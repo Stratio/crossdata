@@ -18,4 +18,5 @@ This will create 3 archives: Meta.tokens, MetaLexer.java and MetaParser.java in 
 
 3.- Once is running, if we want to exit the program, we only have to introduce the word "exit" when a query is asked.
 
+
 NOTE: There is no any error handler at the moment.

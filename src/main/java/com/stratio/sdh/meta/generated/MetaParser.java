@@ -1,4 +1,4 @@
-// $ANTLR 3.5.1 Meta.g 2014-02-06 11:52:16
+// $ANTLR 3.5.1 Meta.g 2014-02-06 13:30:36
 
     package com.stratio.sdh.meta.generated;    
     import com.stratio.sdh.meta.statements.Statement;
@@ -139,19 +139,25 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "explainPlanStatement"
-	// Meta.g:144:1: explainPlanStatement returns [ExplainPlanStatement xpplst] : T_EXPLAIN T_PLAN T_FOR ;
+	// Meta.g:144:1: explainPlanStatement returns [ExplainPlanStatement xpplst] : T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement ;
 	public final ExplainPlanStatement explainPlanStatement() throws RecognitionException {
 		ExplainPlanStatement xpplst = null;
 
 
+		Statement parsedStmnt =null;
+
 		try {
-			// Meta.g:144:59: ( T_EXPLAIN T_PLAN T_FOR )
-			// Meta.g:145:5: T_EXPLAIN T_PLAN T_FOR
+			// Meta.g:144:59: ( T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement )
+			// Meta.g:145:5: T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement
 			{
 			match(input,T_EXPLAIN,FOLLOW_T_EXPLAIN_in_explainPlanStatement960); 
 			match(input,T_PLAN,FOLLOW_T_PLAN_in_explainPlanStatement962); 
 			match(input,T_FOR,FOLLOW_T_FOR_in_explainPlanStatement964); 
-			xpplst = new ExplainPlanStatement("temp");
+			pushFollow(FOLLOW_metaStatement_in_explainPlanStatement968);
+			parsedStmnt=metaStatement();
+			state._fsp--;
+
+			xpplst = new ExplainPlanStatement(parsedStmnt);
 			}
 
 		}
@@ -185,8 +191,8 @@ public class MetaParser extends Parser {
 			// Meta.g:156:6: ( T_SET T_OPTIONS ( T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )? | T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )? ) )
 			// Meta.g:157:5: T_SET T_OPTIONS ( T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )? | T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )? )
 			{
-			match(input,T_SET,FOLLOW_T_SET_in_setOptionsStatement999); 
-			match(input,T_OPTIONS,FOLLOW_T_OPTIONS_in_setOptionsStatement1001); 
+			match(input,T_SET,FOLLOW_T_SET_in_setOptionsStatement1002); 
+			match(input,T_OPTIONS,FOLLOW_T_OPTIONS_in_setOptionsStatement1004); 
 			// Meta.g:157:21: ( T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )? | T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )? )
 			int alt7=2;
 			int LA7_0 = input.LA(1);
@@ -207,8 +213,8 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:158:9: T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )?
 					{
-					match(input,T_ANALYTICS,FOLLOW_T_ANALYTICS_in_setOptionsStatement1013); 
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_setOptionsStatement1015); 
+					match(input,T_ANALYTICS,FOLLOW_T_ANALYTICS_in_setOptionsStatement1016); 
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_setOptionsStatement1018); 
 					// Meta.g:158:29: ( T_TRUE | T_FALSE )
 					int alt1=2;
 					int LA1_0 = input.LA(1);
@@ -229,14 +235,14 @@ public class MetaParser extends Parser {
 						case 1 :
 							// Meta.g:158:30: T_TRUE
 							{
-							match(input,T_TRUE,FOLLOW_T_TRUE_in_setOptionsStatement1018); 
+							match(input,T_TRUE,FOLLOW_T_TRUE_in_setOptionsStatement1021); 
 							analytics=true;
 							}
 							break;
 						case 2 :
 							// Meta.g:158:54: T_FALSE
 							{
-							match(input,T_FALSE,FOLLOW_T_FALSE_in_setOptionsStatement1021); 
+							match(input,T_FALSE,FOLLOW_T_FALSE_in_setOptionsStatement1024); 
 							analytics=false;
 							}
 							break;
@@ -254,9 +260,9 @@ public class MetaParser extends Parser {
 						case 1 :
 							// Meta.g:159:10: T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM )
 							{
-							match(input,T_AND,FOLLOW_T_AND_in_setOptionsStatement1036); 
-							match(input,T_CONSISTENCY,FOLLOW_T_CONSISTENCY_in_setOptionsStatement1038); 
-							match(input,T_EQUAL,FOLLOW_T_EQUAL_in_setOptionsStatement1040); 
+							match(input,T_AND,FOLLOW_T_AND_in_setOptionsStatement1039); 
+							match(input,T_CONSISTENCY,FOLLOW_T_CONSISTENCY_in_setOptionsStatement1041); 
+							match(input,T_EQUAL,FOLLOW_T_EQUAL_in_setOptionsStatement1043); 
 							// Meta.g:160:13: ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM )
 							int alt2=9;
 							switch ( input.LA(1) ) {
@@ -314,63 +320,63 @@ public class MetaParser extends Parser {
 								case 1 :
 									// Meta.g:160:14: T_ALL
 									{
-									match(input,T_ALL,FOLLOW_T_ALL_in_setOptionsStatement1055); 
+									match(input,T_ALL,FOLLOW_T_ALL_in_setOptionsStatement1058); 
 									cnstc=Consistency.ALL;
 									}
 									break;
 								case 2 :
 									// Meta.g:161:15: T_ANY
 									{
-									match(input,T_ANY,FOLLOW_T_ANY_in_setOptionsStatement1074); 
+									match(input,T_ANY,FOLLOW_T_ANY_in_setOptionsStatement1077); 
 									cnstc=Consistency.ANY;
 									}
 									break;
 								case 3 :
 									// Meta.g:162:15: T_QUORUM
 									{
-									match(input,T_QUORUM,FOLLOW_T_QUORUM_in_setOptionsStatement1092); 
+									match(input,T_QUORUM,FOLLOW_T_QUORUM_in_setOptionsStatement1095); 
 									cnstc=Consistency.QUORUM;
 									}
 									break;
 								case 4 :
 									// Meta.g:163:15: T_ONE
 									{
-									match(input,T_ONE,FOLLOW_T_ONE_in_setOptionsStatement1110); 
+									match(input,T_ONE,FOLLOW_T_ONE_in_setOptionsStatement1113); 
 									cnstc=Consistency.ONE;
 									}
 									break;
 								case 5 :
 									// Meta.g:164:15: T_TWO
 									{
-									match(input,T_TWO,FOLLOW_T_TWO_in_setOptionsStatement1128); 
+									match(input,T_TWO,FOLLOW_T_TWO_in_setOptionsStatement1131); 
 									cnstc=Consistency.TWO;
 									}
 									break;
 								case 6 :
 									// Meta.g:165:15: T_THREE
 									{
-									match(input,T_THREE,FOLLOW_T_THREE_in_setOptionsStatement1146); 
+									match(input,T_THREE,FOLLOW_T_THREE_in_setOptionsStatement1149); 
 									cnstc=Consistency.THREE;
 									}
 									break;
 								case 7 :
 									// Meta.g:166:15: T_EACH_QUORUM
 									{
-									match(input,T_EACH_QUORUM,FOLLOW_T_EACH_QUORUM_in_setOptionsStatement1164); 
+									match(input,T_EACH_QUORUM,FOLLOW_T_EACH_QUORUM_in_setOptionsStatement1167); 
 									cnstc=Consistency.EACH_QUORUM;
 									}
 									break;
 								case 8 :
 									// Meta.g:167:15: T_LOCAL_ONE
 									{
-									match(input,T_LOCAL_ONE,FOLLOW_T_LOCAL_ONE_in_setOptionsStatement1182); 
+									match(input,T_LOCAL_ONE,FOLLOW_T_LOCAL_ONE_in_setOptionsStatement1185); 
 									cnstc=Consistency.LOCAL_ONE;
 									}
 									break;
 								case 9 :
 									// Meta.g:168:15: T_LOCAL_QUORUM
 									{
-									match(input,T_LOCAL_QUORUM,FOLLOW_T_LOCAL_QUORUM_in_setOptionsStatement1200); 
+									match(input,T_LOCAL_QUORUM,FOLLOW_T_LOCAL_QUORUM_in_setOptionsStatement1203); 
 									cnstc=Consistency.LOCAL_QUORUM;
 									}
 									break;
@@ -389,8 +395,8 @@ public class MetaParser extends Parser {
 				case 2 :
 					// Meta.g:172:11: T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )?
 					{
-					match(input,T_CONSISTENCY,FOLLOW_T_CONSISTENCY_in_setOptionsStatement1250); 
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_setOptionsStatement1252); 
+					match(input,T_CONSISTENCY,FOLLOW_T_CONSISTENCY_in_setOptionsStatement1253); 
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_setOptionsStatement1255); 
 					// Meta.g:173:13: ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM )
 					int alt4=9;
 					switch ( input.LA(1) ) {
@@ -448,63 +454,63 @@ public class MetaParser extends Parser {
 						case 1 :
 							// Meta.g:173:14: T_ALL
 							{
-							match(input,T_ALL,FOLLOW_T_ALL_in_setOptionsStatement1268); 
+							match(input,T_ALL,FOLLOW_T_ALL_in_setOptionsStatement1271); 
 							cnstc=Consistency.ALL;
 							}
 							break;
 						case 2 :
 							// Meta.g:174:15: T_ANY
 							{
-							match(input,T_ANY,FOLLOW_T_ANY_in_setOptionsStatement1287); 
+							match(input,T_ANY,FOLLOW_T_ANY_in_setOptionsStatement1290); 
 							cnstc=Consistency.ANY;
 							}
 							break;
 						case 3 :
 							// Meta.g:175:15: T_QUORUM
 							{
-							match(input,T_QUORUM,FOLLOW_T_QUORUM_in_setOptionsStatement1305); 
+							match(input,T_QUORUM,FOLLOW_T_QUORUM_in_setOptionsStatement1308); 
 							cnstc=Consistency.QUORUM;
 							}
 							break;
 						case 4 :
 							// Meta.g:176:15: T_ONE
 							{
-							match(input,T_ONE,FOLLOW_T_ONE_in_setOptionsStatement1323); 
+							match(input,T_ONE,FOLLOW_T_ONE_in_setOptionsStatement1326); 
 							cnstc=Consistency.ONE;
 							}
 							break;
 						case 5 :
 							// Meta.g:177:15: T_TWO
 							{
-							match(input,T_TWO,FOLLOW_T_TWO_in_setOptionsStatement1341); 
+							match(input,T_TWO,FOLLOW_T_TWO_in_setOptionsStatement1344); 
 							cnstc=Consistency.TWO;
 							}
 							break;
 						case 6 :
 							// Meta.g:178:15: T_THREE
 							{
-							match(input,T_THREE,FOLLOW_T_THREE_in_setOptionsStatement1359); 
+							match(input,T_THREE,FOLLOW_T_THREE_in_setOptionsStatement1362); 
 							cnstc=Consistency.THREE;
 							}
 							break;
 						case 7 :
 							// Meta.g:179:15: T_EACH_QUORUM
 							{
-							match(input,T_EACH_QUORUM,FOLLOW_T_EACH_QUORUM_in_setOptionsStatement1377); 
+							match(input,T_EACH_QUORUM,FOLLOW_T_EACH_QUORUM_in_setOptionsStatement1380); 
 							cnstc=Consistency.EACH_QUORUM;
 							}
 							break;
 						case 8 :
 							// Meta.g:180:15: T_LOCAL_ONE
 							{
-							match(input,T_LOCAL_ONE,FOLLOW_T_LOCAL_ONE_in_setOptionsStatement1395); 
+							match(input,T_LOCAL_ONE,FOLLOW_T_LOCAL_ONE_in_setOptionsStatement1398); 
 							cnstc=Consistency.LOCAL_ONE;
 							}
 							break;
 						case 9 :
 							// Meta.g:181:15: T_LOCAL_QUORUM
 							{
-							match(input,T_LOCAL_QUORUM,FOLLOW_T_LOCAL_QUORUM_in_setOptionsStatement1413); 
+							match(input,T_LOCAL_QUORUM,FOLLOW_T_LOCAL_QUORUM_in_setOptionsStatement1416); 
 							cnstc=Consistency.LOCAL_QUORUM;
 							}
 							break;
@@ -522,9 +528,9 @@ public class MetaParser extends Parser {
 						case 1 :
 							// Meta.g:183:10: T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE )
 							{
-							match(input,T_AND,FOLLOW_T_AND_in_setOptionsStatement1441); 
-							match(input,T_ANALYTICS,FOLLOW_T_ANALYTICS_in_setOptionsStatement1443); 
-							match(input,T_EQUAL,FOLLOW_T_EQUAL_in_setOptionsStatement1445); 
+							match(input,T_AND,FOLLOW_T_AND_in_setOptionsStatement1444); 
+							match(input,T_ANALYTICS,FOLLOW_T_ANALYTICS_in_setOptionsStatement1446); 
+							match(input,T_EQUAL,FOLLOW_T_EQUAL_in_setOptionsStatement1448); 
 							// Meta.g:183:36: ( T_TRUE | T_FALSE )
 							int alt5=2;
 							int LA5_0 = input.LA(1);
@@ -545,14 +551,14 @@ public class MetaParser extends Parser {
 								case 1 :
 									// Meta.g:183:37: T_TRUE
 									{
-									match(input,T_TRUE,FOLLOW_T_TRUE_in_setOptionsStatement1448); 
+									match(input,T_TRUE,FOLLOW_T_TRUE_in_setOptionsStatement1451); 
 									analytics=true;
 									}
 									break;
 								case 2 :
 									// Meta.g:183:61: T_FALSE
 									{
-									match(input,T_FALSE,FOLLOW_T_FALSE_in_setOptionsStatement1451); 
+									match(input,T_FALSE,FOLLOW_T_FALSE_in_setOptionsStatement1454); 
 									analytics=false;
 									}
 									break;
@@ -599,8 +605,8 @@ public class MetaParser extends Parser {
 			// Meta.g:189:41: ( T_USE iden= T_IDENT )
 			// Meta.g:190:5: T_USE iden= T_IDENT
 			{
-			match(input,T_USE,FOLLOW_T_USE_in_useStatement1506); 
-			iden=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_useStatement1514); 
+			match(input,T_USE,FOLLOW_T_USE_in_useStatement1509); 
+			iden=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_useStatement1517); 
 			usst = new UseStatement((iden!=null?iden.getText():null));
 			}
 
@@ -633,8 +639,8 @@ public class MetaParser extends Parser {
 			// Meta.g:197:6: ( T_DROP T_KEYSPACE ( T_IF T_EXISTS )? iden= T_IDENT )
 			// Meta.g:198:5: T_DROP T_KEYSPACE ( T_IF T_EXISTS )? iden= T_IDENT
 			{
-			match(input,T_DROP,FOLLOW_T_DROP_in_dropKeyspaceStatement1544); 
-			match(input,T_KEYSPACE,FOLLOW_T_KEYSPACE_in_dropKeyspaceStatement1550); 
+			match(input,T_DROP,FOLLOW_T_DROP_in_dropKeyspaceStatement1547); 
+			match(input,T_KEYSPACE,FOLLOW_T_KEYSPACE_in_dropKeyspaceStatement1553); 
 			// Meta.g:200:5: ( T_IF T_EXISTS )?
 			int alt8=2;
 			int LA8_0 = input.LA(1);
@@ -645,15 +651,15 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:200:6: T_IF T_EXISTS
 					{
-					match(input,T_IF,FOLLOW_T_IF_in_dropKeyspaceStatement1557); 
-					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_dropKeyspaceStatement1559); 
+					match(input,T_IF,FOLLOW_T_IF_in_dropKeyspaceStatement1560); 
+					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_dropKeyspaceStatement1562); 
 					ifExists = true;
 					}
 					break;
 
 			}
 
-			iden=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_dropKeyspaceStatement1571); 
+			iden=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_dropKeyspaceStatement1574); 
 			 drksst = new DropKeyspaceStatement((iden!=null?iden.getText():null), ifExists);
 			}
 
@@ -690,13 +696,13 @@ public class MetaParser extends Parser {
 			// Meta.g:208:6: ( T_ALTER T_KEYSPACE ident= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )
 			// Meta.g:209:5: T_ALTER T_KEYSPACE ident= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
 			{
-			match(input,T_ALTER,FOLLOW_T_ALTER_in_alterKeyspaceStatement1605); 
-			match(input,T_KEYSPACE,FOLLOW_T_KEYSPACE_in_alterKeyspaceStatement1611); 
-			ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterKeyspaceStatement1619); 
-			match(input,T_WITH,FOLLOW_T_WITH_in_alterKeyspaceStatement1625); 
-			identProp1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterKeyspaceStatement1633); 
-			match(input,T_EQUAL,FOLLOW_T_EQUAL_in_alterKeyspaceStatement1635); 
-			pushFollow(FOLLOW_getValueProperty_in_alterKeyspaceStatement1639);
+			match(input,T_ALTER,FOLLOW_T_ALTER_in_alterKeyspaceStatement1608); 
+			match(input,T_KEYSPACE,FOLLOW_T_KEYSPACE_in_alterKeyspaceStatement1614); 
+			ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterKeyspaceStatement1622); 
+			match(input,T_WITH,FOLLOW_T_WITH_in_alterKeyspaceStatement1628); 
+			identProp1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterKeyspaceStatement1636); 
+			match(input,T_EQUAL,FOLLOW_T_EQUAL_in_alterKeyspaceStatement1638); 
+			pushFollow(FOLLOW_getValueProperty_in_alterKeyspaceStatement1642);
 			valueProp1=getValueProperty();
 			state._fsp--;
 
@@ -714,10 +720,10 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:214:6: T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty
 					{
-					match(input,T_AND,FOLLOW_T_AND_in_alterKeyspaceStatement1648); 
-					identPropN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterKeyspaceStatement1652); 
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_alterKeyspaceStatement1654); 
-					pushFollow(FOLLOW_getValueProperty_in_alterKeyspaceStatement1658);
+					match(input,T_AND,FOLLOW_T_AND_in_alterKeyspaceStatement1651); 
+					identPropN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterKeyspaceStatement1655); 
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_alterKeyspaceStatement1657); 
+					pushFollow(FOLLOW_getValueProperty_in_alterKeyspaceStatement1661);
 					valuePropN=getValueProperty();
 					state._fsp--;
 
@@ -767,8 +773,8 @@ public class MetaParser extends Parser {
 			// Meta.g:222:6: ( T_CREATE T_KEYSPACE ( T_IF T_NOT T_EXISTS )? identKS= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )
 			// Meta.g:223:5: T_CREATE T_KEYSPACE ( T_IF T_NOT T_EXISTS )? identKS= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
 			{
-			match(input,T_CREATE,FOLLOW_T_CREATE_in_createKeyspaceStatement1697); 
-			match(input,T_KEYSPACE,FOLLOW_T_KEYSPACE_in_createKeyspaceStatement1703); 
+			match(input,T_CREATE,FOLLOW_T_CREATE_in_createKeyspaceStatement1700); 
+			match(input,T_KEYSPACE,FOLLOW_T_KEYSPACE_in_createKeyspaceStatement1706); 
 			// Meta.g:225:5: ( T_IF T_NOT T_EXISTS )?
 			int alt10=2;
 			int LA10_0 = input.LA(1);
@@ -779,20 +785,20 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:225:6: T_IF T_NOT T_EXISTS
 					{
-					match(input,T_IF,FOLLOW_T_IF_in_createKeyspaceStatement1710); 
-					match(input,T_NOT,FOLLOW_T_NOT_in_createKeyspaceStatement1712); 
-					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_createKeyspaceStatement1714); 
+					match(input,T_IF,FOLLOW_T_IF_in_createKeyspaceStatement1713); 
+					match(input,T_NOT,FOLLOW_T_NOT_in_createKeyspaceStatement1715); 
+					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_createKeyspaceStatement1717); 
 					ifNotExists = true;
 					}
 					break;
 
 			}
 
-			identKS=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createKeyspaceStatement1726); 
-			match(input,T_WITH,FOLLOW_T_WITH_in_createKeyspaceStatement1732); 
-			identProp1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createKeyspaceStatement1744); 
-			match(input,T_EQUAL,FOLLOW_T_EQUAL_in_createKeyspaceStatement1746); 
-			pushFollow(FOLLOW_getValueProperty_in_createKeyspaceStatement1750);
+			identKS=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createKeyspaceStatement1729); 
+			match(input,T_WITH,FOLLOW_T_WITH_in_createKeyspaceStatement1735); 
+			identProp1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createKeyspaceStatement1747); 
+			match(input,T_EQUAL,FOLLOW_T_EQUAL_in_createKeyspaceStatement1749); 
+			pushFollow(FOLLOW_getValueProperty_in_createKeyspaceStatement1753);
 			valueProp1=getValueProperty();
 			state._fsp--;
 
@@ -810,10 +816,10 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:229:6: T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty
 					{
-					match(input,T_AND,FOLLOW_T_AND_in_createKeyspaceStatement1759); 
-					identPropN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createKeyspaceStatement1763); 
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_createKeyspaceStatement1765); 
-					pushFollow(FOLLOW_getValueProperty_in_createKeyspaceStatement1769);
+					match(input,T_AND,FOLLOW_T_AND_in_createKeyspaceStatement1762); 
+					identPropN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createKeyspaceStatement1766); 
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_createKeyspaceStatement1768); 
+					pushFollow(FOLLOW_getValueProperty_in_createKeyspaceStatement1772);
 					valuePropN=getValueProperty();
 					state._fsp--;
 
@@ -858,8 +864,8 @@ public class MetaParser extends Parser {
 			// Meta.g:236:6: ( T_DROP T_TABLE ( T_IF T_EXISTS )? ident= getTableID )
 			// Meta.g:237:5: T_DROP T_TABLE ( T_IF T_EXISTS )? ident= getTableID
 			{
-			match(input,T_DROP,FOLLOW_T_DROP_in_dropTableStatement1808); 
-			match(input,T_TABLE,FOLLOW_T_TABLE_in_dropTableStatement1814); 
+			match(input,T_DROP,FOLLOW_T_DROP_in_dropTableStatement1811); 
+			match(input,T_TABLE,FOLLOW_T_TABLE_in_dropTableStatement1817); 
 			// Meta.g:239:5: ( T_IF T_EXISTS )?
 			int alt12=2;
 			int LA12_0 = input.LA(1);
@@ -870,15 +876,15 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:239:6: T_IF T_EXISTS
 					{
-					match(input,T_IF,FOLLOW_T_IF_in_dropTableStatement1821); 
-					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_dropTableStatement1823); 
+					match(input,T_IF,FOLLOW_T_IF_in_dropTableStatement1824); 
+					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_dropTableStatement1826); 
 					 ifExists = true; 
 					}
 					break;
 
 			}
 
-			pushFollow(FOLLOW_getTableID_in_dropTableStatement1835);
+			pushFollow(FOLLOW_getTableID_in_dropTableStatement1838);
 			ident=getTableID();
 			state._fsp--;
 
@@ -913,8 +919,8 @@ public class MetaParser extends Parser {
 			// Meta.g:245:51: ( T_TRUNCATE ident= getTableID )
 			// Meta.g:246:2: T_TRUNCATE ident= getTableID
 			{
-			match(input,T_TRUNCATE,FOLLOW_T_TRUNCATE_in_truncateStatement1855); 
-			pushFollow(FOLLOW_getTableID_in_truncateStatement1868);
+			match(input,T_TRUNCATE,FOLLOW_T_TRUNCATE_in_truncateStatement1858); 
+			pushFollow(FOLLOW_getTableID_in_truncateStatement1871);
 			ident=getTableID();
 			state._fsp--;
 
@@ -1019,7 +1025,7 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:253:5: st_xppl= explainPlanStatement
 					{
-					pushFollow(FOLLOW_explainPlanStatement_in_metaStatement1891);
+					pushFollow(FOLLOW_explainPlanStatement_in_metaStatement1894);
 					st_xppl=explainPlanStatement();
 					state._fsp--;
 
@@ -1029,7 +1035,7 @@ public class MetaParser extends Parser {
 				case 2 :
 					// Meta.g:254:7: st_stpt= setOptionsStatement
 					{
-					pushFollow(FOLLOW_setOptionsStatement_in_metaStatement1905);
+					pushFollow(FOLLOW_setOptionsStatement_in_metaStatement1908);
 					st_stpt=setOptionsStatement();
 					state._fsp--;
 
@@ -1039,7 +1045,7 @@ public class MetaParser extends Parser {
 				case 3 :
 					// Meta.g:255:7: st_usks= useStatement
 					{
-					pushFollow(FOLLOW_useStatement_in_metaStatement1919);
+					pushFollow(FOLLOW_useStatement_in_metaStatement1922);
 					st_usks=useStatement();
 					state._fsp--;
 
@@ -1049,7 +1055,7 @@ public class MetaParser extends Parser {
 				case 4 :
 					// Meta.g:256:7: st_drks= dropKeyspaceStatement
 					{
-					pushFollow(FOLLOW_dropKeyspaceStatement_in_metaStatement1933);
+					pushFollow(FOLLOW_dropKeyspaceStatement_in_metaStatement1936);
 					st_drks=dropKeyspaceStatement();
 					state._fsp--;
 
@@ -1059,7 +1065,7 @@ public class MetaParser extends Parser {
 				case 5 :
 					// Meta.g:257:7: st_crks= createKeyspaceStatement
 					{
-					pushFollow(FOLLOW_createKeyspaceStatement_in_metaStatement1947);
+					pushFollow(FOLLOW_createKeyspaceStatement_in_metaStatement1950);
 					st_crks=createKeyspaceStatement();
 					state._fsp--;
 
@@ -1069,7 +1075,7 @@ public class MetaParser extends Parser {
 				case 6 :
 					// Meta.g:258:7: st_alks= alterKeyspaceStatement
 					{
-					pushFollow(FOLLOW_alterKeyspaceStatement_in_metaStatement1961);
+					pushFollow(FOLLOW_alterKeyspaceStatement_in_metaStatement1964);
 					st_alks=alterKeyspaceStatement();
 					state._fsp--;
 
@@ -1079,7 +1085,7 @@ public class MetaParser extends Parser {
 				case 7 :
 					// Meta.g:259:7: st_tbdr= dropTableStatement
 					{
-					pushFollow(FOLLOW_dropTableStatement_in_metaStatement1975);
+					pushFollow(FOLLOW_dropTableStatement_in_metaStatement1978);
 					st_tbdr=dropTableStatement();
 					state._fsp--;
 
@@ -1089,7 +1095,7 @@ public class MetaParser extends Parser {
 				case 8 :
 					// Meta.g:260:7: st_trst= truncateStatement
 					{
-					pushFollow(FOLLOW_truncateStatement_in_metaStatement1989);
+					pushFollow(FOLLOW_truncateStatement_in_metaStatement1992);
 					st_trst=truncateStatement();
 					state._fsp--;
 
@@ -1124,7 +1130,7 @@ public class MetaParser extends Parser {
 			// Meta.g:262:29: (mtst= metaStatement ( T_SEMICOLON )+ EOF )
 			// Meta.g:263:2: mtst= metaStatement ( T_SEMICOLON )+ EOF
 			{
-			pushFollow(FOLLOW_metaStatement_in_query2010);
+			pushFollow(FOLLOW_metaStatement_in_query2013);
 			mtst=metaStatement();
 			state._fsp--;
 
@@ -1142,7 +1148,7 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:263:22: T_SEMICOLON
 					{
-					match(input,T_SEMICOLON,FOLLOW_T_SEMICOLON_in_query2013); 
+					match(input,T_SEMICOLON,FOLLOW_T_SEMICOLON_in_query2016); 
 					}
 					break;
 
@@ -1154,7 +1160,7 @@ public class MetaParser extends Parser {
 				cnt14++;
 			}
 
-			match(input,EOF,FOLLOW_EOF_in_query2017); 
+			match(input,EOF,FOLLOW_EOF_in_query2020); 
 
 					st = mtst;
 				
@@ -1200,14 +1206,14 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:271:6: ks= T_IDENT '.'
 					{
-					ks=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTableID2041); 
-					match(input,T_POINT,FOLLOW_T_POINT_in_getTableID2043); 
+					ks=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTableID2044); 
+					match(input,T_POINT,FOLLOW_T_POINT_in_getTableID2046); 
 					}
 					break;
 
 			}
 
-			ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTableID2054); 
+			ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTableID2057); 
 			tableID = new String((ks!=null?ks.getText():null)==null?(ident!=null?ident.getText():null):(ks!=null?ks.getText():null)+'.'+(ident!=null?ident.getText():null));
 			}
 
@@ -1259,14 +1265,14 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:275:5: ident= T_IDENT
 					{
-					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTerm2074); 
+					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTerm2077); 
 					retval.term = (ident!=null?ident.getText():null);
 					}
 					break;
 				case 2 :
 					// Meta.g:276:7: noIdent= T_TERM
 					{
-					noIdent=(Token)match(input,T_TERM,FOLLOW_T_TERM_in_getTerm2086); 
+					noIdent=(Token)match(input,T_TERM,FOLLOW_T_TERM_in_getTerm2089); 
 					retval.term = (noIdent!=null?noIdent.getText():null);
 					}
 					break;
@@ -1306,7 +1312,7 @@ public class MetaParser extends Parser {
 			// Meta.g:282:6: ( T_START_SBRACKET (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )? T_END_SBRACKET )
 			// Meta.g:283:5: T_START_SBRACKET (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )? T_END_SBRACKET
 			{
-			match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getMapLiteral2116); 
+			match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getMapLiteral2119); 
 			// Meta.g:284:5: (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )?
 			int alt18=2;
 			int LA18_0 = input.LA(1);
@@ -1317,12 +1323,12 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:284:6: leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )*
 					{
-					pushFollow(FOLLOW_getTerm_in_getMapLiteral2126);
+					pushFollow(FOLLOW_getTerm_in_getMapLiteral2129);
 					leftTerm1=getTerm();
 					state._fsp--;
 
-					match(input,T_COLON,FOLLOW_T_COLON_in_getMapLiteral2128); 
-					pushFollow(FOLLOW_getTerm_in_getMapLiteral2132);
+					match(input,T_COLON,FOLLOW_T_COLON_in_getMapLiteral2131); 
+					pushFollow(FOLLOW_getTerm_in_getMapLiteral2135);
 					rightTerm1=getTerm();
 					state._fsp--;
 
@@ -1340,13 +1346,13 @@ public class MetaParser extends Parser {
 						case 1 :
 							// Meta.g:285:6: T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm
 							{
-							match(input,T_COMMA,FOLLOW_T_COMMA_in_getMapLiteral2141); 
-							pushFollow(FOLLOW_getTerm_in_getMapLiteral2145);
+							match(input,T_COMMA,FOLLOW_T_COMMA_in_getMapLiteral2144); 
+							pushFollow(FOLLOW_getTerm_in_getMapLiteral2148);
 							leftTermN=getTerm();
 							state._fsp--;
 
-							match(input,T_COLON,FOLLOW_T_COLON_in_getMapLiteral2147); 
-							pushFollow(FOLLOW_getTerm_in_getMapLiteral2151);
+							match(input,T_COLON,FOLLOW_T_COLON_in_getMapLiteral2150); 
+							pushFollow(FOLLOW_getTerm_in_getMapLiteral2154);
 							rightTermN=getTerm();
 							state._fsp--;
 
@@ -1364,7 +1370,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getMapLiteral2163); 
+			match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getMapLiteral2166); 
 			}
 
 		}
@@ -1419,21 +1425,21 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:290:5: ident= T_IDENT
 					{
-					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getValueProperty2185); 
+					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getValueProperty2188); 
 					value = new IdentifierProperty((ident!=null?ident.getText():null));
 					}
 					break;
 				case 2 :
 					// Meta.g:291:7: constant= T_CONSTANT
 					{
-					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getValueProperty2197); 
+					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getValueProperty2200); 
 					value = new ConstantProperty(Integer.parseInt((constant!=null?constant.getText():null)));
 					}
 					break;
 				case 3 :
 					// Meta.g:292:7: mapliteral= getMapLiteral
 					{
-					pushFollow(FOLLOW_getMapLiteral_in_getValueProperty2209);
+					pushFollow(FOLLOW_getMapLiteral_in_getValueProperty2212);
 					mapliteral=getMapLiteral();
 					state._fsp--;
 
@@ -1460,106 +1466,107 @@ public class MetaParser extends Parser {
 
 	public static final BitSet FOLLOW_T_EXPLAIN_in_explainPlanStatement960 = new BitSet(new long[]{0x0010000000000000L});
 	public static final BitSet FOLLOW_T_PLAN_in_explainPlanStatement962 = new BitSet(new long[]{0x0000080000000000L});
-	public static final BitSet FOLLOW_T_FOR_in_explainPlanStatement964 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_SET_in_setOptionsStatement999 = new BitSet(new long[]{0x0008000000000000L});
-	public static final BitSet FOLLOW_T_OPTIONS_in_setOptionsStatement1001 = new BitSet(new long[]{0x0000000210000000L});
-	public static final BitSet FOLLOW_T_ANALYTICS_in_setOptionsStatement1013 = new BitSet(new long[]{0x0000008000000000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_setOptionsStatement1015 = new BitSet(new long[]{0x2000040000000000L});
-	public static final BitSet FOLLOW_T_TRUE_in_setOptionsStatement1018 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_FALSE_in_setOptionsStatement1021 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_AND_in_setOptionsStatement1036 = new BitSet(new long[]{0x0000000200000000L});
-	public static final BitSet FOLLOW_T_CONSISTENCY_in_setOptionsStatement1038 = new BitSet(new long[]{0x0000008000000000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_setOptionsStatement1040 = new BitSet(new long[]{0x9045802044000000L});
-	public static final BitSet FOLLOW_T_ALL_in_setOptionsStatement1055 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_ANY_in_setOptionsStatement1074 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_QUORUM_in_setOptionsStatement1092 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_ONE_in_setOptionsStatement1110 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TWO_in_setOptionsStatement1128 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_THREE_in_setOptionsStatement1146 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_EACH_QUORUM_in_setOptionsStatement1164 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_LOCAL_ONE_in_setOptionsStatement1182 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_LOCAL_QUORUM_in_setOptionsStatement1200 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CONSISTENCY_in_setOptionsStatement1250 = new BitSet(new long[]{0x0000008000000000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_setOptionsStatement1252 = new BitSet(new long[]{0x9045802044000000L});
-	public static final BitSet FOLLOW_T_ALL_in_setOptionsStatement1268 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_ANY_in_setOptionsStatement1287 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_QUORUM_in_setOptionsStatement1305 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_ONE_in_setOptionsStatement1323 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_TWO_in_setOptionsStatement1341 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_THREE_in_setOptionsStatement1359 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_EACH_QUORUM_in_setOptionsStatement1377 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_LOCAL_ONE_in_setOptionsStatement1395 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_LOCAL_QUORUM_in_setOptionsStatement1413 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_AND_in_setOptionsStatement1441 = new BitSet(new long[]{0x0000000010000000L});
-	public static final BitSet FOLLOW_T_ANALYTICS_in_setOptionsStatement1443 = new BitSet(new long[]{0x0000008000000000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_setOptionsStatement1445 = new BitSet(new long[]{0x2000040000000000L});
-	public static final BitSet FOLLOW_T_TRUE_in_setOptionsStatement1448 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_FALSE_in_setOptionsStatement1451 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_USE_in_useStatement1506 = new BitSet(new long[]{0x0000100000000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_useStatement1514 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_DROP_in_dropKeyspaceStatement1544 = new BitSet(new long[]{0x0000400000000000L});
-	public static final BitSet FOLLOW_T_KEYSPACE_in_dropKeyspaceStatement1550 = new BitSet(new long[]{0x0000300000000000L});
-	public static final BitSet FOLLOW_T_IF_in_dropKeyspaceStatement1557 = new BitSet(new long[]{0x0000010000000000L});
-	public static final BitSet FOLLOW_T_EXISTS_in_dropKeyspaceStatement1559 = new BitSet(new long[]{0x0000100000000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_dropKeyspaceStatement1571 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_ALTER_in_alterKeyspaceStatement1605 = new BitSet(new long[]{0x0000400000000000L});
-	public static final BitSet FOLLOW_T_KEYSPACE_in_alterKeyspaceStatement1611 = new BitSet(new long[]{0x0000100000000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_alterKeyspaceStatement1619 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000002L});
-	public static final BitSet FOLLOW_T_WITH_in_alterKeyspaceStatement1625 = new BitSet(new long[]{0x0000100000000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_alterKeyspaceStatement1633 = new BitSet(new long[]{0x0000008000000000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_alterKeyspaceStatement1635 = new BitSet(new long[]{0x0200100400000000L});
-	public static final BitSet FOLLOW_getValueProperty_in_alterKeyspaceStatement1639 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_AND_in_alterKeyspaceStatement1648 = new BitSet(new long[]{0x0000100000000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_alterKeyspaceStatement1652 = new BitSet(new long[]{0x0000008000000000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_alterKeyspaceStatement1654 = new BitSet(new long[]{0x0200100400000000L});
-	public static final BitSet FOLLOW_getValueProperty_in_alterKeyspaceStatement1658 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_CREATE_in_createKeyspaceStatement1697 = new BitSet(new long[]{0x0000400000000000L});
-	public static final BitSet FOLLOW_T_KEYSPACE_in_createKeyspaceStatement1703 = new BitSet(new long[]{0x0000300000000000L});
-	public static final BitSet FOLLOW_T_IF_in_createKeyspaceStatement1710 = new BitSet(new long[]{0x0002000000000000L});
-	public static final BitSet FOLLOW_T_NOT_in_createKeyspaceStatement1712 = new BitSet(new long[]{0x0000010000000000L});
-	public static final BitSet FOLLOW_T_EXISTS_in_createKeyspaceStatement1714 = new BitSet(new long[]{0x0000100000000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_createKeyspaceStatement1726 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000002L});
-	public static final BitSet FOLLOW_T_WITH_in_createKeyspaceStatement1732 = new BitSet(new long[]{0x0000100000000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_createKeyspaceStatement1744 = new BitSet(new long[]{0x0000008000000000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_createKeyspaceStatement1746 = new BitSet(new long[]{0x0200100400000000L});
-	public static final BitSet FOLLOW_getValueProperty_in_createKeyspaceStatement1750 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_AND_in_createKeyspaceStatement1759 = new BitSet(new long[]{0x0000100000000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_createKeyspaceStatement1763 = new BitSet(new long[]{0x0000008000000000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_createKeyspaceStatement1765 = new BitSet(new long[]{0x0200100400000000L});
-	public static final BitSet FOLLOW_getValueProperty_in_createKeyspaceStatement1769 = new BitSet(new long[]{0x0000000020000002L});
-	public static final BitSet FOLLOW_T_DROP_in_dropTableStatement1808 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_T_TABLE_in_dropTableStatement1814 = new BitSet(new long[]{0x0000300000000000L});
-	public static final BitSet FOLLOW_T_IF_in_dropTableStatement1821 = new BitSet(new long[]{0x0000010000000000L});
-	public static final BitSet FOLLOW_T_EXISTS_in_dropTableStatement1823 = new BitSet(new long[]{0x0000100000000000L});
-	public static final BitSet FOLLOW_getTableID_in_dropTableStatement1835 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TRUNCATE_in_truncateStatement1855 = new BitSet(new long[]{0x0000100000000000L});
-	public static final BitSet FOLLOW_getTableID_in_truncateStatement1868 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_explainPlanStatement_in_metaStatement1891 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_setOptionsStatement_in_metaStatement1905 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_useStatement_in_metaStatement1919 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_dropKeyspaceStatement_in_metaStatement1933 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_createKeyspaceStatement_in_metaStatement1947 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_alterKeyspaceStatement_in_metaStatement1961 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_dropTableStatement_in_metaStatement1975 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_truncateStatement_in_metaStatement1989 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_metaStatement_in_query2010 = new BitSet(new long[]{0x0080000000000000L});
-	public static final BitSet FOLLOW_T_SEMICOLON_in_query2013 = new BitSet(new long[]{0x0080000000000000L});
-	public static final BitSet FOLLOW_EOF_in_query2017 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getTableID2041 = new BitSet(new long[]{0x0020000000000000L});
-	public static final BitSet FOLLOW_T_POINT_in_getTableID2043 = new BitSet(new long[]{0x0000100000000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_getTableID2054 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getTerm2074 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TERM_in_getTerm2086 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_SBRACKET_in_getMapLiteral2116 = new BitSet(new long[]{0x0800104000000000L});
-	public static final BitSet FOLLOW_getTerm_in_getMapLiteral2126 = new BitSet(new long[]{0x0000000080000000L});
-	public static final BitSet FOLLOW_T_COLON_in_getMapLiteral2128 = new BitSet(new long[]{0x0800100000000000L});
-	public static final BitSet FOLLOW_getTerm_in_getMapLiteral2132 = new BitSet(new long[]{0x0000004100000000L});
-	public static final BitSet FOLLOW_T_COMMA_in_getMapLiteral2141 = new BitSet(new long[]{0x0800100000000000L});
-	public static final BitSet FOLLOW_getTerm_in_getMapLiteral2145 = new BitSet(new long[]{0x0000000080000000L});
-	public static final BitSet FOLLOW_T_COLON_in_getMapLiteral2147 = new BitSet(new long[]{0x0800100000000000L});
-	public static final BitSet FOLLOW_getTerm_in_getMapLiteral2151 = new BitSet(new long[]{0x0000004100000000L});
-	public static final BitSet FOLLOW_T_END_SBRACKET_in_getMapLiteral2163 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getValueProperty2185 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CONSTANT_in_getValueProperty2197 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getMapLiteral_in_getValueProperty2209 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FOR_in_explainPlanStatement964 = new BitSet(new long[]{0x4100021808000000L,0x0000000000000001L});
+	public static final BitSet FOLLOW_metaStatement_in_explainPlanStatement968 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_SET_in_setOptionsStatement1002 = new BitSet(new long[]{0x0008000000000000L});
+	public static final BitSet FOLLOW_T_OPTIONS_in_setOptionsStatement1004 = new BitSet(new long[]{0x0000000210000000L});
+	public static final BitSet FOLLOW_T_ANALYTICS_in_setOptionsStatement1016 = new BitSet(new long[]{0x0000008000000000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_setOptionsStatement1018 = new BitSet(new long[]{0x2000040000000000L});
+	public static final BitSet FOLLOW_T_TRUE_in_setOptionsStatement1021 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_FALSE_in_setOptionsStatement1024 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_AND_in_setOptionsStatement1039 = new BitSet(new long[]{0x0000000200000000L});
+	public static final BitSet FOLLOW_T_CONSISTENCY_in_setOptionsStatement1041 = new BitSet(new long[]{0x0000008000000000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_setOptionsStatement1043 = new BitSet(new long[]{0x9045802044000000L});
+	public static final BitSet FOLLOW_T_ALL_in_setOptionsStatement1058 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_ANY_in_setOptionsStatement1077 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_QUORUM_in_setOptionsStatement1095 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_ONE_in_setOptionsStatement1113 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TWO_in_setOptionsStatement1131 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_THREE_in_setOptionsStatement1149 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_EACH_QUORUM_in_setOptionsStatement1167 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_LOCAL_ONE_in_setOptionsStatement1185 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_LOCAL_QUORUM_in_setOptionsStatement1203 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CONSISTENCY_in_setOptionsStatement1253 = new BitSet(new long[]{0x0000008000000000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_setOptionsStatement1255 = new BitSet(new long[]{0x9045802044000000L});
+	public static final BitSet FOLLOW_T_ALL_in_setOptionsStatement1271 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_ANY_in_setOptionsStatement1290 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_QUORUM_in_setOptionsStatement1308 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_ONE_in_setOptionsStatement1326 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_TWO_in_setOptionsStatement1344 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_THREE_in_setOptionsStatement1362 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_EACH_QUORUM_in_setOptionsStatement1380 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_LOCAL_ONE_in_setOptionsStatement1398 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_LOCAL_QUORUM_in_setOptionsStatement1416 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_AND_in_setOptionsStatement1444 = new BitSet(new long[]{0x0000000010000000L});
+	public static final BitSet FOLLOW_T_ANALYTICS_in_setOptionsStatement1446 = new BitSet(new long[]{0x0000008000000000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_setOptionsStatement1448 = new BitSet(new long[]{0x2000040000000000L});
+	public static final BitSet FOLLOW_T_TRUE_in_setOptionsStatement1451 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FALSE_in_setOptionsStatement1454 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_USE_in_useStatement1509 = new BitSet(new long[]{0x0000100000000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_useStatement1517 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_DROP_in_dropKeyspaceStatement1547 = new BitSet(new long[]{0x0000400000000000L});
+	public static final BitSet FOLLOW_T_KEYSPACE_in_dropKeyspaceStatement1553 = new BitSet(new long[]{0x0000300000000000L});
+	public static final BitSet FOLLOW_T_IF_in_dropKeyspaceStatement1560 = new BitSet(new long[]{0x0000010000000000L});
+	public static final BitSet FOLLOW_T_EXISTS_in_dropKeyspaceStatement1562 = new BitSet(new long[]{0x0000100000000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_dropKeyspaceStatement1574 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_ALTER_in_alterKeyspaceStatement1608 = new BitSet(new long[]{0x0000400000000000L});
+	public static final BitSet FOLLOW_T_KEYSPACE_in_alterKeyspaceStatement1614 = new BitSet(new long[]{0x0000100000000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_alterKeyspaceStatement1622 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000002L});
+	public static final BitSet FOLLOW_T_WITH_in_alterKeyspaceStatement1628 = new BitSet(new long[]{0x0000100000000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_alterKeyspaceStatement1636 = new BitSet(new long[]{0x0000008000000000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_alterKeyspaceStatement1638 = new BitSet(new long[]{0x0200100400000000L});
+	public static final BitSet FOLLOW_getValueProperty_in_alterKeyspaceStatement1642 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_AND_in_alterKeyspaceStatement1651 = new BitSet(new long[]{0x0000100000000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_alterKeyspaceStatement1655 = new BitSet(new long[]{0x0000008000000000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_alterKeyspaceStatement1657 = new BitSet(new long[]{0x0200100400000000L});
+	public static final BitSet FOLLOW_getValueProperty_in_alterKeyspaceStatement1661 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_CREATE_in_createKeyspaceStatement1700 = new BitSet(new long[]{0x0000400000000000L});
+	public static final BitSet FOLLOW_T_KEYSPACE_in_createKeyspaceStatement1706 = new BitSet(new long[]{0x0000300000000000L});
+	public static final BitSet FOLLOW_T_IF_in_createKeyspaceStatement1713 = new BitSet(new long[]{0x0002000000000000L});
+	public static final BitSet FOLLOW_T_NOT_in_createKeyspaceStatement1715 = new BitSet(new long[]{0x0000010000000000L});
+	public static final BitSet FOLLOW_T_EXISTS_in_createKeyspaceStatement1717 = new BitSet(new long[]{0x0000100000000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_createKeyspaceStatement1729 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000002L});
+	public static final BitSet FOLLOW_T_WITH_in_createKeyspaceStatement1735 = new BitSet(new long[]{0x0000100000000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_createKeyspaceStatement1747 = new BitSet(new long[]{0x0000008000000000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_createKeyspaceStatement1749 = new BitSet(new long[]{0x0200100400000000L});
+	public static final BitSet FOLLOW_getValueProperty_in_createKeyspaceStatement1753 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_AND_in_createKeyspaceStatement1762 = new BitSet(new long[]{0x0000100000000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_createKeyspaceStatement1766 = new BitSet(new long[]{0x0000008000000000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_createKeyspaceStatement1768 = new BitSet(new long[]{0x0200100400000000L});
+	public static final BitSet FOLLOW_getValueProperty_in_createKeyspaceStatement1772 = new BitSet(new long[]{0x0000000020000002L});
+	public static final BitSet FOLLOW_T_DROP_in_dropTableStatement1811 = new BitSet(new long[]{0x0400000000000000L});
+	public static final BitSet FOLLOW_T_TABLE_in_dropTableStatement1817 = new BitSet(new long[]{0x0000300000000000L});
+	public static final BitSet FOLLOW_T_IF_in_dropTableStatement1824 = new BitSet(new long[]{0x0000010000000000L});
+	public static final BitSet FOLLOW_T_EXISTS_in_dropTableStatement1826 = new BitSet(new long[]{0x0000100000000000L});
+	public static final BitSet FOLLOW_getTableID_in_dropTableStatement1838 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TRUNCATE_in_truncateStatement1858 = new BitSet(new long[]{0x0000100000000000L});
+	public static final BitSet FOLLOW_getTableID_in_truncateStatement1871 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_explainPlanStatement_in_metaStatement1894 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_setOptionsStatement_in_metaStatement1908 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_useStatement_in_metaStatement1922 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_dropKeyspaceStatement_in_metaStatement1936 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_createKeyspaceStatement_in_metaStatement1950 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_alterKeyspaceStatement_in_metaStatement1964 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_dropTableStatement_in_metaStatement1978 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_truncateStatement_in_metaStatement1992 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_metaStatement_in_query2013 = new BitSet(new long[]{0x0080000000000000L});
+	public static final BitSet FOLLOW_T_SEMICOLON_in_query2016 = new BitSet(new long[]{0x0080000000000000L});
+	public static final BitSet FOLLOW_EOF_in_query2020 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getTableID2044 = new BitSet(new long[]{0x0020000000000000L});
+	public static final BitSet FOLLOW_T_POINT_in_getTableID2046 = new BitSet(new long[]{0x0000100000000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_getTableID2057 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getTerm2077 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TERM_in_getTerm2089 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_SBRACKET_in_getMapLiteral2119 = new BitSet(new long[]{0x0800104000000000L});
+	public static final BitSet FOLLOW_getTerm_in_getMapLiteral2129 = new BitSet(new long[]{0x0000000080000000L});
+	public static final BitSet FOLLOW_T_COLON_in_getMapLiteral2131 = new BitSet(new long[]{0x0800100000000000L});
+	public static final BitSet FOLLOW_getTerm_in_getMapLiteral2135 = new BitSet(new long[]{0x0000004100000000L});
+	public static final BitSet FOLLOW_T_COMMA_in_getMapLiteral2144 = new BitSet(new long[]{0x0800100000000000L});
+	public static final BitSet FOLLOW_getTerm_in_getMapLiteral2148 = new BitSet(new long[]{0x0000000080000000L});
+	public static final BitSet FOLLOW_T_COLON_in_getMapLiteral2150 = new BitSet(new long[]{0x0800100000000000L});
+	public static final BitSet FOLLOW_getTerm_in_getMapLiteral2154 = new BitSet(new long[]{0x0000004100000000L});
+	public static final BitSet FOLLOW_T_END_SBRACKET_in_getMapLiteral2166 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getValueProperty2188 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CONSTANT_in_getValueProperty2200 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getMapLiteral_in_getValueProperty2212 = new BitSet(new long[]{0x0000000000000002L});
 }

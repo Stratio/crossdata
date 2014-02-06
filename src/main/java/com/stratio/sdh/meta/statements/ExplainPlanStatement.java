@@ -4,24 +4,25 @@ import com.stratio.sdh.meta.structures.Path;
 
 public class ExplainPlanStatement extends Statement {
     
-    private String metaStatement;
+    private Statement metaStatement;
 
-    public ExplainPlanStatement(String metaStatement) {
+    public ExplainPlanStatement(Statement metaStatement) {
         this.metaStatement = metaStatement;
     }    
     
-    public String getMetaStatement() {
+    public Statement getMetaStatement() {
         return metaStatement;
     }
 
-    public void setMetaStatement(String metaStatement) {
+    public void setMetaStatement(Statement metaStatement) {
         this.metaStatement = metaStatement;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Explaing plan for: ");
-        sb.append(metaStatement);
+        sb.append(System.getProperty("line.separator"));
+        sb.append(metaStatement.toString());
         return sb.toString();
     }   
 

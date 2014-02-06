@@ -142,8 +142,8 @@ T_TERM: (LETTER | DIGIT | '_' | '.')+;
 //STATEMENTS
 
 explainPlanStatement returns [ExplainPlanStatement xpplst]:
-    T_EXPLAIN T_PLAN T_FOR 
-    {$xpplst = new ExplainPlanStatement("temp");}
+    T_EXPLAIN T_PLAN T_FOR parsedStmnt=metaStatement
+    {$xpplst = new ExplainPlanStatement(parsedStmnt);}
     ;
 
 setOptionsStatement returns [SetOptionsStatement stptst]
