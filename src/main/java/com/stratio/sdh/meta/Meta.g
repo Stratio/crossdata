@@ -32,6 +32,8 @@ options {
     import com.stratio.sdh.meta.statements.DropTableStatement;
     import com.stratio.sdh.meta.statements.ExplainPlanStatement;
     import com.stratio.sdh.meta.statements.SetOptionsStatement;
+    import com.stratio.sdh.meta.statements.StopProcessStatement;
+    import com.stratio.sdh.meta.statements.DropTriggerStatement;
     import com.stratio.sdh.meta.statements.TruncateStatement;
     import com.stratio.sdh.meta.statements.UseStatement;
     import com.stratio.sdh.meta.structures.Consistency;
@@ -120,6 +122,11 @@ T_LOCAL_QUORUM: L O C A L '_' Q U O R U M;
 T_EXPLAIN: E X P L A I N;
 T_PLAN: P L A N;
 T_FOR: F O R;
+T_STOP: S T O P;
+T_PROCESS: P R O C E S S;
+//cambiado por Antonio 6-2-2014
+T_TRIGGER: T R I G G E R;
+T_ON: O N;
 
 T_SEMICOLON: ';';
 T_EQUAL: '=';
@@ -141,6 +148,18 @@ T_TERM: (LETTER | DIGIT | '_' | '.')+;
 
 //STATEMENTS
 
+stopProcessStatement returns [StopProcessStatement stprst]:
+    T_STOP T_PROCESS ident=T_IDENT { $stprst = new StopProcessStatement($ident.text); }
+    ;
+
+//cambiado por Antonio 6-2-2014
+dropTriggerStatement returns [DropTriggerStatement drtrst]:
+    T_DROP 
+    T_TRIGGER ident=T_IDENT 
+    T_ON 
+    ident2=T_IDENT  
+    {$drtrst = new DropTriggerStatement($ident.text,$ident2.text);}
+    ;
 explainPlanStatement returns [ExplainPlanStatement xpplst]:
     T_EXPLAIN T_PLAN T_FOR parsedStmnt=metaStatement
     {$xpplst = new ExplainPlanStatement(parsedStmnt);}
@@ -250,7 +269,10 @@ truncateStatement returns [TruncateStatement trst]:
 	;
 
 metaStatement returns [Statement st]:
-    st_xppl = explainPlanStatement { $st = st_xppl;}
+//cambiado por Antonio 6-2-2014
+    st_drtr= dropTriggerStatement { $st = st_drtr; }
+    |st_stpr = stopProcessStatement { $st = st_stpr; }
+    | st_xppl = explainPlanStatement { $st = st_xppl;}
     | st_stpt = setOptionsStatement { $st = st_stpt; }
     | st_usks = useStatement { $st = st_usks; }
     | st_drks = dropKeyspaceStatement { $st = st_drks ;}

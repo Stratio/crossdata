@@ -1,4 +1,4 @@
-// $ANTLR 3.5.1 Meta.g 2014-02-06 13:30:37
+// $ANTLR 3.5.1 Meta.g 2014-02-06 18:42:58
 
     package com.stratio.sdh.meta.generated;
 
@@ -57,29 +57,33 @@ public class MetaLexer extends Lexer {
 	public static final int T_LOCAL_ONE=47;
 	public static final int T_LOCAL_QUORUM=48;
 	public static final int T_NOT=49;
-	public static final int T_ONE=50;
-	public static final int T_OPTIONS=51;
-	public static final int T_PLAN=52;
-	public static final int T_POINT=53;
-	public static final int T_QUORUM=54;
-	public static final int T_SEMICOLON=55;
-	public static final int T_SET=56;
-	public static final int T_START_SBRACKET=57;
-	public static final int T_TABLE=58;
-	public static final int T_TERM=59;
-	public static final int T_THREE=60;
-	public static final int T_TRUE=61;
-	public static final int T_TRUNCATE=62;
-	public static final int T_TWO=63;
-	public static final int T_USE=64;
-	public static final int T_WITH=65;
-	public static final int U=66;
-	public static final int V=67;
-	public static final int W=68;
-	public static final int WS=69;
-	public static final int X=70;
-	public static final int Y=71;
-	public static final int Z=72;
+	public static final int T_ON=50;
+	public static final int T_ONE=51;
+	public static final int T_OPTIONS=52;
+	public static final int T_PLAN=53;
+	public static final int T_POINT=54;
+	public static final int T_PROCESS=55;
+	public static final int T_QUORUM=56;
+	public static final int T_SEMICOLON=57;
+	public static final int T_SET=58;
+	public static final int T_START_SBRACKET=59;
+	public static final int T_STOP=60;
+	public static final int T_TABLE=61;
+	public static final int T_TERM=62;
+	public static final int T_THREE=63;
+	public static final int T_TRIGGER=64;
+	public static final int T_TRUE=65;
+	public static final int T_TRUNCATE=66;
+	public static final int T_TWO=67;
+	public static final int T_USE=68;
+	public static final int T_WITH=69;
+	public static final int U=70;
+	public static final int V=71;
+	public static final int W=72;
+	public static final int WS=73;
+	public static final int X=74;
+	public static final int Y=75;
+	public static final int Z=76;
 
 	    
 
@@ -102,7 +106,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "A"
 	public final void mA() throws RecognitionException {
 		try {
-			// Meta.g:65:11: ( ( 'a' | 'A' ) )
+			// Meta.g:67:11: ( ( 'a' | 'A' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
@@ -125,7 +129,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "B"
 	public final void mB() throws RecognitionException {
 		try {
-			// Meta.g:66:11: ( ( 'b' | 'B' ) )
+			// Meta.g:68:11: ( ( 'b' | 'B' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='B'||input.LA(1)=='b' ) {
@@ -148,7 +152,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "C"
 	public final void mC() throws RecognitionException {
 		try {
-			// Meta.g:67:11: ( ( 'c' | 'C' ) )
+			// Meta.g:69:11: ( ( 'c' | 'C' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='C'||input.LA(1)=='c' ) {
@@ -171,7 +175,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "D"
 	public final void mD() throws RecognitionException {
 		try {
-			// Meta.g:68:11: ( ( 'd' | 'D' ) )
+			// Meta.g:70:11: ( ( 'd' | 'D' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='D'||input.LA(1)=='d' ) {
@@ -194,7 +198,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "E"
 	public final void mE() throws RecognitionException {
 		try {
-			// Meta.g:69:11: ( ( 'e' | 'E' ) )
+			// Meta.g:71:11: ( ( 'e' | 'E' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
@@ -217,7 +221,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "F"
 	public final void mF() throws RecognitionException {
 		try {
-			// Meta.g:70:11: ( ( 'f' | 'F' ) )
+			// Meta.g:72:11: ( ( 'f' | 'F' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='F'||input.LA(1)=='f' ) {
@@ -240,7 +244,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "G"
 	public final void mG() throws RecognitionException {
 		try {
-			// Meta.g:71:11: ( ( 'g' | 'G' ) )
+			// Meta.g:73:11: ( ( 'g' | 'G' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='G'||input.LA(1)=='g' ) {
@@ -263,7 +267,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "H"
 	public final void mH() throws RecognitionException {
 		try {
-			// Meta.g:72:11: ( ( 'h' | 'H' ) )
+			// Meta.g:74:11: ( ( 'h' | 'H' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='H'||input.LA(1)=='h' ) {
@@ -286,7 +290,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "I"
 	public final void mI() throws RecognitionException {
 		try {
-			// Meta.g:73:11: ( ( 'i' | 'I' ) )
+			// Meta.g:75:11: ( ( 'i' | 'I' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
@@ -309,7 +313,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "J"
 	public final void mJ() throws RecognitionException {
 		try {
-			// Meta.g:74:11: ( ( 'j' | 'J' ) )
+			// Meta.g:76:11: ( ( 'j' | 'J' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='J'||input.LA(1)=='j' ) {
@@ -332,7 +336,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "K"
 	public final void mK() throws RecognitionException {
 		try {
-			// Meta.g:75:11: ( ( 'k' | 'K' ) )
+			// Meta.g:77:11: ( ( 'k' | 'K' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='K'||input.LA(1)=='k' ) {
@@ -355,7 +359,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "L"
 	public final void mL() throws RecognitionException {
 		try {
-			// Meta.g:76:11: ( ( 'l' | 'L' ) )
+			// Meta.g:78:11: ( ( 'l' | 'L' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='L'||input.LA(1)=='l' ) {
@@ -378,7 +382,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "M"
 	public final void mM() throws RecognitionException {
 		try {
-			// Meta.g:77:11: ( ( 'm' | 'M' ) )
+			// Meta.g:79:11: ( ( 'm' | 'M' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
@@ -401,7 +405,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "N"
 	public final void mN() throws RecognitionException {
 		try {
-			// Meta.g:78:11: ( ( 'n' | 'N' ) )
+			// Meta.g:80:11: ( ( 'n' | 'N' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
@@ -424,7 +428,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "O"
 	public final void mO() throws RecognitionException {
 		try {
-			// Meta.g:79:11: ( ( 'o' | 'O' ) )
+			// Meta.g:81:11: ( ( 'o' | 'O' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
@@ -447,7 +451,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "P"
 	public final void mP() throws RecognitionException {
 		try {
-			// Meta.g:80:11: ( ( 'p' | 'P' ) )
+			// Meta.g:82:11: ( ( 'p' | 'P' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='P'||input.LA(1)=='p' ) {
@@ -470,7 +474,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "Q"
 	public final void mQ() throws RecognitionException {
 		try {
-			// Meta.g:81:11: ( ( 'q' | 'Q' ) )
+			// Meta.g:83:11: ( ( 'q' | 'Q' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='Q'||input.LA(1)=='q' ) {
@@ -493,7 +497,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "R"
 	public final void mR() throws RecognitionException {
 		try {
-			// Meta.g:82:11: ( ( 'r' | 'R' ) )
+			// Meta.g:84:11: ( ( 'r' | 'R' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='R'||input.LA(1)=='r' ) {
@@ -516,7 +520,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "S"
 	public final void mS() throws RecognitionException {
 		try {
-			// Meta.g:83:11: ( ( 's' | 'S' ) )
+			// Meta.g:85:11: ( ( 's' | 'S' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='S'||input.LA(1)=='s' ) {
@@ -539,7 +543,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "T"
 	public final void mT() throws RecognitionException {
 		try {
-			// Meta.g:84:11: ( ( 't' | 'T' ) )
+			// Meta.g:86:11: ( ( 't' | 'T' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
@@ -562,7 +566,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "U"
 	public final void mU() throws RecognitionException {
 		try {
-			// Meta.g:85:11: ( ( 'u' | 'U' ) )
+			// Meta.g:87:11: ( ( 'u' | 'U' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='U'||input.LA(1)=='u' ) {
@@ -585,7 +589,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "V"
 	public final void mV() throws RecognitionException {
 		try {
-			// Meta.g:86:11: ( ( 'v' | 'V' ) )
+			// Meta.g:88:11: ( ( 'v' | 'V' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='V'||input.LA(1)=='v' ) {
@@ -608,7 +612,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "W"
 	public final void mW() throws RecognitionException {
 		try {
-			// Meta.g:87:11: ( ( 'w' | 'W' ) )
+			// Meta.g:89:11: ( ( 'w' | 'W' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='W'||input.LA(1)=='w' ) {
@@ -631,7 +635,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "X"
 	public final void mX() throws RecognitionException {
 		try {
-			// Meta.g:88:11: ( ( 'x' | 'X' ) )
+			// Meta.g:90:11: ( ( 'x' | 'X' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='X'||input.LA(1)=='x' ) {
@@ -654,7 +658,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "Y"
 	public final void mY() throws RecognitionException {
 		try {
-			// Meta.g:89:11: ( ( 'y' | 'Y' ) )
+			// Meta.g:91:11: ( ( 'y' | 'Y' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='Y'||input.LA(1)=='y' ) {
@@ -677,7 +681,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "Z"
 	public final void mZ() throws RecognitionException {
 		try {
-			// Meta.g:90:11: ( ( 'z' | 'Z' ) )
+			// Meta.g:92:11: ( ( 'z' | 'Z' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='Z'||input.LA(1)=='z' ) {
@@ -702,8 +706,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TRUNCATE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:93:11: ( T R U N C A T E )
-			// Meta.g:93:13: T R U N C A T E
+			// Meta.g:95:11: ( T R U N C A T E )
+			// Meta.g:95:13: T R U N C A T E
 			{
 			mT(); 
 
@@ -737,8 +741,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_CREATE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:94:9: ( C R E A T E )
-			// Meta.g:94:11: C R E A T E
+			// Meta.g:96:9: ( C R E A T E )
+			// Meta.g:96:11: C R E A T E
 			{
 			mC(); 
 
@@ -768,8 +772,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ALTER;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:95:8: ( A L T E R )
-			// Meta.g:95:10: A L T E R
+			// Meta.g:97:8: ( A L T E R )
+			// Meta.g:97:10: A L T E R
 			{
 			mA(); 
 
@@ -797,8 +801,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_KEYSPACE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:96:11: ( K E Y S P A C E )
-			// Meta.g:96:13: K E Y S P A C E
+			// Meta.g:98:11: ( K E Y S P A C E )
+			// Meta.g:98:13: K E Y S P A C E
 			{
 			mK(); 
 
@@ -832,8 +836,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_NOT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:97:6: ( N O T )
-			// Meta.g:97:8: N O T
+			// Meta.g:99:6: ( N O T )
+			// Meta.g:99:8: N O T
 			{
 			mN(); 
 
@@ -857,8 +861,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_WITH;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:98:7: ( W I T H )
-			// Meta.g:98:9: W I T H
+			// Meta.g:100:7: ( W I T H )
+			// Meta.g:100:9: W I T H
 			{
 			mW(); 
 
@@ -884,8 +888,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_DROP;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:99:7: ( D R O P )
-			// Meta.g:99:9: D R O P
+			// Meta.g:101:7: ( D R O P )
+			// Meta.g:101:9: D R O P
 			{
 			mD(); 
 
@@ -911,8 +915,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TABLE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:100:8: ( T A B L E )
-			// Meta.g:100:10: T A B L E
+			// Meta.g:102:8: ( T A B L E )
+			// Meta.g:102:10: T A B L E
 			{
 			mT(); 
 
@@ -940,8 +944,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_IF;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:101:5: ( I F )
-			// Meta.g:101:7: I F
+			// Meta.g:103:5: ( I F )
+			// Meta.g:103:7: I F
 			{
 			mI(); 
 
@@ -963,8 +967,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_EXISTS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:102:9: ( E X I S T S )
-			// Meta.g:102:11: E X I S T S
+			// Meta.g:104:9: ( E X I S T S )
+			// Meta.g:104:11: E X I S T S
 			{
 			mE(); 
 
@@ -994,8 +998,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_AND;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:103:6: ( A N D )
-			// Meta.g:103:8: A N D
+			// Meta.g:105:6: ( A N D )
+			// Meta.g:105:8: A N D
 			{
 			mA(); 
 
@@ -1019,8 +1023,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_USE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:104:6: ( U S E )
-			// Meta.g:104:8: U S E
+			// Meta.g:106:6: ( U S E )
+			// Meta.g:106:8: U S E
 			{
 			mU(); 
 
@@ -1044,8 +1048,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_SET;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:105:6: ( S E T )
-			// Meta.g:105:8: S E T
+			// Meta.g:107:6: ( S E T )
+			// Meta.g:107:8: S E T
 			{
 			mS(); 
 
@@ -1069,8 +1073,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_OPTIONS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:106:10: ( O P T I O N S )
-			// Meta.g:106:12: O P T I O N S
+			// Meta.g:108:10: ( O P T I O N S )
+			// Meta.g:108:12: O P T I O N S
 			{
 			mO(); 
 
@@ -1102,8 +1106,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ANALYTICS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:107:12: ( A N A L Y T I C S )
-			// Meta.g:107:14: A N A L Y T I C S
+			// Meta.g:109:12: ( A N A L Y T I C S )
+			// Meta.g:109:14: A N A L Y T I C S
 			{
 			mA(); 
 
@@ -1139,8 +1143,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TRUE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:108:7: ( T R U E )
-			// Meta.g:108:9: T R U E
+			// Meta.g:110:7: ( T R U E )
+			// Meta.g:110:9: T R U E
 			{
 			mT(); 
 
@@ -1166,8 +1170,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_FALSE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:109:8: ( F A L S E )
-			// Meta.g:109:10: F A L S E
+			// Meta.g:111:8: ( F A L S E )
+			// Meta.g:111:10: F A L S E
 			{
 			mF(); 
 
@@ -1195,8 +1199,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_CONSISTENCY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:110:14: ( C O N S I S T E N C Y )
-			// Meta.g:110:16: C O N S I S T E N C Y
+			// Meta.g:112:14: ( C O N S I S T E N C Y )
+			// Meta.g:112:16: C O N S I S T E N C Y
 			{
 			mC(); 
 
@@ -1236,8 +1240,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ALL;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:111:6: ( A L L )
-			// Meta.g:111:8: A L L
+			// Meta.g:113:6: ( A L L )
+			// Meta.g:113:8: A L L
 			{
 			mA(); 
 
@@ -1261,8 +1265,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ANY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:112:6: ( A N Y )
-			// Meta.g:112:8: A N Y
+			// Meta.g:114:6: ( A N Y )
+			// Meta.g:114:8: A N Y
 			{
 			mA(); 
 
@@ -1286,8 +1290,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_QUORUM;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:113:9: ( Q U O R U M )
-			// Meta.g:113:11: Q U O R U M
+			// Meta.g:115:9: ( Q U O R U M )
+			// Meta.g:115:11: Q U O R U M
 			{
 			mQ(); 
 
@@ -1317,8 +1321,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ONE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:114:6: ( O N E )
-			// Meta.g:114:8: O N E
+			// Meta.g:116:6: ( O N E )
+			// Meta.g:116:8: O N E
 			{
 			mO(); 
 
@@ -1342,8 +1346,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TWO;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:115:6: ( T W O )
-			// Meta.g:115:8: T W O
+			// Meta.g:117:6: ( T W O )
+			// Meta.g:117:8: T W O
 			{
 			mT(); 
 
@@ -1367,8 +1371,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_THREE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:116:8: ( T H R E E )
-			// Meta.g:116:10: T H R E E
+			// Meta.g:118:8: ( T H R E E )
+			// Meta.g:118:10: T H R E E
 			{
 			mT(); 
 
@@ -1396,8 +1400,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_EACH_QUORUM;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:117:14: ( E A C H '_' Q U O R U M )
-			// Meta.g:117:16: E A C H '_' Q U O R U M
+			// Meta.g:119:14: ( E A C H '_' Q U O R U M )
+			// Meta.g:119:16: E A C H '_' Q U O R U M
 			{
 			mE(); 
 
@@ -1436,8 +1440,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_LOCAL_ONE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:118:12: ( L O C A L '_' O N E )
-			// Meta.g:118:14: L O C A L '_' O N E
+			// Meta.g:120:12: ( L O C A L '_' O N E )
+			// Meta.g:120:14: L O C A L '_' O N E
 			{
 			mL(); 
 
@@ -1472,8 +1476,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_LOCAL_QUORUM;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:119:15: ( L O C A L '_' Q U O R U M )
-			// Meta.g:119:17: L O C A L '_' Q U O R U M
+			// Meta.g:121:15: ( L O C A L '_' Q U O R U M )
+			// Meta.g:121:17: L O C A L '_' Q U O R U M
 			{
 			mL(); 
 
@@ -1514,8 +1518,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_EXPLAIN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:120:10: ( E X P L A I N )
-			// Meta.g:120:12: E X P L A I N
+			// Meta.g:122:10: ( E X P L A I N )
+			// Meta.g:122:12: E X P L A I N
 			{
 			mE(); 
 
@@ -1547,8 +1551,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_PLAN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:121:7: ( P L A N )
-			// Meta.g:121:9: P L A N
+			// Meta.g:123:7: ( P L A N )
+			// Meta.g:123:9: P L A N
 			{
 			mP(); 
 
@@ -1574,8 +1578,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_FOR;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:122:6: ( F O R )
-			// Meta.g:122:8: F O R
+			// Meta.g:124:6: ( F O R )
+			// Meta.g:124:8: F O R
 			{
 			mF(); 
 
@@ -1594,13 +1598,129 @@ public class MetaLexer extends Lexer {
 	}
 	// $ANTLR end "T_FOR"
 
+	// $ANTLR start "T_STOP"
+	public final void mT_STOP() throws RecognitionException {
+		try {
+			int _type = T_STOP;
+			int _channel = DEFAULT_TOKEN_CHANNEL;
+			// Meta.g:125:7: ( S T O P )
+			// Meta.g:125:9: S T O P
+			{
+			mS(); 
+
+			mT(); 
+
+			mO(); 
+
+			mP(); 
+
+			}
+
+			state.type = _type;
+			state.channel = _channel;
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "T_STOP"
+
+	// $ANTLR start "T_PROCESS"
+	public final void mT_PROCESS() throws RecognitionException {
+		try {
+			int _type = T_PROCESS;
+			int _channel = DEFAULT_TOKEN_CHANNEL;
+			// Meta.g:126:10: ( P R O C E S S )
+			// Meta.g:126:12: P R O C E S S
+			{
+			mP(); 
+
+			mR(); 
+
+			mO(); 
+
+			mC(); 
+
+			mE(); 
+
+			mS(); 
+
+			mS(); 
+
+			}
+
+			state.type = _type;
+			state.channel = _channel;
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "T_PROCESS"
+
+	// $ANTLR start "T_TRIGGER"
+	public final void mT_TRIGGER() throws RecognitionException {
+		try {
+			int _type = T_TRIGGER;
+			int _channel = DEFAULT_TOKEN_CHANNEL;
+			// Meta.g:128:10: ( T R I G G E R )
+			// Meta.g:128:12: T R I G G E R
+			{
+			mT(); 
+
+			mR(); 
+
+			mI(); 
+
+			mG(); 
+
+			mG(); 
+
+			mE(); 
+
+			mR(); 
+
+			}
+
+			state.type = _type;
+			state.channel = _channel;
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "T_TRIGGER"
+
+	// $ANTLR start "T_ON"
+	public final void mT_ON() throws RecognitionException {
+		try {
+			int _type = T_ON;
+			int _channel = DEFAULT_TOKEN_CHANNEL;
+			// Meta.g:129:5: ( O N )
+			// Meta.g:129:7: O N
+			{
+			mO(); 
+
+			mN(); 
+
+			}
+
+			state.type = _type;
+			state.channel = _channel;
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "T_ON"
+
 	// $ANTLR start "T_SEMICOLON"
 	public final void mT_SEMICOLON() throws RecognitionException {
 		try {
 			int _type = T_SEMICOLON;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:124:12: ( ';' )
-			// Meta.g:124:14: ';'
+			// Meta.g:131:12: ( ';' )
+			// Meta.g:131:14: ';'
 			{
 			match(';'); 
 			}
@@ -1619,8 +1739,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_EQUAL;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:125:8: ( '=' )
-			// Meta.g:125:10: '='
+			// Meta.g:132:8: ( '=' )
+			// Meta.g:132:10: '='
 			{
 			match('='); 
 			}
@@ -1639,8 +1759,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_POINT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:126:8: ( '.' )
-			// Meta.g:126:10: '.'
+			// Meta.g:133:8: ( '.' )
+			// Meta.g:133:10: '.'
 			{
 			match('.'); 
 			}
@@ -1659,8 +1779,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_START_SBRACKET;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:127:17: ( '{' )
-			// Meta.g:127:19: '{'
+			// Meta.g:134:17: ( '{' )
+			// Meta.g:134:19: '{'
 			{
 			match('{'); 
 			}
@@ -1679,8 +1799,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_END_SBRACKET;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:128:15: ( '}' )
-			// Meta.g:128:17: '}'
+			// Meta.g:135:15: ( '}' )
+			// Meta.g:135:17: '}'
 			{
 			match('}'); 
 			}
@@ -1699,8 +1819,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_COLON;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:129:8: ( ':' )
-			// Meta.g:129:10: ':'
+			// Meta.g:136:8: ( ':' )
+			// Meta.g:136:10: ':'
 			{
 			match(':'); 
 			}
@@ -1719,8 +1839,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_COMMA;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:130:8: ( ',' )
-			// Meta.g:130:10: ','
+			// Meta.g:137:8: ( ',' )
+			// Meta.g:137:10: ','
 			{
 			match(','); 
 			}
@@ -1737,7 +1857,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "LETTER"
 	public final void mLETTER() throws RecognitionException {
 		try {
-			// Meta.g:132:16: ( ( 'A' .. 'Z' | 'a' .. 'z' ) )
+			// Meta.g:139:16: ( ( 'A' .. 'Z' | 'a' .. 'z' ) )
 			// Meta.g:
 			{
 			if ( (input.LA(1) >= 'A' && input.LA(1) <= 'Z')||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
@@ -1760,7 +1880,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "DIGIT"
 	public final void mDIGIT() throws RecognitionException {
 		try {
-			// Meta.g:133:15: ( '0' .. '9' )
+			// Meta.g:140:15: ( '0' .. '9' )
 			// Meta.g:
 			{
 			if ( (input.LA(1) >= '0' && input.LA(1) <= '9') ) {
@@ -1785,10 +1905,10 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_CONSTANT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:135:11: ( ( DIGIT )+ )
-			// Meta.g:135:13: ( DIGIT )+
+			// Meta.g:142:11: ( ( DIGIT )+ )
+			// Meta.g:142:13: ( DIGIT )+
 			{
-			// Meta.g:135:13: ( DIGIT )+
+			// Meta.g:142:13: ( DIGIT )+
 			int cnt1=0;
 			loop1:
 			while (true) {
@@ -1837,12 +1957,12 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_IDENT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:137:8: ( LETTER ( LETTER | DIGIT | '_' )* )
-			// Meta.g:137:10: LETTER ( LETTER | DIGIT | '_' )*
+			// Meta.g:144:8: ( LETTER ( LETTER | DIGIT | '_' )* )
+			// Meta.g:144:10: LETTER ( LETTER | DIGIT | '_' )*
 			{
 			mLETTER(); 
 
-			// Meta.g:137:17: ( LETTER | DIGIT | '_' )*
+			// Meta.g:144:17: ( LETTER | DIGIT | '_' )*
 			loop2:
 			while (true) {
 				int alt2=2;
@@ -1887,10 +2007,10 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TERM;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:139:7: ( ( LETTER | DIGIT | '_' | '.' )+ )
-			// Meta.g:139:9: ( LETTER | DIGIT | '_' | '.' )+
+			// Meta.g:146:7: ( ( LETTER | DIGIT | '_' | '.' )+ )
+			// Meta.g:146:9: ( LETTER | DIGIT | '_' | '.' )+
 			{
-			// Meta.g:139:9: ( LETTER | DIGIT | '_' | '.' )+
+			// Meta.g:146:9: ( LETTER | DIGIT | '_' | '.' )+
 			int cnt3=0;
 			loop3:
 			while (true) {
@@ -1939,10 +2059,10 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = WS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:295:3: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
-			// Meta.g:295:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
+			// Meta.g:317:3: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
+			// Meta.g:317:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
 			{
-			// Meta.g:295:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
+			// Meta.g:317:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
 			int cnt4=0;
 			loop4:
 			while (true) {
@@ -1991,8 +2111,8 @@ public class MetaLexer extends Lexer {
 
 	@Override
 	public void mTokens() throws RecognitionException {
-		// Meta.g:1:8: ( T_TRUNCATE | T_CREATE | T_ALTER | T_KEYSPACE | T_NOT | T_WITH | T_DROP | T_TABLE | T_IF | T_EXISTS | T_AND | T_USE | T_SET | T_OPTIONS | T_ANALYTICS | T_TRUE | T_FALSE | T_CONSISTENCY | T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM | T_EXPLAIN | T_PLAN | T_FOR | T_SEMICOLON | T_EQUAL | T_POINT | T_START_SBRACKET | T_END_SBRACKET | T_COLON | T_COMMA | T_CONSTANT | T_IDENT | T_TERM | WS )
-		int alt5=41;
+		// Meta.g:1:8: ( T_TRUNCATE | T_CREATE | T_ALTER | T_KEYSPACE | T_NOT | T_WITH | T_DROP | T_TABLE | T_IF | T_EXISTS | T_AND | T_USE | T_SET | T_OPTIONS | T_ANALYTICS | T_TRUE | T_FALSE | T_CONSISTENCY | T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM | T_EXPLAIN | T_PLAN | T_FOR | T_STOP | T_PROCESS | T_TRIGGER | T_ON | T_SEMICOLON | T_EQUAL | T_POINT | T_START_SBRACKET | T_END_SBRACKET | T_COLON | T_COMMA | T_CONSTANT | T_IDENT | T_TERM | WS )
+		int alt5=45;
 		alt5 = dfa5.predict(input);
 		switch (alt5) {
 			case 1 :
@@ -2206,77 +2326,105 @@ public class MetaLexer extends Lexer {
 				}
 				break;
 			case 31 :
-				// Meta.g:1:265: T_SEMICOLON
+				// Meta.g:1:265: T_STOP
+				{
+				mT_STOP(); 
+
+				}
+				break;
+			case 32 :
+				// Meta.g:1:272: T_PROCESS
+				{
+				mT_PROCESS(); 
+
+				}
+				break;
+			case 33 :
+				// Meta.g:1:282: T_TRIGGER
+				{
+				mT_TRIGGER(); 
+
+				}
+				break;
+			case 34 :
+				// Meta.g:1:292: T_ON
+				{
+				mT_ON(); 
+
+				}
+				break;
+			case 35 :
+				// Meta.g:1:297: T_SEMICOLON
 				{
 				mT_SEMICOLON(); 
 
 				}
 				break;
-			case 32 :
-				// Meta.g:1:277: T_EQUAL
+			case 36 :
+				// Meta.g:1:309: T_EQUAL
 				{
 				mT_EQUAL(); 
 
 				}
 				break;
-			case 33 :
-				// Meta.g:1:285: T_POINT
+			case 37 :
+				// Meta.g:1:317: T_POINT
 				{
 				mT_POINT(); 
 
 				}
 				break;
-			case 34 :
-				// Meta.g:1:293: T_START_SBRACKET
+			case 38 :
+				// Meta.g:1:325: T_START_SBRACKET
 				{
 				mT_START_SBRACKET(); 
 
 				}
 				break;
-			case 35 :
-				// Meta.g:1:310: T_END_SBRACKET
+			case 39 :
+				// Meta.g:1:342: T_END_SBRACKET
 				{
 				mT_END_SBRACKET(); 
 
 				}
 				break;
-			case 36 :
-				// Meta.g:1:325: T_COLON
+			case 40 :
+				// Meta.g:1:357: T_COLON
 				{
 				mT_COLON(); 
 
 				}
 				break;
-			case 37 :
-				// Meta.g:1:333: T_COMMA
+			case 41 :
+				// Meta.g:1:365: T_COMMA
 				{
 				mT_COMMA(); 
 
 				}
 				break;
-			case 38 :
-				// Meta.g:1:341: T_CONSTANT
+			case 42 :
+				// Meta.g:1:373: T_CONSTANT
 				{
 				mT_CONSTANT(); 
 
 				}
 				break;
-			case 39 :
-				// Meta.g:1:352: T_IDENT
+			case 43 :
+				// Meta.g:1:384: T_IDENT
 				{
 				mT_IDENT(); 
 
 				}
 				break;
-			case 40 :
-				// Meta.g:1:360: T_TERM
+			case 44 :
+				// Meta.g:1:392: T_TERM
 				{
 				mT_TERM(); 
 
 				}
 				break;
-			case 41 :
-				// Meta.g:1:367: WS
+			case 45 :
+				// Meta.g:1:399: WS
 				{
 				mWS(); 
 
@@ -2289,42 +2437,44 @@ public class MetaLexer extends Lexer {
 
 	protected DFA5 dfa5 = new DFA5(this);
 	static final String DFA5_eotS =
-		"\1\uffff\20\34\2\uffff\1\66\4\uffff\1\67\1\34\3\uffff\15\34\1\107\13\34"+
-		"\2\uffff\2\34\1\127\4\34\1\134\1\135\1\34\1\137\1\34\1\141\2\34\1\uffff"+
-		"\3\34\1\147\1\150\1\34\1\152\1\34\1\154\4\34\1\161\1\34\1\uffff\4\34\2"+
-		"\uffff\1\34\1\uffff\1\34\1\uffff\1\171\1\172\3\34\2\uffff\1\34\1\uffff"+
-		"\1\34\1\uffff\2\34\1\u0082\1\34\1\uffff\1\u0084\1\u0085\2\34\1\u0088\2"+
-		"\34\2\uffff\4\34\1\u008f\2\34\1\uffff\1\34\2\uffff\1\u0093\1\34\1\uffff"+
-		"\2\34\1\u0097\3\34\1\uffff\1\u009b\2\34\1\uffff\3\34\1\uffff\1\u00a2\1"+
-		"\34\1\u00a4\1\uffff\2\34\1\u00a7\2\34\1\u00aa\1\uffff\1\34\1\uffff\2\34"+
-		"\1\uffff\1\34\1\u00af\1\uffff\1\34\1\u00b1\2\34\1\uffff\1\34\1\uffff\1"+
-		"\34\1\u00b6\1\u00b7\1\34\2\uffff\1\u00b9\1\uffff";
+		"\1\uffff\20\34\2\uffff\1\70\4\uffff\1\71\1\34\3\uffff\15\34\1\112\6\34"+
+		"\1\122\6\34\2\uffff\3\34\1\136\4\34\1\143\1\144\1\34\1\146\1\34\1\150"+
+		"\2\34\1\uffff\3\34\1\156\1\157\2\34\1\uffff\1\162\1\34\1\164\5\34\1\172"+
+		"\2\34\1\uffff\4\34\2\uffff\1\34\1\uffff\1\34\1\uffff\1\u0083\1\u0084\3"+
+		"\34\2\uffff\1\u0088\1\34\1\uffff\1\34\1\uffff\2\34\1\u008d\2\34\1\uffff"+
+		"\1\34\1\u0091\1\u0092\2\34\1\u0095\2\34\2\uffff\3\34\1\uffff\1\34\1\u009c"+
+		"\2\34\1\uffff\3\34\2\uffff\1\u00a2\1\34\1\uffff\2\34\1\u00a6\3\34\1\uffff"+
+		"\1\u00aa\3\34\1\u00af\1\uffff\3\34\1\uffff\1\u00b3\1\34\1\u00b5\1\uffff"+
+		"\2\34\1\u00b8\1\u00b9\1\uffff\2\34\1\u00bc\1\uffff\1\34\1\uffff\2\34\2"+
+		"\uffff\1\34\1\u00c1\1\uffff\1\34\1\u00c3\2\34\1\uffff\1\34\1\uffff\1\34"+
+		"\1\u00c8\1\u00c9\1\34\2\uffff\1\u00cb\1\uffff";
 	static final String DFA5_eofS =
-		"\u00ba\uffff";
+		"\u00cc\uffff";
 	static final String DFA5_minS =
-		"\1\11\20\56\2\uffff\1\56\4\uffff\2\56\3\uffff\31\56\2\uffff\17\56\1\uffff"+
-		"\17\56\1\uffff\4\56\2\uffff\1\56\1\uffff\1\56\1\uffff\5\56\2\uffff\1\56"+
-		"\1\uffff\1\56\1\uffff\4\56\1\uffff\7\56\2\uffff\7\56\1\uffff\1\56\2\uffff"+
-		"\2\56\1\uffff\6\56\1\uffff\3\56\1\uffff\3\56\1\uffff\3\56\1\uffff\6\56"+
-		"\1\uffff\1\56\1\uffff\2\56\1\uffff\2\56\1\uffff\4\56\1\uffff\1\56\1\uffff"+
-		"\4\56\2\uffff\1\56\1\uffff";
+		"\1\11\20\56\2\uffff\1\56\4\uffff\2\56\3\uffff\33\56\2\uffff\20\56\1\uffff"+
+		"\7\56\1\uffff\13\56\1\uffff\4\56\2\uffff\1\56\1\uffff\1\56\1\uffff\5\56"+
+		"\2\uffff\2\56\1\uffff\1\56\1\uffff\5\56\1\uffff\10\56\2\uffff\3\56\1\uffff"+
+		"\4\56\1\uffff\3\56\2\uffff\2\56\1\uffff\6\56\1\uffff\5\56\1\uffff\3\56"+
+		"\1\uffff\3\56\1\uffff\4\56\1\uffff\3\56\1\uffff\1\56\1\uffff\2\56\2\uffff"+
+		"\2\56\1\uffff\4\56\1\uffff\1\56\1\uffff\4\56\2\uffff\1\56\1\uffff";
 	static final String DFA5_maxS =
-		"\1\175\20\172\2\uffff\1\172\4\uffff\2\172\3\uffff\31\172\2\uffff\17\172"+
-		"\1\uffff\17\172\1\uffff\4\172\2\uffff\1\172\1\uffff\1\172\1\uffff\5\172"+
-		"\2\uffff\1\172\1\uffff\1\172\1\uffff\4\172\1\uffff\7\172\2\uffff\7\172"+
-		"\1\uffff\1\172\2\uffff\2\172\1\uffff\6\172\1\uffff\3\172\1\uffff\3\172"+
-		"\1\uffff\3\172\1\uffff\6\172\1\uffff\1\172\1\uffff\2\172\1\uffff\2\172"+
-		"\1\uffff\4\172\1\uffff\1\172\1\uffff\4\172\2\uffff\1\172\1\uffff";
+		"\1\175\20\172\2\uffff\1\172\4\uffff\2\172\3\uffff\33\172\2\uffff\20\172"+
+		"\1\uffff\7\172\1\uffff\13\172\1\uffff\4\172\2\uffff\1\172\1\uffff\1\172"+
+		"\1\uffff\5\172\2\uffff\2\172\1\uffff\1\172\1\uffff\5\172\1\uffff\10\172"+
+		"\2\uffff\3\172\1\uffff\4\172\1\uffff\3\172\2\uffff\2\172\1\uffff\6\172"+
+		"\1\uffff\5\172\1\uffff\3\172\1\uffff\3\172\1\uffff\4\172\1\uffff\3\172"+
+		"\1\uffff\1\172\1\uffff\2\172\2\uffff\2\172\1\uffff\4\172\1\uffff\1\172"+
+		"\1\uffff\4\172\2\uffff\1\172\1\uffff";
 	static final String DFA5_acceptS =
-		"\21\uffff\1\37\1\40\1\uffff\1\42\1\43\1\44\1\45\2\uffff\1\50\1\51\1\47"+
-		"\31\uffff\1\41\1\46\17\uffff\1\11\17\uffff\1\27\4\uffff\1\23\1\13\1\uffff"+
-		"\1\24\1\uffff\1\5\5\uffff\1\14\1\15\1\uffff\1\26\1\uffff\1\36\4\uffff"+
-		"\1\20\7\uffff\1\6\1\7\7\uffff\1\35\1\uffff\1\10\1\30\2\uffff\1\3\6\uffff"+
-		"\1\21\3\uffff\1\2\3\uffff\1\12\3\uffff\1\25\6\uffff\1\34\1\uffff\1\16"+
-		"\2\uffff\1\1\2\uffff\1\4\4\uffff\1\17\1\uffff\1\32\4\uffff\1\22\1\31\1"+
-		"\uffff\1\33";
+		"\21\uffff\1\43\1\44\1\uffff\1\46\1\47\1\50\1\51\2\uffff\1\54\1\55\1\53"+
+		"\33\uffff\1\45\1\52\20\uffff\1\11\7\uffff\1\42\13\uffff\1\27\4\uffff\1"+
+		"\23\1\13\1\uffff\1\24\1\uffff\1\5\5\uffff\1\14\1\15\2\uffff\1\26\1\uffff"+
+		"\1\36\5\uffff\1\20\10\uffff\1\6\1\7\3\uffff\1\37\4\uffff\1\35\3\uffff"+
+		"\1\10\1\30\2\uffff\1\3\6\uffff\1\21\5\uffff\1\2\3\uffff\1\12\3\uffff\1"+
+		"\25\4\uffff\1\41\3\uffff\1\34\1\uffff\1\16\2\uffff\1\40\1\1\2\uffff\1"+
+		"\4\4\uffff\1\17\1\uffff\1\32\4\uffff\1\22\1\31\1\uffff\1\33";
 	static final String DFA5_specialS =
-		"\u00ba\uffff}>";
+		"\u00cc\uffff}>";
 	static final String[] DFA5_transitionS = {
 			"\2\33\2\uffff\1\33\22\uffff\1\33\13\uffff\1\27\1\uffff\1\23\1\uffff\12"+
 			"\30\1\26\1\21\1\uffff\1\22\3\uffff\1\3\1\31\1\2\1\7\1\11\1\15\2\31\1"+
@@ -2352,18 +2502,18 @@ public class MetaLexer extends Lexer {
 			"\1\54\26\41\1\53\2\41",
 			"\1\32\1\uffff\12\41\7\uffff\22\41\1\55\7\41\4\uffff\1\41\1\uffff\22"+
 			"\41\1\55\7\41",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\56\25\41\4\uffff\1\41\1\uffff\4\41"+
-			"\1\56\25\41",
-			"\1\32\1\uffff\12\41\7\uffff\15\41\1\60\1\41\1\57\12\41\4\uffff\1\41"+
-			"\1\uffff\15\41\1\60\1\41\1\57\12\41",
-			"\1\32\1\uffff\12\41\7\uffff\1\61\15\41\1\62\13\41\4\uffff\1\41\1\uffff"+
-			"\1\61\15\41\1\62\13\41",
-			"\1\32\1\uffff\12\41\7\uffff\24\41\1\63\5\41\4\uffff\1\41\1\uffff\24"+
-			"\41\1\63\5\41",
-			"\1\32\1\uffff\12\41\7\uffff\16\41\1\64\13\41\4\uffff\1\41\1\uffff\16"+
-			"\41\1\64\13\41",
-			"\1\32\1\uffff\12\41\7\uffff\13\41\1\65\16\41\4\uffff\1\41\1\uffff\13"+
-			"\41\1\65\16\41",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\56\16\41\1\57\6\41\4\uffff\1\41\1"+
+			"\uffff\4\41\1\56\16\41\1\57\6\41",
+			"\1\32\1\uffff\12\41\7\uffff\15\41\1\61\1\41\1\60\12\41\4\uffff\1\41"+
+			"\1\uffff\15\41\1\61\1\41\1\60\12\41",
+			"\1\32\1\uffff\12\41\7\uffff\1\62\15\41\1\63\13\41\4\uffff\1\41\1\uffff"+
+			"\1\62\15\41\1\63\13\41",
+			"\1\32\1\uffff\12\41\7\uffff\24\41\1\64\5\41\4\uffff\1\41\1\uffff\24"+
+			"\41\1\64\5\41",
+			"\1\32\1\uffff\12\41\7\uffff\16\41\1\65\13\41\4\uffff\1\41\1\uffff\16"+
+			"\41\1\65\13\41",
+			"\1\32\1\uffff\12\41\7\uffff\13\41\1\66\5\41\1\67\10\41\4\uffff\1\41"+
+			"\1\uffff\13\41\1\66\5\41\1\67\10\41",
 			"",
 			"",
 			"\1\32\1\uffff\12\32\7\uffff\32\32\4\uffff\1\32\1\uffff\32\32",
@@ -2376,251 +2526,280 @@ public class MetaLexer extends Lexer {
 			"",
 			"",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\24\41\1\70\5\41\4\uffff\1\41\1\uffff\24"+
-			"\41\1\70\5\41",
-			"\1\32\1\uffff\12\41\7\uffff\1\41\1\71\30\41\4\uffff\1\41\1\uffff\1\41"+
-			"\1\71\30\41",
-			"\1\32\1\uffff\12\41\7\uffff\16\41\1\72\13\41\4\uffff\1\41\1\uffff\16"+
-			"\41\1\72\13\41",
-			"\1\32\1\uffff\12\41\7\uffff\21\41\1\73\10\41\4\uffff\1\41\1\uffff\21"+
-			"\41\1\73\10\41",
+			"\1\32\1\uffff\12\41\7\uffff\10\41\1\73\13\41\1\72\5\41\4\uffff\1\41"+
+			"\1\uffff\10\41\1\73\13\41\1\72\5\41",
+			"\1\32\1\uffff\12\41\7\uffff\1\41\1\74\30\41\4\uffff\1\41\1\uffff\1\41"+
+			"\1\74\30\41",
+			"\1\32\1\uffff\12\41\7\uffff\16\41\1\75\13\41\4\uffff\1\41\1\uffff\16"+
+			"\41\1\75\13\41",
+			"\1\32\1\uffff\12\41\7\uffff\21\41\1\76\10\41\4\uffff\1\41\1\uffff\21"+
+			"\41\1\76\10\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\74\25\41\4\uffff\1\41\1\uffff\4\41"+
-			"\1\74\25\41",
-			"\1\32\1\uffff\12\41\7\uffff\15\41\1\75\14\41\4\uffff\1\41\1\uffff\15"+
-			"\41\1\75\14\41",
-			"\1\32\1\uffff\12\41\7\uffff\13\41\1\77\7\41\1\76\6\41\4\uffff\1\41\1"+
-			"\uffff\13\41\1\77\7\41\1\76\6\41",
-			"\1\32\1\uffff\12\41\7\uffff\1\101\2\41\1\100\24\41\1\102\1\41\4\uffff"+
-			"\1\41\1\uffff\1\101\2\41\1\100\24\41\1\102\1\41",
-			"\1\32\1\uffff\12\41\7\uffff\30\41\1\103\1\41\4\uffff\1\41\1\uffff\30"+
-			"\41\1\103\1\41",
-			"\1\32\1\uffff\12\41\7\uffff\23\41\1\104\6\41\4\uffff\1\41\1\uffff\23"+
-			"\41\1\104\6\41",
-			"\1\32\1\uffff\12\41\7\uffff\23\41\1\105\6\41\4\uffff\1\41\1\uffff\23"+
-			"\41\1\105\6\41",
-			"\1\32\1\uffff\12\41\7\uffff\16\41\1\106\13\41\4\uffff\1\41\1\uffff\16"+
-			"\41\1\106\13\41",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\77\25\41\4\uffff\1\41\1\uffff\4\41"+
+			"\1\77\25\41",
+			"\1\32\1\uffff\12\41\7\uffff\15\41\1\100\14\41\4\uffff\1\41\1\uffff\15"+
+			"\41\1\100\14\41",
+			"\1\32\1\uffff\12\41\7\uffff\13\41\1\102\7\41\1\101\6\41\4\uffff\1\41"+
+			"\1\uffff\13\41\1\102\7\41\1\101\6\41",
+			"\1\32\1\uffff\12\41\7\uffff\1\104\2\41\1\103\24\41\1\105\1\41\4\uffff"+
+			"\1\41\1\uffff\1\104\2\41\1\103\24\41\1\105\1\41",
+			"\1\32\1\uffff\12\41\7\uffff\30\41\1\106\1\41\4\uffff\1\41\1\uffff\30"+
+			"\41\1\106\1\41",
+			"\1\32\1\uffff\12\41\7\uffff\23\41\1\107\6\41\4\uffff\1\41\1\uffff\23"+
+			"\41\1\107\6\41",
+			"\1\32\1\uffff\12\41\7\uffff\23\41\1\110\6\41\4\uffff\1\41\1\uffff\23"+
+			"\41\1\110\6\41",
+			"\1\32\1\uffff\12\41\7\uffff\16\41\1\111\13\41\4\uffff\1\41\1\uffff\16"+
+			"\41\1\111\13\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\10\41\1\110\6\41\1\111\12\41\4\uffff\1\41"+
-			"\1\uffff\10\41\1\110\6\41\1\111\12\41",
-			"\1\32\1\uffff\12\41\7\uffff\2\41\1\112\27\41\4\uffff\1\41\1\uffff\2"+
-			"\41\1\112\27\41",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\113\25\41\4\uffff\1\41\1\uffff\4"+
-			"\41\1\113\25\41",
-			"\1\32\1\uffff\12\41\7\uffff\23\41\1\114\6\41\4\uffff\1\41\1\uffff\23"+
-			"\41\1\114\6\41",
-			"\1\32\1\uffff\12\41\7\uffff\23\41\1\115\6\41\4\uffff\1\41\1\uffff\23"+
-			"\41\1\115\6\41",
+			"\1\32\1\uffff\12\41\7\uffff\10\41\1\113\6\41\1\114\12\41\4\uffff\1\41"+
+			"\1\uffff\10\41\1\113\6\41\1\114\12\41",
+			"\1\32\1\uffff\12\41\7\uffff\2\41\1\115\27\41\4\uffff\1\41\1\uffff\2"+
+			"\41\1\115\27\41",
 			"\1\32\1\uffff\12\41\7\uffff\4\41\1\116\25\41\4\uffff\1\41\1\uffff\4"+
 			"\41\1\116\25\41",
-			"\1\32\1\uffff\12\41\7\uffff\13\41\1\117\16\41\4\uffff\1\41\1\uffff\13"+
-			"\41\1\117\16\41",
-			"\1\32\1\uffff\12\41\7\uffff\21\41\1\120\10\41\4\uffff\1\41\1\uffff\21"+
-			"\41\1\120\10\41",
-			"\1\32\1\uffff\12\41\7\uffff\16\41\1\121\13\41\4\uffff\1\41\1\uffff\16"+
-			"\41\1\121\13\41",
-			"\1\32\1\uffff\12\41\7\uffff\2\41\1\122\27\41\4\uffff\1\41\1\uffff\2"+
-			"\41\1\122\27\41",
-			"\1\32\1\uffff\12\41\7\uffff\1\123\31\41\4\uffff\1\41\1\uffff\1\123\31"+
+			"\1\32\1\uffff\12\41\7\uffff\23\41\1\117\6\41\4\uffff\1\41\1\uffff\23"+
+			"\41\1\117\6\41",
+			"\1\32\1\uffff\12\41\7\uffff\16\41\1\120\13\41\4\uffff\1\41\1\uffff\16"+
+			"\41\1\120\13\41",
+			"\1\32\1\uffff\12\41\7\uffff\23\41\1\121\6\41\4\uffff\1\41\1\uffff\23"+
+			"\41\1\121\6\41",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\123\25\41\4\uffff\1\41\1\uffff\4"+
+			"\41\1\123\25\41",
+			"\1\32\1\uffff\12\41\7\uffff\13\41\1\124\16\41\4\uffff\1\41\1\uffff\13"+
+			"\41\1\124\16\41",
+			"\1\32\1\uffff\12\41\7\uffff\21\41\1\125\10\41\4\uffff\1\41\1\uffff\21"+
+			"\41\1\125\10\41",
+			"\1\32\1\uffff\12\41\7\uffff\16\41\1\126\13\41\4\uffff\1\41\1\uffff\16"+
+			"\41\1\126\13\41",
+			"\1\32\1\uffff\12\41\7\uffff\2\41\1\127\27\41\4\uffff\1\41\1\uffff\2"+
+			"\41\1\127\27\41",
+			"\1\32\1\uffff\12\41\7\uffff\1\130\31\41\4\uffff\1\41\1\uffff\1\130\31"+
 			"\41",
+			"\1\32\1\uffff\12\41\7\uffff\16\41\1\131\13\41\4\uffff\1\41\1\uffff\16"+
+			"\41\1\131\13\41",
 			"",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\125\10\41\1\124\14\41\4\uffff\1\41"+
-			"\1\uffff\4\41\1\125\10\41\1\124\14\41",
-			"\1\32\1\uffff\12\41\7\uffff\13\41\1\126\16\41\4\uffff\1\41\1\uffff\13"+
-			"\41\1\126\16\41",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\133\10\41\1\132\14\41\4\uffff\1\41"+
+			"\1\uffff\4\41\1\133\10\41\1\132\14\41",
+			"\1\32\1\uffff\12\41\7\uffff\6\41\1\134\23\41\4\uffff\1\41\1\uffff\6"+
+			"\41\1\134\23\41",
+			"\1\32\1\uffff\12\41\7\uffff\13\41\1\135\16\41\4\uffff\1\41\1\uffff\13"+
+			"\41\1\135\16\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\130\25\41\4\uffff\1\41\1\uffff\4"+
-			"\41\1\130\25\41",
-			"\1\32\1\uffff\12\41\7\uffff\1\131\31\41\4\uffff\1\41\1\uffff\1\131\31"+
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\137\25\41\4\uffff\1\41\1\uffff\4"+
+			"\41\1\137\25\41",
+			"\1\32\1\uffff\12\41\7\uffff\1\140\31\41\4\uffff\1\41\1\uffff\1\140\31"+
 			"\41",
-			"\1\32\1\uffff\12\41\7\uffff\22\41\1\132\7\41\4\uffff\1\41\1\uffff\22"+
-			"\41\1\132\7\41",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\133\25\41\4\uffff\1\41\1\uffff\4"+
-			"\41\1\133\25\41",
+			"\1\32\1\uffff\12\41\7\uffff\22\41\1\141\7\41\4\uffff\1\41\1\uffff\22"+
+			"\41\1\141\7\41",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\142\25\41\4\uffff\1\41\1\uffff\4"+
+			"\41\1\142\25\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\13\41\1\136\16\41\4\uffff\1\41\1\uffff\13"+
-			"\41\1\136\16\41",
-			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\22\41\1\140\7\41\4\uffff\1\41\1\uffff\22"+
-			"\41\1\140\7\41",
-			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\7\41\1\142\22\41\4\uffff\1\41\1\uffff\7"+
-			"\41\1\142\22\41",
-			"\1\32\1\uffff\12\41\7\uffff\17\41\1\143\12\41\4\uffff\1\41\1\uffff\17"+
-			"\41\1\143\12\41",
-			"",
-			"\1\32\1\uffff\12\41\7\uffff\22\41\1\144\7\41\4\uffff\1\41\1\uffff\22"+
-			"\41\1\144\7\41",
 			"\1\32\1\uffff\12\41\7\uffff\13\41\1\145\16\41\4\uffff\1\41\1\uffff\13"+
 			"\41\1\145\16\41",
-			"\1\32\1\uffff\12\41\7\uffff\7\41\1\146\22\41\4\uffff\1\41\1\uffff\7"+
-			"\41\1\146\22\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
+			"\1\32\1\uffff\12\41\7\uffff\22\41\1\147\7\41\4\uffff\1\41\1\uffff\22"+
+			"\41\1\147\7\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\10\41\1\151\21\41\4\uffff\1\41\1\uffff\10"+
-			"\41\1\151\21\41",
-			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
+			"\1\32\1\uffff\12\41\7\uffff\7\41\1\151\22\41\4\uffff\1\41\1\uffff\7"+
+			"\41\1\151\22\41",
+			"\1\32\1\uffff\12\41\7\uffff\17\41\1\152\12\41\4\uffff\1\41\1\uffff\17"+
+			"\41\1\152\12\41",
+			"",
 			"\1\32\1\uffff\12\41\7\uffff\22\41\1\153\7\41\4\uffff\1\41\1\uffff\22"+
 			"\41\1\153\7\41",
+			"\1\32\1\uffff\12\41\7\uffff\13\41\1\154\16\41\4\uffff\1\41\1\uffff\13"+
+			"\41\1\154\16\41",
+			"\1\32\1\uffff\12\41\7\uffff\7\41\1\155\22\41\4\uffff\1\41\1\uffff\7"+
+			"\41\1\155\22\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\21\41\1\155\10\41\4\uffff\1\41\1\uffff\21"+
-			"\41\1\155\10\41",
-			"\1\32\1\uffff\12\41\7\uffff\1\156\31\41\4\uffff\1\41\1\uffff\1\156\31"+
+			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
+			"\1\32\1\uffff\12\41\7\uffff\17\41\1\160\12\41\4\uffff\1\41\1\uffff\17"+
+			"\41\1\160\12\41",
+			"\1\32\1\uffff\12\41\7\uffff\10\41\1\161\21\41\4\uffff\1\41\1\uffff\10"+
+			"\41\1\161\21\41",
+			"",
+			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
+			"\1\32\1\uffff\12\41\7\uffff\22\41\1\163\7\41\4\uffff\1\41\1\uffff\22"+
+			"\41\1\163\7\41",
+			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
+			"\1\32\1\uffff\12\41\7\uffff\21\41\1\165\10\41\4\uffff\1\41\1\uffff\21"+
+			"\41\1\165\10\41",
+			"\1\32\1\uffff\12\41\7\uffff\1\166\31\41\4\uffff\1\41\1\uffff\1\166\31"+
 			"\41",
-			"\1\32\1\uffff\12\41\7\uffff\15\41\1\157\14\41\4\uffff\1\41\1\uffff\15"+
-			"\41\1\157\14\41",
-			"\1\32\1\uffff\12\41\7\uffff\2\41\1\160\27\41\4\uffff\1\41\1\uffff\2"+
-			"\41\1\160\27\41",
+			"\1\32\1\uffff\12\41\7\uffff\15\41\1\167\14\41\4\uffff\1\41\1\uffff\15"+
+			"\41\1\167\14\41",
+			"\1\32\1\uffff\12\41\7\uffff\2\41\1\170\27\41\4\uffff\1\41\1\uffff\2"+
+			"\41\1\170\27\41",
+			"\1\32\1\uffff\12\41\7\uffff\2\41\1\171\27\41\4\uffff\1\41\1\uffff\2"+
+			"\41\1\171\27\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\162\25\41\4\uffff\1\41\1\uffff\4"+
-			"\41\1\162\25\41",
+			"\1\32\1\uffff\12\41\7\uffff\6\41\1\173\23\41\4\uffff\1\41\1\uffff\6"+
+			"\41\1\173\23\41",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\174\25\41\4\uffff\1\41\1\uffff\4"+
+			"\41\1\174\25\41",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\163\25\41\4\uffff\1\41\1\uffff\4"+
-			"\41\1\163\25\41",
-			"\1\32\1\uffff\12\41\7\uffff\23\41\1\164\6\41\4\uffff\1\41\1\uffff\23"+
-			"\41\1\164\6\41",
-			"\1\32\1\uffff\12\41\7\uffff\10\41\1\165\21\41\4\uffff\1\41\1\uffff\10"+
-			"\41\1\165\21\41",
-			"\1\32\1\uffff\12\41\7\uffff\21\41\1\166\10\41\4\uffff\1\41\1\uffff\21"+
-			"\41\1\166\10\41",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\175\25\41\4\uffff\1\41\1\uffff\4"+
+			"\41\1\175\25\41",
+			"\1\32\1\uffff\12\41\7\uffff\23\41\1\176\6\41\4\uffff\1\41\1\uffff\23"+
+			"\41\1\176\6\41",
+			"\1\32\1\uffff\12\41\7\uffff\10\41\1\177\21\41\4\uffff\1\41\1\uffff\10"+
+			"\41\1\177\21\41",
+			"\1\32\1\uffff\12\41\7\uffff\21\41\1\u0080\10\41\4\uffff\1\41\1\uffff"+
+			"\21\41\1\u0080\10\41",
 			"",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\30\41\1\167\1\41\4\uffff\1\41\1\uffff\30"+
-			"\41\1\167\1\41",
+			"\1\32\1\uffff\12\41\7\uffff\30\41\1\u0081\1\41\4\uffff\1\41\1\uffff"+
+			"\30\41\1\u0081\1\41",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\17\41\1\170\12\41\4\uffff\1\41\1\uffff\17"+
-			"\41\1\170\12\41",
+			"\1\32\1\uffff\12\41\7\uffff\17\41\1\u0082\12\41\4\uffff\1\41\1\uffff"+
+			"\17\41\1\u0082\12\41",
 			"",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\23\41\1\173\6\41\4\uffff\1\41\1\uffff\23"+
-			"\41\1\173\6\41",
-			"\1\32\1\uffff\12\41\7\uffff\1\174\31\41\4\uffff\1\41\1\uffff\1\174\31"+
-			"\41",
-			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\175\1\uffff\32\41",
+			"\1\32\1\uffff\12\41\7\uffff\23\41\1\u0085\6\41\4\uffff\1\41\1\uffff"+
+			"\23\41\1\u0085\6\41",
+			"\1\32\1\uffff\12\41\7\uffff\1\u0086\31\41\4\uffff\1\41\1\uffff\1\u0086"+
+			"\31\41",
+			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\u0087\1\uffff\32\41",
 			"",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\16\41\1\176\13\41\4\uffff\1\41\1\uffff\16"+
-			"\41\1\176\13\41",
-			"",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\177\25\41\4\uffff\1\41\1\uffff\4"+
-			"\41\1\177\25\41",
-			"",
-			"\1\32\1\uffff\12\41\7\uffff\24\41\1\u0080\5\41\4\uffff\1\41\1\uffff"+
-			"\24\41\1\u0080\5\41",
-			"\1\32\1\uffff\12\41\7\uffff\13\41\1\u0081\16\41\4\uffff\1\41\1\uffff"+
-			"\13\41\1\u0081\16\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\1\u0083\31\41\4\uffff\1\41\1\uffff\1\u0083"+
+			"\1\32\1\uffff\12\41\7\uffff\16\41\1\u0089\13\41\4\uffff\1\41\1\uffff"+
+			"\16\41\1\u0089\13\41",
+			"",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u008a\25\41\4\uffff\1\41\1\uffff"+
+			"\4\41\1\u008a\25\41",
+			"",
+			"\1\32\1\uffff\12\41\7\uffff\24\41\1\u008b\5\41\4\uffff\1\41\1\uffff"+
+			"\24\41\1\u008b\5\41",
+			"\1\32\1\uffff\12\41\7\uffff\13\41\1\u008c\16\41\4\uffff\1\41\1\uffff"+
+			"\13\41\1\u008c\16\41",
+			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u008e\25\41\4\uffff\1\41\1\uffff"+
+			"\4\41\1\u008e\25\41",
+			"\1\32\1\uffff\12\41\7\uffff\1\u008f\31\41\4\uffff\1\41\1\uffff\1\u008f"+
 			"\31\41",
 			"",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u0090\25\41\4\uffff\1\41\1\uffff"+
+			"\4\41\1\u0090\25\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u0086\25\41\4\uffff\1\41\1\uffff"+
-			"\4\41\1\u0086\25\41",
-			"\1\32\1\uffff\12\41\7\uffff\22\41\1\u0087\7\41\4\uffff\1\41\1\uffff"+
-			"\22\41\1\u0087\7\41",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u0093\25\41\4\uffff\1\41\1\uffff"+
+			"\4\41\1\u0093\25\41",
+			"\1\32\1\uffff\12\41\7\uffff\22\41\1\u0094\7\41\4\uffff\1\41\1\uffff"+
+			"\22\41\1\u0094\7\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\23\41\1\u0089\6\41\4\uffff\1\41\1\uffff"+
-			"\23\41\1\u0089\6\41",
-			"\1\32\1\uffff\12\41\7\uffff\1\u008a\31\41\4\uffff\1\41\1\uffff\1\u008a"+
+			"\1\32\1\uffff\12\41\7\uffff\23\41\1\u0096\6\41\4\uffff\1\41\1\uffff"+
+			"\23\41\1\u0096\6\41",
+			"\1\32\1\uffff\12\41\7\uffff\1\u0097\31\41\4\uffff\1\41\1\uffff\1\u0097"+
 			"\31\41",
 			"",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\22\41\1\u008b\7\41\4\uffff\1\41\1\uffff"+
-			"\22\41\1\u008b\7\41",
-			"\1\32\1\uffff\12\41\7\uffff\10\41\1\u008c\21\41\4\uffff\1\41\1\uffff"+
-			"\10\41\1\u008c\21\41",
-			"\1\32\1\uffff\12\41\7\uffff\20\41\1\u008d\11\41\4\uffff\1\41\1\uffff"+
-			"\20\41\1\u008d\11\41",
-			"\1\32\1\uffff\12\41\7\uffff\15\41\1\u008e\14\41\4\uffff\1\41\1\uffff"+
-			"\15\41\1\u008e\14\41",
+			"\1\32\1\uffff\12\41\7\uffff\22\41\1\u0098\7\41\4\uffff\1\41\1\uffff"+
+			"\22\41\1\u0098\7\41",
+			"\1\32\1\uffff\12\41\7\uffff\10\41\1\u0099\21\41\4\uffff\1\41\1\uffff"+
+			"\10\41\1\u0099\21\41",
+			"\1\32\1\uffff\12\41\7\uffff\20\41\1\u009a\11\41\4\uffff\1\41\1\uffff"+
+			"\20\41\1\u009a\11\41",
+			"",
+			"\1\32\1\uffff\12\41\7\uffff\15\41\1\u009b\14\41\4\uffff\1\41\1\uffff"+
+			"\15\41\1\u009b\14\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\14\41\1\u0090\15\41\4\uffff\1\41\1\uffff"+
-			"\14\41\1\u0090\15\41",
-			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\u0091\1\uffff\32\41",
+			"\1\32\1\uffff\12\41\7\uffff\14\41\1\u009d\15\41\4\uffff\1\41\1\uffff"+
+			"\14\41\1\u009d\15\41",
+			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\u009e\1\uffff\32\41",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\23\41\1\u0092\6\41\4\uffff\1\41\1\uffff"+
-			"\23\41\1\u0092\6\41",
+			"\1\32\1\uffff\12\41\7\uffff\22\41\1\u009f\7\41\4\uffff\1\41\1\uffff"+
+			"\22\41\1\u009f\7\41",
+			"\1\32\1\uffff\12\41\7\uffff\23\41\1\u00a0\6\41\4\uffff\1\41\1\uffff"+
+			"\23\41\1\u00a0\6\41",
+			"\1\32\1\uffff\12\41\7\uffff\21\41\1\u00a1\10\41\4\uffff\1\41\1\uffff"+
+			"\21\41\1\u00a1\10\41",
 			"",
-			"",
-			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\23\41\1\u0094\6\41\4\uffff\1\41\1\uffff"+
-			"\23\41\1\u0094\6\41",
-			"",
-			"\1\32\1\uffff\12\41\7\uffff\10\41\1\u0095\21\41\4\uffff\1\41\1\uffff"+
-			"\10\41\1\u0095\21\41",
-			"\1\32\1\uffff\12\41\7\uffff\2\41\1\u0096\27\41\4\uffff\1\41\1\uffff"+
-			"\2\41\1\u0096\27\41",
-			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\15\41\1\u0098\14\41\4\uffff\1\41\1\uffff"+
-			"\15\41\1\u0098\14\41",
-			"\1\32\1\uffff\12\41\7\uffff\24\41\1\u0099\5\41\4\uffff\1\41\1\uffff"+
-			"\24\41\1\u0099\5\41",
-			"\1\32\1\uffff\12\41\7\uffff\22\41\1\u009a\7\41\4\uffff\1\41\1\uffff"+
-			"\22\41\1\u009a\7\41",
 			"",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\16\41\1\u009c\1\41\1\u009d\11\41\4\uffff"+
-			"\1\41\1\uffff\16\41\1\u009c\1\41\1\u009d\11\41",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u009e\25\41\4\uffff\1\41\1\uffff"+
-			"\4\41\1\u009e\25\41",
+			"\1\32\1\uffff\12\41\7\uffff\23\41\1\u00a3\6\41\4\uffff\1\41\1\uffff"+
+			"\23\41\1\u00a3\6\41",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u009f\25\41\4\uffff\1\41\1\uffff"+
-			"\4\41\1\u009f\25\41",
-			"\1\32\1\uffff\12\41\7\uffff\2\41\1\u00a0\27\41\4\uffff\1\41\1\uffff"+
-			"\2\41\1\u00a0\27\41",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u00a1\25\41\4\uffff\1\41\1\uffff"+
-			"\4\41\1\u00a1\25\41",
-			"",
+			"\1\32\1\uffff\12\41\7\uffff\10\41\1\u00a4\21\41\4\uffff\1\41\1\uffff"+
+			"\10\41\1\u00a4\21\41",
+			"\1\32\1\uffff\12\41\7\uffff\2\41\1\u00a5\27\41\4\uffff\1\41\1\uffff"+
+			"\2\41\1\u00a5\27\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\16\41\1\u00a3\13\41\4\uffff\1\41\1\uffff"+
-			"\16\41\1\u00a3\13\41",
-			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"",
-			"\1\32\1\uffff\12\41\7\uffff\15\41\1\u00a5\14\41\4\uffff\1\41\1\uffff"+
-			"\15\41\1\u00a5\14\41",
-			"\1\32\1\uffff\12\41\7\uffff\24\41\1\u00a6\5\41\4\uffff\1\41\1\uffff"+
-			"\24\41\1\u00a6\5\41",
-			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\15\41\1\u00a8\14\41\4\uffff\1\41\1\uffff"+
-			"\15\41\1\u00a8\14\41",
+			"\1\32\1\uffff\12\41\7\uffff\15\41\1\u00a7\14\41\4\uffff\1\41\1\uffff"+
+			"\15\41\1\u00a7\14\41",
+			"\1\32\1\uffff\12\41\7\uffff\24\41\1\u00a8\5\41\4\uffff\1\41\1\uffff"+
+			"\24\41\1\u00a8\5\41",
 			"\1\32\1\uffff\12\41\7\uffff\22\41\1\u00a9\7\41\4\uffff\1\41\1\uffff"+
 			"\22\41\1\u00a9\7\41",
+			"",
+			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
+			"\1\32\1\uffff\12\41\7\uffff\16\41\1\u00ab\1\41\1\u00ac\11\41\4\uffff"+
+			"\1\41\1\uffff\16\41\1\u00ab\1\41\1\u00ac\11\41",
+			"\1\32\1\uffff\12\41\7\uffff\22\41\1\u00ad\7\41\4\uffff\1\41\1\uffff"+
+			"\22\41\1\u00ad\7\41",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u00ae\25\41\4\uffff\1\41\1\uffff"+
+			"\4\41\1\u00ae\25\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\21\41\1\u00ab\10\41\4\uffff\1\41\1\uffff"+
-			"\21\41\1\u00ab\10\41",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u00b0\25\41\4\uffff\1\41\1\uffff"+
+			"\4\41\1\u00b0\25\41",
+			"\1\32\1\uffff\12\41\7\uffff\2\41\1\u00b1\27\41\4\uffff\1\41\1\uffff"+
+			"\2\41\1\u00b1\27\41",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u00b2\25\41\4\uffff\1\41\1\uffff"+
+			"\4\41\1\u00b2\25\41",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u00ac\25\41\4\uffff\1\41\1\uffff"+
-			"\4\41\1\u00ac\25\41",
-			"\1\32\1\uffff\12\41\7\uffff\16\41\1\u00ad\13\41\4\uffff\1\41\1\uffff"+
-			"\16\41\1\u00ad\13\41",
-			"",
-			"\1\32\1\uffff\12\41\7\uffff\2\41\1\u00ae\27\41\4\uffff\1\41\1\uffff"+
-			"\2\41\1\u00ae\27\41",
+			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
+			"\1\32\1\uffff\12\41\7\uffff\16\41\1\u00b4\13\41\4\uffff\1\41\1\uffff"+
+			"\16\41\1\u00b4\13\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\24\41\1\u00b0\5\41\4\uffff\1\41\1\uffff"+
-			"\24\41\1\u00b0\5\41",
+			"\1\32\1\uffff\12\41\7\uffff\15\41\1\u00b6\14\41\4\uffff\1\41\1\uffff"+
+			"\15\41\1\u00b6\14\41",
+			"\1\32\1\uffff\12\41\7\uffff\24\41\1\u00b7\5\41\4\uffff\1\41\1\uffff"+
+			"\24\41\1\u00b7\5\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\21\41\1\u00b2\10\41\4\uffff\1\41\1\uffff"+
-			"\21\41\1\u00b2\10\41",
-			"\1\32\1\uffff\12\41\7\uffff\30\41\1\u00b3\1\41\4\uffff\1\41\1\uffff"+
-			"\30\41\1\u00b3\1\41",
+			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\14\41\1\u00b4\15\41\4\uffff\1\41\1\uffff"+
-			"\14\41\1\u00b4\15\41",
+			"\1\32\1\uffff\12\41\7\uffff\15\41\1\u00ba\14\41\4\uffff\1\41\1\uffff"+
+			"\15\41\1\u00ba\14\41",
+			"\1\32\1\uffff\12\41\7\uffff\22\41\1\u00bb\7\41\4\uffff\1\41\1\uffff"+
+			"\22\41\1\u00bb\7\41",
+			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
 			"",
-			"\1\32\1\uffff\12\41\7\uffff\24\41\1\u00b5\5\41\4\uffff\1\41\1\uffff"+
-			"\24\41\1\u00b5\5\41",
+			"\1\32\1\uffff\12\41\7\uffff\21\41\1\u00bd\10\41\4\uffff\1\41\1\uffff"+
+			"\21\41\1\u00bd\10\41",
+			"",
+			"\1\32\1\uffff\12\41\7\uffff\4\41\1\u00be\25\41\4\uffff\1\41\1\uffff"+
+			"\4\41\1\u00be\25\41",
+			"\1\32\1\uffff\12\41\7\uffff\16\41\1\u00bf\13\41\4\uffff\1\41\1\uffff"+
+			"\16\41\1\u00bf\13\41",
+			"",
+			"",
+			"\1\32\1\uffff\12\41\7\uffff\2\41\1\u00c0\27\41\4\uffff\1\41\1\uffff"+
+			"\2\41\1\u00c0\27\41",
+			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
+			"",
+			"\1\32\1\uffff\12\41\7\uffff\24\41\1\u00c2\5\41\4\uffff\1\41\1\uffff"+
+			"\24\41\1\u00c2\5\41",
+			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
+			"\1\32\1\uffff\12\41\7\uffff\21\41\1\u00c4\10\41\4\uffff\1\41\1\uffff"+
+			"\21\41\1\u00c4\10\41",
+			"\1\32\1\uffff\12\41\7\uffff\30\41\1\u00c5\1\41\4\uffff\1\41\1\uffff"+
+			"\30\41\1\u00c5\1\41",
+			"",
+			"\1\32\1\uffff\12\41\7\uffff\14\41\1\u00c6\15\41\4\uffff\1\41\1\uffff"+
+			"\14\41\1\u00c6\15\41",
+			"",
+			"\1\32\1\uffff\12\41\7\uffff\24\41\1\u00c7\5\41\4\uffff\1\41\1\uffff"+
+			"\24\41\1\u00c7\5\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
-			"\1\32\1\uffff\12\41\7\uffff\14\41\1\u00b8\15\41\4\uffff\1\41\1\uffff"+
-			"\14\41\1\u00b8\15\41",
+			"\1\32\1\uffff\12\41\7\uffff\14\41\1\u00ca\15\41\4\uffff\1\41\1\uffff"+
+			"\14\41\1\u00ca\15\41",
 			"",
 			"",
 			"\1\32\1\uffff\12\41\7\uffff\32\41\4\uffff\1\41\1\uffff\32\41",
@@ -2658,7 +2837,7 @@ public class MetaLexer extends Lexer {
 		}
 		@Override
 		public String getDescription() {
-			return "1:1: Tokens : ( T_TRUNCATE | T_CREATE | T_ALTER | T_KEYSPACE | T_NOT | T_WITH | T_DROP | T_TABLE | T_IF | T_EXISTS | T_AND | T_USE | T_SET | T_OPTIONS | T_ANALYTICS | T_TRUE | T_FALSE | T_CONSISTENCY | T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM | T_EXPLAIN | T_PLAN | T_FOR | T_SEMICOLON | T_EQUAL | T_POINT | T_START_SBRACKET | T_END_SBRACKET | T_COLON | T_COMMA | T_CONSTANT | T_IDENT | T_TERM | WS );";
+			return "1:1: Tokens : ( T_TRUNCATE | T_CREATE | T_ALTER | T_KEYSPACE | T_NOT | T_WITH | T_DROP | T_TABLE | T_IF | T_EXISTS | T_AND | T_USE | T_SET | T_OPTIONS | T_ANALYTICS | T_TRUE | T_FALSE | T_CONSISTENCY | T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM | T_EXPLAIN | T_PLAN | T_FOR | T_STOP | T_PROCESS | T_TRIGGER | T_ON | T_SEMICOLON | T_EQUAL | T_POINT | T_START_SBRACKET | T_END_SBRACKET | T_COLON | T_COMMA | T_CONSTANT | T_IDENT | T_TERM | WS );";
 		}
 	}
 
