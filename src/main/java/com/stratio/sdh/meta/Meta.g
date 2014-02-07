@@ -31,16 +31,22 @@ options {
     import com.stratio.sdh.meta.statements.DropKeyspaceStatement;
     import com.stratio.sdh.meta.statements.DropTableStatement;
     import com.stratio.sdh.meta.statements.ExplainPlanStatement;
+    import com.stratio.sdh.meta.statements.InsertIntoStatement;
+    import com.stratio.sdh.meta.statements.SelectStatement;
     import com.stratio.sdh.meta.statements.SetOptionsStatement;
     import com.stratio.sdh.meta.statements.StopProcessStatement;
     import com.stratio.sdh.meta.statements.DropTriggerStatement;
     import com.stratio.sdh.meta.statements.CreateTriggerStatement;
     import com.stratio.sdh.meta.statements.TruncateStatement;
     import com.stratio.sdh.meta.statements.UseStatement;
+    import com.stratio.sdh.meta.structures.CollectionLiteral;
     import com.stratio.sdh.meta.structures.Consistency;
     import com.stratio.sdh.meta.structures.ConstantProperty;
     import com.stratio.sdh.meta.structures.IdentifierProperty;
     import com.stratio.sdh.meta.structures.MapLiteralProperty;
+    import com.stratio.sdh.meta.structures.Option;
+    import com.stratio.sdh.meta.structures.Term;
+    import com.stratio.sdh.meta.structures.ValueCell;
     import com.stratio.sdh.meta.structures.ValueProperty;
     import java.util.HashMap;
     import java.util.Map;
@@ -123,6 +129,7 @@ T_LOCAL_QUORUM: L O C A L '_' Q U O R U M;
 T_EXPLAIN: E X P L A I N;
 T_PLAN: P L A N;
 T_FOR: F O R;
+<<<<<<< d1ae33aec023b251155183ae7c0643a1b8f0fc99
 T_STOP: S T O P;
 T_PROCESS: P R O C E S S;
 //cambiado por Antonio 6-2-2014
@@ -130,6 +137,17 @@ T_TRIGGER: T R I G G E R;
 T_ON: O N;
 //Cambiado por Antonio 7-2-2014
 T_USING: U S I N G;
+=======
+T_INSERT: I N S E R T;
+T_INTO: I N T O;
+T_COMPACT: C O M P A C T;
+T_STORAGE: S T O R A G E;
+T_CLUSTERING: C L U S T E R I N G;
+T_ORDER: O R D E R;
+T_SELECT: S E L E C T;
+T_USING: U S I N G;
+T_VALUES: V A L U E S;
+>>>>>>> 4142c6035937b06dbf662df8391fcd7146d52d4c
 
 T_SEMICOLON: ';';
 T_EQUAL: '=';
@@ -138,6 +156,8 @@ T_START_SBRACKET: '{';
 T_END_SBRACKET: '}';
 T_COLON: ':';
 T_COMMA: ',';
+T_START_BRACKET: '(';
+T_END_BRACKET: ')';
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -151,6 +171,7 @@ T_TERM: (LETTER | DIGIT | '_' | '.')+;
 
 //STATEMENTS
 
+<<<<<<< d1ae33aec023b251155183ae7c0643a1b8f0fc99
 stopProcessStatement returns [StopProcessStatement stprst]:
     T_STOP T_PROCESS ident=T_IDENT { $stprst = new StopProcessStatement($ident.text); }
     ;
@@ -172,6 +193,60 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
     T_USING class_name=T_IDENT    
     {$crtrst = new CreateTriggerStatement($trigger_name.text,$table_name.text,$class_name.text);}
     ;
+=======
+selectStatement returns [SelectStatement slctst]:
+    T_SELECT {$slctst = new SelectStatement();}
+    ;
+
+insertIntoStatement returns [InsertIntoStatement nsntst]
+    @init{
+        List<String> ids = new ArrayList<>();
+        boolean ifNotExists = false;
+        int typeValues = InsertIntoStatement.TYPE_VALUES_CLAUSE;
+        List<ValueCell> cellValues = new ArrayList<>();
+        boolean optsInc = false;
+        List<Option> options = new ArrayList<>();
+    }:
+    T_INSERT 
+    T_INTO 
+    tableName=getTableID
+    T_START_BRACKET 
+    ident1=T_IDENT {ids.add($ident1.text);} 
+    (T_COMMA identN=T_IDENT {ids.add($identN.text);})* 
+    T_END_BRACKET
+    ( 
+        selectStmnt=selectStatement {typeValues = InsertIntoStatement.TYPE_SELECT_CLAUSE;}
+        | 
+        T_VALUES
+        T_START_BRACKET 
+            term1=getTermOrLiteral {cellValues.add(term1);}
+            (T_COMMA termN=getTermOrLiteral {cellValues.add(termN);})*
+        T_END_BRACKET
+    )
+    (T_IF T_NOT T_EXISTS {ifNotExists=true;} )?
+    (
+        T_USING {optsInc=true;} 
+        opt1=getOption {
+            options.add(opt1);
+        }
+        (T_AND optN=getOption {options.add(optN);})*
+    )?
+    {
+        if(typeValues==InsertIntoStatement.TYPE_SELECT_CLAUSE)
+            if(optsInc)
+                $nsntst = new InsertIntoStatement(tableName, ids, selectStmnt, ifNotExists, options);
+            else
+                $nsntst = new InsertIntoStatement(tableName, ids, selectStmnt, ifNotExists);
+        else
+            if(optsInc)
+                $nsntst = new InsertIntoStatement(tableName, ids, cellValues, ifNotExists, options);
+            else
+                $nsntst = new InsertIntoStatement(tableName, ids, cellValues, ifNotExists);
+                
+    }
+    ;
+
+>>>>>>> 4142c6035937b06dbf662df8391fcd7146d52d4c
 explainPlanStatement returns [ExplainPlanStatement xpplst]:
     T_EXPLAIN T_PLAN T_FOR parsedStmnt=metaStatement
     {$xpplst = new ExplainPlanStatement(parsedStmnt);}
@@ -281,10 +356,15 @@ truncateStatement returns [TruncateStatement trst]:
 	;
 
 metaStatement returns [Statement st]:
+<<<<<<< d1ae33aec023b251155183ae7c0643a1b8f0fc99
 //cambiado por Antonio 7-2-2014
     st_crtr= createTriggerStatement { $st = st_crtr; }
     |st_drtr= dropTriggerStatement { $st = st_drtr; }
     |st_stpr = stopProcessStatement { $st = st_stpr; }
+=======
+    st_slct = selectStatement { $st = st_slct;}
+    | st_nsnt = insertIntoStatement { $st = st_nsnt;}
+>>>>>>> 4142c6035937b06dbf662df8391fcd7146d52d4c
     | st_xppl = explainPlanStatement { $st = st_xppl;}
     | st_stpt = setOptionsStatement { $st = st_stpt; }
     | st_usks = useStatement { $st = st_usks; }
@@ -301,6 +381,34 @@ query returns [Statement st]:
 
 
 //FUNCTIONS
+
+getOption returns [Option opt]:
+    T_COMPACT T_STORAGE {$opt=new Option(Option.OPTION_COMPACT);}
+    | T_CLUSTERING T_ORDER {$opt=new Option(Option.OPTION_CLUSTERING);}
+    | identProp=T_IDENT T_EQUAL valueProp=getValueProperty {$opt=new Option($identProp.text, valueProp);}
+;
+
+getList returns [List list]
+    @init{
+        list = new ArrayList<String>();
+    }:
+    term1=getTerm {list.add($term1.text);}
+    (T_COMMA termN=getTerm {list.add($termN.text);})*
+    ;
+
+getTermOrLiteral returns [ValueCell vc]
+    @init{
+        CollectionLiteral cl = new CollectionLiteral();
+    }:
+    term=getTerm {$vc=new Term($term.text);}
+    |
+    T_START_SBRACKET
+    (
+        term1=getTerm {cl.addLiteral(new Term($term1.text));}
+        (T_COMMA termN=getTerm {cl.addLiteral(new Term($termN.text));})*
+    )?
+    T_END_SBRACKET {$vc=cl;}
+;
 
 getTableID returns [String tableID]: 
     (ks=T_IDENT '.')? 

@@ -20,8 +20,6 @@ public class ConstantProperty extends ValueProperty {
     @Override
     public String toString() {
         return Integer.toString(constant);
-    }
-    
-    
+    }        
 
 }
