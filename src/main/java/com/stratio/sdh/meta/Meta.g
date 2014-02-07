@@ -34,6 +34,7 @@ options {
     import com.stratio.sdh.meta.statements.SetOptionsStatement;
     import com.stratio.sdh.meta.statements.StopProcessStatement;
     import com.stratio.sdh.meta.statements.DropTriggerStatement;
+    import com.stratio.sdh.meta.statements.CreateTriggerStatement;
     import com.stratio.sdh.meta.statements.TruncateStatement;
     import com.stratio.sdh.meta.statements.UseStatement;
     import com.stratio.sdh.meta.structures.Consistency;
@@ -127,6 +128,8 @@ T_PROCESS: P R O C E S S;
 //cambiado por Antonio 6-2-2014
 T_TRIGGER: T R I G G E R;
 T_ON: O N;
+//Cambiado por Antonio 7-2-2014
+T_USING: U S I N G;
 
 T_SEMICOLON: ';';
 T_EQUAL: '=';
@@ -152,13 +155,22 @@ stopProcessStatement returns [StopProcessStatement stprst]:
     T_STOP T_PROCESS ident=T_IDENT { $stprst = new StopProcessStatement($ident.text); }
     ;
 
-//cambiado por Antonio 6-2-2014
+//Metodo drop  Trigger: Antonio 6-2-2014
 dropTriggerStatement returns [DropTriggerStatement drtrst]:
     T_DROP 
     T_TRIGGER ident=T_IDENT 
     T_ON 
     ident2=T_IDENT  
     {$drtrst = new DropTriggerStatement($ident.text,$ident2.text);}
+    ;
+//Metodo create  Trigger: Antonio 7-2-2014
+createTriggerStatement returns [CreateTriggerStatement crtrst]:
+    T_CREATE 
+    T_TRIGGER trigger_name=T_IDENT 
+    T_ON 
+    table_name=T_IDENT
+    T_USING class_name=T_IDENT    
+    {$crtrst = new CreateTriggerStatement($trigger_name.text,$table_name.text,$class_name.text);}
     ;
 explainPlanStatement returns [ExplainPlanStatement xpplst]:
     T_EXPLAIN T_PLAN T_FOR parsedStmnt=metaStatement
@@ -269,8 +281,9 @@ truncateStatement returns [TruncateStatement trst]:
 	;
 
 metaStatement returns [Statement st]:
-//cambiado por Antonio 6-2-2014
-    st_drtr= dropTriggerStatement { $st = st_drtr; }
+//cambiado por Antonio 7-2-2014
+    st_crtr= createTriggerStatement { $st = st_crtr; }
+    |st_drtr= dropTriggerStatement { $st = st_drtr; }
     |st_stpr = stopProcessStatement { $st = st_stpr; }
     | st_xppl = explainPlanStatement { $st = st_xppl;}
     | st_stpt = setOptionsStatement { $st = st_stpt; }
