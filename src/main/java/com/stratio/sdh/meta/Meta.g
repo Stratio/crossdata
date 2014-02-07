@@ -129,7 +129,7 @@ T_LOCAL_QUORUM: L O C A L '_' Q U O R U M;
 T_EXPLAIN: E X P L A I N;
 T_PLAN: P L A N;
 T_FOR: F O R;
-<<<<<<< d1ae33aec023b251155183ae7c0643a1b8f0fc99
+//<<<<<<< d1ae33aec023b251155183ae7c0643a1b8f0fc99
 T_STOP: S T O P;
 T_PROCESS: P R O C E S S;
 //cambiado por Antonio 6-2-2014
@@ -137,7 +137,7 @@ T_TRIGGER: T R I G G E R;
 T_ON: O N;
 //Cambiado por Antonio 7-2-2014
 T_USING: U S I N G;
-=======
+//=======
 T_INSERT: I N S E R T;
 T_INTO: I N T O;
 T_COMPACT: C O M P A C T;
@@ -145,9 +145,8 @@ T_STORAGE: S T O R A G E;
 T_CLUSTERING: C L U S T E R I N G;
 T_ORDER: O R D E R;
 T_SELECT: S E L E C T;
-T_USING: U S I N G;
 T_VALUES: V A L U E S;
->>>>>>> 4142c6035937b06dbf662df8391fcd7146d52d4c
+//>>>>>>> 4142c6035937b06dbf662df8391fcd7146d52d4c
 
 T_SEMICOLON: ';';
 T_EQUAL: '=';
@@ -171,7 +170,7 @@ T_TERM: (LETTER | DIGIT | '_' | '.')+;
 
 //STATEMENTS
 
-<<<<<<< d1ae33aec023b251155183ae7c0643a1b8f0fc99
+//<<<<<<< d1ae33aec023b251155183ae7c0643a1b8f0fc99
 stopProcessStatement returns [StopProcessStatement stprst]:
     T_STOP T_PROCESS ident=T_IDENT { $stprst = new StopProcessStatement($ident.text); }
     ;
@@ -193,7 +192,7 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
     T_USING class_name=T_IDENT    
     {$crtrst = new CreateTriggerStatement($trigger_name.text,$table_name.text,$class_name.text);}
     ;
-=======
+//=======
 selectStatement returns [SelectStatement slctst]:
     T_SELECT {$slctst = new SelectStatement();}
     ;
@@ -246,7 +245,7 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
     }
     ;
 
->>>>>>> 4142c6035937b06dbf662df8391fcd7146d52d4c
+//>>>>>>> 4142c6035937b06dbf662df8391fcd7146d52d4c
 explainPlanStatement returns [ExplainPlanStatement xpplst]:
     T_EXPLAIN T_PLAN T_FOR parsedStmnt=metaStatement
     {$xpplst = new ExplainPlanStatement(parsedStmnt);}
@@ -356,15 +355,15 @@ truncateStatement returns [TruncateStatement trst]:
 	;
 
 metaStatement returns [Statement st]:
-<<<<<<< d1ae33aec023b251155183ae7c0643a1b8f0fc99
+//<<<<<<< d1ae33aec023b251155183ae7c0643a1b8f0fc99
 //cambiado por Antonio 7-2-2014
     st_crtr= createTriggerStatement { $st = st_crtr; }
     |st_drtr= dropTriggerStatement { $st = st_drtr; }
     |st_stpr = stopProcessStatement { $st = st_stpr; }
-=======
+//=======
     st_slct = selectStatement { $st = st_slct;}
     | st_nsnt = insertIntoStatement { $st = st_nsnt;}
->>>>>>> 4142c6035937b06dbf662df8391fcd7146d52d4c
+//>>>>>>> 4142c6035937b06dbf662df8391fcd7146d52d4c
     | st_xppl = explainPlanStatement { $st = st_xppl;}
     | st_stpt = setOptionsStatement { $st = st_stpt; }
     | st_usks = useStatement { $st = st_usks; }
