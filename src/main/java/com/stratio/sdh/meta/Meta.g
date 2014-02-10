@@ -29,11 +29,16 @@ options {
     import com.stratio.sdh.meta.statements.AlterKeyspaceStatement;
     import com.stratio.sdh.meta.statements.CreateKeyspaceStatement;
     import com.stratio.sdh.meta.statements.DropKeyspaceStatement;
+    import com.stratio.sdh.meta.statements.CreateIndexStatement;
+    import com.stratio.sdh.meta.statements.DropIndexStatement;
     import com.stratio.sdh.meta.statements.DropTableStatement;
     import com.stratio.sdh.meta.statements.ExplainPlanStatement;
     import com.stratio.sdh.meta.statements.SetOptionsStatement;
     import com.stratio.sdh.meta.statements.TruncateStatement;
     import com.stratio.sdh.meta.statements.UseStatement;
+    import com.stratio.sdh.meta.statements.AddStatement;
+    import com.stratio.sdh.meta.statements.ListStatement;
+    import com.stratio.sdh.meta.statements.RemoveUDFStatement;
     import com.stratio.sdh.meta.structures.Consistency;
     import com.stratio.sdh.meta.structures.ConstantProperty;
     import com.stratio.sdh.meta.structures.IdentifierProperty;
@@ -120,6 +125,13 @@ T_LOCAL_QUORUM: L O C A L '_' Q U O R U M;
 T_EXPLAIN: E X P L A I N;
 T_PLAN: P L A N;
 T_FOR: F O R;
+T_INDEX: I N D E X;
+T_ADD: A D D;
+T_LIST: L I S T;
+T_REMOVE: R E M O V E;
+T_ON: O N;
+T_USING: U S I N G;
+T_UDF: U D F;
 
 T_SEMICOLON: ';';
 T_EQUAL: '=';
@@ -128,6 +140,11 @@ T_START_SBRACKET: '{';
 T_END_SBRACKET: '}';
 T_COLON: ':';
 T_COMMA: ',';
+T_LEFT_PARENTHESIS: '(';
+T_RIGHT_PARENTHESIS: ')';
+T_QUOTE: '"' | '\'';
+
+T_INDEX_TYPE: ('HASH' | 'FULLTEXT' | 'CUSTOM');
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -138,8 +155,59 @@ T_IDENT: LETTER (LETTER | DIGIT | '_')*;
 
 T_TERM: (LETTER | DIGIT | '_' | '.')+;
 
+T_PATH: (LETTER | DIGIT | '_' | '.' | '-' | '/')+;
 
 //STATEMENTS
+
+//ADD \"index_path\";
+addStatement returns [AddStatement as]:
+	T_ADD T_QUOTE name=T_PATH T_QUOTE {$as = new AddStatement($name.text);}
+	;
+
+//LIST ( PROCESS | UDF | TRIGGER) ;
+listStatement returns [ListStatement ls]:
+	T_LIST (type=getListTypes) {$ls = new ListStatement($type.text);}
+	;
+
+//REMOVE UDF \"jar.name\";"
+removeUDFStatement returns [RemoveUDFStatement rus]:
+	T_REMOVE 'UDF' T_QUOTE jar=T_TERM T_QUOTE {$rus = new RemoveUDFStatement($jar.text);}
+	;
+
+//DROP INDEX IF EXISTS index_name;
+dropIndexStatement returns [DropIndexStatement dis]
+	@init{
+		$dis = new DropIndexStatement();
+	}:
+	T_DROP T_INDEX
+	(T_IF T_EXISTS {$dis.setDropIfExists();})?
+	name=T_IDENT {$dis.setName($name.text);}
+	;
+
+
+//CREATE HASH INDEX ON table1 (field1, field2);
+//CREATE HASH INDEX index1 ON table1 (field1, field2) USING com.company.Index.class;
+//CREATE HASH INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1=val1 AND opt2=val2;
+createIndexStatement returns [CreateIndexStatement cis]
+	@init{
+		$cis = new CreateIndexStatement();
+	}:
+	T_CREATE indexType=T_INDEX_TYPE {$cis.setIndexType($indexType.text);} T_INDEX
+	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
+	name=T_IDENT {$cis.setName($name.text);}
+	T_ON tablename=T_IDENT {$cis.setTablename($tablename.text);}
+	T_LEFT_PARENTHESIS
+	firstField=T_IDENT {$cis.addColumn($firstField.text);}
+	(T_COMMA
+		field=T_IDENT {$cis.addColumn($field.text);}
+	)*
+	T_RIGHT_PARENTHESIS
+	(T_USING usingClass=T_TERM {$cis.setUsingClass($usingClass.text);})?
+	(T_WITH T_OPTIONS key=T_IDENT T_EQUAL value=getValueProperty {$cis.addOption($key.text, value);}
+		(T_AND key=T_IDENT T_EQUAL value=getValueProperty {$cis.addOption($key.text, value);} )*
+	)?
+	;
+    //identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {properties.put($identProp1.text, valueProp1);}
 
 explainPlanStatement returns [ExplainPlanStatement xpplst]:
     T_EXPLAIN T_PLAN T_FOR parsedStmnt=metaStatement
@@ -257,7 +325,13 @@ metaStatement returns [Statement st]:
     | st_crks = createKeyspaceStatement { $st = st_crks; }
     | st_alks = alterKeyspaceStatement { $st = st_alks; }
     | st_tbdr = dropTableStatement { $st = st_tbdr; }
-    | st_trst = truncateStatement { $st = st_trst; };    
+    | st_trst = truncateStatement { $st = st_trst; }
+    | cis = createIndexStatement { $st = cis; } 
+    | dis = dropIndexStatement { $st = dis; } 
+    | ls = listStatement { $st = ls; } 
+    | add = addStatement { $st = add; } 
+    | rs = removeUDFStatement { $st = rs; } 
+    ;
 
 query returns [Statement st]: 
 	mtst=metaStatement (T_SEMICOLON)+ EOF {
@@ -266,6 +340,10 @@ query returns [Statement st]:
 
 
 //FUNCTIONS
+
+getListTypes returns [String listType]:
+	ident=('PROCESS' | 'UDF' | 'TRIGGER') {$listType = new String($ident.text);}
+	;
 
 getTableID returns [String tableID]: 
     (ks=T_IDENT '.')? 
