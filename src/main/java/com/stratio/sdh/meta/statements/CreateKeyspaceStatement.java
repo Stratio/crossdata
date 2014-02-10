@@ -45,12 +45,12 @@ public class CreateKeyspaceStatement extends Statement {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Creating keyspace ");
-        sb.append(ident);
+        StringBuilder sb = new StringBuilder("CREATE KEYSPACE ");
         if(ifNotExists){
-            sb.append(" (if not exists) ");
+            sb.append("IF NOT EXISTS ");
         }
-        sb.append(" with: ");
+        sb.append(ident);
+        sb.append(" WITH ");
         sb.append(MetaUtils.StringHashMap(properties, ", "));
         return sb.substring(0, sb.length()-5);
     }

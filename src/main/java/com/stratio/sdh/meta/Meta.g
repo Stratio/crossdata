@@ -144,7 +144,6 @@ T_UDF: U D F;
 T_STOP: S T O P;
 T_PROCESS: P R O C E S S;
 T_TRIGGER: T R I G G E R;
-T_ON: O N;
 T_INSERT: I N S E R T;
 T_INTO: I N T O;
 T_COMPACT: C O M P A C T;
@@ -166,9 +165,6 @@ T_RIGHT_PARENTHESIS: ')';
 T_QUOTE: '"' | '\'';
 
 T_INDEX_TYPE: ('HASH' | 'FULLTEXT' | 'CUSTOM');
-
-T_START_BRACKET: '(';
-T_END_BRACKET: ')';
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -271,18 +267,18 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
     T_INSERT 
     T_INTO 
     tableName=getTableID
-    T_START_BRACKET 
+    T_LEFT_PARENTHESIS 
     ident1=T_IDENT {ids.add($ident1.text);} 
     (T_COMMA identN=T_IDENT {ids.add($identN.text);})* 
-    T_END_BRACKET
+    T_RIGHT_PARENTHESIS
     ( 
         selectStmnt=selectStatement {typeValues = InsertIntoStatement.TYPE_SELECT_CLAUSE;}
         | 
         T_VALUES
-        T_START_BRACKET 
+        T_LEFT_PARENTHESIS 
             term1=getTermOrLiteral {cellValues.add(term1);}
             (T_COMMA termN=getTermOrLiteral {cellValues.add(termN);})*
-        T_END_BRACKET
+        T_RIGHT_PARENTHESIS
     )
     (T_IF T_NOT T_EXISTS {ifNotExists=true;} )?
     (

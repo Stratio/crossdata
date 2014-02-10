@@ -46,6 +46,37 @@ public class ParsingTest {
         return result;
 	}
 
+	// CREATE KEYSPACE (IF NOT EXISTS)? <keyspace_name> WITH <properties> ';'
+	@Test
+	public void createKeyspace_basic() {
+		String inputText = "CREATE KEYSPACE key_space1 "
+				+ "WITH replication = replicationLevel AND durable_writes = false;";
+		
+		Statement st = parseStatement(inputText);
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", inputText, st.toString()+";");
+	}
+	
+	@Test
+	public void createKeyspace_ifNotExists() {
+		String inputText = "CREATE KEYSPACE IF NOT EXISTS key_space1 "
+				+ "WITH replication = replicationLevel AND durable_writes = false;";
+		Statement st = parseStatement(inputText);
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", inputText, st.toString()+";");
+	}
+	
+	//TODO: Should we support it in this way?
+	//@Test
+	public void createKeyspace_nestedOptions() {
+		String inputText = "CREATE KEYSPACE IF NOT EXISTS key_space1 "
+				+ "WITH replication = {class: NetworkTopologyStrategy, DC1 : 1, DC2 : 3} "
+				+"AND durable_writes = false;";
+		Statement st = parseStatement(inputText);
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", inputText, st.toString()+";");
+	}
+	
 	//
 	//CREATE INDEX
 	
