@@ -2,10 +2,9 @@ package com.stratio.sdh.meta.statements;
 
 import com.stratio.sdh.meta.structures.Path;
 import com.stratio.sdh.meta.structures.ValueProperty;
+import com.stratio.sdh.meta.utils.MetaUtils;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 public class CreateKeyspaceStatement extends Statement {
     
@@ -46,19 +45,14 @@ public class CreateKeyspaceStatement extends Statement {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Creating keyspace ");
-        sb.append(ident);
+        StringBuilder sb = new StringBuilder("CREATE KEYSPACE ");
         if(ifNotExists){
-            sb.append(" (if not exists) ");
+            sb.append("IF NOT EXISTS ");
         }
-        sb.append(" with: ");
-        Set keySet = properties.keySet();
-        for (Iterator it = keySet.iterator(); it.hasNext();) {
-            String key = (String) it.next();
-            ValueProperty vp = properties.get(key);
-            sb.append(key).append(": ").append(vp.toString());
-        }
-        return sb.toString();
+        sb.append(ident);
+        sb.append(" WITH ");
+        sb.append(MetaUtils.StringMap(properties, ", "));
+        return sb.substring(0, sb.length()-5);
     }
 
     @Override

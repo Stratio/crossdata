@@ -29,25 +29,54 @@ options {
     import com.stratio.sdh.meta.statements.AlterKeyspaceStatement;
     import com.stratio.sdh.meta.statements.CreateKeyspaceStatement;
     import com.stratio.sdh.meta.statements.DropKeyspaceStatement;
+    import com.stratio.sdh.meta.statements.CreateIndexStatement;
+    import com.stratio.sdh.meta.statements.DropIndexStatement;
     import com.stratio.sdh.meta.statements.DropTableStatement;
     import com.stratio.sdh.meta.statements.ExplainPlanStatement;
+    import com.stratio.sdh.meta.statements.InsertIntoStatement;
+    import com.stratio.sdh.meta.statements.SelectStatement;
     import com.stratio.sdh.meta.statements.SetOptionsStatement;
     import com.stratio.sdh.meta.statements.StopProcessStatement;
     import com.stratio.sdh.meta.statements.DropTriggerStatement;
+    import com.stratio.sdh.meta.statements.DeleteStatement;
     import com.stratio.sdh.meta.statements.CreateTriggerStatement;
+    import com.stratio.sdh.meta.statements.UpdateTableStatement;
     import com.stratio.sdh.meta.statements.TruncateStatement;
     import com.stratio.sdh.meta.statements.UseStatement;
     import com.stratio.sdh.meta.statements.AlterTableStatement;
     import com.stratio.sdh.meta.statements.CreateTableStatement;
+    import com.stratio.sdh.meta.statements.AddStatement;
+    import com.stratio.sdh.meta.statements.ListStatement;
+    import com.stratio.sdh.meta.statements.RemoveUDFStatement;
+    import com.stratio.sdh.meta.structures.Assignment;
+    import com.stratio.sdh.meta.structures.CollectionLiteral;
     import com.stratio.sdh.meta.structures.Consistency;
     import com.stratio.sdh.meta.structures.ConstantProperty;
     import com.stratio.sdh.meta.structures.IdentifierProperty;
+    import com.stratio.sdh.meta.structures.IdentifierAssignment;
+    import com.stratio.sdh.meta.structures.IdentIntOrLiteral;
+    import com.stratio.sdh.meta.structures.IdentMap;
+    import com.stratio.sdh.meta.structures.IntTerm;
+    import com.stratio.sdh.meta.structures.ListLiteral;
+    import com.stratio.sdh.meta.structures.MetaRelation;
+    import com.stratio.sdh.meta.structures.RelationInterrogation;
+    import com.stratio.sdh.meta.structures.RelationOneTerm;
+    import com.stratio.sdh.meta.structures.RelationTerms;
+    import com.stratio.sdh.meta.structures.SetLiteral;
     import com.stratio.sdh.meta.structures.MapLiteralProperty;
+    import com.stratio.sdh.meta.structures.MetaRelation;
+    import com.stratio.sdh.meta.structures.Option;
+    import com.stratio.sdh.meta.structures.Term;
+    import com.stratio.sdh.meta.structures.ValueCell;
     import com.stratio.sdh.meta.structures.ValueProperty;
     import com.stratio.sdh.meta.structures.FloatProperty;
+    import java.util.LinkedHashMap;
+    import com.stratio.sdh.meta.structures.ValueAssignment;
     import java.util.HashMap;
     import java.util.Map;
-    import java.util.LinkedHashMap;
+    import java.util.Set;
+    import java.util.HashSet;
+
 }
 
 @members {
@@ -96,6 +125,7 @@ fragment X: ('x'|'X');
 fragment Y: ('y'|'Y');
 fragment Z: ('z'|'Z');
 fragment EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
+fragment POINT: '.';
 
 // Case-insensitive keywords
 T_TRUNCATE: T R U N C A T E;
@@ -128,27 +158,50 @@ T_LOCAL_QUORUM: L O C A L '_' Q U O R U M;
 T_EXPLAIN: E X P L A I N;
 T_PLAN: P L A N;
 T_FOR: F O R;
-T_STOP: S T O P;
+T_INDEX: I N D E X;
+T_ADD: A D D;
+T_LIST: L I S T;
+T_REMOVE: R E M O V E;
+T_USING: U S I N G;
+T_UDF: U D F;
 T_PROCESS: P R O C E S S;
-//cambiado por Antonio 6-2-2014
 T_TRIGGER: T R I G G E R;
+T_STOP: S T O P;
 T_ON: O N;
-//Cambiado por Antonio 7-2-2014
 T_USING: U S I N G;
 T_TYPE: T Y P E;
 T_ADD: A D D;
-//Cambiado por Antonio 10-02-2014
 T_PRIMARY: P R I M A R Y;
 T_KEY: K E Y;
-
+T_INSERT: I N S E R T;
+T_INTO: I N T O;
+T_COMPACT: C O M P A C T;
+T_STORAGE: S T O R A G E;
+T_CLUSTERING: C L U S T E R I N G;
+T_ORDER: O R D E R;
+T_SELECT: S E L E C T;
+T_VALUES: V A L U E S;
+T_UPDATE: U P D A T E;
+T_WHERE: W H E R E;
+T_IN: I N;
+T_FROM: F R O M;
+T_DELETE: D E L E T E;
 
 T_SEMICOLON: ';';
 T_EQUAL: '=';
-T_POINT: '.';
 T_START_SBRACKET: '{';
 T_END_SBRACKET: '}';
 T_COLON: ':';
 T_COMMA: ',';
+T_START_PARENTHESIS: '(';
+T_END_PARENTHESIS: ')';
+T_QUOTE: '"' | '\'';
+T_INDEX_TYPE: ('HASH' | 'FULLTEXT' | 'CUSTOM');
+T_START_BRACKET: '[';
+T_END_BRACKET: ']';
+T_PLUS: '+';
+T_SUBTRACT: '-';
+T_INTERROGATION: '?';
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -157,20 +210,120 @@ T_CONSTANT: (DIGIT)+;
 
 T_IDENT: LETTER (LETTER | DIGIT | '_')*;
 
+T_KS_AND_TN: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)?; 
+
 T_TERM: (LETTER | DIGIT | '_' | '.')+;
 T_FLOAT:   ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
      |   '.' ('0'..'9')+ EXPONENT?
      |   ('0'..'9')+ EXPONENT
      ;
 
+T_PATH: (LETTER | DIGIT | '_' | '.' | '-' | '/')+;
 
 //STATEMENTS
+
+//DELETE (col1, col2) FROM table1 WHERE field1=value1 AND field2=value2;
+deleteStatement returns [DeleteStatement ds]
+	@init{
+		$ds = new DeleteStatement();
+	}:
+	T_DELETE
+	(T_START_PARENTHESIS
+	firstField=T_IDENT {$ds.addColumn($firstField.text);}
+		(T_COMMA
+			field=T_IDENT {$ds.addColumn($field.text);}
+		)*
+	
+	T_END_PARENTHESIS)*
+	T_FROM
+	tablename=T_IDENT {$ds.setTablename($tablename.text);}
+	T_WHERE
+	rel1=getRelation {$ds.addRelation(rel1);} (T_AND relN=getRelation {$ds.addRelation(relN);})*
+	;
+
+//ADD \"index_path\";
+addStatement returns [AddStatement as]:
+	T_ADD T_QUOTE name=T_PATH T_QUOTE {$as = new AddStatement($name.text);}
+	;
+
+//LIST ( PROCESS | UDF | TRIGGER) ;
+listStatement returns [ListStatement ls]:
+	T_LIST (type=getListTypes) {$ls = new ListStatement($type.text);}
+	;
+
+//REMOVE UDF \"jar.name\";"
+removeUDFStatement returns [RemoveUDFStatement rus]:
+	T_REMOVE 'UDF' T_QUOTE jar=getTerm {$rus = new RemoveUDFStatement(jar);} T_QUOTE
+	;
+
+//DROP INDEX IF EXISTS index_name;
+dropIndexStatement returns [DropIndexStatement dis]
+	@init{
+		$dis = new DropIndexStatement();
+	}:
+	T_DROP T_INDEX
+	(T_IF T_EXISTS {$dis.setDropIfExists();})?
+	name=T_IDENT {$dis.setName($name.text);}
+	;
+
+
+//CREATE HASH INDEX ON table1 (field1, field2);
+//CREATE HASH INDEX index1 ON table1 (field1, field2) USING com.company.Index.class;
+//CREATE HASH INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1=val1 AND opt2=val2;
+createIndexStatement returns [CreateIndexStatement cis]
+	@init{
+		$cis = new CreateIndexStatement();
+	}:
+	T_CREATE indexType=T_INDEX_TYPE {$cis.setIndexType($indexType.text);} T_INDEX
+	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
+	name=T_IDENT {$cis.setName($name.text);}
+	T_ON tablename=T_IDENT {$cis.setTablename($tablename.text);}
+	T_START_PARENTHESIS
+	firstField=T_IDENT {$cis.addColumn($firstField.text);}
+	(T_COMMA
+		field=T_IDENT {$cis.addColumn($field.text);}
+	)*
+	T_END_PARENTHESIS
+	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass);})?
+	(T_WITH T_OPTIONS key=T_IDENT T_EQUAL value=getValueProperty {$cis.addOption($key.text, value);}
+		(T_AND key=T_IDENT T_EQUAL value=getValueProperty {$cis.addOption($key.text, value);} )*
+	)?
+	;
+    //identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {properties.put($identProp1.text, valueProp1);}
+
+updateTableStatement returns [UpdateTableStatement pdtbst]
+    @init{
+        boolean optsInc = false;
+        boolean condsInc = false;
+        List<Option> options = new ArrayList<>();
+        List<Assignment> assignments = new ArrayList<>();
+        List<MetaRelation> whereclauses = new ArrayList<>();
+        Map<String, Term> conditions = new HashMap<>();
+    }:
+    T_UPDATE tablename=getTableID
+    (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (optN=getOption {options.add(optN);})*)?
+    T_SET assig1=getAssignment {assignments.add(assig1);} (T_COMMA assigN=getAssignment {assignments.add(assigN);})*
+    T_WHERE rel1=getRelation {whereclauses.add(rel1);} (T_AND relN=getRelation {whereclauses.add(relN);})*
+    (T_IF id1=T_IDENT T_EQUAL term1=getTerm {condsInc = true; conditions.put($id1.text, new Term(term1));} 
+                    (T_AND idN=T_IDENT T_EQUAL termN=getTerm {conditions.put($idN.text, new Term(termN));})*)?
+    { 
+        if(optsInc)
+            if(condsInc)
+                $pdtbst = new UpdateTableStatement(tablename, options, assignments, whereclauses, conditions);
+            else
+                $pdtbst = new UpdateTableStatement(tablename, options, assignments, whereclauses);
+        else
+            if(condsInc)
+                $pdtbst = new UpdateTableStatement(tablename, assignments, whereclauses, conditions);
+            else
+                $pdtbst = new UpdateTableStatement(tablename, assignments, whereclauses);
+    }
+    ;
 
 stopProcessStatement returns [StopProcessStatement stprst]:
     T_STOP T_PROCESS ident=T_IDENT { $stprst = new StopProcessStatement($ident.text); }
     ;
 
-//Metodo drop  Trigger: Antonio 6-2-2014
 dropTriggerStatement returns [DropTriggerStatement drtrst]:
     T_DROP 
     T_TRIGGER ident=T_IDENT 
@@ -178,7 +331,7 @@ dropTriggerStatement returns [DropTriggerStatement drtrst]:
     ident2=T_IDENT  
     {$drtrst = new DropTriggerStatement($ident.text,$ident2.text);}
     ;
-//Metodo create  Trigger: Antonio 7-2-2014
+
 createTriggerStatement returns [CreateTriggerStatement crtrst]:
     T_CREATE 
     T_TRIGGER trigger_name=T_IDENT 
@@ -187,6 +340,7 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
     T_USING class_name=T_IDENT    
     {$crtrst = new CreateTriggerStatement($trigger_name.text,$table_name.text,$class_name.text);}
     ;
+
 
 createTableStatement returns [CreateTableStatement crtast]
 @init{
@@ -258,6 +412,57 @@ alterTableStatement returns [AlterTableStatement altast]
             {prop=4;}
     )
     {$altast = new AlterTableStatement($name_table.text,$column.text,$type.text,option,prop);  }
+
+selectStatement returns [SelectStatement slctst]:
+    T_SELECT {$slctst = new SelectStatement();}
+    ;
+
+insertIntoStatement returns [InsertIntoStatement nsntst]
+    @init{
+        List<String> ids = new ArrayList<>();
+        boolean ifNotExists = false;
+        int typeValues = InsertIntoStatement.TYPE_VALUES_CLAUSE;
+        List<ValueCell> cellValues = new ArrayList<>();
+        boolean optsInc = false;
+        List<Option> options = new ArrayList<>();
+    }:
+    T_INSERT 
+    T_INTO 
+    tableName=getTableID
+    T_START_PARENTHESIS 
+    ident1=T_IDENT {ids.add($ident1.text);} 
+    (T_COMMA identN=T_IDENT {ids.add($identN.text);})* 
+    T_END_PARENTHESIS
+    ( 
+        selectStmnt=selectStatement {typeValues = InsertIntoStatement.TYPE_SELECT_CLAUSE;}
+        | 
+        T_VALUES
+        T_START_PARENTHESIS 
+            term1=getTermOrLiteral {cellValues.add(term1);}
+            (T_COMMA termN=getTermOrLiteral {cellValues.add(termN);})*
+        T_END_PARENTHESIS
+    )
+    (T_IF T_NOT T_EXISTS {ifNotExists=true;} )?
+    (
+        T_USING {optsInc=true;} 
+        opt1=getOption {
+            options.add(opt1);
+        }
+        (T_AND optN=getOption {options.add(optN);})*
+    )?
+    {
+        if(typeValues==InsertIntoStatement.TYPE_SELECT_CLAUSE)
+            if(optsInc)
+                $nsntst = new InsertIntoStatement(tableName, ids, selectStmnt, ifNotExists, options);
+            else
+                $nsntst = new InsertIntoStatement(tableName, ids, selectStmnt, ifNotExists);
+        else
+            if(optsInc)
+                $nsntst = new InsertIntoStatement(tableName, ids, cellValues, ifNotExists, options);
+            else
+                $nsntst = new InsertIntoStatement(tableName, ids, cellValues, ifNotExists);
+                
+    }
     ;
 
 explainPlanStatement returns [ExplainPlanStatement xpplst]:
@@ -356,8 +561,8 @@ dropTableStatement returns [DropTableStatement drtbst]
     T_DROP
     T_TABLE
     (T_IF T_EXISTS { ifExists = true; })?
-    ident=getTableID {
-        $drtbst = new DropTableStatement(ident, ifExists);
+    identID=getTableID {
+        $drtbst = new DropTableStatement(identID, ifExists);
     }
     ;
 
@@ -369,12 +574,16 @@ truncateStatement returns [TruncateStatement trst]:
 	;
 
 metaStatement returns [Statement st]:
+
 //cambiado por Antonio 7-2-2014
     st_crta= createTableStatement { $st = st_crta;}
     | st_alta= alterTableStatement { $st = st_alta;}
     | st_crtr= createTriggerStatement { $st = st_crtr; }
     | st_drtr= dropTriggerStatement { $st = st_drtr; }
     | st_stpr = stopProcessStatement { $st = st_stpr; }
+    | st_pdtb = updateTableStatement { $st = st_pdtb; }
+    | st_slct = selectStatement { $st = st_slct;}
+    | st_nsnt = insertIntoStatement { $st = st_nsnt;}
     | st_xppl = explainPlanStatement { $st = st_xppl;}
     | st_stpt = setOptionsStatement { $st = st_stpt; }
     | st_usks = useStatement { $st = st_usks; }
@@ -382,7 +591,14 @@ metaStatement returns [Statement st]:
     | st_crks = createKeyspaceStatement { $st = st_crks; }
     | st_alks = alterKeyspaceStatement { $st = st_alks; }
     | st_tbdr = dropTableStatement { $st = st_tbdr; }
-    | st_trst = truncateStatement { $st = st_trst; };    
+    | st_trst = truncateStatement { $st = st_trst; }
+    | cis = createIndexStatement { $st = cis; } 
+    | dis = dropIndexStatement { $st = dis; } 
+    | ls = listStatement { $st = ls; } 
+    | add = addStatement { $st = add; } 
+    | rs = removeUDFStatement { $st = rs; } 
+    | ds = deleteStatement { $st = ds; } 
+    ;
 
 query returns [Statement st]: 
 	mtst=metaStatement (T_SEMICOLON)+ EOF {
@@ -392,12 +608,110 @@ query returns [Statement st]:
 
 //FUNCTIONS
 
+getListTypes returns [String listType]:
+	ident=('PROCESS' | 'UDF' | 'TRIGGER') {$listType = new String($ident.text);}
+	;
+
+getAssignment returns [Assignment assign]:
+    ident=T_IDENT (
+        T_EQUAL value=getValueAssign {$assign = new Assignment(new IdentifierAssignment($ident.text), value);} 
+    |
+        T_START_BRACKET termL=getTerm T_END_BRACKET T_EQUAL termR=getTerm { 
+            $assign = new Assignment (new IdentifierAssignment($ident.text, new Term(termL)), new ValueAssignment(new Term(termR)));
+        }
+    )
+; 
+
+getValueAssign returns [ValueAssignment valueAssign]:
+    term1=getTerm { $valueAssign = new ValueAssignment(new Term(term1));}
+    | ident=T_IDENT (T_PLUS (T_START_SBRACKET mapLiteral=getMapLiteral T_END_SBRACKET { $valueAssign = new ValueAssignment(new IdentMap($ident.text, new MapLiteralProperty(mapLiteral)));}
+                                | value1=getIntSetOrList { 
+                                                            if(value1 instanceof IntTerm)
+                                                                $valueAssign = new ValueAssignment(new IntTerm($ident.text, '+', ((IntTerm) value1).getTerm()));
+                                                            else if(value1 instanceof ListLiteral)
+                                                                $valueAssign = new ValueAssignment(new ListLiteral($ident.text, '+', ((ListLiteral) value1).getLiterals()));
+                                                            else
+                                                                $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '+', ((SetLiteral) value1).getLiterals()));
+                                                         }
+                           ) 
+        | T_SUBTRACT value2=getIntSetOrList { 
+                                                if(value2 instanceof IntTerm)
+                                                    $valueAssign = new ValueAssignment(new IntTerm($ident.text, '-', ((IntTerm) value2).getTerm()));
+                                                else if(value2 instanceof ListLiteral)
+                                                    $valueAssign = new ValueAssignment(new ListLiteral($ident.text, '-', ((ListLiteral) value2).getLiterals()));
+                                                else
+                                                    $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '-', ((SetLiteral) value2).getLiterals()));
+                                            }
+    )
+;
+
+getIntSetOrList returns [IdentIntOrLiteral iiol]:
+    constant=T_CONSTANT { $iiol = new IntTerm(Integer.parseInt($constant.text));}
+    | T_START_BRACKET list=getList T_END_BRACKET { $iiol = new ListLiteral(list);}
+    | T_START_SBRACKET set=getSet T_END_SBRACKET { $iiol = new SetLiteral(set);}
+;
+
+getRelation returns [MetaRelation mrel]:
+    ident=T_IDENT (
+    T_EQUAL term=getTerm { $mrel = new RelationOneTerm($ident.text, new Term(term));}
+    | T_IN ( T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS { $mrel = new RelationTerms($ident.text, terms);}
+           | T_INTERROGATION { $mrel = new RelationInterrogation($ident.text);}
+           )
+    )
+;
+
+getOption returns [Option opt]:
+    T_COMPACT T_STORAGE {$opt=new Option(Option.OPTION_COMPACT);}
+    | T_CLUSTERING T_ORDER {$opt=new Option(Option.OPTION_CLUSTERING);}
+    | identProp=T_IDENT T_EQUAL valueProp=getValueProperty {$opt=new Option($identProp.text, valueProp);}
+;
+
+getList returns [List list]
+    @init{
+        list = new ArrayList<String>();
+    }:
+    term1=getTerm {list.add(term1);}
+    (T_COMMA termN=getTerm {list.add(termN);})*
+    ;
+
+getTerms returns [List list]
+    @init{
+        list = new ArrayList<Term>();
+    }:
+    term1=getTerm {list.add(new Term(term1));}
+    (T_COMMA termN=getTerm {list.add(new Term(termN));})*
+    ;
+
+getSet returns [Set set]
+    @init{
+        set = new HashSet<String>();
+    }:
+    term1=getTerm {set.add(term1);}
+    (T_COMMA termN=getTerm {set.add(termN);})*
+    ;
+
+getTermOrLiteral returns [ValueCell vc]
+    @init{
+        CollectionLiteral cl = new CollectionLiteral();
+    }:
+    term=getTerm {$vc=new Term(term);}
+    |
+    T_START_SBRACKET
+    (
+        term1=getTerm {cl.addLiteral(new Term(term1));}
+        (T_COMMA termN=getTerm {cl.addLiteral(new Term(termN));})*
+    )?
+    T_END_SBRACKET {$vc=cl;}
+;
+
 getTableID returns [String tableID]: 
-    (ks=T_IDENT '.')? 
-    ident=T_IDENT {$tableID = new String($ks.text==null?$ident.text:$ks.text+'.'+$ident.text);} ;
+    ident1=T_IDENT {$tableID = new String($ident1.text);}    
+    | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);}
+    ;
 
 getTerm returns [String term]:
     ident=T_IDENT {$term = $ident.text;}
+    | ksAndTn=T_KS_AND_TN {$term = $ksAndTn.text;}
     | noIdent=T_TERM {$term = $noIdent.text;}
     ;
 
@@ -406,8 +720,8 @@ getMapLiteral returns [Map<String, String> mapTerms]
         $mapTerms = new HashMap<>();
     }:
     T_START_SBRACKET 
-    (leftTerm1=getTerm T_COLON rightTerm1=getTerm {$mapTerms.put($leftTerm1.text, $rightTerm1.text);}
-    (T_COMMA leftTermN=getTerm T_COLON rightTermN=getTerm {$mapTerms.put($leftTermN.text, $rightTermN.text);})*)?
+    (leftTerm1=getTerm T_COLON rightTerm1=getTerm {$mapTerms.put(leftTerm1, rightTerm1);}
+    (T_COMMA leftTermN=getTerm T_COLON rightTermN=getTerm {$mapTerms.put(leftTermN, rightTermN);})*)?
     T_END_SBRACKET
     ;
 

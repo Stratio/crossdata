@@ -16,6 +16,8 @@ public class MetaTest{
         try {
             System.out.print("Insert query: ");
             String queryTxt = new Scanner(System.in).nextLine();
+            
+            
             while(!queryTxt.equalsIgnoreCase("exit")){                                                                
                 ANTLRStringStream input = new ANTLRStringStream(queryTxt);
                 System.out.println("ANTLRInputStream created");
