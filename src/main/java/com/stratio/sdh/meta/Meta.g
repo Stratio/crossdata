@@ -159,10 +159,8 @@ T_EXPLAIN: E X P L A I N;
 T_PLAN: P L A N;
 T_FOR: F O R;
 T_INDEX: I N D E X;
-T_ADD: A D D;
 T_LIST: L I S T;
 T_REMOVE: R E M O V E;
-T_USING: U S I N G;
 T_UDF: U D F;
 T_PROCESS: P R O C E S S;
 T_TRIGGER: T R I G G E R;
@@ -399,7 +397,6 @@ alterTableStatement returns [AlterTableStatement altast]
         LinkedHashMap<String, ValueProperty> option = new LinkedHashMap<>();
         int prop= 0;
     }:
-
     T_ALTER
     T_TABLE
     name_table=T_IDENT
@@ -412,6 +409,7 @@ alterTableStatement returns [AlterTableStatement altast]
             {prop=4;}
     )
     {$altast = new AlterTableStatement($name_table.text,$column.text,$type.text,option,prop);  }
+;
 
 selectStatement returns [SelectStatement slctst]:
     T_SELECT {$slctst = new SelectStatement();}
