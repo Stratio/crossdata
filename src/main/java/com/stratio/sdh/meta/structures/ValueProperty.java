@@ -5,6 +5,7 @@ public abstract class ValueProperty {
     public final int TYPE_IDENT = 1;
     public final int TYPE_CONST = 2;
     public final int TYPE_MAPLT = 3;
+    public final int TYPE_FLOAT = 4;
     
     protected int type;
 

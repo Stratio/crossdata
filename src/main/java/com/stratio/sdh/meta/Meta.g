@@ -37,13 +37,17 @@ options {
     import com.stratio.sdh.meta.statements.CreateTriggerStatement;
     import com.stratio.sdh.meta.statements.TruncateStatement;
     import com.stratio.sdh.meta.statements.UseStatement;
+    import com.stratio.sdh.meta.statements.AlterTableStatement;
+    import com.stratio.sdh.meta.statements.CreateTableStatement;
     import com.stratio.sdh.meta.structures.Consistency;
     import com.stratio.sdh.meta.structures.ConstantProperty;
     import com.stratio.sdh.meta.structures.IdentifierProperty;
     import com.stratio.sdh.meta.structures.MapLiteralProperty;
     import com.stratio.sdh.meta.structures.ValueProperty;
+    import com.stratio.sdh.meta.structures.FloatProperty;
     import java.util.HashMap;
     import java.util.Map;
+    import java.util.LinkedHashMap;
 }
 
 @members {
@@ -91,6 +95,7 @@ fragment W: ('w'|'W');
 fragment X: ('x'|'X');
 fragment Y: ('y'|'Y');
 fragment Z: ('z'|'Z');
+fragment EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
 
 // Case-insensitive keywords
 T_TRUNCATE: T R U N C A T E;
@@ -130,6 +135,12 @@ T_TRIGGER: T R I G G E R;
 T_ON: O N;
 //Cambiado por Antonio 7-2-2014
 T_USING: U S I N G;
+T_TYPE: T Y P E;
+T_ADD: A D D;
+//Cambiado por Antonio 10-02-2014
+T_PRIMARY: P R I M A R Y;
+T_KEY: K E Y;
+
 
 T_SEMICOLON: ';';
 T_EQUAL: '=';
@@ -147,6 +158,10 @@ T_CONSTANT: (DIGIT)+;
 T_IDENT: LETTER (LETTER | DIGIT | '_')*;
 
 T_TERM: (LETTER | DIGIT | '_' | '.')+;
+T_FLOAT:   ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
+     |   '.' ('0'..'9')+ EXPONENT?
+     |   ('0'..'9')+ EXPONENT
+     ;
 
 
 //STATEMENTS
@@ -172,6 +187,79 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
     T_USING class_name=T_IDENT    
     {$crtrst = new CreateTriggerStatement($trigger_name.text,$table_name.text,$class_name.text);}
     ;
+
+createTableStatement returns [CreateTableStatement crtast]
+@init{
+    LinkedHashMap<String, String> columns = new LinkedHashMap<>();
+    List<String>   primaryKey = new ArrayList<String>();
+    List<String> clusterKey = new ArrayList<String>();
+    LinkedHashMap<String, ValueProperty> propierties = new LinkedHashMap<>();
+    int Type_Primary_Key= 0;
+    int columnNumberPK= 0;
+    int columnNumberPK_inter= 0;
+    boolean ifNotExists_2 = false;
+    boolean withClusterKey = false;
+    boolean withPropierties = false;
+
+    }:
+    
+
+    T_CREATE
+    T_TABLE
+    (T_IF T_NOT T_EXISTS {ifNotExists_2 = true;})? 
+    name_table=T_IDENT
+    '(' (
+            
+                ident_column1=T_IDENT type1=T_IDENT (T_PRIMARY T_KEY)? {columns.put($ident_column1.text,$type1.text); Type_Primary_Key=1;}
+                (   
+                    ( ',' ident_columN=T_IDENT typeN=T_IDENT (T_PRIMARY T_KEY {Type_Primary_Key=2;columnNumberPK=columnNumberPK_inter +1;})? {columns.put($ident_columN.text,$typeN.text);columnNumberPK_inter+=1;})
+                    |(  
+                        ',' T_PRIMARY T_KEY '('
+                        (
+                            (   primaryK=T_IDENT {primaryKey.add($primaryK.text);Type_Primary_Key=3;}
+                           
+                                (','partitionKN=T_IDENT {primaryKey.add($partitionKN.text);})*
+                            )
+                            |(
+                                '(' partitionK=T_IDENT {primaryKey.add($partitionK.text);Type_Primary_Key=4;}
+                                    (','partitionKN=T_IDENT {primaryKey.add($partitionKN.text);})*
+                                ')' 
+                                (',' clusterKN=T_IDENT {clusterKey.add($clusterKN.text);withClusterKey=true;})*
+
+                            )
+                        )
+                       ')' 
+                   )
+                )* 
+         )     
+        
+    ')' T_WITH?
+    ( identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {propierties.put($identProp1.text, valueProp1);withPropierties=true;}
+            (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {propierties.put($identPropN.text, valuePropN);withPropierties=true;} )*)?
+            
+     {$crtast = new CreateTableStatement($name_table.text,columns,primaryKey,clusterKey,propierties,Type_Primary_Key,ifNotExists_2,withClusterKey,columnNumberPK,withPropierties);  } ;        
+
+        
+alterTableStatement returns [AlterTableStatement altast]
+@init{
+        LinkedHashMap<String, ValueProperty> option = new LinkedHashMap<>();
+        int prop= 0;
+    }:
+
+    T_ALTER
+    T_TABLE
+    name_table=T_IDENT
+    (T_ALTER column=T_IDENT T_TYPE type=T_IDENT {prop=1;}
+        |T_ADD column=T_IDENT type=T_IDENT {prop=2;}
+        |T_DROP column=T_IDENT {prop=3;}
+        |T_WITH 
+            identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {option.put($identProp1.text, valueProp1);}
+            (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {option.put($identPropN.text, valuePropN);} )*
+            {prop=4;}
+    )
+    {$altast = new AlterTableStatement($name_table.text,$column.text,$type.text,option,prop);  }
+    ;
+
 explainPlanStatement returns [ExplainPlanStatement xpplst]:
     T_EXPLAIN T_PLAN T_FOR parsedStmnt=metaStatement
     {$xpplst = new ExplainPlanStatement(parsedStmnt);}
@@ -282,9 +370,11 @@ truncateStatement returns [TruncateStatement trst]:
 
 metaStatement returns [Statement st]:
 //cambiado por Antonio 7-2-2014
-    st_crtr= createTriggerStatement { $st = st_crtr; }
-    |st_drtr= dropTriggerStatement { $st = st_drtr; }
-    |st_stpr = stopProcessStatement { $st = st_stpr; }
+    st_crta= createTableStatement { $st = st_crta;}
+    | st_alta= alterTableStatement { $st = st_alta;}
+    | st_crtr= createTriggerStatement { $st = st_crtr; }
+    | st_drtr= dropTriggerStatement { $st = st_drtr; }
+    | st_stpr = stopProcessStatement { $st = st_stpr; }
     | st_xppl = explainPlanStatement { $st = st_xppl;}
     | st_stpt = setOptionsStatement { $st = st_stpt; }
     | st_usks = useStatement { $st = st_usks; }
@@ -324,7 +414,16 @@ getMapLiteral returns [Map<String, String> mapTerms]
 getValueProperty returns [ValueProperty value]:
     ident=T_IDENT {$value = new IdentifierProperty($ident.text);}
     | constant=T_CONSTANT {$value = new ConstantProperty(Integer.parseInt($constant.text));}
-    | mapliteral=getMapLiteral {$value = new MapLiteralProperty(mapliteral);};
+    | mapliteral=getMapLiteral {$value = new MapLiteralProperty(mapliteral);}
+    | number=getFloat {$value = new FloatProperty(Float.parseFloat(number));}
+    ;
+
+
+getFloat returns [String floating]:
+    termToken=T_TERM {$floating=$termToken.text;}
+    |
+    floatToken = T_FLOAT {$floating=$floatToken.text;} 
+    ;
 
 
 WS: (' ' | '\t' | '\n' | '\r')+ { 
