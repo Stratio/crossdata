@@ -172,6 +172,7 @@ T_VALUES: V A L U E S;
 T_UPDATE: U P D A T E;
 T_WHERE: W H E R E;
 T_IN: I N;
+T_FROM: F R O M;
 
 
 T_SEMICOLON: ';';
@@ -217,7 +218,7 @@ listStatement returns [ListStatement ls]:
 
 //REMOVE UDF \"jar.name\";"
 removeUDFStatement returns [RemoveUDFStatement rus]:
-	T_REMOVE 'UDF' T_QUOTE jar=T_TERM T_QUOTE {$rus = new RemoveUDFStatement($jar.text);}
+	T_REMOVE 'UDF' T_QUOTE jar=getTerm {$rus = new RemoveUDFStatement(jar);}
 	;
 
 //DROP INDEX IF EXISTS index_name;
@@ -248,7 +249,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 		field=T_IDENT {$cis.addColumn($field.text);}
 	)*
 	T_END_PARENTHESIS
-	(T_USING usingClass=T_TERM {$cis.setUsingClass($usingClass.text);})?
+	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass);})?
 	(T_WITH T_OPTIONS key=T_IDENT T_EQUAL value=getValueProperty {$cis.addOption($key.text, value);}
 		(T_AND key=T_IDENT T_EQUAL value=getValueProperty {$cis.addOption($key.text, value);} )*
 	)?
