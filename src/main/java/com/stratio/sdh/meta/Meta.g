@@ -38,6 +38,7 @@ options {
     import com.stratio.sdh.meta.statements.SetOptionsStatement;
     import com.stratio.sdh.meta.statements.StopProcessStatement;
     import com.stratio.sdh.meta.statements.DropTriggerStatement;
+    import com.stratio.sdh.meta.statements.DeleteStatement;
     import com.stratio.sdh.meta.statements.CreateTriggerStatement;
     import com.stratio.sdh.meta.statements.UpdateTableStatement;
     import com.stratio.sdh.meta.statements.TruncateStatement;
@@ -173,6 +174,7 @@ T_UPDATE: U P D A T E;
 T_WHERE: W H E R E;
 T_IN: I N;
 T_FROM: F R O M;
+T_DELETE: D E L E T E;
 
 
 T_SEMICOLON: ';';
@@ -206,6 +208,25 @@ T_PATH: (LETTER | DIGIT | '_' | '.' | '-' | '/')+;
 
 //STATEMENTS
 
+//DELETE (col1, col2) FROM table1 WHERE field1=value1 AND field2=value2;
+deleteStatement returns [DeleteStatement ds]
+	@init{
+		$ds = new DeleteStatement();
+	}:
+	T_DELETE
+	(T_START_PARENTHESIS
+	firstField=T_IDENT {$ds.addColumn($firstField.text);}
+		(T_COMMA
+			field=T_IDENT {$ds.addColumn($field.text);}
+		)*
+	
+	T_END_PARENTHESIS)*
+	T_FROM
+	tablename=T_IDENT {$ds.setTablename($tablename.text);}
+	T_WHERE
+	rel1=getRelation {$ds.addRelation(rel1);} (T_AND relN=getRelation {$ds.addRelation(relN);})*
+	;
+
 //ADD \"index_path\";
 addStatement returns [AddStatement as]:
 	T_ADD T_QUOTE name=T_PATH T_QUOTE {$as = new AddStatement($name.text);}
@@ -218,7 +239,7 @@ listStatement returns [ListStatement ls]:
 
 //REMOVE UDF \"jar.name\";"
 removeUDFStatement returns [RemoveUDFStatement rus]:
-	T_REMOVE 'UDF' T_QUOTE jar=getTerm {$rus = new RemoveUDFStatement(jar);}
+	T_REMOVE 'UDF' T_QUOTE jar=getTerm {$rus = new RemoveUDFStatement(jar);} T_QUOTE
 	;
 
 //DROP INDEX IF EXISTS index_name;
@@ -486,6 +507,7 @@ metaStatement returns [Statement st]:
     | ls = listStatement { $st = ls; } 
     | add = addStatement { $st = add; } 
     | rs = removeUDFStatement { $st = rs; } 
+    | ds = deleteStatement { $st = ds; } 
     ;
 
 query returns [Statement st]: 

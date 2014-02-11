@@ -7,8 +7,12 @@ import java.util.HashMap;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.junit.Test;
+import org.junit.BeforeClass;
 
 import com.stratio.sdh.meta.generated.MetaLexer;
 import com.stratio.sdh.meta.generated.MetaParser;
@@ -44,6 +48,18 @@ public class ParsingTest {
 			_logger.error("Cannot parse statement", e);
 		}
         return result;
+	}
+	
+	@BeforeClass
+	//TODO Define common logging properties
+	public static void initLog(){
+		ConsoleAppender console = new ConsoleAppender();
+		//String PATTERN = "%d [%p|%c|%C{1}] %m%n";
+		String PATTERN = "%d [%p|%c] %m%n";
+		console.setLayout(new PatternLayout(PATTERN)); 
+		console.setThreshold(Level.INFO);
+		console.activateOptions();
+		Logger.getRootLogger().addAppender(console);
 	}
 
 	// CREATE KEYSPACE (IF NOT EXISTS)? <keyspace_name> WITH <properties> ';'
@@ -122,7 +138,7 @@ public class ParsingTest {
 		assertEquals("Cannot parse hash index with options clause - options size", numberOptions, cist.getOptions().size());
 		HashMap<String, ValueProperty> options = cist.getOptions();
 		
-		for(int i = 0; i < numberOptions; i++){
+		for(int i = 1; i < numberOptions; i++){
 			assertTrue("Cannot parse hash index with options clause - options opt"+i, options.containsKey("opt"+i));
 			assertEquals("Cannot parse hash index with options clause - options opt"+i, "val"+i, options.get("opt"+i).toString());
 			
@@ -236,7 +252,7 @@ public class ParsingTest {
 	
 	@Test
 	public void delete_where() {
-		String inputText = "DELETE FROM table1 WHERE field1=value1;";
+		String inputText = "DELETE FROM table1 WHERE field1 = value1;";
 		Statement st = parseStatement(inputText);
 		assertNotNull("Cannot parse delete - where", st);
 		assertEquals("Cannot parse delete - where", inputText, st.toString()+";");
@@ -244,7 +260,7 @@ public class ParsingTest {
 	
 	@Test
 	public void delete_selection() {
-		String inputText = "DELETE (col1, col2) FROM table1 WHERE field1=value1;";
+		String inputText = "DELETE (col1, col2) FROM table1 WHERE field1 = value1;";
 		Statement st = parseStatement(inputText);
 		assertNotNull("Cannot parse delete - selection", st);
 		assertEquals("Cannot parse delete - selection", inputText, st.toString()+";");
@@ -252,10 +268,30 @@ public class ParsingTest {
 	
 	@Test
 	public void delete_full() {
-		String inputText = "DELETE (col1, col2) FROM table1 WHERE field1=value1 AND field2=value2;";
+		String inputText = "DELETE (col1, col2) FROM table1 WHERE field1 = value1 AND field2 = value2;";
 		Statement st = parseStatement(inputText);
-		assertNotNull("Cannot parse delete - selection", st);
-		assertEquals("Cannot parse delete - selection", inputText, st.toString()+";");
+		assertNotNull("Cannot parse delete - full", st);
+		assertEquals("Cannot parse delete - full", inputText, st.toString()+";");
+	}
+	
+	//UPDATE
+	
+	@Test
+	public void update_basic() {
+		String inputText = "UPDATE table1 SET field1 = value1 WHERE field3 = value3;";
+		Statement st = parseStatement(inputText);
+		_logger.info(st.toString());
+		assertNotNull("Cannot parse update - full", st);
+		assertEquals("Cannot parse update - full", inputText, st.toString()+";");
+	}
+	
+	@Test
+	public void update_full() {
+		String inputText = "UPDATE table1 USING TTL 400 SET field1 = value1,"
+				+ " field2 = value2 WHERE field3 = value3 AND field4 = value4;";
+		Statement st = parseStatement(inputText);
+		assertNotNull("Cannot parse update - full", st);
+		assertEquals("Cannot parse update - full", inputText, st.toString()+";");
 	}
 	
 }

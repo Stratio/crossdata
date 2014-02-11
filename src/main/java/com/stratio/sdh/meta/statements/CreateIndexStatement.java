@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import com.stratio.sdh.meta.structures.Path;
 import com.stratio.sdh.meta.structures.ValueProperty;
+import com.stratio.sdh.meta.utils.MetaUtils;
 
 /**
  * Create index statement of the META language. This class recognizes the following syntax:
@@ -84,16 +85,7 @@ public class CreateIndexStatement extends Statement {
 		sb.append(_name);
 		sb.append(" ON ");
 		sb.append(_tablename);
-		
-		Iterator<String> colIt = _targetColumn.iterator();
-		sb.append(" (");
-		while(colIt.hasNext()){
-			sb.append(colIt.next());
-			if(colIt.hasNext()){
-				sb.append(", ");
-			}
-		}
-		sb.append(")");
+		sb.append(" (").append(MetaUtils.StringList(_targetColumn, ", ")).append(")");
 		if(_usingClass != null){
 			sb.append(" USING ");
 			sb.append(_usingClass);

@@ -6,7 +6,7 @@ import java.util.Set;
 
 public class MetaUtils {   
 
-    public static String StringList(List ids, String separator) {
+    public static String StringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
         for(Object value: ids){
             sb.append(value.toString()).append(separator);
