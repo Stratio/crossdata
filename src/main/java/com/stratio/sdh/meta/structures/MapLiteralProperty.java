@@ -1,5 +1,6 @@
 package com.stratio.sdh.meta.structures;
 
+import com.stratio.sdh.meta.utils.MetaUtils;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,11 +46,12 @@ public class MapLiteralProperty extends ValueProperty {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(System.getProperty("line.separator"));
+        sb.append(MetaUtils.StringMap(literals, ", "));
+        /*sb.append(System.getProperty("line.separator"));
         for (String key: literals.keySet()) {
             sb.append(" * ").append(key).append(": ").append(literals.get(key));
             sb.append(System.getProperty("line.separator"));
-        }
+        }*/
         return sb.toString();
     }
     
