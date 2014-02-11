@@ -230,4 +230,32 @@ public class ParsingTest {
 		assertEquals("Cannot parse remove udf", inputText, st.toString()+";");
 	}
 	
+	//DELETE ( <selection> ( ',' <selection> )* )?
+    //FROM <tablename>
+    //WHERE <where-clause>
+	
+	@Test
+	public void delete_where() {
+		String inputText = "DELETE FROM table1 WHERE field1=value1;";
+		Statement st = parseStatement(inputText);
+		assertNotNull("Cannot parse delete - where", st);
+		assertEquals("Cannot parse delete - where", inputText, st.toString()+";");
+	}
+	
+	@Test
+	public void delete_selection() {
+		String inputText = "DELETE (col1, col2) FROM table1 WHERE field1=value1;";
+		Statement st = parseStatement(inputText);
+		assertNotNull("Cannot parse delete - selection", st);
+		assertEquals("Cannot parse delete - selection", inputText, st.toString()+";");
+	}
+	
+	@Test
+	public void delete_full() {
+		String inputText = "DELETE (col1, col2) FROM table1 WHERE field1=value1 AND field2=value2;";
+		Statement st = parseStatement(inputText);
+		assertNotNull("Cannot parse delete - selection", st);
+		assertEquals("Cannot parse delete - selection", inputText, st.toString()+";");
+	}
+	
 }
