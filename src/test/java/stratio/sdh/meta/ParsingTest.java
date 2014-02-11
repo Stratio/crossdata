@@ -113,15 +113,21 @@ public class ParsingTest {
 	@Test
 	public void createIndex_hash_options() {
 		String inputText = "CREATE HASH INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1=val1 AND opt2=val2;";
+		int numberOptions = 2;
+		
 		Statement st = parseStatement(inputText);
 		assertNotNull("Cannot parse hash index with options clause", st);
 		CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
 		assertEquals("Cannot parse hash index with options clause - name", "index1", cist.getName());
-		assertTrue("Cannot parse hash index with options clause - options size", cist.getOptions().size() > 0);
+		assertEquals("Cannot parse hash index with options clause - options size", numberOptions, cist.getOptions().size());
 		HashMap<String, ValueProperty> options = cist.getOptions();
 		
-		assertTrue("Cannot parse hash index with options clause - options opt1", options.containsKey("opt1"));
-		assertTrue("Cannot parse hash index with options clause - options opt1", options.containsKey("opt2"));
+		for(int i = 0; i < numberOptions; i++){
+			assertTrue("Cannot parse hash index with options clause - options opt"+i, options.containsKey("opt"+i));
+			assertEquals("Cannot parse hash index with options clause - options opt"+i, "val"+i, options.get("opt"+i).toString());
+			
+		}
+
 	}
 	
 	@Test
