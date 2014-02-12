@@ -18,14 +18,14 @@ public class MetaTest{
             String queryTxt = new Scanner(System.in).nextLine();
             
             
-            while(!queryTxt.equalsIgnoreCase("exit")){                                                                
+           while(!queryTxt.equalsIgnoreCase("exit")){                                                                
                 ANTLRStringStream input = new ANTLRStringStream(queryTxt);
                 System.out.println("ANTLRInputStream created");
                 MetaLexer lexer = new MetaLexer(input);
                 System.out.println("MetaLexer created");
                 CommonTokenStream tokens = new CommonTokenStream(lexer);
                 System.out.println("CommonTokenStream created");
-                MetaParser parser = new MetaParser(tokens);   
+               MetaParser parser = new MetaParser(tokens);   
                 System.out.println("MetaParser created");
                 Statement statement = parser.query();
                 System.out.println(statement.toString());                

@@ -25,7 +25,7 @@ public class FloatProperty extends ValueProperty {
     public FloatProperty(float number) {
         this.number = number;
         this.type = TYPE_FLOAT;
-        System.out.println("el numero float es" + number);
+  
     }
 
     

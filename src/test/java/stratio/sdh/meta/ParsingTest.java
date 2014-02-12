@@ -293,5 +293,126 @@ public class ParsingTest {
 		assertNotNull("Cannot parse update - full", st);
 		assertEquals("Cannot parse update - full", inputText, st.toString()+";");
 	}
+        
+        @Test
+	public void createTable_basic() {
+		String inputText = "create table adsa (algo text  primary key, algo2 int, algo3 bool);";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Create table adsa(algo text PRIMARY KEY, algo2 int, algo3 bool)";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+	}
+        
+        @Test
+	public void createTable_basic_2() {
+		String inputText = "create table adsa (algo text,  algo2 int primary key , algo3 bool);";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Create table adsa(algo text, algo2 int PRIMARY KEY, algo3 bool)";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+	}
 	
+        @Test
+	public void createTable_basic_3() {
+		String inputText = "create table adsa (algo text,  algo2 int, algo3 bool primary key );";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Create table adsa(algo text, algo2 int, algo3 bool PRIMARY KEY)";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+	}
+        
+        @Test
+	public void createTable_basic_4() {
+		String inputText = "create table adsa (algo text,  algo2 int, algo3 bool , primary key (algo));";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Create table adsa(algo text, algo2 int, algo3 bool, PRIMARY KEY (algo))";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+	}
+        
+        public void createTable_basic_5() {
+		String inputText = "create table adsa (algo text,  algo2 int, algo3 bool, primary key (algo, algo2));";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Create table adsa(algo text, algo2 int, algo3 bool, PRIMARY KEY (algo, algo2))";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+	}
+        
+        public void createTable_basic_6() {
+		String inputText = "create table adsa (algo text,  algo2 int, algo3 bool, primary key ((algo, algo2),algo3));";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Create table adsa(algo text, algo2 int, algo3 bool, PRIMARY KEY ((algo, algo2), algo3))";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+       }
+        
+       public void createTable_basic_7() {
+		String inputText = "create table adsa (algo text,  algo2 int, algo3 bool, primary key ((algo, algo2),algo3)) with propiedad1=prop1 and propiedad2=2 and propiedad3=3.0;";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Create table adsa(algo text, algo2 int, algo3 bool, PRIMARY KEY ((algo, algo2), algo3)) with:\n" +
+"	propiedad1: prop1\n" +
+"	propiedad2: 2\n" +
+"	propiedad3: 3.0";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+       } 
+       
+       public void alterTable_basic() {
+		String inputText = "alter table tabla1 alter column1 type int;";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Alter table tabla1 alter column1 type int";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+       } 
+       
+       public void alterTable_basic_1() {
+		String inputText = "alter table tabla1 add column1 int;";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Alter table tabla1 add column1 int";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+       } 
+       
+       public void alterTable_basic_2() {
+		String inputText = "alter table tabla1 drop column1;";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Alter table tabla1 drop column1";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+       }
+       
+       public void alterTable_basic_3() {
+		String inputText = "alter table tabla1 with  propiertie1=value1 and  propiertie2=2 and propiertie3=3.0 ;";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Alter table tabla1 with:\n" +
+"	propiertie1: value1\n" +
+"	propiertie2: 2\n" +
+"	propiertie3: 3.0";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+       }
+       
+       public void stopProcess() {
+		String inputText = "STOP process process1;";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Stop process process1";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+       }
+       
+       public void createTrigger() {
+		String inputText = "drop trigger trigger1 on table_name;";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Drop trigger trigger1 on table_name";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+       }
+       
+       public void dropTrigger() {
+		String inputText = "drop trigger trigger1 on table_name;";
+		Statement st = parseStatement(inputText);
+                String comparativeText= "Drop trigger trigger1 on table_name";
+		assertNotNull("Cannot parse create keyspace - basic", st);
+		assertEquals("Cannot parse create keyspace - basic", comparativeText, st.toString());
+       }
 }

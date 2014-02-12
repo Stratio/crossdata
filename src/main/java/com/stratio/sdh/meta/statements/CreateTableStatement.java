@@ -170,11 +170,11 @@ public class CreateTableStatement extends Statement{
                 for (Iterator it = keySet.iterator();it.hasNext();){
                     String key = (String) it.next();
                     String vp= columns.get(key);
-                    if (i==0) sb.append(key).append(" ").append(vp).append(" PRIMARY KEY ");
+                    if (i==0) sb.append(key).append(" ").append(vp).append(" PRIMARY KEY");
                     else sb.append(key).append(" ").append(vp);
                     i++;
                     if (it.hasNext()) sb.append(", ");
-                    else sb.append(" )");  
+                    else sb.append(")");  
                     
                 }         
             }break;
@@ -186,11 +186,11 @@ public class CreateTableStatement extends Statement{
                 for (Iterator it = keySet.iterator();it.hasNext();){
                     String key = (String) it.next();
                     String vp= columns.get(key);
-                    if (i == columnNumberPK) sb.append(key).append(" ").append(vp).append(" PRIMARY KEY ");
+                    if (i == columnNumberPK) sb.append(key).append(" ").append(vp).append(" PRIMARY KEY");
                     else sb.append(key).append(" ").append(vp);
                     i++;
                     if (it.hasNext()) sb.append(", ");
-                    else sb.append(" )");  
+                    else sb.append(")");  
                 }
             }break;
             case 3: {
