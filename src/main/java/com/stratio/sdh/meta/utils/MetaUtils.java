@@ -11,14 +11,19 @@ public class MetaUtils {
         for(Object value: ids){
             sb.append(value.toString()).append(separator);
         }
-        return sb.substring(0, sb.length()-separator.length());
+        if(sb.length() > separator.length()){
+            return sb.substring(0, sb.length()-separator.length());
+        } else {
+            return "";
+        }
     }
     
-    public static String StringMap(Map ids, String separator) {
-        StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
+    public static String StringMap(Map ids, String conjunction, String separator) {
+        //StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
+        StringBuilder sb = new StringBuilder();
         for(Object key: ids.keySet()){
             Object vp = ids.get(key);
-            sb.append(key).append(": ").append(vp.toString()).append(separator);
+            sb.append(key).append(conjunction).append(vp.toString()).append(separator);
         }        
         return sb.substring(0, sb.length()-separator.length());
     }

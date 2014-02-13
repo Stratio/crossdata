@@ -25,58 +25,14 @@ options {
  
 @header {
     package com.stratio.sdh.meta.generated;    
-    import com.stratio.sdh.meta.statements.Statement;
-    import com.stratio.sdh.meta.statements.AlterKeyspaceStatement;
-    import com.stratio.sdh.meta.statements.CreateKeyspaceStatement;
-    import com.stratio.sdh.meta.statements.DropKeyspaceStatement;
-    import com.stratio.sdh.meta.statements.CreateIndexStatement;
-    import com.stratio.sdh.meta.statements.DropIndexStatement;
-    import com.stratio.sdh.meta.statements.DropTableStatement;
-    import com.stratio.sdh.meta.statements.ExplainPlanStatement;
-    import com.stratio.sdh.meta.statements.InsertIntoStatement;
-    import com.stratio.sdh.meta.statements.SelectStatement;
-    import com.stratio.sdh.meta.statements.SetOptionsStatement;
-    import com.stratio.sdh.meta.statements.StopProcessStatement;
-    import com.stratio.sdh.meta.statements.DropTriggerStatement;
-    import com.stratio.sdh.meta.statements.DeleteStatement;
-    import com.stratio.sdh.meta.statements.CreateTriggerStatement;
-    import com.stratio.sdh.meta.statements.UpdateTableStatement;
-    import com.stratio.sdh.meta.statements.TruncateStatement;
-    import com.stratio.sdh.meta.statements.UseStatement;
-    import com.stratio.sdh.meta.statements.AlterTableStatement;
-    import com.stratio.sdh.meta.statements.CreateTableStatement;
-    import com.stratio.sdh.meta.statements.AddStatement;
-    import com.stratio.sdh.meta.statements.ListStatement;
-    import com.stratio.sdh.meta.statements.RemoveUDFStatement;
-    import com.stratio.sdh.meta.structures.Assignment;
-    import com.stratio.sdh.meta.structures.CollectionLiteral;
-    import com.stratio.sdh.meta.structures.Consistency;
-    import com.stratio.sdh.meta.structures.ConstantProperty;
-    import com.stratio.sdh.meta.structures.IdentifierProperty;
-    import com.stratio.sdh.meta.structures.IdentifierAssignment;
-    import com.stratio.sdh.meta.structures.IdentIntOrLiteral;
-    import com.stratio.sdh.meta.structures.IdentMap;
-    import com.stratio.sdh.meta.structures.IntTerm;
-    import com.stratio.sdh.meta.structures.ListLiteral;
-    import com.stratio.sdh.meta.structures.MetaRelation;
-    import com.stratio.sdh.meta.structures.RelationInterrogation;
-    import com.stratio.sdh.meta.structures.RelationOneTerm;
-    import com.stratio.sdh.meta.structures.RelationTerms;
-    import com.stratio.sdh.meta.structures.SetLiteral;
-    import com.stratio.sdh.meta.structures.MapLiteralProperty;
-    import com.stratio.sdh.meta.structures.MetaRelation;
-    import com.stratio.sdh.meta.structures.Option;
-    import com.stratio.sdh.meta.structures.Term;
-    import com.stratio.sdh.meta.structures.ValueCell;
-    import com.stratio.sdh.meta.structures.ValueProperty;
-    import com.stratio.sdh.meta.structures.FloatProperty;
+    import com.stratio.sdh.meta.statements.*;
+    import com.stratio.sdh.meta.structures.*;
     import java.util.LinkedHashMap;
     import com.stratio.sdh.meta.structures.ValueAssignment;
     import java.util.HashMap;
     import java.util.Map;
     import java.util.Set;
     import java.util.HashSet;
-
 }
 
 @members {
@@ -215,6 +171,18 @@ T_END_BRACKET: ']';
 T_PLUS: '+';
 T_SUBTRACT: '-';
 T_INTERROGATION: '?';
+T_ASTERISK: '*';
+T_GROUP: G R O U P;
+T_AGGREGATION: A G G R E G A T I O N;
+T_MAX: M A X;
+T_MIN: M I N;
+T_AVG: A V G;
+T_GT: '>';
+T_LT: '<';
+T_GET: '>' '='; 
+T_LET: '<' '=';
+T_NOT_EQUAL: '<' '>'; 
+T_TOKEN: T O K E N;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -226,6 +194,7 @@ T_IDENT: LETTER (LETTER | DIGIT | '_')*;
 T_KS_AND_TN: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)?; 
 
 T_TERM: (LETTER | DIGIT | '_' | '.')+;
+
 T_FLOAT:   ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
      |   '.' ('0'..'9')+ EXPONENT?
      |   ('0'..'9')+ EXPONENT
@@ -367,16 +336,12 @@ createTableStatement returns [CreateTableStatement crtast]
     boolean ifNotExists_2 = false;
     boolean withClusterKey = false;
     boolean withPropierties = false;
-
-    }:
-    
-
+    }:    
     T_CREATE
     T_TABLE
     (T_IF T_NOT T_EXISTS {ifNotExists_2 = true;})? 
     name_table=T_IDENT
-    '(' (
-            
+    '(' (            
                 ident_column1=T_IDENT type1=T_IDENT (T_PRIMARY T_KEY)? {columns.put($ident_column1.text,$type1.text); Type_Primary_Key=1;}
                 (   
                     ( ',' ident_columN=T_IDENT typeN=T_IDENT (T_PRIMARY T_KEY {Type_Primary_Key=2;columnNumberPK=columnNumberPK_inter +1;})? {columns.put($ident_columN.text,$typeN.text);columnNumberPK_inter+=1;})
@@ -398,8 +363,7 @@ createTableStatement returns [CreateTableStatement crtast]
                        ')' 
                    )
                 )* 
-         )     
-        
+         )             
     ')' T_WITH?
     ( identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {propierties.put($identProp1.text, valueProp1);withPropierties=true;}
             (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {propierties.put($identPropN.text, valuePropN);withPropierties=true;} )*)?
@@ -426,8 +390,41 @@ alterTableStatement returns [AlterTableStatement altast]
     {$altast = new AlterTableStatement($name_table.text,$column.text,$type.text,option,prop);  }
 ;
 
-selectStatement returns [SelectStatement slctst]:
-    T_SELECT {$slctst = new SelectStatement();}
+selectStatement returns [SelectStatement slctst]
+    @init{
+        boolean windowInc = false;
+        boolean joinInc = false;
+        boolean whereInc = false;
+        boolean orderInc = false;
+        boolean groupInc = false;
+        boolean limitInc = false;
+        boolean disable = false;
+    }:
+    T_SELECT selClause=getSelectClause T_FROM tablename=getTableID 
+    (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?    
+    (T_INNER T_JOIN { joinInc = true;} identJoin=getTableID T_ON fields=getFields)?
+    (T_WHERE {whereInc = true;} whereClauses=getWhereClauses)?
+    (T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
+    (T_GROUP T_BY {groupInc = true;} groupby=getList)?
+    (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
+    (T_DISABLE T_ANALYTICS {disable = true;})?
+    {
+        $slctst = new SelectStatement(selClause, tablename);        
+        if(windowInc)
+            $slctst.setWindow(window);
+        if(joinInc)
+            $slctst.setJoin(new InnerJoin(identJoin, fields)); 
+        if(whereInc)
+             $slctst.setWhere(whereClauses); 
+        if(orderInc)
+             $slctst.setOrder(ordering);
+        if(groupInc)
+            $slctst.setGroup(new GroupBy(groupby)); 
+        if(limitInc)
+            $slctst.setLimit(Integer.parseInt($constant.text));
+        if(disable)
+            $slctst.setDisableAnalytics(true);
+    }
     ;
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
@@ -621,6 +618,112 @@ query returns [Statement st]:
 
 //FUNCTIONS
 
+getOrdering returns [List<Ordering> order]
+    @init{
+        order = new ArrayList<>();
+        Ordering ordering;
+    }:
+    ident1=T_IDENT {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
+    (T_COMMA identN=T_IDENT {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+;
+
+getWhereClauses returns [List<MetaRelation> clauses]
+    @init{
+        clauses = new ArrayList<>();
+    }:
+    rel1=getRelation {clauses.add(rel1);} (T_AND relN=getRelation {clauses.add(relN);})*
+;
+
+getFields returns [Map<String, String> fields]
+    @init{
+        fields = new HashMap<>();
+    }:
+    ident1L=T_IDENT T_EQUAL ident1R=T_IDENT { fields.put($ident1L.text, $ident1R.text);}
+    (identNL=T_IDENT T_EQUAL identNR=T_IDENT { fields.put($identNL.text, $identNR.text);})* 
+;
+
+getWindow returns [WindowSelect ws]:
+    (T_LAST {$ws = new WindowLast();} 
+    | cnstnt=T_CONSTANT (T_ROWS {$ws = new WindowRows(Integer.parseInt($cnstnt.text));} 
+                       | unit=getTimeUnit {$ws = new WindowTime(Integer.parseInt($cnstnt.text), unit);}
+                       )
+    )
+;
+
+getTimeUnit returns [TimeUnit unit]:
+    ( 'S' {$unit=TimeUnit.S;}
+    | 'M' {$unit=TimeUnit.M;}
+    | 'H' {$unit=TimeUnit.H;}
+    | 'D' {$unit=TimeUnit.D;}
+    | 's' {$unit=TimeUnit.s;}
+    | 'm' {$unit=TimeUnit.m;}
+    | 'h' {$unit=TimeUnit.h;}
+    | 'd' {$unit=TimeUnit.d;} )
+;
+
+getSelectClause returns [SelectionClause sc]:
+    scc=getSelectionCount {$sc = scc;}
+    | scl=getSelectionList {$sc = scl;}
+;
+
+getSelectionCount returns [SelectionCount scc]
+    @init{
+        boolean identInc = false;
+        char symbol = '*';
+    }:
+    T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' {symbol = '1';} ) T_END_PARENTHESIS
+    (T_AS {identInc = true;} ident=T_IDENT )? 
+    {
+        if(identInc)
+            $scc = new SelectionCount(symbol, identInc, $ident.text);
+        else
+            $scc = new SelectionCount(symbol);
+    }
+;
+
+getSelectionList returns [SelectionList scl]
+    @init{
+        boolean distinct = false;
+    }:
+    (T_DISTINCT {distinct = true;})? selections=getSelection
+    { $scl = new SelectionList(distinct, selections);}
+;
+
+getSelection returns [Selection slct]
+    @init{
+        SelectionSelector slsl;
+        List<SelectionSelector> selections = new ArrayList<>();
+    }:
+    (
+        T_ASTERISK { $slct = new SelectionAsterisk();}       
+        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS ident1=T_IDENT {slsl.setIdentifier($ident1.text);})? {selections.add(slsl);}
+            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS identN=T_IDENT {slsl.setIdentifier($identN.text);})? {selections.add(slsl);})*
+            { $slct = new SelectionSelectors(selections);}
+    )
+;
+
+getSelector returns [SelectorMeta slmt]
+    @init{
+        List<SelectorMeta> params = new ArrayList<>();
+        GroupByFunction gbFunc = null;
+    }:
+    ( (T_AGGREGATION {gbFunc = GroupByFunction.aggregation;} 
+       | T_MAX {gbFunc = GroupByFunction.max;} 
+       | T_MIN {gbFunc = GroupByFunction.min;} 
+       | T_AVG {gbFunc = GroupByFunction.avg;} 
+       | T_COUNT {gbFunc = GroupByFunction.count;} 
+      ) 
+            T_START_PARENTHESIS 
+                (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 
+            T_END_PARENTHESIS {$slmt = new SelectorGroupBy(gbFunc, params);}
+        | ident=T_IDENT (
+            {$slmt = new SelectorIdentifier($ident.text);}
+            | T_START_PARENTHESIS (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 
+                T_END_PARENTHESIS {$slmt = new SelectorFunction($ident.text, params);}
+        )
+    )
+;
+
 getListTypes returns [String listType]:
 	ident=('PROCESS' | 'UDF' | 'TRIGGER') {$listType = new String($ident.text);}
 	;
@@ -664,13 +767,44 @@ getIntSetOrList returns [IdentIntOrLiteral iiol]:
     | T_START_SBRACKET set=getSet T_END_SBRACKET { $iiol = new SetLiteral(set);}
 ;
 
-getRelation returns [MetaRelation mrel]:
+/*getRelation returns [MetaRelation mrel]:
     ident=T_IDENT (
     T_EQUAL term=getTerm { $mrel = new RelationOneTerm($ident.text, new Term(term));}
     | T_IN ( T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS { $mrel = new RelationTerms($ident.text, terms);}
            | T_INTERROGATION { $mrel = new RelationInterrogation($ident.text);}
            )
     )
+;*/
+
+getRelation returns [MetaRelation mrel]:
+    T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator term=getTerm {$mrel = new RelationToken(listIds, operator, new Term(term));}
+    | ident=T_IDENT ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, new Term(termR));}
+                    | T_IN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationIn($ident.text, terms);}
+                    | T_BETWEEN term1=getTerm T_AND term2=getTerm {$mrel = new RelationBetween($ident.text, new Term(term1), new Term(term2));}
+                    )
+;
+
+getComparator returns [String comparator]:
+    T_EQUAL {$comparator="=";}
+    | T_GT {$comparator=">";}
+    | T_LT {$comparator="<";}
+    | T_GET {$comparator=">=";} 
+    | T_LET {$comparator="<=";}
+    | T_NOT_EQUAL {$comparator="<>";} 
+    | T_LIKE {$comparator="LIKE";}
+;
+
+getIds returns [List<String> listStrs]
+    @init{
+        listStrs = new ArrayList<>();
+    }:
+    ident1=T_IDENT {listStrs.add($ident1.text);} (T_COMMA identN=T_IDENT {listStrs.add($identN.text);})*
+;
+
+getOptions returns [List<Option> opts]@init{
+        opts = new ArrayList<>();
+    }:
+    opt1=getOption {opts.add(opt1);} (optN=getOption {opts.add(optN);})*
 ;
 
 getOption returns [Option opt]:

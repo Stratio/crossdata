@@ -8,12 +8,9 @@ package com.stratio.sdh.meta.statements;
 
 import com.stratio.sdh.meta.structures.Path;
 import com.stratio.sdh.meta.structures.ValueProperty;
-import java.lang.reflect.Array;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**

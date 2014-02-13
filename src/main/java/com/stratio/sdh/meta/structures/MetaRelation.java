@@ -1,20 +1,41 @@
 package com.stratio.sdh.meta.structures;
 
+import java.util.List;
+
 public abstract class MetaRelation {
     
-    public static final int TYPE_ONE_TERM = 1;
-    public static final int TYPE_TERMS = 2;
-    public static final int TYPE_INTERROGATION = 3;
+    public static final int TYPE_COMPARE = 1;
+    public static final int TYPE_IN = 2;
+    public static final int TYPE_TOKEN = 3;
+    public static final int TYPE_BETWEEN = 4;
     
-    protected String identifier;
-    protected int type;
-
-    public String getIdentifier() {
-        return identifier;
+    protected List<String> identifiers;
+    protected String operator;
+    protected List<Term> terms;
+    protected int type;   
+    
+    public List<String> getIdentifiers() {
+        return identifiers;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public void setIdentifiers(List<String> identifiers) {
+        this.identifiers = identifiers;
+    }
+
+    public String getOperator() {
+        return operator;
+    }
+
+    public void setOperator(String operator) {
+        this.operator = operator;
+    }
+
+    public List<Term> getTerms() {
+        return terms;
+    }
+
+    public void setTerms(List<Term> terms) {
+        this.terms = terms;
     }
 
     public int getType() {
