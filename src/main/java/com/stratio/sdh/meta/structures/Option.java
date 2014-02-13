@@ -1,7 +1,5 @@
 package com.stratio.sdh.meta.structures;
 
-import com.stratio.sdh.meta.utils.MetaUtils;
-
 public class Option {
     
     public static final int OPTION_PROPERTY = 1;
@@ -57,7 +55,7 @@ public class Option {
         StringBuilder sb = new StringBuilder();
         switch(fixedOption){
             case OPTION_PROPERTY:
-                sb.append(nameProperty).append("=").append(valueProperty.toString());
+                sb.append(nameProperty).append(" = ").append(valueProperty.toString());
                 break;
             case OPTION_COMPACT:
                 sb.append("COMPACT STORAGE");

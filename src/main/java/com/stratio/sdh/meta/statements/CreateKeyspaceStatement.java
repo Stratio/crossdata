@@ -51,8 +51,8 @@ public class CreateKeyspaceStatement extends Statement {
         }
         sb.append(ident);
         sb.append(" WITH ");
-        sb.append(MetaUtils.StringMap(properties, ": ", ", "));
-        return sb.substring(0, sb.length()-5);
+        sb.append(MetaUtils.StringMap(properties, " = ", " AND "));
+        return sb.toString();
     }
 
     @Override

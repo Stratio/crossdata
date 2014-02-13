@@ -868,6 +868,8 @@ getValueProperty returns [ValueProperty value]:
     | constant=T_CONSTANT {$value = new ConstantProperty(Integer.parseInt($constant.text));}
     | mapliteral=getMapLiteral {$value = new MapLiteralProperty(mapliteral);}
     | number=getFloat {$value = new FloatProperty(Float.parseFloat(number));}
+    | T_FALSE {$value = new BooleanProperty(false);}
+    | T_TRUE {$value = new BooleanProperty(true);}
     ;
 
 

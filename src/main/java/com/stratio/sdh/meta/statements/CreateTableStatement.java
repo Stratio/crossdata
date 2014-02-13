@@ -156,8 +156,6 @@ public class CreateTableStatement extends Statement{
         if(ifNotExists) sb.append("if not exit ");
         sb.append(name_table);
         
-       System.out.println("type= "+Type_Primary_Key);
-        
         switch(Type_Primary_Key){
             case 1: {
                 Set keySet = columns.keySet();

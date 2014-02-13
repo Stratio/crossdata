@@ -127,27 +127,18 @@ public class UpdateTableStatement extends Statement {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("UPDATE ");
-        sb.append(tablename).append(" ");
+        sb.append(tablename);
         if(optsInc){
-            sb.append("USING ");
+            sb.append(" ").append("USING ");
             sb.append(MetaUtils.StringList(options, " AND "));
         }
         sb.append(" ").append("SET ");
         sb.append(MetaUtils.StringList(assignments, ", "));
-        /*for(Assignment assign: assignments){
-            sb.append(assign.toString());
-        }*/        
         sb.append(" ").append("WHERE ");
         sb.append(MetaUtils.StringList(whereclauses, " AND "));
-        /*for(MetaRelation relation: whereclauses){
-            sb.append(relation.toString());
-        }*/
         if(condsInc){
             sb.append(" ").append("IF ");
             sb.append(MetaUtils.StringMap(conditions, ": ", " AND "));
-            /*for(String key: conditions.keySet()){
-                sb.append(sb);
-            }*/
         }
         return sb.toString();
     }    
