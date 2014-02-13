@@ -767,15 +767,6 @@ getIntSetOrList returns [IdentIntOrLiteral iiol]:
     | T_START_SBRACKET set=getSet T_END_SBRACKET { $iiol = new SetLiteral(set);}
 ;
 
-/*getRelation returns [MetaRelation mrel]:
-    ident=T_IDENT (
-    T_EQUAL term=getTerm { $mrel = new RelationOneTerm($ident.text, new Term(term));}
-    | T_IN ( T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS { $mrel = new RelationTerms($ident.text, terms);}
-           | T_INTERROGATION { $mrel = new RelationInterrogation($ident.text);}
-           )
-    )
-;*/
-
 getRelation returns [MetaRelation mrel]:
     T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator term=getTerm {$mrel = new RelationToken(listIds, operator, new Term(term));}
     | ident=T_IDENT ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, new Term(termR));}
