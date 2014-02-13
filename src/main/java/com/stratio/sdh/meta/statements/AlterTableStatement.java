@@ -8,10 +8,8 @@ package com.stratio.sdh.meta.statements;
 
 import com.stratio.sdh.meta.structures.Path;
 import com.stratio.sdh.meta.structures.ValueProperty;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -99,11 +97,14 @@ public class AlterTableStatement extends Statement{
             }break;
             case 4: {
                 Set keySet = option.keySet();
-                sb.append(" with:\n\t");
+                //sb.append(" with:\n\t");
+                sb.append(" with");
                 for (Iterator it = keySet.iterator(); it.hasNext();) {
                     String key = (String) it.next();
                     ValueProperty vp = option.get(key);
-                    sb.append(key).append(": ").append(String.valueOf(vp)).append("\n\t");
+                    //sb.append(key).append(": ").append(String.valueOf(vp)).append("\n\t");
+                    sb.append(" ").append(key).append("=").append(String.valueOf(vp));
+                    if(it.hasNext()) sb.append(" AND");
                 }
             }break;
             default:{

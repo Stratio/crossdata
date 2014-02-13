@@ -2,6 +2,7 @@ package com.stratio.sdh.meta.statements;
 
 import com.stratio.sdh.meta.structures.Path;
 import com.stratio.sdh.meta.structures.ValueProperty;
+import com.stratio.sdh.meta.utils.MetaUtils;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,14 +37,15 @@ public class AlterKeyspaceStatement extends Statement {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Altering keyspace ");
-        sb.append(keyspaceName).append(" with: ");
-        Set keySet = properties.keySet();
+        StringBuilder sb = new StringBuilder("ALTER KEYSPACE ");
+        sb.append(keyspaceName).append(" WITH ");
+        sb.append(MetaUtils.StringMap(properties, " = ", " AND "));
+        /*Set keySet = properties.keySet();
         for (Iterator it = keySet.iterator(); it.hasNext();) {
             String key = (String) it.next();
             ValueProperty vp = properties.get(key);
             sb.append(key).append(": ").append(vp.toString());
-        }
+        }*/
         return sb.toString();
     }
 

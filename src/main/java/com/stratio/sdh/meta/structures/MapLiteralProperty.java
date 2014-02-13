@@ -46,16 +46,9 @@ public class MapLiteralProperty extends ValueProperty {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(MetaUtils.StringMap(literals, ": ", ", "));
-        /*sb.append(System.getProperty("line.separator"));
-        for (String key: literals.keySet()) {
-            sb.append(" * ").append(key).append(": ").append(literals.get(key));
-            sb.append(System.getProperty("line.separator"));
-        }*/
+        sb.append("{").append(MetaUtils.StringMap(literals, ": ", ", ")).append("}");        
         return sb.toString();
     }
-    
-    
     
 }
     

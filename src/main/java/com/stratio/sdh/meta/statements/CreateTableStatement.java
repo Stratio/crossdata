@@ -249,11 +249,14 @@ public class CreateTableStatement extends Statement{
                 
         }
         Set keySet = propierties.keySet();
-        if (withPropierties) sb.append(" with:\n\t");
+        //if (withPropierties) sb.append(" with:\n\t");
+        if (withPropierties) sb.append(" with");
         for (Iterator it = keySet.iterator(); it.hasNext();) {
             String key = (String) it.next();
             ValueProperty vp = propierties.get(key);
-            sb.append(key).append(": ").append(String.valueOf(vp)).append("\n\t");
+            //sb.append(key).append(": ").append(String.valueOf(vp)).append("\n\t");
+            sb.append(" ").append(key).append("=").append(String.valueOf(vp));
+            if(it.hasNext()) sb.append(" AND");
         }
         return sb.toString();
     

@@ -23,7 +23,7 @@ public class TruncateStatement extends Statement {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Truncating "+ident);
+        StringBuilder sb = new StringBuilder("Truncate "+ident);
         return sb.toString();        
     }
 

@@ -30,11 +30,11 @@ public class DropKeyspaceStatement extends Statement {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Dropping keyspace ");        
-        sb.append(keyspaceName);  
+        StringBuilder sb = new StringBuilder("Drop keyspace ");        
         if(ifExists){
-           sb.append(" (if exists) ");
-        }        
+           sb.append("if exists ");
+        } 
+        sb.append(keyspaceName);                 
         return sb.toString();
     }
 

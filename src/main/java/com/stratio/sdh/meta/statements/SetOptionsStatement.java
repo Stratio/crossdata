@@ -45,11 +45,11 @@ public class SetOptionsStatement extends Statement {
     @Override
     public String toString() {
         //System.out.println("optionsCheck="+optionsCheck.toString());
-        StringBuilder sb = new StringBuilder("Setting options: ");
+        StringBuilder sb = new StringBuilder("Set options ");
         if(optionsCheck.get(0)){
             sb.append("analytics=").append(analytics);            
             if(optionsCheck.get(1)){
-                sb.append(", consistency=").append(consistency);
+                sb.append(" AND consistency=").append(consistency);
             }
         } else {
             if(optionsCheck.get(1)){

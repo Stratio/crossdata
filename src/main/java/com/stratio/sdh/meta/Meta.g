@@ -851,6 +851,8 @@ getTerm returns [String term]:
     ident=T_IDENT {$term = $ident.text;}
     | ksAndTn=T_KS_AND_TN {$term = $ksAndTn.text;}
     | noIdent=T_TERM {$term = $noIdent.text;}
+    | number=T_CONSTANT {$term = $number.text;}
+    | '1' {$term = "1";}
     ;
 
 getMapLiteral returns [Map<String, String> mapTerms]

@@ -138,7 +138,7 @@ public class UpdateTableStatement extends Statement {
         sb.append(MetaUtils.StringList(whereclauses, " AND "));
         if(condsInc){
             sb.append(" ").append("IF ");
-            sb.append(MetaUtils.StringMap(conditions, ": ", " AND "));
+            sb.append(MetaUtils.StringMap(conditions, " = ", " AND "));
         }
         return sb.toString();
     }    

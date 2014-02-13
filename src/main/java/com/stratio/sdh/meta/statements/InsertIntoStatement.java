@@ -168,22 +168,19 @@ public class InsertIntoStatement extends Statement {
     public String toString() {
         StringBuilder sb = new StringBuilder("INSERT INTO ");
         sb.append(tablename).append(" (");
-        sb.append(MetaUtils.StringList(ids, ", "));
-        sb.append(") ").append(System.getProperty("line.separator"));
+        sb.append(MetaUtils.StringList(ids, ", ")).append(") ");
         if(typeValues == TYPE_SELECT_CLAUSE){
            sb.append(selectStatement.toString());
         } else {
-           sb.append("VALUES (");
+           sb.append("VALUES(");
            sb.append(MetaUtils.StringList(cellValues, ", "));
            sb.append(")");
         }        
         if(ifNotExists){
-            sb.append(System.getProperty("line.separator"));
-            sb.append("IF NOT EXISTS");            
+            sb.append(" IF NOT EXISTS");            
         }
         if(optsInc){
-            sb.append(System.getProperty("line.separator"));
-            sb.append("USING ");
+            sb.append(" USING ");
             sb.append(MetaUtils.StringList(options, " AND "));
         }
         return sb.toString();

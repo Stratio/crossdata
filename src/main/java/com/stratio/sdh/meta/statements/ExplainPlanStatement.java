@@ -20,8 +20,7 @@ public class ExplainPlanStatement extends Statement {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Explaing plan for: ");
-        sb.append(System.getProperty("line.separator"));
+        StringBuilder sb = new StringBuilder("Explain plan for ");
         sb.append(metaStatement.toString());
         return sb.toString();
     }   

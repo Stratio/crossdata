@@ -30,11 +30,11 @@ public class DropTableStatement extends Statement {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Dropping table ");
-        sb.append(ident);        
+        StringBuilder sb = new StringBuilder("Drop table ");
         if(ifExists){
-            sb.append(" (if exists) ");
+            sb.append("if exists ");
         }       
+        sb.append(ident);                
         return sb.toString();
     }
 
