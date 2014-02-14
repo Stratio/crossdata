@@ -11,7 +11,7 @@ One LANGUAGE to rule them all
 
 This will create 3 archives: Meta.tokens, MetaLexer.java and MetaParser.java in the com.stratio.sdh.meta.generated package as pom.xml is configured to do it automatically.
 
-2.- Now it's ready to be runned and here we have two methods:
+2.- Now it's ready to be runned and here we have three methods:
 	
 	- Maven: mvn exec:java -Dexec.mainClass="com.stratio.sdh.meta.MetaTest"
 	- Alternativelly, mvn exec:java -Dexec.mainClass="com.stratio.sdh.meta.ui.shell.server.Metash"
