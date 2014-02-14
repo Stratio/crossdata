@@ -848,12 +848,14 @@ getTableID returns [String tableID]:
     ;
 
 getTerm returns [String term]:
-    ident=T_IDENT {$term = $ident.text;}
-    | ksAndTn=T_KS_AND_TN {$term = $ksAndTn.text;}
-    | noIdent=T_TERM {$term = $noIdent.text;}
-    | number=T_CONSTANT {$term = $number.text;}
-    | '1' {$term = "1";}
-    ;
+    ident=T_IDENT {$term = new String($ident.text);}
+    | constant=T_CONSTANT {$term = new String($constant.text);}
+    | '1' {$term = new String("1");}
+    | T_FALSE {$term = new String("false");}
+    | T_TRUE {$term = new String("true");}
+    | ksAndTn=T_KS_AND_TN {$term = new String($ksAndTn.text);}
+    | noIdent=T_TERM {$term = new String($noIdent.text);}
+;
 
 getMapLiteral returns [Map<String, String> mapTerms]
     @init{

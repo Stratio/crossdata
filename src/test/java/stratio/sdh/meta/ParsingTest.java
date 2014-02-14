@@ -119,13 +119,13 @@ public class ParsingTest {
         @Test
 	public void update_tablename() {
 		String inputText = "UPDATE tablename USING prop1 = 342 SET ident1 = term1, ident2 = term2"
-                        + " WHERE ident3 IN (term3, term4) IF field1 = 25;";
+                        + " WHERE ident3 IN (term3, term4) IF field1 = 25 ;";
 		Statement st = parseStatement(inputText);
                 //System.out.println(inputText);
-                //System.out.println(st.toString()+";");
+                //System.out.println(st.toString()+" ;");
 		assertNotNull("Cannot parse update tablename", st);
 		//assertEquals("Cannot parse update tablename", inputText, st.toString()+";");
-                assertTrue("Cannot parse update tablename", inputText.equalsIgnoreCase(st.toString()+";"));
+                assertTrue("Cannot parse update tablename", inputText.equalsIgnoreCase(st.toString()+" ;"));
 	}
         
         @Test
