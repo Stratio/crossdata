@@ -217,7 +217,7 @@ public class SelectStatement extends Statement {
         if(disableAnalytics){
             sb.append(" DISABLE ANALYTICS");
         }        
-        sb.append(";");
+        //sb.append(";");
         return sb.toString();
     }
     
