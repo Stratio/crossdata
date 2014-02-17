@@ -15,4 +15,6 @@ public abstract class Statement {
     @Override
     public abstract String toString();
     
+    public abstract boolean validate();
+    
 }

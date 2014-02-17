@@ -1,20 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.stratio.sdh.meta.statements;
 
 import com.stratio.sdh.meta.structures.Path;
 
-/**
- *
- * @author aalcocer
- */
 public class DropTriggerStatement extends Statement{
 
-        private String ident;
+    private String ident;
 
     public String getIdent() {
         return ident;
@@ -38,9 +28,7 @@ public class DropTriggerStatement extends Statement{
         this.ident = ident;
         this.ident2 = ident2;
     }
-
-    
-    
+       
     @Override
     public Path estimatePath() {
     return Path.CASSANDRA;    
@@ -54,6 +42,10 @@ public class DropTriggerStatement extends Statement{
         sb.append(ident2);
         return sb.toString();
     }
-    
-    
+
+    @Override
+    public boolean validate() {
+        return true;
+    }
+        
 }

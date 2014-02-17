@@ -15,26 +15,26 @@ import com.stratio.sdh.meta.utils.MetaUtils;
  */
 public class DeleteStatement extends Statement {
 	
-	private ArrayList<String> _targetColumn = null;
-	private String _tablename = null;
-	private List<MetaRelation> _whereClauses;
-	
-	public DeleteStatement(){
-		_targetColumn = new ArrayList<>();
-		_whereClauses = new ArrayList<>();
-	}
-	
-	public void addColumn(String column){
-		_targetColumn.add(column);
-	}
-	
-	public void setTablename(String tablename){
-		_tablename = tablename;
-	}
-	
-	public void addRelation(MetaRelation relation){
-		_whereClauses.add(relation);
-	}
+    private ArrayList<String> _targetColumn = null;
+    private String _tablename = null;
+    private List<MetaRelation> _whereClauses;
+
+    public DeleteStatement(){
+            _targetColumn = new ArrayList<>();
+            _whereClauses = new ArrayList<>();
+    }
+
+    public void addColumn(String column){
+            _targetColumn.add(column);
+    }
+
+    public void setTablename(String tablename){
+            _tablename = tablename;
+    }
+
+    public void addRelation(MetaRelation relation){
+            _whereClauses.add(relation);
+    }
 
     @Override
     public String toString() {
@@ -54,6 +54,11 @@ public class DeleteStatement extends Statement {
     @Override
     public Path estimatePath() {
         return Path.CASSANDRA;
+    }
+
+    @Override
+    public boolean validate() {
+        return true;
     }
             
 }

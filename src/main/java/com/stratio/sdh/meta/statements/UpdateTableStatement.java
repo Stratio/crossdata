@@ -142,5 +142,10 @@ public class UpdateTableStatement extends Statement {
         }
         return sb.toString();
     }    
+
+    @Override
+    public boolean validate() {
+        return true;
+    }
     
 }

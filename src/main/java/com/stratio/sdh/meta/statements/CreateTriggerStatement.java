@@ -1,20 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.stratio.sdh.meta.statements;
 
 import com.stratio.sdh.meta.structures.Path;
 
-/**
- *
- * @author aalcocer
- */
 public class CreateTriggerStatement extends Statement {
     
-        private String trigger_name;
+    private String trigger_name;
 
     public CreateTriggerStatement(String trigger_name, String table_name, String class_name) {
         this.trigger_name = trigger_name;
@@ -64,6 +54,11 @@ public class CreateTriggerStatement extends Statement {
         sb.append(" using ");
         sb.append(class_name);
         return sb.toString();
+    }
+
+    @Override
+    public boolean validate() {
+        return true;
     }
     
 }

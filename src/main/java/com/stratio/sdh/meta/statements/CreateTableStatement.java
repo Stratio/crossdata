@@ -18,7 +18,6 @@ import java.util.Set;
  * @author aalcocer
  */
 public class CreateTableStatement extends Statement{
-
     
     private String name_table;
     
@@ -39,12 +38,6 @@ public class CreateTableStatement extends Statement{
     private int columnNumberPK;
 
     private boolean withPropierties;
-
-    
-
-    
-
-
 
     public CreateTableStatement(String name_table, LinkedHashMap<String, String> columns, List<String> primaryKey, List<String> clusterKey, LinkedHashMap<String, ValueProperty> propierties, int Type_Primary_Key, boolean ifNotExists, boolean withClusterKey, int columnNumberPK, boolean withPropierties ) {
         this.name_table = name_table;
@@ -260,6 +253,11 @@ public class CreateTableStatement extends Statement{
         }
         return sb.toString();
     
+    }
+
+    @Override
+    public boolean validate() {
+        return true;
     }
 
     

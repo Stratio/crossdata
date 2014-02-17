@@ -42,5 +42,10 @@ public class DropTableStatement extends Statement {
     public Path estimatePath() {
         return Path.CASSANDRA;
     }
+
+    @Override
+    public boolean validate() {
+        return true;
+    }
             
 }

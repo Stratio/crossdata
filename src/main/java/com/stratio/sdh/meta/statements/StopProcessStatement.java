@@ -17,7 +17,6 @@ public class StopProcessStatement extends Statement {
     public void setIdent(String ident) {
         this.ident = ident;
     }
-
     
     @Override
     public Path estimatePath() {
@@ -30,7 +29,10 @@ public class StopProcessStatement extends Statement {
         sb.append(ident);
         return sb.toString();
     }
-    
-    
-    
+
+    @Override
+    public boolean validate() {
+        return true;
+    }
+           
 }

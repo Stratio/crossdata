@@ -1,9 +1,9 @@
 package com.stratio.sdh.meta.statements;
 
+import com.stratio.sdh.meta.structures.IndexType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import com.stratio.sdh.meta.structures.Path;
@@ -17,8 +17,7 @@ import com.stratio.sdh.meta.utils.MetaUtils;
  * ON {@literal <tablename>} ( {@literal <identifier> , ..., <identifier>})
  * ( USING {@literal <index_class>} )? ( WITH OPTIONS ( key_1=value_1 AND ... AND key_n=value_n) )?;
  */
-public class CreateIndexStatement extends Statement {
-	
+public class CreateIndexStatement extends Statement {	
 	
 	private IndexType _type = null;
 	private boolean _createIfNotExists = false;
@@ -104,5 +103,10 @@ public class CreateIndexStatement extends Statement {
 		}
 		return sb.toString();
 	}
+
+    @Override
+    public boolean validate() {
+        return true;
+    }
 
 }

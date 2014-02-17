@@ -4,9 +4,7 @@ import com.stratio.sdh.meta.structures.Path;
 import com.stratio.sdh.meta.structures.ValueProperty;
 import com.stratio.sdh.meta.utils.MetaUtils;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 public class AlterKeyspaceStatement extends Statement {
     
@@ -52,6 +50,11 @@ public class AlterKeyspaceStatement extends Statement {
     @Override
     public Path estimatePath() {
         return Path.CASSANDRA;
+    }
+
+    @Override
+    public boolean validate() {
+        return true;
     }
     
 }

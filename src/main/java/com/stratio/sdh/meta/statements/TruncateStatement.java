@@ -1,9 +1,6 @@
 package com.stratio.sdh.meta.statements;
 
-//import org.antlr.runtime.Token;
-
 import com.stratio.sdh.meta.structures.Path;
-
 
 public class TruncateStatement extends Statement {
     
@@ -30,6 +27,11 @@ public class TruncateStatement extends Statement {
     @Override
     public Path estimatePath() {
         return Path.CASSANDRA;
+    }
+
+    @Override
+    public boolean validate() {
+        return true;
     }
     
 }

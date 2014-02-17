@@ -220,5 +220,10 @@ public class SelectStatement extends Statement {
         //sb.append(";");
         return sb.toString();
     }
+
+    @Override
+    public boolean validate() {
+        return true;
+    }
     
 }
