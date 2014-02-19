@@ -40,9 +40,9 @@ public class Metash {
 	
 	/**
 	 * Parse a input text and return the equivalent Statement.
-	 * @param inputText The input text.
-	 * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
-	 */
+	 * //@param inputText The input text.
+	 * //@return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
+	 *
 	private AntlrResult parseStatement(String inputText){
             Statement result = null;
             ANTLRStringStream input = new ANTLRStringStream(inputText);
@@ -57,7 +57,7 @@ public class Metash {
 		_logger.error("Cannot parse statement", e);
             }            
             return new AntlrResult(result, foundErrors);
-	}
+	}*/
 	
 	public void loop(){
             Console input = System.console();
@@ -67,12 +67,12 @@ public class Metash {
                 //\033[4mmetash-server\033[0m> = underline 
                 while((cmd = input.readLine("\033[36mmetash-server\033[0m> ")).compareTo("exit")!= 0){
                     System.out.println("\033[33mCommand: \033[0m" + cmd);
-                    AntlrResult antlrResult = parseStatement(cmd);
+                    AntlrResult antlrResult = MetaUtils.parseStatement(cmd, _logger);
                     stmt = antlrResult.getStatement();
                     ErrorsHelper foundErrors = antlrResult.getFoundErrors();
-                    //if((stmt!=null) && (foundErrors.isEmpty())){
+                    if((stmt!=null) && (foundErrors.isEmpty())){
                         _logger.info("\033[32mExecute: \033[0m" + stmt.toString());
-                    //} else {
+                    } else {
                         MetaUtils.printParserErrors(cmd, antlrResult, true);
                         /*if(foundErrors.isEmpty()){                  
                             System.err.println("\033[31mAntlr exception: \033[0m");
@@ -80,7 +80,7 @@ public class Metash {
                         } else {                                                        
                             System.err.println(foundErrors.toString());                              
                         }*/                        
-                    //}
+                    }
                 }
             }else{
                 System.err.println("Cannot launch Metash, no console present");

@@ -1,6 +1,9 @@
 package com.stratio.sdh.meta.utils;
 
 import com.google.common.collect.Sets;
+import com.stratio.sdh.meta.generated.MetaLexer;
+import com.stratio.sdh.meta.generated.MetaParser;
+import com.stratio.sdh.meta.statements.Statement;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -11,6 +14,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang3.StringUtils;
 
 public class MetaUtils {
@@ -275,6 +281,28 @@ public class MetaUtils {
             Logger.getLogger(MetaUtils.class.getName()).log(Level.SEVERE, null, ex);
         }
         return replacement;
+    }
+    
+    /**
+     * Parse a input text and return the equivalent Statement.
+     * @param inputText The input text.
+     * @param _logger where to print the result on
+     * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
+     */ 
+    public static AntlrResult parseStatement(String inputText, org.apache.log4j.Logger _logger){
+        Statement result = null;
+        ANTLRStringStream input = new ANTLRStringStream(inputText);
+        MetaLexer lexer = new MetaLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        MetaParser parser = new MetaParser(tokens);   
+        ErrorsHelper foundErrors = null;
+        try {
+            result = parser.query();
+            foundErrors = parser.getFoundErrors();
+        } catch (RecognitionException e) {
+            _logger.error("Cannot parse statement", e);
+        }            
+        return new AntlrResult(result, foundErrors);
     }
     
 }
