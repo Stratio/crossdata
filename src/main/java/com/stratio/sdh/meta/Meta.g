@@ -27,8 +27,8 @@ options {
     package com.stratio.sdh.meta.generated;    
     import com.stratio.sdh.meta.statements.*;
     import com.stratio.sdh.meta.structures.*;
+    import com.stratio.sdh.meta.utils.*;
     import java.util.LinkedHashMap;
-    import com.stratio.sdh.meta.structures.ValueAssignment;
     import java.util.HashMap;
     import java.util.Map;
     import java.util.Set;
@@ -36,12 +36,22 @@ options {
 }
 
 @members {
-    public void displayRecognitionError(String[] tokenNames, RecognitionException e){
-        System.err.print("Error recognized: ");
+    private ErrorsHelper foundErrors = new ErrorsHelper();
+
+    public ErrorsHelper getFoundErrors(){
+        return foundErrors;
+    }
+
+    @Override
+    public void displayRecognitionError(String[] tokenNames, RecognitionException e){        
         String hdr = getErrorHeader(e);
         String msg = getErrorMessage(e, tokenNames);
-        System.err.print(hdr+": ");
-        System.err.println(msg);
+        //System.err.println("Antlr exception: ");
+        //System.err.print("\tError recognized: ");
+        //System.err.print(hdr+": ");
+        //System.err.println(msg);
+        AntlrError antlrError = new AntlrError(hdr, msg);
+        foundErrors.addError(antlrError);
     }
 }
 

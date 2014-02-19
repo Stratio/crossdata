@@ -109,4 +109,9 @@ public class CreateIndexStatement extends Statement {
         return true;
     }
 
+    @Override
+    public String getSuggestion() {
+        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
 }

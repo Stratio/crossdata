@@ -26,4 +26,9 @@ public class ListStatement extends Statement {
         return true;
     }
 
+    @Override
+    public String getSuggestion() {
+        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
 }

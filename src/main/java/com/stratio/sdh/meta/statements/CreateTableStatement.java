@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.stratio.sdh.meta.statements;
 
 import com.stratio.sdh.meta.structures.Path;
@@ -13,10 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-/**
- *
- * @author aalcocer
- */
 public class CreateTableStatement extends Statement{
     
     private String name_table;
@@ -258,6 +248,11 @@ public class CreateTableStatement extends Statement{
     @Override
     public boolean validate() {
         return true;
+    }
+
+    @Override
+    public String getSuggestion() {
+        return this.getClass().toString().toUpperCase()+" EXAMPLE";
     }
 
     

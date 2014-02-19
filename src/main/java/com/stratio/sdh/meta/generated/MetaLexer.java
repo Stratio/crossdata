@@ -1,4 +1,4 @@
-// $ANTLR 3.5.1 Meta.g 2014-02-14 12:43:26
+// $ANTLR 3.5.1 Meta.g 2014-02-18 11:14:02
 
     package com.stratio.sdh.meta.generated;
 
@@ -423,7 +423,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "A"
 	public final void mA() throws RecognitionException {
 		try {
-			// Meta.g:57:11: ( ( 'a' | 'A' ) )
+			// Meta.g:67:11: ( ( 'a' | 'A' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
@@ -446,7 +446,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "B"
 	public final void mB() throws RecognitionException {
 		try {
-			// Meta.g:58:11: ( ( 'b' | 'B' ) )
+			// Meta.g:68:11: ( ( 'b' | 'B' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='B'||input.LA(1)=='b' ) {
@@ -469,7 +469,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "C"
 	public final void mC() throws RecognitionException {
 		try {
-			// Meta.g:59:11: ( ( 'c' | 'C' ) )
+			// Meta.g:69:11: ( ( 'c' | 'C' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='C'||input.LA(1)=='c' ) {
@@ -492,7 +492,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "D"
 	public final void mD() throws RecognitionException {
 		try {
-			// Meta.g:60:11: ( ( 'd' | 'D' ) )
+			// Meta.g:70:11: ( ( 'd' | 'D' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='D'||input.LA(1)=='d' ) {
@@ -515,7 +515,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "E"
 	public final void mE() throws RecognitionException {
 		try {
-			// Meta.g:61:11: ( ( 'e' | 'E' ) )
+			// Meta.g:71:11: ( ( 'e' | 'E' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
@@ -538,7 +538,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "F"
 	public final void mF() throws RecognitionException {
 		try {
-			// Meta.g:62:11: ( ( 'f' | 'F' ) )
+			// Meta.g:72:11: ( ( 'f' | 'F' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='F'||input.LA(1)=='f' ) {
@@ -561,7 +561,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "G"
 	public final void mG() throws RecognitionException {
 		try {
-			// Meta.g:63:11: ( ( 'g' | 'G' ) )
+			// Meta.g:73:11: ( ( 'g' | 'G' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='G'||input.LA(1)=='g' ) {
@@ -584,7 +584,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "H"
 	public final void mH() throws RecognitionException {
 		try {
-			// Meta.g:64:11: ( ( 'h' | 'H' ) )
+			// Meta.g:74:11: ( ( 'h' | 'H' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='H'||input.LA(1)=='h' ) {
@@ -607,7 +607,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "I"
 	public final void mI() throws RecognitionException {
 		try {
-			// Meta.g:65:11: ( ( 'i' | 'I' ) )
+			// Meta.g:75:11: ( ( 'i' | 'I' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
@@ -630,7 +630,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "J"
 	public final void mJ() throws RecognitionException {
 		try {
-			// Meta.g:66:11: ( ( 'j' | 'J' ) )
+			// Meta.g:76:11: ( ( 'j' | 'J' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='J'||input.LA(1)=='j' ) {
@@ -653,7 +653,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "K"
 	public final void mK() throws RecognitionException {
 		try {
-			// Meta.g:67:11: ( ( 'k' | 'K' ) )
+			// Meta.g:77:11: ( ( 'k' | 'K' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='K'||input.LA(1)=='k' ) {
@@ -676,7 +676,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "L"
 	public final void mL() throws RecognitionException {
 		try {
-			// Meta.g:68:11: ( ( 'l' | 'L' ) )
+			// Meta.g:78:11: ( ( 'l' | 'L' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='L'||input.LA(1)=='l' ) {
@@ -699,7 +699,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "M"
 	public final void mM() throws RecognitionException {
 		try {
-			// Meta.g:69:11: ( ( 'm' | 'M' ) )
+			// Meta.g:79:11: ( ( 'm' | 'M' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
@@ -722,7 +722,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "N"
 	public final void mN() throws RecognitionException {
 		try {
-			// Meta.g:70:11: ( ( 'n' | 'N' ) )
+			// Meta.g:80:11: ( ( 'n' | 'N' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
@@ -745,7 +745,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "O"
 	public final void mO() throws RecognitionException {
 		try {
-			// Meta.g:71:11: ( ( 'o' | 'O' ) )
+			// Meta.g:81:11: ( ( 'o' | 'O' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
@@ -768,7 +768,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "P"
 	public final void mP() throws RecognitionException {
 		try {
-			// Meta.g:72:11: ( ( 'p' | 'P' ) )
+			// Meta.g:82:11: ( ( 'p' | 'P' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='P'||input.LA(1)=='p' ) {
@@ -791,7 +791,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "Q"
 	public final void mQ() throws RecognitionException {
 		try {
-			// Meta.g:73:11: ( ( 'q' | 'Q' ) )
+			// Meta.g:83:11: ( ( 'q' | 'Q' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='Q'||input.LA(1)=='q' ) {
@@ -814,7 +814,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "R"
 	public final void mR() throws RecognitionException {
 		try {
-			// Meta.g:74:11: ( ( 'r' | 'R' ) )
+			// Meta.g:84:11: ( ( 'r' | 'R' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='R'||input.LA(1)=='r' ) {
@@ -837,7 +837,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "S"
 	public final void mS() throws RecognitionException {
 		try {
-			// Meta.g:75:11: ( ( 's' | 'S' ) )
+			// Meta.g:85:11: ( ( 's' | 'S' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='S'||input.LA(1)=='s' ) {
@@ -860,7 +860,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "T"
 	public final void mT() throws RecognitionException {
 		try {
-			// Meta.g:76:11: ( ( 't' | 'T' ) )
+			// Meta.g:86:11: ( ( 't' | 'T' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
@@ -883,7 +883,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "U"
 	public final void mU() throws RecognitionException {
 		try {
-			// Meta.g:77:11: ( ( 'u' | 'U' ) )
+			// Meta.g:87:11: ( ( 'u' | 'U' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='U'||input.LA(1)=='u' ) {
@@ -906,7 +906,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "V"
 	public final void mV() throws RecognitionException {
 		try {
-			// Meta.g:78:11: ( ( 'v' | 'V' ) )
+			// Meta.g:88:11: ( ( 'v' | 'V' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='V'||input.LA(1)=='v' ) {
@@ -929,7 +929,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "W"
 	public final void mW() throws RecognitionException {
 		try {
-			// Meta.g:79:11: ( ( 'w' | 'W' ) )
+			// Meta.g:89:11: ( ( 'w' | 'W' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='W'||input.LA(1)=='w' ) {
@@ -952,7 +952,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "X"
 	public final void mX() throws RecognitionException {
 		try {
-			// Meta.g:80:11: ( ( 'x' | 'X' ) )
+			// Meta.g:90:11: ( ( 'x' | 'X' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='X'||input.LA(1)=='x' ) {
@@ -975,7 +975,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "Y"
 	public final void mY() throws RecognitionException {
 		try {
-			// Meta.g:81:11: ( ( 'y' | 'Y' ) )
+			// Meta.g:91:11: ( ( 'y' | 'Y' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='Y'||input.LA(1)=='y' ) {
@@ -998,7 +998,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "Z"
 	public final void mZ() throws RecognitionException {
 		try {
-			// Meta.g:82:11: ( ( 'z' | 'Z' ) )
+			// Meta.g:92:11: ( ( 'z' | 'Z' ) )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='Z'||input.LA(1)=='z' ) {
@@ -1021,8 +1021,8 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "EXPONENT"
 	public final void mEXPONENT() throws RecognitionException {
 		try {
-			// Meta.g:83:19: ( ( 'e' | 'E' ) ( '+' | '-' )? ( '0' .. '9' )+ )
-			// Meta.g:83:21: ( 'e' | 'E' ) ( '+' | '-' )? ( '0' .. '9' )+
+			// Meta.g:93:19: ( ( 'e' | 'E' ) ( '+' | '-' )? ( '0' .. '9' )+ )
+			// Meta.g:93:21: ( 'e' | 'E' ) ( '+' | '-' )? ( '0' .. '9' )+
 			{
 			if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
 				input.consume();
@@ -1032,7 +1032,7 @@ public class MetaLexer extends Lexer {
 				recover(mse);
 				throw mse;
 			}
-			// Meta.g:83:31: ( '+' | '-' )?
+			// Meta.g:93:31: ( '+' | '-' )?
 			int alt1=2;
 			int LA1_0 = input.LA(1);
 			if ( (LA1_0=='+'||LA1_0=='-') ) {
@@ -1055,7 +1055,7 @@ public class MetaLexer extends Lexer {
 
 			}
 
-			// Meta.g:83:42: ( '0' .. '9' )+
+			// Meta.g:93:42: ( '0' .. '9' )+
 			int cnt2=0;
 			loop2:
 			while (true) {
@@ -1100,8 +1100,8 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "POINT"
 	public final void mPOINT() throws RecognitionException {
 		try {
-			// Meta.g:84:15: ( '.' )
-			// Meta.g:84:17: '.'
+			// Meta.g:94:15: ( '.' )
+			// Meta.g:94:17: '.'
 			{
 			match('.'); 
 			}
@@ -1118,8 +1118,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TRUNCATE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:87:11: ( T R U N C A T E )
-			// Meta.g:87:13: T R U N C A T E
+			// Meta.g:97:11: ( T R U N C A T E )
+			// Meta.g:97:13: T R U N C A T E
 			{
 			mT(); 
 
@@ -1153,8 +1153,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_CREATE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:88:9: ( C R E A T E )
-			// Meta.g:88:11: C R E A T E
+			// Meta.g:98:9: ( C R E A T E )
+			// Meta.g:98:11: C R E A T E
 			{
 			mC(); 
 
@@ -1184,8 +1184,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ALTER;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:89:8: ( A L T E R )
-			// Meta.g:89:10: A L T E R
+			// Meta.g:99:8: ( A L T E R )
+			// Meta.g:99:10: A L T E R
 			{
 			mA(); 
 
@@ -1213,8 +1213,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_KEYSPACE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:90:11: ( K E Y S P A C E )
-			// Meta.g:90:13: K E Y S P A C E
+			// Meta.g:100:11: ( K E Y S P A C E )
+			// Meta.g:100:13: K E Y S P A C E
 			{
 			mK(); 
 
@@ -1248,8 +1248,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_NOT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:91:6: ( N O T )
-			// Meta.g:91:8: N O T
+			// Meta.g:101:6: ( N O T )
+			// Meta.g:101:8: N O T
 			{
 			mN(); 
 
@@ -1273,8 +1273,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_WITH;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:92:7: ( W I T H )
-			// Meta.g:92:9: W I T H
+			// Meta.g:102:7: ( W I T H )
+			// Meta.g:102:9: W I T H
 			{
 			mW(); 
 
@@ -1300,8 +1300,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_DROP;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:93:7: ( D R O P )
-			// Meta.g:93:9: D R O P
+			// Meta.g:103:7: ( D R O P )
+			// Meta.g:103:9: D R O P
 			{
 			mD(); 
 
@@ -1327,8 +1327,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TABLE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:94:8: ( T A B L E )
-			// Meta.g:94:10: T A B L E
+			// Meta.g:104:8: ( T A B L E )
+			// Meta.g:104:10: T A B L E
 			{
 			mT(); 
 
@@ -1356,8 +1356,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_IF;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:95:5: ( I F )
-			// Meta.g:95:7: I F
+			// Meta.g:105:5: ( I F )
+			// Meta.g:105:7: I F
 			{
 			mI(); 
 
@@ -1379,8 +1379,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_EXISTS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:96:9: ( E X I S T S )
-			// Meta.g:96:11: E X I S T S
+			// Meta.g:106:9: ( E X I S T S )
+			// Meta.g:106:11: E X I S T S
 			{
 			mE(); 
 
@@ -1410,8 +1410,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_AND;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:97:6: ( A N D )
-			// Meta.g:97:8: A N D
+			// Meta.g:107:6: ( A N D )
+			// Meta.g:107:8: A N D
 			{
 			mA(); 
 
@@ -1435,8 +1435,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_USE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:98:6: ( U S E )
-			// Meta.g:98:8: U S E
+			// Meta.g:108:6: ( U S E )
+			// Meta.g:108:8: U S E
 			{
 			mU(); 
 
@@ -1460,8 +1460,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_SET;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:99:6: ( S E T )
-			// Meta.g:99:8: S E T
+			// Meta.g:109:6: ( S E T )
+			// Meta.g:109:8: S E T
 			{
 			mS(); 
 
@@ -1485,8 +1485,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_OPTIONS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:100:10: ( O P T I O N S )
-			// Meta.g:100:12: O P T I O N S
+			// Meta.g:110:10: ( O P T I O N S )
+			// Meta.g:110:12: O P T I O N S
 			{
 			mO(); 
 
@@ -1518,8 +1518,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ANALYTICS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:101:12: ( A N A L Y T I C S )
-			// Meta.g:101:14: A N A L Y T I C S
+			// Meta.g:111:12: ( A N A L Y T I C S )
+			// Meta.g:111:14: A N A L Y T I C S
 			{
 			mA(); 
 
@@ -1555,8 +1555,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TRUE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:102:7: ( T R U E )
-			// Meta.g:102:9: T R U E
+			// Meta.g:112:7: ( T R U E )
+			// Meta.g:112:9: T R U E
 			{
 			mT(); 
 
@@ -1582,8 +1582,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_FALSE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:103:8: ( F A L S E )
-			// Meta.g:103:10: F A L S E
+			// Meta.g:113:8: ( F A L S E )
+			// Meta.g:113:10: F A L S E
 			{
 			mF(); 
 
@@ -1611,8 +1611,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_CONSISTENCY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:104:14: ( C O N S I S T E N C Y )
-			// Meta.g:104:16: C O N S I S T E N C Y
+			// Meta.g:114:14: ( C O N S I S T E N C Y )
+			// Meta.g:114:16: C O N S I S T E N C Y
 			{
 			mC(); 
 
@@ -1652,8 +1652,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ALL;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:105:6: ( A L L )
-			// Meta.g:105:8: A L L
+			// Meta.g:115:6: ( A L L )
+			// Meta.g:115:8: A L L
 			{
 			mA(); 
 
@@ -1677,8 +1677,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ANY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:106:6: ( A N Y )
-			// Meta.g:106:8: A N Y
+			// Meta.g:116:6: ( A N Y )
+			// Meta.g:116:8: A N Y
 			{
 			mA(); 
 
@@ -1702,8 +1702,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_QUORUM;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:107:9: ( Q U O R U M )
-			// Meta.g:107:11: Q U O R U M
+			// Meta.g:117:9: ( Q U O R U M )
+			// Meta.g:117:11: Q U O R U M
 			{
 			mQ(); 
 
@@ -1733,8 +1733,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ONE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:108:6: ( O N E )
-			// Meta.g:108:8: O N E
+			// Meta.g:118:6: ( O N E )
+			// Meta.g:118:8: O N E
 			{
 			mO(); 
 
@@ -1758,8 +1758,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TWO;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:109:6: ( T W O )
-			// Meta.g:109:8: T W O
+			// Meta.g:119:6: ( T W O )
+			// Meta.g:119:8: T W O
 			{
 			mT(); 
 
@@ -1783,8 +1783,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_THREE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:110:8: ( T H R E E )
-			// Meta.g:110:10: T H R E E
+			// Meta.g:120:8: ( T H R E E )
+			// Meta.g:120:10: T H R E E
 			{
 			mT(); 
 
@@ -1812,8 +1812,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_EACH_QUORUM;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:111:14: ( E A C H '_' Q U O R U M )
-			// Meta.g:111:16: E A C H '_' Q U O R U M
+			// Meta.g:121:14: ( E A C H '_' Q U O R U M )
+			// Meta.g:121:16: E A C H '_' Q U O R U M
 			{
 			mE(); 
 
@@ -1852,8 +1852,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_LOCAL_ONE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:112:12: ( L O C A L '_' O N E )
-			// Meta.g:112:14: L O C A L '_' O N E
+			// Meta.g:122:12: ( L O C A L '_' O N E )
+			// Meta.g:122:14: L O C A L '_' O N E
 			{
 			mL(); 
 
@@ -1888,8 +1888,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_LOCAL_QUORUM;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:113:15: ( L O C A L '_' Q U O R U M )
-			// Meta.g:113:17: L O C A L '_' Q U O R U M
+			// Meta.g:123:15: ( L O C A L '_' Q U O R U M )
+			// Meta.g:123:17: L O C A L '_' Q U O R U M
 			{
 			mL(); 
 
@@ -1930,8 +1930,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_EXPLAIN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:114:10: ( E X P L A I N )
-			// Meta.g:114:12: E X P L A I N
+			// Meta.g:124:10: ( E X P L A I N )
+			// Meta.g:124:12: E X P L A I N
 			{
 			mE(); 
 
@@ -1963,8 +1963,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_PLAN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:115:7: ( P L A N )
-			// Meta.g:115:9: P L A N
+			// Meta.g:125:7: ( P L A N )
+			// Meta.g:125:9: P L A N
 			{
 			mP(); 
 
@@ -1990,8 +1990,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_FOR;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:116:6: ( F O R )
-			// Meta.g:116:8: F O R
+			// Meta.g:126:6: ( F O R )
+			// Meta.g:126:8: F O R
 			{
 			mF(); 
 
@@ -2015,8 +2015,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_INDEX;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:117:8: ( I N D E X )
-			// Meta.g:117:10: I N D E X
+			// Meta.g:127:8: ( I N D E X )
+			// Meta.g:127:10: I N D E X
 			{
 			mI(); 
 
@@ -2044,8 +2044,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_LIST;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:118:7: ( L I S T )
-			// Meta.g:118:9: L I S T
+			// Meta.g:128:7: ( L I S T )
+			// Meta.g:128:9: L I S T
 			{
 			mL(); 
 
@@ -2071,8 +2071,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_REMOVE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:119:9: ( R E M O V E )
-			// Meta.g:119:11: R E M O V E
+			// Meta.g:129:9: ( R E M O V E )
+			// Meta.g:129:11: R E M O V E
 			{
 			mR(); 
 
@@ -2102,8 +2102,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_UDF;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:120:6: ( U D F )
-			// Meta.g:120:8: U D F
+			// Meta.g:130:6: ( U D F )
+			// Meta.g:130:8: U D F
 			{
 			mU(); 
 
@@ -2127,8 +2127,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_PROCESS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:121:10: ( P R O C E S S )
-			// Meta.g:121:12: P R O C E S S
+			// Meta.g:131:10: ( P R O C E S S )
+			// Meta.g:131:12: P R O C E S S
 			{
 			mP(); 
 
@@ -2160,8 +2160,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TRIGGER;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:122:10: ( T R I G G E R )
-			// Meta.g:122:12: T R I G G E R
+			// Meta.g:132:10: ( T R I G G E R )
+			// Meta.g:132:12: T R I G G E R
 			{
 			mT(); 
 
@@ -2193,8 +2193,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_STOP;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:123:7: ( S T O P )
-			// Meta.g:123:9: S T O P
+			// Meta.g:133:7: ( S T O P )
+			// Meta.g:133:9: S T O P
 			{
 			mS(); 
 
@@ -2220,8 +2220,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ON;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:124:5: ( O N )
-			// Meta.g:124:7: O N
+			// Meta.g:134:5: ( O N )
+			// Meta.g:134:7: O N
 			{
 			mO(); 
 
@@ -2243,8 +2243,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_USING;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:125:8: ( U S I N G )
-			// Meta.g:125:10: U S I N G
+			// Meta.g:135:8: ( U S I N G )
+			// Meta.g:135:10: U S I N G
 			{
 			mU(); 
 
@@ -2272,8 +2272,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TYPE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:126:7: ( T Y P E )
-			// Meta.g:126:9: T Y P E
+			// Meta.g:136:7: ( T Y P E )
+			// Meta.g:136:9: T Y P E
 			{
 			mT(); 
 
@@ -2299,8 +2299,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ADD;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:127:6: ( A D D )
-			// Meta.g:127:8: A D D
+			// Meta.g:137:6: ( A D D )
+			// Meta.g:137:8: A D D
 			{
 			mA(); 
 
@@ -2324,8 +2324,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_PRIMARY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:128:10: ( P R I M A R Y )
-			// Meta.g:128:12: P R I M A R Y
+			// Meta.g:138:10: ( P R I M A R Y )
+			// Meta.g:138:12: P R I M A R Y
 			{
 			mP(); 
 
@@ -2357,8 +2357,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_KEY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:129:6: ( K E Y )
-			// Meta.g:129:8: K E Y
+			// Meta.g:139:6: ( K E Y )
+			// Meta.g:139:8: K E Y
 			{
 			mK(); 
 
@@ -2382,8 +2382,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_INSERT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:130:9: ( I N S E R T )
-			// Meta.g:130:11: I N S E R T
+			// Meta.g:140:9: ( I N S E R T )
+			// Meta.g:140:11: I N S E R T
 			{
 			mI(); 
 
@@ -2413,8 +2413,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_INTO;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:131:7: ( I N T O )
-			// Meta.g:131:9: I N T O
+			// Meta.g:141:7: ( I N T O )
+			// Meta.g:141:9: I N T O
 			{
 			mI(); 
 
@@ -2440,8 +2440,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_COMPACT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:132:10: ( C O M P A C T )
-			// Meta.g:132:12: C O M P A C T
+			// Meta.g:142:10: ( C O M P A C T )
+			// Meta.g:142:12: C O M P A C T
 			{
 			mC(); 
 
@@ -2473,8 +2473,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_STORAGE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:133:10: ( S T O R A G E )
-			// Meta.g:133:12: S T O R A G E
+			// Meta.g:143:10: ( S T O R A G E )
+			// Meta.g:143:12: S T O R A G E
 			{
 			mS(); 
 
@@ -2506,8 +2506,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_CLUSTERING;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:134:13: ( C L U S T E R I N G )
-			// Meta.g:134:15: C L U S T E R I N G
+			// Meta.g:144:13: ( C L U S T E R I N G )
+			// Meta.g:144:15: C L U S T E R I N G
 			{
 			mC(); 
 
@@ -2545,8 +2545,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ORDER;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:135:8: ( O R D E R )
-			// Meta.g:135:10: O R D E R
+			// Meta.g:145:8: ( O R D E R )
+			// Meta.g:145:10: O R D E R
 			{
 			mO(); 
 
@@ -2574,8 +2574,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_SELECT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:136:9: ( S E L E C T )
-			// Meta.g:136:11: S E L E C T
+			// Meta.g:146:9: ( S E L E C T )
+			// Meta.g:146:11: S E L E C T
 			{
 			mS(); 
 
@@ -2605,8 +2605,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_VALUES;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:137:9: ( V A L U E S )
-			// Meta.g:137:11: V A L U E S
+			// Meta.g:147:9: ( V A L U E S )
+			// Meta.g:147:11: V A L U E S
 			{
 			mV(); 
 
@@ -2636,8 +2636,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_UPDATE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:138:9: ( U P D A T E )
-			// Meta.g:138:11: U P D A T E
+			// Meta.g:148:9: ( U P D A T E )
+			// Meta.g:148:11: U P D A T E
 			{
 			mU(); 
 
@@ -2667,8 +2667,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_WHERE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:139:8: ( W H E R E )
-			// Meta.g:139:10: W H E R E
+			// Meta.g:149:8: ( W H E R E )
+			// Meta.g:149:10: W H E R E
 			{
 			mW(); 
 
@@ -2696,8 +2696,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_IN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:140:5: ( I N )
-			// Meta.g:140:7: I N
+			// Meta.g:150:5: ( I N )
+			// Meta.g:150:7: I N
 			{
 			mI(); 
 
@@ -2719,8 +2719,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_FROM;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:141:7: ( F R O M )
-			// Meta.g:141:9: F R O M
+			// Meta.g:151:7: ( F R O M )
+			// Meta.g:151:9: F R O M
 			{
 			mF(); 
 
@@ -2746,8 +2746,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_DELETE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:142:9: ( D E L E T E )
-			// Meta.g:142:11: D E L E T E
+			// Meta.g:152:9: ( D E L E T E )
+			// Meta.g:152:11: D E L E T E
 			{
 			mD(); 
 
@@ -2777,8 +2777,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_WINDOW;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:143:9: ( W I N D O W )
-			// Meta.g:143:11: W I N D O W
+			// Meta.g:153:9: ( W I N D O W )
+			// Meta.g:153:11: W I N D O W
 			{
 			mW(); 
 
@@ -2808,8 +2808,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_LAST;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:144:7: ( L A S T )
-			// Meta.g:144:9: L A S T
+			// Meta.g:154:7: ( L A S T )
+			// Meta.g:154:9: L A S T
 			{
 			mL(); 
 
@@ -2835,8 +2835,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ROWS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:145:7: ( R O W S )
-			// Meta.g:145:9: R O W S
+			// Meta.g:155:7: ( R O W S )
+			// Meta.g:155:9: R O W S
 			{
 			mR(); 
 
@@ -2862,8 +2862,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_INNER;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:146:8: ( I N N E R )
-			// Meta.g:146:10: I N N E R
+			// Meta.g:156:8: ( I N N E R )
+			// Meta.g:156:10: I N N E R
 			{
 			mI(); 
 
@@ -2891,8 +2891,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_JOIN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:147:7: ( J O I N )
-			// Meta.g:147:9: J O I N
+			// Meta.g:157:7: ( J O I N )
+			// Meta.g:157:9: J O I N
 			{
 			mJ(); 
 
@@ -2918,8 +2918,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_BY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:148:5: ( B Y )
-			// Meta.g:148:7: B Y
+			// Meta.g:158:5: ( B Y )
+			// Meta.g:158:7: B Y
 			{
 			mB(); 
 
@@ -2941,8 +2941,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_LIMIT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:149:8: ( L I M I T )
-			// Meta.g:149:10: L I M I T
+			// Meta.g:159:8: ( L I M I T )
+			// Meta.g:159:10: L I M I T
 			{
 			mL(); 
 
@@ -2970,8 +2970,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_DISABLE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:150:10: ( D I S A B L E )
-			// Meta.g:150:12: D I S A B L E
+			// Meta.g:160:10: ( D I S A B L E )
+			// Meta.g:160:12: D I S A B L E
 			{
 			mD(); 
 
@@ -3003,8 +3003,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_DISTINCT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:151:11: ( D I S T I N C T )
-			// Meta.g:151:13: D I S T I N C T
+			// Meta.g:161:11: ( D I S T I N C T )
+			// Meta.g:161:13: D I S T I N C T
 			{
 			mD(); 
 
@@ -3038,8 +3038,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_COUNT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:152:8: ( C O U N T )
-			// Meta.g:152:10: C O U N T
+			// Meta.g:162:8: ( C O U N T )
+			// Meta.g:162:10: C O U N T
 			{
 			mC(); 
 
@@ -3067,8 +3067,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_AS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:153:5: ( A S )
-			// Meta.g:153:7: A S
+			// Meta.g:163:5: ( A S )
+			// Meta.g:163:7: A S
 			{
 			mA(); 
 
@@ -3090,8 +3090,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_BETWEEN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:154:10: ( B E T W E E N )
-			// Meta.g:154:12: B E T W E E N
+			// Meta.g:164:10: ( B E T W E E N )
+			// Meta.g:164:12: B E T W E E N
 			{
 			mB(); 
 
@@ -3123,8 +3123,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ASC;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:155:6: ( A S C )
-			// Meta.g:155:8: A S C
+			// Meta.g:165:6: ( A S C )
+			// Meta.g:165:8: A S C
 			{
 			mA(); 
 
@@ -3148,8 +3148,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_DESC;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:156:7: ( D E S C )
-			// Meta.g:156:9: D E S C
+			// Meta.g:166:7: ( D E S C )
+			// Meta.g:166:9: D E S C
 			{
 			mD(); 
 
@@ -3175,8 +3175,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_LIKE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:157:7: ( L I K E )
-			// Meta.g:157:9: L I K E
+			// Meta.g:167:7: ( L I K E )
+			// Meta.g:167:9: L I K E
 			{
 			mL(); 
 
@@ -3202,8 +3202,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_SEMICOLON;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:159:12: ( ';' )
-			// Meta.g:159:14: ';'
+			// Meta.g:169:12: ( ';' )
+			// Meta.g:169:14: ';'
 			{
 			match(';'); 
 			}
@@ -3222,8 +3222,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_EQUAL;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:160:8: ( '=' )
-			// Meta.g:160:10: '='
+			// Meta.g:170:8: ( '=' )
+			// Meta.g:170:10: '='
 			{
 			match('='); 
 			}
@@ -3242,8 +3242,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_START_SBRACKET;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:161:17: ( '{' )
-			// Meta.g:161:19: '{'
+			// Meta.g:171:17: ( '{' )
+			// Meta.g:171:19: '{'
 			{
 			match('{'); 
 			}
@@ -3262,8 +3262,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_END_SBRACKET;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:162:15: ( '}' )
-			// Meta.g:162:17: '}'
+			// Meta.g:172:15: ( '}' )
+			// Meta.g:172:17: '}'
 			{
 			match('}'); 
 			}
@@ -3282,8 +3282,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_COLON;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:163:8: ( ':' )
-			// Meta.g:163:10: ':'
+			// Meta.g:173:8: ( ':' )
+			// Meta.g:173:10: ':'
 			{
 			match(':'); 
 			}
@@ -3302,8 +3302,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_COMMA;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:164:8: ( ',' )
-			// Meta.g:164:10: ','
+			// Meta.g:174:8: ( ',' )
+			// Meta.g:174:10: ','
 			{
 			match(','); 
 			}
@@ -3322,8 +3322,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_START_PARENTHESIS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:165:20: ( '(' )
-			// Meta.g:165:22: '('
+			// Meta.g:175:20: ( '(' )
+			// Meta.g:175:22: '('
 			{
 			match('('); 
 			}
@@ -3342,8 +3342,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_END_PARENTHESIS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:166:18: ( ')' )
-			// Meta.g:166:20: ')'
+			// Meta.g:176:18: ( ')' )
+			// Meta.g:176:20: ')'
 			{
 			match(')'); 
 			}
@@ -3362,7 +3362,7 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_QUOTE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:167:8: ( '\"' | '\\'' )
+			// Meta.g:177:8: ( '\"' | '\\'' )
 			// Meta.g:
 			{
 			if ( input.LA(1)=='\"'||input.LA(1)=='\'' ) {
@@ -3389,10 +3389,10 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_INDEX_TYPE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:168:13: ( ( 'HASH' | 'FULLTEXT' | 'CUSTOM' ) )
-			// Meta.g:168:15: ( 'HASH' | 'FULLTEXT' | 'CUSTOM' )
+			// Meta.g:178:13: ( ( 'HASH' | 'FULLTEXT' | 'CUSTOM' ) )
+			// Meta.g:178:15: ( 'HASH' | 'FULLTEXT' | 'CUSTOM' )
 			{
-			// Meta.g:168:15: ( 'HASH' | 'FULLTEXT' | 'CUSTOM' )
+			// Meta.g:178:15: ( 'HASH' | 'FULLTEXT' | 'CUSTOM' )
 			int alt3=3;
 			switch ( input.LA(1) ) {
 			case 'H':
@@ -3417,21 +3417,21 @@ public class MetaLexer extends Lexer {
 			}
 			switch (alt3) {
 				case 1 :
-					// Meta.g:168:16: 'HASH'
+					// Meta.g:178:16: 'HASH'
 					{
 					match("HASH"); 
 
 					}
 					break;
 				case 2 :
-					// Meta.g:168:25: 'FULLTEXT'
+					// Meta.g:178:25: 'FULLTEXT'
 					{
 					match("FULLTEXT"); 
 
 					}
 					break;
 				case 3 :
-					// Meta.g:168:38: 'CUSTOM'
+					// Meta.g:178:38: 'CUSTOM'
 					{
 					match("CUSTOM"); 
 
@@ -3456,8 +3456,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_START_BRACKET;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:169:16: ( '[' )
-			// Meta.g:169:18: '['
+			// Meta.g:179:16: ( '[' )
+			// Meta.g:179:18: '['
 			{
 			match('['); 
 			}
@@ -3476,8 +3476,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_END_BRACKET;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:170:14: ( ']' )
-			// Meta.g:170:16: ']'
+			// Meta.g:180:14: ( ']' )
+			// Meta.g:180:16: ']'
 			{
 			match(']'); 
 			}
@@ -3496,8 +3496,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_PLUS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:171:7: ( '+' )
-			// Meta.g:171:9: '+'
+			// Meta.g:181:7: ( '+' )
+			// Meta.g:181:9: '+'
 			{
 			match('+'); 
 			}
@@ -3516,8 +3516,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_SUBTRACT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:172:11: ( '-' )
-			// Meta.g:172:13: '-'
+			// Meta.g:182:11: ( '-' )
+			// Meta.g:182:13: '-'
 			{
 			match('-'); 
 			}
@@ -3536,8 +3536,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_INTERROGATION;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:173:16: ( '?' )
-			// Meta.g:173:18: '?'
+			// Meta.g:183:16: ( '?' )
+			// Meta.g:183:18: '?'
 			{
 			match('?'); 
 			}
@@ -3556,8 +3556,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_ASTERISK;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:174:11: ( '*' )
-			// Meta.g:174:13: '*'
+			// Meta.g:184:11: ( '*' )
+			// Meta.g:184:13: '*'
 			{
 			match('*'); 
 			}
@@ -3576,8 +3576,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_GROUP;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:175:8: ( G R O U P )
-			// Meta.g:175:10: G R O U P
+			// Meta.g:185:8: ( G R O U P )
+			// Meta.g:185:10: G R O U P
 			{
 			mG(); 
 
@@ -3605,8 +3605,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_AGGREGATION;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:176:14: ( A G G R E G A T I O N )
-			// Meta.g:176:16: A G G R E G A T I O N
+			// Meta.g:186:14: ( A G G R E G A T I O N )
+			// Meta.g:186:16: A G G R E G A T I O N
 			{
 			mA(); 
 
@@ -3646,8 +3646,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_MAX;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:177:6: ( M A X )
-			// Meta.g:177:8: M A X
+			// Meta.g:187:6: ( M A X )
+			// Meta.g:187:8: M A X
 			{
 			mM(); 
 
@@ -3671,8 +3671,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_MIN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:178:6: ( M I N )
-			// Meta.g:178:8: M I N
+			// Meta.g:188:6: ( M I N )
+			// Meta.g:188:8: M I N
 			{
 			mM(); 
 
@@ -3696,8 +3696,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_AVG;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:179:6: ( A V G )
-			// Meta.g:179:8: A V G
+			// Meta.g:189:6: ( A V G )
+			// Meta.g:189:8: A V G
 			{
 			mA(); 
 
@@ -3721,8 +3721,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_GT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:180:5: ( '>' )
-			// Meta.g:180:7: '>'
+			// Meta.g:190:5: ( '>' )
+			// Meta.g:190:7: '>'
 			{
 			match('>'); 
 			}
@@ -3741,8 +3741,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_LT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:181:5: ( '<' )
-			// Meta.g:181:7: '<'
+			// Meta.g:191:5: ( '<' )
+			// Meta.g:191:7: '<'
 			{
 			match('<'); 
 			}
@@ -3761,8 +3761,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_GET;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:182:6: ( '>' '=' )
-			// Meta.g:182:8: '>' '='
+			// Meta.g:192:6: ( '>' '=' )
+			// Meta.g:192:8: '>' '='
 			{
 			match('>'); 
 			match('='); 
@@ -3782,8 +3782,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_LET;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:183:6: ( '<' '=' )
-			// Meta.g:183:8: '<' '='
+			// Meta.g:193:6: ( '<' '=' )
+			// Meta.g:193:8: '<' '='
 			{
 			match('<'); 
 			match('='); 
@@ -3803,8 +3803,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_NOT_EQUAL;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:184:12: ( '<' '>' )
-			// Meta.g:184:14: '<' '>'
+			// Meta.g:194:12: ( '<' '>' )
+			// Meta.g:194:14: '<' '>'
 			{
 			match('<'); 
 			match('>'); 
@@ -3824,8 +3824,8 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TOKEN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:185:8: ( T O K E N )
-			// Meta.g:185:10: T O K E N
+			// Meta.g:195:8: ( T O K E N )
+			// Meta.g:195:10: T O K E N
 			{
 			mT(); 
 
@@ -3851,7 +3851,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "LETTER"
 	public final void mLETTER() throws RecognitionException {
 		try {
-			// Meta.g:187:16: ( ( 'A' .. 'Z' | 'a' .. 'z' ) )
+			// Meta.g:197:16: ( ( 'A' .. 'Z' | 'a' .. 'z' ) )
 			// Meta.g:
 			{
 			if ( (input.LA(1) >= 'A' && input.LA(1) <= 'Z')||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
@@ -3874,7 +3874,7 @@ public class MetaLexer extends Lexer {
 	// $ANTLR start "DIGIT"
 	public final void mDIGIT() throws RecognitionException {
 		try {
-			// Meta.g:188:15: ( '0' .. '9' )
+			// Meta.g:198:15: ( '0' .. '9' )
 			// Meta.g:
 			{
 			if ( (input.LA(1) >= '0' && input.LA(1) <= '9') ) {
@@ -3899,10 +3899,10 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_CONSTANT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:190:11: ( ( DIGIT )+ )
-			// Meta.g:190:13: ( DIGIT )+
+			// Meta.g:200:11: ( ( DIGIT )+ )
+			// Meta.g:200:13: ( DIGIT )+
 			{
-			// Meta.g:190:13: ( DIGIT )+
+			// Meta.g:200:13: ( DIGIT )+
 			int cnt4=0;
 			loop4:
 			while (true) {
@@ -3951,12 +3951,12 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_IDENT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:192:8: ( LETTER ( LETTER | DIGIT | '_' )* )
-			// Meta.g:192:10: LETTER ( LETTER | DIGIT | '_' )*
+			// Meta.g:202:8: ( LETTER ( LETTER | DIGIT | '_' )* )
+			// Meta.g:202:10: LETTER ( LETTER | DIGIT | '_' )*
 			{
 			mLETTER(); 
 
-			// Meta.g:192:17: ( LETTER | DIGIT | '_' )*
+			// Meta.g:202:17: ( LETTER | DIGIT | '_' )*
 			loop5:
 			while (true) {
 				int alt5=2;
@@ -4001,12 +4001,12 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_KS_AND_TN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:194:12: ( LETTER ( LETTER | DIGIT | '_' )* ( POINT LETTER ( LETTER | DIGIT | '_' )* )? )
-			// Meta.g:194:14: LETTER ( LETTER | DIGIT | '_' )* ( POINT LETTER ( LETTER | DIGIT | '_' )* )?
+			// Meta.g:204:12: ( LETTER ( LETTER | DIGIT | '_' )* ( POINT LETTER ( LETTER | DIGIT | '_' )* )? )
+			// Meta.g:204:14: LETTER ( LETTER | DIGIT | '_' )* ( POINT LETTER ( LETTER | DIGIT | '_' )* )?
 			{
 			mLETTER(); 
 
-			// Meta.g:194:21: ( LETTER | DIGIT | '_' )*
+			// Meta.g:204:21: ( LETTER | DIGIT | '_' )*
 			loop6:
 			while (true) {
 				int alt6=2;
@@ -4035,7 +4035,7 @@ public class MetaLexer extends Lexer {
 				}
 			}
 
-			// Meta.g:194:45: ( POINT LETTER ( LETTER | DIGIT | '_' )* )?
+			// Meta.g:204:45: ( POINT LETTER ( LETTER | DIGIT | '_' )* )?
 			int alt8=2;
 			int LA8_0 = input.LA(1);
 			if ( (LA8_0=='.') ) {
@@ -4043,13 +4043,13 @@ public class MetaLexer extends Lexer {
 			}
 			switch (alt8) {
 				case 1 :
-					// Meta.g:194:46: POINT LETTER ( LETTER | DIGIT | '_' )*
+					// Meta.g:204:46: POINT LETTER ( LETTER | DIGIT | '_' )*
 					{
 					mPOINT(); 
 
 					mLETTER(); 
 
-					// Meta.g:194:59: ( LETTER | DIGIT | '_' )*
+					// Meta.g:204:59: ( LETTER | DIGIT | '_' )*
 					loop7:
 					while (true) {
 						int alt7=2;
@@ -4099,10 +4099,10 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_TERM;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:196:7: ( ( LETTER | DIGIT | '_' | '.' )+ )
-			// Meta.g:196:9: ( LETTER | DIGIT | '_' | '.' )+
+			// Meta.g:206:7: ( ( LETTER | DIGIT | '_' | '.' )+ )
+			// Meta.g:206:9: ( LETTER | DIGIT | '_' | '.' )+
 			{
-			// Meta.g:196:9: ( LETTER | DIGIT | '_' | '.' )+
+			// Meta.g:206:9: ( LETTER | DIGIT | '_' | '.' )+
 			int cnt9=0;
 			loop9:
 			while (true) {
@@ -4151,14 +4151,14 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_FLOAT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:198:8: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )? | '.' ( '0' .. '9' )+ ( EXPONENT )? | ( '0' .. '9' )+ EXPONENT )
+			// Meta.g:208:8: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )? | '.' ( '0' .. '9' )+ ( EXPONENT )? | ( '0' .. '9' )+ EXPONENT )
 			int alt16=3;
 			alt16 = dfa16.predict(input);
 			switch (alt16) {
 				case 1 :
-					// Meta.g:198:12: ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )?
+					// Meta.g:208:12: ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )?
 					{
-					// Meta.g:198:12: ( '0' .. '9' )+
+					// Meta.g:208:12: ( '0' .. '9' )+
 					int cnt10=0;
 					loop10:
 					while (true) {
@@ -4192,7 +4192,7 @@ public class MetaLexer extends Lexer {
 					}
 
 					match('.'); 
-					// Meta.g:198:28: ( '0' .. '9' )*
+					// Meta.g:208:28: ( '0' .. '9' )*
 					loop11:
 					while (true) {
 						int alt11=2;
@@ -4221,7 +4221,7 @@ public class MetaLexer extends Lexer {
 						}
 					}
 
-					// Meta.g:198:40: ( EXPONENT )?
+					// Meta.g:208:40: ( EXPONENT )?
 					int alt12=2;
 					int LA12_0 = input.LA(1);
 					if ( (LA12_0=='E'||LA12_0=='e') ) {
@@ -4229,7 +4229,7 @@ public class MetaLexer extends Lexer {
 					}
 					switch (alt12) {
 						case 1 :
-							// Meta.g:198:40: EXPONENT
+							// Meta.g:208:40: EXPONENT
 							{
 							mEXPONENT(); 
 
@@ -4241,10 +4241,10 @@ public class MetaLexer extends Lexer {
 					}
 					break;
 				case 2 :
-					// Meta.g:199:10: '.' ( '0' .. '9' )+ ( EXPONENT )?
+					// Meta.g:209:10: '.' ( '0' .. '9' )+ ( EXPONENT )?
 					{
 					match('.'); 
-					// Meta.g:199:14: ( '0' .. '9' )+
+					// Meta.g:209:14: ( '0' .. '9' )+
 					int cnt13=0;
 					loop13:
 					while (true) {
@@ -4277,7 +4277,7 @@ public class MetaLexer extends Lexer {
 						cnt13++;
 					}
 
-					// Meta.g:199:26: ( EXPONENT )?
+					// Meta.g:209:26: ( EXPONENT )?
 					int alt14=2;
 					int LA14_0 = input.LA(1);
 					if ( (LA14_0=='E'||LA14_0=='e') ) {
@@ -4285,7 +4285,7 @@ public class MetaLexer extends Lexer {
 					}
 					switch (alt14) {
 						case 1 :
-							// Meta.g:199:26: EXPONENT
+							// Meta.g:209:26: EXPONENT
 							{
 							mEXPONENT(); 
 
@@ -4297,9 +4297,9 @@ public class MetaLexer extends Lexer {
 					}
 					break;
 				case 3 :
-					// Meta.g:200:10: ( '0' .. '9' )+ EXPONENT
+					// Meta.g:210:10: ( '0' .. '9' )+ EXPONENT
 					{
-					// Meta.g:200:10: ( '0' .. '9' )+
+					// Meta.g:210:10: ( '0' .. '9' )+
 					int cnt15=0;
 					loop15:
 					while (true) {
@@ -4352,10 +4352,10 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = T_PATH;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:203:7: ( ( LETTER | DIGIT | '_' | '.' | '-' | '/' )+ )
-			// Meta.g:203:9: ( LETTER | DIGIT | '_' | '.' | '-' | '/' )+
+			// Meta.g:213:7: ( ( LETTER | DIGIT | '_' | '.' | '-' | '/' )+ )
+			// Meta.g:213:9: ( LETTER | DIGIT | '_' | '.' | '-' | '/' )+
 			{
-			// Meta.g:203:9: ( LETTER | DIGIT | '_' | '.' | '-' | '/' )+
+			// Meta.g:213:9: ( LETTER | DIGIT | '_' | '.' | '-' | '/' )+
 			int cnt17=0;
 			loop17:
 			while (true) {
@@ -4404,10 +4404,10 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = WS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:896:3: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
-			// Meta.g:896:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
+			// Meta.g:897:3: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
+			// Meta.g:897:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
 			{
-			// Meta.g:896:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
+			// Meta.g:897:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
 			int cnt18=0;
 			loop18:
 			while (true) {
@@ -5337,7 +5337,7 @@ public class MetaLexer extends Lexer {
 		}
 		@Override
 		public String getDescription() {
-			return "198:1: T_FLOAT : ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )? | '.' ( '0' .. '9' )+ ( EXPONENT )? | ( '0' .. '9' )+ EXPONENT );";
+			return "208:1: T_FLOAT : ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )? | '.' ( '0' .. '9' )+ ( EXPONENT )? | ( '0' .. '9' )+ EXPONENT );";
 		}
 	}
 

@@ -1,6 +1,5 @@
 package com.stratio.sdh.meta.statements;
 
-//import com.stratio.sdh.meta.structures.Option;
 import com.stratio.sdh.meta.structures.GroupBy;
 import com.stratio.sdh.meta.structures.InnerJoin;
 import com.stratio.sdh.meta.structures.MetaRelation;
@@ -10,7 +9,6 @@ import com.stratio.sdh.meta.structures.SelectionClause;
 import com.stratio.sdh.meta.structures.WindowSelect;
 import com.stratio.sdh.meta.utils.MetaUtils;
 import java.util.List;
-//import java.util.List;
 
 public class SelectStatement extends Statement {
 
@@ -224,6 +222,11 @@ public class SelectStatement extends Statement {
     @Override
     public boolean validate() {
         return true;
+    }
+
+    @Override
+    public String getSuggestion() {
+        return this.getClass().toString().toUpperCase()+" EXAMPLE";
     }
     
 }

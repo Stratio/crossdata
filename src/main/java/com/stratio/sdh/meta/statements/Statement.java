@@ -16,5 +16,7 @@ public abstract class Statement {
     public abstract String toString();
     
     public abstract boolean validate();
+
+    public abstract String getSuggestion();
     
 }

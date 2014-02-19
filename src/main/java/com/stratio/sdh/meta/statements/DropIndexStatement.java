@@ -35,4 +35,9 @@ public class DropIndexStatement extends Statement {
         return true;
     }
 
+    @Override
+    public String getSuggestion() {
+        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
 }

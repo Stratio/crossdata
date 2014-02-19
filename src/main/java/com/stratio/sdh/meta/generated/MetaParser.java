@@ -1,10 +1,10 @@
-// $ANTLR 3.5.1 Meta.g 2014-02-14 12:43:25
+// $ANTLR 3.5.1 Meta.g 2014-02-18 11:14:01
 
     package com.stratio.sdh.meta.generated;    
     import com.stratio.sdh.meta.statements.*;
     import com.stratio.sdh.meta.structures.*;
+    import com.stratio.sdh.meta.utils.*;
     import java.util.LinkedHashMap;
-    import com.stratio.sdh.meta.structures.ValueAssignment;
     import java.util.HashMap;
     import java.util.Map;
     import java.util.Set;
@@ -209,18 +209,28 @@ public class MetaParser extends Parser {
 	@Override public String getGrammarFileName() { return "Meta.g"; }
 
 
-	    public void displayRecognitionError(String[] tokenNames, RecognitionException e){
-	        System.err.print("Error recognized: ");
+	    private ErrorsHelper foundErrors = new ErrorsHelper();
+
+	    public ErrorsHelper getFoundErrors(){
+	        return foundErrors;
+	    }
+
+	    @Override
+	    public void displayRecognitionError(String[] tokenNames, RecognitionException e){        
 	        String hdr = getErrorHeader(e);
 	        String msg = getErrorMessage(e, tokenNames);
-	        System.err.print(hdr+": ");
-	        System.err.println(msg);
+	        //System.err.println("Antlr exception: ");
+	        //System.err.print("\tError recognized: ");
+	        //System.err.print(hdr+": ");
+	        //System.err.println(msg);
+	        AntlrError antlrError = new AntlrError(hdr, msg);
+	        foundErrors.addError(antlrError);
 	    }
 
 
 
 	// $ANTLR start "deleteStatement"
-	// Meta.g:208:1: deleteStatement returns [DeleteStatement ds] : T_DELETE ( T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS )* T_FROM tablename= T_IDENT T_WHERE rel1= getRelation ( T_AND relN= getRelation )* ;
+	// Meta.g:218:1: deleteStatement returns [DeleteStatement ds] : T_DELETE ( T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS )* T_FROM tablename= T_IDENT T_WHERE rel1= getRelation ( T_AND relN= getRelation )* ;
 	public final DeleteStatement deleteStatement() throws RecognitionException {
 		DeleteStatement ds = null;
 
@@ -235,11 +245,11 @@ public class MetaParser extends Parser {
 				ds = new DeleteStatement();
 			
 		try {
-			// Meta.g:211:3: ( T_DELETE ( T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS )* T_FROM tablename= T_IDENT T_WHERE rel1= getRelation ( T_AND relN= getRelation )* )
-			// Meta.g:212:2: T_DELETE ( T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS )* T_FROM tablename= T_IDENT T_WHERE rel1= getRelation ( T_AND relN= getRelation )*
+			// Meta.g:221:3: ( T_DELETE ( T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS )* T_FROM tablename= T_IDENT T_WHERE rel1= getRelation ( T_AND relN= getRelation )* )
+			// Meta.g:222:2: T_DELETE ( T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS )* T_FROM tablename= T_IDENT T_WHERE rel1= getRelation ( T_AND relN= getRelation )*
 			{
 			match(input,T_DELETE,FOLLOW_T_DELETE_in_deleteStatement1902); 
-			// Meta.g:213:2: ( T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS )*
+			// Meta.g:223:2: ( T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS )*
 			loop2:
 			while (true) {
 				int alt2=2;
@@ -250,12 +260,12 @@ public class MetaParser extends Parser {
 
 				switch (alt2) {
 				case 1 :
-					// Meta.g:213:3: T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS
+					// Meta.g:223:3: T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS
 					{
 					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_deleteStatement1906); 
 					firstField=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_deleteStatement1911); 
 					ds.addColumn((firstField!=null?firstField.getText():null));
-					// Meta.g:215:3: ( T_COMMA field= T_IDENT )*
+					// Meta.g:225:3: ( T_COMMA field= T_IDENT )*
 					loop1:
 					while (true) {
 						int alt1=2;
@@ -266,7 +276,7 @@ public class MetaParser extends Parser {
 
 						switch (alt1) {
 						case 1 :
-							// Meta.g:215:4: T_COMMA field= T_IDENT
+							// Meta.g:225:4: T_COMMA field= T_IDENT
 							{
 							match(input,T_COMMA,FOLLOW_T_COMMA_in_deleteStatement1918); 
 							field=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_deleteStatement1925); 
@@ -297,7 +307,7 @@ public class MetaParser extends Parser {
 			state._fsp--;
 
 			ds.addRelation(rel1);
-			// Meta.g:223:44: ( T_AND relN= getRelation )*
+			// Meta.g:233:44: ( T_AND relN= getRelation )*
 			loop3:
 			while (true) {
 				int alt3=2;
@@ -308,7 +318,7 @@ public class MetaParser extends Parser {
 
 				switch (alt3) {
 				case 1 :
-					// Meta.g:223:45: T_AND relN= getRelation
+					// Meta.g:233:45: T_AND relN= getRelation
 					{
 					match(input,T_AND,FOLLOW_T_AND_in_deleteStatement1962); 
 					pushFollow(FOLLOW_getRelation_in_deleteStatement1966);
@@ -341,7 +351,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "addStatement"
-	// Meta.g:227:1: addStatement returns [AddStatement as] : T_ADD T_QUOTE name= T_PATH T_QUOTE ;
+	// Meta.g:237:1: addStatement returns [AddStatement as] : T_ADD T_QUOTE name= T_PATH T_QUOTE ;
 	public final AddStatement addStatement() throws RecognitionException {
 		AddStatement as = null;
 
@@ -349,8 +359,8 @@ public class MetaParser extends Parser {
 		Token name=null;
 
 		try {
-			// Meta.g:227:39: ( T_ADD T_QUOTE name= T_PATH T_QUOTE )
-			// Meta.g:228:2: T_ADD T_QUOTE name= T_PATH T_QUOTE
+			// Meta.g:237:39: ( T_ADD T_QUOTE name= T_PATH T_QUOTE )
+			// Meta.g:238:2: T_ADD T_QUOTE name= T_PATH T_QUOTE
 			{
 			match(input,T_ADD,FOLLOW_T_ADD_in_addStatement1985); 
 			match(input,T_QUOTE,FOLLOW_T_QUOTE_in_addStatement1987); 
@@ -374,7 +384,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "listStatement"
-	// Meta.g:232:1: listStatement returns [ListStatement ls] : T_LIST (type= getListTypes ) ;
+	// Meta.g:242:1: listStatement returns [ListStatement ls] : T_LIST (type= getListTypes ) ;
 	public final ListStatement listStatement() throws RecognitionException {
 		ListStatement ls = null;
 
@@ -382,12 +392,12 @@ public class MetaParser extends Parser {
 		ParserRuleReturnScope type =null;
 
 		try {
-			// Meta.g:232:41: ( T_LIST (type= getListTypes ) )
-			// Meta.g:233:2: T_LIST (type= getListTypes )
+			// Meta.g:242:41: ( T_LIST (type= getListTypes ) )
+			// Meta.g:243:2: T_LIST (type= getListTypes )
 			{
 			match(input,T_LIST,FOLLOW_T_LIST_in_listStatement2010); 
-			// Meta.g:233:9: (type= getListTypes )
-			// Meta.g:233:10: type= getListTypes
+			// Meta.g:243:9: (type= getListTypes )
+			// Meta.g:243:10: type= getListTypes
 			{
 			pushFollow(FOLLOW_getListTypes_in_listStatement2015);
 			type=getListTypes();
@@ -413,7 +423,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "removeUDFStatement"
-	// Meta.g:237:1: removeUDFStatement returns [RemoveUDFStatement rus] : T_REMOVE 'UDF' T_QUOTE jar= getTerm T_QUOTE ;
+	// Meta.g:247:1: removeUDFStatement returns [RemoveUDFStatement rus] : T_REMOVE 'UDF' T_QUOTE jar= getTerm T_QUOTE ;
 	public final RemoveUDFStatement removeUDFStatement() throws RecognitionException {
 		RemoveUDFStatement rus = null;
 
@@ -421,8 +431,8 @@ public class MetaParser extends Parser {
 		String jar =null;
 
 		try {
-			// Meta.g:237:52: ( T_REMOVE 'UDF' T_QUOTE jar= getTerm T_QUOTE )
-			// Meta.g:238:2: T_REMOVE 'UDF' T_QUOTE jar= getTerm T_QUOTE
+			// Meta.g:247:52: ( T_REMOVE 'UDF' T_QUOTE jar= getTerm T_QUOTE )
+			// Meta.g:248:2: T_REMOVE 'UDF' T_QUOTE jar= getTerm T_QUOTE
 			{
 			match(input,T_REMOVE,FOLLOW_T_REMOVE_in_removeUDFStatement2033); 
 			match(input,146,FOLLOW_146_in_removeUDFStatement2035); 
@@ -450,7 +460,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "dropIndexStatement"
-	// Meta.g:242:1: dropIndexStatement returns [DropIndexStatement dis] : T_DROP T_INDEX ( T_IF T_EXISTS )? name= T_IDENT ;
+	// Meta.g:252:1: dropIndexStatement returns [DropIndexStatement dis] : T_DROP T_INDEX ( T_IF T_EXISTS )? name= T_IDENT ;
 	public final DropIndexStatement dropIndexStatement() throws RecognitionException {
 		DropIndexStatement dis = null;
 
@@ -461,12 +471,12 @@ public class MetaParser extends Parser {
 				dis = new DropIndexStatement();
 			
 		try {
-			// Meta.g:245:3: ( T_DROP T_INDEX ( T_IF T_EXISTS )? name= T_IDENT )
-			// Meta.g:246:2: T_DROP T_INDEX ( T_IF T_EXISTS )? name= T_IDENT
+			// Meta.g:255:3: ( T_DROP T_INDEX ( T_IF T_EXISTS )? name= T_IDENT )
+			// Meta.g:256:2: T_DROP T_INDEX ( T_IF T_EXISTS )? name= T_IDENT
 			{
 			match(input,T_DROP,FOLLOW_T_DROP_in_dropIndexStatement2065); 
 			match(input,T_INDEX,FOLLOW_T_INDEX_in_dropIndexStatement2067); 
-			// Meta.g:247:2: ( T_IF T_EXISTS )?
+			// Meta.g:257:2: ( T_IF T_EXISTS )?
 			int alt4=2;
 			int LA4_0 = input.LA(1);
 			if ( (LA4_0==T_IF) ) {
@@ -474,7 +484,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt4) {
 				case 1 :
-					// Meta.g:247:3: T_IF T_EXISTS
+					// Meta.g:257:3: T_IF T_EXISTS
 					{
 					match(input,T_IF,FOLLOW_T_IF_in_dropIndexStatement2071); 
 					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_dropIndexStatement2073); 
@@ -503,7 +513,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "createIndexStatement"
-	// Meta.g:255:1: createIndexStatement returns [CreateIndexStatement cis] : T_CREATE indexType= T_INDEX_TYPE T_INDEX ( T_IF T_NOT T_EXISTS )? name= T_IDENT T_ON tablename= T_IDENT T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS ( T_USING usingClass= getTerm )? ( T_WITH T_OPTIONS key= T_IDENT T_EQUAL value= getValueProperty ( T_AND key= T_IDENT T_EQUAL value= getValueProperty )* )? ;
+	// Meta.g:265:1: createIndexStatement returns [CreateIndexStatement cis] : T_CREATE indexType= T_INDEX_TYPE T_INDEX ( T_IF T_NOT T_EXISTS )? name= T_IDENT T_ON tablename= T_IDENT T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS ( T_USING usingClass= getTerm )? ( T_WITH T_OPTIONS key= T_IDENT T_EQUAL value= getValueProperty ( T_AND key= T_IDENT T_EQUAL value= getValueProperty )* )? ;
 	public final CreateIndexStatement createIndexStatement() throws RecognitionException {
 		CreateIndexStatement cis = null;
 
@@ -521,14 +531,14 @@ public class MetaParser extends Parser {
 				cis = new CreateIndexStatement();
 			
 		try {
-			// Meta.g:258:3: ( T_CREATE indexType= T_INDEX_TYPE T_INDEX ( T_IF T_NOT T_EXISTS )? name= T_IDENT T_ON tablename= T_IDENT T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS ( T_USING usingClass= getTerm )? ( T_WITH T_OPTIONS key= T_IDENT T_EQUAL value= getValueProperty ( T_AND key= T_IDENT T_EQUAL value= getValueProperty )* )? )
-			// Meta.g:259:2: T_CREATE indexType= T_INDEX_TYPE T_INDEX ( T_IF T_NOT T_EXISTS )? name= T_IDENT T_ON tablename= T_IDENT T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS ( T_USING usingClass= getTerm )? ( T_WITH T_OPTIONS key= T_IDENT T_EQUAL value= getValueProperty ( T_AND key= T_IDENT T_EQUAL value= getValueProperty )* )?
+			// Meta.g:268:3: ( T_CREATE indexType= T_INDEX_TYPE T_INDEX ( T_IF T_NOT T_EXISTS )? name= T_IDENT T_ON tablename= T_IDENT T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS ( T_USING usingClass= getTerm )? ( T_WITH T_OPTIONS key= T_IDENT T_EQUAL value= getValueProperty ( T_AND key= T_IDENT T_EQUAL value= getValueProperty )* )? )
+			// Meta.g:269:2: T_CREATE indexType= T_INDEX_TYPE T_INDEX ( T_IF T_NOT T_EXISTS )? name= T_IDENT T_ON tablename= T_IDENT T_START_PARENTHESIS firstField= T_IDENT ( T_COMMA field= T_IDENT )* T_END_PARENTHESIS ( T_USING usingClass= getTerm )? ( T_WITH T_OPTIONS key= T_IDENT T_EQUAL value= getValueProperty ( T_AND key= T_IDENT T_EQUAL value= getValueProperty )* )?
 			{
 			match(input,T_CREATE,FOLLOW_T_CREATE_in_createIndexStatement2107); 
 			indexType=(Token)match(input,T_INDEX_TYPE,FOLLOW_T_INDEX_TYPE_in_createIndexStatement2111); 
 			cis.setIndexType((indexType!=null?indexType.getText():null));
 			match(input,T_INDEX,FOLLOW_T_INDEX_in_createIndexStatement2115); 
-			// Meta.g:260:2: ( T_IF T_NOT T_EXISTS )?
+			// Meta.g:270:2: ( T_IF T_NOT T_EXISTS )?
 			int alt5=2;
 			int LA5_0 = input.LA(1);
 			if ( (LA5_0==T_IF) ) {
@@ -536,7 +546,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt5) {
 				case 1 :
-					// Meta.g:260:3: T_IF T_NOT T_EXISTS
+					// Meta.g:270:3: T_IF T_NOT T_EXISTS
 					{
 					match(input,T_IF,FOLLOW_T_IF_in_createIndexStatement2119); 
 					match(input,T_NOT,FOLLOW_T_NOT_in_createIndexStatement2121); 
@@ -555,7 +565,7 @@ public class MetaParser extends Parser {
 			match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_createIndexStatement2146); 
 			firstField=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createIndexStatement2151); 
 			cis.addColumn((firstField!=null?firstField.getText():null));
-			// Meta.g:265:2: ( T_COMMA field= T_IDENT )*
+			// Meta.g:275:2: ( T_COMMA field= T_IDENT )*
 			loop6:
 			while (true) {
 				int alt6=2;
@@ -566,7 +576,7 @@ public class MetaParser extends Parser {
 
 				switch (alt6) {
 				case 1 :
-					// Meta.g:265:3: T_COMMA field= T_IDENT
+					// Meta.g:275:3: T_COMMA field= T_IDENT
 					{
 					match(input,T_COMMA,FOLLOW_T_COMMA_in_createIndexStatement2157); 
 					field=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createIndexStatement2163); 
@@ -580,7 +590,7 @@ public class MetaParser extends Parser {
 			}
 
 			match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_createIndexStatement2172); 
-			// Meta.g:269:2: ( T_USING usingClass= getTerm )?
+			// Meta.g:279:2: ( T_USING usingClass= getTerm )?
 			int alt7=2;
 			int LA7_0 = input.LA(1);
 			if ( (LA7_0==T_USING) ) {
@@ -588,7 +598,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt7) {
 				case 1 :
-					// Meta.g:269:3: T_USING usingClass= getTerm
+					// Meta.g:279:3: T_USING usingClass= getTerm
 					{
 					match(input,T_USING,FOLLOW_T_USING_in_createIndexStatement2176); 
 					pushFollow(FOLLOW_getTerm_in_createIndexStatement2180);
@@ -601,7 +611,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:270:2: ( T_WITH T_OPTIONS key= T_IDENT T_EQUAL value= getValueProperty ( T_AND key= T_IDENT T_EQUAL value= getValueProperty )* )?
+			// Meta.g:280:2: ( T_WITH T_OPTIONS key= T_IDENT T_EQUAL value= getValueProperty ( T_AND key= T_IDENT T_EQUAL value= getValueProperty )* )?
 			int alt9=2;
 			int LA9_0 = input.LA(1);
 			if ( (LA9_0==T_WITH) ) {
@@ -609,7 +619,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt9) {
 				case 1 :
-					// Meta.g:270:3: T_WITH T_OPTIONS key= T_IDENT T_EQUAL value= getValueProperty ( T_AND key= T_IDENT T_EQUAL value= getValueProperty )*
+					// Meta.g:280:3: T_WITH T_OPTIONS key= T_IDENT T_EQUAL value= getValueProperty ( T_AND key= T_IDENT T_EQUAL value= getValueProperty )*
 					{
 					match(input,T_WITH,FOLLOW_T_WITH_in_createIndexStatement2188); 
 					match(input,T_OPTIONS,FOLLOW_T_OPTIONS_in_createIndexStatement2190); 
@@ -620,7 +630,7 @@ public class MetaParser extends Parser {
 					state._fsp--;
 
 					cis.addOption((key!=null?key.getText():null), value);
-					// Meta.g:271:3: ( T_AND key= T_IDENT T_EQUAL value= getValueProperty )*
+					// Meta.g:281:3: ( T_AND key= T_IDENT T_EQUAL value= getValueProperty )*
 					loop8:
 					while (true) {
 						int alt8=2;
@@ -631,7 +641,7 @@ public class MetaParser extends Parser {
 
 						switch (alt8) {
 						case 1 :
-							// Meta.g:271:4: T_AND key= T_IDENT T_EQUAL value= getValueProperty
+							// Meta.g:281:4: T_AND key= T_IDENT T_EQUAL value= getValueProperty
 							{
 							match(input,T_AND,FOLLOW_T_AND_in_createIndexStatement2207); 
 							key=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createIndexStatement2211); 
@@ -671,7 +681,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "updateTableStatement"
-	// Meta.g:276:1: updateTableStatement returns [UpdateTableStatement pdtbst] : T_UPDATE tablename= getTableID ( T_USING opt1= getOption (optN= getOption )* )? T_SET assig1= getAssignment ( T_COMMA assigN= getAssignment )* T_WHERE rel1= getRelation ( T_AND relN= getRelation )* ( T_IF id1= T_IDENT T_EQUAL term1= getTerm ( T_AND idN= T_IDENT T_EQUAL termN= getTerm )* )? ;
+	// Meta.g:286:1: updateTableStatement returns [UpdateTableStatement pdtbst] : T_UPDATE tablename= getTableID ( T_USING opt1= getOption (optN= getOption )* )? T_SET assig1= getAssignment ( T_COMMA assigN= getAssignment )* T_WHERE rel1= getRelation ( T_AND relN= getRelation )* ( T_IF id1= T_IDENT T_EQUAL term1= getTerm ( T_AND idN= T_IDENT T_EQUAL termN= getTerm )* )? ;
 	public final UpdateTableStatement updateTableStatement() throws RecognitionException {
 		UpdateTableStatement pdtbst = null;
 
@@ -697,15 +707,15 @@ public class MetaParser extends Parser {
 		        Map<String, Term> conditions = new HashMap<>();
 		    
 		try {
-			// Meta.g:284:6: ( T_UPDATE tablename= getTableID ( T_USING opt1= getOption (optN= getOption )* )? T_SET assig1= getAssignment ( T_COMMA assigN= getAssignment )* T_WHERE rel1= getRelation ( T_AND relN= getRelation )* ( T_IF id1= T_IDENT T_EQUAL term1= getTerm ( T_AND idN= T_IDENT T_EQUAL termN= getTerm )* )? )
-			// Meta.g:285:5: T_UPDATE tablename= getTableID ( T_USING opt1= getOption (optN= getOption )* )? T_SET assig1= getAssignment ( T_COMMA assigN= getAssignment )* T_WHERE rel1= getRelation ( T_AND relN= getRelation )* ( T_IF id1= T_IDENT T_EQUAL term1= getTerm ( T_AND idN= T_IDENT T_EQUAL termN= getTerm )* )?
+			// Meta.g:294:6: ( T_UPDATE tablename= getTableID ( T_USING opt1= getOption (optN= getOption )* )? T_SET assig1= getAssignment ( T_COMMA assigN= getAssignment )* T_WHERE rel1= getRelation ( T_AND relN= getRelation )* ( T_IF id1= T_IDENT T_EQUAL term1= getTerm ( T_AND idN= T_IDENT T_EQUAL termN= getTerm )* )? )
+			// Meta.g:295:5: T_UPDATE tablename= getTableID ( T_USING opt1= getOption (optN= getOption )* )? T_SET assig1= getAssignment ( T_COMMA assigN= getAssignment )* T_WHERE rel1= getRelation ( T_AND relN= getRelation )* ( T_IF id1= T_IDENT T_EQUAL term1= getTerm ( T_AND idN= T_IDENT T_EQUAL termN= getTerm )* )?
 			{
 			match(input,T_UPDATE,FOLLOW_T_UPDATE_in_updateTableStatement2256); 
 			pushFollow(FOLLOW_getTableID_in_updateTableStatement2260);
 			tablename=getTableID();
 			state._fsp--;
 
-			// Meta.g:286:5: ( T_USING opt1= getOption (optN= getOption )* )?
+			// Meta.g:296:5: ( T_USING opt1= getOption (optN= getOption )* )?
 			int alt11=2;
 			int LA11_0 = input.LA(1);
 			if ( (LA11_0==T_USING) ) {
@@ -713,7 +723,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt11) {
 				case 1 :
-					// Meta.g:286:6: T_USING opt1= getOption (optN= getOption )*
+					// Meta.g:296:6: T_USING opt1= getOption (optN= getOption )*
 					{
 					match(input,T_USING,FOLLOW_T_USING_in_updateTableStatement2267); 
 					pushFollow(FOLLOW_getOption_in_updateTableStatement2271);
@@ -721,7 +731,7 @@ public class MetaParser extends Parser {
 					state._fsp--;
 
 					optsInc = true; options.add(opt1);
-					// Meta.g:286:66: (optN= getOption )*
+					// Meta.g:296:66: (optN= getOption )*
 					loop10:
 					while (true) {
 						int alt10=2;
@@ -732,7 +742,7 @@ public class MetaParser extends Parser {
 
 						switch (alt10) {
 						case 1 :
-							// Meta.g:286:67: optN= getOption
+							// Meta.g:296:67: optN= getOption
 							{
 							pushFollow(FOLLOW_getOption_in_updateTableStatement2278);
 							optN=getOption();
@@ -758,7 +768,7 @@ public class MetaParser extends Parser {
 			state._fsp--;
 
 			assignments.add(assig1);
-			// Meta.g:287:59: ( T_COMMA assigN= getAssignment )*
+			// Meta.g:297:59: ( T_COMMA assigN= getAssignment )*
 			loop12:
 			while (true) {
 				int alt12=2;
@@ -769,7 +779,7 @@ public class MetaParser extends Parser {
 
 				switch (alt12) {
 				case 1 :
-					// Meta.g:287:60: T_COMMA assigN= getAssignment
+					// Meta.g:297:60: T_COMMA assigN= getAssignment
 					{
 					match(input,T_COMMA,FOLLOW_T_COMMA_in_updateTableStatement2299); 
 					pushFollow(FOLLOW_getAssignment_in_updateTableStatement2303);
@@ -791,7 +801,7 @@ public class MetaParser extends Parser {
 			state._fsp--;
 
 			whereclauses.add(rel1);
-			// Meta.g:288:56: ( T_AND relN= getRelation )*
+			// Meta.g:298:56: ( T_AND relN= getRelation )*
 			loop13:
 			while (true) {
 				int alt13=2;
@@ -802,7 +812,7 @@ public class MetaParser extends Parser {
 
 				switch (alt13) {
 				case 1 :
-					// Meta.g:288:57: T_AND relN= getRelation
+					// Meta.g:298:57: T_AND relN= getRelation
 					{
 					match(input,T_AND,FOLLOW_T_AND_in_updateTableStatement2322); 
 					pushFollow(FOLLOW_getRelation_in_updateTableStatement2326);
@@ -818,7 +828,7 @@ public class MetaParser extends Parser {
 				}
 			}
 
-			// Meta.g:289:5: ( T_IF id1= T_IDENT T_EQUAL term1= getTerm ( T_AND idN= T_IDENT T_EQUAL termN= getTerm )* )?
+			// Meta.g:299:5: ( T_IF id1= T_IDENT T_EQUAL term1= getTerm ( T_AND idN= T_IDENT T_EQUAL termN= getTerm )* )?
 			int alt15=2;
 			int LA15_0 = input.LA(1);
 			if ( (LA15_0==T_IF) ) {
@@ -826,7 +836,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt15) {
 				case 1 :
-					// Meta.g:289:6: T_IF id1= T_IDENT T_EQUAL term1= getTerm ( T_AND idN= T_IDENT T_EQUAL termN= getTerm )*
+					// Meta.g:299:6: T_IF id1= T_IDENT T_EQUAL term1= getTerm ( T_AND idN= T_IDENT T_EQUAL termN= getTerm )*
 					{
 					match(input,T_IF,FOLLOW_T_IF_in_updateTableStatement2337); 
 					id1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_updateTableStatement2341); 
@@ -836,7 +846,7 @@ public class MetaParser extends Parser {
 					state._fsp--;
 
 					condsInc = true; conditions.put((id1!=null?id1.getText():null), new Term(term1));
-					// Meta.g:290:21: ( T_AND idN= T_IDENT T_EQUAL termN= getTerm )*
+					// Meta.g:300:21: ( T_AND idN= T_IDENT T_EQUAL termN= getTerm )*
 					loop14:
 					while (true) {
 						int alt14=2;
@@ -847,7 +857,7 @@ public class MetaParser extends Parser {
 
 						switch (alt14) {
 						case 1 :
-							// Meta.g:290:22: T_AND idN= T_IDENT T_EQUAL termN= getTerm
+							// Meta.g:300:22: T_AND idN= T_IDENT T_EQUAL termN= getTerm
 							{
 							match(input,T_AND,FOLLOW_T_AND_in_updateTableStatement2373); 
 							idN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_updateTableStatement2377); 
@@ -899,7 +909,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "stopProcessStatement"
-	// Meta.g:305:1: stopProcessStatement returns [StopProcessStatement stprst] : T_STOP T_PROCESS ident= T_IDENT ;
+	// Meta.g:315:1: stopProcessStatement returns [StopProcessStatement stprst] : T_STOP T_PROCESS ident= T_IDENT ;
 	public final StopProcessStatement stopProcessStatement() throws RecognitionException {
 		StopProcessStatement stprst = null;
 
@@ -907,8 +917,8 @@ public class MetaParser extends Parser {
 		Token ident=null;
 
 		try {
-			// Meta.g:305:59: ( T_STOP T_PROCESS ident= T_IDENT )
-			// Meta.g:306:5: T_STOP T_PROCESS ident= T_IDENT
+			// Meta.g:315:59: ( T_STOP T_PROCESS ident= T_IDENT )
+			// Meta.g:316:5: T_STOP T_PROCESS ident= T_IDENT
 			{
 			match(input,T_STOP,FOLLOW_T_STOP_in_stopProcessStatement2415); 
 			match(input,T_PROCESS,FOLLOW_T_PROCESS_in_stopProcessStatement2417); 
@@ -931,7 +941,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "dropTriggerStatement"
-	// Meta.g:309:1: dropTriggerStatement returns [DropTriggerStatement drtrst] : T_DROP T_TRIGGER ident= T_IDENT T_ON ident2= T_IDENT ;
+	// Meta.g:319:1: dropTriggerStatement returns [DropTriggerStatement drtrst] : T_DROP T_TRIGGER ident= T_IDENT T_ON ident2= T_IDENT ;
 	public final DropTriggerStatement dropTriggerStatement() throws RecognitionException {
 		DropTriggerStatement drtrst = null;
 
@@ -940,8 +950,8 @@ public class MetaParser extends Parser {
 		Token ident2=null;
 
 		try {
-			// Meta.g:309:59: ( T_DROP T_TRIGGER ident= T_IDENT T_ON ident2= T_IDENT )
-			// Meta.g:310:5: T_DROP T_TRIGGER ident= T_IDENT T_ON ident2= T_IDENT
+			// Meta.g:319:59: ( T_DROP T_TRIGGER ident= T_IDENT T_ON ident2= T_IDENT )
+			// Meta.g:320:5: T_DROP T_TRIGGER ident= T_IDENT T_ON ident2= T_IDENT
 			{
 			match(input,T_DROP,FOLLOW_T_DROP_in_dropTriggerStatement2443); 
 			match(input,T_TRIGGER,FOLLOW_T_TRIGGER_in_dropTriggerStatement2450); 
@@ -966,7 +976,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "createTriggerStatement"
-	// Meta.g:317:1: createTriggerStatement returns [CreateTriggerStatement crtrst] : T_CREATE T_TRIGGER trigger_name= T_IDENT T_ON table_name= T_IDENT T_USING class_name= T_IDENT ;
+	// Meta.g:327:1: createTriggerStatement returns [CreateTriggerStatement crtrst] : T_CREATE T_TRIGGER trigger_name= T_IDENT T_ON table_name= T_IDENT T_USING class_name= T_IDENT ;
 	public final CreateTriggerStatement createTriggerStatement() throws RecognitionException {
 		CreateTriggerStatement crtrst = null;
 
@@ -976,8 +986,8 @@ public class MetaParser extends Parser {
 		Token class_name=null;
 
 		try {
-			// Meta.g:317:63: ( T_CREATE T_TRIGGER trigger_name= T_IDENT T_ON table_name= T_IDENT T_USING class_name= T_IDENT )
-			// Meta.g:318:5: T_CREATE T_TRIGGER trigger_name= T_IDENT T_ON table_name= T_IDENT T_USING class_name= T_IDENT
+			// Meta.g:327:63: ( T_CREATE T_TRIGGER trigger_name= T_IDENT T_ON table_name= T_IDENT T_USING class_name= T_IDENT )
+			// Meta.g:328:5: T_CREATE T_TRIGGER trigger_name= T_IDENT T_ON table_name= T_IDENT T_USING class_name= T_IDENT
 			{
 			match(input,T_CREATE,FOLLOW_T_CREATE_in_createTriggerStatement2498); 
 			match(input,T_TRIGGER,FOLLOW_T_TRIGGER_in_createTriggerStatement2505); 
@@ -1004,7 +1014,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "createTableStatement"
-	// Meta.g:327:1: createTableStatement returns [CreateTableStatement crtast] : T_CREATE T_TABLE ( T_IF T_NOT T_EXISTS )? name_table= T_IDENT '(' (ident_column1= T_IDENT type1= T_IDENT ( T_PRIMARY T_KEY )? ( ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? ) | ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' ) )* ) ')' ( T_WITH )? (identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )? ;
+	// Meta.g:337:1: createTableStatement returns [CreateTableStatement crtast] : T_CREATE T_TABLE ( T_IF T_NOT T_EXISTS )? name_table= T_IDENT '(' (ident_column1= T_IDENT type1= T_IDENT ( T_PRIMARY T_KEY )? ( ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? ) | ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' ) )* ) ')' ( T_WITH )? (identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )? ;
 	public final CreateTableStatement createTableStatement() throws RecognitionException {
 		CreateTableStatement crtast = null;
 
@@ -1036,12 +1046,12 @@ public class MetaParser extends Parser {
 		    boolean withPropierties = false;
 		    
 		try {
-			// Meta.g:339:6: ( T_CREATE T_TABLE ( T_IF T_NOT T_EXISTS )? name_table= T_IDENT '(' (ident_column1= T_IDENT type1= T_IDENT ( T_PRIMARY T_KEY )? ( ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? ) | ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' ) )* ) ')' ( T_WITH )? (identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )? )
-			// Meta.g:340:5: T_CREATE T_TABLE ( T_IF T_NOT T_EXISTS )? name_table= T_IDENT '(' (ident_column1= T_IDENT type1= T_IDENT ( T_PRIMARY T_KEY )? ( ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? ) | ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' ) )* ) ')' ( T_WITH )? (identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )?
+			// Meta.g:349:6: ( T_CREATE T_TABLE ( T_IF T_NOT T_EXISTS )? name_table= T_IDENT '(' (ident_column1= T_IDENT type1= T_IDENT ( T_PRIMARY T_KEY )? ( ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? ) | ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' ) )* ) ')' ( T_WITH )? (identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )? )
+			// Meta.g:350:5: T_CREATE T_TABLE ( T_IF T_NOT T_EXISTS )? name_table= T_IDENT '(' (ident_column1= T_IDENT type1= T_IDENT ( T_PRIMARY T_KEY )? ( ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? ) | ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' ) )* ) ')' ( T_WITH )? (identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )?
 			{
 			match(input,T_CREATE,FOLLOW_T_CREATE_in_createTableStatement2574); 
 			match(input,T_TABLE,FOLLOW_T_TABLE_in_createTableStatement2580); 
-			// Meta.g:342:5: ( T_IF T_NOT T_EXISTS )?
+			// Meta.g:352:5: ( T_IF T_NOT T_EXISTS )?
 			int alt16=2;
 			int LA16_0 = input.LA(1);
 			if ( (LA16_0==T_IF) ) {
@@ -1049,7 +1059,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt16) {
 				case 1 :
-					// Meta.g:342:6: T_IF T_NOT T_EXISTS
+					// Meta.g:352:6: T_IF T_NOT T_EXISTS
 					{
 					match(input,T_IF,FOLLOW_T_IF_in_createTableStatement2587); 
 					match(input,T_NOT,FOLLOW_T_NOT_in_createTableStatement2589); 
@@ -1062,12 +1072,12 @@ public class MetaParser extends Parser {
 
 			name_table=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement2604); 
 			match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_createTableStatement2610); 
-			// Meta.g:344:9: (ident_column1= T_IDENT type1= T_IDENT ( T_PRIMARY T_KEY )? ( ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? ) | ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' ) )* )
-			// Meta.g:345:17: ident_column1= T_IDENT type1= T_IDENT ( T_PRIMARY T_KEY )? ( ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? ) | ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' ) )*
+			// Meta.g:354:9: (ident_column1= T_IDENT type1= T_IDENT ( T_PRIMARY T_KEY )? ( ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? ) | ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' ) )* )
+			// Meta.g:355:17: ident_column1= T_IDENT type1= T_IDENT ( T_PRIMARY T_KEY )? ( ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? ) | ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' ) )*
 			{
 			ident_column1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement2644); 
 			type1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement2648); 
-			// Meta.g:345:53: ( T_PRIMARY T_KEY )?
+			// Meta.g:355:53: ( T_PRIMARY T_KEY )?
 			int alt17=2;
 			int LA17_0 = input.LA(1);
 			if ( (LA17_0==T_PRIMARY) ) {
@@ -1075,7 +1085,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt17) {
 				case 1 :
-					// Meta.g:345:54: T_PRIMARY T_KEY
+					// Meta.g:355:54: T_PRIMARY T_KEY
 					{
 					match(input,T_PRIMARY,FOLLOW_T_PRIMARY_in_createTableStatement2651); 
 					match(input,T_KEY,FOLLOW_T_KEY_in_createTableStatement2653); 
@@ -1085,7 +1095,7 @@ public class MetaParser extends Parser {
 			}
 
 			columns.put((ident_column1!=null?ident_column1.getText():null),(type1!=null?type1.getText():null)); Type_Primary_Key=1;
-			// Meta.g:346:17: ( ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? ) | ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' ) )*
+			// Meta.g:356:17: ( ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? ) | ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' ) )*
 			loop23:
 			while (true) {
 				int alt23=3;
@@ -1103,15 +1113,15 @@ public class MetaParser extends Parser {
 
 				switch (alt23) {
 				case 1 :
-					// Meta.g:347:21: ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? )
+					// Meta.g:357:21: ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? )
 					{
-					// Meta.g:347:21: ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? )
-					// Meta.g:347:23: ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )?
+					// Meta.g:357:21: ( ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )? )
+					// Meta.g:357:23: ',' ident_columN= T_IDENT typeN= T_IDENT ( T_PRIMARY T_KEY )?
 					{
 					match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement2702); 
 					ident_columN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement2706); 
 					typeN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement2710); 
-					// Meta.g:347:62: ( T_PRIMARY T_KEY )?
+					// Meta.g:357:62: ( T_PRIMARY T_KEY )?
 					int alt18=2;
 					int LA18_0 = input.LA(1);
 					if ( (LA18_0==T_PRIMARY) ) {
@@ -1119,7 +1129,7 @@ public class MetaParser extends Parser {
 					}
 					switch (alt18) {
 						case 1 :
-							// Meta.g:347:63: T_PRIMARY T_KEY
+							// Meta.g:357:63: T_PRIMARY T_KEY
 							{
 							match(input,T_PRIMARY,FOLLOW_T_PRIMARY_in_createTableStatement2713); 
 							match(input,T_KEY,FOLLOW_T_KEY_in_createTableStatement2715); 
@@ -1135,16 +1145,16 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:348:22: ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' )
+					// Meta.g:358:22: ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' )
 					{
-					// Meta.g:348:22: ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' )
-					// Meta.g:349:25: ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')'
+					// Meta.g:358:22: ( ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')' )
+					// Meta.g:359:25: ',' T_PRIMARY T_KEY '(' ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) ) ')'
 					{
 					match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement2773); 
 					match(input,T_PRIMARY,FOLLOW_T_PRIMARY_in_createTableStatement2775); 
 					match(input,T_KEY,FOLLOW_T_KEY_in_createTableStatement2777); 
 					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_createTableStatement2779); 
-					// Meta.g:350:25: ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) )
+					// Meta.g:360:25: ( (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* ) | ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* ) )
 					int alt22=2;
 					int LA22_0 = input.LA(1);
 					if ( (LA22_0==T_IDENT) ) {
@@ -1162,14 +1172,14 @@ public class MetaParser extends Parser {
 
 					switch (alt22) {
 						case 1 :
-							// Meta.g:351:29: (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* )
+							// Meta.g:361:29: (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* )
 							{
-							// Meta.g:351:29: (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* )
-							// Meta.g:351:33: primaryK= T_IDENT ( ',' partitionKN= T_IDENT )*
+							// Meta.g:361:29: (primaryK= T_IDENT ( ',' partitionKN= T_IDENT )* )
+							// Meta.g:361:33: primaryK= T_IDENT ( ',' partitionKN= T_IDENT )*
 							{
 							primaryK=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement2841); 
 							primaryKey.add((primaryK!=null?primaryK.getText():null));Type_Primary_Key=3;
-							// Meta.g:353:33: ( ',' partitionKN= T_IDENT )*
+							// Meta.g:363:33: ( ',' partitionKN= T_IDENT )*
 							loop19:
 							while (true) {
 								int alt19=2;
@@ -1180,7 +1190,7 @@ public class MetaParser extends Parser {
 
 								switch (alt19) {
 								case 1 :
-									// Meta.g:353:34: ',' partitionKN= T_IDENT
+									// Meta.g:363:34: ',' partitionKN= T_IDENT
 									{
 									match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement2906); 
 									partitionKN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement2909); 
@@ -1198,15 +1208,15 @@ public class MetaParser extends Parser {
 							}
 							break;
 						case 2 :
-							// Meta.g:355:30: ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* )
+							// Meta.g:365:30: ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* )
 							{
-							// Meta.g:355:30: ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* )
-							// Meta.g:356:33: '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )*
+							// Meta.g:365:30: ( '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )* )
+							// Meta.g:366:33: '(' partitionK= T_IDENT ( ',' partitionKN= T_IDENT )* ')' ( ',' clusterKN= T_IDENT )*
 							{
 							match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_createTableStatement3008); 
 							partitionK=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement3012); 
 							primaryKey.add((partitionK!=null?partitionK.getText():null));Type_Primary_Key=4;
-							// Meta.g:357:37: ( ',' partitionKN= T_IDENT )*
+							// Meta.g:367:37: ( ',' partitionKN= T_IDENT )*
 							loop20:
 							while (true) {
 								int alt20=2;
@@ -1217,7 +1227,7 @@ public class MetaParser extends Parser {
 
 								switch (alt20) {
 								case 1 :
-									// Meta.g:357:38: ',' partitionKN= T_IDENT
+									// Meta.g:367:38: ',' partitionKN= T_IDENT
 									{
 									match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement3053); 
 									partitionKN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement3056); 
@@ -1231,7 +1241,7 @@ public class MetaParser extends Parser {
 							}
 
 							match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_createTableStatement3094); 
-							// Meta.g:359:33: ( ',' clusterKN= T_IDENT )*
+							// Meta.g:369:33: ( ',' clusterKN= T_IDENT )*
 							loop21:
 							while (true) {
 								int alt21=2;
@@ -1242,7 +1252,7 @@ public class MetaParser extends Parser {
 
 								switch (alt21) {
 								case 1 :
-									// Meta.g:359:34: ',' clusterKN= T_IDENT
+									// Meta.g:369:34: ',' clusterKN= T_IDENT
 									{
 									match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement3130); 
 									clusterKN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement3134); 
@@ -1276,7 +1286,7 @@ public class MetaParser extends Parser {
 			}
 
 			match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_createTableStatement3292); 
-			// Meta.g:367:9: ( T_WITH )?
+			// Meta.g:377:9: ( T_WITH )?
 			int alt24=2;
 			int LA24_0 = input.LA(1);
 			if ( (LA24_0==T_WITH) ) {
@@ -1284,7 +1294,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt24) {
 				case 1 :
-					// Meta.g:367:9: T_WITH
+					// Meta.g:377:9: T_WITH
 					{
 					match(input,T_WITH,FOLLOW_T_WITH_in_createTableStatement3294); 
 					}
@@ -1292,7 +1302,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:368:5: (identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )?
+			// Meta.g:378:5: (identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )?
 			int alt26=2;
 			int LA26_0 = input.LA(1);
 			if ( (LA26_0==T_IDENT) ) {
@@ -1300,7 +1310,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt26) {
 				case 1 :
-					// Meta.g:368:7: identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
+					// Meta.g:378:7: identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
 					{
 					identProp1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement3305); 
 					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_createTableStatement3307); 
@@ -1309,7 +1319,7 @@ public class MetaParser extends Parser {
 					state._fsp--;
 
 					propierties.put((identProp1!=null?identProp1.getText():null), valueProp1);withPropierties=true;
-					// Meta.g:369:13: ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
+					// Meta.g:379:13: ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
 					loop25:
 					while (true) {
 						int alt25=2;
@@ -1320,7 +1330,7 @@ public class MetaParser extends Parser {
 
 						switch (alt25) {
 						case 1 :
-							// Meta.g:369:14: T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty
+							// Meta.g:379:14: T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty
 							{
 							match(input,T_AND,FOLLOW_T_AND_in_createTableStatement3328); 
 							identPropN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement3332); 
@@ -1361,7 +1371,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "alterTableStatement"
-	// Meta.g:374:1: alterTableStatement returns [AlterTableStatement altast] : T_ALTER T_TABLE name_table= T_IDENT ( T_ALTER column= T_IDENT T_TYPE type= T_IDENT | T_ADD column= T_IDENT type= T_IDENT | T_DROP column= T_IDENT | T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* ) ;
+	// Meta.g:384:1: alterTableStatement returns [AlterTableStatement altast] : T_ALTER T_TABLE name_table= T_IDENT ( T_ALTER column= T_IDENT T_TYPE type= T_IDENT | T_ADD column= T_IDENT type= T_IDENT | T_DROP column= T_IDENT | T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* ) ;
 	public final AlterTableStatement alterTableStatement() throws RecognitionException {
 		AlterTableStatement altast = null;
 
@@ -1379,13 +1389,13 @@ public class MetaParser extends Parser {
 		        int prop= 0;
 		    
 		try {
-			// Meta.g:378:6: ( T_ALTER T_TABLE name_table= T_IDENT ( T_ALTER column= T_IDENT T_TYPE type= T_IDENT | T_ADD column= T_IDENT type= T_IDENT | T_DROP column= T_IDENT | T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* ) )
-			// Meta.g:379:5: T_ALTER T_TABLE name_table= T_IDENT ( T_ALTER column= T_IDENT T_TYPE type= T_IDENT | T_ADD column= T_IDENT type= T_IDENT | T_DROP column= T_IDENT | T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )
+			// Meta.g:388:6: ( T_ALTER T_TABLE name_table= T_IDENT ( T_ALTER column= T_IDENT T_TYPE type= T_IDENT | T_ADD column= T_IDENT type= T_IDENT | T_DROP column= T_IDENT | T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* ) )
+			// Meta.g:389:5: T_ALTER T_TABLE name_table= T_IDENT ( T_ALTER column= T_IDENT T_TYPE type= T_IDENT | T_ADD column= T_IDENT type= T_IDENT | T_DROP column= T_IDENT | T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )
 			{
 			match(input,T_ALTER,FOLLOW_T_ALTER_in_alterTableStatement3402); 
 			match(input,T_TABLE,FOLLOW_T_TABLE_in_alterTableStatement3408); 
 			name_table=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterTableStatement3416); 
-			// Meta.g:382:5: ( T_ALTER column= T_IDENT T_TYPE type= T_IDENT | T_ADD column= T_IDENT type= T_IDENT | T_DROP column= T_IDENT | T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )
+			// Meta.g:392:5: ( T_ALTER column= T_IDENT T_TYPE type= T_IDENT | T_ADD column= T_IDENT type= T_IDENT | T_DROP column= T_IDENT | T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )
 			int alt28=4;
 			switch ( input.LA(1) ) {
 			case T_ALTER:
@@ -1415,7 +1425,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt28) {
 				case 1 :
-					// Meta.g:382:6: T_ALTER column= T_IDENT T_TYPE type= T_IDENT
+					// Meta.g:392:6: T_ALTER column= T_IDENT T_TYPE type= T_IDENT
 					{
 					match(input,T_ALTER,FOLLOW_T_ALTER_in_alterTableStatement3423); 
 					column=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterTableStatement3427); 
@@ -1425,7 +1435,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:383:10: T_ADD column= T_IDENT type= T_IDENT
+					// Meta.g:393:10: T_ADD column= T_IDENT type= T_IDENT
 					{
 					match(input,T_ADD,FOLLOW_T_ADD_in_alterTableStatement3446); 
 					column=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterTableStatement3450); 
@@ -1434,7 +1444,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 3 :
-					// Meta.g:384:10: T_DROP column= T_IDENT
+					// Meta.g:394:10: T_DROP column= T_IDENT
 					{
 					match(input,T_DROP,FOLLOW_T_DROP_in_alterTableStatement3467); 
 					column=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterTableStatement3471); 
@@ -1442,7 +1452,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 4 :
-					// Meta.g:385:10: T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
+					// Meta.g:395:10: T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
 					{
 					match(input,T_WITH,FOLLOW_T_WITH_in_alterTableStatement3484); 
 					identProp1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterTableStatement3501); 
@@ -1452,7 +1462,7 @@ public class MetaParser extends Parser {
 					state._fsp--;
 
 					option.put((identProp1!=null?identProp1.getText():null), valueProp1);
-					// Meta.g:387:13: ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
+					// Meta.g:397:13: ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
 					loop27:
 					while (true) {
 						int alt27=2;
@@ -1463,7 +1473,7 @@ public class MetaParser extends Parser {
 
 						switch (alt27) {
 						case 1 :
-							// Meta.g:387:14: T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty
+							// Meta.g:397:14: T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty
 							{
 							match(input,T_AND,FOLLOW_T_AND_in_alterTableStatement3524); 
 							identPropN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterTableStatement3528); 
@@ -1505,7 +1515,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "selectStatement"
-	// Meta.g:393:1: selectStatement returns [SelectStatement slctst] : T_SELECT selClause= getSelectClause T_FROM tablename= getTableID ( T_WITH T_WINDOW window= getWindow )? ( T_INNER T_JOIN identJoin= getTableID T_ON fields= getFields )? ( T_WHERE whereClauses= getWhereClauses )? ( T_ORDER T_BY ordering= getOrdering )? ( T_GROUP T_BY groupby= getList )? ( T_LIMIT constant= T_CONSTANT )? ( T_DISABLE T_ANALYTICS )? ;
+	// Meta.g:403:1: selectStatement returns [SelectStatement slctst] : T_SELECT selClause= getSelectClause T_FROM tablename= getTableID ( T_WITH T_WINDOW window= getWindow )? ( T_INNER T_JOIN identJoin= getTableID T_ON fields= getFields )? ( T_WHERE whereClauses= getWhereClauses )? ( T_ORDER T_BY ordering= getOrdering )? ( T_GROUP T_BY groupby= getList )? ( T_LIMIT constant= T_CONSTANT )? ( T_DISABLE T_ANALYTICS )? ;
 	public final SelectStatement selectStatement() throws RecognitionException {
 		SelectStatement slctst = null;
 
@@ -1530,8 +1540,8 @@ public class MetaParser extends Parser {
 		        boolean disable = false;
 		    
 		try {
-			// Meta.g:402:6: ( T_SELECT selClause= getSelectClause T_FROM tablename= getTableID ( T_WITH T_WINDOW window= getWindow )? ( T_INNER T_JOIN identJoin= getTableID T_ON fields= getFields )? ( T_WHERE whereClauses= getWhereClauses )? ( T_ORDER T_BY ordering= getOrdering )? ( T_GROUP T_BY groupby= getList )? ( T_LIMIT constant= T_CONSTANT )? ( T_DISABLE T_ANALYTICS )? )
-			// Meta.g:403:5: T_SELECT selClause= getSelectClause T_FROM tablename= getTableID ( T_WITH T_WINDOW window= getWindow )? ( T_INNER T_JOIN identJoin= getTableID T_ON fields= getFields )? ( T_WHERE whereClauses= getWhereClauses )? ( T_ORDER T_BY ordering= getOrdering )? ( T_GROUP T_BY groupby= getList )? ( T_LIMIT constant= T_CONSTANT )? ( T_DISABLE T_ANALYTICS )?
+			// Meta.g:412:6: ( T_SELECT selClause= getSelectClause T_FROM tablename= getTableID ( T_WITH T_WINDOW window= getWindow )? ( T_INNER T_JOIN identJoin= getTableID T_ON fields= getFields )? ( T_WHERE whereClauses= getWhereClauses )? ( T_ORDER T_BY ordering= getOrdering )? ( T_GROUP T_BY groupby= getList )? ( T_LIMIT constant= T_CONSTANT )? ( T_DISABLE T_ANALYTICS )? )
+			// Meta.g:413:5: T_SELECT selClause= getSelectClause T_FROM tablename= getTableID ( T_WITH T_WINDOW window= getWindow )? ( T_INNER T_JOIN identJoin= getTableID T_ON fields= getFields )? ( T_WHERE whereClauses= getWhereClauses )? ( T_ORDER T_BY ordering= getOrdering )? ( T_GROUP T_BY groupby= getList )? ( T_LIMIT constant= T_CONSTANT )? ( T_DISABLE T_ANALYTICS )?
 			{
 			match(input,T_SELECT,FOLLOW_T_SELECT_in_selectStatement3589); 
 			pushFollow(FOLLOW_getSelectClause_in_selectStatement3593);
@@ -1543,7 +1553,7 @@ public class MetaParser extends Parser {
 			tablename=getTableID();
 			state._fsp--;
 
-			// Meta.g:404:5: ( T_WITH T_WINDOW window= getWindow )?
+			// Meta.g:414:5: ( T_WITH T_WINDOW window= getWindow )?
 			int alt29=2;
 			int LA29_0 = input.LA(1);
 			if ( (LA29_0==T_WITH) ) {
@@ -1551,7 +1561,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt29) {
 				case 1 :
-					// Meta.g:404:6: T_WITH T_WINDOW window= getWindow
+					// Meta.g:414:6: T_WITH T_WINDOW window= getWindow
 					{
 					match(input,T_WITH,FOLLOW_T_WITH_in_selectStatement3607); 
 					match(input,T_WINDOW,FOLLOW_T_WINDOW_in_selectStatement3609); 
@@ -1565,7 +1575,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:405:5: ( T_INNER T_JOIN identJoin= getTableID T_ON fields= getFields )?
+			// Meta.g:415:5: ( T_INNER T_JOIN identJoin= getTableID T_ON fields= getFields )?
 			int alt30=2;
 			int LA30_0 = input.LA(1);
 			if ( (LA30_0==T_INNER) ) {
@@ -1573,7 +1583,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt30) {
 				case 1 :
-					// Meta.g:405:6: T_INNER T_JOIN identJoin= getTableID T_ON fields= getFields
+					// Meta.g:415:6: T_INNER T_JOIN identJoin= getTableID T_ON fields= getFields
 					{
 					match(input,T_INNER,FOLLOW_T_INNER_in_selectStatement3628); 
 					match(input,T_JOIN,FOLLOW_T_JOIN_in_selectStatement3630); 
@@ -1592,7 +1602,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:406:5: ( T_WHERE whereClauses= getWhereClauses )?
+			// Meta.g:416:5: ( T_WHERE whereClauses= getWhereClauses )?
 			int alt31=2;
 			int LA31_0 = input.LA(1);
 			if ( (LA31_0==T_WHERE) ) {
@@ -1600,7 +1610,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt31) {
 				case 1 :
-					// Meta.g:406:6: T_WHERE whereClauses= getWhereClauses
+					// Meta.g:416:6: T_WHERE whereClauses= getWhereClauses
 					{
 					match(input,T_WHERE,FOLLOW_T_WHERE_in_selectStatement3651); 
 					whereInc = true;
@@ -1613,7 +1623,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:407:5: ( T_ORDER T_BY ordering= getOrdering )?
+			// Meta.g:417:5: ( T_ORDER T_BY ordering= getOrdering )?
 			int alt32=2;
 			int LA32_0 = input.LA(1);
 			if ( (LA32_0==T_ORDER) ) {
@@ -1621,7 +1631,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt32) {
 				case 1 :
-					// Meta.g:407:6: T_ORDER T_BY ordering= getOrdering
+					// Meta.g:417:6: T_ORDER T_BY ordering= getOrdering
 					{
 					match(input,T_ORDER,FOLLOW_T_ORDER_in_selectStatement3666); 
 					match(input,T_BY,FOLLOW_T_BY_in_selectStatement3668); 
@@ -1635,7 +1645,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:408:5: ( T_GROUP T_BY groupby= getList )?
+			// Meta.g:418:5: ( T_GROUP T_BY groupby= getList )?
 			int alt33=2;
 			int LA33_0 = input.LA(1);
 			if ( (LA33_0==T_GROUP) ) {
@@ -1643,7 +1653,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt33) {
 				case 1 :
-					// Meta.g:408:6: T_GROUP T_BY groupby= getList
+					// Meta.g:418:6: T_GROUP T_BY groupby= getList
 					{
 					match(input,T_GROUP,FOLLOW_T_GROUP_in_selectStatement3683); 
 					match(input,T_BY,FOLLOW_T_BY_in_selectStatement3685); 
@@ -1657,7 +1667,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:409:5: ( T_LIMIT constant= T_CONSTANT )?
+			// Meta.g:419:5: ( T_LIMIT constant= T_CONSTANT )?
 			int alt34=2;
 			int LA34_0 = input.LA(1);
 			if ( (LA34_0==T_LIMIT) ) {
@@ -1665,7 +1675,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt34) {
 				case 1 :
-					// Meta.g:409:6: T_LIMIT constant= T_CONSTANT
+					// Meta.g:419:6: T_LIMIT constant= T_CONSTANT
 					{
 					match(input,T_LIMIT,FOLLOW_T_LIMIT_in_selectStatement3700); 
 					limitInc = true;
@@ -1675,7 +1685,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:410:5: ( T_DISABLE T_ANALYTICS )?
+			// Meta.g:420:5: ( T_DISABLE T_ANALYTICS )?
 			int alt35=2;
 			int LA35_0 = input.LA(1);
 			if ( (LA35_0==T_DISABLE) ) {
@@ -1683,7 +1693,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt35) {
 				case 1 :
-					// Meta.g:410:6: T_DISABLE T_ANALYTICS
+					// Meta.g:420:6: T_DISABLE T_ANALYTICS
 					{
 					match(input,T_DISABLE,FOLLOW_T_DISABLE_in_selectStatement3715); 
 					match(input,T_ANALYTICS,FOLLOW_T_ANALYTICS_in_selectStatement3717); 
@@ -1727,7 +1737,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "insertIntoStatement"
-	// Meta.g:430:1: insertIntoStatement returns [InsertIntoStatement nsntst] : T_INSERT T_INTO tableName= getTableID T_START_PARENTHESIS ident1= T_IDENT ( T_COMMA identN= T_IDENT )* T_END_PARENTHESIS (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getTermOrLiteral ( T_COMMA termN= getTermOrLiteral )* T_END_PARENTHESIS ) ( T_IF T_NOT T_EXISTS )? ( T_USING opt1= getOption ( T_AND optN= getOption )* )? ;
+	// Meta.g:440:1: insertIntoStatement returns [InsertIntoStatement nsntst] : T_INSERT T_INTO tableName= getTableID T_START_PARENTHESIS ident1= T_IDENT ( T_COMMA identN= T_IDENT )* T_END_PARENTHESIS (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getTermOrLiteral ( T_COMMA termN= getTermOrLiteral )* T_END_PARENTHESIS ) ( T_IF T_NOT T_EXISTS )? ( T_USING opt1= getOption ( T_AND optN= getOption )* )? ;
 	public final InsertIntoStatement insertIntoStatement() throws RecognitionException {
 		InsertIntoStatement nsntst = null;
 
@@ -1750,8 +1760,8 @@ public class MetaParser extends Parser {
 		        List<Option> options = new ArrayList<>();
 		    
 		try {
-			// Meta.g:438:6: ( T_INSERT T_INTO tableName= getTableID T_START_PARENTHESIS ident1= T_IDENT ( T_COMMA identN= T_IDENT )* T_END_PARENTHESIS (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getTermOrLiteral ( T_COMMA termN= getTermOrLiteral )* T_END_PARENTHESIS ) ( T_IF T_NOT T_EXISTS )? ( T_USING opt1= getOption ( T_AND optN= getOption )* )? )
-			// Meta.g:439:5: T_INSERT T_INTO tableName= getTableID T_START_PARENTHESIS ident1= T_IDENT ( T_COMMA identN= T_IDENT )* T_END_PARENTHESIS (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getTermOrLiteral ( T_COMMA termN= getTermOrLiteral )* T_END_PARENTHESIS ) ( T_IF T_NOT T_EXISTS )? ( T_USING opt1= getOption ( T_AND optN= getOption )* )?
+			// Meta.g:448:6: ( T_INSERT T_INTO tableName= getTableID T_START_PARENTHESIS ident1= T_IDENT ( T_COMMA identN= T_IDENT )* T_END_PARENTHESIS (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getTermOrLiteral ( T_COMMA termN= getTermOrLiteral )* T_END_PARENTHESIS ) ( T_IF T_NOT T_EXISTS )? ( T_USING opt1= getOption ( T_AND optN= getOption )* )? )
+			// Meta.g:449:5: T_INSERT T_INTO tableName= getTableID T_START_PARENTHESIS ident1= T_IDENT ( T_COMMA identN= T_IDENT )* T_END_PARENTHESIS (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getTermOrLiteral ( T_COMMA termN= getTermOrLiteral )* T_END_PARENTHESIS ) ( T_IF T_NOT T_EXISTS )? ( T_USING opt1= getOption ( T_AND optN= getOption )* )?
 			{
 			match(input,T_INSERT,FOLLOW_T_INSERT_in_insertIntoStatement3755); 
 			match(input,T_INTO,FOLLOW_T_INTO_in_insertIntoStatement3762); 
@@ -1762,7 +1772,7 @@ public class MetaParser extends Parser {
 			match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_insertIntoStatement3777); 
 			ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_insertIntoStatement3786); 
 			ids.add((ident1!=null?ident1.getText():null));
-			// Meta.g:444:5: ( T_COMMA identN= T_IDENT )*
+			// Meta.g:454:5: ( T_COMMA identN= T_IDENT )*
 			loop36:
 			while (true) {
 				int alt36=2;
@@ -1773,7 +1783,7 @@ public class MetaParser extends Parser {
 
 				switch (alt36) {
 				case 1 :
-					// Meta.g:444:6: T_COMMA identN= T_IDENT
+					// Meta.g:454:6: T_COMMA identN= T_IDENT
 					{
 					match(input,T_COMMA,FOLLOW_T_COMMA_in_insertIntoStatement3796); 
 					identN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_insertIntoStatement3800); 
@@ -1787,7 +1797,7 @@ public class MetaParser extends Parser {
 			}
 
 			match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_insertIntoStatement3811); 
-			// Meta.g:446:5: (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getTermOrLiteral ( T_COMMA termN= getTermOrLiteral )* T_END_PARENTHESIS )
+			// Meta.g:456:5: (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getTermOrLiteral ( T_COMMA termN= getTermOrLiteral )* T_END_PARENTHESIS )
 			int alt38=2;
 			int LA38_0 = input.LA(1);
 			if ( (LA38_0==T_SELECT) ) {
@@ -1805,7 +1815,7 @@ public class MetaParser extends Parser {
 
 			switch (alt38) {
 				case 1 :
-					// Meta.g:447:9: selectStmnt= selectStatement
+					// Meta.g:457:9: selectStmnt= selectStatement
 					{
 					pushFollow(FOLLOW_selectStatement_in_insertIntoStatement3830);
 					selectStmnt=selectStatement();
@@ -1815,7 +1825,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:449:9: T_VALUES T_START_PARENTHESIS term1= getTermOrLiteral ( T_COMMA termN= getTermOrLiteral )* T_END_PARENTHESIS
+					// Meta.g:459:9: T_VALUES T_START_PARENTHESIS term1= getTermOrLiteral ( T_COMMA termN= getTermOrLiteral )* T_END_PARENTHESIS
 					{
 					match(input,T_VALUES,FOLLOW_T_VALUES_in_insertIntoStatement3853); 
 					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_insertIntoStatement3863); 
@@ -1824,7 +1834,7 @@ public class MetaParser extends Parser {
 					state._fsp--;
 
 					cellValues.add(term1);
-					// Meta.g:452:13: ( T_COMMA termN= getTermOrLiteral )*
+					// Meta.g:462:13: ( T_COMMA termN= getTermOrLiteral )*
 					loop37:
 					while (true) {
 						int alt37=2;
@@ -1835,7 +1845,7 @@ public class MetaParser extends Parser {
 
 						switch (alt37) {
 						case 1 :
-							// Meta.g:452:14: T_COMMA termN= getTermOrLiteral
+							// Meta.g:462:14: T_COMMA termN= getTermOrLiteral
 							{
 							match(input,T_COMMA,FOLLOW_T_COMMA_in_insertIntoStatement3897); 
 							pushFollow(FOLLOW_getTermOrLiteral_in_insertIntoStatement3901);
@@ -1857,7 +1867,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:455:5: ( T_IF T_NOT T_EXISTS )?
+			// Meta.g:465:5: ( T_IF T_NOT T_EXISTS )?
 			int alt39=2;
 			int LA39_0 = input.LA(1);
 			if ( (LA39_0==T_IF) ) {
@@ -1865,7 +1875,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt39) {
 				case 1 :
-					// Meta.g:455:6: T_IF T_NOT T_EXISTS
+					// Meta.g:465:6: T_IF T_NOT T_EXISTS
 					{
 					match(input,T_IF,FOLLOW_T_IF_in_insertIntoStatement3928); 
 					match(input,T_NOT,FOLLOW_T_NOT_in_insertIntoStatement3930); 
@@ -1876,7 +1886,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:456:5: ( T_USING opt1= getOption ( T_AND optN= getOption )* )?
+			// Meta.g:466:5: ( T_USING opt1= getOption ( T_AND optN= getOption )* )?
 			int alt41=2;
 			int LA41_0 = input.LA(1);
 			if ( (LA41_0==T_USING) ) {
@@ -1884,7 +1894,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt41) {
 				case 1 :
-					// Meta.g:457:9: T_USING opt1= getOption ( T_AND optN= getOption )*
+					// Meta.g:467:9: T_USING opt1= getOption ( T_AND optN= getOption )*
 					{
 					match(input,T_USING,FOLLOW_T_USING_in_insertIntoStatement3953); 
 					optsInc=true;
@@ -1895,7 +1905,7 @@ public class MetaParser extends Parser {
 
 					            options.add(opt1);
 					        
-					// Meta.g:461:9: ( T_AND optN= getOption )*
+					// Meta.g:471:9: ( T_AND optN= getOption )*
 					loop40:
 					while (true) {
 						int alt40=2;
@@ -1906,7 +1916,7 @@ public class MetaParser extends Parser {
 
 						switch (alt40) {
 						case 1 :
-							// Meta.g:461:10: T_AND optN= getOption
+							// Meta.g:471:10: T_AND optN= getOption
 							{
 							match(input,T_AND,FOLLOW_T_AND_in_insertIntoStatement3981); 
 							pushFollow(FOLLOW_getOption_in_insertIntoStatement3985);
@@ -1957,7 +1967,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "explainPlanStatement"
-	// Meta.g:478:1: explainPlanStatement returns [ExplainPlanStatement xpplst] : T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement ;
+	// Meta.g:488:1: explainPlanStatement returns [ExplainPlanStatement xpplst] : T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement ;
 	public final ExplainPlanStatement explainPlanStatement() throws RecognitionException {
 		ExplainPlanStatement xpplst = null;
 
@@ -1965,8 +1975,8 @@ public class MetaParser extends Parser {
 		Statement parsedStmnt =null;
 
 		try {
-			// Meta.g:478:59: ( T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement )
-			// Meta.g:479:5: T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement
+			// Meta.g:488:59: ( T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement )
+			// Meta.g:489:5: T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement
 			{
 			match(input,T_EXPLAIN,FOLLOW_T_EXPLAIN_in_explainPlanStatement4022); 
 			match(input,T_PLAN,FOLLOW_T_PLAN_in_explainPlanStatement4024); 
@@ -1993,7 +2003,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "setOptionsStatement"
-	// Meta.g:483:1: setOptionsStatement returns [SetOptionsStatement stptst] : T_SET T_OPTIONS ( T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )? | T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )? ) ;
+	// Meta.g:493:1: setOptionsStatement returns [SetOptionsStatement stptst] : T_SET T_OPTIONS ( T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )? | T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )? ) ;
 	public final SetOptionsStatement setOptionsStatement() throws RecognitionException {
 		SetOptionsStatement stptst = null;
 
@@ -2006,12 +2016,12 @@ public class MetaParser extends Parser {
 		        Consistency cnstc=Consistency.ALL;
 		    
 		try {
-			// Meta.g:490:6: ( T_SET T_OPTIONS ( T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )? | T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )? ) )
-			// Meta.g:491:5: T_SET T_OPTIONS ( T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )? | T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )? )
+			// Meta.g:500:6: ( T_SET T_OPTIONS ( T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )? | T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )? ) )
+			// Meta.g:501:5: T_SET T_OPTIONS ( T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )? | T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )? )
 			{
 			match(input,T_SET,FOLLOW_T_SET_in_setOptionsStatement4064); 
 			match(input,T_OPTIONS,FOLLOW_T_OPTIONS_in_setOptionsStatement4066); 
-			// Meta.g:491:21: ( T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )? | T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )? )
+			// Meta.g:501:21: ( T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )? | T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )? )
 			int alt48=2;
 			int LA48_0 = input.LA(1);
 			if ( (LA48_0==T_ANALYTICS) ) {
@@ -2029,11 +2039,11 @@ public class MetaParser extends Parser {
 
 			switch (alt48) {
 				case 1 :
-					// Meta.g:492:9: T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )?
+					// Meta.g:502:9: T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )?
 					{
 					match(input,T_ANALYTICS,FOLLOW_T_ANALYTICS_in_setOptionsStatement4078); 
 					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_setOptionsStatement4080); 
-					// Meta.g:492:29: ( T_TRUE | T_FALSE )
+					// Meta.g:502:29: ( T_TRUE | T_FALSE )
 					int alt42=2;
 					int LA42_0 = input.LA(1);
 					if ( (LA42_0==T_TRUE) ) {
@@ -2051,14 +2061,14 @@ public class MetaParser extends Parser {
 
 					switch (alt42) {
 						case 1 :
-							// Meta.g:492:30: T_TRUE
+							// Meta.g:502:30: T_TRUE
 							{
 							match(input,T_TRUE,FOLLOW_T_TRUE_in_setOptionsStatement4083); 
 							analytics=true;
 							}
 							break;
 						case 2 :
-							// Meta.g:492:54: T_FALSE
+							// Meta.g:502:54: T_FALSE
 							{
 							match(input,T_FALSE,FOLLOW_T_FALSE_in_setOptionsStatement4086); 
 							analytics=false;
@@ -2068,7 +2078,7 @@ public class MetaParser extends Parser {
 					}
 
 					checks.set(0, true);
-					// Meta.g:493:9: ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )?
+					// Meta.g:503:9: ( T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) )?
 					int alt44=2;
 					int LA44_0 = input.LA(1);
 					if ( (LA44_0==T_AND) ) {
@@ -2076,12 +2086,12 @@ public class MetaParser extends Parser {
 					}
 					switch (alt44) {
 						case 1 :
-							// Meta.g:493:10: T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM )
+							// Meta.g:503:10: T_AND T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM )
 							{
 							match(input,T_AND,FOLLOW_T_AND_in_setOptionsStatement4101); 
 							match(input,T_CONSISTENCY,FOLLOW_T_CONSISTENCY_in_setOptionsStatement4103); 
 							match(input,T_EQUAL,FOLLOW_T_EQUAL_in_setOptionsStatement4105); 
-							// Meta.g:494:13: ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM )
+							// Meta.g:504:13: ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM )
 							int alt43=9;
 							switch ( input.LA(1) ) {
 							case T_ALL:
@@ -2136,63 +2146,63 @@ public class MetaParser extends Parser {
 							}
 							switch (alt43) {
 								case 1 :
-									// Meta.g:494:14: T_ALL
+									// Meta.g:504:14: T_ALL
 									{
 									match(input,T_ALL,FOLLOW_T_ALL_in_setOptionsStatement4120); 
 									cnstc=Consistency.ALL;
 									}
 									break;
 								case 2 :
-									// Meta.g:495:15: T_ANY
+									// Meta.g:505:15: T_ANY
 									{
 									match(input,T_ANY,FOLLOW_T_ANY_in_setOptionsStatement4139); 
 									cnstc=Consistency.ANY;
 									}
 									break;
 								case 3 :
-									// Meta.g:496:15: T_QUORUM
+									// Meta.g:506:15: T_QUORUM
 									{
 									match(input,T_QUORUM,FOLLOW_T_QUORUM_in_setOptionsStatement4157); 
 									cnstc=Consistency.QUORUM;
 									}
 									break;
 								case 4 :
-									// Meta.g:497:15: T_ONE
+									// Meta.g:507:15: T_ONE
 									{
 									match(input,T_ONE,FOLLOW_T_ONE_in_setOptionsStatement4175); 
 									cnstc=Consistency.ONE;
 									}
 									break;
 								case 5 :
-									// Meta.g:498:15: T_TWO
+									// Meta.g:508:15: T_TWO
 									{
 									match(input,T_TWO,FOLLOW_T_TWO_in_setOptionsStatement4193); 
 									cnstc=Consistency.TWO;
 									}
 									break;
 								case 6 :
-									// Meta.g:499:15: T_THREE
+									// Meta.g:509:15: T_THREE
 									{
 									match(input,T_THREE,FOLLOW_T_THREE_in_setOptionsStatement4211); 
 									cnstc=Consistency.THREE;
 									}
 									break;
 								case 7 :
-									// Meta.g:500:15: T_EACH_QUORUM
+									// Meta.g:510:15: T_EACH_QUORUM
 									{
 									match(input,T_EACH_QUORUM,FOLLOW_T_EACH_QUORUM_in_setOptionsStatement4229); 
 									cnstc=Consistency.EACH_QUORUM;
 									}
 									break;
 								case 8 :
-									// Meta.g:501:15: T_LOCAL_ONE
+									// Meta.g:511:15: T_LOCAL_ONE
 									{
 									match(input,T_LOCAL_ONE,FOLLOW_T_LOCAL_ONE_in_setOptionsStatement4247); 
 									cnstc=Consistency.LOCAL_ONE;
 									}
 									break;
 								case 9 :
-									// Meta.g:502:15: T_LOCAL_QUORUM
+									// Meta.g:512:15: T_LOCAL_QUORUM
 									{
 									match(input,T_LOCAL_QUORUM,FOLLOW_T_LOCAL_QUORUM_in_setOptionsStatement4265); 
 									cnstc=Consistency.LOCAL_QUORUM;
@@ -2211,11 +2221,11 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:506:11: T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )?
+					// Meta.g:516:11: T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )?
 					{
 					match(input,T_CONSISTENCY,FOLLOW_T_CONSISTENCY_in_setOptionsStatement4315); 
 					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_setOptionsStatement4317); 
-					// Meta.g:507:13: ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM )
+					// Meta.g:517:13: ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM )
 					int alt45=9;
 					switch ( input.LA(1) ) {
 					case T_ALL:
@@ -2270,63 +2280,63 @@ public class MetaParser extends Parser {
 					}
 					switch (alt45) {
 						case 1 :
-							// Meta.g:507:14: T_ALL
+							// Meta.g:517:14: T_ALL
 							{
 							match(input,T_ALL,FOLLOW_T_ALL_in_setOptionsStatement4333); 
 							cnstc=Consistency.ALL;
 							}
 							break;
 						case 2 :
-							// Meta.g:508:15: T_ANY
+							// Meta.g:518:15: T_ANY
 							{
 							match(input,T_ANY,FOLLOW_T_ANY_in_setOptionsStatement4352); 
 							cnstc=Consistency.ANY;
 							}
 							break;
 						case 3 :
-							// Meta.g:509:15: T_QUORUM
+							// Meta.g:519:15: T_QUORUM
 							{
 							match(input,T_QUORUM,FOLLOW_T_QUORUM_in_setOptionsStatement4370); 
 							cnstc=Consistency.QUORUM;
 							}
 							break;
 						case 4 :
-							// Meta.g:510:15: T_ONE
+							// Meta.g:520:15: T_ONE
 							{
 							match(input,T_ONE,FOLLOW_T_ONE_in_setOptionsStatement4388); 
 							cnstc=Consistency.ONE;
 							}
 							break;
 						case 5 :
-							// Meta.g:511:15: T_TWO
+							// Meta.g:521:15: T_TWO
 							{
 							match(input,T_TWO,FOLLOW_T_TWO_in_setOptionsStatement4406); 
 							cnstc=Consistency.TWO;
 							}
 							break;
 						case 6 :
-							// Meta.g:512:15: T_THREE
+							// Meta.g:522:15: T_THREE
 							{
 							match(input,T_THREE,FOLLOW_T_THREE_in_setOptionsStatement4424); 
 							cnstc=Consistency.THREE;
 							}
 							break;
 						case 7 :
-							// Meta.g:513:15: T_EACH_QUORUM
+							// Meta.g:523:15: T_EACH_QUORUM
 							{
 							match(input,T_EACH_QUORUM,FOLLOW_T_EACH_QUORUM_in_setOptionsStatement4442); 
 							cnstc=Consistency.EACH_QUORUM;
 							}
 							break;
 						case 8 :
-							// Meta.g:514:15: T_LOCAL_ONE
+							// Meta.g:524:15: T_LOCAL_ONE
 							{
 							match(input,T_LOCAL_ONE,FOLLOW_T_LOCAL_ONE_in_setOptionsStatement4460); 
 							cnstc=Consistency.LOCAL_ONE;
 							}
 							break;
 						case 9 :
-							// Meta.g:515:15: T_LOCAL_QUORUM
+							// Meta.g:525:15: T_LOCAL_QUORUM
 							{
 							match(input,T_LOCAL_QUORUM,FOLLOW_T_LOCAL_QUORUM_in_setOptionsStatement4478); 
 							cnstc=Consistency.LOCAL_QUORUM;
@@ -2336,7 +2346,7 @@ public class MetaParser extends Parser {
 					}
 
 					checks.set(1, true);
-					// Meta.g:517:9: ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )?
+					// Meta.g:527:9: ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )?
 					int alt47=2;
 					int LA47_0 = input.LA(1);
 					if ( (LA47_0==T_AND) ) {
@@ -2344,12 +2354,12 @@ public class MetaParser extends Parser {
 					}
 					switch (alt47) {
 						case 1 :
-							// Meta.g:517:10: T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE )
+							// Meta.g:527:10: T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE )
 							{
 							match(input,T_AND,FOLLOW_T_AND_in_setOptionsStatement4506); 
 							match(input,T_ANALYTICS,FOLLOW_T_ANALYTICS_in_setOptionsStatement4508); 
 							match(input,T_EQUAL,FOLLOW_T_EQUAL_in_setOptionsStatement4510); 
-							// Meta.g:517:36: ( T_TRUE | T_FALSE )
+							// Meta.g:527:36: ( T_TRUE | T_FALSE )
 							int alt46=2;
 							int LA46_0 = input.LA(1);
 							if ( (LA46_0==T_TRUE) ) {
@@ -2367,14 +2377,14 @@ public class MetaParser extends Parser {
 
 							switch (alt46) {
 								case 1 :
-									// Meta.g:517:37: T_TRUE
+									// Meta.g:527:37: T_TRUE
 									{
 									match(input,T_TRUE,FOLLOW_T_TRUE_in_setOptionsStatement4513); 
 									analytics=true;
 									}
 									break;
 								case 2 :
-									// Meta.g:517:61: T_FALSE
+									// Meta.g:527:61: T_FALSE
 									{
 									match(input,T_FALSE,FOLLOW_T_FALSE_in_setOptionsStatement4516); 
 									analytics=false;
@@ -2412,7 +2422,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "useStatement"
-	// Meta.g:523:1: useStatement returns [UseStatement usst] : T_USE iden= T_IDENT ;
+	// Meta.g:533:1: useStatement returns [UseStatement usst] : T_USE iden= T_IDENT ;
 	public final UseStatement useStatement() throws RecognitionException {
 		UseStatement usst = null;
 
@@ -2420,8 +2430,8 @@ public class MetaParser extends Parser {
 		Token iden=null;
 
 		try {
-			// Meta.g:523:41: ( T_USE iden= T_IDENT )
-			// Meta.g:524:5: T_USE iden= T_IDENT
+			// Meta.g:533:41: ( T_USE iden= T_IDENT )
+			// Meta.g:534:5: T_USE iden= T_IDENT
 			{
 			match(input,T_USE,FOLLOW_T_USE_in_useStatement4571); 
 			iden=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_useStatement4579); 
@@ -2443,7 +2453,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "dropKeyspaceStatement"
-	// Meta.g:528:1: dropKeyspaceStatement returns [DropKeyspaceStatement drksst] : T_DROP T_KEYSPACE ( T_IF T_EXISTS )? iden= T_IDENT ;
+	// Meta.g:538:1: dropKeyspaceStatement returns [DropKeyspaceStatement drksst] : T_DROP T_KEYSPACE ( T_IF T_EXISTS )? iden= T_IDENT ;
 	public final DropKeyspaceStatement dropKeyspaceStatement() throws RecognitionException {
 		DropKeyspaceStatement drksst = null;
 
@@ -2454,12 +2464,12 @@ public class MetaParser extends Parser {
 		        boolean ifExists = false;
 		    
 		try {
-			// Meta.g:531:6: ( T_DROP T_KEYSPACE ( T_IF T_EXISTS )? iden= T_IDENT )
-			// Meta.g:532:5: T_DROP T_KEYSPACE ( T_IF T_EXISTS )? iden= T_IDENT
+			// Meta.g:541:6: ( T_DROP T_KEYSPACE ( T_IF T_EXISTS )? iden= T_IDENT )
+			// Meta.g:542:5: T_DROP T_KEYSPACE ( T_IF T_EXISTS )? iden= T_IDENT
 			{
 			match(input,T_DROP,FOLLOW_T_DROP_in_dropKeyspaceStatement4609); 
 			match(input,T_KEYSPACE,FOLLOW_T_KEYSPACE_in_dropKeyspaceStatement4615); 
-			// Meta.g:534:5: ( T_IF T_EXISTS )?
+			// Meta.g:544:5: ( T_IF T_EXISTS )?
 			int alt49=2;
 			int LA49_0 = input.LA(1);
 			if ( (LA49_0==T_IF) ) {
@@ -2467,7 +2477,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt49) {
 				case 1 :
-					// Meta.g:534:6: T_IF T_EXISTS
+					// Meta.g:544:6: T_IF T_EXISTS
 					{
 					match(input,T_IF,FOLLOW_T_IF_in_dropKeyspaceStatement4622); 
 					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_dropKeyspaceStatement4624); 
@@ -2496,7 +2506,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "alterKeyspaceStatement"
-	// Meta.g:539:1: alterKeyspaceStatement returns [AlterKeyspaceStatement alksst] : T_ALTER T_KEYSPACE ident= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* ;
+	// Meta.g:549:1: alterKeyspaceStatement returns [AlterKeyspaceStatement alksst] : T_ALTER T_KEYSPACE ident= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* ;
 	public final AlterKeyspaceStatement alterKeyspaceStatement() throws RecognitionException {
 		AlterKeyspaceStatement alksst = null;
 
@@ -2511,8 +2521,8 @@ public class MetaParser extends Parser {
 		        HashMap<String, ValueProperty> properties = new HashMap<>();
 		    
 		try {
-			// Meta.g:542:6: ( T_ALTER T_KEYSPACE ident= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )
-			// Meta.g:543:5: T_ALTER T_KEYSPACE ident= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
+			// Meta.g:552:6: ( T_ALTER T_KEYSPACE ident= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )
+			// Meta.g:553:5: T_ALTER T_KEYSPACE ident= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
 			{
 			match(input,T_ALTER,FOLLOW_T_ALTER_in_alterKeyspaceStatement4670); 
 			match(input,T_KEYSPACE,FOLLOW_T_KEYSPACE_in_alterKeyspaceStatement4676); 
@@ -2525,7 +2535,7 @@ public class MetaParser extends Parser {
 			state._fsp--;
 
 			properties.put((identProp1!=null?identProp1.getText():null), valueProp1);
-			// Meta.g:548:5: ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
+			// Meta.g:558:5: ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
 			loop50:
 			while (true) {
 				int alt50=2;
@@ -2536,7 +2546,7 @@ public class MetaParser extends Parser {
 
 				switch (alt50) {
 				case 1 :
-					// Meta.g:548:6: T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty
+					// Meta.g:558:6: T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty
 					{
 					match(input,T_AND,FOLLOW_T_AND_in_alterKeyspaceStatement4713); 
 					identPropN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_alterKeyspaceStatement4717); 
@@ -2572,7 +2582,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "createKeyspaceStatement"
-	// Meta.g:552:1: createKeyspaceStatement returns [CreateKeyspaceStatement crksst] : T_CREATE T_KEYSPACE ( T_IF T_NOT T_EXISTS )? identKS= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* ;
+	// Meta.g:562:1: createKeyspaceStatement returns [CreateKeyspaceStatement crksst] : T_CREATE T_KEYSPACE ( T_IF T_NOT T_EXISTS )? identKS= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* ;
 	public final CreateKeyspaceStatement createKeyspaceStatement() throws RecognitionException {
 		CreateKeyspaceStatement crksst = null;
 
@@ -2588,12 +2598,12 @@ public class MetaParser extends Parser {
 		        HashMap<String, ValueProperty> properties = new HashMap<>();
 		    
 		try {
-			// Meta.g:556:6: ( T_CREATE T_KEYSPACE ( T_IF T_NOT T_EXISTS )? identKS= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )
-			// Meta.g:557:5: T_CREATE T_KEYSPACE ( T_IF T_NOT T_EXISTS )? identKS= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
+			// Meta.g:566:6: ( T_CREATE T_KEYSPACE ( T_IF T_NOT T_EXISTS )? identKS= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )* )
+			// Meta.g:567:5: T_CREATE T_KEYSPACE ( T_IF T_NOT T_EXISTS )? identKS= T_IDENT T_WITH identProp1= T_IDENT T_EQUAL valueProp1= getValueProperty ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
 			{
 			match(input,T_CREATE,FOLLOW_T_CREATE_in_createKeyspaceStatement4762); 
 			match(input,T_KEYSPACE,FOLLOW_T_KEYSPACE_in_createKeyspaceStatement4768); 
-			// Meta.g:559:5: ( T_IF T_NOT T_EXISTS )?
+			// Meta.g:569:5: ( T_IF T_NOT T_EXISTS )?
 			int alt51=2;
 			int LA51_0 = input.LA(1);
 			if ( (LA51_0==T_IF) ) {
@@ -2601,7 +2611,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt51) {
 				case 1 :
-					// Meta.g:559:6: T_IF T_NOT T_EXISTS
+					// Meta.g:569:6: T_IF T_NOT T_EXISTS
 					{
 					match(input,T_IF,FOLLOW_T_IF_in_createKeyspaceStatement4775); 
 					match(input,T_NOT,FOLLOW_T_NOT_in_createKeyspaceStatement4777); 
@@ -2621,7 +2631,7 @@ public class MetaParser extends Parser {
 			state._fsp--;
 
 			properties.put((identProp1!=null?identProp1.getText():null), valueProp1);
-			// Meta.g:563:5: ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
+			// Meta.g:573:5: ( T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty )*
 			loop52:
 			while (true) {
 				int alt52=2;
@@ -2632,7 +2642,7 @@ public class MetaParser extends Parser {
 
 				switch (alt52) {
 				case 1 :
-					// Meta.g:563:6: T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty
+					// Meta.g:573:6: T_AND identPropN= T_IDENT T_EQUAL valuePropN= getValueProperty
 					{
 					match(input,T_AND,FOLLOW_T_AND_in_createKeyspaceStatement4824); 
 					identPropN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createKeyspaceStatement4828); 
@@ -2668,7 +2678,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "dropTableStatement"
-	// Meta.g:567:1: dropTableStatement returns [DropTableStatement drtbst] : T_DROP T_TABLE ( T_IF T_EXISTS )? identID= getTableID ;
+	// Meta.g:577:1: dropTableStatement returns [DropTableStatement drtbst] : T_DROP T_TABLE ( T_IF T_EXISTS )? identID= getTableID ;
 	public final DropTableStatement dropTableStatement() throws RecognitionException {
 		DropTableStatement drtbst = null;
 
@@ -2679,12 +2689,12 @@ public class MetaParser extends Parser {
 		        boolean ifExists = false;
 		    
 		try {
-			// Meta.g:570:6: ( T_DROP T_TABLE ( T_IF T_EXISTS )? identID= getTableID )
-			// Meta.g:571:5: T_DROP T_TABLE ( T_IF T_EXISTS )? identID= getTableID
+			// Meta.g:580:6: ( T_DROP T_TABLE ( T_IF T_EXISTS )? identID= getTableID )
+			// Meta.g:581:5: T_DROP T_TABLE ( T_IF T_EXISTS )? identID= getTableID
 			{
 			match(input,T_DROP,FOLLOW_T_DROP_in_dropTableStatement4873); 
 			match(input,T_TABLE,FOLLOW_T_TABLE_in_dropTableStatement4879); 
-			// Meta.g:573:5: ( T_IF T_EXISTS )?
+			// Meta.g:583:5: ( T_IF T_EXISTS )?
 			int alt53=2;
 			int LA53_0 = input.LA(1);
 			if ( (LA53_0==T_IF) ) {
@@ -2692,7 +2702,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt53) {
 				case 1 :
-					// Meta.g:573:6: T_IF T_EXISTS
+					// Meta.g:583:6: T_IF T_EXISTS
 					{
 					match(input,T_IF,FOLLOW_T_IF_in_dropTableStatement4886); 
 					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_dropTableStatement4888); 
@@ -2726,7 +2736,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "truncateStatement"
-	// Meta.g:579:1: truncateStatement returns [TruncateStatement trst] : T_TRUNCATE ident= getTableID ;
+	// Meta.g:589:1: truncateStatement returns [TruncateStatement trst] : T_TRUNCATE ident= getTableID ;
 	public final TruncateStatement truncateStatement() throws RecognitionException {
 		TruncateStatement trst = null;
 
@@ -2734,8 +2744,8 @@ public class MetaParser extends Parser {
 		String ident =null;
 
 		try {
-			// Meta.g:579:51: ( T_TRUNCATE ident= getTableID )
-			// Meta.g:580:2: T_TRUNCATE ident= getTableID
+			// Meta.g:589:51: ( T_TRUNCATE ident= getTableID )
+			// Meta.g:590:2: T_TRUNCATE ident= getTableID
 			{
 			match(input,T_TRUNCATE,FOLLOW_T_TRUNCATE_in_truncateStatement4920); 
 			pushFollow(FOLLOW_getTableID_in_truncateStatement4933);
@@ -2762,7 +2772,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "metaStatement"
-	// Meta.g:586:1: metaStatement returns [Statement st] : (st_crta= createTableStatement |st_alta= alterTableStatement |st_crtr= createTriggerStatement |st_drtr= dropTriggerStatement |st_stpr= stopProcessStatement |st_pdtb= updateTableStatement |st_slct= selectStatement |st_nsnt= insertIntoStatement |st_xppl= explainPlanStatement |st_stpt= setOptionsStatement |st_usks= useStatement |st_drks= dropKeyspaceStatement |st_crks= createKeyspaceStatement |st_alks= alterKeyspaceStatement |st_tbdr= dropTableStatement |st_trst= truncateStatement |cis= createIndexStatement |dis= dropIndexStatement |ls= listStatement |add= addStatement |rs= removeUDFStatement |ds= deleteStatement );
+	// Meta.g:596:1: metaStatement returns [Statement st] : (st_crta= createTableStatement |st_alta= alterTableStatement |st_crtr= createTriggerStatement |st_drtr= dropTriggerStatement |st_stpr= stopProcessStatement |st_pdtb= updateTableStatement |st_slct= selectStatement |st_nsnt= insertIntoStatement |st_xppl= explainPlanStatement |st_stpt= setOptionsStatement |st_usks= useStatement |st_drks= dropKeyspaceStatement |st_crks= createKeyspaceStatement |st_alks= alterKeyspaceStatement |st_tbdr= dropTableStatement |st_trst= truncateStatement |cis= createIndexStatement |dis= dropIndexStatement |ls= listStatement |add= addStatement |rs= removeUDFStatement |ds= deleteStatement );
 	public final Statement metaStatement() throws RecognitionException {
 		Statement st = null;
 
@@ -2791,7 +2801,7 @@ public class MetaParser extends Parser {
 		DeleteStatement ds =null;
 
 		try {
-			// Meta.g:586:37: (st_crta= createTableStatement |st_alta= alterTableStatement |st_crtr= createTriggerStatement |st_drtr= dropTriggerStatement |st_stpr= stopProcessStatement |st_pdtb= updateTableStatement |st_slct= selectStatement |st_nsnt= insertIntoStatement |st_xppl= explainPlanStatement |st_stpt= setOptionsStatement |st_usks= useStatement |st_drks= dropKeyspaceStatement |st_crks= createKeyspaceStatement |st_alks= alterKeyspaceStatement |st_tbdr= dropTableStatement |st_trst= truncateStatement |cis= createIndexStatement |dis= dropIndexStatement |ls= listStatement |add= addStatement |rs= removeUDFStatement |ds= deleteStatement )
+			// Meta.g:596:37: (st_crta= createTableStatement |st_alta= alterTableStatement |st_crtr= createTriggerStatement |st_drtr= dropTriggerStatement |st_stpr= stopProcessStatement |st_pdtb= updateTableStatement |st_slct= selectStatement |st_nsnt= insertIntoStatement |st_xppl= explainPlanStatement |st_stpt= setOptionsStatement |st_usks= useStatement |st_drks= dropKeyspaceStatement |st_crks= createKeyspaceStatement |st_alks= alterKeyspaceStatement |st_tbdr= dropTableStatement |st_trst= truncateStatement |cis= createIndexStatement |dis= dropIndexStatement |ls= listStatement |add= addStatement |rs= removeUDFStatement |ds= deleteStatement )
 			int alt54=22;
 			switch ( input.LA(1) ) {
 			case T_CREATE:
@@ -2957,7 +2967,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt54) {
 				case 1 :
-					// Meta.g:589:5: st_crta= createTableStatement
+					// Meta.g:599:5: st_crta= createTableStatement
 					{
 					pushFollow(FOLLOW_createTableStatement_in_metaStatement4957);
 					st_crta=createTableStatement();
@@ -2967,7 +2977,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:590:7: st_alta= alterTableStatement
+					// Meta.g:600:7: st_alta= alterTableStatement
 					{
 					pushFollow(FOLLOW_alterTableStatement_in_metaStatement4970);
 					st_alta=alterTableStatement();
@@ -2977,7 +2987,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 3 :
-					// Meta.g:591:7: st_crtr= createTriggerStatement
+					// Meta.g:601:7: st_crtr= createTriggerStatement
 					{
 					pushFollow(FOLLOW_createTriggerStatement_in_metaStatement4983);
 					st_crtr=createTriggerStatement();
@@ -2987,7 +2997,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 4 :
-					// Meta.g:592:7: st_drtr= dropTriggerStatement
+					// Meta.g:602:7: st_drtr= dropTriggerStatement
 					{
 					pushFollow(FOLLOW_dropTriggerStatement_in_metaStatement4996);
 					st_drtr=dropTriggerStatement();
@@ -2997,7 +3007,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 5 :
-					// Meta.g:593:7: st_stpr= stopProcessStatement
+					// Meta.g:603:7: st_stpr= stopProcessStatement
 					{
 					pushFollow(FOLLOW_stopProcessStatement_in_metaStatement5010);
 					st_stpr=stopProcessStatement();
@@ -3007,7 +3017,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 6 :
-					// Meta.g:594:7: st_pdtb= updateTableStatement
+					// Meta.g:604:7: st_pdtb= updateTableStatement
 					{
 					pushFollow(FOLLOW_updateTableStatement_in_metaStatement5024);
 					st_pdtb=updateTableStatement();
@@ -3017,7 +3027,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 7 :
-					// Meta.g:595:7: st_slct= selectStatement
+					// Meta.g:605:7: st_slct= selectStatement
 					{
 					pushFollow(FOLLOW_selectStatement_in_metaStatement5038);
 					st_slct=selectStatement();
@@ -3027,7 +3037,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 8 :
-					// Meta.g:596:7: st_nsnt= insertIntoStatement
+					// Meta.g:606:7: st_nsnt= insertIntoStatement
 					{
 					pushFollow(FOLLOW_insertIntoStatement_in_metaStatement5052);
 					st_nsnt=insertIntoStatement();
@@ -3037,7 +3047,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 9 :
-					// Meta.g:597:7: st_xppl= explainPlanStatement
+					// Meta.g:607:7: st_xppl= explainPlanStatement
 					{
 					pushFollow(FOLLOW_explainPlanStatement_in_metaStatement5066);
 					st_xppl=explainPlanStatement();
@@ -3047,7 +3057,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 10 :
-					// Meta.g:598:7: st_stpt= setOptionsStatement
+					// Meta.g:608:7: st_stpt= setOptionsStatement
 					{
 					pushFollow(FOLLOW_setOptionsStatement_in_metaStatement5080);
 					st_stpt=setOptionsStatement();
@@ -3057,7 +3067,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 11 :
-					// Meta.g:599:7: st_usks= useStatement
+					// Meta.g:609:7: st_usks= useStatement
 					{
 					pushFollow(FOLLOW_useStatement_in_metaStatement5094);
 					st_usks=useStatement();
@@ -3067,7 +3077,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 12 :
-					// Meta.g:600:7: st_drks= dropKeyspaceStatement
+					// Meta.g:610:7: st_drks= dropKeyspaceStatement
 					{
 					pushFollow(FOLLOW_dropKeyspaceStatement_in_metaStatement5108);
 					st_drks=dropKeyspaceStatement();
@@ -3077,7 +3087,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 13 :
-					// Meta.g:601:7: st_crks= createKeyspaceStatement
+					// Meta.g:611:7: st_crks= createKeyspaceStatement
 					{
 					pushFollow(FOLLOW_createKeyspaceStatement_in_metaStatement5122);
 					st_crks=createKeyspaceStatement();
@@ -3087,7 +3097,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 14 :
-					// Meta.g:602:7: st_alks= alterKeyspaceStatement
+					// Meta.g:612:7: st_alks= alterKeyspaceStatement
 					{
 					pushFollow(FOLLOW_alterKeyspaceStatement_in_metaStatement5136);
 					st_alks=alterKeyspaceStatement();
@@ -3097,7 +3107,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 15 :
-					// Meta.g:603:7: st_tbdr= dropTableStatement
+					// Meta.g:613:7: st_tbdr= dropTableStatement
 					{
 					pushFollow(FOLLOW_dropTableStatement_in_metaStatement5150);
 					st_tbdr=dropTableStatement();
@@ -3107,7 +3117,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 16 :
-					// Meta.g:604:7: st_trst= truncateStatement
+					// Meta.g:614:7: st_trst= truncateStatement
 					{
 					pushFollow(FOLLOW_truncateStatement_in_metaStatement5164);
 					st_trst=truncateStatement();
@@ -3117,7 +3127,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 17 :
-					// Meta.g:605:7: cis= createIndexStatement
+					// Meta.g:615:7: cis= createIndexStatement
 					{
 					pushFollow(FOLLOW_createIndexStatement_in_metaStatement5178);
 					cis=createIndexStatement();
@@ -3127,7 +3137,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 18 :
-					// Meta.g:606:7: dis= dropIndexStatement
+					// Meta.g:616:7: dis= dropIndexStatement
 					{
 					pushFollow(FOLLOW_dropIndexStatement_in_metaStatement5193);
 					dis=dropIndexStatement();
@@ -3137,7 +3147,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 19 :
-					// Meta.g:607:7: ls= listStatement
+					// Meta.g:617:7: ls= listStatement
 					{
 					pushFollow(FOLLOW_listStatement_in_metaStatement5208);
 					ls=listStatement();
@@ -3147,7 +3157,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 20 :
-					// Meta.g:608:7: add= addStatement
+					// Meta.g:618:7: add= addStatement
 					{
 					pushFollow(FOLLOW_addStatement_in_metaStatement5223);
 					add=addStatement();
@@ -3157,7 +3167,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 21 :
-					// Meta.g:609:7: rs= removeUDFStatement
+					// Meta.g:619:7: rs= removeUDFStatement
 					{
 					pushFollow(FOLLOW_removeUDFStatement_in_metaStatement5238);
 					rs=removeUDFStatement();
@@ -3167,7 +3177,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 22 :
-					// Meta.g:610:7: ds= deleteStatement
+					// Meta.g:620:7: ds= deleteStatement
 					{
 					pushFollow(FOLLOW_deleteStatement_in_metaStatement5253);
 					ds=deleteStatement();
@@ -3193,7 +3203,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "query"
-	// Meta.g:613:1: query returns [Statement st] : mtst= metaStatement ( T_SEMICOLON )+ EOF ;
+	// Meta.g:623:1: query returns [Statement st] : mtst= metaStatement ( T_SEMICOLON )+ EOF ;
 	public final Statement query() throws RecognitionException {
 		Statement st = null;
 
@@ -3201,14 +3211,14 @@ public class MetaParser extends Parser {
 		Statement mtst =null;
 
 		try {
-			// Meta.g:613:29: (mtst= metaStatement ( T_SEMICOLON )+ EOF )
-			// Meta.g:614:2: mtst= metaStatement ( T_SEMICOLON )+ EOF
+			// Meta.g:623:29: (mtst= metaStatement ( T_SEMICOLON )+ EOF )
+			// Meta.g:624:2: mtst= metaStatement ( T_SEMICOLON )+ EOF
 			{
 			pushFollow(FOLLOW_metaStatement_in_query5276);
 			mtst=metaStatement();
 			state._fsp--;
 
-			// Meta.g:614:21: ( T_SEMICOLON )+
+			// Meta.g:624:21: ( T_SEMICOLON )+
 			int cnt55=0;
 			loop55:
 			while (true) {
@@ -3220,7 +3230,7 @@ public class MetaParser extends Parser {
 
 				switch (alt55) {
 				case 1 :
-					// Meta.g:614:22: T_SEMICOLON
+					// Meta.g:624:22: T_SEMICOLON
 					{
 					match(input,T_SEMICOLON,FOLLOW_T_SEMICOLON_in_query5279); 
 					}
@@ -3255,7 +3265,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getOrdering"
-	// Meta.g:621:1: getOrdering returns [List<Ordering> order] : ident1= T_IDENT ( T_ASC | T_DESC )? ( T_COMMA identN= T_IDENT ( T_ASC | T_DESC )? )* ;
+	// Meta.g:631:1: getOrdering returns [List<Ordering> order] : ident1= T_IDENT ( T_ASC | T_DESC )? ( T_COMMA identN= T_IDENT ( T_ASC | T_DESC )? )* ;
 	public final List<Ordering> getOrdering() throws RecognitionException {
 		List<Ordering> order = null;
 
@@ -3268,12 +3278,12 @@ public class MetaParser extends Parser {
 		        Ordering ordering;
 		    
 		try {
-			// Meta.g:625:6: (ident1= T_IDENT ( T_ASC | T_DESC )? ( T_COMMA identN= T_IDENT ( T_ASC | T_DESC )? )* )
-			// Meta.g:626:5: ident1= T_IDENT ( T_ASC | T_DESC )? ( T_COMMA identN= T_IDENT ( T_ASC | T_DESC )? )*
+			// Meta.g:635:6: (ident1= T_IDENT ( T_ASC | T_DESC )? ( T_COMMA identN= T_IDENT ( T_ASC | T_DESC )? )* )
+			// Meta.g:636:5: ident1= T_IDENT ( T_ASC | T_DESC )? ( T_COMMA identN= T_IDENT ( T_ASC | T_DESC )? )*
 			{
 			ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getOrdering5313); 
 			ordering = new Ordering((ident1!=null?ident1.getText():null));
-			// Meta.g:626:61: ( T_ASC | T_DESC )?
+			// Meta.g:636:61: ( T_ASC | T_DESC )?
 			int alt56=3;
 			int LA56_0 = input.LA(1);
 			if ( (LA56_0==T_ASC) ) {
@@ -3284,14 +3294,14 @@ public class MetaParser extends Parser {
 			}
 			switch (alt56) {
 				case 1 :
-					// Meta.g:626:62: T_ASC
+					// Meta.g:636:62: T_ASC
 					{
 					match(input,T_ASC,FOLLOW_T_ASC_in_getOrdering5318); 
 					ordering.setOrderDir(OrderDirection.ASC);
 					}
 					break;
 				case 2 :
-					// Meta.g:626:114: T_DESC
+					// Meta.g:636:114: T_DESC
 					{
 					match(input,T_DESC,FOLLOW_T_DESC_in_getOrdering5324); 
 					ordering.setOrderDir(OrderDirection.DESC);
@@ -3301,7 +3311,7 @@ public class MetaParser extends Parser {
 			}
 
 			order.add(ordering);
-			// Meta.g:627:5: ( T_COMMA identN= T_IDENT ( T_ASC | T_DESC )? )*
+			// Meta.g:637:5: ( T_COMMA identN= T_IDENT ( T_ASC | T_DESC )? )*
 			loop58:
 			while (true) {
 				int alt58=2;
@@ -3312,12 +3322,12 @@ public class MetaParser extends Parser {
 
 				switch (alt58) {
 				case 1 :
-					// Meta.g:627:6: T_COMMA identN= T_IDENT ( T_ASC | T_DESC )?
+					// Meta.g:637:6: T_COMMA identN= T_IDENT ( T_ASC | T_DESC )?
 					{
 					match(input,T_COMMA,FOLLOW_T_COMMA_in_getOrdering5337); 
 					identN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getOrdering5341); 
 					ordering = new Ordering((identN!=null?identN.getText():null));
-					// Meta.g:627:70: ( T_ASC | T_DESC )?
+					// Meta.g:637:70: ( T_ASC | T_DESC )?
 					int alt57=3;
 					int LA57_0 = input.LA(1);
 					if ( (LA57_0==T_ASC) ) {
@@ -3328,14 +3338,14 @@ public class MetaParser extends Parser {
 					}
 					switch (alt57) {
 						case 1 :
-							// Meta.g:627:71: T_ASC
+							// Meta.g:637:71: T_ASC
 							{
 							match(input,T_ASC,FOLLOW_T_ASC_in_getOrdering5346); 
 							ordering.setOrderDir(OrderDirection.ASC);
 							}
 							break;
 						case 2 :
-							// Meta.g:627:123: T_DESC
+							// Meta.g:637:123: T_DESC
 							{
 							match(input,T_DESC,FOLLOW_T_DESC_in_getOrdering5352); 
 							ordering.setOrderDir(OrderDirection.DESC);
@@ -3370,7 +3380,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getWhereClauses"
-	// Meta.g:630:1: getWhereClauses returns [List<MetaRelation> clauses] : rel1= getRelation ( T_AND relN= getRelation )* ;
+	// Meta.g:640:1: getWhereClauses returns [List<MetaRelation> clauses] : rel1= getRelation ( T_AND relN= getRelation )* ;
 	public final List<MetaRelation> getWhereClauses() throws RecognitionException {
 		List<MetaRelation> clauses = null;
 
@@ -3382,15 +3392,15 @@ public class MetaParser extends Parser {
 		        clauses = new ArrayList<>();
 		    
 		try {
-			// Meta.g:633:6: (rel1= getRelation ( T_AND relN= getRelation )* )
-			// Meta.g:634:5: rel1= getRelation ( T_AND relN= getRelation )*
+			// Meta.g:643:6: (rel1= getRelation ( T_AND relN= getRelation )* )
+			// Meta.g:644:5: rel1= getRelation ( T_AND relN= getRelation )*
 			{
 			pushFollow(FOLLOW_getRelation_in_getWhereClauses5386);
 			rel1=getRelation();
 			state._fsp--;
 
 			clauses.add(rel1);
-			// Meta.g:634:43: ( T_AND relN= getRelation )*
+			// Meta.g:644:43: ( T_AND relN= getRelation )*
 			loop59:
 			while (true) {
 				int alt59=2;
@@ -3401,7 +3411,7 @@ public class MetaParser extends Parser {
 
 				switch (alt59) {
 				case 1 :
-					// Meta.g:634:44: T_AND relN= getRelation
+					// Meta.g:644:44: T_AND relN= getRelation
 					{
 					match(input,T_AND,FOLLOW_T_AND_in_getWhereClauses5391); 
 					pushFollow(FOLLOW_getRelation_in_getWhereClauses5395);
@@ -3434,7 +3444,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getFields"
-	// Meta.g:637:1: getFields returns [Map<String, String> fields] : ident1L= T_IDENT T_EQUAL ident1R= T_IDENT (identNL= T_IDENT T_EQUAL identNR= T_IDENT )* ;
+	// Meta.g:647:1: getFields returns [Map<String, String> fields] : ident1L= T_IDENT T_EQUAL ident1R= T_IDENT (identNL= T_IDENT T_EQUAL identNR= T_IDENT )* ;
 	public final Map<String, String> getFields() throws RecognitionException {
 		Map<String, String> fields = null;
 
@@ -3448,14 +3458,14 @@ public class MetaParser extends Parser {
 		        fields = new HashMap<>();
 		    
 		try {
-			// Meta.g:640:6: (ident1L= T_IDENT T_EQUAL ident1R= T_IDENT (identNL= T_IDENT T_EQUAL identNR= T_IDENT )* )
-			// Meta.g:641:5: ident1L= T_IDENT T_EQUAL ident1R= T_IDENT (identNL= T_IDENT T_EQUAL identNR= T_IDENT )*
+			// Meta.g:650:6: (ident1L= T_IDENT T_EQUAL ident1R= T_IDENT (identNL= T_IDENT T_EQUAL identNR= T_IDENT )* )
+			// Meta.g:651:5: ident1L= T_IDENT T_EQUAL ident1R= T_IDENT (identNL= T_IDENT T_EQUAL identNR= T_IDENT )*
 			{
 			ident1L=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getFields5425); 
 			match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getFields5427); 
 			ident1R=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getFields5431); 
 			 fields.put((ident1L!=null?ident1L.getText():null), (ident1R!=null?ident1R.getText():null));
-			// Meta.g:642:5: (identNL= T_IDENT T_EQUAL identNR= T_IDENT )*
+			// Meta.g:652:5: (identNL= T_IDENT T_EQUAL identNR= T_IDENT )*
 			loop60:
 			while (true) {
 				int alt60=2;
@@ -3466,7 +3476,7 @@ public class MetaParser extends Parser {
 
 				switch (alt60) {
 				case 1 :
-					// Meta.g:642:6: identNL= T_IDENT T_EQUAL identNR= T_IDENT
+					// Meta.g:652:6: identNL= T_IDENT T_EQUAL identNR= T_IDENT
 					{
 					identNL=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getFields5442); 
 					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getFields5444); 
@@ -3497,7 +3507,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getWindow"
-	// Meta.g:645:1: getWindow returns [WindowSelect ws] : ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) ) ;
+	// Meta.g:655:1: getWindow returns [WindowSelect ws] : ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) ) ;
 	public final WindowSelect getWindow() throws RecognitionException {
 		WindowSelect ws = null;
 
@@ -3506,10 +3516,10 @@ public class MetaParser extends Parser {
 		TimeUnit unit =null;
 
 		try {
-			// Meta.g:645:36: ( ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) ) )
-			// Meta.g:646:5: ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) )
+			// Meta.g:655:36: ( ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) ) )
+			// Meta.g:656:5: ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) )
 			{
-			// Meta.g:646:5: ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) )
+			// Meta.g:656:5: ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) )
 			int alt62=2;
 			int LA62_0 = input.LA(1);
 			if ( (LA62_0==T_LAST) ) {
@@ -3527,17 +3537,17 @@ public class MetaParser extends Parser {
 
 			switch (alt62) {
 				case 1 :
-					// Meta.g:646:6: T_LAST
+					// Meta.g:656:6: T_LAST
 					{
 					match(input,T_LAST,FOLLOW_T_LAST_in_getWindow5470); 
 					ws = new WindowLast();
 					}
 					break;
 				case 2 :
-					// Meta.g:647:7: cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit )
+					// Meta.g:657:7: cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit )
 					{
 					cnstnt=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getWindow5483); 
-					// Meta.g:647:25: ( T_ROWS |unit= getTimeUnit )
+					// Meta.g:657:25: ( T_ROWS |unit= getTimeUnit )
 					int alt61=2;
 					int LA61_0 = input.LA(1);
 					if ( (LA61_0==T_ROWS) ) {
@@ -3555,14 +3565,14 @@ public class MetaParser extends Parser {
 
 					switch (alt61) {
 						case 1 :
-							// Meta.g:647:26: T_ROWS
+							// Meta.g:657:26: T_ROWS
 							{
 							match(input,T_ROWS,FOLLOW_T_ROWS_in_getWindow5486); 
 							ws = new WindowRows(Integer.parseInt((cnstnt!=null?cnstnt.getText():null)));
 							}
 							break;
 						case 2 :
-							// Meta.g:648:26: unit= getTimeUnit
+							// Meta.g:658:26: unit= getTimeUnit
 							{
 							pushFollow(FOLLOW_getTimeUnit_in_getWindow5518);
 							unit=getTimeUnit();
@@ -3596,16 +3606,16 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTimeUnit"
-	// Meta.g:653:1: getTimeUnit returns [TimeUnit unit] : ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' ) ;
+	// Meta.g:663:1: getTimeUnit returns [TimeUnit unit] : ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' ) ;
 	public final TimeUnit getTimeUnit() throws RecognitionException {
 		TimeUnit unit = null;
 
 
 		try {
-			// Meta.g:653:36: ( ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' ) )
-			// Meta.g:654:5: ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' )
+			// Meta.g:663:36: ( ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' ) )
+			// Meta.g:664:5: ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' )
 			{
-			// Meta.g:654:5: ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' )
+			// Meta.g:664:5: ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' )
 			int alt63=8;
 			switch ( input.LA(1) ) {
 			case 144:
@@ -3655,56 +3665,56 @@ public class MetaParser extends Parser {
 			}
 			switch (alt63) {
 				case 1 :
-					// Meta.g:654:7: 'S'
+					// Meta.g:664:7: 'S'
 					{
 					match(input,144,FOLLOW_144_in_getTimeUnit5569); 
 					unit =TimeUnit.S;
 					}
 					break;
 				case 2 :
-					// Meta.g:655:7: 'M'
+					// Meta.g:665:7: 'M'
 					{
 					match(input,142,FOLLOW_142_in_getTimeUnit5579); 
 					unit =TimeUnit.M;
 					}
 					break;
 				case 3 :
-					// Meta.g:656:7: 'H'
+					// Meta.g:666:7: 'H'
 					{
 					match(input,141,FOLLOW_141_in_getTimeUnit5589); 
 					unit =TimeUnit.H;
 					}
 					break;
 				case 4 :
-					// Meta.g:657:7: 'D'
+					// Meta.g:667:7: 'D'
 					{
 					match(input,140,FOLLOW_140_in_getTimeUnit5599); 
 					unit =TimeUnit.D;
 					}
 					break;
 				case 5 :
-					// Meta.g:658:7: 's'
+					// Meta.g:668:7: 's'
 					{
 					match(input,150,FOLLOW_150_in_getTimeUnit5609); 
 					unit =TimeUnit.s;
 					}
 					break;
 				case 6 :
-					// Meta.g:659:7: 'm'
+					// Meta.g:669:7: 'm'
 					{
 					match(input,149,FOLLOW_149_in_getTimeUnit5619); 
 					unit =TimeUnit.m;
 					}
 					break;
 				case 7 :
-					// Meta.g:660:7: 'h'
+					// Meta.g:670:7: 'h'
 					{
 					match(input,148,FOLLOW_148_in_getTimeUnit5629); 
 					unit =TimeUnit.h;
 					}
 					break;
 				case 8 :
-					// Meta.g:661:7: 'd'
+					// Meta.g:671:7: 'd'
 					{
 					match(input,147,FOLLOW_147_in_getTimeUnit5639); 
 					unit =TimeUnit.d;
@@ -3730,7 +3740,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelectClause"
-	// Meta.g:664:1: getSelectClause returns [SelectionClause sc] : (scc= getSelectionCount |scl= getSelectionList );
+	// Meta.g:674:1: getSelectClause returns [SelectionClause sc] : (scc= getSelectionCount |scl= getSelectionList );
 	public final SelectionClause getSelectClause() throws RecognitionException {
 		SelectionClause sc = null;
 
@@ -3739,7 +3749,7 @@ public class MetaParser extends Parser {
 		SelectionList scl =null;
 
 		try {
-			// Meta.g:664:45: (scc= getSelectionCount |scl= getSelectionList )
+			// Meta.g:674:45: (scc= getSelectionCount |scl= getSelectionList )
 			int alt64=2;
 			int LA64_0 = input.LA(1);
 			if ( (LA64_0==T_COUNT) ) {
@@ -3794,7 +3804,7 @@ public class MetaParser extends Parser {
 
 			switch (alt64) {
 				case 1 :
-					// Meta.g:665:5: scc= getSelectionCount
+					// Meta.g:675:5: scc= getSelectionCount
 					{
 					pushFollow(FOLLOW_getSelectionCount_in_getSelectClause5661);
 					scc=getSelectionCount();
@@ -3804,7 +3814,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:666:7: scl= getSelectionList
+					// Meta.g:676:7: scl= getSelectionList
 					{
 					pushFollow(FOLLOW_getSelectionList_in_getSelectClause5673);
 					scl=getSelectionList();
@@ -3830,7 +3840,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelectionCount"
-	// Meta.g:669:1: getSelectionCount returns [SelectionCount scc] : T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' ) T_END_PARENTHESIS ( T_AS ident= T_IDENT )? ;
+	// Meta.g:679:1: getSelectionCount returns [SelectionCount scc] : T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' ) T_END_PARENTHESIS ( T_AS ident= T_IDENT )? ;
 	public final SelectionCount getSelectionCount() throws RecognitionException {
 		SelectionCount scc = null;
 
@@ -3842,12 +3852,12 @@ public class MetaParser extends Parser {
 		        char symbol = '*';
 		    
 		try {
-			// Meta.g:673:6: ( T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' ) T_END_PARENTHESIS ( T_AS ident= T_IDENT )? )
-			// Meta.g:674:5: T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' ) T_END_PARENTHESIS ( T_AS ident= T_IDENT )?
+			// Meta.g:683:6: ( T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' ) T_END_PARENTHESIS ( T_AS ident= T_IDENT )? )
+			// Meta.g:684:5: T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' ) T_END_PARENTHESIS ( T_AS ident= T_IDENT )?
 			{
 			match(input,T_COUNT,FOLLOW_T_COUNT_in_getSelectionCount5699); 
 			match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getSelectionCount5701); 
-			// Meta.g:674:33: ( T_ASTERISK | '1' )
+			// Meta.g:684:33: ( T_ASTERISK | '1' )
 			int alt65=2;
 			int LA65_0 = input.LA(1);
 			if ( (LA65_0==T_ASTERISK) ) {
@@ -3865,13 +3875,13 @@ public class MetaParser extends Parser {
 
 			switch (alt65) {
 				case 1 :
-					// Meta.g:674:35: T_ASTERISK
+					// Meta.g:684:35: T_ASTERISK
 					{
 					match(input,T_ASTERISK,FOLLOW_T_ASTERISK_in_getSelectionCount5705); 
 					}
 					break;
 				case 2 :
-					// Meta.g:674:48: '1'
+					// Meta.g:684:48: '1'
 					{
 					match(input,139,FOLLOW_139_in_getSelectionCount5709); 
 					symbol = '1';
@@ -3881,7 +3891,7 @@ public class MetaParser extends Parser {
 			}
 
 			match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getSelectionCount5715); 
-			// Meta.g:675:5: ( T_AS ident= T_IDENT )?
+			// Meta.g:685:5: ( T_AS ident= T_IDENT )?
 			int alt66=2;
 			int LA66_0 = input.LA(1);
 			if ( (LA66_0==T_AS) ) {
@@ -3889,7 +3899,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt66) {
 				case 1 :
-					// Meta.g:675:6: T_AS ident= T_IDENT
+					// Meta.g:685:6: T_AS ident= T_IDENT
 					{
 					match(input,T_AS,FOLLOW_T_AS_in_getSelectionCount5722); 
 					identInc = true;
@@ -3922,7 +3932,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelectionList"
-	// Meta.g:684:1: getSelectionList returns [SelectionList scl] : ( T_DISTINCT )? selections= getSelection ;
+	// Meta.g:694:1: getSelectionList returns [SelectionList scl] : ( T_DISTINCT )? selections= getSelection ;
 	public final SelectionList getSelectionList() throws RecognitionException {
 		SelectionList scl = null;
 
@@ -3933,10 +3943,10 @@ public class MetaParser extends Parser {
 		        boolean distinct = false;
 		    
 		try {
-			// Meta.g:687:6: ( ( T_DISTINCT )? selections= getSelection )
-			// Meta.g:688:5: ( T_DISTINCT )? selections= getSelection
+			// Meta.g:697:6: ( ( T_DISTINCT )? selections= getSelection )
+			// Meta.g:698:5: ( T_DISTINCT )? selections= getSelection
 			{
-			// Meta.g:688:5: ( T_DISTINCT )?
+			// Meta.g:698:5: ( T_DISTINCT )?
 			int alt67=2;
 			int LA67_0 = input.LA(1);
 			if ( (LA67_0==T_DISTINCT) ) {
@@ -3944,7 +3954,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt67) {
 				case 1 :
-					// Meta.g:688:6: T_DISTINCT
+					// Meta.g:698:6: T_DISTINCT
 					{
 					match(input,T_DISTINCT,FOLLOW_T_DISTINCT_in_getSelectionList5763); 
 					distinct = true;
@@ -3975,7 +3985,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelection"
-	// Meta.g:692:1: getSelection returns [Selection slct] : ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* ) ;
+	// Meta.g:702:1: getSelection returns [Selection slct] : ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* ) ;
 	public final Selection getSelection() throws RecognitionException {
 		Selection slct = null;
 
@@ -3990,10 +4000,10 @@ public class MetaParser extends Parser {
 		        List<SelectionSelector> selections = new ArrayList<>();
 		    
 		try {
-			// Meta.g:696:6: ( ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* ) )
-			// Meta.g:697:5: ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* )
+			// Meta.g:706:6: ( ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* ) )
+			// Meta.g:707:5: ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* )
 			{
-			// Meta.g:697:5: ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* )
+			// Meta.g:707:5: ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* )
 			int alt71=2;
 			int LA71_0 = input.LA(1);
 			if ( (LA71_0==T_ASTERISK) ) {
@@ -4011,21 +4021,21 @@ public class MetaParser extends Parser {
 
 			switch (alt71) {
 				case 1 :
-					// Meta.g:698:9: T_ASTERISK
+					// Meta.g:708:9: T_ASTERISK
 					{
 					match(input,T_ASTERISK,FOLLOW_T_ASTERISK_in_getSelection5811); 
 					 slct = new SelectionAsterisk();
 					}
 					break;
 				case 2 :
-					// Meta.g:699:11: selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )*
+					// Meta.g:709:11: selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )*
 					{
 					pushFollow(FOLLOW_getSelector_in_getSelection5834);
 					selector1=getSelector();
 					state._fsp--;
 
 					 slsl = new SelectionSelector(selector1);
-					// Meta.g:699:77: ( T_AS ident1= T_IDENT )?
+					// Meta.g:709:77: ( T_AS ident1= T_IDENT )?
 					int alt68=2;
 					int LA68_0 = input.LA(1);
 					if ( (LA68_0==T_AS) ) {
@@ -4033,7 +4043,7 @@ public class MetaParser extends Parser {
 					}
 					switch (alt68) {
 						case 1 :
-							// Meta.g:699:78: T_AS ident1= T_IDENT
+							// Meta.g:709:78: T_AS ident1= T_IDENT
 							{
 							match(input,T_AS,FOLLOW_T_AS_in_getSelection5839); 
 							ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelection5843); 
@@ -4044,7 +4054,7 @@ public class MetaParser extends Parser {
 					}
 
 					selections.add(slsl);
-					// Meta.g:700:13: ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )*
+					// Meta.g:710:13: ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )*
 					loop70:
 					while (true) {
 						int alt70=2;
@@ -4055,7 +4065,7 @@ public class MetaParser extends Parser {
 
 						switch (alt70) {
 						case 1 :
-							// Meta.g:700:14: T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )?
+							// Meta.g:710:14: T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )?
 							{
 							match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelection5864); 
 							pushFollow(FOLLOW_getSelector_in_getSelection5868);
@@ -4063,7 +4073,7 @@ public class MetaParser extends Parser {
 							state._fsp--;
 
 							slsl = new SelectionSelector(selectorN);
-							// Meta.g:700:87: ( T_AS identN= T_IDENT )?
+							// Meta.g:710:87: ( T_AS identN= T_IDENT )?
 							int alt69=2;
 							int LA69_0 = input.LA(1);
 							if ( (LA69_0==T_AS) ) {
@@ -4071,7 +4081,7 @@ public class MetaParser extends Parser {
 							}
 							switch (alt69) {
 								case 1 :
-									// Meta.g:700:88: T_AS identN= T_IDENT
+									// Meta.g:710:88: T_AS identN= T_IDENT
 									{
 									match(input,T_AS,FOLLOW_T_AS_in_getSelection5873); 
 									identN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelection5877); 
@@ -4113,7 +4123,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelector"
-	// Meta.g:705:1: getSelector returns [SelectorMeta slmt] : ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) ) ;
+	// Meta.g:715:1: getSelector returns [SelectorMeta slmt] : ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) ) ;
 	public final SelectorMeta getSelector() throws RecognitionException {
 		SelectorMeta slmt = null;
 
@@ -4127,10 +4137,10 @@ public class MetaParser extends Parser {
 		        GroupByFunction gbFunc = null;
 		    
 		try {
-			// Meta.g:709:6: ( ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) ) )
-			// Meta.g:710:5: ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) )
+			// Meta.g:719:6: ( ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) ) )
+			// Meta.g:720:5: ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) )
 			{
-			// Meta.g:710:5: ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) )
+			// Meta.g:720:5: ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) )
 			int alt78=2;
 			int LA78_0 = input.LA(1);
 			if ( (LA78_0==T_AGGREGATION||LA78_0==T_AVG||LA78_0==T_COUNT||(LA78_0 >= T_MAX && LA78_0 <= T_MIN)) ) {
@@ -4148,9 +4158,9 @@ public class MetaParser extends Parser {
 
 			switch (alt78) {
 				case 1 :
-					// Meta.g:710:7: ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS
+					// Meta.g:720:7: ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS
 					{
-					// Meta.g:710:7: ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT )
+					// Meta.g:720:7: ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT )
 					int alt72=5;
 					switch ( input.LA(1) ) {
 					case T_AGGREGATION:
@@ -4185,35 +4195,35 @@ public class MetaParser extends Parser {
 					}
 					switch (alt72) {
 						case 1 :
-							// Meta.g:710:8: T_AGGREGATION
+							// Meta.g:720:8: T_AGGREGATION
 							{
 							match(input,T_AGGREGATION,FOLLOW_T_AGGREGATION_in_getSelector5932); 
 							gbFunc = GroupByFunction.aggregation;
 							}
 							break;
 						case 2 :
-							// Meta.g:711:10: T_MAX
+							// Meta.g:721:10: T_MAX
 							{
 							match(input,T_MAX,FOLLOW_T_MAX_in_getSelector5946); 
 							gbFunc = GroupByFunction.max;
 							}
 							break;
 						case 3 :
-							// Meta.g:712:10: T_MIN
+							// Meta.g:722:10: T_MIN
 							{
 							match(input,T_MIN,FOLLOW_T_MIN_in_getSelector5960); 
 							gbFunc = GroupByFunction.min;
 							}
 							break;
 						case 4 :
-							// Meta.g:713:10: T_AVG
+							// Meta.g:723:10: T_AVG
 							{
 							match(input,T_AVG,FOLLOW_T_AVG_in_getSelector5974); 
 							gbFunc = GroupByFunction.avg;
 							}
 							break;
 						case 5 :
-							// Meta.g:714:10: T_COUNT
+							// Meta.g:724:10: T_COUNT
 							{
 							match(input,T_COUNT,FOLLOW_T_COUNT_in_getSelector5988); 
 							gbFunc = GroupByFunction.count;
@@ -4223,7 +4233,7 @@ public class MetaParser extends Parser {
 					}
 
 					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getSelector6014); 
-					// Meta.g:717:17: (select1= getSelector ( T_COMMA selectN= getSelector )* )?
+					// Meta.g:727:17: (select1= getSelector ( T_COMMA selectN= getSelector )* )?
 					int alt74=2;
 					int LA74_0 = input.LA(1);
 					if ( (LA74_0==T_AGGREGATION||LA74_0==T_AVG||LA74_0==T_COUNT||LA74_0==T_IDENT||(LA74_0 >= T_MAX && LA74_0 <= T_MIN)) ) {
@@ -4231,14 +4241,14 @@ public class MetaParser extends Parser {
 					}
 					switch (alt74) {
 						case 1 :
-							// Meta.g:717:18: select1= getSelector ( T_COMMA selectN= getSelector )*
+							// Meta.g:727:18: select1= getSelector ( T_COMMA selectN= getSelector )*
 							{
 							pushFollow(FOLLOW_getSelector_in_getSelector6036);
 							select1=getSelector();
 							state._fsp--;
 
 							params.add(select1);
-							// Meta.g:717:61: ( T_COMMA selectN= getSelector )*
+							// Meta.g:727:61: ( T_COMMA selectN= getSelector )*
 							loop73:
 							while (true) {
 								int alt73=2;
@@ -4249,7 +4259,7 @@ public class MetaParser extends Parser {
 
 								switch (alt73) {
 								case 1 :
-									// Meta.g:717:62: T_COMMA selectN= getSelector
+									// Meta.g:727:62: T_COMMA selectN= getSelector
 									{
 									match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelector6041); 
 									pushFollow(FOLLOW_getSelector_in_getSelector6045);
@@ -4275,10 +4285,10 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:719:11: ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS )
+					// Meta.g:729:11: ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS )
 					{
 					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelector6082); 
-					// Meta.g:719:25: (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS )
+					// Meta.g:729:25: (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS )
 					int alt77=2;
 					int LA77_0 = input.LA(1);
 					if ( (LA77_0==T_AS||LA77_0==T_COMMA||LA77_0==T_END_PARENTHESIS||LA77_0==T_FROM) ) {
@@ -4296,16 +4306,16 @@ public class MetaParser extends Parser {
 
 					switch (alt77) {
 						case 1 :
-							// Meta.g:720:13: 
+							// Meta.g:730:13: 
 							{
 							slmt = new SelectorIdentifier((ident!=null?ident.getText():null));
 							}
 							break;
 						case 2 :
-							// Meta.g:721:15: T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS
+							// Meta.g:731:15: T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS
 							{
 							match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getSelector6114); 
-							// Meta.g:721:35: (select1= getSelector ( T_COMMA selectN= getSelector )* )?
+							// Meta.g:731:35: (select1= getSelector ( T_COMMA selectN= getSelector )* )?
 							int alt76=2;
 							int LA76_0 = input.LA(1);
 							if ( (LA76_0==T_AGGREGATION||LA76_0==T_AVG||LA76_0==T_COUNT||LA76_0==T_IDENT||(LA76_0 >= T_MAX && LA76_0 <= T_MIN)) ) {
@@ -4313,14 +4323,14 @@ public class MetaParser extends Parser {
 							}
 							switch (alt76) {
 								case 1 :
-									// Meta.g:721:36: select1= getSelector ( T_COMMA selectN= getSelector )*
+									// Meta.g:731:36: select1= getSelector ( T_COMMA selectN= getSelector )*
 									{
 									pushFollow(FOLLOW_getSelector_in_getSelector6119);
 									select1=getSelector();
 									state._fsp--;
 
 									params.add(select1);
-									// Meta.g:721:79: ( T_COMMA selectN= getSelector )*
+									// Meta.g:731:79: ( T_COMMA selectN= getSelector )*
 									loop75:
 									while (true) {
 										int alt75=2;
@@ -4331,7 +4341,7 @@ public class MetaParser extends Parser {
 
 										switch (alt75) {
 										case 1 :
-											// Meta.g:721:80: T_COMMA selectN= getSelector
+											// Meta.g:731:80: T_COMMA selectN= getSelector
 											{
 											match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelector6124); 
 											pushFollow(FOLLOW_getSelector_in_getSelector6128);
@@ -4385,7 +4395,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getListTypes"
-	// Meta.g:727:1: getListTypes returns [String listType] : ident= ( 'PROCESS' | 'UDF' | 'TRIGGER' ) ;
+	// Meta.g:737:1: getListTypes returns [String listType] : ident= ( 'PROCESS' | 'UDF' | 'TRIGGER' ) ;
 	public final MetaParser.getListTypes_return getListTypes() throws RecognitionException {
 		MetaParser.getListTypes_return retval = new MetaParser.getListTypes_return();
 		retval.start = input.LT(1);
@@ -4393,8 +4403,8 @@ public class MetaParser extends Parser {
 		Token ident=null;
 
 		try {
-			// Meta.g:727:39: (ident= ( 'PROCESS' | 'UDF' | 'TRIGGER' ) )
-			// Meta.g:728:2: ident= ( 'PROCESS' | 'UDF' | 'TRIGGER' )
+			// Meta.g:737:39: (ident= ( 'PROCESS' | 'UDF' | 'TRIGGER' ) )
+			// Meta.g:738:2: ident= ( 'PROCESS' | 'UDF' | 'TRIGGER' )
 			{
 			ident=input.LT(1);
 			if ( input.LA(1)==143||(input.LA(1) >= 145 && input.LA(1) <= 146) ) {
@@ -4425,7 +4435,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getAssignment"
-	// Meta.g:731:1: getAssignment returns [Assignment assign] : ident= T_IDENT ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm ) ;
+	// Meta.g:741:1: getAssignment returns [Assignment assign] : ident= T_IDENT ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm ) ;
 	public final Assignment getAssignment() throws RecognitionException {
 		Assignment assign = null;
 
@@ -4436,11 +4446,11 @@ public class MetaParser extends Parser {
 		String termR =null;
 
 		try {
-			// Meta.g:731:42: (ident= T_IDENT ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm ) )
-			// Meta.g:732:5: ident= T_IDENT ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm )
+			// Meta.g:741:42: (ident= T_IDENT ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm ) )
+			// Meta.g:742:5: ident= T_IDENT ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm )
 			{
 			ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getAssignment6217); 
-			// Meta.g:732:19: ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm )
+			// Meta.g:742:19: ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm )
 			int alt79=2;
 			int LA79_0 = input.LA(1);
 			if ( (LA79_0==T_EQUAL) ) {
@@ -4458,7 +4468,7 @@ public class MetaParser extends Parser {
 
 			switch (alt79) {
 				case 1 :
-					// Meta.g:733:9: T_EQUAL value= getValueAssign
+					// Meta.g:743:9: T_EQUAL value= getValueAssign
 					{
 					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getAssignment6229); 
 					pushFollow(FOLLOW_getValueAssign_in_getAssignment6233);
@@ -4469,7 +4479,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:735:9: T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm
+					// Meta.g:745:9: T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm
 					{
 					match(input,T_START_BRACKET,FOLLOW_T_START_BRACKET_in_getAssignment6252); 
 					pushFollow(FOLLOW_getTerm_in_getAssignment6256);
@@ -4507,7 +4517,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getValueAssign"
-	// Meta.g:741:1: getValueAssign returns [ValueAssignment valueAssign] : (term1= getTerm |ident= T_IDENT ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList ) );
+	// Meta.g:751:1: getValueAssign returns [ValueAssignment valueAssign] : (term1= getTerm |ident= T_IDENT ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList ) );
 	public final ValueAssignment getValueAssign() throws RecognitionException {
 		ValueAssignment valueAssign = null;
 
@@ -4519,7 +4529,7 @@ public class MetaParser extends Parser {
 		IdentIntOrLiteral value2 =null;
 
 		try {
-			// Meta.g:741:53: (term1= getTerm |ident= T_IDENT ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList ) )
+			// Meta.g:751:53: (term1= getTerm |ident= T_IDENT ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList ) )
 			int alt82=2;
 			int LA82_0 = input.LA(1);
 			if ( (LA82_0==T_IDENT) ) {
@@ -4556,7 +4566,7 @@ public class MetaParser extends Parser {
 
 			switch (alt82) {
 				case 1 :
-					// Meta.g:742:5: term1= getTerm
+					// Meta.g:752:5: term1= getTerm
 					{
 					pushFollow(FOLLOW_getTerm_in_getValueAssign6291);
 					term1=getTerm();
@@ -4566,10 +4576,10 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:743:7: ident= T_IDENT ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList )
+					// Meta.g:753:7: ident= T_IDENT ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList )
 					{
 					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getValueAssign6303); 
-					// Meta.g:743:21: ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList )
+					// Meta.g:753:21: ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList )
 					int alt81=2;
 					int LA81_0 = input.LA(1);
 					if ( (LA81_0==T_PLUS) ) {
@@ -4587,10 +4597,10 @@ public class MetaParser extends Parser {
 
 					switch (alt81) {
 						case 1 :
-							// Meta.g:743:22: T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList )
+							// Meta.g:753:22: T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList )
 							{
 							match(input,T_PLUS,FOLLOW_T_PLUS_in_getValueAssign6306); 
-							// Meta.g:743:29: ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList )
+							// Meta.g:753:29: ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList )
 							int alt80=2;
 							int LA80_0 = input.LA(1);
 							if ( (LA80_0==T_START_SBRACKET) ) {
@@ -4627,7 +4637,7 @@ public class MetaParser extends Parser {
 
 							switch (alt80) {
 								case 1 :
-									// Meta.g:743:30: T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET
+									// Meta.g:753:30: T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET
 									{
 									match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getValueAssign6309); 
 									pushFollow(FOLLOW_getMapLiteral_in_getValueAssign6313);
@@ -4639,7 +4649,7 @@ public class MetaParser extends Parser {
 									}
 									break;
 								case 2 :
-									// Meta.g:744:35: value1= getIntSetOrList
+									// Meta.g:754:35: value1= getIntSetOrList
 									{
 									pushFollow(FOLLOW_getIntSetOrList_in_getValueAssign6355);
 									value1=getIntSetOrList();
@@ -4661,7 +4671,7 @@ public class MetaParser extends Parser {
 							}
 							break;
 						case 2 :
-							// Meta.g:753:11: T_SUBTRACT value2= getIntSetOrList
+							// Meta.g:763:11: T_SUBTRACT value2= getIntSetOrList
 							{
 							match(input,T_SUBTRACT,FOLLOW_T_SUBTRACT_in_getValueAssign6399); 
 							pushFollow(FOLLOW_getIntSetOrList_in_getValueAssign6403);
@@ -4700,7 +4710,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getIntSetOrList"
-	// Meta.g:764:1: getIntSetOrList returns [IdentIntOrLiteral iiol] : (constant= T_CONSTANT | T_START_BRACKET list= getList T_END_BRACKET | T_START_SBRACKET set= getSet T_END_SBRACKET );
+	// Meta.g:774:1: getIntSetOrList returns [IdentIntOrLiteral iiol] : (constant= T_CONSTANT | T_START_BRACKET list= getList T_END_BRACKET | T_START_SBRACKET set= getSet T_END_SBRACKET );
 	public final IdentIntOrLiteral getIntSetOrList() throws RecognitionException {
 		IdentIntOrLiteral iiol = null;
 
@@ -4710,7 +4720,7 @@ public class MetaParser extends Parser {
 		Set set =null;
 
 		try {
-			// Meta.g:764:49: (constant= T_CONSTANT | T_START_BRACKET list= getList T_END_BRACKET | T_START_SBRACKET set= getSet T_END_SBRACKET )
+			// Meta.g:774:49: (constant= T_CONSTANT | T_START_BRACKET list= getList T_END_BRACKET | T_START_SBRACKET set= getSet T_END_SBRACKET )
 			int alt83=3;
 			switch ( input.LA(1) ) {
 			case T_CONSTANT:
@@ -4735,14 +4745,14 @@ public class MetaParser extends Parser {
 			}
 			switch (alt83) {
 				case 1 :
-					// Meta.g:765:5: constant= T_CONSTANT
+					// Meta.g:775:5: constant= T_CONSTANT
 					{
 					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getIntSetOrList6429); 
 					 iiol = new IntTerm(Integer.parseInt((constant!=null?constant.getText():null)));
 					}
 					break;
 				case 2 :
-					// Meta.g:766:7: T_START_BRACKET list= getList T_END_BRACKET
+					// Meta.g:776:7: T_START_BRACKET list= getList T_END_BRACKET
 					{
 					match(input,T_START_BRACKET,FOLLOW_T_START_BRACKET_in_getIntSetOrList6439); 
 					pushFollow(FOLLOW_getList_in_getIntSetOrList6443);
@@ -4754,7 +4764,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 3 :
-					// Meta.g:767:7: T_START_SBRACKET set= getSet T_END_SBRACKET
+					// Meta.g:777:7: T_START_SBRACKET set= getSet T_END_SBRACKET
 					{
 					match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getIntSetOrList6455); 
 					pushFollow(FOLLOW_getSet_in_getIntSetOrList6459);
@@ -4782,7 +4792,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getRelation"
-	// Meta.g:770:1: getRelation returns [MetaRelation mrel] : ( T_TOKEN T_START_PARENTHESIS listIds= getIds T_END_PARENTHESIS operator= getComparator term= getTerm |ident= T_IDENT (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm ) );
+	// Meta.g:780:1: getRelation returns [MetaRelation mrel] : ( T_TOKEN T_START_PARENTHESIS listIds= getIds T_END_PARENTHESIS operator= getComparator term= getTerm |ident= T_IDENT (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm ) );
 	public final MetaRelation getRelation() throws RecognitionException {
 		MetaRelation mrel = null;
 
@@ -4798,7 +4808,7 @@ public class MetaParser extends Parser {
 		String term2 =null;
 
 		try {
-			// Meta.g:770:40: ( T_TOKEN T_START_PARENTHESIS listIds= getIds T_END_PARENTHESIS operator= getComparator term= getTerm |ident= T_IDENT (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm ) )
+			// Meta.g:780:40: ( T_TOKEN T_START_PARENTHESIS listIds= getIds T_END_PARENTHESIS operator= getComparator term= getTerm |ident= T_IDENT (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm ) )
 			int alt85=2;
 			int LA85_0 = input.LA(1);
 			if ( (LA85_0==T_TOKEN) ) {
@@ -4816,7 +4826,7 @@ public class MetaParser extends Parser {
 
 			switch (alt85) {
 				case 1 :
-					// Meta.g:771:5: T_TOKEN T_START_PARENTHESIS listIds= getIds T_END_PARENTHESIS operator= getComparator term= getTerm
+					// Meta.g:781:5: T_TOKEN T_START_PARENTHESIS listIds= getIds T_END_PARENTHESIS operator= getComparator term= getTerm
 					{
 					match(input,T_TOKEN,FOLLOW_T_TOKEN_in_getRelation6479); 
 					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getRelation6481); 
@@ -4837,10 +4847,10 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:772:7: ident= T_IDENT (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm )
+					// Meta.g:782:7: ident= T_IDENT (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm )
 					{
 					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getRelation6507); 
-					// Meta.g:772:21: (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm )
+					// Meta.g:782:21: (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm )
 					int alt84=3;
 					switch ( input.LA(1) ) {
 					case T_EQUAL:
@@ -4871,7 +4881,7 @@ public class MetaParser extends Parser {
 					}
 					switch (alt84) {
 						case 1 :
-							// Meta.g:772:23: compSymbol= getComparator termR= getTerm
+							// Meta.g:782:23: compSymbol= getComparator termR= getTerm
 							{
 							pushFollow(FOLLOW_getComparator_in_getRelation6513);
 							compSymbol=getComparator();
@@ -4885,7 +4895,7 @@ public class MetaParser extends Parser {
 							}
 							break;
 						case 2 :
-							// Meta.g:773:23: T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS
+							// Meta.g:783:23: T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS
 							{
 							match(input,T_IN,FOLLOW_T_IN_in_getRelation6543); 
 							match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getRelation6545); 
@@ -4898,7 +4908,7 @@ public class MetaParser extends Parser {
 							}
 							break;
 						case 3 :
-							// Meta.g:774:23: T_BETWEEN term1= getTerm T_AND term2= getTerm
+							// Meta.g:784:23: T_BETWEEN term1= getTerm T_AND term2= getTerm
 							{
 							match(input,T_BETWEEN,FOLLOW_T_BETWEEN_in_getRelation6577); 
 							pushFollow(FOLLOW_getTerm_in_getRelation6581);
@@ -4935,13 +4945,13 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getComparator"
-	// Meta.g:778:1: getComparator returns [String comparator] : ( T_EQUAL | T_GT | T_LT | T_GET | T_LET | T_NOT_EQUAL | T_LIKE );
+	// Meta.g:788:1: getComparator returns [String comparator] : ( T_EQUAL | T_GT | T_LT | T_GET | T_LET | T_NOT_EQUAL | T_LIKE );
 	public final String getComparator() throws RecognitionException {
 		String comparator = null;
 
 
 		try {
-			// Meta.g:778:42: ( T_EQUAL | T_GT | T_LT | T_GET | T_LET | T_NOT_EQUAL | T_LIKE )
+			// Meta.g:788:42: ( T_EQUAL | T_GT | T_LT | T_GET | T_LET | T_NOT_EQUAL | T_LIKE )
 			int alt86=7;
 			switch ( input.LA(1) ) {
 			case T_EQUAL:
@@ -4986,49 +4996,49 @@ public class MetaParser extends Parser {
 			}
 			switch (alt86) {
 				case 1 :
-					// Meta.g:779:5: T_EQUAL
+					// Meta.g:789:5: T_EQUAL
 					{
 					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getComparator6627); 
 					comparator ="=";
 					}
 					break;
 				case 2 :
-					// Meta.g:780:7: T_GT
+					// Meta.g:790:7: T_GT
 					{
 					match(input,T_GT,FOLLOW_T_GT_in_getComparator6637); 
 					comparator =">";
 					}
 					break;
 				case 3 :
-					// Meta.g:781:7: T_LT
+					// Meta.g:791:7: T_LT
 					{
 					match(input,T_LT,FOLLOW_T_LT_in_getComparator6647); 
 					comparator ="<";
 					}
 					break;
 				case 4 :
-					// Meta.g:782:7: T_GET
+					// Meta.g:792:7: T_GET
 					{
 					match(input,T_GET,FOLLOW_T_GET_in_getComparator6657); 
 					comparator =">=";
 					}
 					break;
 				case 5 :
-					// Meta.g:783:7: T_LET
+					// Meta.g:793:7: T_LET
 					{
 					match(input,T_LET,FOLLOW_T_LET_in_getComparator6668); 
 					comparator ="<=";
 					}
 					break;
 				case 6 :
-					// Meta.g:784:7: T_NOT_EQUAL
+					// Meta.g:794:7: T_NOT_EQUAL
 					{
 					match(input,T_NOT_EQUAL,FOLLOW_T_NOT_EQUAL_in_getComparator6678); 
 					comparator ="<>";
 					}
 					break;
 				case 7 :
-					// Meta.g:785:7: T_LIKE
+					// Meta.g:795:7: T_LIKE
 					{
 					match(input,T_LIKE,FOLLOW_T_LIKE_in_getComparator6689); 
 					comparator ="LIKE";
@@ -5051,7 +5061,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getIds"
-	// Meta.g:788:1: getIds returns [List<String> listStrs] : ident1= T_IDENT ( T_COMMA identN= T_IDENT )* ;
+	// Meta.g:798:1: getIds returns [List<String> listStrs] : ident1= T_IDENT ( T_COMMA identN= T_IDENT )* ;
 	public final List<String> getIds() throws RecognitionException {
 		List<String> listStrs = null;
 
@@ -5063,12 +5073,12 @@ public class MetaParser extends Parser {
 		        listStrs = new ArrayList<>();
 		    
 		try {
-			// Meta.g:791:6: (ident1= T_IDENT ( T_COMMA identN= T_IDENT )* )
-			// Meta.g:792:5: ident1= T_IDENT ( T_COMMA identN= T_IDENT )*
+			// Meta.g:801:6: (ident1= T_IDENT ( T_COMMA identN= T_IDENT )* )
+			// Meta.g:802:5: ident1= T_IDENT ( T_COMMA identN= T_IDENT )*
 			{
 			ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getIds6717); 
 			listStrs.add((ident1!=null?ident1.getText():null));
-			// Meta.g:792:50: ( T_COMMA identN= T_IDENT )*
+			// Meta.g:802:50: ( T_COMMA identN= T_IDENT )*
 			loop87:
 			while (true) {
 				int alt87=2;
@@ -5079,7 +5089,7 @@ public class MetaParser extends Parser {
 
 				switch (alt87) {
 				case 1 :
-					// Meta.g:792:51: T_COMMA identN= T_IDENT
+					// Meta.g:802:51: T_COMMA identN= T_IDENT
 					{
 					match(input,T_COMMA,FOLLOW_T_COMMA_in_getIds6722); 
 					identN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getIds6726); 
@@ -5109,7 +5119,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getOptions"
-	// Meta.g:795:1: getOptions returns [List<Option> opts] : opt1= getOption (optN= getOption )* ;
+	// Meta.g:805:1: getOptions returns [List<Option> opts] : opt1= getOption (optN= getOption )* ;
 	public final List<Option> getOptions() throws RecognitionException {
 		List<Option> opts = null;
 
@@ -5121,15 +5131,15 @@ public class MetaParser extends Parser {
 		        opts = new ArrayList<>();
 		    
 		try {
-			// Meta.g:797:6: (opt1= getOption (optN= getOption )* )
-			// Meta.g:798:5: opt1= getOption (optN= getOption )*
+			// Meta.g:807:6: (opt1= getOption (optN= getOption )* )
+			// Meta.g:808:5: opt1= getOption (optN= getOption )*
 			{
 			pushFollow(FOLLOW_getOption_in_getOptions6751);
 			opt1=getOption();
 			state._fsp--;
 
 			opts.add(opt1);
-			// Meta.g:798:38: (optN= getOption )*
+			// Meta.g:808:38: (optN= getOption )*
 			loop88:
 			while (true) {
 				int alt88=2;
@@ -5140,7 +5150,7 @@ public class MetaParser extends Parser {
 
 				switch (alt88) {
 				case 1 :
-					// Meta.g:798:39: optN= getOption
+					// Meta.g:808:39: optN= getOption
 					{
 					pushFollow(FOLLOW_getOption_in_getOptions6758);
 					optN=getOption();
@@ -5172,7 +5182,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getOption"
-	// Meta.g:801:1: getOption returns [Option opt] : ( T_COMPACT T_STORAGE | T_CLUSTERING T_ORDER |identProp= T_IDENT T_EQUAL valueProp= getValueProperty );
+	// Meta.g:811:1: getOption returns [Option opt] : ( T_COMPACT T_STORAGE | T_CLUSTERING T_ORDER |identProp= T_IDENT T_EQUAL valueProp= getValueProperty );
 	public final Option getOption() throws RecognitionException {
 		Option opt = null;
 
@@ -5181,7 +5191,7 @@ public class MetaParser extends Parser {
 		ValueProperty valueProp =null;
 
 		try {
-			// Meta.g:801:31: ( T_COMPACT T_STORAGE | T_CLUSTERING T_ORDER |identProp= T_IDENT T_EQUAL valueProp= getValueProperty )
+			// Meta.g:811:31: ( T_COMPACT T_STORAGE | T_CLUSTERING T_ORDER |identProp= T_IDENT T_EQUAL valueProp= getValueProperty )
 			int alt89=3;
 			switch ( input.LA(1) ) {
 			case T_COMPACT:
@@ -5206,7 +5216,7 @@ public class MetaParser extends Parser {
 			}
 			switch (alt89) {
 				case 1 :
-					// Meta.g:802:5: T_COMPACT T_STORAGE
+					// Meta.g:812:5: T_COMPACT T_STORAGE
 					{
 					match(input,T_COMPACT,FOLLOW_T_COMPACT_in_getOption6778); 
 					match(input,T_STORAGE,FOLLOW_T_STORAGE_in_getOption6780); 
@@ -5214,7 +5224,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:803:7: T_CLUSTERING T_ORDER
+					// Meta.g:813:7: T_CLUSTERING T_ORDER
 					{
 					match(input,T_CLUSTERING,FOLLOW_T_CLUSTERING_in_getOption6790); 
 					match(input,T_ORDER,FOLLOW_T_ORDER_in_getOption6792); 
@@ -5222,7 +5232,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 3 :
-					// Meta.g:804:7: identProp= T_IDENT T_EQUAL valueProp= getValueProperty
+					// Meta.g:814:7: identProp= T_IDENT T_EQUAL valueProp= getValueProperty
 					{
 					identProp=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getOption6804); 
 					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getOption6806); 
@@ -5250,7 +5260,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getList"
-	// Meta.g:807:1: getList returns [List list] : term1= getTerm ( T_COMMA termN= getTerm )* ;
+	// Meta.g:817:1: getList returns [List list] : term1= getTerm ( T_COMMA termN= getTerm )* ;
 	public final List getList() throws RecognitionException {
 		List list = null;
 
@@ -5262,15 +5272,15 @@ public class MetaParser extends Parser {
 		        list = new ArrayList<String>();
 		    
 		try {
-			// Meta.g:810:6: (term1= getTerm ( T_COMMA termN= getTerm )* )
-			// Meta.g:811:5: term1= getTerm ( T_COMMA termN= getTerm )*
+			// Meta.g:820:6: (term1= getTerm ( T_COMMA termN= getTerm )* )
+			// Meta.g:821:5: term1= getTerm ( T_COMMA termN= getTerm )*
 			{
 			pushFollow(FOLLOW_getTerm_in_getList6838);
 			term1=getTerm();
 			state._fsp--;
 
 			list.add(term1);
-			// Meta.g:812:5: ( T_COMMA termN= getTerm )*
+			// Meta.g:822:5: ( T_COMMA termN= getTerm )*
 			loop90:
 			while (true) {
 				int alt90=2;
@@ -5281,7 +5291,7 @@ public class MetaParser extends Parser {
 
 				switch (alt90) {
 				case 1 :
-					// Meta.g:812:6: T_COMMA termN= getTerm
+					// Meta.g:822:6: T_COMMA termN= getTerm
 					{
 					match(input,T_COMMA,FOLLOW_T_COMMA_in_getList6847); 
 					pushFollow(FOLLOW_getTerm_in_getList6851);
@@ -5314,7 +5324,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTerms"
-	// Meta.g:815:1: getTerms returns [List list] : term1= getTerm ( T_COMMA termN= getTerm )* ;
+	// Meta.g:825:1: getTerms returns [List list] : term1= getTerm ( T_COMMA termN= getTerm )* ;
 	public final List getTerms() throws RecognitionException {
 		List list = null;
 
@@ -5326,15 +5336,15 @@ public class MetaParser extends Parser {
 		        list = new ArrayList<Term>();
 		    
 		try {
-			// Meta.g:818:6: (term1= getTerm ( T_COMMA termN= getTerm )* )
-			// Meta.g:819:5: term1= getTerm ( T_COMMA termN= getTerm )*
+			// Meta.g:828:6: (term1= getTerm ( T_COMMA termN= getTerm )* )
+			// Meta.g:829:5: term1= getTerm ( T_COMMA termN= getTerm )*
 			{
 			pushFollow(FOLLOW_getTerm_in_getTerms6885);
 			term1=getTerm();
 			state._fsp--;
 
 			list.add(new Term(term1));
-			// Meta.g:820:5: ( T_COMMA termN= getTerm )*
+			// Meta.g:830:5: ( T_COMMA termN= getTerm )*
 			loop91:
 			while (true) {
 				int alt91=2;
@@ -5345,7 +5355,7 @@ public class MetaParser extends Parser {
 
 				switch (alt91) {
 				case 1 :
-					// Meta.g:820:6: T_COMMA termN= getTerm
+					// Meta.g:830:6: T_COMMA termN= getTerm
 					{
 					match(input,T_COMMA,FOLLOW_T_COMMA_in_getTerms6894); 
 					pushFollow(FOLLOW_getTerm_in_getTerms6898);
@@ -5378,7 +5388,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSet"
-	// Meta.g:823:1: getSet returns [Set set] : term1= getTerm ( T_COMMA termN= getTerm )* ;
+	// Meta.g:833:1: getSet returns [Set set] : term1= getTerm ( T_COMMA termN= getTerm )* ;
 	public final Set getSet() throws RecognitionException {
 		Set set = null;
 
@@ -5390,15 +5400,15 @@ public class MetaParser extends Parser {
 		        set = new HashSet<String>();
 		    
 		try {
-			// Meta.g:826:6: (term1= getTerm ( T_COMMA termN= getTerm )* )
-			// Meta.g:827:5: term1= getTerm ( T_COMMA termN= getTerm )*
+			// Meta.g:836:6: (term1= getTerm ( T_COMMA termN= getTerm )* )
+			// Meta.g:837:5: term1= getTerm ( T_COMMA termN= getTerm )*
 			{
 			pushFollow(FOLLOW_getTerm_in_getSet6932);
 			term1=getTerm();
 			state._fsp--;
 
 			set.add(term1);
-			// Meta.g:828:5: ( T_COMMA termN= getTerm )*
+			// Meta.g:838:5: ( T_COMMA termN= getTerm )*
 			loop92:
 			while (true) {
 				int alt92=2;
@@ -5409,7 +5419,7 @@ public class MetaParser extends Parser {
 
 				switch (alt92) {
 				case 1 :
-					// Meta.g:828:6: T_COMMA termN= getTerm
+					// Meta.g:838:6: T_COMMA termN= getTerm
 					{
 					match(input,T_COMMA,FOLLOW_T_COMMA_in_getSet6941); 
 					pushFollow(FOLLOW_getTerm_in_getSet6945);
@@ -5442,7 +5452,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTermOrLiteral"
-	// Meta.g:831:1: getTermOrLiteral returns [ValueCell vc] : (term= getTerm | T_START_SBRACKET (term1= getTerm ( T_COMMA termN= getTerm )* )? T_END_SBRACKET );
+	// Meta.g:841:1: getTermOrLiteral returns [ValueCell vc] : (term= getTerm | T_START_SBRACKET (term1= getTerm ( T_COMMA termN= getTerm )* )? T_END_SBRACKET );
 	public final ValueCell getTermOrLiteral() throws RecognitionException {
 		ValueCell vc = null;
 
@@ -5455,7 +5465,7 @@ public class MetaParser extends Parser {
 		        CollectionLiteral cl = new CollectionLiteral();
 		    
 		try {
-			// Meta.g:834:6: (term= getTerm | T_START_SBRACKET (term1= getTerm ( T_COMMA termN= getTerm )* )? T_END_SBRACKET )
+			// Meta.g:844:6: (term= getTerm | T_START_SBRACKET (term1= getTerm ( T_COMMA termN= getTerm )* )? T_END_SBRACKET )
 			int alt95=2;
 			int LA95_0 = input.LA(1);
 			if ( (LA95_0==T_CONSTANT||LA95_0==T_FALSE||LA95_0==T_IDENT||LA95_0==T_KS_AND_TN||LA95_0==T_TERM||LA95_0==T_TRUE||LA95_0==139) ) {
@@ -5473,7 +5483,7 @@ public class MetaParser extends Parser {
 
 			switch (alt95) {
 				case 1 :
-					// Meta.g:835:5: term= getTerm
+					// Meta.g:845:5: term= getTerm
 					{
 					pushFollow(FOLLOW_getTerm_in_getTermOrLiteral6979);
 					term=getTerm();
@@ -5483,10 +5493,10 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:837:5: T_START_SBRACKET (term1= getTerm ( T_COMMA termN= getTerm )* )? T_END_SBRACKET
+					// Meta.g:847:5: T_START_SBRACKET (term1= getTerm ( T_COMMA termN= getTerm )* )? T_END_SBRACKET
 					{
 					match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getTermOrLiteral6993); 
-					// Meta.g:838:5: (term1= getTerm ( T_COMMA termN= getTerm )* )?
+					// Meta.g:848:5: (term1= getTerm ( T_COMMA termN= getTerm )* )?
 					int alt94=2;
 					int LA94_0 = input.LA(1);
 					if ( (LA94_0==T_CONSTANT||LA94_0==T_FALSE||LA94_0==T_IDENT||LA94_0==T_KS_AND_TN||LA94_0==T_TERM||LA94_0==T_TRUE||LA94_0==139) ) {
@@ -5494,14 +5504,14 @@ public class MetaParser extends Parser {
 					}
 					switch (alt94) {
 						case 1 :
-							// Meta.g:839:9: term1= getTerm ( T_COMMA termN= getTerm )*
+							// Meta.g:849:9: term1= getTerm ( T_COMMA termN= getTerm )*
 							{
 							pushFollow(FOLLOW_getTerm_in_getTermOrLiteral7011);
 							term1=getTerm();
 							state._fsp--;
 
 							cl.addLiteral(new Term(term1));
-							// Meta.g:840:9: ( T_COMMA termN= getTerm )*
+							// Meta.g:850:9: ( T_COMMA termN= getTerm )*
 							loop93:
 							while (true) {
 								int alt93=2;
@@ -5512,7 +5522,7 @@ public class MetaParser extends Parser {
 
 								switch (alt93) {
 								case 1 :
-									// Meta.g:840:10: T_COMMA termN= getTerm
+									// Meta.g:850:10: T_COMMA termN= getTerm
 									{
 									match(input,T_COMMA,FOLLOW_T_COMMA_in_getTermOrLiteral7024); 
 									pushFollow(FOLLOW_getTerm_in_getTermOrLiteral7028);
@@ -5554,7 +5564,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTableID"
-	// Meta.g:845:1: getTableID returns [String tableID] : (ident1= T_IDENT |ident2= T_KS_AND_TN );
+	// Meta.g:855:1: getTableID returns [String tableID] : (ident1= T_IDENT |ident2= T_KS_AND_TN );
 	public final String getTableID() throws RecognitionException {
 		String tableID = null;
 
@@ -5563,7 +5573,7 @@ public class MetaParser extends Parser {
 		Token ident2=null;
 
 		try {
-			// Meta.g:845:36: (ident1= T_IDENT |ident2= T_KS_AND_TN )
+			// Meta.g:855:36: (ident1= T_IDENT |ident2= T_KS_AND_TN )
 			int alt96=2;
 			int LA96_0 = input.LA(1);
 			if ( (LA96_0==T_IDENT) ) {
@@ -5581,14 +5591,14 @@ public class MetaParser extends Parser {
 
 			switch (alt96) {
 				case 1 :
-					// Meta.g:846:5: ident1= T_IDENT
+					// Meta.g:856:5: ident1= T_IDENT
 					{
 					ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTableID7066); 
 					tableID = new String((ident1!=null?ident1.getText():null));
 					}
 					break;
 				case 2 :
-					// Meta.g:847:7: ident2= T_KS_AND_TN
+					// Meta.g:857:7: ident2= T_KS_AND_TN
 					{
 					ident2=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getTableID7082); 
 					tableID = new String((ident2!=null?ident2.getText():null));
@@ -5611,7 +5621,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTerm"
-	// Meta.g:859:1: getTerm returns [String term] : (ident= T_IDENT |constant= T_CONSTANT | '1' | T_FALSE | T_TRUE |ksAndTn= T_KS_AND_TN |noIdent= T_TERM );
+	// Meta.g:860:1: getTerm returns [String term] : (ident= T_IDENT |constant= T_CONSTANT | '1' | T_FALSE | T_TRUE |ksAndTn= T_KS_AND_TN |noIdent= T_TERM );
 	public final String getTerm() throws RecognitionException {
 		String term = null;
 
@@ -5622,7 +5632,7 @@ public class MetaParser extends Parser {
 		Token noIdent=null;
 
 		try {
-			// Meta.g:859:30: (ident= T_IDENT |constant= T_CONSTANT | '1' | T_FALSE | T_TRUE |ksAndTn= T_KS_AND_TN |noIdent= T_TERM )
+			// Meta.g:860:30: (ident= T_IDENT |constant= T_CONSTANT | '1' | T_FALSE | T_TRUE |ksAndTn= T_KS_AND_TN |noIdent= T_TERM )
 			int alt97=7;
 			switch ( input.LA(1) ) {
 			case T_IDENT:
@@ -5667,51 +5677,51 @@ public class MetaParser extends Parser {
 			}
 			switch (alt97) {
 				case 1 :
-					// Meta.g:860:5: ident= T_IDENT
+					// Meta.g:861:5: ident= T_IDENT
 					{
-					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTerm7109); 
+					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTerm7106); 
 					term = new String((ident!=null?ident.getText():null));
 					}
 					break;
 				case 2 :
-					// Meta.g:861:7: constant= T_CONSTANT
+					// Meta.g:862:7: constant= T_CONSTANT
 					{
-					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getTerm7121); 
+					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getTerm7118); 
 					term = new String((constant!=null?constant.getText():null));
 					}
 					break;
 				case 3 :
-					// Meta.g:862:7: '1'
+					// Meta.g:863:7: '1'
 					{
-					match(input,139,FOLLOW_139_in_getTerm7131); 
+					match(input,139,FOLLOW_139_in_getTerm7128); 
 					term = new String("1");
 					}
 					break;
 				case 4 :
-					// Meta.g:863:7: T_FALSE
+					// Meta.g:864:7: T_FALSE
 					{
-					match(input,T_FALSE,FOLLOW_T_FALSE_in_getTerm7141); 
+					match(input,T_FALSE,FOLLOW_T_FALSE_in_getTerm7138); 
 					term = new String("false");
 					}
 					break;
 				case 5 :
-					// Meta.g:864:7: T_TRUE
+					// Meta.g:865:7: T_TRUE
 					{
-					match(input,T_TRUE,FOLLOW_T_TRUE_in_getTerm7151); 
+					match(input,T_TRUE,FOLLOW_T_TRUE_in_getTerm7148); 
 					term = new String("true");
 					}
 					break;
 				case 6 :
-					// Meta.g:865:7: ksAndTn= T_KS_AND_TN
+					// Meta.g:866:7: ksAndTn= T_KS_AND_TN
 					{
-					ksAndTn=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getTerm7163); 
+					ksAndTn=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getTerm7160); 
 					term = new String((ksAndTn!=null?ksAndTn.getText():null));
 					}
 					break;
 				case 7 :
-					// Meta.g:866:7: noIdent= T_TERM
+					// Meta.g:867:7: noIdent= T_TERM
 					{
-					noIdent=(Token)match(input,T_TERM,FOLLOW_T_TERM_in_getTerm7175); 
+					noIdent=(Token)match(input,T_TERM,FOLLOW_T_TERM_in_getTerm7172); 
 					term = new String((noIdent!=null?noIdent.getText():null));
 					}
 					break;
@@ -5732,7 +5742,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getMapLiteral"
-	// Meta.g:869:1: getMapLiteral returns [Map<String, String> mapTerms] : T_START_SBRACKET (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )? T_END_SBRACKET ;
+	// Meta.g:870:1: getMapLiteral returns [Map<String, String> mapTerms] : T_START_SBRACKET (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )? T_END_SBRACKET ;
 	public final Map<String, String> getMapLiteral() throws RecognitionException {
 		Map<String, String> mapTerms = null;
 
@@ -5746,11 +5756,11 @@ public class MetaParser extends Parser {
 		        mapTerms = new HashMap<>();
 		    
 		try {
-			// Meta.g:872:6: ( T_START_SBRACKET (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )? T_END_SBRACKET )
-			// Meta.g:873:5: T_START_SBRACKET (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )? T_END_SBRACKET
+			// Meta.g:873:6: ( T_START_SBRACKET (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )? T_END_SBRACKET )
+			// Meta.g:874:5: T_START_SBRACKET (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )? T_END_SBRACKET
 			{
-			match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getMapLiteral7201); 
-			// Meta.g:874:5: (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )?
+			match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getMapLiteral7198); 
+			// Meta.g:875:5: (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )?
 			int alt99=2;
 			int LA99_0 = input.LA(1);
 			if ( (LA99_0==T_CONSTANT||LA99_0==T_FALSE||LA99_0==T_IDENT||LA99_0==T_KS_AND_TN||LA99_0==T_TERM||LA99_0==T_TRUE||LA99_0==139) ) {
@@ -5758,19 +5768,19 @@ public class MetaParser extends Parser {
 			}
 			switch (alt99) {
 				case 1 :
-					// Meta.g:874:6: leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )*
+					// Meta.g:875:6: leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )*
 					{
-					pushFollow(FOLLOW_getTerm_in_getMapLiteral7211);
+					pushFollow(FOLLOW_getTerm_in_getMapLiteral7208);
 					leftTerm1=getTerm();
 					state._fsp--;
 
-					match(input,T_COLON,FOLLOW_T_COLON_in_getMapLiteral7213); 
-					pushFollow(FOLLOW_getTerm_in_getMapLiteral7217);
+					match(input,T_COLON,FOLLOW_T_COLON_in_getMapLiteral7210); 
+					pushFollow(FOLLOW_getTerm_in_getMapLiteral7214);
 					rightTerm1=getTerm();
 					state._fsp--;
 
 					mapTerms.put(leftTerm1, rightTerm1);
-					// Meta.g:875:5: ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )*
+					// Meta.g:876:5: ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )*
 					loop98:
 					while (true) {
 						int alt98=2;
@@ -5781,15 +5791,15 @@ public class MetaParser extends Parser {
 
 						switch (alt98) {
 						case 1 :
-							// Meta.g:875:6: T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm
+							// Meta.g:876:6: T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm
 							{
-							match(input,T_COMMA,FOLLOW_T_COMMA_in_getMapLiteral7226); 
-							pushFollow(FOLLOW_getTerm_in_getMapLiteral7230);
+							match(input,T_COMMA,FOLLOW_T_COMMA_in_getMapLiteral7223); 
+							pushFollow(FOLLOW_getTerm_in_getMapLiteral7227);
 							leftTermN=getTerm();
 							state._fsp--;
 
-							match(input,T_COLON,FOLLOW_T_COLON_in_getMapLiteral7232); 
-							pushFollow(FOLLOW_getTerm_in_getMapLiteral7236);
+							match(input,T_COLON,FOLLOW_T_COLON_in_getMapLiteral7229); 
+							pushFollow(FOLLOW_getTerm_in_getMapLiteral7233);
 							rightTermN=getTerm();
 							state._fsp--;
 
@@ -5807,7 +5817,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getMapLiteral7248); 
+			match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getMapLiteral7245); 
 			}
 
 		}
@@ -5825,7 +5835,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getValueProperty"
-	// Meta.g:879:1: getValueProperty returns [ValueProperty value] : (ident= T_IDENT |constant= T_CONSTANT |mapliteral= getMapLiteral |number= getFloat | T_FALSE | T_TRUE );
+	// Meta.g:880:1: getValueProperty returns [ValueProperty value] : (ident= T_IDENT |constant= T_CONSTANT |mapliteral= getMapLiteral |number= getFloat | T_FALSE | T_TRUE );
 	public final ValueProperty getValueProperty() throws RecognitionException {
 		ValueProperty value = null;
 
@@ -5836,7 +5846,7 @@ public class MetaParser extends Parser {
 		String number =null;
 
 		try {
-			// Meta.g:879:47: (ident= T_IDENT |constant= T_CONSTANT |mapliteral= getMapLiteral |number= getFloat | T_FALSE | T_TRUE )
+			// Meta.g:880:47: (ident= T_IDENT |constant= T_CONSTANT |mapliteral= getMapLiteral |number= getFloat | T_FALSE | T_TRUE )
 			int alt100=6;
 			switch ( input.LA(1) ) {
 			case T_IDENT:
@@ -5877,23 +5887,23 @@ public class MetaParser extends Parser {
 			}
 			switch (alt100) {
 				case 1 :
-					// Meta.g:880:5: ident= T_IDENT
+					// Meta.g:881:5: ident= T_IDENT
 					{
-					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getValueProperty7270); 
+					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getValueProperty7267); 
 					value = new IdentifierProperty((ident!=null?ident.getText():null));
 					}
 					break;
 				case 2 :
-					// Meta.g:881:7: constant= T_CONSTANT
+					// Meta.g:882:7: constant= T_CONSTANT
 					{
-					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getValueProperty7282); 
+					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getValueProperty7279); 
 					value = new ConstantProperty(Integer.parseInt((constant!=null?constant.getText():null)));
 					}
 					break;
 				case 3 :
-					// Meta.g:882:7: mapliteral= getMapLiteral
+					// Meta.g:883:7: mapliteral= getMapLiteral
 					{
-					pushFollow(FOLLOW_getMapLiteral_in_getValueProperty7294);
+					pushFollow(FOLLOW_getMapLiteral_in_getValueProperty7291);
 					mapliteral=getMapLiteral();
 					state._fsp--;
 
@@ -5901,9 +5911,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 4 :
-					// Meta.g:883:7: number= getFloat
+					// Meta.g:884:7: number= getFloat
 					{
-					pushFollow(FOLLOW_getFloat_in_getValueProperty7306);
+					pushFollow(FOLLOW_getFloat_in_getValueProperty7303);
 					number=getFloat();
 					state._fsp--;
 
@@ -5911,16 +5921,16 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 5 :
-					// Meta.g:884:7: T_FALSE
+					// Meta.g:885:7: T_FALSE
 					{
-					match(input,T_FALSE,FOLLOW_T_FALSE_in_getValueProperty7316); 
+					match(input,T_FALSE,FOLLOW_T_FALSE_in_getValueProperty7313); 
 					value = new BooleanProperty(false);
 					}
 					break;
 				case 6 :
-					// Meta.g:885:7: T_TRUE
+					// Meta.g:886:7: T_TRUE
 					{
-					match(input,T_TRUE,FOLLOW_T_TRUE_in_getValueProperty7326); 
+					match(input,T_TRUE,FOLLOW_T_TRUE_in_getValueProperty7323); 
 					value = new BooleanProperty(true);
 					}
 					break;
@@ -5941,7 +5951,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getFloat"
-	// Meta.g:889:1: getFloat returns [String floating] : (termToken= T_TERM |floatToken= T_FLOAT );
+	// Meta.g:890:1: getFloat returns [String floating] : (termToken= T_TERM |floatToken= T_FLOAT );
 	public final String getFloat() throws RecognitionException {
 		String floating = null;
 
@@ -5950,7 +5960,7 @@ public class MetaParser extends Parser {
 		Token floatToken=null;
 
 		try {
-			// Meta.g:889:35: (termToken= T_TERM |floatToken= T_FLOAT )
+			// Meta.g:890:35: (termToken= T_TERM |floatToken= T_FLOAT )
 			int alt101=2;
 			int LA101_0 = input.LA(1);
 			if ( (LA101_0==T_TERM) ) {
@@ -5968,16 +5978,16 @@ public class MetaParser extends Parser {
 
 			switch (alt101) {
 				case 1 :
-					// Meta.g:890:5: termToken= T_TERM
+					// Meta.g:891:5: termToken= T_TERM
 					{
-					termToken=(Token)match(input,T_TERM,FOLLOW_T_TERM_in_getFloat7351); 
+					termToken=(Token)match(input,T_TERM,FOLLOW_T_TERM_in_getFloat7348); 
 					floating =(termToken!=null?termToken.getText():null);
 					}
 					break;
 				case 2 :
-					// Meta.g:892:5: floatToken= T_FLOAT
+					// Meta.g:893:5: floatToken= T_FLOAT
 					{
-					floatToken=(Token)match(input,T_FLOAT,FOLLOW_T_FLOAT_in_getFloat7369); 
+					floatToken=(Token)match(input,T_FLOAT,FOLLOW_T_FLOAT_in_getFloat7366); 
 					floating =(floatToken!=null?floatToken.getText():null);
 					}
 					break;
@@ -6437,28 +6447,28 @@ public class MetaParser extends Parser {
 	public static final BitSet FOLLOW_T_END_SBRACKET_in_getTermOrLiteral7045 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_T_IDENT_in_getTableID7066 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_T_KS_AND_TN_in_getTableID7082 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getTerm7109 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CONSTANT_in_getTerm7121 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_139_in_getTerm7131 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_FALSE_in_getTerm7141 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TRUE_in_getTerm7151 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_KS_AND_TN_in_getTerm7163 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TERM_in_getTerm7175 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_SBRACKET_in_getMapLiteral7201 = new BitSet(new long[]{0x2200400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7211 = new BitSet(new long[]{0x0000040000000000L});
-	public static final BitSet FOLLOW_T_COLON_in_getMapLiteral7213 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7217 = new BitSet(new long[]{0x0200080000000000L});
-	public static final BitSet FOLLOW_T_COMMA_in_getMapLiteral7226 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7230 = new BitSet(new long[]{0x0000040000000000L});
-	public static final BitSet FOLLOW_T_COLON_in_getMapLiteral7232 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7236 = new BitSet(new long[]{0x0200080000000000L});
-	public static final BitSet FOLLOW_T_END_SBRACKET_in_getMapLiteral7248 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getValueProperty7270 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CONSTANT_in_getValueProperty7282 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getMapLiteral_in_getValueProperty7294 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getFloat_in_getValueProperty7306 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_FALSE_in_getValueProperty7316 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TRUE_in_getValueProperty7326 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TERM_in_getFloat7351 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_FLOAT_in_getFloat7369 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getTerm7106 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CONSTANT_in_getTerm7118 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_139_in_getTerm7128 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FALSE_in_getTerm7138 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TRUE_in_getTerm7148 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_KS_AND_TN_in_getTerm7160 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TERM_in_getTerm7172 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_SBRACKET_in_getMapLiteral7198 = new BitSet(new long[]{0x2200400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7208 = new BitSet(new long[]{0x0000040000000000L});
+	public static final BitSet FOLLOW_T_COLON_in_getMapLiteral7210 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7214 = new BitSet(new long[]{0x0200080000000000L});
+	public static final BitSet FOLLOW_T_COMMA_in_getMapLiteral7223 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7227 = new BitSet(new long[]{0x0000040000000000L});
+	public static final BitSet FOLLOW_T_COLON_in_getMapLiteral7229 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7233 = new BitSet(new long[]{0x0200080000000000L});
+	public static final BitSet FOLLOW_T_END_SBRACKET_in_getMapLiteral7245 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getValueProperty7267 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CONSTANT_in_getValueProperty7279 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getMapLiteral_in_getValueProperty7291 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getFloat_in_getValueProperty7303 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FALSE_in_getValueProperty7313 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TRUE_in_getValueProperty7323 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TERM_in_getFloat7348 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FLOAT_in_getFloat7366 = new BitSet(new long[]{0x0000000000000002L});
 }

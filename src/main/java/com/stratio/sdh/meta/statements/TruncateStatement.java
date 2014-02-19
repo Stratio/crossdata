@@ -33,5 +33,10 @@ public class TruncateStatement extends Statement {
     public boolean validate() {
         return true;
     }
+
+    @Override
+    public String getSuggestion() {
+        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
     
 }
