@@ -136,18 +136,18 @@ public class MetaUtils {
         return sb.substring(0, sb.length()-separator.length());
     }   
  
-    public static Set<String> getBestMatches(String str, Set<String> words, int thresold){
+    public static Set<LevenshteinMatch> getBestMatches(String str, Set<String> words, int thresold){
         int limit = thresold+1;
-        Set<String> result = new HashSet<>();
+        Set<LevenshteinMatch> result = new HashSet<>();
         for(String word: words){
             int distance = StringUtils.getLevenshteinDistance(str, word, thresold);
-            //System.out.println(str+" vs "+word+" = "+distance);
+            //System.out.println("'"+str+"' vs '"+word+"' = "+distance);
             if((distance>-1) && (distance<limit)){
                 result.clear();
-                result.add(word);
+                result.add(new LevenshteinMatch(word, distance));
                 limit = distance;
             } else if (distance==limit){
-                result.add(word);
+                result.add(new LevenshteinMatch(word, distance));
             }
         }
         return result;
@@ -200,7 +200,7 @@ public class MetaUtils {
             //System.out.println("Suggestion from token: "+suggestionFromToken);
         }                                                  
         
-        Set<String> bestMatches = getBestMatches(errorWord, statementTokens, 2);
+        Set<LevenshteinMatch> bestMatches = getBestMatches(errorWord, statementTokens, 2);
         StringBuilder sb = new StringBuilder();        
         if((bestMatches.isEmpty() || antlrError == null) && (charPosition<1)){
             sb.append("Did you mean: ");
@@ -211,10 +211,14 @@ public class MetaUtils {
             sb.append("\"").append(suggestionFromToken).append("\"").append("?");
             sb.append(System.getProperty("line.separator"));
         } else if (errorWord.matches("[QWERTYUIOPASDFGHJKLZXCVBNM_]+") /*&& query.contains("T_")*/){            
-            for(String match: bestMatches){           
+            for(LevenshteinMatch match: bestMatches){
+                //System.out.println(match.getWord()+":"+match.getDistance());
+                if(match.getDistance()<1){
+                    break;
+                }
                 sb.append("Did you mean: ");
-                sb.append("\"").append(match).append("\"").append("?");
-                sb.append(System.getProperty("line.separator"));
+                sb.append("\"").append(match.getWord()).append("\"").append("?");
+                sb.append(System.getProperty("line.separator"));              
             }
         }
         return sb.substring(0, sb.length());
