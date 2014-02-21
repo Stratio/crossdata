@@ -189,8 +189,8 @@ T_MIN: M I N;
 T_AVG: A V G;
 T_GT: '>';
 T_LT: '<';
-T_GET: '>' '='; 
-T_LET: '<' '=';
+T_GTE: '>' '='; 
+T_LTE: '<' '=';
 T_NOT_EQUAL: '<' '>'; 
 T_TOKEN: T O K E N;
 
@@ -593,9 +593,7 @@ truncateStatement returns [TruncateStatement trst]:
 	}
 	;
 
-metaStatement returns [Statement st]:
-
-//cambiado por Antonio 7-2-2014
+metaStatement returns [MetaStatement st]:
     st_crta= createTableStatement { $st = st_crta;}
     | st_alta= alterTableStatement { $st = st_alta;}
     | st_crtr= createTriggerStatement { $st = st_crtr; }
@@ -620,7 +618,7 @@ metaStatement returns [Statement st]:
     | ds = deleteStatement { $st = ds; } 
     ;
 
-query returns [Statement st]: 
+query returns [MetaStatement st]: 
 	mtst=metaStatement (T_SEMICOLON)+ EOF {
 		$st = mtst;
 	};
@@ -628,13 +626,13 @@ query returns [Statement st]:
 
 //FUNCTIONS
 
-getOrdering returns [List<Ordering> order]
+getOrdering returns [List<MetaOrdering> order]
     @init{
         order = new ArrayList<>();
-        Ordering ordering;
+        MetaOrdering ordering;
     }:
-    ident1=T_IDENT {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
-    (T_COMMA identN=T_IDENT {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+    ident1=T_IDENT {ordering = new MetaOrdering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
+    (T_COMMA identN=T_IDENT {ordering = new MetaOrdering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
 ;
 
 getWhereClauses returns [List<MetaRelation> clauses]
@@ -789,8 +787,8 @@ getComparator returns [String comparator]:
     T_EQUAL {$comparator="=";}
     | T_GT {$comparator=">";}
     | T_LT {$comparator="<";}
-    | T_GET {$comparator=">=";} 
-    | T_LET {$comparator="<=";}
+    | T_GTE {$comparator=">=";} 
+    | T_LTE {$comparator="<=";}
     | T_NOT_EQUAL {$comparator="<>";} 
     | T_LIKE {$comparator="LIKE";}
 ;

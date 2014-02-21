@@ -1,12 +1,14 @@
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import com.stratio.sdh.meta.structures.Option;
 import com.stratio.sdh.meta.structures.Path;
 import com.stratio.sdh.meta.structures.ValueCell;
 import com.stratio.sdh.meta.utils.MetaUtils;
 import java.util.List;
 
-public class InsertIntoStatement extends Statement {
+public class InsertIntoStatement extends MetaStatement {
 
     public static final int TYPE_SELECT_CLAUSE = 1;
     public static final int TYPE_VALUES_CLAUSE = 2;
@@ -194,6 +196,22 @@ public class InsertIntoStatement extends Statement {
     @Override
     public String getSuggestion() {
         return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
+    
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        return "\t"+resultSet.toString();
+    }
+    
+    @Override
+    public Statement getDriverStatement() {
+        Statement statement = null;
+        return statement;
     }
     
 }

@@ -1,18 +1,18 @@
 package com.stratio.sdh.meta.structures;
 
-public class Ordering {
+public class MetaOrdering {
     
     private String identifier;
     private boolean dirInc;
     private OrderDirection orderDir;
 
-    public Ordering(String identifier, boolean dirInc, OrderDirection orderDir) {
+    public MetaOrdering(String identifier, boolean dirInc, OrderDirection orderDir) {
         this.identifier = identifier;
         this.dirInc = dirInc;
         this.orderDir = orderDir;
     }
     
-    public Ordering(String identifier) {
+    public MetaOrdering(String identifier) {
         this(identifier, false, null);
     }
 

@@ -1,22 +1,22 @@
 package com.stratio.sdh.meta.utils;
 
-import com.stratio.sdh.meta.statements.Statement;
+import com.stratio.sdh.meta.statements.MetaStatement;
 
 public class AntlrResult {
 
-    private Statement statement;
+    private MetaStatement statement;
     private ErrorsHelper foundErrors;
 
-    public AntlrResult(Statement statement, ErrorsHelper foundErrors) {
+    public AntlrResult(MetaStatement statement, ErrorsHelper foundErrors) {
         this.statement = statement;
         this.foundErrors = foundErrors;
     }
 
-    public Statement getStatement() {
+    public MetaStatement getStatement() {
         return statement;
     }
 
-    public void setStatement(Statement statement) {
+    public void setStatement(MetaStatement statement) {
         this.statement = statement;
     }
 

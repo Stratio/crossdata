@@ -1,9 +1,11 @@
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import com.stratio.sdh.meta.structures.ListType;
 import com.stratio.sdh.meta.structures.Path;
 
-public class ListStatement extends Statement {
+public class ListStatement extends MetaStatement {
 
     private ListType _type = null;
 
@@ -31,4 +33,20 @@ public class ListStatement extends Statement {
         return this.getClass().toString().toUpperCase()+" EXAMPLE";
     }
 
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
+
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        return "\t"+resultSet.toString();
+    }
+    
+    @Override
+    public Statement getDriverStatement() {
+        Statement statement = null;
+        return statement;
+    }
+    
 }

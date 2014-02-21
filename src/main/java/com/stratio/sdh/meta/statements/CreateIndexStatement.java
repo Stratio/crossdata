@@ -1,5 +1,7 @@
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import com.stratio.sdh.meta.structures.IndexType;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +19,7 @@ import com.stratio.sdh.meta.utils.MetaUtils;
  * ON {@literal <tablename>} ( {@literal <identifier> , ..., <identifier>})
  * ( USING {@literal <index_class>} )? ( WITH OPTIONS ( key_1=value_1 AND ... AND key_n=value_n) )?;
  */
-public class CreateIndexStatement extends Statement {	
+public class CreateIndexStatement extends MetaStatement {	
 	
 	private IndexType _type = null;
 	private boolean _createIfNotExists = false;
@@ -114,4 +116,20 @@ public class CreateIndexStatement extends Statement {
         return this.getClass().toString().toUpperCase()+" EXAMPLE";
     }
 
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
+    
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        return "\t"+resultSet.toString();
+    }
+
+    @Override
+    public Statement getDriverStatement() {
+        Statement statement = null;
+        return statement;
+    }
+    
 }

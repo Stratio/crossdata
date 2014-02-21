@@ -1,18 +1,36 @@
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.*;
+import com.datastax.driver.core.querybuilder.Select.Where;
 import com.stratio.sdh.meta.structures.GroupBy;
 import com.stratio.sdh.meta.structures.InnerJoin;
+import com.stratio.sdh.meta.structures.MetaOrdering;
 import com.stratio.sdh.meta.structures.MetaRelation;
-import com.stratio.sdh.meta.structures.Ordering;
+import com.stratio.sdh.meta.structures.OrderDirection;
 import com.stratio.sdh.meta.structures.Path;
+import com.stratio.sdh.meta.structures.RelationCompare;
+import com.stratio.sdh.meta.structures.RelationIn;
+import com.stratio.sdh.meta.structures.RelationToken;
+import com.stratio.sdh.meta.structures.Selection;
 import com.stratio.sdh.meta.structures.SelectionClause;
+import com.stratio.sdh.meta.structures.SelectionList;
+import com.stratio.sdh.meta.structures.SelectionSelector;
+import com.stratio.sdh.meta.structures.SelectionSelectors;
+import com.stratio.sdh.meta.structures.SelectorIdentifier;
+import com.stratio.sdh.meta.structures.SelectorMeta;
+import com.stratio.sdh.meta.structures.Term;
 import com.stratio.sdh.meta.structures.WindowSelect;
 import com.stratio.sdh.meta.utils.MetaUtils;
 import java.util.List;
 
-public class SelectStatement extends Statement {
+public class SelectStatement extends MetaStatement {
 
-    private SelectionClause selectionClause;    
+    private SelectionClause selectionClause;
+    private boolean keyspaceInc;
+    private String keyspace;
     private String tablename;
     private boolean windowInc;
     private WindowSelect window;
@@ -21,7 +39,7 @@ public class SelectStatement extends Statement {
     private boolean whereInc;
     private List<MetaRelation> where;
     private boolean orderInc;
-    private List<Ordering> order;    
+    private List<MetaOrdering> order;    
     private boolean groupInc;
     private GroupBy group;    
     private boolean limitInc;
@@ -32,12 +50,18 @@ public class SelectStatement extends Statement {
                            boolean windowInc, WindowSelect window, 
                            boolean joinInc, InnerJoin join, 
                            boolean whereInc, List<MetaRelation> where, 
-                           boolean orderInc, List<Ordering> order, 
+                           boolean orderInc, List<MetaOrdering> order, 
                            boolean groupInc, GroupBy group, 
                            boolean limitInc, int limit, 
                            boolean disableAnalytics) {
-        this.selectionClause = selectionClause;
-        this.tablename = tablename;
+        this.selectionClause = selectionClause;        
+        if(tablename.contains(".")){
+            String[] ksAndTablename = tablename.split("\\.");
+            keyspace = ksAndTablename[0];
+            tablename = ksAndTablename[1];
+            keyspaceInc = true;
+        }
+        this.tablename = tablename;        
         this.windowInc = windowInc;
         this.window = window;
         this.joinInc = joinInc;
@@ -132,11 +156,11 @@ public class SelectStatement extends Statement {
         this.orderInc = orderInc;
     }
 
-    public List<Ordering> getOrder() {
+    public List<MetaOrdering> getOrder() {
         return order;
     }
 
-    public void setOrder(List<Ordering> order) {
+    public void setOrder(List<MetaOrdering> order) {
         this.orderInc = true;
         this.order = order;
     }        
@@ -227,6 +251,165 @@ public class SelectStatement extends Statement {
     @Override
     public String getSuggestion() {
         return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
+    
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        StringBuilder sb = new StringBuilder();  
+        /*Properties props = System.getProperties();
+        for(String propKey: props.stringPropertyNames()){
+            System.out.println(propKey+": "+props.getProperty(propKey));
+        }*/
+        for(Row row: resultSet){
+            sb.append("\t").append(row.toString()).append(System.getProperty("line.separator"));
+        }
+        return sb.toString();
+    }
+    
+    @Override
+    public Statement getDriverStatement() {
+        //Statement sel = QueryBuilder.select().from("tks","testselectin").where(in("key",list));
+        
+        //Select sel = QueryBuilder.select().from(tablename);     
+        
+        Select sel = null;
+        
+        SelectionClause selClause = this.selectionClause;
+        
+        if(this.selectionClause.getType() == SelectionClause.TYPE_COUNT){
+            return null;
+        }
+        
+        SelectionList selList = (SelectionList) selClause;
+        
+        Select.Builder builder = null;
+        
+        if(selList.getSelection().getType() == Selection.TYPE_ASTERISK){
+            builder = QueryBuilder.select();
+        } else {
+            SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection();
+            String[] columns = {};
+            int nCol = 0;
+            for(SelectionSelector selSelector: selSelectors.getSelectors()){
+                SelectorMeta selectorMeta = selSelector.getSelector();
+                if(selectorMeta.getType() == SelectorMeta.TYPE_IDENT){
+                    SelectorIdentifier selIdent = (SelectorIdentifier) selectorMeta;
+                    columns[0] = selIdent.getIdentifier();
+                    nCol++;
+                }
+            }
+            builder = QueryBuilder.select(columns);
+        }              
+        
+        if(this.keyspaceInc){
+            sel = builder.from(this.keyspace, this.tablename);
+        } else {
+            sel = builder.from(this.tablename);
+        }
+        
+        if(this.limitInc){
+            sel.limit(this.limit);
+        }
+        
+        if(this.orderInc){
+            Ordering[] orderings = {};
+            int nOrdering = 0;
+            for(MetaOrdering metaOrdering: this.order){
+                if(metaOrdering.isDirInc() && (metaOrdering.getOrderDir() == OrderDirection.DESC)){
+                    orderings[nOrdering] = QueryBuilder.desc(metaOrdering.getIdentifier());
+                } else {
+                    orderings[nOrdering] = QueryBuilder.asc(metaOrdering.getIdentifier());
+                }
+                nOrdering++;
+            }
+            sel.orderBy(orderings); 
+        }
+        
+        Where whereStmt = null;
+        if(this.whereInc){
+            for(MetaRelation metaRelation: this.where){
+                Clause clause = null;
+                String name = "";
+                Object value = null;
+                switch(metaRelation.getType()){
+                    case MetaRelation.TYPE_COMPARE:
+                        RelationCompare relCompare = (RelationCompare) metaRelation;
+                        name = relCompare.getIdentifiers().get(0);
+                        value = relCompare.getTerms().get(0).getTerm();
+                        switch(relCompare.getOperator()){
+                            case "=":
+                                clause = QueryBuilder.eq(name, value);
+                                break;
+                            case ">":
+                                clause = QueryBuilder.gt(name, value);
+                                break;
+                            case ">=":
+                                clause = QueryBuilder.gte(name, value);
+                                break;
+                            case "<":
+                                clause = QueryBuilder.lt(name, value);
+                                break;
+                            case "<=":
+                                clause = QueryBuilder.lte(name, value);
+                                break;
+                        }                                  
+                        break;
+                    case MetaRelation.TYPE_IN:
+                        RelationIn relIn = (RelationIn) metaRelation;
+                        List<Term> terms = relIn.getTerms();
+                        Object[] values = {};
+                        int nTerm = 0;
+                        for(Term term: terms){
+                            values[nTerm] = term.getTerm();
+                            nTerm++;
+                        }
+                        clause = QueryBuilder.in(relIn.getIdentifiers().get(0), values);
+                        break;
+                    case MetaRelation.TYPE_TOKEN:
+                        RelationToken relToken = (RelationToken) metaRelation;
+                        List<String> names = relToken.getIdentifiers();
+                        value = relToken.getTerms().get(0).getTerm();
+                        switch(relToken.getOperator()){
+                            case "=":
+                                clause = QueryBuilder.eq(QueryBuilder.token((String[]) names.toArray()), value);
+                                break;
+                            case ">":
+                                clause = QueryBuilder.gt(name, value);
+                                break;
+                            case ">=":
+                                clause = QueryBuilder.gte(name, value);
+                                break;
+                            case "<":
+                                clause = QueryBuilder.lt(name, value);
+                                break;
+                            case "<=":
+                                clause = QueryBuilder.lte(name, value);
+                                break;
+                        }
+                        break;
+                }
+                if(whereStmt == null){
+                    whereStmt = sel.where(clause);
+                } else {
+                    whereStmt = whereStmt.and(clause);
+                }
+            }            
+            /*
+            Object[] complexUriArr;
+            Select.Where tmp = QueryBuilder.select().all().from("myTable").where(QueryBuilder.eq("col_1", QueryBuilder.bindMarker())).and(QueryBuilder.in("col_2", complexUriArr));            
+            sql = sel.where(QueryBuilder.lt(query, sel)).and(QueryBuilder.eq(query, sel));
+            sel.where(Clause clause).where(Clause clause);
+            */
+        } else {
+            whereStmt = sel.where();
+        }
+        
+        return whereStmt;
     }
     
 }

@@ -3,7 +3,7 @@ package com.stratio.sdh.meta.utils;
 import com.google.common.collect.Sets;
 import com.stratio.sdh.meta.generated.MetaLexer;
 import com.stratio.sdh.meta.generated.MetaParser;
-import com.stratio.sdh.meta.statements.Statement;
+import com.stratio.sdh.meta.statements.MetaStatement;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -35,7 +35,9 @@ public class MetaUtils {
             "ADD",
             "LIST",
             "REMOVE",
-            "STOP");    
+            "STOP",
+            "EXIT",
+            "HELP");    
     
     public static Set<String> noInitials = Sets.newHashSet(                      
             "KEYSPACE",
@@ -218,7 +220,7 @@ public class MetaUtils {
                 }
                 sb.append("Did you mean: ");
                 sb.append("\"").append(match.getWord()).append("\"").append("?");
-                sb.append(System.getProperty("line.separator"));              
+                sb.append(System.getProperty("line.separator")).append("\t");              
             }
         }
         return sb.substring(0, sb.length());
@@ -294,7 +296,7 @@ public class MetaUtils {
      * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
      */ 
     public static AntlrResult parseStatement(String inputText, org.apache.log4j.Logger _logger){
-        Statement result = null;
+        MetaStatement result = null;
         ANTLRStringStream input = new ANTLRStringStream(inputText);
         MetaLexer lexer = new MetaLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -307,6 +309,30 @@ public class MetaUtils {
             _logger.error("Cannot parse statement", e);
         }            
         return new AntlrResult(result, foundErrors);
+    }
+
+    public static String translateLiteralsToCQL(String metaStr) {
+        StringBuilder sb = new StringBuilder();
+        int startSquareBracketPosition = metaStr.indexOf("{");
+        int endSquareBracketPosition = metaStr.indexOf("}");
+        String propsStr = metaStr.substring(startSquareBracketPosition+1, endSquareBracketPosition).trim();
+        if(propsStr.length() < 3){
+            return metaStr;
+        }
+        sb.append(metaStr.substring(0, startSquareBracketPosition+1));
+        String[] props = propsStr.split(",");
+        for(String prop: props){
+            String[] keyAndValue = prop.trim().split(":");
+            sb.append("'").append(keyAndValue[0].trim()).append("'").append(": ");
+            if(keyAndValue[1].trim().matches("[0123456789.]+")){
+                sb.append(keyAndValue[1].trim()).append(", ");
+            } else {
+                sb.append("'").append(keyAndValue[1].trim()).append("'").append(", ");
+            }
+        }
+        sb = sb.delete(sb.length()-2, sb.length());
+        sb.append(metaStr.substring(endSquareBracketPosition));
+        return sb.toString();
     }
     
 }

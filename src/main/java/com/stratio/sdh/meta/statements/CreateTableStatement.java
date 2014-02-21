@@ -1,5 +1,7 @@
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import com.stratio.sdh.meta.structures.Path;
 import com.stratio.sdh.meta.structures.ValueProperty;
 import java.util.Iterator;
@@ -7,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-public class CreateTableStatement extends Statement{
+public class CreateTableStatement extends MetaStatement{
     
     private String name_table;
     
@@ -255,5 +257,20 @@ public class CreateTableStatement extends Statement{
         return this.getClass().toString().toUpperCase()+" EXAMPLE";
     }
 
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
+    
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        return "\t"+resultSet.toString();
+    }
+ 
+    @Override
+    public Statement getDriverStatement() {
+        Statement statement = null;
+        return statement;
+    }
     
 }

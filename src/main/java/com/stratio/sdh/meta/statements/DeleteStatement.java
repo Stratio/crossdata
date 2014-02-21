@@ -1,5 +1,7 @@
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +15,7 @@ import com.stratio.sdh.meta.utils.MetaUtils;
  * DELETE ( {@literal <column>}, ( ',' {@literal <column>} )*)? FROM {@literal <tablename>}
  * WHERE {@literal <where_clause>};
  */
-public class DeleteStatement extends Statement {
+public class DeleteStatement extends MetaStatement {
 	
     private ArrayList<String> _targetColumn = null;
     private String _tablename = null;
@@ -64,6 +66,22 @@ public class DeleteStatement extends Statement {
     @Override
     public String getSuggestion() {
         return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
+    
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        return "\t"+resultSet.toString();
+    }
+    
+    @Override
+    public Statement getDriverStatement() {
+        Statement statement = null;
+        return statement;
     }
             
 }

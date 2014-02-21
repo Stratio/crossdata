@@ -12,7 +12,7 @@ import org.junit.Test;
 import org.junit.BeforeClass;
 
 import com.stratio.sdh.meta.statements.CreateIndexStatement;
-import com.stratio.sdh.meta.statements.Statement;
+import com.stratio.sdh.meta.statements.MetaStatement;
 import com.stratio.sdh.meta.structures.ValueProperty;
 import com.stratio.sdh.meta.utils.AntlrResult;
 import com.stratio.sdh.meta.utils.MetaUtils;
@@ -69,7 +69,7 @@ public class ParsingTest {
             String inputText = "CREATE KEYSPACE key_space1 "
                             + "WITH replication = replicationLevel AND durable_writes = false;";		
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse create keyspace - basic", st);
             //assertEquals("Cannot parse create keyspace - basic", inputText, st.toString()+";");
             //System.out.println(st.toString());
@@ -82,7 +82,7 @@ public class ParsingTest {
             String inputText = "CREATE KEYSPACE IF NOT EXISTS key_space1 "
                             + "WITH replication = replicationLevel AND durable_writes = false;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse create keyspace - If Not Exists", st);
             //assertEquals("Cannot parse create keyspace - basic", inputText, st.toString()+";");
             assertTrue("Cannot parse create keyspace - If Not Exists", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -99,7 +99,7 @@ public class ParsingTest {
             properties.add("DC1: 1");
             properties.add("DC2: 3");
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             String propResultStr = st.toString().substring(st.toString().indexOf("{")+1, st.toString().indexOf("}"));
             //System.out.println(propResultStr);
             String[] str = propResultStr.split(",");
@@ -127,7 +127,7 @@ public class ParsingTest {
             String inputText = "UPDATE tablename USING prop1 = 342 SET ident1 = term1, ident2 = term2"
                     + " WHERE ident3 IN (term3, term4) IF field1 = 25 ;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //System.out.println(inputText);
             //System.out.println(st.toString()+" ;");
             assertNotNull("Cannot parse update tablename", st);
@@ -140,7 +140,7 @@ public class ParsingTest {
             String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES(term1, term2) "
                     + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //System.out.println(inputText);
             //System.out.println(st.toString()+";");
             assertNotNull("Cannot parse insert into", st);
@@ -152,7 +152,7 @@ public class ParsingTest {
 	public void truncate_table() {
             String inputText = "TRUNCATE usersTable;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse truncate table", st);
             //assertEquals("Cannot parse truncate table", inputText, st.toString()+";");
             assertTrue("Cannot parse truncate table", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -171,7 +171,7 @@ public class ParsingTest {
 	public void createIndex_hash_basic() {
             String inputText = "CREATE HASH INDEX index1 ON table1 (field1, field2);";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse basic hash index", st);
             //assertEquals("Cannot parse basic hash index", inputText, st.toString()+";");
             assertTrue("Cannot parse basic hash index", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -181,7 +181,7 @@ public class ParsingTest {
 	public void createIndex_hash_ifNotExist() {
             String inputText = "CREATE HASH INDEX IF NOT EXISTS index1 ON table1 (field1, field2);";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse hash index with if not exists", st);
             //assertEquals("Cannot parse hash index with if not exists", inputText, st.toString()+";");
             assertTrue("Cannot parse hash index with if not exists", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -191,7 +191,7 @@ public class ParsingTest {
 	public void createIndex_hash_using() {
             String inputText = "CREATE HASH INDEX index1 ON table1 (field1, field2) USING com.company.Index.class;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse hash index with using clause", st);
             //assertEquals("Cannot parse hash index with using clause", inputText, st.toString()+";");
             assertTrue("Cannot parse hash index with using clause", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -203,7 +203,7 @@ public class ParsingTest {
             int numberOptions = 2;
 
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse hash index with options clause", st);
             CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
             //assertEquals("Cannot parse hash index with options clause - name", "index1", cist.getName());
@@ -225,7 +225,7 @@ public class ParsingTest {
                             + "ON table1 (field1, field2) USING com.company.Index.class "
                             + "WITH OPTIONS opt1=val1 AND opt2=val2;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse hash index with options clause", st);
             CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
 
@@ -247,7 +247,7 @@ public class ParsingTest {
 	public void dropIndex_basic() {
             String inputText = "DROP INDEX index_name;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse drop index basic", st);
             //assertEquals("Cannot parse drop index basic", inputText, st.toString()+";");
             assertTrue("Cannot parse drop index basic", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -257,7 +257,7 @@ public class ParsingTest {
 	public void dropIndex_ifExists() {
             String inputText = "DROP INDEX IF EXISTS index_name;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse drop index with if exists clause", st);
             //assertEquals("Cannot parse drop index with if exists clause", inputText, st.toString()+";");
             assertTrue("Cannot parse drop index with if exists clause", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -269,7 +269,7 @@ public class ParsingTest {
                     + "FROM newks.newtb WITH WINDOW 5 ROWS INNER JOIN tablename ON field1=field2 WHERE ident1 LIKE whatever"
                     + " ORDER BY id1 ASC GROUP BY col1 LIMIT 50 DISABLE ANALYTICS;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse select", st);
             //assertEquals("Cannot parse select", inputText, st.toString());
 
@@ -282,7 +282,7 @@ public class ParsingTest {
 	public void add_basic() {
             String inputText = "ADD \"jar_name-v1.0.jar\";";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse add jar basic", st);
             //assertEquals("Cannot parse add jar basic", inputText, st.toString()+";");
             assertTrue("Cannot parse add jar basic", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -292,7 +292,7 @@ public class ParsingTest {
 	public void add_relative() {
             String inputText = "ADD \"dir/jar_name-v1.0.jar\";";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse add jar with relative path", st);
             //assertEquals("Cannot parse add jar with relative path", inputText, st.toString()+";");
             assertTrue("Cannot parse add jar with relative path", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -302,7 +302,7 @@ public class ParsingTest {
 	public void add_absolute() {
             String inputText = "ADD \"/dir/jar_name-v1.0.jar\";";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse add jar with absolute path", st);
             //assertEquals("Cannot parse add jar with absolute path", inputText, st.toString()+";");
             assertTrue("Cannot parse add jar with absolute path", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -314,7 +314,7 @@ public class ParsingTest {
 	public void list_process() {
             String inputText = "LIST PROCESS;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse list process", st);
             //assertEquals("Cannot parse list process", inputText, st.toString()+";");
             assertTrue("Cannot parse list process", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -324,7 +324,7 @@ public class ParsingTest {
 	public void list_udf() {
             String inputText = "LIST UDF;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse list udf", st);
             //assertEquals("Cannot parse list udf", inputText, st.toString()+";");
             assertTrue("Cannot parse list udf", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -334,7 +334,7 @@ public class ParsingTest {
 	public void list_trigger() {
             String inputText = "LIST TRIGGER;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse list trigger", st);
             //assertEquals("Cannot parse list trigger", inputText, st.toString()+";");
             assertTrue("Cannot parse list trigger", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -345,7 +345,7 @@ public class ParsingTest {
 	public void removeUDF() {
             String inputText = "REMOVE UDF \"jar.name\";";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse remove udf", st);
             //assertEquals("Cannot parse remove udf", inputText, st.toString()+";");
             assertTrue("Cannot parse remove udf", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -358,7 +358,7 @@ public class ParsingTest {
 	public void delete_where() {
             String inputText = "DELETE FROM table1 WHERE field1 = value1;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse delete - where", st);
             //assertEquals("Cannot parse delete - where", inputText, st.toString()+";");
             assertTrue("Cannot parse delete - where", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -368,7 +368,7 @@ public class ParsingTest {
 	public void delete_selection() {
             String inputText = "DELETE (col1, col2) FROM table1 WHERE field1 = value1;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse delete - selection", st);
             //assertEquals("Cannot parse delete - selection", inputText, st.toString()+";");
             assertTrue("Cannot parse delete - selection", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -378,7 +378,7 @@ public class ParsingTest {
 	public void delete_full() {
             String inputText = "DELETE (col1, col2) FROM table1 WHERE field1 = value1 AND field2 = value2;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse delete - full", st);
             //assertEquals("Cannot parse delete - full", inputText, st.toString()+";");
             assertTrue("Cannot parse delete - full", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -388,7 +388,7 @@ public class ParsingTest {
 	public void set_basic() {
             String inputText = "SET OPTIONS ANALYTICS=true AND CONSISTENCY=LOCAL_ONE;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //System.out.println(inputText);
             //System.out.println(st.toString()+";");
             assertNotNull("Cannot parse set - basic", st);
@@ -402,7 +402,7 @@ public class ParsingTest {
 	public void update_basic() {
             String inputText = "UPDATE table1 SET field1 = value1 WHERE field3 = value3;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse update - basic", st);
             //assertEquals("Cannot parse update - basic", inputText, st.toString()+";");
             assertTrue("Cannot parse update - basic", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -412,7 +412,7 @@ public class ParsingTest {
 	public void explain_plan() {
             String inputText = "EXPLAIN PLAN FOR DROP INDEX indexName;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //System.out.println("EXPLAIN PLAN FOR DROP INDEX indexName;");
             //System.out.println(st.toString()+";");
             assertNotNull("Cannot parse explain plan", st);
@@ -424,7 +424,7 @@ public class ParsingTest {
 	public void drop_table() {
             String inputText = "DROP TABLE IF EXISTS lastTable;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //System.out.println(inputText);
             //System.out.println(st.toString()+";");
             assertNotNull("Cannot parse drop table", st);
@@ -437,7 +437,7 @@ public class ParsingTest {
             String inputText = "UPDATE table1 USING TTL = 400 SET field1 = value1,"
                             + " field2 = value2 WHERE field3 = value3 AND field4 = value4;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse update - full", st);
             //assertEquals("Cannot parse update - full", inputText, st.toString()+";");
             assertTrue("Cannot parse update - full", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -447,7 +447,7 @@ public class ParsingTest {
 	public void createTable_basic() {
             String inputText = "create table adsa(algo text primary key, algo2 int, algo3 bool);";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "Create table adsa(algo text PRIMARY KEY, algo2 int, algo3 bool)";
             assertNotNull("Cannot parse create table - basic", st);
             //assertEquals("Cannot parse create table - basic", comparativeText, st.toString());
@@ -460,7 +460,7 @@ public class ParsingTest {
 	public void createTable_basic_2() {
             String inputText = "create table adsa(algo text, algo2 int primary key, algo3 bool);";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "Create table adsa(algo text, algo2 int PRIMARY KEY, algo3 bool)";
             assertNotNull("Cannot parse create table - basic_2", st);
             //assertEquals("Cannot parse create table - basic_2", comparativeText, st.toString()+";");
@@ -474,7 +474,7 @@ public class ParsingTest {
 	public void createTable_basic_3() {
             String inputText = "create table adsa(algo text, algo2 int, algo3 bool primary key);";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "Create table adsa(algo text, algo2 int, algo3 bool PRIMARY KEY)";
             assertNotNull("Cannot parse create table - basic_3", st);
             //assertEquals("Cannot parse create table - basic_3", comparativeText, st.toString()+";");
@@ -487,7 +487,7 @@ public class ParsingTest {
 	public void createTable_basic_4() {
             String inputText = "create table adsa(algo text, algo2 int, algo3 bool, primary key (algo));";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "Create table adsa(algo text, algo2 int, algo3 bool, PRIMARY KEY (algo))";
             assertNotNull("Cannot parse create table - basic_4", st);
             //assertEquals("Cannot parse create table - basic_4", comparativeText, st.toString()+";");
@@ -500,7 +500,7 @@ public class ParsingTest {
         public void createTable_basic_5() {
             String inputText = "create table adsa(algo text, algo2 int, algo3 bool, primary key (algo, algo2));";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "Create table adsa(algo text, algo2 int, algo3 bool, PRIMARY KEY (algo, algo2))";
             assertNotNull("Cannot parse create table - basic_5", st);
             //assertEquals("Cannot parse create table - basic_5", comparativeText, st.toString()+";");
@@ -513,7 +513,7 @@ public class ParsingTest {
         public void createTable_basic_6() {
             String inputText = "create table adsa(algo text, algo2 int, algo3 bool, primary key ((algo, algo2), algo3));";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "Create table adsa(algo text, algo2 int, algo3 bool, PRIMARY KEY ((algo, algo2), algo3))";
             assertNotNull("Cannot parse create table - basic_6", st);
             //assertEquals("Cannot parse create table - basic_6", comparativeText, st.toString()+";");
@@ -526,7 +526,7 @@ public class ParsingTest {
        public void createTable_basic_7() {
             String inputText = "create table adsa(algo text, algo2 int, algo3 bool, primary key ((algo, algo2), algo3)) with propiedad1=prop1 and propiedad2=2 and propiedad3=3.0;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //System.out.println(inputText);
             //System.out.println(st.toString()+";");
             assertNotNull("Cannot parse create table - basic_7", st);
@@ -538,7 +538,7 @@ public class ParsingTest {
        public void alterKeyspace() {
             String inputText = "ALTER KEYSPACE mykeyspace WITH ident1 = value1 AND ident2 = 54;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "ALTER KEYSPACE mykeyspace WITH ident1 = value1 AND ident2 = 54";
             //assertTrue("Cannot parse alter keyspace", comparativeText.equalsIgnoreCase(st.toString()));
             assertNotNull("Cannot parse alter keyspace", st);
@@ -550,7 +550,7 @@ public class ParsingTest {
        public void dropKeyspace() {
             String inputText = "drop keyspace IF EXISTS mykeyspace;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //System.out.println(inputText);
             //System.out.println(st.toString()+";");
             assertNotNull("Cannot parse drop keyspace", st);
@@ -562,7 +562,7 @@ public class ParsingTest {
        public void alterTable_basic() {
             String inputText = "alter table tabla1 alter column1 type int;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "Alter table tabla1 alter column1 type int";
             assertNotNull("Cannot parse alter table - basic", st);
             //assertEquals("Cannot parse alter table - basic", comparativeText, st.toString()+";");
@@ -573,7 +573,7 @@ public class ParsingTest {
        public void alterTable_basic_1() {
             String inputText = "alter table tabla1 add column1 int;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "Alter table tabla1 add column1 int";
             assertNotNull("Cannot parse alter table - basic_1", st);
             //assertEquals("Cannot parse alter table - basic_1", comparativeText, st.toString()+";");
@@ -584,7 +584,7 @@ public class ParsingTest {
        public void alterTable_basic_2() {
             String inputText = "alter table tabla1 drop column1;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "Alter table tabla1 drop column1";
             assertNotNull("Cannot parse alter table - basic_2", st);
             //assertEquals("Cannot parse alter table - basic_2", comparativeText, st.toString()+";");
@@ -595,7 +595,7 @@ public class ParsingTest {
        public void alterTable_basic_3() {
             String inputText = "Alter table tabla1 with property1=value1 and property2=2 and property3=3.0;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse alter table - basic_3", st);
             //assertEquals("Cannot parse alter table - basic_3", inputText, st.toString()+";");
             //System.out.println(inputText);
@@ -607,7 +607,7 @@ public class ParsingTest {
        public void stopProcess() {
             String inputText = "STOP process process1;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "Stop process process1";
             assertNotNull("Cannot parse stop process", st);
             //assertEquals("Cannot parse stop process", comparativeText, st.toString()+";");
@@ -618,7 +618,7 @@ public class ParsingTest {
        public void createTrigger() {
             String inputText = "create trigger trigger1 on table_name USING triggerClassName;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "create trigger trigger1 on table_name USING triggerClassName";
             assertNotNull("Cannot parse create trigger", st);
             //assertEquals("Cannot parse create trigger", comparativeText, st.toString()+";");
@@ -629,7 +629,7 @@ public class ParsingTest {
        public void dropTrigger() {
             String inputText = "drop trigger trigger1 on table_name;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             //String comparativeText= "Drop trigger trigger1 on table_name";
             assertNotNull("Cannot parse drop trigger", st);
             //assertEquals("Cannot parse drop trigger", comparativeText, st.toString()+";");
@@ -644,7 +644,7 @@ public class ParsingTest {
        public void update_for_invalid_assignment(){
             String inputText = "UPDATE table1 SET field1 = value1 WHERE field3: value3;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class);
             //thrown.expectMessage("Value of field3 should be null");
             System.out.println(st.toString());
@@ -654,7 +654,7 @@ public class ParsingTest {
        public void update_wrong_spelling(){
             String inputText = "UPDDATE table1 SET field1 = value1 WHERE field3: value3;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class);
             //thrown.expectMessage("Value of field3 should be null");
             System.out.println(st.toString());
@@ -664,7 +664,7 @@ public class ParsingTest {
        public void unknown_first_word_of_statement(){
             String inputText = "WINDOWS GO HOME;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class);
             //thrown.expectMessage("Value of field3 should be null");
             System.out.println(st.toString());
@@ -674,7 +674,7 @@ public class ParsingTest {
        public void wrong_plan_token(){
             String inputText = "EXPLAIN PLAANS FOR DROP INDEX indexName;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class);
             //thrown.expectMessage("Value of field3 should be null");
             System.out.println(st.toString());
@@ -685,7 +685,7 @@ public class ParsingTest {
             String inputText = "INSERT INTI mykeyspace.tablename (ident1, ident2) VALUES(term1, term2)"
                     + " IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(RecoverableParserException.class);            
             //thrown.expectMessage("Value of field3 should be null");
             if(antlrResult.getFoundErrors().getNumberOfErrors()>0) throw new RecoverableParserException("Wrong 'INTO' token");
@@ -695,7 +695,7 @@ public class ParsingTest {
        public void create_table_wrong_column_definition(){
             String inputText = "CREATE TABLE adsa (algo text, primary key ([algo, algo2],algo3));";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class);
             //thrown.expectMessage("Value of field3 should be null");
             System.out.println(st.toString());
@@ -706,7 +706,7 @@ public class ParsingTest {
             String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUED(term1, term2)"
                     + " IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class);
             //thrown.expectMessage("Value of field3 should be null");
             System.out.println(st.toString());
@@ -716,7 +716,7 @@ public class ParsingTest {
        public void create_keyspace_wrong_identifier(){
             String inputText = "CREATE KEYSPACE name.key_space1 WITH replication = replicationLevel;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class);
             //thrown.expectMessage("Value of field3 should be null");
             System.out.println(st.toString());
@@ -726,7 +726,7 @@ public class ParsingTest {
        public void truncate_wrong_identifier(){
             String inputText = "TRUNCATE companyKS..usersTable;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(RecoverableParserException.class);            
             //thrown.expectMessage("Value of field3 should be null");
             if(antlrResult.getFoundErrors().getNumberOfErrors()>0) throw new RecoverableParserException("Wrong identifier");
@@ -736,7 +736,7 @@ public class ParsingTest {
        public void alter_wrong_keyspace_token(){
             String inputText = "ALTER KEYSPACES mykeyspace WITH ident1 = value1;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class); 
             System.out.println(st.toString());
        }
@@ -745,7 +745,7 @@ public class ParsingTest {
        public void drop_wrong_place_for_if_exists(){
             String inputText = "DROP KEYSPACE mykeyspace IF EXISTS;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class); 
             System.out.println(st.toString());
        }
@@ -754,7 +754,7 @@ public class ParsingTest {
        public void set_wrong_boolean(){
             String inputText = "SET OPTIONS ANALYTICS=5;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class); 
             System.out.println(st.toString());
        }
@@ -763,7 +763,7 @@ public class ParsingTest {
        public void alter_wrong_property_identifier(){
             String inputText = "ALTER TABLE tabla1 with 2property1=value1;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class); 
             System.out.println(st.toString());
        }
@@ -772,7 +772,7 @@ public class ParsingTest {
        public void drop_not_missing(){
             String inputText = "DROP TABLE IF EXISTS _lastTable;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(RecoverableParserException.class); 
             if(antlrResult.getFoundErrors().getNumberOfErrors()>0) throw new RecoverableParserException("Drop missing word 'NOT'");
        }
@@ -781,7 +781,7 @@ public class ParsingTest {
        public void create_index_wrong_option_assignment(){
             String inputText = "CREATE HASH INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1:val1;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(RecoverableParserException.class); 
             if(antlrResult.getFoundErrors().getNumberOfErrors()>0) throw new RecoverableParserException("Create index with wrong assignment symbol in options");
        }
@@ -790,7 +790,7 @@ public class ParsingTest {
        public void drop_index_wrong_not_word(){
             String inputText = "DROP INDEX IF NOT EXISTS index_name;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(RecoverableParserException.class); 
             if(antlrResult.getFoundErrors().getNumberOfErrors()>0) throw new RecoverableParserException("Drop index with not expected word 'NOT'");
        }
@@ -799,7 +799,7 @@ public class ParsingTest {
        public void delete_wrong_property_assignment(){
             String inputText = "DELETE (col1 AND col2) FROM table1 WHERE field1: value1;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(RecoverableParserException.class); 
             if(antlrResult.getFoundErrors().getNumberOfErrors()>0) throw new RecoverableParserException("Delete with wrong assignmet symbol for where clause");
        }
@@ -808,7 +808,7 @@ public class ParsingTest {
        public void select_wrong_like_word(){
             String inputText = "SELECT ident1, myfunction(innerIdent, anotherIdent) LIKE ident1 FROM newks.newtb;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class); 
             System.out.println(st.toString());
        }
@@ -817,7 +817,7 @@ public class ParsingTest {
        public void add_ending_quote_missing(){
             String inputText = "ADD \"/dir/jar_name-v1.0.jar;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(RecoverableParserException.class); 
             if(antlrResult.getFoundErrors().getNumberOfErrors()>0) throw new RecoverableParserException("Add missing ending quote symbol");
        }
@@ -826,7 +826,7 @@ public class ParsingTest {
        public void list_reserved_word_use(){
             String inputText = "LIST PROCESS LAST;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class);
             System.out.println(st.toString());
        }
@@ -835,7 +835,7 @@ public class ParsingTest {
        public void remove_udf_not_expected_word() {
             String inputText = "REMOVE UDF \"jar.name\" NOW;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class); 
             System.out.println(st.toString());
        }
@@ -844,7 +844,7 @@ public class ParsingTest {
        public void stop_wrong_process_identifier(){
             String inputText = "STOP process kstest.process1;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class); 
             System.out.println(st.toString());
        }
@@ -853,7 +853,7 @@ public class ParsingTest {
        public void create_trigger_wrong_as_word_use(){
             String inputText = "create trigger trigger1 on table_name USING triggerClassName AS ident1;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class); 
             System.out.println(st.toString());
        }
@@ -862,7 +862,7 @@ public class ParsingTest {
        public void drop_trigger_wrong_assignment(){
             String inputText = "drop trigger trigger1 on table_name = 20;";
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
-            Statement st = antlrResult.getStatement();
+            MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class); 
             System.out.println(st.toString());
        }

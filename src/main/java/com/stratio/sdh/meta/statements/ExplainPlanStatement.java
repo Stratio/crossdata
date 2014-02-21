@@ -1,20 +1,22 @@
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import com.stratio.sdh.meta.structures.Path;
 
-public class ExplainPlanStatement extends Statement {
+public class ExplainPlanStatement extends MetaStatement {
     
-    private Statement metaStatement;
+    private MetaStatement metaStatement;
 
-    public ExplainPlanStatement(Statement metaStatement) {
+    public ExplainPlanStatement(MetaStatement metaStatement) {
         this.metaStatement = metaStatement;
     }    
     
-    public Statement getMetaStatement() {
+    public MetaStatement getMetaStatement() {
         return metaStatement;
     }
 
-    public void setMetaStatement(Statement metaStatement) {
+    public void setMetaStatement(MetaStatement metaStatement) {
         this.metaStatement = metaStatement;
     }
 
@@ -38,6 +40,22 @@ public class ExplainPlanStatement extends Statement {
     @Override
     public String getSuggestion() {
         return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
+    
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        return "\t"+resultSet.toString();
+    }
+    
+    @Override
+    public Statement getDriverStatement() {
+        Statement statement = null;
+        return statement;
     }
     
 }

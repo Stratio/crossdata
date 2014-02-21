@@ -35,10 +35,30 @@
       <version>${antlr.version}</version>
     </dependency>
     <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.7.6</version>
+    </dependency>
+    <!--dependency>
+	<groupId>org.slf4j</groupId>
+	<artifactId>slf4j-simple</artifactId>
+	<version>1.7.6</version>
+    </dependency-->
+    <dependency>
+	<groupId>org.slf4j</groupId>
+	<artifactId>slf4j-log4j12</artifactId>
+	<version>1.7.6</version>
+    </dependency>
+    <dependency>
     	<groupId>log4j</groupId>
     	<artifactId>log4j</artifactId>
     	<version>1.2.17</version>
     </dependency>
+    <!--dependency>
+	<groupId>ch.qos.logback</groupId>
+	<artifactId>logback-classic</artifactId>
+	<version>1.1.1</version>
+    </dependency-->            
     <dependency>
 	<groupId>org.apache.commons</groupId>
 	<artifactId>commons-lang3</artifactId>
@@ -47,13 +67,28 @@
     <dependency>
 	<groupId>com.google.guava</groupId>
 	<artifactId>guava</artifactId>
-	<version>r09</version>
+	<version>16.0.1</version>
     </dependency>
-    <dependency>
+    <!--dependency>
 	<groupId>org.apache.cassandra</groupId>
 	<artifactId>cassandra-all</artifactId>
 	<version>2.0.5</version>
-    </dependency>                                    
+    </dependency-->  
+    <dependency>
+	<groupId>com.datastax.cassandra</groupId>
+	<artifactId>cassandra-driver-core</artifactId>
+	<version>2.0.0-rc2</version>
+    </dependency>       
+    <dependency>
+	<groupId>org.xerial.snappy</groupId>
+	<artifactId>snappy-java</artifactId>
+	<version>1.1.1-M1</version>
+    </dependency>
+    <dependency>
+	<groupId>net.jpountz.lz4</groupId>
+	<artifactId>lz4</artifactId>
+	<version>1.2.0</version>
+    </dependency>                                                                                                                                                                                                                                                                                                      
   </dependencies>
   
   <build>

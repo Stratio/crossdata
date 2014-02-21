@@ -1,6 +1,6 @@
 package com.stratio.sdh.meta.utils;
 
-import com.stratio.sdh.meta.statements.Statement;
+import com.stratio.sdh.meta.statements.MetaStatement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +46,7 @@ public class ErrorsHelper {
         return toString(null, null); 
     }    
     
-    public String toString(String query, Statement stmt){        
+    public String toString(String query, MetaStatement stmt){        
         StringBuilder sb = new StringBuilder("\033[31mParser exception: \033[0m");
         for(AntlrError ae: antlrErrors){
             sb.append(System.getProperty("line.separator"));
