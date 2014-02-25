@@ -385,9 +385,14 @@ createTableStatement returns [CreateTableStatement crtast]
                    )
                 )* 
          )             
-    ')' T_WITH?
-    ( identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {propierties.put($identProp1.text, valueProp1);withPropierties=true;}
-            (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {propierties.put($identPropN.text, valuePropN);withPropierties=true;} )*)?
+    ')' (T_WITH {withPropierties=true;} properties=getMetaProperties
+    /*(
+    (identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {propierties.put($identProp1.text, valueProp1);} 
+    | T_COMPACT T_STORAGE)
+    (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {propierties.put($identPropN.text, valuePropN);} 
+    | T_COMPACT T_STORAGE)*
+    )*/
+    )?
             
      {$crtast = new CreateTableStatement(name_table,columns,primaryKey,clusterKey,propierties,Type_Primary_Key,ifNotExists_2,withClusterKey,columnNumberPK,withPropierties);  } ;        
 
@@ -628,6 +633,17 @@ query returns [MetaStatement st]:
 
 
 //FUNCTIONS
+
+getMetaProperties returns [MetaProperties mp]:
+    (
+    (identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {propierties.put($identProp1.text, valueProp1);} 
+    | T_COMPACT T_STORAGE)
+    (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {propierties.put($identPropN.text, valuePropN);} 
+    | T_COMPACT T_STORAGE)*
+    )
+;
+
+getMetaProperty returns []
 
 getDataType returns [String dataType]:
     (

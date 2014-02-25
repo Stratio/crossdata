@@ -2,6 +2,7 @@ package com.stratio.sdh.meta.statements;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
+import com.stratio.sdh.meta.structures.MetaProperty;
 import com.stratio.sdh.meta.structures.Path;
 import com.stratio.sdh.meta.structures.ValueProperty;
 import java.util.Iterator;
@@ -17,7 +18,8 @@ public class CreateTableStatement extends MetaStatement{
     private LinkedHashMap<String, String> columns;    
     private List<String> primaryKey;    
     private List<String> clusterKey;    
-    private LinkedHashMap<String, ValueProperty> propierties;   
+    //private LinkedHashMap<String, ValueProperty> propierties;
+    private List<MetaProperty> propierties;
     private int Type_Primary_Key;
     private boolean ifNotExists;
     private boolean withClusterKey;
@@ -28,7 +30,7 @@ public class CreateTableStatement extends MetaStatement{
                                 LinkedHashMap<String, String> columns, 
                                 List<String> primaryKey, 
                                 List<String> clusterKey, 
-                                LinkedHashMap<String, ValueProperty> propierties, 
+                                List<MetaProperty> propierties, 
                                 int Type_Primary_Key, 
                                 boolean ifNotExists, 
                                 boolean withClusterKey, 
@@ -107,11 +109,11 @@ public class CreateTableStatement extends MetaStatement{
         this.Type_Primary_Key = Type_Primary_Key;
     }
 
-    public LinkedHashMap<String, ValueProperty> getPropierties() {
+    public List<MetaProperty> getPropierties() {
         return propierties;
     }
 
-    public void setPropierties(LinkedHashMap<String, ValueProperty> propierties) {
+    public void setPropierties(List<MetaProperty> propierties) {
         this.propierties = propierties;
     }
 
