@@ -1,4 +1,4 @@
-// $ANTLR 3.5.1 Meta.g 2014-02-14 12:43:25
+// $ANTLR 3.5.1 Meta.g 2014-02-25 15:09:52
 
     package com.stratio.sdh.meta.generated;    
     import com.stratio.sdh.meta.statements.*;
@@ -38,8 +38,9 @@ public class MetaParser extends Parser {
 		"T_TABLE", "T_TERM", "T_THREE", "T_TOKEN", "T_TRIGGER", "T_TRUE", "T_TRUNCATE", 
 		"T_TWO", "T_TYPE", "T_UDF", "T_UPDATE", "T_USE", "T_USING", "T_VALUES", 
 		"T_WHERE", "T_WINDOW", "T_WITH", "U", "V", "W", "WS", "X", "Y", "Z", "'1'", 
-		"'D'", "'H'", "'M'", "'PROCESS'", "'S'", "'TRIGGER'", "'UDF'", "'d'", 
-		"'h'", "'m'", "'s'"
+		"'D'", "'DAYS'", "'H'", "'HOURS'", "'M'", "'MINUTES'", "'PROCESS'", "'S'", 
+		"'SECONDS'", "'TRIGGER'", "'UDF'", "'d'", "'days'", "'h'", "'hours'", 
+		"'m'", "'minutes'", "'s'", "'seconds'"
 	};
 	public static final int EOF=-1;
 	public static final int T__139=139;
@@ -54,6 +55,14 @@ public class MetaParser extends Parser {
 	public static final int T__148=148;
 	public static final int T__149=149;
 	public static final int T__150=150;
+	public static final int T__151=151;
+	public static final int T__152=152;
+	public static final int T__153=153;
+	public static final int T__154=154;
+	public static final int T__155=155;
+	public static final int T__156=156;
+	public static final int T__157=157;
+	public static final int T__158=158;
 	public static final int A=4;
 	public static final int B=5;
 	public static final int C=6;
@@ -425,7 +434,7 @@ public class MetaParser extends Parser {
 			// Meta.g:238:2: T_REMOVE 'UDF' T_QUOTE jar= getTerm T_QUOTE
 			{
 			match(input,T_REMOVE,FOLLOW_T_REMOVE_in_removeUDFStatement2033); 
-			match(input,146,FOLLOW_146_in_removeUDFStatement2035); 
+			match(input,150,FOLLOW_150_in_removeUDFStatement2035); 
 			match(input,T_QUOTE,FOLLOW_T_QUOTE_in_removeUDFStatement2037); 
 			pushFollow(FOLLOW_getTerm_in_removeUDFStatement2041);
 			jar=getTerm();
@@ -3543,7 +3552,7 @@ public class MetaParser extends Parser {
 					if ( (LA61_0==T_ROWS) ) {
 						alt61=1;
 					}
-					else if ( ((LA61_0 >= 140 && LA61_0 <= 142)||LA61_0==144||(LA61_0 >= 147 && LA61_0 <= 150)) ) {
+					else if ( ((LA61_0 >= 140 && LA61_0 <= 145)||(LA61_0 >= 147 && LA61_0 <= 148)||(LA61_0 >= 151 && LA61_0 <= 158)) ) {
 						alt61=2;
 					}
 
@@ -3596,29 +3605,29 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTimeUnit"
-	// Meta.g:653:1: getTimeUnit returns [TimeUnit unit] : ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' ) ;
+	// Meta.g:653:1: getTimeUnit returns [TimeUnit unit] : ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' | 'seconds' | 'minutes' | 'hours' | 'days' | 'SECONDS' | 'MINUTES' | 'HOURS' | 'DAYS' ) ;
 	public final TimeUnit getTimeUnit() throws RecognitionException {
 		TimeUnit unit = null;
 
 
 		try {
-			// Meta.g:653:36: ( ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' ) )
-			// Meta.g:654:5: ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' )
+			// Meta.g:653:36: ( ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' | 'seconds' | 'minutes' | 'hours' | 'days' | 'SECONDS' | 'MINUTES' | 'HOURS' | 'DAYS' ) )
+			// Meta.g:654:5: ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' | 'seconds' | 'minutes' | 'hours' | 'days' | 'SECONDS' | 'MINUTES' | 'HOURS' | 'DAYS' )
 			{
-			// Meta.g:654:5: ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' )
-			int alt63=8;
+			// Meta.g:654:5: ( 'S' | 'M' | 'H' | 'D' | 's' | 'm' | 'h' | 'd' | 'seconds' | 'minutes' | 'hours' | 'days' | 'SECONDS' | 'MINUTES' | 'HOURS' | 'DAYS' )
+			int alt63=16;
 			switch ( input.LA(1) ) {
-			case 144:
+			case 147:
 				{
 				alt63=1;
 				}
 				break;
-			case 142:
+			case 144:
 				{
 				alt63=2;
 				}
 				break;
-			case 141:
+			case 142:
 				{
 				alt63=3;
 				}
@@ -3628,24 +3637,64 @@ public class MetaParser extends Parser {
 				alt63=4;
 				}
 				break;
-			case 150:
+			case 157:
 				{
 				alt63=5;
 				}
 				break;
-			case 149:
+			case 155:
 				{
 				alt63=6;
 				}
 				break;
-			case 148:
+			case 153:
 				{
 				alt63=7;
 				}
 				break;
-			case 147:
+			case 151:
 				{
 				alt63=8;
+				}
+				break;
+			case 158:
+				{
+				alt63=9;
+				}
+				break;
+			case 156:
+				{
+				alt63=10;
+				}
+				break;
+			case 154:
+				{
+				alt63=11;
+				}
+				break;
+			case 152:
+				{
+				alt63=12;
+				}
+				break;
+			case 148:
+				{
+				alt63=13;
+				}
+				break;
+			case 145:
+				{
+				alt63=14;
+				}
+				break;
+			case 143:
+				{
+				alt63=15;
+				}
+				break;
+			case 141:
+				{
+				alt63=16;
 				}
 				break;
 			default:
@@ -3657,57 +3706,113 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:654:7: 'S'
 					{
-					match(input,144,FOLLOW_144_in_getTimeUnit5569); 
-					unit =TimeUnit.S;
+					match(input,147,FOLLOW_147_in_getTimeUnit5569); 
+					unit =TimeUnit.SECONDS;
 					}
 					break;
 				case 2 :
 					// Meta.g:655:7: 'M'
 					{
-					match(input,142,FOLLOW_142_in_getTimeUnit5579); 
-					unit =TimeUnit.M;
+					match(input,144,FOLLOW_144_in_getTimeUnit5579); 
+					unit =TimeUnit.MINUTES;
 					}
 					break;
 				case 3 :
 					// Meta.g:656:7: 'H'
 					{
-					match(input,141,FOLLOW_141_in_getTimeUnit5589); 
-					unit =TimeUnit.H;
+					match(input,142,FOLLOW_142_in_getTimeUnit5589); 
+					unit =TimeUnit.HOURS;
 					}
 					break;
 				case 4 :
 					// Meta.g:657:7: 'D'
 					{
 					match(input,140,FOLLOW_140_in_getTimeUnit5599); 
-					unit =TimeUnit.D;
+					unit =TimeUnit.DAYS;
 					}
 					break;
 				case 5 :
 					// Meta.g:658:7: 's'
 					{
-					match(input,150,FOLLOW_150_in_getTimeUnit5609); 
-					unit =TimeUnit.s;
+					match(input,157,FOLLOW_157_in_getTimeUnit5609); 
+					unit =TimeUnit.SECONDS;
 					}
 					break;
 				case 6 :
 					// Meta.g:659:7: 'm'
 					{
-					match(input,149,FOLLOW_149_in_getTimeUnit5619); 
-					unit =TimeUnit.m;
+					match(input,155,FOLLOW_155_in_getTimeUnit5619); 
+					unit =TimeUnit.MINUTES;
 					}
 					break;
 				case 7 :
 					// Meta.g:660:7: 'h'
 					{
-					match(input,148,FOLLOW_148_in_getTimeUnit5629); 
-					unit =TimeUnit.h;
+					match(input,153,FOLLOW_153_in_getTimeUnit5629); 
+					unit =TimeUnit.HOURS;
 					}
 					break;
 				case 8 :
 					// Meta.g:661:7: 'd'
 					{
-					match(input,147,FOLLOW_147_in_getTimeUnit5639); 
-					unit =TimeUnit.d;
+					match(input,151,FOLLOW_151_in_getTimeUnit5639); 
+					unit =TimeUnit.DAYS;
+					}
+					break;
+				case 9 :
+					// Meta.g:662:7: 'seconds'
+					{
+					match(input,158,FOLLOW_158_in_getTimeUnit5649); 
+					unit =TimeUnit.SECONDS;
+					}
+					break;
+				case 10 :
+					// Meta.g:663:7: 'minutes'
+					{
+					match(input,156,FOLLOW_156_in_getTimeUnit5659); 
+					unit =TimeUnit.MINUTES;
+					}
+					break;
+				case 11 :
+					// Meta.g:664:7: 'hours'
+					{
+					match(input,154,FOLLOW_154_in_getTimeUnit5669); 
+					unit =TimeUnit.HOURS;
+					}
+					break;
+				case 12 :
+					// Meta.g:665:7: 'days'
+					{
+					match(input,152,FOLLOW_152_in_getTimeUnit5679); 
+					unit =TimeUnit.DAYS;
+					}
+					break;
+				case 13 :
+					// Meta.g:666:7: 'SECONDS'
+					{
+					match(input,148,FOLLOW_148_in_getTimeUnit5689); 
+					unit =TimeUnit.SECONDS;
+					}
+					break;
+				case 14 :
+					// Meta.g:667:7: 'MINUTES'
+					{
+					match(input,145,FOLLOW_145_in_getTimeUnit5699); 
+					unit =TimeUnit.MINUTES;
+					}
+					break;
+				case 15 :
+					// Meta.g:668:7: 'HOURS'
+					{
+					match(input,143,FOLLOW_143_in_getTimeUnit5709); 
+					unit =TimeUnit.HOURS;
+					}
+					break;
+				case 16 :
+					// Meta.g:669:7: 'DAYS'
+					{
+					match(input,141,FOLLOW_141_in_getTimeUnit5719); 
+					unit =TimeUnit.DAYS;
 					}
 					break;
 
@@ -3730,7 +3835,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelectClause"
-	// Meta.g:664:1: getSelectClause returns [SelectionClause sc] : (scc= getSelectionCount |scl= getSelectionList );
+	// Meta.g:673:1: getSelectClause returns [SelectionClause sc] : (scc= getSelectionCount |scl= getSelectionList );
 	public final SelectionClause getSelectClause() throws RecognitionException {
 		SelectionClause sc = null;
 
@@ -3739,7 +3844,7 @@ public class MetaParser extends Parser {
 		SelectionList scl =null;
 
 		try {
-			// Meta.g:664:45: (scc= getSelectionCount |scl= getSelectionList )
+			// Meta.g:673:45: (scc= getSelectionCount |scl= getSelectionList )
 			int alt64=2;
 			int LA64_0 = input.LA(1);
 			if ( (LA64_0==T_COUNT) ) {
@@ -3794,9 +3899,9 @@ public class MetaParser extends Parser {
 
 			switch (alt64) {
 				case 1 :
-					// Meta.g:665:5: scc= getSelectionCount
+					// Meta.g:674:5: scc= getSelectionCount
 					{
-					pushFollow(FOLLOW_getSelectionCount_in_getSelectClause5661);
+					pushFollow(FOLLOW_getSelectionCount_in_getSelectClause5745);
 					scc=getSelectionCount();
 					state._fsp--;
 
@@ -3804,9 +3909,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:666:7: scl= getSelectionList
+					// Meta.g:675:7: scl= getSelectionList
 					{
-					pushFollow(FOLLOW_getSelectionList_in_getSelectClause5673);
+					pushFollow(FOLLOW_getSelectionList_in_getSelectClause5757);
 					scl=getSelectionList();
 					state._fsp--;
 
@@ -3830,7 +3935,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelectionCount"
-	// Meta.g:669:1: getSelectionCount returns [SelectionCount scc] : T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' ) T_END_PARENTHESIS ( T_AS ident= T_IDENT )? ;
+	// Meta.g:678:1: getSelectionCount returns [SelectionCount scc] : T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' ) T_END_PARENTHESIS ( T_AS ident= T_IDENT )? ;
 	public final SelectionCount getSelectionCount() throws RecognitionException {
 		SelectionCount scc = null;
 
@@ -3842,12 +3947,12 @@ public class MetaParser extends Parser {
 		        char symbol = '*';
 		    
 		try {
-			// Meta.g:673:6: ( T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' ) T_END_PARENTHESIS ( T_AS ident= T_IDENT )? )
-			// Meta.g:674:5: T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' ) T_END_PARENTHESIS ( T_AS ident= T_IDENT )?
+			// Meta.g:682:6: ( T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' ) T_END_PARENTHESIS ( T_AS ident= T_IDENT )? )
+			// Meta.g:683:5: T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' ) T_END_PARENTHESIS ( T_AS ident= T_IDENT )?
 			{
-			match(input,T_COUNT,FOLLOW_T_COUNT_in_getSelectionCount5699); 
-			match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getSelectionCount5701); 
-			// Meta.g:674:33: ( T_ASTERISK | '1' )
+			match(input,T_COUNT,FOLLOW_T_COUNT_in_getSelectionCount5783); 
+			match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getSelectionCount5785); 
+			// Meta.g:683:33: ( T_ASTERISK | '1' )
 			int alt65=2;
 			int LA65_0 = input.LA(1);
 			if ( (LA65_0==T_ASTERISK) ) {
@@ -3865,23 +3970,23 @@ public class MetaParser extends Parser {
 
 			switch (alt65) {
 				case 1 :
-					// Meta.g:674:35: T_ASTERISK
+					// Meta.g:683:35: T_ASTERISK
 					{
-					match(input,T_ASTERISK,FOLLOW_T_ASTERISK_in_getSelectionCount5705); 
+					match(input,T_ASTERISK,FOLLOW_T_ASTERISK_in_getSelectionCount5789); 
 					}
 					break;
 				case 2 :
-					// Meta.g:674:48: '1'
+					// Meta.g:683:48: '1'
 					{
-					match(input,139,FOLLOW_139_in_getSelectionCount5709); 
+					match(input,139,FOLLOW_139_in_getSelectionCount5793); 
 					symbol = '1';
 					}
 					break;
 
 			}
 
-			match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getSelectionCount5715); 
-			// Meta.g:675:5: ( T_AS ident= T_IDENT )?
+			match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getSelectionCount5799); 
+			// Meta.g:684:5: ( T_AS ident= T_IDENT )?
 			int alt66=2;
 			int LA66_0 = input.LA(1);
 			if ( (LA66_0==T_AS) ) {
@@ -3889,11 +3994,11 @@ public class MetaParser extends Parser {
 			}
 			switch (alt66) {
 				case 1 :
-					// Meta.g:675:6: T_AS ident= T_IDENT
+					// Meta.g:684:6: T_AS ident= T_IDENT
 					{
-					match(input,T_AS,FOLLOW_T_AS_in_getSelectionCount5722); 
+					match(input,T_AS,FOLLOW_T_AS_in_getSelectionCount5806); 
 					identInc = true;
-					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelectionCount5728); 
+					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelectionCount5812); 
 					}
 					break;
 
@@ -3922,7 +4027,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelectionList"
-	// Meta.g:684:1: getSelectionList returns [SelectionList scl] : ( T_DISTINCT )? selections= getSelection ;
+	// Meta.g:693:1: getSelectionList returns [SelectionList scl] : ( T_DISTINCT )? selections= getSelection ;
 	public final SelectionList getSelectionList() throws RecognitionException {
 		SelectionList scl = null;
 
@@ -3933,10 +4038,10 @@ public class MetaParser extends Parser {
 		        boolean distinct = false;
 		    
 		try {
-			// Meta.g:687:6: ( ( T_DISTINCT )? selections= getSelection )
-			// Meta.g:688:5: ( T_DISTINCT )? selections= getSelection
+			// Meta.g:696:6: ( ( T_DISTINCT )? selections= getSelection )
+			// Meta.g:697:5: ( T_DISTINCT )? selections= getSelection
 			{
-			// Meta.g:688:5: ( T_DISTINCT )?
+			// Meta.g:697:5: ( T_DISTINCT )?
 			int alt67=2;
 			int LA67_0 = input.LA(1);
 			if ( (LA67_0==T_DISTINCT) ) {
@@ -3944,16 +4049,16 @@ public class MetaParser extends Parser {
 			}
 			switch (alt67) {
 				case 1 :
-					// Meta.g:688:6: T_DISTINCT
+					// Meta.g:697:6: T_DISTINCT
 					{
-					match(input,T_DISTINCT,FOLLOW_T_DISTINCT_in_getSelectionList5763); 
+					match(input,T_DISTINCT,FOLLOW_T_DISTINCT_in_getSelectionList5847); 
 					distinct = true;
 					}
 					break;
 
 			}
 
-			pushFollow(FOLLOW_getSelection_in_getSelectionList5771);
+			pushFollow(FOLLOW_getSelection_in_getSelectionList5855);
 			selections=getSelection();
 			state._fsp--;
 
@@ -3975,7 +4080,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelection"
-	// Meta.g:692:1: getSelection returns [Selection slct] : ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* ) ;
+	// Meta.g:701:1: getSelection returns [Selection slct] : ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* ) ;
 	public final Selection getSelection() throws RecognitionException {
 		Selection slct = null;
 
@@ -3990,10 +4095,10 @@ public class MetaParser extends Parser {
 		        List<SelectionSelector> selections = new ArrayList<>();
 		    
 		try {
-			// Meta.g:696:6: ( ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* ) )
-			// Meta.g:697:5: ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* )
+			// Meta.g:705:6: ( ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* ) )
+			// Meta.g:706:5: ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* )
 			{
-			// Meta.g:697:5: ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* )
+			// Meta.g:706:5: ( T_ASTERISK |selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )* )
 			int alt71=2;
 			int LA71_0 = input.LA(1);
 			if ( (LA71_0==T_ASTERISK) ) {
@@ -4011,21 +4116,21 @@ public class MetaParser extends Parser {
 
 			switch (alt71) {
 				case 1 :
-					// Meta.g:698:9: T_ASTERISK
+					// Meta.g:707:9: T_ASTERISK
 					{
-					match(input,T_ASTERISK,FOLLOW_T_ASTERISK_in_getSelection5811); 
+					match(input,T_ASTERISK,FOLLOW_T_ASTERISK_in_getSelection5895); 
 					 slct = new SelectionAsterisk();
 					}
 					break;
 				case 2 :
-					// Meta.g:699:11: selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )*
+					// Meta.g:708:11: selector1= getSelector ( T_AS ident1= T_IDENT )? ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )*
 					{
-					pushFollow(FOLLOW_getSelector_in_getSelection5834);
+					pushFollow(FOLLOW_getSelector_in_getSelection5918);
 					selector1=getSelector();
 					state._fsp--;
 
 					 slsl = new SelectionSelector(selector1);
-					// Meta.g:699:77: ( T_AS ident1= T_IDENT )?
+					// Meta.g:708:77: ( T_AS ident1= T_IDENT )?
 					int alt68=2;
 					int LA68_0 = input.LA(1);
 					if ( (LA68_0==T_AS) ) {
@@ -4033,10 +4138,10 @@ public class MetaParser extends Parser {
 					}
 					switch (alt68) {
 						case 1 :
-							// Meta.g:699:78: T_AS ident1= T_IDENT
+							// Meta.g:708:78: T_AS ident1= T_IDENT
 							{
-							match(input,T_AS,FOLLOW_T_AS_in_getSelection5839); 
-							ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelection5843); 
+							match(input,T_AS,FOLLOW_T_AS_in_getSelection5923); 
+							ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelection5927); 
 							slsl.setIdentifier((ident1!=null?ident1.getText():null));
 							}
 							break;
@@ -4044,7 +4149,7 @@ public class MetaParser extends Parser {
 					}
 
 					selections.add(slsl);
-					// Meta.g:700:13: ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )*
+					// Meta.g:709:13: ( T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )? )*
 					loop70:
 					while (true) {
 						int alt70=2;
@@ -4055,15 +4160,15 @@ public class MetaParser extends Parser {
 
 						switch (alt70) {
 						case 1 :
-							// Meta.g:700:14: T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )?
+							// Meta.g:709:14: T_COMMA selectorN= getSelector ( T_AS identN= T_IDENT )?
 							{
-							match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelection5864); 
-							pushFollow(FOLLOW_getSelector_in_getSelection5868);
+							match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelection5948); 
+							pushFollow(FOLLOW_getSelector_in_getSelection5952);
 							selectorN=getSelector();
 							state._fsp--;
 
 							slsl = new SelectionSelector(selectorN);
-							// Meta.g:700:87: ( T_AS identN= T_IDENT )?
+							// Meta.g:709:87: ( T_AS identN= T_IDENT )?
 							int alt69=2;
 							int LA69_0 = input.LA(1);
 							if ( (LA69_0==T_AS) ) {
@@ -4071,10 +4176,10 @@ public class MetaParser extends Parser {
 							}
 							switch (alt69) {
 								case 1 :
-									// Meta.g:700:88: T_AS identN= T_IDENT
+									// Meta.g:709:88: T_AS identN= T_IDENT
 									{
-									match(input,T_AS,FOLLOW_T_AS_in_getSelection5873); 
-									identN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelection5877); 
+									match(input,T_AS,FOLLOW_T_AS_in_getSelection5957); 
+									identN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelection5961); 
 									slsl.setIdentifier((identN!=null?identN.getText():null));
 									}
 									break;
@@ -4113,7 +4218,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelector"
-	// Meta.g:705:1: getSelector returns [SelectorMeta slmt] : ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) ) ;
+	// Meta.g:714:1: getSelector returns [SelectorMeta slmt] : ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) ) ;
 	public final SelectorMeta getSelector() throws RecognitionException {
 		SelectorMeta slmt = null;
 
@@ -4127,10 +4232,10 @@ public class MetaParser extends Parser {
 		        GroupByFunction gbFunc = null;
 		    
 		try {
-			// Meta.g:709:6: ( ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) ) )
-			// Meta.g:710:5: ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) )
+			// Meta.g:718:6: ( ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) ) )
+			// Meta.g:719:5: ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) )
 			{
-			// Meta.g:710:5: ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) )
+			// Meta.g:719:5: ( ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS |ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS ) )
 			int alt78=2;
 			int LA78_0 = input.LA(1);
 			if ( (LA78_0==T_AGGREGATION||LA78_0==T_AVG||LA78_0==T_COUNT||(LA78_0 >= T_MAX && LA78_0 <= T_MIN)) ) {
@@ -4148,9 +4253,9 @@ public class MetaParser extends Parser {
 
 			switch (alt78) {
 				case 1 :
-					// Meta.g:710:7: ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS
+					// Meta.g:719:7: ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT ) T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS
 					{
-					// Meta.g:710:7: ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT )
+					// Meta.g:719:7: ( T_AGGREGATION | T_MAX | T_MIN | T_AVG | T_COUNT )
 					int alt72=5;
 					switch ( input.LA(1) ) {
 					case T_AGGREGATION:
@@ -4185,45 +4290,45 @@ public class MetaParser extends Parser {
 					}
 					switch (alt72) {
 						case 1 :
-							// Meta.g:710:8: T_AGGREGATION
+							// Meta.g:719:8: T_AGGREGATION
 							{
-							match(input,T_AGGREGATION,FOLLOW_T_AGGREGATION_in_getSelector5932); 
+							match(input,T_AGGREGATION,FOLLOW_T_AGGREGATION_in_getSelector6016); 
 							gbFunc = GroupByFunction.aggregation;
 							}
 							break;
 						case 2 :
-							// Meta.g:711:10: T_MAX
+							// Meta.g:720:10: T_MAX
 							{
-							match(input,T_MAX,FOLLOW_T_MAX_in_getSelector5946); 
+							match(input,T_MAX,FOLLOW_T_MAX_in_getSelector6030); 
 							gbFunc = GroupByFunction.max;
 							}
 							break;
 						case 3 :
-							// Meta.g:712:10: T_MIN
+							// Meta.g:721:10: T_MIN
 							{
-							match(input,T_MIN,FOLLOW_T_MIN_in_getSelector5960); 
+							match(input,T_MIN,FOLLOW_T_MIN_in_getSelector6044); 
 							gbFunc = GroupByFunction.min;
 							}
 							break;
 						case 4 :
-							// Meta.g:713:10: T_AVG
+							// Meta.g:722:10: T_AVG
 							{
-							match(input,T_AVG,FOLLOW_T_AVG_in_getSelector5974); 
+							match(input,T_AVG,FOLLOW_T_AVG_in_getSelector6058); 
 							gbFunc = GroupByFunction.avg;
 							}
 							break;
 						case 5 :
-							// Meta.g:714:10: T_COUNT
+							// Meta.g:723:10: T_COUNT
 							{
-							match(input,T_COUNT,FOLLOW_T_COUNT_in_getSelector5988); 
+							match(input,T_COUNT,FOLLOW_T_COUNT_in_getSelector6072); 
 							gbFunc = GroupByFunction.count;
 							}
 							break;
 
 					}
 
-					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getSelector6014); 
-					// Meta.g:717:17: (select1= getSelector ( T_COMMA selectN= getSelector )* )?
+					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getSelector6098); 
+					// Meta.g:726:17: (select1= getSelector ( T_COMMA selectN= getSelector )* )?
 					int alt74=2;
 					int LA74_0 = input.LA(1);
 					if ( (LA74_0==T_AGGREGATION||LA74_0==T_AVG||LA74_0==T_COUNT||LA74_0==T_IDENT||(LA74_0 >= T_MAX && LA74_0 <= T_MIN)) ) {
@@ -4231,14 +4336,14 @@ public class MetaParser extends Parser {
 					}
 					switch (alt74) {
 						case 1 :
-							// Meta.g:717:18: select1= getSelector ( T_COMMA selectN= getSelector )*
+							// Meta.g:726:18: select1= getSelector ( T_COMMA selectN= getSelector )*
 							{
-							pushFollow(FOLLOW_getSelector_in_getSelector6036);
+							pushFollow(FOLLOW_getSelector_in_getSelector6120);
 							select1=getSelector();
 							state._fsp--;
 
 							params.add(select1);
-							// Meta.g:717:61: ( T_COMMA selectN= getSelector )*
+							// Meta.g:726:61: ( T_COMMA selectN= getSelector )*
 							loop73:
 							while (true) {
 								int alt73=2;
@@ -4249,10 +4354,10 @@ public class MetaParser extends Parser {
 
 								switch (alt73) {
 								case 1 :
-									// Meta.g:717:62: T_COMMA selectN= getSelector
+									// Meta.g:726:62: T_COMMA selectN= getSelector
 									{
-									match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelector6041); 
-									pushFollow(FOLLOW_getSelector_in_getSelector6045);
+									match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelector6125); 
+									pushFollow(FOLLOW_getSelector_in_getSelector6129);
 									selectN=getSelector();
 									state._fsp--;
 
@@ -4270,15 +4375,15 @@ public class MetaParser extends Parser {
 
 					}
 
-					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getSelector6066); 
+					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getSelector6150); 
 					slmt = new SelectorGroupBy(gbFunc, params);
 					}
 					break;
 				case 2 :
-					// Meta.g:719:11: ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS )
+					// Meta.g:728:11: ident= T_IDENT (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS )
 					{
-					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelector6082); 
-					// Meta.g:719:25: (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS )
+					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelector6166); 
+					// Meta.g:728:25: (| T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS )
 					int alt77=2;
 					int LA77_0 = input.LA(1);
 					if ( (LA77_0==T_AS||LA77_0==T_COMMA||LA77_0==T_END_PARENTHESIS||LA77_0==T_FROM) ) {
@@ -4296,16 +4401,16 @@ public class MetaParser extends Parser {
 
 					switch (alt77) {
 						case 1 :
-							// Meta.g:720:13: 
+							// Meta.g:729:13: 
 							{
 							slmt = new SelectorIdentifier((ident!=null?ident.getText():null));
 							}
 							break;
 						case 2 :
-							// Meta.g:721:15: T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS
+							// Meta.g:730:15: T_START_PARENTHESIS (select1= getSelector ( T_COMMA selectN= getSelector )* )? T_END_PARENTHESIS
 							{
-							match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getSelector6114); 
-							// Meta.g:721:35: (select1= getSelector ( T_COMMA selectN= getSelector )* )?
+							match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getSelector6198); 
+							// Meta.g:730:35: (select1= getSelector ( T_COMMA selectN= getSelector )* )?
 							int alt76=2;
 							int LA76_0 = input.LA(1);
 							if ( (LA76_0==T_AGGREGATION||LA76_0==T_AVG||LA76_0==T_COUNT||LA76_0==T_IDENT||(LA76_0 >= T_MAX && LA76_0 <= T_MIN)) ) {
@@ -4313,14 +4418,14 @@ public class MetaParser extends Parser {
 							}
 							switch (alt76) {
 								case 1 :
-									// Meta.g:721:36: select1= getSelector ( T_COMMA selectN= getSelector )*
+									// Meta.g:730:36: select1= getSelector ( T_COMMA selectN= getSelector )*
 									{
-									pushFollow(FOLLOW_getSelector_in_getSelector6119);
+									pushFollow(FOLLOW_getSelector_in_getSelector6203);
 									select1=getSelector();
 									state._fsp--;
 
 									params.add(select1);
-									// Meta.g:721:79: ( T_COMMA selectN= getSelector )*
+									// Meta.g:730:79: ( T_COMMA selectN= getSelector )*
 									loop75:
 									while (true) {
 										int alt75=2;
@@ -4331,10 +4436,10 @@ public class MetaParser extends Parser {
 
 										switch (alt75) {
 										case 1 :
-											// Meta.g:721:80: T_COMMA selectN= getSelector
+											// Meta.g:730:80: T_COMMA selectN= getSelector
 											{
-											match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelector6124); 
-											pushFollow(FOLLOW_getSelector_in_getSelector6128);
+											match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelector6208); 
+											pushFollow(FOLLOW_getSelector_in_getSelector6212);
 											selectN=getSelector();
 											state._fsp--;
 
@@ -4352,7 +4457,7 @@ public class MetaParser extends Parser {
 
 							}
 
-							match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getSelector6153); 
+							match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getSelector6237); 
 							slmt = new SelectorFunction((ident!=null?ident.getText():null), params);
 							}
 							break;
@@ -4385,7 +4490,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getListTypes"
-	// Meta.g:727:1: getListTypes returns [String listType] : ident= ( 'PROCESS' | 'UDF' | 'TRIGGER' ) ;
+	// Meta.g:736:1: getListTypes returns [String listType] : ident= ( 'PROCESS' | 'UDF' | 'TRIGGER' ) ;
 	public final MetaParser.getListTypes_return getListTypes() throws RecognitionException {
 		MetaParser.getListTypes_return retval = new MetaParser.getListTypes_return();
 		retval.start = input.LT(1);
@@ -4393,11 +4498,11 @@ public class MetaParser extends Parser {
 		Token ident=null;
 
 		try {
-			// Meta.g:727:39: (ident= ( 'PROCESS' | 'UDF' | 'TRIGGER' ) )
-			// Meta.g:728:2: ident= ( 'PROCESS' | 'UDF' | 'TRIGGER' )
+			// Meta.g:736:39: (ident= ( 'PROCESS' | 'UDF' | 'TRIGGER' ) )
+			// Meta.g:737:2: ident= ( 'PROCESS' | 'UDF' | 'TRIGGER' )
 			{
 			ident=input.LT(1);
-			if ( input.LA(1)==143||(input.LA(1) >= 145 && input.LA(1) <= 146) ) {
+			if ( input.LA(1)==146||(input.LA(1) >= 149 && input.LA(1) <= 150) ) {
 				input.consume();
 				state.errorRecovery=false;
 			}
@@ -4425,7 +4530,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getAssignment"
-	// Meta.g:731:1: getAssignment returns [Assignment assign] : ident= T_IDENT ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm ) ;
+	// Meta.g:740:1: getAssignment returns [Assignment assign] : ident= T_IDENT ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm ) ;
 	public final Assignment getAssignment() throws RecognitionException {
 		Assignment assign = null;
 
@@ -4436,11 +4541,11 @@ public class MetaParser extends Parser {
 		String termR =null;
 
 		try {
-			// Meta.g:731:42: (ident= T_IDENT ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm ) )
-			// Meta.g:732:5: ident= T_IDENT ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm )
+			// Meta.g:740:42: (ident= T_IDENT ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm ) )
+			// Meta.g:741:5: ident= T_IDENT ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm )
 			{
-			ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getAssignment6217); 
-			// Meta.g:732:19: ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm )
+			ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getAssignment6301); 
+			// Meta.g:741:19: ( T_EQUAL value= getValueAssign | T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm )
 			int alt79=2;
 			int LA79_0 = input.LA(1);
 			if ( (LA79_0==T_EQUAL) ) {
@@ -4458,10 +4563,10 @@ public class MetaParser extends Parser {
 
 			switch (alt79) {
 				case 1 :
-					// Meta.g:733:9: T_EQUAL value= getValueAssign
+					// Meta.g:742:9: T_EQUAL value= getValueAssign
 					{
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getAssignment6229); 
-					pushFollow(FOLLOW_getValueAssign_in_getAssignment6233);
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getAssignment6313); 
+					pushFollow(FOLLOW_getValueAssign_in_getAssignment6317);
 					value=getValueAssign();
 					state._fsp--;
 
@@ -4469,16 +4574,16 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:735:9: T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm
+					// Meta.g:744:9: T_START_BRACKET termL= getTerm T_END_BRACKET T_EQUAL termR= getTerm
 					{
-					match(input,T_START_BRACKET,FOLLOW_T_START_BRACKET_in_getAssignment6252); 
-					pushFollow(FOLLOW_getTerm_in_getAssignment6256);
+					match(input,T_START_BRACKET,FOLLOW_T_START_BRACKET_in_getAssignment6336); 
+					pushFollow(FOLLOW_getTerm_in_getAssignment6340);
 					termL=getTerm();
 					state._fsp--;
 
-					match(input,T_END_BRACKET,FOLLOW_T_END_BRACKET_in_getAssignment6258); 
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getAssignment6260); 
-					pushFollow(FOLLOW_getTerm_in_getAssignment6264);
+					match(input,T_END_BRACKET,FOLLOW_T_END_BRACKET_in_getAssignment6342); 
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getAssignment6344); 
+					pushFollow(FOLLOW_getTerm_in_getAssignment6348);
 					termR=getTerm();
 					state._fsp--;
 
@@ -4507,7 +4612,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getValueAssign"
-	// Meta.g:741:1: getValueAssign returns [ValueAssignment valueAssign] : (term1= getTerm |ident= T_IDENT ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList ) );
+	// Meta.g:750:1: getValueAssign returns [ValueAssignment valueAssign] : (term1= getTerm |ident= T_IDENT ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList ) );
 	public final ValueAssignment getValueAssign() throws RecognitionException {
 		ValueAssignment valueAssign = null;
 
@@ -4519,7 +4624,7 @@ public class MetaParser extends Parser {
 		IdentIntOrLiteral value2 =null;
 
 		try {
-			// Meta.g:741:53: (term1= getTerm |ident= T_IDENT ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList ) )
+			// Meta.g:750:53: (term1= getTerm |ident= T_IDENT ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList ) )
 			int alt82=2;
 			int LA82_0 = input.LA(1);
 			if ( (LA82_0==T_IDENT) ) {
@@ -4556,9 +4661,9 @@ public class MetaParser extends Parser {
 
 			switch (alt82) {
 				case 1 :
-					// Meta.g:742:5: term1= getTerm
+					// Meta.g:751:5: term1= getTerm
 					{
-					pushFollow(FOLLOW_getTerm_in_getValueAssign6291);
+					pushFollow(FOLLOW_getTerm_in_getValueAssign6375);
 					term1=getTerm();
 					state._fsp--;
 
@@ -4566,10 +4671,10 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:743:7: ident= T_IDENT ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList )
+					// Meta.g:752:7: ident= T_IDENT ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList )
 					{
-					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getValueAssign6303); 
-					// Meta.g:743:21: ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList )
+					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getValueAssign6387); 
+					// Meta.g:752:21: ( T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList ) | T_SUBTRACT value2= getIntSetOrList )
 					int alt81=2;
 					int LA81_0 = input.LA(1);
 					if ( (LA81_0==T_PLUS) ) {
@@ -4587,10 +4692,10 @@ public class MetaParser extends Parser {
 
 					switch (alt81) {
 						case 1 :
-							// Meta.g:743:22: T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList )
+							// Meta.g:752:22: T_PLUS ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList )
 							{
-							match(input,T_PLUS,FOLLOW_T_PLUS_in_getValueAssign6306); 
-							// Meta.g:743:29: ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList )
+							match(input,T_PLUS,FOLLOW_T_PLUS_in_getValueAssign6390); 
+							// Meta.g:752:29: ( T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET |value1= getIntSetOrList )
 							int alt80=2;
 							int LA80_0 = input.LA(1);
 							if ( (LA80_0==T_START_SBRACKET) ) {
@@ -4627,21 +4732,21 @@ public class MetaParser extends Parser {
 
 							switch (alt80) {
 								case 1 :
-									// Meta.g:743:30: T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET
+									// Meta.g:752:30: T_START_SBRACKET mapLiteral= getMapLiteral T_END_SBRACKET
 									{
-									match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getValueAssign6309); 
-									pushFollow(FOLLOW_getMapLiteral_in_getValueAssign6313);
+									match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getValueAssign6393); 
+									pushFollow(FOLLOW_getMapLiteral_in_getValueAssign6397);
 									mapLiteral=getMapLiteral();
 									state._fsp--;
 
-									match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getValueAssign6315); 
+									match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getValueAssign6399); 
 									 valueAssign = new ValueAssignment(new IdentMap((ident!=null?ident.getText():null), new MapLiteralProperty(mapLiteral)));
 									}
 									break;
 								case 2 :
-									// Meta.g:744:35: value1= getIntSetOrList
+									// Meta.g:753:35: value1= getIntSetOrList
 									{
-									pushFollow(FOLLOW_getIntSetOrList_in_getValueAssign6355);
+									pushFollow(FOLLOW_getIntSetOrList_in_getValueAssign6439);
 									value1=getIntSetOrList();
 									state._fsp--;
 
@@ -4661,10 +4766,10 @@ public class MetaParser extends Parser {
 							}
 							break;
 						case 2 :
-							// Meta.g:753:11: T_SUBTRACT value2= getIntSetOrList
+							// Meta.g:762:11: T_SUBTRACT value2= getIntSetOrList
 							{
-							match(input,T_SUBTRACT,FOLLOW_T_SUBTRACT_in_getValueAssign6399); 
-							pushFollow(FOLLOW_getIntSetOrList_in_getValueAssign6403);
+							match(input,T_SUBTRACT,FOLLOW_T_SUBTRACT_in_getValueAssign6483); 
+							pushFollow(FOLLOW_getIntSetOrList_in_getValueAssign6487);
 							value2=getIntSetOrList();
 							state._fsp--;
 
@@ -4700,7 +4805,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getIntSetOrList"
-	// Meta.g:764:1: getIntSetOrList returns [IdentIntOrLiteral iiol] : (constant= T_CONSTANT | T_START_BRACKET list= getList T_END_BRACKET | T_START_SBRACKET set= getSet T_END_SBRACKET );
+	// Meta.g:773:1: getIntSetOrList returns [IdentIntOrLiteral iiol] : (constant= T_CONSTANT | T_START_BRACKET list= getList T_END_BRACKET | T_START_SBRACKET set= getSet T_END_SBRACKET );
 	public final IdentIntOrLiteral getIntSetOrList() throws RecognitionException {
 		IdentIntOrLiteral iiol = null;
 
@@ -4710,7 +4815,7 @@ public class MetaParser extends Parser {
 		Set set =null;
 
 		try {
-			// Meta.g:764:49: (constant= T_CONSTANT | T_START_BRACKET list= getList T_END_BRACKET | T_START_SBRACKET set= getSet T_END_SBRACKET )
+			// Meta.g:773:49: (constant= T_CONSTANT | T_START_BRACKET list= getList T_END_BRACKET | T_START_SBRACKET set= getSet T_END_SBRACKET )
 			int alt83=3;
 			switch ( input.LA(1) ) {
 			case T_CONSTANT:
@@ -4735,33 +4840,33 @@ public class MetaParser extends Parser {
 			}
 			switch (alt83) {
 				case 1 :
-					// Meta.g:765:5: constant= T_CONSTANT
+					// Meta.g:774:5: constant= T_CONSTANT
 					{
-					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getIntSetOrList6429); 
+					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getIntSetOrList6513); 
 					 iiol = new IntTerm(Integer.parseInt((constant!=null?constant.getText():null)));
 					}
 					break;
 				case 2 :
-					// Meta.g:766:7: T_START_BRACKET list= getList T_END_BRACKET
+					// Meta.g:775:7: T_START_BRACKET list= getList T_END_BRACKET
 					{
-					match(input,T_START_BRACKET,FOLLOW_T_START_BRACKET_in_getIntSetOrList6439); 
-					pushFollow(FOLLOW_getList_in_getIntSetOrList6443);
+					match(input,T_START_BRACKET,FOLLOW_T_START_BRACKET_in_getIntSetOrList6523); 
+					pushFollow(FOLLOW_getList_in_getIntSetOrList6527);
 					list=getList();
 					state._fsp--;
 
-					match(input,T_END_BRACKET,FOLLOW_T_END_BRACKET_in_getIntSetOrList6445); 
+					match(input,T_END_BRACKET,FOLLOW_T_END_BRACKET_in_getIntSetOrList6529); 
 					 iiol = new ListLiteral(list);
 					}
 					break;
 				case 3 :
-					// Meta.g:767:7: T_START_SBRACKET set= getSet T_END_SBRACKET
+					// Meta.g:776:7: T_START_SBRACKET set= getSet T_END_SBRACKET
 					{
-					match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getIntSetOrList6455); 
-					pushFollow(FOLLOW_getSet_in_getIntSetOrList6459);
+					match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getIntSetOrList6539); 
+					pushFollow(FOLLOW_getSet_in_getIntSetOrList6543);
 					set=getSet();
 					state._fsp--;
 
-					match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getIntSetOrList6461); 
+					match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getIntSetOrList6545); 
 					 iiol = new SetLiteral(set);
 					}
 					break;
@@ -4782,7 +4887,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getRelation"
-	// Meta.g:770:1: getRelation returns [MetaRelation mrel] : ( T_TOKEN T_START_PARENTHESIS listIds= getIds T_END_PARENTHESIS operator= getComparator term= getTerm |ident= T_IDENT (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm ) );
+	// Meta.g:779:1: getRelation returns [MetaRelation mrel] : ( T_TOKEN T_START_PARENTHESIS listIds= getIds T_END_PARENTHESIS operator= getComparator term= getTerm |ident= T_IDENT (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm ) );
 	public final MetaRelation getRelation() throws RecognitionException {
 		MetaRelation mrel = null;
 
@@ -4798,7 +4903,7 @@ public class MetaParser extends Parser {
 		String term2 =null;
 
 		try {
-			// Meta.g:770:40: ( T_TOKEN T_START_PARENTHESIS listIds= getIds T_END_PARENTHESIS operator= getComparator term= getTerm |ident= T_IDENT (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm ) )
+			// Meta.g:779:40: ( T_TOKEN T_START_PARENTHESIS listIds= getIds T_END_PARENTHESIS operator= getComparator term= getTerm |ident= T_IDENT (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm ) )
 			int alt85=2;
 			int LA85_0 = input.LA(1);
 			if ( (LA85_0==T_TOKEN) ) {
@@ -4816,20 +4921,20 @@ public class MetaParser extends Parser {
 
 			switch (alt85) {
 				case 1 :
-					// Meta.g:771:5: T_TOKEN T_START_PARENTHESIS listIds= getIds T_END_PARENTHESIS operator= getComparator term= getTerm
+					// Meta.g:780:5: T_TOKEN T_START_PARENTHESIS listIds= getIds T_END_PARENTHESIS operator= getComparator term= getTerm
 					{
-					match(input,T_TOKEN,FOLLOW_T_TOKEN_in_getRelation6479); 
-					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getRelation6481); 
-					pushFollow(FOLLOW_getIds_in_getRelation6485);
+					match(input,T_TOKEN,FOLLOW_T_TOKEN_in_getRelation6563); 
+					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getRelation6565); 
+					pushFollow(FOLLOW_getIds_in_getRelation6569);
 					listIds=getIds();
 					state._fsp--;
 
-					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getRelation6487); 
-					pushFollow(FOLLOW_getComparator_in_getRelation6491);
+					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getRelation6571); 
+					pushFollow(FOLLOW_getComparator_in_getRelation6575);
 					operator=getComparator();
 					state._fsp--;
 
-					pushFollow(FOLLOW_getTerm_in_getRelation6495);
+					pushFollow(FOLLOW_getTerm_in_getRelation6579);
 					term=getTerm();
 					state._fsp--;
 
@@ -4837,10 +4942,10 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:772:7: ident= T_IDENT (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm )
+					// Meta.g:781:7: ident= T_IDENT (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm )
 					{
-					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getRelation6507); 
-					// Meta.g:772:21: (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm )
+					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getRelation6591); 
+					// Meta.g:781:21: (compSymbol= getComparator termR= getTerm | T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS | T_BETWEEN term1= getTerm T_AND term2= getTerm )
 					int alt84=3;
 					switch ( input.LA(1) ) {
 					case T_EQUAL:
@@ -4871,13 +4976,13 @@ public class MetaParser extends Parser {
 					}
 					switch (alt84) {
 						case 1 :
-							// Meta.g:772:23: compSymbol= getComparator termR= getTerm
+							// Meta.g:781:23: compSymbol= getComparator termR= getTerm
 							{
-							pushFollow(FOLLOW_getComparator_in_getRelation6513);
+							pushFollow(FOLLOW_getComparator_in_getRelation6597);
 							compSymbol=getComparator();
 							state._fsp--;
 
-							pushFollow(FOLLOW_getTerm_in_getRelation6517);
+							pushFollow(FOLLOW_getTerm_in_getRelation6601);
 							termR=getTerm();
 							state._fsp--;
 
@@ -4885,28 +4990,28 @@ public class MetaParser extends Parser {
 							}
 							break;
 						case 2 :
-							// Meta.g:773:23: T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS
+							// Meta.g:782:23: T_IN T_START_PARENTHESIS terms= getTerms T_END_PARENTHESIS
 							{
-							match(input,T_IN,FOLLOW_T_IN_in_getRelation6543); 
-							match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getRelation6545); 
-							pushFollow(FOLLOW_getTerms_in_getRelation6549);
+							match(input,T_IN,FOLLOW_T_IN_in_getRelation6627); 
+							match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getRelation6629); 
+							pushFollow(FOLLOW_getTerms_in_getRelation6633);
 							terms=getTerms();
 							state._fsp--;
 
-							match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getRelation6551); 
+							match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getRelation6635); 
 							mrel = new RelationIn((ident!=null?ident.getText():null), terms);
 							}
 							break;
 						case 3 :
-							// Meta.g:774:23: T_BETWEEN term1= getTerm T_AND term2= getTerm
+							// Meta.g:783:23: T_BETWEEN term1= getTerm T_AND term2= getTerm
 							{
-							match(input,T_BETWEEN,FOLLOW_T_BETWEEN_in_getRelation6577); 
-							pushFollow(FOLLOW_getTerm_in_getRelation6581);
+							match(input,T_BETWEEN,FOLLOW_T_BETWEEN_in_getRelation6661); 
+							pushFollow(FOLLOW_getTerm_in_getRelation6665);
 							term1=getTerm();
 							state._fsp--;
 
-							match(input,T_AND,FOLLOW_T_AND_in_getRelation6583); 
-							pushFollow(FOLLOW_getTerm_in_getRelation6587);
+							match(input,T_AND,FOLLOW_T_AND_in_getRelation6667); 
+							pushFollow(FOLLOW_getTerm_in_getRelation6671);
 							term2=getTerm();
 							state._fsp--;
 
@@ -4935,13 +5040,13 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getComparator"
-	// Meta.g:778:1: getComparator returns [String comparator] : ( T_EQUAL | T_GT | T_LT | T_GET | T_LET | T_NOT_EQUAL | T_LIKE );
+	// Meta.g:787:1: getComparator returns [String comparator] : ( T_EQUAL | T_GT | T_LT | T_GET | T_LET | T_NOT_EQUAL | T_LIKE );
 	public final String getComparator() throws RecognitionException {
 		String comparator = null;
 
 
 		try {
-			// Meta.g:778:42: ( T_EQUAL | T_GT | T_LT | T_GET | T_LET | T_NOT_EQUAL | T_LIKE )
+			// Meta.g:787:42: ( T_EQUAL | T_GT | T_LT | T_GET | T_LET | T_NOT_EQUAL | T_LIKE )
 			int alt86=7;
 			switch ( input.LA(1) ) {
 			case T_EQUAL:
@@ -4986,51 +5091,51 @@ public class MetaParser extends Parser {
 			}
 			switch (alt86) {
 				case 1 :
-					// Meta.g:779:5: T_EQUAL
+					// Meta.g:788:5: T_EQUAL
 					{
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getComparator6627); 
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getComparator6711); 
 					comparator ="=";
 					}
 					break;
 				case 2 :
-					// Meta.g:780:7: T_GT
+					// Meta.g:789:7: T_GT
 					{
-					match(input,T_GT,FOLLOW_T_GT_in_getComparator6637); 
+					match(input,T_GT,FOLLOW_T_GT_in_getComparator6721); 
 					comparator =">";
 					}
 					break;
 				case 3 :
-					// Meta.g:781:7: T_LT
+					// Meta.g:790:7: T_LT
 					{
-					match(input,T_LT,FOLLOW_T_LT_in_getComparator6647); 
+					match(input,T_LT,FOLLOW_T_LT_in_getComparator6731); 
 					comparator ="<";
 					}
 					break;
 				case 4 :
-					// Meta.g:782:7: T_GET
+					// Meta.g:791:7: T_GET
 					{
-					match(input,T_GET,FOLLOW_T_GET_in_getComparator6657); 
+					match(input,T_GET,FOLLOW_T_GET_in_getComparator6741); 
 					comparator =">=";
 					}
 					break;
 				case 5 :
-					// Meta.g:783:7: T_LET
+					// Meta.g:792:7: T_LET
 					{
-					match(input,T_LET,FOLLOW_T_LET_in_getComparator6668); 
+					match(input,T_LET,FOLLOW_T_LET_in_getComparator6752); 
 					comparator ="<=";
 					}
 					break;
 				case 6 :
-					// Meta.g:784:7: T_NOT_EQUAL
+					// Meta.g:793:7: T_NOT_EQUAL
 					{
-					match(input,T_NOT_EQUAL,FOLLOW_T_NOT_EQUAL_in_getComparator6678); 
+					match(input,T_NOT_EQUAL,FOLLOW_T_NOT_EQUAL_in_getComparator6762); 
 					comparator ="<>";
 					}
 					break;
 				case 7 :
-					// Meta.g:785:7: T_LIKE
+					// Meta.g:794:7: T_LIKE
 					{
-					match(input,T_LIKE,FOLLOW_T_LIKE_in_getComparator6689); 
+					match(input,T_LIKE,FOLLOW_T_LIKE_in_getComparator6773); 
 					comparator ="LIKE";
 					}
 					break;
@@ -5051,7 +5156,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getIds"
-	// Meta.g:788:1: getIds returns [List<String> listStrs] : ident1= T_IDENT ( T_COMMA identN= T_IDENT )* ;
+	// Meta.g:797:1: getIds returns [List<String> listStrs] : ident1= T_IDENT ( T_COMMA identN= T_IDENT )* ;
 	public final List<String> getIds() throws RecognitionException {
 		List<String> listStrs = null;
 
@@ -5063,12 +5168,12 @@ public class MetaParser extends Parser {
 		        listStrs = new ArrayList<>();
 		    
 		try {
-			// Meta.g:791:6: (ident1= T_IDENT ( T_COMMA identN= T_IDENT )* )
-			// Meta.g:792:5: ident1= T_IDENT ( T_COMMA identN= T_IDENT )*
+			// Meta.g:800:6: (ident1= T_IDENT ( T_COMMA identN= T_IDENT )* )
+			// Meta.g:801:5: ident1= T_IDENT ( T_COMMA identN= T_IDENT )*
 			{
-			ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getIds6717); 
+			ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getIds6801); 
 			listStrs.add((ident1!=null?ident1.getText():null));
-			// Meta.g:792:50: ( T_COMMA identN= T_IDENT )*
+			// Meta.g:801:50: ( T_COMMA identN= T_IDENT )*
 			loop87:
 			while (true) {
 				int alt87=2;
@@ -5079,10 +5184,10 @@ public class MetaParser extends Parser {
 
 				switch (alt87) {
 				case 1 :
-					// Meta.g:792:51: T_COMMA identN= T_IDENT
+					// Meta.g:801:51: T_COMMA identN= T_IDENT
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_getIds6722); 
-					identN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getIds6726); 
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_getIds6806); 
+					identN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getIds6810); 
 					listStrs.add((identN!=null?identN.getText():null));
 					}
 					break;
@@ -5109,7 +5214,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getOptions"
-	// Meta.g:795:1: getOptions returns [List<Option> opts] : opt1= getOption (optN= getOption )* ;
+	// Meta.g:804:1: getOptions returns [List<Option> opts] : opt1= getOption (optN= getOption )* ;
 	public final List<Option> getOptions() throws RecognitionException {
 		List<Option> opts = null;
 
@@ -5121,15 +5226,15 @@ public class MetaParser extends Parser {
 		        opts = new ArrayList<>();
 		    
 		try {
-			// Meta.g:797:6: (opt1= getOption (optN= getOption )* )
-			// Meta.g:798:5: opt1= getOption (optN= getOption )*
+			// Meta.g:806:6: (opt1= getOption (optN= getOption )* )
+			// Meta.g:807:5: opt1= getOption (optN= getOption )*
 			{
-			pushFollow(FOLLOW_getOption_in_getOptions6751);
+			pushFollow(FOLLOW_getOption_in_getOptions6835);
 			opt1=getOption();
 			state._fsp--;
 
 			opts.add(opt1);
-			// Meta.g:798:38: (optN= getOption )*
+			// Meta.g:807:38: (optN= getOption )*
 			loop88:
 			while (true) {
 				int alt88=2;
@@ -5140,9 +5245,9 @@ public class MetaParser extends Parser {
 
 				switch (alt88) {
 				case 1 :
-					// Meta.g:798:39: optN= getOption
+					// Meta.g:807:39: optN= getOption
 					{
-					pushFollow(FOLLOW_getOption_in_getOptions6758);
+					pushFollow(FOLLOW_getOption_in_getOptions6842);
 					optN=getOption();
 					state._fsp--;
 
@@ -5172,7 +5277,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getOption"
-	// Meta.g:801:1: getOption returns [Option opt] : ( T_COMPACT T_STORAGE | T_CLUSTERING T_ORDER |identProp= T_IDENT T_EQUAL valueProp= getValueProperty );
+	// Meta.g:810:1: getOption returns [Option opt] : ( T_COMPACT T_STORAGE | T_CLUSTERING T_ORDER |identProp= T_IDENT T_EQUAL valueProp= getValueProperty );
 	public final Option getOption() throws RecognitionException {
 		Option opt = null;
 
@@ -5181,7 +5286,7 @@ public class MetaParser extends Parser {
 		ValueProperty valueProp =null;
 
 		try {
-			// Meta.g:801:31: ( T_COMPACT T_STORAGE | T_CLUSTERING T_ORDER |identProp= T_IDENT T_EQUAL valueProp= getValueProperty )
+			// Meta.g:810:31: ( T_COMPACT T_STORAGE | T_CLUSTERING T_ORDER |identProp= T_IDENT T_EQUAL valueProp= getValueProperty )
 			int alt89=3;
 			switch ( input.LA(1) ) {
 			case T_COMPACT:
@@ -5206,27 +5311,27 @@ public class MetaParser extends Parser {
 			}
 			switch (alt89) {
 				case 1 :
-					// Meta.g:802:5: T_COMPACT T_STORAGE
+					// Meta.g:811:5: T_COMPACT T_STORAGE
 					{
-					match(input,T_COMPACT,FOLLOW_T_COMPACT_in_getOption6778); 
-					match(input,T_STORAGE,FOLLOW_T_STORAGE_in_getOption6780); 
+					match(input,T_COMPACT,FOLLOW_T_COMPACT_in_getOption6862); 
+					match(input,T_STORAGE,FOLLOW_T_STORAGE_in_getOption6864); 
 					opt =new Option(Option.OPTION_COMPACT);
 					}
 					break;
 				case 2 :
-					// Meta.g:803:7: T_CLUSTERING T_ORDER
+					// Meta.g:812:7: T_CLUSTERING T_ORDER
 					{
-					match(input,T_CLUSTERING,FOLLOW_T_CLUSTERING_in_getOption6790); 
-					match(input,T_ORDER,FOLLOW_T_ORDER_in_getOption6792); 
+					match(input,T_CLUSTERING,FOLLOW_T_CLUSTERING_in_getOption6874); 
+					match(input,T_ORDER,FOLLOW_T_ORDER_in_getOption6876); 
 					opt =new Option(Option.OPTION_CLUSTERING);
 					}
 					break;
 				case 3 :
-					// Meta.g:804:7: identProp= T_IDENT T_EQUAL valueProp= getValueProperty
+					// Meta.g:813:7: identProp= T_IDENT T_EQUAL valueProp= getValueProperty
 					{
-					identProp=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getOption6804); 
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getOption6806); 
-					pushFollow(FOLLOW_getValueProperty_in_getOption6810);
+					identProp=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getOption6888); 
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getOption6890); 
+					pushFollow(FOLLOW_getValueProperty_in_getOption6894);
 					valueProp=getValueProperty();
 					state._fsp--;
 
@@ -5250,7 +5355,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getList"
-	// Meta.g:807:1: getList returns [List list] : term1= getTerm ( T_COMMA termN= getTerm )* ;
+	// Meta.g:816:1: getList returns [List list] : term1= getTerm ( T_COMMA termN= getTerm )* ;
 	public final List getList() throws RecognitionException {
 		List list = null;
 
@@ -5262,15 +5367,15 @@ public class MetaParser extends Parser {
 		        list = new ArrayList<String>();
 		    
 		try {
-			// Meta.g:810:6: (term1= getTerm ( T_COMMA termN= getTerm )* )
-			// Meta.g:811:5: term1= getTerm ( T_COMMA termN= getTerm )*
+			// Meta.g:819:6: (term1= getTerm ( T_COMMA termN= getTerm )* )
+			// Meta.g:820:5: term1= getTerm ( T_COMMA termN= getTerm )*
 			{
-			pushFollow(FOLLOW_getTerm_in_getList6838);
+			pushFollow(FOLLOW_getTerm_in_getList6922);
 			term1=getTerm();
 			state._fsp--;
 
 			list.add(term1);
-			// Meta.g:812:5: ( T_COMMA termN= getTerm )*
+			// Meta.g:821:5: ( T_COMMA termN= getTerm )*
 			loop90:
 			while (true) {
 				int alt90=2;
@@ -5281,10 +5386,10 @@ public class MetaParser extends Parser {
 
 				switch (alt90) {
 				case 1 :
-					// Meta.g:812:6: T_COMMA termN= getTerm
+					// Meta.g:821:6: T_COMMA termN= getTerm
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_getList6847); 
-					pushFollow(FOLLOW_getTerm_in_getList6851);
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_getList6931); 
+					pushFollow(FOLLOW_getTerm_in_getList6935);
 					termN=getTerm();
 					state._fsp--;
 
@@ -5314,7 +5419,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTerms"
-	// Meta.g:815:1: getTerms returns [List list] : term1= getTerm ( T_COMMA termN= getTerm )* ;
+	// Meta.g:824:1: getTerms returns [List list] : term1= getTerm ( T_COMMA termN= getTerm )* ;
 	public final List getTerms() throws RecognitionException {
 		List list = null;
 
@@ -5326,15 +5431,15 @@ public class MetaParser extends Parser {
 		        list = new ArrayList<Term>();
 		    
 		try {
-			// Meta.g:818:6: (term1= getTerm ( T_COMMA termN= getTerm )* )
-			// Meta.g:819:5: term1= getTerm ( T_COMMA termN= getTerm )*
+			// Meta.g:827:6: (term1= getTerm ( T_COMMA termN= getTerm )* )
+			// Meta.g:828:5: term1= getTerm ( T_COMMA termN= getTerm )*
 			{
-			pushFollow(FOLLOW_getTerm_in_getTerms6885);
+			pushFollow(FOLLOW_getTerm_in_getTerms6969);
 			term1=getTerm();
 			state._fsp--;
 
 			list.add(new Term(term1));
-			// Meta.g:820:5: ( T_COMMA termN= getTerm )*
+			// Meta.g:829:5: ( T_COMMA termN= getTerm )*
 			loop91:
 			while (true) {
 				int alt91=2;
@@ -5345,10 +5450,10 @@ public class MetaParser extends Parser {
 
 				switch (alt91) {
 				case 1 :
-					// Meta.g:820:6: T_COMMA termN= getTerm
+					// Meta.g:829:6: T_COMMA termN= getTerm
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_getTerms6894); 
-					pushFollow(FOLLOW_getTerm_in_getTerms6898);
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_getTerms6978); 
+					pushFollow(FOLLOW_getTerm_in_getTerms6982);
 					termN=getTerm();
 					state._fsp--;
 
@@ -5378,7 +5483,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSet"
-	// Meta.g:823:1: getSet returns [Set set] : term1= getTerm ( T_COMMA termN= getTerm )* ;
+	// Meta.g:832:1: getSet returns [Set set] : term1= getTerm ( T_COMMA termN= getTerm )* ;
 	public final Set getSet() throws RecognitionException {
 		Set set = null;
 
@@ -5390,15 +5495,15 @@ public class MetaParser extends Parser {
 		        set = new HashSet<String>();
 		    
 		try {
-			// Meta.g:826:6: (term1= getTerm ( T_COMMA termN= getTerm )* )
-			// Meta.g:827:5: term1= getTerm ( T_COMMA termN= getTerm )*
+			// Meta.g:835:6: (term1= getTerm ( T_COMMA termN= getTerm )* )
+			// Meta.g:836:5: term1= getTerm ( T_COMMA termN= getTerm )*
 			{
-			pushFollow(FOLLOW_getTerm_in_getSet6932);
+			pushFollow(FOLLOW_getTerm_in_getSet7016);
 			term1=getTerm();
 			state._fsp--;
 
 			set.add(term1);
-			// Meta.g:828:5: ( T_COMMA termN= getTerm )*
+			// Meta.g:837:5: ( T_COMMA termN= getTerm )*
 			loop92:
 			while (true) {
 				int alt92=2;
@@ -5409,10 +5514,10 @@ public class MetaParser extends Parser {
 
 				switch (alt92) {
 				case 1 :
-					// Meta.g:828:6: T_COMMA termN= getTerm
+					// Meta.g:837:6: T_COMMA termN= getTerm
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_getSet6941); 
-					pushFollow(FOLLOW_getTerm_in_getSet6945);
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_getSet7025); 
+					pushFollow(FOLLOW_getTerm_in_getSet7029);
 					termN=getTerm();
 					state._fsp--;
 
@@ -5442,7 +5547,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTermOrLiteral"
-	// Meta.g:831:1: getTermOrLiteral returns [ValueCell vc] : (term= getTerm | T_START_SBRACKET (term1= getTerm ( T_COMMA termN= getTerm )* )? T_END_SBRACKET );
+	// Meta.g:840:1: getTermOrLiteral returns [ValueCell vc] : (term= getTerm | T_START_SBRACKET (term1= getTerm ( T_COMMA termN= getTerm )* )? T_END_SBRACKET );
 	public final ValueCell getTermOrLiteral() throws RecognitionException {
 		ValueCell vc = null;
 
@@ -5455,7 +5560,7 @@ public class MetaParser extends Parser {
 		        CollectionLiteral cl = new CollectionLiteral();
 		    
 		try {
-			// Meta.g:834:6: (term= getTerm | T_START_SBRACKET (term1= getTerm ( T_COMMA termN= getTerm )* )? T_END_SBRACKET )
+			// Meta.g:843:6: (term= getTerm | T_START_SBRACKET (term1= getTerm ( T_COMMA termN= getTerm )* )? T_END_SBRACKET )
 			int alt95=2;
 			int LA95_0 = input.LA(1);
 			if ( (LA95_0==T_CONSTANT||LA95_0==T_FALSE||LA95_0==T_IDENT||LA95_0==T_KS_AND_TN||LA95_0==T_TERM||LA95_0==T_TRUE||LA95_0==139) ) {
@@ -5473,9 +5578,9 @@ public class MetaParser extends Parser {
 
 			switch (alt95) {
 				case 1 :
-					// Meta.g:835:5: term= getTerm
+					// Meta.g:844:5: term= getTerm
 					{
-					pushFollow(FOLLOW_getTerm_in_getTermOrLiteral6979);
+					pushFollow(FOLLOW_getTerm_in_getTermOrLiteral7063);
 					term=getTerm();
 					state._fsp--;
 
@@ -5483,10 +5588,10 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:837:5: T_START_SBRACKET (term1= getTerm ( T_COMMA termN= getTerm )* )? T_END_SBRACKET
+					// Meta.g:846:5: T_START_SBRACKET (term1= getTerm ( T_COMMA termN= getTerm )* )? T_END_SBRACKET
 					{
-					match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getTermOrLiteral6993); 
-					// Meta.g:838:5: (term1= getTerm ( T_COMMA termN= getTerm )* )?
+					match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getTermOrLiteral7077); 
+					// Meta.g:847:5: (term1= getTerm ( T_COMMA termN= getTerm )* )?
 					int alt94=2;
 					int LA94_0 = input.LA(1);
 					if ( (LA94_0==T_CONSTANT||LA94_0==T_FALSE||LA94_0==T_IDENT||LA94_0==T_KS_AND_TN||LA94_0==T_TERM||LA94_0==T_TRUE||LA94_0==139) ) {
@@ -5494,14 +5599,14 @@ public class MetaParser extends Parser {
 					}
 					switch (alt94) {
 						case 1 :
-							// Meta.g:839:9: term1= getTerm ( T_COMMA termN= getTerm )*
+							// Meta.g:848:9: term1= getTerm ( T_COMMA termN= getTerm )*
 							{
-							pushFollow(FOLLOW_getTerm_in_getTermOrLiteral7011);
+							pushFollow(FOLLOW_getTerm_in_getTermOrLiteral7095);
 							term1=getTerm();
 							state._fsp--;
 
 							cl.addLiteral(new Term(term1));
-							// Meta.g:840:9: ( T_COMMA termN= getTerm )*
+							// Meta.g:849:9: ( T_COMMA termN= getTerm )*
 							loop93:
 							while (true) {
 								int alt93=2;
@@ -5512,10 +5617,10 @@ public class MetaParser extends Parser {
 
 								switch (alt93) {
 								case 1 :
-									// Meta.g:840:10: T_COMMA termN= getTerm
+									// Meta.g:849:10: T_COMMA termN= getTerm
 									{
-									match(input,T_COMMA,FOLLOW_T_COMMA_in_getTermOrLiteral7024); 
-									pushFollow(FOLLOW_getTerm_in_getTermOrLiteral7028);
+									match(input,T_COMMA,FOLLOW_T_COMMA_in_getTermOrLiteral7108); 
+									pushFollow(FOLLOW_getTerm_in_getTermOrLiteral7112);
 									termN=getTerm();
 									state._fsp--;
 
@@ -5533,7 +5638,7 @@ public class MetaParser extends Parser {
 
 					}
 
-					match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getTermOrLiteral7045); 
+					match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getTermOrLiteral7129); 
 					vc =cl;
 					}
 					break;
@@ -5554,7 +5659,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTableID"
-	// Meta.g:845:1: getTableID returns [String tableID] : (ident1= T_IDENT |ident2= T_KS_AND_TN );
+	// Meta.g:854:1: getTableID returns [String tableID] : (ident1= T_IDENT |ident2= T_KS_AND_TN );
 	public final String getTableID() throws RecognitionException {
 		String tableID = null;
 
@@ -5563,7 +5668,7 @@ public class MetaParser extends Parser {
 		Token ident2=null;
 
 		try {
-			// Meta.g:845:36: (ident1= T_IDENT |ident2= T_KS_AND_TN )
+			// Meta.g:854:36: (ident1= T_IDENT |ident2= T_KS_AND_TN )
 			int alt96=2;
 			int LA96_0 = input.LA(1);
 			if ( (LA96_0==T_IDENT) ) {
@@ -5581,16 +5686,16 @@ public class MetaParser extends Parser {
 
 			switch (alt96) {
 				case 1 :
-					// Meta.g:846:5: ident1= T_IDENT
+					// Meta.g:855:5: ident1= T_IDENT
 					{
-					ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTableID7066); 
+					ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTableID7150); 
 					tableID = new String((ident1!=null?ident1.getText():null));
 					}
 					break;
 				case 2 :
-					// Meta.g:847:7: ident2= T_KS_AND_TN
+					// Meta.g:856:7: ident2= T_KS_AND_TN
 					{
-					ident2=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getTableID7082); 
+					ident2=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getTableID7166); 
 					tableID = new String((ident2!=null?ident2.getText():null));
 					}
 					break;
@@ -5669,49 +5774,49 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:860:5: ident= T_IDENT
 					{
-					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTerm7109); 
+					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTerm7190); 
 					term = new String((ident!=null?ident.getText():null));
 					}
 					break;
 				case 2 :
 					// Meta.g:861:7: constant= T_CONSTANT
 					{
-					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getTerm7121); 
+					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getTerm7202); 
 					term = new String((constant!=null?constant.getText():null));
 					}
 					break;
 				case 3 :
 					// Meta.g:862:7: '1'
 					{
-					match(input,139,FOLLOW_139_in_getTerm7131); 
+					match(input,139,FOLLOW_139_in_getTerm7212); 
 					term = new String("1");
 					}
 					break;
 				case 4 :
 					// Meta.g:863:7: T_FALSE
 					{
-					match(input,T_FALSE,FOLLOW_T_FALSE_in_getTerm7141); 
+					match(input,T_FALSE,FOLLOW_T_FALSE_in_getTerm7222); 
 					term = new String("false");
 					}
 					break;
 				case 5 :
 					// Meta.g:864:7: T_TRUE
 					{
-					match(input,T_TRUE,FOLLOW_T_TRUE_in_getTerm7151); 
+					match(input,T_TRUE,FOLLOW_T_TRUE_in_getTerm7232); 
 					term = new String("true");
 					}
 					break;
 				case 6 :
 					// Meta.g:865:7: ksAndTn= T_KS_AND_TN
 					{
-					ksAndTn=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getTerm7163); 
+					ksAndTn=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getTerm7244); 
 					term = new String((ksAndTn!=null?ksAndTn.getText():null));
 					}
 					break;
 				case 7 :
 					// Meta.g:866:7: noIdent= T_TERM
 					{
-					noIdent=(Token)match(input,T_TERM,FOLLOW_T_TERM_in_getTerm7175); 
+					noIdent=(Token)match(input,T_TERM,FOLLOW_T_TERM_in_getTerm7256); 
 					term = new String((noIdent!=null?noIdent.getText():null));
 					}
 					break;
@@ -5749,7 +5854,7 @@ public class MetaParser extends Parser {
 			// Meta.g:872:6: ( T_START_SBRACKET (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )? T_END_SBRACKET )
 			// Meta.g:873:5: T_START_SBRACKET (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )? T_END_SBRACKET
 			{
-			match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getMapLiteral7201); 
+			match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getMapLiteral7282); 
 			// Meta.g:874:5: (leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )* )?
 			int alt99=2;
 			int LA99_0 = input.LA(1);
@@ -5760,12 +5865,12 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:874:6: leftTerm1= getTerm T_COLON rightTerm1= getTerm ( T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm )*
 					{
-					pushFollow(FOLLOW_getTerm_in_getMapLiteral7211);
+					pushFollow(FOLLOW_getTerm_in_getMapLiteral7292);
 					leftTerm1=getTerm();
 					state._fsp--;
 
-					match(input,T_COLON,FOLLOW_T_COLON_in_getMapLiteral7213); 
-					pushFollow(FOLLOW_getTerm_in_getMapLiteral7217);
+					match(input,T_COLON,FOLLOW_T_COLON_in_getMapLiteral7294); 
+					pushFollow(FOLLOW_getTerm_in_getMapLiteral7298);
 					rightTerm1=getTerm();
 					state._fsp--;
 
@@ -5783,13 +5888,13 @@ public class MetaParser extends Parser {
 						case 1 :
 							// Meta.g:875:6: T_COMMA leftTermN= getTerm T_COLON rightTermN= getTerm
 							{
-							match(input,T_COMMA,FOLLOW_T_COMMA_in_getMapLiteral7226); 
-							pushFollow(FOLLOW_getTerm_in_getMapLiteral7230);
+							match(input,T_COMMA,FOLLOW_T_COMMA_in_getMapLiteral7307); 
+							pushFollow(FOLLOW_getTerm_in_getMapLiteral7311);
 							leftTermN=getTerm();
 							state._fsp--;
 
-							match(input,T_COLON,FOLLOW_T_COLON_in_getMapLiteral7232); 
-							pushFollow(FOLLOW_getTerm_in_getMapLiteral7236);
+							match(input,T_COLON,FOLLOW_T_COLON_in_getMapLiteral7313); 
+							pushFollow(FOLLOW_getTerm_in_getMapLiteral7317);
 							rightTermN=getTerm();
 							state._fsp--;
 
@@ -5807,7 +5912,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getMapLiteral7248); 
+			match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getMapLiteral7329); 
 			}
 
 		}
@@ -5879,21 +5984,21 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:880:5: ident= T_IDENT
 					{
-					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getValueProperty7270); 
+					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getValueProperty7351); 
 					value = new IdentifierProperty((ident!=null?ident.getText():null));
 					}
 					break;
 				case 2 :
 					// Meta.g:881:7: constant= T_CONSTANT
 					{
-					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getValueProperty7282); 
+					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getValueProperty7363); 
 					value = new ConstantProperty(Integer.parseInt((constant!=null?constant.getText():null)));
 					}
 					break;
 				case 3 :
 					// Meta.g:882:7: mapliteral= getMapLiteral
 					{
-					pushFollow(FOLLOW_getMapLiteral_in_getValueProperty7294);
+					pushFollow(FOLLOW_getMapLiteral_in_getValueProperty7375);
 					mapliteral=getMapLiteral();
 					state._fsp--;
 
@@ -5903,7 +6008,7 @@ public class MetaParser extends Parser {
 				case 4 :
 					// Meta.g:883:7: number= getFloat
 					{
-					pushFollow(FOLLOW_getFloat_in_getValueProperty7306);
+					pushFollow(FOLLOW_getFloat_in_getValueProperty7387);
 					number=getFloat();
 					state._fsp--;
 
@@ -5913,14 +6018,14 @@ public class MetaParser extends Parser {
 				case 5 :
 					// Meta.g:884:7: T_FALSE
 					{
-					match(input,T_FALSE,FOLLOW_T_FALSE_in_getValueProperty7316); 
+					match(input,T_FALSE,FOLLOW_T_FALSE_in_getValueProperty7397); 
 					value = new BooleanProperty(false);
 					}
 					break;
 				case 6 :
 					// Meta.g:885:7: T_TRUE
 					{
-					match(input,T_TRUE,FOLLOW_T_TRUE_in_getValueProperty7326); 
+					match(input,T_TRUE,FOLLOW_T_TRUE_in_getValueProperty7407); 
 					value = new BooleanProperty(true);
 					}
 					break;
@@ -5970,14 +6075,14 @@ public class MetaParser extends Parser {
 				case 1 :
 					// Meta.g:890:5: termToken= T_TERM
 					{
-					termToken=(Token)match(input,T_TERM,FOLLOW_T_TERM_in_getFloat7351); 
+					termToken=(Token)match(input,T_TERM,FOLLOW_T_TERM_in_getFloat7432); 
 					floating =(termToken!=null?termToken.getText():null);
 					}
 					break;
 				case 2 :
 					// Meta.g:892:5: floatToken= T_FLOAT
 					{
-					floatToken=(Token)match(input,T_FLOAT,FOLLOW_T_FLOAT_in_getFloat7369); 
+					floatToken=(Token)match(input,T_FLOAT,FOLLOW_T_FLOAT_in_getFloat7450); 
 					floating =(floatToken!=null?floatToken.getText():null);
 					}
 					break;
@@ -6015,10 +6120,10 @@ public class MetaParser extends Parser {
 	public static final BitSet FOLLOW_T_QUOTE_in_addStatement1987 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_T_PATH_in_addStatement1991 = new BitSet(new long[]{0x0000000000000000L,0x0000008000000000L});
 	public static final BitSet FOLLOW_T_QUOTE_in_addStatement1993 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_LIST_in_listStatement2010 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000068000L});
+	public static final BitSet FOLLOW_T_LIST_in_listStatement2010 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000640000L});
 	public static final BitSet FOLLOW_getListTypes_in_listStatement2015 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_REMOVE_in_removeUDFStatement2033 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000040000L});
-	public static final BitSet FOLLOW_146_in_removeUDFStatement2035 = new BitSet(new long[]{0x0000000000000000L,0x0000008000000000L});
+	public static final BitSet FOLLOW_T_REMOVE_in_removeUDFStatement2033 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000400000L});
+	public static final BitSet FOLLOW_150_in_removeUDFStatement2035 = new BitSet(new long[]{0x0000000000000000L,0x0000008000000000L});
 	public static final BitSet FOLLOW_T_QUOTE_in_removeUDFStatement2037 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
 	public static final BitSet FOLLOW_getTerm_in_removeUDFStatement2041 = new BitSet(new long[]{0x0000000000000000L,0x0000008000000000L});
 	public static final BitSet FOLLOW_T_QUOTE_in_removeUDFStatement2045 = new BitSet(new long[]{0x0000000000000002L});
@@ -6313,152 +6418,160 @@ public class MetaParser extends Parser {
 	public static final BitSet FOLLOW_T_EQUAL_in_getFields5444 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
 	public static final BitSet FOLLOW_T_IDENT_in_getFields5448 = new BitSet(new long[]{0x0000000000000002L,0x0000000000000010L});
 	public static final BitSet FOLLOW_T_LAST_in_getWindow5470 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CONSTANT_in_getWindow5483 = new BitSet(new long[]{0x0000000000000000L,0x0000020000000000L,0x0000000000797000L});
+	public static final BitSet FOLLOW_T_CONSTANT_in_getWindow5483 = new BitSet(new long[]{0x0000000000000000L,0x0000020000000000L,0x000000007F9BF000L});
 	public static final BitSet FOLLOW_T_ROWS_in_getWindow5486 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_getTimeUnit_in_getWindow5518 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_144_in_getTimeUnit5569 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_142_in_getTimeUnit5579 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_141_in_getTimeUnit5589 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_147_in_getTimeUnit5569 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_144_in_getTimeUnit5579 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_142_in_getTimeUnit5589 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_140_in_getTimeUnit5599 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_150_in_getTimeUnit5609 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_149_in_getTimeUnit5619 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_148_in_getTimeUnit5629 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_147_in_getTimeUnit5639 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getSelectionCount_in_getSelectClause5661 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getSelectionList_in_getSelectClause5673 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_COUNT_in_getSelectionCount5699 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getSelectionCount5701 = new BitSet(new long[]{0x0000002000000000L,0x0000000000000000L,0x0000000000000800L});
-	public static final BitSet FOLLOW_T_ASTERISK_in_getSelectionCount5705 = new BitSet(new long[]{0x0100000000000000L});
-	public static final BitSet FOLLOW_139_in_getSelectionCount5709 = new BitSet(new long[]{0x0100000000000000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getSelectionCount5715 = new BitSet(new long[]{0x0000000800000002L});
-	public static final BitSet FOLLOW_T_AS_in_getSelectionCount5722 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
-	public static final BitSet FOLLOW_T_IDENT_in_getSelectionCount5728 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_DISTINCT_in_getSelectionList5763 = new BitSet(new long[]{0x0000806020000000L,0x0000000006000010L});
-	public static final BitSet FOLLOW_getSelection_in_getSelectionList5771 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_ASTERISK_in_getSelection5811 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getSelector_in_getSelection5834 = new BitSet(new long[]{0x0000080800000002L});
-	public static final BitSet FOLLOW_T_AS_in_getSelection5839 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
-	public static final BitSet FOLLOW_T_IDENT_in_getSelection5843 = new BitSet(new long[]{0x0000080000000002L});
-	public static final BitSet FOLLOW_T_COMMA_in_getSelection5864 = new BitSet(new long[]{0x0000804020000000L,0x0000000006000010L});
-	public static final BitSet FOLLOW_getSelector_in_getSelection5868 = new BitSet(new long[]{0x0000080800000002L});
-	public static final BitSet FOLLOW_T_AS_in_getSelection5873 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
-	public static final BitSet FOLLOW_T_IDENT_in_getSelection5877 = new BitSet(new long[]{0x0000080000000002L});
-	public static final BitSet FOLLOW_T_AGGREGATION_in_getSelector5932 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
-	public static final BitSet FOLLOW_T_MAX_in_getSelector5946 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
-	public static final BitSet FOLLOW_T_MIN_in_getSelector5960 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
-	public static final BitSet FOLLOW_T_AVG_in_getSelector5974 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
-	public static final BitSet FOLLOW_T_COUNT_in_getSelector5988 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getSelector6014 = new BitSet(new long[]{0x0100804020000000L,0x0000000006000010L});
-	public static final BitSet FOLLOW_getSelector_in_getSelector6036 = new BitSet(new long[]{0x0100080000000000L});
-	public static final BitSet FOLLOW_T_COMMA_in_getSelector6041 = new BitSet(new long[]{0x0000804020000000L,0x0000000006000010L});
-	public static final BitSet FOLLOW_getSelector_in_getSelector6045 = new BitSet(new long[]{0x0100080000000000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getSelector6066 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getSelector6082 = new BitSet(new long[]{0x0000000000000002L,0x0000400000000000L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getSelector6114 = new BitSet(new long[]{0x0100804020000000L,0x0000000006000010L});
-	public static final BitSet FOLLOW_getSelector_in_getSelector6119 = new BitSet(new long[]{0x0100080000000000L});
-	public static final BitSet FOLLOW_T_COMMA_in_getSelector6124 = new BitSet(new long[]{0x0000804020000000L,0x0000000006000010L});
-	public static final BitSet FOLLOW_getSelector_in_getSelector6128 = new BitSet(new long[]{0x0100080000000000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getSelector6153 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_getListTypes6186 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getAssignment6217 = new BitSet(new long[]{0x0400000000000000L,0x0000200000000000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_getAssignment6229 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getValueAssign_in_getAssignment6233 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_BRACKET_in_getAssignment6252 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getAssignment6256 = new BitSet(new long[]{0x0080000000000000L});
-	public static final BitSet FOLLOW_T_END_BRACKET_in_getAssignment6258 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_getAssignment6260 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getAssignment6264 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getTerm_in_getValueAssign6291 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getValueAssign6303 = new BitSet(new long[]{0x0000000000000000L,0x0004000800000000L});
-	public static final BitSet FOLLOW_T_PLUS_in_getValueAssign6306 = new BitSet(new long[]{0x0000400000000000L,0x0000A00000000000L});
-	public static final BitSet FOLLOW_T_START_SBRACKET_in_getValueAssign6309 = new BitSet(new long[]{0x0000000000000000L,0x0000800000000000L});
-	public static final BitSet FOLLOW_getMapLiteral_in_getValueAssign6313 = new BitSet(new long[]{0x0200000000000000L});
-	public static final BitSet FOLLOW_T_END_SBRACKET_in_getValueAssign6315 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getIntSetOrList_in_getValueAssign6355 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_SUBTRACT_in_getValueAssign6399 = new BitSet(new long[]{0x0000400000000000L,0x0000A00000000000L});
-	public static final BitSet FOLLOW_getIntSetOrList_in_getValueAssign6403 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CONSTANT_in_getIntSetOrList6429 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_BRACKET_in_getIntSetOrList6439 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getList_in_getIntSetOrList6443 = new BitSet(new long[]{0x0080000000000000L});
-	public static final BitSet FOLLOW_T_END_BRACKET_in_getIntSetOrList6445 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_SBRACKET_in_getIntSetOrList6455 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getSet_in_getIntSetOrList6459 = new BitSet(new long[]{0x0200000000000000L});
-	public static final BitSet FOLLOW_T_END_SBRACKET_in_getIntSetOrList6461 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TOKEN_in_getRelation6479 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getRelation6481 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
-	public static final BitSet FOLLOW_getIds_in_getRelation6485 = new BitSet(new long[]{0x0100000000000000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getRelation6487 = new BitSet(new long[]{0x0400000000000000L,0x00000000110C000AL});
-	public static final BitSet FOLLOW_getComparator_in_getRelation6491 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getRelation6495 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getRelation6507 = new BitSet(new long[]{0x0400008000000000L,0x00000000110C004AL});
-	public static final BitSet FOLLOW_getComparator_in_getRelation6513 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getRelation6517 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IN_in_getRelation6543 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getRelation6545 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerms_in_getRelation6549 = new BitSet(new long[]{0x0100000000000000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getRelation6551 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_BETWEEN_in_getRelation6577 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getRelation6581 = new BitSet(new long[]{0x0000000200000000L});
-	public static final BitSet FOLLOW_T_AND_in_getRelation6583 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getRelation6587 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_EQUAL_in_getComparator6627 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_GT_in_getComparator6637 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_LT_in_getComparator6647 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_GET_in_getComparator6657 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_LET_in_getComparator6668 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_NOT_EQUAL_in_getComparator6678 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_LIKE_in_getComparator6689 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getIds6717 = new BitSet(new long[]{0x0000080000000002L});
-	public static final BitSet FOLLOW_T_COMMA_in_getIds6722 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
-	public static final BitSet FOLLOW_T_IDENT_in_getIds6726 = new BitSet(new long[]{0x0000080000000002L});
-	public static final BitSet FOLLOW_getOption_in_getOptions6751 = new BitSet(new long[]{0x0000120000000002L,0x0000000000000010L});
-	public static final BitSet FOLLOW_getOption_in_getOptions6758 = new BitSet(new long[]{0x0000120000000002L,0x0000000000000010L});
-	public static final BitSet FOLLOW_T_COMPACT_in_getOption6778 = new BitSet(new long[]{0x0000000000000000L,0x0002000000000000L});
-	public static final BitSet FOLLOW_T_STORAGE_in_getOption6780 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CLUSTERING_in_getOption6790 = new BitSet(new long[]{0x0000000000000000L,0x0000000100000000L});
-	public static final BitSet FOLLOW_T_ORDER_in_getOption6792 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getOption6804 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_getOption6806 = new BitSet(new long[]{0x6000400000000000L,0x0110800000000010L});
-	public static final BitSet FOLLOW_getValueProperty_in_getOption6810 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getTerm_in_getList6838 = new BitSet(new long[]{0x0000080000000002L});
-	public static final BitSet FOLLOW_T_COMMA_in_getList6847 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getList6851 = new BitSet(new long[]{0x0000080000000002L});
-	public static final BitSet FOLLOW_getTerm_in_getTerms6885 = new BitSet(new long[]{0x0000080000000002L});
-	public static final BitSet FOLLOW_T_COMMA_in_getTerms6894 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getTerms6898 = new BitSet(new long[]{0x0000080000000002L});
-	public static final BitSet FOLLOW_getTerm_in_getSet6932 = new BitSet(new long[]{0x0000080000000002L});
-	public static final BitSet FOLLOW_T_COMMA_in_getSet6941 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getSet6945 = new BitSet(new long[]{0x0000080000000002L});
-	public static final BitSet FOLLOW_getTerm_in_getTermOrLiteral6979 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_SBRACKET_in_getTermOrLiteral6993 = new BitSet(new long[]{0x2200400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getTermOrLiteral7011 = new BitSet(new long[]{0x0200080000000000L});
-	public static final BitSet FOLLOW_T_COMMA_in_getTermOrLiteral7024 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getTermOrLiteral7028 = new BitSet(new long[]{0x0200080000000000L});
-	public static final BitSet FOLLOW_T_END_SBRACKET_in_getTermOrLiteral7045 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getTableID7066 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_KS_AND_TN_in_getTableID7082 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getTerm7109 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CONSTANT_in_getTerm7121 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_139_in_getTerm7131 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_FALSE_in_getTerm7141 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TRUE_in_getTerm7151 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_KS_AND_TN_in_getTerm7163 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TERM_in_getTerm7175 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_SBRACKET_in_getMapLiteral7201 = new BitSet(new long[]{0x2200400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7211 = new BitSet(new long[]{0x0000040000000000L});
-	public static final BitSet FOLLOW_T_COLON_in_getMapLiteral7213 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7217 = new BitSet(new long[]{0x0200080000000000L});
-	public static final BitSet FOLLOW_T_COMMA_in_getMapLiteral7226 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7230 = new BitSet(new long[]{0x0000040000000000L});
-	public static final BitSet FOLLOW_T_COLON_in_getMapLiteral7232 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
-	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7236 = new BitSet(new long[]{0x0200080000000000L});
-	public static final BitSet FOLLOW_T_END_SBRACKET_in_getMapLiteral7248 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getValueProperty7270 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CONSTANT_in_getValueProperty7282 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getMapLiteral_in_getValueProperty7294 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getFloat_in_getValueProperty7306 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_FALSE_in_getValueProperty7316 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TRUE_in_getValueProperty7326 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TERM_in_getFloat7351 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_FLOAT_in_getFloat7369 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_157_in_getTimeUnit5609 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_155_in_getTimeUnit5619 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_153_in_getTimeUnit5629 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_151_in_getTimeUnit5639 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_158_in_getTimeUnit5649 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_156_in_getTimeUnit5659 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_154_in_getTimeUnit5669 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_152_in_getTimeUnit5679 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_148_in_getTimeUnit5689 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_145_in_getTimeUnit5699 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_143_in_getTimeUnit5709 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_141_in_getTimeUnit5719 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getSelectionCount_in_getSelectClause5745 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getSelectionList_in_getSelectClause5757 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_COUNT_in_getSelectionCount5783 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getSelectionCount5785 = new BitSet(new long[]{0x0000002000000000L,0x0000000000000000L,0x0000000000000800L});
+	public static final BitSet FOLLOW_T_ASTERISK_in_getSelectionCount5789 = new BitSet(new long[]{0x0100000000000000L});
+	public static final BitSet FOLLOW_139_in_getSelectionCount5793 = new BitSet(new long[]{0x0100000000000000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getSelectionCount5799 = new BitSet(new long[]{0x0000000800000002L});
+	public static final BitSet FOLLOW_T_AS_in_getSelectionCount5806 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
+	public static final BitSet FOLLOW_T_IDENT_in_getSelectionCount5812 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_DISTINCT_in_getSelectionList5847 = new BitSet(new long[]{0x0000806020000000L,0x0000000006000010L});
+	public static final BitSet FOLLOW_getSelection_in_getSelectionList5855 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_ASTERISK_in_getSelection5895 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getSelector_in_getSelection5918 = new BitSet(new long[]{0x0000080800000002L});
+	public static final BitSet FOLLOW_T_AS_in_getSelection5923 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
+	public static final BitSet FOLLOW_T_IDENT_in_getSelection5927 = new BitSet(new long[]{0x0000080000000002L});
+	public static final BitSet FOLLOW_T_COMMA_in_getSelection5948 = new BitSet(new long[]{0x0000804020000000L,0x0000000006000010L});
+	public static final BitSet FOLLOW_getSelector_in_getSelection5952 = new BitSet(new long[]{0x0000080800000002L});
+	public static final BitSet FOLLOW_T_AS_in_getSelection5957 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
+	public static final BitSet FOLLOW_T_IDENT_in_getSelection5961 = new BitSet(new long[]{0x0000080000000002L});
+	public static final BitSet FOLLOW_T_AGGREGATION_in_getSelector6016 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
+	public static final BitSet FOLLOW_T_MAX_in_getSelector6030 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
+	public static final BitSet FOLLOW_T_MIN_in_getSelector6044 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
+	public static final BitSet FOLLOW_T_AVG_in_getSelector6058 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
+	public static final BitSet FOLLOW_T_COUNT_in_getSelector6072 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getSelector6098 = new BitSet(new long[]{0x0100804020000000L,0x0000000006000010L});
+	public static final BitSet FOLLOW_getSelector_in_getSelector6120 = new BitSet(new long[]{0x0100080000000000L});
+	public static final BitSet FOLLOW_T_COMMA_in_getSelector6125 = new BitSet(new long[]{0x0000804020000000L,0x0000000006000010L});
+	public static final BitSet FOLLOW_getSelector_in_getSelector6129 = new BitSet(new long[]{0x0100080000000000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getSelector6150 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getSelector6166 = new BitSet(new long[]{0x0000000000000002L,0x0000400000000000L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getSelector6198 = new BitSet(new long[]{0x0100804020000000L,0x0000000006000010L});
+	public static final BitSet FOLLOW_getSelector_in_getSelector6203 = new BitSet(new long[]{0x0100080000000000L});
+	public static final BitSet FOLLOW_T_COMMA_in_getSelector6208 = new BitSet(new long[]{0x0000804020000000L,0x0000000006000010L});
+	public static final BitSet FOLLOW_getSelector_in_getSelector6212 = new BitSet(new long[]{0x0100080000000000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getSelector6237 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_getListTypes6270 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getAssignment6301 = new BitSet(new long[]{0x0400000000000000L,0x0000200000000000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_getAssignment6313 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getValueAssign_in_getAssignment6317 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_BRACKET_in_getAssignment6336 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getAssignment6340 = new BitSet(new long[]{0x0080000000000000L});
+	public static final BitSet FOLLOW_T_END_BRACKET_in_getAssignment6342 = new BitSet(new long[]{0x0400000000000000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_getAssignment6344 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getAssignment6348 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getTerm_in_getValueAssign6375 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getValueAssign6387 = new BitSet(new long[]{0x0000000000000000L,0x0004000800000000L});
+	public static final BitSet FOLLOW_T_PLUS_in_getValueAssign6390 = new BitSet(new long[]{0x0000400000000000L,0x0000A00000000000L});
+	public static final BitSet FOLLOW_T_START_SBRACKET_in_getValueAssign6393 = new BitSet(new long[]{0x0000000000000000L,0x0000800000000000L});
+	public static final BitSet FOLLOW_getMapLiteral_in_getValueAssign6397 = new BitSet(new long[]{0x0200000000000000L});
+	public static final BitSet FOLLOW_T_END_SBRACKET_in_getValueAssign6399 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getIntSetOrList_in_getValueAssign6439 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_SUBTRACT_in_getValueAssign6483 = new BitSet(new long[]{0x0000400000000000L,0x0000A00000000000L});
+	public static final BitSet FOLLOW_getIntSetOrList_in_getValueAssign6487 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CONSTANT_in_getIntSetOrList6513 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_BRACKET_in_getIntSetOrList6523 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getList_in_getIntSetOrList6527 = new BitSet(new long[]{0x0080000000000000L});
+	public static final BitSet FOLLOW_T_END_BRACKET_in_getIntSetOrList6529 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_SBRACKET_in_getIntSetOrList6539 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getSet_in_getIntSetOrList6543 = new BitSet(new long[]{0x0200000000000000L});
+	public static final BitSet FOLLOW_T_END_SBRACKET_in_getIntSetOrList6545 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TOKEN_in_getRelation6563 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getRelation6565 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
+	public static final BitSet FOLLOW_getIds_in_getRelation6569 = new BitSet(new long[]{0x0100000000000000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getRelation6571 = new BitSet(new long[]{0x0400000000000000L,0x00000000110C000AL});
+	public static final BitSet FOLLOW_getComparator_in_getRelation6575 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getRelation6579 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getRelation6591 = new BitSet(new long[]{0x0400008000000000L,0x00000000110C004AL});
+	public static final BitSet FOLLOW_getComparator_in_getRelation6597 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getRelation6601 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IN_in_getRelation6627 = new BitSet(new long[]{0x0000000000000000L,0x0000400000000000L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getRelation6629 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerms_in_getRelation6633 = new BitSet(new long[]{0x0100000000000000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getRelation6635 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_BETWEEN_in_getRelation6661 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getRelation6665 = new BitSet(new long[]{0x0000000200000000L});
+	public static final BitSet FOLLOW_T_AND_in_getRelation6667 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getRelation6671 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_EQUAL_in_getComparator6711 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_GT_in_getComparator6721 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_LT_in_getComparator6731 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_GET_in_getComparator6741 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_LET_in_getComparator6752 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_NOT_EQUAL_in_getComparator6762 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_LIKE_in_getComparator6773 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getIds6801 = new BitSet(new long[]{0x0000080000000002L});
+	public static final BitSet FOLLOW_T_COMMA_in_getIds6806 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
+	public static final BitSet FOLLOW_T_IDENT_in_getIds6810 = new BitSet(new long[]{0x0000080000000002L});
+	public static final BitSet FOLLOW_getOption_in_getOptions6835 = new BitSet(new long[]{0x0000120000000002L,0x0000000000000010L});
+	public static final BitSet FOLLOW_getOption_in_getOptions6842 = new BitSet(new long[]{0x0000120000000002L,0x0000000000000010L});
+	public static final BitSet FOLLOW_T_COMPACT_in_getOption6862 = new BitSet(new long[]{0x0000000000000000L,0x0002000000000000L});
+	public static final BitSet FOLLOW_T_STORAGE_in_getOption6864 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CLUSTERING_in_getOption6874 = new BitSet(new long[]{0x0000000000000000L,0x0000000100000000L});
+	public static final BitSet FOLLOW_T_ORDER_in_getOption6876 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getOption6888 = new BitSet(new long[]{0x0400000000000000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_getOption6890 = new BitSet(new long[]{0x6000400000000000L,0x0110800000000010L});
+	public static final BitSet FOLLOW_getValueProperty_in_getOption6894 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getTerm_in_getList6922 = new BitSet(new long[]{0x0000080000000002L});
+	public static final BitSet FOLLOW_T_COMMA_in_getList6931 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getList6935 = new BitSet(new long[]{0x0000080000000002L});
+	public static final BitSet FOLLOW_getTerm_in_getTerms6969 = new BitSet(new long[]{0x0000080000000002L});
+	public static final BitSet FOLLOW_T_COMMA_in_getTerms6978 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getTerms6982 = new BitSet(new long[]{0x0000080000000002L});
+	public static final BitSet FOLLOW_getTerm_in_getSet7016 = new BitSet(new long[]{0x0000080000000002L});
+	public static final BitSet FOLLOW_T_COMMA_in_getSet7025 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getSet7029 = new BitSet(new long[]{0x0000080000000002L});
+	public static final BitSet FOLLOW_getTerm_in_getTermOrLiteral7063 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_SBRACKET_in_getTermOrLiteral7077 = new BitSet(new long[]{0x2200400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getTermOrLiteral7095 = new BitSet(new long[]{0x0200080000000000L});
+	public static final BitSet FOLLOW_T_COMMA_in_getTermOrLiteral7108 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getTermOrLiteral7112 = new BitSet(new long[]{0x0200080000000000L});
+	public static final BitSet FOLLOW_T_END_SBRACKET_in_getTermOrLiteral7129 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getTableID7150 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_KS_AND_TN_in_getTableID7166 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getTerm7190 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CONSTANT_in_getTerm7202 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_139_in_getTerm7212 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FALSE_in_getTerm7222 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TRUE_in_getTerm7232 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_KS_AND_TN_in_getTerm7244 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TERM_in_getTerm7256 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_SBRACKET_in_getMapLiteral7282 = new BitSet(new long[]{0x2200400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7292 = new BitSet(new long[]{0x0000040000000000L});
+	public static final BitSet FOLLOW_T_COLON_in_getMapLiteral7294 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7298 = new BitSet(new long[]{0x0200080000000000L});
+	public static final BitSet FOLLOW_T_COMMA_in_getMapLiteral7307 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7311 = new BitSet(new long[]{0x0000040000000000L});
+	public static final BitSet FOLLOW_T_COLON_in_getMapLiteral7313 = new BitSet(new long[]{0x2000400000000000L,0x0110000000010010L,0x0000000000000800L});
+	public static final BitSet FOLLOW_getTerm_in_getMapLiteral7317 = new BitSet(new long[]{0x0200080000000000L});
+	public static final BitSet FOLLOW_T_END_SBRACKET_in_getMapLiteral7329 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getValueProperty7351 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CONSTANT_in_getValueProperty7363 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getMapLiteral_in_getValueProperty7375 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getFloat_in_getValueProperty7387 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FALSE_in_getValueProperty7397 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TRUE_in_getValueProperty7407 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TERM_in_getFloat7432 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FLOAT_in_getFloat7450 = new BitSet(new long[]{0x0000000000000002L});
 }

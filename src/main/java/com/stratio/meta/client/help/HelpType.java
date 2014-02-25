@@ -1,0 +1,38 @@
+package com.stratio.meta.client.help;
+
+/**
+ * Type of help requested by the user through the META shell.
+ */
+public enum HelpType {
+	CONSOLE_HELP,
+	EXIT,
+	DATATYPES,
+	CREATE,
+	CREATE_KEYSPACE,
+	CREATE_TABLE,
+	CREATE_INDEX,
+	CREATE_LUCENE_INDEX,
+	UPDATE,
+	INSERT_INTO,
+	TRUNCATE,
+	DROP,
+	DROP_INDEX,
+	DROP_TABLE,
+	DROP_KEYSPACE,
+	DROP_TRIGGER,
+	SELECT,
+	ADD,
+	LIST,
+	LIST_PROCESS,
+	LIST_UDF,
+	LIST_TRIGGER,
+	REMOVE_UDF,
+	DELETE,
+	SET_OPTIONS,
+	EXPLAIN_PLAN,
+	ALTER,
+	ALTER_KEYSPACE,
+	ALTER_TABLE,
+	STOP
+	
+}

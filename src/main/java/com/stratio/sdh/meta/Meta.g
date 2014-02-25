@@ -165,7 +165,7 @@ T_COMMA: ',';
 T_START_PARENTHESIS: '(';
 T_END_PARENTHESIS: ')';
 T_QUOTE: '"' | '\'';
-T_INDEX_TYPE: ('HASH' | 'FULLTEXT' | 'CUSTOM');
+T_INDEX_TYPE: ('DEFAULT' | 'LUCENE' | 'CUSTOM');
 T_START_BRACKET: '[';
 T_END_BRACKET: ']';
 T_PLUS: '+';
@@ -651,14 +651,23 @@ getWindow returns [WindowSelect ws]:
 ;
 
 getTimeUnit returns [TimeUnit unit]:
-    ( 'S' {$unit=TimeUnit.S;}
-    | 'M' {$unit=TimeUnit.M;}
-    | 'H' {$unit=TimeUnit.H;}
-    | 'D' {$unit=TimeUnit.D;}
-    | 's' {$unit=TimeUnit.s;}
-    | 'm' {$unit=TimeUnit.m;}
-    | 'h' {$unit=TimeUnit.h;}
-    | 'd' {$unit=TimeUnit.d;} )
+    ( 'S' {$unit=TimeUnit.SECONDS;}
+    | 'M' {$unit=TimeUnit.MINUTES;}
+    | 'H' {$unit=TimeUnit.HOURS;}
+    | 'D' {$unit=TimeUnit.DAYS;}
+    | 's' {$unit=TimeUnit.SECONDS;}
+    | 'm' {$unit=TimeUnit.MINUTES;}
+    | 'h' {$unit=TimeUnit.HOURS;}
+    | 'd' {$unit=TimeUnit.DAYS;}
+    | 'seconds' {$unit=TimeUnit.SECONDS;}
+    | 'minutes' {$unit=TimeUnit.MINUTES;}
+    | 'hours' {$unit=TimeUnit.HOURS;}
+    | 'days' {$unit=TimeUnit.DAYS;}
+    | 'SECONDS' {$unit=TimeUnit.SECONDS;}
+    | 'MINUTES' {$unit=TimeUnit.MINUTES;}
+    | 'HOURS' {$unit=TimeUnit.HOURS;}
+    | 'DAYS' {$unit=TimeUnit.DAYS;}
+    )
 ;
 
 getSelectClause returns [SelectionClause sc]:

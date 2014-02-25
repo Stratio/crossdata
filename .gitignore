@@ -1,1 +1,6 @@
 target/
+src/main/java/com/stratio/sdh/meta/generated/
+src/main/java/com/stratio/meta/client/help/generated/
+.classpath
+.project
+.settings
