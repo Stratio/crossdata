@@ -84,7 +84,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
     
     @Override
     public String parseResult(ResultSet resultSet) {
-        return "\t"+resultSet.toString();
+        return "Executed successfully"+System.getProperty("line.separator");
     }
     
     @Override

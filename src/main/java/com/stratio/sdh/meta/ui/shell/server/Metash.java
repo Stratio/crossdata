@@ -28,6 +28,7 @@ public class Metash {
     }
 
     private void initLog(){
+        StringBuilder sb = new StringBuilder();
         ConsoleAppender console = new ConsoleAppender();
         //String PATTERN = "%d [%p|%c|%C{1}] %m%n";
         //String PATTERN = "%d [%p|%c] %m%n";
@@ -79,7 +80,7 @@ public class Metash {
                     try{
                         Statement driverStmt = stmt.getDriverStatement();
                         if(driverStmt != null){
-                            resultSet = CassandraClient.executeQuery(stmt.getDriverStatement());
+                            resultSet = CassandraClient.executeQuery(driverStmt);
                         } else {
                             resultSet = CassandraClient.executeQuery(stmt.translateToCQL());                            
                         }
@@ -89,9 +90,9 @@ public class Metash {
                         _logger.error("\033[31mCassandra exception:\033[0m "+ex.getMessage()+System.getProperty("line.separator"));
                         continue;
                     }
-
-                    _logger.info("\033[32mResult: \033[0m"+System.getProperty("line.separator")+stmt.parseResult(resultSet));
-
+                    
+                    _logger.info("\033[32mResult: \033[0m"+stmt.parseResult(resultSet));
+                    
                     /*
                     for(Row row: resultSet){
                         _logger.info(row.toString());

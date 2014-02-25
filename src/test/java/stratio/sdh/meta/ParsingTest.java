@@ -204,6 +204,10 @@ public class ParsingTest {
 
             AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
             MetaStatement st = antlrResult.getStatement();
+            
+            System.out.println(inputText);
+            System.out.println(st.toString()+";");
+            
             assertNotNull("Cannot parse hash index with options clause", st);
             CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
             //assertEquals("Cannot parse hash index with options clause - name", "index1", cist.getName());
@@ -228,7 +232,10 @@ public class ParsingTest {
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse hash index with options clause", st);
             CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
-
+            
+            System.out.println(inputText);
+            System.out.println(st.toString()+";");
+            
             String retrieved = cist.toString().substring(0, cist.toString().indexOf("OPTIONS"));
             String expected = inputText.substring(0, inputText.indexOf("OPTIONS"));
             //assertEquals("Cannot parse hash index with using clause", expected, retrieved);

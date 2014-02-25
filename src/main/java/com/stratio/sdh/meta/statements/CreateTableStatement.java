@@ -11,27 +11,35 @@ import java.util.Set;
 
 public class CreateTableStatement extends MetaStatement{
     
-    private String name_table;
-    
-    private LinkedHashMap<String, String> columns;
-    
-    private List<String> primaryKey;
-    
-    private List<String> clusterKey;
-    
-    private LinkedHashMap<String, ValueProperty> propierties;
-   
+    private boolean keyspaceInc = false;
+    private String keyspace;
+    private String name_table;    
+    private LinkedHashMap<String, String> columns;    
+    private List<String> primaryKey;    
+    private List<String> clusterKey;    
+    private LinkedHashMap<String, ValueProperty> propierties;   
     private int Type_Primary_Key;
-
     private boolean ifNotExists;
-
     private boolean withClusterKey;
-
     private int columnNumberPK;
-
     private boolean withPropierties;
 
-    public CreateTableStatement(String name_table, LinkedHashMap<String, String> columns, List<String> primaryKey, List<String> clusterKey, LinkedHashMap<String, ValueProperty> propierties, int Type_Primary_Key, boolean ifNotExists, boolean withClusterKey, int columnNumberPK, boolean withPropierties ) {
+    public CreateTableStatement(String name_table, 
+                                LinkedHashMap<String, String> columns, 
+                                List<String> primaryKey, 
+                                List<String> clusterKey, 
+                                LinkedHashMap<String, ValueProperty> propierties, 
+                                int Type_Primary_Key, 
+                                boolean ifNotExists, 
+                                boolean withClusterKey, 
+                                int columnNumberPK, 
+                                boolean withPropierties ) {       
+        if(name_table.contains(".")){
+            String[] ksAndTablename = name_table.split("\\.");
+            keyspace = ksAndTablename[0];
+            name_table = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.name_table = name_table;
         this.columns = columns;
         this.primaryKey = primaryKey;
@@ -43,6 +51,22 @@ public class CreateTableStatement extends MetaStatement{
         this.columnNumberPK = columnNumberPK;
         this.withPropierties=withPropierties;
     }
+
+    public boolean isKeyspaceInc() {
+        return keyspaceInc;
+    }
+
+    public void setKeyspaceInc(boolean keyspaceInc) {
+        this.keyspaceInc = keyspaceInc;
+    }
+
+    public String getKeyspace() {
+        return keyspace;
+    }
+
+    public void setKeyspace(String keyspace) {
+        this.keyspace = keyspace;
+    }        
     
     public boolean isWithPropierties() {
         return withPropierties;
@@ -83,7 +107,6 @@ public class CreateTableStatement extends MetaStatement{
         this.Type_Primary_Key = Type_Primary_Key;
     }
 
-
     public LinkedHashMap<String, ValueProperty> getPropierties() {
         return propierties;
     }
@@ -91,7 +114,6 @@ public class CreateTableStatement extends MetaStatement{
     public void setPropierties(LinkedHashMap<String, ValueProperty> propierties) {
         this.propierties = propierties;
     }
-
 
     public List<String> getClusterKey() {
         return clusterKey;
@@ -101,7 +123,6 @@ public class CreateTableStatement extends MetaStatement{
         this.clusterKey = clusterKey;
     }
 
-
     public List<String> getPrimaryKey() {
         return primaryKey;
     }
@@ -109,8 +130,6 @@ public class CreateTableStatement extends MetaStatement{
     public void setPrimaryKey(List<String> primaryKey) {
         this.primaryKey = primaryKey;
     }
-
-
 
     public LinkedHashMap<String, String> getColumns() {
         return columns;
@@ -128,8 +147,6 @@ public class CreateTableStatement extends MetaStatement{
         this.name_table = name_table;
     }
 
-    
-    
     @Override
     public Path estimatePath() {
          return Path.CASSANDRA;
@@ -139,6 +156,10 @@ public class CreateTableStatement extends MetaStatement{
     public String toString() {
         StringBuilder sb = new StringBuilder("Create table ");
         if(ifNotExists) sb.append("if not exit ");
+        
+        if(keyspaceInc){
+            sb.append(keyspace).append(".");
+        } 
         sb.append(name_table);
         
         switch(Type_Primary_Key){
@@ -243,8 +264,7 @@ public class CreateTableStatement extends MetaStatement{
             sb.append(" ").append(key).append("=").append(String.valueOf(vp));
             if(it.hasNext()) sb.append(" AND");
         }
-        return sb.toString();
-    
+        return sb.toString();    
     }
 
     @Override
@@ -264,7 +284,8 @@ public class CreateTableStatement extends MetaStatement{
     
     @Override
     public String parseResult(ResultSet resultSet) {
-        return "\t"+resultSet.toString();
+        //return "\t"+resultSet.toString();
+        return "Executed successfully"+System.getProperty("line.separator");
     }
  
     @Override

@@ -21,6 +21,10 @@ public abstract class MetaRelation {
     public void setIdentifiers(List<String> identifiers) {
         this.identifiers = identifiers;
     }
+    
+    public int numberOfIdentifiers(){
+        return this.identifiers.size();
+    }
 
     public String getOperator() {
         return operator;
@@ -32,6 +36,10 @@ public abstract class MetaRelation {
 
     public List<Term> getTerms() {
         return terms;
+    }
+    
+    public int numberOfTerms() {
+        return this.terms.size();
     }
 
     public void setTerms(List<Term> terms) {

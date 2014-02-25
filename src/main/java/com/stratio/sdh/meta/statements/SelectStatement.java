@@ -1,5 +1,7 @@
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
@@ -24,12 +26,18 @@ import com.stratio.sdh.meta.structures.SelectorMeta;
 import com.stratio.sdh.meta.structures.Term;
 import com.stratio.sdh.meta.structures.WindowSelect;
 import com.stratio.sdh.meta.utils.MetaUtils;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 public class SelectStatement extends MetaStatement {
 
     private SelectionClause selectionClause;
-    private boolean keyspaceInc;
+    private boolean keyspaceInc = false;
     private String keyspace;
     private String tablename;
     private boolean windowInc;
@@ -216,7 +224,11 @@ public class SelectStatement extends MetaStatement {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("SELECT ");
-        sb.append(selectionClause.toString()).append(" FROM ").append(tablename);
+        sb.append(selectionClause.toString()).append(" FROM ");
+        if(keyspaceInc){
+            sb.append(keyspace).append(".");
+        }
+        sb.append(tablename);
         if(windowInc){
             sb.append(" WITH WINDOW ").append(window.toString());
         }
@@ -260,13 +272,181 @@ public class SelectStatement extends MetaStatement {
     
     @Override
     public String parseResult(ResultSet resultSet) {
-        StringBuilder sb = new StringBuilder();  
+        //StringBuilder sb = new StringBuilder("\t");
+        System.out.println(resultSet.toString());
+        /*
+        final Object[][] table = new String[4][];
+        table[0] = new String[] { "foo", "bar", "baz" };
+        table[1] = new String[] { "bar2", "foo2", "baz2" };
+        table[2] = new String[] { "baz3", "bar3", "foo3" };
+        table[3] = new String[] { "foo4", "bar4", "baz4" };
+        for (final Object[] row : table) {
+        System.out.format("%15s%15s%15s\n", row);
+        }
+        */
+        ColumnDefinitions colDefs = resultSet.getColumnDefinitions();
+        //System.out.println(colDefs);
+        int nCols = colDefs.size();
+        List<Row> rows = resultSet.all();
+        if(rows.isEmpty()){
+            return "Empty"+System.getProperty("line.separator");
+        }
+        ArrayList<ArrayList<String>> table = new ArrayList<>();
+        HashMap<Integer, Integer> lenghts = new HashMap<>(); 
+        int nColumn = 0;
+        int extraSpace = 2;
+        for(Definition def: colDefs){
+            lenghts.put(nColumn, def.getName().length()+extraSpace);
+            nColumn++;
+        }        
+        
+        if((lenghts.get(0)-extraSpace) < (rows.size()+" rows").length()){
+            lenghts.put(0, (rows.size()+" rows").length()+extraSpace);
+        }
+        
+        for(Row row: rows){
+            ArrayList<String> currentRow = new ArrayList<>();
+            for(int nCol=0; nCol<nCols; nCol++){
+                String cell = "";
+                com.datastax.driver.core.DataType cellType = colDefs.getType(nCol);  
+                if((cellType == com.datastax.driver.core.DataType.varchar()) || (cellType == com.datastax.driver.core.DataType.text())){
+                    cell = row.getString(nCol);
+                } else if (cellType == com.datastax.driver.core.DataType.cint()){
+                    cell = Integer.toString(row.getInt(nCol));
+                } else if (cellType == com.datastax.driver.core.DataType.bigint()){
+                    //BigInteger bi = row.getVarint(nCol);
+                    //cell = bi.toString();
+                    ByteBuffer bb = row.getBytesUnsafe(nCol);
+                    IntBuffer intbb = bb.asIntBuffer();
+                    int tmpInt = 0;
+                    while(intbb.remaining() > 0){
+                        tmpInt = intbb.get();
+                        //System.out.println(tmpInt);
+                    }
+                    //int tmp = bb.asIntBuffer().get(bb.remaining()-1);
+                    cell = Integer.toString(tmpInt);
+                }
+                // TODO: add all data types
+                currentRow.add(cell);
+                if((lenghts.get(nCol)-extraSpace) < cell.length()){
+                    lenghts.put(nCol, cell.length()+extraSpace);
+                }
+                /*if(lenghts.containsKey(nCol)){
+                    if(lenghts.get(nCol) < cell.length()){
+                        lenghts.put(nCol, cell.length());
+                    }
+                } else {
+                    lenghts.put(nCol, cell.length());
+                }*/                
+            }
+            table.add(currentRow);
+        }        
+        
+        // ADD ENDING ROW
+        ArrayList<String> currentRow = new ArrayList<>();
+        for(int nCol=0; nCol<nCols; nCol++){
+            char[] chars = new char[lenghts.get(nCol)];
+            Arrays.fill(chars, '-');
+            currentRow.add(new String(chars));
+        }
+        table.add(currentRow);
+        table.add(currentRow);
+        
+        // ADD STARTING ROW
+        table.add(0, currentRow);
+        
+        // ADD SEPARATING ROW
+        table.add(1, currentRow);
+        
+        // ADD HEADER ROW
+        currentRow = new ArrayList<>();
+        for(int nCol=0; nCol<nCols; nCol++){
+            currentRow.add(colDefs.getName(nCol));
+        }
+        table.add(1, currentRow);        
+        
+        // ADD INFO ROW
+        currentRow = new ArrayList<>();
+        if(rows.size() != 1){
+            currentRow.add(rows.size()+" rows");        
+        } else {
+            currentRow.add("1 row");
+        }
+        for(int nCol=1; nCol<nCols; nCol++){
+            currentRow.add(" ");
+        }
+        table.add(table.size()-1, currentRow);
+        
+          
+        /*for(Definition definition: resultSet.getColumnDefinitions().asList()){
+            sb.append("\033[4m").append(definition.getName()).append("\033[0m");
+            //sb.append(": ").append(definition.getType().getName().toString()).append(" | ");
+        }*/
+        //sb.append(System.getProperty("line.separator"));
         /*Properties props = System.getProperties();
         for(String propKey: props.stringPropertyNames()){
             System.out.println(propKey+": "+props.getProperty(propKey));
         }*/
-        for(Row row: resultSet){
+        /*for(Row row: rows){
             sb.append("\t").append(row.toString()).append(System.getProperty("line.separator"));
+        }*/
+        StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
+        sb.append(System.getProperty("line.separator"));
+        int nRow = 0;
+        for(ArrayList<String> tableRow: table){
+            if((nRow == 0) || (nRow == 2) || (nRow == (table.size()-3)) || (nRow == (table.size()-1))){
+                sb.append(" ").append("+");
+            } else {
+                sb.append(" ").append("|");
+            }
+            int nCol = 0;
+            StringUtils.leftPad(query, nCol);
+            for(String cell: tableRow){                
+                if((colDefs.getType(nCol) != com.datastax.driver.core.DataType.cint()) && (colDefs.getType(nCol) != com.datastax.driver.core.DataType.bigint())){
+                    cell = StringUtils.rightPad(cell, lenghts.get(nCol)-1);
+                    cell = StringUtils.leftPad(cell, lenghts.get(nCol));
+                } else {
+                    cell = StringUtils.leftPad(cell, lenghts.get(nCol)-1);
+                    cell = StringUtils.rightPad(cell, lenghts.get(nCol));
+                }    
+                if(nRow == 1){
+                    sb.append("\033[33;1m").append(cell).append("\033[0m");
+                } else {
+                    sb.append(cell);                    
+                }
+
+                if((nRow == 0) || (nRow == (table.size()-3)) || (nRow == (table.size()-1))){
+                    /*
+                    if((nCol < (tableRow.size()-1)) && (nCol > 0)){
+                        sb.append("-");
+                    }  else {
+                        sb.append("+");
+                    }
+                    */
+                    if(nCol == (tableRow.size()-1)){
+                        sb.append("+");
+                    } else {
+                        sb.append("-");
+                    }
+                } else if(nRow == 2) {
+                    //if(nCol < (tableRow.size()-1)){
+                        sb.append("+");
+                    //} else {
+                    //    sb.append("|");
+                    //}
+                } else if(nRow == (table.size()-2)){
+                    if(nCol > tableRow.size()-2){
+                        sb.append("|");
+                    } else {
+                        sb.append(" ");
+                    } 
+                } else {
+                    sb.append("|");
+                }
+                nCol++;
+            }
+            sb.append(System.getProperty("line.separator"));      
+            nRow++;
         }
         return sb.toString();
     }
@@ -275,36 +455,67 @@ public class SelectStatement extends MetaStatement {
     public Statement getDriverStatement() {
         //Statement sel = QueryBuilder.select().from("tks","testselectin").where(in("key",list));
         
-        //Select sel = QueryBuilder.select().from(tablename);     
+        //Select sel = QueryBuilder.select().from(tablename);             
         
-        Select sel = null;
+        SelectionClause selClause = this.selectionClause;                                        
         
-        SelectionClause selClause = this.selectionClause;
+        Select.Builder builder;                
         
         if(this.selectionClause.getType() == SelectionClause.TYPE_COUNT){
-            return null;
-        }
-        
-        SelectionList selList = (SelectionList) selClause;
-        
-        Select.Builder builder = null;
-        
-        if(selList.getSelection().getType() == Selection.TYPE_ASTERISK){
-            builder = QueryBuilder.select();
+            builder = QueryBuilder.select().countAll();
         } else {
-            SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection();
-            String[] columns = {};
-            int nCol = 0;
-            for(SelectionSelector selSelector: selSelectors.getSelectors()){
-                SelectorMeta selectorMeta = selSelector.getSelector();
-                if(selectorMeta.getType() == SelectorMeta.TYPE_IDENT){
-                    SelectorIdentifier selIdent = (SelectorIdentifier) selectorMeta;
-                    columns[0] = selIdent.getIdentifier();
-                    nCol++;
+            SelectionList selList = (SelectionList) selClause;
+            if(selList.getSelection().getType() != Selection.TYPE_ASTERISK){            
+                Select.Selection selection = QueryBuilder.select();
+                if(selList.isDistinct()){
+                    selection = selection.distinct();
                 }
+                SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection();
+                for(SelectionSelector selSelector: selSelectors.getSelectors()){
+                    SelectorMeta selectorMeta = selSelector.getSelector();
+                    if(selectorMeta.getType() == SelectorMeta.TYPE_IDENT){
+                        SelectorIdentifier selIdent = (SelectorIdentifier) selectorMeta;    
+                        if(selSelector.isAliasInc()){
+                            selection = selection.column(selIdent.getIdentifier()).as(selSelector.getAlias());
+                        } else {
+                            selection = selection.column(selIdent.getIdentifier());                        
+                        }
+                    }                
+                }
+                builder = selection;
+            } else {
+                builder = QueryBuilder.select().all();
             }
-            builder = QueryBuilder.select(columns);
-        }              
+            /*
+            } else if(selList.isDistinct()){
+                Select.Selection selection = QueryBuilder.select();
+                selection = selection.distinct();
+                SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection();
+                for(SelectionSelector selSelector: selSelectors.getSelectors()){
+                    SelectorMeta selectorMeta = selSelector.getSelector();
+                    if(selectorMeta.getType() == SelectorMeta.TYPE_IDENT){
+                        SelectorIdentifier selIdent = (SelectorIdentifier) selectorMeta;
+                        selection = selection.column(selIdent.getIdentifier());
+                    }                
+                }
+                builder = selection;
+            } else {
+                SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection();
+                String[] columns = new String[selSelectors.numberOfSelectors()];
+                int nCol = 0;
+                for(SelectionSelector selSelector: selSelectors.getSelectors()){
+                    SelectorMeta selectorMeta = selSelector.getSelector();
+                    if(selectorMeta.getType() == SelectorMeta.TYPE_IDENT){
+                        SelectorIdentifier selIdent = (SelectorIdentifier) selectorMeta;
+                        columns[nCol] = selIdent.getIdentifier();
+                        nCol++;
+                    }
+                }
+                builder = QueryBuilder.select(columns);
+            }*/ 
+        }                                     
+                        
+        Select sel;
         
         if(this.keyspaceInc){
             sel = builder.from(this.keyspace, this.tablename);
@@ -317,7 +528,7 @@ public class SelectStatement extends MetaStatement {
         }
         
         if(this.orderInc){
-            Ordering[] orderings = {};
+            Ordering[] orderings = new Ordering[order.size()];
             int nOrdering = 0;
             for(MetaOrdering metaOrdering: this.order){
                 if(metaOrdering.isDirInc() && (metaOrdering.getOrderDir() == OrderDirection.DESC)){
@@ -362,7 +573,7 @@ public class SelectStatement extends MetaStatement {
                     case MetaRelation.TYPE_IN:
                         RelationIn relIn = (RelationIn) metaRelation;
                         List<Term> terms = relIn.getTerms();
-                        Object[] values = {};
+                        Object[] values = new Object[relIn.numberOfTerms()];
                         int nTerm = 0;
                         for(Term term: terms){
                             values[nTerm] = term.getTerm();

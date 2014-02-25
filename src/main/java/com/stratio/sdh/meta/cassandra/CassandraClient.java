@@ -2,11 +2,9 @@ package com.stratio.sdh.meta.cassandra;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Select;
 
 public class CassandraClient {
     
@@ -24,7 +22,8 @@ public class CassandraClient {
     }
     
     public static ResultSet executeQuery(String query){        
-        //query = "SELECT * FROM mykeyspace.usuarios";        
+        //query = "SELECT * FROM mykeyspace.usuarios";     
+        System.out.println("Query: "+query);
         PreparedStatement cqlStatement = session.prepare(query);        
         if(cqlStatement == null){
             return null;
@@ -36,17 +35,33 @@ public class CassandraClient {
         return resultSet;
     }
        
-    public static ResultSet executeQuery(Statement query){        
-        //query = "SELECT * FROM mykeyspace.usuarios";       
-        if(query instanceof RegularStatement){
+    public static ResultSet executeQuery(Statement query){      
+        //query = "SELECT * FROM mykeyspace.usuarios";     
+        System.out.println("Statement: "+query.toString());
+        /*if(query instanceof RegularStatement){            
+            System.out.println(query.toString());
+            RegularStatement tmp = (RegularStatement) query;
+            System.out.println(tmp.getQueryString());
+            ByteBuffer[] bytes = tmp.getValues();
+            if(bytes != null){
+                for(ByteBuffer bb: bytes){
+                    System.out.println(Charsets.UTF_8.decode(bb).toString());
+                }
+            }                        
             PreparedStatement cqlStatement = session.prepare((RegularStatement) query);        
             if(cqlStatement == null){
                 return null;
-            }
-        }
+            }            
+        }*/
         
         ResultSet resultSet = session.execute(query);             
-        //System.out.println("ResultSet: "+resultSet.all().size()+" rows");               
+        //System.out.println("ResultSet: "+resultSet.toString());  
+        //System.out.println(resultSet.all().size());
+        /*Iterator<Row> iter = resultSet.iterator();
+        while(iter.hasNext()){
+            Row row = iter.next();
+            System.out.println(row.toString());
+        }*/
         
         return resultSet;
     }
