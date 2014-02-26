@@ -326,6 +326,15 @@ public class ParsingTest {
 	}
 
 	@Test
+	public void list_process_lowercase() {
+		String inputText = "LIST process;";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+		assertNotNull("Cannot parse list process", st);
+		assertTrue("Cannot parse list process", inputText.equalsIgnoreCase(st.toString()+";"));
+	}
+	
+	@Test
 	public void list_udf() {
 		String inputText = "LIST UDF;";
 		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);

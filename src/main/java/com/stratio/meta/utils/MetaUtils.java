@@ -13,13 +13,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 public class MetaUtils {
 
@@ -109,7 +108,13 @@ public class MetaUtils {
             "MIN",
             "AVG",
             "TOKEN");
-   
+    
+    /**
+     * Class logger.
+     */
+    private static final Logger _logger = Logger.getLogger(MetaUtils.class
+    		.getName());
+
     public static String StringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
         for(Object value: ids){
@@ -269,9 +274,10 @@ public class MetaUtils {
             }
         }*/
         String replacement = "";
+        BufferedReader bufferedReaderF = null;
         try {
-            String metaGrammarPath = "src/main/java/com/stratio/sdh/meta/Meta.g";
-            BufferedReader bufferedReaderF = new BufferedReader(new FileReader(new File(metaGrammarPath)));
+            String metaGrammarPath = "src/main/java/com/stratio/meta/grammar/Meta.g";
+            bufferedReaderF = new BufferedReader(new FileReader(new File(metaGrammarPath)));
             String line = bufferedReaderF.readLine();
             while (line != null){
                 if(line.contains(target)){
@@ -286,7 +292,13 @@ public class MetaUtils {
                 line = bufferedReaderF.readLine();
             }
         } catch (IOException ex) {
-            Logger.getLogger(MetaUtils.class.getName()).log(Level.SEVERE, null, ex);
+            _logger.error("Cannot read replacement file", ex);
+        }finally{
+        	try {
+				bufferedReaderF.close();
+			} catch (IOException e) {
+				_logger.error("Cannot close replacement file", e);
+			}
         }
         return replacement;
     }

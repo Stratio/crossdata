@@ -10,7 +10,7 @@ public class ListStatement extends MetaStatement {
     private ListType _type = null;
 
     public ListStatement(String type){
-            _type = ListType.valueOf(type);
+            _type = ListType.valueOf(type.toUpperCase());
     }
 
     @Override

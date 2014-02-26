@@ -247,12 +247,20 @@ addStatement returns [AddStatement as]:
 
 //LIST ( PROCESS | UDF | TRIGGER) ;
 listStatement returns [ListStatement ls]:
-	T_LIST (type=getListTypes) {$ls = new ListStatement($type.text);}
+	T_LIST (type=getListTypes)
+	{
+		if($type.text != null){
+			$ls = new ListStatement($type.text);
+		}else{
+			throw new RecognitionException();
+		}
+	}
 	;
 
 //REMOVE UDF \"jar.name\";"
 removeUDFStatement returns [RemoveUDFStatement rus]:
-	T_REMOVE 'UDF' (T_QUOTE | T_SINGLE_QUOTE) jar=getTerm {$rus = new RemoveUDFStatement(jar);} (T_QUOTE | T_SINGLE_QUOTE)
+	//T_REMOVE 'UDF' (T_QUOTE | T_SINGLE_QUOTE) jar=getTerm {$rus = new RemoveUDFStatement(jar);} (T_QUOTE | T_SINGLE_QUOTE)
+	T_REMOVE T_UDF (T_QUOTE | T_SINGLE_QUOTE) jar=getTerm {$rus = new RemoveUDFStatement(jar);} (T_QUOTE | T_SINGLE_QUOTE)
 	;
 
 //DROP INDEX IF EXISTS index_name;
@@ -764,7 +772,10 @@ getSelector returns [SelectorMeta slmt]
 ;
 
 getListTypes returns [String listType]:
-	ident=('PROCESS' | 'UDF' | 'TRIGGER') {$listType = new String($ident.text);}
+	//ident=('PROCESS' | 'UDF' | 'TRIGGER' | 'process' | 'udf' | 'trigger') {$listType = new String($ident.text);}
+	//ident=('PROCESS' | 'UDF' | 'TRIGGER') {$listType = new String($ident.text);}
+	//ident=(T_PROCESS | 'UDF' | 'TRIGGER') {$listType = new String($ident.text);}
+	ident=(T_PROCESS | T_UDF | T_TRIGGER) {$listType = new String($ident.text);}
 	;
 
 getAssignment returns [Assignment assign]:
