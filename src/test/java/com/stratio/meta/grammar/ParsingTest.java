@@ -9,6 +9,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.junit.Test;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import com.stratio.meta.statements.CreateIndexStatement;
@@ -44,7 +45,17 @@ public class ParsingTest {
 		console.activateOptions();
 		Logger.getRootLogger().addAppender(console);
 	}
+        
+        @BeforeClass
+	public static void checkKeyspacesAndTables(){
+            
+	}
 
+        @AfterClass
+	public static void cleanKeyspacesAndTables(){
+		
+	}
+        
 	// CREATE KEYSPACE (IF NOT EXISTS)? <keyspace_name> WITH <properties> ';'
 	@Test
 	public void createKeyspace_basic() {
@@ -99,8 +110,79 @@ public class ParsingTest {
 		assertTrue("Cannot parse create keyspace - nestedOptions", propertiesResult.containsAll(properties));
 		assertTrue("Cannot parse create keyspace - nestedOptions", properties.containsAll(propertiesResult));
 	}
+        
+        @Test
+	public void createKeyspace_basicOptions() {
+		String inputText = "CREATE KEYSPACE key_space1 WITH replication = {class: SimpleStrategy, replication_factor: 1}"
+                        + " AND durable_writes = false;";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+                assertNotNull("Cannot parse createKeyspace_basicOptions", st);
+                
+		boolean originalOK = false;
+                boolean alternative1 = false;
+                
+                if(inputText.equalsIgnoreCase(st.toString()+";")){
+                    originalOK = true;
+                }
+                
+                String alternative1Str = "CREATE KEYSPACE key_space1 WITH replication = {replication_factor: 1, class: SimpleStrategy}"
+                        + " AND durable_writes = false;";
+                if(alternative1Str.equalsIgnoreCase(st.toString()+";")){
+                    alternative1 = true;
+                }                
+                                
+		assertTrue("Cannot parse createKeyspace_basicOptions", (originalOK || alternative1));
+	}
 
 	@Test
+	public void createKeyspace_durable_writes() {
+		String inputText = "CREATE KEYSPACE demo WITH replication = {class: SimpleStrategy, replication_factor: 1} "
+                        + "AND durable_writes = false;";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+                assertNotNull("Cannot parse createKeyspace_durable_writes", st);
+                
+		boolean originalOK = false;
+                boolean alternative1 = false;
+                
+                if(inputText.equalsIgnoreCase(st.toString()+";")){
+                    originalOK = true;
+                }
+                
+                String alternative1Str = "CREATE KEYSPACE demo WITH replication = {replication_factor: 1, class: SimpleStrategy} "
+                        + "AND durable_writes = false;";
+                if(alternative1Str.equalsIgnoreCase(st.toString()+";")){
+                    alternative1 = true;
+                }
+                               
+		assertTrue("Cannot parse createKeyspace_durable_writes", (originalOK || alternative1));
+	}
+        
+        @Test
+	public void createKeyspace_map_column() {
+		String inputText = "CREATE TABLE demo.banks(day text, key uuid, latitude double, longitude double, name text, "
+                        + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key));";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+		assertNotNull("Cannot parse createKeyspace_map_column", st);
+		assertTrue("Cannot parse createKeyspace_map_column", inputText.equalsIgnoreCase(st.toString()+";"));
+	}
+        
+        @Test
+	public void createKeyspace_literal_value() {
+		String inputText = "CREATE LUCENE INDEX demo_banks ON demo.banks (lucene) USING org.apache.cassandra.db.index.stratio.RowIndex"
+                        + " WITH OPTIONS schema = '{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\", "
+                        + "fields: {day: {type: \"date\", pattern: \"yyyy-MM-dd\"}, key: {type:\"uuid\"}}}';";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+                inputText = inputText.replace("'", "");
+                System.out.println(inputText);
+                System.out.println(st.toString()+";");
+		assertTrue("Cannot parse createKeyspace_literal_value", inputText.equalsIgnoreCase(st.toString()+";"));
+	}
+        
+        @Test
 	public void update_tablename() {
 		String inputText = "UPDATE tablename USING prop1 = 342 SET ident1 = term1, ident2 = term2"
 				+ " WHERE ident3 IN (term3, term4) IF field1 = 25 ;";
@@ -281,10 +363,47 @@ public class ParsingTest {
 		String inputText = "SELECT column1 FROM table1 WITH WINDOW 5 SECONDS WHERE column2 = 3;";
 		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
 		MetaStatement st = antlrResult.getStatement();
-		assertNotNull("Cannot parse select", st);
-		assertTrue("Cannot parse select", inputText.equalsIgnoreCase(st.toString()+";"));
+		assertNotNull("Cannot parse select_withTimeWindow", st);
+		assertTrue("Cannot parse select_withTimeWindow", inputText.equalsIgnoreCase(st.toString()+";"));
 	}
 
+        @Test
+	public void select_all() {
+		String inputText = "SELECT * FROM key_space1.users;";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+		assertNotNull("Cannot parse select_all", st);
+		assertTrue("Cannot parse select_all", inputText.equalsIgnoreCase(st.toString()+";"));
+	}
+        
+        @Test
+	public void select_order() {
+		String inputText = "SELECT name, gender, color, animal AS rage, age, food FROM key_space1.users "
+                        + "WHERE name = pepita AND gender = female ORDER BY color DESC LIMIT 2;";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+		assertNotNull("Cannot parse select_order", st);
+		assertTrue("Cannot parse select_order", inputText.equalsIgnoreCase(st.toString()+";"));
+	}
+        
+        @Test
+	public void select_count() {
+		String inputText = "SELECT COUNT(*) FROM key_space1.users;";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+		assertNotNull("Cannot parse select_count", st);
+		assertTrue("Cannot parse select_count", inputText.equalsIgnoreCase(st.toString()+";"));
+	}
+        
+        @Test
+	public void select_distinct() {
+		String inputText = "SELECT DISTINCT name, gender FROM key_space1.users;";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+		assertNotNull("Cannot parse select_distinct", st);
+		assertTrue("Cannot parse select_distinct", inputText.equalsIgnoreCase(st.toString()+";"));
+	}
+        
 	//ADD
 
 	@Test
@@ -507,13 +626,122 @@ public class ParsingTest {
 
 	@Test 
 	public void createTable_basic_7() {
-		String inputText = "create table adsa(algo text, algo2 int, algo3 bool, primary key ((algo, algo2), algo3)) with propiedad1=prop1 and propiedad2=2 and propiedad3=3.0;";
+		String inputText = "create table adsa(algo text, algo2 int, algo3 bool, primary key ((algo, algo2), algo3)) "
+                        + "with propiedad1=prop1 and propiedad2=2 and propiedad3=3.0;";
 		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
 		MetaStatement st = antlrResult.getStatement();
 		assertNotNull("Cannot parse create table - basic_7", st);
 		assertTrue("Cannot parse create table - basic_7", inputText.equalsIgnoreCase(st.toString()+";"));
 	} 
 
+        @Test 
+	public void createTable_with_many_properties() {
+		String inputText = "CREATE TABLE key_space1.users(name varchar, password varchar, color varchar, gender varchar,"
+                        + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
+                        + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
+                        + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+                assertNotNull("Cannot parse createTable_with_many_properties", st);
+
+                boolean originalOK = false;
+                boolean alternative1 = false;
+                boolean alternative2 = false;
+                boolean alternative3 = false;
+                
+                if(inputText.equalsIgnoreCase(st.toString()+";")){
+                    originalOK = true;
+                }
+                
+                String alternative1Str = "CREATE TABLE key_space1.users(name varchar, password varchar, color varchar, gender varchar,"
+                        + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
+                        + "WITH compression={chunk_length_kb: 64, sstable_compression: DeflateCompressor} AND "
+                        + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
+                if(alternative1Str.equalsIgnoreCase(st.toString()+";")){
+                    alternative1 = true;
+                }
+                String alternative2Str = "CREATE TABLE key_space1.users(name varchar, password varchar, color varchar, gender varchar,"
+                        + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
+                        + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
+                        + "compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND read_repair_chance=1.0;";
+                if(alternative2Str.equalsIgnoreCase(st.toString()+";")){
+                    alternative2 = true;
+                }
+                String alternative3Str = "CREATE TABLE key_space1.users(name varchar, password varchar, color varchar, gender varchar,"
+                        + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
+                        + "WITH compression={chunk_length_kb: 64, sstable_compression: DeflateCompressor} AND "
+                        + "compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND read_repair_chance=1.0;";
+                if(alternative3Str.equalsIgnoreCase(st.toString()+";")){
+                    alternative3 = true;
+                }
+                                
+		assertTrue("Cannot parse createTable_with_many_properties", (originalOK || alternative1 || alternative2 || alternative3));
+	}
+        
+        @Test 
+	public void createTable_compact_storage() {
+		String inputText = "CREATE TABLE key_space1.sblocks(block_id uuid, subblock_id uuid, data blob, PRIMARY KEY "
+                        + "(block_id, subblock_id)) WITH COMPACT STORAGE;";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+		assertNotNull("Cannot parse createTable_compact_storage", st);
+		assertTrue("Cannot parse createTable_compact_storage", inputText.equalsIgnoreCase(st.toString()+";"));
+	}
+        
+        @Test 
+	public void createTable_clustering() {
+		String inputText = "create table key_space1.timeseries(event_type text, insertion_time timestamp, event blob,"
+                        + " PRIMARY KEY (event_type, insertion_time)) WITH CLUSTERING ORDER BY (insertion_time DESC);";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+		assertNotNull("Cannot parse createTable_clustering", st);
+		assertTrue("Cannot parse createTable_clustering", inputText.equalsIgnoreCase(st.toString()+";"));
+	}
+        
+        @Test 
+	public void createTable_with_properties() {
+		String inputText = "CREATE TABLE key_space1.test(name varchar, color varchar, gender varchar, food varchar, "
+                        + "animal varchar, PRIMARY KEY (name)) WITH compression={sstable_compression: DeflateCompressor, "
+                        + "chunk_length_kb: 64} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
+                        + "read_repair_chance=1.0;";
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		MetaStatement st = antlrResult.getStatement();
+                assertNotNull("Cannot parse createTable_with_properties", st);
+                
+                boolean originalOK = false;
+                boolean alternative1 = false;
+                boolean alternative2 = false;
+                boolean alternative3 = false;
+                
+                if(inputText.equalsIgnoreCase(st.toString()+";")){
+                    originalOK = true;
+                }
+                
+                String alternative1Str = "CREATE TABLE key_space1.test(name varchar, color varchar, gender varchar, food varchar, "
+                        + "animal varchar, PRIMARY KEY (name)) WITH compression={chunk_length_kb: 64, "
+                        + "sstable_compression: DeflateCompressor} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
+                        + "read_repair_chance=1.0;";
+                if(alternative1Str.equalsIgnoreCase(st.toString()+";")){
+                    alternative1 = true;
+                }
+                String alternative2Str = "CREATE TABLE key_space1.test(name varchar, color varchar, gender varchar, food varchar, "
+                        + "animal varchar, PRIMARY KEY (name)) WITH compression={sstable_compression: DeflateCompressor, "
+                        + "chunk_length_kb: 64} AND compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND "
+                        + "read_repair_chance=1.0;";
+                if(alternative2Str.equalsIgnoreCase(st.toString()+";")){
+                    alternative2 = true;
+                }
+                String alternative3Str = "CREATE TABLE key_space1.test(name varchar, color varchar, gender varchar, food varchar, "
+                        + "animal varchar, PRIMARY KEY (name)) WITH compression={chunk_length_kb: 64, "
+                        + "sstable_compression: DeflateCompressor} AND compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND "
+                        + "read_repair_chance=1.0;";
+                if(alternative3Str.equalsIgnoreCase(st.toString()+";")){
+                    alternative3 = true;
+                }
+                                
+		assertTrue("Cannot parse createTable_with_properties", (originalOK || alternative1 || alternative2 || alternative3));
+	}
+        
 	@Test
 	public void alterKeyspace() {
 		String inputText = "ALTER KEYSPACE mykeyspace WITH ident1 = value1 AND ident2 = 54;";
@@ -654,7 +882,7 @@ public class ParsingTest {
 	}
 
 	@Test
-	public void create_table_wrong_values_token(){
+	public void insert_into_wrong_values_token(){
 		String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUED(term1, term2)"
 				+ " IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
 		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
@@ -724,7 +952,7 @@ public class ParsingTest {
 
 	@Test
 	public void create_index_wrong_option_assignment(){
-		String inputText = "CREATE HASH INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1:val1;";
+		String inputText = "CREATE LUCENE INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1:val1;";
 		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
 		assertTrue("No errors reported with Create index with wrong assignment symbol in options", antlrResult.getFoundErrors().getNumberOfErrors()>0);
 	}
