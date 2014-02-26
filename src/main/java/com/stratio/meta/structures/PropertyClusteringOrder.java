@@ -1,5 +1,6 @@
 package com.stratio.meta.structures;
 
+import com.stratio.meta.utils.MetaUtils;
 import java.util.List;
 
 public class PropertyClusteringOrder extends MetaProperty{
@@ -13,8 +14,7 @@ public class PropertyClusteringOrder extends MetaProperty{
     public PropertyClusteringOrder(List<MetaOrdering> order) {
         super(TYPE_CLUSTERING_ORDER);
         this.order = order;
-    }
-   
+    }   
     
     public List<MetaOrdering> getOrder() {
         return order;
@@ -23,5 +23,10 @@ public class PropertyClusteringOrder extends MetaProperty{
     public void setOrder(List<MetaOrdering> order) {
         this.order = order;
     }        
+
+    @Override
+    public String toString() {
+        return "CLUSTERING ORDER BY ("+MetaUtils.StringList(order, ", ")+")";
+    }
     
 }

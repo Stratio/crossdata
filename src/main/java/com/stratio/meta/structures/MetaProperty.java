@@ -63,4 +63,7 @@ public abstract class MetaProperty {
         this.orderings.remove(index);
     }
     */
+    
+    @Override
+    public abstract String toString();
 }

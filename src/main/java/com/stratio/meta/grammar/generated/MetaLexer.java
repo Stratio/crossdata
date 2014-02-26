@@ -1,4 +1,4 @@
-// $ANTLR 3.5.1 Meta.g 2014-02-26 11:24:44
+// $ANTLR 3.5.1 Meta.g 2014-02-26 13:16:20
 
     package com.stratio.meta.grammar.generated;
 
@@ -4666,10 +4666,10 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = WS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:941:3: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
-			// Meta.g:941:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
+			// Meta.g:935:3: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
+			// Meta.g:935:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
 			{
-			// Meta.g:941:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
+			// Meta.g:935:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
 			int cnt19=0;
 			loop19:
 			while (true) {

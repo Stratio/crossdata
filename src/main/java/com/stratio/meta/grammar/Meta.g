@@ -385,16 +385,10 @@ createTableStatement returns [CreateTableStatement crtast]
                    )
                 )* 
          )             
-    ')' (T_WITH {withPropierties=true;} properties=getMetaProperties
-    /*(
-    (identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {propierties.put($identProp1.text, valueProp1);} 
-    | T_COMPACT T_STORAGE)
-    (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {propierties.put($identPropN.text, valuePropN);} 
-    | T_COMPACT T_STORAGE)*
-    )*/
-    )?
-            
-     {$crtast = new CreateTableStatement(name_table,columns,primaryKey,clusterKey,propierties,Type_Primary_Key,ifNotExists_2,withClusterKey,columnNumberPK,withPropierties);  } ;        
+    ')' (T_WITH {withPropierties=true;} properties=getMetaProperties 
+    )?            
+    {$crtast = new CreateTableStatement(name_table,columns,primaryKey,clusterKey,properties,Type_Primary_Key,ifNotExists_2,withClusterKey,columnNumberPK,withPropierties);}
+;        
 
         
 alterTableStatement returns [AlterTableStatement altast]
@@ -643,9 +637,9 @@ getMetaProperties returns [List<MetaProperty> props]
 ;
 
 getMetaProperty returns [MetaProperty mp]:
-    (identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {$mp = new PropertyNameValue($identProp.text, valueProp);} 
+    (identProp=T_IDENT T_EQUAL valueProp=getValueProperty {$mp = new PropertyNameValue($identProp.text, valueProp);} 
     | T_COMPACT T_STORAGE {$mp = new PropertyCompactStorage();}
-    | T_CLUSTERING T_ORDER T_BY ordering=getOrdering {$mp = new PropertyClusteringOrder(ordering);})    
+    | T_CLUSTERING T_ORDER T_BY T_START_PARENTHESIS ordering=getOrdering {$mp = new PropertyClusteringOrder(ordering);} T_END_PARENTHESIS)    
 ;
 
 getDataType returns [String dataType]:

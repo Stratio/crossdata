@@ -192,7 +192,8 @@ public class CreateIndexStatement extends MetaStatement {
             String cqlOptions = cqlString.substring(cqlString.indexOf("{")+1, cqlString.lastIndexOf("}")+1);
             //System.out.println("cqlOptions: "+cqlOptions);
             cqlString = cqlString.substring(0, cqlString.indexOf("{")+1).concat(cqlString.substring(cqlString.lastIndexOf("}")));
-            //System.out.println("cqlString: "+cqlString);
+            //System.out.println("cqlString: "+cqlString);            
+            /*
             String[] opts = cqlOptions.split("=");
             cqlOptions = new String();
             for(int i=0; i<opts.length; i++){
@@ -206,10 +207,12 @@ public class CreateIndexStatement extends MetaStatement {
                 }
             }
             cqlString = cqlString.replace("OPTIONS = {", "OPTIONS = {"+cqlOptions);
+            */            
+            cqlString = cqlString.replace("OPTIONS = {", "OPTIONS = {"+MetaUtils.addSingleQuotesToStringList(cqlOptions));
         }
         return cqlString;
     }
-    
+        
     @Override
     public String parseResult(ResultSet resultSet) {
         return "\t"+resultSet.toString();

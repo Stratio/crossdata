@@ -122,18 +122,16 @@ public class Metash {
         Console input = System.console();
         if(input != null){
             String cmd = "";
-
             CassandraClient.connect();
             while(!cmd.startsWith("exit") && !cmd.startsWith("quit")){
 				cmd = input.readLine("\033[36mmetash-server\033[0m> ");
                 _logger.info("\033[33mCommand: \033[0m" + cmd);
                 
                 if(cmd.startsWith("help")){
-					showHelp(cmd);
-				}else{
-					executeMetaCommand(cmd);
-				}
- 
+                    showHelp(cmd);
+                }else if (!cmd.equalsIgnoreCase("exit")){
+                    executeMetaCommand(cmd);
+                } 
             }
             CassandraClient.close();
         }else{

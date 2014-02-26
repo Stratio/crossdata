@@ -30,5 +30,10 @@ public class PropertyNameValue extends MetaProperty{
     public void setVp(ValueProperty vp) {
         this.vp = vp;
     }        
+
+    @Override
+    public String toString() {
+        return name+"="+vp.toString();
+    }
     
 }

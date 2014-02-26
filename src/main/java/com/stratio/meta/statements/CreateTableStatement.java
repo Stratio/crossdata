@@ -4,7 +4,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.structures.MetaProperty;
 import com.stratio.meta.structures.Path;
-import com.stratio.meta.structures.ValueProperty;
+import com.stratio.meta.utils.MetaUtils;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -257,6 +257,10 @@ public class CreateTableStatement extends MetaStatement{
             }break;
                 
         }
+        if(withProperties){
+            sb.append(" WITH ").append(MetaUtils.StringList(properties, " AND "));
+        }
+        /*
         Set keySet = properties.keySet();
         //if (withProperties) sb.append(" with:\n\t");
         if (withProperties) sb.append(" with");
@@ -267,6 +271,7 @@ public class CreateTableStatement extends MetaStatement{
             sb.append(" ").append(key).append("=").append(String.valueOf(vp));
             if(it.hasNext()) sb.append(" AND");
         }
+        */
         return sb.toString();    
     }
 
@@ -282,7 +287,54 @@ public class CreateTableStatement extends MetaStatement{
 
     @Override
     public String translateToCQL() {
-        return this.toString();
+        String cqlString = this.toString();
+        if(!cqlString.contains(" WITH ")){
+            return cqlString;
+        }
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i<cqlString.length(); i++){
+            char c = cqlString.charAt(i);
+            if(c=='{'){
+                sb.append("{");
+                int newI = cqlString.indexOf("}", i);
+                String insideBracket = cqlString.substring(i+1, newI);
+                insideBracket = insideBracket.replace(":", " ");
+                insideBracket = insideBracket.replace(",", " ");
+                System.out.println("|"+insideBracket+"|");
+                boolean wasChanged = true;
+                while(wasChanged){
+                    int before = insideBracket.length();
+                    insideBracket = insideBracket.replace("  ", " ");
+                    int after = insideBracket.length();
+                    if(before==after){
+                        wasChanged = false;
+                    }
+                }
+                System.out.println("|"+insideBracket+"|");
+                insideBracket = insideBracket.trim();
+                String[] strs = insideBracket.split(" ");
+                for(int j=0; j<strs.length; j++){
+                    String currentStr = strs[j];
+                    if(currentStr.matches("[0123456789.]+")){
+                        sb.append(strs[j]);
+                    } else {
+                        sb.append("\'").append(strs[j]).append("\'");
+                    }
+                    if(j % 2 == 0){
+                        sb.append(": ");
+                    } else {
+                        if(j<(strs.length-1)){
+                            sb.append(", ");
+                        }
+                    }
+                }                
+                sb.append("}");
+                i = newI;
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
     
     @Override

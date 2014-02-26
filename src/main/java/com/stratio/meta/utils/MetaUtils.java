@@ -337,4 +337,25 @@ public class MetaUtils {
         return sb.toString();
     }
     
+    public static String addSingleQuotesToStringList(String strList){
+        String[] opts = strList.split("=");
+        strList = new String();
+        for(int i=0; i<opts.length; i++){
+            String currentStr = opts[i];
+            if(currentStr.matches("[0123456789.]+")){
+                strList = strList.concat(opts[i]);
+            } else {
+                strList = strList.concat("\'").concat(opts[i]).concat("\'");
+            }
+            if(i % 2 == 0){
+                strList = strList.concat(": ");
+            } else {
+                if(i<(opts.length-1)){
+                    strList = strList.concat(", ");
+                }
+            }
+        }
+        return strList;
+    }    
+    
 }
