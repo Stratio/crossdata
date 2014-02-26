@@ -4,3 +4,5 @@ src/main/java/com/stratio/meta/client/help/generated/
 .classpath
 .project
 .settings
+/nbproject/
+build.xml
