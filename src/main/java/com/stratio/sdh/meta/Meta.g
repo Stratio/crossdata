@@ -634,16 +634,19 @@ query returns [MetaStatement st]:
 
 //FUNCTIONS
 
-getMetaProperties returns [MetaProperties mp]:
-    (
-    (identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {propierties.put($identProp1.text, valueProp1);} 
-    | T_COMPACT T_STORAGE)
-    (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {propierties.put($identPropN.text, valuePropN);} 
-    | T_COMPACT T_STORAGE)*
-    )
+getMetaProperties returns [List<MetaProperty> props]
+    @init{
+        $props = new ArrayList<>();
+    }:
+    firstProp=getMetaProperty {$props.add(firstProp);}
+    (T_AND newProp=getMetaProperty {$props.add(newProp);)*
 ;
 
-getMetaProperty returns []
+getMetaProperty returns [MetaProperty mp]:
+    (identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {$mp = new PropertyNameValue($identProp.text, valueProp);} 
+    | T_COMPACT T_STORAGE {$mp = new PropertyCompactStorage();}
+    | T_CLUSTERING T_ORDER T_BY ordering=getOrdering {$mp = new PropertyClusteringOrder(ordering);})    
+;
 
 getDataType returns [String dataType]:
     (

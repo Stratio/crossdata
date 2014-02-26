@@ -18,24 +18,24 @@ public class CreateTableStatement extends MetaStatement{
     private LinkedHashMap<String, String> columns;    
     private List<String> primaryKey;    
     private List<String> clusterKey;    
-    //private LinkedHashMap<String, ValueProperty> propierties;
-    private List<MetaProperty> propierties;
+    //private LinkedHashMap<String, ValueProperty> properties;
+    private List<MetaProperty> properties;
     private int Type_Primary_Key;
     private boolean ifNotExists;
     private boolean withClusterKey;
     private int columnNumberPK;
-    private boolean withPropierties;
+    private boolean withProperties;
 
     public CreateTableStatement(String name_table, 
                                 LinkedHashMap<String, String> columns, 
                                 List<String> primaryKey, 
                                 List<String> clusterKey, 
-                                List<MetaProperty> propierties, 
+                                List<MetaProperty> properties, 
                                 int Type_Primary_Key, 
                                 boolean ifNotExists, 
                                 boolean withClusterKey, 
                                 int columnNumberPK, 
-                                boolean withPropierties ) {       
+                                boolean withProperties) {       
         if(name_table.contains(".")){
             String[] ksAndTablename = name_table.split("\\.");
             keyspace = ksAndTablename[0];
@@ -46,12 +46,12 @@ public class CreateTableStatement extends MetaStatement{
         this.columns = columns;
         this.primaryKey = primaryKey;
         this.clusterKey = clusterKey;
-        this.propierties = propierties;
+        this.properties = properties;
         this.Type_Primary_Key = Type_Primary_Key;
         this.ifNotExists = ifNotExists;
         this.withClusterKey = withClusterKey;
         this.columnNumberPK = columnNumberPK;
-        this.withPropierties=withPropierties;
+        this.withProperties=withProperties;
     }
 
     public boolean isKeyspaceInc() {
@@ -70,12 +70,12 @@ public class CreateTableStatement extends MetaStatement{
         this.keyspace = keyspace;
     }        
     
-    public boolean isWithPropierties() {
-        return withPropierties;
+    public boolean isWithProperties() {
+        return withProperties;
     }
 
-    public void setWithPropierties(boolean withPropierties) {
-        this.withPropierties = withPropierties;
+    public void setWithProperties(boolean withProperties) {
+        this.withProperties = withProperties;
     }
     public int getColumnNumberPK() {
         return columnNumberPK;
@@ -109,12 +109,12 @@ public class CreateTableStatement extends MetaStatement{
         this.Type_Primary_Key = Type_Primary_Key;
     }
 
-    public List<MetaProperty> getPropierties() {
-        return propierties;
+    public List<MetaProperty> getProperties() {
+        return properties;
     }
 
-    public void setPropierties(List<MetaProperty> propierties) {
-        this.propierties = propierties;
+    public void setProperties(List<MetaProperty> properties) {
+        this.properties = properties;
     }
 
     public List<String> getClusterKey() {
@@ -256,12 +256,12 @@ public class CreateTableStatement extends MetaStatement{
             }break;
                 
         }
-        Set keySet = propierties.keySet();
-        //if (withPropierties) sb.append(" with:\n\t");
-        if (withPropierties) sb.append(" with");
+        Set keySet = properties.keySet();
+        //if (withProperties) sb.append(" with:\n\t");
+        if (withProperties) sb.append(" with");
         for (Iterator it = keySet.iterator(); it.hasNext();) {
             String key = (String) it.next();
-            ValueProperty vp = propierties.get(key);
+            ValueProperty vp = properties.get(key);
             //sb.append(key).append(": ").append(String.valueOf(vp)).append("\n\t");
             sb.append(" ").append(key).append("=").append(String.valueOf(vp));
             if(it.hasNext()) sb.append(" AND");

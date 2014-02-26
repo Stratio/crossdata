@@ -6,7 +6,7 @@ public abstract class MetaProperty {
     public static final int TYPE_COMPACT_STORAGE = 2;
     public static final int TYPE_CLUSTERING_ORDER = 3;
     
-    private int type;
+    protected int type;
     //private LinkedHashMap<String, ValueProperty> propierties = new LinkedHashMap<>(); 
     //private List<MetaOrdering> orderings = new ArrayList<>();
 
