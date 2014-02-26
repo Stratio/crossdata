@@ -97,13 +97,13 @@
 							<goal>antlr</goal>
 						</goals>
 						<configuration>
-							<sourceDirectory>src/main/java/com/stratio/sdh/meta</sourceDirectory>
+							<sourceDirectory>src/main/java/com/stratio/meta/grammar</sourceDirectory>
 							<listener>true</listener>
 							<visitor>true</visitor>
-							<outputDirectory>src/main/java/com/stratio/sdh/meta/generated</outputDirectory>
+							<outputDirectory>src/main/java/com/stratio/meta/grammar/generated</outputDirectory>
 							<arguments>
 								<argument>-package</argument>
-								<argument>com.stratio.sdh.generated</argument>
+								<argument>com.stratio.meta.grammar.generated</argument>
 							</arguments>
 						</configuration>
 					</execution>
