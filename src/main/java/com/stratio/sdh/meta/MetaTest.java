@@ -2,7 +2,7 @@ package com.stratio.sdh.meta;
 
 import com.stratio.sdh.meta.generated.MetaLexer;
 import com.stratio.sdh.meta.generated.MetaParser;
-import com.stratio.sdh.meta.statements.Statement;
+import com.stratio.sdh.meta.statements.MetaStatement;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,7 +27,7 @@ public class MetaTest{
                 System.out.println("CommonTokenStream created");
                MetaParser parser = new MetaParser(tokens);   
                 System.out.println("MetaParser created");
-                Statement statement = parser.query();
+                MetaStatement statement = parser.query();
                 System.out.println(statement.toString());                
                 System.out.print("Insert query: ");
                 queryTxt = new Scanner(System.in).nextLine();

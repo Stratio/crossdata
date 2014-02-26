@@ -1,5 +1,7 @@
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import com.stratio.sdh.meta.structures.Assignment;
 import com.stratio.sdh.meta.structures.MetaRelation;
 import com.stratio.sdh.meta.structures.Option;
@@ -9,7 +11,7 @@ import com.stratio.sdh.meta.utils.MetaUtils;
 import java.util.List;
 import java.util.Map;
 
-public class UpdateTableStatement extends Statement {
+public class UpdateTableStatement extends MetaStatement {
     
     private String tablename;
     private boolean optsInc;
@@ -142,5 +144,31 @@ public class UpdateTableStatement extends Statement {
         }
         return sb.toString();
     }    
+
+    @Override
+    public boolean validate() {
+        return true;
+    }
+
+    @Override
+    public String getSuggestion() {
+        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
+    
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        return "\t"+resultSet.toString();
+    }
+
+    @Override
+    public Statement getDriverStatement() {
+        Statement statement = null;
+        return statement;
+    }
     
 }

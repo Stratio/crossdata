@@ -1,16 +1,24 @@
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Using;
 import com.stratio.sdh.meta.structures.Option;
 import com.stratio.sdh.meta.structures.Path;
 import com.stratio.sdh.meta.structures.ValueCell;
 import com.stratio.sdh.meta.utils.MetaUtils;
+import java.util.Iterator;
 import java.util.List;
 
-public class InsertIntoStatement extends Statement {
+public class InsertIntoStatement extends MetaStatement {
 
     public static final int TYPE_SELECT_CLAUSE = 1;
     public static final int TYPE_VALUES_CLAUSE = 2;
     
+    private boolean keyspaceInc = false;
+    private String keyspace;
     private String tablename;    
     private List<String> ids;
     private SelectStatement selectStatement;
@@ -27,6 +35,12 @@ public class InsertIntoStatement extends Statement {
                                boolean optsInc,
                                List<Option> options, 
                                int typeValues) {
+        if(tablename.contains(".")){
+            String[] ksAndTablename = tablename.split("\\.");
+            keyspace = ksAndTablename[0];
+            tablename = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.tablename = tablename;
         this.ids = ids;
         this.selectStatement = selectStatement;
@@ -66,6 +80,30 @@ public class InsertIntoStatement extends Statement {
                                boolean ifNotExists) {
         this(tablename, ids, null, cellValues, ifNotExists, false, null, 2);
     }
+
+    public boolean isKeyspaceInc() {
+        return keyspaceInc;
+    }
+
+    public void setKeyspaceInc(boolean keyspaceInc) {
+        this.keyspaceInc = keyspaceInc;
+    }
+
+    public String getKeyspace() {
+        return keyspace;
+    }
+
+    public void setKeyspace(String keyspace) {
+        this.keyspace = keyspace;
+    }
+
+    public boolean isOptsInc() {
+        return optsInc;
+    }
+
+    public void setOptsInc(boolean optsInc) {
+        this.optsInc = optsInc;
+    }        
     
     public List<String> getIds() {
         return ids;
@@ -167,6 +205,9 @@ public class InsertIntoStatement extends Statement {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("INSERT INTO ");
+        if(keyspaceInc){
+            sb.append(keyspace).append(".");
+        }
         sb.append(tablename).append(" (");
         sb.append(MetaUtils.StringList(ids, ", ")).append(") ");
         if(typeValues == TYPE_SELECT_CLAUSE){
@@ -185,5 +226,87 @@ public class InsertIntoStatement extends Statement {
         }
         return sb.toString();
     }
+
+    @Override
+    public boolean validate() {
+        return true;
+    }
+
+    @Override
+    public String getSuggestion() {
+        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
     
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        //return "\t"+resultSet.toString();
+        return "Executed successfully"+System.getProperty("line.separator");
+    }
+    
+    @Override
+    public Statement getDriverStatement() {
+        //INSERT INTO mykeyspace.users(name, gender, color, animal, food, password, age, code) 
+        //VALUES(pepito, male, black, whale, plants, efg, 12, 44) IF NOT EXISTS 
+        //USING TTL=86400 AND TIMESTAMP=542052; 
+        /*
+        Insert insert = QueryBuilder.insertInto("test", "user")
+        .value("username", "jdoe")
+        .value("first", "John")
+        .value("last", "Doe");
+        */
+        if(this.typeValues == TYPE_SELECT_CLAUSE){
+            return null;
+        }
+            
+        Insert insertStmt;
+        if(this.keyspaceInc){
+            insertStmt = QueryBuilder.insertInto(this.keyspace, this.tablename);            
+        } else {
+            insertStmt = QueryBuilder.insertInto(this.tablename);
+        }
+        Iterator iter = this.cellValues.iterator();
+        for(String id: this.ids){
+            ValueCell valueCell = (ValueCell) iter.next();
+            if(valueCell.toString().matches("[0123456789.]+")){
+                insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.toString()));
+            } else {
+                insertStmt = insertStmt.value(id, valueCell.toString());
+            }            
+        }
+        
+        if(this.ifNotExists){
+            insertStmt = insertStmt.ifNotExists();
+        }
+        
+        Insert.Options optionsStmt = null;
+        if(this.optsInc){
+            Using using = null;            
+            for(Option option: this.options){
+                if(option.getFixedOption() == Option.OPTION_PROPERTY){
+                    if(option.getNameProperty().equalsIgnoreCase("ttl")){
+                        if(using == null){
+                            optionsStmt = insertStmt.using(QueryBuilder.ttl(Integer.parseInt(option.getProperties().toString())));
+                        } else {
+                            optionsStmt = optionsStmt.and(QueryBuilder.ttl(Integer.parseInt(option.getProperties().toString())));
+                        }
+                    } else if(option.getNameProperty().equalsIgnoreCase("timestamp")){
+                        if(using == null){
+                            optionsStmt = insertStmt.using(QueryBuilder.timestamp(Integer.parseInt(option.getProperties().toString())));
+                        } else {
+                            optionsStmt = optionsStmt.and(QueryBuilder.timestamp(Integer.parseInt(option.getProperties().toString())));
+                        }
+                    }
+                }
+            }
+        }         
+        if(optionsStmt==null){
+            return insertStmt;
+        }
+        return optionsStmt;        
+    }    
 }

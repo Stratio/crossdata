@@ -1,8 +1,10 @@
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import com.stratio.sdh.meta.structures.Path;
 
-public class StopProcessStatement extends Statement {
+public class StopProcessStatement extends MetaStatement {
 
     private String ident;
 
@@ -17,7 +19,6 @@ public class StopProcessStatement extends Statement {
     public void setIdent(String ident) {
         this.ident = ident;
     }
-
     
     @Override
     public Path estimatePath() {
@@ -30,7 +31,31 @@ public class StopProcessStatement extends Statement {
         sb.append(ident);
         return sb.toString();
     }
+
+    @Override
+    public boolean validate() {
+        return true;
+    }
+
+    @Override
+    public String getSuggestion() {
+        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
+           
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        return "\t"+resultSet.toString();
+    }
     
-    
+    @Override
+    public Statement getDriverStatement() {
+        Statement statement = null;
+        return statement;
+    }
     
 }

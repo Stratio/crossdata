@@ -1,28 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import com.stratio.sdh.meta.structures.Path;
 import com.stratio.sdh.meta.structures.ValueProperty;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
-/**
- *
- * @author aalcocer
- */
-public class AlterTableStatement extends Statement{
+public class AlterTableStatement extends MetaStatement{
     
-        private String name_table;
-        private int prop;
-        private String column;
-        private String type;
-        private LinkedHashMap<String, ValueProperty> option;
+    private String name_table;
+    private int prop;
+    private String column;
+    private String type;
+    private LinkedHashMap<String, ValueProperty> option;
         
         
     public AlterTableStatement(String name_table, String column, String type, LinkedHashMap<String, ValueProperty> option, int prop) {
@@ -30,31 +22,37 @@ public class AlterTableStatement extends Statement{
         this.column = column;
         this.type = type;
         this.option = option;
-        this.prop = prop;
-          
+        this.prop = prop;          
     }
-//Setters and getters Name table
+    
+    //Setters and getters Name table
     public String getName_table() {
         return name_table;
     }
+    
     public void setName_table(String name_table) {
         this.name_table = name_table;
     }
-//Seeters and getters columns
+    
+    //Seeters and getters columns
     public String getColumn() {
         return column;
-    }   
+    }  
+    
     public void setColumn(String column) {
         this.column = column;
     }
-//Setter and getter type 
+    
+    //Setter and getter type 
     public String getType() {
         return type;
     }
+    
     public void setType(String type) {
         this.type = type;
     }
-//Setter and getter option
+    
+    //Setter and getter option
      public LinkedHashMap<String, ValueProperty> getOption() {
         return option;
     }
@@ -62,11 +60,13 @@ public class AlterTableStatement extends Statement{
     public void setOption(LinkedHashMap<String, ValueProperty> option) {
         this.option = option;
     }
-//Setter and getter  prop
+    
+    //Setter and getter  prop
     public int getProp() {
         return prop;
     }
-     public void setProp(int prop) {
+    
+    public void setProp(int prop) {
         this.prop = prop;
     }  
 
@@ -110,10 +110,34 @@ public class AlterTableStatement extends Statement{
             default:{
                 sb.append("bad option");
             }break;
-        }
-        
+        }        
         return sb.toString();
     }
+
+    @Override
+    public boolean validate() {
+        return true;
+    }
+
+    @Override
+    public String getSuggestion() {
+        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
     
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        return "\t"+resultSet.toString();
+    }
+        
+    @Override
+    public Statement getDriverStatement() {
+        Statement statement = null;
+        return statement;
+    }
     
 }

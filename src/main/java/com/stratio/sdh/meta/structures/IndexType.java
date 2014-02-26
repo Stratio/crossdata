@@ -1,4 +1,4 @@
-package com.stratio.sdh.meta.statements;
+package com.stratio.sdh.meta.structures;
 
 /**
  * Types of indexes supported by META.

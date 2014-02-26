@@ -1,20 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import com.stratio.sdh.meta.structures.Path;
 
-/**
- *
- * @author aalcocer
- */
-public class CreateTriggerStatement extends Statement {
+public class CreateTriggerStatement extends MetaStatement {
     
-        private String trigger_name;
+    private String trigger_name;
 
     public CreateTriggerStatement(String trigger_name, String table_name, String class_name) {
         this.trigger_name = trigger_name;
@@ -64,6 +56,32 @@ public class CreateTriggerStatement extends Statement {
         sb.append(" using ");
         sb.append(class_name);
         return sb.toString();
+    }
+
+    @Override
+    public boolean validate() {
+        return true;
+    }
+
+    @Override
+    public String getSuggestion() {
+        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
+    
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        return "\t"+resultSet.toString();
+    }
+    
+    @Override
+    public Statement getDriverStatement() {
+        Statement statement = null;
+        return statement;
     }
     
 }

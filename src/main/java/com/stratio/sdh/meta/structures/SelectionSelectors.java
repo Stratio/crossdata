@@ -32,6 +32,10 @@ public class SelectionSelectors extends Selection {
         selectors.remove(index);
     }
     
+    public int numberOfSelectors(){
+        return selectors.size();
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(MetaUtils.StringList(selectors, ", "));

@@ -1,11 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.stratio.sdh.meta.statements;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
+import com.stratio.sdh.meta.structures.MetaProperty;
 import com.stratio.sdh.meta.structures.Path;
 import com.stratio.sdh.meta.structures.ValueProperty;
 import java.util.Iterator;
@@ -13,58 +10,72 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-/**
- *
- * @author aalcocer
- */
-public class CreateTableStatement extends Statement{
-
+public class CreateTableStatement extends MetaStatement{
     
-    private String name_table;
-    
-    private LinkedHashMap<String, String> columns;
-    
-    private List<String> primaryKey;
-    
-    private List<String> clusterKey;
-    
-    private LinkedHashMap<String, ValueProperty> propierties;
-   
+    private boolean keyspaceInc = false;
+    private String keyspace;
+    private String name_table;    
+    private LinkedHashMap<String, String> columns;    
+    private List<String> primaryKey;    
+    private List<String> clusterKey;    
+    //private LinkedHashMap<String, ValueProperty> properties;
+    private List<MetaProperty> properties;
     private int Type_Primary_Key;
-
     private boolean ifNotExists;
-
     private boolean withClusterKey;
-
     private int columnNumberPK;
+    private boolean withProperties;
 
-    private boolean withPropierties;
-
-    
-
-    
-
-
-
-    public CreateTableStatement(String name_table, LinkedHashMap<String, String> columns, List<String> primaryKey, List<String> clusterKey, LinkedHashMap<String, ValueProperty> propierties, int Type_Primary_Key, boolean ifNotExists, boolean withClusterKey, int columnNumberPK, boolean withPropierties ) {
+    public CreateTableStatement(String name_table, 
+                                LinkedHashMap<String, String> columns, 
+                                List<String> primaryKey, 
+                                List<String> clusterKey, 
+                                List<MetaProperty> properties, 
+                                int Type_Primary_Key, 
+                                boolean ifNotExists, 
+                                boolean withClusterKey, 
+                                int columnNumberPK, 
+                                boolean withProperties) {       
+        if(name_table.contains(".")){
+            String[] ksAndTablename = name_table.split("\\.");
+            keyspace = ksAndTablename[0];
+            name_table = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.name_table = name_table;
         this.columns = columns;
         this.primaryKey = primaryKey;
         this.clusterKey = clusterKey;
-        this.propierties = propierties;
+        this.properties = properties;
         this.Type_Primary_Key = Type_Primary_Key;
         this.ifNotExists = ifNotExists;
         this.withClusterKey = withClusterKey;
         this.columnNumberPK = columnNumberPK;
-        this.withPropierties=withPropierties;
-    }
-    
-    public boolean isWithPropierties() {
-        return withPropierties;
+        this.withProperties=withProperties;
     }
 
-    public void setWithPropierties(boolean withPropierties) {
-        this.withPropierties = withPropierties;
+    public boolean isKeyspaceInc() {
+        return keyspaceInc;
+    }
+
+    public void setKeyspaceInc(boolean keyspaceInc) {
+        this.keyspaceInc = keyspaceInc;
+    }
+
+    public String getKeyspace() {
+        return keyspace;
+    }
+
+    public void setKeyspace(String keyspace) {
+        this.keyspace = keyspace;
+    }        
+    
+    public boolean isWithProperties() {
+        return withProperties;
+    }
+
+    public void setWithProperties(boolean withProperties) {
+        this.withProperties = withProperties;
     }
     public int getColumnNumberPK() {
         return columnNumberPK;
@@ -98,15 +109,13 @@ public class CreateTableStatement extends Statement{
         this.Type_Primary_Key = Type_Primary_Key;
     }
 
-
-    public LinkedHashMap<String, ValueProperty> getPropierties() {
-        return propierties;
+    public List<MetaProperty> getProperties() {
+        return properties;
     }
 
-    public void setPropierties(LinkedHashMap<String, ValueProperty> propierties) {
-        this.propierties = propierties;
+    public void setProperties(List<MetaProperty> properties) {
+        this.properties = properties;
     }
-
 
     public List<String> getClusterKey() {
         return clusterKey;
@@ -116,7 +125,6 @@ public class CreateTableStatement extends Statement{
         this.clusterKey = clusterKey;
     }
 
-
     public List<String> getPrimaryKey() {
         return primaryKey;
     }
@@ -124,8 +132,6 @@ public class CreateTableStatement extends Statement{
     public void setPrimaryKey(List<String> primaryKey) {
         this.primaryKey = primaryKey;
     }
-
-
 
     public LinkedHashMap<String, String> getColumns() {
         return columns;
@@ -143,8 +149,6 @@ public class CreateTableStatement extends Statement{
         this.name_table = name_table;
     }
 
-    
-    
     @Override
     public Path estimatePath() {
          return Path.CASSANDRA;
@@ -154,6 +158,10 @@ public class CreateTableStatement extends Statement{
     public String toString() {
         StringBuilder sb = new StringBuilder("Create table ");
         if(ifNotExists) sb.append("if not exit ");
+        
+        if(keyspaceInc){
+            sb.append(keyspace).append(".");
+        } 
         sb.append(name_table);
         
         switch(Type_Primary_Key){
@@ -248,19 +256,44 @@ public class CreateTableStatement extends Statement{
             }break;
                 
         }
-        Set keySet = propierties.keySet();
-        //if (withPropierties) sb.append(" with:\n\t");
-        if (withPropierties) sb.append(" with");
+        Set keySet = properties.keySet();
+        //if (withProperties) sb.append(" with:\n\t");
+        if (withProperties) sb.append(" with");
         for (Iterator it = keySet.iterator(); it.hasNext();) {
             String key = (String) it.next();
-            ValueProperty vp = propierties.get(key);
+            ValueProperty vp = properties.get(key);
             //sb.append(key).append(": ").append(String.valueOf(vp)).append("\n\t");
             sb.append(" ").append(key).append("=").append(String.valueOf(vp));
             if(it.hasNext()) sb.append(" AND");
         }
-        return sb.toString();
-    
+        return sb.toString();    
     }
 
+    @Override
+    public boolean validate() {
+        return true;
+    }
+
+    @Override
+    public String getSuggestion() {
+        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    }
+
+    @Override
+    public String translateToCQL() {
+        return this.toString();
+    }
+    
+    @Override
+    public String parseResult(ResultSet resultSet) {
+        //return "\t"+resultSet.toString();
+        return "Executed successfully"+System.getProperty("line.separator");
+    }
+ 
+    @Override
+    public Statement getDriverStatement() {
+        Statement statement = null;
+        return statement;
+    }
     
 }

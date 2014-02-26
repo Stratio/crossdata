@@ -3,13 +3,13 @@ package com.stratio.sdh.meta.structures;
 public class SelectionSelector {
     
     SelectorMeta selector;
-    boolean identInc;
-    String identifier;
+    boolean aliasInc;
+    String alias;
 
-    public SelectionSelector(SelectorMeta selector, boolean identInc, String identifier) {
+    public SelectionSelector(SelectorMeta selector, boolean aliasInc, String alias) {
         this.selector = selector;
-        this.identInc = identInc;
-        this.identifier = identifier;
+        this.aliasInc = aliasInc;
+        this.alias = alias;
     }
     
     public SelectionSelector(SelectorMeta selector) {
@@ -24,28 +24,28 @@ public class SelectionSelector {
         this.selector = selector;
     }
 
-    public boolean isIdentInc() {
-        return identInc;
+    public boolean isAliasInc() {
+        return aliasInc;
     }
 
-    public void setIdentInc(boolean identInc) {
-        this.identInc = identInc;
+    public void setAliasInc(boolean aliasInc) {
+        this.aliasInc = aliasInc;
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public String getAlias() {
+        return alias;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identInc = true;
-        this.identifier = identifier;
+    public void setAlias(String alias) {
+        this.aliasInc = true;
+        this.alias = alias;
     }        
         
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder(selector.toString());
-        if(identInc){
-            sb.append(" AS ").append(identifier);
+        if(aliasInc){
+            sb.append(" AS ").append(alias);
         }
         return sb.toString();
     }

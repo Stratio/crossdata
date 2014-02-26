@@ -27,8 +27,8 @@ options {
     package com.stratio.sdh.meta.generated;    
     import com.stratio.sdh.meta.statements.*;
     import com.stratio.sdh.meta.structures.*;
+    import com.stratio.sdh.meta.utils.*;
     import java.util.LinkedHashMap;
-    import com.stratio.sdh.meta.structures.ValueAssignment;
     import java.util.HashMap;
     import java.util.Map;
     import java.util.Set;
@@ -36,12 +36,22 @@ options {
 }
 
 @members {
-    public void displayRecognitionError(String[] tokenNames, RecognitionException e){
-        System.err.print("Error recognized: ");
+    private ErrorsHelper foundErrors = new ErrorsHelper();
+
+    public ErrorsHelper getFoundErrors(){
+        return foundErrors;
+    }
+
+    @Override
+    public void displayRecognitionError(String[] tokenNames, RecognitionException e){        
         String hdr = getErrorHeader(e);
         String msg = getErrorMessage(e, tokenNames);
+        /*System.err.println("Antlr exception: ");
+        System.err.print("\tError recognized: ");
         System.err.print(hdr+": ");
-        System.err.println(msg);
+        System.err.println(msg);*/
+        AntlrError antlrError = new AntlrError(hdr, msg);
+        foundErrors.addError(antlrError);
     }
 }
 
@@ -164,7 +174,8 @@ T_COLON: ':';
 T_COMMA: ',';
 T_START_PARENTHESIS: '(';
 T_END_PARENTHESIS: ')';
-T_QUOTE: '"' | '\'';
+T_QUOTE: '"';
+T_SINGLE_QUOTE: '\'';
 T_INDEX_TYPE: ('DEFAULT' | 'LUCENE' | 'CUSTOM');
 T_START_BRACKET: '[';
 T_END_BRACKET: ']';
@@ -179,13 +190,19 @@ T_MIN: M I N;
 T_AVG: A V G;
 T_GT: '>';
 T_LT: '<';
-T_GET: '>' '='; 
-T_LET: '<' '=';
+T_GTE: '>' '='; 
+T_LTE: '<' '=';
 T_NOT_EQUAL: '<' '>'; 
 T_TOKEN: T O K E N;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
+
+QUOTED_LITERAL
+    @init{ StringBuilder sb = new StringBuilder(); }
+    @after{ setText(sb.toString()); }: 
+        '\'' (c=~('\'') { sb.appendCodePoint(c);} | '\'' '\'' { sb.appendCodePoint('\''); })* '\''
+    ;
 
 T_CONSTANT: (DIGIT)+;
 
@@ -225,7 +242,7 @@ deleteStatement returns [DeleteStatement ds]
 
 //ADD \"index_path\";
 addStatement returns [AddStatement as]:
-	T_ADD T_QUOTE name=T_PATH T_QUOTE {$as = new AddStatement($name.text);}
+	T_ADD (T_QUOTE | T_SINGLE_QUOTE) name=T_PATH (T_QUOTE | T_SINGLE_QUOTE) {$as = new AddStatement($name.text);}
 	;
 
 //LIST ( PROCESS | UDF | TRIGGER) ;
@@ -235,7 +252,7 @@ listStatement returns [ListStatement ls]:
 
 //REMOVE UDF \"jar.name\";"
 removeUDFStatement returns [RemoveUDFStatement rus]:
-	T_REMOVE 'UDF' T_QUOTE jar=getTerm {$rus = new RemoveUDFStatement(jar);} T_QUOTE
+	T_REMOVE 'UDF' (T_QUOTE | T_SINGLE_QUOTE) jar=getTerm {$rus = new RemoveUDFStatement(jar);} (T_QUOTE | T_SINGLE_QUOTE)
 	;
 
 //DROP INDEX IF EXISTS index_name;
@@ -259,7 +276,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	T_CREATE indexType=T_INDEX_TYPE {$cis.setIndexType($indexType.text);} T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
 	name=T_IDENT {$cis.setName($name.text);}
-	T_ON tablename=T_IDENT {$cis.setTablename($tablename.text);}
+	T_ON tablename=getTableID {$cis.setTablename(tablename);}
 	T_START_PARENTHESIS
 	firstField=T_IDENT {$cis.addColumn($firstField.text);}
 	(T_COMMA
@@ -272,6 +289,10 @@ createIndexStatement returns [CreateIndexStatement cis]
 	)?
 	;
     //identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {properties.put($identProp1.text, valueProp1);}
+/*
+(T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=T_IDENT T_COLON value=getValueProperty {$cis.addOption($key.text, value);}
+		(T_AND key=T_IDENT T_COLON value=getValueProperty {$cis.addOption($key.text, value);} )* T_END_SBRACKET
+*/
 
 updateTableStatement returns [UpdateTableStatement pdtbst]
     @init{
@@ -340,23 +361,23 @@ createTableStatement returns [CreateTableStatement crtast]
     T_CREATE
     T_TABLE
     (T_IF T_NOT T_EXISTS {ifNotExists_2 = true;})? 
-    name_table=T_IDENT
+    name_table=getTableID
     '(' (            
-                ident_column1=T_IDENT type1=T_IDENT (T_PRIMARY T_KEY)? {columns.put($ident_column1.text,$type1.text); Type_Primary_Key=1;}
+                ident_column1=(T_IDENT | T_KEY) type1=getDataType (T_PRIMARY T_KEY)? {columns.put($ident_column1.text,type1); Type_Primary_Key=1;}
                 (   
-                    ( ',' ident_columN=T_IDENT typeN=T_IDENT (T_PRIMARY T_KEY {Type_Primary_Key=2;columnNumberPK=columnNumberPK_inter +1;})? {columns.put($ident_columN.text,$typeN.text);columnNumberPK_inter+=1;})
+                    ( ',' ident_columN=(T_IDENT | T_KEY) typeN=getDataType (T_PRIMARY T_KEY {Type_Primary_Key=2;columnNumberPK=columnNumberPK_inter +1;})? {columns.put($ident_columN.text,typeN);columnNumberPK_inter+=1;})
                     |(  
                         ',' T_PRIMARY T_KEY '('
                         (
-                            (   primaryK=T_IDENT {primaryKey.add($primaryK.text);Type_Primary_Key=3;}
+                            (   primaryK=(T_IDENT | T_KEY) {primaryKey.add($primaryK.text);Type_Primary_Key=3;}
                            
-                                (','partitionKN=T_IDENT {primaryKey.add($partitionKN.text);})*
+                                (','partitionKN=(T_IDENT | T_KEY) {primaryKey.add($partitionKN.text);})*
                             )
                             |(
-                                '(' partitionK=T_IDENT {primaryKey.add($partitionK.text);Type_Primary_Key=4;}
-                                    (','partitionKN=T_IDENT {primaryKey.add($partitionKN.text);})*
+                                '(' partitionK=(T_IDENT | T_KEY) {primaryKey.add($partitionK.text);Type_Primary_Key=4;}
+                                    (','partitionKN=(T_IDENT | T_KEY) {primaryKey.add($partitionKN.text);})*
                                 ')' 
-                                (',' clusterKN=T_IDENT {clusterKey.add($clusterKN.text);withClusterKey=true;})*
+                                (',' clusterKN=(T_IDENT | T_KEY) {clusterKey.add($clusterKN.text);withClusterKey=true;})*
 
                             )
                         )
@@ -364,11 +385,16 @@ createTableStatement returns [CreateTableStatement crtast]
                    )
                 )* 
          )             
-    ')' T_WITH?
-    ( identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {propierties.put($identProp1.text, valueProp1);withPropierties=true;}
-            (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {propierties.put($identPropN.text, valuePropN);withPropierties=true;} )*)?
+    ')' (T_WITH {withPropierties=true;} properties=getMetaProperties
+    /*(
+    (identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {propierties.put($identProp1.text, valueProp1);} 
+    | T_COMPACT T_STORAGE)
+    (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {propierties.put($identPropN.text, valuePropN);} 
+    | T_COMPACT T_STORAGE)*
+    )*/
+    )?
             
-     {$crtast = new CreateTableStatement($name_table.text,columns,primaryKey,clusterKey,propierties,Type_Primary_Key,ifNotExists_2,withClusterKey,columnNumberPK,withPropierties);  } ;        
+     {$crtast = new CreateTableStatement(name_table,columns,primaryKey,clusterKey,propierties,Type_Primary_Key,ifNotExists_2,withClusterKey,columnNumberPK,withPropierties);  } ;        
 
         
 alterTableStatement returns [AlterTableStatement altast]
@@ -378,7 +404,7 @@ alterTableStatement returns [AlterTableStatement altast]
     }:
     T_ALTER
     T_TABLE
-    name_table=T_IDENT
+    name_table=getTableID
     (T_ALTER column=T_IDENT T_TYPE type=T_IDENT {prop=1;}
         |T_ADD column=T_IDENT type=T_IDENT {prop=2;}
         |T_DROP column=T_IDENT {prop=3;}
@@ -387,7 +413,7 @@ alterTableStatement returns [AlterTableStatement altast]
             (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {option.put($identPropN.text, valuePropN);} )*
             {prop=4;}
     )
-    {$altast = new AlterTableStatement($name_table.text,$column.text,$type.text,option,prop);  }
+    {$altast = new AlterTableStatement(name_table, $column.text, $type.text, option, prop);  }
 ;
 
 selectStatement returns [SelectStatement slctst]
@@ -424,8 +450,7 @@ selectStatement returns [SelectStatement slctst]
             $slctst.setLimit(Integer.parseInt($constant.text));
         if(disable)
             $slctst.setDisableAnalytics(true);
-    }
-    ;
+    };
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
     @init{
@@ -517,13 +542,11 @@ setOptionsStatement returns [SetOptionsStatement stptst]
         (T_AND T_ANALYTICS T_EQUAL (T_TRUE{analytics=true;}|T_FALSE{analytics=false;}) 
             {checks.set(0, true);})?
         { $stptst = new SetOptionsStatement(analytics, cnstc, checks);}
-    )
-    ;
+    );
 
 useStatement returns [UseStatement usst]:
     T_USE
-    iden=T_IDENT {$usst = new UseStatement($iden.text);}
-    ;
+    iden=T_IDENT {$usst = new UseStatement($iden.text);};
 
 dropKeyspaceStatement returns [DropKeyspaceStatement drksst]
     @init{
@@ -533,8 +556,7 @@ dropKeyspaceStatement returns [DropKeyspaceStatement drksst]
     T_KEYSPACE
     (T_IF T_EXISTS {ifExists = true;})?
     iden=T_IDENT
-    { $drksst = new DropKeyspaceStatement($iden.text, ifExists);}
-    ;
+    { $drksst = new DropKeyspaceStatement($iden.text, ifExists);};
 
 alterKeyspaceStatement returns [AlterKeyspaceStatement alksst]
     @init{
@@ -546,8 +568,7 @@ alterKeyspaceStatement returns [AlterKeyspaceStatement alksst]
     T_WITH
     identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {properties.put($identProp1.text, valueProp1);}
     (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {properties.put($identPropN.text, valuePropN);} )*
-    { $alksst = new AlterKeyspaceStatement($ident.text, properties); }
-    ;
+    { $alksst = new AlterKeyspaceStatement($ident.text, properties); };
 
 createKeyspaceStatement returns [CreateKeyspaceStatement crksst]
     @init{
@@ -561,8 +582,7 @@ createKeyspaceStatement returns [CreateKeyspaceStatement crksst]
     T_WITH    
     identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {properties.put($identProp1.text, valueProp1);}
     (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {properties.put($identPropN.text, valuePropN);} )*
-    { $crksst = new CreateKeyspaceStatement($identKS.text, ifNotExists, properties); }
-    ;
+    { $crksst = new CreateKeyspaceStatement($identKS.text, ifNotExists, properties); };
 
 dropTableStatement returns [DropTableStatement drtbst]
     @init{
@@ -573,19 +593,15 @@ dropTableStatement returns [DropTableStatement drtbst]
     (T_IF T_EXISTS { ifExists = true; })?
     identID=getTableID {
         $drtbst = new DropTableStatement(identID, ifExists);
-    }
-    ;
+    };
 
 truncateStatement returns [TruncateStatement trst]: 
 	T_TRUNCATE 
         ident=getTableID {
             $trst = new TruncateStatement(ident);
-	}
-	;
+	};
 
-metaStatement returns [Statement st]:
-
-//cambiado por Antonio 7-2-2014
+metaStatement returns [MetaStatement st]:
     st_crta= createTableStatement { $st = st_crta;}
     | st_alta= alterTableStatement { $st = st_alta;}
     | st_crtr= createTriggerStatement { $st = st_crtr; }
@@ -610,7 +626,7 @@ metaStatement returns [Statement st]:
     | ds = deleteStatement { $st = ds; } 
     ;
 
-query returns [Statement st]: 
+query returns [MetaStatement st]: 
 	mtst=metaStatement (T_SEMICOLON)+ EOF {
 		$st = mtst;
 	};
@@ -618,13 +634,34 @@ query returns [Statement st]:
 
 //FUNCTIONS
 
-getOrdering returns [List<Ordering> order]
+getMetaProperties returns [List<MetaProperty> props]
+    @init{
+        $props = new ArrayList<>();
+    }:
+    firstProp=getMetaProperty {$props.add(firstProp);}
+    (T_AND newProp=getMetaProperty {$props.add(newProp);})*
+;
+
+getMetaProperty returns [MetaProperty mp]:
+    (identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {$mp = new PropertyNameValue($identProp.text, valueProp);} 
+    | T_COMPACT T_STORAGE {$mp = new PropertyCompactStorage();}
+    | T_CLUSTERING T_ORDER T_BY ordering=getOrdering {$mp = new PropertyClusteringOrder(ordering);})    
+;
+
+getDataType returns [String dataType]:
+    (
+        ident1=T_IDENT ('<' ident2=T_IDENT (',' ident3=T_IDENT)? '>')?
+    )
+    {$dataType = $ident1.text.concat(ident2==null?"":"<"+$ident2.text).concat(ident3==null?"":","+$ident3.text).concat(ident2==null?"":">");}
+;
+
+getOrdering returns [List<MetaOrdering> order]
     @init{
         order = new ArrayList<>();
-        Ordering ordering;
+        MetaOrdering ordering;
     }:
-    ident1=T_IDENT {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
-    (T_COMMA identN=T_IDENT {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+    ident1=T_IDENT {ordering = new MetaOrdering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
+    (T_COMMA identN=T_IDENT {ordering = new MetaOrdering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
 ;
 
 getWhereClauses returns [List<MetaRelation> clauses]
@@ -647,8 +684,7 @@ getWindow returns [WindowSelect ws]:
     | cnstnt=T_CONSTANT (T_ROWS {$ws = new WindowRows(Integer.parseInt($cnstnt.text));} 
                        | unit=getTimeUnit {$ws = new WindowTime(Integer.parseInt($cnstnt.text), unit);}
                        )
-    )
-;
+    );
 
 getTimeUnit returns [TimeUnit unit]:
     ( 'S' {$unit=TimeUnit.SECONDS;}
@@ -705,8 +741,8 @@ getSelection returns [Selection slct]
     }:
     (
         T_ASTERISK { $slct = new SelectionAsterisk();}       
-        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS ident1=T_IDENT {slsl.setIdentifier($ident1.text);})? {selections.add(slsl);}
-            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS identN=T_IDENT {slsl.setIdentifier($identN.text);})? {selections.add(slsl);})*
+        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS ident1=T_IDENT {slsl.setAlias($ident1.text);})? {selections.add(slsl);}
+            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS identN=T_IDENT {slsl.setAlias($identN.text);})? {selections.add(slsl);})*
             { $slct = new SelectionSelectors(selections);}
     )
 ;
@@ -788,8 +824,8 @@ getComparator returns [String comparator]:
     T_EQUAL {$comparator="=";}
     | T_GT {$comparator=">";}
     | T_LT {$comparator="<";}
-    | T_GET {$comparator=">=";} 
-    | T_LET {$comparator="<=";}
+    | T_GTE {$comparator=">=";} 
+    | T_LTE {$comparator="<=";}
     | T_NOT_EQUAL {$comparator="<>";} 
     | T_LIKE {$comparator="LIKE";}
 ;
@@ -851,9 +887,12 @@ getTermOrLiteral returns [ValueCell vc]
     T_END_SBRACKET {$vc=cl;}
 ;
 
-getTableID returns [String tableID]: 
-    ident1=T_IDENT {$tableID = new String($ident1.text);}    
-    | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);}
+getTableID returns [String tableID]
+    @init{
+        $tableID="";
+    }: 
+    (ident1=T_IDENT {$tableID = new String($ident1.text);}    
+    | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);})
     ;
 
 getTerm returns [String term]:
@@ -876,13 +915,19 @@ getMapLiteral returns [Map<String, String> mapTerms]
     T_END_SBRACKET
     ;
 
-getValueProperty returns [ValueProperty value]:
+getValueProperty returns [ValueProperty value]
+    @init{
+        StringBuilder sb = new StringBuilder();
+    }:
     ident=T_IDENT {$value = new IdentifierProperty($ident.text);}
     | constant=T_CONSTANT {$value = new ConstantProperty(Integer.parseInt($constant.text));}
     | mapliteral=getMapLiteral {$value = new MapLiteralProperty(mapliteral);}
     | number=getFloat {$value = new FloatProperty(Float.parseFloat(number));}
     | T_FALSE {$value = new BooleanProperty(false);}
     | T_TRUE {$value = new BooleanProperty(true);}
+    | T_COMPACT T_STORAGE {$value = new IdentifierProperty("COMPACT STORAGE");}
+    | T_CLUSTERING T_ORDER {$value = new IdentifierProperty("CLUSTERING ORDER");}
+    | quotedLiteral=QUOTED_LITERAL {$value = new IdentifierProperty($quotedLiteral.text);}
     ;
 
 
