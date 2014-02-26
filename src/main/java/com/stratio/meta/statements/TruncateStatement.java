@@ -15,7 +15,6 @@ public class TruncateStatement extends MetaStatement {
     private String ident;
     
     public TruncateStatement(String ident){
-        //System.out.println(ident);
         if(ident.contains(".")){
             String[] ksAndTablename = ident.split("\\.");
             keyspace = ksAndTablename[0];
@@ -46,6 +45,12 @@ public class TruncateStatement extends MetaStatement {
     }
 
     public void setIdent(String ident) {
+        if(ident.contains(".")){
+            String[] ksAndTablename = ident.split("\\.");
+            keyspace = ksAndTablename[0];
+            ident = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.ident = ident;
     }        
 
@@ -76,15 +81,6 @@ public class TruncateStatement extends MetaStatement {
 
     @Override
     public String translateToCQL() {
-        //Statement exampleQuery = update("table").with(set("col1", "val1")).and(set("col2","val2")).where(eq("col3","val3"));
-        /*
-        String[] ksAndTablename = ident.split("\\.");
-        Truncate truncateQuery = truncate(ksAndTablename[0], ksAndTablename[1]);        
-        ResultSet resultSet = CassandraClient.executeQuery(truncateQuery);
-        System.out.println("executed: "+resultSet.toString());
-        System.out.println(truncateQuery.toString());
-        return truncateQuery.toString();
-        */
         return this.toString();
     }
     
@@ -96,12 +92,6 @@ public class TruncateStatement extends MetaStatement {
         } else {
             truncateQuery = truncate(ident);
         }
-        /*if(ident.contains(".")){
-            String[] ksAndTablename = ident.split("\\.");
-            truncateQuery = truncate(ksAndTablename[0], ksAndTablename[1]);
-        } else {
-            truncateQuery = truncate(ident);
-        }*/
         return truncateQuery;
     }
     

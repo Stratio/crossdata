@@ -131,6 +131,12 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     public void setTablename(String tablename) {
+        if(tablename.contains(".")){
+            String[] ksAndTablename = tablename.split("\\.");
+            keyspace = ksAndTablename[0];
+            tablename = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.tablename = tablename;
     }
 

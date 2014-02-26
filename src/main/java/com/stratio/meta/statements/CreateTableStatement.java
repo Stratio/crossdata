@@ -70,7 +70,7 @@ public class CreateTableStatement extends MetaStatement{
     public void setKeyspace(String keyspace) {
         this.keyspace = keyspace;
     }        
-    
+            
     public boolean isWithProperties() {
         return withProperties;
     }
@@ -147,6 +147,12 @@ public class CreateTableStatement extends MetaStatement{
     }
 
     public void setName_table(String name_table) {
+        if(name_table.contains(".")){
+            String[] ksAndTablename = name_table.split("\\.");
+            keyspace = ksAndTablename[0];
+            name_table = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.name_table = name_table;
     }
 

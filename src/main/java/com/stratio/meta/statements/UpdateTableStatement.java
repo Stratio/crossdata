@@ -14,6 +14,8 @@ import java.util.Map;
 
 public class UpdateTableStatement extends MetaStatement {
     
+    private boolean keyspaceInc = false;
+    private String keyspace;
     private String tablename;
     private boolean optsInc;
     private List<Option> options;
@@ -29,6 +31,12 @@ public class UpdateTableStatement extends MetaStatement {
                                 List<MetaRelation> whereclauses, 
                                 boolean condsInc, 
                                 Map<String, Term> conditions) {
+        if(tablename.contains(".")){
+            String[] ksAndTablename = tablename.split("\\.");
+            keyspace = ksAndTablename[0];
+            tablename = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.tablename = tablename;
         this.optsInc = optsInc;
         this.options = options;
@@ -65,12 +73,42 @@ public class UpdateTableStatement extends MetaStatement {
                                 List<MetaRelation> whereclauses) {
         this(tablename, false, null, assignments, whereclauses, false, null);
     }
+
+    public boolean isKeyspaceInc() {
+        return keyspaceInc;
+    }
+
+    public void setKeyspaceInc(boolean keyspaceInc) {
+        this.keyspaceInc = keyspaceInc;
+    }
+
+    public String getKeyspace() {
+        return keyspace;
+    }
+
+    public void setKeyspace(String keyspace) {
+        this.keyspace = keyspace;
+    }
+
+    public boolean isCondsInc() {
+        return condsInc;
+    }
+
+    public void setCondsInc(boolean condsInc) {
+        this.condsInc = condsInc;
+    }       
     
     public String getTablename() {
         return tablename;
     }
 
     public void setTablename(String tablename) {
+        if(tablename.contains(".")){
+            String[] ksAndTablename = tablename.split("\\.");
+            keyspace = ksAndTablename[0];
+            tablename = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.tablename = tablename;
     }
 
@@ -130,7 +168,10 @@ public class UpdateTableStatement extends MetaStatement {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("UPDATE ");
-        sb.append(tablename);
+        if(keyspaceInc){
+            sb.append(keyspace).append(".");
+        }
+        sb.append(tablename);        
         if(optsInc){
             sb.append(" ").append("USING ");
             sb.append(MetaUtils.StringList(options, " AND "));

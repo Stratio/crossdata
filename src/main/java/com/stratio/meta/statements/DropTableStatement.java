@@ -6,10 +6,18 @@ import com.stratio.meta.structures.Path;
 
 public class DropTableStatement extends MetaStatement {
     
+    private boolean keyspaceInc = false;
+    private String keyspace;
     private String ident;
     private boolean ifExists;
 
     public DropTableStatement(String ident, boolean ifExists) {
+        if(ident.contains(".")){
+            String[] ksAndTablename = ident.split("\\.");
+            keyspace = ksAndTablename[0];
+            ident = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.ident = ident;
         this.ifExists = ifExists;
     }
@@ -19,6 +27,12 @@ public class DropTableStatement extends MetaStatement {
     }
 
     public void setIdent(String ident) {
+        if(ident.contains(".")){
+            String[] ksAndTablename = ident.split("\\.");
+            keyspace = ksAndTablename[0];
+            ident = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.ident = ident;
     }
 
@@ -36,6 +50,9 @@ public class DropTableStatement extends MetaStatement {
         if(ifExists){
             sb.append("if exists ");
         }       
+        if(keyspaceInc){
+            sb.append(keyspace).append(".");
+        }
         sb.append(ident);                
         return sb.toString();
     }

@@ -11,6 +11,8 @@ import java.util.Set;
 
 public class AlterTableStatement extends MetaStatement{
     
+    private boolean keyspaceInc = false;
+    private String keyspace;
     private String name_table;
     private int prop;
     private String column;
@@ -19,6 +21,12 @@ public class AlterTableStatement extends MetaStatement{
         
         
     public AlterTableStatement(String name_table, String column, String type, LinkedHashMap<String, ValueProperty> option, int prop) {
+        if(name_table.contains(".")){
+            String[] ksAndTablename = name_table.split("\\.");
+            keyspace = ksAndTablename[0];
+            name_table = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.name_table = name_table;
         this.column = column;
         this.type = type;
@@ -32,6 +40,12 @@ public class AlterTableStatement extends MetaStatement{
     }
     
     public void setName_table(String name_table) {
+        if(name_table.contains(".")){
+            String[] ksAndTablename = name_table.split("\\.");
+            keyspace = ksAndTablename[0];
+            name_table = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.name_table = name_table;
     }
     
@@ -79,6 +93,9 @@ public class AlterTableStatement extends MetaStatement{
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Alter table ");
+        if(keyspaceInc){
+            sb.append(keyspace).append(".");
+        }
         sb.append(name_table);
         switch(prop){
             case 1: {
