@@ -22,7 +22,7 @@ public class UseStatement extends MetaStatement {
     
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Using keyspace ");
+        StringBuilder sb = new StringBuilder("USE ");
         sb.append(keyspaceName);
         return sb.toString();
     }
