@@ -94,12 +94,34 @@ public class SelectStatement extends MetaStatement {
     public void setSelectionClause(SelectionClause selectionClause) {
         this.selectionClause = selectionClause;
     }        
+
+    public boolean isKeyspaceInc() {
+        return keyspaceInc;
+    }
+
+    public void setKeyspaceInc(boolean keyspaceInc) {
+        this.keyspaceInc = keyspaceInc;
+    }
+
+    public String getKeyspace() {
+        return keyspace;
+    }
+
+    public void setKeyspace(String keyspace) {
+        this.keyspace = keyspace;
+    }        
     
     public String getTablename() {
         return tablename;
     }
 
     public void setTablename(String tablename) {
+        if(tablename.contains(".")){
+            String[] ksAndTablename = tablename.split("\\.");
+            keyspace = ksAndTablename[0];
+            tablename = ksAndTablename[1];
+            keyspaceInc = true;
+        }
         this.tablename = tablename;
     }          
 
