@@ -226,7 +226,7 @@ content:
       
   - entry: DROP_INDEX
     help: |
-      Remove an existing.
+      Remove an existing index.
       
       Syntax:
       
@@ -274,7 +274,7 @@ content:
       
   - entry: SELECT
     help: |
-      Retreive a subset of data from an existing table.
+      Retrieve a subset of data from an existing table.
       
       Syntax:
       
