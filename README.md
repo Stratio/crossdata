@@ -24,7 +24,6 @@ Both methods will create the following files required to compile and execute MET
    com/stratio/meta/client/help/generated/MetaHelpLexer.java
    com/stratio/meta/client/help/generated/MetaHelpParser.java
 ```
-1. 
 
 # Running the META-shell#
 
