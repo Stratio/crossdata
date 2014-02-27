@@ -109,11 +109,24 @@ public class MetaUtils {
             "AVG",
             "TOKEN");
     
+    
     /**
      * Class logger.
      */
-    private static final Logger _logger = Logger.getLogger(MetaUtils.class
-    		.getName());
+    private static final Logger _utilsLogger = Logger.getLogger(MetaUtils.class.getName());
+    
+    /*
+    static {
+        ConsoleAppender console = new ConsoleAppender();
+        //String PATTERN = "%d [%p|%c|%C{1}] %m%n";
+        //String PATTERN = "%d [%p|%c] %m%n";
+        String PATTERN = "%d{dd-MM-yyyy HH:mm:ss.SSS} [%p|%c{1}] %m%n";
+        console.setLayout(new PatternLayout(PATTERN)); 
+        console.setThreshold(Level.INFO);
+        console.activateOptions();
+        Logger.getRootLogger().addAppender(console);
+    }
+    */
 
     public static String StringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
@@ -253,19 +266,19 @@ public class MetaUtils {
         return sb.toString();
     }
 
-    public static String translateToken(String message) {        
+    public static String translateToken(String message, Logger _logger) {        
         int tokenPosition = message.indexOf("T_");        
         if(tokenPosition>-1){            
             String target = message.substring(tokenPosition);
             target = target.trim().split(" ")[0].toUpperCase();
-            String replacement = getReplacement(target);
+            String replacement = getReplacement(target, _logger);
             return message.replace(target, replacement);            
         } else {
             return message;
         }
     }
 
-    private static String getReplacement(String target) {
+    private static String getReplacement(String target, Logger _logger) {
         /*File dir = new File(".");
         File[] filesList = dir.listFiles();
         for (File file: filesList) {
@@ -295,10 +308,10 @@ public class MetaUtils {
             _logger.error("Cannot read replacement file", ex);
         }finally{
         	try {
-				bufferedReaderF.close();
-			} catch (IOException e) {
-				_logger.error("Cannot close replacement file", e);
-			}
+                    bufferedReaderF.close();
+                } catch (IOException e) {
+                    _logger.error("Cannot close replacement file", e);
+                }
         }
         return replacement;
     }
@@ -306,10 +319,10 @@ public class MetaUtils {
     /**
      * Parse a input text and return the equivalent Statement.
      * @param inputText The input text.
-     * @param _logger where to print the result on
+     * @param _logger logger of the calling class
      * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
      */ 
-    public static AntlrResult parseStatement(String inputText, org.apache.log4j.Logger _logger){
+    public static AntlrResult parseStatement(String inputText, Logger _logger){
         MetaStatement result = null;
         ANTLRStringStream input = new ANTLRStringStream(inputText);
         MetaLexer lexer = new MetaLexer(input);

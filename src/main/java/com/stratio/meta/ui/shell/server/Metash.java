@@ -30,8 +30,7 @@ public class Metash {
 	/**
 	 * Class logger.
 	 */
-	private static final Logger _logger = Logger.getLogger(Metash.class
-			.getName());
+	private static final Logger _logger = Logger.getLogger(Metash.class.getName());
 	
 	private final HelpContent _help;
 	
@@ -79,39 +78,35 @@ public class Metash {
 		HelpStatement h = parseHelp(inputText);
 		System.out.println(_help.searchHelp(h.getType()));
 	}
-		
-
-
 	
 	private void executeMetaCommand(String cmd){
-		boolean error = false;
-        AntlrResult antlrResult = MetaUtils.parseStatement(cmd, _logger);
-        MetaStatement stmt = antlrResult.getStatement();
-        ErrorsHelper foundErrors = antlrResult.getFoundErrors();
-        if((stmt!=null) && (foundErrors.isEmpty())){
-            _logger.info("\033[32mExecute: \033[0m" + stmt.toString());
-            stmt.setQuery(cmd);                              
+            boolean error = false;
+            AntlrResult antlrResult = MetaUtils.parseStatement(cmd, _logger);
+            MetaStatement stmt = antlrResult.getStatement();
+            ErrorsHelper foundErrors = antlrResult.getFoundErrors();
+            if((stmt!=null) && (foundErrors.isEmpty())){
+                _logger.info("\033[32mExecute: \033[0m" + stmt.toString());
+                stmt.setQuery(cmd);
 
-            ResultSet resultSet = null;                        
-            try{
-                Statement driverStmt = stmt.getDriverStatement();
-                if(driverStmt != null){
-                    resultSet = CassandraClient.executeQuery(driverStmt);
-                } else {
-                    resultSet = CassandraClient.executeQuery(stmt.translateToCQL());                            
+                ResultSet resultSet = null;                        
+                try{
+                    Statement driverStmt = stmt.getDriverStatement();
+                    if(driverStmt != null){
+                        resultSet = CassandraClient.executeQuery(driverStmt, true, _logger);
+                    } else {
+                        resultSet = CassandraClient.executeQuery(stmt.translateToCQL(), true, _logger);   
+                    }
+                } catch (DriverException ex) {
+                    _logger.error("\033[31mCassandra exception:\033[0m "+ex.getMessage()+System.getProperty("line.separator"));
+                    error = true;
                 }
-            } catch (DriverException ex) {
-                _logger.error("\033[31mCassandra exception:\033[0m "+ex.getMessage()+System.getProperty("line.separator"));
-                error = true;
+
+                if(!error){
+                    _logger.info("\033[32mResult: \033[0m"+stmt.parseResult(resultSet));
+                }            
+            } else {
+                MetaUtils.printParserErrors(cmd, antlrResult, true);                        
             }
-            
-            if(!error){
-            	_logger.info("\033[32mResult: \033[0m"+stmt.parseResult(resultSet));
-            }
-            
-        } else {
-            MetaUtils.printParserErrors(cmd, antlrResult, true);                        
-        }
 	}
 
 	/**
@@ -124,7 +119,7 @@ public class Metash {
             String cmd = "";
             CassandraClient.connect();
             while(!cmd.startsWith("exit") && !cmd.startsWith("quit")){
-				cmd = input.readLine("\033[36mmetash-server\033[0m> ");
+                cmd = input.readLine("\033[36mmetash-server>\033[0m ");
                 _logger.info("\033[33mCommand: \033[0m" + cmd);
                 
                 if(cmd.startsWith("help")){

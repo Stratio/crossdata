@@ -257,15 +257,6 @@ public class InsertIntoStatement extends MetaStatement {
     
     @Override
     public Statement getDriverStatement() {
-        //INSERT INTO mykeyspace.users(name, gender, color, animal, food, password, age, code) 
-        //VALUES(pepito, male, black, whale, plants, efg, 12, 44) IF NOT EXISTS 
-        //USING TTL=86400 AND TIMESTAMP=542052; 
-        /*
-        Insert insert = QueryBuilder.insertInto("test", "user")
-        .value("username", "jdoe")
-        .value("first", "John")
-        .value("last", "Doe");
-        */
         if(this.typeValues == TYPE_SELECT_CLAUSE){
             return null;
         }
