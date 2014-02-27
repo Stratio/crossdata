@@ -5,7 +5,6 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.exceptions.DriverException;
 import org.apache.log4j.Logger;
 
 public class CassandraClient {

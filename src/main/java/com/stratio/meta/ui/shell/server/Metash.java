@@ -85,7 +85,7 @@ public class Metash {
             MetaStatement stmt = antlrResult.getStatement();
             ErrorsHelper foundErrors = antlrResult.getFoundErrors();
             if((stmt!=null) && (foundErrors.isEmpty())){
-                _logger.info("\033[32mExecute: \033[0m" + stmt.toString());
+                _logger.info("\033[32mExecute:\033[0m " + stmt.toString());
                 stmt.setQuery(cmd);
 
                 ResultSet resultSet = null;                        
@@ -102,9 +102,9 @@ public class Metash {
                 }
 
                 if(!error){
-                    _logger.info("\033[32mResult: \033[0m"+stmt.parseResult(resultSet));
+                    _logger.info("\033[32mResult:\033[0m "+stmt.parseResult(resultSet));
                 }            
-            } else {
+            } else {                
                 MetaUtils.printParserErrors(cmd, antlrResult, true);                        
             }
 	}
@@ -120,7 +120,7 @@ public class Metash {
             CassandraClient.connect();
             while(!cmd.startsWith("exit") && !cmd.startsWith("quit")){
                 cmd = input.readLine("\033[36mmetash-server>\033[0m ");
-                _logger.info("\033[33mCommand: \033[0m" + cmd);
+                _logger.info("\033[33mCommand:\033[0m " + cmd);
                 
                 if(cmd.startsWith("help")){
                     showHelp(cmd);
@@ -134,10 +134,10 @@ public class Metash {
         }
     }
 
-	/**
-	 * Launch the META server shell.
-	 * @param args The list of arguments. Not supported at the moment.
-	 */
+    /**
+     * Launch the META server shell.
+     * @param args The list of arguments. Not supported at the moment.
+     */
     public static void main(String[] args) {
         Metash sh = new Metash();
         sh.loop();

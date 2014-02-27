@@ -107,26 +107,7 @@ public class MetaUtils {
             "MAX",
             "MIN",
             "AVG",
-            "TOKEN");
-    
-    
-    /**
-     * Class logger.
-     */
-    private static final Logger _utilsLogger = Logger.getLogger(MetaUtils.class.getName());
-    
-    /*
-    static {
-        ConsoleAppender console = new ConsoleAppender();
-        //String PATTERN = "%d [%p|%c|%C{1}] %m%n";
-        //String PATTERN = "%d [%p|%c] %m%n";
-        String PATTERN = "%d{dd-MM-yyyy HH:mm:ss.SSS} [%p|%c{1}] %m%n";
-        console.setLayout(new PatternLayout(PATTERN)); 
-        console.setThreshold(Level.INFO);
-        console.activateOptions();
-        Logger.getRootLogger().addAppender(console);
-    }
-    */
+            "TOKEN");       
 
     public static String StringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
@@ -279,27 +260,19 @@ public class MetaUtils {
     }
 
     private static String getReplacement(String target, Logger _logger) {
-        /*File dir = new File(".");
-        File[] filesList = dir.listFiles();
-        for (File file: filesList) {
-            if (file.isFile()) {
-                System.out.println(file.getName());
-            }
-        }*/
+        target = target.substring(2);
         String replacement = "";
         BufferedReader bufferedReaderF = null;
         try {
-            String metaGrammarPath = "src/main/java/com/stratio/meta/grammar/Meta.g";
-            bufferedReaderF = new BufferedReader(new FileReader(new File(metaGrammarPath)));
+            String metaTokens = "src/main/resources/com/stratio/meta/server/parser/tokens.txt";
+            bufferedReaderF = new BufferedReader(new FileReader(new File(metaTokens)));
             String line = bufferedReaderF.readLine();
             while (line != null){
-                if(line.contains(target)){
-                    //T_END_PARENTHESIS: ')';
+                if(line.startsWith(target)){
                     replacement = line.substring(line.indexOf(":")+1);
-                    replacement = replacement.replace(";", "");
-                    replacement = replacement.replace("'", "");
+                    replacement = replacement.replace("[#", "\"");
+                    replacement = replacement.replace("#]", "\"");
                     replacement = replacement.replace(" ", "");
-                    replacement = "\""+replacement+"\"";
                     break;
                 }
                 line = bufferedReaderF.readLine();
