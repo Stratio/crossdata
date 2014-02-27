@@ -184,8 +184,7 @@ public class CreateTableStatement extends MetaStatement{
                     else sb.append(key).append(" ").append(vp);
                     i++;
                     if (it.hasNext()) sb.append(", ");
-                    else sb.append(")");  
-                    
+                    else sb.append(")");                      
                 }         
             }break;
                 

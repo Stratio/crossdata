@@ -6,3 +6,4 @@ src/main/java/com/stratio/meta/client/help/generated/
 .settings
 /nbproject/
 build.xml
+nbactions.xml
