@@ -1,19 +1,41 @@
-stratio-meta
-============
+# stratio-meta #
 
 One LANGUAGE to rule them all
 
---- How to run ---
+# Compiling META #
 
-1.- The fist thing is to create the archives derivated of the grammar (.g file). In order to do it, we have to use a maven command:
+Compiling META involves generating a set of files (.tokens, Lexers, and Parsers) from the different grammar files. To automatically buildMETA execute the following command:
+```
+   > mvn clean compile
+```
 
-	mvn generate-sources
+Alternativelly, you can manually generate the grammar derived files first, and the proceed to the usual compilation using:
+```
+   > mvn generate-sources
+   > mvn compile
+```
 
-This will create 3 archives: Meta.tokens, MetaLexer.java and MetaParser.java in the com.stratio.sdh.meta.generated package as pom.xml is configured to do it automatically.
+Both methods will create the following files required to compile and execute META.
+```
+   com/stratio/meta/grammar/generated/Meta.tokens
+   com/stratio/meta/grammar/generated/MetaLexer.java
+   com/stratio/meta/grammar/generated/MetaParser.java
+   com/stratio/meta/client/help/generated/MetaHelp.tokens
+   com/stratio/meta/client/help/generated/MetaHelpLexer.java
+   com/stratio/meta/client/help/generated/MetaHelpParser.java
+```
+1. 
 
-2.- Now it's ready to be runned:
-	
-	- Maven: mvn exec:java -Dexec.mainClass="com.stratio.meta.ui.shell.server.Metash"
-	
-3.- Once is running, if we want to exit the program, we only have to introduce the word "exit" when a query is asked.
+# Running the META-shell#
+
+The META-shell can be executed in two differentiated modes: client and server. A client shell launches a shell that connects to a set of META servers. Additionally, a server-shell is available to be launched in the META servers themselves. This type of execution does not required any type of network communication between the shell and the META server.
+
+## META server shell ##
+
+```
+   > mvn exec:java -Dexec.mainClass="com.stratio.meta.ui.shell.server.Metash"
+```
+
+## Useful commands ##
+Once the shell is running, you can exit the program introducing the word **exit** or **quit** in the query prompt. A command help system is available by introducing the command **help**. A help entry is available per command, to check specify help topics use **help command**.
 
