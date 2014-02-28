@@ -9,6 +9,8 @@ import org.apache.log4j.Logger;
 
 public class CassandraClient {
     
+    private static final Logger logger = Logger.getLogger(CassandraClient.class);
+    
     private static Cluster cluster;
     private static Session session;    
     
@@ -22,14 +24,10 @@ public class CassandraClient {
         }                
     }
     
-    public static void testing(){
-        System.out.println(session.getCluster().getMetadata().toString());
-    }
-    
-    public static ResultSet executeQuery(String query, boolean showInfo, Logger _logger){        
+    public static ResultSet executeQuery(String query, boolean showInfo){        
         //query = "SELECT * FROM mykeyspace.usuarios";     
         if(showInfo){
-            _logger.info("\033[34;1mQuery:\033[0m "+query);
+            logger.info("\033[34;1mQuery:\033[0m "+query);
         }
         PreparedStatement cqlStatement = session.prepare(query);        
         if(cqlStatement == null){
@@ -42,10 +40,10 @@ public class CassandraClient {
         return resultSet;
     }
        
-    public static ResultSet executeQuery(Statement query, boolean showInfo, Logger _logger){      
+    public static ResultSet executeQuery(Statement query, boolean showInfo){      
         //query = "SELECT * FROM mykeyspace.usuarios";    
         if(showInfo){
-            _logger.info("\033[34;1mStatement:\033[0m "+query.toString());
+            logger.info("\033[34;1mStatement:\033[0m "+query.toString());
         }
         /*if(query instanceof RegularStatement){            
             System.out.println(query.toString());

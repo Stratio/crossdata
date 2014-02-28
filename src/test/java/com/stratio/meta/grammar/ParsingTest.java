@@ -9,10 +9,6 @@ import static org.junit.Assert.*;
 
 import java.util.HashMap;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.junit.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -25,6 +21,7 @@ import com.stratio.meta.utils.MetaUtils;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.apache.log4j.Logger;
 
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
@@ -37,48 +34,35 @@ public class ParsingTest {
 	/**
 	 * Class logger.
 	 */
-	private static final Logger _logger = Logger.getLogger(ParsingTest.class.getName());
-
-	//TODO Define common logging properties
-	public static void initLog(){
-            ConsoleAppender console = new ConsoleAppender();
-            //String PATTERN = "%d [%p|%c|%C{1}] %m%n";
-            //String PATTERN = "%d [%p|%c] %m%n";
-            String PATTERN = "%d{dd-MM-yyyy HH:mm:ss.SSS} [%p|%c{1}] %m%n";
-            console.setLayout(new PatternLayout(PATTERN)); 
-            console.setThreshold(Level.INFO);
-            console.activateOptions();
-            Logger.getRootLogger().addAppender(console);
-	}
+	private static final Logger logger = Logger.getLogger(ParsingTest.class);	
         
 	public static void initCassandraConnection(){
             try {
                 CassandraClient.connect();
             } catch(NoHostAvailableException ex){
-                _logger.error("\033[31mCannot connect with Cassandra\033[0m", ex);  
+                logger.error("\033[31mCannot connect with Cassandra\033[0m", ex);  
                 System.exit(-1);
             }
 	}
         
 	public static void checkKeyspaces(){
             try {
-                CassandraClient.executeQuery("USE testKS", false, _logger);
-                _logger.error("\033[31mKeyspace \'testKs\' already exists\033[0m");  
+                CassandraClient.executeQuery("USE testKS", false);
+                logger.error("\033[31mKeyspace \'testKs\' already exists\033[0m");  
                 System.exit(-1);
             } catch(DriverException ex){
-                _logger.info("Creating keyspace \'testKS\' in Cassandra for testing purposes");
+                logger.info("Creating keyspace \'testKS\' in Cassandra for testing purposes");
             }
 	}
         
         @BeforeClass
         public static void init(){
-            initLog();
             initCassandraConnection();
             checkKeyspaces();
         }
         
         public static void dropKeyspaces(){
-            CassandraClient.executeQuery("DROP KEYSPACE IF EXISTS testKS;", false, _logger);
+            CassandraClient.executeQuery("DROP KEYSPACE IF EXISTS testKS;", false);
 	}
         
 	public static void closeCassandraConnection(){
@@ -92,7 +76,7 @@ public class ParsingTest {
         }        	
                         
         public MetaStatement testRegularStatement(String inputText, String methodName) {
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse "+methodName, st);             
             assertTrue("Cannot parse "+methodName, inputText.equalsIgnoreCase(st.toString()+";"));
@@ -103,9 +87,9 @@ public class ParsingTest {
             Statement driverStmt = st.getDriverStatement();
             ResultSet resultSet;
             if(driverStmt != null){
-                resultSet = CassandraClient.executeQuery(driverStmt, false, _logger);
+                resultSet = CassandraClient.executeQuery(driverStmt, false);
             } else {
-                resultSet = CassandraClient.executeQuery(st.translateToCQL(), false, _logger);
+                resultSet = CassandraClient.executeQuery(st.translateToCQL(), false);
             }            
             assertNotNull("Cannot execute "+methodName+" in Cassandra", resultSet);
         }
@@ -116,14 +100,14 @@ public class ParsingTest {
         }
         
         public void testMetaError(String inputText){
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class);
             System.out.println(st.toString());
         }
         
         public void testRecoverableError(String inputText, String methodName){
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertTrue("No errors reported in "+methodName, antlrResult.getFoundErrors().getNumberOfErrors()>0);
         }
@@ -131,7 +115,7 @@ public class ParsingTest {
         public void testCassandraError(MetaStatement st){
             Statement driverStmt = st.getDriverStatement();
             thrown.expect(DriverException.class); 
-            ResultSet resultSet = CassandraClient.executeQuery(driverStmt, false, _logger);
+            ResultSet resultSet = CassandraClient.executeQuery(driverStmt, false);
         }        	
 
         // CREATE KEYSPACE
@@ -152,7 +136,7 @@ public class ParsingTest {
 		properties.add("class: NetworkTopologyStrategy");
 		properties.add("DC1: 1");
 		properties.add("DC2: 3");
-		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
 		MetaStatement st = antlrResult.getStatement();
 		String propResultStr = st.toString().substring(st.toString().indexOf("{")+1, st.toString().indexOf("}"));
 		String[] str = propResultStr.split(",");
@@ -175,7 +159,7 @@ public class ParsingTest {
 	public void createKeyspace_basicOptions() {
 		String inputText = "CREATE KEYSPACE key_space1 WITH replication = {class: SimpleStrategy, replication_factor: 1}"
                         + " AND durable_writes = false;";
-		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
 		MetaStatement st = antlrResult.getStatement();
                 assertNotNull("Cannot parse createKeyspace_basicOptions", st);
                 
@@ -199,7 +183,7 @@ public class ParsingTest {
 	public void createKeyspace_durable_writes() {
 		String inputText = "CREATE KEYSPACE demo WITH replication = {class: SimpleStrategy, replication_factor: 1} "
                         + "AND durable_writes = false;";
-		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
 		MetaStatement st = antlrResult.getStatement();
                 assertNotNull("Cannot parse createKeyspace_durable_writes", st);
                 
@@ -231,7 +215,7 @@ public class ParsingTest {
 		String inputText = "CREATE LUCENE INDEX demo_banks ON demo.banks (lucene) USING org.apache.cassandra.db.index.stratio.RowIndex"
                         + " WITH OPTIONS schema = '{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\", "
                         + "fields: {day: {type: \"date\", pattern: \"yyyy-MM-dd\"}, key: {type:\"uuid\"}}}';";
-		AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+		AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
 		MetaStatement st = antlrResult.getStatement();
                 inputText = inputText.replace("'", "");
 		assertTrue("Cannot parse createKeyspace_literal_value", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -295,7 +279,7 @@ public class ParsingTest {
 	public void createIndex_default_options() {
             String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1=val1 AND opt2=val2;";
             int numberOptions = 2;
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse default index with options clause", st);
             CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
@@ -320,7 +304,7 @@ public class ParsingTest {
                             + " entry_id:{type:\"uuid\"}, latitude:{type:\"double\"},"
                             + " longitude:{type:\"double\"}, name:{type:\"text\"},"
                             + " address:{type:\"string\"}, tags:{type:\"boolean\"}}}\'};";
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse default index with options clause", st);
             CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
@@ -331,7 +315,7 @@ public class ParsingTest {
             String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 "
                             + "ON table1 (field1, field2) USING com.company.Index.class "
                             + "WITH OPTIONS opt1=val1 AND opt2=val2;";
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse default index with options clause", st);
             CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
@@ -539,7 +523,7 @@ public class ParsingTest {
                     + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                     + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
                     + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse createTable_with_many_properties", st);
 
@@ -597,7 +581,7 @@ public class ParsingTest {
                     + "animal varchar, PRIMARY KEY (name)) WITH compression={sstable_compression: DeflateCompressor, "
                     + "chunk_length_kb: 64} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
                     + "read_repair_chance=1.0;";
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse createTable_with_properties", st);
 
@@ -693,7 +677,7 @@ public class ParsingTest {
 	public void createKeyspace_basic() {
             String inputText = "CREATE KEYSPACE testKS WITH replication = {class: SimpleStrategy, replication_factor: 1}"
                     + " AND durable_writes = false;";		
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText, _logger);
+            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse createKeyspace_basic", st);
 
