@@ -1,9 +1,17 @@
 package com.stratio.meta.utils;
 
+import org.apache.log4j.Logger;
+
 public class AntlrError {
+    
+    /**
+     * Class logger.
+     */
+    private final Logger logger = Logger.getLogger(AntlrError.class);
+    
     private String header;
     private String message;   
-
+    
     public AntlrError(String header, String message) {
         this.header = header;
         this.message = message;

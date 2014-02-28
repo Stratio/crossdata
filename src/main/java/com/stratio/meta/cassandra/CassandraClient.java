@@ -5,8 +5,11 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import org.apache.log4j.Logger;
 
 public class CassandraClient {
+    
+    private static final Logger logger = Logger.getLogger(CassandraClient.class);
     
     private static Cluster cluster;
     private static Session session;    
@@ -14,16 +17,18 @@ public class CassandraClient {
     public static void connect(){
         if(cluster == null){
             cluster = Cluster.builder().addContactPoint("127.0.0.1").build();
-        }        
+        }                
         
         if(session == null){
             session = cluster.connect();
-        }
+        }                
     }
     
-    public static ResultSet executeQuery(String query){        
+    public static ResultSet executeQuery(String query, boolean showInfo){        
         //query = "SELECT * FROM mykeyspace.usuarios";     
-        System.out.println("Query: "+query);
+        if(showInfo){
+            logger.info("\033[34;1mQuery:\033[0m "+query);
+        }
         PreparedStatement cqlStatement = session.prepare(query);        
         if(cqlStatement == null){
             return null;
@@ -35,9 +40,11 @@ public class CassandraClient {
         return resultSet;
     }
        
-    public static ResultSet executeQuery(Statement query){      
-        //query = "SELECT * FROM mykeyspace.usuarios";     
-        System.out.println("Statement: "+query.toString());
+    public static ResultSet executeQuery(Statement query, boolean showInfo){      
+        //query = "SELECT * FROM mykeyspace.usuarios";    
+        if(showInfo){
+            logger.info("\033[34;1mStatement:\033[0m "+query.toString());
+        }
         /*if(query instanceof RegularStatement){            
             System.out.println(query.toString());
             RegularStatement tmp = (RegularStatement) query;

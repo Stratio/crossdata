@@ -22,6 +22,8 @@ import org.apache.log4j.Logger;
 
 public class MetaUtils {
 
+    private static final Logger logger = Logger.getLogger(MetaUtils.class);
+    
     public static Set<String> initials = Sets.newHashSet(
             "CREATE",
             "ALTER",
@@ -107,13 +109,7 @@ public class MetaUtils {
             "MAX",
             "MIN",
             "AVG",
-            "TOKEN");
-    
-    /**
-     * Class logger.
-     */
-    private static final Logger _logger = Logger.getLogger(MetaUtils.class
-    		.getName());
+            "TOKEN");       
 
     public static String StringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
@@ -240,10 +236,10 @@ public class MetaUtils {
     public static void printParserErrors(String cmd, AntlrResult antlrResult, boolean printSuggestions) {
         if(printSuggestions){
             //System.out.println("Print suggestion");
-            System.err.println(antlrResult.toString(cmd));
+            logger.error(antlrResult.toString(cmd));
         } else {
             //System.out.println("Omit suggestion");
-            System.err.println(antlrResult.toString(""));
+            logger.error(antlrResult.toString(""));
         }
     }      
 
@@ -266,39 +262,31 @@ public class MetaUtils {
     }
 
     private static String getReplacement(String target) {
-        /*File dir = new File(".");
-        File[] filesList = dir.listFiles();
-        for (File file: filesList) {
-            if (file.isFile()) {
-                System.out.println(file.getName());
-            }
-        }*/
+        target = target.substring(2);
         String replacement = "";
         BufferedReader bufferedReaderF = null;
         try {
-            String metaGrammarPath = "src/main/java/com/stratio/meta/grammar/Meta.g";
-            bufferedReaderF = new BufferedReader(new FileReader(new File(metaGrammarPath)));
+            String metaTokens = "src/main/resources/com/stratio/meta/server/parser/tokens.txt";
+            bufferedReaderF = new BufferedReader(new FileReader(new File(metaTokens)));
             String line = bufferedReaderF.readLine();
             while (line != null){
-                if(line.contains(target)){
-                    //T_END_PARENTHESIS: ')';
+                if(line.startsWith(target)){
                     replacement = line.substring(line.indexOf(":")+1);
-                    replacement = replacement.replace(";", "");
-                    replacement = replacement.replace("'", "");
+                    replacement = replacement.replace("[#", "\"");
+                    replacement = replacement.replace("#]", "\"");
                     replacement = replacement.replace(" ", "");
-                    replacement = "\""+replacement+"\"";
                     break;
                 }
                 line = bufferedReaderF.readLine();
             }
         } catch (IOException ex) {
-            _logger.error("Cannot read replacement file", ex);
+            logger.error("Cannot read replacement file", ex);
         }finally{
-        	try {
-				bufferedReaderF.close();
-			} catch (IOException e) {
-				_logger.error("Cannot close replacement file", e);
-			}
+            try {
+                bufferedReaderF.close();
+            } catch (IOException e) {
+                logger.error("Cannot close replacement file", e);
+            }
         }
         return replacement;
     }
@@ -306,22 +294,21 @@ public class MetaUtils {
     /**
      * Parse a input text and return the equivalent Statement.
      * @param inputText The input text.
-     * @param _logger where to print the result on
      * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
      */ 
-    public static AntlrResult parseStatement(String inputText, org.apache.log4j.Logger _logger){
+    public static AntlrResult parseStatement(String inputText){
         MetaStatement result = null;
         ANTLRStringStream input = new ANTLRStringStream(inputText);
         MetaLexer lexer = new MetaLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        MetaParser parser = new MetaParser(tokens);   
-        ErrorsHelper foundErrors = null;
-        try {
+        MetaParser parser = new MetaParser(tokens);        
+        ErrorsHelper foundErrors = null;                
+        try {                       
             result = parser.query();
             foundErrors = parser.getFoundErrors();
         } catch (RecognitionException e) {
-            _logger.error("Cannot parse statement", e);
-        }            
+            logger.error("Cannot parse statement", e);
+        }                   
         return new AntlrResult(result, foundErrors);
     }
 

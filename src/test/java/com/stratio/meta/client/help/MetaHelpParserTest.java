@@ -5,24 +5,19 @@ import static org.junit.Assert.*;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.stratio.meta.client.help.generated.MetaHelpLexer;
 import com.stratio.meta.client.help.generated.MetaHelpParser;
-
+import org.apache.log4j.Logger;
 
 public class MetaHelpParserTest {
 
 	/**
 	 * Class logger.
 	 */
-	private static final Logger _logger = Logger.getLogger(MetaHelpParserTest.class
-			.getName());
+	private final Logger logger = Logger.getLogger(MetaHelpParserTest.class);
 	
 	/**
 	 * Parse a input text and return the equivalent HelpStatement.
@@ -38,22 +33,10 @@ public class MetaHelpParserTest {
         try {
 			result = parser.query();
 		} catch (RecognitionException e) {
-			_logger.error("Cannot parse statement", e);
+			logger.error("Cannot parse statement", e);
 		}
         return result;
-	}
-
-	@BeforeClass
-	//TODO Define common logging properties
-	public static void initLog(){
-		ConsoleAppender console = new ConsoleAppender();
-		//String PATTERN = "%d [%p|%c|%C{1}] %m%n";
-		String PATTERN = "%d [%p|%c] %m%n";
-		console.setLayout(new PatternLayout(PATTERN)); 
-		console.setThreshold(Level.INFO);
-		console.activateOptions();
-		Logger.getRootLogger().addAppender(console);
-	}
+	}       
 	
 	@Test
 	public void help() {
