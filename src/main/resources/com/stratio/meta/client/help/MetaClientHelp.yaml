@@ -212,7 +212,7 @@ content:
       
       Example:
       
-        TRUNCATE keyspace
+        TRUNCATE mytable 
       
   - entry: DROP
     help: |
@@ -432,7 +432,7 @@ content:
       
       Syntax:
       
-        ALTER KEYSPACE <keyspace_name> WITH <properties> ';'
+        ALTER KEYSPACE <keyspace_name> WITH <properties>;
       
         where the <properties> match the ones specified during
         the keyspace creation.
