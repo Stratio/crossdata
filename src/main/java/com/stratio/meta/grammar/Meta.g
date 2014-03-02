@@ -818,7 +818,8 @@ getIntSetOrList returns [IdentIntOrLiteral iiol]:
 ;
 
 getRelation returns [MetaRelation mrel]:
-    T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator term=getTerm {$mrel = new RelationToken(listIds, operator, new Term(term));}
+    T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, new Term(term));}
+                            | T_TOKEN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationToken(listIds, operator, terms);})
     | ident=T_IDENT ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, new Term(termR));}
                     | T_IN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationIn($ident.text, terms);}
                     | T_BETWEEN term1=getTerm T_AND term2=getTerm {$mrel = new RelationBetween($ident.text, new Term(term1), new Term(term2));}

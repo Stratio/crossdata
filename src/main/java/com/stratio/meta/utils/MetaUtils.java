@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.stratio.meta.grammar.generated.MetaLexer;
 import com.stratio.meta.grammar.generated.MetaParser;
 import com.stratio.meta.statements.MetaStatement;
+import com.stratio.meta.structures.Term;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -356,5 +357,15 @@ public class MetaUtils {
         }
         return strList;
     }    
+
+    public static String[] fromStringListToArray(List<String> names) {
+        String[] result = new String[names.size()];
+        int n=0;
+        for(String str: names){
+            result[n] = str;
+            n++;
+        }
+        return result;
+    }
     
 }

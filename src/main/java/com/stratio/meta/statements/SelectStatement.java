@@ -463,13 +463,8 @@ public class SelectStatement extends MetaStatement {
     }
     
     @Override
-    public Statement getDriverStatement() {
-        //Statement sel = QueryBuilder.select().from("tks","testselectin").where(in("key",list));
-        
-        //Select sel = QueryBuilder.select().from(tablename);             
-        
-        SelectionClause selClause = this.selectionClause;                                        
-        
+    public Statement getDriverStatement() {                
+        SelectionClause selClause = this.selectionClause;                                                
         Select.Builder builder;                
         
         if(this.selectionClause.getType() == SelectionClause.TYPE_COUNT){
@@ -595,30 +590,70 @@ public class SelectStatement extends MetaStatement {
                     case MetaRelation.TYPE_TOKEN:
                         RelationToken relToken = (RelationToken) metaRelation;
                         List<String> names = relToken.getIdentifiers();
-                        value = relToken.getTerms().get(0).getTerm();
-                        switch(relToken.getOperator()){
-                            case "=":
-                                clause = QueryBuilder.eq(QueryBuilder.token((String[]) names.toArray()), value);
-                                break;
-                            case ">":
-                                clause = QueryBuilder.gt(name, value);
-                                break;
-                            case ">=":
-                                clause = QueryBuilder.gte(name, value);
-                                break;
-                            case "<":
-                                clause = QueryBuilder.lt(name, value);
-                                break;
-                            case "<=":
-                                clause = QueryBuilder.lte(name, value);
-                                break;
-                        }
+                        if(!relToken.isRighSideTokenType()){
+                            value = relToken.getTerms().get(0).getTerm();
+                            switch(relToken.getOperator()){
+                                case "=":
+                                    clause = QueryBuilder.eq(QueryBuilder.token((String[]) names.toArray()), value);
+                                    break;
+                                case ">":
+                                    clause = QueryBuilder.gt(QueryBuilder.token((String[]) names.toArray()), value);
+                                    break;
+                                case ">=":
+                                    clause = QueryBuilder.gte(QueryBuilder.token((String[]) names.toArray()), value);
+                                    break;
+                                case "<":
+                                    clause = QueryBuilder.lt(QueryBuilder.token((String[]) names.toArray()), value);
+                                    break;
+                                case "<=":
+                                    clause = QueryBuilder.lte(QueryBuilder.token((String[]) names.toArray()), value);
+                                    break;
+                                default:
+                                    clause = null;
+                                    break;
+                            }
+                        } else {
+                            List<Term> termsOfToken = relToken.getTerms();
+                            List<String> termsOfTokenStr = new ArrayList<>();
+                            for(Term term: termsOfToken){
+                                termsOfTokenStr.add(term.toString());
+                            }
+                            String[] namesStr = MetaUtils.fromStringListToArray(names);
+                            String[] termsStr = MetaUtils.fromStringListToArray(termsOfTokenStr);
+                            switch(relToken.getOperator()){
+                                case "=":
+                                    clause = QueryBuilder.eq(QueryBuilder.token(namesStr), QueryBuilder.token(termsStr));
+                                    break;
+                                case ">":
+                                    clause = QueryBuilder.gt(QueryBuilder.token(namesStr), QueryBuilder.token(termsStr));
+                                    break;
+                                case ">=":
+                                    clause = QueryBuilder.gte(QueryBuilder.token(namesStr), QueryBuilder.token(termsStr));
+                                    break;
+                                case "<":
+                                    clause = QueryBuilder.lt(QueryBuilder.token(namesStr), QueryBuilder.token(termsStr));
+                                    break;
+                                case "<=":
+                                    clause = QueryBuilder.lte(QueryBuilder.token(namesStr), QueryBuilder.token(termsStr));
+                                    break;
+                                default:
+                                    clause = null;
+                                    break;
+                            }  
+                            //System.out.println("Not supported");
+                        } 
                         break;
                 }
-                if(whereStmt == null){
-                    whereStmt = sel.where(clause);
-                } else {
-                    whereStmt = whereStmt.and(clause);
+                //System.out.println(metaRelation.toString());
+                //System.out.println(clause.toString());
+                if(clause != null){
+                    if(whereStmt == null){
+                        //System.out.println("Branch if");                    
+                        whereStmt = sel.where(clause);
+                    } else {
+                        //System.out.println("Branch else");
+                        whereStmt = whereStmt.and(clause);
+                    }
                 }
             }            
             /*
