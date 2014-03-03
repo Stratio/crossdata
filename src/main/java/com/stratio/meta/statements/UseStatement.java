@@ -2,7 +2,11 @@ package com.stratio.meta.statements;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
-import com.stratio.meta.structures.Path;
+import com.stratio.meta.utils.DeepResult;
+import com.stratio.meta.utils.MetaStep;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class UseStatement extends MetaStatement {
 
@@ -25,11 +29,6 @@ public class UseStatement extends MetaStatement {
         StringBuilder sb = new StringBuilder("USE ");
         sb.append(keyspaceName);
         return sb.toString();
-    }
-
-    @Override
-    public Path estimatePath() {
-        return Path.CASSANDRA;
     }
 
     @Override
@@ -56,6 +55,16 @@ public class UseStatement extends MetaStatement {
     public Statement getDriverStatement() {
         Statement statement = null;
         return statement;
+    }
+
+    @Override
+    public DeepResult executeDeep() {
+        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
+    }
+    
+    @Override
+    public List<MetaStep> getPlan() {
+        return null;
     }
     
 }

@@ -6,9 +6,12 @@ import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Using;
 import com.stratio.meta.structures.Option;
-import com.stratio.meta.structures.Path;
 import com.stratio.meta.structures.ValueCell;
+import com.stratio.meta.utils.DeepResult;
+import com.stratio.meta.utils.MetaStep;
 import com.stratio.meta.utils.MetaUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import java.util.Iterator;
 import java.util.List;
@@ -203,11 +206,6 @@ public class InsertIntoStatement extends MetaStatement {
     public void setTypeValues(int typeValues) {
         this.typeValues = typeValues;
     }        
-    
-    @Override
-    public Path estimatePath() {
-        return Path.CASSANDRA;
-    }
 
     @Override
     public String toString() {
@@ -306,5 +304,16 @@ public class InsertIntoStatement extends MetaStatement {
             return insertStmt;
         }
         return optionsStmt;        
-    }    
+    }
+    
+    @Override
+    public DeepResult executeDeep() {
+        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
+    }
+    
+    @Override
+    public List<MetaStep> getPlan() {
+        return null;
+    }
+    
 }

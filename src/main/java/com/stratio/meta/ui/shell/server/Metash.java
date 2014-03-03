@@ -16,6 +16,12 @@ import java.io.Console;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
+import com.google.common.base.Joiner;
+import com.stratio.meta.utils.AntlrError;
+import com.stratio.meta.utils.DeepResult;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -73,22 +79,48 @@ public class Metash {
                 logger.info("\033[32mExecute:\033[0m " + stmt.toString());
                 stmt.setQuery(cmd);
 
-                ResultSet resultSet = null;                        
+                ResultSet resultSet = null;  
+                Statement driverStmt = null;
                 try{
-                    Statement driverStmt = stmt.getDriverStatement();
+                    driverStmt = stmt.getDriverStatement();
                     if(driverStmt != null){
                         resultSet = CassandraClient.executeQuery(driverStmt, true);
                     } else {
                         resultSet = CassandraClient.executeQuery(stmt.translateToCQL(), true);   
                     }
-                } catch (DriverException ex) {
-                    logger.error("\033[31mCassandra exception:\033[0m "+ex.getMessage()+System.getProperty("line.separator"));
+                } catch (DriverException | UnsupportedOperationException ex) {
+                    if(ex instanceof DriverException){
+                        logger.error("\033[31mCassandra exception:\033[0m "+ex.getMessage());
+                    } else if (ex instanceof UnsupportedOperationException){
+                        logger.error("\033[31mUnsupported operation by C*:\033[0m "+ex.getMessage());
+                    }                    
                     error = true;
+                    String queryStr = "";
+                    if(driverStmt != null){
+                        queryStr = driverStmt.toString();
+                    } else {
+                        queryStr = stmt.translateToCQL();
+                    }
+                    String[] cMessageEx =  ex.getMessage().split(" ");
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(cMessageEx[2]);
+                    for(int i=3; i<cMessageEx.length; i++){
+                        sb.append(" ").append(cMessageEx[i]);
+                    }
+                    AntlrError ae = new AntlrError(cMessageEx[0]+" "+cMessageEx[1], sb.toString());
+                    queryStr = MetaUtils.getQueryWithSign(queryStr, ae);
+                    logger.error(queryStr+System.getProperty("line.separator"));
                 }
-
                 if(!error){
                     logger.info("\033[32mResult:\033[0m "+stmt.parseResult(resultSet));
-                }            
+                } else {
+                    DeepResult deepResult = stmt.executeDeep();
+                    if(deepResult.hasErrors()){
+                        logger.error("\033[31mUnsupported operation by Deep:\033[0m "+deepResult.getErrors());
+                    } else {
+                        logger.info("\033[32mResult:\033[0m "+deepResult.getResult());
+                    }
+                }           
             } else {                
                 MetaUtils.printParserErrors(cmd, antlrResult, true);                        
             }

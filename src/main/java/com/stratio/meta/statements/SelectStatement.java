@@ -12,7 +12,6 @@ import com.stratio.meta.structures.InnerJoin;
 import com.stratio.meta.structures.MetaOrdering;
 import com.stratio.meta.structures.MetaRelation;
 import com.stratio.meta.structures.OrderDirection;
-import com.stratio.meta.structures.Path;
 import com.stratio.meta.structures.RelationCompare;
 import com.stratio.meta.structures.RelationIn;
 import com.stratio.meta.structures.RelationToken;
@@ -25,6 +24,8 @@ import com.stratio.meta.structures.SelectorIdentifier;
 import com.stratio.meta.structures.SelectorMeta;
 import com.stratio.meta.structures.Term;
 import com.stratio.meta.structures.WindowSelect;
+import com.stratio.meta.utils.DeepResult;
+import com.stratio.meta.utils.MetaStep;
 import com.stratio.meta.utils.MetaUtils;
 
 import java.nio.ByteBuffer;
@@ -239,11 +240,6 @@ public class SelectStatement extends MetaStatement {
     public void setDisableAnalytics(boolean disableAnalytics) {
         this.disableAnalytics = disableAnalytics;
     }                    
-    
-    @Override
-    public Path estimatePath() {
-        return Path.CASSANDRA;
-    }    
 
     @Override
     public String toString() {
@@ -574,6 +570,9 @@ public class SelectStatement extends MetaStatement {
                             case "<=":
                                 clause = QueryBuilder.lte(name, value);
                                 break;
+                            default:
+                                clause = null;
+                                throw new UnsupportedOperationException("'"+relCompare.getOperator()+"' operator not supported by C*");
                         }                                  
                         break;
                     case MetaRelation.TYPE_IN:
@@ -610,9 +609,11 @@ public class SelectStatement extends MetaStatement {
                                     break;
                                 default:
                                     clause = null;
-                                    break;
+                                    throw new UnsupportedOperationException("'"+relToken.getOperator()+"' operator not supported by C*");
                             }
                         } else {
+                            return null;
+                            /*
                             List<Term> termsOfToken = relToken.getTerms();
                             List<String> termsOfTokenStr = new ArrayList<>();
                             for(Term term: termsOfToken){
@@ -638,9 +639,9 @@ public class SelectStatement extends MetaStatement {
                                     break;
                                 default:
                                     clause = null;
-                                    break;
+                                    throw new UnsupportedOperationException("'"+relToken.getOperator()+"' operator not supported by C*");
                             }  
-                            //System.out.println("Not supported");
+                            */
                         } 
                         break;
                 }
@@ -656,17 +657,21 @@ public class SelectStatement extends MetaStatement {
                     }
                 }
             }            
-            /*
-            Object[] complexUriArr;
-            Select.Where tmp = QueryBuilder.select().all().from("myTable").where(QueryBuilder.eq("col_1", QueryBuilder.bindMarker())).and(QueryBuilder.in("col_2", complexUriArr));            
-            sql = sel.where(QueryBuilder.lt(query, sel)).and(QueryBuilder.eq(query, sel));
-            sel.where(Clause clause).where(Clause clause);
-            */
         } else {
             whereStmt = sel.where();
         }
         
         return whereStmt;
+    }
+    
+    @Override
+    public DeepResult executeDeep() {
+        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
+    }
+
+    @Override
+    public List<MetaStep> getPlan() {
+        return null;
     }
     
 }

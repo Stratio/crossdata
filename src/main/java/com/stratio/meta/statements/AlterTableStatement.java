@@ -2,11 +2,15 @@ package com.stratio.meta.statements;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
-import com.stratio.meta.structures.Path;
 import com.stratio.meta.structures.ValueProperty;
+import com.stratio.meta.utils.DeepResult;
+import com.stratio.meta.utils.MetaStep;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 
 public class AlterTableStatement extends MetaStatement{
@@ -86,11 +90,6 @@ public class AlterTableStatement extends MetaStatement{
     }  
 
     @Override
-    public Path estimatePath() {
-           return Path.CASSANDRA;
-    }
-
-    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Alter table ");
         if(keyspaceInc){
@@ -156,6 +155,16 @@ public class AlterTableStatement extends MetaStatement{
     public Statement getDriverStatement() {
         Statement statement = null;
         return statement;
+    }
+    
+    @Override
+    public DeepResult executeDeep() {
+        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
+    }
+    
+    @Override
+    public List<MetaStep> getPlan() {
+        return null;
     }
     
 }

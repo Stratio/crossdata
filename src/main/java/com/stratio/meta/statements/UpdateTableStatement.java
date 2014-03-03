@@ -5,9 +5,12 @@ import com.datastax.driver.core.Statement;
 import com.stratio.meta.structures.Assignment;
 import com.stratio.meta.structures.MetaRelation;
 import com.stratio.meta.structures.Option;
-import com.stratio.meta.structures.Path;
 import com.stratio.meta.structures.Term;
+import com.stratio.meta.utils.DeepResult;
+import com.stratio.meta.utils.MetaStep;
 import com.stratio.meta.utils.MetaUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import java.util.List;
 import java.util.Map;
@@ -161,11 +164,6 @@ public class UpdateTableStatement extends MetaStatement {
     }
 
     @Override
-    public Path estimatePath() {        
-        return Path.CASSANDRA;
-    }
-
-    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("UPDATE ");
         if(keyspaceInc){
@@ -211,6 +209,16 @@ public class UpdateTableStatement extends MetaStatement {
     public Statement getDriverStatement() {
         Statement statement = null;
         return statement;
+    }
+    
+    @Override
+    public DeepResult executeDeep() {
+        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
+    }
+    
+    @Override
+    public List<MetaStep> getPlan() {
+        return null;
     }
     
 }
