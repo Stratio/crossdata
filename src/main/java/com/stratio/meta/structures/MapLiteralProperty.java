@@ -32,6 +32,14 @@ public class MapLiteralProperty extends ValueProperty {
         this.literals = literals;
     }   
     
+    public int size() {
+        return this.literals.size();
+    }
+    
+    public boolean isEmpty() {
+        return this.literals.isEmpty();
+    }    
+    
     public void addLiteral(String key, String value){
         literals.put(key, value);
     }

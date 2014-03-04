@@ -39,7 +39,7 @@ public abstract class MetaStatement {
     @Override
     public abstract String toString();
     
-    public abstract boolean validate();
+    public abstract void validate();
 
     public abstract String getSuggestion();
     

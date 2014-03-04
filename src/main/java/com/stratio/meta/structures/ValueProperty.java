@@ -2,11 +2,12 @@ package com.stratio.meta.structures;
 
 public abstract class ValueProperty {
     
-    public final int TYPE_IDENT = 1;
-    public final int TYPE_CONST = 2;
-    public final int TYPE_MAPLT = 3;
-    public final int TYPE_FLOAT = 4;
-    public final int TYPE_BOOLEAN = 5;
+    public static final int TYPE_IDENT = 1;
+    public static final int TYPE_CONST = 2;
+    public static final int TYPE_MAPLT = 3;
+    public static final int TYPE_FLOAT = 4;
+    public static final int TYPE_BOOLEAN = 5;
+    public static final int TYPE_LITERAL = 6;
     
     protected int type;
 

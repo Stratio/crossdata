@@ -65,8 +65,8 @@ public class SetOptionsStatement extends MetaStatement {
     }
 
     @Override
-    public boolean validate() {
-        return true;
+    public void validate() {
+
     }
 
     @Override
@@ -97,7 +97,8 @@ public class SetOptionsStatement extends MetaStatement {
     
     @Override
     public List<MetaStep> getPlan() {
-        return null;
+        ArrayList<MetaStep> steps = new ArrayList<>();
+        return steps;
     }
     
 }

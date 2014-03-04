@@ -1,5 +1,7 @@
 package com.stratio.meta.ui.shell.server;
 
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
 import com.stratio.meta.cassandra.CassandraClient;
 import com.stratio.meta.client.help.HelpContent;
 import com.stratio.meta.client.help.HelpManager;
@@ -16,11 +18,10 @@ import java.io.Console;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
-import com.google.common.base.Joiner;
 import com.stratio.meta.utils.AntlrError;
 import com.stratio.meta.utils.DeepResult;
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.stratio.meta.utils.MetaStep;
+import com.stratio.meta.utils.ValidationException;
 import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -76,9 +77,16 @@ public class Metash {
             MetaStatement stmt = antlrResult.getStatement();
             ErrorsHelper foundErrors = antlrResult.getFoundErrors();
             if((stmt!=null) && (foundErrors.isEmpty())){
-                logger.info("\033[32mExecute:\033[0m " + stmt.toString());
+                logger.info("\033[32mParsed:\033[0m " + stmt.toString());
                 stmt.setQuery(cmd);
-
+                
+                try{
+                    stmt.validate();
+                } catch(ValidationException ex){
+                    logger.error("\033[31mValidation exception:\033[0m "+ex.getMessage());
+                    return;
+                }
+                
                 ResultSet resultSet = null;  
                 Statement driverStmt = null;
                 try{
@@ -93,43 +101,49 @@ public class Metash {
                         logger.error("\033[31mCassandra exception:\033[0m "+ex.getMessage());
                     } else if (ex instanceof UnsupportedOperationException){
                         logger.error("\033[31mUnsupported operation by C*:\033[0m "+ex.getMessage());
-                    }                    
+                    }
                     error = true;
-                    String queryStr = "";
-                    if(driverStmt != null){
-                        queryStr = driverStmt.toString();
-                    } else {
-                        queryStr = stmt.translateToCQL();
+                    if(ex.getMessage().contains("line") && ex.getMessage().contains(":")){
+                        String queryStr;
+                        if(driverStmt != null){
+                            queryStr = driverStmt.toString();
+                        } else {
+                            queryStr = stmt.translateToCQL();
+                        }
+                        String[] cMessageEx =  ex.getMessage().split(" ");
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(cMessageEx[2]);
+                        for(int i=3; i<cMessageEx.length; i++){
+                            sb.append(" ").append(cMessageEx[i]);
+                        }
+                        AntlrError ae = new AntlrError(cMessageEx[0]+" "+cMessageEx[1], sb.toString());
+                        queryStr = MetaUtils.getQueryWithSign(queryStr, ae);
+                        logger.error(queryStr);
                     }
-                    String[] cMessageEx =  ex.getMessage().split(" ");
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(cMessageEx[2]);
-                    for(int i=3; i<cMessageEx.length; i++){
-                        sb.append(" ").append(cMessageEx[i]);
-                    }
-                    AntlrError ae = new AntlrError(cMessageEx[0]+" "+cMessageEx[1], sb.toString());
-                    queryStr = MetaUtils.getQueryWithSign(queryStr, ae);
-                    logger.error(queryStr+System.getProperty("line.separator"));
                 }
                 if(!error){
-                    logger.info("\033[32mResult:\033[0m "+stmt.parseResult(resultSet));
+                    logger.info("\033[32mResult:\033[0m "+stmt.parseResult(resultSet)+System.getProperty("line.separator"));
                 } else {
+                    List<MetaStep> steps = stmt.getPlan();
+                    for(MetaStep step: steps){
+                        logger.info(step.getPath()+"-->"+step.getQuery());
+                    }
                     DeepResult deepResult = stmt.executeDeep();
                     if(deepResult.hasErrors()){
-                        logger.error("\033[31mUnsupported operation by Deep:\033[0m "+deepResult.getErrors());
+                        logger.error("\033[31mUnsupported operation by Deep:\033[0m "+deepResult.getErrors()+System.getProperty("line.separator"));
                     } else {
-                        logger.info("\033[32mResult:\033[0m "+deepResult.getResult());
+                        logger.info("\033[32mResult:\033[0m "+deepResult.getResult()+System.getProperty("line.separator"));
                     }
-                }           
+                }
             } else {                
                 MetaUtils.printParserErrors(cmd, antlrResult, true);                        
             }
 	}
 
-	/**
-	 * Shell loop that receives user commands until a {@code exit} or {@code quit} command
-	 * is introduced.
-	 */
+    /**
+     * Shell loop that receives user commands until a {@code exit} or {@code quit} command
+     * is introduced.
+     */
     public void loop(){
         Console input = System.console();
         if(input != null){

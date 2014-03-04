@@ -17,6 +17,24 @@ public class SelectorIdentifier extends SelectorMeta {
         this.identifier = identifier;
     }        
     
+    public boolean isColumnSelector(){
+        return identifier.contains(".");
+    }
+    
+    public String getTablename(){
+        if(identifier.contains(".")){
+            return identifier.split("\\.")[0];
+        }
+        return identifier;
+    }
+    
+    public String getColumnName(){
+        if(identifier.contains(".")){
+            return identifier.split("\\.")[1];
+        }
+        return identifier;
+    }
+    
     @Override
     public String toString() {
         return identifier;

@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import com.stratio.meta.grammar.generated.MetaLexer;
 import com.stratio.meta.grammar.generated.MetaParser;
 import com.stratio.meta.statements.MetaStatement;
-import com.stratio.meta.structures.Term;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -130,7 +129,10 @@ public class MetaUtils {
         for(Object key: ids.keySet()){
             Object vp = ids.get(key);
             sb.append(key).append(conjunction).append(vp.toString()).append(separator);
-        }        
+        }
+        if(sb.length() < separator.length()){
+            return "";
+        }
         return sb.substring(0, sb.length()-separator.length());
     }
 
@@ -165,7 +167,11 @@ public class MetaUtils {
     }
     
     private static int getCharPosition(AntlrError antlrError) {
-        return Integer.parseInt(antlrError.getHeader().split(":")[1]);
+        if(antlrError.getHeader().contains(":")){
+            return Integer.parseInt(antlrError.getHeader().split(":")[1]);
+        } else {
+            return -1;
+        }
     }
     
     public static String getSuggestion(String query, AntlrError antlrError){
@@ -246,7 +252,10 @@ public class MetaUtils {
 
     public static String getQueryWithSign(String query, AntlrError ae) {
         StringBuilder sb = new StringBuilder(query);
+        int pos = getCharPosition(ae);
+        if(pos >= 0){
         sb.insert(getCharPosition(ae), "\033[35m|\033[0m");
+        }
         return sb.toString();
     }
 

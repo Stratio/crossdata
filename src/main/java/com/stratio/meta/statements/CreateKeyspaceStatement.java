@@ -6,6 +6,7 @@ import com.stratio.meta.structures.ValueProperty;
 import com.stratio.meta.utils.DeepResult;
 import com.stratio.meta.utils.MetaStep;
 import com.stratio.meta.utils.MetaUtils;
+import com.stratio.meta.utils.ValidationException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -63,8 +64,34 @@ public class CreateKeyspaceStatement extends MetaStatement {
     }
 
     @Override
-    public boolean validate() {
-        return true;
+    public void validate() {
+        /*
+        if(properties.isEmpty()){
+            throw new ValidationException("CREATE KEYSPACE must include at least property 'replication'");
+        }
+        // Check if there are innapropiate properties
+        for(String key: properties.keySet()){
+            if(!key.equalsIgnoreCase("replication") && !key.equalsIgnoreCase("durable_writes")){
+                throw new ValidationException("CREATE KEYSPACE can only include properties 'replication' and 'durable_writes'");
+            }
+        }
+        // Check if replication is present and it's built properly
+        if(!properties.containsKey("replication")){
+            throw new ValidationException("CREATE KEYSPACE must include property 'replication'");
+        }
+        if(properties.get("replication").getType() != ValueProperty.TYPE_MAPLT){
+            throw new ValidationException("'replication' property must be a map");
+        }
+        MapLiteralProperty mlp = (MapLiteralProperty) properties.get("replication");
+        if(mlp.isEmpty()){
+            throw new ValidationException("'replication' property cannot be empty");
+        }*/   
+        // if durable_writes is present then it must be a boolean type
+        if(properties.containsKey("durable_writes")){
+            if(properties.get("durable_writes").getType() != ValueProperty.TYPE_BOOLEAN){
+                throw new ValidationException("Property 'replication' must be a boolean");
+            }
+        }
     }
 
     @Override
@@ -100,7 +127,8 @@ public class CreateKeyspaceStatement extends MetaStatement {
     
     @Override
     public List<MetaStep> getPlan() {
-        return null;
+        ArrayList<MetaStep> steps = new ArrayList<>();
+        return steps;
     }
     
 }

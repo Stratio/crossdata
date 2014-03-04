@@ -25,6 +25,7 @@ import com.stratio.meta.structures.SelectorMeta;
 import com.stratio.meta.structures.Term;
 import com.stratio.meta.structures.WindowSelect;
 import com.stratio.meta.utils.DeepResult;
+import com.stratio.meta.utils.MetaPath;
 import com.stratio.meta.utils.MetaStep;
 import com.stratio.meta.utils.MetaUtils;
 
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -276,8 +278,8 @@ public class SelectStatement extends MetaStatement {
     }
 
     @Override
-    public boolean validate() {
-        return true;
+    public void validate() {
+
     }
 
     @Override
@@ -487,34 +489,7 @@ public class SelectStatement extends MetaStatement {
                 builder = selection;
             } else {
                 builder = QueryBuilder.select().all();
-            }
-            /*
-            } else if(selList.isDistinct()){
-                Select.Selection selection = QueryBuilder.select();
-                selection = selection.distinct();
-                SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection();
-                for(SelectionSelector selSelector: selSelectors.getSelectors()){
-                    SelectorMeta selectorMeta = selSelector.getSelector();
-                    if(selectorMeta.getType() == SelectorMeta.TYPE_IDENT){
-                        SelectorIdentifier selIdent = (SelectorIdentifier) selectorMeta;
-                        selection = selection.column(selIdent.getIdentifier());
-                    }                
-                }
-                builder = selection;
-            } else {
-                SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection();
-                String[] columns = new String[selSelectors.numberOfSelectors()];
-                int nCol = 0;
-                for(SelectionSelector selSelector: selSelectors.getSelectors()){
-                    SelectorMeta selectorMeta = selSelector.getSelector();
-                    if(selectorMeta.getType() == SelectorMeta.TYPE_IDENT){
-                        SelectorIdentifier selIdent = (SelectorIdentifier) selectorMeta;
-                        columns[nCol] = selIdent.getIdentifier();
-                        nCol++;
-                    }
-                }
-                builder = QueryBuilder.select(columns);
-            }*/ 
+            }             
         }                                     
                         
         Select sel;
@@ -612,8 +587,7 @@ public class SelectStatement extends MetaStatement {
                                     throw new UnsupportedOperationException("'"+relToken.getOperator()+"' operator not supported by C*");
                             }
                         } else {
-                            return null;
-                            /*
+                            //return null;
                             List<Term> termsOfToken = relToken.getTerms();
                             List<String> termsOfTokenStr = new ArrayList<>();
                             for(Term term: termsOfToken){
@@ -641,18 +615,13 @@ public class SelectStatement extends MetaStatement {
                                     clause = null;
                                     throw new UnsupportedOperationException("'"+relToken.getOperator()+"' operator not supported by C*");
                             }  
-                            */
                         } 
                         break;
                 }
-                //System.out.println(metaRelation.toString());
-                //System.out.println(clause.toString());
                 if(clause != null){
-                    if(whereStmt == null){
-                        //System.out.println("Branch if");                    
+                    if(whereStmt == null){                
                         whereStmt = sel.where(clause);
                     } else {
-                        //System.out.println("Branch else");
                         whereStmt = whereStmt.and(clause);
                     }
                 }
@@ -666,12 +635,49 @@ public class SelectStatement extends MetaStatement {
     
     @Override
     public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
+        return new DeepResult("Success", new ArrayList<>(Arrays.asList("Not supported yet")));
     }
 
     @Override
     public List<MetaStep> getPlan() {
-        return null;
+        ArrayList<MetaStep> steps = new ArrayList<>();
+        if(joinInc){             
+            String tableFrom = tablename;
+            String tableJoin = this.join.getTablename();
+            SelectionList selectionList = (SelectionList) this.selectionClause;
+            SelectionSelectors selection = (SelectionSelectors) selectionList.getSelection();
+            StringBuilder sb1 = new StringBuilder("SELECT ");
+            StringBuilder sb2 = new StringBuilder("SELECT ");
+            for (SelectionSelector ss: selection.getSelectors()){
+                SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
+                System.out.println(si.getIdentifier());
+                if(si.getTablename().equalsIgnoreCase(tableFrom)){
+                    sb1.append(si.getColumnName()).append(", ");
+                } else {
+                    sb2.append(si.getColumnName()).append(", ");
+                }
+            }
+            Map<String, String> fields = this.join.getFields();
+            for(String key: fields.keySet()){
+                String value = fields.get(key);
+                if(key.split("\\.")[0].trim().equalsIgnoreCase(tableFrom.trim())){
+                    sb1.append(key.split("\\.")[1]).append(", ");
+                    sb2.append(value.split("\\.")[1]).append(", ");
+                } else {
+                    sb1.append(value.split("\\.")[1]).append(", ");
+                    sb2.append(key.split("\\.")[1]).append(", ");
+                }                
+            }
+            sb1.deleteCharAt(sb1.length()-2);
+            sb2.deleteCharAt(sb2.length()-2);
+            sb1.append("FROM ").append(tableFrom).append(";");
+            sb2.append("FROM ").append(tableJoin).append(";");
+            steps.add(new MetaStep(MetaPath.CASSANDRA, "ResultSet rFrom = CassandraClient.executeQuery(\""+sb1.toString()+"\")"));            
+            steps.add(new MetaStep(MetaPath.CASSANDRA, "ResultSet rJoin = CassandraClient.executeQuery(\""+sb2.toString()+"\")"));           
+            // JOIN IN DEEP
+            steps.add(new MetaStep(MetaPath.DEEP, "Deep.select.join(rFrom, rJoin, metaStatement)"));
+        }
+        return steps;
     }
     
 }

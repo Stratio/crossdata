@@ -165,6 +165,7 @@ T_BETWEEN: B E T W E E N;
 T_ASC: A S C;
 T_DESC: D E S C;
 T_LIKE: L I K E;
+T_EPHEMERAL: E P H E M E R A L;
 
 T_SEMICOLON: ';';
 T_EQUAL: '=';
@@ -644,10 +645,14 @@ getMetaProperties returns [List<MetaProperty> props]
     (T_AND newProp=getMetaProperty {$props.add(newProp);})*
 ;
 
-getMetaProperty returns [MetaProperty mp]:
+getMetaProperty returns [MetaProperty mp]
+    @init{
+        BooleanProperty boolProp = new BooleanProperty(true);
+    }:
     (identProp=T_IDENT T_EQUAL valueProp=getValueProperty {$mp = new PropertyNameValue($identProp.text, valueProp);} 
     | T_COMPACT T_STORAGE {$mp = new PropertyCompactStorage();}
-    | T_CLUSTERING T_ORDER T_BY T_START_PARENTHESIS ordering=getOrdering {$mp = new PropertyClusteringOrder(ordering);} T_END_PARENTHESIS)    
+    | T_CLUSTERING T_ORDER T_BY T_START_PARENTHESIS ordering=getOrdering {$mp = new PropertyClusteringOrder(ordering);} T_END_PARENTHESIS)
+    | T_EPHEMERAL ( | T_EQUAL (T_FALSE {new BooleanProperty(false);} | T_TRUE )) {$mp = new PropertyNameValue("ephemeral", boolProp);}
 ;
 
 getDataType returns [String dataType]:
@@ -677,8 +682,8 @@ getFields returns [Map<String, String> fields]
     @init{
         fields = new HashMap<>();
     }:
-    ident1L=T_IDENT T_EQUAL ident1R=T_IDENT { fields.put($ident1L.text, $ident1R.text);}
-    (identNL=T_IDENT T_EQUAL identNR=T_IDENT { fields.put($identNL.text, $identNR.text);})* 
+    ident1L=getTableID T_EQUAL ident1R=getTableID { fields.put(ident1L, ident1R);}
+    (identNL=getTableID T_EQUAL identNR=getTableID { fields.put(identNL, identNR);})* 
 ;
 
 getWindow returns [WindowSelect ws]:
@@ -763,10 +768,10 @@ getSelector returns [SelectorMeta slmt]
             T_START_PARENTHESIS 
                 (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 
             T_END_PARENTHESIS {$slmt = new SelectorGroupBy(gbFunc, params);}
-        | ident=T_IDENT (
-            {$slmt = new SelectorIdentifier($ident.text);}
+        | identID=getTableID (
+            {$slmt = new SelectorIdentifier(identID);}
             | T_START_PARENTHESIS (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 
-                T_END_PARENTHESIS {$slmt = new SelectorFunction($ident.text, params);}
+                T_END_PARENTHESIS {$slmt = new SelectorFunction(identID, params);}
         )
     )
 ;
@@ -933,7 +938,7 @@ getValueProperty returns [ValueProperty value]
     | T_TRUE {$value = new BooleanProperty(true);}
     | T_COMPACT T_STORAGE {$value = new IdentifierProperty("COMPACT STORAGE");}
     | T_CLUSTERING T_ORDER {$value = new IdentifierProperty("CLUSTERING ORDER");}
-    | quotedLiteral=QUOTED_LITERAL {$value = new IdentifierProperty($quotedLiteral.text);}
+    | quotedLiteral=QUOTED_LITERAL {$value = new QuotedLiteral($quotedLiteral.text);}
     ;
 
 

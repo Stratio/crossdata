@@ -2,6 +2,7 @@ package com.stratio.meta.cassandra;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
@@ -22,6 +23,14 @@ public class CassandraClient {
         if(session == null){
             session = cluster.connect();
         }                
+    }
+    
+    public static PreparedStatement parseStatementWithCassandra(String query){
+        return session.prepare(query);
+    }
+    
+    public static PreparedStatement parseStatementWithCassandra(RegularStatement rs){
+        return session.prepare(rs);
     }
     
     public static ResultSet executeQuery(String query, boolean showInfo){        
