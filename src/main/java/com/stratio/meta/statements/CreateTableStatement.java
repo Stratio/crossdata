@@ -282,31 +282,33 @@ public class CreateTableStatement extends MetaStatement{
     }
 
     @Override
-    public void validate() {       
-        for(MetaProperty property: properties){
-            if(property.getType() == MetaProperty.TYPE_NAME_VALUE){
-                PropertyNameValue propertyNameValue = (PropertyNameValue) property;
-                // If property ephemeral is present, it must be a boolean type
-                if(propertyNameValue.getName().equalsIgnoreCase("ephemeral")){
-                    if(propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
-                        throw new ValidationException("Property 'ephemeral' must be a boolean");
+    public void validate() {  
+        if(withProperties){
+            for(MetaProperty property: properties){
+                if(property.getType() == MetaProperty.TYPE_NAME_VALUE){
+                    PropertyNameValue propertyNameValue = (PropertyNameValue) property;
+                    // If property ephemeral is present, it must be a boolean type
+                    if(propertyNameValue.getName().equalsIgnoreCase("ephemeral")){
+                        if(propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+                            throw new ValidationException("Property 'ephemeral' must be a boolean");
+                        }
+                        break;
+                    // If property ephemeral_tuples is present, it must be a integer type    
+                    } else if(propertyNameValue.getName().equalsIgnoreCase("ephemeral_tuples")){
+                        if(propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+                            throw new ValidationException("Property 'ephemeral' must be a boolean");
+                        }
+                        break;
+                    // If property ephemeral_persist_on is present, it must be a string type
+                    } else if(propertyNameValue.getName().equalsIgnoreCase("ephemeral_persist_on")){
+                        if(propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+                            throw new ValidationException("Property 'ephemeral_persist_on' must be a string");
+                        }
+                        break;
                     }
-                    break;
-                // If property ephemeral_tuples is present, it must be a integer type    
-                } else if(propertyNameValue.getName().equalsIgnoreCase("ephemeral_tuples")){
-                    if(propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
-                        throw new ValidationException("Property 'ephemeral' must be a boolean");
-                    }
-                    break;
-                // If property ephemeral_persist_on is present, it must be a string type
-                } else if(propertyNameValue.getName().equalsIgnoreCase("ephemeral_persist_on")){
-                    if(propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
-                        throw new ValidationException("Property 'ephemeral_persist_on' must be a string");
-                    }
-                    break;
                 }
             }
-        }    
+        }
     }
 
     @Override

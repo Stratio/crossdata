@@ -166,6 +166,7 @@ T_ASC: A S C;
 T_DESC: D E S C;
 T_LIKE: L I K E;
 T_EPHEMERAL: E P H E M E R A L;
+T_AT: '@';
 
 T_SEMICOLON: ';';
 T_EQUAL: '=';
@@ -907,13 +908,19 @@ getTableID returns [String tableID]
     ;
 
 getTerm returns [String term]:
+    term1=getPartialTerm ( {$term = new String($term1.text);} | 
+    T_AT term2=getPartialTerm {$term = new String($term1.text+"@"+$term2.text);} )
+;
+
+getPartialTerm returns [String term]:
     ident=T_IDENT {$term = new String($ident.text);}
     | constant=T_CONSTANT {$term = new String($constant.text);}
     | '1' {$term = new String("1");}
     | T_FALSE {$term = new String("false");}
     | T_TRUE {$term = new String("true");}
     | ksAndTn=T_KS_AND_TN {$term = new String($ksAndTn.text);}
-    | noIdent=T_TERM {$term = new String($noIdent.text);}
+    | noIdent=T_TERM {$term = new String($noIdent.text);} 
+    | path=T_PATH {$term = new String($path.text);}
 ;
 
 getMapLiteral returns [Map<String, String> mapTerms]

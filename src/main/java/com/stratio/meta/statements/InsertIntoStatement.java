@@ -15,6 +15,7 @@ import java.util.Arrays;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 public class InsertIntoStatement extends MetaStatement {
 
@@ -270,6 +271,8 @@ public class InsertIntoStatement extends MetaStatement {
             ValueCell valueCell = (ValueCell) iter.next();
             if(valueCell.toString().matches("[0123456789.]+")){
                 insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.toString()));
+            } else if (valueCell.toString().contains("-")){
+                insertStmt = insertStmt.value(id, UUID.fromString(valueCell.toString()));
             } else {
                 insertStmt = insertStmt.value(id, valueCell.toString());
             }            
