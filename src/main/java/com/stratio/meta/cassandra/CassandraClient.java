@@ -6,6 +6,7 @@ import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.exceptions.DriverException;
 import org.apache.log4j.Logger;
 
 public class CassandraClient {
@@ -38,18 +39,19 @@ public class CassandraClient {
         if(showInfo){
             logger.info("\033[34;1mQuery:\033[0m "+query);
         }
+        /*
         PreparedStatement cqlStatement = session.prepare(query);        
         if(cqlStatement == null){
             return null;
         }
-        
+        */
         ResultSet resultSet = session.execute(query);             
         //System.out.println("ResultSet: "+resultSet.all().size()+" rows");               
         
         return resultSet;
     }
        
-    public static ResultSet executeQuery(Statement query, boolean showInfo){      
+    public static ResultSet executeQuery(Statement query, boolean showInfo) {      
         //query = "SELECT * FROM mykeyspace.usuarios";    
         if(showInfo){
             logger.info("\033[34;1mStatement:\033[0m "+query.toString());
@@ -68,8 +70,7 @@ public class CassandraClient {
             if(cqlStatement == null){
                 return null;
             }            
-        }*/
-        
+        }*/        
         ResultSet resultSet = session.execute(query);             
         //System.out.println("ResultSet: "+resultSet.toString());  
         //System.out.println(resultSet.all().size());
@@ -84,11 +85,11 @@ public class CassandraClient {
     
     public static void close(){
         if(session != null){
-            session.shutdown();
+            session.close();
         }
         
         if(cluster != null){
-            cluster.shutdown();
+            cluster.close();
         }                        
     }
     

@@ -1,7 +1,5 @@
 package com.stratio.meta.ui.shell.server;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
 import com.stratio.meta.cassandra.CassandraClient;
 import com.stratio.meta.client.help.HelpContent;
 import com.stratio.meta.client.help.HelpManager;
@@ -18,6 +16,9 @@ import java.io.Console;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
+import com.datastax.driver.core.querybuilder.Select;
+import com.stratio.meta.statements.SelectStatement;
 import com.stratio.meta.utils.AntlrError;
 import com.stratio.meta.utils.DeepResult;
 import com.stratio.meta.utils.MetaStep;
@@ -36,6 +37,8 @@ public class Metash {
 	 */
         private static final Logger logger = Logger.getLogger(Metash.class);
 	
+        private static final int DEFAULT_SELECT_LIMIT = 10000;
+        
 	private final HelpContent _help;
 	
 	public Metash(){
@@ -69,9 +72,9 @@ public class Metash {
 	private void showHelp(String inputText){
 		HelpStatement h = parseHelp(inputText);
 		System.out.println(_help.searchHelp(h.getType()));
-	}
-	
-	private void executeMetaCommand(String cmd){
+	}	                
+                     
+        private void executeMetaCommand(String cmd, boolean selectWithFiltering){
             boolean error = false;
             AntlrResult antlrResult = MetaUtils.parseStatement(cmd);            
             MetaStatement stmt = antlrResult.getStatement();
@@ -79,7 +82,6 @@ public class Metash {
             if((stmt!=null) && (foundErrors.isEmpty())){
                 logger.info("\033[32mParsed:\033[0m " + stmt.toString());
                 stmt.setQuery(cmd);
-                
                 try{
                     stmt.validate();
                 } catch(ValidationException ex){
@@ -89,6 +91,17 @@ public class Metash {
                 
                 ResultSet resultSet = null;  
                 Statement driverStmt = null;
+                
+                if(selectWithFiltering){
+                    if(stmt instanceof SelectStatement){
+                        SelectStatement selectStmt = (SelectStatement) stmt;
+                        selectStmt.setNeedsAllowFiltering(selectWithFiltering);
+                        stmt = selectStmt;
+                    } else {
+                        return;
+                    }
+                }
+                
                 try{
                     driverStmt = stmt.getDriverStatement();
                     if(driverStmt != null){
@@ -97,20 +110,26 @@ public class Metash {
                         resultSet = CassandraClient.executeQuery(stmt.translateToCQL(), true);   
                     }
                 } catch (DriverException | UnsupportedOperationException ex) {
+                    Exception e = ex;
                     if(ex instanceof DriverException){
                         logger.error("\033[31mCassandra exception:\033[0m "+ex.getMessage());
+                        if(ex.getMessage().contains("ALLOW FILTERING")){
+                            logger.info("Executing again including ALLOW FILTERING");
+                            executeMetaCommand(cmd, true);
+                            return;
+                        }
                     } else if (ex instanceof UnsupportedOperationException){
                         logger.error("\033[31mUnsupported operation by C*:\033[0m "+ex.getMessage());
                     }
                     error = true;
-                    if(ex.getMessage().contains("line") && ex.getMessage().contains(":")){
+                    if(e.getMessage().contains("line") && e.getMessage().contains(":")){
                         String queryStr;
                         if(driverStmt != null){
                             queryStr = driverStmt.toString();
                         } else {
                             queryStr = stmt.translateToCQL();
                         }
-                        String[] cMessageEx =  ex.getMessage().split(" ");
+                        String[] cMessageEx =  e.getMessage().split(" ");
                         StringBuilder sb = new StringBuilder();
                         sb.append(cMessageEx[2]);
                         for(int i=3; i<cMessageEx.length; i++){
@@ -135,9 +154,13 @@ public class Metash {
                         logger.info("\033[32mResult:\033[0m "+deepResult.getResult()+System.getProperty("line.separator"));
                     }
                 }
-            } else {                
+            } else {       
                 MetaUtils.printParserErrors(cmd, antlrResult, true);                        
             }
+        }
+        
+	private void executeMetaCommand(String cmd){
+            executeMetaCommand(cmd, false);
 	}
 
     /**

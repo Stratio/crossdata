@@ -285,7 +285,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	}:
 	T_CREATE indexType=T_INDEX_TYPE {$cis.setIndexType($indexType.text);} T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
-	name=T_IDENT {$cis.setName($name.text);}
+	(name=T_IDENT {$cis.setName($name.text);})?
 	T_ON tablename=getTableID {$cis.setTablename(tablename);}
 	T_START_PARENTHESIS
 	firstField=T_IDENT {$cis.addColumn($firstField.text);}
@@ -921,6 +921,7 @@ getPartialTerm returns [String term]:
     | ksAndTn=T_KS_AND_TN {$term = new String($ksAndTn.text);}
     | noIdent=T_TERM {$term = new String($noIdent.text);} 
     | path=T_PATH {$term = new String($path.text);}
+    | qLiteral=QUOTED_LITERAL {$term = new String($qLiteral.text);}
 ;
 
 getMapLiteral returns [Map<String, String> mapTerms]

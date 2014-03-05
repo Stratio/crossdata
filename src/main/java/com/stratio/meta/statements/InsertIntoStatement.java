@@ -16,11 +16,14 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import org.apache.log4j.Logger;
 
 public class InsertIntoStatement extends MetaStatement {
 
     public static final int TYPE_SELECT_CLAUSE = 1;
     public static final int TYPE_VALUES_CLAUSE = 2;
+    
+    private final Logger logger = Logger.getLogger(InsertIntoStatement.class);
     
     private boolean keyspaceInc = false;
     private String keyspace;
@@ -272,7 +275,7 @@ public class InsertIntoStatement extends MetaStatement {
             if(valueCell.toString().matches("[0123456789.]+")){
                 insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.toString()));
             } else if (valueCell.toString().contains("-")){
-                insertStmt = insertStmt.value(id, UUID.fromString(valueCell.toString()));
+                    insertStmt = insertStmt.value(id, UUID.fromString(valueCell.toString()));
             } else {
                 insertStmt = insertStmt.value(id, valueCell.toString());
             }            

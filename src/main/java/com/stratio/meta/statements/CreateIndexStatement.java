@@ -7,6 +7,7 @@ import com.stratio.meta.structures.ValueProperty;
 import com.stratio.meta.utils.DeepResult;
 import com.stratio.meta.utils.MetaStep;
 import com.stratio.meta.utils.MetaUtils;
+import com.stratio.meta.utils.ValidationException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -136,8 +137,10 @@ public class CreateIndexStatement extends MetaStatement {
         if(_keyspaceInc){
             sb.append(_keyspace).append(".");
         }
-        sb.append(_name);
-        sb.append(" ON ");
+        if(_name != null){
+            sb.append(_name).append(" ");
+        }
+        sb.append("ON ");
         sb.append(_tablename);
         sb.append(" (").append(MetaUtils.StringList(_targetColumn, ", ")).append(")");
         if(_usingClass != null){
@@ -175,7 +178,10 @@ public class CreateIndexStatement extends MetaStatement {
 
     @Override
     public String translateToCQL() {
-        String cqlString = this.toString().replace("HASH", "CUSTOM");
+        String cqlString = this.toString().replace(" DEFAULT ", " ");
+        if(cqlString.contains(" LUCENE ")){
+            throw new ValidationException("Lucene indexes are not supported yet");
+        }        
         if(cqlString.contains("USING")){
             cqlString = cqlString.replace("USING ", "USING '");
             if(cqlString.contains("WITH ")){

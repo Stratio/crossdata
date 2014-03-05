@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -57,7 +58,8 @@ public class SelectStatement extends MetaStatement {
     private GroupBy group;    
     private boolean limitInc;
     private int limit;
-    private boolean disableAnalytics;           
+    private boolean disableAnalytics;
+    private boolean needsAllowFiltering = false;
 
     public SelectStatement(SelectionClause selectionClause, String tablename, 
                            boolean windowInc, WindowSelect window, 
@@ -241,7 +243,15 @@ public class SelectStatement extends MetaStatement {
 
     public void setDisableAnalytics(boolean disableAnalytics) {
         this.disableAnalytics = disableAnalytics;
-    }                    
+    }                   
+
+    public boolean isNeedsAllowFiltering() {
+        return needsAllowFiltering;
+    }
+
+    public void setNeedsAllowFiltering(boolean needsAllowFiltering) {
+        this.needsAllowFiltering = needsAllowFiltering;
+    }        
 
     @Override
     public String toString() {
@@ -279,7 +289,7 @@ public class SelectStatement extends MetaStatement {
 
     @Override
     public void validate() {
-
+        
     }
 
     @Override
@@ -316,12 +326,17 @@ public class SelectStatement extends MetaStatement {
         for(Row row: rows){
             ArrayList<String> currentRow = new ArrayList<>();
             for(int nCol=0; nCol<nCols; nCol++){
-                String cell = "";
+                String cell = "null";
                 com.datastax.driver.core.DataType cellType = colDefs.getType(nCol);  
                 if((cellType == com.datastax.driver.core.DataType.varchar()) || (cellType == com.datastax.driver.core.DataType.text())){
                     cell = row.getString(nCol);
                 } else if (cellType == com.datastax.driver.core.DataType.cint()){
                     cell = Integer.toString(row.getInt(nCol));
+                } else if (cellType == com.datastax.driver.core.DataType.uuid()){
+                    UUID uuid = row.getUUID(nCol);
+                    if(uuid!=null){
+                        cell = uuid.toString();
+                    }
                 } else if (cellType == com.datastax.driver.core.DataType.bigint()){
                     //BigInteger bi = row.getVarint(nCol);
                     //cell = bi.toString();
@@ -337,7 +352,7 @@ public class SelectStatement extends MetaStatement {
                 }
                 // TODO: add all data types
                 currentRow.add(cell);
-                if((lenghts.get(nCol)-extraSpace) < cell.length()){
+                if((cell != null) && ((lenghts.get(nCol)-extraSpace) < cell.length())){
                     lenghts.put(nCol, cell.length()+extraSpace);
                 }
                 /*if(lenghts.containsKey(nCol)){
@@ -410,10 +425,13 @@ public class SelectStatement extends MetaStatement {
             }
             int nCol = 0;
             StringUtils.leftPad(query, nCol);
-            for(String cell: tableRow){                
+            for(String cell: tableRow){
+                if(cell == null){
+                    cell = "null";
+                }
                 if((colDefs.getType(nCol) != com.datastax.driver.core.DataType.cint()) && (colDefs.getType(nCol) != com.datastax.driver.core.DataType.bigint())){
                     cell = StringUtils.rightPad(cell, lenghts.get(nCol)-1);
-                    cell = StringUtils.leftPad(cell, lenghts.get(nCol));
+                    cell = StringUtils.leftPad(cell, lenghts.get(nCol));                         
                 } else {
                     cell = StringUtils.leftPad(cell, lenghts.get(nCol)-1);
                     cell = StringUtils.rightPad(cell, lenghts.get(nCol));
@@ -463,7 +481,7 @@ public class SelectStatement extends MetaStatement {
     @Override
     public Statement getDriverStatement() {                
         SelectionClause selClause = this.selectionClause;                                                
-        Select.Builder builder;                
+        Select.Builder builder;
         
         if(this.selectionClause.getType() == SelectionClause.TYPE_COUNT){
             builder = QueryBuilder.select().countAll();
@@ -502,7 +520,7 @@ public class SelectStatement extends MetaStatement {
         
         if(this.limitInc){
             sel.limit(this.limit);
-        }
+        }                
         
         if(this.orderInc){
             Ordering[] orderings = new Ordering[order.size()];
@@ -518,17 +536,26 @@ public class SelectStatement extends MetaStatement {
             sel.orderBy(orderings); 
         }
         
+        if(this.needsAllowFiltering){
+            sel.allowFiltering();
+        }
+        
         Where whereStmt = null;
         if(this.whereInc){
             for(MetaRelation metaRelation: this.where){
                 Clause clause = null;
-                String name = "";
-                Object value = null;
+                String name;
+                Object value;                
                 switch(metaRelation.getType()){
                     case MetaRelation.TYPE_COMPARE:
                         RelationCompare relCompare = (RelationCompare) metaRelation;
                         name = relCompare.getIdentifiers().get(0);
                         value = relCompare.getTerms().get(0).getTerm();
+                        if(value.toString().matches("[0123456789\\.]+")){
+                            value = Integer.parseInt(value.toString());
+                        } else if (value.toString().contains("-")) {
+                            value = UUID.fromString(value.toString());
+                        }
                         switch(relCompare.getOperator()){
                             case "=":
                                 clause = QueryBuilder.eq(name, value);
@@ -552,12 +579,20 @@ public class SelectStatement extends MetaStatement {
                         break;
                     case MetaRelation.TYPE_IN:
                         RelationIn relIn = (RelationIn) metaRelation;
-                        List<Term> terms = relIn.getTerms();
-                        Object[] values = new Object[relIn.numberOfTerms()];
+                        List<Term> terms = relIn.getTerms();                        
+                        Object[] values = new Object[relIn.numberOfTerms()];                        
                         int nTerm = 0;
                         for(Term term: terms){
                             values[nTerm] = term.getTerm();
                             nTerm++;
+                        }     
+                        if(values[0].toString().matches("[0123456789\\.]+")){
+                            int[] intValues = new int[relIn.numberOfTerms()];
+                            for(int i= 0; i<values.length; i++){
+                                intValues[i] = Integer.parseInt(values[i].toString());
+                            }
+                            clause = QueryBuilder.in(relIn.getIdentifiers().get(0), intValues);
+                            break;
                         }
                         clause = QueryBuilder.in(relIn.getIdentifiers().get(0), values);
                         break;

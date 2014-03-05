@@ -195,6 +195,9 @@ public class MetaUtils {
             
             /* NEW get error word method */
             String errorMessage = antlrError.getMessage();
+            if(errorMessage == null){
+                return "";
+            }
             errorWord = errorMessage.substring(errorMessage.indexOf("'")+1, errorMessage.lastIndexOf("'"));
             errorWord = errorWord.toUpperCase();
             //System.out.println("Erroneous word (NEW): "+errorWord);
@@ -259,7 +262,10 @@ public class MetaUtils {
         return sb.toString();
     }
 
-    public static String translateToken(String message) {        
+    public static String translateToken(String message) {     
+        if(message == null){
+            return "";
+        }
         int tokenPosition = message.indexOf("T_");        
         if(tokenPosition>-1){            
             String target = message.substring(tokenPosition);
@@ -316,10 +322,17 @@ public class MetaUtils {
         try {                       
             result = parser.query();
             foundErrors = parser.getFoundErrors();
-        } catch (RecognitionException e) {
+        } catch (Exception e) {
             logger.error("Cannot parse statement", e);
-        }                   
-        return new AntlrResult(result, foundErrors);
+            if(foundErrors == null){                                    
+                foundErrors = new ErrorsHelper();
+            }
+            if(foundErrors.isEmpty()){
+                foundErrors.addError(new AntlrError("Unkown parser error", e.getMessage()));
+            }
+            return new AntlrResult(result, foundErrors);
+        } 
+        return new AntlrResult(result, foundErrors);                 
     }
 
     public static String translateLiteralsToCQL(String metaStr) {
@@ -375,6 +388,10 @@ public class MetaUtils {
             n++;
         }
         return result;
+    }
+
+    public static String addAllowFiltering(String translatedToCQL) {
+        return translatedToCQL.replace(" ;", ";").replace(";", " ALLOW FILTERING;");
     }
     
 }
