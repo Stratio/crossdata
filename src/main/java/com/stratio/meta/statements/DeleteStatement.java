@@ -83,9 +83,9 @@ public class DeleteStatement extends MetaStatement {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("DELETE");
+        StringBuilder sb = new StringBuilder("DELETE ");
         if(_targetColumn.size() > 0){
-        sb.append(" (").append(MetaUtils.StringList(_targetColumn, ", ")).append(")");
+        sb.append(MetaUtils.StringList(_targetColumn, ", "));
         }
         sb.append(" FROM ");
         if(keyspaceInc){

@@ -228,16 +228,12 @@ deleteStatement returns [DeleteStatement ds]
 	@init{
 		$ds = new DeleteStatement();
 	}:
-	T_DELETE
-	(T_START_PARENTHESIS
-	firstField=T_IDENT {$ds.addColumn($firstField.text);}
-		(T_COMMA
-			field=T_IDENT {$ds.addColumn($field.text);}
-		)*
-	
-	T_END_PARENTHESIS)*
+	T_DELETE 
+	(firstField=T_IDENT {$ds.addColumn($firstField.text);}
+		(T_COMMA field=T_IDENT {$ds.addColumn($field.text);})*	
+        )?
 	T_FROM
-	tablename=T_IDENT {$ds.setTablename($tablename.text);}
+	tablename=getTableID {$ds.setTablename(tablename);}
 	T_WHERE
 	rel1=getRelation {$ds.addRelation(rel1);} (T_AND relN=getRelation {$ds.addRelation(relN);})*
 	;
@@ -285,7 +281,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	}:
 	T_CREATE indexType=T_INDEX_TYPE {$cis.setIndexType($indexType.text);} T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
-	(name=T_IDENT {$cis.setName($name.text);})?
+	(name=T_IDENT {$cis.setName($name.text);})? 
 	T_ON tablename=getTableID {$cis.setTablename(tablename);}
 	T_START_PARENTHESIS
 	firstField=T_IDENT {$cis.addColumn($firstField.text);}
