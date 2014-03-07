@@ -1,12 +1,14 @@
 package com.stratio.meta.cassandra;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
+
 import org.apache.log4j.Logger;
 
 public class CassandraClient {
@@ -24,6 +26,18 @@ public class CassandraClient {
         if(session == null){
             session = cluster.connect();
         }                
+    }
+    
+    /**
+     * Get the cluster {@link com.datastax.driver.core.Metadata}.
+     * @return The Metadata if the cluster connection have been established or null otherwise.
+     */
+    public static Metadata getClusterMetadata(){
+    	Metadata result = null;
+		if(session != null){
+			result = cluster.getMetadata();
+		}
+		return result;
     }
     
     public static PreparedStatement parseStatementWithCassandra(String query){

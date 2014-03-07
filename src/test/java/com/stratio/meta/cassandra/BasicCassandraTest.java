@@ -17,6 +17,7 @@ public class BasicCassandraTest {
     public static void initCassandraConnection(){
         try {
             CassandraClient.connect();
+            logger.info("Connected to Cassandra");
         } catch(NoHostAvailableException ex){
             logger.error("\033[31mCannot connect with Cassandra\033[0m", ex);  
             System.exit(-1);
