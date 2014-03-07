@@ -7,3 +7,5 @@ src/main/java/com/stratio/meta/client/help/generated/
 /nbproject/
 build.xml
 nbactions.xml
+.idea
+*.iml
