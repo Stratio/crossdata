@@ -258,7 +258,7 @@ listStatement returns [ListStatement ls]:
 //REMOVE UDF \"jar.name\";"
 removeUDFStatement returns [RemoveUDFStatement rus]:
 	//T_REMOVE 'UDF' (T_QUOTE | T_SINGLE_QUOTE) jar=getTerm {$rus = new RemoveUDFStatement(jar);} (T_QUOTE | T_SINGLE_QUOTE)
-	T_REMOVE T_UDF (T_QUOTE | T_SINGLE_QUOTE) jar=getTerm {$rus = new RemoveUDFStatement(jar);} (T_QUOTE | T_SINGLE_QUOTE)
+	T_REMOVE T_UDF (T_QUOTE | T_SINGLE_QUOTE) jar=getTerm {$rus = new RemoveUDFStatement(jar.getTerm());} (T_QUOTE | T_SINGLE_QUOTE)
 	;
 
 //DROP INDEX IF EXISTS index_name;
@@ -289,7 +289,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 		field=T_IDENT {$cis.addColumn($field.text);}
 	)*
 	T_END_PARENTHESIS
-	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass);})?
+	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.getTerm());})?
 	(T_WITH T_OPTIONS key=T_IDENT T_EQUAL value=getValueProperty {$cis.addOption($key.text, value);}
 		(T_AND key=T_IDENT T_EQUAL value=getValueProperty {$cis.addOption($key.text, value);} )*
 	)?
@@ -313,8 +313,8 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
     (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (optN=getOption {options.add(optN);})*)?
     T_SET assig1=getAssignment {assignments.add(assig1);} (T_COMMA assigN=getAssignment {assignments.add(assigN);})*
     T_WHERE rel1=getRelation {whereclauses.add(rel1);} (T_AND relN=getRelation {whereclauses.add(relN);})*
-    (T_IF id1=T_IDENT T_EQUAL term1=getTerm {condsInc = true; conditions.put($id1.text, new Term(term1));} 
-                    (T_AND idN=T_IDENT T_EQUAL termN=getTerm {conditions.put($idN.text, new Term(termN));})*)?
+    (T_IF id1=T_IDENT T_EQUAL term1=getTerm {condsInc = true; conditions.put($id1.text, new Term(term1.getTerm()));} 
+                    (T_AND idN=T_IDENT T_EQUAL termN=getTerm {conditions.put($idN.text, new Term(termN.getTerm()));})*)?
     { 
         if(optsInc)
             if(condsInc)
@@ -575,13 +575,12 @@ createKeyspaceStatement returns [CreateKeyspaceStatement crksst]
         boolean ifNotExists = false;
         HashMap<String, ValueProperty> properties = new HashMap<>();
     }:
-    T_CREATE
-    T_KEYSPACE
+    T_CREATE T_KEYSPACE
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     identKS=T_IDENT
     T_WITH    
     identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {properties.put($identProp1.text, valueProp1);}
-    (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {properties.put($identPropN.text, valuePropN);} )*
+    (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {properties.put($identPropN.text, valuePropN);})*
     { $crksst = new CreateKeyspaceStatement($identKS.text, ifNotExists, properties); };
 
 dropTableStatement returns [DropTableStatement drtbst]
@@ -785,13 +784,13 @@ getAssignment returns [Assignment assign]:
         T_EQUAL value=getValueAssign {$assign = new Assignment(new IdentifierAssignment($ident.text), value);} 
     |
         T_START_BRACKET termL=getTerm T_END_BRACKET T_EQUAL termR=getTerm { 
-            $assign = new Assignment (new IdentifierAssignment($ident.text, new Term(termL)), new ValueAssignment(new Term(termR)));
+            $assign = new Assignment (new IdentifierAssignment($ident.text, termL), new ValueAssignment(termR));
         }
     )
 ; 
 
 getValueAssign returns [ValueAssignment valueAssign]:
-    term1=getTerm { $valueAssign = new ValueAssignment(new Term(term1));}
+    term1=getTerm { $valueAssign = new ValueAssignment(term1);}
     | ident=T_IDENT (T_PLUS (T_START_SBRACKET mapLiteral=getMapLiteral T_END_SBRACKET { $valueAssign = new ValueAssignment(new IdentMap($ident.text, new MapLiteralProperty(mapLiteral)));}
                                 | value1=getIntSetOrList { 
                                                             if(value1 instanceof IntTerm)
@@ -820,11 +819,11 @@ getIntSetOrList returns [IdentIntOrLiteral iiol]:
 ;
 
 getRelation returns [MetaRelation mrel]:
-    T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, new Term(term));}
+    T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}
                             | T_TOKEN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationToken(listIds, operator, terms);})
-    | ident=T_IDENT ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, new Term(termR));}
+    | ident=T_IDENT ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, termR);}
                     | T_IN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationIn($ident.text, terms);}
-                    | T_BETWEEN term1=getTerm T_AND term2=getTerm {$mrel = new RelationBetween($ident.text, new Term(term1), new Term(term2));}
+                    | T_BETWEEN term1=getTerm T_AND term2=getTerm {$mrel = new RelationBetween($ident.text, term1, term2);}
                     )
 ;
 
@@ -861,36 +860,36 @@ getList returns [List list]
     @init{
         list = new ArrayList<String>();
     }:
-    term1=getTerm {list.add(term1);}
-    (T_COMMA termN=getTerm {list.add(termN);})*
+    term1=getTerm {list.add(term1.getTerm());}
+    (T_COMMA termN=getTerm {list.add(termN.getTerm());})*
     ;
 
 getTerms returns [List list]
     @init{
         list = new ArrayList<Term>();
     }:
-    term1=getTerm {list.add(new Term(term1));}
-    (T_COMMA termN=getTerm {list.add(new Term(termN));})*
+    term1=getTerm {list.add(term1);}
+    (T_COMMA termN=getTerm {list.add(termN);})*
     ;
 
 getSet returns [Set set]
     @init{
         set = new HashSet<String>();
     }:
-    term1=getTerm {set.add(term1);}
-    (T_COMMA termN=getTerm {set.add(termN);})*
+    term1=getTerm {set.add(term1.getTerm());}
+    (T_COMMA termN=getTerm {set.add(termN.getTerm());})*
     ;
 
 getTermOrLiteral returns [ValueCell vc]
     @init{
         CollectionLiteral cl = new CollectionLiteral();
     }:
-    term=getTerm {$vc=new Term(term);}
+    term=getTerm {$vc=term;}
     |
     T_START_SBRACKET
     (
-        term1=getTerm {cl.addLiteral(new Term(term1));}
-        (T_COMMA termN=getTerm {cl.addLiteral(new Term(termN));})*
+        term1=getTerm {cl.addLiteral(term1);}
+        (T_COMMA termN=getTerm {cl.addLiteral(termN);})*
     )?
     T_END_SBRACKET {$vc=cl;}
 ;
@@ -903,21 +902,21 @@ getTableID returns [String tableID]
     | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);})
     ;
 
-getTerm returns [String term]:
-    term1=getPartialTerm ( {$term = new String($term1.text);} | 
-    T_AT term2=getPartialTerm {$term = new String($term1.text+"@"+$term2.text);} )
+getTerm returns [Term term]:
+    term1=getPartialTerm ( {$term = term1;} | 
+    T_AT term2=getPartialTerm {$term = new Term(term1.getTerm()+"@"+term2.getTerm());} )
 ;
 
-getPartialTerm returns [String term]:
-    ident=T_IDENT {$term = new String($ident.text);}
-    | constant=T_CONSTANT {$term = new String($constant.text);}
-    | '1' {$term = new String("1");}
-    | T_FALSE {$term = new String("false");}
-    | T_TRUE {$term = new String("true");}
-    | ksAndTn=T_KS_AND_TN {$term = new String($ksAndTn.text);}
-    | noIdent=T_TERM {$term = new String($noIdent.text);} 
-    | path=T_PATH {$term = new String($path.text);}
-    | qLiteral=QUOTED_LITERAL {$term = new String($qLiteral.text);}
+getPartialTerm returns [Term term]:
+    ident=T_IDENT {$term = new Term($ident.text);}
+    | constant=T_CONSTANT {$term = new Term($constant.text);}
+    | '1' {$term = new Term("1");}
+    | T_FALSE {$term = new Term("false");}
+    | T_TRUE {$term = new Term("true");}
+    | ksAndTn=T_KS_AND_TN {$term = new Term($ksAndTn.text);}
+    | noIdent=T_TERM {$term = new Term($noIdent.text);} 
+    | path=T_PATH {$term = new Term($path.text);}
+    | qLiteral=QUOTED_LITERAL {$term = new Term($qLiteral.text, true);}
 ;
 
 getMapLiteral returns [Map<String, String> mapTerms]
@@ -925,8 +924,8 @@ getMapLiteral returns [Map<String, String> mapTerms]
         $mapTerms = new HashMap<>();
     }:
     T_START_SBRACKET 
-    (leftTerm1=getTerm T_COLON rightTerm1=getTerm {$mapTerms.put(leftTerm1, rightTerm1);}
-    (T_COMMA leftTermN=getTerm T_COLON rightTermN=getTerm {$mapTerms.put(leftTermN, rightTermN);})*)?
+    (leftTerm1=getTerm T_COLON rightTerm1=getTerm {$mapTerms.put(leftTerm1.getTerm(), rightTerm1.getTerm());}
+    (T_COMMA leftTermN=getTerm T_COLON rightTermN=getTerm {$mapTerms.put(leftTermN.getTerm(), rightTermN.getTerm());})*)?
     T_END_SBRACKET
     ;
 

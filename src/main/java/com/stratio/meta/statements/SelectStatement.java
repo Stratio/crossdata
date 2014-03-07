@@ -31,8 +31,10 @@ import com.stratio.meta.utils.MetaUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -299,7 +301,53 @@ public class SelectStatement extends MetaStatement {
 
     @Override
     public String translateToCQL() {
-        return this.toString();
+        StringBuilder sb = new StringBuilder(this.toString());     
+        System.out.println(sb.toString());        
+        if(sb.toString().contains("TOKEN(")){
+            int currentLength = 0;
+            int newLength = sb.toString().length();
+            while(newLength!=currentLength){
+                currentLength = newLength;
+                //sb = new StringBuilder(sb.toString().replaceAll("(.*[=|<|>|<=|>=|<>|LIKE][\\s]?TOKEN\\()([^'][^\\)]+)(\\).*)", "$1'$2'$3"));
+                sb = new StringBuilder(sb.toString().replaceAll("(.*)" //$1
+                        + "(=|<|>|<=|>=|<>|LIKE)" //$2
+                        + "(\\s?)" //$3
+                        + "(TOKEN\\()" //$4
+                        + "([^'][^\\)]+)" //$5
+                        + "(\\).*)", //$6
+                "$1$2$3$4'$5'$6"));
+                sb = new StringBuilder(sb.toString().replaceAll("(.*TOKEN\\(')" //$1
+                        + "([^,]+)" //$2
+                        + "(,)" //$3
+                        + "(\\s*)" //$4
+                        + "([^']+)" //$5
+                        + "(')" //$6
+                        + "(\\).*)", //$7 
+                "$1$2'$3$4'$5$6$7"));
+                sb = new StringBuilder(sb.toString().replaceAll("(.*TOKEN\\(')" //$1
+                        + "(.+)" //$2
+                        + "([^'])" //$3
+                        + "(,)" //$4
+                        + "(\\s*)" //$5
+                        + "([^']+)" //$6
+                        + "(')" //$7
+                        + "(\\).*)", //$8 
+                "$1$2$3'$4$5'$6$7$8"));
+                sb = new StringBuilder(sb.toString().replaceAll("(.*TOKEN\\(')" //$1
+                        + "(.+)" //$2
+                        + "([^'])" //$3
+                        + "(,)" //$4
+                        + "(\\s*)" //$5
+                        + "([^']+)" //$6
+                        + "(')" //$7
+                        + "([^TOKEN]+)" //$8
+                        + "('\\).*)", //$9 
+                "$1$2$3'$4$5'$6$7$8$9"));
+                newLength = sb.toString().length();
+            }          
+        }
+        System.out.println(sb.toString());
+        return sb.toString();
     }
     
     @Override
@@ -332,7 +380,7 @@ public class SelectStatement extends MetaStatement {
                     cell = row.getString(nCol);
                 } else if (cellType == com.datastax.driver.core.DataType.cint()){
                     cell = Integer.toString(row.getInt(nCol));
-                } else if (cellType == com.datastax.driver.core.DataType.uuid()){
+                } else if (cellType == com.datastax.driver.core.DataType.uuid() || cellType == com.datastax.driver.core.DataType.timeuuid()){
                     UUID uuid = row.getUUID(nCol);
                     if(uuid!=null){
                         cell = uuid.toString();
@@ -349,6 +397,12 @@ public class SelectStatement extends MetaStatement {
                     }
                     //int tmp = bb.asIntBuffer().get(bb.remaining()-1);
                     cell = Integer.toString(tmpInt);
+                } else if (cellType == com.datastax.driver.core.DataType.timestamp()){
+                    Date date = row.getDate(nCol);
+                    if (date != null){
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss.SSS");
+                        cell = sdf.format(date); 
+                    }
                 }
                 // TODO: add all data types
                 currentRow.add(cell);
@@ -622,7 +676,8 @@ public class SelectStatement extends MetaStatement {
                                     throw new UnsupportedOperationException("'"+relToken.getOperator()+"' operator not supported by C*");
                             }
                         } else {
-                            //return null;
+                            return null;
+                            /*
                             List<Term> termsOfToken = relToken.getTerms();
                             List<String> termsOfTokenStr = new ArrayList<>();
                             for(Term term: termsOfToken){
@@ -649,7 +704,7 @@ public class SelectStatement extends MetaStatement {
                                 default:
                                     clause = null;
                                     throw new UnsupportedOperationException("'"+relToken.getOperator()+"' operator not supported by C*");
-                            }  
+                            }*/  
                         } 
                         break;
                 }

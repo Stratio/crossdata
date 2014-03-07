@@ -272,13 +272,17 @@ public class InsertIntoStatement extends MetaStatement {
         Iterator iter = this.cellValues.iterator();
         for(String id: this.ids){
             ValueCell valueCell = (ValueCell) iter.next();
-            if(valueCell.toString().matches("[0123456789.]+")){
-                insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.toString()));
-            } else if (valueCell.toString().contains("-")){
-                    insertStmt = insertStmt.value(id, UUID.fromString(valueCell.toString()));
-            } else {
-                insertStmt = insertStmt.value(id, valueCell.toString());
-            }            
+            try{
+                if(valueCell.toString().matches("[0123456789.]+")){
+                    insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.toString()));
+                } else if (valueCell.toString().contains("-")){
+                        insertStmt = insertStmt.value(id, UUID.fromString(valueCell.toString()));
+                } else {
+                    insertStmt = insertStmt.value(id, valueCell.toString());
+                }
+            } catch(Exception ex){
+                return null;
+            }
         }
         
         if(this.ifNotExists){

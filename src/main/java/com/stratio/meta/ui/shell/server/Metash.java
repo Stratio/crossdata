@@ -16,8 +16,6 @@ import java.io.Console;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
-import com.datastax.driver.core.exceptions.InvalidQueryException;
-import com.datastax.driver.core.querybuilder.Select;
 import com.stratio.meta.statements.SelectStatement;
 import com.stratio.meta.utils.AntlrError;
 import com.stratio.meta.utils.DeepResult;
@@ -36,8 +34,6 @@ public class Metash {
 	 * Class logger.
 	 */
         private static final Logger logger = Logger.getLogger(Metash.class);
-	
-        private static final int DEFAULT_SELECT_LIMIT = 10000;
         
 	private final HelpContent _help;
 	
@@ -174,7 +170,7 @@ public class Metash {
             CassandraClient.connect();
             while(!cmd.startsWith("exit") && !cmd.startsWith("quit")){
                 cmd = input.readLine("\033[36mmetash-server>\033[0m ");                                    
-                logger.info("\033[33mCommand:\033[0m " + cmd);
+                logger.info("\033[34;1mCommand:\033[0m " + cmd);
                 
                 if(cmd.startsWith("help")){
                     showHelp(cmd);
