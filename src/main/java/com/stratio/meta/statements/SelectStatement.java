@@ -2,6 +2,7 @@ package com.stratio.meta.statements;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
@@ -20,6 +21,7 @@ import com.stratio.meta.structures.SelectionClause;
 import com.stratio.meta.structures.SelectionList;
 import com.stratio.meta.structures.SelectionSelector;
 import com.stratio.meta.structures.SelectionSelectors;
+import com.stratio.meta.structures.SelectorFunction;
 import com.stratio.meta.structures.SelectorIdentifier;
 import com.stratio.meta.structures.SelectorMeta;
 import com.stratio.meta.structures.Term;
@@ -551,12 +553,22 @@ public class SelectStatement extends MetaStatement {
                     SelectorMeta selectorMeta = selSelector.getSelector();
                     if(selectorMeta.getType() == SelectorMeta.TYPE_IDENT){
                         SelectorIdentifier selIdent = (SelectorIdentifier) selectorMeta;    
-                        if(selSelector.isAliasInc()){
+                        if(selSelector.isAliasInc()){                            
                             selection = selection.column(selIdent.getIdentifier()).as(selSelector.getAlias());
                         } else {
                             selection = selection.column(selIdent.getIdentifier());                        
                         }
-                    }                
+                    } else if (selectorMeta.getType() == SelectorMeta.TYPE_FUNCTION){                        
+                        SelectorFunction selFunction = (SelectorFunction) selectorMeta;
+                        List<SelectorMeta> params = selFunction.getParams();
+                        Object[] innerFunction = new Object[params.size()];
+                        int pos = 0;
+                        for(SelectorMeta selMeta: params){
+                            innerFunction[pos] = QueryBuilder.raw(selMeta.toString());
+                            pos++;
+                        }
+                        selection = selection.fcall(selFunction.getName(), innerFunction);
+                    }               
                 }
                 builder = selection;
             } else {
