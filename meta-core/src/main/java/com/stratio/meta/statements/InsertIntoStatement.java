@@ -248,7 +248,30 @@ public class InsertIntoStatement extends MetaStatement {
 
     @Override
     public String translateToCQL() {
-        return this.toString();
+        StringBuilder sb = new StringBuilder("INSERT INTO ");
+        if(keyspaceInc){
+            sb.append(keyspace).append(" ");
+        }
+        sb.append(tablename).append(" (");
+        sb.append(MetaUtils.StringList(ids, ", "));
+        sb.delete(sb.length()-2, sb.length());
+        sb.append(") ");        
+        if(typeValues == TYPE_SELECT_CLAUSE){
+           sb.append(selectStatement.toString());
+        }
+        if(typeValues == TYPE_VALUES_CLAUSE){
+           sb.append("VALUES(");
+           sb.append(MetaUtils.StringList(cellValues, ", "));
+           sb.append(")");
+        }
+        if(ifNotExists){
+            sb.append(" IF NOT EXISTS");            
+        }
+        if(optsInc){
+            sb.append(" USING ");
+            sb.append(MetaUtils.StringList(options, " AND "));
+        }
+        return sb.append(";").toString();
     }
     
     @Override

@@ -16,7 +16,6 @@ import java.util.Set;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -40,7 +39,8 @@ public class MetaUtils {
             "REMOVE",
             "STOP",
             "EXIT",
-            "HELP");    
+            "HELP",
+            "QUIT");    
     
     public static Set<String> noInitials = Sets.newHashSet(                      
             "KEYSPACE",
@@ -319,7 +319,7 @@ public class MetaUtils {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         MetaParser parser = new MetaParser(tokens);        
         ErrorsHelper foundErrors = null;                
-        try {                       
+        try {
             result = parser.query();
             foundErrors = parser.getFoundErrors();
         } catch (Exception e) {

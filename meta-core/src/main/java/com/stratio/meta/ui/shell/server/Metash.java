@@ -21,7 +21,10 @@ import com.stratio.meta.utils.AntlrError;
 import com.stratio.meta.utils.DeepResult;
 import com.stratio.meta.utils.MetaStep;
 import com.stratio.meta.utils.ValidationException;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import jline.console.ConsoleReader;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -164,22 +167,24 @@ public class Metash {
      * is introduced.
      */
     public void loop(){
-        Console input = System.console();
-        if(input != null){
+        try {
+            ConsoleReader console = new ConsoleReader();
+            console.setPrompt("\033[36mmetash-server>\033[0m ");
+            console.addCompleter(new MetaCompletor());
             String cmd = "";
             CassandraClient.connect();
-            while(!cmd.startsWith("exit") && !cmd.startsWith("quit")){
-                cmd = input.readLine("\033[36mmetash-server>\033[0m ");                                    
+            while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
+                cmd = console.readLine();
                 logger.info("\033[34;1mCommand:\033[0m " + cmd);
-                
-                if(cmd.startsWith("help")){
+
+                if(cmd.toLowerCase().startsWith("help")){
                     showHelp(cmd);
-                }else if (!cmd.equalsIgnoreCase("exit")){
-                    executeMetaCommand(cmd);
-                } 
+                } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
+                    executeMetaCommand(cmd); 
+                }
             }
-            CassandraClient.close();
-        }else{
+            CassandraClient.close(); 
+        } catch (IOException ex) {
             logger.error("Cannot launch Metash, no console present");
         }
     }
