@@ -11,8 +11,6 @@ import com.stratio.meta.utils.AntlrResult;
 import com.stratio.meta.utils.ErrorsHelper;
 import com.stratio.meta.utils.MetaUtils;
 
-import java.io.Console;
-
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
@@ -23,7 +21,6 @@ import com.stratio.meta.utils.MetaStep;
 import com.stratio.meta.utils.ValidationException;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
 import jline.console.ConsoleReader;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -170,7 +167,8 @@ public class Metash {
         try {
             ConsoleReader console = new ConsoleReader();
             console.setPrompt("\033[36mmetash-server>\033[0m ");
-            console.addCompleter(new MetaCompletor());
+            console.setCompletionHandler(new MetaCompletionHandler());
+            console.addCompleter(new MetaCompletor());            
             String cmd = "";
             CassandraClient.connect();
             while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
