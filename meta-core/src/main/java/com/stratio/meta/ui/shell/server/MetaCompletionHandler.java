@@ -40,7 +40,7 @@ class MetaCompletionHandler extends CandidateListCompletionHandler {
             return true;
         }
         else if (candidates.size() > 1) {
-            String value = getUnambiguousCompletions(candidates);
+            //String value = getUnambiguousCompletions(candidates);
             setBuffer(reader, buf.toString(), pos);
         }
 

@@ -19,14 +19,34 @@ import com.stratio.meta.utils.AntlrError;
 import com.stratio.meta.utils.DeepResult;
 import com.stratio.meta.utils.MetaStep;
 import com.stratio.meta.utils.ValidationException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.logging.Level;
 import jline.console.ConsoleReader;
+import jline.console.history.FileHistory;
+import jline.console.history.History;
+import jline.console.history.History.Entry;
+import jline.console.history.MemoryHistory;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
 
 public class Metash {
 
@@ -164,9 +184,39 @@ public class Metash {
      * is introduced.
      */
     public void loop(){
+        final int DAYS_HISTORY_ENTRY_VALID = 30;
         try {
             ConsoleReader console = new ConsoleReader();
             console.setPrompt("\033[36mmetash-server>\033[0m ");
+            
+            /// RETRIEVE HISTORY
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy");
+            Date today = new Date();
+            try {
+                History oldHistory = new MemoryHistory();                                
+                DateTime todayDate = new DateTime(today);
+                InputStream is = getClass().getClassLoader().getResourceAsStream("history");
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                String line;
+                String[] lineArray;
+                Date lineDate;
+                int lineIndex;
+                String lineStatement;
+                while ((line = br.readLine()) != null) {
+                    lineArray = line.split("|");
+                    lineDate = sdf.parse(lineArray[0]);
+                    if(Days.daysBetween(new DateTime(lineDate), todayDate).getDays()<DAYS_HISTORY_ENTRY_VALID){
+                        lineIndex = Integer.parseInt(lineArray[1]);
+                        lineStatement = lineArray[2];
+                        oldHistory.add(lineStatement);
+                    }
+                }
+                console.setHistory(oldHistory);
+            } catch (ParseException ex) {
+                logger.error("Cannot retrieve previous history");
+            }
+            //////
+            
             console.setCompletionHandler(new MetaCompletionHandler());
             console.addCompleter(new MetaCompletor());            
             String cmd = "";
@@ -181,6 +231,29 @@ public class Metash {
                     executeMetaCommand(cmd); 
                 }
             }
+            
+            /// SAVE HISTORY 
+            File file = new File("src/main/resources/history");
+            if (!file.exists()) {
+                file.createNewFile();
+            }            
+            FileWriter fileWritter = new FileWriter(file.getName(), true);            
+            try (BufferedWriter bufferWritter = new BufferedWriter(fileWritter)) {
+                History history = console.getHistory();
+                ListIterator<Entry> histIter = history.entries();                                 
+                while(histIter.hasNext()){
+                    Entry entry = histIter.next();                    
+                    bufferWritter.write(sdf.format(today));
+                    bufferWritter.write("|");
+                    bufferWritter.write(entry.index());
+                    bufferWritter.write("|");
+                    bufferWritter.write(entry.value().toString());
+                    bufferWritter.newLine();
+                }
+                bufferWritter.flush();
+            }
+            //////
+            
             CassandraClient.close(); 
         } catch (IOException ex) {
             logger.error("Cannot launch Metash, no console present");
