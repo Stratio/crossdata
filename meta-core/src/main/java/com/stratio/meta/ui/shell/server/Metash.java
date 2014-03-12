@@ -22,21 +22,19 @@ import com.stratio.meta.utils.ValidationException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.logging.Level;
 import jline.console.ConsoleReader;
-import jline.console.history.FileHistory;
 import jline.console.history.History;
 import jline.console.history.History.Entry;
 import jline.console.history.MemoryHistory;
@@ -189,31 +187,35 @@ public class Metash {
             ConsoleReader console = new ConsoleReader();
             console.setPrompt("\033[36mmetash-server>\033[0m ");
             
-            /// RETRIEVE HISTORY
+            /// RETRIEVE HISTORY            
             SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy");
             Date today = new Date();
+            File file = new File("./src/main/resources/history.txt");
+            if (!file.exists()){
+                file.createNewFile();
+            }
+            BufferedReader br = new BufferedReader(new FileReader(file));
             try {
                 History oldHistory = new MemoryHistory();                                
                 DateTime todayDate = new DateTime(today);
-                InputStream is = getClass().getClassLoader().getResourceAsStream("history");
-                BufferedReader br = new BufferedReader(new InputStreamReader(is));
                 String line;
                 String[] lineArray;
                 Date lineDate;
-                int lineIndex;
+//                int lineIndex;
                 String lineStatement;
                 while ((line = br.readLine()) != null) {
-                    lineArray = line.split("|");
+                    lineArray = line.split("\\|");
                     lineDate = sdf.parse(lineArray[0]);
                     if(Days.daysBetween(new DateTime(lineDate), todayDate).getDays()<DAYS_HISTORY_ENTRY_VALID){
-                        lineIndex = Integer.parseInt(lineArray[1]);
-                        lineStatement = lineArray[2];
+//                        lineIndex = Integer.parseInt(lineArray[1]);
+                        lineStatement = lineArray[1];
                         oldHistory.add(lineStatement);
                     }
                 }
                 console.setHistory(oldHistory);
             } catch (ParseException ex) {
                 logger.error("Cannot retrieve previous history");
+                logger.error(ex);
             }
             //////
             
@@ -232,21 +234,20 @@ public class Metash {
                 }
             }
             
-            /// SAVE HISTORY 
-            File file = new File("src/main/resources/history");
+            /// SAVE HISTORY             
             if (!file.exists()) {
                 file.createNewFile();
-            }            
-            FileWriter fileWritter = new FileWriter(file.getName(), true);            
+            }        
+            FileWriter fileWritter = new FileWriter(file, true);            
             try (BufferedWriter bufferWritter = new BufferedWriter(fileWritter)) {
                 History history = console.getHistory();
                 ListIterator<Entry> histIter = history.entries();                                 
                 while(histIter.hasNext()){
-                    Entry entry = histIter.next();                    
+                    Entry entry = histIter.next();          
                     bufferWritter.write(sdf.format(today));
                     bufferWritter.write("|");
-                    bufferWritter.write(entry.index());
-                    bufferWritter.write("|");
+//                    bufferWritter.write(entry.index());
+//                    bufferWritter.write("|");
                     bufferWritter.write(entry.value().toString());
                     bufferWritter.newLine();
                 }
