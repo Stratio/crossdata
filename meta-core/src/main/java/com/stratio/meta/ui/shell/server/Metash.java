@@ -22,13 +22,9 @@ import com.stratio.meta.utils.ValidationException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -176,7 +172,57 @@ public class Metash {
 	private void executeMetaCommand(String cmd){
             executeMetaCommand(cmd, false);
 	}
+        
+    public File retrieveHistory(ConsoleReader console, int days, SimpleDateFormat sdf) throws IOException{
+        Date today = new Date();
+        File file = new File("./src/main/resources/history.txt");
+        if (!file.exists()){
+            file.createNewFile();
+        }
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        try {
+            History oldHistory = new MemoryHistory();                                
+            DateTime todayDate = new DateTime(today);
+            String line;
+            String[] lineArray;
+            Date lineDate;
+            String lineStatement;
+            while ((line = br.readLine()) != null) {
+                lineArray = line.split("\\|");
+                lineDate = sdf.parse(lineArray[0]);
+                if(Days.daysBetween(new DateTime(lineDate), todayDate).getDays()<days){
+                    lineStatement = lineArray[1];
+                    oldHistory.add(lineStatement);
+                }
+            }
+            console.setHistory(oldHistory);
+            return file;
+        } catch (ParseException ex) {
+            logger.error("Cannot retrieve previous history");
+            logger.error(ex);
+            return null;
+        }
+    }
 
+    public void saveHistory(ConsoleReader console, File file, SimpleDateFormat sdf) throws IOException{
+        if (!file.exists()) {
+            file.createNewFile();
+        }        
+        FileWriter fileWritter = new FileWriter(file, true);            
+        try (BufferedWriter bufferWritter = new BufferedWriter(fileWritter)) {
+            History history = console.getHistory();
+            ListIterator<Entry> histIter = history.entries();                                 
+            while(histIter.hasNext()){
+                Entry entry = histIter.next();          
+                bufferWritter.write(sdf.format(new Date()));
+                bufferWritter.write("|");
+                bufferWritter.write(entry.value().toString());
+                bufferWritter.newLine();
+            }
+            bufferWritter.flush();
+        }
+    }
+    
     /**
      * Shell loop that receives user commands until a {@code exit} or {@code quit} command
      * is introduced.
@@ -187,36 +233,9 @@ public class Metash {
             ConsoleReader console = new ConsoleReader();
             console.setPrompt("\033[36mmetash-server>\033[0m ");
             
-            /// RETRIEVE HISTORY            
+            /// RETRIEVE HISTORY  
             SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy");
-            Date today = new Date();
-            File file = new File("./src/main/resources/history.txt");
-            if (!file.exists()){
-                file.createNewFile();
-            }
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            try {
-                History oldHistory = new MemoryHistory();                                
-                DateTime todayDate = new DateTime(today);
-                String line;
-                String[] lineArray;
-                Date lineDate;
-//                int lineIndex;
-                String lineStatement;
-                while ((line = br.readLine()) != null) {
-                    lineArray = line.split("\\|");
-                    lineDate = sdf.parse(lineArray[0]);
-                    if(Days.daysBetween(new DateTime(lineDate), todayDate).getDays()<DAYS_HISTORY_ENTRY_VALID){
-//                        lineIndex = Integer.parseInt(lineArray[1]);
-                        lineStatement = lineArray[1];
-                        oldHistory.add(lineStatement);
-                    }
-                }
-                console.setHistory(oldHistory);
-            } catch (ParseException ex) {
-                logger.error("Cannot retrieve previous history");
-                logger.error(ex);
-            }
+            File file = retrieveHistory(console, DAYS_HISTORY_ENTRY_VALID, sdf);            
             //////
             
             console.setCompletionHandler(new MetaCompletionHandler());
@@ -235,24 +254,7 @@ public class Metash {
             }
             
             /// SAVE HISTORY             
-            if (!file.exists()) {
-                file.createNewFile();
-            }        
-            FileWriter fileWritter = new FileWriter(file, true);            
-            try (BufferedWriter bufferWritter = new BufferedWriter(fileWritter)) {
-                History history = console.getHistory();
-                ListIterator<Entry> histIter = history.entries();                                 
-                while(histIter.hasNext()){
-                    Entry entry = histIter.next();          
-                    bufferWritter.write(sdf.format(today));
-                    bufferWritter.write("|");
-//                    bufferWritter.write(entry.index());
-//                    bufferWritter.write("|");
-                    bufferWritter.write(entry.value().toString());
-                    bufferWritter.newLine();
-                }
-                bufferWritter.flush();
-            }
+            saveHistory(console, file, sdf);
             //////
             
             CassandraClient.close(); 
