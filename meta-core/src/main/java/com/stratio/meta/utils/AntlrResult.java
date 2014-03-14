@@ -31,5 +31,9 @@ public class AntlrResult {
     public String toString(String query){        
         return foundErrors.toString(query, statement);      
     }
+
+    public boolean hasErrors() {
+        return !foundErrors.isEmpty();
+    }
     
 }
