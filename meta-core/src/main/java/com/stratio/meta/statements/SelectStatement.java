@@ -211,7 +211,6 @@ public class SelectStatement extends MetaStatement {
     }
 
     public void setGroupInc(boolean groupInc) {
-        this.groupInc = true;
         this.groupInc = groupInc;
     }
 

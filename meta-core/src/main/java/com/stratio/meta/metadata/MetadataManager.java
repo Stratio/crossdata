@@ -8,6 +8,9 @@ import com.datastax.driver.core.TableMetadata;
 
 import com.stratio.meta.cassandra.CassandraClient;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Metadata Manager of the META server that maintains and up-to-date version of
  * the metadata associated with the existing keyspaces and tables.
@@ -71,5 +74,36 @@ public class MetadataManager {
 		}
 		return result;
 	}
-	
+
+    /**
+     * Get the list of keyspaces in Cassandra.
+     * @return The list of keyspaces or empty if not connected.
+     */
+    public List<String> getKeyspacesNames(){
+        List<String> result = new ArrayList<>();
+        if(_clusterMetadata != null){
+            for(KeyspaceMetadata list : _clusterMetadata.getKeyspaces()){
+                result.add(list.getName());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get the list of tables in a Cassandra keyspaces.
+     * @param keyspace The name of the keyspace
+     * @return The list of tables or empty if the keyspace does
+     * not exists, or the not connected.
+     */
+    public List<String> getTablesNames(String keyspace){
+        List<String> result = new ArrayList<>();
+        if(_clusterMetadata != null && _clusterMetadata.getKeyspace(keyspace) != null){
+            KeyspaceMetadata km = _clusterMetadata.getKeyspace(keyspace);
+            for(TableMetadata tm : km.getTables()){
+                result.add(tm.getName());
+            }
+        }
+        return result;
+    }
+
 }
