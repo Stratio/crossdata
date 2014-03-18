@@ -3,19 +3,20 @@ package com.stratio.meta.cassandra;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
+import com.stratio.meta.core.parser.CoreParser;
+import com.stratio.meta.driver.MetaDriver;
 import static org.junit.Assert.*;
 
 import com.stratio.meta.driver.MetaDriver;
 import org.junit.Test;
 
-import com.stratio.meta.statements.MetaStatement;
-import com.stratio.meta.utils.AntlrResult;
-import com.stratio.meta.utils.MetaUtils;
+import com.stratio.meta.common.statements.MetaStatement;
+import com.stratio.meta.common.utils.AntlrResult;
 
 public class CassandraTest extends BasicCassandraTest {                	      	
                         
     public MetaStatement testRegularStatement(String inputText, String methodName) {
-        AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+        AntlrResult antlrResult = CoreParser.parseStatement(inputText);
         MetaStatement st = antlrResult.getStatement();
         assertNotNull("Cannot parse "+methodName, st);             
         assertTrue("Cannot parse "+methodName, inputText.equalsIgnoreCase(st.toString()+";"));
@@ -40,14 +41,14 @@ public class CassandraTest extends BasicCassandraTest {
     }
 
     public void testMetaError(String inputText){
-        AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+        AntlrResult antlrResult = CoreParser.parseStatement(inputText);
         MetaStatement st = antlrResult.getStatement();
         thrown.expect(NullPointerException.class);
         System.out.println(st.toString());
     }
 
     public void testRecoverableError(String inputText, String methodName){
-        AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+        AntlrResult antlrResult = CoreParser.parseStatement(inputText);
         MetaStatement st = antlrResult.getStatement();
         assertTrue("No errors reported in "+methodName, antlrResult.getFoundErrors().getNumberOfErrors()>0);
     }
@@ -55,14 +56,14 @@ public class CassandraTest extends BasicCassandraTest {
     public void testCassandraError(MetaStatement st){
         Statement driverStmt = st.getDriverStatement();
         thrown.expect(DriverException.class); 
-        CassandraClient.executeQuery(driverStmt, false);
+        MetaDriver.executeQuery(driverStmt, false);
     }        		                	                
 
     // CASSANDRA TESTS
     public void createKeyspace_basic() {
         String inputText = "CREATE KEYSPACE testKS WITH replication = {class: SimpleStrategy, replication_factor: 1}"
                 + " AND durable_writes = false;";		
-        AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+        AntlrResult antlrResult = CoreParser.parseStatement(inputText);
         MetaStatement st = antlrResult.getStatement();
         assertNotNull("Cannot parse createKeyspace_basic", st);
 

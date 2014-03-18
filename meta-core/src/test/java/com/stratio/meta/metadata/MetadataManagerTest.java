@@ -1,5 +1,6 @@
 package com.stratio.meta.metadata;
 
+import com.stratio.meta.server.metadata.MetadataManager;
 import static org.junit.Assert.*;
 
 import org.junit.BeforeClass;
