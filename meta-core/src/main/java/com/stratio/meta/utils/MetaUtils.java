@@ -305,35 +305,7 @@ public class MetaUtils {
             }
         }
         return replacement;
-    }
-    
-    /**
-     * Parse a input text and return the equivalent Statement.
-     * @param inputText The input text.
-     * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
-     */ 
-    public static AntlrResult parseStatement(String inputText){
-        MetaStatement result = null;
-        ANTLRStringStream input = new ANTLRStringStream(inputText);
-        MetaLexer lexer = new MetaLexer(input);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        MetaParser parser = new MetaParser(tokens);        
-        ErrorsHelper foundErrors = null;                
-        try {
-            result = parser.query();
-            foundErrors = parser.getFoundErrors();
-        } catch (Exception e) {
-            logger.error("Cannot parse statement", e);
-            if(foundErrors == null){                                    
-                foundErrors = new ErrorsHelper();
-            }
-            if(foundErrors.isEmpty()){
-                foundErrors.addError(new AntlrError("Unkown parser error", e.getMessage()));
-            }
-            return new AntlrResult(result, foundErrors);
-        } 
-        return new AntlrResult(result, foundErrors);                 
-    }
+    }        
 
     public static String translateLiteralsToCQL(String metaStr) {
         StringBuilder sb = new StringBuilder();

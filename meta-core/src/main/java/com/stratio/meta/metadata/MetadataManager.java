@@ -5,8 +5,7 @@ import org.apache.log4j.Logger;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.TableMetadata;
-
-import com.stratio.meta.cassandra.CassandraClient;
+import com.stratio.meta.driver.MetaDriver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +38,7 @@ public class MetadataManager {
 	 * @return Whether the metadata has been loaded or not.
 	 */
 	public boolean loadMetadata(){
-		_clusterMetadata = CassandraClient.getClusterMetadata();
+		_clusterMetadata = MetaDriver.getClusterMetadata();
 		return _clusterMetadata != null;
 	}
 	
