@@ -1,16 +1,16 @@
 package com.stratio.meta.grammar;
 
+import com.stratio.meta.core.parser.CoreParser;
 import static org.junit.Assert.*;
 
 import java.util.HashMap;
 
 import org.junit.Test;
 
-import com.stratio.meta.statements.CreateIndexStatement;
-import com.stratio.meta.statements.MetaStatement;
-import com.stratio.meta.structures.ValueProperty;
-import com.stratio.meta.utils.AntlrResult;
-import com.stratio.meta.utils.MetaUtils;
+import com.stratio.meta.common.statements.CreateIndexStatement;
+import com.stratio.meta.common.statements.MetaStatement;
+import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.common.utils.AntlrResult;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -30,7 +30,7 @@ public class ParsingTest {
 	private static final Logger logger = Logger.getLogger(ParsingTest.class);	                
                                
         public MetaStatement testRegularStatement(String inputText, String methodName) {
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+            AntlrResult antlrResult = CoreParser.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse "+methodName, st);             
             assertTrue("Cannot parse "+methodName, inputText.equalsIgnoreCase(st.toString()+";"));
@@ -38,14 +38,14 @@ public class ParsingTest {
         }         
         
         public void testMetaError(String inputText){
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+            AntlrResult antlrResult = CoreParser.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             thrown.expect(NullPointerException.class);
             System.out.println(st.toString());
         }
         
         public void testRecoverableError(String inputText, String methodName){
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+            AntlrResult antlrResult = CoreParser.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertTrue("No errors reported in "+methodName, antlrResult.getFoundErrors().getNumberOfErrors()>0);
         }        	
@@ -68,7 +68,7 @@ public class ParsingTest {
 		properties.add("class: NetworkTopologyStrategy");
 		properties.add("DC1: 1");
 		properties.add("DC2: 3");
-		AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+		AntlrResult antlrResult = CoreParser.parseStatement(inputText);
 		MetaStatement st = antlrResult.getStatement();
 		String propResultStr = st.toString().substring(st.toString().indexOf("{")+1, st.toString().indexOf("}"));
 		String[] str = propResultStr.split(",");
@@ -91,7 +91,7 @@ public class ParsingTest {
 	public void createKeyspace_basicOptions() {
 		String inputText = "CREATE KEYSPACE key_space1 WITH replication = {class: SimpleStrategy, replication_factor: 1}"
                         + " AND durable_writes = false;";
-		AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+		AntlrResult antlrResult = CoreParser.parseStatement(inputText);
 		MetaStatement st = antlrResult.getStatement();
                 assertNotNull("Cannot parse createKeyspace_basicOptions", st);
                 
@@ -115,7 +115,7 @@ public class ParsingTest {
 	public void createKeyspace_durable_writes() {
 		String inputText = "CREATE KEYSPACE demo WITH replication = {class: SimpleStrategy, replication_factor: 1} "
                         + "AND durable_writes = false;";
-		AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+		AntlrResult antlrResult = CoreParser.parseStatement(inputText);
 		MetaStatement st = antlrResult.getStatement();
                 assertNotNull("Cannot parse createKeyspace_durable_writes", st);
                 
@@ -147,7 +147,7 @@ public class ParsingTest {
 		String inputText = "CREATE LUCENE INDEX demo_banks ON demo.banks (lucene) USING org.apache.cassandra.db.index.stratio.RowIndex"
                         + " WITH OPTIONS schema = '{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\", "
                         + "fields: {day: {type: \"date\", pattern: \"yyyy-MM-dd\"}, key: {type:\"uuid\"}}}';";
-		AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+		AntlrResult antlrResult = CoreParser.parseStatement(inputText);
 		MetaStatement st = antlrResult.getStatement();
                 inputText = inputText.replace("'", "");
 		assertTrue("Cannot parse createKeyspace_literal_value", inputText.equalsIgnoreCase(st.toString()+";"));
@@ -211,7 +211,7 @@ public class ParsingTest {
 	public void createIndex_default_options() {
             String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1=val1 AND opt2=val2;";
             int numberOptions = 2;
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+            AntlrResult antlrResult = CoreParser.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse default index with options clause", st);
             CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
@@ -236,7 +236,7 @@ public class ParsingTest {
                             + " entry_id:{type:\"uuid\"}, latitude:{type:\"double\"},"
                             + " longitude:{type:\"double\"}, name:{type:\"text\"},"
                             + " address:{type:\"string\"}, tags:{type:\"boolean\"}}}\'};";
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+            AntlrResult antlrResult = CoreParser.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse default index with options clause", st);
             CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
@@ -247,7 +247,7 @@ public class ParsingTest {
             String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 "
                             + "ON table1 (field1, field2) USING com.company.Index.class "
                             + "WITH OPTIONS opt1=val1 AND opt2=val2;";
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+            AntlrResult antlrResult = CoreParser.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse default index with options clause", st);
             CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
@@ -453,7 +453,7 @@ public class ParsingTest {
                     + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                     + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
                     + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+            AntlrResult antlrResult = CoreParser.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse createTable_with_many_properties", st);
 
@@ -511,7 +511,7 @@ public class ParsingTest {
                     + "animal varchar, PRIMARY KEY (name)) WITH compression={sstable_compression: DeflateCompressor, "
                     + "chunk_length_kb: 64} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
                     + "read_repair_chance=1.0;";
-            AntlrResult antlrResult = MetaUtils.parseStatement(inputText);
+            AntlrResult antlrResult = CoreParser.parseStatement(inputText);
             MetaStatement st = antlrResult.getStatement();
             assertNotNull("Cannot parse createTable_with_properties", st);
 

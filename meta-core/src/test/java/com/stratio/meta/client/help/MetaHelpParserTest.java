@@ -1,5 +1,6 @@
 package com.stratio.meta.client.help;
 
+import com.stratio.meta.sh.help.HelpStatement;
 import static org.junit.Assert.*;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -8,8 +9,8 @@ import org.antlr.runtime.RecognitionException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.stratio.meta.client.help.generated.MetaHelpLexer;
-import com.stratio.meta.client.help.generated.MetaHelpParser;
+import com.stratio.meta.sh.help.generated.MetaHelpLexer;
+import com.stratio.meta.sh.help.generated.MetaHelpParser;
 import org.apache.log4j.Logger;
 
 public class MetaHelpParserTest {

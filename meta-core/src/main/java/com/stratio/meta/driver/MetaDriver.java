@@ -8,24 +8,17 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
-import com.stratio.meta.grammar.generated.MetaLexer;
-import com.stratio.meta.grammar.generated.MetaParser;
-import com.stratio.meta.statements.MetaStatement;
-import com.stratio.meta.statements.SelectStatement;
-import com.stratio.meta.utils.AntlrError;
-import com.stratio.meta.utils.AntlrResult;
-import com.stratio.meta.utils.DeepResult;
-import com.stratio.meta.utils.ErrorsHelper;
-import com.stratio.meta.utils.ExecutionResult;
-import com.stratio.meta.utils.MetaQuery;
-import com.stratio.meta.utils.MetaStep;
-import com.stratio.meta.utils.MetaUtils;
-import com.stratio.meta.utils.PlanResult;
-import com.stratio.meta.utils.ValidationException;
-import com.stratio.meta.utils.ValidationResult;
+import com.stratio.meta.core.parser.CoreParser;
+import com.stratio.meta.common.statements.MetaStatement;
+import com.stratio.meta.common.statements.SelectStatement;
+import com.stratio.meta.common.utils.AntlrError;
+import com.stratio.meta.common.utils.DeepResult;
+import com.stratio.meta.common.utils.MetaQuery;
+import com.stratio.meta.common.utils.MetaStep;
+import com.stratio.meta.common.utils.MetaUtils;
+import com.stratio.meta.common.utils.PlanResult;
+import com.stratio.meta.common.utils.ValidationResult;
 import java.util.List;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
 
 import org.apache.log4j.Logger;
 
@@ -44,6 +37,16 @@ public class MetaDriver {
         if(session == null){
             session = cluster.connect();
         }                
+    }
+            
+    public static void close(){
+        if(session != null){
+            session.close();
+        }
+        
+        if(cluster != null){
+            cluster.close();
+        }                        
     }
     
     /**
@@ -113,49 +116,11 @@ public class MetaDriver {
         }*/
         
         return resultSet;
-    }
-    
-    public static void close(){
-        if(session != null){
-            session.close();
-        }
-        
-        if(cluster != null){
-            cluster.close();
-        }                        
-    }
-    
-    /**
-     * Parse a input text and return the equivalent Statement.
-     * @param inputText The input text.
-     * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
-     */ 
-    public static AntlrResult parseStatement(String inputText){
-        MetaStatement result = null;
-        ANTLRStringStream input = new ANTLRStringStream(inputText);
-        MetaLexer lexer = new MetaLexer(input);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        MetaParser parser = new MetaParser(tokens);        
-        ErrorsHelper foundErrors = null;                
-        try {
-            result = parser.query();
-            foundErrors = parser.getFoundErrors();
-        } catch (Exception e) {
-            logger.error("Cannot parse statement", e);
-            if(foundErrors == null){                                    
-                foundErrors = new ErrorsHelper();
-            }
-            if(foundErrors.isEmpty()){
-                foundErrors.addError(new AntlrError("Unkown parser error", e.getMessage()));
-            }
-            return new AntlrResult(result, foundErrors);
-        } 
-        return new AntlrResult(result, foundErrors);                 
-    }
+    }        
     
     public static MetaQuery parserMetaQuery(String cmd){
         MetaQuery mq = new MetaQuery();
-        mq.setParserResult(parseStatement(cmd));
+        mq.setParserResult(CoreParser.parseStatement(cmd));
         return mq;
     }
     
