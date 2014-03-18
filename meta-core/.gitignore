@@ -9,4 +9,7 @@ build.xml
 nbactions.xml
 .idea
 *.iml
-meta-core/src/main/java/com/stratio/meta/grammar/generated
+src/main/resources/history.txt
+src/main/resources/history
+history.txt
+history

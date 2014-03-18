@@ -9,4 +9,3 @@ build.xml
 nbactions.xml
 .idea
 *.iml
-meta-core/src/main/java/com/stratio/meta/grammar/generated
