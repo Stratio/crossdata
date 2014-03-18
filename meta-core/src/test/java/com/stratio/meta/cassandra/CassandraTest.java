@@ -5,6 +5,7 @@ import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
 import static org.junit.Assert.*;
 
+import com.stratio.meta.driver.MetaDriver;
 import org.junit.Test;
 
 import com.stratio.meta.statements.MetaStatement;
@@ -25,9 +26,9 @@ public class CassandraTest extends BasicCassandraTest {
         Statement driverStmt = st.getDriverStatement();
         ResultSet resultSet;
         if(driverStmt != null){
-            resultSet = CassandraClient.executeQuery(driverStmt, false);
+            resultSet = MetaDriver.executeQuery(driverStmt, false);
         } else {
-            resultSet = CassandraClient.executeQuery(st.translateToCQL(), false);
+            resultSet = MetaDriver.executeQuery(st.translateToCQL(), false);
         }            
         assertNotNull("Cannot execute "+methodName+" in Cassandra", resultSet);
         return resultSet;
