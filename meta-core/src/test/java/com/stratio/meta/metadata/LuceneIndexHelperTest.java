@@ -34,6 +34,11 @@ public class LuceneIndexHelperTest extends BasicCassandraTest {
             assertEquals("Column has several indexes", 1, entry.getValue().size());
             assertEquals("Invalid type of index", IndexType.CUSTOM, entry.getValue().get(0).getIndexType());
         }
+
+        Set<Map.Entry<String,List<CustomIndexMetadata>>> entries = indexes.entrySet();
+        for(Map.Entry<String, List<CustomIndexMetadata>> entry : entries){
+
+        }
     }
 
 }

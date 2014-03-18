@@ -1,5 +1,7 @@
 package com.stratio.meta.sh;
 
+import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.sh.help.HelpContent;
 import com.stratio.meta.sh.help.HelpManager;
 import com.stratio.meta.sh.help.HelpStatement;
@@ -39,8 +41,8 @@ public class Metash {
     private final HelpContent _help;
 
     public Metash(){
-            HelpManager hm = new HelpManager();
-            _help = hm.loadHelpContent();
+        HelpManager hm = new HelpManager();
+        _help = hm.loadHelpContent();
     }        
 
     /**
@@ -145,6 +147,9 @@ public class Metash {
                 if(cmd.toLowerCase().startsWith("help")){
                     showHelp(cmd);
                 } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
+                    QueryResult queryResult = MetaDriver.executeQuery(cmd, true);
+                    queryResult.print();
+                    ///////////////////////////////////////////////////////////
                     MetaQuery metaQuery = MetaDriver.parserMetaQuery(cmd);
                     metaQuery.setQuery(cmd);
                     if(metaQuery.hasParserErrors()){ // parser error

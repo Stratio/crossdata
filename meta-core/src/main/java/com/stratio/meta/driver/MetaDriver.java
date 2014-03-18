@@ -1,13 +1,11 @@
 package com.stratio.meta.driver;
 
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.parser.CoreParser;
 import com.stratio.meta.common.statements.MetaStatement;
 import com.stratio.meta.common.statements.SelectStatement;
@@ -18,6 +16,7 @@ import com.stratio.meta.common.utils.MetaStep;
 import com.stratio.meta.common.utils.MetaUtils;
 import com.stratio.meta.common.utils.PlanResult;
 import com.stratio.meta.common.utils.ValidationResult;
+import com.stratio.meta.server.MetaServer;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -26,50 +25,27 @@ public class MetaDriver {
     
     private static final Logger logger = Logger.getLogger(MetaDriver.class);
     
-    private static Cluster cluster;
-    private static Session session;    
-    
-    public static void connect(){
-        if(cluster == null){
-            cluster = Cluster.builder().addContactPoint("127.0.0.1").build();
-        }                
-        
-        if(session == null){
-            session = cluster.connect();
-        }                
-    }
-            
-    public static void close(){
-        if(session != null){
-            session.close();
-        }
-        
-        if(cluster != null){
-            cluster.close();
-        }                        
-    }
-    
     /**
      * Get the cluster {@link com.datastax.driver.core.Metadata}.
      * @return The Metadata if the cluster connection have been established or null otherwise.
      */
     public static Metadata getClusterMetadata(){
     	Metadata result = null;
-		if(session != null){
-			result = cluster.getMetadata();
+		if(MetaServer.getSession() != null){
+			result = MetaServer.getCluster().getMetadata();
 		}
 		return result;
     }
     
     public static PreparedStatement parseStatementWithCassandra(String query){
-        return session.prepare(query);
+        return MetaServer.getSession().prepare(query);
     }
     
     public static PreparedStatement parseStatementWithCassandra(RegularStatement rs){
-        return session.prepare(rs);
+        return MetaServer.getSession().prepare(rs);
     }
     
-    public static ResultSet executeQuery(String query, boolean showInfo){        
+    public static QueryResult executeQuery(String query, boolean showInfo){        
         //query = "SELECT * FROM mykeyspace.usuarios";     
         if(showInfo){
             logger.info("\033[34;1mQuery:\033[0m "+query);
@@ -80,13 +56,13 @@ public class MetaDriver {
             return null;
         }
         */
-        ResultSet resultSet = session.execute(query);             
+        QueryResult queryResult = new QueryResult(MetaServer.getSession().execute(query));             
         //System.out.println("ResultSet: "+resultSet.all().size()+" rows");               
         
-        return resultSet;
+        return queryResult;
     }
        
-    public static ResultSet executeQuery(Statement query, boolean showInfo) {      
+    public static QueryResult executeQuery(Statement query, boolean showInfo) {      
         //query = "SELECT * FROM mykeyspace.usuarios";    
         if(showInfo){
             logger.info("\033[34;1mStatement:\033[0m "+query.toString());
@@ -106,7 +82,7 @@ public class MetaDriver {
                 return null;
             }            
         }*/        
-        ResultSet resultSet = session.execute(query);             
+        QueryResult queryResult = new QueryResult(MetaServer.getSession().execute(query));             
         //System.out.println("ResultSet: "+resultSet.toString());  
         //System.out.println(resultSet.all().size());
         /*Iterator<Row> iter = resultSet.iterator();
@@ -115,7 +91,7 @@ public class MetaDriver {
             System.out.println(row.toString());
         }*/
         
-        return resultSet;
+        return queryResult;
     }        
     
     public static MetaQuery parserMetaQuery(String cmd){
@@ -149,7 +125,7 @@ public class MetaDriver {
         
         MetaStatement stmt = metaQuery.getParserResult().getStatement();
 
-        ResultSet resultSet = null;  
+        QueryResult queryResult = null;  
         Statement driverStmt = null;
 
         if(selectWithFiltering){
@@ -165,9 +141,9 @@ public class MetaDriver {
         try{
             driverStmt = stmt.getDriverStatement();
             if(driverStmt != null){
-                resultSet = MetaDriver.executeQuery(driverStmt, true);
+                queryResult = MetaDriver.executeQuery(driverStmt, true);
             } else {
-                resultSet = MetaDriver.executeQuery(stmt.translateToCQL(), true);   
+                queryResult = MetaDriver.executeQuery(stmt.translateToCQL(), true);   
             }
         } catch (DriverException | UnsupportedOperationException ex) {
             Exception e = ex;
@@ -201,7 +177,7 @@ public class MetaDriver {
             }
         }
         if(!error){
-            logger.info("\033[32mResult:\033[0m "+stmt.parseResult(resultSet)+System.getProperty("line.separator"));
+            logger.info("\033[32mResult:\033[0m "+stmt.parseResult(queryResult.getResultSet())+System.getProperty("line.separator"));
         } else {
             List<MetaStep> steps = stmt.getPlan();
             for(MetaStep step: steps){
@@ -215,5 +191,13 @@ public class MetaDriver {
             }
         }
     }        
+
+    public static void connect() {
+        MetaServer.connect();
+    }
+
+    public static void close() {
+        MetaServer.close();
+    }
                
 }

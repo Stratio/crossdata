@@ -3,6 +3,7 @@ package com.stratio.meta.metadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.cassandra.BasicCassandraTest;
 import com.stratio.meta.cassandra.CassandraTest;
+import com.stratio.meta.server.metadata.MetadataManager;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
