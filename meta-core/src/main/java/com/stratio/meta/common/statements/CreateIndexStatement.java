@@ -1,5 +1,6 @@
 package com.stratio.meta.common.statements;
 
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.core.structures.IndexType;
@@ -8,6 +9,7 @@ import com.stratio.meta.common.utils.DeepResult;
 import com.stratio.meta.common.utils.MetaStep;
 import com.stratio.meta.common.utils.MetaUtils;
 import com.stratio.meta.common.utils.ValidationException;
+import com.stratio.meta.server.metadata.MetadataManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -168,7 +170,22 @@ public class CreateIndexStatement extends MetaStatement {
 
     @Override
     public void validate() {
+    }
 
+    public void validate(MetadataManager mm, String keyspace) {
+
+        //Get the target table metadata
+        KeyspaceMetadata km = mm.getKeyspaceMetadata(keyspace);
+        //Check that target columns appear on the table
+
+        if(IndexType.LUCENE.equals(_type)){
+            //Parse index options.
+            //Check that the index mapping types are compatible with the specified C* types.
+
+        }else if(IndexType.DEFAULT.equals(_type)){
+            //Check that only one column is specified
+
+        }
     }
 
     @Override

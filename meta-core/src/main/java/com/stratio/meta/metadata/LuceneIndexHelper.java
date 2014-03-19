@@ -2,6 +2,9 @@ package com.stratio.meta.metadata;
 
 
 import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.stratio.meta.driver.MetaDriver;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
@@ -22,11 +25,29 @@ public class LuceneIndexHelper {
     /**
      * Class logger.
      */
-     private static final Logger _logger = Logger.getLogger(LuceneIndexHelper.class.getName());
+    private static final Logger _logger = Logger.getLogger(LuceneIndexHelper.class.getName());
 
 
+    /**
+     * Get the map of columns indexed by the Lucene index associated with {@code column}.
+     * @param column The column with the Lucene index.
+     * @return The map of columns and associated indexes.
+     */
     public Map<String, List<CustomIndexMetadata>> getIndexedColumns(ColumnMetadata column){
-        Map<String, List<CustomIndexMetadata>> result = null;
+        Map<String, List<CustomIndexMetadata>> result = new HashMap<>();
+        StringBuilder sb = new StringBuilder("SELECT index_options FROM system.schema_columns WHERE keyspace_name='");
+        sb.append(column.getTable().getKeyspace().getName());
+        sb.append("' AND columnfamily_name='");
+        sb.append(column.getTable().getName());
+        sb.append("' AND column_name='");
+        sb.append(column.getName());
+        sb.append("'");
+        ResultSet indexOptions = MetaDriver.executeQuery(sb.toString(), true);
+        Row options = indexOptions.one();
+        if(options != null){
+            System.out.println("index options: " + indexOptions.one().toString());
+            result.putAll(processLuceneOptions(column, indexOptions.one().getString("index_options")));
+        }
         return result;
     }
 

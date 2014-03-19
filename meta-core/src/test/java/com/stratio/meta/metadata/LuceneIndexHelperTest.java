@@ -1,6 +1,8 @@
 package com.stratio.meta.metadata;
 
+import com.datastax.driver.core.ColumnMetadata;
 import com.stratio.meta.cassandra.BasicCassandraTest;
+import com.stratio.meta.driver.MetaDriver;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -9,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -34,6 +37,22 @@ public class LuceneIndexHelperTest extends BasicCassandraTest {
             assertEquals("Column has several indexes", 1, entry.getValue().size());
             assertEquals("Invalid type of index", IndexType.CUSTOM, entry.getValue().get(0).getIndexType());
         }
+    }
+
+    @Test
+    public void getIndexedColumns(){
+        String keyspace = "demo";
+        String table = "users";
+        String column = "lucene_index_1";
+        int numIndexedColumns = 6;
+        ColumnMetadata cm = MetaDriver.getClusterMetadata()
+                .getKeyspace(keyspace)
+                .getTable(table)
+                .getColumn(column);
+        assertNotNull("Cannot retrieve test column", cm);
+        LuceneIndexHelper lih = new LuceneIndexHelper();
+        Map<String, List<CustomIndexMetadata>> indexedColumns = lih.getIndexedColumns(cm);
+        assertEquals("Invalid number of indexes", numIndexedColumns, indexedColumns.size());
     }
 
 }
