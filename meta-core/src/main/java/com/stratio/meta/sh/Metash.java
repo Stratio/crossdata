@@ -137,7 +137,9 @@ public class Metash {
             console.setCompletionHandler(new MetaCompletionHandler());
             console.addCompleter(new MetaCompletor());  
             
-            MetaResult connectionResult = MetaDriver.connect();
+            MetaDriver metaDriver = new MetaDriver();
+            
+            MetaResult connectionResult = metaDriver.connect();
             if(connectionResult.hasError()){
                 System.out.println(connectionResult.getErrorMessage());
                 return;
@@ -151,13 +153,13 @@ public class Metash {
                 if(cmd.toLowerCase().startsWith("help")){
                     showHelp(cmd);
                 } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
-                    MetaResult metaResult = MetaDriver.executeQuery(cmd, true);
+                    MetaResult metaResult = metaDriver.executeQuery(cmd, true);
                     metaResult.print();
                 }
             }
                    
             saveHistory(console, file, sdf);            
-            MetaDriver.close(); 
+            metaDriver.close(); 
             
         } catch (IOException ex) {
             logger.error("Cannot launch Metash, no console present");

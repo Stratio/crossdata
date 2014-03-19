@@ -24,9 +24,9 @@ public class CassandraTest extends BasicCassandraTest {
         Statement driverStmt = st.getDriverStatement();
         MetaResult metaResult;
         if(driverStmt != null){
-            metaResult = MetaDriver.executeQuery(driverStmt, false);
+            metaResult = metaDriver.executeQuery(driverStmt, false);
         } else {
-            metaResult = MetaDriver.executeQuery(st.translateToCQL(), false);
+            metaResult = metaDriver.executeQuery(st.translateToCQL(), false);
         }            
         assertNotNull("Cannot execute "+methodName+" in Cassandra", metaResult);
         return metaResult;
@@ -51,7 +51,7 @@ public class CassandraTest extends BasicCassandraTest {
     public void testCassandraError(MetaStatement st){
         Statement driverStmt = st.getDriverStatement();
         thrown.expect(DriverException.class); 
-        MetaDriver.executeQuery(driverStmt, false);
+        metaDriver.executeQuery(driverStmt, false);
     }        		                	                
 
     // CASSANDRA TESTS

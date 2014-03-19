@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * Created by dhiguero on 3/17/14.
@@ -17,9 +17,9 @@ import static org.junit.Assert.fail;
 public class LuceneIndexHelperTest extends BasicCassandraTest {
 
     @BeforeClass
-    public static void setUpBeforeClass(){
-        BasicCassandraTest.setUpBeforeClass();
-        BasicCassandraTest.loadTestData("demo", "demoKeyspace.cql");
+    public void setUpBeforeClass(){
+        setUpBeforeClass();
+        loadTestData("demo", "demoKeyspace.cql");
     }
 
     @Test

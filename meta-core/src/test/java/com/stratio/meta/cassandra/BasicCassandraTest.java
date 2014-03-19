@@ -1,7 +1,6 @@
 package com.stratio.meta.cassandra;
 
 import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.stratio.meta.core.parser.Parser;
@@ -21,12 +20,13 @@ public class BasicCassandraTest {
     /**
      * Class logger.
      */
-    private static final Logger logger = Logger.getLogger(CassandraTest.class);
+    private final Logger logger = Logger.getLogger(CassandraTest.class);
     protected final Parser parser = new Parser();
+    protected final MetaDriver metaDriver = new MetaDriver();
     
-    public static void initCassandraConnection(){
+    public void initCassandraConnection(){
         try {
-            MetaDriver.connect();
+            metaDriver.connect();
             logger.info("Connected to Cassandra");
         } catch(NoHostAvailableException ex){
             logger.error("\033[31mCannot connect with Cassandra\033[0m", ex);  
@@ -34,9 +34,9 @@ public class BasicCassandraTest {
         }
     }
     
-    public static void checkKeyspaces(){
+    public void checkKeyspaces(){
         try {
-            MetaDriver.executeQuery("USE testKS", false);
+            metaDriver.executeQuery("USE testKS", false);
             logger.error("\033[31mKeyspace \'testKs\' already exists\033[0m");  
             System.exit(-1);
         } catch(DriverException ex){
@@ -45,17 +45,17 @@ public class BasicCassandraTest {
     }
 
     @BeforeClass
-    public static void setUpBeforeClass(){
+    public void setUpBeforeClass(){
         initCassandraConnection();
         checkKeyspaces();
     }
 
-    public static void dropKeyspaces(){
-        MetaDriver.executeQuery("DROP KEYSPACE IF EXISTS testKS;", false);
+    public void dropKeyspaces(){
+        metaDriver.executeQuery("DROP KEYSPACE IF EXISTS testKS;", false);
     }
 
-    public static void closeCassandraConnection(){
-        MetaDriver.close();
+    public void closeCassandraConnection(){
+        metaDriver.close();
     }
 
     /**
@@ -64,24 +64,24 @@ public class BasicCassandraTest {
      * @param keyspace The name of the keyspace.
      * @param path The path of the CQL script.
      */
-    public static void loadTestData(String keyspace, String path){
-        KeyspaceMetadata metadata = MetaDriver.getClusterMetadata().getKeyspace(keyspace);
+    public void loadTestData(String keyspace, String path){
+        KeyspaceMetadata metadata = metaDriver.getClusterMetadata().getKeyspace(keyspace);
         if(metadata == null){
             logger.info("Creating keyspace " + keyspace + " using " + path);
             List<String> scriptLines = loadScript(path);
             logger.info("Executing " + scriptLines.size() + " lines");
             for(String cql : scriptLines){
-                MetaDriver.executeQuery(cql, true);
+                metaDriver.executeQuery(cql, true);
             }
         }
         logger.info("Using existing keyspace " + keyspace);
     }
 
-    public static List<String> loadScript(String path){
+    public List<String> loadScript(String path){
         List<String> result = new ArrayList<>();
         URL url = BasicCassandraTest.class.getResource(path);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
-            String line = null;
+            String line;
             while((line = br.readLine()) != null){
                 if(line.length() > 0 && !line.startsWith("#")){
                     result.add(line);
@@ -94,7 +94,7 @@ public class BasicCassandraTest {
     }
 
     @AfterClass
-    public static void exit(){
+    public void exit(){
         dropKeyspaces();
         closeCassandraConnection();
     }  

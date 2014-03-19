@@ -11,55 +11,56 @@ import org.apache.log4j.Logger;
 
 public class MetaDriver {
     
-    private static final Logger logger = Logger.getLogger(MetaDriver.class);
+    private final Logger logger = Logger.getLogger(MetaDriver.class);
+    private final MetaServer metaServer = new MetaServer();
     
-    public static MetaResult connect() {
-        return MetaServer.connect();
+    public MetaResult connect() {
+        return metaServer.connect();
     }
 
-    public static void close() {
-        MetaServer.close();
+    public void close() {
+        metaServer.close();
     }
     
     /**
      * Get the cluster {@link com.datastax.driver.core.Metadata}.
      * @return The Metadata if the cluster connection have been established or null otherwise.
      */
-    public static Metadata getClusterMetadata(){
+    public Metadata getClusterMetadata(){
     	Metadata result = null;
-        if(!MetaServer.connect().hasError()){
-                result = MetaServer.getMetadata();
+        if(!metaServer.connect().hasError()){
+                result = metaServer.getMetadata();
         }
         return result;
     }
     
-    public static PreparedStatement parseStatementWithCassandra(String query){
-        return MetaServer.prepare(query);
+    public PreparedStatement parseStatementWithCassandra(String query){
+        return metaServer.prepare(query);
     }
     
-    public static PreparedStatement parseStatementWithCassandra(RegularStatement rs){
-        return MetaServer.prepare(rs);
+    public PreparedStatement parseStatementWithCassandra(RegularStatement rs){
+        return metaServer.prepare(rs);
     }
     
-    public static MetaResult executeQuery(String query, boolean showInfo){         
+    public MetaResult executeQuery(String query, boolean showInfo){         
         if(showInfo){
             logger.info("\033[34;1mQuery:\033[0m "+query);
         }                      
-        return MetaServer.executeQuery(query);
+        return metaServer.executeQuery(query);
     }
        
-    public static MetaResult executeQuery(Statement query, boolean showInfo) {      
+    public MetaResult executeQuery(Statement query, boolean showInfo) {      
         if(showInfo){
             logger.info("\033[34;1mStatement:\033[0m "+query.toString());
         }        
-        return MetaServer.executeQuery(query);
-    }        
+        return metaServer.executeQuery(query);
+    }
         
-//    public static void executeMetaCommand(MetaQuery metaQuery) {
+//    public void executeMetaCommand(MetaQuery metaQuery) {
 //        executeMetaCommand(metaQuery, true);
 //    }
 //
-//    public static void executeMetaCommand(MetaQuery metaQuery, boolean selectWithFiltering){
+//    public void executeMetaCommand(MetaQuery metaQuery, boolean selectWithFiltering){
 //        boolean error = false;
 //        //logger.info("\033[32mParsed:\033[0m " + stmt.toString());
 //        /*

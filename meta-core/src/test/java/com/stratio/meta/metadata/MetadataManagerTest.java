@@ -1,7 +1,8 @@
 package com.stratio.meta.metadata;
 
 import com.stratio.meta.server.metadata.MetadataManager;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import org.junit.Assert.*;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -12,17 +13,19 @@ import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.cassandra.BasicCassandraTest;
 
 import java.util.List;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class MetadataManagerTest extends BasicCassandraTest {
 
-	private static MetadataManager _metadataManager = null;
+    private MetadataManager _metadataManager = null;
 
-	@BeforeClass
-    public static void setUpBeforeClass(){
-        BasicCassandraTest.setUpBeforeClass();
-		_metadataManager = new MetadataManager();
-		_metadataManager.loadMetadata();
-	}
+    @BeforeClass
+    public void setUpBeforeClass(){
+        setUpBeforeClass();
+        _metadataManager = new MetadataManager();
+        _metadataManager.loadMetadata();
+    }
 	
 	@Test
 	public void getKeyspaceMetadata() {

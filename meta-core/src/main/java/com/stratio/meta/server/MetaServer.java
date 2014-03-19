@@ -17,28 +17,28 @@ import org.apache.log4j.Logger;
 
 public class MetaServer {
     
-    private static final Logger logger = Logger.getLogger(MetaServer.class);
+    private final Logger logger = Logger.getLogger(MetaServer.class);
     
-    private static Cluster cluster;
-    private static Session session;    
+    private Cluster cluster;
+    private Session session;    
     
-    public static Cluster getCluster() {
+    public Cluster getCluster() {
         return cluster;
     }
 
-    public static void setCluster(Cluster cluster) {
-        MetaServer.cluster = cluster;
+    public void setCluster(Cluster cluster) {
+        this.cluster = cluster;
     }
 
-    public static Session getSession() {
+    public Session getSession() {
         return session;
     }
 
-    public static void setSession(Session session) {
-        MetaServer.session = session;
+    public void setSession(Session session) {
+        this.session = session;
     }
     
-    public static MetaResult connect(String host){
+    public MetaResult connect(String host){
         try {            
             if(cluster == null){
                 cluster = Cluster.builder().addContactPoint(host).build();
@@ -57,11 +57,11 @@ public class MetaServer {
         return new ConnectResult("Success");
     }
     
-    public static MetaResult connect(){
+    public MetaResult connect(){
         return connect("127.0.0.1");
     }
             
-    public static boolean close(){
+    public boolean close(){
         if(session != null){
             session.close();
         }
@@ -73,11 +73,11 @@ public class MetaServer {
         return true;
     }    
     
-    public static MetaResult executeQuery(Statement query) {
+    public MetaResult executeQuery(Statement query) {
         return executeQuery(query.toString());
     }
     
-    public static MetaResult executeQuery(String query){
+    public MetaResult executeQuery(String query){
         // PARSER ACTOR    
         Parser parser = new Parser();
         MetaQuery metaQuery = parser.parseStatement(query);
@@ -102,15 +102,15 @@ public class MetaServer {
         return metaQuery.getResult();
     }
 
-    public static Metadata getMetadata() {
+    public Metadata getMetadata() {
         return cluster.getMetadata();
     }
 
-    public static PreparedStatement prepare(String query) {
+    public PreparedStatement prepare(String query) {
         return session.prepare(query);
     }
 
-    public static PreparedStatement prepare(RegularStatement rs) {
+    public PreparedStatement prepare(RegularStatement rs) {
         return session.prepare(rs);
     }    
     

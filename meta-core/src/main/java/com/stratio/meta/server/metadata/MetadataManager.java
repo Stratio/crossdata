@@ -20,12 +20,12 @@ public class MetadataManager {
 	 * Cluster metadata in Cassandra.
 	 */
 	private Metadata _clusterMetadata = null;
+        private final MetaDriver metaDriver = new MetaDriver();
 	
 	/**
 	 * Class logger.
 	 */
-	private static final Logger _logger = Logger
-			.getLogger(MetadataManager.class.getName());
+	private static final Logger _logger = Logger.getLogger(MetadataManager.class.getName());
 	
 	/**
 	 * Class constructor.
@@ -38,7 +38,7 @@ public class MetadataManager {
 	 * @return Whether the metadata has been loaded or not.
 	 */
 	public boolean loadMetadata(){
-		_clusterMetadata = MetaDriver.getClusterMetadata();
+		_clusterMetadata = metaDriver.getClusterMetadata();
 		return _clusterMetadata != null;
 	}
 	
