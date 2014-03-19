@@ -2,7 +2,6 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
-import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
@@ -351,6 +350,7 @@ public class SelectStatement extends MetaStatement {
         return sb.toString();
     }
     
+    // TODO: Pull this method out of this class and move it to SH 
     @Override
     public String parseResult(ResultSet resultSet) {
         ColumnDefinitions colDefs = resultSet.getColumnDefinitions();

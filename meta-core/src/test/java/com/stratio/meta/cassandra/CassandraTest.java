@@ -24,7 +24,7 @@ public class CassandraTest extends BasicCassandraTest {
         Statement driverStmt = st.getDriverStatement();
         MetaResult metaResult;
         if(driverStmt != null){
-            metaResult = metaDriver.executeQuery(driverStmt, false);
+            metaResult = metaDriver.executeQuery(st.translateToCQL());
         } else {
             metaResult = metaDriver.executeQuery(st.translateToCQL(), false);
         }            

@@ -145,6 +145,8 @@ public class Metash {
                 return;
             }
             
+            String currentKeyspace = "";
+            
             String cmd = "";
             while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
                 cmd = console.readLine();
@@ -153,7 +155,10 @@ public class Metash {
                 if(cmd.toLowerCase().startsWith("help")){
                     showHelp(cmd);
                 } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
-                    MetaResult metaResult = metaDriver.executeQuery(cmd, true);
+                    MetaResult metaResult = metaDriver.executeQuery(currentKeyspace, cmd, true);
+                    if(metaResult.isKsChanged()){
+                        currentKeyspace = metaResult.getCurrentKeyspace();
+                    }
                     metaResult.print();
                 }
             }

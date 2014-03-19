@@ -1,6 +1,7 @@
 package com.stratio.meta.sh.utils;
 
 import com.google.common.collect.Sets;
+import com.stratio.meta.common.utils.MetaUtils;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.AntlrResult;
 import com.stratio.meta.core.utils.LevenshteinMatch;
@@ -115,6 +116,8 @@ public class ShUtils {
             "HOURS",
             "DAYS");       
 
+    
+    // TODO: Move almost everything to core.CassandraUtils
     public static String StringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
         for(Object value: ids){
@@ -169,15 +172,7 @@ public class ShUtils {
         StringBuilder sb = new StringBuilder(initials.toString());
         return sb.substring(1, sb.length()-1);
     }
-    
-    private static int getCharPosition(AntlrError antlrError) {
-        if(antlrError.getHeader().contains(":")){
-            return Integer.parseInt(antlrError.getHeader().split(":")[1]);
-        } else {
-            return -1;
-        }
-    }
-    
+        
     public static String getSuggestion(String query, AntlrError antlrError){
         String errorWord = query.trim().split(" ")[0].toUpperCase();
         Set<String> statementTokens = initials;
@@ -185,7 +180,7 @@ public class ShUtils {
         String suggestionFromToken = "";
                 
         if(antlrError != null){
-            charPosition = getCharPosition(antlrError);
+            charPosition = MetaUtils.getCharPosition(antlrError);
             if(charPosition>0){
                 statementTokens = noInitials;
             }
@@ -255,16 +250,7 @@ public class ShUtils {
             //System.out.println("Omit suggestion");
             logger.error(antlrResult.toString(""));
         }
-    }      
-
-    public static String getQueryWithSign(String query, AntlrError ae) {
-        StringBuilder sb = new StringBuilder(query);
-        int pos = getCharPosition(ae);
-        if(pos >= 0){
-        sb.insert(getCharPosition(ae), "\033[35m|\033[0m");
-        }
-        return sb.toString();
-    }
+    }          
 
     public static String translateToken(String message) {     
         if(message == null){

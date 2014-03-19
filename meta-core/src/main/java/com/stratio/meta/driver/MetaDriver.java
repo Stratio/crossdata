@@ -42,24 +42,20 @@ public class MetaDriver {
         return metaServer.prepare(rs);
     }
     
-    public MetaResult executeQuery(String query, boolean showInfo){         
+    public MetaResult executeQuery(String targetKs, String query, boolean showInfo){         
         if(showInfo){
             logger.info("\033[34;1mQuery:\033[0m "+query);
         }                      
-        return metaServer.executeQuery(query);
+        return metaServer.executeQuery(targetKs, query);
     }
        
-    public MetaResult executeQuery(Statement query, boolean showInfo) {      
+    public MetaResult executeQuery(String targetKs, Statement query, boolean showInfo) {      
         if(showInfo){
             logger.info("\033[34;1mStatement:\033[0m "+query.toString());
         }        
-        return metaServer.executeQuery(query);
+        return metaServer.executeQuery(targetKs, query);
     }
         
-//    public void executeMetaCommand(MetaQuery metaQuery) {
-//        executeMetaCommand(metaQuery, true);
-//    }
-//
 //    public void executeMetaCommand(MetaQuery metaQuery, boolean selectWithFiltering){
 //        boolean error = false;
 //        //logger.info("\033[32mParsed:\033[0m " + stmt.toString());

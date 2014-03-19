@@ -73,11 +73,11 @@ public class MetaServer {
         return true;
     }    
     
-    public MetaResult executeQuery(Statement query) {
-        return executeQuery(query.toString());
+    public MetaResult executeQuery(String targetKs, Statement query) {
+        return executeQuery(targetKs, query.toString());
     }
     
-    public MetaResult executeQuery(String query){
+    public MetaResult executeQuery(String targetKs, String query){
         // PARSER ACTOR    
         Parser parser = new Parser();
         MetaQuery metaQuery = parser.parseStatement(query);
