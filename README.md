@@ -32,7 +32,7 @@ The META-shell can be executed in two differentiated modes: client and server. A
 ## META server shell ##
 
 ```
-   > mvn exec:java -Dexec.mainClass="com.stratio.meta.ui.shell.server.Metash"
+   > mvn exec:java -Dexec.mainClass="com.stratio.meta.sh.Metash"
 ```
 
 ## Useful commands ##
