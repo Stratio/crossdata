@@ -1,24 +1,20 @@
 package com.stratio.meta.cassandra;
 
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.stratio.meta.common.result.MetaResult;
-import com.stratio.meta.core.parser.CoreParser;
-import com.stratio.meta.driver.MetaDriver;
 import static org.junit.Assert.*;
 
 import com.stratio.meta.driver.MetaDriver;
 import org.junit.Test;
 
-import com.stratio.meta.common.statements.MetaStatement;
-import com.stratio.meta.common.utils.AntlrResult;
+import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.core.utils.MetaQuery;
 
 public class CassandraTest extends BasicCassandraTest {                	      	
-                        
+    
     public MetaStatement testRegularStatement(String inputText, String methodName) {
-        AntlrResult antlrResult = CoreParser.parseStatement(inputText);
-        MetaStatement st = antlrResult.getStatement();
+        MetaStatement st = parser.parseStatement(inputText).getStatement();        
         assertNotNull("Cannot parse "+methodName, st);             
         assertTrue("Cannot parse "+methodName, inputText.equalsIgnoreCase(st.toString()+";"));
         return st;
@@ -42,16 +38,14 @@ public class CassandraTest extends BasicCassandraTest {
     }
 
     public void testMetaError(String inputText){
-        AntlrResult antlrResult = CoreParser.parseStatement(inputText);
-        MetaStatement st = antlrResult.getStatement();
+        MetaStatement st = parser.parseStatement(inputText).getStatement();
         thrown.expect(NullPointerException.class);
         System.out.println(st.toString());
     }
 
     public void testRecoverableError(String inputText, String methodName){
-        AntlrResult antlrResult = CoreParser.parseStatement(inputText);
-        MetaStatement st = antlrResult.getStatement();
-        assertTrue("No errors reported in "+methodName, antlrResult.getFoundErrors().getNumberOfErrors()>0);
+        MetaQuery metaQuery = parser.parseStatement(inputText);
+        assertTrue("No errors reported in "+methodName, metaQuery.getResult().hasError());
     }
 
     public void testCassandraError(MetaStatement st){
@@ -64,8 +58,7 @@ public class CassandraTest extends BasicCassandraTest {
     public void createKeyspace_basic() {
         String inputText = "CREATE KEYSPACE testKS WITH replication = {class: SimpleStrategy, replication_factor: 1}"
                 + " AND durable_writes = false;";		
-        AntlrResult antlrResult = CoreParser.parseStatement(inputText);
-        MetaStatement st = antlrResult.getStatement();
+        MetaStatement st = parser.parseStatement(inputText).getStatement();
         assertNotNull("Cannot parse createKeyspace_basic", st);
 
         boolean originalOK = false;

@@ -4,6 +4,7 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.driver.MetaDriver;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -21,6 +22,7 @@ public class BasicCassandraTest {
      * Class logger.
      */
     private static final Logger logger = Logger.getLogger(CassandraTest.class);
+    protected final Parser parser = new Parser();
     
     public static void initCassandraConnection(){
         try {

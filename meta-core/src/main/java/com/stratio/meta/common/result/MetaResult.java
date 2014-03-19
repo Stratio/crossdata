@@ -1,7 +1,28 @@
 package com.stratio.meta.common.result;
 
-public interface MetaResult {
+public class MetaResult {
 
-    public void print();
+    private boolean hasError = false;
+    private String errorMessage = null;
+
+    public boolean hasError() {
+        return hasError;
+    }
+
+    public void setHasError() {
+        this.hasError = true;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }   
+    
+    public void print(){
+        System.out.println(errorMessage);
+    }
     
 }

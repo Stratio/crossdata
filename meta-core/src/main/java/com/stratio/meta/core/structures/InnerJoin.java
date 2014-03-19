@@ -1,6 +1,6 @@
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.common.utils.MetaUtils;
+import com.stratio.meta.sh.utils.ShUtils;
 
 import java.util.Map;
 
@@ -33,7 +33,7 @@ public class InnerJoin {
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder(tablename);
-        sb.append(" ON ").append(MetaUtils.StringMap(fields, "=", " "));
+        sb.append(" ON ").append(ShUtils.StringMap(fields, "=", " "));
         return sb.toString();
     }
     

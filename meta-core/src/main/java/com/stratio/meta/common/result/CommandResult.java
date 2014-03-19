@@ -1,10 +1,10 @@
 package com.stratio.meta.common.result;
 
-public class CommandResult implements MetaResult {
+public class CommandResult extends MetaResult {
 
     @Override
     public void print() {
-        System.out.println();
+        System.out.println("Not implemented yet.");
     }
     
 }

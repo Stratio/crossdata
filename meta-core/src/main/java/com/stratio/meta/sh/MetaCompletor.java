@@ -2,8 +2,8 @@ package com.stratio.meta.sh;
 
 import com.stratio.meta.core.grammar.generated.MetaLexer;
 import com.stratio.meta.core.grammar.generated.MetaParser;
-import com.stratio.meta.common.statements.MetaStatement;
-import com.stratio.meta.common.utils.MetaUtils;
+import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.sh.utils.ShUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
@@ -33,7 +33,7 @@ public class MetaCompletor implements Completer {
         //System.out.println("MetaCompletor.complete");
         checkNotNull(candidates);
         if ((buffer == null) || (buffer.length()<1)) {            
-            candidates.addAll(MetaUtils.initials);   
+            candidates.addAll(ShUtils.initials);   
         } else {                       
             // Last char is a space ==> NO completion implemented yet
             if(buffer.charAt(buffer.length()-1) == ' '){ 
@@ -43,9 +43,9 @@ public class MetaCompletor implements Completer {
             String[] partialTokens = buffer.split(" ");
             String partialQuery = buffer.trim().toUpperCase();
             if(partialTokens.length == 1) { // First token
-                strings.addAll(MetaUtils.initials);
+                strings.addAll(ShUtils.initials);
             } else { // NO first token and new token initiated
-                strings.addAll(MetaUtils.noInitials);
+                strings.addAll(ShUtils.noInitials);
                 partialQuery = partialTokens[partialTokens.length-1].trim().toUpperCase();
             }            
 

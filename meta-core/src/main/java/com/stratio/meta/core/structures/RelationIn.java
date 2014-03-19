@@ -1,6 +1,6 @@
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.common.utils.MetaUtils;
+import com.stratio.meta.sh.utils.ShUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,7 @@ public class RelationIn extends MetaRelation {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(identifiers.get(0));
-        sb.append(" ").append(operator).append(" ").append("(").append(MetaUtils.StringList(terms, ", ")).append(")");
+        sb.append(" ").append(operator).append(" ").append("(").append(ShUtils.StringList(terms, ", ")).append(")");
         return sb.toString();
     }
     
