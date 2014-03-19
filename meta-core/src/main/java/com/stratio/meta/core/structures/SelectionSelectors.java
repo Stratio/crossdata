@@ -1,6 +1,6 @@
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.common.utils.MetaUtils;
+import com.stratio.meta.sh.utils.ShUtils;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ public class SelectionSelectors extends Selection {
     
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(MetaUtils.StringList(selectors, ", "));
+        StringBuilder sb = new StringBuilder(ShUtils.StringList(selectors, ", "));
         return sb.toString();
     }
     

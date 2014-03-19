@@ -1,6 +1,6 @@
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.common.utils.MetaUtils;
+import com.stratio.meta.sh.utils.ShUtils;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class GroupBy {
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder(" GROUP BY ");  
-        sb.append(MetaUtils.StringList(colNames, ", "));
+        sb.append(ShUtils.StringList(colNames, ", "));
         return sb.toString();
     }
     

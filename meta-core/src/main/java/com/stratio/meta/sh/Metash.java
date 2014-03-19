@@ -1,12 +1,12 @@
 package com.stratio.meta.sh;
 
+import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.sh.help.HelpContent;
 import com.stratio.meta.sh.help.HelpManager;
 import com.stratio.meta.sh.help.HelpStatement;
 import com.stratio.meta.sh.help.generated.MetaHelpLexer;
 import com.stratio.meta.sh.help.generated.MetaHelpParser;
 import com.stratio.meta.driver.MetaDriver;
-import com.stratio.meta.common.utils.MetaQuery;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -39,8 +39,8 @@ public class Metash {
     private final HelpContent _help;
 
     public Metash(){
-            HelpManager hm = new HelpManager();
-            _help = hm.loadHelpContent();
+        HelpManager hm = new HelpManager();
+        _help = hm.loadHelpContent();
     }        
 
     /**
@@ -135,9 +135,17 @@ public class Metash {
             File file = retrieveHistory(console, sdf);            
             
             console.setCompletionHandler(new MetaCompletionHandler());
-            console.addCompleter(new MetaCompletor());            
+            console.addCompleter(new MetaCompletor());  
+            
+            MetaDriver metaDriver = new MetaDriver();
+            
+            MetaResult connectionResult = metaDriver.connect();
+            if(connectionResult.hasError()){
+                System.out.println(connectionResult.getErrorMessage());
+                return;
+            }
+            
             String cmd = "";
-            MetaDriver.connect();
             while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
                 cmd = console.readLine();
                 logger.info("\033[34;1mCommand:\033[0m " + cmd);
@@ -145,38 +153,14 @@ public class Metash {
                 if(cmd.toLowerCase().startsWith("help")){
                     showHelp(cmd);
                 } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
-                    MetaQuery metaQuery = MetaDriver.parserMetaQuery(cmd);
-                    metaQuery.setQuery(cmd);
-                    if(metaQuery.hasParserErrors()){ // parser error
-                        metaQuery.printParserErrors();
-                        continue;
-                    }
-                    metaQuery.printParserInfo();
-                    MetaDriver.validateMetaQuery(metaQuery);
-                    if(metaQuery.hasValidationErrors()){ // Invalid metadata
-                        metaQuery.printValidationErrors();
-                        continue;
-                    }
-                    metaQuery.printValidationInfo();
-                    MetaDriver.planMetaQuery(metaQuery);
-                    if(metaQuery.hasPlanErrors()){ // Cannot plan
-                        metaQuery.printPlanErrors();
-                        continue;
-                    }        
-                    metaQuery.printPlanInfo();
-                    MetaDriver.executeMetaCommand(metaQuery); 
-                    if(metaQuery.hasExecutionErrors()){
-                        metaQuery.printExecutionErrors();
-                        continue;
-                    }
-                    metaQuery.printResult();
-                    metaQuery.printExecutionInfo();
+                    MetaResult metaResult = metaDriver.executeQuery(cmd, true);
+                    metaResult.print();
                 }
             }
                    
-            saveHistory(console, file, sdf);
+            saveHistory(console, file, sdf);            
+            metaDriver.close(); 
             
-            MetaDriver.close(); 
         } catch (IOException ex) {
             logger.error("Cannot launch Metash, no console present");
         }

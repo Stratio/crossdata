@@ -2,24 +2,28 @@ package com.stratio.meta.metadata;
 
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.cassandra.BasicCassandraTest;
-import com.stratio.meta.cassandra.CassandraTest;
+import com.stratio.meta.server.metadata.MetadataManager;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 public class TableIndexMetadataTest extends BasicCassandraTest{
 
-    private static MetadataManager _metadataManager = null;
+    private MetadataManager _metadataManager = null;
 
     @BeforeClass
-    public static void setUpBeforeClass(){
-        BasicCassandraTest.setUpBeforeClass();
-        BasicCassandraTest.loadTestData("demo", "demoKeyspace.cql");
+    @Override
+    public void setUpBeforeClass(){
+        setUpBeforeClass();
+        loadTestData("demo", "demoKeyspace.cql");
         _metadataManager = new MetadataManager();
         _metadataManager.loadMetadata();
     }

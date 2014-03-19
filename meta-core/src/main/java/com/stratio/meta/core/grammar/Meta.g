@@ -25,9 +25,9 @@ options {
  
 @header {
     package com.stratio.meta.core.grammar.generated;    
-    import com.stratio.meta.statements.*;
-    import com.stratio.meta.structures.*;
-    import com.stratio.meta.utils.*;
+    import com.stratio.meta.core.statements.*;
+    import com.stratio.meta.core.structures.*;
+    import com.stratio.meta.core.utils.*;
     import java.util.LinkedHashMap;
     import java.util.HashMap;
     import java.util.Map;
@@ -178,7 +178,9 @@ T_START_PARENTHESIS: '(';
 T_END_PARENTHESIS: ')';
 T_QUOTE: '"';
 T_SINGLE_QUOTE: '\'';
-T_INDEX_TYPE: ('DEFAULT' | 'LUCENE' | 'CUSTOM');
+T_DEFAULT: D E F A U L T;
+T_LUCENE: L U C E N E;
+T_CUSTOM: C U S T O M;
 T_START_BRACKET: '[';
 T_END_BRACKET: ']';
 T_PLUS: '+';
@@ -196,6 +198,10 @@ T_GTE: '>' '=';
 T_LTE: '<' '=';
 T_NOT_EQUAL: '<' '>'; 
 T_TOKEN: T O K E N;
+T_SECONDS: S E C O N D S;
+T_MINUTES: M I N U T E S;
+T_HOURS: H O U R S;
+T_DAYS: D A Y S;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -279,7 +285,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	@init{
 		$cis = new CreateIndexStatement();
 	}:
-	T_CREATE indexType=T_INDEX_TYPE {$cis.setIndexType($indexType.text);} T_INDEX
+	T_CREATE indexType=getIndexType {$cis.setIndexType(indexType);} T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
 	(name=T_IDENT {$cis.setName($name.text);})? 
 	T_ON tablename=getTableID {$cis.setTablename(tablename);}
@@ -368,30 +374,30 @@ createTableStatement returns [CreateTableStatement crtast]
     T_TABLE
     (T_IF T_NOT T_EXISTS {ifNotExists_2 = true;})? 
     name_table=getTableID
-    '(' (            
+    T_START_PARENTHESIS (            
                 ident_column1=(T_IDENT | T_KEY) type1=getDataType (T_PRIMARY T_KEY)? {columns.put($ident_column1.text,type1); Type_Primary_Key=1;}
                 (   
-                    ( ',' ident_columN=(T_IDENT | T_KEY) typeN=getDataType (T_PRIMARY T_KEY {Type_Primary_Key=2;columnNumberPK=columnNumberPK_inter +1;})? {columns.put($ident_columN.text,typeN);columnNumberPK_inter+=1;})
+                    ( T_COMMA ident_columN=(T_IDENT | T_KEY) typeN=getDataType (T_PRIMARY T_KEY {Type_Primary_Key=2;columnNumberPK=columnNumberPK_inter +1;})? {columns.put($ident_columN.text,typeN);columnNumberPK_inter+=1;})
                     |(  
-                        ',' T_PRIMARY T_KEY '('
+                        T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS
                         (
                             (   primaryK=(T_IDENT | T_KEY) {primaryKey.add($primaryK.text);Type_Primary_Key=3;}
                            
-                                (','partitionKN=(T_IDENT | T_KEY) {primaryKey.add($partitionKN.text);})*
+                                (T_COMMA partitionKN=(T_IDENT | T_KEY) {primaryKey.add($partitionKN.text);})*
                             )
                             |(
-                                '(' partitionK=(T_IDENT | T_KEY) {primaryKey.add($partitionK.text);Type_Primary_Key=4;}
-                                    (','partitionKN=(T_IDENT | T_KEY) {primaryKey.add($partitionKN.text);})*
-                                ')' 
-                                (',' clusterKN=(T_IDENT | T_KEY) {clusterKey.add($clusterKN.text);withClusterKey=true;})*
+                                T_START_PARENTHESIS partitionK=(T_IDENT | T_KEY) {primaryKey.add($partitionK.text);Type_Primary_Key=4;}
+                                    (T_COMMA partitionKN=(T_IDENT | T_KEY) {primaryKey.add($partitionKN.text);})*
+                                T_END_PARENTHESIS 
+                                (T_COMMA clusterKN=(T_IDENT | T_KEY) {clusterKey.add($clusterKN.text);withClusterKey=true;})*
 
                             )
                         )
-                       ')' 
+                       T_END_PARENTHESIS 
                    )
                 )* 
          )             
-    ')' (T_WITH {withPropierties=true;} properties=getMetaProperties 
+    T_END_PARENTHESIS (T_WITH {withPropierties=true;} properties=getMetaProperties 
     )?            
     {$crtast = new CreateTableStatement(name_table,columns,primaryKey,clusterKey,properties,Type_Primary_Key,ifNotExists_2,withClusterKey,columnNumberPK,withPropierties);}
 ;        
@@ -632,6 +638,12 @@ query returns [MetaStatement st]:
 
 
 //FUNCTIONS
+getIndexType returns [String indexType]:
+    ( idxType=T_DEFAULT
+    | idxType=T_LUCENE
+    | idxType=T_CUSTOM)
+    {$indexType=$idxType.text;}
+;
 
 getMetaProperties returns [List<MetaProperty> props]
     @init{
@@ -653,7 +665,7 @@ getMetaProperty returns [MetaProperty mp]
 
 getDataType returns [String dataType]:
     (
-        ident1=T_IDENT ('<' ident2=T_IDENT (',' ident3=T_IDENT)? '>')?
+        ident1=T_IDENT (T_LT ident2=T_IDENT (T_COMMA ident3=T_IDENT)? T_GT)?
     )
     {$dataType = $ident1.text.concat(ident2==null?"":"<"+$ident2.text).concat(ident3==null?"":","+$ident3.text).concat(ident2==null?"":">");}
 ;
@@ -698,14 +710,10 @@ getTimeUnit returns [TimeUnit unit]:
     | 'm' {$unit=TimeUnit.MINUTES;}
     | 'h' {$unit=TimeUnit.HOURS;}
     | 'd' {$unit=TimeUnit.DAYS;}
-    | 'seconds' {$unit=TimeUnit.SECONDS;}
-    | 'minutes' {$unit=TimeUnit.MINUTES;}
-    | 'hours' {$unit=TimeUnit.HOURS;}
-    | 'days' {$unit=TimeUnit.DAYS;}
-    | 'SECONDS' {$unit=TimeUnit.SECONDS;}
-    | 'MINUTES' {$unit=TimeUnit.MINUTES;}
-    | 'HOURS' {$unit=TimeUnit.HOURS;}
-    | 'DAYS' {$unit=TimeUnit.DAYS;}
+    | T_SECONDS {$unit=TimeUnit.SECONDS;}
+    | T_MINUTES {$unit=TimeUnit.MINUTES;}
+    | T_HOURS {$unit=TimeUnit.HOURS;}
+    | T_DAYS {$unit=TimeUnit.DAYS;}
     )
 ;
 

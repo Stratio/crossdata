@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -20,9 +21,9 @@ import static org.junit.Assert.fail;
 public class LuceneIndexHelperTest extends BasicCassandraTest {
 
     @BeforeClass
-    public static void setUpBeforeClass(){
-        BasicCassandraTest.setUpBeforeClass();
-        BasicCassandraTest.loadTestData("demo", "demoKeyspace.cql");
+    public void setUpBeforeClass(){
+        setUpBeforeClass();
+        loadTestData("demo", "demoKeyspace.cql");
     }
 
     @Test
@@ -37,6 +38,7 @@ public class LuceneIndexHelperTest extends BasicCassandraTest {
             assertEquals("Column has several indexes", 1, entry.getValue().size());
             assertEquals("Invalid type of index", IndexType.CUSTOM, entry.getValue().get(0).getIndexType());
         }
+
     }
 
     @Test

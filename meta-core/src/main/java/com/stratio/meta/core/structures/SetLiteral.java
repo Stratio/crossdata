@@ -1,6 +1,6 @@
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.common.utils.MetaUtils;
+import com.stratio.meta.sh.utils.ShUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -36,7 +36,7 @@ public class SetLiteral extends IdentIntOrLiteral {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(string());        
-        sb.append(MetaUtils.StringSet(literals, ", "));        
+        sb.append(ShUtils.StringSet(literals, ", "));        
         return sb.toString();
     }
     
