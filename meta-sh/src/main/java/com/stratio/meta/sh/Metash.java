@@ -77,7 +77,7 @@ public class Metash {
         final int DAYS_HISTORY_ENTRY_VALID = 30;
         Date today = new Date();
         File dir = new File("./src/main/resources/");
-        File file = new File(dir.getPath()+"history.txt");
+        File file = new File(dir.getPath()+"/history.txt");
         if(!dir.exists()){
             dir.mkdirs();
         }
