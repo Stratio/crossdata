@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.stratio.meta.core.structures.MetaRelation;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.sh.utils.ShUtils;
 import java.util.Arrays;
 
 /**
@@ -85,7 +85,7 @@ public class DeleteStatement extends MetaStatement {
     public String toString() {
         StringBuilder sb = new StringBuilder("DELETE ");
         if(_targetColumn.size() > 0){
-        sb.append(ShUtils.StringList(_targetColumn, ", "));
+        sb.append(ParserUtils.stringList(_targetColumn, ", "));
         }
         sb.append(" FROM ");
         if(keyspaceInc){
@@ -94,7 +94,7 @@ public class DeleteStatement extends MetaStatement {
         sb.append(_tablename);
         if(_whereClauses.size() > 0){
         	sb.append(" WHERE ");
-        	sb.append(ShUtils.StringList(_whereClauses, " AND "));
+        	sb.append(ParserUtils.stringList(_whereClauses, " AND "));
         }
         return sb.toString();
     }

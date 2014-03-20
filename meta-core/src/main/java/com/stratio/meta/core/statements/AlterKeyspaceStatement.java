@@ -3,9 +3,9 @@ package com.stratio.meta.core.statements;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.sh.utils.ShUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -44,7 +44,7 @@ public class AlterKeyspaceStatement extends MetaStatement {
     public String toString() {
         StringBuilder sb = new StringBuilder("ALTER KEYSPACE ");
         sb.append(keyspaceName).append(" WITH ");
-        sb.append(ShUtils.StringMap(properties, " = ", " AND "));
+        sb.append(ParserUtils.stringMap(properties, " = ", " AND "));
         /*Set keySet = properties.keySet();
         for (Iterator it = keySet.iterator(); it.hasNext();) {
             String key = (String) it.next();

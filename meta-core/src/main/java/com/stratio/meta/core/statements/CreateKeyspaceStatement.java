@@ -3,9 +3,9 @@ package com.stratio.meta.core.statements;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.sh.utils.ShUtils;
 import com.stratio.meta.core.utils.ValidationException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,7 +59,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
         }
         sb.append(ident);
         sb.append(" WITH ");
-        sb.append(ShUtils.StringMap(properties, " = ", " AND "));
+        sb.append(ParserUtils.stringMap(properties, " = ", " AND "));
         return sb.toString();
     }
 
@@ -103,7 +103,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
     public String translateToCQL() {
         String metaStr = this.toString();
         if(metaStr.contains("{")){
-            return ShUtils.translateLiteralsToCQL(metaStr);
+            return ParserUtils.translateLiteralsToCQL(metaStr);
         } else {
             return metaStr;
         }        

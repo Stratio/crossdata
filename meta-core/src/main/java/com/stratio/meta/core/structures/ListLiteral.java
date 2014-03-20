@@ -1,6 +1,6 @@
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.sh.utils.ShUtils;
+import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,7 @@ public class ListLiteral extends IdentIntOrLiteral {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(string());
-        sb.append(ShUtils.StringList(literals, ", "));
+        sb.append(ParserUtils.stringList(literals, ", "));
         return sb.toString();
     }
     

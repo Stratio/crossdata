@@ -1,6 +1,6 @@
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.sh.utils.ShUtils;
+import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +55,7 @@ public class MapLiteralProperty extends ValueProperty {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("{").append(ShUtils.StringMap(literals, ": ", ", ")).append("}");        
+        sb.append("{").append(ParserUtils.stringMap(literals, ": ", ", ")).append("}");        
         return sb.toString();
     }
     

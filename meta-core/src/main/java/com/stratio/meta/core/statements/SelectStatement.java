@@ -2,7 +2,6 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
-import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
@@ -26,10 +25,10 @@ import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.SelectorMeta;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.WindowSelect;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.sh.utils.ShUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -272,10 +271,10 @@ public class SelectStatement extends MetaStatement {
         }
         if(whereInc){
             sb.append(" WHERE ");
-            sb.append(ShUtils.StringList(where, " AND "));
+            sb.append(ParserUtils.stringList(where, " AND "));
         }
         if(orderInc){
-            sb.append(" ORDER BY ").append(ShUtils.StringList(order, ", "));
+            sb.append(" ORDER BY ").append(ParserUtils.stringList(order, ", "));
         }
         if(groupInc){
             sb.append(group);
@@ -303,7 +302,7 @@ public class SelectStatement extends MetaStatement {
     @Override
     public String translateToCQL() {
         StringBuilder sb = new StringBuilder(this.toString());     
-        System.out.println(sb.toString());        
+        //System.out.println(sb.toString());        
         if(sb.toString().contains("TOKEN(")){
             int currentLength = 0;
             int newLength = sb.toString().length();
@@ -347,10 +346,11 @@ public class SelectStatement extends MetaStatement {
                 newLength = sb.toString().length();
             }          
         }
-        System.out.println(sb.toString());
+        //System.out.println(sb.toString());
         return sb.toString();
     }
     
+    // TODO: Pull this method out of this class and move it to SH 
     @Override
     public String parseResult(ResultSet resultSet) {
         ColumnDefinitions colDefs = resultSet.getColumnDefinitions();

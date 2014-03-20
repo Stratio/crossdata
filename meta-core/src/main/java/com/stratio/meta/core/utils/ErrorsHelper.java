@@ -1,7 +1,5 @@
 package com.stratio.meta.core.utils;
 
-import com.stratio.meta.sh.utils.ShUtils;
-import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.statements.MetaStatement;
 
 import java.util.ArrayList;
@@ -55,10 +53,10 @@ public class ErrorsHelper {
             sb.append(System.getProperty("line.separator"));
             sb.append(ae.toString()).append(System.getProperty("line.separator"));
             sb.append(ae.toStringWithTokenTranslation()).append(System.getProperty("line.separator"));
-            sb.append("\t").append(ShUtils.getQueryWithSign(query, ae));
+            sb.append("\t").append(ParserUtils.getQueryWithSign(query, ae));
             if(!query.equalsIgnoreCase("")){
                 sb.append(System.getProperty("line.separator")).append("\t");
-                sb.append(ShUtils.getSuggestion(query, ae));
+                sb.append(ParserUtils.getSuggestion(query, ae));
             }
             break;
         }

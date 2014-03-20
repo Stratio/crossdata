@@ -6,9 +6,9 @@ import com.stratio.meta.core.structures.Assignment;
 import com.stratio.meta.core.structures.MetaRelation;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.structures.Term;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.sh.utils.ShUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -172,15 +172,15 @@ public class UpdateTableStatement extends MetaStatement {
         sb.append(tablename);        
         if(optsInc){
             sb.append(" ").append("USING ");
-            sb.append(ShUtils.StringList(options, " AND "));
+            sb.append(ParserUtils.stringList(options, " AND "));
         }
         sb.append(" ").append("SET ");
-        sb.append(ShUtils.StringList(assignments, ", "));
+        sb.append(ParserUtils.stringList(assignments, ", "));
         sb.append(" ").append("WHERE ");
-        sb.append(ShUtils.StringList(whereclauses, " AND "));
+        sb.append(ParserUtils.stringList(whereclauses, " AND "));
         if(condsInc){
             sb.append(" ").append("IF ");
-            sb.append(ShUtils.StringMap(conditions, " = ", " AND "));
+            sb.append(ParserUtils.stringMap(conditions, " = ", " AND "));
         }
         return sb.toString();
     }    
