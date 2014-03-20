@@ -83,7 +83,7 @@
         <dependency>
             <groupId>com.stratio</groupId>
             <artifactId>meta-core</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 

@@ -45,12 +45,12 @@
         <dependency>
             <groupId>com.stratio</groupId>
             <artifactId>meta-driver</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio</groupId>
             <artifactId>meta-common</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
     <properties></properties>
