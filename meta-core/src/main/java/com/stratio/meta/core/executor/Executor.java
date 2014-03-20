@@ -18,6 +18,11 @@ import org.apache.log4j.Logger;
 public class Executor {
 
     private final Logger logger = Logger.getLogger(Executor.class);
+    private final Session session;
+    
+    public Executor(Session session) {
+        this.session = session;
+    }
     
     public void executeQuery(MetaQuery metaQuery) {
         boolean error = false;
@@ -25,9 +30,6 @@ public class Executor {
 
         MetaResult metaResult = null;  
         Statement driverStmt = null;
-
-        // TODO: Get the session from the current user
-        Session session = null;
         
         ResultSet resultSet = null;
         try{

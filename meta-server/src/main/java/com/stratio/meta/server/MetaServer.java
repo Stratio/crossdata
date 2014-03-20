@@ -20,7 +20,15 @@ public class MetaServer {
     private final Logger logger = Logger.getLogger(MetaServer.class);
     
     private Cluster cluster;
-    private Session session;    
+    private Session session;  
+
+    public MetaServer() {
+        connect();
+    }   
+    
+    public MetaServer(String host) {
+        connect(host);
+    }
     
     public Cluster getCluster() {
         return cluster;
@@ -31,6 +39,9 @@ public class MetaServer {
     }
 
     public Session getSession() {
+        if (session == null){
+            connect();
+        }
         return session;
     }
 
@@ -97,7 +108,7 @@ public class MetaServer {
             return metaQuery.getResult();
         }                
         // EXECUTOR ACTOR
-        Executor executor = new Executor();
+        Executor executor = new Executor(getSession());
         executor.executeQuery(metaQuery); 
         return metaQuery.getResult();
     }
