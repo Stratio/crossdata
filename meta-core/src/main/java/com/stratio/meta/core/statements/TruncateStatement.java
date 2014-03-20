@@ -93,10 +93,10 @@ public class TruncateStatement extends MetaStatement {
         return truncateQuery;
     }
     
-    @Override
-    public String parseResult(ResultSet resultSet) {
-        return "Executed successfully"+System.getProperty("line.separator");
-    }    
+//    @Override
+//    public String parseResult(ResultSet resultSet) {
+//        return "Executed successfully"+System.getProperty("line.separator");
+//    }    
     
     @Override
     public DeepResult executeDeep() {

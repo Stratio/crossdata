@@ -255,10 +255,10 @@ public class CreateIndexStatement extends MetaStatement {
         return cqlString;
     }
         
-    @Override
-    public String parseResult(ResultSet resultSet) {
-        return "\t"+resultSet.toString();
-    }
+//    @Override
+//    public String parseResult(ResultSet resultSet) {
+//        return "\t"+resultSet.toString();
+//    }
 
     @Override
     public Statement getDriverStatement() {

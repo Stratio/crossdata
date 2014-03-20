@@ -274,11 +274,11 @@ public class InsertIntoStatement extends MetaStatement {
         return sb.append(";").toString();
     }
     
-    @Override
-    public String parseResult(ResultSet resultSet) {
-        //return "\t"+resultSet.toString();
-        return "Executed successfully"+System.getProperty("line.separator");
-    }
+//    @Override
+//    public String parseResult(ResultSet resultSet) {
+//        //return "\t"+resultSet.toString();
+//        return "Executed successfully"+System.getProperty("line.separator");
+//    }
     
     @Override
     public Statement getDriverStatement() {
