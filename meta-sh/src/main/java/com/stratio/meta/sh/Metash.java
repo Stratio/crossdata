@@ -76,7 +76,11 @@ public class Metash {
     public File retrieveHistory(ConsoleReader console, SimpleDateFormat sdf) throws IOException{
         final int DAYS_HISTORY_ENTRY_VALID = 30;
         Date today = new Date();
-        File file = new File("./src/main/resources/history.txt");
+        File dir = new File("./src/main/resources/");
+        File file = new File(dir.getPath()+"history.txt");
+        if(!dir.exists()){
+            dir.mkdirs();
+        }
         if (!file.exists()){
             file.createNewFile();
         }
@@ -169,7 +173,7 @@ public class Metash {
             metaDriver.close(); 
             
         } catch (IOException ex) {
-            logger.error("Cannot launch Metash, no console present");
+            logger.error("Cannot launch Metash, no console present", ex);
         }
     }
 

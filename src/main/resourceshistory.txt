@@ -1,0 +1,30 @@
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit
+20/3/2014|SELECT * FROM demo.emp;
+20/3/2014|exit

@@ -4,15 +4,11 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
-import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.AntlrError;
-import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
-import java.util.List;
 import org.apache.log4j.Logger;
 
 public class Executor {
@@ -24,16 +20,16 @@ public class Executor {
         this.session = session;
     }
     
-    public void executeQuery(MetaQuery metaQuery) {
-        boolean error = false;
+    public QueryResult executeQuery(MetaQuery metaQuery) {
         MetaStatement stmt = metaQuery.getStatement();
-
-        MetaResult metaResult = null;  
+        
+        QueryResult queryResult = new QueryResult();
         Statement driverStmt = null;
         
         ResultSet resultSet = null;
         try{
-            resultSet = session.execute(stmt.translateToCQL());            
+            resultSet = session.execute(stmt.translateToCQL());              
+            queryResult.setResultSet(resultSet);
         } catch (DriverException | UnsupportedOperationException ex) {
             Exception e = ex;
             if(ex instanceof DriverException){
@@ -41,7 +37,7 @@ public class Executor {
             } else if (ex instanceof UnsupportedOperationException){
                 logger.error("\033[31mUnsupported operation by C*:\033[0m "+ex.getMessage());
             }
-            error = true;
+            queryResult.setHasError();
             if(e.getMessage().contains("line") && e.getMessage().contains(":")){
                 String queryStr;
                 if(driverStmt != null){
@@ -60,15 +56,10 @@ public class Executor {
                 logger.error(queryStr);
             }
         }
-        if(!error){
-            if(metaResult != null){
-                QueryResult queryResult = (QueryResult) metaResult;
-                logger.info("\033[32mResult:\033[0m "+stmt.parseResult(resultSet)+System.getProperty("line.separator"));
-            } else {
-                logger.info("\033[32mResult:\033[0m Cannot execute command"+System.getProperty("line.separator"));
-            }
-            
-        } else {
+        if(!queryResult.hasError()){            
+            logger.info("\033[32mResult:\033[0m "+stmt.parseResult(resultSet)+System.getProperty("line.separator"));
+            //logger.info("\033[32mResult:\033[0m Cannot execute command"+System.getProperty("line.separator"));        
+        } /*else {
             List<MetaStep> steps = stmt.getPlan();
             for(MetaStep step: steps){
                 logger.info(step.getPath()+"-->"+step.getQuery());
@@ -79,7 +70,8 @@ public class Executor {
             } else {
                 logger.info("\033[32mResult:\033[0m "+deepResult.getResult()+System.getProperty("line.separator"));
             }
-        }
+        }*/
+        return queryResult;
     }
     
 }

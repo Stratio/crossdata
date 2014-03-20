@@ -302,7 +302,7 @@ public class SelectStatement extends MetaStatement {
     @Override
     public String translateToCQL() {
         StringBuilder sb = new StringBuilder(this.toString());     
-        System.out.println(sb.toString());        
+        //System.out.println(sb.toString());        
         if(sb.toString().contains("TOKEN(")){
             int currentLength = 0;
             int newLength = sb.toString().length();
@@ -346,7 +346,7 @@ public class SelectStatement extends MetaStatement {
                 newLength = sb.toString().length();
             }          
         }
-        System.out.println(sb.toString());
+        //System.out.println(sb.toString());
         return sb.toString();
     }
     
