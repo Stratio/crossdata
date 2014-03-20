@@ -1,6 +1,6 @@
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.sh.utils.ShUtils;
+import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class SelectorFunction extends SelectorMeta {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(name);
-        sb.append("(").append(ShUtils.StringList(params, ", ")).append(")");
+        sb.append("(").append(ParserUtils.stringList(params, ", ")).append(")");
         return sb.toString();
     }
     

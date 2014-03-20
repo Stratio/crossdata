@@ -68,8 +68,23 @@
             <artifactId>meta-common</artifactId>
             <version>${meta.version}</version>
         </dependency>
-
-
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>2.0.0-rc3</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio</groupId>
+            <artifactId>meta-core</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -89,7 +104,6 @@
         </pluginManagement>
 
         <plugins>
-
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
@@ -115,6 +129,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>compile</phase>

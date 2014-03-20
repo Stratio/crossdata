@@ -8,10 +8,10 @@ import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.AntlrError;
-import com.stratio.meta.core.utils.CassandraUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.ParserUtils;
 import java.util.List;
 import org.apache.log4j.Logger;
 
@@ -54,7 +54,7 @@ public class Executor {
                     sb.append(" ").append(cMessageEx[i]);
                 }
                 AntlrError ae = new AntlrError(cMessageEx[0]+" "+cMessageEx[1], sb.toString());
-                queryStr = CassandraUtils.getQueryWithSign(queryStr, ae);
+                queryStr = ParserUtils.getQueryWithSign(queryStr, ae);
                 logger.error(queryStr);
             }
         }

@@ -7,9 +7,9 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Using;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.structures.ValueCell;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.sh.utils.ShUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -218,12 +218,12 @@ public class InsertIntoStatement extends MetaStatement {
             sb.append(keyspace).append(".");
         }
         sb.append(tablename).append(" (");
-        sb.append(ShUtils.StringList(ids, ", ")).append(") ");
+        sb.append(ParserUtils.stringList(ids, ", ")).append(") ");
         if(typeValues == TYPE_SELECT_CLAUSE){
            sb.append(selectStatement.toString());
         } else {
            sb.append("VALUES(");
-           sb.append(ShUtils.StringList(cellValues, ", "));
+           sb.append(ParserUtils.stringList(cellValues, ", "));
            sb.append(")");
         }        
         if(ifNotExists){
@@ -231,7 +231,7 @@ public class InsertIntoStatement extends MetaStatement {
         }
         if(optsInc){
             sb.append(" USING ");
-            sb.append(ShUtils.StringList(options, " AND "));
+            sb.append(ParserUtils.stringList(options, " AND "));
         }
         return sb.toString();
     }
@@ -253,7 +253,7 @@ public class InsertIntoStatement extends MetaStatement {
             sb.append(keyspace).append(" ");
         }
         sb.append(tablename).append(" (");
-        sb.append(ShUtils.StringList(ids, ", "));
+        sb.append(ParserUtils.stringList(ids, ", "));
         sb.delete(sb.length()-2, sb.length());
         sb.append(") ");        
         if(typeValues == TYPE_SELECT_CLAUSE){
@@ -261,7 +261,7 @@ public class InsertIntoStatement extends MetaStatement {
         }
         if(typeValues == TYPE_VALUES_CLAUSE){
            sb.append("VALUES(");
-           sb.append(ShUtils.StringList(cellValues, ", "));
+           sb.append(ParserUtils.stringList(cellValues, ", "));
            sb.append(")");
         }
         if(ifNotExists){
@@ -269,7 +269,7 @@ public class InsertIntoStatement extends MetaStatement {
         }
         if(optsInc){
             sb.append(" USING ");
-            sb.append(ShUtils.StringList(options, " AND "));
+            sb.append(ParserUtils.stringList(options, " AND "));
         }
         return sb.append(";").toString();
     }

@@ -5,9 +5,9 @@ import com.datastax.driver.core.Statement;
 import com.stratio.meta.core.structures.MetaProperty;
 import com.stratio.meta.core.structures.PropertyNameValue;
 import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.sh.utils.ShUtils;
 import com.stratio.meta.core.utils.ValidationException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -264,7 +264,7 @@ public class CreateTableStatement extends MetaStatement{
                 
         }
         if(withProperties){
-            sb.append(" WITH ").append(ShUtils.StringList(properties, " AND "));
+            sb.append(" WITH ").append(ParserUtils.stringList(properties, " AND "));
         }
         /*
         Set keySet = properties.keySet();

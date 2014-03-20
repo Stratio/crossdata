@@ -25,10 +25,10 @@ import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.SelectorMeta;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.WindowSelect;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.sh.utils.ShUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -271,10 +271,10 @@ public class SelectStatement extends MetaStatement {
         }
         if(whereInc){
             sb.append(" WHERE ");
-            sb.append(ShUtils.StringList(where, " AND "));
+            sb.append(ParserUtils.stringList(where, " AND "));
         }
         if(orderInc){
-            sb.append(" ORDER BY ").append(ShUtils.StringList(order, ", "));
+            sb.append(" ORDER BY ").append(ParserUtils.stringList(order, ", "));
         }
         if(groupInc){
             sb.append(group);

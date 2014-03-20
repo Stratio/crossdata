@@ -4,9 +4,9 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.sh.utils.ShUtils;
 import com.stratio.meta.core.utils.ValidationException;
 
 import java.util.ArrayList;
@@ -142,7 +142,7 @@ public class CreateIndexStatement extends MetaStatement {
         }
         sb.append("ON ");
         sb.append(_tablename);
-        sb.append(" (").append(ShUtils.StringList(_targetColumn, ", ")).append(")");
+        sb.append(" (").append(ParserUtils.stringList(_targetColumn, ", ")).append(")");
         if(_usingClass != null){
                 sb.append(" USING ");
                 sb.append(_usingClass);
@@ -212,7 +212,7 @@ public class CreateIndexStatement extends MetaStatement {
             }
             cqlString = cqlString.replace("OPTIONS = {", "OPTIONS = {"+cqlOptions);
             */            
-            cqlString = cqlString.replace("OPTIONS = {", "OPTIONS = {"+ShUtils.addSingleQuotesToStringList(cqlOptions));
+            cqlString = cqlString.replace("OPTIONS = {", "OPTIONS = {"+ParserUtils.addSingleQuotesToStringList(cqlOptions));
         }
         return cqlString;
     }

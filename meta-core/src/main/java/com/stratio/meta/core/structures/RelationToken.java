@@ -1,6 +1,6 @@
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.sh.utils.ShUtils;
+import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,12 +43,12 @@ public class RelationToken extends MetaRelation {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("TOKEN(");
-        sb.append(ShUtils.StringList(identifiers, ", ")).append(")");
+        sb.append(ParserUtils.stringList(identifiers, ", ")).append(")");
         sb.append(" ").append(operator).append(" ");
         if(righSideTokenType){
-            sb.append("TOKEN(").append(ShUtils.StringList(terms, ", ")).append(")");
+            sb.append("TOKEN(").append(ParserUtils.stringList(terms, ", ")).append(")");
         } else {
-            sb.append(ShUtils.StringList(terms, ", "));
+            sb.append(ParserUtils.stringList(terms, ", "));
         }
         return sb.toString();
     }

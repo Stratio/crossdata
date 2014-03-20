@@ -1,6 +1,5 @@
 package com.stratio.meta.core.utils;
 
-import com.stratio.meta.sh.utils.ShUtils;
 import org.apache.log4j.Logger;
 
 public class AntlrError {
@@ -44,7 +43,7 @@ public class AntlrError {
     public String toStringWithTokenTranslation(){
         StringBuilder sb = new StringBuilder("\tError recognized: ");        
         sb.append(header).append(": ");
-        sb.append(ShUtils.translateToken(message));
+        sb.append(ParserUtils.translateToken(message));
         return sb.toString();        
     }
     
