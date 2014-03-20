@@ -25,8 +25,8 @@ import static org.junit.Assert.fail;
 public class LuceneIndexHelperTest extends BasicCassandraTest {
 
     @BeforeClass
-    public void setUpBeforeClass(){
-        setUpBeforeClass();
+    public static void setUpBeforeClass(){
+        BasicCassandraTest.setUpBeforeClass();
         loadTestData("demo", "demoKeyspace.cql");
     }
 
