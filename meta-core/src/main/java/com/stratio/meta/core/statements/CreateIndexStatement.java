@@ -3,6 +3,7 @@ package com.stratio.meta.core.statements;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.server.metadata.MetadataManager;
@@ -172,19 +173,40 @@ public class CreateIndexStatement extends MetaStatement {
     public void validate() {
     }
 
+
     public void validate(MetadataManager mm, String keyspace) {
 
+        boolean result = true;
+        TableMetadata tm = null;
+
         //Get the target table metadata
-        KeyspaceMetadata km = mm.getKeyspaceMetadata(keyspace);
-        //Check that target columns appear on the table
+        if(_tablename != null && mm.getKeyspaceMetadata(keyspace) != null){
+            tm = mm.getTableMetadata(keyspace, _tablename);
+        }
+        if(tm == null){
+            //TODO Report Incorrect keyspace or tablename.
+            result = false;
+        }
 
-        if(IndexType.LUCENE.equals(_type)){
-            //Parse index options.
-            //Check that the index mapping types are compatible with the specified C* types.
+        if(result){
+            //Check that target columns appear on the table
+            for(String column : _targetColumn){
+                if(tm.getColumn(column)==null){
+                    //TODO Report Column does not exists
+                    result = false;
+                }
+            }
+        }
 
-        }else if(IndexType.DEFAULT.equals(_type)){
-            //Check that only one column is specified
+        if(result){
+            if(IndexType.LUCENE.equals(_type)){
+                //Parse index options.
+                //Check that the index mapping types are compatible with the specified C* types.
 
+            }else if(IndexType.DEFAULT.equals(_type)){
+                //Check that only one column is specified
+
+            }
         }
     }
 
