@@ -231,6 +231,25 @@ public class ParserUtils {
         return sb.toString();
     }
     
+    public static String addSingleQuotesToString(String strList, String separator){
+        StringBuilder sb = new StringBuilder();
+        String[] eltos = strList.split(separator);
+        for(String elto: eltos){
+            elto = elto.trim();
+            if(elto.matches("[0123456789.]+")){
+                sb.append(elto).append(", ");
+            } else {
+                sb.append("'").append(elto).append("'").append(", ");
+            }
+        }
+        if(sb.charAt(sb.length()-2)==','){
+            return sb.substring(0, sb.length()-2);
+        } else {
+            return sb.substring(0, sb.length());
+        }
+        
+    }
+    
     public static String addSingleQuotesToStringList(String strList){
         String[] opts = strList.split("=");
         strList = new String();

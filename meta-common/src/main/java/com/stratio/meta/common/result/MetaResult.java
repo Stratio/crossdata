@@ -1,7 +1,11 @@
 package com.stratio.meta.common.result;
 
+import org.apache.log4j.Logger;
+
 public class MetaResult {
 
+    private final Logger logger = Logger.getLogger(MetaResult.class);
+    
     private boolean hasError = false;
     private String errorMessage = null;
     private boolean ksChanged = false;
@@ -40,7 +44,7 @@ public class MetaResult {
     }        
     
     public void print(){
-        System.out.println(errorMessage);
+        logger.info("\033[32mResult:\033[0m"+System.getProperty("line.separator")+errorMessage);
     }
     
 }

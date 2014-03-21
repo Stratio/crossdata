@@ -52,12 +52,14 @@ public class QueryResult extends MetaResult {
     @Override
     public void print(){
         System.out.println(resultSet.toString());
+        logger.info("\033[32mResult:\033[0m");
         /////////////////////////////////////////        
         ColumnDefinitions colDefs = resultSet.getColumnDefinitions();
         int nCols = colDefs.size();
         List<Row> rows = resultSet.all();
         if(rows.isEmpty()){
             logger.info("Empty"+System.getProperty("line.separator"));
+            return;
         }
         ArrayList<ArrayList<String>> table = new ArrayList<>();
         HashMap<Integer, Integer> lenghts = new HashMap<>(); 

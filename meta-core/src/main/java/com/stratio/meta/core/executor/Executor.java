@@ -26,11 +26,11 @@ public class Executor {
         QueryResult queryResult = new QueryResult();
         Statement driverStmt = null;
         
-        ResultSet resultSet = null;
+        ResultSet resultSet;
         try{
             resultSet = session.execute(stmt.translateToCQL());              
             queryResult.setResultSet(resultSet);
-        } catch (DriverException | UnsupportedOperationException ex) {
+        } catch (Exception ex) {
             Exception e = ex;
             if(ex instanceof DriverException){
                 logger.error("\033[31mCassandra exception:\033[0m "+ex.getMessage());                
