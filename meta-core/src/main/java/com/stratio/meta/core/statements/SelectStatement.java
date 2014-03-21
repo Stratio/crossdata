@@ -1,9 +1,5 @@
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ColumnDefinitions.Definition;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.*;
 import com.datastax.driver.core.querybuilder.Select.Where;
@@ -30,18 +26,12 @@ import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 
 public class SelectStatement extends MetaStatement {
 
