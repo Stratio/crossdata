@@ -70,8 +70,7 @@ public class QueryResult extends MetaResult {
     
     @Override
     public void print(){
-        System.out.println(resultSet.toString());
-        logger.info("\033[32mResult:\033[0m");
+        logger.info("\033[32mResult:\033[0m "+resultSet.toString());
         /////////////////////////////////////////        
         ColumnDefinitions colDefs = resultSet.getColumnDefinitions();
         int nCols = colDefs.size();

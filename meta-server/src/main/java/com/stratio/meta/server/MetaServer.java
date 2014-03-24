@@ -30,9 +30,7 @@ import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.engine.Engine;
 import com.stratio.meta.core.engine.EngineConfig;
-import com.stratio.meta.core.planner.MetaPlan;
 import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.core.validator.MetaValidation;
 import org.apache.log4j.Logger;
 
 public class MetaServer {
@@ -57,8 +55,7 @@ public class MetaServer {
             }
         } catch(Exception ex){
             ConnectResult connResult = new ConnectResult();
-            connResult.setHasError();
-            connResult.setErrorMessage(ex.getMessage());
+            connResult.setErrorMessage("\033[31mCannot connect with Cassandra:\033[0m "+System.getProperty("line.separator")+ex.getMessage());
             return connResult;
         }
         
@@ -97,17 +94,18 @@ public class MetaServer {
             return metaQuery.getResult();
         }
         // VALIDATOR ACTOR
-        metaQuery = engine.getValidator().validateQuery(metaQuery);
-
+        MetaQuery metaQueryValidated = engine.getValidator().validateQuery(metaQuery);
+        if(metaQueryValidated.hasError()){ // Invalid metadata
+            return metaQueryValidated.getResult();
+        }
         // PLANNER ACTOR
-        MetaPlan metaPlan = engine.getPlanner().planQuery(metaQuery);
-        metaQuery.setPlan(metaPlan);
-        if(metaQuery.hasError()){ // Cannot plan
-            return metaQuery.getResult();
+        MetaQuery metaQueryPlanned = engine.getPlanner().planQuery(metaQueryValidated);
+        if(metaQueryPlanned.hasError()){ // Cannot plan
+            return metaQueryPlanned.getResult();
         }                
         // EXECUTOR ACTOR
-        QueryResult result = engine.getExecutor().executeQuery(metaQuery);
-        return result;
+        MetaQuery metaQueryExecuted = engine.getExecutor().executeQuery(metaQueryPlanned); 
+        return metaQueryExecuted.getResult();
     }
 
     public Metadata getMetadata() {

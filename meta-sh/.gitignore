@@ -9,4 +9,4 @@ build.xml
 nbactions.xml
 .idea
 *.iml
-src/main/resources/history
+src/main/resources/history.txt

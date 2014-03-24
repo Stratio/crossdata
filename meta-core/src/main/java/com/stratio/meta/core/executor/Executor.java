@@ -20,12 +20,15 @@
 package com.stratio.meta.core.executor;
 
 import com.datastax.driver.core.*;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta.core.utils.QueryStatus;
 import org.apache.log4j.Logger;
 
 public class Executor {
@@ -43,7 +46,8 @@ public class Executor {
         this.session = session;
     }
     
-    public QueryResult executeQuery(MetaQuery metaQuery) {
+    public MetaQuery executeQuery(MetaQuery metaQuery) {
+        metaQuery.setStatus(QueryStatus.EXECUTED);
         MetaStatement stmt = metaQuery.getStatement();
         
         QueryResult queryResult = new QueryResult();
@@ -51,24 +55,29 @@ public class Executor {
         
         ResultSet resultSet;
         try{
-            resultSet = session.execute(stmt.translateToCQL());              
-            queryResult.setResultSet(resultSet);
-        } catch (Exception ex) {
-            Exception e = ex;
-            if(ex instanceof DriverException){
-                logger.error("\033[31mCassandra exception:\033[0m "+ex.getMessage());                
-            } else if (ex instanceof UnsupportedOperationException){
-                logger.error("\033[31mUnsupported operation by C*:\033[0m "+ex.getMessage());
+            driverStmt = stmt.getDriverStatement();
+            if(driverStmt != null){
+                resultSet = session.execute(driverStmt);
+            } else {
+                resultSet = session.execute(stmt.translateToCQL());
             }
-            queryResult.setHasError();
-            if(e.getMessage().contains("line") && e.getMessage().contains(":")){
+                          
+            queryResult.setResultSet(resultSet);
+            logger.info("Executed");
+        } catch (Exception ex) {
+            metaQuery.hasError();
+            queryResult.setErrorMessage("\033[31mCassandra exception:\033[0m "+ex.getMessage());
+            if (ex instanceof UnsupportedOperationException){
+                queryResult.setErrorMessage("\033[31mUnsupported operation by C*:\033[0m "+ex.getMessage());
+            }
+            if(ex.getMessage().contains("line") && ex.getMessage().contains(":")){
                 String queryStr;
                 if(driverStmt != null){
                     queryStr = driverStmt.toString();
                 } else {
                     queryStr = stmt.translateToCQL();
                 }
-                String[] cMessageEx =  e.getMessage().split(" ");
+                String[] cMessageEx =  ex.getMessage().split(" ");
                 StringBuilder sb = new StringBuilder();
                 sb.append(cMessageEx[2]);
                 for(int i=3; i<cMessageEx.length; i++){
@@ -76,6 +85,7 @@ public class Executor {
                 }
                 AntlrError ae = new AntlrError(cMessageEx[0]+" "+cMessageEx[1], sb.toString());
                 queryStr = ParserUtils.getQueryWithSign(queryStr, ae);
+                queryResult.setErrorMessage(queryStr);
                 logger.error(queryStr);
             }
         }
@@ -95,7 +105,8 @@ public class Executor {
                 logger.info("\033[32mResult:\033[0m "+deepResult.getResult()+System.getProperty("line.separator"));
             }
         }*/
-        return queryResult;
+        metaQuery.setResult(queryResult);
+        return metaQuery;
     }
     
 }

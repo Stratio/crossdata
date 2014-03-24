@@ -27,6 +27,7 @@ import com.stratio.meta.core.validator.MetaValidation;
 public class MetaQuery {
     
     private String query;
+    private QueryStatus status;
     private boolean hasError;
     private MetaStatement statement;
     private MetaPlan plan;
@@ -34,6 +35,7 @@ public class MetaQuery {
     private QueryResult result;
     
     public MetaQuery() {
+        status = QueryStatus.NONE;
         this.hasError = false;
         result = new QueryResult();
     }
@@ -50,6 +52,14 @@ public class MetaQuery {
     public void setQuery(String query) {
         this.query = query;
     }
+
+    public QueryStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(QueryStatus status) {
+        this.status = status;
+    }        
     
     public boolean hasError() {
         return hasError;
