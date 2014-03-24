@@ -1,6 +1,8 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
@@ -37,8 +39,18 @@ public abstract class MetaStatement {
     
     @Override
     public abstract String toString();
-    
-    public abstract void validate();
+
+    /**
+     * Validate the semantics of the current statement. This method checks the
+     * existing metadata to determine that all referenced entities exists in the
+     * {@code targetKeyspace} and the types are compatible with the assignations
+     * or comparisons.
+     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+     *                 the required information.
+     * @param targetKeyspace The target keyspace where the query will be executed.
+     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     */
+    public abstract MetaResult validate(MetadataManager metadata, String targetKeyspace);
 
     public abstract String getSuggestion();
     

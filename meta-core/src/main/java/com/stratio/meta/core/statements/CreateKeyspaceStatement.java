@@ -2,6 +2,8 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
@@ -64,7 +66,12 @@ public class CreateKeyspaceStatement extends MetaStatement {
     }
 
     @Override
-    public void validate() {
+    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
+        return null;
+    }
+
+    //TODO Remove
+    public void validate_remove() {
         /*
         if(properties.isEmpty()){
             throw new ValidationException("CREATE KEYSPACE must include at least property 'replication'");

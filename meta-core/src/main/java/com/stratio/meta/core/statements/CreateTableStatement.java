@@ -2,6 +2,8 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.MetaProperty;
 import com.stratio.meta.core.structures.PropertyNameValue;
 import com.stratio.meta.core.structures.ValueProperty;
@@ -281,8 +283,9 @@ public class CreateTableStatement extends MetaStatement{
         return sb.toString();    
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void validate() {  
+    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
         if(withProperties){
             for(MetaProperty property: properties){
                 if(property.getType() == MetaProperty.TYPE_NAME_VALUE){
@@ -309,6 +312,7 @@ public class CreateTableStatement extends MetaStatement{
                 }
             }
         }
+        return null;
     }
 
     @Override

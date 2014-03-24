@@ -2,6 +2,8 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Assignment;
 import com.stratio.meta.core.structures.MetaRelation;
 import com.stratio.meta.core.structures.Option;
@@ -183,11 +185,12 @@ public class UpdateTableStatement extends MetaStatement {
             sb.append(ParserUtils.stringMap(conditions, " = ", " AND "));
         }
         return sb.toString();
-    }    
+    }
 
+    /** {@inheritDoc} */
     @Override
-    public void validate() {
-
+    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
+        return null;
     }
 
     @Override

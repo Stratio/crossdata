@@ -6,6 +6,8 @@ import com.datastax.driver.core.Statement;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
 
 import com.datastax.driver.core.querybuilder.Truncate;
+import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
 import java.util.ArrayList;
@@ -68,8 +70,10 @@ public class TruncateStatement extends MetaStatement {
         return sb.toString();        
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void validate() {
+    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
+        return null;
     }
 
     @Override

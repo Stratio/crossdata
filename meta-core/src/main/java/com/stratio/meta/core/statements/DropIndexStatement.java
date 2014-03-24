@@ -2,6 +2,8 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
 import java.util.ArrayList;
@@ -31,9 +33,10 @@ public class DropIndexStatement extends MetaStatement {
             return sb.toString();
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void validate() {
-        
+    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
+        return null;
     }
 
     @Override

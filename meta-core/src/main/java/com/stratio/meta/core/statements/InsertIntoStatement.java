@@ -4,6 +4,8 @@ import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Using;
+import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.structures.ValueCell;
 import com.stratio.meta.core.utils.ParserUtils;
@@ -235,9 +237,10 @@ public class InsertIntoStatement extends MetaStatement {
         return sb.toString();
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void validate() {
-        
+    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
+        return null;
     }
 
     @Override

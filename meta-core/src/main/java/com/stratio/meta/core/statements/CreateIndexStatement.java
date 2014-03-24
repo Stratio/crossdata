@@ -1,6 +1,8 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.DeepResult;
@@ -165,8 +167,10 @@ public class CreateIndexStatement extends MetaStatement {
         return sb.toString();
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void validate() {
+    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
+        return null;
     }
 
 /*

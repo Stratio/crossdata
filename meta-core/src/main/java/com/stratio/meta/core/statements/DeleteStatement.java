@@ -6,6 +6,8 @@ import com.datastax.driver.core.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.MetaRelation;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
@@ -99,9 +101,10 @@ public class DeleteStatement extends MetaStatement {
         return sb.toString();
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void validate() {
-        
+    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
+        return null;
     }
 
     @Override
