@@ -20,14 +20,14 @@ public class Parser {
      */ 
     public MetaQuery parseStatement(String inputText){
         MetaQuery metaQuery = new MetaQuery(inputText);
-        MetaStatement result;
+        MetaStatement resultStatement;
         ANTLRStringStream input = new ANTLRStringStream(inputText);
         MetaLexer lexer = new MetaLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         com.stratio.meta.core.grammar.generated.MetaParser parser = new com.stratio.meta.core.grammar.generated.MetaParser(tokens);        
         ErrorsHelper foundErrors = null;                
         try {
-            result = parser.query();
+            resultStatement = parser.query();
             foundErrors = parser.getFoundErrors();
         } catch (Exception e) {
             logger.error("Cannot parse statement", e);
@@ -39,10 +39,11 @@ public class Parser {
             }
             metaQuery.setErrorMessage(foundErrors.toString());
             return metaQuery;
-        } 
-        metaQuery.setStatement(result);
+        }
+        metaQuery.setStatement(resultStatement);
         if((foundErrors!=null) && (!foundErrors.isEmpty())){
-            metaQuery.setErrorMessage(foundErrors.toString());
+            logger.error(foundErrors.toString(inputText, resultStatement));
+            metaQuery.setErrorMessage(foundErrors.toString(inputText, resultStatement));
         }
         return metaQuery;                 
     }

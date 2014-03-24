@@ -15,6 +15,13 @@
 		<antlr.version>3.5.1</antlr.version>
 	</properties>
 
+        <repositories>
+            <repository>
+                <id>diff_match_patch</id>
+                <url>http://google-diff-match-patch.googlecode.com/svn/trunk/maven</url>
+            </repository>
+        </repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -104,6 +111,11 @@
                 <artifactId>meta-common</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
+            <dependency>
+                <groupId>diff_match_patch</groupId>
+                <artifactId>diff_match_patch</artifactId>
+                <version>current</version>
+            </dependency>
 	</dependencies>
 
 	<build>
@@ -127,23 +139,6 @@
 							<arguments>
 								<argument>-package</argument>
 								<argument>com.stratio.meta.core.grammar.generated</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>run antlr3 help</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>antlr</goal>
-						</goals>
-						<configuration>
-							<sourceDirectory>src/main/java/com/stratio/meta/sh/help</sourceDirectory>
-							<listener>true</listener>
-							<visitor>true</visitor>
-							<outputDirectory>src/main/java/com/stratio/meta/sh/help/generated</outputDirectory>
-							<arguments>
-								<argument>-package</argument>
-								<argument>com.stratio.meta.sh.help.generated</argument>
 							</arguments>
 						</configuration>
 					</execution>

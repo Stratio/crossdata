@@ -45,10 +45,10 @@ public class UseStatement extends MetaStatement {
         return this.toString();
     }
 
-    @Override
-    public String parseResult(ResultSet resultSet) {
-        return "\t"+resultSet.toString();
-    }
+//    @Override
+//    public String parseResult(ResultSet resultSet) {
+//        return "\t"+resultSet.toString();
+//    }
 
     @Override
     public Statement getDriverStatement() {

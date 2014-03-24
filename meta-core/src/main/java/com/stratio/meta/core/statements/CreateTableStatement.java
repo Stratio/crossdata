@@ -368,11 +368,11 @@ public class CreateTableStatement extends MetaStatement{
         return sb.toString();
     }
     
-    @Override
-    public String parseResult(ResultSet resultSet) {
-        //return "\t"+resultSet.toString();
-        return "Executed successfully"+System.getProperty("line.separator");
-    }
+//    @Override
+//    public String parseResult(ResultSet resultSet) {
+//        //return "\t"+resultSet.toString();
+//        return "Executed successfully"+System.getProperty("line.separator");
+//    }
  
     @Override
     public Statement getDriverStatement() {

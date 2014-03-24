@@ -1,24 +1,24 @@
 package com.stratio.meta.core.utils;
 
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.statements.MetaStatement;
-import com.stratio.meta.core.planner.Planner;
+import com.stratio.meta.core.planner.MetaPlan;
 
 public class MetaQuery {
     
     private String query;
     private boolean hasError;
     private MetaStatement statement;
-    private Planner plan;
-    private MetaResult result;
+    private MetaPlan plan;
+    private QueryResult result;
     
     public MetaQuery() {
         this.hasError = false;
-        result = new MetaResult();
+        result = new QueryResult();
     }
     
     public MetaQuery(String query) {
-        this.hasError = false;
+        this();
         this.query = query;
     }
 
@@ -51,19 +51,19 @@ public class MetaQuery {
         return statement;
     } 
     
-    public Planner getPlan() {
+    public MetaPlan getPlan() {
         return plan;
     }
 
-    public void setPlan(Planner plan) {
+    public void setPlan(MetaPlan plan) {
         this.plan = plan;
     }
     
-    public void setResult(MetaResult result) {
+    public void setResult(QueryResult result) {
         this.result = result;
     }
 
-    public MetaResult getResult() {
+    public QueryResult getResult() {
         return result;
     }
     

@@ -1,7 +1,11 @@
 package com.stratio.meta.common.result;
 
+import org.apache.log4j.Logger;
+
 public class ConnectResult extends MetaResult {
 
+    private final Logger logger = Logger.getLogger(ConnectResult.class);
+    
     private String message;
 
     public ConnectResult() {
@@ -21,7 +25,7 @@ public class ConnectResult extends MetaResult {
     
     @Override
     public void print() {
-        System.out.println("Not implemented yet.");
+        logger.info("Not implemented yet.");
     }
     
 }

@@ -10,6 +10,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>meta-sh</artifactId>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<antlr.version>3.5.1</antlr.version>
+	</properties>
     <dependencies>
         <dependency>
             <groupId>jline</groupId>
@@ -36,12 +40,18 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr-runtime</artifactId>
-            <version>3.5.1</version>
-            <type>jar</type>
-        </dependency>
+		<dependency>
+			<groupId>org.antlr</groupId>
+			<artifactId>antlr</artifactId>
+			<version>${antlr.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.antlr</groupId>
+			<artifactId>antlr-runtime</artifactId>
+			<version>${antlr.version}</version>
+		</dependency>		
         <dependency>
             <groupId>com.stratio</groupId>
             <artifactId>meta-driver</artifactId>
@@ -53,7 +63,43 @@
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
-    <properties></properties>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.antlr</groupId>
+				<artifactId>antlr3-maven-plugin</artifactId>
+				<version>${antlr.version}</version>
+				<executions>
+					<execution>
+						<id>run antlr3 help</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>antlr</goal>
+						</goals>
+						<configuration>
+							<sourceDirectory>src/main/java/com/stratio/meta/sh/help</sourceDirectory>
+							<listener>true</listener>
+							<visitor>true</visitor>
+							<outputDirectory>src/main/java/com/stratio/meta/sh/help/generated</outputDirectory>
+							<arguments>
+								<argument>-package</argument>
+								<argument>com.stratio.meta.sh.help.generated</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!--plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin-->
+		</plugins>
+	</build>
 
 
 </project>

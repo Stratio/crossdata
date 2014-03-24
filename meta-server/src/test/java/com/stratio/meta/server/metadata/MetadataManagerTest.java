@@ -18,12 +18,13 @@ import static org.junit.Assert.assertTrue;
 
 public class MetadataManagerTest extends BasicCassandraTest {
 
-    private MetadataManager _metadataManager = null;
+    private static MetadataManager _metadataManager = null;
 
     @BeforeClass
-    public void setUpBeforeClass(){
-        setUpBeforeClass();
+    public static void setUpBeforeClass(){
+        BasicCassandraTest.setUpBeforeClass();
         _metadataManager = new MetadataManager();
+        assertTrue("Cannot connect MetadataManager to C*", _metadataManager.connect("127.0.0.1"));
         _metadataManager.loadMetadata();
     }
 	

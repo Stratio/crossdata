@@ -1,12 +1,11 @@
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.ValueProperty;
-import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.ValidationException;
 
 import java.util.ArrayList;
@@ -168,8 +167,44 @@ public class CreateIndexStatement extends MetaStatement {
 
     @Override
     public void validate() {
-
     }
+
+/*
+    public void validate(MetadataManager mm, String keyspace) {
+
+        boolean result = true;
+        TableMetadata tm = null;
+
+        //Get the target table metadata
+        if(_tablename != null && mm.getKeyspaceMetadata(keyspace) != null){
+            tm = mm.getTableMetadata(keyspace, _tablename);
+        }
+        if(tm == null){
+            //TODO Report Incorrect keyspace or tablename.
+            result = false;
+        }
+
+        if(result){
+            //Check that target columns appear on the table
+            for(String column : _targetColumn){
+                if(tm.getColumn(column)==null){
+                    //TODO Report Column does not exists
+                    result = false;
+                }
+            }
+        }
+
+        if(result){
+            if(IndexType.LUCENE.equals(_type)){
+                //Parse index options.
+                //Check that the index mapping types are compatible with the specified C* types.
+
+            }else if(IndexType.DEFAULT.equals(_type)){
+                //Check that only one column is specified
+
+            }
+        }
+    }*/
 
     @Override
     public String getSuggestion() {
@@ -217,10 +252,10 @@ public class CreateIndexStatement extends MetaStatement {
         return cqlString;
     }
         
-    @Override
-    public String parseResult(ResultSet resultSet) {
-        return "\t"+resultSet.toString();
-    }
+//    @Override
+//    public String parseResult(ResultSet resultSet) {
+//        return "\t"+resultSet.toString();
+//    }
 
     @Override
     public Statement getDriverStatement() {

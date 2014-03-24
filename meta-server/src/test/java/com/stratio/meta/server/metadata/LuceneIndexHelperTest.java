@@ -16,6 +16,8 @@ import java.util.Set;
 
 import org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * Created by dhiguero on 3/17/14.
@@ -23,8 +25,8 @@ import static org.junit.Assert.assertEquals;
 public class LuceneIndexHelperTest extends BasicCassandraTest {
 
     @BeforeClass
-    public void setUpBeforeClass(){
-        setUpBeforeClass();
+    public static void setUpBeforeClass(){
+        BasicCassandraTest.setUpBeforeClass();
         loadTestData("demo", "demoKeyspace.cql");
     }
 
@@ -41,10 +43,24 @@ public class LuceneIndexHelperTest extends BasicCassandraTest {
             assertEquals("Invalid type of index", IndexType.CUSTOM, entry.getValue().get(0).getIndexType());
         }
 
-        Set<Map.Entry<String,List<CustomIndexMetadata>>> entries = indexes.entrySet();
-        for(Map.Entry<String, List<CustomIndexMetadata>> entry : entries){
+    }
 
-        }
+    @Test
+    public void getIndexedColumns(){
+        String keyspace = "demo";
+        String table = "users";
+        String column = "lucene_index_1";
+        int numIndexedColumns = 6;
+        fail("TODO");
+        /*ColumnMetadata cm = MetaDriver.getClusterMetadata()
+                .getKeyspace(keyspace)
+                .getTable(table)
+                .getColumn(column);
+        assertNotNull("Cannot retrieve test column", cm);
+        LuceneIndexHelper lih = new LuceneIndexHelper();
+        Map<String, List<CustomIndexMetadata>> indexedColumns = lih.getIndexedColumns(cm);
+        assertEquals("Invalid number of indexes", numIndexedColumns, indexedColumns.size());
+        */
     }
 
 }

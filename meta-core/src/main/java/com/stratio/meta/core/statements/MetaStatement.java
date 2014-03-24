@@ -1,6 +1,5 @@
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.DeepResult;
@@ -45,7 +44,7 @@ public abstract class MetaStatement {
     
     public abstract String translateToCQL();
 
-    public abstract String parseResult(ResultSet resultSet);
+    //public abstract String parseResult(ResultSet resultSet);
 
     public abstract Statement getDriverStatement();
 

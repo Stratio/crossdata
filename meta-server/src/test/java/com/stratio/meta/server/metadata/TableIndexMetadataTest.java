@@ -21,14 +21,12 @@ import static org.junit.Assert.assertTrue;
 
 public class TableIndexMetadataTest extends BasicCassandraTest{
 
-    private MetadataManager _metadataManager = null;
+    private static final MetadataManager _metadataManager = new MetadataManager();
 
     @BeforeClass
-    @Override
-    public void setUpBeforeClass(){
-        setUpBeforeClass();
-        loadTestData("demo", "demoKeyspace.cql");
-        _metadataManager = new MetadataManager();
+    public static void setUpBeforeClass(){
+        BasicCassandraTest.setUpBeforeClass();
+        BasicCassandraTest.loadTestData("demo", "demoKeyspace.cql");
         _metadataManager.loadMetadata();
     }
 

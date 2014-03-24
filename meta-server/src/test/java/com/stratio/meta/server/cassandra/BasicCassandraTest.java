@@ -1,8 +1,15 @@
 package com.stratio.meta.server.cassandra;
 
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.datastax.driver.core.exceptions.QueryExecutionException;
+import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.server.MetaServer;
 import org.apache.log4j.Logger;
@@ -16,45 +23,91 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
+
 public class BasicCassandraTest {
+
+    private static final String DEFAULT_HOST = "127.0.0.1";
+
     /**
      * Class logger.
      */
-    private final Logger logger = Logger.getLogger(CassandraTest.class);
+    private static final Logger logger = Logger.getLogger(CassandraTest.class);
     protected final Parser parser = new Parser();
-    protected final MetaServer metaServer = new MetaServer();
-    
-    public void initCassandraConnection(){
-        try {
+    protected static final MetaServer metaServer = new MetaServer();
+
+    /**
+     * Session to launch queries on C*.
+     */
+    protected static Session _session = null;
+
+    /**
+     * Establish the connection with Cassandra in order to be able to retrieve
+     * metadata from the system columns.
+     * @param host The target host.
+     * @return Whether the connection has been established or not.
+     */
+    protected static boolean connect(String host){
+        boolean result = false;
+        Cluster c = Cluster.builder().addContactPoint(host).build();
+        _session = c.connect();
+        result = null == _session.getLoggedKeyspace();
+        return result;
+    }
+
+
+    public static void initCassandraConnection(){
+        assertTrue("Cannot connect to cassandra", connect(DEFAULT_HOST));
+
+        /*try {
             metaServer.connect();
             logger.info("Connected to Cassandra");
         } catch(NoHostAvailableException ex){
             logger.error("\033[31mCannot connect with Cassandra\033[0m", ex);  
             System.exit(-1);
+        }*/
+    }
+
+    public static void dropKeyspaceIfExists(String targetKeyspace){
+        String query = "USE " + targetKeyspace;
+        boolean ksExists = true;
+        try{
+            ResultSet result = _session.execute(query);
+        }catch (InvalidQueryException iqe){
+            ksExists = false;
+        }
+
+        if(ksExists){
+            String q = "DROP KEYSPACE " + targetKeyspace;
+            try{
+                ResultSet result = _session.execute(q);
+            }catch (Exception e){
+                logger.error("Cannot drop keyspace: " + targetKeyspace, e);
+            }
         }
     }
     
-    public void checkKeyspaces(){
-        try {
-            metaServer.executeQuery("", "USE testKS");
-            logger.error("\033[31mKeyspace \'testKs\' already exists\033[0m");  
-            System.exit(-1);
-        } catch(DriverException ex){
-            logger.info("Creating keyspace \'testKS\' in Cassandra for testing purposes");
+    public static void checkKeyspaces(){
+
+        QueryResult result = metaServer.executeQuery("", "USE testKS;");
+        if(!result.hasError()){
+            dropKeyspaces();
+            logger.error("Keyspace testKs already exists, removing it.");
         }
+
     }
 
     @BeforeClass
-    public void setUpBeforeClass(){
+    public static void setUpBeforeClass(){
         initCassandraConnection();
-        checkKeyspaces();
+        dropKeyspaceIfExists("testKS");
     }
 
-    public void dropKeyspaces(){
+    public static void dropKeyspaces(){
         metaServer.executeQuery("testKS", "DROP KEYSPACE IF EXISTS testKS;");
     }
 
-    public void closeCassandraConnection(){
+    public static void closeCassandraConnection(){
         metaServer.close();
     }
 
@@ -64,22 +117,32 @@ public class BasicCassandraTest {
      * @param keyspace The name of the keyspace.
      * @param path The path of the CQL script.
      */
-    public void loadTestData(String keyspace, String path){
+    public static void loadTestData(String keyspace, String path){
         KeyspaceMetadata metadata = metaServer.getMetadata().getKeyspace(keyspace);
         if(metadata == null){
             logger.info("Creating keyspace " + keyspace + " using " + path);
             List<String> scriptLines = loadScript(path);
             logger.info("Executing " + scriptLines.size() + " lines");
             for(String cql : scriptLines){
-                metaServer.executeQuery(keyspace, cql);
+               ResultSet result = _session.execute(cql);
+                if(logger.isDebugEnabled()){
+                	logger.debug("Executing: " + cql + " -> " + result.toString());
+                }
             }
         }
         logger.info("Using existing keyspace " + keyspace);
     }
 
-    public List<String> loadScript(String path){
+    /**
+     * Load the lines of a CQL script containing one statement per line
+     * into a list.
+     * @param path The path of the CQL script.
+     * @return The contents of the script.
+     */
+    public static List<String> loadScript(String path){
         List<String> result = new ArrayList<>();
         URL url = BasicCassandraTest.class.getResource(path);
+        logger.info("Loading script from: " + url);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
             String line;
             while((line = br.readLine()) != null){
@@ -94,7 +157,7 @@ public class BasicCassandraTest {
     }
 
     @AfterClass
-    public void exit(){
+    public static void exit(){
         dropKeyspaces();
         closeCassandraConnection();
     }  

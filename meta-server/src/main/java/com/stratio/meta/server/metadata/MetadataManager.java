@@ -1,10 +1,8 @@
 package com.stratio.meta.server.metadata;
 
+import com.datastax.driver.core.*;
 import org.apache.log4j.Logger;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Metadata;
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.server.MetaServer;
 
 import java.util.ArrayList;
@@ -32,6 +30,21 @@ public class MetadataManager {
 	 */
 	public MetadataManager(){
 	}
+
+    /**
+     * Establish the connection with Cassandra in order to be able to retrieve
+     * metadata from the system columns.
+     * @param host The target host.
+     * @return Whether the connection has been established or not.
+     */
+    protected boolean connect(String host){
+        boolean result = false;
+        String ks = "system";
+        Cluster c = Cluster.builder().addContactPoint(host).build();
+        Session _session = c.connect(ks);
+        result = ks.equals(_session.getLoggedKeyspace());
+        return result;
+    }
 	
 	/**
 	 * Load all Metadata from Cassandra.

@@ -6,23 +6,23 @@ One LANGUAGE to rule them all
 
 Compiling META involves generating a set of files (.tokens, Lexers, and Parsers) from the different grammar files. To automatically buildMETA execute the following command:
 ```
-   > mvn clean compile
+   > mvn clean compile install
 ```
 
 Alternativelly, you can manually generate the grammar derived files first, and the proceed to the usual compilation using:
 ```
    > mvn generate-sources
-   > mvn compile
+   > mvn compile install
 ```
 
 Both methods will create the following files required to compile and execute META.
 ```
-   com/stratio/meta/grammar/generated/Meta.tokens
-   com/stratio/meta/grammar/generated/MetaLexer.java
-   com/stratio/meta/grammar/generated/MetaParser.java
-   com/stratio/meta/client/help/generated/MetaHelp.tokens
-   com/stratio/meta/client/help/generated/MetaHelpLexer.java
-   com/stratio/meta/client/help/generated/MetaHelpParser.java
+   com/stratio/meta/core/grammar/generated/Meta.tokens
+   com/stratio/meta/core/grammar/generated/MetaLexer.java
+   com/stratio/meta/core/grammar/generated/MetaParser.java
+   com/stratio/meta/sh/help/generated/MetaHelp.tokens
+   com/stratio/meta/sh/help/generated/MetaHelpLexer.java
+   com/stratio/meta/sh/help/generated/MetaHelpParser.java
 ```
 
 # Running the META-shell#

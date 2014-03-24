@@ -76,10 +76,10 @@ public class DropTableStatement extends MetaStatement {
         return this.toString();
     }
             
-    @Override
-    public String parseResult(ResultSet resultSet) {
-        return "Executed successfully";
-    }
+//    @Override
+//    public String parseResult(ResultSet resultSet) {
+//        return "Executed successfully";
+//    }
 
     @Override
     public Statement getDriverStatement() {
