@@ -7,9 +7,11 @@ public class Validator {
 
     private final Logger logger = Logger.getLogger(Validator.class);
     
-    public MetaValidation validateQuery(MetaQuery metaQuery) {
+    public MetaQuery validateQuery(MetaQuery metaQuery) {
         logger.warn("Not supported yet.");
-        return new MetaValidation();
+        MetaValidation validation =new MetaValidation();
+        metaQuery.setValidation(validation);
+        return metaQuery;
     }
     
 }

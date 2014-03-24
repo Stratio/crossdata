@@ -2,20 +2,24 @@ package com.stratio.meta.server
 
 import akka.actor.{ Props, ActorSystem}
 import akka.contrib.pattern.ClusterReceptionistExtension
+import com.stratio.meta.server.actors.ServerActor
+import com.stratio.meta.core.engine.Engine
+import com.stratio.meta.server.config.ServerConfig
 
 
-object Application extends App{
-  if (args.nonEmpty) System.setProperty("akka.remote.netty.tcp.port", args(0))
+object Application extends App with ServerConfig{
+  val engine = new Engine(engineConfig)
+
+  if (args.nonEmpty) System.setProperty("akka.remote.netty.tcp.port", "13420")
+
+
 
   // Create an Akka system
-  val system = ActorSystem("ClusterSystem")
+  val system = ActorSystem("MetaServerCluster")
 
 
-  val echo= system.actorOf(Props[EchoActor],"echo")
-  ClusterReceptionistExtension(system).registerService(echo)
-
-  val serverStatus = system.actorOf(Props[ServerStatusActor],"server-status")
-  ClusterReceptionistExtension(system).registerService(serverStatus)
+  val serverActor= system.actorOf(ServerActor.props(engine) ,"ServerActor")
+  ClusterReceptionistExtension(system).registerService(serverActor)
 
 }
 

@@ -8,7 +8,7 @@ import scala.concurrent.{Await, ExecutionContext}
 import ExecutionContext.Implicits.global
 import akka.pattern.ask
 import scala.annotation.tailrec
-import com.stratio.meta.communication.{Reply, Query, ACK, Connect}
+import com.stratio.meta.communication.{Reply, ACK, Connect}
 
 
 object Application extends App{

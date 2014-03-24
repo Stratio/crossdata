@@ -1,8 +1,6 @@
 package com.stratio.meta.core.executor;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.statements.MetaStatement;
@@ -15,6 +13,12 @@ public class Executor {
 
     private final Logger logger = Logger.getLogger(Executor.class);
     private final Session session;
+
+    public Executor(String [] hosts, int port){
+        Cluster cluster = Cluster.builder().addContactPoints(hosts)
+                .withPort(port).build();
+        this.session=cluster.connect();
+    }
     
     public Executor(Session session) {
         this.session = session;

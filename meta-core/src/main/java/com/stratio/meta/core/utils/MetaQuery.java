@@ -3,6 +3,7 @@ package com.stratio.meta.core.utils;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.planner.MetaPlan;
+import com.stratio.meta.core.validator.MetaValidation;
 
 public class MetaQuery {
     
@@ -10,6 +11,7 @@ public class MetaQuery {
     private boolean hasError;
     private MetaStatement statement;
     private MetaPlan plan;
+    private MetaValidation validation;
     private QueryResult result;
     
     public MetaQuery() {
@@ -66,5 +68,12 @@ public class MetaQuery {
     public QueryResult getResult() {
         return result;
     }
-    
+
+    public MetaValidation getValidation() {
+        return validation;
+    }
+
+    public void setValidation(MetaValidation validation) {
+        this.validation = validation;
+    }
 }

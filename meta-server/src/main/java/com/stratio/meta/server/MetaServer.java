@@ -10,13 +10,10 @@ import com.stratio.meta.common.result.ConnectResult;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.engine.Engine;
-import com.stratio.meta.core.executor.Executor;
-import com.stratio.meta.core.parser.Parser;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.planner.MetaPlan;
-import com.stratio.meta.core.planner.Planner;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.validator.MetaValidation;
-import com.stratio.meta.core.validator.Validator;
 import org.apache.log4j.Logger;
 
 public class MetaServer {
@@ -28,31 +25,8 @@ public class MetaServer {
 
     public MetaServer() {
         connect();
-    }   
-    
-    public MetaServer(String host) {
-        connect(host);
-    }
-    
-    public Cluster getCluster() {
-        return cluster;
     }
 
-    public void setCluster(Cluster cluster) {
-        this.cluster = cluster;
-    }
-
-    public Session getSession() {
-        if (session == null){
-            connect();
-        }
-        return session;
-    }
-
-    public void setSession(Session session) {
-        this.session = session;
-    }
-    
     public MetaResult connect(String host){
         try {            
             if(cluster == null){
@@ -89,31 +63,31 @@ public class MetaServer {
     }    
     
     public MetaResult executeQuery(String targetKs, Statement query) {
-        return executeQuery(targetKs, query.toString());
+        return executeQuery(query.toString());
     }
     
-    public QueryResult executeQuery(String targetKs, String query){
-        Engine engine = new Engine(getSession());
+    public QueryResult executeQuery(String query){
+        EngineConfig config =new EngineConfig();
+        config.setCassandraHosts(new String[]{"127.0.0.1"});
+        config.setCassandraPort(9042);
+
+        Engine engine = new Engine(config);
         // PARSER ACTOR    
-        MetaQuery metaQuery = engine.parseStatement(query);
+        MetaQuery metaQuery = engine.getParser().parseStatement(query);
         if(metaQuery.hasError()){ // parser error
             return metaQuery.getResult();
         }
         // VALIDATOR ACTOR
-        MetaValidation validation = engine.validateQuery(metaQuery);
-        if(validation.hasError()){ // Invalid metadata
-            QueryResult queryResult = new QueryResult();
-            queryResult.setErrorMessage(validation.getMessage());
-            return queryResult;
-        }
+        metaQuery = engine.getValidator().validateQuery(metaQuery);
+
         // PLANNER ACTOR
-        MetaPlan metaPlan = engine.planQuery(metaQuery);
+        MetaPlan metaPlan = engine.getPlanner().planQuery(metaQuery);
         metaQuery.setPlan(metaPlan);
         if(metaQuery.hasError()){ // Cannot plan
             return metaQuery.getResult();
         }                
         // EXECUTOR ACTOR
-        QueryResult result = engine.executeQuery(metaQuery); 
+        QueryResult result = engine.getExecutor().executeQuery(metaQuery);
         return result;
     }
 

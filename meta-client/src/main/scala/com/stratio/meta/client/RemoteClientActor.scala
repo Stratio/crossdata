@@ -2,7 +2,7 @@ package com.stratio.meta.client
 
 import akka.actor.{Props, ActorRef, Actor}
 import akka.contrib.pattern.ClusterClient
-import com.stratio.meta.communication.{Connect, Query}
+import com.stratio.meta.communication.Connect
 
 object RemoteClientActor{
   def props(clusterClient:ActorRef) :Props= Props(new RemoteClientActor(clusterClient))
