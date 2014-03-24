@@ -1,6 +1,5 @@
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -250,18 +249,17 @@ public class InsertIntoStatement extends MetaStatement {
     public String translateToCQL() {
         StringBuilder sb = new StringBuilder("INSERT INTO ");
         if(keyspaceInc){
-            sb.append(keyspace).append(" ");
+            sb.append(keyspace).append(".");
         }
         sb.append(tablename).append(" (");
         sb.append(ParserUtils.stringList(ids, ", "));
-        sb.delete(sb.length()-2, sb.length());
         sb.append(") ");        
         if(typeValues == TYPE_SELECT_CLAUSE){
            sb.append(selectStatement.toString());
         }
         if(typeValues == TYPE_VALUES_CLAUSE){
-           sb.append("VALUES(");
-           sb.append(ParserUtils.stringList(cellValues, ", "));
+           sb.append("VALUES (");
+           sb.append(ParserUtils.addSingleQuotesToString(ParserUtils.stringList(cellValues, ", "),","));           
            sb.append(")");
         }
         if(ifNotExists){
@@ -274,11 +272,11 @@ public class InsertIntoStatement extends MetaStatement {
         return sb.append(";").toString();
     }
     
-    @Override
-    public String parseResult(ResultSet resultSet) {
-        //return "\t"+resultSet.toString();
-        return "Executed successfully"+System.getProperty("line.separator");
-    }
+//    @Override
+//    public String parseResult(ResultSet resultSet) {
+//        //return "\t"+resultSet.toString();
+//        return "Executed successfully"+System.getProperty("line.separator");
+//    }
     
     @Override
     public Statement getDriverStatement() {

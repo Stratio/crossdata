@@ -1,6 +1,5 @@
 package com.stratio.meta.core.utils;
 
-import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.planner.MetaPlan;
@@ -19,7 +18,7 @@ public class MetaQuery {
     }
     
     public MetaQuery(String query) {
-        this.hasError = false;
+        this();
         this.query = query;
     }
 

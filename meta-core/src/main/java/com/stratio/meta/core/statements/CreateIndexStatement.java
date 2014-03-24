@@ -1,9 +1,6 @@
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.DeepResult;
@@ -255,10 +252,10 @@ public class CreateIndexStatement extends MetaStatement {
         return cqlString;
     }
         
-    @Override
-    public String parseResult(ResultSet resultSet) {
-        return "\t"+resultSet.toString();
-    }
+//    @Override
+//    public String parseResult(ResultSet resultSet) {
+//        return "\t"+resultSet.toString();
+//    }
 
     @Override
     public Statement getDriverStatement() {

@@ -9,11 +9,12 @@ import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.ConnectResult;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.core.utils.MetaQuery;
+import com.stratio.meta.core.engine.Engine;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.planner.MetaPlan;
 import com.stratio.meta.core.planner.Planner;
+import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.validator.MetaValidation;
 import com.stratio.meta.core.validator.Validator;
 import org.apache.log4j.Logger;
@@ -92,30 +93,27 @@ public class MetaServer {
     }
     
     public QueryResult executeQuery(String targetKs, String query){
+        Engine engine = new Engine(getSession());
         // PARSER ACTOR    
-        Parser parser = new Parser();
-        MetaQuery metaQuery = parser.parseStatement(query);
+        MetaQuery metaQuery = engine.parseStatement(query);
         if(metaQuery.hasError()){ // parser error
             return metaQuery.getResult();
         }
         // VALIDATOR ACTOR
-        Validator validator = new Validator();
-        MetaValidation validation = validator.validateQuery(metaQuery);
+        MetaValidation validation = engine.validateQuery(metaQuery);
         if(validation.hasError()){ // Invalid metadata
             QueryResult queryResult = new QueryResult();
             queryResult.setErrorMessage(validation.getMessage());
             return queryResult;
         }
         // PLANNER ACTOR
-        Planner planner = new Planner();
-        MetaPlan metaPlan = planner.planQuery(metaQuery);
+        MetaPlan metaPlan = engine.planQuery(metaQuery);
         metaQuery.setPlan(metaPlan);
         if(metaQuery.hasError()){ // Cannot plan
             return metaQuery.getResult();
         }                
         // EXECUTOR ACTOR
-        Executor executor = new Executor(getSession());
-        QueryResult result = executor.executeQuery(metaQuery); 
+        QueryResult result = engine.executeQuery(metaQuery); 
         return result;
     }
 

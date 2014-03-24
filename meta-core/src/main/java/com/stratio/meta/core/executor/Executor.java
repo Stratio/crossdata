@@ -26,11 +26,11 @@ public class Executor {
         QueryResult queryResult = new QueryResult();
         Statement driverStmt = null;
         
-        ResultSet resultSet = null;
+        ResultSet resultSet;
         try{
             resultSet = session.execute(stmt.translateToCQL());              
             queryResult.setResultSet(resultSet);
-        } catch (DriverException | UnsupportedOperationException ex) {
+        } catch (Exception ex) {
             Exception e = ex;
             if(ex instanceof DriverException){
                 logger.error("\033[31mCassandra exception:\033[0m "+ex.getMessage());                
@@ -56,10 +56,11 @@ public class Executor {
                 logger.error(queryStr);
             }
         }
+        /*
         if(!queryResult.hasError()){            
             logger.info("\033[32mResult:\033[0m "+stmt.parseResult(resultSet)+System.getProperty("line.separator"));
             //logger.info("\033[32mResult:\033[0m Cannot execute command"+System.getProperty("line.separator"));        
-        } /*else {
+        } else {
             List<MetaStep> steps = stmt.getPlan();
             for(MetaStep step: steps){
                 logger.info(step.getPath()+"-->"+step.getQuery());

@@ -59,10 +59,10 @@ public class DropKeyspaceStatement extends MetaStatement {
         return this.toString();
     }
     
-    @Override
-    public String parseResult(ResultSet resultSet) {
-        return "Executed successfully"+System.getProperty("line.separator");
-    }
+//    @Override
+//    public String parseResult(ResultSet resultSet) {
+//        return "Executed successfully"+System.getProperty("line.separator");
+//    }
     
     @Override
     public Statement getDriverStatement() {

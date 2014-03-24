@@ -1,23 +1,20 @@
 package com.stratio.meta.core.grammar;
 
 import com.stratio.meta.core.parser.Parser;
-import static org.junit.Assert.*;
-
-import java.util.HashMap;
-
-import org.junit.Test;
-
 import com.stratio.meta.core.statements.CreateIndexStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.AntlrResult;
 import com.stratio.meta.core.utils.MetaQuery;
-
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
+import name.fraser.neil.plaintext.diff_match_patch;
 import org.apache.log4j.Logger;
-
+import static org.junit.Assert.*;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 /**
@@ -35,7 +32,7 @@ public class ParsingTest {
         public MetaStatement testRegularStatement(String inputText, String methodName) {
             MetaStatement st = parser.parseStatement(inputText).getStatement();
             assertNotNull("Cannot parse "+methodName, st);             
-            assertTrue("Cannot parse "+methodName, inputText.equalsIgnoreCase(st.toString()+";"));
+            assertTrue("Cannot parse "+methodName+": expecting '"+inputText+"' from '"+st.toString()+"'", inputText.equalsIgnoreCase(st.toString()+";"));
             return st;
         }         
         
@@ -47,7 +44,7 @@ public class ParsingTest {
         
         public void testRecoverableError(String inputText, String methodName){
             MetaQuery metaQuery = parser.parseStatement(inputText);            
-            assertTrue("No errors reported in "+methodName, metaQuery.getResult().hasError());
+            assertTrue("No errors reported in "+methodName, metaQuery.hasError());
         }        	
 
         // CREATE KEYSPACE
@@ -145,7 +142,17 @@ public class ParsingTest {
                         + " WITH OPTIONS schema = '{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\", "
                         + "fields: {day: {type: \"date\", pattern: \"yyyy-MM-dd\"}, key: {type:\"uuid\"}}}';";
 		MetaStatement st = parser.parseStatement(inputText).getStatement();
-                inputText = inputText.replace("'", "");
+                //inputText = inputText.replace("'", "");                
+                /*
+                diff_match_patch dmp = new diff_match_patch();
+                LinkedList<diff_match_patch.Diff> diffs = dmp.diff_main(inputText, st.toString()+";");
+                for(diff_match_patch.Diff diff: diffs){
+                    System.out.println("DIFF: "+diff.text);
+                }
+                */
+                CreateIndexStatement cis = (CreateIndexStatement) st;
+                System.out.println(inputText);
+                System.out.println(st.toString()+";");
 		assertTrue("Cannot parse createKeyspace_literal_value", inputText.equalsIgnoreCase(st.toString()+";"));
 	}
         
@@ -267,7 +274,7 @@ public class ParsingTest {
 	public void dropIndex_ifExists() {
 		String inputText = "DROP INDEX IF EXISTS index_name;";
 		testRegularStatement(inputText, "dropIndex_ifExists");
-	}
+	}                
 
 	@Test
 	public void select_statement() {
@@ -277,6 +284,12 @@ public class ParsingTest {
 		testRegularStatement(inputText, "select_statement");
 	}
 
+        @Test
+	public void select_statement_2() {
+		String inputText = "SELECT lucene FROM newks.newtb;"; 
+		testRegularStatement(inputText, "select_statement_2");
+	}
+        
 	@Test
 	public void select_withTimeWindow() {
 		String inputText = "SELECT column1 FROM table1 WITH WINDOW 5 SECONDS WHERE column2 = 3;";
