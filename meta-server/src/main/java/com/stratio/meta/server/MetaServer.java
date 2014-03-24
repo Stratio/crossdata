@@ -30,7 +30,6 @@ import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.engine.Engine;
 import com.stratio.meta.core.engine.EngineConfig;
-import com.stratio.meta.core.planner.MetaPlan;
 import com.stratio.meta.core.utils.MetaQuery;
 import org.apache.log4j.Logger;
 
@@ -95,18 +94,18 @@ public class MetaServer {
             return metaQuery.getResult();
         }
         // VALIDATOR ACTOR
-        metaQuery = engine.getValidator().validateQuery(metaQuery);
-        if(metaQuery.hasError()){ // Invalid metadata
-            return metaQuery.getResult();
+        MetaQuery metaQueryValidated = engine.getValidator().validateQuery(metaQuery);
+        if(metaQueryValidated.hasError()){ // Invalid metadata
+            return metaQueryValidated.getResult();
         }
         // PLANNER ACTOR
-        metaQuery = engine.getPlanner().planQuery(metaQuery);
-        if(metaQuery.hasError()){ // Cannot plan
-            return metaQuery.getResult();
+        MetaQuery metaQueryPlanned = engine.getPlanner().planQuery(metaQueryValidated);
+        if(metaQueryPlanned.hasError()){ // Cannot plan
+            return metaQueryPlanned.getResult();
         }                
         // EXECUTOR ACTOR
-        metaQuery = engine.getExecutor().executeQuery(metaQuery); 
-        return metaQuery.getResult();
+        MetaQuery metaQueryExecuted = engine.getExecutor().executeQuery(metaQueryPlanned); 
+        return metaQueryExecuted.getResult();
     }
 
     public Metadata getMetadata() {
