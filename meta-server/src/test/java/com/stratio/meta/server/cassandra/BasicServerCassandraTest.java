@@ -1,27 +1,27 @@
 package com.stratio.meta.server.cassandra;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.InvalidQueryException;
-import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.server.MetaServer;
-import org.apache.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
 
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
 
-public class BasicCassandraTest {
+import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+
+import static org.testng.Assert.assertTrue;
+
+
+public class BasicServerCassandraTest {
 
     private static final String DEFAULT_HOST = "127.0.0.1";
 
@@ -51,19 +51,18 @@ public class BasicCassandraTest {
         return result;
     }
 
-
+    /**
+     * Initialize the connection to Cassandra using the
+     * host specified by {@code DEFAULT_HOST}.
+     */
     public static void initCassandraConnection(){
-        assertTrue("Cannot connect to cassandra", connect(DEFAULT_HOST));
-
-        /*try {
-            metaServer.connect();
-            logger.info("Connected to Cassandra");
-        } catch(NoHostAvailableException ex){
-            logger.error("\033[31mCannot connect with Cassandra\033[0m", ex);  
-            System.exit(-1);
-        }*/
+        assertTrue(connect(DEFAULT_HOST), "Cannot connect to cassandra");
     }
 
+    /**
+     * Drop a keyspace if it exists in the database.
+     * @param targetKeyspace The target keyspace.
+     */
     public static void dropKeyspaceIfExists(String targetKeyspace){
         String query = "USE " + targetKeyspace;
         boolean ksExists = true;
@@ -76,31 +75,17 @@ public class BasicCassandraTest {
         if(ksExists){
             String q = "DROP KEYSPACE " + targetKeyspace;
             try{
-                ResultSet result = _session.execute(q);
+                _session.execute(q);
             }catch (Exception e){
                 logger.error("Cannot drop keyspace: " + targetKeyspace, e);
             }
         }
-    }
-    
-    public static void checkKeyspaces(){
-
-        QueryResult result = metaServer.executeQuery("USE testKS;");
-        if(!result.hasError()){
-            dropKeyspaces();
-            logger.error("Keyspace testKs already exists, removing it.");
-        }
-
     }
 
     @BeforeClass
     public static void setUpBeforeClass(){
         initCassandraConnection();
         dropKeyspaceIfExists("testKS");
-    }
-
-    public static void dropKeyspaces(){
-        metaServer.executeQuery("DROP KEYSPACE IF EXISTS testKS;");
     }
 
     public static void closeCassandraConnection(){
@@ -137,7 +122,7 @@ public class BasicCassandraTest {
      */
     public static List<String> loadScript(String path){
         List<String> result = new ArrayList<>();
-        URL url = BasicCassandraTest.class.getResource(path);
+        URL url = BasicServerCassandraTest.class.getResource(path);
         logger.info("Loading script from: " + url);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
             String line;
@@ -153,12 +138,9 @@ public class BasicCassandraTest {
     }
 
     @AfterClass
-    public static void exit(){
-        dropKeyspaces();
+    public static void tearDownAfterClass(){
+        dropKeyspaceIfExists("testKs");
         closeCassandraConnection();
     }  
-        
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-    
+
 }

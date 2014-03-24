@@ -1,6 +1,4 @@
 target/
-src/main/java/com/stratio/meta/grammar/generated/
-src/main/java/com/stratio/meta/client/help/generated/
 .classpath
 .project
 .settings
@@ -9,5 +7,5 @@ build.xml
 nbactions.xml
 .idea
 *.iml
-meta-core/src/main/java/com/stratio/meta/grammar/generated
+meta-core/src/main/java/com/stratio/meta/core/grammar/generated
 src/main/resources/history.txt
