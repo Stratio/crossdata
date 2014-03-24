@@ -46,7 +46,7 @@ public class MetaDriver {
         if(showInfo){
             logger.info("\033[34;1mQuery:\033[0m "+query);
         }                      
-        return metaServer.executeQuery(targetKs, query);
+        return metaServer.executeQuery(query);
     }
        
     public MetaResult executeQuery(String targetKs, Statement query, boolean showInfo) {      

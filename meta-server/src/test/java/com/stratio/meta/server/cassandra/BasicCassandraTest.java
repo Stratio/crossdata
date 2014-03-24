@@ -4,11 +4,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
-import com.datastax.driver.core.exceptions.QueryExecutionException;
-import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.server.MetaServer;
@@ -89,7 +85,7 @@ public class BasicCassandraTest {
     
     public static void checkKeyspaces(){
 
-        QueryResult result = metaServer.executeQuery("", "USE testKS;");
+        QueryResult result = metaServer.executeQuery("USE testKS;");
         if(!result.hasError()){
             dropKeyspaces();
             logger.error("Keyspace testKs already exists, removing it.");
@@ -104,7 +100,7 @@ public class BasicCassandraTest {
     }
 
     public static void dropKeyspaces(){
-        metaServer.executeQuery("testKS", "DROP KEYSPACE IF EXISTS testKS;");
+        metaServer.executeQuery("DROP KEYSPACE IF EXISTS testKS;");
     }
 
     public static void closeCassandraConnection(){
