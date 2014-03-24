@@ -42,5 +42,12 @@ public class MetaResult {
     public void print(){
         System.out.println(errorMessage);
     }
+
+    public static MetaResult createMetaResultError(String errorMessage){
+        MetaResult result=new MetaResult();
+        result.setErrorMessage(errorMessage);
+        result.setHasError();
+        return result;
+    }
     
 }

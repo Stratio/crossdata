@@ -85,6 +85,12 @@
             <artifactId>meta-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.stratio</groupId>
+            <artifactId>meta-common</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
