@@ -24,6 +24,7 @@ import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.ErrorsHelper;
 import com.stratio.meta.core.utils.MetaQuery;
+import com.stratio.meta.core.utils.QueryStatus;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
@@ -39,6 +40,7 @@ public class Parser {
      */ 
     public MetaQuery parseStatement(String inputText){
         MetaQuery metaQuery = new MetaQuery(inputText);
+        metaQuery.setStatus(QueryStatus.PARSED);
         MetaStatement resultStatement;
         ANTLRStringStream input = new ANTLRStringStream(inputText);
         MetaLexer lexer = new MetaLexer(input);
@@ -61,8 +63,9 @@ public class Parser {
         }
         metaQuery.setStatement(resultStatement);
         if((foundErrors!=null) && (!foundErrors.isEmpty())){
-            logger.error(foundErrors.toString(inputText, resultStatement));
-            metaQuery.setErrorMessage(foundErrors.toString(inputText, resultStatement));
+            String foundErrorsStr = foundErrors.toString(inputText, resultStatement);
+            //logger.error(foundErrorsStr);
+            metaQuery.setErrorMessage(foundErrorsStr);
         }
         return metaQuery;                 
     }

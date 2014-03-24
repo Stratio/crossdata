@@ -22,6 +22,7 @@ package com.stratio.meta.core.engine;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
+import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.validator.Validator;
 
 public class Engine {
@@ -34,7 +35,7 @@ public class Engine {
         parser = new Parser();
         validator = new Validator();
         planner = new Planner();
-        executor = new Executor(config.getCassandraHosts(),config.getCassandraPort());
+        executor = new Executor(config.getCassandraHosts(), config.getCassandraPort());
     }
        
     public Parser getParser() {
@@ -51,6 +52,22 @@ public class Engine {
 
     public Executor getExecutor() {
         return executor;
+    }
+      
+    public MetaQuery parseStatement(String query) {
+        return parser.parseStatement(query);
+    }
+
+    public MetaQuery validateQuery(MetaQuery metaQuery) {
+        return validator.validateQuery(metaQuery);
+    }
+
+    public MetaQuery planQuery(MetaQuery metaQuery) {
+        return planner.planQuery(metaQuery);
+    }
+
+    public MetaQuery executeQuery(MetaQuery metaQuery) {
+        return executor.executeQuery(metaQuery);
     }
     
 }

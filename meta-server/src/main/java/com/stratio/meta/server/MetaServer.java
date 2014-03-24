@@ -32,7 +32,6 @@ import com.stratio.meta.core.engine.Engine;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.planner.MetaPlan;
 import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.core.validator.MetaValidation;
 import org.apache.log4j.Logger;
 
 public class MetaServer {
@@ -57,8 +56,7 @@ public class MetaServer {
             }
         } catch(Exception ex){
             ConnectResult connResult = new ConnectResult();
-            connResult.setHasError();
-            connResult.setErrorMessage(ex.getMessage());
+            connResult.setErrorMessage("\033[31mCannot connect with Cassandra:\033[0m "+System.getProperty("line.separator")+ex.getMessage());
             return connResult;
         }
         
@@ -98,16 +96,17 @@ public class MetaServer {
         }
         // VALIDATOR ACTOR
         metaQuery = engine.getValidator().validateQuery(metaQuery);
-
+        if(metaQuery.hasError()){ // Invalid metadata
+            return metaQuery.getResult();
+        }
         // PLANNER ACTOR
-        MetaPlan metaPlan = engine.getPlanner().planQuery(metaQuery);
-        metaQuery.setPlan(metaPlan);
+        metaQuery = engine.getPlanner().planQuery(metaQuery);
         if(metaQuery.hasError()){ // Cannot plan
             return metaQuery.getResult();
         }                
         // EXECUTOR ACTOR
-        QueryResult result = engine.getExecutor().executeQuery(metaQuery);
-        return result;
+        metaQuery = engine.getExecutor().executeQuery(metaQuery); 
+        return metaQuery.getResult();
     }
 
     public Metadata getMetadata() {

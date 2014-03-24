@@ -26,18 +26,32 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class CreateTokensFile {
     
+    private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(CreateTokensFile.class);
+    
     public static void main(String[] args) {                
-        try {            
-            String metaGrammarPath = "src/main/java/com/stratio/meta/core/grammar/Meta.g";
-            String metaTokens = "src/main/resources/com/stratio/meta/sh/tokens.txt";
+        try {
+            String workingDir = System.getProperty("user.dir");
+            if(workingDir.endsWith("stratio-meta")){
+                workingDir = workingDir.concat("/meta-core/");
+            } else if(!workingDir.endsWith("meta-core")){
+                workingDir = workingDir.substring(0, workingDir.lastIndexOf("/"));
+                workingDir = workingDir.concat("/meta-core/");
+            } else {
+                workingDir = workingDir.concat("/");
+            }
+            
+            String metaGrammarPath = workingDir+"src/main/java/com/stratio/meta/core/grammar/Meta.g";
+            String metaTokens = workingDir+"src/main/resources/com/stratio/meta/parser/tokens.txt";
+            File fileGrammar = new File(metaGrammarPath);  
+            File outFile = new File(metaTokens);
+
+            logger.info("Reading grammar from "+fileGrammar.getAbsolutePath());
             BufferedWriter bw;
-            try (BufferedReader br = new BufferedReader(new FileReader(metaGrammarPath))) {
-                bw = new BufferedWriter(new FileWriter(metaTokens));
+            try (BufferedReader br = new BufferedReader(new FileReader(fileGrammar))) {
+                bw = new BufferedWriter(new FileWriter(outFile));
                 String line = br.readLine();
                 while (line != null){
                     if(line.startsWith("T_")){
@@ -55,10 +69,11 @@ public class CreateTokensFile {
             }
             bw.flush();
             bw.close();            
+            logger.info(outFile.getAbsolutePath()+" created");
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(CreateTokensFile.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error(ex.getMessage());
         } catch (IOException ex) {
-            Logger.getLogger(CreateTokensFile.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error(ex.getMessage());
         }
     }
     

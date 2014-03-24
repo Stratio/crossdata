@@ -20,15 +20,17 @@
 package com.stratio.meta.core.planner;
 
 import com.stratio.meta.core.utils.MetaQuery;
+import com.stratio.meta.core.utils.QueryStatus;
 import org.apache.log4j.Logger;
 
 public class Planner {
 
     private final Logger logger = Logger.getLogger(Planner.class);
     
-    public MetaPlan planQuery(MetaQuery metaQuery) {
+    public MetaQuery planQuery(MetaQuery metaQuery) {
+        metaQuery.setStatus(QueryStatus.PLANNED);
         logger.warn("Not supported yet.");
-        return new MetaPlan();
+        return metaQuery;
     }
     
 }

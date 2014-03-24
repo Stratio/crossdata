@@ -81,11 +81,7 @@
             <artifactId>testng</artifactId>
             <version>6.8.8</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.stratio</groupId>
-            <artifactId>meta-common</artifactId>
-            <version>${meta.version}</version>
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.datastax.cassandra</groupId>
@@ -107,12 +103,12 @@
         <dependency>
             <groupId>com.stratio</groupId>
             <artifactId>meta-core</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${meta.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio</groupId>
             <artifactId>meta-common</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${meta.version}</version>
         </dependency>
 
     </dependencies>

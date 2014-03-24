@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ListIterator;
@@ -95,37 +94,45 @@ public class Metash {
     public File retrieveHistory(ConsoleReader console, SimpleDateFormat sdf) throws IOException{
         final int DAYS_HISTORY_ENTRY_VALID = 30;
         Date today = new Date();
-        File dir = new File("./src/main/resources/");
-        File file = new File(dir.getPath()+"/history.txt");
+        String workingDir = System.getProperty("user.dir");
+        File dir = new File("meta-sh/src/main/resources/");
+        if(workingDir.endsWith("meta-sh")){
+            dir = new File("src/main/resources/");
+        }        
         if(!dir.exists()){
             dir.mkdirs();
         }
+        File file = new File(dir.getPath()+"/history.txt");        
         if (!file.exists()){
             file.createNewFile();
         }
+        //logger.info("Retrieving history from "+file.getAbsolutePath());
         BufferedReader br = new BufferedReader(new FileReader(file));
-        try {
-            History oldHistory = new MemoryHistory();                                
-            DateTime todayDate = new DateTime(today);
-            String line;
-            String[] lineArray;
-            Date lineDate;
-            String lineStatement;
+        History oldHistory = new MemoryHistory();                                
+        DateTime todayDate = new DateTime(today);
+        String line;
+        String[] lineArray;
+        Date lineDate;
+        String lineStatement;
+        try{
             while ((line = br.readLine()) != null) {
-                lineArray = line.split("\\|");
-                lineDate = sdf.parse(lineArray[0]);
-                if(Days.daysBetween(new DateTime(lineDate), todayDate).getDays()<DAYS_HISTORY_ENTRY_VALID){
-                    lineStatement = lineArray[1];
-                    oldHistory.add(lineStatement);
+                try {
+                    lineArray = line.split("\\|");
+                    lineDate = sdf.parse(lineArray[0]);
+                    if(Days.daysBetween(new DateTime(lineDate), todayDate).getDays()<DAYS_HISTORY_ENTRY_VALID){
+                        lineStatement = lineArray[1];
+                        oldHistory.add(lineStatement);
+                    }
+                } catch(Exception ex){
+                    logger.error("Cannot parse date", ex);
                 }
             }
-            console.setHistory(oldHistory);
-            return file;
-        } catch (ParseException ex) {
-            logger.error("Cannot retrieve previous history");
-            logger.error(ex);
-            return null;
+        } catch(Exception ex){
+            logger.error("Cannot read all the history", ex);
         }
+        console.setHistory(oldHistory);
+        logger.info("History retrieved");
+        return file;
     }
 
     public void saveHistory(ConsoleReader console, File file, SimpleDateFormat sdf) throws IOException{
@@ -151,7 +158,7 @@ public class Metash {
      * Shell loop that receives user commands until a {@code exit} or {@code quit} command
      * is introduced.
      */
-    public void loop(){
+    public void loop(){        
         try {
             ConsoleReader console = new ConsoleReader();
             console.setPrompt("\033[36mmetash-server>\033[0m ");
@@ -166,7 +173,7 @@ public class Metash {
             
             MetaResult connectionResult = metaDriver.connect();
             if(connectionResult.hasError()){
-                System.out.println(connectionResult.getErrorMessage());
+                logger.error(connectionResult.getErrorMessage());
                 return;
             }
             
@@ -176,16 +183,23 @@ public class Metash {
             while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
                 cmd = console.readLine();
                 logger.info("\033[34;1mCommand:\033[0m " + cmd);
-
-                if(cmd.toLowerCase().startsWith("help")){
-                    showHelp(cmd);
-                } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
-                    MetaResult metaResult = metaDriver.executeQuery(currentKeyspace, cmd, true);
-                    if(metaResult.isKsChanged()){
-                        currentKeyspace = metaResult.getCurrentKeyspace();
+                    try {
+                        if(cmd.toLowerCase().startsWith("help")){
+                            showHelp(cmd);
+                        } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
+                            MetaResult metaResult = metaDriver.executeQuery(currentKeyspace, cmd, true);
+                            if(metaResult.isKsChanged()){
+                                currentKeyspace = metaResult.getCurrentKeyspace();
+                            }
+                            if(metaResult.hasError()){
+                                logger.error(metaResult.getErrorMessage());
+                                continue;
+                            } 
+                            metaResult.print();
+                        }
+                    } catch(Exception exc){
+                        logger.error(exc.getMessage());
                     }
-                    metaResult.print();
-                }
             }
                    
             saveHistory(console, file, sdf);            

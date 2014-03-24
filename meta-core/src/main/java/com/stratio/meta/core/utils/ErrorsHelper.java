@@ -70,7 +70,7 @@ public class ErrorsHelper {
         StringBuilder sb = new StringBuilder("\033[31mParser exception: \033[0m");
         for(AntlrError ae: antlrErrors){
             sb.append(System.getProperty("line.separator"));
-            sb.append(ae.toString()).append(System.getProperty("line.separator"));
+            //sb.append(ae.toString()).append(System.getProperty("line.separator"));
             sb.append(ae.toStringWithTokenTranslation()).append(System.getProperty("line.separator"));
             sb.append("\t").append(ParserUtils.getQueryWithSign(query, ae));
             if(!query.equalsIgnoreCase("")){

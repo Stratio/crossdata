@@ -201,7 +201,18 @@ public class ParserUtils {
         String replacement = "";
         BufferedReader bufferedReaderF = null;
         try {
-            String metaTokens = "src/main/resources/com/stratio/meta/sh/tokens.txt";
+            String workingDir = System.getProperty("user.dir");
+            if(workingDir.endsWith("stratio-meta")){
+                workingDir = workingDir.concat("/meta-core/");
+            } else if(!workingDir.endsWith("meta-core")){
+                workingDir = workingDir.substring(0, workingDir.lastIndexOf("/"));
+                workingDir = workingDir.concat("/meta-core/");
+            } else {
+                workingDir = workingDir.concat("/");
+            }
+            
+            String metaTokens = workingDir+"src/main/resources/com/stratio/meta/parser/tokens.txt";
+            
             bufferedReaderF = new BufferedReader(new FileReader(new File(metaTokens)));
             String line = bufferedReaderF.readLine();
             while (line != null){

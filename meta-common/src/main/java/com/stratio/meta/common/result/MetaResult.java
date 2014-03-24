@@ -43,6 +43,7 @@ public class MetaResult {
     }
 
     public void setErrorMessage(String errorMessage) {
+        this.hasError = true;
         this.errorMessage = errorMessage;
     }   
 
