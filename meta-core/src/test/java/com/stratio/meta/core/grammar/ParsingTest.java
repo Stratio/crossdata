@@ -493,21 +493,21 @@ public class ParsingTest {
             originalOK = true;
         }
 
-        String alternative1Str = "CREATE TABLE key_space1.users(name varchar, password varchar, color varchar, gender varchar,"
+        String alternative1Str = "CREATE TABLE key_space1.users (name varchar, password varchar, color varchar, gender varchar,"
                 + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                 + "WITH compression={chunk_length_kb: 64, sstable_compression: DeflateCompressor} AND "
                 + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
         if(alternative1Str.equalsIgnoreCase(st.toString()+";")){
             alternative1 = true;
         }
-        String alternative2Str = "CREATE TABLE key_space1.users(name varchar, password varchar, color varchar, gender varchar,"
+        String alternative2Str = "CREATE TABLE key_space1.users (name varchar, password varchar, color varchar, gender varchar,"
                 + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                 + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
                 + "compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND read_repair_chance=1.0;";
         if(alternative2Str.equalsIgnoreCase(st.toString()+";")){
             alternative2 = true;
         }
-        String alternative3Str = "CREATE TABLE key_space1.users(name varchar, password varchar, color varchar, gender varchar,"
+        String alternative3Str = "CREATE TABLE key_space1.users (name varchar, password varchar, color varchar, gender varchar,"
                 + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                 + "WITH compression={chunk_length_kb: 64, sstable_compression: DeflateCompressor} AND "
                 + "compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND read_repair_chance=1.0;";
@@ -521,21 +521,21 @@ public class ParsingTest {
 
     @Test
     public void createTable_compact_storage() {
-        String inputText = "CREATE TABLE key_space1.sblocks(block_id uuid, subblock_id uuid, data blob, PRIMARY KEY "
+        String inputText = "CREATE TABLE key_space1.sblocks (block_id uuid, subblock_id uuid, data blob, PRIMARY KEY "
                 + "(block_id, subblock_id)) WITH COMPACT STORAGE;";
         testRegularStatement(inputText, "createTable_compact_storage");
     }
 
     @Test
     public void createTable_clustering() {
-        String inputText = "create table key_space1.timeseries(event_type text, insertion_time timestamp, event blob,"
+        String inputText = "create table key_space1.timeseries (event_type text, insertion_time timestamp, event blob,"
                 + " PRIMARY KEY (event_type, insertion_time)) WITH CLUSTERING ORDER BY (insertion_time DESC);";
         testRegularStatement(inputText, "createTable_clustering");
     }
 
     @Test
     public void createTable_with_properties() {
-        String inputText = "CREATE TABLE key_space1.test(name varchar, color varchar, gender varchar, food varchar, "
+        String inputText = "CREATE TABLE key_space1.test (name varchar, color varchar, gender varchar, food varchar, "
                 + "animal varchar, PRIMARY KEY (name)) WITH compression={sstable_compression: DeflateCompressor, "
                 + "chunk_length_kb: 64} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
                 + "read_repair_chance=1.0;";

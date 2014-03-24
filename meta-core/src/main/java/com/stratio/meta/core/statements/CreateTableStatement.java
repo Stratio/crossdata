@@ -187,7 +187,7 @@ public class CreateTableStatement extends MetaStatement{
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Create table ");
-        if(ifNotExists) sb.append("if not exit ");
+        if(ifNotExists) sb.append("IF NOT EXISTS ");
         
         if(keyspaceInc){
             sb.append(keyspace).append(".");

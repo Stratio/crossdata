@@ -55,7 +55,7 @@ public class CreateTableStatementTest extends BasicCoreCassandraTest {
 
     @Test
     public void validate_ifNotExits_ok(){
-        String inputText = "CREATE TABLE IF NOT EXITS demo.users ( name varchar, gender varchar, email varchar, age int, bool boolean, phrase text, lucene_index_1 text, PRIMARY KEY ((name, gender), email, age));";
+        String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name varchar, gender varchar, email varchar, age int, bool boolean, phrase text, lucene_index_1 text, PRIMARY KEY ((name, gender), email, age));";
         MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_ifNotExits_ok");
         MetaResult result = stmt.validate(_metadataManager, "");
         assertNotNull(result, "Sentence validation not supported");
