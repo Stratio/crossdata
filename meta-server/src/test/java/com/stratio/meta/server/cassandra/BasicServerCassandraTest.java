@@ -15,14 +15,11 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 
 import org.apache.log4j.Logger;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 
+import static org.testng.Assert.assertTrue;
 
-
-import static org.junit.Assert.assertTrue;
 
 public class BasicServerCassandraTest {
 
@@ -59,7 +56,7 @@ public class BasicServerCassandraTest {
      * host specified by {@code DEFAULT_HOST}.
      */
     public static void initCassandraConnection(){
-        assertTrue("Cannot connect to cassandra", connect(DEFAULT_HOST));
+        assertTrue(connect(DEFAULT_HOST), "Cannot connect to cassandra");
     }
 
     /**
@@ -145,8 +142,5 @@ public class BasicServerCassandraTest {
         dropKeyspaceIfExists("testKs");
         closeCassandraConnection();
     }  
-        
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-    
+
 }

@@ -88,16 +88,9 @@ public class LuceneIndexHelper {
                 String schemaString = schema.toString()
                         .substring(1, schema.toString().length() - 1)
                         .replace("\\", "");
-                System.out.println("-> " + schema.toString());
-                System.out.println("--> " + schemaString);
-                //System.out.println("--> " + schema.getElements().toString());
-                //System.out.println("--> " + schema.get("fields").asText());
-                //System.out.println("---> " + schema.getFieldNames().toString());
                 JsonNode schemaRoot = mapper.readTree(factory.createJsonParser(schemaString));
-                System.out.println("----> " + schemaRoot.asText());
                 if(schemaRoot != null && schemaRoot.get("fields") != null){
                     JsonNode fields = schemaRoot.get("fields");
-                    System.out.println("Index fields: #"+fields.toString()+"#");
                     result.putAll(processLuceneFields(metadata, fields));
                 }else{
                     _logger.error("Fields not found in Lucene index with JSON: " + root.toString());
@@ -127,7 +120,6 @@ public class LuceneIndexHelper {
         Iterator<String> fieldIt = fields.getFieldNames();
         while(fieldIt.hasNext()){
             String fieldName = fieldIt.next();
-            System.out.println("field: " + fieldName + " -> " + fields.get(fieldName).toString());
             CustomIndexMetadata cim = new CustomIndexMetadata(metadata, IndexType.LUCENE);
             cim.setIndexOptions(fields.get(fieldName).toString());
             List<CustomIndexMetadata> indexes = result.get(fieldName);

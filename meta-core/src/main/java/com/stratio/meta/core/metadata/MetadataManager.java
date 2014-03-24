@@ -1,15 +1,15 @@
 package com.stratio.meta.core.metadata;
 
-import com.datastax.driver.core.Metadata;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.*;
 
 
+import com.stratio.meta.core.structures.IndexType;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Metadata Manager of the META server that maintains and up-to-date version of
@@ -27,6 +27,11 @@ public class MetadataManager {
      */
     private final Session _session;
 
+    /**
+     * Lucene index helper used to parse custom index options.
+     */
+    private final LuceneIndexHelper _luceneHelper;
+
 	/**
 	 * Class logger.
 	 */
@@ -38,6 +43,7 @@ public class MetadataManager {
 	 */
 	public MetadataManager(Session cassandraSession){
         _session = cassandraSession;
+        _luceneHelper = new LuceneIndexHelper(_session);
 	}
 
 	/**
@@ -108,6 +114,55 @@ public class MetadataManager {
             for(TableMetadata tm : km.getTables()){
                 result.add(tm.getName());
             }
+        }
+        return result;
+    }
+
+    /**
+     * Return the list of indexes available for each column in a specific table.
+     * @param tableMetadata Metadata associated with the target table.
+     * @return The list of available indexes.
+     */
+    public Map<String, List<CustomIndexMetadata>> getColumnIndexes(TableMetadata tableMetadata){
+        Map<String, List<CustomIndexMetadata>> result = new HashMap<>();
+        for(ColumnMetadata column : tableMetadata.getColumns()){
+            if(column.getIndex() != null){
+                if(_logger.isTraceEnabled()){
+                    _logger.trace("Index found in column " + column.getName());
+                }
+
+                CustomIndexMetadata toAdd = null;
+                if(!column.getIndex().isCustomIndex()){
+                    //A Cassandra index is associated with the column.
+                    List<CustomIndexMetadata> indexes = result.get(column.getName());
+                    if(indexes == null){
+                        indexes = new ArrayList<>();
+                        result.put(column.getName(), indexes);
+                    }
+                    indexes.add(new CustomIndexMetadata(column, IndexType.DEFAULT));
+
+                }else if (column.getIndex().isCustomIndex()
+                        && column.getIndex().getIndexClassName().compareTo("org.apache.cassandra.db.index.stratio.RowIndex") == 0){
+                    //A Lucene custom index is found that may index several columns.
+                    Map<String, List<CustomIndexMetadata>> indexedColumns = _luceneHelper.getIndexedColumns(column);
+                    for(String indexedColumn : indexedColumns.keySet()){
+                        List<CustomIndexMetadata> existingIndexes = result.get(indexedColumn);
+                        if(existingIndexes == null){
+                            existingIndexes = new ArrayList<>();
+                            result.put(indexedColumn, existingIndexes);
+                        }
+                        existingIndexes.addAll(indexedColumns.get(indexedColumn));
+                    }
+                }else{
+                    _logger.error("Index " + column.getIndex().getName()
+                            + " on " + column.getName()
+                            + " with class " + column.getIndex().getIndexClassName() + " not supported.");
+                }
+            }
+        }
+
+        if(_logger.isDebugEnabled()){
+            _logger.debug("Table " + tableMetadata.getName() + " has " + result.size() + " indexed columns.");
         }
         return result;
     }

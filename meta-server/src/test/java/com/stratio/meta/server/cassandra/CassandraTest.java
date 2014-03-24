@@ -3,19 +3,20 @@ package com.stratio.meta.server.cassandra;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.stratio.meta.common.result.MetaResult;
-import static org.junit.Assert.*;
-
-import org.junit.Test;
 
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.MetaQuery;
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class CassandraTest extends BasicServerCassandraTest {
     
     public MetaStatement testRegularStatement(String inputText, String methodName) {
         MetaStatement st = parser.parseStatement(inputText).getStatement();        
-        assertNotNull("Cannot parse "+methodName, st);             
-        assertTrue("Cannot parse "+methodName, inputText.equalsIgnoreCase(st.toString()+";"));
+        assertNotNull(st, "Cannot parse "+methodName);
+        assertTrue(inputText.equalsIgnoreCase(st.toString()+";"), "Cannot parse "+methodName);
         return st;
     }
 
@@ -27,7 +28,7 @@ public class CassandraTest extends BasicServerCassandraTest {
         } else {
             metaResult = metaServer.executeQuery("", st.translateToCQL());
         }            
-        assertNotNull("Cannot execute "+methodName+" in Cassandra", metaResult);
+        assertNotNull(metaResult, "Cannot execute "+methodName+" in Cassandra");
         return metaResult;
     }
 
@@ -36,20 +37,22 @@ public class CassandraTest extends BasicServerCassandraTest {
         return testDriverStatement(st, methodName);
     }
 
+    /*
     public void testMetaError(String inputText){
         MetaStatement st = parser.parseStatement(inputText).getStatement();
-        thrown.expect(NullPointerException.class);
+        //thrown.expect(NullPointerException.class);
         System.out.println(st.toString());
     }
+    */
 
     public void testRecoverableError(String inputText, String methodName){
         MetaQuery metaQuery = parser.parseStatement(inputText);
-        assertTrue("No errors reported in "+methodName, metaQuery.getResult().hasError());
+        assertTrue(metaQuery.getResult().hasError(), "No errors reported in "+methodName);
     }
 
     public void testCassandraError(MetaStatement st){
         Statement driverStmt = st.getDriverStatement();
-        thrown.expect(DriverException.class); 
+        //thrown.expect(DriverException.class);
         metaServer.executeQuery("", driverStmt);
     }        		                	                
 
@@ -58,7 +61,7 @@ public class CassandraTest extends BasicServerCassandraTest {
         String inputText = "CREATE KEYSPACE testKS WITH replication = {class: SimpleStrategy, replication_factor: 1}"
                 + " AND durable_writes = false;";		
         MetaStatement st = parser.parseStatement(inputText).getStatement();
-        assertNotNull("Cannot parse createKeyspace_basic", st);
+        assertNotNull(st, "Cannot parse createKeyspace_basic");
 
         boolean originalOK = false;
         boolean alternative1 = false;
@@ -73,7 +76,7 @@ public class CassandraTest extends BasicServerCassandraTest {
             alternative1 = true;
         }
 
-        assertTrue("Cannot parse createKeyspace_basic", (originalOK || alternative1));    
+        assertTrue((originalOK || alternative1), "Cannot parse createKeyspace_basic");
 
         testDriverStatement(st, "createKeyspace_basic");
     }
@@ -170,6 +173,7 @@ public class CassandraTest extends BasicServerCassandraTest {
     }
 
     // TEST CASSANDRA EXCEPTIONS
+
     public void insert_into_wrong_data_type(){   
         String inputText = "INSERT INTO testKS.users (name, gender, color, animal, food, password, age, code)"
                 + " VALUES(pepito, male, black, whale, plants, efg, twelve, 44);";
@@ -177,7 +181,7 @@ public class CassandraTest extends BasicServerCassandraTest {
         testCassandraError(st);                       
     }
 
-    @Test
+    @Test(expectedExceptions = DriverException.class)
     public void test_cassandra_wrong_1(){   
         createKeyspace_basic();
         createTable_basic_simple();

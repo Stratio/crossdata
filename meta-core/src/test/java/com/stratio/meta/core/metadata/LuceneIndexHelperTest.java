@@ -7,18 +7,16 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 public class LuceneIndexHelperTest extends BasicCoreCassandraTest {
 
@@ -35,11 +33,11 @@ public class LuceneIndexHelperTest extends BasicCoreCassandraTest {
         int numColumns = 6;
         LuceneIndexHelper lih = new LuceneIndexHelper(_session);
         Map<String, List<CustomIndexMetadata>> indexes = lih.processLuceneOptions(null, options);
-        assertEquals("Invalid number of indexes", numColumns, indexes.size());
+        assertEquals(numColumns, indexes.size(), "Invalid number of indexes");
 
         for(Map.Entry<String, List<CustomIndexMetadata>> entry : indexes.entrySet()){
-            assertEquals("Column has several indexes", 1, entry.getValue().size());
-            Assert.assertEquals("Invalid type of index", IndexType.LUCENE, entry.getValue().get(0).getIndexType());
+            assertEquals(1, entry.getValue().size(), "Column has several indexes");
+            assertEquals(IndexType.LUCENE, entry.getValue().get(0).getIndexType(), "Invalid type of index");
         }
     }
 
@@ -69,15 +67,15 @@ public class LuceneIndexHelperTest extends BasicCoreCassandraTest {
                 }
             }
         }
-        assertNotNull("Cannot index options.", root);
+        assertNotNull(root, "Cannot index options");
 
         Map<String, List<CustomIndexMetadata>> indexes = lih.processLuceneFields(null, root);
-        assertNotNull("Cannot retrieve mapped columns", indexes);
-        assertEquals("Invalid number of indexes", numColumns, indexes.size());
+        assertNotNull(indexes, "Cannot retrieve mapped columns");
+        assertEquals(numColumns, indexes.size(), "Invalid number of indexes");
 
         for(Map.Entry<String, List<CustomIndexMetadata>> entry : indexes.entrySet()){
-            assertEquals("Column has several indexes", 1, entry.getValue().size());
-            Assert.assertEquals("Invalid type of index", IndexType.LUCENE, entry.getValue().get(0).getIndexType());
+            assertEquals(1, entry.getValue().size(), "Column has several indexes");
+            assertEquals(IndexType.LUCENE, entry.getValue().get(0).getIndexType(), "Invalid type of index");
         }
     }
 
@@ -92,15 +90,13 @@ public class LuceneIndexHelperTest extends BasicCoreCassandraTest {
                 .getKeyspace(keyspace)
                 .getTable(table)
                 .getColumn(column);
-        assertNotNull("Cannot retrieve test column", cm);
+        assertNotNull(cm, "Cannot retrieve test column");
         LuceneIndexHelper lih = new LuceneIndexHelper(_session);
         Map<String, List<CustomIndexMetadata>> indexedColumns = lih.getIndexedColumns(cm);
-        assertEquals("Invalid number of indexes", numIndexedColumns, indexedColumns.size());
+        assertEquals(numIndexedColumns, indexedColumns.size(), "Invalid number of indexes");
         for(Map.Entry<String, List<CustomIndexMetadata>> entry : indexedColumns.entrySet()){
-            System.out.println(entry.getKey() + " - " + entry.getValue().size());
-            for(CustomIndexMetadata cim : entry.getValue()){
-                System.out.println("-> " + cim.getIndexType() + " - " + cim.getIndexOptions());
-            }
+            assertEquals(1, entry.getValue().size(), "Column has several indexes");
+            assertEquals(IndexType.LUCENE, entry.getValue().get(0).getIndexType(), "Invalid type of index");
         }
 
     }

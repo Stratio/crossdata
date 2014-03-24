@@ -1,9 +1,9 @@
 package com.stratio.meta.core.metadata;
 
 import com.stratio.meta.core.structures.IndexType;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.testng.Assert.assertEquals;
 
 public class CustomIndexMetadataTest {
 
@@ -11,8 +11,8 @@ public class CustomIndexMetadataTest {
     public void getIndexType(){
         CustomIndexMetadata cim1 = new CustomIndexMetadata(null, IndexType.DEFAULT);
         CustomIndexMetadata cim2 = new CustomIndexMetadata(null, IndexType.LUCENE);
-        assertEquals("Invalid index type", IndexType.DEFAULT, cim1.getIndexType());
-        assertEquals("Invalid index type", IndexType.LUCENE, cim2.getIndexType());
+        assertEquals(IndexType.DEFAULT, cim1.getIndexType(), "Invalid index type");
+        assertEquals(IndexType.LUCENE, cim2.getIndexType(), "Invalid index type");
     }
 
 }

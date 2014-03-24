@@ -1,18 +1,18 @@
 package com.stratio.meta.core.metadata;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.List;
+import java.util.Map;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
 
 public class MetadataManagerTest extends BasicCoreCassandraTest {
 
@@ -31,9 +31,9 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
 		String keyspace = "system";
 		int numTables = 16; //Number of system tables in Cassandra 2.0.5
 		KeyspaceMetadata metadata = _metadataManager.getKeyspaceMetadata(keyspace);
-		assertNotNull("Cannot retrieve keyspace metadata", metadata);
-		assertEquals("Retrieved keyspace name does not match", keyspace, metadata.getName());
-		assertTrue("Invalid number of columns", metadata.getTables().size() == numTables);
+		assertNotNull(metadata, "Cannot retrieve keyspace metadata");
+		assertEquals(keyspace, metadata.getName(), "Retrieved keyspace name does not match");
+		assertEquals(numTables, metadata.getTables().size(), "Invalid number of columns");
 	}
 	
 	@Test
@@ -49,8 +49,8 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
 		TableMetadata metadata = null;
 		for(String table : tables){
 			metadata = _metadataManager.getTableMetadata(keyspace, table);
-			assertNotNull("Cannot retrieve table metadata", metadata);
-			assertEquals("Retrieved table name does not match", table, metadata.getName());
+			assertNotNull(metadata, "Cannot retrieve table metadata");
+			assertEquals(table, metadata.getName(), "Retrieved table name does not match");
 		}
 	}
 	
@@ -72,49 +72,44 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
 		Class<?> [] columnClass = {String.class, Boolean.class, String.class, String.class};
 		
 		TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);
-		assertNotNull("Cannot retrieve table metadata", metadata);
-		assertEquals("Retrieved table name does not match", table, metadata.getName());
+		assertNotNull(metadata, "Cannot retrieve table metadata");
+		assertEquals(table, metadata.getName(), "Retrieved table name does not match");
 
-		assertTrue("Invalid number of columns", metadata.getColumns().size() == numColumns);
+		assertEquals(numColumns, metadata.getColumns().size(), "Invalid number of columns");
 		for(int columnIndex = 0; columnIndex < numColumns; columnIndex++){
 			ColumnMetadata cm = metadata.getColumn(columnNames[columnIndex]);
-			assertNotNull("Cannot retrieve column", cm);
-			assertEquals("Column type does not match", columnClass[columnIndex], cm.getType().asJavaClass());
+			assertNotNull(cm, "Cannot retrieve column");
+			assertEquals(columnClass[columnIndex], cm.getType().asJavaClass(), "Column type does not match");
 		}
 	}
 
-    @Test
+    //@Test
     public void luceneMetadata(){
         String keyspace = "demo";
         String table = "users";
         int numColumns = 7;
 
         TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);
-        assertNotNull("Cannot retrieve table metadata", metadata);
-        assertEquals("Retrieved table name does not match", table, metadata.getName());
-        assertEquals("Invalid number of columns", numColumns, metadata.getColumns().size());
+        assertNotNull(metadata, "Cannot retrieve table metadata");
+        assertEquals(table, metadata.getName(), "Retrieved table name does not match");
+        assertEquals(numColumns, metadata.getColumns().size(), "Invalid number of columns");
 
         ColumnMetadata cm = metadata.getColumn("lucene_index_1");
-        assertNotNull("Cannot retrieve lucene indexed column", cm);
+        assertNotNull(cm, "Cannot retrieve lucene indexed column");
         ColumnMetadata.IndexMetadata im = cm.getIndex();
-        assertNotNull("No index information found", im);
+        assertNotNull(im, "No index information found");
 
-        System.out.println("index.asCQLQuery: " + im.asCQLQuery());
-        System.out.println("IndexClassName: " + im.getIndexClassName());
-        System.out.println("IndexedColumn: " + im.getIndexedColumn());
-        System.out.println("IndexName: " + im.getName());
-        System.out.println("isCustomIndex: " + im.isCustomIndex());
-
+        fail("Missing checks on the resulting map");
 
     }
 
     @Test
     public void getKeyspacesNames(){
         List<String> keyspaces = _metadataManager.getKeyspacesNames();
-        assertNotNull("Cannot retrieve the list of keyspaces", keyspaces);
-        assertTrue("At least two keyspaces should be returned: " + keyspaces.toString(), keyspaces.size() >= 2);
-        assertTrue("system keyspace not found", keyspaces.contains("system"));
-        assertTrue("system_traces keyspace not found", keyspaces.contains("system_traces"));
+        assertNotNull(keyspaces, "Cannot retrieve the list of keyspaces");
+        assertTrue(keyspaces.size() >= 2, "At least two keyspaces should be returned: " + keyspaces.toString());
+        assertTrue(keyspaces.contains("system"), "system keyspace not found");
+        assertTrue(keyspaces.contains("system_traces"), "system_traces keyspace not found");
     }
 
     @Test
@@ -128,11 +123,41 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
                 "schema_columns", "schema_keyspaces",
                 "schema_triggers", "sstable_activity"};
         List<String> tables = _metadataManager.getTablesNames(keyspace);
-        assertNotNull("Cannot retrieve the list of table names", tables);
-        assertTrue("At least two keyspaces should be returned", tables.size() == systemTables.length);
+        assertNotNull(tables, "Cannot retrieve the list of table names");
+        assertEquals(systemTables.length, tables.size(), "At least two keyspaces should be returned");
         for(String table : systemTables){
-            assertTrue("system table not found", tables.contains(table));
+            assertTrue(tables.contains(table), "system table not found");
         }
+    }
+
+    @Test
+    public void testGetColumnIndexes(){
+
+        String keyspace = "demo";
+        String table = "users";
+        String [] columns = {
+                "age", "bool", "gender", //Two indexes, one on Cassandra and other in Lucene
+                "email", "name", "phrase"};
+
+        TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);
+        assertNotNull(metadata, "Cannot retrieve table metadata");
+        assertEquals(table, metadata.getName(), "Retrieved table name does not match");
+
+        Map<String, List<CustomIndexMetadata>> indexes = _metadataManager.getColumnIndexes(metadata);
+        //System.out.println("Returned: " + indexes.size() + " -> " + indexes.keySet().toString());
+        assertEquals(columns.length, indexes.size(), "Invalid number of indexes");
+
+        for(String column : columns){
+            assertTrue(indexes.containsKey(column), "Column does not have an index");
+            if(column.equals("age") || column.equals("bool") || column.equals("gender")){
+                assertEquals(indexes.get(column).size(), 2,
+                        "Invalid number of index associated with column " + column);
+            }else{
+                assertEquals(indexes.get(column).size(), 1,
+                        "Invalid number of index associated with column" + column);
+            }
+        }
+
     }
 
 }

@@ -7,10 +7,9 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.stratio.meta.core.parser.Parser;
 import org.apache.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,7 +18,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.assertTrue;
+
 
 public class BasicCoreCassandraTest {
 
@@ -35,9 +35,6 @@ public class BasicCoreCassandraTest {
      * Session to launch queries on C*.
      */
     protected static Session _session = null;
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     /**
      * Class logger.
@@ -75,7 +72,7 @@ public class BasicCoreCassandraTest {
      * host specified by {@code DEFAULT_HOST}.
      */
     public static void initCassandraConnection(){
-        assertTrue("Cannot connect to cassandra", connect(DEFAULT_HOST));
+        assertTrue(connect(DEFAULT_HOST), "Cannot connect to cassandra");
     }
 
     /**
