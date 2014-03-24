@@ -376,7 +376,7 @@ createTableStatement returns [CreateTableStatement crtast]
     T_CREATE
     T_TABLE
     (T_IF T_NOT T_EXISTS {ifNotExists_2 = true;})? 
-    name_table=getTableID
+    tablename=getTableID
     T_START_PARENTHESIS (            
                 ident_column1=(T_IDENT | T_LUCENE | T_KEY) type1=getDataType (T_PRIMARY T_KEY)? {columns.put($ident_column1.text,type1); Type_Primary_Key=1;}
                 (   
@@ -402,7 +402,7 @@ createTableStatement returns [CreateTableStatement crtast]
          )             
     T_END_PARENTHESIS (T_WITH {withPropierties=true;} properties=getMetaProperties 
     )?            
-    {$crtast = new CreateTableStatement(name_table,columns,primaryKey,clusterKey,properties,Type_Primary_Key,ifNotExists_2,withClusterKey,columnNumberPK,withPropierties);}
+    {$crtast = new CreateTableStatement(tablename,columns,primaryKey,clusterKey,properties,Type_Primary_Key,ifNotExists_2,withClusterKey,columnNumberPK,withPropierties);}
 ;        
 
         
@@ -413,7 +413,7 @@ alterTableStatement returns [AlterTableStatement altast]
     }:
     T_ALTER
     T_TABLE
-    name_table=getTableID
+    tablename=getTableID
     (T_ALTER column=(T_IDENT | T_LUCENE) T_TYPE type=T_IDENT {prop=1;}
         |T_ADD column=(T_IDENT | T_LUCENE) type=T_IDENT {prop=2;}
         |T_DROP column=(T_IDENT | T_LUCENE) {prop=3;}
@@ -422,7 +422,7 @@ alterTableStatement returns [AlterTableStatement altast]
             (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {option.put($identPropN.text, valuePropN);} )*
             {prop=4;}
     )
-    {$altast = new AlterTableStatement(name_table, $column.text, $type.text, option, prop);  }
+    {$altast = new AlterTableStatement(tablename, $column.text, $type.text, option, prop);  }
 ;
 
 selectStatement returns [SelectStatement slctst]

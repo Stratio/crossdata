@@ -42,7 +42,12 @@ public class MetaResult {
         return errorMessage;
     }
 
+    /**
+     * Set the error message and set {@code hasError} to true.
+     * @param errorMessage The error message.
+     */
     public void setErrorMessage(String errorMessage) {
+        this.hasError = true;
         this.errorMessage = errorMessage;
     }   
 

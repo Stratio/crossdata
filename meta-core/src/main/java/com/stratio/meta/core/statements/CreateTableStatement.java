@@ -19,8 +19,9 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.MetaProperty;
@@ -29,7 +30,7 @@ import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.ValidationException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -42,7 +43,7 @@ public class CreateTableStatement extends MetaStatement{
     
     private boolean keyspaceInc = false;
     private String keyspace;
-    private String name_table;    
+    private String tablename;
     private LinkedHashMap<String, String> columns;    
     private List<String> primaryKey;    
     private List<String> clusterKey;    
@@ -70,7 +71,7 @@ public class CreateTableStatement extends MetaStatement{
             name_table = ksAndTablename[1];
             keyspaceInc = true;
         }
-        this.name_table = name_table;
+        this.tablename = name_table;
         this.columns = columns;
         this.primaryKey = primaryKey;
         this.clusterKey = clusterKey;
@@ -169,18 +170,18 @@ public class CreateTableStatement extends MetaStatement{
         this.columns = columns;
     }   
     
-    public String getName_table() {
-        return name_table;
+    public String getTablename() {
+        return tablename;
     }
 
-    public void setName_table(String name_table) {
-        if(name_table.contains(".")){
-            String[] ksAndTablename = name_table.split("\\.");
+    public void setTablename(String tablename) {
+        if(tablename.contains(".")){
+            String[] ksAndTablename = tablename.split("\\.");
             keyspace = ksAndTablename[0];
-            name_table = ksAndTablename[1];
+            tablename = ksAndTablename[1];
             keyspaceInc = true;
         }
-        this.name_table = name_table;
+        this.tablename = tablename;
     }
 
     @Override
@@ -191,13 +192,13 @@ public class CreateTableStatement extends MetaStatement{
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         } 
-        sb.append(name_table);
+        sb.append(tablename);
         
         switch(Type_Primary_Key){
             case 1: {
                 Set keySet = columns.keySet();
                 int i = 0;
-                sb.append("(");
+                sb.append(" (");
                 
                 for (Iterator it = keySet.iterator();it.hasNext();){
                     String key = (String) it.next();
@@ -213,7 +214,7 @@ public class CreateTableStatement extends MetaStatement{
             case 2: {
                 Set keySet = columns.keySet();
                 int i = 0;
-                sb.append("(");
+                sb.append(" (");
                 for (Iterator it = keySet.iterator();it.hasNext();){
                     String key = (String) it.next();
                     String vp= columns.get(key);
@@ -227,7 +228,7 @@ public class CreateTableStatement extends MetaStatement{
             case 3: {
                 Set keySet = columns.keySet();
                 int i = 0;
-                sb.append("(");
+                sb.append(" (");
                 for (Iterator it = keySet.iterator();it.hasNext();){
                     String key = (String) it.next();
                     String vp= columns.get(key);
@@ -251,7 +252,7 @@ public class CreateTableStatement extends MetaStatement{
             case 4: {
                 Set keySet = columns.keySet();
                 int i = 0;
-                sb.append("(");
+                sb.append(" (");
                 for (Iterator it = keySet.iterator();it.hasNext();){
                     String key = (String) it.next();
                     String vp= columns.get(key);
@@ -305,6 +306,85 @@ public class CreateTableStatement extends MetaStatement{
     /** {@inheritDoc} */
     @Override
     public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
+        MetaResult result = validateKeyspaceAndTable(metadata, targetKeyspace);
+        if(!result.hasError()){
+            result = validateColumns();
+        }
+        if(!result.hasError()){
+            result = validateProperties();
+        }
+        return result;
+    }
+
+    /**
+     * Validate that a valid keyspace is present, and that the table does not
+     * exits unless {@code ifNotExists} has been specified.
+     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+     *                 the required information.
+     * @param targetKeyspace The target keyspace where the query will be executed.
+     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     */
+    private MetaResult validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
+        MetaResult result = new MetaResult();
+        //Get the effective keyspace based on the user specification during the create
+        //sentence, or taking the keyspace in use in the user session.
+        String effectiveKeyspace = null;
+        if(keyspaceInc){
+            effectiveKeyspace = keyspace;
+        }else{
+            effectiveKeyspace = targetKeyspace;
+        }
+
+        //Check that the keyspace exists, and that the table does not exits.
+        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
+        }else{
+            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+            if(ksMetadata == null){
+                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
+            }else {
+                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
+                if (tableMetadata != null && !ifNotExists) {
+                    result.setErrorMessage("Table " + tablename + " already exists.");
+                }
+            }
+
+        }
+        return result;
+    }
+
+    /**
+     * Validate that the primary key is created and uses a set
+     * of existing columns. The same checks are applied to the clustering
+     * key if it exists.
+     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     */
+    private MetaResult validateColumns(){
+        MetaResult result = new MetaResult();
+        for (String pk : primaryKey) {
+            if(!columns.containsKey(pk)){
+                result.setErrorMessage("Missing declaration for Primary Key column " + pk);
+            }
+        }
+
+        for(String ck : clusterKey){
+            if(!columns.containsKey(ck)){
+                result.setErrorMessage("Missing declaration for Clustering Key column " + ck);
+            }
+            if(primaryKey.contains(ck)){
+               result.setErrorMessage("Column " + ck + " found as part of primary and clustering key.");
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Validate the semantics of the ephemeral properties.
+     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     */
+    private MetaResult validateProperties(){
+        MetaResult result = new MetaResult();
         if(withProperties){
             for(MetaProperty property: properties){
                 if(property.getType() == MetaProperty.TYPE_NAME_VALUE){
@@ -312,26 +392,26 @@ public class CreateTableStatement extends MetaStatement{
                     // If property ephemeral is present, it must be a boolean type
                     if(propertyNameValue.getName().equalsIgnoreCase("ephemeral")){
                         if(propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
-                            throw new ValidationException("Property 'ephemeral' must be a boolean");
+                            result.setErrorMessage("Property 'ephemeral' must be a boolean");
                         }
                         break;
-                    // If property ephemeral_tuples is present, it must be a integer type    
+                        // If property ephemeral_tuples is present, it must be a integer type
                     } else if(propertyNameValue.getName().equalsIgnoreCase("ephemeral_tuples")){
                         if(propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
-                            throw new ValidationException("Property 'ephemeral' must be a boolean");
+                            result.setErrorMessage("Property 'ephemeral' must be a boolean");
                         }
                         break;
-                    // If property ephemeral_persist_on is present, it must be a string type
+                        // If property ephemeral_persist_on is present, it must be a string type
                     } else if(propertyNameValue.getName().equalsIgnoreCase("ephemeral_persist_on")){
                         if(propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
-                            throw new ValidationException("Property 'ephemeral_persist_on' must be a string");
+                            result.setErrorMessage("Property 'ephemeral_persist_on' must be a string");
                         }
                         break;
                     }
                 }
             }
         }
-        return null;
+        return result;
     }
 
     @Override
@@ -411,6 +491,8 @@ public class CreateTableStatement extends MetaStatement{
     @Override
     public List<MetaStep> getPlan() {
         ArrayList<MetaStep> steps = new ArrayList<>();
+
+        //Check ifNotExists
         return steps;
     }
     

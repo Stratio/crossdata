@@ -19,7 +19,7 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -37,23 +37,23 @@ import java.util.Map;
 
 public class CreateKeyspaceStatement extends MetaStatement {
     
-    private String ident;
+    private String name;
     private boolean ifNotExists;
     private HashMap<String, ValueProperty> properties;
 
-    public CreateKeyspaceStatement(String ident, boolean ifNotExists, Map<String, ValueProperty> properties) {
-        this.ident = ident;
+    public CreateKeyspaceStatement(String name, boolean ifNotExists, Map<String, ValueProperty> properties) {
+        this.name = name;
         this.ifNotExists = ifNotExists;
         this.properties = new HashMap<>();
         this.properties.putAll(properties);
     }   
     
-    public String getIdent() {
-        return ident;
+    public String getName() {
+        return name;
     }
 
-    public void setIdent(String ident) {
-        this.ident = ident;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean isIfNotExists() {
@@ -78,7 +78,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
         if(ifNotExists){
             sb.append("IF NOT EXISTS ");
         }
-        sb.append(ident);
+        sb.append(name);
         sb.append(" WITH ");
         sb.append(ParserUtils.stringMap(properties, " = ", " AND "));
         return sb.toString();
@@ -86,7 +86,24 @@ public class CreateKeyspaceStatement extends MetaStatement {
 
     @Override
     public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
+        MetaResult result = new MetaResult();
+        if(name!= null && name.length() > 0) {
+            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(name);
+            if(ksMetadata != null && !ifNotExists){
+                result.setHasError();
+                result.setErrorMessage("Keyspace " + name + " already exists.");
+            }
+        }else{
+            result.setHasError();
+            result.setErrorMessage("Empty keyspace name found.");
+        }
+
+        if(properties.size() == 0 || !properties.containsKey("replication")){
+            result.setHasError();
+            result.setErrorMessage("Missing mandatory replication property.");
+        }
+
+        return result;
     }
 
     //TODO Remove

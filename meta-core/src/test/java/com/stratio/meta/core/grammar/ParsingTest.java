@@ -434,50 +434,50 @@ public class ParsingTest {
 
     @Test
     public void createTable_basic() {
-        String inputText = "create table adsa(algo text primary key, algo2 int, algo3 bool);";
+        String inputText = "create table adsa (algo text primary key, algo2 int, algo3 bool);";
         testRegularStatement(inputText, "createTable_basic");
     }
 
     @Test
     public void createTable_basic_2() {
-        String inputText = "create table adsa(algo text, algo2 int primary key, algo3 bool);";
+        String inputText = "create table adsa (algo text, algo2 int primary key, algo3 bool);";
         testRegularStatement(inputText, "createTable_basic_2");
     }
 
     @Test
     public void createTable_basic_3() {
-        String inputText = "create table adsa(algo text, algo2 int, algo3 bool primary key);";
+        String inputText = "create table adsa (algo text, algo2 int, algo3 bool primary key);";
         testRegularStatement(inputText, "createTable_basic_3");
     }
 
     @Test
     public void createTable_basic_4() {
-        String inputText = "create table adsa(algo text, algo2 int, algo3 bool, primary key (algo));";
+        String inputText = "create table adsa (algo text, algo2 int, algo3 bool, primary key (algo));";
         testRegularStatement(inputText, "createTable_basic_4");
     }
 
     @Test
     public void createTable_basic_5() {
-        String inputText = "create table adsa(algo text, algo2 int, algo3 bool, primary key (algo, algo2));";
+        String inputText = "create table adsa (algo text, algo2 int, algo3 bool, primary key (algo, algo2));";
         testRegularStatement(inputText, "createTable_basic_5");
     }
 
     @Test
     public void createTable_basic_6() {
-        String inputText = "create table adsa(algo text, algo2 int, algo3 bool, primary key ((algo, algo2), algo3));";
+        String inputText = "create table adsa (algo text, algo2 int, algo3 bool, primary key ((algo, algo2), algo3));";
         testRegularStatement(inputText, "createTable_basic_6");
     }
 
     @Test
     public void createTable_basic_7() {
-        String inputText = "create table adsa(algo text, algo2 int, algo3 bool, primary key ((algo, algo2), algo3)) "
+        String inputText = "create table adsa (algo text, algo2 int, algo3 bool, primary key ((algo, algo2), algo3)) "
                 + "with propiedad1=prop1 and propiedad2=2 and propiedad3=3.0;";
         testRegularStatement(inputText, "createTable_basic_7");
     }
 
     @Test
     public void createTable_with_many_properties() {
-        String inputText = "CREATE TABLE key_space1.users(name varchar, password varchar, color varchar, gender varchar,"
+        String inputText = "CREATE TABLE key_space1.users (name varchar, password varchar, color varchar, gender varchar,"
                 + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                 + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
                 + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
