@@ -29,7 +29,7 @@ object RemoteClientActor{
 
 class RemoteClientActor(clusterClient:ActorRef) extends Actor{
   override def receive: Actor.Receive = {
-    case Query(query)=> clusterClient forward ClusterClient.Send("/user/echo", Query(query), localAffinity = true)
+    //case Query(query)=> clusterClient forward ClusterClient.Send("/user/echo", Query(query), localAffinity = true)
     case Connect(msg) => clusterClient forward ClusterClient.Send("/user/server-status",Connect(msg),localAffinity = true)
     case _ => println("BASURA")
   }

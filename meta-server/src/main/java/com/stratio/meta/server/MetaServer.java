@@ -94,18 +94,18 @@ public class MetaServer {
             return metaQuery.getResult();
         }
         // VALIDATOR ACTOR
-        MetaQuery metaQueryValidated = engine.getValidator().validateQuery(metaQuery);
-        if(metaQueryValidated.hasError()){ // Invalid metadata
-            return metaQueryValidated.getResult();
+        metaQuery = engine.getValidator().validateQuery(metaQuery);
+        if(metaQuery.hasError()){ // Invalid metadata
+            return metaQuery.getResult();
         }
         // PLANNER ACTOR
-        MetaQuery metaQueryPlanned = engine.getPlanner().planQuery(metaQueryValidated);
-        if(metaQueryPlanned.hasError()){ // Cannot plan
-            return metaQueryPlanned.getResult();
+        metaQuery = engine.getPlanner().planQuery(metaQuery);
+        if(metaQuery.hasError()){ // Cannot plan
+            return metaQuery.getResult();
         }                
         // EXECUTOR ACTOR
-        MetaQuery metaQueryExecuted = engine.getExecutor().executeQuery(metaQueryPlanned); 
-        return metaQueryExecuted.getResult();
+        metaQuery = engine.getExecutor().executeQuery(metaQuery); 
+        return metaQuery.getResult();
     }
 
     public Metadata getMetadata() {
