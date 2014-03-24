@@ -2,6 +2,7 @@ package com.stratio.meta.core.metadata;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.core.structures.IndexType;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -49,7 +50,7 @@ public class TableIndexMetadata {
 
                 CustomIndexMetadata toAdd = null;
                 if(!column.getIndex().isCustomIndex()){
-                    indexes.add(new CustomIndexMetadata(column, IndexType.COMPOSITES));
+                    indexes.add(new CustomIndexMetadata(column, IndexType.DEFAULT));
                 }else if (column.getIndex().isCustomIndex()
                         && column.getIndex().getIndexClassName().compareTo("org.apache.cassandra.db.index.stratio.RowIndex") == 0){
                     result.putAll(processCustomIndex(column));

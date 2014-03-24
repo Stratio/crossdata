@@ -1,32 +1,26 @@
-package com.stratio.meta.server.metadata;
+package com.stratio.meta.core.metadata;
 
-import com.stratio.meta.core.metadata.TableIndexMetadata;
-import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.datastax.driver.core.TableMetadata;
-import com.stratio.meta.core.metadata.CustomIndexMetadata;
-import com.stratio.meta.core.metadata.TableIndexMetadata;
-import com.stratio.meta.server.cassandra.BasicCassandraTest;
-import com.stratio.meta.server.metadata.MetadataManager;
+import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 
-public class TableIndexMetadataTest extends BasicCassandraTest{
+public class TableIndexMetadataTest extends BasicCoreCassandraTest{
 
-    private static final MetadataManager _metadataManager = new MetadataManager();
+    private static final MetadataManager _metadataManager = new MetadataManager(_session);
 
     @BeforeClass
     public static void setUpBeforeClass(){
-        BasicCassandraTest.setUpBeforeClass();
-        BasicCassandraTest.loadTestData("demo", "demoKeyspace.cql");
+        BasicCoreCassandraTest.setUpBeforeClass();
+        BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
         _metadataManager.loadMetadata();
     }
 

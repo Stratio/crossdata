@@ -1,9 +1,12 @@
-package com.stratio.meta.server.metadata;
+package com.stratio.meta.core.metadata;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.Session;
+
+
 import org.apache.log4j.Logger;
-
-import com.stratio.meta.server.MetaServer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +21,12 @@ public class MetadataManager {
 	 * Cluster metadata in Cassandra.
 	 */
 	private Metadata _clusterMetadata = null;
-        private final MetaServer metaServer = new MetaServer();
-	
+
+    /**
+     * Cassandra session used to query the custom index information.
+     */
+    private final Session _session;
+
 	/**
 	 * Class logger.
 	 */
@@ -27,31 +34,18 @@ public class MetadataManager {
 	
 	/**
 	 * Class constructor.
+     * @param cassandraSession The Cassandra session used to retrieve index metadata.
 	 */
-	public MetadataManager(){
+	public MetadataManager(Session cassandraSession){
+        _session = cassandraSession;
 	}
 
-    /**
-     * Establish the connection with Cassandra in order to be able to retrieve
-     * metadata from the system columns.
-     * @param host The target host.
-     * @return Whether the connection has been established or not.
-     */
-    protected boolean connect(String host){
-        boolean result = false;
-        String ks = "system";
-        Cluster c = Cluster.builder().addContactPoint(host).build();
-        Session _session = c.connect(ks);
-        result = ks.equals(_session.getLoggedKeyspace());
-        return result;
-    }
-	
 	/**
 	 * Load all Metadata from Cassandra.
 	 * @return Whether the metadata has been loaded or not.
 	 */
 	public boolean loadMetadata(){
-		_clusterMetadata = metaServer.getMetadata();
+		_clusterMetadata = _session.getCluster().getMetadata();
 		return _clusterMetadata != null;
 	}
 	

@@ -7,7 +7,8 @@ import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
-import com.stratio.meta.core.executor.Executor;
+import com.datastax.driver.core.Session;
+import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.utils.MetaQuery;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonFactory;
@@ -29,7 +30,18 @@ public class LuceneIndexHelper {
      */
     private static final Logger _logger = Logger.getLogger(LuceneIndexHelper.class.getName());
 
-    //private final Executor _executor;
+    /**
+     * Session used to retrieve custom Lucene index metadata.
+     */
+    private final Session _session;
+
+    /**
+     * Class constructor.
+     * @param session The session used to retrieve Lucene index metadata.
+     */
+    public LuceneIndexHelper(Session session){
+        _session = session;
+    }
 
     /**
      * Get the map of columns indexed by the Lucene index associated with {@code column}.
@@ -47,11 +59,10 @@ public class LuceneIndexHelper {
         sb.append("'");
         MetaQuery mq = new MetaQuery();
         mq.setQuery(sb.toString());
-        ResultSet indexOptions = null; //Executor.executeQuery("system", mq, true);
+        ResultSet indexOptions = _session.execute(sb.toString());
         Row options = indexOptions.one();
         if(options != null){
-            System.out.println("index options: " + indexOptions.one().toString());
-            result.putAll(processLuceneOptions(column, indexOptions.one().getString("index_options")));
+            result.putAll(processLuceneOptions(column, options.getString("index_options")));
         }
         return result;
     }
@@ -63,7 +74,7 @@ public class LuceneIndexHelper {
      * be processed.
      */
     public Map<String, List<CustomIndexMetadata>> processLuceneOptions(ColumnMetadata metadata, String options){
-        Map<String, List<CustomIndexMetadata>> result = null;
+        Map<String, List<CustomIndexMetadata>> result = new HashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
         JsonFactory factory = mapper.getJsonFactory();
@@ -77,11 +88,17 @@ public class LuceneIndexHelper {
                 String schemaString = schema.toString()
                         .substring(1, schema.toString().length() - 1)
                         .replace("\\", "");
-
+                System.out.println("-> " + schema.toString());
+                System.out.println("--> " + schemaString);
+                //System.out.println("--> " + schema.getElements().toString());
+                //System.out.println("--> " + schema.get("fields").asText());
+                //System.out.println("---> " + schema.getFieldNames().toString());
                 JsonNode schemaRoot = mapper.readTree(factory.createJsonParser(schemaString));
+                System.out.println("----> " + schemaRoot.asText());
                 if(schemaRoot != null && schemaRoot.get("fields") != null){
                     JsonNode fields = schemaRoot.get("fields");
-                    result = processLuceneFields(metadata, fields);
+                    System.out.println("Index fields: #"+fields.toString()+"#");
+                    result.putAll(processLuceneFields(metadata, fields));
                 }else{
                     _logger.error("Fields not found in Lucene index with JSON: " + root.toString());
                 }
@@ -110,8 +127,8 @@ public class LuceneIndexHelper {
         Iterator<String> fieldIt = fields.getFieldNames();
         while(fieldIt.hasNext()){
             String fieldName = fieldIt.next();
-            //System.out.println("field: " + fieldName + " -> " + fields.get(fieldName).toString());
-            CustomIndexMetadata cim = new CustomIndexMetadata(metadata, IndexType.CUSTOM);
+            System.out.println("field: " + fieldName + " -> " + fields.get(fieldName).toString());
+            CustomIndexMetadata cim = new CustomIndexMetadata(metadata, IndexType.LUCENE);
             cim.setIndexOptions(fields.get(fieldName).toString());
             List<CustomIndexMetadata> indexes = result.get(fieldName);
             if(indexes == null){

@@ -10,7 +10,7 @@ import org.junit.Test;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.MetaQuery;
 
-public class CassandraTest extends BasicCassandraTest {                	      	
+public class CassandraTest extends BasicServerCassandraTest {
     
     public MetaStatement testRegularStatement(String inputText, String methodName) {
         MetaStatement st = parser.parseStatement(inputText).getStatement();        

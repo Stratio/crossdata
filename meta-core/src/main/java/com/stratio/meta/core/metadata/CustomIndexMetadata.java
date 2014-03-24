@@ -1,6 +1,7 @@
 package com.stratio.meta.core.metadata;
 
 import com.datastax.driver.core.ColumnMetadata;
+import com.stratio.meta.core.structures.IndexType;
 
 public class CustomIndexMetadata {
 
@@ -8,6 +9,11 @@ public class CustomIndexMetadata {
      * Type of index associated with the column.
      */
     private final IndexType _type;
+
+    /**
+     * Index target column.
+     */
+    private final ColumnMetadata _column;
 
     /**
      * Index options.
@@ -21,6 +27,7 @@ public class CustomIndexMetadata {
      */
     public CustomIndexMetadata(ColumnMetadata columnMetadata, IndexType type){
         _type = type;
+        _column = columnMetadata;
     }
 
     /**
@@ -28,8 +35,7 @@ public class CustomIndexMetadata {
      * @return The type of index.
      */
     public IndexType getIndexType(){
-        IndexType result = null;
-        return result;
+        return _type;
     }
 
     /**
