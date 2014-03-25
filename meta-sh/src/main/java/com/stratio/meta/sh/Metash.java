@@ -201,15 +201,15 @@ public class Metash {
                         logger.error(exc.getMessage());
                     }
             }
-                   
-            saveHistory(console, file, sdf);            
+            saveHistory(console, file, sdf);  
+            logger.info("History saved");
             metaDriver.close(); 
-            
+            logger.info("Driver connections closed");
         } catch (IOException ex) {
             logger.error("Cannot launch Metash, no console present", ex);
         }
     }
-
+ 
     /**
      * Launch the META server shell.
      * @param args The list of arguments. Not supported at the moment.
@@ -217,6 +217,7 @@ public class Metash {
     public static void main(String[] args) {
         Metash sh = new Metash();
         sh.loop();
+        System.exit(0);
     }
 
 }

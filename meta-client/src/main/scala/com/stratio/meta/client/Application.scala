@@ -86,12 +86,12 @@ object Application extends App{
     Console.readLine() match {
       case QuitCommand  => return
       case msg:String            => {
-        val future= (remoteClientActor ask Query(msg)).mapTo[Reply]
+        /*val future= (remoteClientActor ask Query(msg)).mapTo[Reply]
         future.onComplete(answer=>{
           if(answer.isSuccess){
             println(answer.get.msg)
           }
-        })
+        })*/
       }
     }
     commandLoop()
