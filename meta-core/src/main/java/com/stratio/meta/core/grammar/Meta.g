@@ -267,7 +267,7 @@ listStatement returns [ListStatement ls]:
 //REMOVE UDF \"jar.name\";"
 removeUDFStatement returns [RemoveUDFStatement rus]:
 	//T_REMOVE 'UDF' (T_QUOTE | T_SINGLE_QUOTE) jar=getTerm {$rus = new RemoveUDFStatement(jar);} (T_QUOTE | T_SINGLE_QUOTE)
-	T_REMOVE T_UDF (T_QUOTE | T_SINGLE_QUOTE) jar=getTerm {$rus = new RemoveUDFStatement(jar.getTerm());} (T_QUOTE | T_SINGLE_QUOTE)
+	T_REMOVE T_UDF (T_QUOTE | T_SINGLE_QUOTE) jar=getTerm {$rus = new RemoveUDFStatement(jar.toString());} (T_QUOTE | T_SINGLE_QUOTE)
 	;
 
 //DROP INDEX IF EXISTS index_name;
@@ -298,7 +298,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 		field=(T_IDENT | T_LUCENE) {$cis.addColumn($field.text);}
 	)*
 	T_END_PARENTHESIS
-	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.getTerm());})?
+	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.toString());})?
 	(T_WITH T_OPTIONS key=T_IDENT T_EQUAL value=getValueProperty {$cis.addOption($key.text, value);}
 		(T_AND key=T_IDENT T_EQUAL value=getValueProperty {$cis.addOption($key.text, value);} )*
 	)?
@@ -322,8 +322,8 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
     (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (optN=getOption {options.add(optN);})*)?
     T_SET assig1=getAssignment {assignments.add(assig1);} (T_COMMA assigN=getAssignment {assignments.add(assigN);})*
     T_WHERE rel1=getRelation {whereclauses.add(rel1);} (T_AND relN=getRelation {whereclauses.add(relN);})*
-    (T_IF id1=T_IDENT T_EQUAL term1=getTerm {condsInc = true; conditions.put($id1.text, new Term(term1.getTerm()));} 
-                    (T_AND idN=T_IDENT T_EQUAL termN=getTerm {conditions.put($idN.text, new Term(termN.getTerm()));})*)?
+    (T_IF id1=T_IDENT T_EQUAL term1=getTerm {condsInc = true; conditions.put($id1.text, term1);}
+                    (T_AND idN=T_IDENT T_EQUAL termN=getTerm {conditions.put($idN.text, termN);})*)?
     { 
         if(optsInc)
             if(condsInc)
@@ -871,8 +871,8 @@ getList returns [List list]
     @init{
         list = new ArrayList<String>();
     }:
-    term1=getTerm {list.add(term1.getTerm());}
-    (T_COMMA termN=getTerm {list.add(termN.getTerm());})*
+    term1=getTerm {list.add(term1.toString());}
+    (T_COMMA termN=getTerm {list.add(termN.toString());})*
     ;
 
 getTerms returns [List list]
@@ -887,8 +887,8 @@ getSet returns [Set set]
     @init{
         set = new HashSet<String>();
     }:
-    term1=getTerm {set.add(term1.getTerm());}
-    (T_COMMA termN=getTerm {set.add(termN.getTerm());})*
+    term1=getTerm {set.add(term1.toString());}
+    (T_COMMA termN=getTerm {set.add(termN.toString());})*
     ;
 
 getTermOrLiteral returns [ValueCell vc]
@@ -915,19 +915,19 @@ getTableID returns [String tableID]
 
 getTerm returns [Term term]:
     term1=getPartialTerm ( {$term = term1;} | 
-    T_AT term2=getPartialTerm {$term = new Term(term1.getTerm()+"@"+term2.getTerm());} )
+    T_AT term2=getPartialTerm {$term = new StringTerm(term1.getTermValue()+"@"+term2.getTermValue());} )
 ;
 
 getPartialTerm returns [Term term]:
-    ident=T_IDENT {$term = new Term($ident.text);}
-    | constant=T_CONSTANT {$term = new Term($constant.text);}
-    | '1' {$term = new Term("1");}
-    | T_FALSE {$term = new Term("false");}
-    | T_TRUE {$term = new Term("true");}
-    | ksAndTn=T_KS_AND_TN {$term = new Term($ksAndTn.text);}
-    | noIdent=T_TERM {$term = new Term($noIdent.text);} 
-    | path=T_PATH {$term = new Term($path.text);}
-    | qLiteral=QUOTED_LITERAL {$term = new Term($qLiteral.text, true);}
+    ident=T_IDENT {$term = new StringTerm($ident.text);}
+    | constant=T_CONSTANT {$term = new IntegerTerm($constant.text);}
+    | '1' {$term = new IntegerTerm("1");}
+    | T_FALSE {$term = new BooleanTerm("false");}
+    | T_TRUE {$term = new BooleanTerm("true");}
+    | ksAndTn=T_KS_AND_TN {$term = new StringTerm($ksAndTn.text);}
+    | noIdent=T_TERM {$term = new StringTerm($noIdent.text);}
+    | path=T_PATH {$term = new StringTerm($path.text);}
+    | qLiteral=QUOTED_LITERAL {$term = new StringTerm($qLiteral.text, true);}
 ;
 
 getMapLiteral returns [Map<String, String> mapTerms]
@@ -935,8 +935,8 @@ getMapLiteral returns [Map<String, String> mapTerms]
         $mapTerms = new HashMap<>();
     }:
     T_START_SBRACKET 
-    (leftTerm1=getTerm T_COLON rightTerm1=getTerm {$mapTerms.put(leftTerm1.getTerm(), rightTerm1.getTerm());}
-    (T_COMMA leftTermN=getTerm T_COLON rightTermN=getTerm {$mapTerms.put(leftTermN.getTerm(), rightTermN.getTerm());})*)?
+    (leftTerm1=getTerm T_COLON rightTerm1=getTerm {$mapTerms.put(leftTerm1.toString(), rightTerm1.toString());}
+    (T_COMMA leftTermN=getTerm T_COLON rightTermN=getTerm {$mapTerms.put(leftTermN.toString(), rightTermN.toString());})*)?
     T_END_SBRACKET
     ;
 

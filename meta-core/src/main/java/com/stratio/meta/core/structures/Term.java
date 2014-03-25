@@ -19,49 +19,18 @@
 
 package com.stratio.meta.core.structures;
 
-public class Term extends ValueCell {
-        
-    private String term;
-    private boolean quotedLiteral = false;
+public abstract class Term extends ValueCell {
 
-    public Term(String term, boolean quotedLiteral) {
-        this.term = term;
-        this.quotedLiteral = quotedLiteral;
-    }   
-    
-    public Term(String term) {
-        this.term = term;
-        this.type = TYPE_TERM;
-    }   
-    
-    public String getTerm() {
-        return term;
-    }
+    /**
+     * Get the Term Java Class.
+     * @return A {@link java.lang.Class}.
+     */
+    public abstract Class getTermClass();
 
-    public void setTerm(String term) {
-        this.term = term;
-    }
-    
-    public void setTerm(String term, boolean quotedLiteral) {
-        this.term = term;
-        this.quotedLiteral = quotedLiteral;
-    }
-
-    public boolean isQuotedLiteral() {
-        return quotedLiteral;
-    }
-
-    public void setQuotedLiteral(boolean quotedLiteral) {
-        this.quotedLiteral = quotedLiteral;
-    }    
-
-    @Override
-    public String toString() {
-        if(this.isQuotedLiteral()){
-            return "'"+term+"'";
-        } else {
-            return term;
-        }
-    }
+    /**
+     * Get the term value.
+     * @return A {@link java.lang.Object} with the value.
+     */
+    public abstract Object getTermValue();
     
 }

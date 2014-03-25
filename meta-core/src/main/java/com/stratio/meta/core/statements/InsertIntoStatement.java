@@ -19,13 +19,17 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Using;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
+import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.ValueCell;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
@@ -242,7 +246,7 @@ public class InsertIntoStatement extends MetaStatement {
         if(typeValues == TYPE_SELECT_CLAUSE){
            sb.append(selectStatement.toString());
         } else {
-           sb.append("VALUES(");
+           sb.append("VALUES (");
            sb.append(ParserUtils.stringList(cellValues, ", "));
            sb.append(")");
         }        
@@ -259,7 +263,72 @@ public class InsertIntoStatement extends MetaStatement {
     /** {@inheritDoc} */
     @Override
     public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
+        MetaResult result = new MetaResult();
+        //Check that the table exists.
+
+        String effectiveKeyspace = null;
+        if(keyspaceInc){
+            effectiveKeyspace = keyspace;
+        }else{
+            effectiveKeyspace = targetKeyspace;
+        }
+
+        TableMetadata tableMetadata = null;
+        //Check that the keyspace exists, and that the table does not exits.
+        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
+        }else{
+            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+            if(ksMetadata == null){
+                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
+            }else {
+                tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
+                if (tableMetadata != null && !ifNotExists) {
+                    result.setErrorMessage("Table " + tablename + " already exists.");
+                }
+            }
+        }
+
+        if(tableMetadata !=  null){
+            if(typeValues == TYPE_SELECT_CLAUSE){
+                result.setErrorMessage("INSERT INTO with subqueries not supported.");
+            }else {
+                result = validateColumns(tableMetadata);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Check that the specified columns exist on the target table and that
+     * the semantics of the assigned values match.
+     * @param tableMetadata Table metadata associated with the target table.
+     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     */
+    private MetaResult validateColumns(TableMetadata tableMetadata) {
+        MetaResult result = new MetaResult();
+
+        ColumnMetadata cm = null;
+        if(cellValues.size() == ids.size()){
+            for(int index = 0; index < cellValues.size(); index++){
+                cm = tableMetadata.getColumn(ids.get(index));
+                if(cm != null){
+                    Term t = Term.class.cast(cellValues.get(index));
+                    if(!cm.getType().asJavaClass().equals(t.getTermClass())){
+                        result.setErrorMessage("Column " + ids.get(index)
+                                + " of type " + cm.getType().asJavaClass()
+                                + " does not accept " + t.getTermClass()
+                                + " values ("+cellValues.get(index)+")");
+                    }
+                }else{
+                    result.setErrorMessage("Column " + ids.get(index)  + " not found in " + tableMetadata.getName());
+                }
+            }
+        }else{
+            result.setErrorMessage("Number of columns and values does not match.");
+        }
+        return result;
     }
 
     @Override

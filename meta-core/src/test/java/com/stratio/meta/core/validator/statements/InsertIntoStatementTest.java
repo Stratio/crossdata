@@ -19,6 +19,7 @@
 
 package com.stratio.meta.core.validator.statements;
 
+
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.grammar.ParsingTest;
@@ -31,7 +32,7 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-public class CreateTableStatementTest extends BasicCoreCassandraTest {
+public class InsertIntoStatementTest extends BasicCoreCassandraTest {
 
     private static MetadataManager _metadataManager = null;
 
@@ -47,7 +48,7 @@ public class CreateTableStatementTest extends BasicCoreCassandraTest {
 
     @Test
     public void validate_basic_ok(){
-        String inputText = "CREATE TABLE demo.new_table (id int, name text, check bool, PRIMARY KEY (id, name));";
+        String inputText = "INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
         MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_basic_ok");
         MetaResult result = stmt.validate(_metadataManager, "");
         assertNotNull(result, "Sentence validation not supported");
@@ -55,29 +56,48 @@ public class CreateTableStatementTest extends BasicCoreCassandraTest {
     }
 
     @Test
-    public void validate_ifNotExits_ok(){
-        String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name varchar, gender varchar, email varchar, age int, bool boolean, phrase text, lucene_index_1 text, PRIMARY KEY ((name, gender), email, age));";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_ifNotExits_ok");
-        MetaResult result = stmt.validate(_metadataManager, "");
+    public void validate_basic_userKs_ok(){
+        String inputText = "INSERT INTO users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
+        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_basic_userKs_ok");
+        MetaResult result = stmt.validate(_metadataManager, "demo");
         assertNotNull(result, "Sentence validation not supported");
         assertFalse(result.hasError(), "Cannot validate sentence");
     }
 
     @Test
-    public void validate_pkNotDeclared(){
-        String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name varchar, gender varchar, email varchar, age int, bool boolean, phrase text, lucene_index_1 text, PRIMARY KEY ((unknown, gender), email, age));";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_pkNotDeclared");
-        MetaResult result = stmt.validate(_metadataManager, "");
+    public void validate_unknownColumn(){
+        String inputText = "INSERT INTO users (unknown, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
+        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_unknownColumn");
+        MetaResult result = stmt.validate(_metadataManager, "demo");
         assertNotNull(result, "Sentence validation not supported");
         assertTrue(result.hasError(), "Validation should fail");
     }
 
     @Test
-    public void validate_ckNotDeclared(){
-        String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name varchar, gender varchar, email varchar, age int, bool boolean, phrase text, lucene_index_1 text, PRIMARY KEY ((name, gender), unknown, age));";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_ckNotDeclared");
-        MetaResult result = stmt.validate(_metadataManager, "");
+    public void validate_booleanColumnFail(){
+        String inputText = "INSERT INTO users (unknown, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, 'true', '');";
+        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_booleanColumnFail");
+        MetaResult result = stmt.validate(_metadataManager, "demo");
         assertNotNull(result, "Sentence validation not supported");
         assertTrue(result.hasError(), "Validation should fail");
     }
+
+    @Test
+    public void validate_integerColumnFail(){
+        String inputText = "INSERT INTO users (unknown, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', '10', true, '');";
+        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_integerColumnFail");
+        MetaResult result = stmt.validate(_metadataManager, "demo");
+        assertNotNull(result, "Sentence validation not supported");
+        assertTrue(result.hasError(), "Validation should fail");
+    }
+
+    @Test
+    public void validate_textColumnFail(){
+        String inputText = "INSERT INTO users (name, gender, email, age, bool, phrase) VALUES (true, 'male', 'name_0@domain.com', 10, true, '');";
+        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_textColumnFail");
+        MetaResult result = stmt.validate(_metadataManager, "demo");
+        assertNotNull(result, "Sentence validation not supported");
+        assertTrue(result.hasError(), "Validation should fail");
+    }
+
 }

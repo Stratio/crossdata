@@ -361,12 +361,14 @@ public class CreateTableStatement extends MetaStatement{
      */
     private MetaResult validateColumns(){
         MetaResult result = new MetaResult();
+        //The columns in the primary key must be declared.
         for (String pk : primaryKey) {
             if(!columns.containsKey(pk)){
                 result.setErrorMessage("Missing declaration for Primary Key column " + pk);
             }
         }
 
+        //The columns in the clustering key must be declared and not part of the primary key.
         for(String ck : clusterKey){
             if(!columns.containsKey(ck)){
                 result.setErrorMessage("Missing declaration for Clustering Key column " + ck);

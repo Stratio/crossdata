@@ -19,16 +19,18 @@
 
 package com.stratio.meta.sh.help;
 
-import static org.junit.Assert.*;
-
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.junit.Test;
+
 
 import com.stratio.meta.sh.help.generated.MetaHelpLexer;
 import com.stratio.meta.sh.help.generated.MetaHelpParser;
 import org.apache.log4j.Logger;
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 public class MetaHelpParserTest {
 
@@ -61,8 +63,8 @@ public class MetaHelpParserTest {
 		String inputText = "HELP;";
 		String expectedText = "HELP CONSOLE_HELP";
 		HelpStatement st = parseStatement(inputText);
-		assertNotNull("Cannot parse help - basic", st);
-		assertEquals("Cannot parse help - basic", expectedText, st.toString());
+		assertNotNull(st, "Cannot parse help - basic");
+		assertEquals(st.toString(), expectedText, "Cannot parse help - basic");
 	}
 	
 	@Test
@@ -104,8 +106,8 @@ public class MetaHelpParserTest {
 
 		for(String [] test : types){
 			HelpStatement st = parseStatement("HELP " + test[0] + ";");
-			assertNotNull("Cannot parse help - type " + test[1], st);
-			assertEquals("Cannot parse help - basic", "HELP "+test[1], st.toString());
+			assertNotNull(st, "Cannot parse help - type " + test[1]);
+			assertEquals(st.toString(), "HELP "+test[1], "Cannot parse help - basic");
 		}
 	}
 

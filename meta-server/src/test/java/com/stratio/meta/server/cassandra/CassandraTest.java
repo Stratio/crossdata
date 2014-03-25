@@ -71,8 +71,8 @@ public class CassandraTest extends BasicServerCassandraTest {
 
     public void testCassandraError(MetaStatement st){
         Statement driverStmt = st.getDriverStatement();
-        //thrown.expect(DriverException.class);
-        metaServer.executeQuery("", driverStmt);
+        MetaResult mq = metaServer.executeQuery("", driverStmt);
+        assertTrue(mq.hasError(), "Expected Cassandra error on " + st.toString());
     }        		                	                
 
     // CASSANDRA TESTS
@@ -101,44 +101,44 @@ public class CassandraTest extends BasicServerCassandraTest {
     }
 
     public void createTable_basic_simple() {
-        String inputText = "CREATE TABLE testKS.users(name varchar, password varchar, color varchar, gender varchar,"
+        String inputText = "CREATE TABLE testKS.users (name varchar, password varchar, color varchar, gender varchar,"
                 + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal));";
         MetaResult ms = testStatementWithCassandra(inputText, "createTable_basic_simple");
     }
 
     public void insert_into_simple_1() {
         String inputText = "INSERT INTO testKS.users (name, gender, color, animal, food, password, age, code)"
-                + " VALUES(pepito, male, orange, whale, plants, efg, 12, 44);";
+                + " VALUES (pepito, male, orange, whale, plants, efg, 12, 44);";
         MetaResult ms = testStatementWithCassandra(inputText, "insert_into_simple_1");
     }
 
     public void insert_into_simple_2() {
         String inputText = "INSERT INTO testKS.users (name, gender, color, animal, food, password, age, code) "
-                + "VALUES(pepito, male, black, whale, plants, efg, 12, 44) IF NOT EXISTS USING TTL = 86400;"; 
+                + "VALUES (pepito, male, black, whale, plants, efg, 12, 44) IF NOT EXISTS USING TTL = 86400;";
         MetaResult ms = testStatementWithCassandra(inputText, "insert_into_simple_2");
     }
 
     public void insert_into_simple_3() {
         String inputText = "INSERT INTO testKS.users (name, gender, color, animal, food, password, age, code) "
-                + "VALUES(pepita, female, blue, dog, meat, sdh, 5, 33);"; 
+                + "VALUES (pepita, female, blue, dog, meat, sdh, 5, 33);";
         MetaResult ms = testStatementWithCassandra(inputText, "insert_into_simple_3");
     }
 
     public void insert_into_simple_4() {
         String inputText = "INSERT INTO testKS.users (name, gender, color, animal, food, password, age, code) "
-                + "VALUES(pepita, female, red, cat, mice, kdf, 3, 22);";
+                + "VALUES (pepita, female, red, cat, mice, kdf, 3, 22);";
         MetaResult ms = testStatementWithCassandra(inputText, "insert_into_simple_4");
     }
 
     public void insert_into_simple_5() {
         String inputText = "INSERT INTO testKS.users (name, gender, color, animal, food, password, age, code) "
-                + "VALUES(pepita, female, black, fish, plankton, dfp, 3, 11);"; 
+                + "VALUES (pepita, female, black, fish, plankton, dfp, 3, 11);";
         MetaResult ms = testStatementWithCassandra(inputText, "insert_into_simple_5");
     }
 
     public void insert_into_simple_6() {
         String inputText = "INSERT INTO testKS.users (name, gender, color, animal, food, password, age, code) "
-                + "VALUES(pepito, male, green, cat, cookies, cas, 5, 55);";
+                + "VALUES (pepito, male, green, cat, cookies, cas, 5, 55);";
         MetaResult ms = testStatementWithCassandra(inputText, "insert_into_simple_6");
     }
 
@@ -195,12 +195,12 @@ public class CassandraTest extends BasicServerCassandraTest {
 
     public void insert_into_wrong_data_type(){   
         String inputText = "INSERT INTO testKS.users (name, gender, color, animal, food, password, age, code)"
-                + " VALUES(pepito, male, black, whale, plants, efg, twelve, 44);";
+                + " VALUES (pepito, male, black, whale, plants, efg, twelve, 44);";
         MetaStatement st = testRegularStatement(inputText, "insert_into_wrong_data_type");
         testCassandraError(st);                       
     }
 
-    @Test(expectedExceptions = DriverException.class)
+    @Test
     public void test_cassandra_wrong_1(){   
         createKeyspace_basic();
         createTable_basic_simple();

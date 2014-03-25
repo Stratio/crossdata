@@ -627,7 +627,7 @@ public class SelectStatement extends MetaStatement {
                     case MetaRelation.TYPE_COMPARE:
                         RelationCompare relCompare = (RelationCompare) metaRelation;
                         name = relCompare.getIdentifiers().get(0);
-                        value = relCompare.getTerms().get(0).getTerm();
+                        value = relCompare.getTerms().get(0).getTermValue();
                         if(value.toString().matches("[0123456789\\.]+")){
                             value = Integer.parseInt(value.toString());
                         } else if (value.toString().contains("-")) {
@@ -660,7 +660,7 @@ public class SelectStatement extends MetaStatement {
                         Object[] values = new Object[relIn.numberOfTerms()];                        
                         int nTerm = 0;
                         for(Term term: terms){
-                            values[nTerm] = term.getTerm();
+                            values[nTerm] = term.getTermValue();
                             nTerm++;
                         }     
                         if(values[0].toString().matches("[0123456789\\.]+")){
@@ -677,7 +677,7 @@ public class SelectStatement extends MetaStatement {
                         RelationToken relToken = (RelationToken) metaRelation;
                         List<String> names = relToken.getIdentifiers();
                         if(!relToken.isRighSideTokenType()){
-                            value = relToken.getTerms().get(0).getTerm();
+                            value = relToken.getTerms().get(0).getTermValue();
                             switch(relToken.getOperator()){
                                 case "=":
                                     clause = QueryBuilder.eq(QueryBuilder.token((String[]) names.toArray()), value);

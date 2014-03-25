@@ -32,9 +32,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 
 /**
@@ -52,9 +50,17 @@ public class ParsingTest {
     public MetaStatement testRegularStatement(String inputText, String methodName) {
         MetaStatement st = parser.parseStatement(inputText).getStatement();
         assertNotNull(st, "Cannot parse "+methodName);
-        assertTrue(inputText.equalsIgnoreCase(st.toString()+";"), "Cannot parse "+methodName+": expecting '"+inputText+"' from '"+st.toString()+"'");
+        assertTrue(inputText.equalsIgnoreCase(st.toString()+";"), "Cannot parse "+methodName+": expecting '"+inputText+"' from '"+st.toString()+";'");
         return st;
     }
+
+    public void testParseFails(String inputText, String methodName){
+        MetaQuery mq = parser.parseStatement(inputText);
+        assertNotNull(mq, "Parser should return a query");
+        assertNull(mq.getStatement(), "Null statement expected.");
+        assertTrue(mq.hasError(), "Parser should return and error for " + methodName);
+    }
+
 
     /*
         public void testMetaError(String inputText){
@@ -152,7 +158,7 @@ public class ParsingTest {
 
     @Test
     public void createKeyspace_map_column() {
-        String inputText = "CREATE TABLE demo.banks(day text, key uuid, latitude double, longitude double, name text, "
+        String inputText = "CREATE TABLE demo.banks (day text, key uuid, latitude double, longitude double, name text, "
                 + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key));";
         testRegularStatement(inputText, "createKeyspace_map_column");
     }
@@ -186,14 +192,14 @@ public class ParsingTest {
 
     @Test
     public void insert_into() {
-        String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES(term1, term2) "
+        String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (term1, term2) "
                 + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
         testRegularStatement(inputText, "insert_into");
     }
 
     @Test
     public void insert_into_2() {
-        String inputText = "INSERT INTO mykeyspace.tablename (column1, column2) VALUES(value1, value2)"
+        String inputText = "INSERT INTO mykeyspace.tablename (column1, column2) VALUES (value1, value2)"
                 + " IF NOT EXISTS USING TTL = 10;";
         testRegularStatement(inputText, "insert_into_2");
     }
@@ -539,8 +545,11 @@ public class ParsingTest {
                 + "animal varchar, PRIMARY KEY (name)) WITH compression={sstable_compression: DeflateCompressor, "
                 + "chunk_length_kb: 64} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
                 + "read_repair_chance=1.0;";
-        MetaStatement st = parser.parseStatement(inputText).getStatement();
-        assertNotNull(st, "Cannot parse createTable_with_properties");
+        //MetaStatement st = parser.parseStatement(inputText).getStatement();
+        MetaQuery mq = parser.parseStatement(inputText);
+        MetaStatement st = mq.getStatement();
+
+        assertNotNull(st, "Statement should not be null createTable_with_properties");
 
         boolean originalOK = false;
         boolean alternative1 = false;
@@ -551,21 +560,21 @@ public class ParsingTest {
             originalOK = true;
         }
 
-        String alternative1Str = "CREATE TABLE key_space1.test(name varchar, color varchar, gender varchar, food varchar, "
+        String alternative1Str = "CREATE TABLE key_space1.test (name varchar, color varchar, gender varchar, food varchar, "
                 + "animal varchar, PRIMARY KEY (name)) WITH compression={chunk_length_kb: 64, "
                 + "sstable_compression: DeflateCompressor} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
                 + "read_repair_chance=1.0;";
         if(alternative1Str.equalsIgnoreCase(st.toString()+";")){
             alternative1 = true;
         }
-        String alternative2Str = "CREATE TABLE key_space1.test(name varchar, color varchar, gender varchar, food varchar, "
+        String alternative2Str = "CREATE TABLE key_space1.test (name varchar, color varchar, gender varchar, food varchar, "
                 + "animal varchar, PRIMARY KEY (name)) WITH compression={sstable_compression: DeflateCompressor, "
                 + "chunk_length_kb: 64} AND compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND "
                 + "read_repair_chance=1.0;";
         if(alternative2Str.equalsIgnoreCase(st.toString()+";")){
             alternative2 = true;
         }
-        String alternative3Str = "CREATE TABLE key_space1.test(name varchar, color varchar, gender varchar, food varchar, "
+        String alternative3Str = "CREATE TABLE key_space1.test (name varchar, color varchar, gender varchar, food varchar, "
                 + "animal varchar, PRIMARY KEY (name)) WITH compression={chunk_length_kb: 64, "
                 + "sstable_compression: DeflateCompressor} AND compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND "
                 + "read_repair_chance=1.0;";
@@ -633,28 +642,28 @@ public class ParsingTest {
 
     // TEST META EXCEPTIONS
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void update_for_invalid_assignment(){
         String inputText = "UPDATE table1 SET field1 = value1 WHERE field3: value3;";
-        testRegularStatement(inputText, "update_for_invalid_assignment");
+        testRecoverableError(inputText, "update_for_invalid_assignment");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void update_wrong_spelling(){
         String inputText = "UPDDATE table1 SET field1 = value1 WHERE field3: value3;";
-        testRegularStatement(inputText, "update_wrong_spelling");
+        testParseFails(inputText, "update_wrong_spelling");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void unknown_first_word_of_statement(){
         String inputText = "WINDOWS GO HOME;";
-        testRegularStatement(inputText, "unknown_first_word_of_statement");
+        testParseFails(inputText, "unknown_first_word_of_statement");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void wrong_plan_token(){
         String inputText = "EXPLAIN PLAANS FOR DROP INDEX indexName;";
-        testRegularStatement(inputText, "wrong_plan_token");
+        testParseFails(inputText, "wrong_plan_token");
     }
 
     @Test
@@ -664,23 +673,23 @@ public class ParsingTest {
         testRecoverableError(inputText, "wrong_into_token");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void create_table_wrong_column_definition(){
         String inputText = "CREATE TABLE adsa (algo text, primary key ([algo, algo2],algo3));";
-        testRegularStatement(inputText, "create_table_wrong_column_definition");
+        testParseFails(inputText, "create_table_wrong_column_definition");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void insert_into_wrong_values_token(){
-        String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUED(term1, term2)"
+        String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUED (term1, term2)"
                 + " IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
-        testRegularStatement(inputText, "insert_into_wrong_values_token");
+        testParseFails(inputText, "insert_into_wrong_values_token");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void create_keyspace_wrong_identifier(){
         String inputText = "CREATE KEYSPACE name.key_space1 WITH replication = replicationLevel;";
-        testRegularStatement(inputText, "create_keyspace_wrong_identifier");
+        testParseFails(inputText, "create_keyspace_wrong_identifier");
     }
 
     @Test
@@ -689,28 +698,28 @@ public class ParsingTest {
         testRecoverableError(inputText, "truncate_wrong_identifier");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void alter_wrong_keyspace_token(){
         String inputText = "ALTER KEYSPACES mykeyspace WITH ident1 = value1;";
-        testRegularStatement(inputText, "alter_wrong_keyspace_token");
+        testParseFails(inputText, "alter_wrong_keyspace_token");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void drop_wrong_place_for_if_exists(){
         String inputText = "DROP KEYSPACE mykeyspace IF EXISTS;";
-        testRegularStatement(inputText, "drop_wrong_place_for_if_exists");
+        testRecoverableError(inputText, "drop_wrong_place_for_if_exists");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void set_wrong_boolean(){
         String inputText = "SET OPTIONS ANALYTICS=5;";
-        testRegularStatement(inputText, "set_wrong_boolean");
+        testParseFails(inputText, "set_wrong_boolean");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void alter_wrong_property_identifier(){
         String inputText = "ALTER TABLE tabla1 with 2property1=value1;";
-        testRegularStatement(inputText, "set_wrong_boolean");
+        testParseFails(inputText, "set_wrong_boolean");
     }
 
     @Test
@@ -737,10 +746,10 @@ public class ParsingTest {
         testRecoverableError(inputText, "delete_wrong_property_assignment");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void select_wrong_like_word(){
         String inputText = "SELECT ident1, myfunction(innerIdent, anotherIdent) LIKE ident1 FROM newks.newtb;";
-        testRegularStatement(inputText, "select_wrong_like_word");
+        testParseFails(inputText, "select_wrong_like_word");
     }
 
     @Test
@@ -749,34 +758,34 @@ public class ParsingTest {
         testRecoverableError(inputText, "add_ending_quote_missing");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void list_reserved_word_use(){
         String inputText = "LIST PROCESS LAST;";
-        testRegularStatement(inputText, "list_reserved_word_use");
+        testParseFails(inputText, "list_reserved_word_use");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void remove_udf_not_expected_word() {
         String inputText = "REMOVE UDF \"jar.name\" NOW;";
-        testRegularStatement(inputText, "remove_udf_not_expected_word");
+        testParseFails(inputText, "remove_udf_not_expected_word");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void stop_wrong_process_identifier(){
         String inputText = "STOP process kstest.process1;";
-        testRegularStatement(inputText, "stop_wrong_process_identifier");
+        testParseFails(inputText, "stop_wrong_process_identifier");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void create_trigger_wrong_as_word_use(){
         String inputText = "create trigger trigger1 on table_name USING triggerClassName AS ident1;";
-        testRegularStatement(inputText, "create_trigger_wrong_as_word_use");
+        testParseFails(inputText, "create_trigger_wrong_as_word_use");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test
     public void drop_trigger_wrong_assignment(){
         String inputText = "drop trigger trigger1 on table_name = 20;";
-        testRegularStatement(inputText, "drop_trigger_wrong_assignment");
+        testParseFails(inputText, "drop_trigger_wrong_assignment");
     }
 
 }

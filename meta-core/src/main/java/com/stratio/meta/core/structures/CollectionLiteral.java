@@ -60,7 +60,7 @@ public class CollectionLiteral extends ValueCell {
     public String toString() {
         StringBuilder sb = new StringBuilder("{");
         for(Term term: literals){
-            sb.append(term.getTerm()).append(", ");
+            sb.append(term.toString()).append(", ");
         }        
         return sb.substring(0, sb.length()-2)+"}";
         //return sb.toString();

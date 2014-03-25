@@ -42,6 +42,7 @@ public class Parser {
         MetaQuery metaQuery = new MetaQuery(inputText);
         metaQuery.setStatus(QueryStatus.PARSED);
         MetaStatement resultStatement;
+        //System.out.println("Parsing: {"+inputText+"}");
         ANTLRStringStream input = new ANTLRStringStream(inputText);
         MetaLexer lexer = new MetaLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -50,6 +51,7 @@ public class Parser {
         try {
             resultStatement = parser.query();
             foundErrors = parser.getFoundErrors();
+            //System.out.println("ResultStmt: " + resultStatement + " foundErrors: =" + foundErrors.toString() + "=");
         } catch (Exception e) {
             logger.error("Cannot parse statement", e);
             if(foundErrors == null){                                    
@@ -64,7 +66,7 @@ public class Parser {
         metaQuery.setStatement(resultStatement);
         if((foundErrors!=null) && (!foundErrors.isEmpty())){
             String foundErrorsStr = foundErrors.toString(inputText, resultStatement);
-            //logger.error(foundErrorsStr);
+            //logger.error("Recoverable: " + foundErrorsStr);
             metaQuery.setErrorMessage(foundErrorsStr);
         }
         return metaQuery;                 
