@@ -102,6 +102,9 @@ public class MetaHelpParserTest {
 				{"alter keyspace","ALTER_KEYSPACE"},
 				{"alter table","ALTER_TABLE"},
 				{"stop","STOP"},
+                                {"describe","DESCRIBE"},
+                                {"describe keyspace","DESCRIBE_KEYSPACE"},
+				{"describe table","DESCRIBE_TABLE"},
 		};
 
 		for(String [] test : types){

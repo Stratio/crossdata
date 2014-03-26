@@ -130,10 +130,17 @@ T_QUIT: Q U I T;
 T_DATATYPES: D A T A T Y P E S;
 T_LUCENE: L U C E N E;
 T_DEFAULT: D E F A U L T;
+T_DESCRIBE: D E S C R I B E;
 
 T_SEMICOLON: ';';
 
-
+describeHelpStatement returns [HelpType type]:
+	T_DESCRIBE {$type = HelpType.DESCRIBE;}
+	(
+		T_KEYSPACE {$type = HelpType.DESCRIBE_KEYSPACE;}
+		| T_TABLE {$type = HelpType.DESCRIBE_TABLE;}
+	)?
+	;
 
 alterHelpStatement returns [HelpType type]:
 	T_ALTER {$type = HelpType.ALTER;}
@@ -200,6 +207,7 @@ helpStatement returns [HelpType type]
 	| (T_EXPLAIN T_PLAN) {t = HelpType.EXPLAIN_PLAN;}
 	| (alterType=alterHelpStatement) {t = alterType;}
 	| (T_STOP) {t = HelpType.STOP;}
+        | (describeType=describeHelpStatement) {t = describeType;}
 	;
 	finally{
 		$type = t;

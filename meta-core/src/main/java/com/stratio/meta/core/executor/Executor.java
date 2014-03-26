@@ -23,11 +23,13 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.statements.DescribeStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.QueryStatus;
 import org.apache.log4j.Logger;
@@ -52,6 +54,17 @@ public class Executor {
         metaQuery.setStatus(QueryStatus.EXECUTED);
         MetaStatement stmt = metaQuery.getStatement();
         
+        if(stmt.isCommand()){
+            if(stmt instanceof DescribeStatement){
+                DescribeStatement descrStmt =  (DescribeStatement) stmt;
+                metaQuery.setResult(new CommandResult(System.getProperty("line.separator")+descrStmt.execute(session)));
+            } else {
+                metaQuery.setErrorMessage("Not supported yet.");
+                return metaQuery;
+            }
+            return metaQuery;
+        }
+        
         StringBuilder sb = new StringBuilder();
         if(!stmt.getPlan().isEmpty()){
             sb.append("PLAN: ").append(System.getProperty("line.separator"));
@@ -74,7 +87,6 @@ public class Executor {
             }
                           
             queryResult.setResultSet(resultSet);
-            logger.info("Executed");
         } catch (Exception ex) {
             metaQuery.hasError();
             queryResult.setErrorMessage("Cassandra exception: "+ex.getMessage());
@@ -96,7 +108,7 @@ public class Executor {
                 }
                 AntlrError ae = new AntlrError(cMessageEx[0]+" "+cMessageEx[1], sb.toString());
                 queryStr = ParserUtils.getQueryWithSign(queryStr, ae);
-                queryResult.setErrorMessage(queryStr);
+                queryResult.setErrorMessage(ex.getMessage()+System.getProperty("line.separator")+"\t"+queryStr);
                 logger.error(queryStr);
             }
         }
