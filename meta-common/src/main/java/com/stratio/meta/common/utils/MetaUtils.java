@@ -116,16 +116,17 @@ public class MetaUtils {
             "SECONDS",
             "MINUTES",
             "HOURS",
-            "DAYS");
+            "DAYS",
+            "MATCH");
     
     public static String getInitialsStatements() {
-        StringBuilder sb = new StringBuilder(initials.toString());
-        return sb.substring(1, sb.length()-1);
+        String str = initials.toString();
+        return str.substring(1, str.length()-1);
     }
     
     public static String getNoInitialsStatements() {
-        StringBuilder sb = new StringBuilder(noInitials.toString());
-        return sb.substring(1, sb.length()-1);
+        String str = noInitials.toString();
+        return str.substring(1, str.length()-1);
     }
     
 }

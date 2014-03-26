@@ -21,22 +21,27 @@ package com.stratio.meta.core.structures;
 
 import com.stratio.meta.core.utils.ParserUtils;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class SelectionSelectors extends Selection {
 
-    private List<SelectionSelector> selectors;
+    private ArrayList<SelectionSelector> selectors;
 
-    public SelectionSelectors(List<SelectionSelector> selectors) {
+    public SelectionSelectors() {
         this.type = TYPE_SELECTOR;
+        selectors = new ArrayList<>();
+    }    
+    
+    public SelectionSelectors(ArrayList<SelectionSelector> selectors) {
+        this();
         this.selectors = selectors;
     }   
     
-    public List<SelectionSelector> getSelectors() {
+    public ArrayList<SelectionSelector> getSelectors() {
         return selectors;
     }
 
-    public void setSelectors(List<SelectionSelector> selectors) {
+    public void setSelectors(ArrayList<SelectionSelector> selectors) {
         this.selectors = selectors;
     }   
     
@@ -58,8 +63,8 @@ public class SelectionSelectors extends Selection {
     
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(ParserUtils.stringList(selectors, ", "));
-        return sb.toString();
+        String sb = ParserUtils.stringList(selectors, ", ");
+        return sb;
     }
     
 }

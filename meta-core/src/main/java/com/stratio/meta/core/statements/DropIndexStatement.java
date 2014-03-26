@@ -19,12 +19,12 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +34,15 @@ public class DropIndexStatement extends MetaStatement {
     private boolean _dropIfExists = false;
     private String _name = null;
 
+    public DropIndexStatement(){
+        this.command = false;
+    }
+    
+    public DropIndexStatement(String name){
+        this();
+        _name = name;
+    }
+    
     public void setDropIfExists(){
             _dropIfExists = true;
     }
@@ -85,9 +94,8 @@ public class DropIndexStatement extends MetaStatement {
     }
     
     @Override
-    public List<MetaStep> getPlan() {
-        ArrayList<MetaStep> steps = new ArrayList<>();
-        return steps;
+    public Tree getPlan() {
+        return new Tree();
     }
     
 }

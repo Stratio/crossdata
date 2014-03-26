@@ -19,7 +19,6 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 
 import java.util.ArrayList;
@@ -31,6 +30,7 @@ import com.stratio.meta.core.structures.MetaRelation;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.Tree;
 import java.util.Arrays;
 
 /**
@@ -48,8 +48,9 @@ public class DeleteStatement extends MetaStatement {
     private List<MetaRelation> _whereClauses;
 
     public DeleteStatement(){
-            _targetColumn = new ArrayList<>();
-            _whereClauses = new ArrayList<>();
+        this.command = false;
+        _targetColumn = new ArrayList<>();
+        _whereClauses = new ArrayList<>();
     }
 
     public ArrayList<String> getTargetColumn() {
@@ -153,9 +154,8 @@ public class DeleteStatement extends MetaStatement {
     }
     
     @Override
-    public List<MetaStep> getPlan() {
-        ArrayList<MetaStep> steps = new ArrayList<>();
-        return steps;
+    public Tree getPlan() {
+        return new Tree();
     }
     
 }

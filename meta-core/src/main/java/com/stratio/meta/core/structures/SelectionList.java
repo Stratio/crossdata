@@ -30,6 +30,10 @@ public class SelectionList extends SelectionClause {
         this.selection = selection;
     }   
     
+    public SelectionList(Selection selection) {
+        this(false, selection);
+    } 
+    
     public boolean isDistinct() {
         return distinct;
     }

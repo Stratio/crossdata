@@ -22,30 +22,29 @@ package com.stratio.meta.core.structures;
 import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class RelationToken extends MetaRelation {
     
     private boolean righSideTokenType = false;
     
-    public RelationToken(List<String> identifiers) {
+    public RelationToken(ArrayList<String> identifiers) {
         this.terms = new ArrayList<>();
         this.type = TYPE_TOKEN;
         this.identifiers = new ArrayList<>();
         this.identifiers = identifiers;
     }   
     
-    public RelationToken(List<String> identifiers, String operator) {
+    public RelationToken(ArrayList<String> identifiers, String operator) {
         this(identifiers);
         this.operator = operator;
     }
     
-    public RelationToken(List<String> identifiers, String operator, Term term) {
+    public RelationToken(ArrayList<String> identifiers, String operator, Term term) {
         this(identifiers, operator);        
         this.terms.add(term);
     }
     
-    public RelationToken(List<String> identifiers, String operator, List<Term> terms) {
+    public RelationToken(ArrayList<String> identifiers, String operator, ArrayList<Term> terms) {
         this(identifiers, operator); 
         this.terms = terms;
         this.righSideTokenType = true;

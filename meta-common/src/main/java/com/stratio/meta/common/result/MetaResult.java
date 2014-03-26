@@ -70,6 +70,11 @@ public class MetaResult {
     public void print(){
         logger.info("\033[32mResult:\033[0m"+System.getProperty("line.separator")+errorMessage);
     }
+    
+    @Override
+    public String toString(){
+        return System.getProperty("line.separator")+errorMessage;
+    }
 
     public static MetaResult createMetaResultError(String errorMessage){
         MetaResult result=new MetaResult();

@@ -19,12 +19,12 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,6 +33,12 @@ public class DropTriggerStatement extends MetaStatement{
 
     private String ident;
 
+    public DropTriggerStatement(String ident, String ident2) {
+        this.command = true;
+        this.ident = ident;
+        this.ident2 = ident2;
+    }
+    
     public String getIdent() {
         return ident;
     }
@@ -49,12 +55,7 @@ public class DropTriggerStatement extends MetaStatement{
 
     public void setIdent2(String ident2) {
         this.ident2 = ident2;
-    }
-
-    public DropTriggerStatement(String ident, String ident2) {
-        this.ident = ident;
-        this.ident2 = ident2;
-    }
+    }   
 
     @Override
     public String toString() {
@@ -98,9 +99,8 @@ public class DropTriggerStatement extends MetaStatement{
     }
     
     @Override
-    public List<MetaStep> getPlan() {
-        ArrayList<MetaStep> steps = new ArrayList<>();
-        return steps;
+    public Tree getPlan() {
+        return new Tree();
     }
     
 }

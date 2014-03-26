@@ -27,6 +27,7 @@ import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta.core.utils.ValidationException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +44,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
 
     public CreateKeyspaceStatement(String name, boolean ifNotExists, Map<String, ValueProperty> properties) {
         this.name = name;
+        this.command = false;
         this.ifNotExists = ifNotExists;
         this.properties = new HashMap<>();
         this.properties.putAll(properties);
@@ -166,9 +168,8 @@ public class CreateKeyspaceStatement extends MetaStatement {
     }
     
     @Override
-    public List<MetaStep> getPlan() {
-        ArrayList<MetaStep> steps = new ArrayList<>();
-        return steps;
+    public Tree getPlan() {
+        return new Tree();
     }
     
 }

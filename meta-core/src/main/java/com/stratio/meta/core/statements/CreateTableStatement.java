@@ -30,6 +30,7 @@ import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.Tree;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +65,8 @@ public class CreateTableStatement extends MetaStatement{
                                 boolean ifNotExists, 
                                 boolean withClusterKey, 
                                 int columnNumberPK, 
-                                boolean withProperties) {       
+                                boolean withProperties) {
+        this.command = false;
         if(name_table.contains(".")){
             String[] ksAndTablename = name_table.split("\\.");
             keyspace = ksAndTablename[0];
@@ -491,11 +493,9 @@ public class CreateTableStatement extends MetaStatement{
     }
     
     @Override
-    public List<MetaStep> getPlan() {
-        ArrayList<MetaStep> steps = new ArrayList<>();
-
+    public Tree getPlan() {
         //Check ifNotExists
-        return steps;
+        return new Tree();
     }
     
 }

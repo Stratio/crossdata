@@ -47,4 +47,9 @@ public class ConnectResult extends MetaResult {
         logger.info("Not implemented yet.");
     }
     
+    @Override
+    public String toString(){
+        return "Not implemented yet.";
+    }
+    
 }
