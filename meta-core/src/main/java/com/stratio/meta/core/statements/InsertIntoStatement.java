@@ -309,24 +309,32 @@ public class InsertIntoStatement extends MetaStatement {
     private MetaResult validateColumns(TableMetadata tableMetadata) {
         MetaResult result = new MetaResult();
 
-        ColumnMetadata cm = null;
-        if(cellValues.size() == ids.size()){
-            for(int index = 0; index < cellValues.size(); index++){
-                cm = tableMetadata.getColumn(ids.get(index));
-                if(cm != null){
-                    Term t = Term.class.cast(cellValues.get(index));
-                    if(!cm.getType().asJavaClass().equals(t.getTermClass())){
-                        result.setErrorMessage("Column " + ids.get(index)
-                                + " of type " + cm.getType().asJavaClass()
-                                + " does not accept " + t.getTermClass()
-                                + " values ("+cellValues.get(index)+")");
-                    }
-                }else{
-                    result.setErrorMessage("Column " + ids.get(index)  + " not found in " + tableMetadata.getName());
-                }
+        //Validate target column names
+        for(String c : ids){
+            if(c.toLowerCase().startsWith("stratio")){
+                result.setErrorMessage("Cannot insert data into column " + c + " reserved for internal use.");
             }
-        }else{
-            result.setErrorMessage("Number of columns and values does not match.");
+        }
+        if(!result.hasError()) {
+            ColumnMetadata cm = null;
+            if (cellValues.size() == ids.size()) {
+                for (int index = 0; index < cellValues.size(); index++) {
+                    cm = tableMetadata.getColumn(ids.get(index));
+                    if (cm != null) {
+                        Term t = Term.class.cast(cellValues.get(index));
+                        if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
+                            result.setErrorMessage("Column " + ids.get(index)
+                                    + " of type " + cm.getType().asJavaClass()
+                                    + " does not accept " + t.getTermClass()
+                                    + " values (" + cellValues.get(index) + ")");
+                        }
+                    } else {
+                        result.setErrorMessage("Column " + ids.get(index) + " not found in " + tableMetadata.getName());
+                    }
+                }
+            } else {
+                result.setErrorMessage("Number of columns and values does not match.");
+            }
         }
         return result;
     }

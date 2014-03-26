@@ -75,6 +75,11 @@ public class CreateTableStatementTest extends BasicValidatorTest {
             String inputText = "CREATE TABLE demo.table_fail (id " + u +", PRIMARY KEY (id));";
             validateFail(inputText, "validate_unsupportedType: " + u);
         }
+    }
 
+    @Test
+    public void validate_stratioColumnFail(){
+        String inputText = "CREATE TABLE demo.table_fail (name VARCHAR, stratio_column VARCHAR, PRIMARY KEY (name));";
+        validateFail(inputText, "validate_stratioColumnFail");
     }
 }

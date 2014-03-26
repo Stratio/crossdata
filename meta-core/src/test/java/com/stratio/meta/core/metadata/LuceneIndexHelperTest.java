@@ -102,7 +102,7 @@ public class LuceneIndexHelperTest extends BasicCoreCassandraTest {
     public void getIndexedColumns(){
         String keyspace = "demo";
         String table = "users";
-        String column = "lucene_index_1";
+        String column = "stratio_lucene_index_1";
         int numIndexedColumns = 6;
 
         ColumnMetadata cm = _session.getCluster().getMetadata()
