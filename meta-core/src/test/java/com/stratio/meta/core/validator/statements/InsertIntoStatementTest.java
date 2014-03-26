@@ -25,6 +25,7 @@ import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.grammar.ParsingTest;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.core.validator.BasicValidatorTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -32,72 +33,43 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-public class InsertIntoStatementTest extends BasicCoreCassandraTest {
+public class InsertIntoStatementTest extends BasicValidatorTest {
 
-    private static MetadataManager _metadataManager = null;
-
-    private static final ParsingTest _pt = new ParsingTest();
-
-    @BeforeClass
-    public static void setUpBeforeClass(){
-        BasicCoreCassandraTest.setUpBeforeClass();
-        BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-        _metadataManager = new MetadataManager(_session);
-        _metadataManager.loadMetadata();
-    }
 
     @Test
     public void validate_basic_ok(){
         String inputText = "INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_basic_ok");
-        MetaResult result = stmt.validate(_metadataManager, "");
-        assertNotNull(result, "Sentence validation not supported");
-        assertFalse(result.hasError(), "Cannot validate sentence");
+        validateOk(inputText, "validate_basic_ok");
     }
 
     @Test
-    public void validate_basic_userKs_ok(){
+    public void validate_basic_noKs(){
         String inputText = "INSERT INTO users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_basic_userKs_ok");
-        MetaResult result = stmt.validate(_metadataManager, "demo");
-        assertNotNull(result, "Sentence validation not supported");
-        assertFalse(result.hasError(), "Cannot validate sentence");
+        validateFail(inputText, "validate_basic_noKs");
     }
 
     @Test
     public void validate_unknownColumn(){
         String inputText = "INSERT INTO users (unknown, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_unknownColumn");
-        MetaResult result = stmt.validate(_metadataManager, "demo");
-        assertNotNull(result, "Sentence validation not supported");
-        assertTrue(result.hasError(), "Validation should fail");
+        validateFail(inputText, "validate_unknownColumn");
     }
 
     @Test
     public void validate_booleanColumnFail(){
         String inputText = "INSERT INTO users (unknown, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, 'true', '');";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_booleanColumnFail");
-        MetaResult result = stmt.validate(_metadataManager, "demo");
-        assertNotNull(result, "Sentence validation not supported");
-        assertTrue(result.hasError(), "Validation should fail");
+        validateFail(inputText, "validate_booleanColumnFail");
     }
 
     @Test
     public void validate_integerColumnFail(){
         String inputText = "INSERT INTO users (unknown, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', '10', true, '');";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_integerColumnFail");
-        MetaResult result = stmt.validate(_metadataManager, "demo");
-        assertNotNull(result, "Sentence validation not supported");
-        assertTrue(result.hasError(), "Validation should fail");
+        validateFail(inputText, "validate_integerColumnFail");
     }
 
     @Test
     public void validate_textColumnFail(){
         String inputText = "INSERT INTO users (name, gender, email, age, bool, phrase) VALUES (true, 'male', 'name_0@domain.com', 10, true, '');";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_textColumnFail");
-        MetaResult result = stmt.validate(_metadataManager, "demo");
-        assertNotNull(result, "Sentence validation not supported");
-        assertTrue(result.hasError(), "Validation should fail");
+        validateFail(inputText, "validate_textColumnFail");
     }
 
 }

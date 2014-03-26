@@ -266,11 +266,9 @@ public class InsertIntoStatement extends MetaStatement {
         MetaResult result = new MetaResult();
         //Check that the table exists.
 
-        String effectiveKeyspace = null;
+        String effectiveKeyspace = targetKeyspace;
         if(keyspaceInc){
             effectiveKeyspace = keyspace;
-        }else{
-            effectiveKeyspace = targetKeyspace;
         }
 
         TableMetadata tableMetadata = null;

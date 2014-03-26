@@ -19,7 +19,10 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.*;
 import com.datastax.driver.core.querybuilder.Select.Where;
 import com.stratio.meta.common.result.MetaResult;
@@ -303,7 +306,174 @@ public class SelectStatement extends MetaStatement {
     /** {@inheritDoc} */
     @Override
     public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
+        MetaResult result = validateKeyspaceAndTable(metadata, targetKeyspace);
+
+        String effectiveKeyspace = targetKeyspace;
+        if(keyspaceInc){
+            effectiveKeyspace = keyspace;
+        }
+        TableMetadata tableMetadata = null;
+
+        if(!result.hasError()){
+            tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
+            result = validateSelectionColumns(tableMetadata);
+        }
+        if(!result.hasError() && whereInc){
+            result = validateWhereClause(tableMetadata);
+        }
+        return result;
+    }
+
+    private MetaResult validateOptions(){
+        MetaResult result = new MetaResult();
+        if(windowInc){
+            result.setErrorMessage("Select with streaming options not supported.");
+        }
+
+        if(groupInc){
+            result.setErrorMessage("Select with GROUP BY clause not supported.");
+        }
+
+        if(orderInc){
+            result.setErrorMessage("Select with ORDER BY clause not supported.");
+        }
+        return result;
+    }
+
+
+    /**
+     * Validate that the columns specified in the select are valid by checking
+     * that the selection columns exists in the table.
+     * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
+     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     */
+    private MetaResult validateWhereClause(TableMetadata tableMetadata){
+        MetaResult result = new MetaResult();
+        for(MetaRelation relation : where){
+            if(MetaRelation.TYPE_COMPARE == relation.getType()) {
+                //Check comparison, =, >, <, etc.
+                RelationCompare rc = RelationCompare.class.cast(relation);
+                String column = rc.getIdentifiers().get(0);
+                //System.out.println("column: " + column);
+                if (tableMetadata.getColumn(column) == null) {
+                    result.setErrorMessage("Column " + column + " does not exists in table " + tableMetadata.getName());
+                }
+
+                Term t = Term.class.cast(rc.getTerms().get(0));
+                ColumnMetadata cm = tableMetadata.getColumn(column);
+                if (cm != null){
+                    if (!tableMetadata.getColumn(column)
+                            .getType().asJavaClass().equals(t.getTermClass())) {
+                        result.setErrorMessage("Column " + column
+                                + " of type " + tableMetadata.getColumn(rc.getIdentifiers().get(0))
+                                .getType().asJavaClass()
+                                + " does not accept " + t.getTermClass()
+                                + " values (" + t.toString() + ")");
+                    }
+
+                    if (Boolean.class.equals(tableMetadata.getColumn(column)
+                        .getType().asJavaClass())) {
+                    boolean supported = true;
+                    switch (rc.getOperator()) {
+                        case ">":
+                            supported = false;
+                            break;
+                        case "<":
+                            supported = false;
+                            break;
+                        case ">=":
+                            supported = false;
+                            break;
+                        case "<=":
+                            supported = false;
+                            break;
+                    }
+                    if (!supported) {
+                        result.setErrorMessage("Operand " + rc.getOperator() + " not supported for column " + column + ".");
+                    }
+                }
+            }else {
+                    result.setErrorMessage("Column " + column + " not found in table " + tablename);
+            }
+
+            }else if(MetaRelation.TYPE_IN == relation.getType()){
+                //TODO: Check IN relation
+                result.setErrorMessage("IN clause not supported.");
+            }else if(MetaRelation.TYPE_TOKEN == relation.getType()){
+                //TODO: Check IN relation
+                result.setErrorMessage("TOKEN function not supported.");
+            }else if(MetaRelation.TYPE_BETWEEN == relation.getType()){
+                //TODO: Check IN relation
+                result.setErrorMessage("BETWEEN clause not supported.");
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Validate that the columns specified in the select are valid by checking
+     * that the selection columns exists in the table.
+     * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
+     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     */
+    private MetaResult validateSelectionColumns(TableMetadata tableMetadata) {
+        MetaResult result = new MetaResult();
+
+        //Iterate through the selection columns. If the user specified count(*) skip
+        if(selectionClause.getType() == SelectionClause.TYPE_SELECTION){
+            SelectionList sl = SelectionList.class.cast(selectionClause);
+            //Check columns only if an asterisk is not selected.
+            if(sl.getSelection().getType() == Selection.TYPE_SELECTOR){
+                SelectionSelectors ss = SelectionSelectors.class.cast(sl.getSelection());
+                for(SelectionSelector selector : ss.getSelectors()){
+                    if(selector.getSelector().getType() == SelectorMeta.TYPE_IDENT){
+                        SelectorIdentifier si = SelectorIdentifier.class.cast(selector.getSelector());
+                        if(tableMetadata.getColumn(si.getColumnName()) == null){
+                            result.setErrorMessage("Column " + si.getColumnName() + " does not exists in table " + tableMetadata.getName());
+                        }
+                    }else{
+                        result.setErrorMessage("Functions on selected fields not supported.");
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Validate that a valid keyspace is present, and that the table does not
+     * exits unless {@code ifNotExists} has been specified.
+     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+     *                 the required information.
+     * @param targetKeyspace The target keyspace where the query will be executed.
+     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     */
+    private MetaResult validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
+        MetaResult result = new MetaResult();
+        //Get the effective keyspace based on the user specification during the create
+        //sentence, or taking the keyspace in use in the user session.
+        String effectiveKeyspace = targetKeyspace;
+        if(keyspaceInc){
+            effectiveKeyspace = keyspace;
+        }
+
+        //Check that the keyspace and table exists.
+        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
+        }else{
+            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+            if(ksMetadata == null){
+                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
+            }else {
+                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
+                if (tableMetadata == null) {
+                    result.setErrorMessage("Table " + tablename + " does not exists.");
+                }
+            }
+
+        }
+        return result;
     }
 
     @Override
@@ -763,7 +933,7 @@ public class SelectStatement extends MetaStatement {
             StringBuilder sb2 = new StringBuilder("SELECT ");
             for (SelectionSelector ss: selection.getSelectors()){
                 SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-                System.out.println(si.getIdentifier());
+                //System.out.println(si.getIdentifier());
                 if(si.getTablename().equalsIgnoreCase(tableFrom)){
                     sb1.append(si.getColumnName()).append(", ");
                 } else {

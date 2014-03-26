@@ -24,6 +24,7 @@ import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.grammar.ParsingTest;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.core.validator.BasicValidatorTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -31,53 +32,49 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-public class CreateTableStatementTest extends BasicCoreCassandraTest {
-
-    private static MetadataManager _metadataManager = null;
-
-    private static final ParsingTest _pt = new ParsingTest();
-
-    @BeforeClass
-    public static void setUpBeforeClass(){
-        BasicCoreCassandraTest.setUpBeforeClass();
-        BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-        _metadataManager = new MetadataManager(_session);
-        _metadataManager.loadMetadata();
-    }
+public class CreateTableStatementTest extends BasicValidatorTest {
 
     @Test
     public void validate_basic_ok(){
-        String inputText = "CREATE TABLE demo.new_table (id int, name text, check bool, PRIMARY KEY (id, name));";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_basic_ok");
-        MetaResult result = stmt.validate(_metadataManager, "");
-        assertNotNull(result, "Sentence validation not supported");
-        assertFalse(result.hasError(), "Cannot validate sentence");
+        String inputText = "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
+        validateOk(inputText, "validate_basic_ok");
+    }
+
+    @Test
+    public void validate_allSupported_ok(){
+        String inputText = "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
+        validateOk(inputText, "validate_basic_ok");
     }
 
     @Test
     public void validate_ifNotExits_ok(){
-        String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name varchar, gender varchar, email varchar, age int, bool boolean, phrase text, lucene_index_1 text, PRIMARY KEY ((name, gender), email, age));";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_ifNotExits_ok");
-        MetaResult result = stmt.validate(_metadataManager, "");
-        assertNotNull(result, "Sentence validation not supported");
-        assertFalse(result.hasError(), "Cannot validate sentence");
+        String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name VARCHAR, gender VARCHAR, email VARCHAR, age INT, bool BOOLEAN, phrase VARCHAR, PRIMARY KEY ((name, gender), email, age));";
+        validateOk(inputText, "validate_ifNotExits_ok");
     }
 
     @Test
     public void validate_pkNotDeclared(){
-        String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name varchar, gender varchar, email varchar, age int, bool boolean, phrase text, lucene_index_1 text, PRIMARY KEY ((unknown, gender), email, age));";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_pkNotDeclared");
-        MetaResult result = stmt.validate(_metadataManager, "");
-        assertNotNull(result, "Sentence validation not supported");
-        assertTrue(result.hasError(), "Validation should fail");
+        String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name VARCHAR, gender VARCHAR, email VARCHAR, age INT, bool BOOLEAN, phrase VARCHAR, PRIMARY KEY ((unknown, gender), email, age));";
+        validateFail(inputText, "validate_pkNotDeclared");
     }
 
     @Test
     public void validate_ckNotDeclared(){
-        String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name varchar, gender varchar, email varchar, age int, bool boolean, phrase text, lucene_index_1 text, PRIMARY KEY ((name, gender), unknown, age));";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_ckNotDeclared");
-        MetaResult result = stmt.validate(_metadataManager, "");
-        assertNotNull(result, "Sentence validation not supported");
-        assertTrue(result.hasError(), "Validation should fail");
+        String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name VARCHAR, gender VARCHAR, email VARCHAR, age INT, bool BOOLEAN, phrase VARCHAR, PRIMARY KEY ((name, gender), unknown, age));";
+        validateFail(inputText, "validate_ckNotDeclared");
+    }
+
+    @Test
+    public void validate_unsupportedType(){
+        String [] unsupported = {
+                "ASCII",  "BLOB",   "DECIMAL",
+                "INET",   "TEXT",   "TIMESTAMP",
+                "UUID",   "VARINT", "TIMEUUID",
+                "UNKNOWN"};
+        for(String u : unsupported) {
+            String inputText = "CREATE TABLE demo.table_fail (id " + u +", PRIMARY KEY (id));";
+            validateFail(inputText, "validate_unsupportedType: " + u);
+        }
+
     }
 }

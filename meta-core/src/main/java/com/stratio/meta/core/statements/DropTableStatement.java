@@ -19,8 +19,9 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.DeepResult;
@@ -33,32 +34,32 @@ public class DropTableStatement extends MetaStatement {
     
     private boolean keyspaceInc = false;
     private String keyspace;
-    private String ident;
+    private String tablename;
     private boolean ifExists;
 
-    public DropTableStatement(String ident, boolean ifExists) {
-        if(ident.contains(".")){
-            String[] ksAndTablename = ident.split("\\.");
+    public DropTableStatement(String tablename, boolean ifExists) {
+        if(tablename.contains(".")){
+            String[] ksAndTablename = tablename.split("\\.");
             keyspace = ksAndTablename[0];
-            ident = ksAndTablename[1];
+            tablename = ksAndTablename[1];
             keyspaceInc = true;
         }
-        this.ident = ident;
+        this.tablename = tablename;
         this.ifExists = ifExists;
     }
     
-    public String getIdent() {
-        return ident;
+    public String getTablename() {
+        return tablename;
     }
 
-    public void setIdent(String ident) {
-        if(ident.contains(".")){
-            String[] ksAndTablename = ident.split("\\.");
+    public void setTablename(String tablename) {
+        if(tablename.contains(".")){
+            String[] ksAndTablename = tablename.split("\\.");
             keyspace = ksAndTablename[0];
-            ident = ksAndTablename[1];
+            tablename = ksAndTablename[1];
             keyspaceInc = true;
         }
-        this.ident = ident;
+        this.tablename = tablename;
     }
 
     public boolean isIfExists() {
@@ -78,14 +79,37 @@ public class DropTableStatement extends MetaStatement {
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
-        sb.append(ident);                
+        sb.append(tablename);
         return sb.toString();
     }
 
     /** {@inheritDoc} */
     @Override
     public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
+        MetaResult result = new MetaResult();
+
+        String effectiveKeyspace = targetKeyspace;
+        if(keyspaceInc){
+            effectiveKeyspace = keyspace;
+        }
+
+        //Check that the keyspace and table exists.
+        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
+        }else{
+            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+            if(ksMetadata == null){
+                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
+            }else {
+                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
+                if (tableMetadata == null) {
+                    result.setErrorMessage("Table " + tablename + " does not exists.");
+                }
+            }
+
+        }
+
+        return result;
     }
 
     @Override

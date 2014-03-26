@@ -107,6 +107,21 @@ public class MetadataManager {
 	}
 
     /**
+     * Get the comment associated with a {@code tablename} of a {@code keyspace}.
+     * @param keyspace The target keyspace.
+     * @param tablename The target table.
+     * @return The comment or null if the table does not exist in the keyspace,
+     * or the client is not connected to Cassandra.
+     */
+    public String getTableComment(String keyspace, String tablename){
+        String result = null;
+        if(_clusterMetadata != null && _clusterMetadata.getKeyspace(keyspace) != null){
+            result = _clusterMetadata.getKeyspace(keyspace).getTable(tablename).getOptions().getComment();
+        }
+        return result;
+    }
+
+    /**
      * Get the list of keyspaces in Cassandra.
      * @return The list of keyspaces or empty if not connected.
      */
