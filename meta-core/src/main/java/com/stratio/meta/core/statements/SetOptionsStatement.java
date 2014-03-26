@@ -19,13 +19,13 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Consistency;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.Tree;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +38,7 @@ public class SetOptionsStatement extends MetaStatement {
     private List<Boolean> optionsCheck;
 
     public SetOptionsStatement(boolean analytics, Consistency consistency, List<Boolean> optionsCheck) {
+        this.command = true;
         this.consistency = consistency;
         this.analytics = analytics;
         this.optionsCheck = new ArrayList<>();
@@ -118,9 +119,8 @@ public class SetOptionsStatement extends MetaStatement {
     }
     
     @Override
-    public List<MetaStep> getPlan() {
-        ArrayList<MetaStep> steps = new ArrayList<>();
-        return steps;
+    public Tree getPlan() {
+        return new Tree();
     }
     
 }

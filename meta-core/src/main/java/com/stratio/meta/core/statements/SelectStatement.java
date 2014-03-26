@@ -45,14 +45,13 @@ import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.SelectorMeta;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.WindowSelect;
-import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
-
+import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta.core.utils.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -68,9 +67,9 @@ public class SelectStatement extends MetaStatement {
     private boolean joinInc;
     private InnerJoin join;
     private boolean whereInc;
-    private List<MetaRelation> where;
+    private ArrayList<MetaRelation> where;
     private boolean orderInc;
-    private List<MetaOrdering> order;    
+    private ArrayList<MetaOrdering> order;    
     private boolean groupInc;
     private GroupBy group;    
     private boolean limitInc;
@@ -81,11 +80,12 @@ public class SelectStatement extends MetaStatement {
     public SelectStatement(SelectionClause selectionClause, String tablename, 
                            boolean windowInc, WindowSelect window, 
                            boolean joinInc, InnerJoin join, 
-                           boolean whereInc, List<MetaRelation> where, 
-                           boolean orderInc, List<MetaOrdering> order, 
+                           boolean whereInc, ArrayList<MetaRelation> where, 
+                           boolean orderInc, ArrayList<MetaOrdering> order, 
                            boolean groupInc, GroupBy group, 
                            boolean limitInc, int limit, 
                            boolean disableAnalytics) {
+        this.command = false;
         this.selectionClause = selectionClause;        
         if(tablename.contains(".")){
             String[] ksAndTablename = tablename.split("\\.");
@@ -111,7 +111,11 @@ public class SelectStatement extends MetaStatement {
     
     public SelectStatement(SelectionClause selectionClause, String tablename) {        
         this(selectionClause, tablename, false, null, false, null, false, null, false, null, false, null, false, 0, false);
-    }                
+    }             
+    
+    public SelectStatement(String tablename) {        
+        this(null, tablename, false, null, false, null, false, null, false, null, false, null, false, 0, false);
+    }
 
     public void setSelectionClause(SelectionClause selectionClause) {
         this.selectionClause = selectionClause;
@@ -193,11 +197,11 @@ public class SelectStatement extends MetaStatement {
         this.whereInc = whereInc;
     }
 
-    public List<MetaRelation> getWhere() {
+    public ArrayList<MetaRelation> getWhere() {
         return where;
     }
 
-    public void setWhere(List<MetaRelation> where) {
+    public void setWhere(ArrayList<MetaRelation> where) {
         this.whereInc = true;
         this.where = where;
     }        
@@ -210,11 +214,11 @@ public class SelectStatement extends MetaStatement {
         this.orderInc = orderInc;
     }
 
-    public List<MetaOrdering> getOrder() {
+    public ArrayList<MetaOrdering> getOrder() {
         return order;
     }
 
-    public void setOrder(List<MetaOrdering> order) {
+    public void setOrder(ArrayList<MetaOrdering> order) {
         this.orderInc = true;
         this.order = order;
     }        
@@ -268,11 +272,24 @@ public class SelectStatement extends MetaStatement {
     public void setNeedsAllowFiltering(boolean needsAllowFiltering) {
         this.needsAllowFiltering = needsAllowFiltering;
     }        
+    
+    public void addSelection(SelectionSelector selSelector){
+        if(selectionClause == null){
+            SelectionSelectors selSelectors = new SelectionSelectors();
+            selectionClause = new SelectionList(selSelectors);
+        }
+        SelectionList selList = (SelectionList) selectionClause;
+        SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection();
+        selSelectors.addSelectionSelector(selSelector);
+    }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("SELECT ");
-        sb.append(selectionClause.toString()).append(" FROM ");
+        if(selectionClause != null){
+            sb.append(selectionClause.toString());
+        }
+        sb.append(" FROM ");
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
@@ -300,7 +317,7 @@ public class SelectStatement extends MetaStatement {
             sb.append(" DISABLE ANALYTICS");
         }        
         //sb.append(";");
-        return sb.toString();
+        return sb.toString().replace("  ", " ");
     }
 
     /** {@inheritDoc} */
@@ -741,7 +758,7 @@ public class SelectStatement extends MetaStatement {
                         }
                     } else if (selectorMeta.getType() == SelectorMeta.TYPE_FUNCTION){                        
                         SelectorFunction selFunction = (SelectorFunction) selectorMeta;
-                        List<SelectorMeta> params = selFunction.getParams();
+                        ArrayList<SelectorMeta> params = selFunction.getParams();
                         Object[] innerFunction = new Object[params.size()];
                         int pos = 0;
                         for(SelectorMeta selMeta: params){
@@ -826,7 +843,7 @@ public class SelectStatement extends MetaStatement {
                         break;
                     case MetaRelation.TYPE_IN:
                         RelationIn relIn = (RelationIn) metaRelation;
-                        List<Term> terms = relIn.getTerms();                        
+                        ArrayList<Term> terms = relIn.getTerms();                        
                         Object[] values = new Object[relIn.numberOfTerms()];                        
                         int nTerm = 0;
                         for(Term term: terms){
@@ -845,7 +862,7 @@ public class SelectStatement extends MetaStatement {
                         break;
                     case MetaRelation.TYPE_TOKEN:
                         RelationToken relToken = (RelationToken) metaRelation;
-                        List<String> names = relToken.getIdentifiers();
+                        ArrayList<String> names = relToken.getIdentifiers();
                         if(!relToken.isRighSideTokenType()){
                             value = relToken.getTerms().get(0).getTermValue();
                             switch(relToken.getOperator()){
@@ -922,43 +939,79 @@ public class SelectStatement extends MetaStatement {
     }
 
     @Override
-    public List<MetaStep> getPlan() {
-        ArrayList<MetaStep> steps = new ArrayList<>();
-        if(joinInc){             
-            String tableFrom = tablename;
-            String tableJoin = this.join.getTablename();
-            SelectionList selectionList = (SelectionList) this.selectionClause;
-            SelectionSelectors selection = (SelectionSelectors) selectionList.getSelection();
-            StringBuilder sb1 = new StringBuilder("SELECT ");
-            StringBuilder sb2 = new StringBuilder("SELECT ");
-            for (SelectionSelector ss: selection.getSelectors()){
-                SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-                //System.out.println(si.getIdentifier());
-                if(si.getTablename().equalsIgnoreCase(tableFrom)){
-                    sb1.append(si.getColumnName()).append(", ");
+    public Tree getPlan() {
+        Tree steps = new Tree();
+        if(joinInc){
+            SelectStatement firstSelect = new SelectStatement(tablename);
+            SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
+            SelectStatement joinSelect = new SelectStatement("");
+            // ADD FIELDS OF THE JOIN
+            Map<String, String> fields = this.join.getFields();
+            for(String key: fields.keySet()){                
+                String value = fields.get(key);
+                if(key.split("\\.")[0].trim().equalsIgnoreCase(tablename)){
+                    firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(key.split("\\.")[1])));
+                    secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(value.split("\\.")[1])));
                 } else {
-                    sb2.append(si.getColumnName()).append(", ");
+                    firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(value.split("\\.")[1])));
+                    secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(key.split("\\.")[1])));
                 }
             }
-            Map<String, String> fields = this.join.getFields();
-            for(String key: fields.keySet()){
-                String value = fields.get(key);
-                if(key.split("\\.")[0].trim().equalsIgnoreCase(tableFrom.trim())){
-                    sb1.append(key.split("\\.")[1]).append(", ");
-                    sb2.append(value.split("\\.")[1]).append(", ");
+            // ADD FIELDS OF THE SELECT
+            SelectionList selectionList = (SelectionList) this.selectionClause;
+            SelectionSelectors selection = (SelectionSelectors) selectionList.getSelection();
+            for (SelectionSelector ss: selection.getSelectors()){
+                SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
+
+                if(si.getTablename().equalsIgnoreCase(tablename)){
+                    firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
                 } else {
-                    sb1.append(value.split("\\.")[1]).append(", ");
-                    sb2.append(key.split("\\.")[1]).append(", ");
-                }                
+                    secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
+                }
             }
-            sb1.deleteCharAt(sb1.length()-2);
-            sb2.deleteCharAt(sb2.length()-2);
-            sb1.append("FROM ").append(tableFrom).append(";");
-            sb2.append("FROM ").append(tableJoin).append(";");
-            steps.add(new MetaStep(MetaPath.CASSANDRA, "ResultSet rFrom = CassandraClient.executeQuery(\""+sb1.toString()+"\")"));            
-            steps.add(new MetaStep(MetaPath.CASSANDRA, "ResultSet rJoin = CassandraClient.executeQuery(\""+sb2.toString()+"\")"));           
-            // JOIN IN DEEP
-            steps.add(new MetaStep(MetaPath.DEEP, "Deep.select.join(rFrom, rJoin, metaStatement)"));
+            // ADD MAP OF THE JOIN
+            joinSelect.setJoin(new InnerJoin("", fields));
+            /* joinSelect.getJoin().getFields().size(); */
+            // ADD STEPS
+            steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
+            steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
+            steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
+            ////////////////////////////////////////////////////////////////////
+//            String tableFrom = tablename;
+//            String tableJoin = this.join.getTablename();
+//            selectionList = (SelectionList) this.selectionClause;
+//            selection = (SelectionSelectors) selectionList.getSelection();
+//            StringBuilder sb1 = new StringBuilder("SELECT ");
+//            StringBuilder sb2 = new StringBuilder("SELECT ");
+//            for (SelectionSelector ss: selection.getSelectors()){
+//                SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
+//                System.out.println(si.getIdentifier());
+//                if(si.getTablename().equalsIgnoreCase(tableFrom)){
+//                    sb1.append(si.getColumnName()).append(", ");
+//                } else {
+//                    sb2.append(si.getColumnName()).append(", ");
+//                }
+//            }
+//            fields = this.join.getFields();
+//            for(String key: fields.keySet()){
+//                String value = fields.get(key);
+//                if(key.split("\\.")[0].trim().equalsIgnoreCase(tableFrom.trim())){
+//                    sb1.append(key.split("\\.")[1]).append(", ");
+//                    sb2.append(value.split("\\.")[1]).append(", ");
+//                } else {
+//                    sb1.append(value.split("\\.")[1]).append(", ");
+//                    sb2.append(key.split("\\.")[1]).append(", ");
+//                }                
+//            }
+//            sb1.deleteCharAt(sb1.length()-2);
+//            sb2.deleteCharAt(sb2.length()-2);
+//            sb1.append("FROM ").append(tableFrom).append(";");
+//            sb2.append("FROM ").append(tableJoin).append(";");
+//            steps.add(new MetaStep(MetaPath.CASSANDRA, "ResultSet rFrom = CassandraClient.executeQuery(\""+sb1.toString()+"\")"));            
+//            steps.add(new MetaStep(MetaPath.CASSANDRA, "ResultSet rJoin = CassandraClient.executeQuery(\""+sb2.toString()+"\")"));           
+//            // JOIN IN DEEP
+//            steps.add(new MetaStep(MetaPath.DEEP, "Deep.select.join(rFrom, rJoin, metaStatement)"));
+            ////////////////////////////////////////////////////////////////////
         }
         return steps;
     }

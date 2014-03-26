@@ -202,6 +202,7 @@ T_SECONDS: S E C O N D S;
 T_MINUTES: M I N U T E S;
 T_HOURS: H O U R S;
 T_DAYS: D A Y S;
+T_MATCH: M A T C H;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -313,9 +314,9 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
     @init{
         boolean optsInc = false;
         boolean condsInc = false;
-        List<Option> options = new ArrayList<>();
-        List<Assignment> assignments = new ArrayList<>();
-        List<MetaRelation> whereclauses = new ArrayList<>();
+        ArrayList<Option> options = new ArrayList<>();
+        ArrayList<Assignment> assignments = new ArrayList<>();
+        ArrayList<MetaRelation> whereclauses = new ArrayList<>();
         Map<String, Term> conditions = new HashMap<>();
     }:
     T_UPDATE tablename=getTableID
@@ -363,8 +364,8 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
 createTableStatement returns [CreateTableStatement crtast]
 @init{
     LinkedHashMap<String, String> columns = new LinkedHashMap<>();
-    List<String>   primaryKey = new ArrayList<String>();
-    List<String> clusterKey = new ArrayList<String>();
+    ArrayList<String>   primaryKey = new ArrayList<String>();
+    ArrayList<String> clusterKey = new ArrayList<String>();
     LinkedHashMap<String, ValueProperty> propierties = new LinkedHashMap<>();
     int Type_Primary_Key= 0;
     int columnNumberPK= 0;
@@ -463,12 +464,12 @@ selectStatement returns [SelectStatement slctst]
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
     @init{
-        List<String> ids = new ArrayList<>();
+        ArrayList<String> ids = new ArrayList<>();
         boolean ifNotExists = false;
         int typeValues = InsertIntoStatement.TYPE_VALUES_CLAUSE;
-        List<ValueCell> cellValues = new ArrayList<>();
+        ArrayList<ValueCell> cellValues = new ArrayList<>();
         boolean optsInc = false;
-        List<Option> options = new ArrayList<>();
+        ArrayList<Option> options = new ArrayList<>();
     }:
     T_INSERT 
     T_INTO 
@@ -648,7 +649,7 @@ getIndexType returns [String indexType]:
     {$indexType=$idxType.text;}
 ;
 
-getMetaProperties returns [List<MetaProperty> props]
+getMetaProperties returns [ArrayList<MetaProperty> props]
     @init{
         $props = new ArrayList<>();
     }:
@@ -673,7 +674,7 @@ getDataType returns [String dataType]:
     {$dataType = $ident1.text.concat(ident2==null?"":"<"+$ident2.text).concat(ident3==null?"":","+$ident3.text).concat(ident2==null?"":">");}
 ;
 
-getOrdering returns [List<MetaOrdering> order]
+getOrdering returns [ArrayList<MetaOrdering> order]
     @init{
         order = new ArrayList<>();
         MetaOrdering ordering;
@@ -682,7 +683,7 @@ getOrdering returns [List<MetaOrdering> order]
     (T_COMMA identN=T_IDENT {ordering = new MetaOrdering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
 ;
 
-getWhereClauses returns [List<MetaRelation> clauses]
+getWhereClauses returns [ArrayList<MetaRelation> clauses]
     @init{
         clauses = new ArrayList<>();
     }:
@@ -694,7 +695,7 @@ getFields returns [Map<String, String> fields]
         fields = new HashMap<>();
     }:
     ident1L=getTableID T_EQUAL ident1R=getTableID { fields.put(ident1L, ident1R);}
-    (identNL=getTableID T_EQUAL identNR=getTableID { fields.put(identNL, identNR);})* 
+    (T_AND identNL=getTableID T_EQUAL identNR=getTableID { fields.put(identNL, identNR);})* 
 ;
 
 getWindow returns [WindowSelect ws]:
@@ -751,7 +752,7 @@ getSelectionList returns [SelectionList scl]
 getSelection returns [Selection slct]
     @init{
         SelectionSelector slsl;
-        List<SelectionSelector> selections = new ArrayList<>();
+        ArrayList<SelectionSelector> selections = new ArrayList<>();
     }:
     (
         T_ASTERISK { $slct = new SelectionAsterisk();}       
@@ -763,7 +764,7 @@ getSelection returns [Selection slct]
 
 getSelector returns [SelectorMeta slmt]
     @init{
-        List<SelectorMeta> params = new ArrayList<>();
+        ArrayList<SelectorMeta> params = new ArrayList<>();
         GroupByFunction gbFunc = null;
     }:
     ( (T_AGGREGATION {gbFunc = GroupByFunction.aggregation;} 
@@ -846,16 +847,17 @@ getComparator returns [String comparator]:
     | T_LTE {$comparator="<=";}
     | T_NOT_EQUAL {$comparator="<>";} 
     | T_LIKE {$comparator="LIKE";}
+    | T_MATCH {$comparator="MATCH";}
 ;
 
-getIds returns [List<String> listStrs]
+getIds returns [ArrayList<String> listStrs]
     @init{
         listStrs = new ArrayList<>();
     }:
     ident1=T_IDENT {listStrs.add($ident1.text);} (T_COMMA identN=T_IDENT {listStrs.add($identN.text);})*
 ;
 
-getOptions returns [List<Option> opts]@init{
+getOptions returns [ArrayList<Option> opts]@init{
         opts = new ArrayList<>();
     }:
     opt1=getOption {opts.add(opt1);} (optN=getOption {opts.add(optN);})*
@@ -867,7 +869,7 @@ getOption returns [Option opt]:
     | identProp=T_IDENT T_EQUAL valueProp=getValueProperty {$opt=new Option($identProp.text, valueProp);}
 ;
 
-getList returns [List list]
+getList returns [ArrayList list]
     @init{
         list = new ArrayList<String>();
     }:
@@ -875,7 +877,7 @@ getList returns [List list]
     (T_COMMA termN=getTerm {list.add(termN.toString());})*
     ;
 
-getTerms returns [List list]
+getTerms returns [ArrayList list]
     @init{
         list = new ArrayList<Term>();
     }:

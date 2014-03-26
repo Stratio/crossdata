@@ -27,6 +27,7 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.MetaQuery;
+import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.QueryStatus;
 import org.apache.log4j.Logger;
@@ -47,9 +48,19 @@ public class Executor {
     }
     
     public MetaQuery executeQuery(MetaQuery metaQuery) {
+        
         metaQuery.setStatus(QueryStatus.EXECUTED);
         MetaStatement stmt = metaQuery.getStatement();
         
+        StringBuilder sb = new StringBuilder();
+        if(!stmt.getPlan().isEmpty()){
+            sb.append("PLAN: ").append(System.getProperty("line.separator"));
+            sb.append(stmt.getPlan().toStringDownTop());
+            logger.info(sb.toString());
+            metaQuery.setErrorMessage("Deep execution is not supported yet");
+            return metaQuery;
+        }       
+                
         QueryResult queryResult = new QueryResult();
         Statement driverStmt = null;
         
@@ -66,9 +77,9 @@ public class Executor {
             logger.info("Executed");
         } catch (Exception ex) {
             metaQuery.hasError();
-            queryResult.setErrorMessage("\033[31mCassandra exception:\033[0m "+ex.getMessage());
+            queryResult.setErrorMessage("Cassandra exception: "+ex.getMessage());
             if (ex instanceof UnsupportedOperationException){
-                queryResult.setErrorMessage("\033[31mUnsupported operation by C*:\033[0m "+ex.getMessage());
+                queryResult.setErrorMessage("Unsupported operation by C*: "+ex.getMessage());
             }
             if(ex.getMessage().contains("line") && ex.getMessage().contains(":")){
                 String queryStr;
@@ -78,7 +89,7 @@ public class Executor {
                     queryStr = stmt.translateToCQL();
                 }
                 String[] cMessageEx =  ex.getMessage().split(" ");
-                StringBuilder sb = new StringBuilder();
+                sb = new StringBuilder();
                 sb.append(cMessageEx[2]);
                 for(int i=3; i<cMessageEx.length; i++){
                     sb.append(" ").append(cMessageEx[i]);

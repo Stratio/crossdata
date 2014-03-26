@@ -19,7 +19,7 @@
 
 package com.stratio.meta.core.structures;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public abstract class MetaRelation {
     
@@ -28,16 +28,16 @@ public abstract class MetaRelation {
     public static final int TYPE_TOKEN = 3;
     public static final int TYPE_BETWEEN = 4;
     
-    protected List<String> identifiers;
+    protected ArrayList<String> identifiers;
     protected String operator;
-    protected List<Term> terms;
+    protected ArrayList<Term> terms;
     protected int type;   
     
-    public List<String> getIdentifiers() {
+    public ArrayList<String> getIdentifiers() {
         return identifiers;
     }
 
-    public void setIdentifiers(List<String> identifiers) {
+    public void setIdentifiers(ArrayList<String> identifiers) {
         this.identifiers = identifiers;
     }
     
@@ -53,7 +53,7 @@ public abstract class MetaRelation {
         this.operator = operator;
     }
 
-    public List<Term> getTerms() {
+    public ArrayList<Term> getTerms() {
         return terms;
     }
     
@@ -61,7 +61,7 @@ public abstract class MetaRelation {
         return this.terms.size();
     }
 
-    public void setTerms(List<Term> terms) {
+    public void setTerms(ArrayList<Term> terms) {
         this.terms = terms;
     }
 

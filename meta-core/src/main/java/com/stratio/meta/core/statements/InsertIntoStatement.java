@@ -34,6 +34,7 @@ import com.stratio.meta.core.structures.ValueCell;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -67,6 +68,7 @@ public class InsertIntoStatement extends MetaStatement {
                                boolean optsInc,
                                List<Option> options, 
                                int typeValues) {
+        this.command = false;
         if(tablename.contains(".")){
             String[] ksAndTablename = tablename.split("\\.");
             keyspace = ksAndTablename[0];
@@ -432,9 +434,8 @@ public class InsertIntoStatement extends MetaStatement {
     }
     
     @Override
-    public List<MetaStep> getPlan() {
-        ArrayList<MetaStep> steps = new ArrayList<>();
-        return steps;
+    public Tree getPlan() {
+        return new Tree();
     }
     
 }

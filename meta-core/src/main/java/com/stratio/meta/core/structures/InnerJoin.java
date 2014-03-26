@@ -52,7 +52,7 @@ public class InnerJoin {
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder(tablename);
-        sb.append(" ON ").append(ParserUtils.stringMap(fields, "=", " "));
+        sb.append(" ON ").append(ParserUtils.stringMap(fields, "=", " AND "));
         return sb.toString();
     }
     

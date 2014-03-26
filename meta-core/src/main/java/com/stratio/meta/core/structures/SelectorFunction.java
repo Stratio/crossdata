@@ -21,14 +21,14 @@ package com.stratio.meta.core.structures;
 
 import com.stratio.meta.core.utils.ParserUtils;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class SelectorFunction extends SelectorMeta {
 
     private String name;
-    private List<SelectorMeta> params;
+    private ArrayList<SelectorMeta> params;
 
-    public SelectorFunction(String name, List<SelectorMeta> params) {
+    public SelectorFunction(String name, ArrayList<SelectorMeta> params) {
         this.type = TYPE_FUNCTION;
         this.name = name;
         this.params = params;
@@ -42,11 +42,11 @@ public class SelectorFunction extends SelectorMeta {
         this.name = name;
     }
 
-    public List<SelectorMeta> getParams() {
+    public ArrayList<SelectorMeta> getParams() {
         return params;
     }
 
-    public void setParams(List<SelectorMeta> params) {
+    public void setParams(ArrayList<SelectorMeta> params) {
         this.params = params;
     }        
     

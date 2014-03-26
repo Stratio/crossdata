@@ -745,6 +745,12 @@ public class ParsingTest {
     }
 
     @Test
+    public void select_with_match(){
+        String inputText = "SELECT * FROM demo.emp WHERE first_name MATCH s2o;";
+        testRegularStatement(inputText, "select_with_match");
+    }
+    
+    @Test
     public void select_wrong_like_word(){
         String inputText = "SELECT ident1, myfunction(innerIdent, anotherIdent) LIKE ident1 FROM newks.newtb;";
         testParseFails(inputText, "select_wrong_like_word");

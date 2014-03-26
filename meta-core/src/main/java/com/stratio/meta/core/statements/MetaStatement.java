@@ -22,22 +22,32 @@ package com.stratio.meta.core.statements;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
-import java.util.List;
+import com.stratio.meta.core.utils.Tree;
 
 public abstract class MetaStatement {
     
     protected String query;
     protected MetaPath path;
+    protected boolean command;
 
     public MetaStatement() {
     }
 
-    public MetaStatement(String query, MetaPath path) {
+    public MetaStatement(String query, MetaPath path, boolean command) {
         this.query = query;
         this.path = path;
+        this.command = command;
+    }       
+
+    public boolean isCommand() {
+        return command;
+    }
+
+    public void setAsCommand(boolean command) {
+        this.command = command;
     }        
     
     public String getQuery() {
@@ -81,6 +91,6 @@ public abstract class MetaStatement {
 
     public abstract DeepResult executeDeep();
     
-    public abstract List<MetaStep> getPlan();
+    public abstract Tree getPlan();
     
 }

@@ -176,6 +176,7 @@ public class Metash {
                 logger.error(connectionResult.getErrorMessage());
                 return;
             }
+            logger.info("Driver connections established");
             
             String currentKeyspace = "";
             
@@ -192,13 +193,13 @@ public class Metash {
                                 currentKeyspace = metaResult.getCurrentKeyspace();
                             }
                             if(metaResult.hasError()){
-                                logger.error(metaResult.getErrorMessage());
+                                logger.error("\033[31mError:\033[0m "+metaResult.getErrorMessage());
                                 continue;
                             } 
-                            metaResult.print();
+                            logger.info("\033[32mResult:\033[0m"+metaResult.toString());
                         }
                     } catch(Exception exc){
-                        logger.error(exc.getMessage());
+                        logger.error("\033[31mError:\033[0m "+exc.getMessage());
                     }
             }
             saveHistory(console, file, sdf);  
