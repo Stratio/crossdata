@@ -19,12 +19,7 @@
 
 package com.stratio.meta.core.validator.statements;
 
-import com.stratio.meta.common.result.MetaResult;
-import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
-import com.stratio.meta.core.grammar.ParsingTest;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.statements.MetaStatement;
-import org.testng.annotations.BeforeClass;
+import com.stratio.meta.core.validator.BasicValidatorTest;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertFalse;
@@ -32,35 +27,17 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 
-public class UseStatementTest extends BasicCoreCassandraTest {
-
-    private static MetadataManager _metadataManager = null;
-
-    private static final ParsingTest _pt = new ParsingTest();
-
-    @BeforeClass
-    public static void setUpBeforeClass(){
-        BasicCoreCassandraTest.setUpBeforeClass();
-        BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-        _metadataManager = new MetadataManager(_session);
-        _metadataManager.loadMetadata();
-    }
+public class UseStatementTest extends BasicValidatorTest {
 
     @Test
     public void validate_ok(){
         String inputText = "USE demo;";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_ok");
-        MetaResult result = stmt.validate(_metadataManager, "");
-        assertNotNull(result, "Sentence validation not supported");
-        assertFalse(result.hasError(), "Cannot validate sentence");
+        validateOk(inputText, "validate_ok");
     }
 
     @Test
     public void validate_notExists(){
         String inputText = "USE demo_unknown;";
-        MetaStatement stmt = _pt.testRegularStatement(inputText, "validate_notExists");
-        MetaResult result = stmt.validate(_metadataManager, "");
-        assertNotNull(result, "Sentence validation not supported");
-        assertTrue(result.hasError(), "Validation should fail");
+        validateFail(inputText, "validate_notExists");
     }
 }

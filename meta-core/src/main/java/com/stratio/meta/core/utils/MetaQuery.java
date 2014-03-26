@@ -19,7 +19,7 @@
 
 package com.stratio.meta.core.utils;
 
-import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.planner.MetaPlan;
 import com.stratio.meta.core.validator.MetaValidation;
@@ -32,12 +32,12 @@ public class MetaQuery {
     private MetaStatement statement;
     private MetaPlan plan;
     private MetaValidation validation;
-    private QueryResult result;
+    private MetaResult result;
     
     public MetaQuery() {
         status = QueryStatus.NONE;
         this.hasError = false;
-        result = new QueryResult();
+        result = new MetaResult();
     }
     
     public MetaQuery(String query) {
@@ -90,11 +90,11 @@ public class MetaQuery {
         this.plan = plan;
     }
     
-    public void setResult(QueryResult result) {
+    public void setResult(MetaResult result) {
         this.result = result;
     }
 
-    public QueryResult getResult() {
+    public MetaResult getResult() {
         return result;
     }
 

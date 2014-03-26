@@ -32,13 +32,7 @@ import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class CreateTableStatement extends MetaStatement{
     
@@ -271,7 +265,7 @@ public class CreateTableStatement extends MetaStatement{
                     j++;
                     if (!it.hasNext()) sb.append(")");
                 }
-                System.out.println(withClusterKey);
+                //System.out.println(withClusterKey);
                 if (withClusterKey){
                     for (Iterator it = clusterKey.iterator();it.hasNext();){
                         String key = (String) it.next();
@@ -330,11 +324,9 @@ public class CreateTableStatement extends MetaStatement{
         MetaResult result = new MetaResult();
         //Get the effective keyspace based on the user specification during the create
         //sentence, or taking the keyspace in use in the user session.
-        String effectiveKeyspace = null;
+        String effectiveKeyspace = targetKeyspace;
         if(keyspaceInc){
             effectiveKeyspace = keyspace;
-        }else{
-            effectiveKeyspace = targetKeyspace;
         }
 
         //Check that the keyspace exists, and that the table does not exits.
@@ -377,6 +369,14 @@ public class CreateTableStatement extends MetaStatement{
             }
             if(primaryKey.contains(ck)){
                result.setErrorMessage("Column " + ck + " found as part of primary and clustering key.");
+            }
+        }
+
+        String [] supported = {"BIGINT", "BOOLEAN", "COUNTER", "DOUBLE", "FLOAT", "INT", "VARCHAR"};
+        Set<String> supportedColumns = new HashSet<String>(Arrays.asList(supported));
+        for(String c : columns.keySet()){
+            if(!supportedColumns.contains(columns.get(c).toUpperCase())){
+                result.setErrorMessage("Column " + c + " with datatype " + columns.get(c) + " not supported.");
             }
         }
 
@@ -438,7 +438,7 @@ public class CreateTableStatement extends MetaStatement{
                 String insideBracket = cqlString.substring(i+1, newI);
                 insideBracket = insideBracket.replace(":", " ");
                 insideBracket = insideBracket.replace(",", " ");
-                System.out.println("|"+insideBracket+"|");
+                //System.out.println("|"+insideBracket+"|");
                 boolean wasChanged = true;
                 while(wasChanged){
                     int before = insideBracket.length();
@@ -448,7 +448,7 @@ public class CreateTableStatement extends MetaStatement{
                         wasChanged = false;
                     }
                 }
-                System.out.println("|"+insideBracket+"|");
+                //System.out.println("|"+insideBracket+"|");
                 insideBracket = insideBracket.trim();
                 String[] strs = insideBracket.split(" ");
                 for(int j=0; j<strs.length; j++){

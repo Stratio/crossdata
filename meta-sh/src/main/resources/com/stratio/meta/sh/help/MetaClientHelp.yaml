@@ -25,6 +25,7 @@ content:
         set options
         explain plan
         stop
+        describe
 
       === META related help ===
       
@@ -467,6 +468,38 @@ content:
       For more information check:
       
         > help create table
+
+  - entry: DESCRIBE
+    help: |
+      The DESCRIBE command can be used to provide information. For
+      more information check one of the following:
+      
+        > help describe keyspace
+        > help describe table
+
+  - entry: DESCRIBE_KEYSPACE
+    help: |
+      Describe a keyspace.
+      
+      Syntax:
+      
+        DESCRIBE KEYSPACE <keyspacename> ;
+
+      Example:
+      
+        DESCRIBE KEYSPACE demo;     
+
+  - entry: DESCRIBE_TABLE
+    help: |
+      Describe the structure of a table.
+      
+      Syntax:
+      
+        DESCRIBE TABLE <tablename> ;
+
+      Example:
+      
+        DESCRIBE TABLE demo.users;     
 
   - entry: STOP
     help: |

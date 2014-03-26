@@ -164,7 +164,7 @@ public class ParsingTest {
     }
 
     @Test
-    public void createKeyspace_literal_value() {
+    public void createIndex_lucene_value() {
         String inputText = "CREATE LUCENE INDEX demo_banks ON demo.banks (lucene) USING org.apache.cassandra.db.index.stratio.RowIndex"
                 + " WITH OPTIONS schema = '{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\", "
                 + "fields: {day: {type: \"date\", pattern: \"yyyy-MM-dd\"}, key: {type:\"uuid\"}}}';";
@@ -178,9 +178,7 @@ public class ParsingTest {
                 }
                 */
         CreateIndexStatement cis = (CreateIndexStatement) st;
-        System.out.println(inputText);
-        System.out.println(st.toString()+";");
-        assertTrue(inputText.equalsIgnoreCase(st.toString()+";"), "Cannot parse createKeyspace_literal_value");
+        assertTrue(inputText.equalsIgnoreCase(st.toString()+";"), "Cannot parse createIndex_lucene_value");
     }
 
     @Test

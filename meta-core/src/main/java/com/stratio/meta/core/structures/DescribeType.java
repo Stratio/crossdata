@@ -17,36 +17,9 @@
  * License along with this library.
  */
 
-package com.stratio.meta.common.result;
+package com.stratio.meta.core.structures;
 
-import org.apache.log4j.Logger;
-
-public class CommandResult extends MetaResult {
-
-    private final Logger logger = Logger.getLogger(CommandResult.class);
-    
-    private String result;
-
-    public CommandResult(String result) {
-        this.result = result;
-    }
-
-    public String getResult() {
-        return result;
-    }
-
-    public void setResult(String result) {
-        this.result = result;
-    }        
-    
-    @Override
-    public void print() {
-        logger.info(result);
-    }
-    
-    @Override
-    public String toString(){
-        return result;
-    }
-    
+public enum DescribeType {
+    KEYSPACE,
+    TABLE
 }

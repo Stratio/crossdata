@@ -238,25 +238,36 @@ public class CreateIndexStatement extends MetaStatement {
 
     @Override
     public String translateToCQL() {
+        // EXAMPLE:
+        // META: CREATE LUCENE INDEX demo_banks ON demo.banks(lucene) USING org.apache.cassandra.db.index.stratio.RowIndex WITH OPTIONS schema = '{default_analyzer:"org.apache.lucene.analysis.standard.StandardAnalyzer", fields: {day: {type: "date", pattern: "yyyy-MM-dd"}, key: {type:"uuid"}}}';
+        // CQL: CREATE CUSTOM INDEX demo_banks ON demo.banks (lucene) USING 'org.apache.cassandra.db.index.stratio.RowIndex'WITH OPTIONS = {'schema' : '{default_analyzer:"org.apache.lucene.analysis.standard.StandardAnalyzer", fields: {day: {type: "date", pattern: "yyyy-MM-dd"}, key: {type:"uuid"}}}'}
+        
         String cqlString = this.toString().replace(" DEFAULT ", " ");
         if(cqlString.contains(" LUCENE ")){
-            throw new ValidationException("Lucene indexes are not supported yet");
+            cqlString = this.toString().replace("CREATE LUCENE ", "CREATE CUSTOM ");
         }        
         if(cqlString.contains("USING")){
             cqlString = cqlString.replace("USING ", "USING '");
             if(cqlString.contains("WITH ")){
                 cqlString = cqlString.replace(" WITH ", "' WITH ");
-            } else {
+            } /*else {
                 cqlString = cqlString.replace(";", "';");
-            }
+            }*/
         }
         if(cqlString.contains("OPTIONS")){
-            cqlString = cqlString.replace("OPTIONS", "OPTIONS = {");
-            cqlString = cqlString.replace(";", "};");
-            String cqlOptions = cqlString.substring(cqlString.indexOf("{")+1, cqlString.lastIndexOf("}")+1);
-            //System.out.println("cqlOptions: "+cqlOptions);
-            cqlString = cqlString.substring(0, cqlString.indexOf("{")+1).concat(cqlString.substring(cqlString.lastIndexOf("}")));
-            //System.out.println("cqlString: "+cqlString);            
+            cqlString = cqlString.replace("OPTIONS", "OPTIONS = { '");
+            cqlString = cqlString.concat("}");
+            cqlString = cqlString.replaceAll("='", "'='");
+            cqlString = cqlString.replaceAll("= '", "' = '");
+            cqlString = cqlString.replaceAll("' ", "'");
+            cqlString = cqlString.replaceAll(" '", "'");
+            cqlString = cqlString.replaceAll("USING'", "USING '");
+            cqlString = cqlString.replaceAll("'='", "' : '");
+            cqlString = cqlString.replaceAll("'= '", "' : '");
+            cqlString = cqlString.replaceAll("' ='", "' : '");
+            cqlString = cqlString.replaceAll("' = '", "' : '");
+            //String cqlOptions = cqlString.substring(cqlString.indexOf("{"), cqlString.lastIndexOf("}")+1);
+            //cqlString = cqlString.substring(0, cqlString.indexOf("{")+1).concat(cqlString.substring(cqlString.lastIndexOf("}")));           
             /*
             String[] opts = cqlOptions.split("=");
             cqlOptions = new String();
@@ -272,7 +283,9 @@ public class CreateIndexStatement extends MetaStatement {
             }
             cqlString = cqlString.replace("OPTIONS = {", "OPTIONS = {"+cqlOptions);
             */            
-            cqlString = cqlString.replace("OPTIONS = {", "OPTIONS = {"+ParserUtils.addSingleQuotesToStringList(cqlOptions));
+                    
+            
+            //cqlString = cqlString.replace("OPTIONS = {", "OPTIONS = {"+ParserUtils.addSingleQuotesToStringList(cqlOptions));
         }
         return cqlString;
     }

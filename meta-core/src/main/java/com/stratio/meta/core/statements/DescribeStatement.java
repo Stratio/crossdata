@@ -19,36 +19,49 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-public class DropTableStatement extends MetaStatement {
-    
-    private boolean keyspaceInc = false;
+public class DescribeStatement extends MetaStatement {
+
+    private DescribeType type;
     private String keyspace;
     private String tablename;
-    private boolean ifExists;
 
-    public DropTableStatement(String tablename, boolean ifExists) {
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
-            keyspaceInc = true;
-        }
-        this.tablename = tablename;
-        this.ifExists = ifExists;
+    public DescribeStatement(DescribeType type) {
+        this.type = type;
+        this.command = true;
     }
     
+    public DescribeStatement(DescribeType type, String keyspace, String tablename) {
+        this(type);
+        this.keyspace = keyspace;
+        this.tablename = tablename;
+    }        
+    
+    public DescribeType getType() {
+        return type;
+    }
+
+    public void setType(DescribeType type) {
+        this.type = type;
+    }        
+
+    public String getKeyspace() {
+        return keyspace;
+    }
+
+    public void setKeyspace(String keyspace) {
+        this.keyspace = keyspace;
+    }
+
     public String getTablename() {
         return tablename;
     }
@@ -58,59 +71,29 @@ public class DropTableStatement extends MetaStatement {
             String[] ksAndTablename = tablename.split("\\.");
             keyspace = ksAndTablename[0];
             tablename = ksAndTablename[1];
-            keyspaceInc = true;
         }
         this.tablename = tablename;
-    }
-
-    public boolean isIfExists() {
-        return ifExists;
-    }
-
-    public void setIfExists(boolean ifExists) {
-        this.ifExists = ifExists;
-    }
-
+    }   
+    
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Drop table ");
-        if(ifExists){
-            sb.append("if exists ");
-        }       
-        if(keyspaceInc){
-            sb.append(keyspace).append(".");
+        StringBuilder sb = new StringBuilder("DESCRIBE ");
+        sb.append(type.name()).append(" ");
+        if(type == DescribeType.KEYSPACE){
+            sb.append(keyspace);            
+        } else {
+            if(keyspace != null){
+                sb.append(keyspace).append(".");
+            }
+            sb.append(tablename);
         }
-        sb.append(tablename);
         return sb.toString();
     }
 
     /** {@inheritDoc} */
     @Override
     public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = new MetaResult();
-
-        String effectiveKeyspace = targetKeyspace;
-        if(keyspaceInc){
-            effectiveKeyspace = keyspace;
-        }
-
-        //Check that the keyspace and table exists.
-        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
-        }else{
-            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
-            if(ksMetadata == null){
-                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
-            }else {
-                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
-                if (tableMetadata == null) {
-                    result.setErrorMessage("Table " + tablename + " does not exists.");
-                }
-            }
-
-        }
-
-        return result;
+        return new MetaResult();
     }
 
     @Override
@@ -122,11 +105,6 @@ public class DropTableStatement extends MetaStatement {
     public String translateToCQL() {
         return this.toString();
     }
-            
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "Executed successfully";
-//    }
 
     @Override
     public Statement getDriverStatement() {
@@ -138,10 +116,20 @@ public class DropTableStatement extends MetaStatement {
     public DeepResult executeDeep() {
         return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
     }
-       
+
     @Override
     public Tree getPlan() {
         return new Tree();
+    }
+    
+    public String execute(Session session){
+        MetadataManager mm = new MetadataManager(session);
+        mm.loadMetadata();
+        if(type == DescribeType.KEYSPACE){
+            return mm.getKeyspaceMetadata(keyspace).exportAsString();
+        } else {
+            return mm.getTableMetadata(keyspace, tablename).exportAsString();
+        }
     }
     
 }

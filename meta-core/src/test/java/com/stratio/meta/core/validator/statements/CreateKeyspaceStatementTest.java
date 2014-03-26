@@ -25,6 +25,7 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.CreateKeyspaceStatement;
 import com.stratio.meta.core.structures.IdentifierProperty;
 import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.core.validator.BasicValidatorTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -35,20 +36,11 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-public class CreateKeyspaceStatementTest extends BasicCoreCassandraTest {
-
-    private static MetadataManager _metadataManager = null;
-
-    @BeforeClass
-    public static void setUpBeforeClass(){
-        BasicCoreCassandraTest.setUpBeforeClass();
-        BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-        _metadataManager = new MetadataManager(_session);
-        _metadataManager.loadMetadata();
-    }
+public class CreateKeyspaceStatementTest extends BasicValidatorTest {
 
     @Test
     public void validate_ok(){
+        //TODO Migrate the tests to validateOk or validateFail. Take into account the mapping order.
         String name = "not_exists";
         boolean ifNotExists = false;
         Map<String, ValueProperty> properties = new HashMap<>();
@@ -56,6 +48,7 @@ public class CreateKeyspaceStatementTest extends BasicCoreCassandraTest {
         properties.put("replication", ip);
 
         CreateKeyspaceStatement cks = new CreateKeyspaceStatement(name, ifNotExists, properties);
+        System.out.println("{"+cks.toString()+"}");
         MetaResult result = cks.validate(_metadataManager, "");
         assertNotNull(result, "Sentence validation not supported");
         assertFalse(result.hasError(), "Cannot validate sentence");
