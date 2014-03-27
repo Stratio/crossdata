@@ -173,12 +173,12 @@ public class MetadataManager {
                         indexes = new ArrayList<>();
                         result.put(column.getName(), indexes);
                     }
-                    indexes.add(new CustomIndexMetadata(column, IndexType.DEFAULT));
+                    indexes.add(new CustomIndexMetadata(column, column.getIndex().getName(), IndexType.DEFAULT));
 
                 }else if (column.getIndex().isCustomIndex()
                         && column.getIndex().getIndexClassName().compareTo("org.apache.cassandra.db.index.stratio.RowIndex") == 0){
                     //A Lucene custom index is found that may index several columns.
-                    Map<String, List<CustomIndexMetadata>> indexedColumns = _luceneHelper.getIndexedColumns(column);
+                    Map<String, List<CustomIndexMetadata>> indexedColumns = _luceneHelper.getIndexedColumns(column, column.getIndex().getName());
                     for(String indexedColumn : indexedColumns.keySet()){
                         List<CustomIndexMetadata> existingIndexes = result.get(indexedColumn);
                         if(existingIndexes == null){

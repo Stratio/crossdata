@@ -51,7 +51,7 @@ public class LuceneIndexHelperTest extends BasicCoreCassandraTest {
 
         int numColumns = 6;
         LuceneIndexHelper lih = new LuceneIndexHelper(_session);
-        Map<String, List<CustomIndexMetadata>> indexes = lih.processLuceneOptions(null, options);
+        Map<String, List<CustomIndexMetadata>> indexes = lih.processLuceneOptions(null, "stratio_lucene_index", options);
         assertEquals(numColumns, indexes.size(), "Invalid number of indexes");
 
         for(Map.Entry<String, List<CustomIndexMetadata>> entry : indexes.entrySet()){
@@ -88,7 +88,7 @@ public class LuceneIndexHelperTest extends BasicCoreCassandraTest {
         }
         assertNotNull(root, "Cannot index options");
 
-        Map<String, List<CustomIndexMetadata>> indexes = lih.processLuceneFields(null, root);
+        Map<String, List<CustomIndexMetadata>> indexes = lih.processLuceneFields(null, "stratio_lucene_index", root);
         assertNotNull(indexes, "Cannot retrieve mapped columns");
         assertEquals(numColumns, indexes.size(), "Invalid number of indexes");
 
@@ -111,7 +111,7 @@ public class LuceneIndexHelperTest extends BasicCoreCassandraTest {
                 .getColumn(column);
         assertNotNull(cm, "Cannot retrieve test column");
         LuceneIndexHelper lih = new LuceneIndexHelper(_session);
-        Map<String, List<CustomIndexMetadata>> indexedColumns = lih.getIndexedColumns(cm);
+        Map<String, List<CustomIndexMetadata>> indexedColumns = lih.getIndexedColumns(cm, column);
         assertEquals(numIndexedColumns, indexedColumns.size(), "Invalid number of indexes");
         for(Map.Entry<String, List<CustomIndexMetadata>> entry : indexedColumns.entrySet()){
             assertEquals(1, entry.getValue().size(), "Column has several indexes");

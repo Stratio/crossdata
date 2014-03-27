@@ -227,7 +227,9 @@ public class DeleteStatement extends MetaStatement {
         MetaResult result = new MetaResult();
 
         for(String c : _targetColumn){
-            if(tableMetadata.getColumn(c) == null){
+            if(c.toLowerCase().startsWith("stratio")){
+                result.setErrorMessage("Internal column " + c + " cannot be part of the WHERE clause.");
+            }else if(tableMetadata.getColumn(c) == null){
                 result.setErrorMessage("Column " + c + " does not exists in table " + tableMetadata.getName());
             }
         }

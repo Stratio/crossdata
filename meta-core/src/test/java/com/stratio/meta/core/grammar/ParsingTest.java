@@ -48,9 +48,17 @@ public class ParsingTest {
 
 
     public MetaStatement testRegularStatement(String inputText, String methodName) {
-        MetaStatement st = parser.parseStatement(inputText).getStatement();
-        assertNotNull(st, "Cannot parse "+methodName);
-        assertTrue(inputText.equalsIgnoreCase(st.toString()+";"), "Cannot parse "+methodName+": expecting '"+inputText+"' from '"+st.toString()+";'");
+        MetaQuery mq = parser.parseStatement(inputText);
+        MetaStatement st = mq.getStatement();
+        assertNotNull(st, "Cannot parse "+methodName
+                + " parser error: " + mq.hasError()
+                + " -> " + mq.getResult().getErrorMessage());
+        assertFalse(mq.hasError(), "Parsing expecting '" + inputText
+                + "' from '" + st.toString() + "' returned: " + mq.getResult().getErrorMessage());
+        assertTrue(inputText.equalsIgnoreCase(st.toString()+";"),
+                "Cannot parse " + methodName
+                        + ": expecting '" + inputText
+                        + "' from '" + st.toString()+";'" );
         return st;
     }
 
@@ -213,8 +221,8 @@ public class ParsingTest {
 
     // CREATE <type_index>? INDEX (IF NOT EXISTS)? <identifier>? ON <tablename> '(' <identifier> (',' <identifier>)* ')'
     // ( USING <string> )? WITH OPTIONS? (<maps> AND <maps>...) ';'
-    //HASH → Usual inverted index, Hash index. (By default).
-    //FULLTEXT → Full text index.
+    //DEFAULT → Usual inverted index, Hash index. (By default).
+    //LUCENE → Full text index.
     //CUSTOM → custom index. (new feature for release 2)
 
     @Test

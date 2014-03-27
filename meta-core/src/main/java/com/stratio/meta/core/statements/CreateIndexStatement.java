@@ -19,22 +19,21 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.IndexType;
-import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.core.structures.*;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta.core.utils.ValidationException;
+import scala.util.regexp.Base;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
 
 /**
@@ -125,7 +124,14 @@ public class CreateIndexStatement extends MetaStatement {
     }
 
     public void setTablename(String tablename){
+        if(tablename.contains(".")){
+            String[] ksAndTablename = tablename.split("\\.");
+            _keyspace = ksAndTablename[0];
+            tablename = ksAndTablename[1];
+            _keyspaceInc = true;
+        }
         _tablename = tablename;
+
     }
 
     public void addColumn(String column){
@@ -156,13 +162,14 @@ public class CreateIndexStatement extends MetaStatement {
         if(_createIfNotExists){
                 sb.append("IF NOT EXISTS ");
         }
-        if(_keyspaceInc){
-            sb.append(_keyspace).append(".");
-        }
+
         if(_name != null){
             sb.append(_name).append(" ");
         }
         sb.append("ON ");
+        if(_keyspaceInc){
+            sb.append(_keyspace).append(".");
+        }
         sb.append(_tablename);
         sb.append(" (").append(ParserUtils.stringList(_targetColumn, ", ")).append(")");
         if(_usingClass != null){
@@ -191,7 +198,118 @@ public class CreateIndexStatement extends MetaStatement {
     /** {@inheritDoc} */
     @Override
     public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
+
+        //Validate target table
+        MetaResult result = validateKeyspaceAndTable(metadata, targetKeyspace);
+
+        String effectiveKeyspace = targetKeyspace;
+        if(_keyspaceInc){
+            effectiveKeyspace = _keyspace;
+        }
+        TableMetadata tableMetadata = null;
+        if(!result.hasError()) {
+            tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tablename);
+            result = validateOptions(metadata);
+        }
+
+        //Validate index name if not exists
+        if(!result.hasError()){
+            if(_name != null && _name.toLowerCase().startsWith("stratio")){
+                result.setErrorMessage("Internal namespace stratio cannot be use on index name " + _name);
+            }else {
+                result = validateIndexName(metadata, tableMetadata);
+            }
+        }
+
+        //Validate target columns
+        if(!result.hasError()){
+            result = validateSelectionColumns(tableMetadata);
+        }
+
+        return result;
+    }
+
+    /**
+     * Validate that the target columns exists in the table.
+     * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
+     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     */
+    private MetaResult validateSelectionColumns(TableMetadata tableMetadata) {
+        MetaResult result = new MetaResult();
+
+        for(String c : _targetColumn){
+            if(c.toLowerCase().startsWith("stratio")){
+                result.setErrorMessage("Internal column " + c + " cannot be part of the WHERE clause.");
+            }else if(tableMetadata.getColumn(c) == null){
+                result.setErrorMessage("Column " + c + " does not exists in table " + tableMetadata.getName());
+            }
+        }
+
+        return result;
+    }
+
+    private MetaResult validateIndexName(MetadataManager metadata, TableMetadata tableMetadata){
+        MetaResult result = new MetaResult();
+        String index_name = _name;
+        if(IndexType.LUCENE.equals(_type)){
+            index_name = "stratio_lucene_" + _name;
+        }
+        List<CustomIndexMetadata> allIndex = new ArrayList<>();
+        for(List<CustomIndexMetadata> l : metadata.getColumnIndexes(tableMetadata).values()){
+            allIndex.addAll(l);
+        }
+        boolean found = false;
+        for(int index = 0; index < allIndex.size() && !found; index++){
+            if(allIndex.get(index).getIndexName().equalsIgnoreCase(index_name)){
+                found = true;
+            }
+        }
+        if(found && !_createIfNotExists){
+            result.setErrorMessage("Index " + _name + " already exists in table " + _tablename);
+        }
+        return result;
+    }
+
+    private MetaResult validateOptions(MetadataManager metadata) {
+        MetaResult result = new MetaResult();
+        if(_options.size() > 0){
+            result.setErrorMessage("WITH OPTIONS clause not supported in index creation.");
+        }
+        return result;
+    }
+
+    /**
+     * Validate that a valid keyspace and table is present.
+     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+     *                 the required information.
+     * @param targetKeyspace The target keyspace where the query will be executed.
+     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     */
+    private MetaResult validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
+        MetaResult result = new MetaResult();
+        //Get the effective keyspace based on the user specification during the create
+        //sentence, or taking the keyspace in use in the user session.
+        String effectiveKeyspace = targetKeyspace;
+        if(_keyspaceInc){
+            effectiveKeyspace = _keyspace;
+        }
+
+        //Check that the keyspace and table exists.
+        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
+        }else{
+            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+            if(ksMetadata == null){
+                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
+            }else {
+                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tablename);
+                if (tableMetadata == null) {
+                    result.setErrorMessage("Table " + _tablename + " does not exists.");
+                }
+            }
+
+        }
+        return result;
     }
 
 /*
@@ -200,14 +318,6 @@ public class CreateIndexStatement extends MetaStatement {
         boolean result = true;
         TableMetadata tm = null;
 
-        //Get the target table metadata
-        if(_tablename != null && mm.getKeyspaceMetadata(keyspace) != null){
-            tm = mm.getTableMetadata(keyspace, _tablename);
-        }
-        if(tm == null){
-            //TODO Report Incorrect keyspace or tablename.
-            result = false;
-        }
 
         if(result){
             //Check that target columns appear on the table
