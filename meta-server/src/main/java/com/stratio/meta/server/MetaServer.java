@@ -82,7 +82,7 @@ public class MetaServer {
         return executeQuery(query.toString());
     }
     
-    public QueryResult executeQuery(String query){
+    public MetaResult executeQuery(String query){
         EngineConfig config =new EngineConfig();
         config.setCassandraHosts(new String[]{"127.0.0.1"});
         config.setCassandraPort(9042);

@@ -25,14 +25,28 @@ public class CommandResult extends MetaResult {
 
     private final Logger logger = Logger.getLogger(CommandResult.class);
     
+    private String result;
+
+    public CommandResult(String result) {
+        this.result = result;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
+    }        
+    
     @Override
     public void print() {
-        logger.info("Not implemented yet.");
+        logger.info(result);
     }
     
     @Override
     public String toString(){
-        return "Not implemented yet.";
+        return result;
     }
     
 }

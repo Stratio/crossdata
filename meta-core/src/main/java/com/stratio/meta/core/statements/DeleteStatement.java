@@ -32,7 +32,6 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.*;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import java.util.Arrays;
 

@@ -17,26 +17,9 @@
  * License along with this library.
  */
 
-package com.stratio.meta.server
+package com.stratio.meta.core.structures;
 
-import akka.actor.{ Props, ActorSystem}
-import akka.contrib.pattern.ClusterReceptionistExtension
-import com.stratio.meta.server.actors.ServerActor
-import com.stratio.meta.core.engine.Engine
-import com.stratio.meta.server.config.ServerConfig
-
-
-object Application extends App with ServerConfig{
-  val engine = new Engine(engineConfig)
-
-
-
-  // Create an Akka system
-  val system = ActorSystem("MetaServerCluster",config)
-
-
-  val serverActor= system.actorOf(ServerActor.props(engine) ,"ServerActor")
-  ClusterReceptionistExtension(system).registerService(serverActor)
-
+public enum DescribeType {
+    KEYSPACE,
+    TABLE
 }
-

@@ -19,23 +19,26 @@
 
 package com.stratio.meta.server.config
 
-import org.apache.commons.configuration.PropertiesConfiguration
+
 import com.stratio.meta.core.engine.EngineConfig
+import com.typesafe.config.{ConfigFactory, Config}
 
 object ServerConfig{
-  val SERVER_PROPERTIES_FILE = "meta-config.properties"
-
-  val CASSANDRA_HOSTS_KEY = "meta.server.cassandra.hosts"
-
-  val CASSANDRA_PORT_KEY =  "meta.server.cassandra.port"
-
+  val SERVER_DEFAULT_CONFIG_FILE = "basic.conf"
+  val SERVER_USER_CONFIG_FILE = "meta.conf"
 }
 
-trait ServerConfig {
-  private val config =new PropertiesConfiguration(ServerConfig.SERVER_PROPERTIES_FILE)
+trait ServerConfig extends CassandraConfig{
 
-  val cassandraHosts: Array[String] = config.getStringArray(ServerConfig.CASSANDRA_HOSTS_KEY)
-  val cassandraPort= config.getInt(ServerConfig.CASSANDRA_PORT_KEY,9042)
+  override lazy val config: Config ={
+
+    val defaultConfig= ConfigFactory.load(ServerConfig.SERVER_DEFAULT_CONFIG_FILE).getConfig("meta")
+    val userConfig=ConfigFactory.load(ServerConfig.SERVER_USER_CONFIG_FILE).getConfig("meta")
+    val merge = userConfig.withFallback(defaultConfig)
+    print(merge)
+
+    ConfigFactory.load(merge)
+  }
 
   lazy val engineConfig:EngineConfig = {
     val result= new EngineConfig()
@@ -45,3 +48,4 @@ trait ServerConfig {
   }
 
 }
+

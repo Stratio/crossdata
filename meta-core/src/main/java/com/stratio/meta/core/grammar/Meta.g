@@ -203,6 +203,7 @@ T_MINUTES: M I N U T E S;
 T_HOURS: H O U R S;
 T_DAYS: D A Y S;
 T_MATCH: M A T C H;
+T_DESCRIBE: D E S C R I B E;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -229,6 +230,12 @@ T_FLOAT:   ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
 T_PATH: (LETTER | DIGIT | '_' | '.' | '-' | '/')+;
 
 //STATEMENTS
+
+describeStatement returns [DescribeStatement descs]:
+    T_DESCRIBE ( T_KEYSPACE keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.KEYSPACE); $descs.setKeyspace($keyspace.text);}
+        | T_TABLE tablename=getTableID { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTablename(tablename);}
+    )
+;
 
 //DELETE (col1, col2) FROM table1 WHERE field1=value1 AND field2=value2;
 deleteStatement returns [DeleteStatement ds]
@@ -633,6 +640,7 @@ metaStatement returns [MetaStatement st]:
     | add = addStatement { $st = add; } 
     | rs = removeUDFStatement { $st = rs; } 
     | ds = deleteStatement { $st = ds; } 
+    | descs = describeStatement { $st = descs;}
     ;
 
 query returns [MetaStatement st]: 

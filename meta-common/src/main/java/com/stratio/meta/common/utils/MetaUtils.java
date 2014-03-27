@@ -41,7 +41,8 @@ public class MetaUtils {
             "STOP",
             "EXIT",
             "HELP",
-            "QUIT");    
+            "QUIT",
+            "DESCRIBE");    
     
     public static Set<String> noInitials = Sets.newHashSet(                      
             "KEYSPACE",
