@@ -19,8 +19,11 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
+
+import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Truncate;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -91,7 +94,28 @@ public class TruncateStatement extends MetaStatement {
     /** {@inheritDoc} */
     @Override
     public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
+        MetaResult result = new MetaResult();
+
+        String effectiveKeyspace = targetKeyspace;
+        if(keyspaceInc){
+            effectiveKeyspace = keyspace;
+        }
+
+        //Check that the keyspace and table exists.
+        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
+        }else{
+            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+            if(ksMetadata == null){
+                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
+            }else {
+                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, ident);
+                if (tableMetadata == null) {
+                    result.setErrorMessage("Table " + ident + " does not exists.");
+                }
+            }
+        }
+        return result;
     }
 
     @Override
