@@ -86,12 +86,16 @@ public class BasicCoreCassandraTest {
         return result;
     }
 
+    private static String getHost(){
+        return System.getProperty("cassandraTestHost", DEFAULT_HOST);
+    }
+
     /**
      * Initialize the connection to Cassandra using the
      * host specified by {@code DEFAULT_HOST}.
      */
     public static void initCassandraConnection(){
-        assertTrue(connect(DEFAULT_HOST), "Cannot connect to cassandra");
+        assertTrue(connect(getHost()), "Cannot connect to cassandra");
     }
 
     /**

@@ -32,11 +32,11 @@ trait ServerConfig extends CassandraConfig{
 
   override lazy val config: Config ={
 
-    val defaultConfig= ConfigFactory.load(ServerConfig.SERVER_DEFAULT_CONFIG_FILE).getConfig("meta")
+    val defaultConfig1= ConfigFactory.load(ServerConfig.SERVER_DEFAULT_CONFIG_FILE)
+    println(defaultConfig1)
+    val defaultConfig= defaultConfig1.getConfig("meta")
     val userConfig=ConfigFactory.load(ServerConfig.SERVER_USER_CONFIG_FILE).getConfig("meta")
     val merge = userConfig.withFallback(defaultConfig)
-    print(merge)
-
     ConfigFactory.load(merge)
   }
 
