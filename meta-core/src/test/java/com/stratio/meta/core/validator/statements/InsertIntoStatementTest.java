@@ -72,4 +72,10 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         validateFail(inputText, "validate_textColumnFail");
     }
 
+    @Test
+    public void validate_stratioColumnFail(){
+        String inputText = "INSERT INTO users (name, gender, email, age, bool, phrase, stratio_lucene_index_1) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '', 'error');";
+        validateFail(inputText, "validate_textColumnFail");
+    }
+
 }

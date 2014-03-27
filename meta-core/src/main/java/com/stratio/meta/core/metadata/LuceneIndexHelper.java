@@ -65,9 +65,10 @@ public class LuceneIndexHelper {
     /**
      * Get the map of columns indexed by the Lucene index associated with {@code column}.
      * @param column The column with the Lucene index.
+     * @param indexName The name of the index.
      * @return The map of columns and associated indexes.
      */
-    public Map<String, List<CustomIndexMetadata>> getIndexedColumns(ColumnMetadata column){
+    public Map<String, List<CustomIndexMetadata>> getIndexedColumns(ColumnMetadata column, String indexName){
         Map<String, List<CustomIndexMetadata>> result = new HashMap<>();
         StringBuilder sb = new StringBuilder("SELECT index_options FROM system.schema_columns WHERE keyspace_name='");
         sb.append(column.getTable().getKeyspace().getName());
@@ -81,7 +82,7 @@ public class LuceneIndexHelper {
         ResultSet indexOptions = _session.execute(sb.toString());
         Row options = indexOptions.one();
         if(options != null){
-            result.putAll(processLuceneOptions(column, options.getString("index_options")));
+            result.putAll(processLuceneOptions(column, indexName, options.getString("index_options")));
         }
         return result;
     }
@@ -89,10 +90,11 @@ public class LuceneIndexHelper {
     /**
      * Process the list of options found in a Lucene index in the form of a JSON string.
      * @param options The options.
+     * @param indexName The name of the index.
      * @return The map with the columns and associated indexes or empty if the JSON cannot
      * be processed.
      */
-    public Map<String, List<CustomIndexMetadata>> processLuceneOptions(ColumnMetadata metadata, String options){
+    public Map<String, List<CustomIndexMetadata>> processLuceneOptions(ColumnMetadata metadata, String indexName, String options){
         Map<String, List<CustomIndexMetadata>> result = new HashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
@@ -110,7 +112,7 @@ public class LuceneIndexHelper {
                 JsonNode schemaRoot = mapper.readTree(factory.createJsonParser(schemaString));
                 if(schemaRoot != null && schemaRoot.get("fields") != null){
                     JsonNode fields = schemaRoot.get("fields");
-                    result.putAll(processLuceneFields(metadata, fields));
+                    result.putAll(processLuceneFields(metadata, indexName, fields));
                 }else{
                     _logger.error("Fields not found in Lucene index with JSON: " + root.toString());
                 }
@@ -131,15 +133,16 @@ public class LuceneIndexHelper {
     /**
      * Process a JSON list of fields mapped by a Lucene index.
      * @param metadata Column metadata.
+     * @param indexName The name of the index.
      * @param fields The JSON representation of the fields.
      * @return The map of columns indexed by the current index.
      */
-    public Map<String, List<CustomIndexMetadata>> processLuceneFields(ColumnMetadata metadata, JsonNode fields){
+    public Map<String, List<CustomIndexMetadata>> processLuceneFields(ColumnMetadata metadata, String indexName, JsonNode fields){
         Map<String, List<CustomIndexMetadata>> result = new HashMap<>();
         Iterator<String> fieldIt = fields.getFieldNames();
         while(fieldIt.hasNext()){
             String fieldName = fieldIt.next();
-            CustomIndexMetadata cim = new CustomIndexMetadata(metadata, IndexType.LUCENE);
+            CustomIndexMetadata cim = new CustomIndexMetadata(metadata, indexName, IndexType.LUCENE);
             cim.setIndexOptions(fields.get(fieldName).toString());
             List<CustomIndexMetadata> indexes = result.get(fieldName);
             if(indexes == null){

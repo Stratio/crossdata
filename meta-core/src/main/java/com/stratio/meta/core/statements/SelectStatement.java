@@ -459,8 +459,7 @@ public class SelectStatement extends MetaStatement {
     }
 
     /**
-     * Validate that a valid keyspace is present, and that the table does not
-     * exits unless {@code ifNotExists} has been specified.
+     * Validate that a valid keyspace and table is present.
      * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
      *                 the required information.
      * @param targetKeyspace The target keyspace where the query will be executed.

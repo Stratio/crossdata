@@ -35,18 +35,26 @@ public class CustomIndexMetadata {
     private final ColumnMetadata _column;
 
     /**
+     * The name of the index.
+     */
+    private final String _indexName;
+
+    /**
      * Index options.
      */
     private String _options = null;
+
+
 
     /**
      * Class constructor for default Cassandra indexes.
      * @param columnMetadata The column metadata associated with the index.
      * @param type Type of index.
      */
-    public CustomIndexMetadata(ColumnMetadata columnMetadata, IndexType type){
+    public CustomIndexMetadata(ColumnMetadata columnMetadata, String indexName, IndexType type){
         _type = type;
         _column = columnMetadata;
+        _indexName = indexName;
     }
 
     /**
@@ -55,6 +63,14 @@ public class CustomIndexMetadata {
      */
     public IndexType getIndexType(){
         return _type;
+    }
+
+    /**
+     * Get the index name.
+     * @return The name.
+     */
+    public String getIndexName(){
+        return _indexName;
     }
 
     /**
