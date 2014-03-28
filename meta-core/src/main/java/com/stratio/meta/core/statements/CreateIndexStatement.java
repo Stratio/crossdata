@@ -27,11 +27,8 @@ import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.*;
 import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta.core.utils.ValidationException;
-import scala.util.regexp.Base;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -53,7 +50,7 @@ public class CreateIndexStatement extends MetaStatement {
     private String _tablename = null;
     private ArrayList<String> _targetColumn = null;
     private String _usingClass = null;
-    private HashMap<String, ValueProperty> _options = null;
+    private HashMap<ValueProperty, ValueProperty> _options = null;
 
     public CreateIndexStatement(){
         this.command = false;
@@ -142,11 +139,11 @@ public class CreateIndexStatement extends MetaStatement {
         _usingClass = using;
     }
 
-    public void addOption(String key, ValueProperty value){
+    public void addOption(ValueProperty key, ValueProperty value){
         _options.put(key, value);
     }
 
-    public HashMap<String, ValueProperty> getOptions(){
+    public HashMap<ValueProperty, ValueProperty> getOptions(){
         return _options;
     }
 
@@ -177,19 +174,19 @@ public class CreateIndexStatement extends MetaStatement {
                 sb.append(_usingClass);
         }
         if(_options.size() > 0){
-            sb.append(" WITH OPTIONS ");
-            //sb.append(" WITH OPTIONS = {");
-            Iterator<Entry<String, ValueProperty>> entryIt = _options.entrySet().iterator();
-            Entry<String, ValueProperty> e;
+            //sb.append(" WITH OPTIONS ");
+            sb.append(" WITH OPTIONS = {");
+            Iterator<Entry<ValueProperty, ValueProperty>> entryIt = _options.entrySet().iterator();
+            Entry<ValueProperty, ValueProperty> e;
             while(entryIt.hasNext()){
                     e = entryIt.next();
                     //sb.append(e.getKey()).append(" : ").append("'").append(e.getValue()).append("'");
-                    sb.append(e.getKey()).append(" = ").append(e.getValue());
+                    sb.append(e.getKey()).append(": ").append(e.getValue());
                     if(entryIt.hasNext()){
-                            sb.append(" AND ");
+                            sb.append(", ");
                     }
             }
-            //sb.append("}");
+            sb.append("}");
         }
         
         return sb.toString();
@@ -350,7 +347,7 @@ public class CreateIndexStatement extends MetaStatement {
     public String translateToCQL() {
         // EXAMPLE:
         // META: CREATE LUCENE INDEX demo_banks ON demo.banks(lucene) USING org.apache.cassandra.db.index.stratio.RowIndex WITH OPTIONS schema = '{default_analyzer:"org.apache.lucene.analysis.standard.StandardAnalyzer", fields: {day: {type: "date", pattern: "yyyy-MM-dd"}, key: {type:"uuid"}}}';
-        // CQL: CREATE CUSTOM INDEX demo_banks ON demo.banks (lucene) USING 'org.apache.cassandra.db.index.stratio.RowIndex'WITH OPTIONS = {'schema' : '{default_analyzer:"org.apache.lucene.analysis.standard.StandardAnalyzer", fields: {day: {type: "date", pattern: "yyyy-MM-dd"}, key: {type:"uuid"}}}'}
+        // CQL: CREATE CUSTOM INDEX demo_banks ON demo.banks (lucene) USING 'org.apache.cassandra.db.index.stratio.RowIndex' WITH OPTIONS = {'schema' : '{default_analyzer:"org.apache.lucene.analysis.standard.StandardAnalyzer", fields: {day: {type: "date", pattern: "yyyy-MM-dd"}, key: {type:"uuid"}}}'}
         
         String cqlString = this.toString().replace(" DEFAULT ", " ");
         if(cqlString.contains(" LUCENE ")){

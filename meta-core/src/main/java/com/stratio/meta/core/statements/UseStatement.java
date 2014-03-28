@@ -19,17 +19,13 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class UseStatement extends MetaStatement {
 

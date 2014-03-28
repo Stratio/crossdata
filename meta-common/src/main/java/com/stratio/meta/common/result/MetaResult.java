@@ -64,6 +64,7 @@ public class MetaResult {
     }
 
     public void setCurrentKeyspace(String currentKeyspace) {
+        this.ksChanged = true;
         this.currentKeyspace = currentKeyspace;
     }        
     

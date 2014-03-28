@@ -161,7 +161,7 @@ public class Metash {
     public void loop(){        
         try {
             ConsoleReader console = new ConsoleReader();
-            console.setPrompt("\033[36mmetash-server>\033[0m ");
+            console.setPrompt("\033[36mmetash-server:"+System.getProperty("user.name")+">\033[0m ");
             
             SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy");
             File file = retrieveHistory(console, sdf);            
@@ -191,12 +191,17 @@ public class Metash {
                             MetaResult metaResult = metaDriver.executeQuery(currentKeyspace, cmd, true);
                             if(metaResult.isKsChanged()){
                                 currentKeyspace = metaResult.getCurrentKeyspace();
+                                if(currentKeyspace.isEmpty()){
+                                    console.setPrompt("\033[36mmetash-server:"+System.getProperty("user.name")+">\033[0m ");
+                                } else {
+                                    console.setPrompt("\033[36mmetash-server:"+System.getProperty("user.name")+":"+currentKeyspace+">\033[0m ");
+                                }
                             }
                             if(metaResult.hasError()){
                                 logger.error("\033[31mError:\033[0m "+metaResult.getErrorMessage());
                                 continue;
                             } 
-                            logger.info("\033[32mResult:\033[0m"+metaResult.toString());
+                            logger.info("\033[32mResult:\033[0m "+metaResult.toString());
                         }
                     } catch(Exception exc){
                         logger.error("\033[31mError:\033[0m "+exc.getMessage());

@@ -82,4 +82,12 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
         validateFail(inputText, "validate_lucene_withOptions_fail");
     }
 
+    @Test
+    public void validate_lucene_withOptionsFull_fail() {
+        String inputText = "CREATE LUCENE INDEX demo_banks ON demo.banks (lucene) "
+                + "USING org.apache.cassandra.db.index.stratio.RowIndex WITH OPTIONS = "
+                + "{schema: '{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\", fields: {day: {type: \"date\", pattern: \"yyyy-MM-dd\"}, key: {type:\"uuid\"}}}'};";
+        validateFail(inputText, "validate_lucene_withOptionsFull_fail");
+    }
+    
 }
