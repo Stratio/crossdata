@@ -17,9 +17,6 @@
  * License along with this library.
  */
 
-package com.stratio.meta.client
+package com.stratio.meta.common.ask
 
-object Config {
-  val serverHostPropName= "meta.server.hosts"
-  val clusterServeName = "ClusterSystem"
-}
+case class Connect (user: String)

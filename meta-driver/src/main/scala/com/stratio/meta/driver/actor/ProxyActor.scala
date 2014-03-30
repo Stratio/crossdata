@@ -17,26 +17,24 @@
  * License along with this library.
  */
 
-package com.stratio.meta.server
+package com.stratio.meta.driver.actor
 
-import akka.actor.{ Props, ActorSystem}
-import akka.contrib.pattern.ClusterReceptionistExtension
-import com.stratio.meta.server.actors.ServerActor
-import com.stratio.meta.core.engine.Engine
-import com.stratio.meta.server.config.ServerConfig
+import akka.actor.{Actor, Props, ActorRef}
+import akka.contrib.pattern.ClusterClient
 
-
-object Application extends App with ServerConfig{
-  val engine = new Engine(engineConfig)
-
-
-
-  // Create an Akka system
-  val system = ActorSystem(clusterName,config)
-
-
-  val serverActor= system.actorOf(ServerActor.props(engine), actorName)
-  ClusterReceptionistExtension(system).registerService(serverActor)
-
+object ProxyActor{
+  def props(clusterClientActor: ActorRef, remoteActor: String): Props= Props(new ProxyActor(clusterClientActor,
+    remoteActor))
+  val INIT_PATH= "/user/"
+  def remotePath(remoteActor: String)= INIT_PATH + remoteActor
 }
+
+class ProxyActor(clusterClientActor:ActorRef, remoteActor:String) extends Actor{
+  override def receive: Actor.Receive = {
+    case message => {
+      clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor),message,localAffinity = true)
+    }
+  }
+}
+
 

@@ -19,6 +19,7 @@
 
 package com.stratio.meta.sh;
 
+import com.stratio.meta.driver.BasicDriver;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
 import com.stratio.meta.common.result.MetaResult;
@@ -27,7 +28,6 @@ import com.stratio.meta.sh.help.HelpManager;
 import com.stratio.meta.sh.help.HelpStatement;
 import com.stratio.meta.sh.help.generated.MetaHelpLexer;
 import com.stratio.meta.sh.help.generated.MetaHelpParser;
-import com.stratio.meta.driver.MetaDriver;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -55,6 +55,7 @@ public class Metash {
      * Class logger.
      */
     private static final Logger logger = Logger.getLogger(Metash.class);
+    private static final String user = "TEST_USER";
 
     private final HelpContent _help;
 
@@ -169,9 +170,10 @@ public class Metash {
             console.setCompletionHandler(new MetaCompletionHandler());
             console.addCompleter(new MetaCompletor());  
             
-            MetaDriver metaDriver = new MetaDriver();
+            //MetaDriver metaDriver = new MetaDriver();
+            BasicDriver metaDriver = new BasicDriver();
             
-            MetaResult connectionResult = metaDriver.connect();
+            MetaResult connectionResult = metaDriver.connect(user);
             if(connectionResult.hasError()){
                 logger.error(connectionResult.getErrorMessage());
                 return;
@@ -188,7 +190,7 @@ public class Metash {
                         if(cmd.toLowerCase().startsWith("help")){
                             showHelp(cmd);
                         } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
-                            MetaResult metaResult = metaDriver.executeQuery(currentKeyspace, cmd, true);
+                            MetaResult metaResult = metaDriver.executeQuery(user,currentKeyspace, cmd);
                             if(metaResult.isKsChanged()){
                                 currentKeyspace = metaResult.getCurrentKeyspace();
                                 if(currentKeyspace.isEmpty()){

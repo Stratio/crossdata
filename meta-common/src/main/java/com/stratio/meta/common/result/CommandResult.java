@@ -19,11 +19,9 @@
 
 package com.stratio.meta.common.result;
 
-import org.apache.log4j.Logger;
 
 public class CommandResult extends MetaResult {
 
-    private final Logger logger = Logger.getLogger(CommandResult.class);
     
     private String result;
 
@@ -40,13 +38,8 @@ public class CommandResult extends MetaResult {
     }        
     
     @Override
-    public void print() {
-        logger.info(result);
-    }
-    
-    @Override
     public String toString(){
         return result;
     }
-    
+
 }

@@ -29,13 +29,13 @@ class QueryActorTest {
     val queryActor = TestActorRef.create(system,QueryActor.props(engine))
     val createKs: String = "CREATE KEYSPACE testKS WITH replication = {class: SimpleStrategy, replication_factor: 1};"
 
-    val futureCreate: Future[Any] = queryActor.ask(new Query(createKs, "test"))(1000 second)
+    val futureCreate: Future[Any] = queryActor.ask(new Query("system",createKs, "test"))(1000 second)
     val resultCreate= Await.result(futureCreate.mapTo[MetaResult],1000 second)
     resultCreate.print()
 
     val dropKs: String = "DROP KEYSPACE testks;"
 
-    val futureDrop: Future[Any] = queryActor.ask(new Query(dropKs, "test"))(1000 second)
+    val futureDrop: Future[Any] = queryActor.ask(new Query("system",dropKs, "test"))(1000 second)
     val resultDrop= Await.result(futureDrop.mapTo[MetaResult],1000 second)
     resultDrop.print()
 

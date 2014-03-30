@@ -17,20 +17,26 @@
  * License along with this library.
  */
 
-package com.stratio.meta.client
+package com.stratio.meta.driver.utils
 
-import akka.actor.{Props, ActorRef, Actor}
-import akka.contrib.pattern.ClusterClient
-import com.stratio.meta.communication.Connect
+import akka.actor.ActorRef
+import com.stratio.meta.common.result.MetaResult
+import scala.concurrent.Await
+import akka.pattern.ask
+import akka.util.Timeout
 
-object RemoteClientActor{
-  def props(clusterClient:ActorRef) :Props= Props(new RemoteClientActor(clusterClient))
-}
+class RetryPolitics(retryTimes:Int,waitTime: Timeout) {
+  def askRetry(remoteActor:ActorRef, message:AnyRef, retry:Int = 0): MetaResult={
+    if(retry==retryTimes){
+      MetaResult.createMetaResultError("Not found answer")
+    } else {
+      try {
+        val future = remoteActor.ask(message)(waitTime)
+        Await.result(future.mapTo[MetaResult], waitTime.duration*2)
+      } catch {
 
-class RemoteClientActor(clusterClient:ActorRef) extends Actor{
-  override def receive: Actor.Receive = {
-    //case Query(query)=> clusterClient forward ClusterClient.Send("/user/echo", Query(query), localAffinity = true)
-    case Connect(msg) => clusterClient forward ClusterClient.Send("/user/server-status",Connect(msg),localAffinity = true)
-    case _ => println("BASURA")
+        case ex: Exception => askRetry(remoteActor, message, retry + 1)
+      }
+    }
   }
 }

@@ -24,8 +24,11 @@ import com.stratio.meta.core.engine.EngineConfig
 import com.typesafe.config.{ConfigFactory, Config}
 
 object ServerConfig{
-  val SERVER_DEFAULT_CONFIG_FILE = "basic.conf"
-  val SERVER_USER_CONFIG_FILE = "meta.conf"
+  val SERVER_DEFAULT_CONFIG_FILE = "basic-server.conf"
+  val SERVER_USER_CONFIG_FILE = "meta-server.conf"
+
+  val SERVER_CLUSTER_NAME_KEY="server.cluster.name"
+  val SERVER_ACTOR_NAME_KEY="server.cluster.actor.name"
 }
 
 trait ServerConfig extends CassandraConfig{
@@ -46,6 +49,10 @@ trait ServerConfig extends CassandraConfig{
     result.setCassandraPort(cassandraPort)
     result
   }
+
+  lazy val clusterName =  config.getString(ServerConfig.SERVER_CLUSTER_NAME_KEY)
+  
+  lazy val actorName =  config.getString(ServerConfig.SERVER_ACTOR_NAME_KEY)
 
 }
 

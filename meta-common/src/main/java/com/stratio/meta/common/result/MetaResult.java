@@ -21,9 +21,11 @@ package com.stratio.meta.common.result;
 
 import org.apache.log4j.Logger;
 
-public class MetaResult {
+import java.io.Serializable;
 
-    private final Logger logger = Logger.getLogger(MetaResult.class);
+public class MetaResult implements Serializable {
+
+    transient final Logger logger = Logger.getLogger(MetaResult.class);
     
     private boolean hasError = false;
     private String errorMessage = null;
@@ -81,6 +83,11 @@ public class MetaResult {
         MetaResult result=new MetaResult();
         result.setErrorMessage(errorMessage);
         result.setHasError();
+        return result;
+    }
+    public static MetaResult createMetaResultWelcome(){
+        MetaResult result=new MetaResult();
+        result.setKsChanged();
         return result;
     }
     
