@@ -55,6 +55,10 @@ public class ParsingTest {
                 + " -> " + mq.getResult().getErrorMessage());
         assertFalse(mq.hasError(), "Parsing expecting '" + inputText
                 + "' from '" + st.toString() + "' returned: " + mq.getResult().getErrorMessage());
+        
+        System.out.println("inputText:"+inputText);
+        System.out.println("st.toStrg:"+st.toString()+";");
+        
         assertTrue(inputText.equalsIgnoreCase(st.toString()+";"),
                 "Cannot parse " + methodName
                         + ": expecting '" + inputText
@@ -252,7 +256,7 @@ public class ParsingTest {
         CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
         assertEquals("index1", cist.getName(), "Cannot parse default index with options clause - name");
         assertEquals(numberOptions, cist.getOptions().size(), "Cannot parse default index with options clause - options size");
-        HashMap<String, ValueProperty> options = cist.getOptions();
+        HashMap<ValueProperty, ValueProperty> options = cist.getOptions();
         for(int i = 1; i < numberOptions; i++){
             assertTrue(options.containsKey("opt"+i), "Cannot parse default index with options clause - options opt"+i);
             assertEquals("val"+i, options.get("opt"+i).toString(),
@@ -291,7 +295,7 @@ public class ParsingTest {
         assertEquals(expected, retrieved, "Cannot parse default index with using clause");
 
         assertTrue(cist.getOptions().size() > 0, "Cannot parse default index with options clause - options size");
-        HashMap<String, ValueProperty> options = cist.getOptions();
+        HashMap<ValueProperty, ValueProperty> options = cist.getOptions();
 
         assertTrue(options.containsKey("opt1"), "Cannot parse default index with options clause - options opt1");
         assertTrue(options.containsKey("opt2"), "Cannot parse default index with options clause - options opt1");

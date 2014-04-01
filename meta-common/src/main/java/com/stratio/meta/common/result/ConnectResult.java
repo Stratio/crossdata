@@ -19,11 +19,8 @@
 
 package com.stratio.meta.common.result;
 
-import org.apache.log4j.Logger;
 
 public class ConnectResult extends MetaResult {
-
-    private final Logger logger = Logger.getLogger(ConnectResult.class);
     
     private String message;
 

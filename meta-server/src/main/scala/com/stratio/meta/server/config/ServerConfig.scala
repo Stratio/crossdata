@@ -24,19 +24,22 @@ import com.stratio.meta.core.engine.EngineConfig
 import com.typesafe.config.{ConfigFactory, Config}
 
 object ServerConfig{
-  val SERVER_DEFAULT_CONFIG_FILE = "basic.conf"
-  val SERVER_USER_CONFIG_FILE = "meta.conf"
+  val SERVER_DEFAULT_CONFIG_FILE = "basic-server.conf"
+  val SERVER_USER_CONFIG_FILE = "meta-server.conf"
+
+  val SERVER_CLUSTER_NAME_KEY="server.cluster.name"
+  val SERVER_ACTOR_NAME_KEY="server.cluster.actor.name"
 }
 
 trait ServerConfig extends CassandraConfig{
 
   override lazy val config: Config ={
 
-    val defaultConfig= ConfigFactory.load(ServerConfig.SERVER_DEFAULT_CONFIG_FILE).getConfig("meta")
+    val defaultConfig1= ConfigFactory.load(ServerConfig.SERVER_DEFAULT_CONFIG_FILE)
+    println(defaultConfig1)
+    val defaultConfig= defaultConfig1.getConfig("meta")
     val userConfig=ConfigFactory.load(ServerConfig.SERVER_USER_CONFIG_FILE).getConfig("meta")
     val merge = userConfig.withFallback(defaultConfig)
-    print(merge)
-
     ConfigFactory.load(merge)
   }
 
@@ -46,6 +49,10 @@ trait ServerConfig extends CassandraConfig{
     result.setCassandraPort(cassandraPort)
     result
   }
+
+  lazy val clusterName =  config.getString(ServerConfig.SERVER_CLUSTER_NAME_KEY)
+  
+  lazy val actorName =  config.getString(ServerConfig.SERVER_ACTOR_NAME_KEY)
 
 }
 

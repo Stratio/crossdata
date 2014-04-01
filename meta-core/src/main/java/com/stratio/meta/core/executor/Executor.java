@@ -28,6 +28,7 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.DescribeStatement;
 import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.core.statements.UseStatement;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.ParserUtils;
@@ -87,6 +88,12 @@ public class Executor {
             }
                           
             queryResult.setResultSet(resultSet);
+            
+            if(stmt instanceof UseStatement){
+                UseStatement useStatement = (UseStatement) stmt;
+                queryResult.setCurrentKeyspace(useStatement.getKeyspaceName());
+            }
+            
         } catch (Exception ex) {
             metaQuery.hasError();
             queryResult.setErrorMessage("Cassandra exception: "+ex.getMessage());

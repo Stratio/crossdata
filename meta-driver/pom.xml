@@ -56,11 +56,6 @@
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-cluster_2.10</artifactId>
-            <version>${akka.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-contrib_2.10</artifactId>
             <version>${akka.version}</version>
         </dependency>
@@ -71,10 +66,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.8.8</version>
             <scope>test</scope>
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.stratio</groupId>
@@ -92,11 +88,6 @@
             <artifactId>cassandra-driver-core</artifactId>
             <version>2.0.0-rc3</version>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.stratio</groupId>
-            <artifactId>meta-server</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 

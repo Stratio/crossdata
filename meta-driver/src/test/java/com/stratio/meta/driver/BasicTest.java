@@ -17,26 +17,21 @@
  * License along with this library.
  */
 
-package com.stratio.meta.server
+package com.stratio.meta.driver;
 
-import akka.actor.{ Props, ActorSystem}
-import akka.contrib.pattern.ClusterReceptionistExtension
-import com.stratio.meta.server.actors.ServerActor
-import com.stratio.meta.core.engine.Engine
-import com.stratio.meta.server.config.ServerConfig
+import com.stratio.meta.common.result.MetaResult;
+import org.testng.annotations.Test;
 
-
-object Application extends App with ServerConfig{
-  val engine = new Engine(engineConfig)
+import static org.testng.Assert.*;
 
 
+public class BasicTest {
+    BasicDriver driver =new BasicDriver();
 
-  // Create an Akka system
-  val system = ActorSystem(clusterName,config)
-
-
-  val serverActor= system.actorOf(ServerActor.props(engine), actorName)
-  ClusterReceptionistExtension(system).registerService(serverActor)
+    @Test
+    public void ConnectTest(){
+        MetaResult metaResult= driver.connect("TEST_USER");
+        assertFalse(metaResult.hasError());
+    }
 
 }
-

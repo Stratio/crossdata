@@ -28,7 +28,7 @@
     <modules>
         <module>meta-core</module>
         <module>meta-common</module>
-        <module>meta-client</module>
+        <module>meta-driver</module>
         <module>meta-server</module>
         <module>meta-sh</module>
         <module>meta-deep</module>

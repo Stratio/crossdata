@@ -34,7 +34,7 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker with Actor
     case query:MetaQuery if !query.hasError=> {
       log.info("Init Planner Task")
       val timer=initTimer()
-      sender ! executor.executeQuery(query)
+      sender ! executor.executeQuery(query).getResult
       finishTimer(timer)
       log.info("Finish Planner Task")
     }

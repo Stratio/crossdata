@@ -125,11 +125,19 @@ public class DescribeStatement extends MetaStatement {
     public String execute(Session session){
         MetadataManager mm = new MetadataManager(session);
         mm.loadMetadata();
-        if(type == DescribeType.KEYSPACE){
-            return mm.getKeyspaceMetadata(keyspace).exportAsString();
+        String result;
+        if(type == DescribeType.KEYSPACE){            
+            result =  mm.getKeyspaceMetadata(keyspace).exportAsString();
+            if(result == null){
+               result = "KEYSPACE "+keyspace+" was not found"; 
+            }
         } else {
-            return mm.getTableMetadata(keyspace, tablename).exportAsString();
-        }
+            result = mm.getTableMetadata(keyspace, tablename).exportAsString();
+            if(result == null){
+                result = "TABLE "+tablename+" was not found";
+            }
+        }        
+        return result;
     }
     
 }
