@@ -104,7 +104,7 @@ public class MetaServer {
             return metaQuery.getResult();
         }                
         // EXECUTOR ACTOR
-        metaQuery = engine.getExecutor().executeQuery(metaQuery); 
+        metaQuery = engine.getExecutor().executeQuery(metaQuery);
         return metaQuery.getResult();
     }
 
