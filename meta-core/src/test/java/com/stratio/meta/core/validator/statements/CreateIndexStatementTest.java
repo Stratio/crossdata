@@ -66,26 +66,32 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
 
     @Test
     public void validate_lucene_noName_ok(){
-        String inputText = "CREATE LUCENE INDEX ON demo.users (email);";
+        String inputText = "CREATE LUCENE INDEX ON demo.types (varchar_column);";
         validateOk(inputText, "validate_lucene_noName_ok");
     }
 
     @Test
     public void validate_lucene_named_ok() {
-        String inputText = "CREATE LUCENE INDEX new_index ON demo.users (email);";
+        String inputText = "CREATE LUCENE INDEX new_index ON demo.types (varchar_column);";
         validateOk(inputText, "validate_lucene_named_ok");
     }
 
     @Test
     public void validate_lucene_2columns_ok() {
-        String inputText = "CREATE LUCENE INDEX new_index ON demo.users (email, name);";
+        String inputText = "CREATE LUCENE INDEX new_index ON demo.types (varchar_column, boolean_column);";
         validateOk(inputText, "validate_lucene_2columns_ok");
     }
 
     @Test
     public void validate_lucene_stratioName_fail() {
-        String inputText = "CREATE LUCENE INDEX stratio_new_index ON demo.users (email, name);";
+        String inputText = "CREATE LUCENE INDEX stratio_new_index ON demo.types (varchar_column, boolean_column);";
         validateFail(inputText, "validate_lucene_stratioName_fail");
+    }
+
+    @Test
+    public void validate_lucene_2indexes_fail(){
+        String inputText = "CREATE LUCENE INDEX ON demo.users (gender);";
+        validateFail(inputText, "validate_lucene_2indexes_fail");
     }
 
     @Test
@@ -97,7 +103,7 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
     @Test
     public void validate_lucene_withOptions_fail() {
         String inputText = "CREATE LUCENE INDEX new_index ON demo.users (email, bool, age)"
-                + " WITH OPTIONS schema = '{refresh_seconds:1}';";
+                + " WITH OPTIONS = {'refresh_seconds': '1'};";
         validateFail(inputText, "validate_lucene_withOptions_fail");
     }
 

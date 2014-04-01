@@ -19,6 +19,7 @@
 
 package com.stratio.meta.core.validator;
 
+import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.QueryStatus;
 import org.apache.log4j.Logger;

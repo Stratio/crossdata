@@ -19,6 +19,7 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -206,7 +207,7 @@ public class CreateIndexStatement extends MetaStatement {
         TableMetadata tableMetadata = null;
         if(!result.hasError()) {
             tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tablename);
-            result = validateOptions(metadata);
+            result = validateOptions(effectiveKeyspace, tableMetadata);
         }
 
         //Validate index name if not exists
@@ -267,10 +268,25 @@ public class CreateIndexStatement extends MetaStatement {
         return result;
     }
 
-    private MetaResult validateOptions(MetadataManager metadata) {
+    private MetaResult validateOptions(String effectiveKeyspace, TableMetadata metadata) {
         MetaResult result = new MetaResult();
         if(_options.size() > 0){
             result.setErrorMessage("WITH OPTIONS clause not supported in index creation.");
+        }
+        if(!_createIfNotExists && IndexType.LUCENE.equals(_type)) {
+            Iterator<ColumnMetadata> columns = metadata.getColumns().iterator();
+            boolean found = false;
+            ColumnMetadata column = null;
+            while (!found && columns.hasNext()) {
+                column = columns.next();
+                if (column.getName().startsWith("stratio_lucene")) {
+                    found = true;
+                }
+            }
+            if (found) {
+                result.setErrorMessage("Cannot create index: A Lucene index already exists on table " + effectiveKeyspace + "."
+                        + metadata.getName() + ". Use DROP INDEX " + column.getName().replace("stratio_lucene_", "") + "; to remove the index.");
+            }
         }
         return result;
     }
