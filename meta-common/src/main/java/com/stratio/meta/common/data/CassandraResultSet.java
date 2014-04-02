@@ -1,37 +1,41 @@
 package com.stratio.meta.common.data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class CassandraResultSet extends ResultSet {
+public class CassandraResultSet extends ResultSet implements Serializable {
 
-    private List<Row> rows = new ArrayList<>();
-    private int pointer = 0;
+    private List<Row> rows;
 
-    public void addRow(Row row){
+    public CassandraResultSet() {
+        rows = new ArrayList<>();
+    }
+
+    public CassandraResultSet(List<Row> rows) {
+        this.rows = rows;
+    }
+
+    public List<Row> getRows() {
+        return rows;
+    }
+
+    public void add(Row row){
         rows.add(row);
+    }
+
+    public void remove(int current) {
+        rows.remove(current);
     }
 
     public int size(){
         return rows.size();
     }
 
-    public void reset(){
-        pointer = 0;
+    @Override
+    public Iterator<Row> iterator() {
+        return new CResultSetIterator<Row>(this);
     }
 
-    @Override
-    public Row next() {
-        return rows.get(pointer++);
-    }
-
-    @Override
-    public boolean hasNext() {
-        return pointer < rows.size();
-    }
-
-    @Override
-    public void close() {
-        return;
-    }
 }

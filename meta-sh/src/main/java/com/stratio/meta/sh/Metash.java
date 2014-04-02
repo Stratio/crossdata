@@ -180,7 +180,7 @@ public class Metash {
             String cmd = "";
             while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
                 cmd = console.readLine();
-                logger.info("\033[34;1mCommand:\033[0m " + cmd);
+                System.out.println("\033[34;1mCommand:\033[0m " + cmd);
                     try {
                         if(cmd.toLowerCase().startsWith("help")){
                             showHelp(cmd);
@@ -195,15 +195,14 @@ public class Metash {
                                 }
                             }
                             if(metaResult.hasError()){
-                                logger.error("\033[31mError:\033[0m "+metaResult.getErrorMessage());
+                                System.err.println("\033[31mError:\033[0m "+metaResult.getErrorMessage());
                                 continue;
                             }
 
-                            String resultStr = metaResult.toString();
-                            logger.info("\033[32mResult:\033[0m "+resultStr);
+                            System.out.println("\033[32mResult:\033[0m "+metaResult.toString());
                         }
                     } catch(Exception exc){
-                        logger.error("\033[31mError:\033[0m "+exc.getMessage());
+                        System.err.println("\033[31mError:\033[0m "+exc.getMessage());
                     }
             }
             saveHistory(console, file, sdf);  

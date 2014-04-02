@@ -1,13 +1,9 @@
 package com.stratio.meta.common.data;
 
-import java.io.Serializable;
+import java.util.Iterator;
 
-public abstract class ResultSet implements Serializable {
+public abstract class ResultSet implements Iterable<Row> {
 
-    public abstract Row next();
-
-    public abstract boolean hasNext();
-
-    public abstract void close();
+    public abstract Iterator iterator();
 
 }

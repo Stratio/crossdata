@@ -19,13 +19,6 @@
 
 package com.stratio.meta.common.result;
 
-/*
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-*/
-
-import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
@@ -64,11 +57,6 @@ public class QueryResult extends MetaResult {
         this.message = message;
     }
 
-    public int size(){
-        CassandraResultSet crs = (CassandraResultSet) resultSet;
-        return crs.size();
-    }
-
     @Override
     public void print(){
         logger.info(toString());
@@ -76,13 +64,31 @@ public class QueryResult extends MetaResult {
 
     @Override
     public String toString(){
-        CassandraResultSet crs = (CassandraResultSet) resultSet;
-        crs.reset();
         StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
         sb.append("------------------------------------------------------------------");
         sb.append(System.getProperty("line.separator"));
         boolean firstRow = true;
-        while(resultSet.hasNext()){
+        for(Row row: resultSet){
+            sb.append(" | ");
+            if(firstRow){
+                for(String key: row.getCells().keySet()){
+                    sb.append(key+" | ");
+                }
+                sb.append(System.getProperty("line.separator"));
+                sb.append("------------------------------------------------------------------");
+                sb.append(System.getProperty("line.separator"));
+                sb.append(" | ");
+                firstRow = false;
+            }
+            Map<String, Cell> cells = row.getCells();
+            for(String key: cells.keySet()){
+                Cell cell = cells.get(key);
+                sb.append(cell.getDatatype().cast(cell.getValue())).append(" | ");
+            }
+            sb.append(System.getProperty("line.separator"));
+        }
+
+        /*while(resultSet.hasNext()){
             Row row = resultSet.next();
             sb.append(" | ");
             if(firstRow){
@@ -101,9 +107,8 @@ public class QueryResult extends MetaResult {
                 sb.append(cell.getDatatype().cast(cell.getValue())).append(" | ");
             }
             sb.append(System.getProperty("line.separator"));
-        }
+        }*/
         sb.append("------------------------------------------------------------------");
-        crs.reset();
         return sb.toString();
     }
 

@@ -195,7 +195,7 @@ public class Executor {
                 CUSTOM    (0,  ByteBuffer.class);
                 */
             }
-            crs.addRow(metaRow);
+            crs.add(metaRow);
         }
         logger.info("Returning "+crs.size()+" rows");
         return crs;
