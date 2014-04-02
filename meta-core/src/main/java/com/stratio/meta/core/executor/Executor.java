@@ -20,12 +20,9 @@
 package com.stratio.meta.core.executor;
 
 import com.datastax.driver.core.*;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.DescribeStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.UseStatement;
@@ -86,14 +83,14 @@ public class Executor {
             } else {
                 resultSet = session.execute(stmt.translateToCQL());
             }
-                          
-            queryResult.setResultSet(resultSet);
+
+            queryResult.setResultSet(transformToMetaResultSet(resultSet));
             
             if(stmt instanceof UseStatement){
                 UseStatement useStatement = (UseStatement) stmt;
                 queryResult.setCurrentKeyspace(useStatement.getKeyspaceName());
             }
-            
+
         } catch (Exception ex) {
             metaQuery.hasError();
             queryResult.setErrorMessage("Cassandra exception: "+ex.getMessage());
@@ -138,5 +135,70 @@ public class Executor {
         metaQuery.setResult(queryResult);
         return metaQuery;
     }
-    
+
+    private com.stratio.meta.common.data.ResultSet transformToMetaResultSet(ResultSet resultSet) {
+        com.stratio.meta.common.data.CassandraResultSet crs = new com.stratio.meta.common.data.CassandraResultSet();
+        for(Row row: resultSet.all()){
+            com.stratio.meta.common.data.Row metaRow = new com.stratio.meta.common.data.Row();
+            for (ColumnDefinitions.Definition def: row.getColumnDefinitions().asList()){
+                Cell metaCell = null;
+                if((def.getType() == DataType.ascii())
+                    || (def.getType() == DataType.text())
+                    || (def.getType() == DataType.varchar())){
+                    metaCell = new Cell(def.getType().asJavaClass(), row.getString(def.getName()));
+                } else if ((def.getType() == DataType.bigint())
+                        || (def.getType() == DataType.counter())){
+                    metaCell = new Cell(def.getType().asJavaClass(), row.getLong(def.getName()));
+                } else if ((def.getType() == DataType.cboolean())){
+                    metaCell = new Cell(def.getType().asJavaClass(), row.getBool(def.getName()));
+                } else if ((def.getType() == DataType.blob())){
+                    metaCell = new Cell(def.getType().asJavaClass(), row.getBytes(def.getName()));
+                } else if ((def.getType() == DataType.decimal())){
+                    metaCell = new Cell(def.getType().asJavaClass(), row.getDecimal(def.getName()));
+                } else if ((def.getType() == DataType.cdouble())){
+                    metaCell = new Cell(def.getType().asJavaClass(), row.getDouble(def.getName()));
+                } else if ((def.getType() == DataType.cfloat())){
+                    metaCell = new Cell(def.getType().asJavaClass(), row.getFloat(def.getName()));
+                } else if ((def.getType() == DataType.inet())){
+                    metaCell = new Cell(def.getType().asJavaClass(), row.getInet(def.getName()));
+                } else if ((def.getType() == DataType.cint())){
+                    metaCell = new Cell(def.getType().asJavaClass(), row.getInt(def.getName()));
+                } else if ((def.getType() == DataType.timestamp())){
+                    metaCell = new Cell(def.getType().asJavaClass(), row.getDate(def.getName()));
+                } else if ((def.getType() == DataType.uuid())
+                        || (def.getType() == DataType.timeuuid())){
+                    metaCell = new Cell(def.getType().asJavaClass(), row.getUUID(def.getName()));
+                } else if ((def.getType() == DataType.varint())){
+                    metaCell = new Cell(def.getType().asJavaClass(), row.getVarint(def.getName()));
+                }
+                metaRow.addCell(def.getName(), metaCell);
+                /*
+                - ASCII     (1,  String.class),
+                - BIGINT    (2,  Long.class),
+                - BLOB      (3,  ByteBuffer.class),
+                - BOOLEAN   (4,  Boolean.class),
+                - COUNTER   (5,  Long.class),
+                - DECIMAL   (6,  BigDecimal.class),
+                - DOUBLE    (7,  Double.class),
+                - FLOAT     (8,  Float.class),
+                - INET      (16, InetAddress.class),
+                - INT       (9,  Integer.class),
+                - TEXT      (10, String.class),
+                - TIMESTAMP (11, Date.class),
+                - UUID      (12, UUID.class),
+                - VARCHAR   (13, String.class),
+                - VARINT    (14, BigInteger.class),
+                - TIMEUUID  (15, UUID.class),
+                LIST      (32, List.class),
+                SET       (34, Set.class),
+                MAP       (33, Map.class),
+                CUSTOM    (0,  ByteBuffer.class);
+                */
+            }
+            crs.addRow(metaRow);
+        }
+        logger.info("Returning "+crs.size()+" rows");
+        return crs;
+    }
+
 }
