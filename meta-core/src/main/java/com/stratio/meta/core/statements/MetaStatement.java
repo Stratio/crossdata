@@ -20,11 +20,10 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
 public abstract class MetaStatement {
@@ -77,15 +76,13 @@ public abstract class MetaStatement {
      * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
      *                 the required information.
      * @param targetKeyspace The target keyspace where the query will be executed.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    public abstract MetaResult validate(MetadataManager metadata, String targetKeyspace);
+    public abstract Result validate(MetadataManager metadata, String targetKeyspace);
 
     public abstract String getSuggestion();
     
     public abstract String translateToCQL();
-
-    //public abstract String parseResult(ResultSet resultSet);
 
     public abstract Statement getDriverStatement();
 

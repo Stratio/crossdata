@@ -19,13 +19,7 @@
 
 package com.stratio.meta.core.validator.statements;
 
-import com.stratio.meta.common.result.MetaResult;
-import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
-import com.stratio.meta.core.grammar.ParsingTest;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.validator.BasicValidatorTest;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertFalse;

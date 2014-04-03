@@ -19,7 +19,7 @@
 
 package com.stratio.meta.sh;
 
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
 import com.stratio.meta.sh.help.HelpContent;
 import com.stratio.meta.sh.help.HelpManager;
@@ -168,7 +168,7 @@ public class Metash {
             //MetaDriver metaDriver = new MetaDriver();
             BasicDriver metaDriver = new BasicDriver();
             
-            MetaResult connectionResult = metaDriver.connect(user);
+            Result connectionResult = metaDriver.connect(user);
             if(connectionResult.hasError()){
                 logger.error(connectionResult.getErrorMessage());
                 return;
@@ -185,7 +185,7 @@ public class Metash {
                         if(cmd.toLowerCase().startsWith("help")){
                             showHelp(cmd);
                         } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
-                            MetaResult metaResult = metaDriver.executeQuery(user, currentKeyspace, cmd);
+                            Result metaResult = metaDriver.executeQuery(user, currentKeyspace, cmd);
                             if(metaResult.isKsChanged()){
                                 currentKeyspace = metaResult.getCurrentKeyspace();
                                 if(currentKeyspace.isEmpty()){

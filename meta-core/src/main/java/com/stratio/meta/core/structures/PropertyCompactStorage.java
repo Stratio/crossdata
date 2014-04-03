@@ -19,7 +19,7 @@
 
 package com.stratio.meta.core.structures;
 
-public class PropertyCompactStorage extends MetaProperty{
+public class PropertyCompactStorage extends Property {
 
     public PropertyCompactStorage() {
         super(TYPE_COMPACT_STORAGE);

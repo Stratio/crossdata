@@ -3,7 +3,7 @@ package com.stratio.meta.common.data;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class CResultSetIterator<Row> implements Iterator<com.stratio.meta.common.data.Row> {
+public class CResultSetIterator implements Iterator<com.stratio.meta.common.data.Row> {
 
     private final CassandraResultSet cResultSet;
     private int current;

@@ -19,7 +19,7 @@
 
 package com.stratio.meta.driver;
 
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.Result;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
@@ -30,7 +30,7 @@ public class BasicTest {
 
     @Test
     public void ConnectTest(){
-        MetaResult metaResult= driver.connect("TEST_USER");
+        Result metaResult= driver.connect("TEST_USER");
         assertFalse(metaResult.hasError());
     }
 

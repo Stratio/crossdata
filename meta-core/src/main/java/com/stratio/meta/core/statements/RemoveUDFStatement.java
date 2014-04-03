@@ -20,14 +20,12 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class RemoveUDFStatement extends MetaStatement {
 
@@ -45,7 +43,7 @@ public class RemoveUDFStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata, String targetKeyspace) {
         return null;
     }
 
@@ -59,15 +57,10 @@ public class RemoveUDFStatement extends MetaStatement {
         return this.toString();
     }
 
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
     
     @Override
     public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
+        return null;
     }
     
     @Override

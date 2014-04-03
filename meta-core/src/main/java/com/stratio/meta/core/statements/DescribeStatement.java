@@ -21,7 +21,8 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta.core.utils.DeepResult;
@@ -92,8 +93,8 @@ public class DescribeStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return new MetaResult();
+    public Result validate(MetadataManager metadata, String targetKeyspace) {
+        return QueryResult.CreateSuccessQueryResult();
     }
 
     @Override
@@ -108,8 +109,7 @@ public class DescribeStatement extends MetaStatement {
 
     @Override
     public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
+        return null;
     }
 
     @Override

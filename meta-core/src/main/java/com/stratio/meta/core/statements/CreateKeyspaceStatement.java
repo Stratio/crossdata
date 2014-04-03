@@ -21,19 +21,18 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta.core.utils.ValidationException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class CreateKeyspaceStatement extends MetaStatement {
@@ -87,19 +86,19 @@ public class CreateKeyspaceStatement extends MetaStatement {
     }
 
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = new MetaResult();
+    public Result validate(MetadataManager metadata, String targetKeyspace) {
+        Result result = QueryResult.CreateSuccessQueryResult();
         if(name!= null && name.length() > 0) {
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(name);
             if(ksMetadata != null && !ifNotExists){
-                result.setErrorMessage("Keyspace " + name + " already exists.");
+                result= QueryResult.CreateFailQueryResult("Keyspace " + name + " already exists.");
             }
         }else{
-            result.setErrorMessage("Empty keyspace name found.");
+            result= QueryResult.CreateFailQueryResult("Empty keyspace name found.");
         }
 
         if(properties.size() == 0 || !properties.containsKey("replication")){
-            result.setErrorMessage("Missing mandatory replication property.");
+            result= QueryResult.CreateFailQueryResult("Missing mandatory replication property.");
         }
 
         return result;
@@ -107,28 +106,6 @@ public class CreateKeyspaceStatement extends MetaStatement {
 
     //TODO Remove
     public void validate_remove() {
-        /*
-        if(properties.isEmpty()){
-            throw new ValidationException("CREATE KEYSPACE must include at least property 'replication'");
-        }
-        // Check if there are innapropiate properties
-        for(String key: properties.keySet()){
-            if(!key.equalsIgnoreCase("replication") && !key.equalsIgnoreCase("durable_writes")){
-                throw new ValidationException("CREATE KEYSPACE can only include properties 'replication' and 'durable_writes'");
-            }
-        }
-        // Check if replication is present and it's built properly
-        if(!properties.containsKey("replication")){
-            throw new ValidationException("CREATE KEYSPACE must include property 'replication'");
-        }
-        if(properties.get("replication").getType() != ValueProperty.TYPE_MAPLT){
-            throw new ValidationException("'replication' property must be a map");
-        }
-        MapLiteralProperty mlp = (MapLiteralProperty) properties.get("replication");
-        if(mlp.isEmpty()){
-            throw new ValidationException("'replication' property cannot be empty");
-        }*/   
-        // if durable_writes is present then it must be a boolean type
         if(properties.containsKey("durable_writes")){
             if(properties.get("durable_writes").getType() != ValueProperty.TYPE_BOOLEAN){
                 throw new ValidationException("Property 'replication' must be a boolean");
@@ -151,15 +128,10 @@ public class CreateKeyspaceStatement extends MetaStatement {
         }        
     }
     
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "Executed successfully"+System.getProperty("line.separator");
-//    }
-    
+
     @Override
     public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
+        return null;
     }
 
     @Override

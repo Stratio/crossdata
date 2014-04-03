@@ -23,7 +23,7 @@ import akka.actor.{ ActorSelection, ActorSystem}
 import com.stratio.meta.driver.config.DriverConfig
 import akka.contrib.pattern.ClusterClient
 import com.stratio.meta.driver.actor.ProxyActor
-import com.stratio.meta.common.result.MetaResult
+import com.stratio.meta.common.result.Result
 import com.stratio.meta.common.ask.{Query, Connect}
 
 class BasicDriver extends DriverConfig{
@@ -32,13 +32,13 @@ class BasicDriver extends DriverConfig{
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts),"remote-client")
   lazy val proxyActor= system.actorOf(ProxyActor.props(clusterClientActor,actorName), "proxy-actor")
 
-  def connect(user:String): MetaResult = {
+  def connect(user:String): Result = {
     println(contactPoints)
     retryPolitics.askRetry(proxyActor,new Connect(user))
   }
 
 
-  def executeQuery(user:String, targetKs: String, query: String): MetaResult = {
+  def executeQuery(user:String, targetKs: String, query: String): Result = {
     retryPolitics.askRetry(proxyActor,new Query(targetKs,query,user))
   }
 

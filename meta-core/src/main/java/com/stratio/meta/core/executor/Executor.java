@@ -48,55 +48,56 @@ public class Executor {
     }
     
     public MetaQuery executeQuery(MetaQuery metaQuery) {
-        
+
         metaQuery.setStatus(QueryStatus.EXECUTED);
         MetaStatement stmt = metaQuery.getStatement();
-        
-        if(stmt.isCommand()){
-            if(stmt instanceof DescribeStatement){
-                DescribeStatement descrStmt =  (DescribeStatement) stmt;
-                metaQuery.setResult(new CommandResult(System.getProperty("line.separator")+descrStmt.execute(session)));
+
+        if (stmt.isCommand()) {
+            if (stmt instanceof DescribeStatement) {
+                DescribeStatement descrStmt = (DescribeStatement) stmt;
+                metaQuery.setResult(CommandResult.CreateSuccessCommandResult(System.getProperty("line.separator")
+                        + descrStmt.execute
+                        (session)));
             } else {
                 metaQuery.setErrorMessage("Not supported yet.");
                 return metaQuery;
             }
             return metaQuery;
         }
-        
+
         StringBuilder sb = new StringBuilder();
-        if(!stmt.getPlan().isEmpty()){
+        if (!stmt.getPlan().isEmpty()) {
             sb.append("PLAN: ").append(System.getProperty("line.separator"));
             sb.append(stmt.getPlan().toStringDownTop());
             logger.info(sb.toString());
             metaQuery.setErrorMessage("Deep execution is not supported yet");
             return metaQuery;
-        }       
-                
-        QueryResult queryResult = new QueryResult();
+        }
+
+        QueryResult queryResult;
         Statement driverStmt = null;
-        
+
         ResultSet resultSet;
-        try{
+        try {
             driverStmt = stmt.getDriverStatement();
-            if(driverStmt != null){
+            if (driverStmt != null) {
                 resultSet = session.execute(driverStmt);
             } else {
                 resultSet = session.execute(stmt.translateToCQL());
             }
 
-            queryResult.setResultSet(transformToMetaResultSet(resultSet));
-            
-            if(stmt instanceof UseStatement){
+
+            if (stmt instanceof UseStatement) {
                 UseStatement useStatement = (UseStatement) stmt;
-                queryResult.setCurrentKeyspace(useStatement.getKeyspaceName());
+                queryResult = QueryResult.CreateSuccessQueryResult(transformToMetaResultSet(resultSet), useStatement.getKeyspaceName());
+            } else {
+                queryResult = QueryResult.CreateSuccessQueryResult(transformToMetaResultSet(resultSet));
             }
 
-        } catch (Exception ex) {
-            metaQuery.hasError();
-            queryResult.setErrorMessage("Cassandra exception: "+ex.getMessage());
-            if (ex instanceof UnsupportedOperationException){
-                queryResult.setErrorMessage("Unsupported operation by C*: "+ex.getMessage());
-            }
+        } catch (UnsupportedOperationException unSupportException){
+             metaQuery.hasError();
+             queryResult= QueryResult.CreateFailQueryResult("Unsupported operation by C*: "+unSupportException.getMessage());
+        }catch (Exception ex) {
             if(ex.getMessage().contains("line") && ex.getMessage().contains(":")){
                 String queryStr;
                 if(driverStmt != null){
@@ -112,26 +113,13 @@ public class Executor {
                 }
                 AntlrError ae = new AntlrError(cMessageEx[0]+" "+cMessageEx[1], sb.toString());
                 queryStr = ParserUtils.getQueryWithSign(queryStr, ae);
-                queryResult.setErrorMessage(ex.getMessage()+System.getProperty("line.separator")+"\t"+queryStr);
+                queryResult= QueryResult.CreateFailQueryResult(ex.getMessage()+System.getProperty("line.separator")
+                        +"\t"+queryStr);
                 logger.error(queryStr);
+            }else{
+                queryResult= QueryResult.CreateFailQueryResult(ex.getMessage());
             }
         }
-        /*
-        if(!queryResult.hasError()){            
-            logger.info("\033[32mResult:\033[0m "+stmt.parseResult(resultSet)+System.getProperty("line.separator"));
-            //logger.info("\033[32mResult:\033[0m Cannot execute command"+System.getProperty("line.separator"));        
-        } else {
-            List<MetaStep> steps = stmt.getPlan();
-            for(MetaStep step: steps){
-                logger.info(step.getPath()+"-->"+step.getQuery());
-            }
-            DeepResult deepResult = stmt.executeDeep();
-            if(deepResult.hasErrors()){
-                logger.error("\033[31mUnsupported operation by Deep:\033[0m "+deepResult.getErrors()+System.getProperty("line.separator"));
-            } else {
-                logger.info("\033[32mResult:\033[0m "+deepResult.getResult()+System.getProperty("line.separator"));
-            }
-        }*/
         metaQuery.setResult(queryResult);
         return metaQuery;
     }

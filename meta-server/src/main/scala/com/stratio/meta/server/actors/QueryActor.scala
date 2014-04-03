@@ -20,7 +20,7 @@
 package com.stratio.meta.server.actors
 
 import akka.actor.{Props, ActorLogging, Actor}
-import com.stratio.meta.common.result.MetaResult
+import com.stratio.meta.common.result.{QueryResult, Result}
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.common.ask.Query
 
@@ -41,7 +41,7 @@ class QueryActor(engine: Engine) extends Actor with ActorLogging{
       log.info("Finish Query")
     }
     case _ => {
-      sender ! MetaResult.createMetaResultError("Not recognized object")
+      sender ! QueryResult.CreateFailQueryResult("Not recognized object")
     }
   }
 }

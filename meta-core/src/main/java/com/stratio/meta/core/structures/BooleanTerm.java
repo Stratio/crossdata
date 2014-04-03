@@ -1,8 +1,6 @@
 package com.stratio.meta.core.structures;
 
-/**
- * Created by dhiguero on 25/03/14.
- */
+
 public class BooleanTerm extends Term{
 
     private final Boolean _value;
