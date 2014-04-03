@@ -20,6 +20,9 @@
 package com.stratio.meta.core.utils;
 
 import com.stratio.meta.common.utils.MetaUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -28,8 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 
 public class ParserUtils {    
     
@@ -95,9 +96,13 @@ public class ParserUtils {
     
     public static String getQueryWithSign(String query, AntlrError ae) {
         StringBuilder sb = new StringBuilder(query);
-        int pos = getCharPosition(ae);
-        if(pos >= 0){
-        sb.insert(getCharPosition(ae), "\033[35m|\033[0m");
+        try {
+            int pos = getCharPosition(ae);
+            if(pos >= 0){
+                sb.insert(getCharPosition(ae), "\033[35m|\033[0m");
+            }
+        } catch (NullPointerException npex){
+            return query;
         }
         return sb.toString();
     }

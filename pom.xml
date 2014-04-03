@@ -49,8 +49,8 @@
             <name>Typesafe Repository</name>
             <url>http://repo.typesafe.com/typesafe/releases/</url>
         </repository>
-    </repositories>                
-            
+    </repositories>
+
     <build>
         <plugins>            
             <plugin>

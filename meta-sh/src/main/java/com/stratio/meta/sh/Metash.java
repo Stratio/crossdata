@@ -182,10 +182,28 @@ public class Metash {
                 cmd = console.readLine();
                 System.out.println("\033[34;1mCommand:\033[0m " + cmd);
                     try {
+                        /*
+                        if(cmd.toLowerCase().startsWith("random")){
+                            for(int i=0; i<10; i++){
+                                StringBuilder sb = new StringBuilder("INSERT INTO demo.emp(user_uuid, email, fan, first_name, last_name) VALUES (");
+                                sb.append(UUID.randomUUID()).append(", "); //user_uuid
+                                sb.append(RandomStringUtils.randomAlphabetic((int) (Math.random()*13))).append("@").append(RandomStringUtils.randomAlphabetic((int) (Math.random()*12))).append(".com").append(", "); //email
+                                sb.append(RandomStringUtils.randomAlphabetic((int) (Math.random()*30))).append(", "); //fan
+                                sb.append(RandomStringUtils.randomAlphabetic((int) (Math.random()*30))).append(", "); //first_name
+                                sb.append(RandomStringUtils.randomAlphabetic((int) (Math.random()*30))).append(");"); //last_name
+                                metaDriver.executeQuery(user, currentKeyspace, sb.toString());
+                            }
+                            continue;
+                        }
+                        */
                         if(cmd.toLowerCase().startsWith("help")){
                             showHelp(cmd);
                         } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
+
+                            long queryStart = System.currentTimeMillis();
                             Result metaResult = metaDriver.executeQuery(user, currentKeyspace, cmd);
+                            long queryEnd = System.currentTimeMillis();
+
                             if(metaResult.isKsChanged()){
                                 currentKeyspace = metaResult.getCurrentKeyspace();
                                 if(currentKeyspace.isEmpty()){
@@ -200,6 +218,8 @@ public class Metash {
                             }
 
                             System.out.println("\033[32mResult:\033[0m "+metaResult.toString());
+                            System.out.println("Response time: "+((queryEnd-queryStart)/1000)+" seconds");
+                            System.out.println("Display time: "+((System.currentTimeMillis()-queryEnd)/1000)+" seconds");
                         }
                     } catch(Exception exc){
                         System.err.println("\033[31mError:\033[0m "+exc.getMessage());
