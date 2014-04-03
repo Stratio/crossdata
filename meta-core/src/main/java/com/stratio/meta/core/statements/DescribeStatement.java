@@ -131,14 +131,14 @@ public class DescribeStatement extends MetaStatement {
         if(type == DescribeType.KEYSPACE){
             KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(keyspace);
             if(ksInfo == null){
-               result = "KEYSPACE "+keyspace+" was not found"; 
+               throw new RuntimeException("KEYSPACE "+keyspace+" was not found");
             } else {
                 result =  ksInfo.exportAsString();
             }
         } else {
             TableMetadata tableInfo = mm.getTableMetadata(keyspace, tablename);
             if(tableInfo == null){
-                result = "TABLE "+tablename+" was not found";
+                throw new RuntimeException("TABLE "+tablename+" was not found");
             } else {
                 result = tableInfo.exportAsString();
             }
