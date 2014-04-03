@@ -20,33 +20,31 @@
 package com.stratio.meta.common.result;
 
 
-public class ConnectResult extends MetaResult {
+public class ConnectResult extends Result {
     
-    private String message;
+    private long sessionId;
 
-    public ConnectResult() {
-    }    
-    
-    public ConnectResult(String message) {
-        this.message = message;
-    }   
-
-    public String getMessage() {
-        return message;
+    private ConnectResult(long sessionId,boolean error, String errorMessage, boolean ksChanged, String currentKeyspace){
+        super(error,errorMessage,ksChanged,currentKeyspace);
+        this.sessionId=sessionId;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }        
-    
-    @Override
-    public void print() {
-        logger.info("Not implemented yet.");
+    public long getSessionId() {
+        return sessionId;
     }
     
     @Override
     public String toString(){
-        return "Not implemented yet.";
+        return super.toString() + System.lineSeparator() + sessionId;
     }
+
+    public static ConnectResult CreateSuccessConnectResult(long sessionId){
+        return new ConnectResult(sessionId,false,null,false,null);
+    }
+
+    public static ConnectResult CreateFailConnectResult(String message){
+        return new ConnectResult(-1,true,message,false,null);
+    }
+
     
 }

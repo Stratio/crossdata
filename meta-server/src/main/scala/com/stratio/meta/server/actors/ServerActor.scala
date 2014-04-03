@@ -20,9 +20,10 @@
 package com.stratio.meta.server.actors
 
 import akka.actor.{Props, ActorLogging, Actor}
-import com.stratio.meta.common.result.MetaResult
+import com.stratio.meta.common.result.{CommandResult, ConnectResult, QueryResult, Result}
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.common.ask.{Connect, Query}
+import scala.util.Random
 
 object ServerActor{
   def props(engine: Engine): Props = Props(new ServerActor(engine))
@@ -34,10 +35,10 @@ class ServerActor(engine:Engine) extends Actor with ActorLogging {
     case query:Query => queryActorRef forward query
     case Connect(user)=> {
       log.info("Welcome {}!",user)
-      sender ! MetaResult.createMetaResultWelcome()
+      sender ! ConnectResult.CreateSuccessConnectResult(Random.nextLong())
     }
     case _ => {
-      sender ! MetaResult.createMetaResultError("Not recognized object")
+      sender ! CommandResult.CreateFailCommanResult("Not recognized object")
     }
   }
 }

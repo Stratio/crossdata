@@ -20,16 +20,14 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class DropKeyspaceStatement extends MetaStatement {
     
@@ -70,11 +68,11 @@ public class DropKeyspaceStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = new MetaResult();
+    public Result validate(MetadataManager metadata, String targetKeyspace) {
+        Result result = QueryResult.CreateSuccessQueryResult();
         KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspaceName);
         if(ksMetadata == null && !ifExists){
-            result.setErrorMessage("Keyspace " + keyspaceName + " does not exists.");
+            result= QueryResult.CreateFailQueryResult("Keyspace " + keyspaceName + " does not exists.");
         }
         return result;
     }
@@ -89,10 +87,7 @@ public class DropKeyspaceStatement extends MetaStatement {
         return this.toString();
     }
     
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "Executed successfully"+System.getProperty("line.separator");
-//    }
+
     
     @Override
     public Statement getDriverStatement() {

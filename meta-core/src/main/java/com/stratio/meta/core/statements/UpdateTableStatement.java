@@ -20,15 +20,14 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Assignment;
-import com.stratio.meta.core.structures.MetaRelation;
+import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,29 +39,29 @@ public class UpdateTableStatement extends MetaStatement {
     
     private boolean keyspaceInc = false;
     private String keyspace;
-    private String tablename;
+    private String tableName;
     private boolean optsInc;
     private List<Option> options;
     private List<Assignment> assignments;
-    private List<MetaRelation> whereclauses;
+    private List<Relation> whereclauses;
     private boolean condsInc;
     private Map<String, Term> conditions;
 
-    public UpdateTableStatement(String tablename, 
+    public UpdateTableStatement(String tableName,
                                 boolean optsInc, 
                                 List<Option> options, 
                                 List<Assignment> assignments, 
-                                List<MetaRelation> whereclauses, 
+                                List<Relation> whereclauses,
                                 boolean condsInc, 
                                 Map<String, Term> conditions) {
         this.command = false;
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+        if(tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            tableName = ksAndTableName[1];
             keyspaceInc = true;
         }
-        this.tablename = tablename;
+        this.tableName = tableName;
         this.optsInc = optsInc;
         this.options = options;
         this.assignments = assignments;
@@ -71,32 +70,32 @@ public class UpdateTableStatement extends MetaStatement {
         this.conditions = conditions;
     }        
     
-    public UpdateTableStatement(String tablename, 
+    public UpdateTableStatement(String tableName,
                                 List<Option> options, 
                                 List<Assignment> assignments, 
-                                List<MetaRelation> whereclauses, 
+                                List<Relation> whereclauses,
                                 Map<String, Term> conditions) {
-        this(tablename, true, options, assignments, whereclauses, true, conditions);
+        this(tableName, true, options, assignments, whereclauses, true, conditions);
     }
     
-    public UpdateTableStatement(String tablename, 
+    public UpdateTableStatement(String tableName,
                                 List<Assignment> assignments, 
-                                List<MetaRelation> whereclauses, 
+                                List<Relation> whereclauses,
                                 Map<String, Term> conditions) {
-        this(tablename, false, null, assignments, whereclauses, true, conditions);
+        this(tableName, false, null, assignments, whereclauses, true, conditions);
     }
     
-    public UpdateTableStatement(String tablename, 
+    public UpdateTableStatement(String tableName,
                                 List<Option> options, 
                                 List<Assignment> assignments, 
-                                List<MetaRelation> whereclauses) {
-        this(tablename, true, options, assignments, whereclauses, false, null);
+                                List<Relation> whereclauses) {
+        this(tableName, true, options, assignments, whereclauses, false, null);
     }
     
-    public UpdateTableStatement(String tablename,                                 
+    public UpdateTableStatement(String tableName,
                                 List<Assignment> assignments, 
-                                List<MetaRelation> whereclauses) {
-        this(tablename, false, null, assignments, whereclauses, false, null);
+                                List<Relation> whereclauses) {
+        this(tableName, false, null, assignments, whereclauses, false, null);
     }
 
     public boolean isKeyspaceInc() {
@@ -123,18 +122,18 @@ public class UpdateTableStatement extends MetaStatement {
         this.condsInc = condsInc;
     }       
     
-    public String getTablename() {
-        return tablename;
+    public String getTableName() {
+        return tableName;
     }
 
-    public void setTablename(String tablename) {
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
+    public void setTableName(String tableName) {
+        if(tableName.contains(".")){
+            String[] ksAndTablename = tableName.split("\\.");
             keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+            tableName = ksAndTablename[1];
             keyspaceInc = true;
         }
-        this.tablename = tablename;
+        this.tableName = tableName;
     }
 
     public boolean isOptsInc() {
@@ -161,11 +160,11 @@ public class UpdateTableStatement extends MetaStatement {
         this.assignments = assignments;
     }        
 
-    public List<MetaRelation> getWhereclauses() {
+    public List<Relation> getWhereclauses() {
         return whereclauses;
     }
 
-    public void setWhereclauses(List<MetaRelation> whereclauses) {
+    public void setWhereclauses(List<Relation> whereclauses) {
         this.whereclauses = whereclauses;
     }
 
@@ -191,7 +190,7 @@ public class UpdateTableStatement extends MetaStatement {
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
-        sb.append(tablename);        
+        sb.append(tableName);
         if(optsInc){
             sb.append(" ").append("USING ");
             sb.append(ParserUtils.stringList(options, " AND "));
@@ -209,7 +208,7 @@ public class UpdateTableStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata, String targetKeyspace) {
         return null;
     }
 
@@ -222,16 +221,11 @@ public class UpdateTableStatement extends MetaStatement {
     public String translateToCQL() {
         return this.toString();
     }
-    
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
+
 
     @Override
     public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
+        return null;
     }
     
     @Override

@@ -19,14 +19,11 @@
 
 package com.stratio.meta.core.validator.statements;
 
-import com.stratio.meta.common.result.MetaResult;
-import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
-import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.CreateKeyspaceStatement;
 import com.stratio.meta.core.structures.IdentifierProperty;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.validator.BasicValidatorTest;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
@@ -49,7 +46,7 @@ public class CreateKeyspaceStatementTest extends BasicValidatorTest {
 
         CreateKeyspaceStatement cks = new CreateKeyspaceStatement(name, ifNotExists, properties);
         System.out.println("{"+cks.toString()+"}");
-        MetaResult result = cks.validate(_metadataManager, "");
+        Result result = cks.validate(_metadataManager, "");
         assertNotNull(result, "Sentence validation not supported");
         assertFalse(result.hasError(), "Cannot validate sentence");
     }
@@ -63,7 +60,7 @@ public class CreateKeyspaceStatementTest extends BasicValidatorTest {
         properties.put("replication", ip);
 
         CreateKeyspaceStatement cks = new CreateKeyspaceStatement(name, ifNotExists, properties);
-        MetaResult result = cks.validate(_metadataManager, "");
+        Result result = cks.validate(_metadataManager, "");
         assertNotNull(result, "Sentence validation not supported");
         assertFalse(result.hasError(), "Cannot validate sentence");
     }
@@ -76,7 +73,7 @@ public class CreateKeyspaceStatementTest extends BasicValidatorTest {
         Map<String, ValueProperty> properties = new HashMap<>();
 
         CreateKeyspaceStatement cks = new CreateKeyspaceStatement(name, ifNotExists, properties);
-        MetaResult result = cks.validate(_metadataManager, "");
+        Result result = cks.validate(_metadataManager, "");
         assertNotNull(result, "Sentence validation not supported");
         assertTrue(result.hasError(), "Validation should fail");
     }
@@ -90,7 +87,7 @@ public class CreateKeyspaceStatementTest extends BasicValidatorTest {
         properties.put("missing", ip);
 
         CreateKeyspaceStatement cks = new CreateKeyspaceStatement(name, ifNotExists, properties);
-        MetaResult result = cks.validate(_metadataManager, "");
+        Result result = cks.validate(_metadataManager, "");
         assertNotNull(result, "Sentence validation not supported");
         assertTrue(result.hasError(), "Validation should fail");
     }

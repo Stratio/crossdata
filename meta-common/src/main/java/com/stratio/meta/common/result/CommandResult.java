@@ -20,26 +20,33 @@
 package com.stratio.meta.common.result;
 
 
-public class CommandResult extends MetaResult {
+public class CommandResult extends Result {
 
     
-    private String result;
+    private final String result;
 
-    public CommandResult(String result) {
-        this.result = result;
+    private CommandResult(String result,boolean error, String errorMessage, boolean ksChanged, String currentKeyspace){
+        super(error,errorMessage,ksChanged,currentKeyspace);
+        this.result=result;
     }
 
     public String getResult() {
         return result;
     }
 
-    public void setResult(String result) {
-        this.result = result;
-    }        
     
     @Override
     public String toString(){
-        return result;
+        return super.toString() + System.lineSeparator() + result;
     }
+
+    public static CommandResult CreateSuccessCommandResult(String result){
+        return new CommandResult(result,false,null,false,null);
+    }
+
+    public static CommandResult CreateFailCommanResult(String errorMessage){
+        return new CommandResult(null,true,errorMessage,false,null);
+    }
+
 
 }

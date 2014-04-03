@@ -19,35 +19,30 @@
 
 package com.stratio.meta.sh;
 
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
-import com.stratio.meta.sh.utils.MetaCompletionHandler;
-import com.stratio.meta.sh.utils.MetaCompletor;
-import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.sh.help.HelpContent;
 import com.stratio.meta.sh.help.HelpManager;
 import com.stratio.meta.sh.help.HelpStatement;
 import com.stratio.meta.sh.help.generated.MetaHelpLexer;
 import com.stratio.meta.sh.help.generated.MetaHelpParser;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.ListIterator;
+import com.stratio.meta.sh.utils.MetaCompletionHandler;
+import com.stratio.meta.sh.utils.MetaCompletor;
 import jline.console.ConsoleReader;
 import jline.console.history.History;
 import jline.console.history.History.Entry;
 import jline.console.history.MemoryHistory;
-
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
+
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.ListIterator;
 
 public class Metash {
 
@@ -162,7 +157,7 @@ public class Metash {
     public void loop(){        
         try {
             ConsoleReader console = new ConsoleReader();
-            console.setPrompt("\033[36mmetash-server:"+System.getProperty("user.name")+">\033[0m ");
+            console.setPrompt("\033[36mmetash-sh:"+System.getProperty("user.name")+">\033[0m ");
             
             SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy");
             File file = retrieveHistory(console, sdf);            
@@ -173,7 +168,7 @@ public class Metash {
             //MetaDriver metaDriver = new MetaDriver();
             BasicDriver metaDriver = new BasicDriver();
             
-            MetaResult connectionResult = metaDriver.connect(user);
+            Result connectionResult = metaDriver.connect(user);
             if(connectionResult.hasError()){
                 logger.error(connectionResult.getErrorMessage());
                 return;
@@ -185,28 +180,29 @@ public class Metash {
             String cmd = "";
             while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
                 cmd = console.readLine();
-                logger.info("\033[34;1mCommand:\033[0m " + cmd);
+                System.out.println("\033[34;1mCommand:\033[0m " + cmd);
                     try {
                         if(cmd.toLowerCase().startsWith("help")){
                             showHelp(cmd);
                         } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
-                            MetaResult metaResult = metaDriver.executeQuery(user,currentKeyspace, cmd);
+                            Result metaResult = metaDriver.executeQuery(user, currentKeyspace, cmd);
                             if(metaResult.isKsChanged()){
                                 currentKeyspace = metaResult.getCurrentKeyspace();
                                 if(currentKeyspace.isEmpty()){
-                                    console.setPrompt("\033[36mmetash-server:"+System.getProperty("user.name")+">\033[0m ");
+                                    console.setPrompt("\033[36mmetash-sh:"+System.getProperty("user.name")+">\033[0m ");
                                 } else {
-                                    console.setPrompt("\033[36mmetash-server:"+System.getProperty("user.name")+":"+currentKeyspace+">\033[0m ");
+                                    console.setPrompt("\033[36mmetash-sh:"+System.getProperty("user.name")+":"+currentKeyspace+">\033[0m ");
                                 }
                             }
                             if(metaResult.hasError()){
-                                logger.error("\033[31mError:\033[0m "+metaResult.getErrorMessage());
+                                System.err.println("\033[31mError:\033[0m "+metaResult.getErrorMessage());
                                 continue;
-                            } 
-                            logger.info("\033[32mResult:\033[0m "+metaResult.toString());
+                            }
+
+                            System.out.println("\033[32mResult:\033[0m "+metaResult.toString());
                         }
                     } catch(Exception exc){
-                        logger.error("\033[31mError:\033[0m "+exc.getMessage());
+                        System.err.println("\033[31mError:\033[0m "+exc.getMessage());
                     }
             }
             saveHistory(console, file, sdf);  

@@ -24,16 +24,19 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Clause;
-import com.datastax.driver.core.querybuilder.Ordering;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Where;
-import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.*;
-import com.stratio.meta.core.utils.*;
-
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta.core.utils.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -46,15 +49,15 @@ public class SelectStatement extends MetaStatement {
     private SelectionClause selectionClause;
     private boolean keyspaceInc = false;
     private String keyspace;
-    private String tablename;
+    private String tableName;
     private boolean windowInc;
     private WindowSelect window;
     private boolean joinInc;
     private InnerJoin join;
     private boolean whereInc;
-    private ArrayList<MetaRelation> where;
+    private ArrayList<Relation> where;
     private boolean orderInc;
-    private ArrayList<MetaOrdering> order;    
+    private ArrayList<com.stratio.meta.core.structures.Ordering> order;
     private boolean groupInc;
     private GroupBy group;    
     private boolean limitInc;
@@ -62,27 +65,28 @@ public class SelectStatement extends MetaStatement {
     private boolean disableAnalytics;
     private boolean needsAllowFiltering = false;
 
+
     //TODO: We should probably remove this an pass it as parameters.
     private MetadataManager _metadata = null;
     private TableMetadata _tableMetadata = null;
 
-    public SelectStatement(SelectionClause selectionClause, String tablename, 
+    public SelectStatement(SelectionClause selectionClause, String tablename,
                            boolean windowInc, WindowSelect window, 
                            boolean joinInc, InnerJoin join, 
-                           boolean whereInc, ArrayList<MetaRelation> where, 
-                           boolean orderInc, ArrayList<MetaOrdering> order, 
+                           boolean whereInc, ArrayList<Relation> where,
+                           boolean orderInc, ArrayList<com.stratio.meta.core.structures.Ordering> order,
                            boolean groupInc, GroupBy group, 
                            boolean limitInc, int limit, 
                            boolean disableAnalytics) {
         this.command = false;
         this.selectionClause = selectionClause;        
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
+        if(this.tableName.contains(".")){
+            String[] ksAndTablename = this.tableName.split("\\.");
             keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+            this.tableName = ksAndTablename[1];
             keyspaceInc = true;
         }
-        this.tablename = tablename;        
+        this.tableName = tableName;
         this.windowInc = windowInc;
         this.window = window;
         this.joinInc = joinInc;
@@ -98,12 +102,12 @@ public class SelectStatement extends MetaStatement {
         this.disableAnalytics = disableAnalytics;
     }        
     
-    public SelectStatement(SelectionClause selectionClause, String tablename) {        
-        this(selectionClause, tablename, false, null, false, null, false, null, false, null, false, null, false, 0, false);
+    public SelectStatement(SelectionClause selectionClause, String tableName) {
+        this(selectionClause, tableName, false, null, false, null, false, null, false, null, false, null, false, 0, false);
     }             
     
-    public SelectStatement(String tablename) {        
-        this(null, tablename, false, null, false, null, false, null, false, null, false, null, false, 0, false);
+    public SelectStatement(String tableName) {
+        this(null, tableName, false, null, false, null, false, null, false, null, false, null, false, 0, false);
     }
 
     public void setSelectionClause(SelectionClause selectionClause) {
@@ -126,18 +130,18 @@ public class SelectStatement extends MetaStatement {
         this.keyspace = keyspace;
     }        
     
-    public String getTablename() {
-        return tablename;
+    public String getTableName() {
+        return tableName;
     }
 
-    public void setTablename(String tablename) {
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
+    public void setTableName(String tableName) {
+        if(tableName.contains(".")){
+            String[] ksAndTablename = tableName.split("\\.");
             keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+            tableName = ksAndTablename[1];
             keyspaceInc = true;
         }
-        this.tablename = tablename;
+        this.tableName = tableName;
     }          
 
     public SelectionClause getSelectionClause() {
@@ -186,11 +190,11 @@ public class SelectStatement extends MetaStatement {
         this.whereInc = whereInc;
     }
 
-    public ArrayList<MetaRelation> getWhere() {
+    public ArrayList<Relation> getWhere() {
         return where;
     }
 
-    public void setWhere(ArrayList<MetaRelation> where) {
+    public void setWhere(ArrayList<Relation> where) {
         this.whereInc = true;
         this.where = where;
     }        
@@ -203,11 +207,11 @@ public class SelectStatement extends MetaStatement {
         this.orderInc = orderInc;
     }
 
-    public ArrayList<MetaOrdering> getOrder() {
+    public ArrayList<com.stratio.meta.core.structures.Ordering> getOrder() {
         return order;
     }
 
-    public void setOrder(ArrayList<MetaOrdering> order) {
+    public void setOrder(ArrayList<com.stratio.meta.core.structures.Ordering> order) {
         this.orderInc = true;
         this.order = order;
     }        
@@ -282,7 +286,7 @@ public class SelectStatement extends MetaStatement {
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
-        sb.append(tablename);
+        sb.append(tableName);
         if(windowInc){
             sb.append(" WITH WINDOW ").append(window.toString());
         }
@@ -311,8 +315,8 @@ public class SelectStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = validateKeyspaceAndTable(metadata, targetKeyspace);
+    public Result validate(MetadataManager metadata, String targetKeyspace) {
+        Result result = validateKeyspaceAndTable(metadata, targetKeyspace);
 
         String effectiveKeyspace = targetKeyspace;
         if(keyspaceInc){
@@ -321,7 +325,7 @@ public class SelectStatement extends MetaStatement {
         TableMetadata tableMetadata = null;
 
         if(!result.hasError()){
-            tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
+            tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
             //Cache Metadata manager and table metadata for the getDriverStatement.
             _metadata = metadata;
             _tableMetadata = tableMetadata;
@@ -335,20 +339,20 @@ public class SelectStatement extends MetaStatement {
 
     /**
      * Validate the supported select options.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateOptions(){
-        MetaResult result = new MetaResult();
+    private Result validateOptions(){
+        Result result = QueryResult.CreateSuccessQueryResult();
         if(windowInc){
-            result.setErrorMessage("Select with streaming options not supported.");
+            result= QueryResult.CreateFailQueryResult("Select with streaming options not supported.");
         }
 
         if(groupInc){
-            result.setErrorMessage("Select with GROUP BY clause not supported.");
+            result= QueryResult.CreateFailQueryResult("Select with GROUP BY clause not supported.");
         }
 
         if(orderInc){
-            result.setErrorMessage("Select with ORDER BY clause not supported.");
+            result= QueryResult.CreateFailQueryResult("Select with ORDER BY clause not supported.");
         }
         return result;
     }
@@ -358,19 +362,21 @@ public class SelectStatement extends MetaStatement {
      * Validate that the where clause is valid by checking that columns exists on the target
      * table and that the comparisons are semantically valid.
      * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateWhereClause(TableMetadata tableMetadata){
+    private Result validateWhereClause(TableMetadata tableMetadata){
         //TODO: Check that the MATCH operator is only used in Lucene mapped columns.
-        MetaResult result = new MetaResult();
-        for(MetaRelation relation : where){
-            if(MetaRelation.TYPE_COMPARE == relation.getType()) {
+
+        Result result = QueryResult.CreateSuccessQueryResult();
+        for(Relation relation : where){
+            if(Relation.TYPE_COMPARE == relation.getType()) {
                 //Check comparison, =, >, <, etc.
                 RelationCompare rc = RelationCompare.class.cast(relation);
                 String column = rc.getIdentifiers().get(0);
                 //System.out.println("column: " + column);
                 if (tableMetadata.getColumn(column) == null) {
-                    result.setErrorMessage("Column " + column + " does not exists in table " + tableMetadata.getName());
+                    result= QueryResult.CreateFailQueryResult("Column " + column + " does not exists in table " +
+                            tableMetadata.getName());
                 }
 
                 Term t = Term.class.cast(rc.getTerms().get(0));
@@ -378,7 +384,7 @@ public class SelectStatement extends MetaStatement {
                 if (cm != null){
                     if (!tableMetadata.getColumn(column)
                             .getType().asJavaClass().equals(t.getTermClass())) {
-                        result.setErrorMessage("Column " + column
+                        result= QueryResult.CreateFailQueryResult("Column " + column
                                 + " of type " + tableMetadata.getColumn(rc.getIdentifiers().get(0))
                                 .getType().asJavaClass()
                                 + " does not accept " + t.getTermClass()
@@ -403,22 +409,23 @@ public class SelectStatement extends MetaStatement {
                             break;
                     }
                     if (!supported) {
-                        result.setErrorMessage("Operand " + rc.getOperator() + " not supported for column " + column + ".");
+                        result= QueryResult.CreateFailQueryResult("Operand " + rc.getOperator() + " not supported for" +
+                                " column " + column + ".");
                     }
                 }
             }else {
-                    result.setErrorMessage("Column " + column + " not found in table " + tablename);
+                    result= QueryResult.CreateFailQueryResult("Column " + column + " not found in table " + tableName);
             }
 
-            }else if(MetaRelation.TYPE_IN == relation.getType()){
+            }else if(Relation.TYPE_IN == relation.getType()){
                 //TODO: Check IN relation
-                result.setErrorMessage("IN clause not supported.");
-            }else if(MetaRelation.TYPE_TOKEN == relation.getType()){
+                result= QueryResult.CreateFailQueryResult("IN clause not supported.");
+            }else if(Relation.TYPE_TOKEN == relation.getType()){
                 //TODO: Check IN relation
-                result.setErrorMessage("TOKEN function not supported.");
-            }else if(MetaRelation.TYPE_BETWEEN == relation.getType()){
+                result= QueryResult.CreateFailQueryResult("TOKEN function not supported.");
+            }else if(Relation.TYPE_BETWEEN == relation.getType()){
                 //TODO: Check IN relation
-                result.setErrorMessage("BETWEEN clause not supported.");
+                result= QueryResult.CreateFailQueryResult("BETWEEN clause not supported.");
             }
         }
 
@@ -429,10 +436,10 @@ public class SelectStatement extends MetaStatement {
      * Validate that the columns specified in the select are valid by checking
      * that the selection columns exists in the table.
      * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateSelectionColumns(TableMetadata tableMetadata) {
-        MetaResult result = new MetaResult();
+    private Result validateSelectionColumns(TableMetadata tableMetadata) {
+        Result result = QueryResult.CreateSuccessQueryResult();
 
         //Iterate through the selection columns. If the user specified count(*) skip
         if(selectionClause.getType() == SelectionClause.TYPE_SELECTION){
@@ -444,10 +451,11 @@ public class SelectStatement extends MetaStatement {
                     if(selector.getSelector().getType() == SelectorMeta.TYPE_IDENT){
                         SelectorIdentifier si = SelectorIdentifier.class.cast(selector.getSelector());
                         if(tableMetadata.getColumn(si.getColumnName()) == null){
-                            result.setErrorMessage("Column " + si.getColumnName() + " does not exists in table " + tableMetadata.getName());
+                            result= QueryResult.CreateFailQueryResult("Column " + si.getColumnName() + " does not " +
+                                    "exists in table " + tableMetadata.getName());
                         }
                     }else{
-                        result.setErrorMessage("Functions on selected fields not supported.");
+                        result= QueryResult.CreateFailQueryResult("Functions on selected fields not supported.");
                     }
                 }
             }
@@ -460,10 +468,10 @@ public class SelectStatement extends MetaStatement {
      * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
      *                 the required information.
      * @param targetKeyspace The target keyspace where the query will be executed.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
-        MetaResult result = new MetaResult();
+    private Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
+        Result result = QueryResult.CreateSuccessQueryResult();
         //Get the effective keyspace based on the user specification during the create
         //sentence, or taking the keyspace in use in the user session.
         String effectiveKeyspace = targetKeyspace;
@@ -473,15 +481,15 @@ public class SelectStatement extends MetaStatement {
 
         //Check that the keyspace and table exists.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
+            result= QueryResult.CreateFailQueryResult("Target keyspace missing or no keyspace has been selected.");
         }else{
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
             if(ksMetadata == null){
-                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
+                result= QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
             }else {
-                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
+                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
                 if (tableMetadata == null) {
-                    result.setErrorMessage("Table " + tablename + " does not exists.");
+                    result= QueryResult.CreateFailQueryResult("Table " + tableName + " does not exists.");
                 }
             }
 
@@ -506,8 +514,8 @@ public class SelectStatement extends MetaStatement {
             StringBuilder sb = new StringBuilder("'{query : ");
 
             //Iterate throughout the relations of the where clause looking for MATCH.
-            for (MetaRelation relation : where) {
-                if (MetaRelation.TYPE_COMPARE == relation.getType()
+            for (Relation relation : where) {
+                if (Relation.TYPE_COMPARE == relation.getType()
                         && relation.getOperator().equalsIgnoreCase("MATCH")) {
                     RelationCompare rc = RelationCompare.class.cast(relation);
                     String column = rc.getIdentifiers().get(0);
@@ -622,189 +630,7 @@ public class SelectStatement extends MetaStatement {
         //System.out.println(sb.toString());
         return sb.toString();
     }
-    
-    // TODO: Pull this method out of this class and move it to SH 
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        ColumnDefinitions colDefs = resultSet.getColumnDefinitions();
-//        int nCols = colDefs.size();
-//        List<Row> rows = resultSet.all();
-//        if(rows.isEmpty()){
-//            return "Empty"+System.getProperty("line.separator");
-//        }
-//        ArrayList<ArrayList<String>> table = new ArrayList<>();
-//        HashMap<Integer, Integer> lenghts = new HashMap<>(); 
-//        int nColumn = 0;
-//        int extraSpace = 2;
-//        for(Definition def: colDefs){
-//            lenghts.put(nColumn, def.getName().length()+extraSpace);
-//            nColumn++;
-//        }        
-//        
-//        if((lenghts.get(0)-extraSpace) < (rows.size()+" rows").length()){
-//            lenghts.put(0, (rows.size()+" rows").length()+extraSpace);
-//        }
-//        
-//        for(Row row: rows){
-//            ArrayList<String> currentRow = new ArrayList<>();
-//            for(int nCol=0; nCol<nCols; nCol++){
-//                String cell = "null";
-//                com.datastax.driver.core.DataType cellType = colDefs.getType(nCol);  
-//                if((cellType == com.datastax.driver.core.DataType.varchar()) || (cellType == com.datastax.driver.core.DataType.text())){
-//                    cell = row.getString(nCol);
-//                } else if (cellType == com.datastax.driver.core.DataType.cint()){
-//                    cell = Integer.toString(row.getInt(nCol));
-//                } else if (cellType == com.datastax.driver.core.DataType.uuid() || cellType == com.datastax.driver.core.DataType.timeuuid()){
-//                    UUID uuid = row.getUUID(nCol);
-//                    if(uuid!=null){
-//                        cell = uuid.toString();
-//                    }
-//                } else if (cellType == com.datastax.driver.core.DataType.bigint()){
-//                    //BigInteger bi = row.getVarint(nCol);
-//                    //cell = bi.toString();
-//                    ByteBuffer bb = row.getBytesUnsafe(nCol);
-//                    IntBuffer intbb = bb.asIntBuffer();
-//                    int tmpInt = 0;
-//                    while(intbb.remaining() > 0){
-//                        tmpInt = intbb.get();
-//                        //System.out.println(tmpInt);
-//                    }
-//                    //int tmp = bb.asIntBuffer().get(bb.remaining()-1);
-//                    cell = Integer.toString(tmpInt);
-//                } else if (cellType == com.datastax.driver.core.DataType.timestamp()){
-//                    Date date = row.getDate(nCol);
-//                    if (date != null){
-//                        SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss.SSS");
-//                        cell = sdf.format(date); 
-//                    }
-//                }
-//                // TODO: add all data types
-//                currentRow.add(cell);
-//                if((cell != null) && ((lenghts.get(nCol)-extraSpace) < cell.length())){
-//                    lenghts.put(nCol, cell.length()+extraSpace);
-//                }
-//                /*if(lenghts.containsKey(nCol)){
-//                    if(lenghts.get(nCol) < cell.length()){
-//                        lenghts.put(nCol, cell.length());
-//                    }
-//                } else {
-//                    lenghts.put(nCol, cell.length());
-//                }*/                
-//            }
-//            table.add(currentRow);
-//        }        
-//        
-//        // ADD ENDING ROW
-//        ArrayList<String> currentRow = new ArrayList<>();
-//        for(int nCol=0; nCol<nCols; nCol++){
-//            char[] chars = new char[lenghts.get(nCol)];
-//            Arrays.fill(chars, '-');
-//            currentRow.add(new String(chars));
-//        }
-//        table.add(currentRow);
-//        table.add(currentRow);
-//        
-//        // ADD STARTING ROW
-//        table.add(0, currentRow);
-//        
-//        // ADD SEPARATING ROW
-//        table.add(1, currentRow);
-//        
-//        // ADD HEADER ROW
-//        currentRow = new ArrayList<>();
-//        for(int nCol=0; nCol<nCols; nCol++){
-//            currentRow.add(colDefs.getName(nCol));
-//        }
-//        table.add(1, currentRow);        
-//        
-//        // ADD INFO ROW
-//        currentRow = new ArrayList<>();
-//        if(rows.size() != 1){
-//            currentRow.add(rows.size()+" rows");        
-//        } else {
-//            currentRow.add("1 row");
-//        }
-//        for(int nCol=1; nCol<nCols; nCol++){
-//            currentRow.add(" ");
-//        }
-//        table.add(table.size()-1, currentRow);
-//        
-//          
-//        /*for(Definition definition: resultSet.getColumnDefinitions().asList()){
-//            sb.append("\033[4m").append(definition.getName()).append("\033[0m");
-//            //sb.append(": ").append(definition.getType().getName().toString()).append(" | ");
-//        }*/
-//        //sb.append(System.getProperty("line.separator"));
-//        /*Properties props = System.getProperties();
-//        for(String propKey: props.stringPropertyNames()){
-//            System.out.println(propKey+": "+props.getProperty(propKey));
-//        }*/
-//        /*for(Row row: rows){
-//            sb.append("\t").append(row.toString()).append(System.getProperty("line.separator"));
-//        }*/
-//        StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
-//        sb.append(System.getProperty("line.separator"));
-//        int nRow = 0;
-//        for(ArrayList<String> tableRow: table){
-//            if((nRow == 0) || (nRow == 2) || (nRow == (table.size()-3)) || (nRow == (table.size()-1))){
-//                sb.append(" ").append("+");
-//            } else {
-//                sb.append(" ").append("|");
-//            }
-//            int nCol = 0;
-//            StringUtils.leftPad(query, nCol);
-//            for(String cell: tableRow){
-//                if(cell == null){
-//                    cell = "null";
-//                }
-//                if((colDefs.getType(nCol) != com.datastax.driver.core.DataType.cint()) && (colDefs.getType(nCol) != com.datastax.driver.core.DataType.bigint())){
-//                    cell = StringUtils.rightPad(cell, lenghts.get(nCol)-1);
-//                    cell = StringUtils.leftPad(cell, lenghts.get(nCol));                         
-//                } else {
-//                    cell = StringUtils.leftPad(cell, lenghts.get(nCol)-1);
-//                    cell = StringUtils.rightPad(cell, lenghts.get(nCol));
-//                }    
-//                if(nRow == 1){
-//                    sb.append("\033[33;1m").append(cell).append("\033[0m");
-//                } else {
-//                    sb.append(cell);                    
-//                }
-//
-//                if((nRow == 0) || (nRow == (table.size()-3)) || (nRow == (table.size()-1))){
-//                    /*
-//                    if((nCol < (tableRow.size()-1)) && (nCol > 0)){
-//                        sb.append("-");
-//                    }  else {
-//                        sb.append("+");
-//                    }
-//                    */
-//                    if(nCol == (tableRow.size()-1)){
-//                        sb.append("+");
-//                    } else {
-//                        sb.append("-");
-//                    }
-//                } else if(nRow == 2) {
-//                    //if(nCol < (tableRow.size()-1)){
-//                        sb.append("+");
-//                    //} else {
-//                    //    sb.append("|");
-//                    //}
-//                } else if(nRow == (table.size()-2)){
-//                    if(nCol > tableRow.size()-2){
-//                        sb.append("|");
-//                    } else {
-//                        sb.append(" ");
-//                    } 
-//                } else {
-//                    sb.append("|");
-//                }
-//                nCol++;
-//            }
-//            sb.append(System.getProperty("line.separator"));      
-//            nRow++;
-//        }
-//        return sb.toString();
-//    }
+
     
     @Override
     public Statement getDriverStatement() {                
@@ -851,9 +677,9 @@ public class SelectStatement extends MetaStatement {
         Select sel;
         
         if(this.keyspaceInc){
-            sel = builder.from(this.keyspace, this.tablename);
+            sel = builder.from(this.keyspace, this.tableName);
         } else {
-            sel = builder.from(this.tablename);
+            sel = builder.from(this.tableName);
         }
         
         if(this.limitInc){
@@ -861,9 +687,9 @@ public class SelectStatement extends MetaStatement {
         }                
         
         if(this.orderInc){
-            Ordering[] orderings = new Ordering[order.size()];
+            com.datastax.driver.core.querybuilder.Ordering[] orderings = new com.datastax.driver.core.querybuilder.Ordering[order.size()];
             int nOrdering = 0;
-            for(MetaOrdering metaOrdering: this.order){
+            for(com.stratio.meta.core.structures.Ordering metaOrdering: this.order){
                 if(metaOrdering.isDirInc() && (metaOrdering.getOrderDir() == OrderDirection.DESC)){
                     orderings[nOrdering] = QueryBuilder.desc(metaOrdering.getIdentifier());
                 } else {
@@ -880,15 +706,13 @@ public class SelectStatement extends MetaStatement {
         
         Where whereStmt = null;
         if(this.whereInc){
-
             String luceneWhere = getLuceneWhereClause(_metadata, _tableMetadata);
-
-            for(MetaRelation metaRelation: this.where){
+            for(Relation metaRelation: this.where){
                 Clause clause = null;
                 String name;
                 Object value;                
                 switch(metaRelation.getType()){
-                    case MetaRelation.TYPE_COMPARE:
+                    case Relation.TYPE_COMPARE:
                         RelationCompare relCompare = (RelationCompare) metaRelation;
                         name = relCompare.getIdentifiers().get(0);
                         value = relCompare.getTerms().get(0).getTermValue();
@@ -918,7 +742,7 @@ public class SelectStatement extends MetaStatement {
                                 throw new UnsupportedOperationException("'"+relCompare.getOperator()+"' operator not supported by C*");
                         }                                  
                         break;
-                    case MetaRelation.TYPE_IN:
+                    case Relation.TYPE_IN:
                         RelationIn relIn = (RelationIn) metaRelation;
                         ArrayList<Term> terms = relIn.getTerms();                        
                         Object[] values = new Object[relIn.numberOfTerms()];                        
@@ -937,7 +761,7 @@ public class SelectStatement extends MetaStatement {
                         }
                         clause = QueryBuilder.in(relIn.getIdentifiers().get(0), values);
                         break;
-                    case MetaRelation.TYPE_TOKEN:
+                    case Relation.TYPE_TOKEN:
                         RelationToken relToken = (RelationToken) metaRelation;
                         ArrayList<String> names = relToken.getIdentifiers();
                         if(!relToken.isRighSideTokenType()){
@@ -964,35 +788,7 @@ public class SelectStatement extends MetaStatement {
                             }
                         } else {
                             return null;
-                            /*
-                            List<Term> termsOfToken = relToken.getTerms();
-                            List<String> termsOfTokenStr = new ArrayList<>();
-                            for(Term term: termsOfToken){
-                                termsOfTokenStr.add(term.toString());
-                            }
-                            String[] namesStr = MetaUtils.fromStringListToArray(names);
-                            String[] termsStr = MetaUtils.fromStringListToArray(termsOfTokenStr);
-                            switch(relToken.getOperator()){
-                                case "=":
-                                    clause = QueryBuilder.eq(QueryBuilder.token(namesStr), QueryBuilder.token(termsStr));
-                                    break;
-                                case ">":
-                                    clause = QueryBuilder.gt(QueryBuilder.token(namesStr), QueryBuilder.token(termsStr));
-                                    break;
-                                case ">=":
-                                    clause = QueryBuilder.gte(QueryBuilder.token(namesStr), QueryBuilder.token(termsStr));
-                                    break;
-                                case "<":
-                                    clause = QueryBuilder.lt(QueryBuilder.token(namesStr), QueryBuilder.token(termsStr));
-                                    break;
-                                case "<=":
-                                    clause = QueryBuilder.lte(QueryBuilder.token(namesStr), QueryBuilder.token(termsStr));
-                                    break;
-                                default:
-                                    clause = null;
-                                    throw new UnsupportedOperationException("'"+relToken.getOperator()+"' operator not supported by C*");
-                            }*/  
-                        } 
+                        }
                         break;
                 }
                 if(clause != null){
@@ -1019,14 +815,14 @@ public class SelectStatement extends MetaStatement {
     public Tree getPlan() {
         Tree steps = new Tree();
         if(joinInc){
-            SelectStatement firstSelect = new SelectStatement(tablename);
+            SelectStatement firstSelect = new SelectStatement(tableName);
             SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
             SelectStatement joinSelect = new SelectStatement("");
             // ADD FIELDS OF THE JOIN
             Map<String, String> fields = this.join.getFields();
             for(String key: fields.keySet()){                
                 String value = fields.get(key);
-                if(key.split("\\.")[0].trim().equalsIgnoreCase(tablename)){
+                if(key.split("\\.")[0].trim().equalsIgnoreCase(tableName)){
                     firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(key.split("\\.")[1])));
                     secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(value.split("\\.")[1])));
                 } else {
@@ -1040,7 +836,7 @@ public class SelectStatement extends MetaStatement {
             for (SelectionSelector ss: selection.getSelectors()){
                 SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
 
-                if(si.getTablename().equalsIgnoreCase(tablename)){
+                if(si.getTablename().equalsIgnoreCase(tableName)){
                     firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
                 } else {
                     secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
@@ -1053,42 +849,6 @@ public class SelectStatement extends MetaStatement {
             steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
             steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
             steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
-            ////////////////////////////////////////////////////////////////////
-//            String tableFrom = tablename;
-//            String tableJoin = this.join.getTablename();
-//            selectionList = (SelectionList) this.selectionClause;
-//            selection = (SelectionSelectors) selectionList.getSelection();
-//            StringBuilder sb1 = new StringBuilder("SELECT ");
-//            StringBuilder sb2 = new StringBuilder("SELECT ");
-//            for (SelectionSelector ss: selection.getSelectors()){
-//                SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-//                System.out.println(si.getIdentifier());
-//                if(si.getTablename().equalsIgnoreCase(tableFrom)){
-//                    sb1.append(si.getColumnName()).append(", ");
-//                } else {
-//                    sb2.append(si.getColumnName()).append(", ");
-//                }
-//            }
-//            fields = this.join.getFields();
-//            for(String key: fields.keySet()){
-//                String value = fields.get(key);
-//                if(key.split("\\.")[0].trim().equalsIgnoreCase(tableFrom.trim())){
-//                    sb1.append(key.split("\\.")[1]).append(", ");
-//                    sb2.append(value.split("\\.")[1]).append(", ");
-//                } else {
-//                    sb1.append(value.split("\\.")[1]).append(", ");
-//                    sb2.append(key.split("\\.")[1]).append(", ");
-//                }                
-//            }
-//            sb1.deleteCharAt(sb1.length()-2);
-//            sb2.deleteCharAt(sb2.length()-2);
-//            sb1.append("FROM ").append(tableFrom).append(";");
-//            sb2.append("FROM ").append(tableJoin).append(";");
-//            steps.add(new MetaStep(MetaPath.CASSANDRA, "ResultSet rFrom = CassandraClient.executeQuery(\""+sb1.toString()+"\")"));            
-//            steps.add(new MetaStep(MetaPath.CASSANDRA, "ResultSet rJoin = CassandraClient.executeQuery(\""+sb2.toString()+"\")"));           
-//            // JOIN IN DEEP
-//            steps.add(new MetaStep(MetaPath.DEEP, "Deep.select.join(rFrom, rJoin, metaStatement)"));
-            ////////////////////////////////////////////////////////////////////
         }
         return steps;
     }

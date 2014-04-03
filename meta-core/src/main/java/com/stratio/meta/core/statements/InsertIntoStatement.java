@@ -26,14 +26,14 @@ import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Using;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.ValueCell;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +52,7 @@ public class InsertIntoStatement extends MetaStatement {
     
     private boolean keyspaceInc = false;
     private String keyspace;
-    private String tablename;    
+    private String tableName;
     private List<String> ids;
     private SelectStatement selectStatement;
     private List<ValueCell> cellValues;
@@ -61,7 +61,7 @@ public class InsertIntoStatement extends MetaStatement {
     private List<Option> options;
     private int typeValues;
 
-    public InsertIntoStatement(String tablename, List<String> ids, 
+    public InsertIntoStatement(String tableName, List<String> ids,
                                SelectStatement selectStatement, 
                                List<ValueCell> cellValues, 
                                boolean ifNotExists,
@@ -69,13 +69,13 @@ public class InsertIntoStatement extends MetaStatement {
                                List<Option> options, 
                                int typeValues) {
         this.command = false;
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+        if(this.tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
         }
-        this.tablename = tablename;
+        this.tableName = tableName;
         this.ids = ids;
         this.selectStatement = selectStatement;
         this.cellValues = cellValues;
@@ -85,34 +85,34 @@ public class InsertIntoStatement extends MetaStatement {
         this.typeValues = typeValues;
     }   
 
-    public InsertIntoStatement(String tablename, 
+    public InsertIntoStatement(String tableName,
                                List<String> ids, 
                                SelectStatement selectStatement, 
                                boolean ifNotExists, 
                                List<Option> options) {
-        this(tablename, ids, selectStatement, null, ifNotExists, true, options, 1);
+        this(tableName, ids, selectStatement, null, ifNotExists, true, options, 1);
     }        
 
-    public InsertIntoStatement(String tablename, 
+    public InsertIntoStatement(String tableName,
                                List<String> ids, 
                                List<ValueCell> cellValues, 
                                boolean ifNotExists, 
                                List<Option> options) {
-        this(tablename, ids, null, cellValues, ifNotExists, true, options, 2);
+        this(tableName, ids, null, cellValues, ifNotExists, true, options, 2);
     }        
     
-    public InsertIntoStatement(String tablename, 
+    public InsertIntoStatement(String tableName,
                                List<String> ids, 
                                SelectStatement selectStatement, 
                                boolean ifNotExists) {
-        this(tablename, ids, selectStatement, null, ifNotExists, false, null, 1);
+        this(tableName, ids, selectStatement, null, ifNotExists, false, null, 1);
     }        
 
-    public InsertIntoStatement(String tablename, 
+    public InsertIntoStatement(String tableName,
                                List<String> ids, 
                                List<ValueCell> cellValues, 
                                boolean ifNotExists) {
-        this(tablename, ids, null, cellValues, ifNotExists, false, null, 2);
+        this(tableName, ids, null, cellValues, ifNotExists, false, null, 2);
     }
 
     public boolean isKeyspaceInc() {
@@ -159,18 +159,18 @@ public class InsertIntoStatement extends MetaStatement {
         ids.remove(id);
     }
 
-    public String getTablename() {
-        return tablename;
+    public String getTableName() {
+        return tableName;
     }
 
-    public void setTablename(String tablename) {
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
+    public void setTableName(String tableName) {
+        if(tableName.contains(".")){
+            String[] ksAndTablename = tableName.split("\\.");
             keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+            tableName = ksAndTablename[1];
             keyspaceInc = true;
         }
-        this.tablename = tablename;
+        this.tableName = tableName;
     }
 
     public SelectStatement getSelectStatement() {
@@ -243,7 +243,7 @@ public class InsertIntoStatement extends MetaStatement {
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
-        sb.append(tablename).append(" (");
+        sb.append(tableName).append(" (");
         sb.append(ParserUtils.stringList(ids, ", ")).append(") ");
         if(typeValues == TYPE_SELECT_CLAUSE){
            sb.append(selectStatement.toString());
@@ -264,8 +264,8 @@ public class InsertIntoStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = new MetaResult();
+    public Result validate(MetadataManager metadata, String targetKeyspace) {
+        Result result = QueryResult.CreateSuccessQueryResult();
         //Check that the table exists.
 
         String effectiveKeyspace = targetKeyspace;
@@ -276,22 +276,22 @@ public class InsertIntoStatement extends MetaStatement {
         TableMetadata tableMetadata = null;
         //Check that the keyspace exists, and that the table does not exits.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
+            result = QueryResult.CreateFailQueryResult("Target keyspace missing or no keyspace has been selected.");
         }else{
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
             if(ksMetadata == null){
-                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
+                result = QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
             }else {
-                tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
+                tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
                 if (tableMetadata != null && !ifNotExists) {
-                    result.setErrorMessage("Table " + tablename + " already exists.");
+                    result = QueryResult.CreateFailQueryResult("Table " + tableName + " already exists.");
                 }
             }
         }
 
         if(tableMetadata !=  null){
             if(typeValues == TYPE_SELECT_CLAUSE){
-                result.setErrorMessage("INSERT INTO with subqueries not supported.");
+                result = QueryResult.CreateFailQueryResult("INSERT INTO with subqueries not supported.");
             }else {
                 result = validateColumns(tableMetadata);
             }
@@ -304,15 +304,15 @@ public class InsertIntoStatement extends MetaStatement {
      * Check that the specified columns exist on the target table and that
      * the semantics of the assigned values match.
      * @param tableMetadata Table metadata associated with the target table.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateColumns(TableMetadata tableMetadata) {
-        MetaResult result = new MetaResult();
+    private Result validateColumns(TableMetadata tableMetadata) {
+        Result result = QueryResult.CreateSuccessQueryResult();
 
         //Validate target column names
         for(String c : ids){
             if(c.toLowerCase().startsWith("stratio")){
-                result.setErrorMessage("Cannot insert data into column " + c + " reserved for internal use.");
+                result = QueryResult.CreateFailQueryResult("Cannot insert data into column " + c + " reserved for internal use.");
             }
         }
         if(!result.hasError()) {
@@ -323,17 +323,17 @@ public class InsertIntoStatement extends MetaStatement {
                     if (cm != null) {
                         Term t = Term.class.cast(cellValues.get(index));
                         if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
-                            result.setErrorMessage("Column " + ids.get(index)
+                            result = QueryResult.CreateFailQueryResult("Column " + ids.get(index)
                                     + " of type " + cm.getType().asJavaClass()
                                     + " does not accept " + t.getTermClass()
                                     + " values (" + cellValues.get(index) + ")");
                         }
                     } else {
-                        result.setErrorMessage("Column " + ids.get(index) + " not found in " + tableMetadata.getName());
+                        result = QueryResult.CreateFailQueryResult("Column " + ids.get(index) + " not found in " + tableMetadata.getName());
                     }
                 }
             } else {
-                result.setErrorMessage("Number of columns and values does not match.");
+                result = QueryResult.CreateFailQueryResult("Number of columns and values does not match.");
             }
         }
         return result;
@@ -350,7 +350,7 @@ public class InsertIntoStatement extends MetaStatement {
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
-        sb.append(tablename).append(" (");
+        sb.append(tableName).append(" (");
         sb.append(ParserUtils.stringList(ids, ", "));
         sb.append(") ");        
         if(typeValues == TYPE_SELECT_CLAUSE){
@@ -370,13 +370,7 @@ public class InsertIntoStatement extends MetaStatement {
         }
         return sb.append(";").toString();
     }
-    
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        //return "\t"+resultSet.toString();
-//        return "Executed successfully"+System.getProperty("line.separator");
-//    }
-    
+
     @Override
     public Statement getDriverStatement() {
         if(this.typeValues == TYPE_SELECT_CLAUSE){
@@ -385,9 +379,9 @@ public class InsertIntoStatement extends MetaStatement {
             
         Insert insertStmt;
         if(this.keyspaceInc){
-            insertStmt = QueryBuilder.insertInto(this.keyspace, this.tablename);            
+            insertStmt = QueryBuilder.insertInto(this.keyspace, this.tableName);
         } else {
-            insertStmt = QueryBuilder.insertInto(this.tablename);
+            insertStmt = QueryBuilder.insertInto(this.tableName);
         }
         Iterator iter = this.cellValues.iterator();
         for(String id: this.ids){

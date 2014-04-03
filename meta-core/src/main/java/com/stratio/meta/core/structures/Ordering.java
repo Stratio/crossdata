@@ -19,19 +19,19 @@
 
 package com.stratio.meta.core.structures;
 
-public class MetaOrdering {
+public class Ordering {
     
     private String identifier;
     private boolean dirInc;
     private OrderDirection orderDir;
 
-    public MetaOrdering(String identifier, boolean dirInc, OrderDirection orderDir) {
+    public Ordering(String identifier, boolean dirInc, OrderDirection orderDir) {
         this.identifier = identifier;
         this.dirInc = dirInc;
         this.orderDir = orderDir;
     }
     
-    public MetaOrdering(String identifier) {
+    public Ordering(String identifier) {
         this(identifier, false, null);
     }
 

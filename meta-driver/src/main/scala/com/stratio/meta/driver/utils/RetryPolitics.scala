@@ -20,19 +20,19 @@
 package com.stratio.meta.driver.utils
 
 import akka.actor.ActorRef
-import com.stratio.meta.common.result.MetaResult
+import com.stratio.meta.common.result.{ConnectResult, Result}
 import scala.concurrent.Await
 import akka.pattern.ask
 import akka.util.Timeout
 
 class RetryPolitics(retryTimes:Int,waitTime: Timeout) {
-  def askRetry(remoteActor:ActorRef, message:AnyRef, retry:Int = 0): MetaResult={
+  def askRetry(remoteActor:ActorRef, message:AnyRef, retry:Int = 0): Result={
     if(retry==retryTimes){
-      MetaResult.createMetaResultError("Not found answer")
+      ConnectResult.CreateFailConnectResult("Not found answer")
     } else {
       try {
         val future = remoteActor.ask(message)(waitTime)
-        Await.result(future.mapTo[MetaResult], waitTime.duration*2)
+        Await.result(future.mapTo[Result], waitTime.duration*2)
       } catch {
 
         case ex: Exception => askRetry(remoteActor, message, retry + 1)

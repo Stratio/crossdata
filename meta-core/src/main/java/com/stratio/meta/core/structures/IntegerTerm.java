@@ -1,8 +1,5 @@
 package com.stratio.meta.core.structures;
 
-/**
- * Created by dhiguero on 25/03/14.
- */
 public class IntegerTerm extends Term{
 
     private final Integer _number;

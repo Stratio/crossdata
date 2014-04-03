@@ -323,7 +323,7 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
         boolean condsInc = false;
         ArrayList<Option> options = new ArrayList<>();
         ArrayList<Assignment> assignments = new ArrayList<>();
-        ArrayList<MetaRelation> whereclauses = new ArrayList<>();
+        ArrayList<Relation> whereclauses = new ArrayList<>();
         Map<String, Term> conditions = new HashMap<>();
     }:
     T_UPDATE tablename=getTableID
@@ -657,7 +657,7 @@ getIndexType returns [String indexType]:
     {$indexType=$idxType.text;}
 ;
 
-getMetaProperties returns [ArrayList<MetaProperty> props]
+getMetaProperties returns [ArrayList<Property> props]
     @init{
         $props = new ArrayList<>();
     }:
@@ -665,7 +665,7 @@ getMetaProperties returns [ArrayList<MetaProperty> props]
     (T_AND newProp=getMetaProperty {$props.add(newProp);})*
 ;
 
-getMetaProperty returns [MetaProperty mp]
+getMetaProperty returns [Property mp]
     @init{
         BooleanProperty boolProp = new BooleanProperty(true);
     }:
@@ -682,16 +682,16 @@ getDataType returns [String dataType]:
     {$dataType = $ident1.text.concat(ident2==null?"":"<"+$ident2.text).concat(ident3==null?"":","+$ident3.text).concat(ident2==null?"":">");}
 ;
 
-getOrdering returns [ArrayList<MetaOrdering> order]
+getOrdering returns [ArrayList<Ordering> order]
     @init{
         order = new ArrayList<>();
-        MetaOrdering ordering;
+        Ordering ordering;
     }:
-    ident1=T_IDENT {ordering = new MetaOrdering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
-    (T_COMMA identN=T_IDENT {ordering = new MetaOrdering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+    ident1=T_IDENT {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
+    (T_COMMA identN=T_IDENT {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
 ;
 
-getWhereClauses returns [ArrayList<MetaRelation> clauses]
+getWhereClauses returns [ArrayList<Relation> clauses]
     @init{
         clauses = new ArrayList<>();
     }:
@@ -838,7 +838,7 @@ getIntSetOrList returns [IdentIntOrLiteral iiol]:
     | T_START_SBRACKET set=getSet T_END_SBRACKET { $iiol = new SetLiteral(set);}
 ;
 
-getRelation returns [MetaRelation mrel]:
+getRelation returns [Relation mrel]:
     T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}
                             | T_TOKEN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationToken(listIds, operator, terms);})
     | ident=T_IDENT ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, termR);}

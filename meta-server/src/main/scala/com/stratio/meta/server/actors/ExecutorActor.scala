@@ -35,7 +35,6 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker with Actor
       log.info("Init Executor Task")
       val timer=initTimer()
       val result = executor.executeQuery(query).getResult
-      println(result)
       sender ! result
       finishTimer(timer)
       log.info("Finish Executor Task")

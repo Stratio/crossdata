@@ -21,7 +21,7 @@ package com.stratio.meta.core.structures;
 
 import java.util.ArrayList;
 
-public abstract class MetaRelation {
+public abstract class Relation {
     
     public static final int TYPE_COMPARE = 1;
     public static final int TYPE_IN = 2;
