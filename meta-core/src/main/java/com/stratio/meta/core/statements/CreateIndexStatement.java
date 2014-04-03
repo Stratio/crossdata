@@ -252,10 +252,8 @@ public class CreateIndexStatement extends MetaStatement {
         if(IndexType.LUCENE.equals(_type)){
             index_name = "stratio_lucene_" + _name;
         }
-        List<CustomIndexMetadata> allIndex = new ArrayList<>();
-        for(List<CustomIndexMetadata> l : metadata.getColumnIndexes(tableMetadata).values()){
-            allIndex.addAll(l);
-        }
+        List<CustomIndexMetadata> allIndex = metadata.getTableIndex(tableMetadata);
+
         boolean found = false;
         for(int index = 0; index < allIndex.size() && !found; index++){
             if(allIndex.get(index).getIndexName().equalsIgnoreCase(index_name)){

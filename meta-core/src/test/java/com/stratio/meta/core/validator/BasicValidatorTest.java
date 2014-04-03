@@ -57,4 +57,5 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
         assertNotNull(result, "Sentence validation not supported - " + methodName);
         assertTrue(result.hasError(), "Cannot validate sentence - " + methodName + ": " + result.getErrorMessage());
     }
+
 }

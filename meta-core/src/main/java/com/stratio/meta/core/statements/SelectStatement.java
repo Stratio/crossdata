@@ -23,37 +23,22 @@ import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.querybuilder.*;
+import com.datastax.driver.core.querybuilder.Clause;
+import com.datastax.driver.core.querybuilder.Ordering;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Where;
 import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.GroupBy;
-import com.stratio.meta.core.structures.InnerJoin;
-import com.stratio.meta.core.structures.MetaOrdering;
-import com.stratio.meta.core.structures.MetaRelation;
-import com.stratio.meta.core.structures.OrderDirection;
-import com.stratio.meta.core.structures.RelationCompare;
-import com.stratio.meta.core.structures.RelationIn;
-import com.stratio.meta.core.structures.RelationToken;
-import com.stratio.meta.core.structures.Selection;
-import com.stratio.meta.core.structures.SelectionClause;
-import com.stratio.meta.core.structures.SelectionList;
-import com.stratio.meta.core.structures.SelectionSelector;
-import com.stratio.meta.core.structures.SelectionSelectors;
-import com.stratio.meta.core.structures.SelectorFunction;
-import com.stratio.meta.core.structures.SelectorIdentifier;
-import com.stratio.meta.core.structures.SelectorMeta;
-import com.stratio.meta.core.structures.Term;
-import com.stratio.meta.core.structures.WindowSelect;
-import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.ParserUtils;
-import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta.core.structures.*;
+import com.stratio.meta.core.utils.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 
 public class SelectStatement extends MetaStatement {
@@ -76,6 +61,10 @@ public class SelectStatement extends MetaStatement {
     private int limit;
     private boolean disableAnalytics;
     private boolean needsAllowFiltering = false;
+
+    //TODO: We should probably remove this an pass it as parameters.
+    private MetadataManager _metadata = null;
+    private TableMetadata _tableMetadata = null;
 
     public SelectStatement(SelectionClause selectionClause, String tablename, 
                            boolean windowInc, WindowSelect window, 
@@ -333,6 +322,9 @@ public class SelectStatement extends MetaStatement {
 
         if(!result.hasError()){
             tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
+            //Cache Metadata manager and table metadata for the getDriverStatement.
+            _metadata = metadata;
+            _tableMetadata = tableMetadata;
             result = validateSelectionColumns(tableMetadata);
         }
         if(!result.hasError() && whereInc){
@@ -341,6 +333,10 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
+    /**
+     * Validate the supported select options.
+     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     */
     private MetaResult validateOptions(){
         MetaResult result = new MetaResult();
         if(windowInc){
@@ -359,12 +355,13 @@ public class SelectStatement extends MetaStatement {
 
 
     /**
-     * Validate that the columns specified in the select are valid by checking
-     * that the selection columns exists in the table.
+     * Validate that the where clause is valid by checking that columns exists on the target
+     * table and that the comparisons are semantically valid.
      * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
      * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
      */
     private MetaResult validateWhereClause(TableMetadata tableMetadata){
+        //TODO: Check that the MATCH operator is only used in Lucene mapped columns.
         MetaResult result = new MetaResult();
         for(MetaRelation relation : where){
             if(MetaRelation.TYPE_COMPARE == relation.getType()) {
@@ -489,6 +486,84 @@ public class SelectStatement extends MetaStatement {
             }
 
         }
+        return result;
+    }
+
+    /**
+     * Get the processed where clause to be sent to Cassandra related with lucene
+     * indexes.
+     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+     *                 the required information.
+     * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
+     * @return A String representation of the clause.
+     */
+    public String getLuceneWhereClause(MetadataManager metadata, TableMetadata tableMetadata){
+        String result = null;
+        CustomIndexMetadata luceneIndex = metadata.getLuceneIndex(tableMetadata);
+
+        if(luceneIndex != null) {
+
+            StringBuilder sb = new StringBuilder("'{query : ");
+
+            //Iterate throughout the relations of the where clause looking for MATCH.
+            for (MetaRelation relation : where) {
+                if (MetaRelation.TYPE_COMPARE == relation.getType()
+                        && relation.getOperator().equalsIgnoreCase("MATCH")) {
+                    RelationCompare rc = RelationCompare.class.cast(relation);
+                    String column = rc.getIdentifiers().get(0);
+                    String value = rc.getIdentifiers().get(1);
+                    System.out.println(">>>> column: " + column + " value: " + value);
+                    //Generate query for column
+                    String queryType = "match";
+                    if(value.contains("*") || value.contains("?")){
+                        queryType = "wildcard";
+                    }
+                    sb.append("{ type : \"" + queryType);
+                    System.out.println(">>>>>> " + sb.toString());
+
+                }
+            }
+        }
+        return result;
+    }
+
+
+    /**
+     * Process a query pattern to determine the type of Lucene query.
+     * The supported types of queries are:
+     * <li>
+     *     <ul>Wildcard: The query contains * or ?.</ul>
+     *     <ul>Fuzzy: The query ends with ~ and a number.</ul>
+     *     <ul>Regex: The query contains [ or ].</ul>
+     *     <ul>Match: Default query, supporting escaped symbols: *, ?, [, ], etc.</ul>
+     * </li>
+     * @param query The user query.
+     * @return An array with the type of query and the processed query.
+     */
+    protected String [] processLuceneQueryType(String query){
+        String [] result = {"", ""};
+        //Pattern escaped = Pattern.compile("\\\\\\*|\\\\\\?");
+        Pattern escaped = Pattern.compile(".*\\\\\\*.*|.*\\\\\\?.*|.*\\\\\\[.*|.*\\\\\\].*");
+        Pattern wildcard = Pattern.compile(".*\\*.*|.*\\?.*");
+        Pattern regex = Pattern.compile(".*\\].*|.*\\[.*");
+        Pattern fuzzy = Pattern.compile(".*~\\d+");
+        if(escaped.matcher(query).matches()){
+            result[0] = "match";
+            result[1] = query.replace("\\*", "*").replace("\\?", "?").replace("\\]", "]").replace("\\[", "[");
+        }else if(regex.matcher(query).matches()) {
+            result[0] = "regex";
+            result[1] = query;
+        }else if(fuzzy.matcher(query).matches()) {
+            result[0] = "fuzzy";
+            result[1] = query;
+        }else if(wildcard.matcher(query).matches()) {
+            result[0] = "wildcard";
+            result[1] = query;
+        }else{
+            result[0] = "match";
+            result[1] = query;
+        }
+
         return result;
     }
 
@@ -805,6 +880,9 @@ public class SelectStatement extends MetaStatement {
         
         Where whereStmt = null;
         if(this.whereInc){
+
+            String luceneWhere = getLuceneWhereClause(_metadata, _tableMetadata);
+
             for(MetaRelation metaRelation: this.where){
                 Clause clause = null;
                 String name;

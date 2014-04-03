@@ -61,7 +61,6 @@ public class Executor {
                 metaQuery.setResult(new CommandResult(System.getProperty("line.separator")+descrStmt.execute(session)));
             } else {
                 metaQuery.setErrorMessage("Not supported yet.");
-                return metaQuery;
             }
             return metaQuery;
         }

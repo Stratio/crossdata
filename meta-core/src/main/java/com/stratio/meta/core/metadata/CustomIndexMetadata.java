@@ -22,6 +22,9 @@ package com.stratio.meta.core.metadata;
 import com.datastax.driver.core.ColumnMetadata;
 import com.stratio.meta.core.structures.IndexType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CustomIndexMetadata {
 
     /**
@@ -30,9 +33,14 @@ public class CustomIndexMetadata {
     private final IndexType _type;
 
     /**
-     * Index target column.
+     * Cassandra column linked with the index.
      */
     private final ColumnMetadata _column;
+
+    /**
+     * List of columns indexed.
+     */
+    private final List<String> _indexedColumns;
 
     /**
      * The name of the index.
@@ -44,17 +52,34 @@ public class CustomIndexMetadata {
      */
     private String _options = null;
 
-
+    /**
+     * Class constructor for default Cassandra indexes.
+     * @param columnMetadata The column metadata associated with the index.
+     * @param indexName The name of the index.
+     * @param type Type of index.
+     * @param indexedColumn The name of the column indexed by the current index.
+     */
+    public CustomIndexMetadata(ColumnMetadata columnMetadata, String indexName, IndexType type, String indexedColumn){
+        _type = type;
+        _column = columnMetadata;
+        _indexName = indexName;
+        _indexedColumns = new ArrayList<>();
+        _indexedColumns.add(indexedColumn);
+    }
 
     /**
      * Class constructor for default Cassandra indexes.
      * @param columnMetadata The column metadata associated with the index.
+     * @param indexName The name of the index.
      * @param type Type of index.
+     * @param indexedColumns The names of the columns indexed by the current index.
      */
-    public CustomIndexMetadata(ColumnMetadata columnMetadata, String indexName, IndexType type){
+    public CustomIndexMetadata(ColumnMetadata columnMetadata, String indexName, IndexType type, List<String> indexedColumns){
         _type = type;
         _column = columnMetadata;
         _indexName = indexName;
+        _indexedColumns = new ArrayList<>();
+        _indexedColumns.addAll(indexedColumns);
     }
 
     /**
@@ -88,4 +113,14 @@ public class CustomIndexMetadata {
     public String getIndexOptions(){
         return _options;
     }
+
+    /**
+     * Get the list of indexed columns.
+     * @return The list of indexed columns.
+     */
+    public List<String> getIndexedColumns(){
+        return _indexedColumns;
+    }
+
+
 }
