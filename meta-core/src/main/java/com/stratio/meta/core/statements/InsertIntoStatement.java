@@ -32,16 +32,12 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.ValueCell;
-import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
 import org.apache.log4j.Logger;
+
+import java.util.*;
 
 public class InsertIntoStatement extends MetaStatement {
 
@@ -69,13 +65,13 @@ public class InsertIntoStatement extends MetaStatement {
                                List<Option> options, 
                                int typeValues) {
         this.command = false;
-        if(this.tableName.contains(".")){
+        this.tableName = tableName;
+        if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
             keyspace = ksAndTableName[0];
             this.tableName = ksAndTableName[1];
             keyspaceInc = true;
         }
-        this.tableName = tableName;
         this.ids = ids;
         this.selectStatement = selectStatement;
         this.cellValues = cellValues;

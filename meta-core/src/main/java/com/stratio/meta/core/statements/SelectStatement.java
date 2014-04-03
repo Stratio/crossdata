@@ -70,7 +70,7 @@ public class SelectStatement extends MetaStatement {
     private MetadataManager _metadata = null;
     private TableMetadata _tableMetadata = null;
 
-    public SelectStatement(SelectionClause selectionClause, String tablename,
+    public SelectStatement(SelectionClause selectionClause, String tableName,
                            boolean windowInc, WindowSelect window, 
                            boolean joinInc, InnerJoin join, 
                            boolean whereInc, ArrayList<Relation> where,
@@ -79,14 +79,14 @@ public class SelectStatement extends MetaStatement {
                            boolean limitInc, int limit, 
                            boolean disableAnalytics) {
         this.command = false;
-        this.selectionClause = selectionClause;        
+        this.selectionClause = selectionClause;
+        this.tableName = tableName;
         if(this.tableName.contains(".")){
             String[] ksAndTablename = this.tableName.split("\\.");
             keyspace = ksAndTablename[0];
             this.tableName = ksAndTablename[1];
             keyspaceInc = true;
         }
-        this.tableName = tableName;
         this.windowInc = windowInc;
         this.window = window;
         this.joinInc = joinInc;
