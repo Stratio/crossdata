@@ -25,4 +25,9 @@ public abstract class ResultSet implements Iterable<Row> {
 
     public abstract Iterator iterator();
 
+    public abstract int size();
+
+    public boolean isEmpty(){
+        return (size() < 1);
+    }
 }

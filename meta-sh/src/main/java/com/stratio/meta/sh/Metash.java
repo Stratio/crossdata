@@ -30,20 +30,14 @@ import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
 import jline.console.ConsoleReader;
-import jline.console.history.History;
-import jline.console.history.History.Entry;
-import jline.console.history.MemoryHistory;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.Days;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.ListIterator;
 
 public class Metash {
 
@@ -86,69 +80,6 @@ public class Metash {
     private void showHelp(String inputText){
             HelpStatement h = parseHelp(inputText);
             System.out.println(_help.searchHelp(h.getType()));
-    }	                                             
-        
-    public File retrieveHistory(ConsoleReader console, SimpleDateFormat sdf) throws IOException{
-        final int DAYS_HISTORY_ENTRY_VALID = 30;
-        Date today = new Date();
-        String workingDir = System.getProperty("user.dir");
-        File dir = new File("meta-sh/src/main/resources/");
-        if(workingDir.endsWith("meta-sh")){
-            dir = new File("src/main/resources/");
-        }        
-        if(!dir.exists()){
-            dir.mkdirs();
-        }
-        File file = new File(dir.getPath()+"/history.txt");        
-        if (!file.exists()){
-            file.createNewFile();
-        }
-        //logger.info("Retrieving history from "+file.getAbsolutePath());
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        History oldHistory = new MemoryHistory();                                
-        DateTime todayDate = new DateTime(today);
-        String line;
-        String[] lineArray;
-        Date lineDate;
-        String lineStatement;
-        try{
-            while ((line = br.readLine()) != null) {
-                try {
-                    lineArray = line.split("\\|");
-                    lineDate = sdf.parse(lineArray[0]);
-                    if(Days.daysBetween(new DateTime(lineDate), todayDate).getDays()<DAYS_HISTORY_ENTRY_VALID){
-                        lineStatement = lineArray[1];
-                        oldHistory.add(lineStatement);
-                    }
-                } catch(Exception ex){
-                    logger.error("Cannot parse date", ex);
-                }
-            }
-        } catch(Exception ex){
-            logger.error("Cannot read all the history", ex);
-        }
-        console.setHistory(oldHistory);
-        logger.info("History retrieved");
-        return file;
-    }
-
-    public void saveHistory(ConsoleReader console, File file, SimpleDateFormat sdf) throws IOException{
-        if (!file.exists()) {
-            file.createNewFile();
-        }        
-        FileWriter fileWritter = new FileWriter(file, true);            
-        try (BufferedWriter bufferWritter = new BufferedWriter(fileWritter)) {
-            History history = console.getHistory();
-            ListIterator<Entry> histIter = history.entries();                                 
-            while(histIter.hasNext()){
-                Entry entry = histIter.next();          
-                bufferWritter.write(sdf.format(new Date()));
-                bufferWritter.write("|");
-                bufferWritter.write(entry.value().toString());
-                bufferWritter.newLine();
-            }
-            bufferWritter.flush();
-        }
     }
     
     /**
@@ -161,7 +92,7 @@ public class Metash {
             console.setPrompt("\033[36mmetash-sh:"+System.getProperty("user.name")+">\033[0m ");
             
             SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy");
-            File file = retrieveHistory(console, sdf);            
+            File file = ConsoleUtils.retrieveHistory(console, sdf);
             
             console.setCompletionHandler(new MetaCompletionHandler());
             console.addCompleter(new MetaCompletor());  
@@ -213,7 +144,7 @@ public class Metash {
                         System.err.println("\033[31mError:\033[0m "+exc.getMessage());
                     }
             }
-            saveHistory(console, file, sdf);  
+            ConsoleUtils.saveHistory(console, file, sdf);
             logger.info("History saved");
             metaDriver.close(); 
             logger.info("Driver connections closed");

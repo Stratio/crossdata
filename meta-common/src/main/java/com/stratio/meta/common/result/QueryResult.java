@@ -45,7 +45,6 @@ public class QueryResult extends Result {
         return new QueryResult(resultSet,false,null,true,keySpace);
     }
 
-
     public static QueryResult CreateFailQueryResult(String errorMessage){
         return new QueryResult(null,true,errorMessage,false,null);
     }

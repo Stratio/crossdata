@@ -84,7 +84,6 @@ public class Executor {
                 resultSet = session.execute(stmt.translateToCQL());
             }
 
-
             if (stmt instanceof UseStatement) {
                 UseStatement useStatement = (UseStatement) stmt;
                 queryResult = QueryResult.CreateSuccessQueryResult(transformToMetaResultSet(resultSet), useStatement.getKeyspaceName());
