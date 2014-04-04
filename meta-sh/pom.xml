@@ -33,6 +33,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<antlr.version>3.5.1</antlr.version>
 	</properties>
+
     <dependencies>
         <dependency>
             <groupId>jline</groupId>

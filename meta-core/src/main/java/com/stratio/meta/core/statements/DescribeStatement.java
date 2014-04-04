@@ -19,8 +19,10 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -126,15 +128,19 @@ public class DescribeStatement extends MetaStatement {
         MetadataManager mm = new MetadataManager(session);
         mm.loadMetadata();
         String result;
-        if(type == DescribeType.KEYSPACE){            
-            result =  mm.getKeyspaceMetadata(keyspace).exportAsString();
-            if(result == null){
-               result = "KEYSPACE "+keyspace+" was not found"; 
+        if(type == DescribeType.KEYSPACE){
+            KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(keyspace);
+            if(ksInfo == null){
+               throw new RuntimeException("KEYSPACE "+keyspace+" was not found");
+            } else {
+                result =  ksInfo.exportAsString();
             }
         } else {
-            result = mm.getTableMetadata(keyspace, tablename).exportAsString();
-            if(result == null){
-                result = "TABLE "+tablename+" was not found";
+            TableMetadata tableInfo = mm.getTableMetadata(keyspace, tablename);
+            if(tableInfo == null){
+                throw new RuntimeException("TABLE "+tablename+" was not found");
+            } else {
+                result = tableInfo.exportAsString();
             }
         }        
         return result;

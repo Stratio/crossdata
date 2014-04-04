@@ -35,9 +35,6 @@ public abstract class Result implements Serializable {
         this.currentKeyspace = currentKeyspace;
     }
 
-
-
-
     public boolean hasError() {
         return error;
     }
@@ -52,11 +49,6 @@ public abstract class Result implements Serializable {
 
     public String getCurrentKeyspace() {
         return currentKeyspace;
-    }
-
-    @Override
-    public String toString(){
-        return System.getProperty("line.separator")+errorMessage;
     }
 
 }

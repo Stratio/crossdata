@@ -20,6 +20,7 @@
 package com.stratio.meta.core.executor;
 
 import com.datastax.driver.core.*;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
@@ -47,13 +48,17 @@ public class Executor {
         MetaStatement stmt = metaQuery.getStatement();
 
         if (stmt.isCommand()) {
-            if (stmt instanceof DescribeStatement) {
-                DescribeStatement descrStmt = (DescribeStatement) stmt;
-                metaQuery.setResult(CommandResult.CreateSuccessCommandResult(System.getProperty("line.separator")
-                        + descrStmt.execute
-                        (session)));
-            } else {
-                metaQuery.setErrorMessage("Not supported yet.");
+            try {
+                if (stmt instanceof DescribeStatement) {
+                    DescribeStatement descrStmt = (DescribeStatement) stmt;
+                    metaQuery.setResult(CommandResult.CreateSuccessCommandResult(System.getProperty("line.separator")
+                            + descrStmt.execute
+                            (session)));
+                } else {
+                    metaQuery.setErrorMessage("Not supported yet.");
+                }
+            } catch(Exception ex){
+                metaQuery.setErrorMessage(ex.getMessage());
             }
             return metaQuery;
         }

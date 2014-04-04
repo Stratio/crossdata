@@ -27,7 +27,7 @@ import com.stratio.meta.common.result.Result
 import com.stratio.meta.common.ask.{Query, Connect}
 
 class BasicDriver extends DriverConfig{
-  val system = ActorSystem("MetaDriverSystem",config)
+  lazy val system = ActorSystem("MetaDriverSystem",config)
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact=> system.actorSelection(contact)).toSet
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts),"remote-client")
   lazy val proxyActor= system.actorOf(ProxyActor.props(clusterClientActor,actorName), "proxy-actor")

@@ -19,11 +19,7 @@
 
 package com.stratio.meta.common.result;
 
-import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.ResultSet;
-import com.stratio.meta.common.data.Row;
-
-import java.util.Map;
 
 public class QueryResult extends Result {
 
@@ -36,37 +32,6 @@ public class QueryResult extends Result {
     
     public ResultSet getResultSet() {
         return resultSet;
-    }
-
-
-
-    @Override
-    public String toString(){
-        StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
-        sb.append("------------------------------------------------------------------");
-        sb.append(System.getProperty("line.separator"));
-        boolean firstRow = true;
-        for(Row row: resultSet){
-            sb.append(" | ");
-            if(firstRow){
-                for(String key: row.getCells().keySet()){
-                    sb.append(key+" | ");
-                }
-                sb.append(System.getProperty("line.separator"));
-                sb.append("------------------------------------------------------------------");
-                sb.append(System.getProperty("line.separator"));
-                sb.append(" | ");
-                firstRow = false;
-            }
-            Map<String, Cell> cells = row.getCells();
-            for(String key: cells.keySet()){
-                Cell cell = cells.get(key);
-                sb.append(cell.getDatatype().cast(cell.getValue())).append(" | ");
-            }
-            sb.append(System.getProperty("line.separator"));
-        }
-        sb.append("------------------------------------------------------------------");
-        return sb.toString();
     }
 
     public static QueryResult CreateSuccessQueryResult(){
@@ -84,5 +49,5 @@ public class QueryResult extends Result {
     public static QueryResult CreateFailQueryResult(String errorMessage){
         return new QueryResult(null,true,errorMessage,false,null);
     }
-    
+
 }
