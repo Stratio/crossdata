@@ -70,6 +70,7 @@ public class MetaQuery {
     }
     
     public void setErrorMessage(String errorMsg) {
+        hasError = true;
         result=QueryResult.CreateFailQueryResult(errorMsg);
     }
     

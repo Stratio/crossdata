@@ -65,7 +65,7 @@ public class ParsingTest {
     public void testParseFails(String inputText, String methodName){
         MetaQuery mq = parser.parseStatement(inputText);
         assertNotNull(mq, "Parser should return a query");
-        assertNull(mq.getStatement(), "Null statement expected.");
+        assertNull(mq.getStatement(), "Null statement expected. Returned: " + mq.getStatement());
         assertTrue(mq.hasError(), "Parser should return and error for " + methodName);
     }
 

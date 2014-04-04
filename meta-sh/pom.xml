@@ -33,6 +33,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<antlr.version>3.5.1</antlr.version>
 	</properties>
+
     <dependencies>
         <dependency>
             <groupId>jline</groupId>
@@ -84,6 +85,11 @@
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>1.13</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code</groupId>
+            <artifactId>java-ascii-table</artifactId>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 	<build>

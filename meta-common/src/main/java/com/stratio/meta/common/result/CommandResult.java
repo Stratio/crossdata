@@ -34,12 +34,6 @@ public class CommandResult extends Result {
         return result;
     }
 
-    
-    @Override
-    public String toString(){
-        return super.toString() + System.lineSeparator() + result;
-    }
-
     public static CommandResult CreateSuccessCommandResult(String result){
         return new CommandResult(result,false,null,false,null);
     }

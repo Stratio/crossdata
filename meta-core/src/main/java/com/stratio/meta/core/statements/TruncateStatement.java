@@ -21,8 +21,6 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
-
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Truncate;
 import com.stratio.meta.common.result.QueryResult;
@@ -30,8 +28,11 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.Tree;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
 
 public class TruncateStatement extends MetaStatement {
     
@@ -41,13 +42,13 @@ public class TruncateStatement extends MetaStatement {
     
     public TruncateStatement(String ident){
         this.command = false;
+        this.ident = ident;
         if(ident.contains(".")){
             String[] ksAndTablename = ident.split("\\.");
             keyspace = ksAndTablename[0];
-            ident = ksAndTablename[1];
+            this.ident = ksAndTablename[1];
             keyspaceInc = true;
         }
-        this.ident = ident;
     }
 
     public boolean isKeyspaceInc() {

@@ -26,6 +26,7 @@ import com.stratio.meta.sh.help.HelpManager;
 import com.stratio.meta.sh.help.HelpStatement;
 import com.stratio.meta.sh.help.generated.MetaHelpLexer;
 import com.stratio.meta.sh.help.generated.MetaHelpParser;
+import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
 import jline.console.ConsoleReader;
@@ -174,6 +175,7 @@ public class Metash {
                 return;
             }
             logger.info("Driver connections established");
+            logger.info(ConsoleUtils.stringResult(connectionResult));
             
             String currentKeyspace = "";
             
@@ -185,7 +187,11 @@ public class Metash {
                         if(cmd.toLowerCase().startsWith("help")){
                             showHelp(cmd);
                         } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
+
+                            long queryStart = System.currentTimeMillis();
                             Result metaResult = metaDriver.executeQuery(user, currentKeyspace, cmd);
+                            long queryEnd = System.currentTimeMillis();
+
                             if(metaResult.isKsChanged()){
                                 currentKeyspace = metaResult.getCurrentKeyspace();
                                 if(currentKeyspace.isEmpty()){
@@ -199,7 +205,9 @@ public class Metash {
                                 continue;
                             }
 
-                            System.out.println("\033[32mResult:\033[0m "+metaResult.toString());
+                            System.out.println("\033[32mResult:\033[0m "+ ConsoleUtils.stringResult(metaResult));
+                            System.out.println("Response time: "+((queryEnd-queryStart)/1000)+" seconds");
+                            System.out.println("Display time: "+((System.currentTimeMillis()-queryEnd)/1000)+" seconds");
                         }
                     } catch(Exception exc){
                         System.err.println("\033[31mError:\033[0m "+exc.getMessage());
