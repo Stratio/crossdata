@@ -23,9 +23,9 @@ import com.typesafe.config.Config
 import scala.collection.JavaConversions._
 
 object MetaServerConfig{
-  val META_SERVER_HOSTS_KEY="server.cluster.hosts"
-  val META_SERVER_CLUSTER_NAME_KEY="server.cluster.name"
-  val META_SERVER_ACTOR_NAME_KEY="server.actor.name"
+  val META_SERVER_HOSTS_KEY="config.cluster.hosts"
+  val META_SERVER_CLUSTER_NAME_KEY="config.cluster.name"
+  val META_SERVER_ACTOR_NAME_KEY="config.cluster.actor"
 }
 
 trait MetaServerConfig {

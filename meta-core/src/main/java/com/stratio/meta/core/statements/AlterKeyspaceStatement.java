@@ -20,18 +20,16 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class AlterKeyspaceStatement extends MetaStatement {
@@ -67,18 +65,12 @@ public class AlterKeyspaceStatement extends MetaStatement {
         StringBuilder sb = new StringBuilder("ALTER KEYSPACE ");
         sb.append(keyspaceName).append(" WITH ");
         sb.append(ParserUtils.stringMap(properties, " = ", " AND "));
-        /*Set keySet = properties.keySet();
-        for (Iterator it = keySet.iterator(); it.hasNext();) {
-            String key = (String) it.next();
-            ValueProperty vp = properties.get(key);
-            sb.append(key).append(": ").append(vp.toString());
-        }*/
         return sb.toString();
     }
 
     /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata, String targetKeyspace) {
         return null;
     }
 
@@ -91,16 +83,11 @@ public class AlterKeyspaceStatement extends MetaStatement {
     public String translateToCQL() {
         return this.toString();
     }
-    
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
+
     
     @Override
     public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
+        return null;
     }
     
     @Override

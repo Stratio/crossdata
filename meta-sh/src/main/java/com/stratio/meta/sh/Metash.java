@@ -19,13 +19,14 @@
 
 package com.stratio.meta.sh;
 
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
 import com.stratio.meta.sh.help.HelpContent;
 import com.stratio.meta.sh.help.HelpManager;
 import com.stratio.meta.sh.help.HelpStatement;
 import com.stratio.meta.sh.help.generated.MetaHelpLexer;
 import com.stratio.meta.sh.help.generated.MetaHelpParser;
+import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
 import jline.console.ConsoleReader;
@@ -168,24 +169,29 @@ public class Metash {
             //MetaDriver metaDriver = new MetaDriver();
             BasicDriver metaDriver = new BasicDriver();
             
-            MetaResult connectionResult = metaDriver.connect(user);
+            Result connectionResult = metaDriver.connect(user);
             if(connectionResult.hasError()){
                 logger.error(connectionResult.getErrorMessage());
                 return;
             }
             logger.info("Driver connections established");
+            logger.info(ConsoleUtils.stringResult(connectionResult));
             
             String currentKeyspace = "";
             
             String cmd = "";
             while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
                 cmd = console.readLine();
-                logger.info("\033[34;1mCommand:\033[0m " + cmd);
+                System.out.println("\033[34;1mCommand:\033[0m " + cmd);
                     try {
                         if(cmd.toLowerCase().startsWith("help")){
                             showHelp(cmd);
                         } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
-                            MetaResult metaResult = metaDriver.executeQuery(user, currentKeyspace, cmd);
+
+                            long queryStart = System.currentTimeMillis();
+                            Result metaResult = metaDriver.executeQuery(user, currentKeyspace, cmd);
+                            long queryEnd = System.currentTimeMillis();
+
                             if(metaResult.isKsChanged()){
                                 currentKeyspace = metaResult.getCurrentKeyspace();
                                 if(currentKeyspace.isEmpty()){
@@ -195,15 +201,16 @@ public class Metash {
                                 }
                             }
                             if(metaResult.hasError()){
-                                logger.error("\033[31mError:\033[0m "+metaResult.getErrorMessage());
+                                System.err.println("\033[31mError:\033[0m "+metaResult.getErrorMessage());
                                 continue;
                             }
 
-                            String resultStr = metaResult.toString();
-                            logger.info("\033[32mResult:\033[0m "+resultStr);
+                            System.out.println("\033[32mResult:\033[0m "+ ConsoleUtils.stringResult(metaResult));
+                            System.out.println("Response time: "+((queryEnd-queryStart)/1000)+" seconds");
+                            System.out.println("Display time: "+((System.currentTimeMillis()-queryEnd)/1000)+" seconds");
                         }
                     } catch(Exception exc){
-                        logger.error("\033[31mError:\033[0m "+exc.getMessage());
+                        System.err.println("\033[31mError:\033[0m "+exc.getMessage());
                     }
             }
             saveHistory(console, file, sdf);  

@@ -20,17 +20,13 @@
 package com.stratio.meta.core.grammar;
 
 import com.stratio.meta.core.parser.Parser;
-import com.stratio.meta.core.statements.CreateIndexStatement;
 import com.stratio.meta.core.statements.MetaStatement;
-import com.stratio.meta.core.structures.ValueProperty;
-import com.stratio.meta.core.utils.AntlrResult;
 import com.stratio.meta.core.utils.MetaQuery;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.testng.Assert.*;
 
@@ -69,7 +65,7 @@ public class ParsingTest {
     public void testParseFails(String inputText, String methodName){
         MetaQuery mq = parser.parseStatement(inputText);
         assertNotNull(mq, "Parser should return a query");
-        assertNull(mq.getStatement(), "Null statement expected.");
+        assertNull(mq.getStatement(), "Null statement expected. Returned: " + mq.getStatement());
         assertTrue(mq.hasError(), "Parser should return and error for " + methodName);
     }
 
@@ -176,24 +172,6 @@ public class ParsingTest {
     }
 
     @Test
-    public void createIndex_lucene_value() {
-        String inputText = "CREATE LUCENE INDEX demo_banks ON demo.banks (lucene) USING org.apache.cassandra.db.index.stratio.RowIndex"
-                + " WITH OPTIONS schema = '{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\", "
-                + "fields: {day: {type: \"date\", pattern: \"yyyy-MM-dd\"}, key: {type:\"uuid\"}}}';";
-        MetaStatement st = parser.parseStatement(inputText).getStatement();
-        //inputText = inputText.replace("'", "");
-                /*
-                diff_match_patch dmp = new diff_match_patch();
-                LinkedList<diff_match_patch.Diff> diffs = dmp.diff_main(inputText, st.toString()+";");
-                for(diff_match_patch.Diff diff: diffs){
-                    System.out.println("DIFF: "+diff.text);
-                }
-                */
-        CreateIndexStatement cis = (CreateIndexStatement) st;
-        assertTrue(inputText.equalsIgnoreCase(st.toString()+";"), "Cannot parse createIndex_lucene_value");
-    }
-
-    @Test
     public void update_tablename() {
         String inputText = "UPDATE tablename USING prop1 = 342 SET ident1 = term1, ident2 = term2"
                 + " WHERE ident3 IN (term3, term4) IF field1 = 25;";
@@ -248,57 +226,26 @@ public class ParsingTest {
     }
 
     @Test
-    public void createIndex_default_options() {
-        String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1=val1 AND opt2=val2;";
-        int numberOptions = 2;
-        MetaStatement st = parser.parseStatement(inputText).getStatement();
-        assertNotNull(st, "Cannot parse default index with options clause");
-        CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
-        assertEquals("index1", cist.getName(), "Cannot parse default index with options clause - name");
-        assertEquals(numberOptions, cist.getOptions().size(), "Cannot parse default index with options clause - options size");
-        HashMap<ValueProperty, ValueProperty> options = cist.getOptions();
-        for(int i = 1; i < numberOptions; i++){
-            assertTrue(options.containsKey("opt"+i), "Cannot parse default index with options clause - options opt"+i);
-            assertEquals("val"+i, options.get("opt"+i).toString(),
-                    "Cannot parse default index with options clause - options opt"+i);
-        }
-    }
-
-    @Test
     public void createIndex_lucene() {
         String inputText = "CREATE LUCENE INDEX demo_banks ON banks"
-                + "(day, entry_id, latitude, longitude, name, address, tags)"
+                + " (day, entry_id, latitude, longitude, name, address, tags)"
                 + " USING \'org.apache.cassandra.db.index.stratio.RowIndex\'"
-                + " WITH OPTIONS lucene_options = { \'schema\' : "
-                + " \'{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\","
+                + " WITH OPTIONS = {\'schema\': "
+                + "\'{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\","
                 + "fields:"
                 + "{day:{type:\"date\", pattern:\"yyyy-MM-dd\"},"
                 + " entry_id:{type:\"uuid\"}, latitude:{type:\"double\"},"
                 + " longitude:{type:\"double\"}, name:{type:\"text\"},"
                 + " address:{type:\"string\"}, tags:{type:\"boolean\"}}}\'};";
-        MetaStatement st = parser.parseStatement(inputText).getStatement();
-        assertNotNull(st, "Cannot parse default index with options clause");
-        CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
+        testRegularStatement(inputText, "createIndex_lucene");
     }
 
     @Test
     public void createIndex_default_all() {
         String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 "
                 + "ON table1 (field1, field2) USING com.company.Index.class "
-                + "WITH OPTIONS opt1=val1 AND opt2=val2;";
-        MetaStatement st = parser.parseStatement(inputText).getStatement();
-        assertNotNull(st, "Cannot parse default index with options clause");
-        CreateIndexStatement cist = CreateIndexStatement.class.cast(st);
-
-        String retrieved = cist.toString().substring(0, cist.toString().indexOf("OPTIONS"));
-        String expected = inputText.substring(0, inputText.indexOf("OPTIONS"));
-        assertEquals(expected, retrieved, "Cannot parse default index with using clause");
-
-        assertTrue(cist.getOptions().size() > 0, "Cannot parse default index with options clause - options size");
-        HashMap<ValueProperty, ValueProperty> options = cist.getOptions();
-
-        assertTrue(options.containsKey("opt1"), "Cannot parse default index with options clause - options opt1");
-        assertTrue(options.containsKey("opt2"), "Cannot parse default index with options clause - options opt1");
+                + "WITH OPTIONS = {'key1': 'val1'};";
+        testRegularStatement(inputText, "createIndex_default_all");
     }
 
     //DROP INDEX

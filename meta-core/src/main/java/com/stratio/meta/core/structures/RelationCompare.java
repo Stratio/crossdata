@@ -23,7 +23,7 @@ import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.ArrayList;
 
-public class RelationCompare extends MetaRelation {
+public class RelationCompare extends Relation {
 
     public RelationCompare(String identifier) {
         this.terms = new ArrayList<>();

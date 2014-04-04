@@ -23,7 +23,7 @@ import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.ArrayList;
 
-public class RelationToken extends MetaRelation {
+public class RelationToken extends Relation {
     
     private boolean righSideTokenType = false;
     

@@ -23,7 +23,7 @@ import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.ArrayList;
 
-public class RelationIn extends MetaRelation {    
+public class RelationIn extends Relation {
 
     public RelationIn(String identifier) {
         this.terms = new ArrayList<>();

@@ -20,15 +20,11 @@
 package com.stratio.meta.core.metadata;
 
 import com.datastax.driver.core.*;
-
-
 import com.stratio.meta.core.structures.IndexType;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Metadata Manager of the META server that maintains and up-to-date version of
@@ -152,46 +148,52 @@ public class MetadataManager {
         return result;
     }
 
+
     /**
-     * Return the list of indexes available for each column in a specific table.
-     * @param tableMetadata Metadata associated with the target table.
-     * @return The list of available indexes.
+     * Get the Lucene index associated with a table.
+     * @param tableMetadata The metadata associated with the target table.
+     * @return A {@link com.stratio.meta.core.metadata.CustomIndexMetadata} or null if not found.
      */
-    public Map<String, List<CustomIndexMetadata>> getColumnIndexes(TableMetadata tableMetadata){
-        Map<String, List<CustomIndexMetadata>> result = new HashMap<>();
-        for(ColumnMetadata column : tableMetadata.getColumns()){
-            if(column.getIndex() != null){
-                if(_logger.isTraceEnabled()){
+    public CustomIndexMetadata getLuceneIndex(TableMetadata tableMetadata){
+        List<CustomIndexMetadata> indexes = getTableIndex(tableMetadata);
+        CustomIndexMetadata luceneIndex = null;
+        for(int index = 0; index < indexes.size() && luceneIndex == null; index++){
+            if(IndexType.LUCENE.equals(indexes.get(index).getIndexType())){
+                luceneIndex = indexes.get(index);
+            }
+        }
+        return luceneIndex;
+    }
+
+    /**
+     * Get the list of indexes associated with a table.
+     * @param tableMetadata The metadata associated with the target table.
+     * @return A list of {@link com.stratio.meta.core.metadata.CustomIndexMetadata} with the indexes.
+     */
+    public List<CustomIndexMetadata> getTableIndex(TableMetadata tableMetadata){
+        List<CustomIndexMetadata> result = new ArrayList<>();
+
+        //Iterate through the table columns.
+        for(ColumnMetadata column : tableMetadata.getColumns()) {
+            if (column.getIndex() != null) {
+                if (_logger.isTraceEnabled()) {
                     _logger.trace("Index found in column " + column.getName());
                 }
 
                 CustomIndexMetadata toAdd = null;
-                if(!column.getIndex().isCustomIndex()){
+                if (!column.getIndex().isCustomIndex()) {
                     //A Cassandra index is associated with the column.
-                    List<CustomIndexMetadata> indexes = result.get(column.getName());
-                    if(indexes == null){
-                        indexes = new ArrayList<>();
-                        result.put(column.getName(), indexes);
-                    }
-                    indexes.add(new CustomIndexMetadata(column, column.getIndex().getName(), IndexType.DEFAULT));
-
-                }else if (column.getIndex().isCustomIndex()
-                        && column.getIndex().getIndexClassName().compareTo("org.apache.cassandra.db.index.stratio.RowIndex") == 0){
+                    toAdd = new CustomIndexMetadata(column, column.getIndex().getName(), IndexType.DEFAULT, column.getName());
+                } else if (column.getIndex().isCustomIndex()
+                        && column.getIndex().getIndexClassName().compareTo("org.apache.cassandra.db.index.stratio.RowIndex") == 0) {
                     //A Lucene custom index is found that may index several columns.
-                    Map<String, List<CustomIndexMetadata>> indexedColumns = _luceneHelper.getIndexedColumns(column, column.getIndex().getName());
-                    for(String indexedColumn : indexedColumns.keySet()){
-                        List<CustomIndexMetadata> existingIndexes = result.get(indexedColumn);
-                        if(existingIndexes == null){
-                            existingIndexes = new ArrayList<>();
-                            result.put(indexedColumn, existingIndexes);
-                        }
-                        existingIndexes.addAll(indexedColumns.get(indexedColumn));
-                    }
-                }else{
+                    toAdd = _luceneHelper.getLuceneIndex(column, column.getIndex().getName());
+                } else {
                     _logger.error("Index " + column.getIndex().getName()
                             + " on " + column.getName()
                             + " with class " + column.getIndex().getIndexClassName() + " not supported.");
                 }
+                result.add(toAdd);
             }
         }
 

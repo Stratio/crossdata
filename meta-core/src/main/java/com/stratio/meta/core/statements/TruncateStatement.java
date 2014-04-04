@@ -21,18 +21,18 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
-
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Truncate;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
 
 public class TruncateStatement extends MetaStatement {
     
@@ -42,13 +42,13 @@ public class TruncateStatement extends MetaStatement {
     
     public TruncateStatement(String ident){
         this.command = false;
+        this.ident = ident;
         if(ident.contains(".")){
             String[] ksAndTablename = ident.split("\\.");
             keyspace = ksAndTablename[0];
-            ident = ksAndTablename[1];
+            this.ident = ksAndTablename[1];
             keyspaceInc = true;
         }
-        this.ident = ident;
     }
 
     public boolean isKeyspaceInc() {
@@ -93,8 +93,8 @@ public class TruncateStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = new MetaResult();
+    public Result validate(MetadataManager metadata, String targetKeyspace) {
+        Result result = QueryResult.CreateSuccessQueryResult();
 
         String effectiveKeyspace = targetKeyspace;
         if(keyspaceInc){
@@ -103,15 +103,15 @@ public class TruncateStatement extends MetaStatement {
 
         //Check that the keyspace and table exists.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
+            result= QueryResult.CreateFailQueryResult("Target keyspace missing or no keyspace has been selected.");
         }else{
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
             if(ksMetadata == null){
-                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
+                result= QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
             }else {
                 TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, ident);
                 if (tableMetadata == null) {
-                    result.setErrorMessage("Table " + ident + " does not exists.");
+                    result= QueryResult.CreateFailQueryResult("Table " + ident + " does not exists.");
                 }
             }
         }
@@ -138,12 +138,7 @@ public class TruncateStatement extends MetaStatement {
         }
         return truncateQuery;
     }
-    
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "Executed successfully"+System.getProperty("line.separator");
-//    }    
-    
+
     @Override
     public DeepResult executeDeep() {
         return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));

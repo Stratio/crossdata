@@ -19,19 +19,17 @@
 
 package com.stratio.meta.core.metadata;
 
-import java.util.List;
-import java.util.Map;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
-
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
+import com.stratio.meta.core.structures.IndexType;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.util.List;
+
 import static org.testng.Assert.*;
-import static org.testng.Assert.assertEquals;
 
 public class MetadataManagerTest extends BasicCoreCassandraTest {
 
@@ -154,26 +152,25 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
 
         String keyspace = "demo";
         String table = "users";
-        String [] columns = {
-                "age", "bool", "gender", //Two indexes, one on Cassandra and other in Lucene
-                "email", "name", "phrase"};
+        //Columns with one index: email, name, phrase
+        //Columns with two indexes: age, bool, gender
+
+        int numberIndexes = 4;
+        int numberIndexedColumnsLucene = 6;
+        int numberIndexedColumnsDefault = 1;
 
         TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);
         assertNotNull(metadata, "Cannot retrieve table metadata");
         assertEquals(table, metadata.getName(), "Retrieved table name does not match");
 
-        Map<String, List<CustomIndexMetadata>> indexes = _metadataManager.getColumnIndexes(metadata);
-        //System.out.println("Returned: " + indexes.size() + " -> " + indexes.keySet().toString());
-        assertEquals(columns.length, indexes.size(), "Invalid number of indexes");
+        List<CustomIndexMetadata> indexes = _metadataManager.getTableIndex(metadata);
+        assertEquals(indexes.size(), numberIndexes, "Invalid number of indexes");
 
-        for(String column : columns){
-            assertTrue(indexes.containsKey(column), "Column does not have an index");
-            if(column.equals("age") || column.equals("bool") || column.equals("gender")){
-                assertEquals(indexes.get(column).size(), 2,
-                        "Invalid number of index associated with column " + column);
+        for(CustomIndexMetadata cim : indexes){
+            if(IndexType.LUCENE.equals(cim.getIndexType())){
+                assertEquals(cim.getIndexedColumns().size(), numberIndexedColumnsLucene, "Invalid number of mapped columns using Lucene index");
             }else{
-                assertEquals(indexes.get(column).size(), 1,
-                        "Invalid number of index associated with column" + column);
+                assertEquals(cim.getIndexedColumns().size(), numberIndexedColumnsDefault, "Invalid number of mapped columns using default index");
             }
         }
 

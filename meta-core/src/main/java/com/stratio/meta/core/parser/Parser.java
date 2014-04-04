@@ -42,7 +42,7 @@ public class Parser {
         MetaQuery metaQuery = new MetaQuery(inputText);
         metaQuery.setStatus(QueryStatus.PARSED);
         MetaStatement resultStatement;
-        //System.out.println("Parsing: {"+inputText+"}");
+        System.out.println("Parsing: {"+inputText+"}");
         ANTLRStringStream input = new ANTLRStringStream(inputText);
         MetaLexer lexer = new MetaLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -51,14 +51,14 @@ public class Parser {
         try {
             resultStatement = parser.query();
             foundErrors = parser.getFoundErrors();
-            //System.out.println("ResultStmt: " + resultStatement + " foundErrors: =" + foundErrors.toString() + "=");
+            //System.out.println("ResultStmt: " + resultStatement + " foundErrors: =" + foundErrors + "=");
         } catch (Exception e) {
             logger.error("Cannot parse statement", e);
             if(foundErrors == null){                                    
                 foundErrors = new ErrorsHelper();
             }
             if(foundErrors.isEmpty()){
-                foundErrors.addError(new AntlrError("Unkown parser error", e.getMessage()));
+                foundErrors.addError(new AntlrError("Unknown parser error", e.getMessage()));
             }
             metaQuery.setErrorMessage(foundErrors.toString());
             return metaQuery;

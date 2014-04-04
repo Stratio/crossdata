@@ -19,7 +19,7 @@
 
 package com.stratio.meta.core.validator;
 
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.grammar.ParsingTest;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -46,15 +46,16 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
 
     public void validateOk(String inputText, String methodName){
         MetaStatement stmt = _pt.testRegularStatement(inputText, methodName);
-        MetaResult result = stmt.validate(_metadataManager, "");
+        Result result = stmt.validate(_metadataManager, "");
         assertNotNull(result, "Sentence validation not supported - " + methodName);
         assertFalse(result.hasError(), "Cannot validate sentence - " + methodName + ": " + result.getErrorMessage());
     }
 
     public void validateFail(String inputText, String methodName){
         MetaStatement stmt = _pt.testRegularStatement(inputText, methodName);
-        MetaResult result = stmt.validate(_metadataManager, "");
+        Result result = stmt.validate(_metadataManager, "");
         assertNotNull(result, "Sentence validation not supported - " + methodName);
         assertTrue(result.hasError(), "Cannot validate sentence - " + methodName + ": " + result.getErrorMessage());
     }
+
 }

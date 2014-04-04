@@ -20,7 +20,8 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.Tree;
@@ -53,14 +54,14 @@ public class UseStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = new MetaResult();
+    public Result validate(MetadataManager metadata, String targetKeyspace) {
+        Result result = QueryResult.CreateSuccessQueryResult();
         if(keyspaceName != null && keyspaceName.length() > 0){
             if(!metadata.getKeyspacesNames().contains(keyspaceName)){
-                result.setErrorMessage("Keyspace " + keyspaceName + " does not exists.");
+                result= QueryResult.CreateFailQueryResult("Keyspace " + keyspaceName + " does not exists.");
             }
         }else{
-            result.setErrorMessage("Missing keyspace name.");
+            result= QueryResult.CreateFailQueryResult("Missing keyspace name.");
         }
         return result;
     }
@@ -75,15 +76,9 @@ public class UseStatement extends MetaStatement {
         return this.toString();
     }
 
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
-
     @Override
     public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
+        return null;
     }
 
     @Override

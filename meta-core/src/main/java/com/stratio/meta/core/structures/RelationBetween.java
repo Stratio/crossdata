@@ -23,7 +23,7 @@ import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.ArrayList;
 
-public class RelationBetween extends MetaRelation {
+public class RelationBetween extends Relation {
 
     public RelationBetween(String identifier) {
         this.terms = new ArrayList<>();

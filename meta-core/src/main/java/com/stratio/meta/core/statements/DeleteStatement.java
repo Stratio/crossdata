@@ -27,7 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.datastax.driver.core.TableMetadata;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.*;
 import com.stratio.meta.core.utils.ParserUtils;
@@ -47,7 +48,7 @@ public class DeleteStatement extends MetaStatement {
     private boolean keyspaceInc = false;
     private String keyspace;
     private String _tablename = null;
-    private List<MetaRelation> _whereClauses;
+    private List<Relation> _whereClauses;
 
     public DeleteStatement(){
         this.command = false;
@@ -79,11 +80,11 @@ public class DeleteStatement extends MetaStatement {
         this.keyspace = keyspace;
     }
 
-    public List<MetaRelation> getWhereClauses() {
+    public List<Relation> getWhereClauses() {
         return _whereClauses;
     }
 
-    public void setWhereClauses(List<MetaRelation> _whereClauses) {
+    public void setWhereClauses(List<Relation> _whereClauses) {
         this._whereClauses = _whereClauses;
     }        
 
@@ -101,7 +102,7 @@ public class DeleteStatement extends MetaStatement {
         _tablename = tablename;
     }
 
-    public void addRelation(MetaRelation relation){
+    public void addRelation(Relation relation){
             _whereClauses.add(relation);
     }
 
@@ -125,8 +126,8 @@ public class DeleteStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = validateKeyspaceAndTable(metadata, targetKeyspace);
+    public Result validate(MetadataManager metadata, String targetKeyspace) {
+        Result result = validateKeyspaceAndTable(metadata, targetKeyspace);
 
         String effectiveKeyspace = targetKeyspace;
         if(keyspaceInc){
@@ -150,18 +151,18 @@ public class DeleteStatement extends MetaStatement {
      * Validate that the columns specified in the select are valid by checking
      * that the selection columns exists in the table.
      * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateWhereClause(TableMetadata tableMetadata){
-        MetaResult result = new MetaResult();
-        for(MetaRelation relation : _whereClauses){
-            if(MetaRelation.TYPE_COMPARE == relation.getType()) {
+    private Result validateWhereClause(TableMetadata tableMetadata){
+        Result result = QueryResult.CreateSuccessQueryResult();
+        for(Relation relation : _whereClauses){
+            if(Relation.TYPE_COMPARE == relation.getType()) {
                 //Check comparison, =, >, <, etc.
                 RelationCompare rc = RelationCompare.class.cast(relation);
                 String column = rc.getIdentifiers().get(0);
                 //System.out.println("column: " + column);
                 if (tableMetadata.getColumn(column) == null) {
-                    result.setErrorMessage("Column " + column + " does not exists in table " + tableMetadata.getName());
+                    result= QueryResult.CreateFailQueryResult("Column " + column + " does not exists in table " + tableMetadata.getName());
                 }
 
                 Term t = Term.class.cast(rc.getTerms().get(0));
@@ -169,7 +170,7 @@ public class DeleteStatement extends MetaStatement {
                 if (cm != null){
                     if (!tableMetadata.getColumn(column)
                             .getType().asJavaClass().equals(t.getTermClass())) {
-                        result.setErrorMessage("Column " + column
+                        result= QueryResult.CreateFailQueryResult("Column " + column
                                 + " of type " + tableMetadata.getColumn(rc.getIdentifiers().get(0))
                                 .getType().asJavaClass()
                                 + " does not accept " + t.getTermClass()
@@ -194,22 +195,23 @@ public class DeleteStatement extends MetaStatement {
                                 break;
                         }
                         if (!supported) {
-                            result.setErrorMessage("Operand " + rc.getOperator() + " not supported for column " + column + ".");
+                            result= QueryResult.CreateFailQueryResult("Operand " + rc.getOperator() + " not supported" +
+                                    " for column " + column + ".");
                         }
                     }
                 }else {
-                    result.setErrorMessage("Column " + column + " not found in table " + _tablename);
+                    result= QueryResult.CreateFailQueryResult("Column " + column + " not found in table " + _tablename);
                 }
 
-            }else if(MetaRelation.TYPE_IN == relation.getType()){
+            }else if(Relation.TYPE_IN == relation.getType()){
                 //TODO: Check IN relation
-                result.setErrorMessage("IN clause not supported.");
-            }else if(MetaRelation.TYPE_TOKEN == relation.getType()){
+                result= QueryResult.CreateFailQueryResult("IN clause not supported.");
+            }else if(Relation.TYPE_TOKEN == relation.getType()){
                 //TODO: Check IN relation
-                result.setErrorMessage("TOKEN function not supported.");
-            }else if(MetaRelation.TYPE_BETWEEN == relation.getType()){
+                result= QueryResult.CreateFailQueryResult("TOKEN function not supported.");
+            }else if(Relation.TYPE_BETWEEN == relation.getType()){
                 //TODO: Check IN relation
-                result.setErrorMessage("BETWEEN clause not supported.");
+                result= QueryResult.CreateFailQueryResult("BETWEEN clause not supported.");
             }
         }
 
@@ -220,16 +222,18 @@ public class DeleteStatement extends MetaStatement {
      * Validate that the columns specified in the select are valid by checking
      * that the selection columns exists in the table.
      * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateSelectionColumns(TableMetadata tableMetadata) {
-        MetaResult result = new MetaResult();
+    private Result validateSelectionColumns(TableMetadata tableMetadata) {
+        Result result = QueryResult.CreateSuccessQueryResult();
 
         for(String c : _targetColumn){
             if(c.toLowerCase().startsWith("stratio")){
-                result.setErrorMessage("Internal column " + c + " cannot be part of the WHERE clause.");
+                result= QueryResult.CreateFailQueryResult("Internal column " + c + " cannot be part of the WHERE " +
+                        "clause.");
             }else if(tableMetadata.getColumn(c) == null){
-                result.setErrorMessage("Column " + c + " does not exists in table " + tableMetadata.getName());
+                result= QueryResult.CreateFailQueryResult("Column " + c + " does not exists in table " +
+                        tableMetadata.getName());
             }
         }
 
@@ -242,10 +246,10 @@ public class DeleteStatement extends MetaStatement {
      * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
      *                 the required information.
      * @param targetKeyspace The target keyspace where the query will be executed.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
-        MetaResult result = new MetaResult();
+    private Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
+        Result result =QueryResult.CreateSuccessQueryResult();
         //Get the effective keyspace based on the user specification during the create
         //sentence, or taking the keyspace in use in the user session.
         String effectiveKeyspace = targetKeyspace;
@@ -255,15 +259,15 @@ public class DeleteStatement extends MetaStatement {
 
         //Check that the keyspace and table exists.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
+            result= QueryResult.CreateFailQueryResult("Target keyspace missing or no keyspace has been selected.");
         }else{
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
             if(ksMetadata == null){
-                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
+                result= QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
             }else {
                 TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tablename);
                 if (tableMetadata == null) {
-                    result.setErrorMessage("Table " + _tablename + " does not exists.");
+                    result= QueryResult.CreateFailQueryResult("Table " + _tablename + " does not exists.");
                 }
             }
 
@@ -289,8 +293,7 @@ public class DeleteStatement extends MetaStatement {
     
     @Override
     public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
+        return null;
     }
             
     @Override

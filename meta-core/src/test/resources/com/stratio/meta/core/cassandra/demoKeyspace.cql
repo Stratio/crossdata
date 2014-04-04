@@ -58,3 +58,4 @@ INSERT INTO demo.types (varchar_column, bigint_column , boolean_column , double_
 INSERT INTO demo.types (varchar_column, bigint_column , boolean_column , double_column , float_column , int_column ) VALUES ( 'name_7', 10007, true, 1.07, 1.07, 107);
 INSERT INTO demo.types (varchar_column, bigint_column , boolean_column , double_column , float_column , int_column ) VALUES ( 'name_8', 10008, true, 1.08, 1.08, 108);
 INSERT INTO demo.types (varchar_column, bigint_column , boolean_column , double_column , float_column , int_column ) VALUES ( 'name_9', 10009, true, 1.09, 1.09, 109);
+

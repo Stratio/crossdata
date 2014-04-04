@@ -19,28 +19,36 @@
 
 package com.stratio.meta.common.result;
 
+import java.io.Serializable;
 
-public class CommandResult extends Result {
+public abstract class Result implements Serializable {
 
-    
-    private final String result;
+    private final boolean error ;
+    private final String errorMessage ;
+    private final boolean ksChanged ;
+    private final String currentKeyspace ;
 
-    private CommandResult(String result,boolean error, String errorMessage, boolean ksChanged, String currentKeyspace){
-        super(error,errorMessage,ksChanged,currentKeyspace);
-        this.result=result;
+    Result(boolean error, String errorMessage, boolean ksChanged, String currentKeyspace) {
+        this.error = error;
+        this.errorMessage = errorMessage;
+        this.ksChanged = ksChanged;
+        this.currentKeyspace = currentKeyspace;
     }
 
-    public String getResult() {
-        return result;
+    public boolean hasError() {
+        return error;
     }
 
-    public static CommandResult CreateSuccessCommandResult(String result){
-        return new CommandResult(result,false,null,false,null);
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
-    public static CommandResult CreateFailCommanResult(String errorMessage){
-        return new CommandResult(null,true,errorMessage,false,null);
+    public boolean isKsChanged() {
+        return ksChanged;
     }
 
+    public String getCurrentKeyspace() {
+        return currentKeyspace;
+    }
 
 }

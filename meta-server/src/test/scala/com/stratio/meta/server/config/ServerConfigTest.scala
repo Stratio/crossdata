@@ -17,30 +17,8 @@
  * License along with this library.
  */
 
-package com.stratio.meta.common.result;
+package com.stratio.meta.server.config
 
-
-public class CommandResult extends Result {
-
-    
-    private final String result;
-
-    private CommandResult(String result,boolean error, String errorMessage, boolean ksChanged, String currentKeyspace){
-        super(error,errorMessage,ksChanged,currentKeyspace);
-        this.result=result;
-    }
-
-    public String getResult() {
-        return result;
-    }
-
-    public static CommandResult CreateSuccessCommandResult(String result){
-        return new CommandResult(result,false,null,false,null);
-    }
-
-    public static CommandResult CreateFailCommanResult(String errorMessage){
-        return new CommandResult(null,true,errorMessage,false,null);
-    }
-
-
+class ServerConfigTest {
+  //TODO Make test to external config settings
 }

@@ -17,14 +17,28 @@
  * License along with this library.
  */
 
-package com.stratio.meta.server
+package com.stratio.meta.core.structures;
 
-import com.stratio.meta.communication.{Connect, ACK}
-import akka.actor.Actor
+public abstract class Property {
+    
+    public static final int TYPE_NAME_VALUE = 1;
+    public static final int TYPE_COMPACT_STORAGE = 2;
+    public static final int TYPE_CLUSTERING_ORDER = 3;
+    
+    protected int type;
 
+    public Property(int type) {
+        this.type = type;
+    }       
 
-class ServerStatusActor extends Actor{
-  override def receive: Actor.Receive = {
-    case Connect(msg) => sender ! ACK("PONG")
-  }
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+    
+    @Override
+    public abstract String toString();
 }
