@@ -37,12 +37,6 @@ public class Executor {
     private final Logger logger = Logger.getLogger(Executor.class);
     private final Session session;
 
-    public Executor(String [] hosts, int port){
-        Cluster cluster = Cluster.builder().addContactPoints(hosts)
-                .withPort(port).build();
-        this.session=cluster.connect();
-    }
-    
     public Executor(Session session) {
         this.session = session;
     }
@@ -94,7 +88,7 @@ public class Executor {
             }
 
         } catch (UnsupportedOperationException unSupportException){
-             metaQuery.hasError();
+             metaQuery.setError();
              queryResult= QueryResult.CreateFailQueryResult("Unsupported operation by C*: "+unSupportException.getMessage());
         }catch (Exception ex) {
             if(ex.getMessage().contains("line") && ex.getMessage().contains(":")){

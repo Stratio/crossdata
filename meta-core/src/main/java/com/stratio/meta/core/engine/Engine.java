@@ -19,23 +19,43 @@
 
 package com.stratio.meta.core.engine;
 
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
-import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.validator.Validator;
+import org.apache.log4j.Logger;
+
+import java.util.Arrays;
 
 public class Engine {
     private final Parser parser;
     private final Validator validator;
     private final Planner planner;
     private final Executor executor;
-    
+    private final Session session;
+
+
+    /**
+     * Class logger.
+     */
+    private static final Logger _logger = Logger.getLogger(Engine.class.getName());
+
     public Engine(EngineConfig config) {
+
+        Cluster cluster = Cluster.builder()
+                .addContactPoints(config.getCassandraHosts())
+                .withPort(config.getCassandraPort()).build();
+
+        _logger.info("Connecting to Cassandra on "
+                + Arrays.toString(config.getCassandraHosts()) + ":" + config.getCassandraPort());
+        this.session=cluster.connect();
+
         parser = new Parser();
-        validator = new Validator();
+        validator = new Validator(session);
         planner = new Planner();
-        executor = new Executor(config.getCassandraHosts(), config.getCassandraPort());
+        executor = new Executor(session);
     }
        
     public Parser getParser() {
@@ -53,21 +73,5 @@ public class Engine {
     public Executor getExecutor() {
         return executor;
     }
-      
-    public MetaQuery parseStatement(String query) {
-        return parser.parseStatement(query);
-    }
 
-    public MetaQuery validateQuery(MetaQuery metaQuery) {
-        return validator.validateQuery(metaQuery);
-    }
-
-    public MetaQuery planQuery(MetaQuery metaQuery) {
-        return planner.planQuery(metaQuery);
-    }
-
-    public MetaQuery executeQuery(MetaQuery metaQuery) {
-        return executor.executeQuery(metaQuery);
-    }
-    
 }

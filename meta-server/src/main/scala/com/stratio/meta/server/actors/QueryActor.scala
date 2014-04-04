@@ -37,7 +37,7 @@ class QueryActor(engine: Engine) extends Actor with ActorLogging{
   override def receive: Receive = {
     case Query(keyspace,statement,user) => {
       log.info("Init Query by "+ user + " --> ("+ keyspace + ")" + statement )
-      parserActorRef forward statement
+      parserActorRef forward Query(keyspace,statement,user)
       log.info("Finish Query")
     }
     case _ => {

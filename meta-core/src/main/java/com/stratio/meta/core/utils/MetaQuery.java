@@ -34,6 +34,7 @@ public class MetaQuery {
     private MetaPlan plan;
     private MetaValidation validation;
     private Result result;
+    private String targetKeyspace;
     
     public MetaQuery() {
         status = QueryStatus.NONE;
@@ -104,5 +105,13 @@ public class MetaQuery {
 
     public void setValidation(MetaValidation validation) {
         this.validation = validation;
+    }
+
+    public String getTargetKeyspace() {
+        return targetKeyspace;
+    }
+
+    public void setTargetKeyspace(String targetKeyspace) {
+        this.targetKeyspace = targetKeyspace;
     }
 }
