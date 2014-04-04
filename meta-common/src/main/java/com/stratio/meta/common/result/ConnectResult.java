@@ -32,11 +32,6 @@ public class ConnectResult extends Result {
     public long getSessionId() {
         return sessionId;
     }
-    
-    @Override
-    public String toString(){
-        return super.toString() + System.lineSeparator() + sessionId;
-    }
 
     public static ConnectResult CreateSuccessConnectResult(long sessionId){
         return new ConnectResult(sessionId,false,null,false,null);

@@ -26,6 +26,7 @@ import com.stratio.meta.sh.help.HelpManager;
 import com.stratio.meta.sh.help.HelpStatement;
 import com.stratio.meta.sh.help.generated.MetaHelpLexer;
 import com.stratio.meta.sh.help.generated.MetaHelpParser;
+import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
 import jline.console.ConsoleReader;
@@ -174,6 +175,7 @@ public class Metash {
                 return;
             }
             logger.info("Driver connections established");
+            logger.info(ConsoleUtils.stringResult(connectionResult));
             
             String currentKeyspace = "";
             
@@ -182,20 +184,6 @@ public class Metash {
                 cmd = console.readLine();
                 System.out.println("\033[34;1mCommand:\033[0m " + cmd);
                     try {
-                        /*
-                        if(cmd.toLowerCase().startsWith("random")){
-                            for(int i=0; i<10; i++){
-                                StringBuilder sb = new StringBuilder("INSERT INTO demo.emp(user_uuid, email, fan, first_name, last_name) VALUES (");
-                                sb.append(UUID.randomUUID()).append(", "); //user_uuid
-                                sb.append(RandomStringUtils.randomAlphabetic((int) (Math.random()*13))).append("@").append(RandomStringUtils.randomAlphabetic((int) (Math.random()*12))).append(".com").append(", "); //email
-                                sb.append(RandomStringUtils.randomAlphabetic((int) (Math.random()*30))).append(", "); //fan
-                                sb.append(RandomStringUtils.randomAlphabetic((int) (Math.random()*30))).append(", "); //first_name
-                                sb.append(RandomStringUtils.randomAlphabetic((int) (Math.random()*30))).append(");"); //last_name
-                                metaDriver.executeQuery(user, currentKeyspace, sb.toString());
-                            }
-                            continue;
-                        }
-                        */
                         if(cmd.toLowerCase().startsWith("help")){
                             showHelp(cmd);
                         } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
@@ -217,7 +205,7 @@ public class Metash {
                                 continue;
                             }
 
-                            System.out.println("\033[32mResult:\033[0m "+metaResult.toString());
+                            System.out.println("\033[32mResult:\033[0m "+ ConsoleUtils.stringResult(metaResult));
                             System.out.println("Response time: "+((queryEnd-queryStart)/1000)+" seconds");
                             System.out.println("Display time: "+((System.currentTimeMillis()-queryEnd)/1000)+" seconds");
                         }
