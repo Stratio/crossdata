@@ -22,25 +22,51 @@ package com.stratio.meta.server.config
 
 import com.stratio.meta.core.engine.EngineConfig
 import com.typesafe.config.{ConfigFactory, Config}
+import java.io.File
+import org.apache.log4j.Logger
 
 object ServerConfig{
-  val SERVER_DEFAULT_CONFIG_FILE = "basic-server.conf"
-  val SERVER_USER_CONFIG_FILE = "meta-server.conf"
+  val SERVER_BASIC_CONFIG = "server-reference.conf"
+  val PARENT_CONFIG_NAME= "meta-server"
 
-  val SERVER_CLUSTER_NAME_KEY="server.cluster.name"
-  val SERVER_ACTOR_NAME_KEY="server.cluster.actor.name"
+
+  val SERVER_CLUSTER_NAME_KEY="config.cluster.name"
+  val SERVER_ACTOR_NAME_KEY="config.cluster.actor"
+  val SERVER_USER_CONFIG_FILE="external.config.filename"
+  val SERVER_USER_CONFIG_RESOURCE = "external.config.resource"
 }
 
 trait ServerConfig extends CassandraConfig{
 
+  val logger = Logger.getLogger(classOf[ServerConfig])
+
   override lazy val config: Config ={
 
-    val defaultConfig1= ConfigFactory.load(ServerConfig.SERVER_DEFAULT_CONFIG_FILE)
-    println(defaultConfig1)
-    val defaultConfig= defaultConfig1.getConfig("meta")
-    val userConfig=ConfigFactory.load(ServerConfig.SERVER_USER_CONFIG_FILE).getConfig("meta")
-    val merge = userConfig.withFallback(defaultConfig)
-    ConfigFactory.load(merge)
+    var defaultConfig= ConfigFactory.load(ServerConfig.SERVER_BASIC_CONFIG).getConfig(ServerConfig.PARENT_CONFIG_NAME)
+    val configFile= defaultConfig.getString(ServerConfig.SERVER_USER_CONFIG_FILE)
+    val configResource= defaultConfig.getString(ServerConfig.SERVER_USER_CONFIG_RESOURCE)
+
+    if(configResource != ""){
+      val resource = ServerConfig.getClass.getClassLoader.getResource(configResource)
+      if(resource !=null) {
+        val userConfig = ConfigFactory.parseResources(configResource).getConfig(ServerConfig.PARENT_CONFIG_NAME)
+        defaultConfig = userConfig.withFallback(defaultConfig)
+      }else{
+        logger.warn("User resource (" + configResource + ") haven't been found")
+      }
+    }
+
+    if(configFile!="" ){
+      val file=new File(configFile)
+      if(file.exists()) {
+        val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.PARENT_CONFIG_NAME)
+        defaultConfig = userConfig.withFallback(defaultConfig)
+      }else{
+        logger.warn("User file (" + configResource + ") haven't been found")
+      }
+    }
+
+    ConfigFactory.load(defaultConfig)
   }
 
   lazy val engineConfig:EngineConfig = {

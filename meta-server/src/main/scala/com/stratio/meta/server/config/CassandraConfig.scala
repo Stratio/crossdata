@@ -24,9 +24,8 @@ import scala.collection.JavaConversions._
 
 object CassandraConfig{
 
-  val CASSANDRA_HOSTS_KEY = "server.cassandra.hosts"
-
-  val CASSANDRA_PORT_KEY =  "server.cassandra.port"
+  val CASSANDRA_HOSTS_KEY = "config.cassandra.hosts"
+  val CASSANDRA_PORT_KEY =  "config.cassandra.port"
 
 }
 

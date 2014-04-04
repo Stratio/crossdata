@@ -17,29 +17,8 @@
  * License along with this library.
  */
 
-package com.stratio.meta.driver;
+package com.stratio.meta.server.config
 
-import com.stratio.meta.common.result.Result;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
-
-import static org.testng.Assert.*;
-
-
-public class BasicTest {
-    BasicDriver driver;
-    @BeforeTest
-    public void init(){
-        //System.setProperty("meta-driver.user.config.filename",
-        //        "/Users/aagea/Documents/Stratio/Desarrollo/develop/stratio-meta/meta-driver/src/test/resources" +
-        //        "/driver-application.conf");
-        driver=new BasicDriver();
-    }
-
-    @Test
-    public void connectTest(){
-        Result metaResult= driver.connect("TEST_USER");
-        assertFalse(metaResult.hasError());
-    }
-
+class ServerConfigTest {
+  //TODO Make test to external config settings
 }
