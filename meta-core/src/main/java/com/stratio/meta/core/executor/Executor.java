@@ -20,6 +20,7 @@
 package com.stratio.meta.core.executor;
 
 import com.datastax.driver.core.*;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
@@ -38,9 +39,15 @@ public class Executor {
     private final Session session;
 
     public Executor(String [] hosts, int port){
-        Cluster cluster = Cluster.builder().addContactPoints(hosts)
-                .withPort(port).build();
-        this.session=cluster.connect();
+        Session tmpSession = null;
+        try{
+            Cluster cluster = Cluster.builder().addContactPoints(hosts).withPort(port).build();
+            tmpSession = cluster.connect();
+        } catch (NoHostAvailableException ex){
+            System.err.println("Exception: "+ex.getMessage());
+            System.exit(-1);
+        }
+        this.session=tmpSession;
     }
     
     public Executor(Session session) {
