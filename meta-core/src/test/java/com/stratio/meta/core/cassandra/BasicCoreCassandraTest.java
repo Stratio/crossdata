@@ -62,6 +62,17 @@ public class BasicCoreCassandraTest {
 
     @BeforeClass
     public static void setUpBeforeClass(){
+        try {
+            Process p = Runtime.getRuntime().exec("./meta-core/src/test/resources/test.sh");
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(p.getInputStream()));
+            String line = null;
+            while ((line = in.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            logger.error("Cannot execute ccm script");
+        }
         initCassandraConnection();
         dropKeyspaceIfExists("testKS");
     }
@@ -103,6 +114,17 @@ public class BasicCoreCassandraTest {
      */
     public static void closeCassandraConnection(){
         _session.close();
+        /*try {
+            Process p = Runtime.getRuntime().exec("./meta-core/src/test/resources/close.sh");
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(p.getInputStream()));
+            String line = null;
+            while ((line = in.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            logger.error("Cannot execute ccm close script");
+        }*/
     }
 
     /**
