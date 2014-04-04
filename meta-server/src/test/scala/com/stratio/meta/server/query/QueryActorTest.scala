@@ -2,7 +2,7 @@ package com.stratio.meta.server.query
 
 import akka.actor.ActorSystem
 import com.stratio.meta.core.engine.{Engine, EngineConfig}
-import org.testng.annotations.{Test, BeforeTest}
+import org.testng.annotations.{AfterTest, Test, BeforeTest}
 import akka.testkit.TestActorRef
 import com.stratio.meta.server.actors.QueryActor
 import akka.pattern.ask
@@ -11,7 +11,7 @@ import com.stratio.meta.common.result.Result
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import org.apache.log4j.Logger
-
+import scala.sys.process._
 
 class QueryActorTest {
 
@@ -26,8 +26,17 @@ class QueryActorTest {
   lazy val engine: Engine = new Engine(engineConfig)
 
   @BeforeTest def init() = {
-
+    val cmd = "./meta-core/src/test/resources/test.sh"
+    val output = cmd.!!
+    println(output)
   }
+
+  @AfterTest def close() = {
+    val cmd = "./meta-core/src/test/resources/close.sh"
+    val output = cmd.!!
+    println(output)
+  }
+
   @Test def basicTest() = {
     val queryActor = TestActorRef.create(system,QueryActor.props(engine))
     val createKs: String = "CREATE KEYSPACE testKS WITH replication = {class: SimpleStrategy, replication_factor: 1};"
