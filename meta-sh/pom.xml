@@ -86,11 +86,6 @@
             <artifactId>snakeyaml</artifactId>
             <version>1.13</version>
         </dependency>
-        <dependency>
-            <groupId>com.google.code</groupId>
-            <artifactId>java-ascii-table</artifactId>
-            <version>1.0</version>
-        </dependency>
     </dependencies>
 	<build>
 		<plugins>

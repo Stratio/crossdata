@@ -478,7 +478,7 @@ public class SelectStatement extends MetaStatement {
         if(keyspaceInc){
             effectiveKeyspace = keyspace;
         }
-
+        System.out.println("validateKeyspaceAndTable: tKs" + targetKeyspace + " kInc: " + keyspaceInc + " eKs: " + effectiveKeyspace);
         //Check that the keyspace and table exists.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
             result= QueryResult.CreateFailQueryResult("Target keyspace missing or no keyspace has been selected.");
@@ -503,15 +503,16 @@ public class SelectStatement extends MetaStatement {
      * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
      *                 the required information.
      * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
-     * @return A String representation of the clause.
+     * @return A String array with the column name and the lucene query, or null if no index is found.
      */
-    public String getLuceneWhereClause(MetadataManager metadata, TableMetadata tableMetadata){
-        String result = null;
+    public String [] getLuceneWhereClause(MetadataManager metadata, TableMetadata tableMetadata){
+        String [] result = null;
         CustomIndexMetadata luceneIndex = metadata.getLuceneIndex(tableMetadata);
 
         if(luceneIndex != null) {
 
-            StringBuilder sb = new StringBuilder("'{query : ");
+            //TODO: Check in the validator that the query uses AND with the lucene mapped columns.
+            StringBuilder sb = new StringBuilder("{query:{type:\"boolean\",must:[");
 
             //Iterate throughout the relations of the where clause looking for MATCH.
             for (Relation relation : where) {
@@ -519,18 +520,21 @@ public class SelectStatement extends MetaStatement {
                         && relation.getOperator().equalsIgnoreCase("MATCH")) {
                     RelationCompare rc = RelationCompare.class.cast(relation);
                     String column = rc.getIdentifiers().get(0);
-                    String value = rc.getIdentifiers().get(1);
-                    System.out.println(">>>> column: " + column + " value: " + value);
+                    String value = rc.getTerms().get(0).toString();
                     //Generate query for column
-                    String queryType = "match";
-                    if(value.contains("*") || value.contains("?")){
-                        queryType = "wildcard";
-                    }
-                    sb.append("{ type : \"" + queryType);
-                    System.out.println(">>>>>> " + sb.toString());
-
+                    String [] processedQuery = processLuceneQueryType(value);
+                    sb.append("{type:\"");
+                    sb.append(processedQuery[0]);
+                    sb.append("\",field:\"");
+                    sb.append(column);
+                    sb.append("\",value:\"");
+                    sb.append(processedQuery[1]);
+                    sb.append("\"},");
                 }
             }
+            sb.replace(sb.length()-1, sb.length(), "");
+            sb.append("]}}");
+            result = new String[]{luceneIndex.getIndexName(), sb.toString()};
         }
         return result;
     }
@@ -550,7 +554,6 @@ public class SelectStatement extends MetaStatement {
      */
     protected String [] processLuceneQueryType(String query){
         String [] result = {"", ""};
-        //Pattern escaped = Pattern.compile("\\\\\\*|\\\\\\?");
         Pattern escaped = Pattern.compile(".*\\\\\\*.*|.*\\\\\\?.*|.*\\\\\\[.*|.*\\\\\\].*");
         Pattern wildcard = Pattern.compile(".*\\*.*|.*\\?.*");
         Pattern regex = Pattern.compile(".*\\].*|.*\\[.*");
@@ -571,7 +574,8 @@ public class SelectStatement extends MetaStatement {
             result[0] = "match";
             result[1] = query;
         }
-
+        //C* Query builder doubles the ' character.
+        result[1] = result[1].replaceAll("^'", "").replaceAll("'$","");
         return result;
     }
 
@@ -706,7 +710,11 @@ public class SelectStatement extends MetaStatement {
         
         Where whereStmt = null;
         if(this.whereInc){
-            String luceneWhere = getLuceneWhereClause(_metadata, _tableMetadata);
+            String [] luceneWhere = getLuceneWhereClause(_metadata, _tableMetadata);
+            if(luceneWhere != null){
+                Clause lc = QueryBuilder.eq(luceneWhere[0], luceneWhere[1]);
+                whereStmt = sel.where(lc);
+            }
             for(Relation metaRelation: this.where){
                 Clause clause = null;
                 String name;
@@ -721,7 +729,7 @@ public class SelectStatement extends MetaStatement {
                         } else if (value.toString().contains("-")) {
                             value = UUID.fromString(value.toString());
                         }
-                        switch(relCompare.getOperator()){
+                        switch(relCompare.getOperator().toUpperCase()){
                             case "=":
                                 clause = QueryBuilder.eq(name, value);
                                 break;
@@ -736,6 +744,8 @@ public class SelectStatement extends MetaStatement {
                                 break;
                             case "<=":
                                 clause = QueryBuilder.lte(name, value);
+                                break;
+                            case "MATCH": //Processed as LuceneIndex
                                 break;
                             default:
                                 clause = null;
@@ -798,11 +808,11 @@ public class SelectStatement extends MetaStatement {
                         whereStmt = whereStmt.and(clause);
                     }
                 }
-            }            
+            }
         } else {
             whereStmt = sel.where();
         }
-        
+        System.out.println("SelectStatement: " + whereStmt.toString());
         return whereStmt;
     }
     

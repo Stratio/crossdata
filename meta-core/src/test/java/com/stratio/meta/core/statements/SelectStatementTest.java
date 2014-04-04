@@ -19,6 +19,7 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.grammar.ParsingTest;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -40,24 +41,29 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
         BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
         _metadataManager = new MetadataManager(_session);
         _metadataManager.loadMetadata();
+        //for(String k : _metadataManager.getKeyspacesNames()){
+        //    System.out.println("Keyspace: " + k);
+        //}
     }
 
 
     public static String getLuceneQuery(String ... clauses){
-        StringBuilder sb = new StringBuilder("{type:\"boolean\", must:[");
+        StringBuilder sb = new StringBuilder("{query:{type:\"boolean\",must:[");
         for(String clause : clauses){
             sb.append("{").append(clause).append("},");
         }
-        return sb.substring(0, sb.length()-1) + "]}";
+        return sb.substring(0, sb.length()-1) + "]}}";
     }
 
-    public MetaStatement testIndexStatement(String input, String expected, String methodName){
+    public MetaStatement testIndexStatement(String input, String expected, String keyspace, String methodName){
         MetaStatement stmt = _pt.testRegularStatement(input, methodName);
-        assertEquals(stmt.getDriverStatement(), expected, "Lucene query translation does not match - " + methodName);
+        //Required to cache the metadata manager.
+        stmt.validate(_metadataManager, keyspace);
+        assertEquals(stmt.getDriverStatement().toString(), expected, "Lucene query translation does not match - " + methodName);
         return stmt;
     }
 
-    public MetaStatement testGetLuceneWhereClause(String inputText, String expected, String methodName){
+    public MetaStatement testGetLuceneWhereClause(String inputText, String expected, String keyspace, String tablename, String methodName){
         //Parse the statement
         MetaQuery mq = parser.parseStatement(inputText);
         MetaStatement st = mq.getStatement();
@@ -67,39 +73,51 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
         assertFalse(mq.hasError(), "Parsing expecting '" + inputText
                 + "' from '" + st.toString() + "' returned: " + mq.getResult().getErrorMessage());
 
-        String result = null;//SelectStatement.class.cast(st).getLuceneWhereClause(_metadataManager);
-        assertEquals(result, expected, "Lucene where clause does not match");
+        TableMetadata tableMetadata = _metadataManager.getTableMetadata(keyspace, tablename);
+
+        String [] result = SelectStatement.class.cast(st)
+                .getLuceneWhereClause(_metadataManager, _metadataManager.getTableMetadata(keyspace,tablename));
+        assertEquals(result[1], expected, "Lucene where clause does not match");
 
         return st;
     }
 
     /* Tests that concentrate on the generated Lucene syntax. */
 
-    //@Test
+    @Test
     public void getLuceneWhereClause_1lucene_ok(){
         String inputText = "SELECT * FROM demo.users WHERE name MATCH 'name_1*';";
         String [] luceneClauses = {"type:\"wildcard\",field:\"name\",value:\"name_1*\""};
         String expectedText = getLuceneQuery(luceneClauses);
-
-        testGetLuceneWhereClause(inputText, expectedText, "getLuceneWhereClause_1lucene_ok");
+        testGetLuceneWhereClause(inputText, expectedText, "demo", "users", "getLuceneWhereClause_1lucene_ok");
     }
 
     /* Tests with complete queries. */
 
-    //@Test
+    @Test
     public void translateToCQL_1lucene_ok(){
         String inputText = "SELECT * FROM demo.users WHERE name MATCH 'name_1*';";
         String [] luceneClauses = {"type:\"wildcard\",field:\"name\",value:\"name_1*\""};
-        String expectedText = "SELECT * FROM demo.users WHERE stratio_lucene_index_1 = " + getLuceneQuery(luceneClauses)+ ";";
-        testIndexStatement(inputText, expectedText, "getLuceneClause_1lucene_ok");
+        String expectedText = "SELECT * FROM demo.users WHERE stratio_lucene_index_1='" + getLuceneQuery(luceneClauses)+ "';";
+        testIndexStatement(inputText, expectedText, "demo", "getLuceneClause_1lucene_ok");
     }
 
-    //@Test
+    @Test
     public void translateToCQL_1lucene_1c_ok(){
         String inputText = "SELECT * FROM demo.users WHERE name MATCH 'name_1*' AND age > 20;";
         String [] luceneClauses = {"type:\"wildcard\",field:\"name\",value:\"name_1*\""};
-        String expectedText = "SELECT * FROM demo.users WHERE stratio_lucene_index_1 = " + getLuceneQuery(luceneClauses)+ ";";
-        testIndexStatement(inputText, expectedText, "getLuceneClause_1lucene_1c_ok");
+        String expectedText = "SELECT * FROM demo.users WHERE stratio_lucene_index_1='" + getLuceneQuery(luceneClauses)+ "' AND age>20;";
+        testIndexStatement(inputText, expectedText, "demo", "getLuceneClause_1lucene_1c_ok");
+    }
+
+    @Test
+    public void translateToCQL_2lucene_ok(){
+        String inputText = "SELECT * FROM demo.users WHERE name MATCH 'name_*' AND name MATCH 'name_1*';";
+        String [] luceneClauses = {
+                "type:\"wildcard\",field:\"name\",value:\"name_*\"",
+                "type:\"wildcard\",field:\"name\",value:\"name_1*\""};
+        String expectedText = "SELECT * FROM demo.users WHERE stratio_lucene_index_1='" + getLuceneQuery(luceneClauses)+ "';";
+        testIndexStatement(inputText, expectedText, "demo", "getLuceneClause_2lucene_ok");
     }
 
     @Test

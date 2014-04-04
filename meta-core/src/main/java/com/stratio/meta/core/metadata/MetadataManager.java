@@ -84,6 +84,7 @@ public class MetadataManager {
 				_logger.debug("Cluster metadata: " + result);
 			}
 		}
+        System.out.println("getKeyspaceMetadata: " + _clusterMetadata + " result: " + result);
 		return result;
 	}
 	
@@ -179,13 +180,11 @@ public class MetadataManager {
                 if (_logger.isTraceEnabled()) {
                     _logger.trace("Index found in column " + column.getName());
                 }
-
                 CustomIndexMetadata toAdd = null;
                 if (!column.getIndex().isCustomIndex()) {
                     //A Cassandra index is associated with the column.
                     toAdd = new CustomIndexMetadata(column, column.getIndex().getName(), IndexType.DEFAULT, column.getName());
-                } else if (column.getIndex().isCustomIndex()
-                        && column.getIndex().getIndexClassName().compareTo("org.apache.cassandra.db.index.stratio.RowIndex") == 0) {
+                } else if (column.getIndex().getIndexClassName().compareTo("org.apache.cassandra.db.index.stratio.RowIndex") == 0) {
                     //A Lucene custom index is found that may index several columns.
                     toAdd = _luceneHelper.getLuceneIndex(column, column.getIndex().getName());
                 } else {
