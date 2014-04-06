@@ -21,6 +21,7 @@ package com.stratio.meta.core.executor;
 
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.jcraft.jsch.Session;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
@@ -156,7 +157,9 @@ public class Executor {
                 } else if ((def.getType() == DataType.varint())){
                     metaCell = new Cell(def.getType().asJavaClass(), row.getVarint(def.getName()));
                 }
-                metaRow.addCell(def.getName(), metaCell);
+                if(!def.getName().toLowerCase().startsWith("stratio")) {
+                    metaRow.addCell(def.getName(), metaCell);
+                }
                 /*
                 - ASCII     (1,  String.class),
                 - BIGINT    (2,  Long.class),
