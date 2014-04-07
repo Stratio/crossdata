@@ -20,9 +20,9 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.data.DeepResultSet;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.Tree;
 
@@ -39,7 +39,7 @@ public abstract class MetaStatement {
         this.query = query;
         this.path = path;
         this.command = command;
-    }       
+    }
 
     public boolean isCommand() {
         return command;
@@ -86,7 +86,7 @@ public abstract class MetaStatement {
 
     public abstract Statement getDriverStatement();
 
-    public abstract DeepResult executeDeep();
+    public abstract DeepResultSet executeDeep();
     
     public abstract Tree getPlan();
     

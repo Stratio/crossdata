@@ -17,20 +17,19 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.planner;
+package com.stratio.meta.common.data;
 
-import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.core.utils.QueryStatus;
-import org.apache.log4j.Logger;
+import java.io.Serializable;
+import java.util.Iterator;
 
-public class Planner {
-
-    private final Logger logger = Logger.getLogger(Planner.class);
-    
-    public MetaQuery planQuery(MetaQuery metaQuery) {
-        metaQuery.setStatus(QueryStatus.PLANNED);
-        metaQuery.setPlan(metaQuery.getStatement().getPlan());
-        return metaQuery;
+public class DeepResultSet extends ResultSet implements Serializable {
+    @Override
+    public Iterator iterator() {
+        return null;
     }
-    
+
+    @Override
+    public int size() {
+        return 0;
+    }
 }

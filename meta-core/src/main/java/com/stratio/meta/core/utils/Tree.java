@@ -19,13 +19,21 @@
 
 package com.stratio.meta.core.utils;
 
+import com.datastax.driver.core.Session;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.executor.CassandraExecutor;
+import com.stratio.meta.core.executor.CommandExecutor;
+import com.stratio.meta.core.executor.DeepExecutor;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class Tree {
 
     private Tree parent;
     private Object node;
-    private ArrayList<Tree> children = new ArrayList<>();
+    private List<Tree> children = new ArrayList<>();
 
     public Tree() {
         children = new ArrayList<>();
@@ -56,7 +64,7 @@ public class Tree {
         this.node = node;
     }
 
-    public ArrayList<Tree> getChildren() {
+    public List<Tree> getChildren() {
         return children;
     }
 
@@ -145,7 +153,33 @@ public class Tree {
         sb.append(node.toString());
         return sb.toString();
     }
-    
+
+    public Result executeTreeDownTop(Session session){
+        // Get results from my children
+        List<Result> resultsFromChildren = new ArrayList<>();
+        for(Tree child: children){
+            resultsFromChildren.add(child.executeTreeDownTop(session));
+        }
+        // Execute myself and return final result
+        return executeMyself(session, resultsFromChildren);
+    }
+
+    public Result executeMyself(Session session, List<Result> resultsFromChildren){
+        MetaStep myStep = (MetaStep) node;
+        MetaPath myPath = myStep.getPath();
+        if(myPath == MetaPath.COMMAND){
+            return CommandExecutor.execute(myStep.getStmt(), session);
+        } else if(myPath == MetaPath.CASSANDRA){
+            return CassandraExecutor.execute(myStep.getStmt(), session);
+        } else if(myPath == MetaPath.DEEP){
+            return DeepExecutor.execute(myStep.getStmt(), resultsFromChildren);
+        } else if(myPath == MetaPath.UNSUPPORTED){
+            return QueryResult.CreateFailQueryResult("Query not supported.");
+        } else {
+            return QueryResult.CreateFailQueryResult("Query not supported yet.");
+        }
+    }
+
     public String toStringTopDown(){
         StringBuilder sb = new StringBuilder();
         int deep = 0;
@@ -167,5 +201,19 @@ public class Tree {
         }                
         return sb.toString();
     }
-    
+
+    public List<Tree> getSiblings() {
+        List<Tree> allSiblings = parent.getChildren();
+        List<Tree> siblings = new ArrayList<>();
+        for(Tree sibling: allSiblings){
+            if(sibling != this){
+                try {
+                    siblings.add((Tree) sibling.clone());
+                } catch (CloneNotSupportedException e) {
+                    return null;
+                }
+            }
+        }
+        return siblings;
+    }
 }

@@ -113,6 +113,10 @@ public class Metash {
             String cmd = "";
             while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
                 cmd = console.readLine();
+                if(cmd.equalsIgnoreCase("") || cmd.equalsIgnoreCase(System.lineSeparator())){
+                    System.out.println();
+                    continue;
+                }
                 System.out.println("\033[34;1mCommand:\033[0m " + cmd);
                     try {
                         if(cmd.toLowerCase().startsWith("help")){

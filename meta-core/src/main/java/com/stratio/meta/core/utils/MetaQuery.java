@@ -22,7 +22,6 @@ package com.stratio.meta.core.utils;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.MetaStatement;
-import com.stratio.meta.core.planner.MetaPlan;
 import com.stratio.meta.core.validator.MetaValidation;
 
 public class MetaQuery {
@@ -31,7 +30,7 @@ public class MetaQuery {
     private QueryStatus status;
     private boolean hasError;
     private MetaStatement statement;
-    private MetaPlan plan;
+    private Tree plan;
     private MetaValidation validation;
     private Result result;
     private String targetKeyspace;
@@ -83,11 +82,11 @@ public class MetaQuery {
         return statement;
     } 
     
-    public MetaPlan getPlan() {
+    public Tree getPlan() {
         return plan;
     }
 
-    public void setPlan(MetaPlan plan) {
+    public void setPlan(Tree plan) {
         this.plan = plan;
     }
     

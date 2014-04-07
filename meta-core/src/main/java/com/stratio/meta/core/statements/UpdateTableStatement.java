@@ -20,17 +20,15 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.data.DeepResultSet;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Assignment;
-import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.Option;
+import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.utils.ParserUtils;
-import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import java.util.List;
 import java.util.Map;
@@ -229,8 +227,8 @@ public class UpdateTableStatement extends MetaStatement {
     }
     
     @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
+    public DeepResultSet executeDeep() {
+        return new DeepResultSet();
     }
     
     @Override

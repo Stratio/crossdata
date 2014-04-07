@@ -27,18 +27,18 @@ import com.datastax.driver.core.querybuilder.Clause;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Where;
+import com.stratio.meta.common.data.DeepResultSet;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.*;
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.utils.DeepResult;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -817,8 +817,8 @@ public class SelectStatement extends MetaStatement {
     }
     
     @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("Success", new ArrayList<>(Arrays.asList("Not supported yet")));
+    public DeepResultSet executeDeep() {
+        return new DeepResultSet();
     }
 
     @Override
@@ -859,6 +859,8 @@ public class SelectStatement extends MetaStatement {
             steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
             steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
             steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
+        } else {
+            steps.setNode(new MetaStep(MetaPath.CASSANDRA, this));
         }
         return steps;
     }

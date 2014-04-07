@@ -26,18 +26,22 @@ import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Using;
+import com.stratio.meta.common.data.DeepResultSet;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.ValueCell;
-import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
 
 public class InsertIntoStatement extends MetaStatement {
 
@@ -427,13 +431,15 @@ public class InsertIntoStatement extends MetaStatement {
     }
     
     @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
+    public DeepResultSet executeDeep() {
+        return new DeepResultSet();
     }
-    
+
     @Override
     public Tree getPlan() {
-        return new Tree();
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+        return tree;
     }
     
 }
