@@ -38,3 +38,5 @@ The META-shell can be executed in two differentiated modes: client and server. A
 ## Useful commands ##
 Once the shell is running, you can exit the program introducing the word **exit** or **quit** in the query prompt. A command help system is available by introducing the command **help**. A help entry is available per command, to check specify help topics use **help command**.
 
+## More about the project ##
+You can find more information about this project (tutorials, examples, etc...) in http://wordpress.dev.strat.io/
