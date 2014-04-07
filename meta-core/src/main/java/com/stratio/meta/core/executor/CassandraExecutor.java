@@ -67,7 +67,7 @@ public class CassandraExecutor {
                 }
                 AntlrError ae = new AntlrError(cMessageEx[0]+" "+cMessageEx[1], sb.toString());
                 queryStr = ParserUtils.getQueryWithSign(queryStr, ae);
-                return QueryResult.CreateFailQueryResult(ex.getMessage()+System.getProperty("line.separator")+"\t"+queryStr);
+                return QueryResult.CreateFailQueryResult(ex.getMessage()+System.lineSeparator()+"\t"+queryStr);
             } else{
                 return QueryResult.CreateFailQueryResult(ex.getMessage());
             }
