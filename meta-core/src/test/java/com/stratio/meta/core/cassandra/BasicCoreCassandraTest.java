@@ -117,7 +117,9 @@ public class BasicCoreCassandraTest {
     public static void closeCassandraConnection(){
         _session.close();
         /*try {
-            Process p = Runtime.getRuntime().exec("./meta-core/src/test/resources/close.sh");
+            File script = new File(BasicCoreCassandraTest.class.getResource("close.sh").getPath());
+            script.setExecutable(true);
+            Process p = Runtime.getRuntime().exec(script.getAbsolutePath());
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(p.getInputStream()));
             String line = null;

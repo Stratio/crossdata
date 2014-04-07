@@ -26,13 +26,13 @@ class QueryActorTest {
   lazy val engine: Engine = new Engine(engineConfig)
 
   @BeforeTest def init() = {
-    val cmd = "./meta-core/src/test/resources/test.sh"
+    val cmd = "./meta-server/src/test/resources/com/stratio/meta/server/test.sh"
     val output = cmd.!!
     println(output)
   }
 
   @AfterTest def close() = {
-    val cmd = "./meta-core/src/test/resources/close.sh"
+    val cmd = "./meta-server/src/test/resources/com/stratio/meta/server/close.sh"
     val output = cmd.!!
     println(output)
   }
