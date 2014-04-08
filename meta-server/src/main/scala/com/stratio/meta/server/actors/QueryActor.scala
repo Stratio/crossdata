@@ -32,7 +32,7 @@ class QueryActor(engine: Engine) extends Actor with ActorLogging{
   val executorActorRef = context.actorOf(ExecutorActor.props(engine.getExecutor),"ExecutorActor")
   val plannerActorRef = context.actorOf(PlannerActor.props(executorActorRef,engine.getPlanner),"PlanerActor")
   val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef,engine.getValidator),"ValidatorActor")
-  val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef,engine.getParser))
+  val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef,engine.getParser),"ParserActor")
 
   override def receive: Receive = {
     case Query(keyspace,statement,user) => {

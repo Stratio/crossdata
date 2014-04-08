@@ -20,26 +20,37 @@
 package com.stratio.meta.driver;
 
 import com.stratio.meta.common.result.Result;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
+import com.stratio.meta.server.MetaApplication;
+import com.stratio.meta.server.MetaServer;
+import org.testng.annotations.*;
 
 import static org.testng.Assert.*;
 
 
-public class BasicTest {
+public class DriverParentTest {
+    private static final long SLEEP_TIME = 3000;
     BasicDriver driver;
-    @BeforeTest
+    MetaServer metaServer;
+    @BeforeClass
     public void init(){
-        //System.setProperty("meta-driver.user.config.filename",
-        //        "/Users/aagea/Documents/Stratio/Desarrollo/develop/stratio-meta/meta-driver/src/test/resources" +
-        //        "/driver-application.conf");
         driver=new BasicDriver();
+        metaServer=new MetaServer();
+        metaServer.init(null);
+        metaServer.start();
+
+        try {
+            Thread.sleep(SLEEP_TIME);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    @Test
-    public void connectTest(){
-        Result metaResult= driver.connect("TEST_USER");
-        assertFalse(metaResult.hasError());
+
+
+    @AfterClass
+    public void finish(){
+        metaServer.stop();
+        metaServer.destroy();
     }
 
 }

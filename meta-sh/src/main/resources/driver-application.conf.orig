@@ -1,0 +1,13 @@
+<<<<<<< HEAD
+meta.server.cluster.name="MetaServerCluster"
+meta.server.actor.name="meta-server"
+meta.server.cluster.hosts= ["10.90.0.37:13420"]
+meta.driver.retry.times=3
+meta.driver.retry.seconds=10
+=======
+meta-driver.config.cluster.name="MetaServerCluster"
+meta-driver.config.cluster.actor="meta-server"
+meta-driver.config.cluster.hosts= ["127.0.0.1:13420"]
+meta-driver.config.retry.times=3
+meta-driver.config.retry.duration=2s
+>>>>>>> bd16f436b8b2f3ef54eb7d4ed07c74a933b1aaa5
