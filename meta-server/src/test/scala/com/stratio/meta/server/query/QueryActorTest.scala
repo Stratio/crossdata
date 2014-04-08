@@ -13,6 +13,7 @@ import scala.concurrent.duration._
 import org.apache.log4j.Logger
 
 
+
 class QueryActorTest {
 
   val logger: Logger = Logger.getLogger(classOf[Result])

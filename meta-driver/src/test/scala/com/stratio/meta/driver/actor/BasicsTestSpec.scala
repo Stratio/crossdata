@@ -8,7 +8,7 @@ import akka.actor.Props
 import scala.concurrent.duration._
 import akka.contrib.pattern.ClusterClient.Send
 import com.stratio.meta.driver.utils.RetryPolitics
-import com.stratio.meta.common.result.MetaResult
+import com.stratio.meta.common.result.ConnectResult
 import org.testng.Assert._
 import com.stratio.meta.driver.BasicDriver
 
@@ -29,10 +29,23 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll
   }
 
   test("ProxyActor Test send message"){
+    var messages = Seq[Send]()
     within(500 millis) {
       proxyRef ! "test"
       expectMsg(Send(ProxyActor.remotePath("test"),"test",localAffinity = true))
+      proxyRef ! "test1"
+      expectMsg(Send(ProxyActor.remotePath("test"),"test1",localAffinity = true))
+      proxyRef ! "test2"
+      proxyRef ! "test3"
+
+      receiveWhile(500 millis) {
+        case msg:Send ⇒ messages = msg +: messages
+      }
     }
+    assertEquals(messages.length,2)
+    assertEquals(messages.reverse,Seq(Send(ProxyActor.remotePath("test"),"test2",localAffinity = true),Send(ProxyActor.remotePath("test"),"test3",localAffinity = true)))
+
+
   }
 
   test("testing retryPolitics 1"){
@@ -46,7 +59,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll
 
       val metaResultTest=retryPolitics.askRetry(retryTestRef,"Test")
 
-      assertEquals(metaResultTest.getErrorMessage,MetaResult.createMetaResultError("Not found answer").getErrorMessage)
+      assertEquals(metaResultTest.getErrorMessage,ConnectResult.CreateFailConnectResult("Not found answer").getErrorMessage)
     }
   }
 
