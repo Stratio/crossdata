@@ -19,32 +19,14 @@
 
 package com.stratio.meta.core.executor;
 
-import com.datastax.driver.core.Session;
-import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.core.utils.QueryStatus;
-import com.stratio.meta.core.utils.Tree;
-import org.apache.log4j.Logger;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.statements.MetaStatement;
 
-public class Executor {
+import java.util.List;
 
-    private final Logger logger = Logger.getLogger(Executor.class);
-    private final Session session;
-
-    public Executor(Session session) {
-        this.session = session;
+public class DeepExecutor {
+    public static Result execute(MetaStatement stmt, List<Result> resultsFromChildren) {
+        // TODO
+        return null;
     }
-
-    public MetaQuery executeQuery(MetaQuery metaQuery) {
-
-        metaQuery.setStatus(QueryStatus.EXECUTED);
-
-        // Get plan
-        Tree plan = metaQuery.getPlan();
-
-        // Execute plan
-        metaQuery.setResult(plan.executeTreeDownTop(session));
-
-        return metaQuery;
-    }
-
 }

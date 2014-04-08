@@ -21,6 +21,7 @@ package com.stratio.meta.core.utils;
 
 public enum MetaPath {
     CASSANDRA,
+    COMMAND,
     DEEP,
     BATCH,
     STREAMING,

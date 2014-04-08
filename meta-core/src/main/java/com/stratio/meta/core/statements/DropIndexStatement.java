@@ -20,12 +20,12 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.data.DeepResultSet;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class DropIndexStatement extends MetaStatement {
 
@@ -72,6 +72,7 @@ public class DropIndexStatement extends MetaStatement {
 
     @Override
     public String translateToCQL() {
+        System.out.println("translatedToCQL="+toString());
         return this.toString();
     }
 
@@ -82,13 +83,15 @@ public class DropIndexStatement extends MetaStatement {
     }
     
     @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
+    public DeepResultSet executeDeep() {
+        return new DeepResultSet();
     }
-    
+
     @Override
     public Tree getPlan() {
-        return new Tree();
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+        return tree;
     }
     
 }

@@ -29,7 +29,7 @@ public class Planner {
     
     public MetaQuery planQuery(MetaQuery metaQuery) {
         metaQuery.setStatus(QueryStatus.PLANNED);
-        logger.warn("Not supported yet.");
+        metaQuery.setPlan(metaQuery.getStatement().getPlan());
         return metaQuery;
     }
     

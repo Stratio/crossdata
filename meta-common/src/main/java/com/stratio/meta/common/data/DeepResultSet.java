@@ -19,15 +19,17 @@
 
 package com.stratio.meta.common.data;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
-public abstract class ResultSet implements Iterable<Row> {
+public class DeepResultSet extends ResultSet implements Serializable {
+    @Override
+    public Iterator iterator() {
+        return null;
+    }
 
-    public abstract Iterator iterator();
-
-    public abstract int size();
-
-    public boolean isEmpty(){
-        return (size() < 1);
+    @Override
+    public int size() {
+        return 0;
     }
 }
