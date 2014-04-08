@@ -24,19 +24,27 @@ import akka.contrib.pattern.ClusterReceptionistExtension
 import com.stratio.meta.server.actors.ServerActor
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.server.config.ServerConfig
+import scala.annotation.tailrec
+import org.apache.log4j.Logger
 
 
-object Application extends App with ServerConfig{
-  val engine = new Engine(engineConfig)
+object MetaApplication extends App {
+  val metaServer:MetaServer =new MetaServer
+  @tailrec
+  private def commandLoop(): Unit = {
+    Console.readLine() match {
+      case "quit" | "exit" => return
+      case _ =>
+    }
+    commandLoop()
+  }
 
 
-
-  // Create an Akka system
-  val system = ActorSystem(clusterName,config)
-
-
-  val serverActor= system.actorOf(ServerActor.props(engine), actorName)
-  ClusterReceptionistExtension(system).registerService(serverActor)
-
+  metaServer.init(null)
+  metaServer.start()
+  commandLoop()
+  metaServer.stop()
+  metaServer.destroy()
 }
+
 

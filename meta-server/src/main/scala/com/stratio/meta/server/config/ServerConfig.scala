@@ -38,9 +38,9 @@ object ServerConfig{
 
 trait ServerConfig extends CassandraConfig{
 
-  val logger = Logger.getLogger(classOf[ServerConfig])
+  lazy val logger:Logger = ???
 
-  override lazy val config: Config ={
+  override val config: Config ={
 
     var defaultConfig= ConfigFactory.load(ServerConfig.SERVER_BASIC_CONFIG).getConfig(ServerConfig.PARENT_CONFIG_NAME)
     val configFile= defaultConfig.getString(ServerConfig.SERVER_USER_CONFIG_FILE)
