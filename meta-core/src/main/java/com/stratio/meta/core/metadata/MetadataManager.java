@@ -84,7 +84,7 @@ public class MetadataManager {
 				_logger.debug("Cluster metadata: " + result);
 			}
 		}
-        System.out.println("getKeyspaceMetadata: " + _clusterMetadata + " result: " + result);
+        //System.out.println("getKeyspaceMetadata: " + _clusterMetadata + " result: " + result);
 		return result;
 	}
 	

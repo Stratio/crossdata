@@ -42,7 +42,7 @@ public class Parser {
         MetaQuery metaQuery = new MetaQuery(inputText);
         metaQuery.setStatus(QueryStatus.PARSED);
         MetaStatement resultStatement;
-        System.out.println("Parsing: {"+inputText+"}");
+        //System.out.println("Parsing: {"+inputText+"}");
         ANTLRStringStream input = new ANTLRStringStream(inputText);
         MetaLexer lexer = new MetaLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);

@@ -193,6 +193,12 @@ public class ParsingTest {
     }
 
     @Test
+    public void insert_into_allValueTypes() {
+        String inputText = "INSERT INTO mykeyspace.tablename (c1, c2, c3, c4, c5) VALUES (text, 'quoted_text', 123, 1.23, true);";
+        testRegularStatement(inputText, "insert_into_allValueTypes");
+    }
+
+    @Test
     public void truncate_table() {
         String inputText = "TRUNCATE usersTable;";
         testRegularStatement(inputText, "truncate_table");

@@ -43,7 +43,7 @@ public class Validator {
                 metaQuery.getStatement()
                         .validate(_metadata, metaQuery.getTargetKeyspace())
         );
-        System.out.println("Validation hasError: " + metaQuery.getResult().hasError());
+        //System.out.println("Validation hasError: " + metaQuery.getResult().hasError());
         if(!metaQuery.hasError()) {
             metaQuery.setStatus(QueryStatus.VALIDATED);
         }

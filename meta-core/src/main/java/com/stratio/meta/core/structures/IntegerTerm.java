@@ -20,6 +20,11 @@ public class IntegerTerm extends Term{
         return _number;
     }
 
+    @Override
+    public String getStringValue() {
+        return toString();
+    }
+
     /** {@inheritDoc} */
     @Override
     public String toString() {

@@ -21,6 +21,11 @@ public class BooleanTerm extends Term{
         return _value;
     }
 
+    @Override
+    public String getStringValue() {
+        return toString();
+    }
+
     /** {@inheritDoc} */
     @Override
     public String toString() {

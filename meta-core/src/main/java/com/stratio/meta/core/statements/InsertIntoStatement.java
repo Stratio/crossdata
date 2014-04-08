@@ -322,6 +322,7 @@ public class InsertIntoStatement extends MetaStatement {
                     cm = tableMetadata.getColumn(ids.get(index));
                     if (cm != null) {
                         Term t = Term.class.cast(cellValues.get(index));
+                        //System.out.println("Term: " + t + " type: " + t.getClass());
                         if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
                             result = QueryResult.CreateFailQueryResult("Column " + ids.get(index)
                                     + " of type " + cm.getType().asJavaClass()
@@ -388,11 +389,11 @@ public class InsertIntoStatement extends MetaStatement {
             ValueCell valueCell = (ValueCell) iter.next();
             try{
                 if(valueCell.toString().matches("[0123456789.]+")){
-                    insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.toString()));
+                    insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.getStringValue()));
                 } else if (valueCell.toString().contains("-")){
-                        insertStmt = insertStmt.value(id, UUID.fromString(valueCell.toString()));
+                        insertStmt = insertStmt.value(id, UUID.fromString(valueCell.getStringValue()));
                 } else {
-                    insertStmt = insertStmt.value(id, valueCell.toString());
+                    insertStmt = insertStmt.value(id, valueCell.getStringValue());
                 }
             } catch(Exception ex){
                 return null;
@@ -427,6 +428,7 @@ public class InsertIntoStatement extends MetaStatement {
         if(optionsStmt==null){
             return insertStmt;
         }
+
         return optionsStmt;        
     }
     

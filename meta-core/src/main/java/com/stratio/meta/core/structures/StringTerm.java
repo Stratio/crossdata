@@ -47,6 +47,11 @@ public class StringTerm extends Term{
         this.quotedLiteral = quotedLiteral;
     }
 
+    @Override
+    public String getStringValue() {
+        return term;
+    }
+
     /** {@inheritDoc} */
     @Override
     public String toString() {

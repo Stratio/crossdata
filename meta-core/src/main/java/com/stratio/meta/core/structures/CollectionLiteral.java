@@ -57,6 +57,11 @@ public class CollectionLiteral extends ValueCell {
     }
 
     @Override
+    public String getStringValue() {
+        return toString();
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("{");
         for(Term term: literals){

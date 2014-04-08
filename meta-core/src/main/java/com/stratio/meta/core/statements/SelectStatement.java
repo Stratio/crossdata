@@ -373,7 +373,7 @@ public class SelectStatement extends MetaStatement {
                 //Check comparison, =, >, <, etc.
                 RelationCompare rc = RelationCompare.class.cast(relation);
                 String column = rc.getIdentifiers().get(0);
-                //System.out.println("column: " + column);
+
                 if (tableMetadata.getColumn(column) == null) {
                     result= QueryResult.CreateFailQueryResult("Column " + column + " does not exists in table " +
                             tableMetadata.getName());
@@ -478,7 +478,7 @@ public class SelectStatement extends MetaStatement {
         if(keyspaceInc){
             effectiveKeyspace = keyspace;
         }
-        System.out.println("validateKeyspaceAndTable: tKs" + targetKeyspace + " kInc: " + keyspaceInc + " eKs: " + effectiveKeyspace);
+
         //Check that the keyspace and table exists.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
             result= QueryResult.CreateFailQueryResult("Target keyspace missing or no keyspace has been selected.");
@@ -587,7 +587,7 @@ public class SelectStatement extends MetaStatement {
     @Override
     public String translateToCQL() {
         StringBuilder sb = new StringBuilder(this.toString());     
-        //System.out.println(sb.toString());        
+
         if(sb.toString().contains("TOKEN(")){
             int currentLength = 0;
             int newLength = sb.toString().length();
@@ -631,7 +631,7 @@ public class SelectStatement extends MetaStatement {
                 newLength = sb.toString().length();
             }          
         }
-        //System.out.println(sb.toString());
+
         return sb.toString();
     }
 
@@ -812,7 +812,7 @@ public class SelectStatement extends MetaStatement {
         } else {
             whereStmt = sel.where();
         }
-        System.out.println("SelectStatement: " + whereStmt.toString());
+
         return whereStmt;
     }
     
