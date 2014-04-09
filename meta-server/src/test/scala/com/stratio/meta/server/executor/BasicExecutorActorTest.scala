@@ -19,7 +19,7 @@ import org.testng.Assert._
 import scala.util.Failure
 import scala.util.Success
 import scala.collection.JavaConversions._
-
+import com.stratio.meta.server.config.BeforeAndAfterCassandra
 
 
 /**
@@ -28,10 +28,10 @@ import scala.collection.JavaConversions._
  */
 class BasicExecutorActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",
   ConfigFactory.parseString(TestKitUsageSpec.config)))
-with DefaultTimeout with BeforeAndAfterCassandra
+with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 {
 
-  val engineConfig: EngineConfig = {
+  lazy val engineConfig: EngineConfig = {
     val result=new EngineConfig
     result.setCassandraHosts(Array[String]("127.0.0.1"))
     result.setCassandraPort(9042)
@@ -39,7 +39,7 @@ with DefaultTimeout with BeforeAndAfterCassandra
   }
   lazy val engine: Engine = new Engine(engineConfig)
 
-  val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
+  lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
 
   //val executorRef=system.actorOf(Props(classOf[ExecutorActor],engine.getExecutor),"testExecutorActor")
 

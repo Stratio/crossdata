@@ -19,37 +19,43 @@
 
 package com.stratio.meta.server.config
 
-import org.scalatest.{FunSuiteLike, BeforeAndAfterAll}
 import java.io.File
 import scala.sys.process._
+import org.scalatest.{Suite, BeforeAndAfterAll}
 
-trait BeforeAndAfterCassandra extends scala.AnyRef with BeforeAndAfterAll with FunSuiteLike{
-  def beforeCassandraStart(){
+trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
+  this:Suite =>
+    def beforeCassandraStart(): Unit = {
 
-  }
+    }
 
-  override def beforeAll(){
-    val file= new File (getClass.getResource("/com/stratio/meta/test/test.sh").getFile)
-    file.setExecutable(true)
-    val output= file.getAbsolutePath.!!
-    println(output)
-  }
+    override def beforeAll(): Unit = {
+      beforeCassandraStart()
+      val file = new File(getClass.getResource("/com/stratio/meta/test/test.sh").getFile)
+      file.setExecutable(true)
+      val output = file.getAbsolutePath.!!
+      println(output)
+      afterCassandraStart()
+    }
 
-  def afterCassandraStart(){
+    def afterCassandraStart(): Unit = {
 
-  }
+    }
 
-  def beforeCassandraFinish(){
+    def beforeCassandraFinish(): Unit = {
 
-  }
-  override def afterAll(){
-    val file= new File (getClass.getResource("/com/stratio/meta/test/close.sh").getFile)
-    file.setExecutable(true)
-    val output= file.getAbsolutePath.!!
-    println(output)
-  }
+    }
+    override def afterAll(): Unit = {
+      beforeCassandraFinish()
+      val file = new File(getClass.getResource("/com/stratio/meta/test/close.sh").getFile)
+      file.setExecutable(true)
+      val output = file.getAbsolutePath.!!
+      println(output)
+      afterCassandraFinish()
+    }
 
-  def afterCassandraFinish(){
+    def afterCassandraFinish(): Unit = {
 
-  }
+    }
+
 }
