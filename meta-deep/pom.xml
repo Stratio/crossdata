@@ -28,4 +28,29 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>meta-deep</artifactId>
+
+    <properties>
+        <deep.version>0.1.2</deep.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>stratio-releases</id>
+            <url>http://nexus.strat.io:8081/nexus/content/repositories/releases</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.stratio</groupId>
+            <artifactId>meta-common</artifactId>
+            <version>${meta.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.deep</groupId>
+            <artifactId>StratioDeep</artifactId>
+            <version>${deep.version}</version>
+        </dependency>
+    </dependencies>
+
 </project>

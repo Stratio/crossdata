@@ -41,6 +41,8 @@ public class Executor {
         // Get plan
         Tree plan = metaQuery.getPlan();
 
+        System.out.println("PLAN: "+System.lineSeparator()+plan.toStringDownTop());
+
         // Execute plan
         metaQuery.setResult(plan.executeTreeDownTop(session));
 

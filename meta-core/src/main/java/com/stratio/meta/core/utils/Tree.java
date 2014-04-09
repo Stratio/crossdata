@@ -172,7 +172,7 @@ public class Tree {
         } else if(myPath == MetaPath.CASSANDRA){
             return CassandraExecutor.execute(myStep.getStmt(), session);
         } else if(myPath == MetaPath.DEEP){
-            return DeepExecutor.execute(myStep.getStmt(), resultsFromChildren);
+            return DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session);
         } else if(myPath == MetaPath.UNSUPPORTED){
             return QueryResult.CreateFailQueryResult("Query not supported.");
         } else {
