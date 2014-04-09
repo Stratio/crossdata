@@ -19,7 +19,7 @@ import org.testng.Assert._
 import scala.util.Failure
 import scala.util.Success
 import scala.collection.JavaConversions._
-import com.stratio.meta.server.ParentCassandraTest
+import com.stratio.meta.server.config.BeforeAndAfterCassandra
 
 
 /**
@@ -28,7 +28,7 @@ import com.stratio.meta.server.ParentCassandraTest
  */
 class BasicExecutorActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",
   ConfigFactory.parseString(TestKitUsageSpec.config)))
-with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll
+with DefaultTimeout with BeforeAndAfterCassandra
 {
 
   val engineConfig: EngineConfig = {
@@ -43,7 +43,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll
 
   //val executorRef=system.actorOf(Props(classOf[ExecutorActor],engine.getExecutor),"testExecutorActor")
 
-  override def afterAll() {
+  override def beforeCassandraFinish() {
     shutdown(system)
   }
 
