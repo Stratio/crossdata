@@ -17,8 +17,8 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.querys;
+package com.stratio.meta.core.queries;
 
-public class CassandraQuery extends ExternalQuery {
+public class ExternalQuery {
     
 }
