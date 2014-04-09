@@ -19,7 +19,7 @@ import org.testng.Assert._
 import scala.util.Failure
 import scala.util.Success
 import scala.collection.JavaConversions._
-
+import com.stratio.meta.server.config.BeforeAndAfterCassandra
 
 
 /**
@@ -28,7 +28,8 @@ import scala.collection.JavaConversions._
  */
 class BasicExecutorActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",
   ConfigFactory.parseString(TestKitUsageSpec.config)))
-with DefaultTimeout with BeforeAndAfterCassandra
+with DefaultTimeout with  BeforeAndAfterCassandra
+//FunSuiteLike with BeforeAndAfterAll
 {
 
   val engineConfig: EngineConfig = {
@@ -43,10 +44,13 @@ with DefaultTimeout with BeforeAndAfterCassandra
 
   //val executorRef=system.actorOf(Props(classOf[ExecutorActor],engine.getExecutor),"testExecutorActor")
 
-  override def beforeCassandraFinish() {
+ /* override def beforeCassandraFinish() {
+    shutdown(system)
+  }*/
+
+  override def afterAll() {
     shutdown(system)
   }
-
 
   test ("executor Test"){
 
@@ -150,7 +154,7 @@ with DefaultTimeout with BeforeAndAfterCassandra
     within(2000 millis){
 
       var msg="select * from demo ;"
-      assertEquals(proccess(msg),MutableList("'test1'", "'text2'").toString() )
+      assertEquals(proccess(msg),MutableList("test1", "text2").toString() )
     }
   }
   test ("QueryActor drop table "){
@@ -241,7 +245,6 @@ with DefaultTimeout with BeforeAndAfterCassandra
                   }
 
                   else {
-                    println("\n\n\n esto es lo que no vemos" + msg+ "\n\n")
                     "error"
                   }
                 }
@@ -273,7 +276,6 @@ with DefaultTimeout with BeforeAndAfterCassandra
     }
     else{
 
-      println("\n\n\n esto es lo que no vemos 2" + "\n\n")
 
       "error"
     }
