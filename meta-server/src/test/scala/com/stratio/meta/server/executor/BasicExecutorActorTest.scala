@@ -21,12 +21,14 @@ import scala.util.Success
 import scala.collection.JavaConversions._
 
 
+
 /**
  * Created by aalcocer on 4/8/14.
  * To generate unit test of proxy actor
  */
-class BasicExecutorActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll
+class BasicExecutorActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",
+  ConfigFactory.parseString(TestKitUsageSpec.config)))
+with DefaultTimeout with BeforeAndAfterCassandra
 {
 
   val engineConfig: EngineConfig = {
@@ -41,7 +43,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll
 
   //val executorRef=system.actorOf(Props(classOf[ExecutorActor],engine.getExecutor),"testExecutorActor")
 
-  override def afterAll() {
+  override def beforeCassandraFinish() {
     shutdown(system)
   }
 

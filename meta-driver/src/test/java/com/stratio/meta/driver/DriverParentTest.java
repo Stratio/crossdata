@@ -27,7 +27,7 @@ import org.testng.annotations.*;
 import static org.testng.Assert.*;
 
 
-public class DriverParentTest {
+public class DriverParentTest extends ParentCassandraTest {
     private static final long SLEEP_TIME = 3000;
     BasicDriver driver;
     MetaServer metaServer;

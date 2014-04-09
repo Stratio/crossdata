@@ -28,6 +28,11 @@ CASSANDRA_BASE_VERSION=2.0.5
 STRATIO_CASSANDRA_REPO="git@github.com:Stratio/stratio-cassandra.git"
 CCM_DIR=$(which ccm)
 
+if [ "$(ccm status | cut -f2 -d" " | tail -1)" = "UP" ] || [ "$(ccm status | cut -f2 -d" " | tail -1)" = "DOWN" ] ; then
+        echo "CCM is already active" 
+        exit
+fi
+
 echo " Checking ccm installation ... "
 unset $CASSANDRA_HOME
 
@@ -54,17 +59,10 @@ ant build
 cd ..
 
 echo " Initializing ccm ..."
-if [ -d ~/.ccm/testCluster ]; then
-  ccm stop && ccm remove
-fi
-
-if [ "$(ccm status | cut -f2 -d" " | tail -1)" != "UP" ] && [ "$(ccm status | cut -f2 -d" " | tail -1)" != "DOWN" ] ; then 
-	ccm create testCluster --cassandra-version ${CASSANDRA_BASE_VERSION} --nodes 2
-	ccm updateconf
-	ccm start
-else
-	echo "CCM is already active"
-fi
+ 
+ccm create testCluster --cassandra-version ${CASSANDRA_BASE_VERSION} --nodes 2
+ccm updateconf
+ccm start
 
 #Delete temporary files
 rm -rf ${TMPDIR}
