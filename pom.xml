@@ -35,7 +35,7 @@
     </modules>
     <properties>
         <akka.version>2.2.4</akka.version>
-        <cassandra.driver>2.0.0-rc3</cassandra.driver>
+        <cassandra.driver>2.0.0</cassandra.driver>
         <meta.version>1.0.0-SNAPSHOT</meta.version>
     </properties>
     <repositories>

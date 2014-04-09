@@ -127,6 +127,7 @@ public class SelectStatement extends MetaStatement {
     }
 
     public void setKeyspace(String keyspace) {
+        this.keyspaceInc = true;
         this.keyspace = keyspace;
     }        
     
@@ -316,6 +317,11 @@ public class SelectStatement extends MetaStatement {
     /** {@inheritDoc} */
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
+
+        if(true){ // TODO: To be removed
+            return QueryResult.CreateSuccessQueryResult();
+        }
+
         Result result = validateKeyspaceAndTable(metadata, targetKeyspace);
 
         String effectiveKeyspace = targetKeyspace;
@@ -334,6 +340,10 @@ public class SelectStatement extends MetaStatement {
         if(!result.hasError() && whereInc){
             result = validateWhereClause(tableMetadata);
         }
+
+        System.out.println("result.hasError()=" + result.hasError());
+        System.out.println("result.getErrorMessage()="+result.getErrorMessage());
+
         return result;
     }
 
@@ -826,6 +836,9 @@ public class SelectStatement extends MetaStatement {
         Tree steps = new Tree();
         if(joinInc){
             SelectStatement firstSelect = new SelectStatement(tableName);
+            if(keyspaceInc){
+                firstSelect.setKeyspace(this.keyspace);
+            }
             SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
             SelectStatement joinSelect = new SelectStatement("");
             // ADD FIELDS OF THE JOIN
