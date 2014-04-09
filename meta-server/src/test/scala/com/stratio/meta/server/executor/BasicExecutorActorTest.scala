@@ -19,7 +19,6 @@ import org.testng.Assert._
 import scala.util.Failure
 import scala.util.Success
 import scala.collection.JavaConversions._
-import com.stratio.meta.server.ParentCassandraTest
 
 
 /**
