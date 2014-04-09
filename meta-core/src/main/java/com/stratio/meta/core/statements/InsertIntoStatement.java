@@ -171,6 +171,7 @@ public class InsertIntoStatement extends MetaStatement {
             keyspaceInc = true;
         }
         this.tableName = tableName;
+
     }
 
     public SelectStatement getSelectStatement() {
@@ -265,38 +266,21 @@ public class InsertIntoStatement extends MetaStatement {
     /** {@inheritDoc} */
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
-        Result result = QueryResult.CreateSuccessQueryResult();
-        //Check that the table exists.
+        Result result = validateKeyspaceAndTable(metadata, targetKeyspace, keyspaceInc, keyspace, tableName);
 
-        String effectiveKeyspace = targetKeyspace;
-        if(keyspaceInc){
-            effectiveKeyspace = keyspace;
-        }
-
-        TableMetadata tableMetadata = null;
-        //Check that the keyspace exists, and that the table does not exits.
-        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result = QueryResult.CreateFailQueryResult("Target keyspace missing or no keyspace has been selected.");
-        }else{
-            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
-            if(ksMetadata == null){
-                result = QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
-            }else {
-                tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
-                if (tableMetadata != null && !ifNotExists) {
-                    result = QueryResult.CreateFailQueryResult("Table " + tableName + " already exists.");
-                }
+        if(!result.hasError()) {
+            String effectiveKeyspace = targetKeyspace;
+            if (keyspaceInc) {
+                effectiveKeyspace = keyspace;
             }
-        }
+            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
 
-        if(tableMetadata !=  null){
             if(typeValues == TYPE_SELECT_CLAUSE){
                 result = QueryResult.CreateFailQueryResult("INSERT INTO with subqueries not supported.");
             }else {
                 result = validateColumns(tableMetadata);
             }
         }
-
         return result;
     }
 

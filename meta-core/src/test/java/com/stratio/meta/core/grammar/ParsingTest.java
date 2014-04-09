@@ -69,14 +69,6 @@ public class ParsingTest {
         assertTrue(mq.hasError(), "Parser should return and error for " + methodName);
     }
 
-
-    /*
-        public void testMetaError(String inputText){
-            MetaStatement st = parser.parseStatement(inputText).getStatement();
-            thrown.expect(NullPointerException.class);
-            System.out.println(st.toString());
-        }*/
-
     public void testRecoverableError(String inputText, String methodName){
         MetaQuery metaQuery = parser.parseStatement(inputText);
         assertTrue(metaQuery.hasError(), "No errors reported in "+methodName);

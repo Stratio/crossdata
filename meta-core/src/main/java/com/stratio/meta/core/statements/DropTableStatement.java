@@ -72,9 +72,9 @@ public class DropTableStatement extends MetaStatement {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Drop table ");
+        StringBuilder sb = new StringBuilder("DROP TABLE ");
         if(ifExists){
-            sb.append("if exists ");
+            sb.append("IF EXISTS ");
         }       
         if(keyspaceInc){
             sb.append(keyspace).append(".");

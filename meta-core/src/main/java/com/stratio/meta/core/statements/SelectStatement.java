@@ -135,13 +135,15 @@ public class SelectStatement extends MetaStatement {
     }
 
     public void setTableName(String tableName) {
+
+        this.tableName = tableName;
         if(tableName.contains(".")){
             String[] ksAndTablename = tableName.split("\\.");
             keyspace = ksAndTablename[0];
             tableName = ksAndTablename[1];
             keyspaceInc = true;
         }
-        this.tableName = tableName;
+
     }          
 
     public SelectionClause getSelectionClause() {
@@ -316,7 +318,16 @@ public class SelectStatement extends MetaStatement {
     /** {@inheritDoc} */
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
-        Result result = validateKeyspaceAndTable(metadata, targetKeyspace);
+        //Validate FROM keyspace
+        Result result = validateKeyspaceAndTable(metadata, targetKeyspace,
+                keyspaceInc, keyspace, tableName);
+
+        if(!result.hasError() && joinInc){
+            if(join.getKeyspace() != null){
+                result = validateKeyspaceAndTable(metadata, targetKeyspace,
+                        join.isKeyspaceInc(), join.getKeyspace(), join.getTablename());
+            }
+        }
 
         String effectiveKeyspace = targetKeyspace;
         if(keyspaceInc){
@@ -450,6 +461,12 @@ public class SelectStatement extends MetaStatement {
                 for(SelectionSelector selector : ss.getSelectors()){
                     if(selector.getSelector().getType() == SelectorMeta.TYPE_IDENT){
                         SelectorIdentifier si = SelectorIdentifier.class.cast(selector.getSelector());
+
+                        if(si.getTablename() != null && !si.getTablename().equals(tableMetadata.getName())){
+                            result = QueryResult.CreateFailQueryResult("Column " + si.getColumnName()
+                                    + " refers to table " + si.getTablename() + " that has not been specified on query.");
+                        }
+
                         if(tableMetadata.getColumn(si.getColumnName()) == null){
                             result= QueryResult.CreateFailQueryResult("Column " + si.getColumnName() + " does not " +
                                     "exists in table " + tableMetadata.getName());
@@ -463,39 +480,7 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
-    /**
-     * Validate that a valid keyspace and table is present.
-     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
-     *                 the required information.
-     * @param targetKeyspace The target keyspace where the query will be executed.
-     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
-     */
-    private Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
-        Result result = QueryResult.CreateSuccessQueryResult();
-        //Get the effective keyspace based on the user specification during the create
-        //sentence, or taking the keyspace in use in the user session.
-        String effectiveKeyspace = targetKeyspace;
-        if(keyspaceInc){
-            effectiveKeyspace = keyspace;
-        }
 
-        //Check that the keyspace and table exists.
-        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result= QueryResult.CreateFailQueryResult("Target keyspace missing or no keyspace has been selected.");
-        }else{
-            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
-            if(ksMetadata == null){
-                result= QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
-            }else {
-                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
-                if (tableMetadata == null) {
-                    result= QueryResult.CreateFailQueryResult("Table " + tableName + " does not exists.");
-                }
-            }
-
-        }
-        return result;
-    }
 
     /**
      * Get the processed where clause to be sent to Cassandra related with lucene

@@ -102,4 +102,57 @@ public class SelectStatementTest extends BasicValidatorTest {
         }
     }
 
+    //
+    // Tests with table referred columns.
+    //
+    @Test
+    public void validate_referred_ok(){
+        String inputText = "SELECT users.name, users.age FROM demo.users WHERE name = 'name_5' AND age = 15;";
+        validateOk(inputText, "validate_referred_ok");
+    }
+
+    @Test
+    public void validate_referred_fail(){
+        String inputText = "SELECT unknown.name, unknown.age FROM demo.users WHERE name = 'name_5' AND age = 15;";
+        validateFail(inputText, "validate_referred_fail");
+    }
+
+    //
+    // Tests with inner joins
+    //
+    @Test
+    public void validate_innerJoin_basic_ok(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN demo.users ON users.name=users.name;";
+        validateOk(inputText, "validate_innerJoin_basic_ok");
+    }
+
+    @Test
+    public void validate_unknownKs1_fail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM unknown.users "
+                + "INNER JOIN demo.users ON users.name=users.name;";
+        validateFail(inputText, "validate_unknownKs1_fail");
+    }
+
+    @Test
+    public void validate_unknownKs2_fail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN unknown.users ON users.name=users.name;";
+        validateFail(inputText, "validate_unknownKs2_fail");
+    }
+
+    @Test
+    public void validate_unknownTable2_fail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN demo.unknown ON users.name=users.name;";
+        validateFail(inputText, "validate_unknownTable2_fail");
+    }
+
+    @Test
+    public void validate_innerJoin_2tables_ok(){
+        String inputText = "SELECT users.name, users.age, users_info.info FROM demo.users "
+                + "INNER JOIN demo.users_info ON users.name=users_info.link_name;";
+        validateOk(inputText, "validate_innerJoin_basic_ok");
+    }
+
 }

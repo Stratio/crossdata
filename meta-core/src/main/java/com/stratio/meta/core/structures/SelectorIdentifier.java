@@ -39,12 +39,16 @@ public class SelectorIdentifier extends SelectorMeta {
     public boolean isColumnSelector(){
         return identifier.contains(".");
     }
-    
+
+    /**
+     * Get the tablename associated with the selected column.
+     * @return The tablename or null if none have been specified.
+     */
     public String getTablename(){
         if(identifier.contains(".")){
             return identifier.split("\\.")[0];
         }
-        return identifier;
+        return null;
     }
     
     public String getColumnName(){
