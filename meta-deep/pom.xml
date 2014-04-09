@@ -33,13 +33,6 @@
         <deep.version>0.1.2</deep.version>
     </properties>
 
-    <licenses>
-        <license>
-            <name>Apache 2</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-    </licenses>
-
     <repositories>
         <repository>
             <id>stratio-releases</id>
@@ -49,14 +42,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.stratio.deep</groupId>
-            <artifactId>StratioDeep</artifactId>
-            <version>${deep.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.stratio</groupId>
             <artifactId>meta-common</artifactId>
             <version>${meta.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.deep</groupId>
+            <artifactId>StratioDeep</artifactId>
+            <version>${deep.version}</version>
         </dependency>
     </dependencies>
 
