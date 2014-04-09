@@ -343,8 +343,6 @@ public class SelectStatement extends MetaStatement {
             effectiveKs2 = join.getKeyspace();
         }
 
-
-
         TableMetadata tableMetadata1 = null;
         TableMetadata tableMetadata2 = null;
 
@@ -363,9 +361,6 @@ public class SelectStatement extends MetaStatement {
         if(!result.hasError() && whereInc){
             result = validateWhereClause(tableMetadata1, tableMetadata2);
         }
-
-        System.out.println("result.hasError()=" + result.hasError());
-        System.out.println("result.getErrorMessage()="+result.getErrorMessage());
 
         return result;
     }
@@ -414,16 +409,12 @@ public class SelectStatement extends MetaStatement {
                     targetTable = tableAndColumn[0];
                     column = tableAndColumn[1];
                 }
+                //System.out.println("Column: " + column + " targetTable: " + targetTable);
 
                 //Check that the column exists.
-                if(columns.get(targetTable) != null){
-                    if(!columns.get(targetTable).contains(column)){
-                        result= QueryResult.CreateFailQueryResult("Column " + column + " does not " +
-                                "exists in table " + targetTable);
-                    }
-                }else{
-                    result = QueryResult.CreateFailQueryResult("Column " + column
-                            + " refers to table " + targetTable + " that has not been specified on query.");
+                Result columnResult = findColumn(targetTable, column);
+                if(columnResult.hasError()){
+                    result = columnResult;
                 }
 
                 //Get the term and determine its type.
@@ -487,6 +478,38 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
+    /**
+     * Find a column in the selected tables.
+     * @param table The target table of the column.
+     * @param column The name of the column.
+     * @return A {@link com.stratio.meta.common.result.Result}.
+     */
+    private Result findColumn(String table, String column){
+
+        Result result = QueryResult.CreateSuccessQueryResult();
+        boolean found = false;
+
+        if(columns.get(table) != null){
+
+            Iterator<ColumnMetadata> it = columns.get(table).iterator();
+            while(!found && it.hasNext()) {
+                ColumnMetadata cm = it.next();
+                if (cm.getName().equals(column)) {
+                    found = true;
+                }
+            }
+            if(!found){
+                result= QueryResult.CreateFailQueryResult("Column " + column + " does not " +
+                        "exists in table " + table);
+            }
+
+        }else{
+            result = QueryResult.CreateFailQueryResult("Column " + column
+                    + " refers to table " + table + " that has not been specified on query.");
+        }
+        return result;
+    }
+
 
     /**
      * Validate that the columns specified in the select are valid by checking
@@ -508,6 +531,16 @@ public class SelectStatement extends MetaStatement {
         }
         columns.put("any", allColumns);
 
+        //TODO: Remove
+        //for(String k : columns.keySet()){
+        //    System.out.println("Table: " + k);
+        //    for(ColumnMetadata cm : columns.get(k)){
+        //        System.out.println("-> " + cm.getName());
+        //    }
+        //}
+
+        Result columnResult = null;
+
         //Iterate through the selection columns. If the user specified count(*) skip
         if(selectionClause.getType() == SelectionClause.TYPE_SELECTION){
             SelectionList sl = SelectionList.class.cast(selectionClause);
@@ -522,16 +555,11 @@ public class SelectStatement extends MetaStatement {
                         if(si.getTablename() != null){
                             targetTable = si.getTablename();
                         }
-                        if(columns.get(targetTable) != null){
-                            if(!columns.get(targetTable).contains(si.getColumnName())){
-                                result= QueryResult.CreateFailQueryResult("Column " + si.getColumnName() + " does not " +
-                                        "exists in table " + targetTable);
-                            }
-                        }else{
-                            result = QueryResult.CreateFailQueryResult("Column " + si.getColumnName()
-                                    + " refers to table " + si.getTablename() + " that has not been specified on query.");
-                        }
 
+                        columnResult = findColumn(targetTable, si.getColumnName());
+                        if(columnResult.hasError()){
+                            result = columnResult;
+                        }
                     }else{
                         result= QueryResult.CreateFailQueryResult("Functions on selected fields not supported.");
                     }
