@@ -31,6 +31,11 @@ public class Row implements Serializable {
         cells = new LinkedHashMap<>();
     }
 
+    public Row(String key, Cell cell) {
+        this();
+        addCell(key, cell);
+    }
+
     public int size(){
         return cells.size();
     }

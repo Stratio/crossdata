@@ -97,7 +97,7 @@ public class ConsoleUtils {
             Map<String, Cell> cells = row.getCells();
             for(String key: cells.keySet()){
                 Cell cell = cells.get(key);
-                String str = String.valueOf(cell.getDatatype().cast(cell.getValue()));
+                String str = String.valueOf(cell.getValue());
                 sb.append(StringUtils.rightPad(str, colWidths.get(key)));
                 sb.append(" | ");
             }
@@ -112,7 +112,7 @@ public class ConsoleUtils {
         // Get column names
         Row firstRow = (Row) resultSet.iterator().next();
         for(String key: firstRow.getCells().keySet()){
-            colWidths.put(key, 0);
+            colWidths.put(key, key.length());
         }
         // Find widest cell content of every column
         for(Row row: resultSet){

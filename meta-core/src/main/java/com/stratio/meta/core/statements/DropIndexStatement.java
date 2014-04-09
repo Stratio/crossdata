@@ -19,18 +19,27 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.data.DeepResultSet;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
+import java.util.Iterator;
+
 public class DropIndexStatement extends MetaStatement {
 
     private boolean _dropIfExists = false;
     private String _name = null;
+    private String _keyspace = null;
+    private boolean _keyspaceInc = false;
+
 
     public DropIndexStatement(){
         this.command = false;
@@ -39,6 +48,12 @@ public class DropIndexStatement extends MetaStatement {
     public DropIndexStatement(String name){
         this();
         _name = name;
+        if(name.contains(".")){
+            String[] ksAndName = name.split("\\.");
+            _keyspace = ksAndName[0];
+            _name = ksAndName[1];
+            _keyspaceInc = true;
+        }
     }
     
     public void setDropIfExists(){
@@ -47,6 +62,12 @@ public class DropIndexStatement extends MetaStatement {
 
     public void setName(String name){
             _name = name;
+        if(name.contains(".")){
+            String[] ksAndName = name.split("\\.");
+            _keyspace = ksAndName[0];
+            _name = ksAndName[1];
+            _keyspaceInc = true;
+        }
     }
 
     @Override
@@ -62,7 +83,58 @@ public class DropIndexStatement extends MetaStatement {
     /** {@inheritDoc} */
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
+
+        Result result = QueryResult.CreateSuccessQueryResult();
+        //Get the effective keyspace based on the user specification during the create
+        //sentence, or taking the keyspace in use in the user session.
+        String effectiveKeyspace = targetKeyspace;
+        if(_keyspaceInc){
+            effectiveKeyspace = _keyspace;
+        }
+
+        //Check that the keyspace and table exists.
+        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+            result= QueryResult.CreateFailQueryResult("Target keyspace missing or no keyspace has been selected.");
+        }else{
+            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+            if(ksMetadata == null){
+                result= QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
+            }else{
+                result = validateIndexName(ksMetadata);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Validate the existence of the index in the selected keyspace.
+     * @param ksMetadata The keyspace metadata.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     */
+    public Result validateIndexName(KeyspaceMetadata ksMetadata){
+        Result result = QueryResult.CreateSuccessQueryResult();
+        boolean found = false;
+        System.out.println("ks: " + _keyspace + " name: " + _name);
+        Iterator<TableMetadata> tables = ksMetadata.getTables().iterator();
+
+        while(tables.hasNext() && !found){
+            TableMetadata tableMetadata = tables.next();
+            Iterator<ColumnMetadata> columns = tableMetadata.getColumns().iterator();
+            while(columns.hasNext() && !found){
+                ColumnMetadata column = columns.next();
+                if(column.getIndex() != null
+                        && (column.getIndex().getName().equals(_name)
+                        || column.getIndex().getName().equals("stratio_lucene_"+_name))){
+                    found = true;
+                }
+            }
+        }
+
+        if(!_dropIfExists && !found){
+            result = QueryResult.CreateFailQueryResult("Index " + _name + " not found in keyspace " + ksMetadata.getName());
+        }
+
+        return result;
     }
 
     @Override
@@ -72,7 +144,7 @@ public class DropIndexStatement extends MetaStatement {
 
     @Override
     public String translateToCQL() {
-        System.out.println("translatedToCQL="+toString());
+        //System.out.println("translatedToCQL="+toString());
         return this.toString();
     }
 

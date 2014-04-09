@@ -19,15 +19,14 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.*;
 import com.stratio.meta.common.data.DeepResultSet;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.FloatProperty;
+import com.stratio.meta.core.structures.IdentifierProperty;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.MetaPath;
@@ -59,6 +58,11 @@ public class CreateIndexStatement extends MetaStatement {
     private ArrayList<String> _targetColumn = null;
     private String _usingClass = null;
     private HashMap<ValueProperty, ValueProperty> _options = null;
+
+    /**
+     * Table metadata cached on the validate function.
+     */
+    private transient TableMetadata _metadata = null;
 
     public CreateIndexStatement(){
         this.command = false;
@@ -205,7 +209,7 @@ public class CreateIndexStatement extends MetaStatement {
     public Result validate(MetadataManager metadata, String targetKeyspace) {
 
         //Validate target table
-        Result result = validateKeyspaceAndTable(metadata, targetKeyspace);
+        Result result = validateKeyspaceAndTable(metadata, targetKeyspace, _keyspaceInc, _keyspace, _tablename);
 
         String effectiveKeyspace = targetKeyspace;
         if(_keyspaceInc){
@@ -214,6 +218,7 @@ public class CreateIndexStatement extends MetaStatement {
         TableMetadata tableMetadata = null;
         if(!result.hasError()) {
             tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tablename);
+            _metadata = tableMetadata;
             result = validateOptions(effectiveKeyspace, tableMetadata);
         }
 
@@ -297,38 +302,62 @@ public class CreateIndexStatement extends MetaStatement {
     }
 
     /**
-     * Validate that a valid keyspace and table is present.
-     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
-     *                 the required information.
-     * @param targetKeyspace The target keyspace where the query will be executed.
-     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     * Generate the set of Lucene options required to create an index.
+     * @return The set of options.
      */
-    private Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
-        Result result = QueryResult.CreateSuccessQueryResult();
-        //Get the effective keyspace based on the user specification during the create
-        //sentence, or taking the keyspace in use in the user session.
-        String effectiveKeyspace = targetKeyspace;
-        if(_keyspaceInc){
-            effectiveKeyspace = _keyspace;
-        }
+    public HashMap<ValueProperty, ValueProperty> generateLuceneOptions(){
+        HashMap<ValueProperty, ValueProperty> result = new HashMap<>();
 
-        //Check that the keyspace and table exists.
-        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result= QueryResult.CreateFailQueryResult("Target keyspace missing or no keyspace has been selected.");
-        }else{
-            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
-            if(ksMetadata == null){
-                result= QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
-            }else {
-                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tablename);
-                if (tableMetadata == null) {
-                    result= QueryResult.CreateFailQueryResult("Table " + _tablename + " does not exists.");
-                }
-            }
+        // CREATE CUSTOM INDEX demo_banks
+        // ON  demo.banks (lucene)
+        // USING 'org.apache.cassandra.db.index.stratio.RowIndex'
+        // WITH OPTIONS = {
+        //     'refresh_seconds':'1',
+        //     'num_cached_filters':'1',
+        //     'ram_buffer_mb':'32',
+        //     'max_merge_mb':'5',
+        //     'max_cached_mb':'30',
+        //     'schema':
+        //         '{default_analyzer:"org.apache.lucene.analysis.standard.StandardAnalyzer",
+        //          fields:{ip: {type:"inet"}, bytes: {type:"bytes"}, ... , decimal_digits: 50}}}'
+        //  };
+        //TODO: Read parameters from default configuration and merge with the user specification.
+        result.put(new IdentifierProperty("refresh_seconds"), new FloatProperty(1));
+        result.put(new IdentifierProperty("num_cached_filters"), new FloatProperty(1));
+        result.put(new IdentifierProperty("ram_buffer_mb"), new FloatProperty(32));
+        result.put(new IdentifierProperty("max_merge_mb"), new FloatProperty(5));
+        result.put(new IdentifierProperty("max_cached_mb"), new FloatProperty(30));
+        result.put(new IdentifierProperty("schema"), new IdentifierProperty(generateLuceneSchema()));
 
-        }
         return result;
     }
+
+    /**
+     * Generate the Lucene options schema that corresponds with the selected column.
+     * @return The Lucene Schema.
+     */
+    protected String generateLuceneSchema(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\",");
+        sb.append("fields:{");
+        //Iterate throught the columns.
+
+        for(String column : _targetColumn){
+
+            DataType type = _metadata.getColumn(column).getType();
+/*
+            DataType.Name.BIGINT.toString();
+            DataType.Name.BIGINT.name();
+
+            switch (_metadata.getColumn(column).getType().getName().name()){
+                case DataType.Name.ASCII.name():
+            }*/
+        }
+
+        sb.append("}}");
+        return sb.toString();
+    }
+
 
 
     @Override
@@ -388,9 +417,25 @@ public class CreateIndexStatement extends MetaStatement {
 
     @Override
     public Tree getPlan() {
-        Tree tree = new Tree();
-        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-        return tree;
+        Tree result = new Tree();
+
+        //Add CREATE INDEX as the root.
+        result.addChild(new Tree(new MetaStep(MetaPath.CASSANDRA, translateToCQL())));
+        //Add alter table as leaf if LUCENE index is selected.
+        if(IndexType.LUCENE.equals(_type)){
+            StringBuilder alterStatement = new StringBuilder("ALTER TABLE ");
+            if(_keyspaceInc){
+                alterStatement.append(_keyspace);
+                alterStatement.append(".");
+            }
+            alterStatement.append("ADD stratio_lucene");
+            alterStatement.append(_name);
+            alterStatement.append(" TEXT;");
+            System.out.println("CreateIndexStatement.getPlan: " + alterStatement);
+            result.getChild(0).addChild(new Tree(new MetaStep(MetaPath.CASSANDRA, alterStatement.toString())));
+        }
+
+        return result;
     }
     
 }

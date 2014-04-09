@@ -19,14 +19,35 @@
 
 package com.stratio.meta.core.executor;
 
+import com.datastax.driver.core.Session;
+import com.stratio.meta.common.data.CassandraResultSet;
+import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.ResultSet;
+import com.stratio.meta.common.data.Row;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.statements.AlterTableStatement;
 import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.deep.Bridge;
 
 import java.util.List;
 
 public class DeepExecutor {
-    public static Result execute(MetaStatement stmt, List<Result> resultsFromChildren) {
-        // TODO
-        return null;
+    public static Result execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot, Session session) {
+        if(stmt instanceof SelectStatement){
+            SelectStatement ss = (SelectStatement) stmt;
+            ResultSet resultSet = Bridge.execute(ss, resultsFromChildren, isRoot, session);
+            return QueryResult.CreateSuccessQueryResult(resultSet);
+        } else if(stmt instanceof AlterTableStatement){ //TODO: Remove this option
+            AlterTableStatement ats = (AlterTableStatement) stmt;
+            CassandraResultSet resultSet = new CassandraResultSet();
+            int count = Integer.valueOf(Bridge.executeCount(ats.getKeyspace(), ats.getName_table(), session));
+            resultSet.add(new Row("deep_count", new Cell(Integer.TYPE, count)));
+            return QueryResult.CreateSuccessQueryResult(resultSet);
+        } else {
+            System.out.println("EMPTY DEEP RESULT");
+            return QueryResult.CreateSuccessQueryResult();
+        }
     }
 }

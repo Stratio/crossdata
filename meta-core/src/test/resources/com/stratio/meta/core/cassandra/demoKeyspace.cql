@@ -32,6 +32,19 @@ INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_13
 INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_14', 'male', 'name_14@domain.com', 104, false, 'Lucene is a Java full-text search engine.');
 INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_15', 'male', 'name_15@domain.com', 105, false, 'Lucene is not a complete application, but rather a code library and API that can easily be used to add search capabilities to applications.');
 
+# Table used for join tests with demo.users
+CREATE TABLE demo.users_info ( link_name varchar, link_email varchar, info varchar, PRIMARY KEY ((link_name), link_email));
+INSERT INTO demo.users_info (link_name, link_email, info) VALUES ('name_0', 'name_0@domain.com', 'Info 0');
+INSERT INTO demo.users_info (link_name, link_email, info) VALUES ('name_1', 'name_1@domain.com', 'Info 1');
+INSERT INTO demo.users_info (link_name, link_email, info) VALUES ('name_2', 'name_2@domain.com', 'Info 2');
+INSERT INTO demo.users_info (link_name, link_email, info) VALUES ('name_3', 'name_3@domain.com', 'Info 3');
+INSERT INTO demo.users_info (link_name, link_email, info) VALUES ('name_4', 'name_4@domain.com', 'Info 4');
+INSERT INTO demo.users_info (link_name, link_email, info) VALUES ('name_5', 'name_5@domain.com', 'Info 5');
+INSERT INTO demo.users_info (link_name, link_email, info) VALUES ('name_6', 'name_6@domain.com', 'Info 6');
+INSERT INTO demo.users_info (link_name, link_email, info) VALUES ('name_7', 'name_7@domain.com', 'Info 7');
+INSERT INTO demo.users_info (link_name, link_email, info) VALUES ('name_8', 'name_8@domain.com', 'Info 8');
+INSERT INTO demo.users_info (link_name, link_email, info) VALUES ('name_9', 'name_9@domain.com', 'Info 9');
+
 # Table with a counter column. This columns can only be updated and do not support inserts.
 CREATE TABLE demo.counter (name varchar, counter_value counter, PRIMARY KEY (name));
 UPDATE demo.counter SET counter_value = counter_value + 1 WHERE name = 'name_0';

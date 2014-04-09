@@ -21,9 +21,12 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.data.DeepResultSet;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
 import java.util.Iterator;
@@ -70,7 +73,23 @@ public class AlterTableStatement extends MetaStatement{
         }
         this.name_table = name_table;
     }
-    
+
+    public boolean isKeyspaceInc() {
+        return keyspaceInc;
+    }
+
+    public void setKeyspaceInc(boolean keyspaceInc) {
+        this.keyspaceInc = keyspaceInc;
+    }
+
+    public String getKeyspace() {
+        return keyspace;
+    }
+
+    public void setKeyspace(String keyspace) {
+        this.keyspace = keyspace;
+    }
+
     //Seeters and getters columns
     public String getColumn() {
         return column;
@@ -152,7 +171,7 @@ public class AlterTableStatement extends MetaStatement{
     /** {@inheritDoc} */
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
+        return QueryResult.CreateSuccessQueryResult();
     }
 
     @Override
@@ -177,8 +196,10 @@ public class AlterTableStatement extends MetaStatement{
     }
     
     @Override
-    public Tree getPlan() {
-        return new Tree();
+    public Tree getPlan() { //TODO: Return MetaPath.CASSANDRA
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, this));
+        return tree;
     }
     
 }

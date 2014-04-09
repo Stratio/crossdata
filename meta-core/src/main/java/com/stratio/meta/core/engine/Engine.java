@@ -29,19 +29,29 @@ import org.apache.log4j.Logger;
 
 import java.util.Arrays;
 
+/**
+ * Execution engine that creates all entities required for processing an executing a query:
+ * {@link com.stratio.meta.core.parser.Parser}, {@link com.stratio.meta.core.validator.Validator},
+ * {@link com.stratio.meta.core.planner.Planner}, and {@link com.stratio.meta.core.executor.Executor}.
+ * Additionally, it also maintains the {@link com.datastax.driver.core.Session} with the Cassandra backend.
+ */
 public class Engine {
+
     private final Parser parser;
     private final Validator validator;
     private final Planner planner;
     private final Executor executor;
     private final Session session;
 
-
     /**
      * Class logger.
      */
     private static final Logger _logger = Logger.getLogger(Engine.class.getName());
 
+    /**
+     * Class constructor.
+     * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
+     */
     public Engine(EngineConfig config) {
 
         Cluster cluster = Cluster.builder()

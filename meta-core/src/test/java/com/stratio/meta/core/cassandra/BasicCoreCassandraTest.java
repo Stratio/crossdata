@@ -47,7 +47,9 @@ public class BasicCoreCassandraTest {
      */
     private static final String DEFAULT_HOST = "127.0.0.1";
 
-
+    /**
+     * Parsed used to interpret the testing queries.
+     */
     protected final Parser parser = new Parser();
 
     /**
