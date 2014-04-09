@@ -16,16 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-
-package com.stratio.meta.core.cassandra;
+package com.stratio.meta.driver;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
-import com.stratio.meta.core.parser.Parser;
 import org.apache.log4j.Logger;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
@@ -37,33 +36,28 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.testng.Assert.assertTrue;
 
-
-public class BasicCoreCassandraTest {
-
+public class ParentCassandraTest {
     /**
      * Default Cassandra HOST using 127.0.0.1.
      */
     private static final String DEFAULT_HOST = "127.0.0.1";
 
 
-    protected final Parser parser = new Parser();
-
     /**
      * Session to launch queries on C*.
      */
-    protected static Session _session = null;
+    protected static Session session = null;
 
     /**
      * Class logger.
      */
-    private static final Logger logger = Logger.getLogger(BasicCoreCassandraTest.class);
+    private static final Logger logger = Logger.getLogger(ParentCassandraTest.class);
 
     @BeforeClass
     public static void setUpBeforeClass(){
         try {
-            File script = new File(BasicCoreCassandraTest.class.getResource("test.sh").getPath());
+            File script = new File(ParentCassandraTest.class.getResource("/com/stratio/meta/test/test.sh").getPath());
             script.setExecutable(true);
             Process p = Runtime.getRuntime().exec(script.getAbsolutePath());
             BufferedReader in = new BufferedReader(
@@ -94,8 +88,8 @@ public class BasicCoreCassandraTest {
     protected static boolean connect(String host){
         boolean result = false;
         Cluster c = Cluster.builder().addContactPoint(host).build();
-        _session = c.connect();
-        result = null == _session.getLoggedKeyspace();
+        session = c.connect();
+        result = null == session.getLoggedKeyspace();
         return result;
     }
 
@@ -108,14 +102,14 @@ public class BasicCoreCassandraTest {
      * host specified by {@code DEFAULT_HOST}.
      */
     public static void initCassandraConnection(){
-        assertTrue(connect(getHost()), "Cannot connect to cassandra");
+        Assert.assertTrue(connect(getHost()), "Cannot connect to cassandra");
     }
 
     /**
      * Close the Cassandra session.
      */
     public static void closeCassandraConnection(){
-        _session.close();
+        session.close();
     }
 
     /**
@@ -126,7 +120,7 @@ public class BasicCoreCassandraTest {
         String query = "USE " + targetKeyspace;
         boolean ksExists = true;
         try{
-            ResultSet result = _session.execute(query);
+            session.execute(query);
         }catch (InvalidQueryException iqe){
             ksExists = false;
         }
@@ -134,7 +128,7 @@ public class BasicCoreCassandraTest {
         if(ksExists){
             String q = "DROP KEYSPACE " + targetKeyspace;
             try{
-                _session.execute(q);
+                session.execute(q);
             }catch (Exception e){
                 logger.error("Cannot drop keyspace: " + targetKeyspace, e);
             }
@@ -148,15 +142,15 @@ public class BasicCoreCassandraTest {
      * @param path The path of the CQL script.
      */
     public static void loadTestData(String keyspace, String path){
-        KeyspaceMetadata metadata = _session.getCluster().getMetadata().getKeyspace(keyspace);
+        KeyspaceMetadata metadata = session.getCluster().getMetadata().getKeyspace(keyspace);
         if(metadata == null){
             logger.info("Creating keyspace " + keyspace + " using " + path);
             List<String> scriptLines = loadScript(path);
             logger.info("Executing " + scriptLines.size() + " lines");
             for(String cql : scriptLines){
-               ResultSet result = _session.execute(cql);
+                ResultSet result = session.execute(cql);
                 if(logger.isDebugEnabled()){
-                	logger.debug("Executing: " + cql + " -> " + result.toString());
+                    logger.debug("Executing: " + cql + " -> " + result.toString());
                 }
             }
         }
@@ -171,7 +165,7 @@ public class BasicCoreCassandraTest {
      */
     public static List<String> loadScript(String path){
         List<String> result = new ArrayList<>();
-        URL url = BasicCoreCassandraTest.class.getResource(path);
+        URL url = ParentCassandraTest.class.getResource(path);
         logger.info("Loading script from: " + url);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
             String line;
@@ -185,5 +179,4 @@ public class BasicCoreCassandraTest {
         }
         return result;
     }
-
 }

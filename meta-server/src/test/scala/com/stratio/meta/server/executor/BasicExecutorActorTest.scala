@@ -19,13 +19,15 @@ import org.testng.Assert._
 import scala.util.Failure
 import scala.util.Success
 import scala.collection.JavaConversions._
+import com.stratio.meta.server.ParentCassandraTest
 
 
 /**
  * Created by aalcocer on 4/8/14.
  * To generate unit test of proxy actor
  */
-class BasicExecutorActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
+class BasicExecutorActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",
+  ConfigFactory.parseString(TestKitUsageSpec.config)))
 with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll
 {
 

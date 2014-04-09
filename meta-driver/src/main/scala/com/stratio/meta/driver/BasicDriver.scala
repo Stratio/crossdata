@@ -25,8 +25,10 @@ import akka.contrib.pattern.ClusterClient
 import com.stratio.meta.driver.actor.ProxyActor
 import com.stratio.meta.common.result.Result
 import com.stratio.meta.common.ask.{Query, Connect}
+import org.apache.log4j.Logger
 
 class BasicDriver extends DriverConfig{
+  override lazy val logger = Logger.getLogger(getClass)
   lazy val system = ActorSystem("MetaDriverSystem",config)
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact=> system.actorSelection(contact)).toSet
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts),"remote-client")

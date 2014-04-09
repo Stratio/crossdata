@@ -12,6 +12,8 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import org.apache.log4j.Logger
 import scala.sys.process._
+import scala.io.{BufferedSource, Source}
+import java.io.File
 
 
 class QueryActorTest {
@@ -27,14 +29,17 @@ class QueryActorTest {
   lazy val engine: Engine = new Engine(engineConfig)
 
   @BeforeTest def init() = {
-    val cmd = "./meta-server/src/test/resources/com/stratio/meta/server/test.sh"
-    val output = cmd.!!
+    val file= new File (getClass.getResource("/com/stratio/meta/server/test.sh").getFile)
+    file.setExecutable(true)
+    val output= file.getAbsolutePath.!!
     println(output)
+
   }
 
   @AfterTest def close() = {
-    val cmd = "./meta-server/src/test/resources/com/stratio/meta/server/close.sh"
-    val output = cmd.!!
+    val file= new File (getClass.getResource("/com/stratio/meta/server/close.sh").getFile)
+    file.setExecutable(true)
+    val output= file.getAbsolutePath.!!
     println(output)
   }
 

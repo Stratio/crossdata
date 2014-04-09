@@ -23,6 +23,7 @@ import com.typesafe.config.{ ConfigFactory, Config}
 import com.stratio.meta.driver.utils.RetryPolitics
 import akka.util.Timeout
 import java.io.File
+import org.apache.log4j.Logger
 
 object DriverConfig{
   val BASIC_DRIVER_CONFIG= "driver-reference.conf"
@@ -35,19 +36,31 @@ object DriverConfig{
 }
 
 trait DriverConfig extends MetaServerConfig{
+  lazy val logger:Logger = ???
+
   override val config: Config ={
     var defaultConfig= ConfigFactory.load(DriverConfig.BASIC_DRIVER_CONFIG).getConfig(DriverConfig.PARENT_CONFIG_NAME)
     val configFile= defaultConfig.getString(DriverConfig.DRIVER_CONFIG_FILE)
     val configResource= defaultConfig.getString(DriverConfig.DRIVER_CONFIG_RESOURCE)
 
     if(configResource != ""){
-      val userConfig = ConfigFactory.parseResources(configResource).getConfig(DriverConfig.PARENT_CONFIG_NAME)
-      defaultConfig=userConfig.withFallback(defaultConfig)
+      val resource = DriverConfig.getClass.getClassLoader.getResource(configResource)
+      if(resource !=null) {
+        val userConfig = ConfigFactory.parseResources(configResource).getConfig(DriverConfig.PARENT_CONFIG_NAME)
+        defaultConfig = userConfig.withFallback(defaultConfig)
+      }else{
+        logger.warn("User resource (" + configResource + ") haven't been found")
+      }
     }
 
     if(configFile!="" ){
-      val userConfig= ConfigFactory.parseFile(new File(configFile)).getConfig(DriverConfig.PARENT_CONFIG_NAME)
-      defaultConfig=userConfig.withFallback(defaultConfig)
+      val file=new File(configFile)
+      if(file.exists()) {
+        val userConfig = ConfigFactory.parseFile(file).getConfig(DriverConfig.PARENT_CONFIG_NAME)
+        defaultConfig = userConfig.withFallback(defaultConfig)
+      }else{
+        logger.warn("User file (" + configResource + ") haven't been found")
+      }
     }
 
     ConfigFactory.load(defaultConfig)
@@ -55,7 +68,6 @@ trait DriverConfig extends MetaServerConfig{
 
   lazy val retryTimes: Int= config.getInt(DriverConfig.DRIVER_RETRY_TIMES_KEY)
   lazy val retrySeconds: Timeout= new Timeout(config.getMilliseconds(DriverConfig.DRIVER_RETRY_SECONDS_KEY))
-
   lazy val retryPolitics: RetryPolitics = new RetryPolitics(retryTimes,retrySeconds)
 
 }
