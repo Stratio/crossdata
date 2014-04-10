@@ -285,7 +285,7 @@ dropIndexStatement returns [DropIndexStatement dis]
 	}:
 	T_DROP T_INDEX
 	(T_IF T_EXISTS {$dis.setDropIfExists();})?
-	name=(T_IDENT | T_LUCENE) {$dis.setName($name.text);}
+	name=(T_KS_AND_TN | T_LUCENE) {$dis.setName($name.text);}
 	;
 
 

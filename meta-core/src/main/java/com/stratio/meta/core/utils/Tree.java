@@ -144,13 +144,14 @@ public class Tree {
     
     private String printDownTop(int deep){
         StringBuilder sb = new StringBuilder();
+        sb.append(node.toString());
         for(Tree child: children){
             sb.append(child.printDownTop(deep+1)).append(System.getProperty("line.separator"));
         }        
         for(int i=0; i<deep; i++){
             sb.append("\t");
         }
-        sb.append(node.toString());
+
         return sb.toString();
     }
 
@@ -170,7 +171,7 @@ public class Tree {
         if(myPath == MetaPath.COMMAND){
             return CommandExecutor.execute(myStep.getStmt(), session);
         } else if(myPath == MetaPath.CASSANDRA){
-            return CassandraExecutor.execute(myStep.getStmt(), session);
+            return CassandraExecutor.execute(myStep, session);
         } else if(myPath == MetaPath.DEEP){
             return DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session);
         } else if(myPath == MetaPath.UNSUPPORTED){

@@ -36,9 +36,11 @@ import java.util.Iterator;
 public class DropIndexStatement extends MetaStatement {
 
     private boolean _dropIfExists = false;
+    private boolean _dropIndex = false;
     private String _name = null;
     private String _keyspace = null;
     private boolean _keyspaceInc = false;
+    private ColumnMetadata _targetColumn = null;
 
 
     public DropIndexStatement(){
@@ -126,12 +128,15 @@ public class DropIndexStatement extends MetaStatement {
                         && (column.getIndex().getName().equals(_name)
                         || column.getIndex().getName().equals("stratio_lucene_"+_name))){
                     found = true;
+                    _targetColumn = column;
                 }
             }
         }
 
         if(!_dropIfExists && !found){
             result = QueryResult.CreateFailQueryResult("Index " + _name + " not found in keyspace " + ksMetadata.getName());
+        }else{
+            _dropIndex = true;
         }
 
         return result;
@@ -161,9 +166,36 @@ public class DropIndexStatement extends MetaStatement {
 
     @Override
     public Tree getPlan() {
-        Tree tree = new Tree();
-        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-        return tree;
+        Tree result = new Tree();
+        if(_dropIndex) {
+            //Add CREATE INDEX as the root.
+            StringBuilder sb = new StringBuilder("DROP INDEX ");
+            if(_keyspaceInc) {
+                sb.append(_keyspace).append(".");
+            }
+            sb.append(_targetColumn.getIndex().getName());
+            System.out.println("sb: " + sb.toString());
+
+            if (_targetColumn.getIndex().getName().startsWith("stratio")) {
+                //Remove associated column.
+                StringBuilder sb2 = new StringBuilder("ALTER TABLE ");
+                if(_keyspaceInc) {
+                    sb2.append(_keyspace).append(".");
+                }
+                sb2.append(_targetColumn.getTable().getName());
+                sb2.append(" DROP ").append("stratio_lucene_").append(_name);
+                System.out.println("sb2: " + sb2.toString());
+
+                result.setNode(new MetaStep(MetaPath.CASSANDRA, sb2.toString()));
+                result.addChild(new Tree(new MetaStep(MetaPath.CASSANDRA, sb.toString())));
+            }else{
+                result.setNode(new MetaStep(MetaPath.CASSANDRA, sb.toString()));
+            }
+
+
+
+        }
+        return result;
     }
     
 }

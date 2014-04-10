@@ -882,7 +882,7 @@ public class SelectStatement extends MetaStatement {
         } else {
             whereStmt = sel.where();
         }
-
+        System.out.println("SelectStatement.getDriverStatement: " + whereStmt.toString());
         return whereStmt;
     }
     
