@@ -330,10 +330,6 @@ public class SelectStatement extends MetaStatement {
             }
         }
 
-        //if(true){ // TODO: To be removed
-        //    return QueryResult.CreateSuccessQueryResult();
-        //}
-
         String effectiveKs1 = targetKeyspace;
         String effectiveKs2 = targetKeyspace;
         if(keyspaceInc){

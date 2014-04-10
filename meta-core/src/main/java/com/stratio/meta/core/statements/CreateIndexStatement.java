@@ -334,7 +334,7 @@ public class CreateIndexStatement extends MetaStatement {
 
     /**
      * Generate the Lucene options schema that corresponds with the selected column.
-     * @return The Lucene Schema.
+     * @return The JSON representation of the Lucene schema.
      */
     protected String generateLuceneSchema(){
         StringBuilder sb = new StringBuilder();
@@ -344,20 +344,50 @@ public class CreateIndexStatement extends MetaStatement {
 
         for(String column : _targetColumn){
 
-            DataType type = _metadata.getColumn(column).getType();
-/*
-            DataType.Name.BIGINT.toString();
-            DataType.Name.BIGINT.name();
+            sb.append(column);
+            sb.append(":");
+            sb.append(getLuceneType(_metadata.getColumn(column).getType()));
+            sb.append(",");
 
-            switch (_metadata.getColumn(column).getType().getName().name()){
-                case DataType.Name.ASCII.name():
-            }*/
+            DataType type = _metadata.getColumn(column).getType();
+
         }
 
         sb.append("}}");
-        return sb.toString();
+        return sb.toString().replace(",}}", "}}");
     }
 
+    /**
+     * Get the Lucene type equivalent to a Cassandra data type.
+     * @param type The {@link com.datastax.driver.core.DataType} to be converted.
+     * @return The result or null if the conversion is not supported.
+     */
+    protected String getLuceneType(DataType type){
+        String result = null;
+
+        if(DataType.text().equals(type)
+                || DataType.varchar().equals(type)
+                || DataType.inet().equals(type)
+                || DataType.ascii().equals(type)){
+            result = "{type:\"string\"}";
+        }else if(DataType.bigint().equals(type)
+                || DataType.counter().equals(type)){
+            result = "{type:\"long\"}";
+        }else if(DataType.cboolean().equals(type)){
+            result = "{type:\"boolean\"}";
+        }else if(DataType.cdouble().equals(type)){
+            result = "{type:\"double\"}";
+        }else if(DataType.cfloat().equals(type)){
+            result = "{type:\"float\"}";
+        }else if(DataType.cint().equals(type)){
+            result = "{type:\"integer\"}";
+        }else if(DataType.uuid().equals(type)){
+            result = "{type:\"uuid\"}";
+        }
+
+
+        return result;
+    }
 
 
     @Override
