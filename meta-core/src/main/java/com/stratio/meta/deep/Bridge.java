@@ -33,26 +33,31 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
-import com.stratio.meta.core.structures.*;
+import com.stratio.meta.core.structures.SelectionList;
+import com.stratio.meta.core.structures.SelectionSelector;
+import com.stratio.meta.core.structures.SelectionSelectors;
+import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.deep.context.Context;
 import com.stratio.meta.deep.functions.JoinCells;
 import com.stratio.meta.deep.functions.MapKeyForJoin;
-import com.stratio.meta.deep.statements.DeepMapStatement;
 import com.stratio.meta.deep.utils.DeepUtils;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class Bridge {
 
-//    public static final DeepSparkContext deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
+    public static final DeepSparkContext deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
 
     public static int executeCount(String keyspaceName, String tableName, Session cassandraSession){
 
         System.out.println("TRACE: Deep.executionCount");
 
-        DeepSparkContext deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
+        //DeepSparkContext deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
 
         System.out.println("TRACE: Executing deep for: "+keyspaceName+"."+tableName);
 
@@ -78,7 +83,7 @@ public class Bridge {
 
         System.out.println("TRACE: Rows in the RDD (JavaClass): " + rddCount.toString());
 
-        deepContext.stop();
+        //deepContext.stop();
 
         System.out.println("TRACE: Deep context stopped");
 
@@ -90,7 +95,7 @@ public class Bridge {
 
         System.out.println("TRACE: Deep.execution");
 
-        DeepSparkContext deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
+        //DeepSparkContext deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
 
         System.out.println("TRACE: Executing deep for: "+stmt.toString());
 
@@ -137,7 +142,7 @@ public class Bridge {
             }
 
             //JOIN
-            Map<String, String> fields = ss.getJoin().getFields();
+            Map<String, String> fields = ss.getJoin().getColNames();
             Set<String> keys = fields.keySet();
             String field1 = keys.iterator().next();
             String field2 = fields.get(field1);
@@ -155,12 +160,12 @@ public class Bridge {
             ResultSet resultSet = null;
 
             if(isRoot){
-                resultSet = returnResult(joinRDD.dropTake(0, 10000));
+                resultSet = returnResult(result.dropTake(0, 10000));
             } else {
                 resultSet = returnResult(result, isRoot);
             }
 
-            deepContext.stop();
+            //deepContext.stop();
 
             return resultSet;
         }
@@ -178,12 +183,13 @@ public class Bridge {
             }
             rs.add(metaRow);
         }
+        System.out.println("Deep Result:"+ rs.size()+ " rows");
         return rs;
     }
 
-    /*public static void stopContext(){
+    public static void stopContext(){
         deepContext.stop();
-    }*/
+    }
 
     private static ResultSet returnResult(JavaRDD rdd, boolean isRoot){
         if(isRoot){

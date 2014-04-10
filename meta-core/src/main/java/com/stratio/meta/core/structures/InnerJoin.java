@@ -21,6 +21,7 @@ package com.stratio.meta.core.structures;
 
 import com.stratio.meta.core.utils.ParserUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class InnerJoin {
@@ -56,6 +57,17 @@ public class InnerJoin {
 
     public Map<String, String> getFields() {
         return fields;
+    }
+
+    public Map<String, String> getColNames(){
+        Map<String, String> colNames = new HashMap<String, String>();
+        for(String key: fields.keySet()){
+            String field = fields.get(key);
+            String[] ksAndTablenameValue= field.split("\\.");
+            String[] ksAndTablenameKey = key.split("\\.");
+            colNames.put(ksAndTablenameKey[1], ksAndTablenameValue[1]);
+        }
+        return colNames;
     }
 
     public void setFields(Map<String, String> fields) {

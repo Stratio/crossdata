@@ -20,7 +20,6 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Clause;
@@ -900,6 +899,9 @@ public class SelectStatement extends MetaStatement {
                 firstSelect.setKeyspace(this.keyspace);
             }
             SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
+            if(this.join.isKeyspaceInc()){
+                secondSelect.setKeyspace(this.join.getKeyspace());
+            }
             SelectStatement joinSelect = new SelectStatement("");
             // ADD FIELDS OF THE JOIN
             Map<String, String> fields = this.join.getFields();
