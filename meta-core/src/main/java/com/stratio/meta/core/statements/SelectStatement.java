@@ -894,15 +894,19 @@ public class SelectStatement extends MetaStatement {
     public Tree getPlan() {
         Tree steps = new Tree();
         if(joinInc){
+
             SelectStatement firstSelect = new SelectStatement(tableName);
             if(keyspaceInc){
                 firstSelect.setKeyspace(this.keyspace);
             }
+
             SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
             if(this.join.isKeyspaceInc()){
                 secondSelect.setKeyspace(this.join.getKeyspace());
             }
+
             SelectStatement joinSelect = new SelectStatement("");
+
             // ADD FIELDS OF THE JOIN
             Map<String, String> fields = this.join.getFields();
             for(String key: fields.keySet()){                
@@ -915,6 +919,7 @@ public class SelectStatement extends MetaStatement {
                     secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(key.split("\\.")[1])));
                 }
             }
+
             // ADD FIELDS OF THE SELECT
             SelectionList selectionList = (SelectionList) this.selectionClause;
             SelectionSelectors selection = (SelectionSelectors) selectionList.getSelection();
@@ -927,15 +932,39 @@ public class SelectStatement extends MetaStatement {
                     secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
                 }
             }
+
+            // ADD WHERE CLAUSES IF ANY
+
+            if(whereInc){
+                for(Relation relation: where){
+                    String id = relation.getIdentifiers().iterator().next();
+                    if(id.contains(".")){
+                        String[] tablenameAndColumnname = id.split("\\.");
+                        String tablename = tablenameAndColumnname[0];
+                        String columnname = tablenameAndColumnname[1];
+                        if(tablename.equalsIgnoreCase(tablename)){
+                            firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(columnname)));
+                        } else {
+                            secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(columnname)));
+                        }
+                    }
+                }
+            }
+
+
             // ADD MAP OF THE JOIN
             joinSelect.setJoin(new InnerJoin("", fields));
-            /* joinSelect.getJoin().getFields().size(); */
+
+
             // ADD STEPS
             steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
             steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
             steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
+
         } else {
+
             steps.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+
         }
         return steps;
     }

@@ -189,9 +189,9 @@ public class Tree {
     public String toStringTopDown(){
         StringBuilder sb = new StringBuilder();
         int deep = 0;
-        sb.append(node.toString()).append(System.getProperty("line.separator"));
+        sb.append(node.toString()).append(System.lineSeparator());
         for(Tree child: children){
-            sb.append(child.printTopDown(deep+1)).append(System.getProperty("line.separator"));
+            sb.append(child.printTopDown(deep+1)).append(System.lineSeparator());
         }                
         return sb.toString();
     }
@@ -203,7 +203,7 @@ public class Tree {
         }
         sb.append(node.toString());
         for(Tree child: children){
-            sb.append(child.printDownTop(deep+1)).append(System.getProperty("line.separator"));
+            sb.append(child.printDownTop(deep+1)).append(System.lineSeparator());
         }                
         return sb.toString();
     }
