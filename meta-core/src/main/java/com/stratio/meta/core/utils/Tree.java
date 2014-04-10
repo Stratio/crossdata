@@ -137,8 +137,10 @@ public class Tree {
         int deep = 0;
         for(Tree child: children){
             sb.append(child.printDownTop(deep+1)).append(System.getProperty("line.separator"));
-        }        
-        sb.append(node.toString());
+        }
+        if(node != null){
+            sb.append(node.toString());
+        }
         return sb.toString();
     }
     
@@ -166,6 +168,9 @@ public class Tree {
     }
 
     public Result executeMyself(Session session, List<Result> resultsFromChildren){
+        if(node == null){
+            return QueryResult.CreateSuccessQueryResult();
+        }
         MetaStep myStep = (MetaStep) node;
         MetaPath myPath = myStep.getPath();
         if(myPath == MetaPath.COMMAND){
