@@ -19,9 +19,8 @@
 
 package com.stratio.meta.server.config
 
-import java.io.File
-import scala.sys.process._
 import org.scalatest.{Suite, BeforeAndAfterAll}
+import com.stratio.meta.test.CCMHandler
 
 trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
   this:Suite =>
@@ -31,10 +30,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
 
     override def beforeAll(): Unit = {
       beforeCassandraStart()
-      val file = new File(getClass.getResource("/com/stratio/meta/test/test.sh").getFile)
-      file.setExecutable(true)
-      val output = file.getAbsolutePath.!!
-      println(output)
+      CCMHandler.StartCCM()
       afterCassandraStart()
     }
 
@@ -47,10 +43,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
     }
     override def afterAll(): Unit = {
       beforeCassandraFinish()
-      val file = new File(getClass.getResource("/com/stratio/meta/test/close.sh").getFile)
-      file.setExecutable(true)
-      val output = file.getAbsolutePath.!!
-      println(output)
+      CCMHandler.FinishCCM()
       afterCassandraFinish()
     }
 

@@ -178,8 +178,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- enable scalatest
-            Add Antonio Alcocer at 4-4-2014 to include the scalatest format in test-->
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
