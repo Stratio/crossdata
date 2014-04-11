@@ -63,6 +63,7 @@ public class DropIndexStatement extends MetaStatement {
     }
 
     public void setName(String name){
+        System.out.println("name: " + name);
             _name = name;
         if(name.contains(".")){
             String[] ksAndName = name.split("\\.");
@@ -78,6 +79,9 @@ public class DropIndexStatement extends MetaStatement {
             if(_dropIfExists){
                     sb.append("IF EXISTS ");
             }
+        if(_keyspaceInc){
+            sb.append(_keyspace).append(".");
+        }
             sb.append(_name);
             return sb.toString();
     }

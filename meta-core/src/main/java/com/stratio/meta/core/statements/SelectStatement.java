@@ -108,7 +108,7 @@ public class SelectStatement extends MetaStatement {
     public SelectStatement(String tableName) {
         this(null, tableName, false, null, false, null, false, null, false, null, false, null, false, 0, false);
     }
-
+/*
     public void setSelectionClause(SelectionClause selectionClause) {
         this.selectionClause = selectionClause;
     }        
@@ -120,7 +120,7 @@ public class SelectStatement extends MetaStatement {
     public void setKeyspaceInc(boolean keyspaceInc) {
         this.keyspaceInc = keyspaceInc;
     }
-
+*/
     public String getKeyspace() {
         return keyspace;
     }
@@ -525,14 +525,6 @@ public class SelectStatement extends MetaStatement {
             allColumns.addAll(tableJoin.getColumns());
         }
         columns.put("any", allColumns);
-
-        //TODO: Remove
-        //for(String k : columns.keySet()){
-        //    System.out.println("Table: " + k);
-        //    for(ColumnMetadata cm : columns.get(k)){
-        //        System.out.println("-> " + cm.getName());
-        //    }
-        //}
 
         Result columnResult = null;
 
