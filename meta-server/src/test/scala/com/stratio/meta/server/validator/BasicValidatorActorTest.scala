@@ -1,10 +1,9 @@
-package com.stratio.meta.server.planner
+package com.stratio.meta.server.validator
 
 import com.stratio.meta.core.engine.Engine
 import akka.actor.ActorSystem
-import com.stratio.meta.server.actors.{PlannerActor,  ExecutorActor}
+import com.stratio.meta.server.actors.{ValidatorActor, PlannerActor, ExecutorActor}
 import akka.testkit._
-import com.typesafe.config.ConfigFactory
 import org.scalatest.FunSuiteLike
 import com.stratio.meta.common.result.Result
 import scala.concurrent.duration._
@@ -13,24 +12,25 @@ import akka.pattern.ask
 import org.testng.Assert._
 import scala.util.Success
 import com.stratio.meta.server.utilities._
-import scala.collection.mutable
 import com.stratio.meta.server.config.BeforeAndAfterCassandra
+import com.typesafe.config.ConfigFactory
+import scala.collection.mutable
 
 
 /**
  * Created by aalcocer on 4/8/14.
  * To generate unit test of proxy actor
  */
-class BasicPlannerActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
+class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
+with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 {
-
   lazy val engine:Engine =  createEngine.create()
-
 
   lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
   lazy val plannerRef = system.actorOf(PlannerActor.props(executorRef,engine.getPlanner),"TestPlanerActor")
-  lazy val plannerRefTest= system.actorOf(PlannerActor.props(testActor,engine.getPlanner),"TestPlanerActorTest")
+  lazy val validatorRef = system.actorOf(ValidatorActor.props(plannerRef,engine.getValidator),"TestValidatorActor")
+
+  lazy val validatorRefTest= system.actorOf(ValidatorActor.props(testActor,engine.getValidator),"TestPlanerActorTest")
 
 
   override def beforeCassandraFinish() {
@@ -38,58 +38,56 @@ with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
   }
 
 
-  test("executor resend to executor message 1"){
+
+  test("validator resend to planner message 1"){
     within(2000 millis){
 
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
       stmt.setTargetKeyspace("ks_demo1")
-      val stmt1=engine.getValidator.validateQuery(stmt)
-      plannerRefTest ! stmt1
-      expectMsg(engine.getPlanner.planQuery(stmt1))
-
+      validatorRefTest ! stmt
+      expectMsg(engine.getValidator.validateQuery(stmt))
     }
   }
-  test("executor resend to executor message 2"){
+  test("validator resend to planner message 2"){
     within(2000 millis){
 
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
       stmt.setTargetKeyspace("ks_demo1")
-      val stmt1=engine.getValidator.validateQuery(stmt)
-      stmt1.setError()
-      plannerRefTest ! stmt1
+      stmt.setError()
+      validatorRefTest ! stmt
       expectNoMsg()
     }
   }
-  test("executor resend to executor message 3"){
+  test("validator resend to planner message 3"){
     within(2000 millis){
 
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
       stmt.setTargetKeyspace("ks_demo1")
-      val stmt1=engine.getValidator.validateQuery(stmt)
-      stmt1.setError()
-      stmt1.setErrorMessage("it is a test of error")
+      stmt.setError()
+      stmt.setErrorMessage("it is a test of error")
       var complete:Boolean=true
-      val futureExecutorResponse=plannerRefTest.ask(stmt1)(2 second)
+      val futureExecutorResponse=validatorRefTest.ask(stmt)(2 second)
       try{
         val result = Await.result(futureExecutorResponse, 1 seconds)
       }catch{
-        case ex:Exception => {
+        case ex:Exception =>
           println("\n\n\n"+ex.getMessage+"\n\n\n")
           complete=false
-        }
+
       }
       if (complete&&futureExecutorResponse.isCompleted){
         val value_response= futureExecutorResponse.value.get
 
         value_response match{
-        case Success(value:Result)=>
-          if (value.hasError){
-            assertEquals(value.getErrorMessage,"it is a test of error")
-          }
+          case Success(value:Result)=>
+            if (value.hasError){
+              assertEquals(value.getErrorMessage,"it is a test of error")
 
+          }
+          case _ =>
         }
 
       }
@@ -98,137 +96,139 @@ with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
 
   val querying= new queryString
 
-
-  test ("executor Test"){
+  test ("validator Test"){
 
     within(3000 millis){
 
-      plannerRef ! 1
-      expectNoMsg
+      validatorRef ! 1
+      expectNoMsg()
 
     }
   }
-  test ("QueryActor create KS"){
+  test ("validatorActor create KS"){
 
     within(3000 millis){
 
       val msg= "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
+
     }
   }
-  test ("QueryActor create KS yet"){
+  test ("validatorActor create KS yet"){
 
     within(3000 millis){
 
       val msg="create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Keyspace ks_demo already exists" )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"Keyspace ks_demo already exists" )
     }
   }
 
-  test ("QueryActor use KS"){
+  test ("validatorActor use KS"){
 
     within(3000 millis){
 
       val msg="use ks_demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
     }
   }
 
-  test ("QueryActor use KS yet"){
+  test ("validatorActor use KS yet"){
 
     within(3000 millis){
 
       val msg="use ks_demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
     }
   }
 
 
-  test ("QueryActor use KS not create"){
+  test ("validatorActor use KS not create"){
 
     within(3000 millis){
 
       val msg="use ks_demo_not ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Keyspace 'ks_demo_not' does not exist" )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"Keyspace 'ks_demo_not' does not exist" )
     }
   }
-  test ("QueryActor insert into table not create yet without error"){
+  test ("validatorActor insert into table not create yet without error"){
 
     within(3000 millis){
 
       val msg="insert into demo (field1, field2) values ('test1','text2');"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"unconfigured columnfamily demo" )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"unconfigured columnfamily demo" )
     }
   }
-  test ("QueryActor select without table"){
+  test ("validatorActor select without table"){
 
     within(3000 millis){
 
       val msg="select * from demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"unconfigured columnfamily demo")
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"unconfigured columnfamily demo")
     }
   }
 
 
-  test ("QueryActor create table not create yet"){
+  test ("validatorActor create table not create yet"){
 
     within(3000 millis){
 
       val msg="create TABLE demo (field1 text PRIMARY KEY , field2 text);"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
     }
   }
 
-  test ("QueryActor create table  create yet"){
+  test ("validatorActor create table  create yet"){
 
     within(3000 millis){
 
       val msg="create TABLE demo (field1 text PRIMARY KEY , field2 text);"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Table ks_demo.demo already exists" )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"Table ks_demo.demo already exists" )
     }
   }
 
-  test ("QueryActor insert into table  create yet without error"){
+  test ("validatorActor insert into table  create yet without error"){
 
     within(3000 millis){
 
       val msg="insert into demo (field1, field2) values ('test1','text2');"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
     }
   }
-  test ("QueryActor select"){
+  test ("validatorActor select"){
 
     within(3000 millis){
 
       val msg="select * from demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),mutable.MutableList("test1", "text2").toString() )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),mutable.MutableList("test1", "text2").toString() )
     }
   }
-  test ("QueryActor drop table "){
+  test ("validatorActor drop table "){
 
     within(3000 millis){
 
       val msg="drop table demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
     }
   }
-  test ("QueryActor drop KS "){
+  test ("validatorActor drop KS "){
 
     within(3000 millis){
 
       val msg="drop keyspace ks_demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
     }
   }
-  test ("QueryActor drop KS  not exit"){
+  test ("validatorActor drop KS  not exit"){
 
     within(3000 millis){
 
       val msg="drop keyspace ks_demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Cannot drop non existing keyspace 'ks_demo'." )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"Cannot drop non existing keyspace 'ks_demo'." )
     }
   }
+
 }
+
 
 
 
