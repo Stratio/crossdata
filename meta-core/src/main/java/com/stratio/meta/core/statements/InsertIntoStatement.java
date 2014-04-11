@@ -368,9 +368,9 @@ public class InsertIntoStatement extends MetaStatement {
         } else {
             insertStmt = QueryBuilder.insertInto(this.tableName);
         }
-        Iterator iter = this.cellValues.iterator();
+        Iterator<ValueCell> iter = this.cellValues.iterator();
         for(String id: this.ids){
-            ValueCell valueCell = (ValueCell) iter.next();
+            ValueCell valueCell = iter.next();
             try{
                 if(valueCell.toString().matches("[0123456789.]+")){
                     insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.getStringValue()));

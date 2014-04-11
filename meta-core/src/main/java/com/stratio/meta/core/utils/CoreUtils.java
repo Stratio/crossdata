@@ -32,6 +32,9 @@ public class CoreUtils {
         for(Row row: resultSet.all()){
             com.stratio.meta.common.data.Row metaRow = new com.stratio.meta.common.data.Row();
             for (ColumnDefinitions.Definition def: row.getColumnDefinitions().asList()){
+                if(def.getName().toLowerCase().startsWith("stratio")){
+                    continue;
+                }
                 Cell metaCell = null;
                 if((def.getType() == DataType.ascii())
                         || (def.getType() == DataType.text())

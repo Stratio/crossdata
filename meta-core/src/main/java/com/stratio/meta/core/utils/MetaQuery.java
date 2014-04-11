@@ -28,7 +28,7 @@ public class MetaQuery {
     
     private String query;
     private QueryStatus status;
-    private boolean hasError;
+    private boolean hasError = false;
     private MetaStatement statement;
     private Tree plan;
     private MetaValidation validation;
@@ -92,6 +92,7 @@ public class MetaQuery {
     
     public void setResult(Result result) {
         this.result = result;
+        this.hasError = result.hasError();
     }
 
     public Result getResult() {

@@ -41,5 +41,10 @@ public class FloatProperty extends ValueProperty {
     public String toString() {
             return Float.toString(number);
     }
-    
+
+    @Override
+    public String getStringValue() {
+        return toString();
+    }
+
 }

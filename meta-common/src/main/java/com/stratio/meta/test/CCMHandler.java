@@ -46,6 +46,7 @@ public class CCMHandler {
     }
 
     public static void FinishCCM(){
+        /*
         try {
             File tempFile= File.createTempFile("stratio-close-ccm",".sh");
             InputStream resourceStream = CCMHandler.class.getResourceAsStream("/com/stratio/meta/test/close.sh");
@@ -64,5 +65,6 @@ public class CCMHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        */
     }
 }

@@ -25,7 +25,7 @@ public abstract class Term extends ValueCell {
      * Get the Term Java Class.
      * @return A {@link java.lang.Class}.
      */
-    public abstract Class getTermClass();
+    public abstract Class<?> getTermClass();
 
     /**
      * Get the term value.

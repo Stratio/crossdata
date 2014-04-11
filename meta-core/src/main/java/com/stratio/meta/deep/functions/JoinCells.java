@@ -5,14 +5,12 @@ import com.stratio.deep.entity.Cells;
 import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 
+import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-/**
- * Created by gmunoz on 9/04/14.
- */
-public class JoinCells<T> extends Function<Tuple2<T, Tuple2<Cells, Cells>>, Cells> {
+
+public class JoinCells<T> extends Function<Tuple2<T, Tuple2<Cells, Cells>>, Cells> implements Serializable{
 
     private static final long serialVersionUID = 4534397129761833793L;
     private String key1;

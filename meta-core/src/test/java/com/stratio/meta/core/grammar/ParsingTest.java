@@ -167,7 +167,7 @@ public class ParsingTest {
     public void update_tablename() {
         String inputText = "UPDATE tablename USING prop1 = 342 SET ident1 = term1, ident2 = term2"
                 + " WHERE ident3 IN (term3, term4) IF field1 = 25;";
-        MetaStatement st = testRegularStatement(inputText, "update_tablename");
+        testRegularStatement(inputText, "update_tablename");
     }
 
     @Test
@@ -249,13 +249,19 @@ public class ParsingTest {
     //DROP INDEX
     @Test
     public void dropIndex_basic() {
-        String inputText = "DROP INDEX index_name;";
+        String inputText = "DROP INDEX demo.index_name;";
         testRegularStatement(inputText, "dropIndex_basic");
     }
 
     @Test
+    public void dropIndex_noKs_ok() {
+        String inputText = "DROP INDEX index_name;";
+        testRegularStatement(inputText, "dropIndex_noKs_ok");
+    }
+
+    @Test
     public void dropIndex_ifExists() {
-        String inputText = "DROP INDEX IF EXISTS index_name;";
+        String inputText = "DROP INDEX IF EXISTS demo.index_name;";
         testRegularStatement(inputText, "dropIndex_ifExists");
     }
 

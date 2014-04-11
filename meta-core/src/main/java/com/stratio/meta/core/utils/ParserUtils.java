@@ -20,17 +20,13 @@
 package com.stratio.meta.core.utils;
 
 import com.stratio.meta.common.utils.MetaUtils;
+import com.stratio.meta.core.structures.ValueProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.*;
 
 public class ParserUtils {    
     
@@ -47,8 +43,21 @@ public class ParserUtils {
             return "";
         }
     }
-    
-    public static String stringMap(Map ids, String conjunction, String separator) {
+
+    public static String stringMap(HashMap<String, ValueProperty> ids, String conjunction, String separator) {
+        //StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
+        StringBuilder sb = new StringBuilder();
+        for(String key: ids.keySet()){
+            ValueProperty vp = ids.get(key);
+            sb.append(key).append(conjunction).append(vp.getStringValue()).append(separator);
+        }
+        if(sb.length() < separator.length()){
+            return "";
+        }
+        return sb.substring(0, sb.length()-separator.length());
+    }
+
+    public static String stringMap(Map<?, ?> ids, String conjunction, String separator) {
         //StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
         StringBuilder sb = new StringBuilder();
         for(Object key: ids.keySet()){
@@ -218,7 +227,12 @@ public class ParserUtils {
             
             String metaTokens = workingDir+"src/main/resources/com/stratio/meta/parser/tokens.txt";
             
-            bufferedReaderF = new BufferedReader(new FileReader(new File(metaTokens)));
+            //bufferedReaderF = new BufferedReader(new FileReader(new File(metaTokens)));
+            bufferedReaderF = new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(metaTokens), Charset.forName("UTF-8")));
+
+
             String line = bufferedReaderF.readLine();
             while (line != null){
                 if(line.startsWith(target)){
@@ -234,7 +248,9 @@ public class ParserUtils {
             logger.error("Cannot read replacement file", ex);
         }finally{
             try {
-                bufferedReaderF.close();
+                if (bufferedReaderF != null) {
+                    bufferedReaderF.close();
+                }
             } catch (IOException e) {
                 logger.error("Cannot close replacement file", e);
             }

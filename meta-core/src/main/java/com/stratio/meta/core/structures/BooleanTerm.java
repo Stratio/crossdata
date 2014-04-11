@@ -11,7 +11,7 @@ public class BooleanTerm extends Term{
 
     /** {@inheritDoc} */
     @Override
-    public Class getTermClass() {
+    public Class<?> getTermClass() {
         return Boolean.class;
     }
 

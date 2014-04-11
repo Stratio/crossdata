@@ -150,13 +150,11 @@ public class AlterTableStatement extends MetaStatement{
                 sb.append(column);
             }break;
             case 4: {
-                Set keySet = option.keySet();
-                //sb.append(" with:\n\t");
+                Set<String> keySet = option.keySet();
                 sb.append(" with");
-                for (Iterator it = keySet.iterator(); it.hasNext();) {
-                    String key = (String) it.next();
+                for (Iterator<String> it = keySet.iterator(); it.hasNext();) {
+                    String key = it.next();
                     ValueProperty vp = option.get(key);
-                    //sb.append(key).append(": ").append(String.valueOf(vp)).append("\n\t");
                     sb.append(" ").append(key).append("=").append(String.valueOf(vp));
                     if(it.hasNext()) sb.append(" AND");
                 }
@@ -198,7 +196,7 @@ public class AlterTableStatement extends MetaStatement{
     @Override
     public Tree getPlan() { //TODO: Return MetaPath.CASSANDRA
         Tree tree = new Tree();
-        tree.setNode(new MetaStep(MetaPath.DEEP, this));
+        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
         return tree;
     }
     

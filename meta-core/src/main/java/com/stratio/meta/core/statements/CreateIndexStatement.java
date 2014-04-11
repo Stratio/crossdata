@@ -25,10 +25,7 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.FloatProperty;
-import com.stratio.meta.core.structures.IdentifierProperty;
-import com.stratio.meta.core.structures.IndexType;
-import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.core.structures.*;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
@@ -53,6 +50,12 @@ public class CreateIndexStatement extends MetaStatement {
     private String _keyspace = null;
     private IndexType _type = null;
     private boolean _createIfNotExists = false;
+
+    /**
+     * Determine whether the index should be created or not.
+     */
+    private boolean _createIndex = false;
+
     private String _name = null;
     private String _tablename = null;
     private ArrayList<String> _targetColumn = null;
@@ -159,6 +162,32 @@ public class CreateIndexStatement extends MetaStatement {
         return _options;
     }
 
+    public String getIndexName(){
+        String result = _name;
+        if(_name == null){
+            StringBuilder sb = new StringBuilder();
+            if(IndexType.LUCENE.equals(_type)){
+                sb.append("stratio_lucene_");
+                sb.append(_tablename);
+            }else {
+                sb.append(_tablename);
+                for (String c : _targetColumn) {
+                    sb.append("_");
+                    sb.append(c);
+                }
+                sb.append("_idx");
+            }
+            result = sb.toString();
+        }else{
+            result = _name;
+            if(IndexType.LUCENE.equals(_type)){
+                result = "stratio_lucene_" + _name;
+            }
+        }
+        System.out.println("getIndexName: " + _type + " - " + result);
+        return result;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("CREATE ");
@@ -236,6 +265,19 @@ public class CreateIndexStatement extends MetaStatement {
             result = validateSelectionColumns(tableMetadata);
         }
 
+        //If the syntax is valid and we are dealing with a Lucene index, complete the missing fields.
+        if(!result.hasError()
+                && IndexType.LUCENE.equals(_type)
+                && (_options.size()==0 || _usingClass == null)){
+            _options.clear();
+            _options.putAll(generateLuceneOptions());
+            _usingClass = "org.apache.cassandra.db.index.stratio.RowIndex";
+
+            System.out.println("Set Lucene options: " + this.toString());
+        }
+        if(result.hasError()) {
+            System.out.println("validation: " + result.hasError() + " type: " + _type + " error: " + result.getErrorMessage());
+        }
         return result;
     }
 
@@ -274,6 +316,8 @@ public class CreateIndexStatement extends MetaStatement {
         }
         if(found && !_createIfNotExists){
             result= QueryResult.CreateFailQueryResult("Index " + _name + " already exists in table " + _tablename);
+        }else{
+            _createIndex = true;
         }
         return result;
     }
@@ -322,12 +366,12 @@ public class CreateIndexStatement extends MetaStatement {
         //          fields:{ip: {type:"inet"}, bytes: {type:"bytes"}, ... , decimal_digits: 50}}}'
         //  };
         //TODO: Read parameters from default configuration and merge with the user specification.
-        result.put(new IdentifierProperty("refresh_seconds"), new FloatProperty(1));
-        result.put(new IdentifierProperty("num_cached_filters"), new FloatProperty(1));
-        result.put(new IdentifierProperty("ram_buffer_mb"), new FloatProperty(32));
-        result.put(new IdentifierProperty("max_merge_mb"), new FloatProperty(5));
-        result.put(new IdentifierProperty("max_cached_mb"), new FloatProperty(30));
-        result.put(new IdentifierProperty("schema"), new IdentifierProperty(generateLuceneSchema()));
+        result.put(new IdentifierProperty("'refresh_seconds'"), new IdentifierProperty("'1'"));
+        result.put(new IdentifierProperty("'num_cached_filters'"), new IdentifierProperty("'1'"));
+        result.put(new IdentifierProperty("'ram_buffer_mb'"), new IdentifierProperty("'32'"));
+        result.put(new IdentifierProperty("'max_merge_mb'"), new IdentifierProperty("'5'"));
+        result.put(new IdentifierProperty("'max_cached_mb'"), new IdentifierProperty("'30'"));
+        result.put(new IdentifierProperty("'schema'"), new IdentifierProperty("'" + generateLuceneSchema() + "'"));
 
         return result;
     }
@@ -340,17 +384,13 @@ public class CreateIndexStatement extends MetaStatement {
         StringBuilder sb = new StringBuilder();
         sb.append("{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\",");
         sb.append("fields:{");
+
         //Iterate throught the columns.
-
         for(String column : _targetColumn){
-
             sb.append(column);
             sb.append(":");
             sb.append(getLuceneType(_metadata.getColumn(column).getType()));
             sb.append(",");
-
-            DataType type = _metadata.getColumn(column).getType();
-
         }
 
         sb.append("}}");
@@ -397,6 +437,7 @@ public class CreateIndexStatement extends MetaStatement {
 
     @Override
     public String translateToCQL() {
+
         // EXAMPLE:
         // META: CREATE LUCENE INDEX demo_banks ON demo.banks(lucene) USING org.apache.cassandra.db.index.stratio.RowIndex
         // WITH OPTIONS schema = '{default_analyzer:"org.apache.lucene.analysis.standard.StandardAnalyzer", fields: {day:
@@ -404,22 +445,34 @@ public class CreateIndexStatement extends MetaStatement {
         // CQL: CREATE CUSTOM INDEX demo_banks ON demo.banks (lucene) USING 'org.apache.cassandra.db.index.stratio.RowIndex'
         // WITH OPTIONS = {'schema' : '{default_analyzer:"org.apache.lucene.analysis.standard.StandardAnalyzer",
         // fields: {day: {type: "date", pattern: "yyyy-MM-dd"}, key: {type:"uuid"}}}'}
-        
+
+        if(IndexType.LUCENE.equals(_type)){
+            _targetColumn.clear();
+            _targetColumn.add(getIndexName());
+        }
+
+        System.out.println("CreateIndexStatement.translateToCQL.Before: " + this.toString());
+
         String cqlString = this.toString().replace(" DEFAULT ", " ");
         if(cqlString.contains(" LUCENE ")){
             cqlString = this.toString().replace("CREATE LUCENE ", "CREATE CUSTOM ");
-        }        
+        }
+
+        if(_name == null){
+            cqlString = cqlString.replace("INDEX ON", "INDEX " + getIndexName() + " ON");
+        }
+
         if(cqlString.contains("USING")){
             cqlString = cqlString.replace("USING ", "USING '");
             if(cqlString.contains("WITH ")){
-                cqlString = cqlString.replace(" WITH ", "' WITH ");
+                cqlString = cqlString.replace(" WITH OPTIONS", "' WITH OPTIONS");
             } /*else {
                 cqlString = cqlString.replace(";", "';");
             }*/
         }
-        if(cqlString.contains("OPTIONS")){
-            cqlString = cqlString.replace("OPTIONS", "OPTIONS = { '");
-            cqlString = cqlString.concat("}");
+        /*if(cqlString.contains("OPTIONS")){
+            //cqlString = cqlString.replace("OPTIONS", "OPTIONS");
+            //cqlString = cqlString.concat("}");
             cqlString = cqlString.replaceAll("='", "'='");
             cqlString = cqlString.replaceAll("= '", "' = '");
             cqlString = cqlString.replaceAll("' ", "'");
@@ -429,7 +482,8 @@ public class CreateIndexStatement extends MetaStatement {
             cqlString = cqlString.replaceAll("'= '", "' : '");
             cqlString = cqlString.replaceAll("' ='", "' : '");
             cqlString = cqlString.replaceAll("' = '", "' : '");
-        }
+        }*/
+        System.out.println("CreateIndexStatement.translateToCQL: " + cqlString);
         return cqlString;
     }
         
@@ -449,20 +503,23 @@ public class CreateIndexStatement extends MetaStatement {
     public Tree getPlan() {
         Tree result = new Tree();
 
-        //Add CREATE INDEX as the root.
-        result.addChild(new Tree(new MetaStep(MetaPath.CASSANDRA, translateToCQL())));
-        //Add alter table as leaf if LUCENE index is selected.
-        if(IndexType.LUCENE.equals(_type)){
-            StringBuilder alterStatement = new StringBuilder("ALTER TABLE ");
-            if(_keyspaceInc){
-                alterStatement.append(_keyspace);
-                alterStatement.append(".");
+        if(_createIndex) {
+            //Add CREATE INDEX as the root.
+            result.setNode(new MetaStep(MetaPath.CASSANDRA, translateToCQL()));
+            //Add alter table as leaf if LUCENE index is selected.
+            if (IndexType.LUCENE.equals(_type)) {
+                StringBuilder alterStatement = new StringBuilder("ALTER TABLE ");
+                if (_keyspaceInc) {
+                    alterStatement.append(_keyspace);
+                    alterStatement.append(".");
+                }
+                alterStatement.append(_tablename);
+                alterStatement.append(" ADD ");
+                alterStatement.append(getIndexName());
+                alterStatement.append(" TEXT;");
+                System.out.println("CreateIndexStatement.getPlan: " + alterStatement);
+                result.addChild(new Tree(new MetaStep(MetaPath.CASSANDRA, alterStatement.toString())));
             }
-            alterStatement.append("ADD stratio_lucene");
-            alterStatement.append(_name);
-            alterStatement.append(" TEXT;");
-            System.out.println("CreateIndexStatement.getPlan: " + alterStatement);
-            result.getChild(0).addChild(new Tree(new MetaStep(MetaPath.CASSANDRA, alterStatement.toString())));
         }
 
         return result;

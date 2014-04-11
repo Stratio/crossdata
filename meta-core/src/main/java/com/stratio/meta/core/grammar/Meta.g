@@ -285,7 +285,7 @@ dropIndexStatement returns [DropIndexStatement dis]
 	}:
 	T_DROP T_INDEX
 	(T_IF T_EXISTS {$dis.setDropIfExists();})?
-	name=(T_IDENT | T_LUCENE) {$dis.setName($name.text);}
+	name=(T_KS_AND_TN | T_IDENT | T_LUCENE) {$dis.setName($name.text);}
 	;
 
 
@@ -373,7 +373,6 @@ createTableStatement returns [CreateTableStatement crtast]
     LinkedHashMap<String, String> columns = new LinkedHashMap<>();
     ArrayList<String>   primaryKey = new ArrayList<String>();
     ArrayList<String> clusterKey = new ArrayList<String>();
-    LinkedHashMap<String, ValueProperty> propierties = new LinkedHashMap<>();
     int Type_Primary_Key= 0;
     int columnNumberPK= 0;
     int columnNumberPK_inter= 0;
@@ -841,7 +840,7 @@ getIntSetOrList returns [IdentIntOrLiteral iiol]:
 getRelation returns [Relation mrel]:
     T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}
                             | T_TOKEN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationToken(listIds, operator, terms);})
-    | ident=T_IDENT ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, termR);}
+    | (ident=T_IDENT | ident=T_KS_AND_TN) ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, termR);}
                     | T_IN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationIn($ident.text, terms);}
                     | T_BETWEEN term1=getTerm T_AND term2=getTerm {$mrel = new RelationBetween($ident.text, term1, term2);}
                     )
@@ -952,7 +951,6 @@ getMapLiteral returns [Map<String, String> mapTerms]
 
 getValueProperty returns [ValueProperty value]
     @init{
-        StringBuilder sb = new StringBuilder();
     }:
     ident=T_IDENT {$value = new IdentifierProperty($ident.text);}
     | constant=T_CONSTANT {$value = new ConstantProperty(Integer.parseInt($constant.text));}

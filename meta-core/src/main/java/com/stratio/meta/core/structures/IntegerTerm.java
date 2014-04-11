@@ -10,7 +10,7 @@ public class IntegerTerm extends Term{
 
     /** {@inheritDoc} */
     @Override
-    public Class getTermClass() {
+    public Class<?> getTermClass() {
         return Integer.class;
     }
 

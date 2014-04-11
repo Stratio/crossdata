@@ -64,7 +64,7 @@ public class StringTerm extends Term{
 
     /** {@inheritDoc} */
     @Override
-    public Class getTermClass() {
+    public Class<?> getTermClass() {
         return String.class;
     }
 
