@@ -131,13 +131,13 @@ public class Bridge {
 
         } else { // (INNER NODE) NO LEAF
             // Retrieve RDDs from children
-            ArrayList<CassandraJavaRDD> children = new ArrayList<CassandraJavaRDD>();
+            ArrayList<JavaRDD> children = new ArrayList<JavaRDD>();
             for (Result child: resultsFromChildren){
                 QueryResult qResult = (QueryResult) child;
                 CassandraResultSet crset = (CassandraResultSet) qResult.getResultSet();
                 Map<String, Cell> cells = crset.getRows().get(0).getCells();
                 Cell cell = cells.get(cells.keySet().iterator().next());
-                CassandraJavaRDD rdd = (CassandraJavaRDD) cell.getValue();
+                JavaRDD rdd = (JavaRDD) cell.getValue();
                 children.add(rdd);
             }
 
@@ -147,8 +147,8 @@ public class Bridge {
             String field1 = keys.iterator().next();
             String field2 = fields.get(field1);
 
-            CassandraJavaRDD rdd1 = children.get(0);
-            CassandraJavaRDD rdd2 = children.get(1);
+            JavaRDD rdd1 = children.get(0);
+            JavaRDD rdd2 = children.get(1);
 
             JavaPairRDD rddLeft = rdd1.map(new MapKeyForJoin(field1));
             JavaPairRDD rddRight = rdd2.map(new MapKeyForJoin(field2));
