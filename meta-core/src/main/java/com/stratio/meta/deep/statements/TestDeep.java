@@ -19,8 +19,6 @@ import java.util.List;
  * Created by gmunoz on 8/04/14.
  */
 public class TestDeep {
-    protected DeepSparkContext context;
-    protected CassandraJavaRDD<Cells> tweets;
 
     public static void main(String args[]){
         DeepSparkContext context = new DeepSparkContext("spark://gmunoz-Vostro-3550:7077", "Deep Test Take");
@@ -67,7 +65,7 @@ public class TestDeep {
     }
 
     void printCells(Cells cells){
-        List<Cell> list = (ArrayList)cells.getCells();
+        //List<Cell> list = (ArrayList)cells.getCells();
         for(Cell cell : cells){
             System.out.println("Name: " + cell.getCellName() + ", value: " + cell.getCellValue());
         }

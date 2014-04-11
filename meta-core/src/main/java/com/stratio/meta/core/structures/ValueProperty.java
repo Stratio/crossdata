@@ -40,5 +40,7 @@ public abstract class ValueProperty {
         
     @Override
     public abstract String toString();
+
+    public abstract String getStringValue();
     
 }

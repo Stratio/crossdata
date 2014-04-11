@@ -195,6 +195,8 @@ public class DeleteStatement extends MetaStatement {
                             case "<=":
                                 supported = false;
                                 break;
+                            default:
+                                break;
                         }
                         if (!supported) {
                             result= QueryResult.CreateFailQueryResult("Operand " + rc.getOperator() + " not supported" +

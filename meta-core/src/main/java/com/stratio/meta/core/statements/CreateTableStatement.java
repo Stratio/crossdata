@@ -43,8 +43,7 @@ public class CreateTableStatement extends MetaStatement{
     private String tablename;
     private LinkedHashMap<String, String> columns;    
     private List<String> primaryKey;    
-    private List<String> clusterKey;    
-    //private LinkedHashMap<String, ValueProperty> properties;
+    private List<String> clusterKey;
     private List<Property> properties;
     private int Type_Primary_Key;
     private boolean ifNotExists;
@@ -81,59 +80,12 @@ public class CreateTableStatement extends MetaStatement{
         this.withProperties=withProperties;
     }
 
-    public boolean isKeyspaceInc() {
-        return keyspaceInc;
-    }
-
-    public void setKeyspaceInc(boolean keyspaceInc) {
-        this.keyspaceInc = keyspaceInc;
-    }
-
     public String getKeyspace() {
         return keyspace;
     }
 
     public void setKeyspace(String keyspace) {
         this.keyspace = keyspace;
-    }        
-            
-    public boolean isWithProperties() {
-        return withProperties;
-    }
-
-    public void setWithProperties(boolean withProperties) {
-        this.withProperties = withProperties;
-    }
-    public int getColumnNumberPK() {
-        return columnNumberPK;
-    }
-
-    public void setColumnNumberPK(int columnNumberPK) {
-        this.columnNumberPK = columnNumberPK;
-    }
-    
-    public boolean isWithClusterKey() {
-        return withClusterKey;
-    }
-
-    public void setWithClusterKey(boolean withClusterKey) {
-        this.withClusterKey = withClusterKey;
-    }
-    
-    public boolean isIfNotExists() {
-        return ifNotExists;
-    }
-
-    public void setIfNotExists(boolean ifNotExists) {
-        this.ifNotExists = ifNotExists;
-    }
-
-    public int getType_Primary_Key() {
-        return Type_Primary_Key;
-    }
-
-    public void setType_Primary_Key(int Type_Primary_Key) {
-        this.Type_Primary_Key = Type_Primary_Key;
     }
 
     public List<Property> getProperties() {
@@ -142,22 +94,6 @@ public class CreateTableStatement extends MetaStatement{
 
     public void setProperties(List<Property> properties) {
         this.properties = properties;
-    }
-
-    public List<String> getClusterKey() {
-        return clusterKey;
-    }
-
-    public void setClusterKey(List<String> clusterKey) {
-        this.clusterKey = clusterKey;
-    }
-
-    public List<String> getPrimaryKey() {
-        return primaryKey;
-    }
-
-    public void setPrimaryKey(List<String> primaryKey) {
-        this.primaryKey = primaryKey;
     }
 
     public LinkedHashMap<String, String> getColumns() {
@@ -194,12 +130,12 @@ public class CreateTableStatement extends MetaStatement{
         
         switch(Type_Primary_Key){
             case 1: {
-                Set keySet = columns.keySet();
+                Set<String> keySet = columns.keySet();
                 int i = 0;
                 sb.append(" (");
                 
-                for (Iterator it = keySet.iterator();it.hasNext();){
-                    String key = (String) it.next();
+                for (Iterator<String> it = keySet.iterator();it.hasNext();){
+                    String key = it.next();
                     String vp= columns.get(key);
                     if (i==0) sb.append(key).append(" ").append(vp).append(" PRIMARY KEY");
                     else sb.append(key).append(" ").append(vp);
@@ -210,11 +146,11 @@ public class CreateTableStatement extends MetaStatement{
             }break;
                 
             case 2: {
-                Set keySet = columns.keySet();
+                Set<String> keySet = columns.keySet();
                 int i = 0;
                 sb.append(" (");
-                for (Iterator it = keySet.iterator();it.hasNext();){
-                    String key = (String) it.next();
+                for (Iterator<String> it = keySet.iterator();it.hasNext();){
+                    String key = it.next();
                     String vp= columns.get(key);
                     if (i == columnNumberPK) sb.append(key).append(" ").append(vp).append(" PRIMARY KEY");
                     else sb.append(key).append(" ").append(vp);
@@ -224,18 +160,17 @@ public class CreateTableStatement extends MetaStatement{
                 }
             }break;
             case 3: {
-                Set keySet = columns.keySet();
+                Set<String> keySet = columns.keySet();
                 sb.append(" (");
-                for (Object aKeySet : keySet) {
-                    String key = (String) aKeySet;
+                for (String key : keySet) {
                     String vp = columns.get(key);
                     sb.append(key).append(" ").append(vp).append(", ");
                 }
                 
                 sb.append("PRIMARY KEY (");
                 int j=0;
-                for (Iterator it = primaryKey.iterator();it.hasNext();){
-                    String key = (String) it.next();
+                for (Iterator<String> it = primaryKey.iterator();it.hasNext();){
+                    String key = it.next();
                     if (j== 0) sb.append(key);
                     else sb.append(", ").append(key);
                     j++;
@@ -245,26 +180,25 @@ public class CreateTableStatement extends MetaStatement{
             }break;
                 
             case 4: {
-                Set keySet = columns.keySet();
+                Set<String> keySet = columns.keySet();
                 sb.append(" (");
-                for (Object aKeySet : keySet) {
-                    String key = (String) aKeySet;
+                for (String key : keySet) {
                     String vp = columns.get(key);
                     sb.append(key).append(" ").append(vp).append(", ");
                 }
                 sb.append("PRIMARY KEY ((");
                 int j=0;
-                for (Iterator it = primaryKey.iterator();it.hasNext();){
-                    String key = (String) it.next();
+                for (Iterator<String> it = primaryKey.iterator();it.hasNext();){
+                    String key = it.next();
                     if (j== 0) sb.append(key);
                     else sb.append(", ").append(key);
                     j++;
                     if (!it.hasNext()) sb.append(")");
                 }
-                //System.out.println(withClusterKey);
+
                 if (withClusterKey){
-                    for (Iterator it = clusterKey.iterator();it.hasNext();){
-                        String key = (String) it.next();
+                    for (Iterator<String> it = clusterKey.iterator();it.hasNext();){
+                        String key = it.next();
                         sb.append(", ").append(key);
                         if (!it.hasNext()) sb.append("))");
                     } 
@@ -422,7 +356,7 @@ public class CreateTableStatement extends MetaStatement{
                 String insideBracket = cqlString.substring(i + 1, newI);
                 insideBracket = insideBracket.replace(":", " ");
                 insideBracket = insideBracket.replace(",", " ");
-                //System.out.println("|"+insideBracket+"|");
+
                 boolean wasChanged = true;
                 while (wasChanged) {
                     int before = insideBracket.length();
@@ -432,7 +366,7 @@ public class CreateTableStatement extends MetaStatement{
                         wasChanged = false;
                     }
                 }
-                //System.out.println("|"+insideBracket+"|");
+
                 insideBracket = insideBracket.trim();
                 String[] strs = insideBracket.split(" ");
                 for (int j = 0; j < strs.length; j++) {

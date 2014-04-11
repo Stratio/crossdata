@@ -40,7 +40,9 @@ import com.stratio.meta.core.utils.Tree;
 import java.util.*;
 import java.util.regex.Pattern;
 
-
+/**
+ * A object with the mapping of a SELECT statement from the META language.
+ */
 public class SelectStatement extends MetaStatement {
 
     private SelectionClause selectionClause;
@@ -108,19 +110,7 @@ public class SelectStatement extends MetaStatement {
     public SelectStatement(String tableName) {
         this(null, tableName, false, null, false, null, false, null, false, null, false, null, false, 0, false);
     }
-/*
-    public void setSelectionClause(SelectionClause selectionClause) {
-        this.selectionClause = selectionClause;
-    }        
 
-    public boolean isKeyspaceInc() {
-        return keyspaceInc;
-    }
-
-    public void setKeyspaceInc(boolean keyspaceInc) {
-        this.keyspaceInc = keyspaceInc;
-    }
-*/
     public String getKeyspace() {
         return keyspace;
     }
@@ -134,45 +124,13 @@ public class SelectStatement extends MetaStatement {
         return tableName;
     }
 
-    public void setTableName(String tableName) {
-
-        this.tableName = tableName;
-        if(tableName.contains(".")){
-            String[] ksAndTablename = tableName.split("\\.");
-            keyspace = ksAndTablename[0];
-            tableName = ksAndTablename[1];
-            keyspaceInc = true;
-        }
-
-    }          
-
     public SelectionClause getSelectionClause() {
         return selectionClause;
-    }
-
-    public boolean isWindowInc() {
-        return windowInc;
-    }
-
-    public void setWindowInc(boolean windowInc) {
-        this.windowInc = windowInc;
-    }
-
-    public WindowSelect getWindow() {
-        return window;
     }
 
     public void setWindow(WindowSelect window) {
         this.windowInc = true;
         this.window = window;
-    }        
-
-    public boolean isJoinInc() {
-        return joinInc;
-    }
-
-    public void setJoinInc(boolean joinInc) {
-        this.joinInc = joinInc;
     }
 
     public InnerJoin getJoin() {
@@ -184,14 +142,6 @@ public class SelectStatement extends MetaStatement {
         this.join = join;
     }        
 
-    public boolean isWhereInc() {
-        return whereInc;
-    }
-
-    public void setWhereInc(boolean whereInc) {
-        this.whereInc = whereInc;
-    }
-
     public ArrayList<Relation> getWhere() {
         return where;
     }
@@ -201,50 +151,14 @@ public class SelectStatement extends MetaStatement {
         this.where = where;
     }        
 
-    public boolean isOrderInc() {
-        return orderInc;
-    }
-
-    public void setOrderInc(boolean orderInc) {
-        this.orderInc = orderInc;
-    }
-
-    public ArrayList<com.stratio.meta.core.structures.Ordering> getOrder() {
-        return order;
-    }
-
     public void setOrder(ArrayList<com.stratio.meta.core.structures.Ordering> order) {
         this.orderInc = true;
         this.order = order;
     }        
 
-    public boolean isGroupInc() {
-        return groupInc;
-    }
-
-    public void setGroupInc(boolean groupInc) {
-        this.groupInc = groupInc;
-    }
-
-    public GroupBy getGroup() {
-        return group;
-    }
-
     public void setGroup(GroupBy group) {
         this.groupInc = true;
         this.group = group;
-    }
-
-    public boolean isLimitInc() {
-        return limitInc;
-    }
-
-    public void setLimitInc(boolean limitInc) {
-        this.limitInc = limitInc;
-    }
-
-    public int getLimit() {
-        return limit;
     }
 
     public void setLimit(int limit) {
@@ -252,22 +166,10 @@ public class SelectStatement extends MetaStatement {
         this.limit = limit;
     }
 
-    public boolean isDisableAnalytics() {
-        return disableAnalytics;
-    }
-
     public void setDisableAnalytics(boolean disableAnalytics) {
         this.disableAnalytics = disableAnalytics;
     }                   
 
-    public boolean isNeedsAllowFiltering() {
-        return needsAllowFiltering;
-    }
-
-    public void setNeedsAllowFiltering(boolean needsAllowFiltering) {
-        this.needsAllowFiltering = needsAllowFiltering;
-    }        
-    
     public void addSelection(SelectionSelector selSelector){
         if(selectionClause == null){
             SelectionSelectors selSelectors = new SelectionSelectors();
@@ -311,7 +213,7 @@ public class SelectStatement extends MetaStatement {
         if(disableAnalytics){
             sb.append(" DISABLE ANALYTICS");
         }        
-        //sb.append(";");
+
         return sb.toString().replace("  ", " ");
     }
 
@@ -327,6 +229,10 @@ public class SelectStatement extends MetaStatement {
                 result = validateKeyspaceAndTable(metadata, targetKeyspace,
                         join.isKeyspaceInc(), join.getKeyspace(), join.getTablename());
             }
+        }
+
+        if(!result.hasError()){
+            result = validateOptions();
         }
 
         String effectiveKs1 = targetKeyspace;
@@ -404,7 +310,6 @@ public class SelectStatement extends MetaStatement {
                     targetTable = tableAndColumn[0];
                     column = tableAndColumn[1];
                 }
-                //System.out.println("Column: " + column + " targetTable: " + targetTable);
 
                 //Check that the column exists.
                 Result columnResult = findColumn(targetTable, column);
@@ -443,6 +348,8 @@ public class SelectStatement extends MetaStatement {
                                     break;
                                 case "<=":
                                     supported = false;
+                                    break;
+                                default:
                                     break;
                             }
                             if (!supported) {
@@ -873,7 +780,7 @@ public class SelectStatement extends MetaStatement {
         } else {
             whereStmt = sel.where();
         }
-        System.out.println("SelectStatement.getDriverStatement: " + whereStmt.toString());
+
         return whereStmt;
     }
     

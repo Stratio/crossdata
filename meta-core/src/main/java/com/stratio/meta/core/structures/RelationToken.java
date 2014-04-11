@@ -31,7 +31,6 @@ public class RelationToken extends Relation {
         this.terms = new ArrayList<>();
         this.type = TYPE_TOKEN;
         this.identifiers = new ArrayList<>();
-        this.identifiers = identifiers;
     }   
     
     public RelationToken(ArrayList<String> identifiers, String operator) {

@@ -19,7 +19,12 @@
 
 package com.stratio.meta.core.utils;
 
-public class RecoverableParserException extends RuntimeException {            
+public class RecoverableParserException extends RuntimeException {
+
+    /**
+     * Serial version UID to be {@link java.io.Serializable}.
+     */
+    private static final long serialVersionUID = -4249086668009573593L;
 
     public RecoverableParserException() {
         super();

@@ -21,6 +21,11 @@ package com.stratio.meta.core.utils;
 
 public class ValidationException extends RuntimeException {
 
+    /**
+     * Serial version UID to be {@link java.io.Serializable}.
+     */
+    private static final long serialVersionUID = -7182399772226658085L;
+
     public ValidationException() {
     }
 

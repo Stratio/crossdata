@@ -82,6 +82,8 @@ public class Option {
             case OPTION_CLUSTERING:
                 sb.append("CLUSTERING ORDER");
                 break;
+            default:
+                break;
         }
         return sb.toString();
     }

@@ -19,13 +19,8 @@
 
 package com.stratio.meta.core.utils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
 
 public class CreateTokensFile {
     
@@ -50,7 +45,10 @@ public class CreateTokensFile {
 
             logger.info("Reading grammar from "+fileGrammar.getAbsolutePath());
             BufferedWriter bw;
-            try (BufferedReader br = new BufferedReader(new FileReader(fileGrammar))) {
+            //try (BufferedReader br = new BufferedReader(new FileReader(fileGrammar))) {
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(fileGrammar), Charset.forName("UTF-8")))) {
                 bw = new BufferedWriter(new FileWriter(outFile));
                 String line = br.readLine();
                 while (line != null){

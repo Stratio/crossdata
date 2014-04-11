@@ -373,7 +373,6 @@ createTableStatement returns [CreateTableStatement crtast]
     LinkedHashMap<String, String> columns = new LinkedHashMap<>();
     ArrayList<String>   primaryKey = new ArrayList<String>();
     ArrayList<String> clusterKey = new ArrayList<String>();
-    LinkedHashMap<String, ValueProperty> propierties = new LinkedHashMap<>();
     int Type_Primary_Key= 0;
     int columnNumberPK= 0;
     int columnNumberPK_inter= 0;
@@ -952,7 +951,6 @@ getMapLiteral returns [Map<String, String> mapTerms]
 
 getValueProperty returns [ValueProperty value]
     @init{
-        StringBuilder sb = new StringBuilder();
     }:
     ident=T_IDENT {$value = new IdentifierProperty($ident.text);}
     | constant=T_CONSTANT {$value = new ConstantProperty(Integer.parseInt($constant.text));}

@@ -65,7 +65,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
         return properties;
     }
 
-    public void setProperties(HashMap properties) {
+    public void setProperties(HashMap<String, ValueProperty> properties) {
         this.properties = properties;
     }        
 

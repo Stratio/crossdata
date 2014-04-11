@@ -139,6 +139,16 @@
 
 	<build>
 		<plugins>
+
+			<!--plugin>
+			        <artifactId>maven-compiler-plugin</artifactId>
+			        <configuration>
+				        <compilerArgument>-Xlint:all</compilerArgument>
+			        	<showWarnings>true</showWarnings>
+				        <showDeprecation>true</showDeprecation>
+			        </configuration>
+		        </plugin-->
+
 			<plugin>
 				<groupId>org.antlr</groupId>
 				<artifactId>antlr3-maven-plugin</artifactId>

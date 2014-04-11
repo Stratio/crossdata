@@ -77,6 +77,13 @@ public class MapLiteralProperty extends ValueProperty {
         sb.append("{").append(ParserUtils.stringMap(literals, ": ", ", ")).append("}");        
         return sb.toString();
     }
-    
+
+    @Override
+    public String getStringValue() {
+
+        System.out.println("MapLiteralProperty.getStringValue: " + toString());
+        return toString();
+    }
+
 }
     
