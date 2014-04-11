@@ -88,18 +88,19 @@ public class Metash {
         String[] namesGroup = {"Max", "Molly", "Buddy", "Bella", "Jake", "Lucy", "Bailey", "Maggie",
                 "Rocky", "Daisy", "Charlie", "Sadie", "Jack", "Chloe", "Toby", "Sophie",
                 "Cody", "Bailey", "Buster", "Zoe", "Duke", "Lola", "Cooper", "Abby"};
-        if(cmd.toLowerCase().startsWith("random")){
-            limit = Integer.parseInt(cmd.split(" ", 3)[2]);
+        if(cmd.contains(";")){
+            cmd = cmd.replace(";", "");
         }
+        limit = Integer.parseInt(cmd.split(" ", 3)[2]);
         if(cmd.toLowerCase().startsWith("random test")){
             for(int i=0; i<limit; i++){
                 int random = (int) (Math.random()*24.0);
                 cmd = "INSERT INTO key_space1.test (alias, animal, color, food, gender) VALUES " +
-                        "('"+ RandomStringUtils.randomAlphabetic(2) +"', " +
-                        "'"+ RandomStringUtils.randomAlphabetic(8) +"', " +
-                        "'"+ RandomStringUtils.randomAlphabetic(8) +"', " +
-                        "'"+ RandomStringUtils.randomAlphabetic(8) +"', " +
-                        "'"+ RandomStringUtils.randomAlphabetic(8) +"');";
+                        "('"+ RandomStringUtils.randomAlphabetic(3) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(15) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(15) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(15) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(15) +"');";
                 metaDriver.executeQuery(user, currentKeyspace, cmd);
             }
         }
@@ -109,10 +110,10 @@ public class Metash {
                 int randomAge = (int) (Math.random()*20.0);
                 int randomValue = (int) (Math.random()*2000.0);
                 cmd = "INSERT INTO key_space1.clients (name, age, animal, origin, value) VALUES " +
-                        "('"+ RandomStringUtils.randomAlphabetic(2) +"', " +
+                        "('"+ RandomStringUtils.randomAlphabetic(3) +"', " +
                         randomAge+", " +
-                        "'"+ RandomStringUtils.randomAlphabetic(8) +"', " +
-                        "'"+ RandomStringUtils.randomAlphabetic(8) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(15) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(15) +"', " +
                         randomValue+");";
                 metaDriver.executeQuery(user, currentKeyspace, cmd);
             }
@@ -156,7 +157,7 @@ public class Metash {
                 }
                 System.out.println("\033[34;1mCommand:\033[0m " + cmd);
                 try {
-                    ///////////////////////////////////////////////////////////////////////////////////////////
+                    // TODO: To be removed
                     if(cmd.toLowerCase().startsWith("random")){
                         insertRandomData(cmd, metaDriver, currentKeyspace);
                         continue;
