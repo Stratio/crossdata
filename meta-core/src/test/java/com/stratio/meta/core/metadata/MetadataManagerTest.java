@@ -57,7 +57,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
 	public void getTableMetadata() {
 		String keyspace = "system";
 		String [] tables = {
-				"IndexInfo", "NodeIdInfo", "batchlog",
+                "IndexInfo", "NodeIdInfo", "batchlog",
 				"compaction_history", "compactions_in_progress",
 				"hints", "local", "paxos", "peer_events",
 				"peers", "range_xfers", "schema_columnfamilies",
@@ -66,7 +66,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
 		TableMetadata metadata = null;
 		for(String table : tables){
 			metadata = _metadataManager.getTableMetadata(keyspace, table);
-			assertNotNull(metadata, "Cannot retrieve table metadata");
+			assertNotNull(metadata, "Cannot retrieve table " + table + " metadata");
 			assertEquals(table, metadata.getName(), "Retrieved table name does not match");
 		}
 	}

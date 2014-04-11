@@ -19,20 +19,41 @@
 
 package com.stratio.meta.server.config
 
+<<<<<<< HEAD
+import org.scalatest.{FunSuiteLike, BeforeAndAfterAll}
+import java.io.File
+import scala.sys.process._
+import org.scalatest.{Suite, BeforeAndAfterAll}
+
+trait  BeforeAndAfterCassandra extends  BeforeAndAfterAll {
+
+  this:Suite =>
+  def beforeCassandraStart(){
+=======
 import org.scalatest.{Suite, BeforeAndAfterAll}
 import com.stratio.meta.test.CCMHandler
 
 trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
   this:Suite =>
     def beforeCassandraStart(): Unit = {
+>>>>>>> 0ac30dcab97803e21c9c63482a8223af935ef4a9
 
     }
 
+<<<<<<< HEAD
+  abstract override def beforeAll(){
+    val file= new File (getClass.getResource("/com/stratio/meta/test/test.sh").getFile)
+    file.setExecutable(true)
+    val output= file.getAbsolutePath.!!
+    println(output)
+  }
+=======
     override def beforeAll(): Unit = {
       beforeCassandraStart()
       CCMHandler.StartCCM()
       afterCassandraStart()
     }
+>>>>>>> 0ac30dcab97803e21c9c63482a8223af935ef4a9
 
     def afterCassandraStart(): Unit = {
 
@@ -40,15 +61,27 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
 
     def beforeCassandraFinish(): Unit = {
 
+<<<<<<< HEAD
+  }
+  abstract override def afterAll(){
+    val file= new File (getClass.getResource("/com/stratio/meta/test/close.sh").getFile)
+    file.setExecutable(true)
+    val output= file.getAbsolutePath.!!
+    println(output)
+  }
+=======
     }
     override def afterAll(): Unit = {
       beforeCassandraFinish()
       CCMHandler.FinishCCM()
       afterCassandraFinish()
     }
+>>>>>>> 0ac30dcab97803e21c9c63482a8223af935ef4a9
 
     def afterCassandraFinish(): Unit = {
 
     }
 
 }
+
+

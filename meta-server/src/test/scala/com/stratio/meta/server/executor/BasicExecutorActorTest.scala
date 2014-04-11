@@ -25,6 +25,8 @@ with DefaultTimeout with FunSuiteLike with  BeforeAndAfterCassandra
 
 
 
+
+
   lazy val engine:Engine =  createEngine.create()
 
   lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
@@ -60,7 +62,7 @@ with DefaultTimeout with FunSuiteLike with  BeforeAndAfterCassandra
     within(3000 millis){
 
       val msg="create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
-      assertEquals(querying.proccess(msg,executorRef,engine,1),"Keyspace ks_demo already exists" )
+      assertEquals(querying.proccess(msg,executorRef,engine,1),"Keyspace ks_demo already exists." )
     }
   }
 
@@ -83,20 +85,13 @@ with DefaultTimeout with FunSuiteLike with  BeforeAndAfterCassandra
   }
 
 
-  test ("QueryActor use KS not create"){
 
-    within(3000 millis){
-
-      val msg="use ks_demo_not ;"
-      assertEquals(querying.proccess(msg,executorRef,engine,1),"Keyspace 'ks_demo_not' does not exist" )
-    }
-  }
   test ("QueryActor insert into table not create yet without error"){
 
     within(3000 millis){
 
       val msg="insert into demo (field1, field2) values ('test1','text2');"
-      assertEquals(querying.proccess(msg,executorRef,engine,1),"unconfigured columnfamily demo" )
+      assertEquals(querying.proccess(msg,executorRef,engine,1),"Table demo does not exists." )
     }
   }
   test ("QueryActor select without table"){
@@ -104,7 +99,7 @@ with DefaultTimeout with FunSuiteLike with  BeforeAndAfterCassandra
     within(3000 millis){
 
       val msg="select * from demo ;"
-      assertEquals(querying.proccess(msg,executorRef,engine,1),"unconfigured columnfamily demo")
+      assertEquals(querying.proccess(msg,executorRef,engine,1),"Table demo does not exists.")
     }
   }
 
@@ -113,7 +108,7 @@ with DefaultTimeout with FunSuiteLike with  BeforeAndAfterCassandra
 
     within(3000 millis){
 
-      val msg="create TABLE demo (field1 text PRIMARY KEY , field2 text);"
+      val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
       assertEquals(querying.proccess(msg,executorRef,engine,1),"sucess" )
     }
   }
@@ -122,8 +117,8 @@ with DefaultTimeout with FunSuiteLike with  BeforeAndAfterCassandra
 
     within(3000 millis){
 
-      val msg="create TABLE demo (field1 text PRIMARY KEY , field2 text);"
-      assertEquals(querying.proccess(msg,executorRef,engine,1),"Table ks_demo.demo already exists" )
+      val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
+      assertEquals(querying.proccess(msg,executorRef,engine,1),"Table demo already exists." )
     }
   }
 
@@ -164,7 +159,7 @@ with DefaultTimeout with FunSuiteLike with  BeforeAndAfterCassandra
     within(3000 millis){
 
       val msg="drop keyspace ks_demo ;"
-      assertEquals(querying.proccess(msg,executorRef,engine,1),"Cannot drop non existing keyspace 'ks_demo'." )
+      assertEquals(querying.proccess(msg,executorRef,engine,1),"Keyspace ks_demo does not exists." )
     }
   }
 

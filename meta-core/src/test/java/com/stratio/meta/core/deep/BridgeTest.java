@@ -17,8 +17,12 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.planner;
+package com.stratio.meta.core.deep;
 
-public class MetaPlan {
-    
+public class BridgeTest {
+
+    public static final String cluster = "local";
+
+    public static final String jobName = "DeepTest";
+
 }

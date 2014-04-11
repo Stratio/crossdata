@@ -137,20 +137,23 @@ public class Tree {
         int deep = 0;
         for(Tree child: children){
             sb.append(child.printDownTop(deep+1)).append(System.getProperty("line.separator"));
-        }        
-        sb.append(node.toString());
+        }
+        if(node != null){
+            sb.append(node.toString());
+        }
         return sb.toString();
     }
     
     private String printDownTop(int deep){
         StringBuilder sb = new StringBuilder();
+        sb.append(node.toString());
         for(Tree child: children){
             sb.append(child.printDownTop(deep+1)).append(System.getProperty("line.separator"));
         }        
         for(int i=0; i<deep; i++){
             sb.append("\t");
         }
-        sb.append(node.toString());
+
         return sb.toString();
     }
 
@@ -165,12 +168,15 @@ public class Tree {
     }
 
     public Result executeMyself(Session session, List<Result> resultsFromChildren){
+        if(node == null){
+            return QueryResult.CreateSuccessQueryResult();
+        }
         MetaStep myStep = (MetaStep) node;
         MetaPath myPath = myStep.getPath();
         if(myPath == MetaPath.COMMAND){
             return CommandExecutor.execute(myStep.getStmt(), session);
         } else if(myPath == MetaPath.CASSANDRA){
-            return CassandraExecutor.execute(myStep.getStmt(), session);
+            return CassandraExecutor.execute(myStep, session);
         } else if(myPath == MetaPath.DEEP){
             return DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session);
         } else if(myPath == MetaPath.UNSUPPORTED){
@@ -183,9 +189,9 @@ public class Tree {
     public String toStringTopDown(){
         StringBuilder sb = new StringBuilder();
         int deep = 0;
-        sb.append(node.toString()).append(System.getProperty("line.separator"));
+        sb.append(node.toString()).append(System.lineSeparator());
         for(Tree child: children){
-            sb.append(child.printTopDown(deep+1)).append(System.getProperty("line.separator"));
+            sb.append(child.printTopDown(deep+1)).append(System.lineSeparator());
         }                
         return sb.toString();
     }
@@ -197,7 +203,7 @@ public class Tree {
         }
         sb.append(node.toString());
         for(Tree child: children){
-            sb.append(child.printDownTop(deep+1)).append(System.getProperty("line.separator"));
+            sb.append(child.printDownTop(deep+1)).append(System.lineSeparator());
         }                
         return sb.toString();
     }

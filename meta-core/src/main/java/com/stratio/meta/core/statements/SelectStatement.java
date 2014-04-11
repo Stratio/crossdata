@@ -20,7 +20,6 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Clause;
@@ -38,9 +37,7 @@ import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -68,7 +65,9 @@ public class SelectStatement extends MetaStatement {
 
     //TODO: We should probably remove this an pass it as parameters.
     private MetadataManager _metadata = null;
-    private TableMetadata _tableMetadata = null;
+    private TableMetadata _tableMetadataFrom = null;
+    private TableMetadata _tableMetadataJoin = null;
+    private HashMap<String, Collection<ColumnMetadata>> columns = new HashMap<>();
 
     public SelectStatement(SelectionClause selectionClause, String tableName,
                            boolean windowInc, WindowSelect window, 
@@ -109,7 +108,7 @@ public class SelectStatement extends MetaStatement {
     public SelectStatement(String tableName) {
         this(null, tableName, false, null, false, null, false, null, false, null, false, null, false, 0, false);
     }
-
+/*
     public void setSelectionClause(SelectionClause selectionClause) {
         this.selectionClause = selectionClause;
     }        
@@ -121,7 +120,7 @@ public class SelectStatement extends MetaStatement {
     public void setKeyspaceInc(boolean keyspaceInc) {
         this.keyspaceInc = keyspaceInc;
     }
-
+*/
     public String getKeyspace() {
         return keyspace;
     }
@@ -330,29 +329,33 @@ public class SelectStatement extends MetaStatement {
             }
         }
 
-        if(true){ // TODO: To be removed
-            return QueryResult.CreateSuccessQueryResult();
+        String effectiveKs1 = targetKeyspace;
+        String effectiveKs2 = targetKeyspace;
+        if(keyspaceInc){
+            effectiveKs1 = keyspace;
+        }
+        if(joinInc && join.isKeyspaceInc()){
+            effectiveKs2 = join.getKeyspace();
         }
 
-        String effectiveKeyspace = targetKeyspace;
-        if(keyspaceInc){
-            effectiveKeyspace = keyspace;
-        }
-        TableMetadata tableMetadata = null;
+        TableMetadata tableMetadata1 = null;
+        TableMetadata tableMetadata2 = null;
 
         if(!result.hasError()){
-            tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+            tableMetadata1 = metadata.getTableMetadata(effectiveKs1, tableName);
+            if(joinInc) {
+                tableMetadata2 = metadata.getTableMetadata(effectiveKs2, join.getTablename());
+                _tableMetadataJoin = tableMetadata2;
+            }
             //Cache Metadata manager and table metadata for the getDriverStatement.
             _metadata = metadata;
-            _tableMetadata = tableMetadata;
-            result = validateSelectionColumns(tableMetadata);
+            _tableMetadataFrom = tableMetadata1;
+
+            result = validateSelectionColumns(tableMetadata1, tableMetadata2);
         }
         if(!result.hasError() && whereInc){
-            result = validateWhereClause(tableMetadata);
+            result = validateWhereClause(tableMetadata1, tableMetadata2);
         }
-
-        System.out.println("result.hasError()=" + result.hasError());
-        System.out.println("result.getErrorMessage()="+result.getErrorMessage());
 
         return result;
     }
@@ -381,10 +384,11 @@ public class SelectStatement extends MetaStatement {
     /**
      * Validate that the where clause is valid by checking that columns exists on the target
      * table and that the comparisons are semantically valid.
-     * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
+     * @param tableFrom The {@link com.datastax.driver.core.TableMetadata} associated with the FROM table.
+     * @param tableJoin The {@link com.datastax.driver.core.TableMetadata} associated with the JOIN table.
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private Result validateWhereClause(TableMetadata tableMetadata){
+    private Result validateWhereClause(TableMetadata tableFrom, TableMetadata tableJoin){
         //TODO: Check that the MATCH operator is only used in Lucene mapped columns.
 
         Result result = QueryResult.CreateSuccessQueryResult();
@@ -393,49 +397,66 @@ public class SelectStatement extends MetaStatement {
                 //Check comparison, =, >, <, etc.
                 RelationCompare rc = RelationCompare.class.cast(relation);
                 String column = rc.getIdentifiers().get(0);
+                //Determine the target table the column belongs to.
+                String targetTable = "any";
+                if(column.contains(".")){
+                    String[] tableAndColumn = column.split("\\.");
+                    targetTable = tableAndColumn[0];
+                    column = tableAndColumn[1];
+                }
+                //System.out.println("Column: " + column + " targetTable: " + targetTable);
 
-                if (tableMetadata.getColumn(column) == null) {
-                    result= QueryResult.CreateFailQueryResult("Column " + column + " does not exists in table " +
-                            tableMetadata.getName());
+                //Check that the column exists.
+                Result columnResult = findColumn(targetTable, column);
+                if(columnResult.hasError()){
+                    result = columnResult;
                 }
 
+                //Get the term and determine its type.
                 Term t = Term.class.cast(rc.getTerms().get(0));
-                ColumnMetadata cm = tableMetadata.getColumn(column);
-                if (cm != null){
-                    if (!tableMetadata.getColumn(column)
-                            .getType().asJavaClass().equals(t.getTermClass())) {
-                        result= QueryResult.CreateFailQueryResult("Column " + column
-                                + " of type " + tableMetadata.getColumn(rc.getIdentifiers().get(0))
-                                .getType().asJavaClass()
-                                + " does not accept " + t.getTermClass()
-                                + " values (" + t.toString() + ")");
-                    }
+                boolean found = false;
+                Iterator<ColumnMetadata> it = columns.get(targetTable).iterator();
+                while(!found && it.hasNext()) {
+                    ColumnMetadata cm = it.next();
 
-                    if (Boolean.class.equals(tableMetadata.getColumn(column)
-                        .getType().asJavaClass())) {
-                    boolean supported = true;
-                    switch (rc.getOperator()) {
-                        case ">":
-                            supported = false;
-                            break;
-                        case "<":
-                            supported = false;
-                            break;
-                        case ">=":
-                            supported = false;
-                            break;
-                        case "<=":
-                            supported = false;
-                            break;
-                    }
-                    if (!supported) {
-                        result= QueryResult.CreateFailQueryResult("Operand " + rc.getOperator() + " not supported for" +
-                                " column " + column + ".");
+                    if (cm.getName().equals(column)) {
+                        found = true;
+
+                        if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
+                            result = QueryResult.CreateFailQueryResult("Column " + column
+                                    + " of type " + cm.getType().asJavaClass()
+                                    + " does not accept " + t.getTermClass()
+                                    + " values (" + t.toString() + ")");
+                        }
+
+                        if (Boolean.class.equals(cm.getType().asJavaClass())) {
+                            boolean supported = true;
+                            switch (rc.getOperator()) {
+                                case ">":
+                                    supported = false;
+                                    break;
+                                case "<":
+                                    supported = false;
+                                    break;
+                                case ">=":
+                                    supported = false;
+                                    break;
+                                case "<=":
+                                    supported = false;
+                                    break;
+                            }
+                            if (!supported) {
+                                result = QueryResult.CreateFailQueryResult("Operand " + rc.getOperator() + " not supported for" +
+                                        " column " + column + ".");
+                            }
+                        }
                     }
                 }
-            }else {
+
+            if(!found) {
                     result= QueryResult.CreateFailQueryResult("Column " + column + " not found in table " + tableName);
             }
+
 
             }else if(Relation.TYPE_IN == relation.getType()){
                 //TODO: Check IN relation
@@ -453,13 +474,59 @@ public class SelectStatement extends MetaStatement {
     }
 
     /**
+     * Find a column in the selected tables.
+     * @param table The target table of the column.
+     * @param column The name of the column.
+     * @return A {@link com.stratio.meta.common.result.Result}.
+     */
+    private Result findColumn(String table, String column){
+
+        Result result = QueryResult.CreateSuccessQueryResult();
+        boolean found = false;
+
+        if(columns.get(table) != null){
+
+            Iterator<ColumnMetadata> it = columns.get(table).iterator();
+            while(!found && it.hasNext()) {
+                ColumnMetadata cm = it.next();
+                if (cm.getName().equals(column)) {
+                    found = true;
+                }
+            }
+            if(!found){
+                result= QueryResult.CreateFailQueryResult("Column " + column + " does not " +
+                        "exists in table " + table);
+            }
+
+        }else{
+            result = QueryResult.CreateFailQueryResult("Column " + column
+                    + " refers to table " + table + " that has not been specified on query.");
+        }
+        return result;
+    }
+
+
+    /**
      * Validate that the columns specified in the select are valid by checking
      * that the selection columns exists in the table.
-     * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
+     * @param tableFrom The {@link com.datastax.driver.core.TableMetadata} associated with the FROM table.
+     * @param tableJoin The {@link com.datastax.driver.core.TableMetadata} associated with the JOIN table.
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private Result validateSelectionColumns(TableMetadata tableMetadata) {
+    private Result validateSelectionColumns(TableMetadata tableFrom, TableMetadata tableJoin) {
         Result result = QueryResult.CreateSuccessQueryResult();
+
+        //Create a HashMap with the columns
+        Collection<ColumnMetadata> allColumns = new ArrayList<>();
+        columns.put(tableFrom.getName(), tableFrom.getColumns());
+        allColumns.addAll(tableFrom.getColumns());
+        if(joinInc){
+            columns.put(tableJoin.getName(), tableJoin.getColumns());
+            allColumns.addAll(tableJoin.getColumns());
+        }
+        columns.put("any", allColumns);
+
+        Result columnResult = null;
 
         //Iterate through the selection columns. If the user specified count(*) skip
         if(selectionClause.getType() == SelectionClause.TYPE_SELECTION){
@@ -471,14 +538,14 @@ public class SelectStatement extends MetaStatement {
                     if(selector.getSelector().getType() == SelectorMeta.TYPE_IDENT){
                         SelectorIdentifier si = SelectorIdentifier.class.cast(selector.getSelector());
 
-                        if(si.getTablename() != null && !si.getTablename().equals(tableMetadata.getName())){
-                            result = QueryResult.CreateFailQueryResult("Column " + si.getColumnName()
-                                    + " refers to table " + si.getTablename() + " that has not been specified on query.");
+                        String targetTable = "any";
+                        if(si.getTablename() != null){
+                            targetTable = si.getTablename();
                         }
 
-                        if(tableMetadata.getColumn(si.getColumnName()) == null){
-                            result= QueryResult.CreateFailQueryResult("Column " + si.getColumnName() + " does not " +
-                                    "exists in table " + tableMetadata.getName());
+                        columnResult = findColumn(targetTable, si.getColumnName());
+                        if(columnResult.hasError()){
+                            result = columnResult;
                         }
                     }else{
                         result= QueryResult.CreateFailQueryResult("Functions on selected fields not supported.");
@@ -704,7 +771,7 @@ public class SelectStatement extends MetaStatement {
         
         Where whereStmt = null;
         if(this.whereInc){
-            String [] luceneWhere = getLuceneWhereClause(_metadata, _tableMetadata);
+            String [] luceneWhere = getLuceneWhereClause(_metadata, _tableMetadataFrom);
             if(luceneWhere != null){
                 Clause lc = QueryBuilder.eq(luceneWhere[0], luceneWhere[1]);
                 whereStmt = sel.where(lc);
@@ -806,7 +873,7 @@ public class SelectStatement extends MetaStatement {
         } else {
             whereStmt = sel.where();
         }
-
+        System.out.println("SelectStatement.getDriverStatement: " + whereStmt.toString());
         return whereStmt;
     }
     
@@ -819,12 +886,19 @@ public class SelectStatement extends MetaStatement {
     public Tree getPlan() {
         Tree steps = new Tree();
         if(joinInc){
+
             SelectStatement firstSelect = new SelectStatement(tableName);
             if(keyspaceInc){
                 firstSelect.setKeyspace(this.keyspace);
             }
+
             SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
+            if(this.join.isKeyspaceInc()){
+                secondSelect.setKeyspace(this.join.getKeyspace());
+            }
+
             SelectStatement joinSelect = new SelectStatement("");
+
             // ADD FIELDS OF THE JOIN
             Map<String, String> fields = this.join.getFields();
             for(String key: fields.keySet()){                
@@ -837,6 +911,7 @@ public class SelectStatement extends MetaStatement {
                     secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(key.split("\\.")[1])));
                 }
             }
+
             // ADD FIELDS OF THE SELECT
             SelectionList selectionList = (SelectionList) this.selectionClause;
             SelectionSelectors selection = (SelectionSelectors) selectionList.getSelection();
@@ -849,15 +924,39 @@ public class SelectStatement extends MetaStatement {
                     secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
                 }
             }
+
+            // ADD WHERE CLAUSES IF ANY
+
+            if(whereInc){
+                for(Relation relation: where){
+                    String id = relation.getIdentifiers().iterator().next();
+                    if(id.contains(".")){
+                        String[] tablenameAndColumnname = id.split("\\.");
+                        String tablename = tablenameAndColumnname[0];
+                        String columnname = tablenameAndColumnname[1];
+                        if(tablename.equalsIgnoreCase(tablename)){
+                            firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(columnname)));
+                        } else {
+                            secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(columnname)));
+                        }
+                    }
+                }
+            }
+
+
             // ADD MAP OF THE JOIN
             joinSelect.setJoin(new InnerJoin("", fields));
-            /* joinSelect.getJoin().getFields().size(); */
+
+
             // ADD STEPS
             steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
             steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
             steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
+
         } else {
+
             steps.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+
         }
         return steps;
     }

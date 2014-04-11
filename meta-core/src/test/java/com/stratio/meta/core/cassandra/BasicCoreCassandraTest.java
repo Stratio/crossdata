@@ -25,6 +25,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.stratio.meta.core.parser.Parser;
+import com.stratio.meta.test.CCMHandler;
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -64,27 +65,17 @@ public class BasicCoreCassandraTest {
 
     @BeforeClass
     public static void setUpBeforeClass(){
-        try {
-            File script = new File(BasicCoreCassandraTest.class.getResource("test.sh").getPath());
-            script.setExecutable(true);
-            Process p = Runtime.getRuntime().exec(script.getAbsolutePath());
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(p.getInputStream()));
-            String line = null;
-            while ((line = in.readLine()) != null) {
-                System.out.println(line);
-            }
-        } catch (IOException e) {
-            logger.error("Cannot execute ccm script", e);
-        }
+        CCMHandler.StartCCM();
         initCassandraConnection();
         dropKeyspaceIfExists("testKS");
     }
 
     @AfterClass
     public static void tearDownAfterClass(){
+
         dropKeyspaceIfExists("testKs");
         closeCassandraConnection();
+        CCMHandler.FinishCCM();
     }
 
     /**

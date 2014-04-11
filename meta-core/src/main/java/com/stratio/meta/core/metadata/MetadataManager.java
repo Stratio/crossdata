@@ -24,6 +24,7 @@ import com.stratio.meta.core.structures.IndexType;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -98,7 +99,23 @@ public class MetadataManager {
 	public TableMetadata getTableMetadata(String keyspace, String tablename){
 		TableMetadata result = null;
 		if(_clusterMetadata != null && _clusterMetadata.getKeyspace(keyspace) != null){
-			result = _clusterMetadata.getKeyspace(keyspace).getTable(tablename);
+            tablename = tablename.toLowerCase();
+            boolean found = false;
+            //Iterate through the tables matching the name. We cannot use the getTable
+            //method as it changes the names using the Metadata.handleId
+            Iterator<TableMetadata> tables = _clusterMetadata.getKeyspace(keyspace)
+                    .getTables().iterator();
+            TableMetadata tableMetadata = null;
+            while(!found && tables.hasNext()){
+                tableMetadata = tables.next();
+                if(tableMetadata.getName().toLowerCase().equals(tablename)){
+                    found = true;
+                }
+            }
+
+            if(found){
+                result = tableMetadata;
+            }
 		}
 		return result;
 	}

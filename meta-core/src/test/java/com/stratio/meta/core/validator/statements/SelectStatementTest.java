@@ -155,4 +155,12 @@ public class SelectStatementTest extends BasicValidatorTest {
         validateOk(inputText, "validate_innerJoin_basic_ok");
     }
 
+    @Test
+    public void validate_innerJoin_where_ok(){
+        String inputText = "SELECT users.name, users.age, users_info.info FROM demo.users "
+                + "INNER JOIN demo.users_info ON users.name=users_info.link_name "
+                + "WHERE name = 'name_3';";
+        validateOk(inputText, "validate_innerJoin_basic_ok");
+    }
+
 }
