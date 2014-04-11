@@ -33,6 +33,7 @@ import jline.console.ConsoleReader;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -81,7 +82,43 @@ public class Metash {
             HelpStatement h = parseHelp(inputText);
             System.out.println(_help.searchHelp(h.getType()));
     }
-    
+
+    private void insertRandomData(String cmd, BasicDriver metaDriver, String currentKeyspace){
+        int limit = 0;
+        String[] namesGroup = {"Max", "Molly", "Buddy", "Bella", "Jake", "Lucy", "Bailey", "Maggie",
+                "Rocky", "Daisy", "Charlie", "Sadie", "Jack", "Chloe", "Toby", "Sophie",
+                "Cody", "Bailey", "Buster", "Zoe", "Duke", "Lola", "Cooper", "Abby"};
+        if(cmd.toLowerCase().startsWith("random")){
+            limit = Integer.parseInt(cmd.split(" ", 3)[2]);
+        }
+        if(cmd.toLowerCase().startsWith("random test")){
+            for(int i=0; i<limit; i++){
+                int random = (int) (Math.random()*24.0);
+                cmd = "INSERT INTO key_space1.test (alias, animal, color, food, gender) VALUES " +
+                        "('"+ RandomStringUtils.randomAlphabetic(2) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(8) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(8) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(8) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(8) +"');";
+                metaDriver.executeQuery(user, currentKeyspace, cmd);
+            }
+        }
+        if(cmd.toLowerCase().startsWith("random clients")){
+            for(int i=0; i<limit; i++){
+                int random = (int) (Math.random()*24.00);
+                int randomAge = (int) (Math.random()*20.0);
+                int randomValue = (int) (Math.random()*2000.0);
+                cmd = "INSERT INTO key_space1.clients (name, age, animal, origin, value) VALUES " +
+                        "('"+ RandomStringUtils.randomAlphabetic(2) +"', " +
+                        randomAge+", " +
+                        "'"+ RandomStringUtils.randomAlphabetic(8) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(8) +"', " +
+                        randomValue+");";
+                metaDriver.executeQuery(user, currentKeyspace, cmd);
+            }
+        }
+    }
+
     /**
      * Shell loop that receives user commands until a {@code exit} or {@code quit} command
      * is introduced.
@@ -118,35 +155,42 @@ public class Metash {
                     continue;
                 }
                 System.out.println("\033[34;1mCommand:\033[0m " + cmd);
-                    try {
-                        if(cmd.toLowerCase().startsWith("help")){
-                            showHelp(cmd);
-                        } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
-
-                            long queryStart = System.currentTimeMillis();
-                            Result metaResult = metaDriver.executeQuery(user, currentKeyspace, cmd);
-                            long queryEnd = System.currentTimeMillis();
-
-                            if(metaResult.isKsChanged()){
-                                currentKeyspace = metaResult.getCurrentKeyspace();
-                                if(currentKeyspace.isEmpty()){
-                                    console.setPrompt("\033[36mmetash-sh:"+System.getProperty("user.name")+">\033[0m ");
-                                } else {
-                                    console.setPrompt("\033[36mmetash-sh:"+System.getProperty("user.name")+":"+currentKeyspace+">\033[0m ");
-                                }
-                            }
-                            if(metaResult.hasError()){
-                                System.err.println("\033[31mError:\033[0m "+metaResult.getErrorMessage());
-                                continue;
-                            }
-
-                            System.out.println("\033[32mResult:\033[0m "+ ConsoleUtils.stringResult(metaResult));
-                            System.out.println("Response time: "+((queryEnd-queryStart)/1000)+" seconds");
-                            System.out.println("Display time: "+((System.currentTimeMillis()-queryEnd)/1000)+" seconds");
-                        }
-                    } catch(Exception exc){
-                        System.err.println("\033[31mError:\033[0m "+exc.getMessage());
+                try {
+                    ///////////////////////////////////////////////////////////////////////////////////////////
+                    if(cmd.toLowerCase().startsWith("random")){
+                        insertRandomData(cmd, metaDriver, currentKeyspace);
+                        continue;
                     }
+                    ///////////////////////////////////////////////////////////////////////////////////////////
+
+                    if(cmd.toLowerCase().startsWith("help")){
+                        showHelp(cmd);
+                    } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
+
+                        long queryStart = System.currentTimeMillis();
+                        Result metaResult = metaDriver.executeQuery(user, currentKeyspace, cmd);
+                        long queryEnd = System.currentTimeMillis();
+
+                        if(metaResult.isKsChanged()){
+                            currentKeyspace = metaResult.getCurrentKeyspace();
+                            if(currentKeyspace.isEmpty()){
+                                console.setPrompt("\033[36mmetash-sh:"+System.getProperty("user.name")+">\033[0m ");
+                            } else {
+                                console.setPrompt("\033[36mmetash-sh:"+System.getProperty("user.name")+":"+currentKeyspace+">\033[0m ");
+                            }
+                        }
+                        if(metaResult.hasError()){
+                            System.err.println("\033[31mError:\033[0m "+metaResult.getErrorMessage());
+                            continue;
+                        }
+
+                        System.out.println("\033[32mResult:\033[0m "+ ConsoleUtils.stringResult(metaResult));
+                        System.out.println("Response time: "+((queryEnd-queryStart)/1000)+" seconds");
+                        System.out.println("Display time: "+((System.currentTimeMillis()-queryEnd)/1000)+" seconds");
+                    }
+                } catch(Exception exc){
+                    System.err.println("\033[31mError:\033[0m "+exc.getMessage());
+                }
             }
             ConsoleUtils.saveHistory(console, file, sdf);
             logger.info("History saved");

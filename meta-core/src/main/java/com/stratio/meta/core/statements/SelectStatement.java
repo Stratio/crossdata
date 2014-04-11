@@ -926,27 +926,65 @@ public class SelectStatement extends MetaStatement {
             }
 
             // ADD WHERE CLAUSES IF ANY
-
             if(whereInc){
+                ArrayList<Relation> firstWhere = new ArrayList<Relation>();
+                ArrayList<Relation> secondWhere = new ArrayList<Relation>();
                 for(Relation relation: where){
                     String id = relation.getIdentifiers().iterator().next();
                     if(id.contains(".")){
                         String[] tablenameAndColumnname = id.split("\\.");
-                        String tablename = tablenameAndColumnname[0];
-                        String columnname = tablenameAndColumnname[1];
-                        if(tablename.equalsIgnoreCase(tablename)){
-                            firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(columnname)));
-                        } else {
-                            secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(columnname)));
+                        String whereTablename = tablenameAndColumnname[0];
+                        String whereColumnname = tablenameAndColumnname[1];
+
+                        // Where clause corresponding to first table
+                        if(tableName.equalsIgnoreCase(whereTablename)){
+                            firstWhere.add(new RelationCompare(whereColumnname, relation.getOperator(), relation.getTerms().get(0)));
+                            // Add column to Select clauses if applied
+                            SelectionList sClause = (SelectionList) firstSelect.getSelectionClause();
+                            SelectionSelectors sSelectors = (SelectionSelectors) sClause.getSelection();
+                            boolean addCol = true;
+                            for (SelectionSelector ss: sSelectors.getSelectors()){
+                                SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
+                                String ColName = si.getColumnName();
+                                if(ColName.equalsIgnoreCase(whereColumnname)){
+                                    addCol = false;
+                                    break;
+                                }
+                            }
+                            if(addCol){
+                                firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(whereColumnname)));
+                            }
+                        } else { // Where clause corresponding to second table
+                            secondWhere.add(new RelationCompare(whereColumnname, relation.getOperator(), relation.getTerms().get(0)));
+                            // Add column to Select clauses if applied
+                            SelectionList sClause = (SelectionList) secondSelect.getSelectionClause();
+                            SelectionSelectors sSelectors = (SelectionSelectors) sClause.getSelection();
+                            boolean addCol = true;
+                            for (SelectionSelector ss: sSelectors.getSelectors()){
+                                SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
+                                String ColName = si.getColumnName();
+                                if(ColName.equalsIgnoreCase(whereColumnname)){
+                                    addCol = false;
+                                    break;
+                                }
+                            }
+                            if(addCol){
+                                secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(whereColumnname)));
+                            }
                         }
                     }
+                }
+                if(!firstWhere.isEmpty()){
+                    firstSelect.setWhere(firstWhere);
+                }
+                if(!secondWhere.isEmpty()) {
+                    secondSelect.setWhere(secondWhere);
                 }
             }
 
 
             // ADD MAP OF THE JOIN
             joinSelect.setJoin(new InnerJoin("", fields));
-
 
             // ADD STEPS
             steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));

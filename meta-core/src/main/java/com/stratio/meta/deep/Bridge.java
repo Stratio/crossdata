@@ -52,10 +52,6 @@ public class Bridge {
 
     public static int executeCount(String keyspaceName, String tableName, Session cassandraSession){
 
-        System.out.println("TRACE: Deep.executionCount");
-
-        //DeepSparkContext deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
-
         System.out.println("TRACE: Executing deep for: "+keyspaceName+"."+tableName);
 
         // Configuration and initialization
@@ -133,7 +129,7 @@ public class Bridge {
             // Return RDD
             return returnResult(rdd, isRoot);
 
-        } else {
+        } else { // (INNER NODE) NO LEAF
             // Retrieve RDDs from children
             ArrayList<CassandraJavaRDD> children = new ArrayList<CassandraJavaRDD>();
             for (Result child: resultsFromChildren){
@@ -169,15 +165,12 @@ public class Bridge {
                 resultSet = returnResult(result, isRoot);
             }
 
-            //deepContext.stop();
-
             return resultSet;
         }
 
     }
 
     private static ResultSet returnResult(List<Cells> cells) {
-        //com.stratio.deep.entity.Cell
         CassandraResultSet rs = new CassandraResultSet();
         for(Cells deepRow: cells){
             Row metaRow = new Row();
