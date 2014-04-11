@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Stratio Meta
+  ~
+  ~ Copyright (c) 2014, Stratio, All rights reserved.
+  ~
+  ~ This library is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3.0 of the License, or (at your option) any later version.
+  ~
+  ~ This library is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this library.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>meta</artifactId>
+        <groupId>com.stratio</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>meta-dist</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.stratio</groupId>
+            <artifactId>meta-server</artifactId>
+            <version>${meta.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio</groupId>
+            <artifactId>meta-sh</artifactId>
+            <version>${meta.version}</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>1.8</version>
+                <configuration>
+                    <configurationDirectory>conf</configurationDirectory>
+                    <copyConfigurationDirectory>true</copyConfigurationDirectory>
+                    <assembleDirectory>${project.build.directory}/meta-dist-${meta.version}</assembleDirectory>
+                    <extraJvmArguments>-Xms512m</extraJvmArguments>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <generateRepository>true</generateRepository>
+                    <licenseHeaderFile>src/main/template/license-header.txt</licenseHeaderFile>
+                    <unixScriptTemplate>src/main/template/unix-script.sh</unixScriptTemplate>
+                    <repositoryName>lib</repositoryName>
+
+                    <platforms>
+                        <platform>unix</platform>
+                    </platforms>
+                    <programs>
+                        <program>
+                            <mainClass>com.stratio.meta.server.MetaApplication</mainClass>
+                            <id>meta-server</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>com.stratio.meta.sh.Metash</mainClass>
+                            <id>meta-sh</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                    </programs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>
