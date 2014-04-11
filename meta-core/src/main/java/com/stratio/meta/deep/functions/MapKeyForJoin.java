@@ -6,9 +6,7 @@ import scala.Tuple2;
 
 import java.io.Serializable;
 
-/**
- * Created by gmunoz on 9/04/14.
- */
+
 public class MapKeyForJoin<T> extends PairFunction<Cells, T, Cells> implements Serializable{
     private static final long serialVersionUID = -6677647619149716567L;
 

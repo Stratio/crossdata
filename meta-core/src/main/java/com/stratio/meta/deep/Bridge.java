@@ -33,16 +33,13 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
-import com.stratio.meta.core.structures.SelectionList;
-import com.stratio.meta.core.structures.SelectionSelector;
-import com.stratio.meta.core.structures.SelectionSelectors;
-import com.stratio.meta.core.structures.SelectorIdentifier;
+import com.stratio.meta.core.structures.*;
 import com.stratio.meta.deep.context.Context;
-import com.stratio.meta.deep.functions.JoinCells;
-import com.stratio.meta.deep.functions.MapKeyForJoin;
+import com.stratio.meta.deep.functions.*;
 import com.stratio.meta.deep.utils.DeepUtils;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.rdd.RDD;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,7 +121,14 @@ public class Bridge {
                     .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
                     .keyspace(ss.getKeyspace()).table(ss.getTableName()).inputColumns(columnsSet).initialize();
 
-            CassandraJavaRDD rdd = deepContext.cassandraJavaRDD(config);
+            JavaRDD rdd = deepContext.cassandraJavaRDD(config);
+
+            if(ss.isWhereInc()){ // If where
+                ArrayList<Relation> where = ss.getWhere();
+                for(Relation rel : where){
+                    rdd = doWhere(rdd, rel);
+                }
+            }
 
             // Return RDD
             return returnResult(rdd, isRoot);
@@ -201,5 +205,40 @@ public class Bridge {
         }
     }
 
+    private static JavaRDD doWhere(JavaRDD rdd, Relation rel){
+        String operator = rel.getOperator();
+        JavaRDD result = null;
+        String cn = rel.getIdentifiers().get(0);  //Take first. Common is 1 identifier and 1 termValue
+        Object termValue = rel.getTerms().get(0).getTermValue();
+
+        switch (operator){
+            case "=":
+                result = rdd.filter(new Equals(cn, termValue));
+                break;
+            case "<>":
+                result = rdd.filter(new NotEquals(cn,termValue));
+                break;
+            case ">":
+                result = rdd.filter(new GreaterThan(cn,termValue));
+                break;
+            case ">=":
+                result = rdd.filter(new GreaterEqualThan(cn,termValue));
+                break;
+            case "<":
+                result = rdd.filter(new LessThan(cn,termValue));
+                break;
+            case "<=":
+                result = rdd.filter(new LessEqualThan(cn,termValue));
+                break;
+//            case "like":
+//                break;
+//            case "in":
+//                break;
+            default:
+                break;
+        }
+
+        return result;
+    }
 
 }
