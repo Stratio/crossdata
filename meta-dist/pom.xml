@@ -51,6 +51,7 @@
                 <configuration>
                     <configurationDirectory>conf</configurationDirectory>
                     <copyConfigurationDirectory>true</copyConfigurationDirectory>
+                    <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
                     <assembleDirectory>${project.build.directory}/meta-dist-${meta.version}</assembleDirectory>
                     <extraJvmArguments>-Xms512m</extraJvmArguments>
                     <repositoryLayout>flat</repositoryLayout>
