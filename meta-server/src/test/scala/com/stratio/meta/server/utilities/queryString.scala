@@ -30,31 +30,31 @@ class queryString {
         stmt.setTargetKeyspace("ks_demo")
         val stmt1=engine.getValidator.validateQuery(stmt)
         val stmt2=engine.getPlanner.planQuery(stmt1)
-        actor.ask(stmt2)(3 second)
+        actor.ask(stmt2)(5 second)
 
       case 2 =>
         val stmt = engine.getParser.parseStatement(msg)
         stmt.setTargetKeyspace("ks_demo")
         val stmt1=engine.getValidator.validateQuery(stmt)
-        actor.ask(stmt1)(3 second)
+        actor.ask(stmt1)(5 second)
 
       case 3 =>
         val stmt = engine.getParser.parseStatement(msg)
         stmt.setTargetKeyspace("ks_demo")
-        actor.ask(stmt)(3 second)
+        actor.ask(stmt)(5 second)
 
       case 4 =>
         val stmt=Query ("ks_demo", msg, "usr_demo")
-        actor.ask(stmt)(3 second)
+        actor.ask(stmt)(5 second)
       case _ =>
-        actor.ask("error")(3 second)
+        actor.ask("error")(5 second)
 
       }
 
     }
 
     try{
-      val result = Await.result(futureExecutorResponse, 3 seconds)
+      val result = Await.result(futureExecutorResponse, 5 seconds)
     }catch{
       case ex:Exception =>
         println("\n\n\n"+ex.getMessage+"\n\n\n")

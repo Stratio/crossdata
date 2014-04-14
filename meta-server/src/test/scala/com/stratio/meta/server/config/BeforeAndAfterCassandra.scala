@@ -21,11 +21,78 @@ package com.stratio.meta.server.config
 
 import org.scalatest.{Suite, BeforeAndAfterAll}
 import com.stratio.meta.test.CCMHandler
+import com.datastax.driver.core.{ResultSet, Cluster, Session}
+import org.testng.Assert._
+import org.apache.log4j.Logger
+import com.datastax.driver.core.exceptions.InvalidQueryException
 
 trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
   this:Suite =>
-    def beforeCassandraStart(): Unit = {
 
+  /**
+   * Default Cassandra HOST using 127.0.0.1.
+   */
+  private final val DEFAULT_HOST: String = "127.0.0.1"
+
+  /**
+   * Session to launch queries on C*.
+   */
+  protected var _session: Session = null
+
+
+  /**
+   * Class logger.
+   */
+  private final val logger: Logger = Logger.getLogger(classOf[BeforeAndAfterCassandra])
+
+  /**
+   * Establish the connection with Cassandra in order to be able to retrieve
+   * metadata from the system columns.
+   * @param host The target host.
+   * @return Whether the connection has been established or not.
+   */
+  protected def connect(host: String): Boolean = {
+    var result: Boolean = false
+    val c: Cluster = Cluster.builder.addContactPoint(host).build
+    _session = c.connect
+    result = null == _session.getLoggedKeyspace
+    return result
+  }
+
+  private def getHost: String = {
+    return System.getProperty("cassandraTestHost", DEFAULT_HOST)
+  }
+
+  /**
+   * Drop a keyspace if it exists in the database.
+   * @param targetKeyspace The target keyspace.
+   */
+  def dropKeyspaceIfExists(targetKeyspace: String) {
+    val query: String = "USE " + targetKeyspace
+    var ksExists: Boolean = true
+    try {
+      val result: ResultSet = _session.execute(query)
+    }
+    catch {
+      case iqe: InvalidQueryException => {
+        ksExists = false
+      }
+    }
+    if (ksExists) {
+      val q: String = "DROP KEYSPACE " + targetKeyspace
+      try {
+        _session.execute(q)
+      }
+      catch {
+        case e: Exception => {
+          logger.error("Cannot drop keyspace: " + targetKeyspace, e)
+        }
+      }
+    }
+  }
+
+    def beforeCassandraStart(): Unit = {
+      assertTrue(connect(getHost), "Cannot connect to cassandra")
     }
 
     override def beforeAll(): Unit = {
@@ -48,7 +115,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
     }
 
     def afterCassandraFinish(): Unit = {
-
+      _session.close
     }
 
 }
