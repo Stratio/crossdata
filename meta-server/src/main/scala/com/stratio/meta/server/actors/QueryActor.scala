@@ -23,12 +23,14 @@ import akka.actor.{Props, ActorLogging, Actor}
 import com.stratio.meta.common.result.{QueryResult, Result}
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.common.ask.Query
+import org.apache.log4j.Logger
 
 object QueryActor{
   def props(engine: Engine): Props = Props(new QueryActor(engine))
 }
 
-class QueryActor(engine: Engine) extends Actor with ActorLogging{
+class QueryActor(engine: Engine) extends Actor{
+  val log =Logger.getLogger(classOf[QueryActor])
   val executorActorRef = context.actorOf(ExecutorActor.props(engine.getExecutor),"ExecutorActor")
   val plannerActorRef = context.actorOf(PlannerActor.props(executorActorRef,engine.getPlanner),"PlanerActor")
   val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef,engine.getValidator),"ValidatorActor")

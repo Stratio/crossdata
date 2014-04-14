@@ -28,7 +28,7 @@ import akka.contrib.pattern.ClusterReceptionistExtension
 import com.stratio.meta.server.config.ServerConfig
 
 class MetaServer extends Daemon with ServerConfig{
-  override lazy val logger = Logger.getLogger("ServerApplication")
+  override lazy val logger = Logger.getLogger(classOf[MetaServer])
 
   lazy val engine = new Engine(engineConfig)
   // Create an Akka system

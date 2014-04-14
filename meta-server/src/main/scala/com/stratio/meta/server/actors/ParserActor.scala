@@ -23,12 +23,14 @@ import akka.actor.{Props, ActorRef, ActorLogging, Actor}
 import com.stratio.meta.core.parser.Parser
 import com.stratio.meta.common.result.{QueryResult, Result}
 import com.stratio.meta.common.ask.Query
+import org.apache.log4j.Logger
 
 object ParserActor{
   def props(validator:ActorRef, parser:Parser): Props= Props(new ParserActor(validator,parser))
 }
 
-class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTracker with ActorLogging{
+class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTracker {
+  val log =Logger.getLogger(classOf[ParserActor])
   override val timerName= this.getClass.getName
 
   def receive = {
