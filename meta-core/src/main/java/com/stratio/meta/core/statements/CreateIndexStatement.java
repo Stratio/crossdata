@@ -500,7 +500,7 @@ public class CreateIndexStatement extends MetaStatement {
     }
 
     @Override
-    public Tree getPlan() {
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         Tree result = new Tree();
 
         if(_createIndex) {

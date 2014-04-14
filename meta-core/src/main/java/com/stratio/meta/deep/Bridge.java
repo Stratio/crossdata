@@ -36,10 +36,8 @@ import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import com.stratio.meta.deep.context.Context;
 import com.stratio.meta.deep.functions.*;
-import com.stratio.meta.deep.utils.DeepUtils;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.rdd.RDD;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,18 +102,30 @@ public class Bridge {
 
             //Retrieve selected column names
             SelectionList sList = (SelectionList) ss.getSelectionClause();
-            SelectionSelectors sSelectors = (SelectionSelectors) sList.getSelection();
-            String [] columnsSet = new String[sSelectors.getSelectors().size()];
-            for(int i=0;i<sSelectors.getSelectors().size();++i){
-                SelectionSelector sSel = sSelectors.getSelectors().get(i);
-                SelectorIdentifier selId = (SelectorIdentifier) sSel.getSelector();
-                columnsSet[i] = selId.getColumnName();
+
+            Selection selection = sList.getSelection();
+            String [] columnsSet = null;
+            boolean allCols = false;
+            if(selection instanceof SelectionSelectors){
+                SelectionSelectors sSelectors = (SelectionSelectors) selection;
+                columnsSet = new String[sSelectors.getSelectors().size()];
+                for(int i=0;i<sSelectors.getSelectors().size();++i){
+                    SelectionSelector sSel = sSelectors.getSelectors().get(i);
+                    SelectorIdentifier selId = (SelectorIdentifier) sSel.getSelector();
+                    columnsSet[i] = selId.getColumnName();
+                }
+            } else { // SelectionAsterisk
+                allCols = true;
             }
 
             // Configuration and initialization
             IDeepJobConfig config = DeepJobConfigFactory.create()
                     .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
-                    .keyspace(ss.getKeyspace()).table(ss.getTableName()).inputColumns(columnsSet).initialize();
+                    .keyspace(ss.getKeyspace()).table(ss.getTableName());
+            if(!allCols){
+                config = config.inputColumns(columnsSet);
+            }
+            config = config.initialize();
 
             JavaRDD rdd = deepContext.cassandraJavaRDD(config);
 
@@ -157,15 +167,8 @@ public class Bridge {
 
             JavaRDD result = joinRDD.map(new JoinCells(field1, field2));
 
-            ResultSet resultSet = null;
-
-            if(isRoot){
-                resultSet = returnResult(result.dropTake(0, 10000));
-            } else {
-                resultSet = returnResult(result, isRoot);
-            }
-
-            return resultSet;
+            // Return MetaResultSet
+            return returnResult(result, isRoot);
         }
 
     }
@@ -184,18 +187,18 @@ public class Bridge {
         return rs;
     }
 
-    public static void stopContext(){
-        deepContext.stop();
-    }
-
     private static ResultSet returnResult(JavaRDD rdd, boolean isRoot){
         if(isRoot){
-            return DeepUtils.convertRDDtoResultSet(rdd);
+            return returnResult(rdd.dropTake(0, 10000));
         } else {
             List oneRow = new ArrayList<Row>();
             oneRow.add(new Row("RESULT", new Cell(JavaRDD.class, rdd)));
             return new CassandraResultSet(oneRow);
         }
+    }
+
+    public static void stopContext(){
+        deepContext.stop();
     }
 
     private static JavaRDD doWhere(JavaRDD rdd, Relation rel){

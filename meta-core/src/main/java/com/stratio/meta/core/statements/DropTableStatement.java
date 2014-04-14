@@ -134,7 +134,7 @@ public class DropTableStatement extends MetaStatement {
     }
 
     @Override
-    public Tree getPlan() {
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
         return tree;

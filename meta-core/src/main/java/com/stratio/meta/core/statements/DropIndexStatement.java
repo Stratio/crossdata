@@ -169,7 +169,7 @@ public class DropIndexStatement extends MetaStatement {
     }
 
     @Override
-    public Tree getPlan() {
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         Tree result = new Tree();
         if(_dropIndex) {
             //Add CREATE INDEX as the root.

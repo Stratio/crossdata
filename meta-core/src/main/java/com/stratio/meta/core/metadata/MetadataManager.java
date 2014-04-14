@@ -98,6 +98,7 @@ public class MetadataManager {
 	 */
 	public TableMetadata getTableMetadata(String keyspace, String tablename){
 		TableMetadata result = null;
+        _clusterMetadata.getKeyspace(keyspace);
 		if(_clusterMetadata != null && _clusterMetadata.getKeyspace(keyspace) != null){
             tablename = tablename.toLowerCase();
             boolean found = false;
