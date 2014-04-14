@@ -21,6 +21,14 @@ public class In extends Function<Cells, Boolean> implements Serializable{
 
     @Override
     public Boolean call(Cells cells) throws Exception {
-        return inIDs.contains(String.valueOf(cells.getCellByName(field).getCellValue()));
+        Object currentValue = cells.getCellByName(field).getCellValue();
+        if (currentValue == null){
+            if(inIDs == null){
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return inIDs.contains(String.valueOf(currentValue));
     }
 }

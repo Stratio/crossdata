@@ -19,6 +19,14 @@ public class Like extends Function<Cells, Boolean> implements Serializable{
     //TODO Exception Management
     @Override
     public Boolean call(Cells cells) throws Exception {
-        return String.valueOf(cells.getCellByName(field).getCellValue()).matches(regexp);
+        Object currentValue = cells.getCellByName(field).getCellValue();
+        if (currentValue == null){
+            if(regexp == null){
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return String.valueOf(currentValue).matches(regexp);
     }
 }
