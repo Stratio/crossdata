@@ -905,5 +905,8 @@ public class SelectStatement extends MetaStatement {
         }
         return steps;
     }
-    
+
+    public boolean isWhereInc() {
+        return whereInc;
+    }
 }

@@ -10,3 +10,4 @@ nbactions.xml
 .idea
 *.iml
 src/main/resources/history.txt
+*.orig

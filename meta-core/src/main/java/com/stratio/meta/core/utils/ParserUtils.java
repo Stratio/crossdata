@@ -44,7 +44,7 @@ public class ParserUtils {
         }
     }
 
-    public static String stringMap(HashMap<String, ValueProperty> ids, String conjunction, String separator) {
+    public static String stringValuePropertyMap(HashMap<String, ValueProperty> ids, String conjunction, String separator) {
         //StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
         StringBuilder sb = new StringBuilder();
         for(String key: ids.keySet()){

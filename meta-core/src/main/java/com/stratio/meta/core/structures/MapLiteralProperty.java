@@ -80,7 +80,11 @@ public class MapLiteralProperty extends ValueProperty {
 
     @Override
     public String getStringValue() {
-
+        StringBuilder sb = new StringBuilder();
+        //sb.append("{").append(ParserUtils.stringValuePropertyMap(literals, ": ", ", ")).append("}");
+        for(String k : literals.keySet()){
+            System.out.println("k: #"+k+"# -> #"+literals.get(k)+"#");
+        }
         System.out.println("MapLiteralProperty.getStringValue: " + toString());
         return toString();
     }

@@ -2,7 +2,7 @@ package com.stratio.meta.server.query
 
 import akka.actor.ActorSystem
 import com.stratio.meta.core.engine.{Engine, EngineConfig}
-import org.testng.annotations.{AfterTest, Test, BeforeTest}
+import org.testng.annotations.Test
 import akka.testkit.TestActorRef
 import com.stratio.meta.server.actors.QueryActor
 import akka.pattern.ask
@@ -26,21 +26,6 @@ class QueryActorTest {
     result
   }
   lazy val engine: Engine = new Engine(engineConfig)
-
-  @BeforeTest def init() = {
-    val file= new File (getClass.getResource("/com/stratio/meta/server/test.sh").getFile)
-    file.setExecutable(true)
-    val output= file.getAbsolutePath.!!
-    println(output)
-
-  }
-
-  @AfterTest def close() = {
-    val file= new File (getClass.getResource("/com/stratio/meta/server/close.sh").getFile)
-    file.setExecutable(true)
-    val output= file.getAbsolutePath.!!
-    println(output)
-  }
 
   @Test def basicTest() = {
     val queryActor = TestActorRef.create(system,QueryActor.props(engine))
