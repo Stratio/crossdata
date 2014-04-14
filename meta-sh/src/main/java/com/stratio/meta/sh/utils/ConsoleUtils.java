@@ -138,13 +138,10 @@ public class ConsoleUtils {
     public static File retrieveHistory(ConsoleReader console, SimpleDateFormat sdf) throws IOException {
         final int DAYS_HISTORY_ENTRY_VALID = 30;
         Date today = new Date();
-        String workingDir = System.getProperty("user.dir");
-        File dir = new File("meta-sh/src/main/resources/");
-        if(workingDir.endsWith("meta-sh")){
-            dir = new File("src/main/resources/");
-        }
+        String workingDir = System.getProperty("user.home");
+        File dir = new File(workingDir, ".meta");
         if(!dir.exists()){
-            dir.mkdirs();
+            dir.mkdir();
         }
         File file = new File(dir.getPath()+"/history.txt");
         if (!file.exists()){
