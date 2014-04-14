@@ -169,8 +169,11 @@ public abstract class MetaStatement {
     /**
      * Get a tree that contains the planning for executing the query.
      * The plan will be executed starting from the leaves and finishing at the tree root.
+     * @param metadataManager The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+     *                 the required information.
+     * @param targetKeyspace The target keyspace where the query will be executed.
      * @return A {@link com.stratio.meta.core.utils.Tree} with the execution plan.
      */
-    public abstract Tree getPlan();
+    public abstract Tree getPlan(MetadataManager metadataManager, String targetKeyspace);
     
 }

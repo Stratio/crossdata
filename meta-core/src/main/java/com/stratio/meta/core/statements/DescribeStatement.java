@@ -121,7 +121,7 @@ public class DescribeStatement extends MetaStatement {
     }
 
     @Override
-    public Tree getPlan() {
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         Tree steps = new Tree();
         steps.setNode(new MetaStep(MetaPath.COMMAND, this));
         return steps;

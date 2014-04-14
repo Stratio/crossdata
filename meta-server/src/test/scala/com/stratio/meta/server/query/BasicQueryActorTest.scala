@@ -155,7 +155,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("queryActor drop KS "){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="drop keyspace ks_demo ;"
       assertEquals(querying.proccess(msg,queryRef,engine,4),"sucess" )

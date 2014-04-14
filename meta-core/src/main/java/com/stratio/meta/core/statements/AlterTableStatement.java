@@ -194,7 +194,7 @@ public class AlterTableStatement extends MetaStatement{
     }
     
     @Override
-    public Tree getPlan() { //TODO: Return MetaPath.CASSANDRA
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
         return tree;

@@ -89,7 +89,8 @@ with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
           if (value.hasError){
             assertEquals(value.getErrorMessage,"it is a test of error")
           }
-
+        case _ =>
+            fail("Invalid response");
         }
 
       }
@@ -207,7 +208,7 @@ with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
   }
   test ("PlannerActor drop KS "){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="drop keyspace ks_demo ;"
       assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )

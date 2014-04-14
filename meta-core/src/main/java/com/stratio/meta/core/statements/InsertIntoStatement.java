@@ -20,7 +20,6 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -422,7 +421,7 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     @Override
-    public Tree getPlan() {
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
         return tree;

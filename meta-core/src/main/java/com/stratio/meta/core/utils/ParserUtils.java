@@ -270,11 +270,21 @@ public class ParserUtils {
         String[] props = propsStr.split(",");
         for(String prop: props){
             String[] keyAndValue = prop.trim().split(":");
-            sb.append("'").append(keyAndValue[0].trim()).append("'").append(": ");
+            if(keyAndValue[0].contains("'")) {
+                sb.append(keyAndValue[0].trim()).append(": ");
+            }else{
+                sb.append("'").append(keyAndValue[0].trim()).append("'").append(": ");
+            }
+
             if(keyAndValue[1].trim().matches("[0123456789.]+")){
                 sb.append(keyAndValue[1].trim()).append(", ");
             } else {
-                sb.append("'").append(keyAndValue[1].trim()).append("'").append(", ");
+                if(keyAndValue[1].contains("'")) {
+                    sb.append(keyAndValue[1].trim()).append(", ");
+                }else{
+                    sb.append("'").append(keyAndValue[1].trim()).append("'").append(", ");
+                }
+
             }
         }
         sb = sb.delete(sb.length()-2, sb.length());

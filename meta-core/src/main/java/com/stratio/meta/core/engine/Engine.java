@@ -64,7 +64,7 @@ public class Engine {
 
         parser = new Parser();
         validator = new Validator(session);
-        planner = new Planner();
+        planner = new Planner(session);
         executor = new Executor(session);
     }
        
