@@ -26,7 +26,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 
 class RetryPolitics(retryTimes:Int,waitTime: Timeout) {
-  def askRetry(remoteActor:ActorRef, message:AnyRef, retry:Int = 0): Result={
+  def askRetry(remoteActor:ActorRef, message:AnyRef, waitTime:Timeout = this.waitTime , retry:Int = 0): Result={
     if(retry==retryTimes){
       ConnectResult.CreateFailConnectResult("Not found answer")
     } else {
@@ -35,7 +35,7 @@ class RetryPolitics(retryTimes:Int,waitTime: Timeout) {
         Await.result(future.mapTo[Result], waitTime.duration*2)
       } catch {
 
-        case ex: Exception => askRetry(remoteActor, message, retry + 1)
+        case ex: Exception => askRetry(remoteActor, message, waitTime, retry + 1)
       }
     }
   }

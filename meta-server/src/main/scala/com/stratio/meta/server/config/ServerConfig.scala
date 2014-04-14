@@ -53,6 +53,13 @@ trait ServerConfig extends CassandraConfig{
         defaultConfig = userConfig.withFallback(defaultConfig)
       }else{
         logger.warn("User resource (" + configResource + ") haven't been found")
+        val file=new File(configResource)
+        if(file.exists()) {
+          val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.PARENT_CONFIG_NAME)
+          defaultConfig = userConfig.withFallback(defaultConfig)
+        }else{
+          logger.warn("User file (" + configResource + ") haven't been found in classpath")
+        }
       }
     }
 
@@ -62,7 +69,7 @@ trait ServerConfig extends CassandraConfig{
         val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.PARENT_CONFIG_NAME)
         defaultConfig = userConfig.withFallback(defaultConfig)
       }else{
-        logger.warn("User file (" + configResource + ") haven't been found")
+        logger.warn("User file (" + configFile + ") haven't been found")
       }
     }
 

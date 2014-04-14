@@ -965,7 +965,7 @@ public class SelectStatement extends MetaStatement {
     }
 
     @Override
-    public Tree getPlan() {
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         Tree steps = new Tree();
         if(joinInc){
 
@@ -1064,7 +1064,6 @@ public class SelectStatement extends MetaStatement {
                 }
             }
 
-
             // ADD MAP OF THE JOIN
             joinSelect.setJoin(new InnerJoin("", fields));
 
@@ -1073,11 +1072,76 @@ public class SelectStatement extends MetaStatement {
             steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
             steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
 
+        } else if(whereInc) {
+            // Get columns of the where clauses
+            ArrayList<String> whereCols = new ArrayList<>();
+            for(Relation relation: where){
+                whereCols.addAll(relation.getIdentifiers());
+            }
+
+            if((targetKeyspace == null) || (targetKeyspace.equalsIgnoreCase(""))){
+                targetKeyspace = keyspace;
+            }
+            TableMetadata tableMetadata = metadataManager.getTableMetadata(targetKeyspace, tableName);
+
+            // Get columns of the custom and lucene indexes
+            List<String> indexedCols = new ArrayList<>();
+            for(CustomIndexMetadata cim: metadataManager.getTableIndex(tableMetadata)){
+                indexedCols.addAll(cim.getIndexedColumns());
+            }
+
+            // Get columns of the primary key
+            for(ColumnMetadata colMD: tableMetadata.getPrimaryKey()){
+                if(whereCols.contains(colMD.getName())){
+                    whereCols.remove(colMD.getName());
+                } else { // Where column detected that is not included in the Primary Key columns
+                    break;
+                }
+                if(whereCols.isEmpty()){ // All where columns detected
+                    break;
+                }
+            }
+
+            boolean cassandraPath = false;
+
+            if(whereCols.isEmpty()){
+                cassandraPath = true;
+            } else { // whereCols.size() > 1
+                if((whereCols.size()==1) && (indexedCols.containsAll(whereCols))){
+                    cassandraPath = true;
+                } else {
+                    // Clustering key partial but ordered or complete + Custom/Lucene Index
+                    for(ColumnMetadata colMD: tableMetadata.getClusteringColumns()){
+                        if(whereCols.contains(colMD.getName())){
+                            whereCols.remove(colMD.getName());
+                        } else { // Where column detected that is not included in the Clustering Key columns
+                            break;
+                        }
+                        if(whereCols.isEmpty()){ // All where columns detected
+                            break;
+                        }
+                    }
+                    if(!whereCols.isEmpty()){
+                        if((whereCols.size()==1) && (indexedCols.containsAll(whereCols))){
+                            cassandraPath = true;
+                        } else {
+                            cassandraPath = false;
+                        }
+                    } else {
+                        cassandraPath = false;
+                    }
+                }
+            }
+
+            if(cassandraPath){
+                steps.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+            } else {
+                steps.setNode(new MetaStep(MetaPath.DEEP, this));
+            }
         } else {
-
             steps.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-
         }
+
         return steps;
     }
 

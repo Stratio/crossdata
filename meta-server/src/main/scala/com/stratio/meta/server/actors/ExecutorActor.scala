@@ -22,12 +22,14 @@ package com.stratio.meta.server.actors
 import akka.actor.{Props, Actor, ActorLogging}
 import com.stratio.meta.core.utils.MetaQuery
 import com.stratio.meta.core.executor.Executor
+import org.apache.log4j.Logger
 
 object ExecutorActor{
   def props(executor:Executor): Props = Props(new ExecutorActor(executor))
 }
 
-class ExecutorActor(executor:Executor) extends Actor with TimeTracker with ActorLogging{
+class ExecutorActor(executor:Executor) extends Actor with TimeTracker{
+  val log =Logger.getLogger(classOf[ExecutorActor])
   override val timerName: String = this.getClass.getName
 
   override def receive: Receive ={

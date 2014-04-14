@@ -77,7 +77,7 @@ public class ExplainPlanStatement extends MetaStatement {
     }
     
     @Override
-    public Tree getPlan() {
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         return new Tree();
     }
     

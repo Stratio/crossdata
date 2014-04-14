@@ -24,17 +24,19 @@ import com.stratio.meta.common.result.{CommandResult, ConnectResult, QueryResult
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.common.ask.{Connect, Query}
 import scala.util.Random
+import org.apache.log4j.Logger
 
 object ServerActor{
   def props(engine: Engine): Props = Props(new ServerActor(engine))
 }
 
-class ServerActor(engine:Engine) extends Actor with ActorLogging {
+class ServerActor(engine:Engine) extends Actor {
+  val log =Logger.getLogger(classOf[ServerActor])
   val queryActorRef= context.actorOf(QueryActor.props(engine),"QueryActor")
   def receive = {
     case query:Query => queryActorRef forward query
     case Connect(user)=> {
-      log.info("Welcome {}!",user)
+      log.info("Welcome " + user +"!")
       sender ! ConnectResult.CreateSuccessConnectResult(Random.nextLong())
     }
     case _ => {

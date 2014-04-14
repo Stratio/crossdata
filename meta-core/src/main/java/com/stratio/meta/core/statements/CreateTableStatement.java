@@ -511,7 +511,7 @@ public class CreateTableStatement extends MetaStatement{
     }
     
     @Override
-    public Tree getPlan() {
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         //Check ifNotExists
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));

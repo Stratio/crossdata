@@ -24,7 +24,7 @@
     <parent>
         <artifactId>meta</artifactId>
         <groupId>com.stratio</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>0.0.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -56,8 +56,8 @@
                     <extraJvmArguments>-Xms512m</extraJvmArguments>
                     <repositoryLayout>flat</repositoryLayout>
                     <generateRepository>true</generateRepository>
-                    <licenseHeaderFile>src/main/template/license-header.txt</licenseHeaderFile>
-                    <unixScriptTemplate>src/main/template/unix-script.sh</unixScriptTemplate>
+                    <licenseHeaderFile>${project.basedir}/src/main/template/license-header.txt</licenseHeaderFile>
+                    <unixScriptTemplate>${project.basedir}/src/main/template/unix-script.sh</unixScriptTemplate>
                     <repositoryName>lib</repositoryName>
 
                     <platforms>
@@ -70,6 +70,11 @@
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
+                            <jvmSettings>
+                                <systemProperties>
+                                    <systemProperty>log4j.configuration=server-log.properties</systemProperty>
+                                </systemProperties>
+                            </jvmSettings>
                         </program>
                         <program>
                             <mainClass>com.stratio.meta.sh.Metash</mainClass>
@@ -77,9 +82,23 @@
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
+                            <jvmSettings>
+                                <systemProperties>
+                                    <systemProperty>log4j.configuration=driver-log.properties</systemProperty>
+                                </systemProperties>
+                            </jvmSettings>
                         </program>
                     </programs>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>Assembler</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

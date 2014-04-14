@@ -24,7 +24,7 @@
     <parent>
         <artifactId>meta</artifactId>
         <groupId>com.stratio</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>0.0.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -133,15 +133,6 @@
                     <mainClass>com.stratio.meta.sh.Metash</mainClass>
                 </configuration>
             </plugin>
-			<!--plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin-->
 		</plugins>
 	</build>
 

@@ -26,6 +26,7 @@ import com.stratio.meta.driver.actor.ProxyActor
 import com.stratio.meta.common.result.Result
 import com.stratio.meta.common.ask.{Query, Connect}
 import org.apache.log4j.Logger
+import  scala.concurrent.duration._
 
 class BasicDriver extends DriverConfig{
   override lazy val logger = Logger.getLogger(getClass)
@@ -36,7 +37,7 @@ class BasicDriver extends DriverConfig{
 
   def connect(user:String): Result = {
     println(contactPoints)
-    retryPolitics.askRetry(proxyActor,new Connect(user))
+    retryPolitics.askRetry(proxyActor,new Connect(user),1 second)
   }
 
 

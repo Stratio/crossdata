@@ -19,6 +19,8 @@
 
 package com.stratio.meta.core.planner;
 
+import com.datastax.driver.core.Session;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.QueryStatus;
 import org.apache.log4j.Logger;
@@ -26,10 +28,19 @@ import org.apache.log4j.Logger;
 public class Planner {
 
     private final Logger logger = Logger.getLogger(Planner.class);
-    
+    private final Session session;
+
+    private final MetadataManager metadata;
+
+    public Planner(Session session){
+        this.session = session;
+        metadata = new MetadataManager(session);
+        metadata.loadMetadata();
+    }
+
     public MetaQuery planQuery(MetaQuery metaQuery) {
         metaQuery.setStatus(QueryStatus.PLANNED);
-        metaQuery.setPlan(metaQuery.getStatement().getPlan());
+        metaQuery.setPlan(metaQuery.getStatement().getPlan(metadata, metaQuery.getTargetKeyspace()));
         return metaQuery;
     }
     
