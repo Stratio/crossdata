@@ -20,6 +20,14 @@ public class Equals extends Function<Cells, Boolean> implements Serializable{
 
     @Override
     public Boolean call(Cells cells) throws Exception {
-        return cells.getCellByName(field).getCellValue().equals(value);
+        Object currentValue = cells.getCellByName(field).getCellValue();
+        if (currentValue == null){
+            if(value == null){
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return currentValue.equals(value);
     }
 }

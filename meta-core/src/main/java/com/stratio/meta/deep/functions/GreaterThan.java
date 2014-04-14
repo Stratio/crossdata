@@ -18,7 +18,14 @@ public class GreaterThan extends Function<Cells, Boolean> implements Serializabl
 
     @Override
     public Boolean call(Cells cells) throws Exception {
-        Object obj = cells.getCellByName(field).getCellValue();
-        return ((Comparable)obj).compareTo(value) == 1;
+        Object currentValue = cells.getCellByName(field).getCellValue();
+        if (currentValue == null){
+            if(value == null){
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return ((Comparable) currentValue).compareTo(value) == 1;
     }
 }
