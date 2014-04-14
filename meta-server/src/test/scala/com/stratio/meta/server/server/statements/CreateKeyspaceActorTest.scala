@@ -17,7 +17,7 @@ import scala.concurrent.duration._
 
 
 class CreateKeyspaceActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-  with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra{
+  with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
 
   lazy val engine:Engine =  createEngine.create()
 

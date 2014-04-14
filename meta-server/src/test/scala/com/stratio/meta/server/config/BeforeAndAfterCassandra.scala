@@ -21,10 +21,14 @@ package com.stratio.meta.server.config
 
 import org.scalatest.{Suite, BeforeAndAfterAll}
 import com.stratio.meta.test.CCMHandler
-import com.datastax.driver.core.{ResultSet, Cluster, Session}
+import com.datastax.driver.core._
 import org.testng.Assert._
 import org.apache.log4j.Logger
 import com.datastax.driver.core.exceptions.InvalidQueryException
+import java.net.URL
+import java.util
+import java.io.IOException
+import scala.collection.mutable.MutableList
 
 trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
   this:Suite =>
@@ -89,6 +93,58 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
         }
       }
     }
+  }
+
+  /**
+   * Load a {@code keyspace} in Cassandra using the CQL sentences in the script
+   * path. The script is executed if the keyspace does not exists in Cassandra.
+   * @param keyspace The name of the keyspace.
+   * @param path The path of the CQL script.
+   */
+  def loadTestData(keyspace: String, path: String) {
+    val metadata: KeyspaceMetadata = _session.getCluster.getMetadata.getKeyspace(keyspace)
+    if (metadata == null) {
+      logger.info("Creating keyspace " + keyspace + " using " + path)
+      val scriptLines: Iterator[String] = loadScript(path)
+
+      var counter = 0
+      while(scriptLines.hasNext){
+        val cql = scriptLines.next()
+        val result: ResultSet = _session.execute(cql)
+        counter+=1
+        if (logger.isDebugEnabled) {
+          logger.debug("Executing: " + cql + " -> " + result.toString)
+        }
+      }
+      logger.info("Executed " + scriptLines.size + " lines")
+    }
+    logger.info("Using existing keyspace " + keyspace)
+  }
+
+  /**
+   * Load the lines of a CQL script containing one statement per line
+   * into a list.
+   * @param path The path of the CQL script.
+   * @return The contents of the script.
+   */
+  def loadScript(path: String): Iterator[String] = {
+    val url: URL = classOf[BeforeAndAfterCassandra].getResource(path)
+    logger.info("Loading script from: " + url)
+    val source = scala.io.Source.fromURL(url).getLines()
+    val result = source.filter(line => (line.length > 0 && !line.startsWith("#")))
+    return result
+  }
+
+  def checkColumnExists(keyspace: String, tablename: String, columnName: String): Boolean = {
+    var exists: Boolean = false
+    val metadata: KeyspaceMetadata = _session.getCluster.getMetadata.getKeyspace(keyspace)
+    if(metadata != null){
+      val tableMetadata: TableMetadata = metadata.getTable(tablename)
+      if(tableMetadata != null){
+        exists = tableMetadata.getColumn(columnName) != null
+      }
+    }
+    return exists
   }
 
     def beforeCassandraStart(): Unit = {

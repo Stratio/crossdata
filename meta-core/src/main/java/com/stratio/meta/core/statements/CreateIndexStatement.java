@@ -367,7 +367,7 @@ public class CreateIndexStatement extends MetaStatement {
         //  };
         //TODO: Read parameters from default configuration and merge with the user specification.
         result.put(new IdentifierProperty("'refresh_seconds'"), new IdentifierProperty("'1'"));
-        result.put(new IdentifierProperty("'num_cached_filters'"), new IdentifierProperty("'1'"));
+        result.put(new IdentifierProperty("'num_cached_filters'"), new IdentifierProperty("'0'"));
         result.put(new IdentifierProperty("'ram_buffer_mb'"), new IdentifierProperty("'32'"));
         result.put(new IdentifierProperty("'max_merge_mb'"), new IdentifierProperty("'5'"));
         result.put(new IdentifierProperty("'max_cached_mb'"), new IdentifierProperty("'30'"));
