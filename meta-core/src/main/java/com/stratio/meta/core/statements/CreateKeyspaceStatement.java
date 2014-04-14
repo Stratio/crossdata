@@ -31,40 +31,85 @@ import com.stratio.meta.core.utils.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Class that models a {@code CREATE KEYSPACE} statement from the META language.
+ */
 public class CreateKeyspaceStatement extends MetaStatement {
-    
+
+    /**
+     * The name of the keyspace.
+     */
     private String name;
+
+    /**
+     * Whether the keyspace should be created only if it not exists.
+     */
     private boolean ifNotExists;
+
+    /**
+     * The map of properties of the keyspace. The different options accepted by a keyspace
+     * are determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
+     */
     private HashMap<String, ValueProperty> properties;
 
+    /**
+     * Class constructor.
+     * @param name The name of the keyspace.
+     * @param ifNotExists Whether it should be created only if it not exists.
+     * @param properties The map of properties.
+     */
     public CreateKeyspaceStatement(String name, boolean ifNotExists, Map<String, ValueProperty> properties) {
         this.name = name;
         this.command = false;
         this.ifNotExists = ifNotExists;
         this.properties = new HashMap<>();
         this.properties.putAll(properties);
-    }   
-    
+    }
+
+    /**
+     * Get the name of the keyspace.
+     * @return The name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set the name of the keyspace.
+     * @param name The name of the keyspace.
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * If the IF NOT EXISTS clause has been specified.
+     * @return Whether the keyspace should be created only if not exists.
+     */
     public boolean isIfNotExists() {
         return ifNotExists;
     }
 
+    /**
+     * Set the value of the IF NOT EXISTS clause.
+     * @param ifNotExists If it has been specified or not.
+     */
     public void setIfNotExists(boolean ifNotExists) {
         this.ifNotExists = ifNotExists;
     }
 
+    /**
+     * Get the map of properties.
+     * @return The map.
+     */
     public HashMap<String, ValueProperty> getProperties() {
         return properties;
     }
 
+    /**
+     * Set the map of properties used during the keyspace creation.
+     * @param properties The map of properties.
+     */
     public void setProperties(HashMap<String, ValueProperty> properties) {
         this.properties = properties;
     }        
@@ -98,15 +143,6 @@ public class CreateKeyspaceStatement extends MetaStatement {
         }
 
         return result;
-    }
-
-    //TODO Remove
-    public void validate_remove() {
-        if(properties.containsKey("durable_writes")){
-            if(properties.get("durable_writes").getType() != ValueProperty.TYPE_BOOLEAN){
-                throw new ValidationException("Property 'replication' must be a boolean");
-            }
-        }
     }
 
     @Override

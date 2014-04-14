@@ -41,36 +41,142 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * A object with the mapping of a SELECT statement from the META language.
+ * Class that models a {@code SELECT} statement from the META language.
  */
 public class SelectStatement extends MetaStatement {
 
+    /**
+     * The {@link com.stratio.meta.core.structures.SelectionClause} of the Select statement.
+     */
     private SelectionClause selectionClause;
-    private boolean keyspaceInc = false;
-    private String keyspace;
-    private String tableName;
-    private boolean windowInc;
-    private WindowSelect window;
-    private boolean joinInc;
-    private InnerJoin join;
-    private boolean whereInc;
-    private ArrayList<Relation> where;
-    private boolean orderInc;
-    private ArrayList<com.stratio.meta.core.structures.Ordering> order;
-    private boolean groupInc;
-    private GroupBy group;    
-    private boolean limitInc;
-    private int limit;
-    private boolean disableAnalytics;
-    private boolean needsAllowFiltering = false;
 
+    /**
+     * Whether the keyspace has been specified in the Select statement or it should be taken from the
+     * environment.
+     */
+    private boolean keyspaceInc = false;
+
+    /**
+     * The keyspace specified in the select statement.
+     */
+    private String keyspace;
+
+    /**
+     * The name of the target table.
+     */
+    private String tableName;
+
+    /**
+     * Whether a time window has been specified in the Select statement.
+     */
+    private boolean windowInc;
+
+    /**
+     * The {@link com.stratio.meta.core.structures.WindowSelect} specified in the Select statement
+     * for streaming queries.
+     */
+    private WindowSelect window;
+
+    /**
+     * Whether a JOIN clause has been specified.
+     */
+    private boolean joinInc;
+
+    /**
+     * The {@link com.stratio.meta.core.structures.InnerJoin} clause.
+     */
+    private InnerJoin join;
+
+    /**
+     * Whether the Select contains a WHERE clause.
+     */
+    private boolean whereInc;
+
+    /**
+     * The list of {@link com.stratio.meta.core.structures.Relation} found in the WHERE clause.
+     */
+    private ArrayList<Relation> where;
+
+    /**
+     * Whether an ORDER BY clause has been specified.
+     */
+    private boolean orderInc;
+
+    /**
+     * The list of {@link com.stratio.meta.core.structures.Ordering} clauses.
+     */
+    private ArrayList<com.stratio.meta.core.structures.Ordering> order;
+
+    /**
+     * Whether a GROUP BY clause has been specified.
+     */
+    private boolean groupInc;
+
+    /**
+     * The {@link com.stratio.meta.core.structures.GroupBy} clause.
+     */
+    private GroupBy group;
+
+    /**
+     * Whether a LIMIT clause has been specified.
+     */
+    private boolean limitInc;
+
+    /**
+     * The LIMIT in terms of the number of rows to be retrieved in the result of the SELECT statement.
+     */
+    private int limit;
+
+    /**
+     * Flag to disable complex analytic functions such as INNER JOIN.
+     */
+    private boolean disableAnalytics;
 
     //TODO: We should probably remove this an pass it as parameters.
+    /**
+     * The {@link com.stratio.meta.core.metadata.MetadataManager} used to retrieve table metadata during
+     * the validation process and the statement execution phase.
+     */
     private MetadataManager _metadata = null;
+
+    /**
+     * The {@link com.datastax.driver.core.TableMetadata} associated with the table specified in the
+     * FROM of the Select statement.
+     */
     private TableMetadata _tableMetadataFrom = null;
+
+    /**
+     * The {@link com.datastax.driver.core.TableMetadata} associated with the table specified in the
+     * INNER JOIN of the Select statement.
+     */
     private TableMetadata _tableMetadataJoin = null;
+
+    /**
+     * Map with the collection of {@link com.datastax.driver.core.ColumnMetadata} associated with the
+     * tables specified in the FROM and the INNER JOIN parts of the Select statement. A virtual table
+     * named {@code any} is used to match unqualified column names.
+     */
     private HashMap<String, Collection<ColumnMetadata>> columns = new HashMap<>();
 
+    /**
+     * Class constructor.
+     * @param selectionClause The {@link com.stratio.meta.core.structures.SelectionClause}.
+     * @param tableName The name of the target table.
+     * @param windowInc Whether a time window has been specified in the Select statement.
+     * @param window The {@link com.stratio.meta.core.structures.WindowSelect} specified in the Select statement
+     * for streaming queries.
+     * @param joinInc Whether a JOIN clause has been specified.
+     * @param join The {@link com.stratio.meta.core.structures.InnerJoin} clause.
+     * @param whereInc Whether the Select contains a WHERE clause.
+     * @param where The list of {@link com.stratio.meta.core.structures.Relation} found in the WHERE clause.
+     * @param orderInc Whether an ORDER BY clause has been specified.
+     * @param order The list of {@link com.stratio.meta.core.structures.Ordering} clauses.
+     * @param groupInc Whether a GROUP BY clause has been specified.
+     * @param group The {@link com.stratio.meta.core.structures.GroupBy} clause.
+     * @param limitInc Whether a LIMIT clause has been specified.
+     * @param limit The LIMIT in terms of the number of rows to be retrieved in the result of the SELECT statement.
+     * @param disableAnalytics Flag to disable complex analytic functions such as INNER JOIN.
+     */
     public SelectStatement(SelectionClause selectionClause, String tableName,
                            boolean windowInc, WindowSelect window, 
                            boolean joinInc, InnerJoin join, 
@@ -101,75 +207,148 @@ public class SelectStatement extends MetaStatement {
         this.limitInc = limitInc;
         this.limit = limit;
         this.disableAnalytics = disableAnalytics;
-    }        
-    
+    }
+
+    /**
+     * Class constructor.
+     * @param selectionClause The {@link com.stratio.meta.core.structures.SelectionClause} of the Select statement.
+     * @param tableName The name of the target table.
+     */
     public SelectStatement(SelectionClause selectionClause, String tableName) {
         this(selectionClause, tableName, false, null, false, null, false, null, false, null, false, null, false, 0, false);
-    }             
-    
+    }
+
+    /**
+     * Class constructor.
+     * @param tableName The name of the target table.
+     */
     public SelectStatement(String tableName) {
         this(null, tableName, false, null, false, null, false, null, false, null, false, null, false, 0, false);
     }
 
+    /**
+     * Get the keyspace specified in the select statement.
+     * @return The keyspace or null if not specified.
+     */
     public String getKeyspace() {
         return keyspace;
     }
 
+    /**
+     * Set the keyspace specified in the select statement.
+     * @param keyspace The name of the keyspace.
+     */
     public void setKeyspace(String keyspace) {
         this.keyspaceInc = true;
         this.keyspace = keyspace;
-    }        
-    
+    }
+
+    /**
+     * Get the name of the target table.
+     * @return The table name.
+     */
     public String getTableName() {
         return tableName;
     }
 
+    /**
+     * Get the {@link com.stratio.meta.core.structures.SelectionClause}.
+     * @return The selection clause.
+     */
     public SelectionClause getSelectionClause() {
         return selectionClause;
     }
 
+    /**
+     * Set the {@link com.stratio.meta.core.structures.WindowSelect} for streaming queries.
+     * @param window The window.
+     */
     public void setWindow(WindowSelect window) {
         this.windowInc = true;
         this.window = window;
     }
 
+    /**
+     * Get the Join clause.
+     * @return The Join or null if not set.
+     */
     public InnerJoin getJoin() {
         return join;
     }
 
+    /**
+     * Set the {@link com.stratio.meta.core.structures.InnerJoin} clause.
+     * @param join The join clause.
+     */
     public void setJoin(InnerJoin join) {
         this.joinInc = true;
         this.join = join;
-    }        
+    }
 
+    /**
+     * Get the list of {@link Relation} in the where clause.
+     * @return The list of relations.
+     */
     public ArrayList<Relation> getWhere() {
         return where;
     }
 
+    /**
+     * Set the list of {@link Relation} in the where clause.
+     * @param where The list of relations.
+     */
     public void setWhere(ArrayList<Relation> where) {
         this.whereInc = true;
         this.where = where;
-    }        
+    }
 
+    /**
+     * Set the {@link Ordering} in the ORDER BY clause.
+     * @param order The order.
+     */
     public void setOrder(ArrayList<com.stratio.meta.core.structures.Ordering> order) {
         this.orderInc = true;
         this.order = order;
-    }        
+    }
 
+    /**
+     * Set the {@link com.stratio.meta.core.structures.GroupBy} clause.
+     * @param group The group by.
+     */
     public void setGroup(GroupBy group) {
         this.groupInc = true;
         this.group = group;
     }
 
+    /**
+     * Check if a WHERE clause is included.
+     * @return Whether it is included.
+     */
+    public boolean isWhereInc() {
+        return whereInc;
+    }
+
+    /**
+     * Set the LIMIT of the query.
+     * @param limit The maximum number of rows to be returned.
+     */
     public void setLimit(int limit) {
         this.limitInc = true;
         this.limit = limit;
     }
 
+    /**
+     * Disable the analytics mode.
+     * @param disableAnalytics Whether analytics are enable (default) or not.
+     */
     public void setDisableAnalytics(boolean disableAnalytics) {
         this.disableAnalytics = disableAnalytics;
-    }                   
+    }
 
+    /**
+     * Add a {@link com.stratio.meta.core.structures.SelectionSelector} to the {@link com.stratio.meta.core.structures.SelectionClause}.
+     * @param selSelector The new selector.
+     */
     public void addSelection(SelectionSelector selSelector){
         if(selectionClause == null){
             SelectionSelectors selSelectors = new SelectionSelectors();
@@ -671,11 +850,7 @@ public class SelectStatement extends MetaStatement {
             }
             sel.orderBy(orderings); 
         }
-        
-        if(this.needsAllowFiltering){
-            sel.allowFiltering();
-        }
-        
+
         Where whereStmt = null;
         if(this.whereInc){
             String [] luceneWhere = getLuceneWhereClause(_metadata, _tableMetadataFrom);
@@ -906,7 +1081,4 @@ public class SelectStatement extends MetaStatement {
         return steps;
     }
 
-    public boolean isWhereInc() {
-        return whereInc;
-    }
 }

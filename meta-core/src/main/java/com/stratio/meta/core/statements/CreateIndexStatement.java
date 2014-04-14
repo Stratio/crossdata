@@ -38,17 +38,33 @@ import java.util.List;
 import java.util.Map.Entry;
 
 /**
- * Create index statement of the META language. This class recognizes the following syntax:
+ * Class that models a {@code CREATE INDEX} statement of the META language. This class recognizes the following syntax:
  * <p>
- * CREATE {@link IndexType} INDEX (IF NOT EXISTS)? {@literal <index_name>}
- * ON {@literal <tablename>} ( {@literal <identifier> , ..., <identifier>})
+ * CREATE {@link IndexType} INDEX (IF NOT EXISTS)? {@literal <index_name>} </br>
+ * ON {@literal <tablename>} ( {@literal <identifier> , ..., <identifier>}) </br>
  * ( USING {@literal <index_class>} )? ( WITH OPTIONS ( key_1=value_1 AND ... AND key_n=value_n) )?;
  */
-public class CreateIndexStatement extends MetaStatement {	
-	
+public class CreateIndexStatement extends MetaStatement {
+
+    /**
+     * Whether the keyspace has been specified in the Create index statement or it should be taken from the
+     * environment.
+     */
     private boolean _keyspaceInc = false;
+
+    /**
+     * The keyspace specified in the create index statement.
+     */
     private String _keyspace = null;
+
+    /**
+     * The {@link com.stratio.meta.core.structures.IndexType} to be created.
+     */
     private IndexType _type = null;
+
+    /**
+     * Whether the index should be created only if not exists.
+     */
     private boolean _createIfNotExists = false;
 
     /**
@@ -56,10 +72,29 @@ public class CreateIndexStatement extends MetaStatement {
      */
     private boolean _createIndex = false;
 
+    /**
+     * The name of the index.
+     */
     private String _name = null;
+
+    /**
+     * The name of the target table.
+     */
     private String _tablename = null;
+
+    /**
+     * The list of columns covered by the index. Only one column is allowed for {@code DEFAULT} indexes.
+     */
     private ArrayList<String> _targetColumn = null;
+
+    /**
+     * The name of the class that implements the secondary index.
+     */
     private String _usingClass = null;
+
+    /**
+     * The map of options passed to the index during its creation.
+     */
     private HashMap<ValueProperty, ValueProperty> _options = null;
 
     /**
@@ -67,60 +102,114 @@ public class CreateIndexStatement extends MetaStatement {
      */
     private transient TableMetadata _metadata = null;
 
+    /**
+     * Class constructor.
+     */
     public CreateIndexStatement(){
         this.command = false;
         _targetColumn = new ArrayList<>();
         _options = new HashMap<>();
     }
 
+    /**
+     * Set the type of index.
+     * @param type The type from {@link com.stratio.meta.core.structures.IndexType}.
+     */
     public void setIndexType(String type){
         _type = IndexType.valueOf(type);
     }
 
+    /**
+     * Set that the index should be created if not exists.
+     */
     public void setCreateIfNotExists(){
         _createIfNotExists = true;
     }
 
+    /**
+     * Determine whether the keyspace have been included in the create index statement.
+     * @return Whether it has been included.
+     */
     public boolean isKeyspaceInc() {
         return _keyspaceInc;
     }
 
+    /**
+     * Set whether the keyspace has been specified in the create index statement.
+     * @param _keyspaceInc The boolean value.
+     */
     public void setKeyspaceInc(boolean _keyspaceInc) {
         this._keyspaceInc = _keyspaceInc;
     }
 
+    /**
+     * Get the keyspace specified in the create index statement.
+     * @return The keyspace or null if not set.
+     */
     public String getKeyspace() {
         return _keyspace;
     }
 
+    /**
+     * Set the keyspace specified in the create index statement.
+     * @param _keyspace The name of the keyspace.
+     */
     public void setKeyspace(String _keyspace) {
         this._keyspace = _keyspace;
     }
 
+    /**
+     * Get the type of index.
+     * @return A {@link com.stratio.meta.core.structures.IndexType}.
+     */
     public IndexType getType() {
         return _type;
     }
 
+    /**
+     * Set the type of index.
+     * @param _type A {@link com.stratio.meta.core.structures.IndexType}.
+     */
     public void setType(IndexType _type) {
         this._type = _type;
     }
 
+    /**
+     * If the IF NOT EXISTS clause has been specified.
+     * @return Whether the index should be created only if not exists.
+     */
     public boolean isCreateIfNotExists() {
         return _createIfNotExists;
     }
 
-    public void setCreateIfNotExists(boolean _createIfNotExists) {
-        this._createIfNotExists = _createIfNotExists;
+    /**
+     * Set the value of the IF NOT EXISTS clause.
+     * @param ifNotExists If it has been specified or not.
+     */
+    public void setCreateIfNotExists(boolean ifNotExists) {
+        this._createIfNotExists = ifNotExists;
     }
 
+    /**
+     * Get the list of column indexed.
+     * @return The list of columns.
+     */
     public ArrayList<String> getTargetColumn() {
         return _targetColumn;
     }
 
-    public void setTargetColumn(ArrayList<String> _targetColumn) {
-        this._targetColumn = _targetColumn;
-    }	        
-        
+    /**
+     * Set the list of columns to be indexed.
+     * @param targetColumn The list of columns.
+     */
+    public void setTargetColumn(ArrayList<String> targetColumn) {
+        this._targetColumn = targetColumn;
+    }
+
+    /**
+     * Set the name of the index.
+     * @param name The name.
+     */
     public void setName(String name){
         if(name.contains(".")){
             String[] ksAndTablename = name.split("\\.");
@@ -131,10 +220,18 @@ public class CreateIndexStatement extends MetaStatement {
         _name = name;
     }
 
+    /**
+     * Get the index name.
+     * @return The name.
+     */
     public String getName(){
             return _name;
     }
 
+    /**
+     * Set the name of the target table.
+     * @param tablename The name.
+     */
     public void setTablename(String tablename){
         if(tablename.contains(".")){
             String[] ksAndTablename = tablename.split("\\.");
@@ -146,22 +243,45 @@ public class CreateIndexStatement extends MetaStatement {
 
     }
 
+    /**
+     * Add a column to the list of indexed columns.
+     * @param column The name of the column.
+     */
     public void addColumn(String column){
         _targetColumn.add(column);
     }
 
+    /**
+     * Set a USING class that implements the custom index.
+     * @param using The qualified name of the class.
+     */
     public void setUsingClass(String using){
         _usingClass = using;
     }
 
+    /**
+     * Add an options to the index.
+     * @param key
+     * @param value
+     */
     public void addOption(ValueProperty key, ValueProperty value){
         _options.put(key, value);
     }
 
+    /**
+     * Get the map of options.
+     * @return The map of options.
+     */
     public HashMap<ValueProperty, ValueProperty> getOptions(){
         return _options;
     }
 
+    /**
+     * Get the name of the index. If a LUCENE index is to be created, the name of the index
+     * is prepended with {@code stratio_lucene_}. If a name for the index is not specified, the index
+     * will be named using the concatenation of the target column names.
+     * @return The name of the index.
+     */
     public String getIndexName(){
         String result = _name;
         if(_name == null){
@@ -184,18 +304,13 @@ public class CreateIndexStatement extends MetaStatement {
                 result = "stratio_lucene_" + _name;
             }
         }
-        System.out.println("getIndexName: " + _type + " - " + result);
         return result;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("CREATE ");
-        //if(_type == IndexType.HASH){
-        //    sb.append("CUSTOM");
-        //} else {
-            sb.append(_type);
-        //}
+        sb.append(_type);
         sb.append(" INDEX ");
         if(_createIfNotExists){
                 sb.append("IF NOT EXISTS ");
@@ -215,13 +330,11 @@ public class CreateIndexStatement extends MetaStatement {
                 sb.append(_usingClass);
         }
         if(_options.size() > 0){
-            //sb.append(" WITH OPTIONS ");
             sb.append(" WITH OPTIONS = {");
             Iterator<Entry<ValueProperty, ValueProperty>> entryIt = _options.entrySet().iterator();
             Entry<ValueProperty, ValueProperty> e;
             while(entryIt.hasNext()){
                     e = entryIt.next();
-                    //sb.append(e.getKey()).append(" : ").append("'").append(e.getValue()).append("'");
                     sb.append(e.getKey()).append(": ").append(e.getValue());
                     if(entryIt.hasNext()){
                             sb.append(", ");
@@ -300,6 +413,12 @@ public class CreateIndexStatement extends MetaStatement {
         return result;
     }
 
+    /**
+     * Validate that the index name is valid an has not been previously used.
+     * @param metadata The associated {@link com.stratio.meta.core.metadata.MetadataManager}.
+     * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     */
     private Result validateIndexName(MetadataManager metadata, TableMetadata tableMetadata){
         Result result = QueryResult.CreateSuccessQueryResult();
         String index_name = _name;
@@ -322,6 +441,12 @@ public class CreateIndexStatement extends MetaStatement {
         return result;
     }
 
+    /**
+     * Validate the index options.
+     * @param effectiveKeyspace The effective keyspace used in the validation process.
+     * @param metadata The associated {@link com.datastax.driver.core.TableMetadata}.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     */
     private Result validateOptions(String effectiveKeyspace, TableMetadata metadata) {
         Result result = QueryResult.CreateSuccessQueryResult();
         if(_options.size() > 0){
@@ -451,8 +576,6 @@ public class CreateIndexStatement extends MetaStatement {
             _targetColumn.add(getIndexName());
         }
 
-        System.out.println("CreateIndexStatement.translateToCQL.Before: " + this.toString());
-
         String cqlString = this.toString().replace(" DEFAULT ", " ");
         if(cqlString.contains(" LUCENE ")){
             cqlString = this.toString().replace("CREATE LUCENE ", "CREATE CUSTOM ");
@@ -466,24 +589,8 @@ public class CreateIndexStatement extends MetaStatement {
             cqlString = cqlString.replace("USING ", "USING '");
             if(cqlString.contains("WITH ")){
                 cqlString = cqlString.replace(" WITH OPTIONS", "' WITH OPTIONS");
-            } /*else {
-                cqlString = cqlString.replace(";", "';");
-            }*/
+            }
         }
-        /*if(cqlString.contains("OPTIONS")){
-            //cqlString = cqlString.replace("OPTIONS", "OPTIONS");
-            //cqlString = cqlString.concat("}");
-            cqlString = cqlString.replaceAll("='", "'='");
-            cqlString = cqlString.replaceAll("= '", "' = '");
-            cqlString = cqlString.replaceAll("' ", "'");
-            cqlString = cqlString.replaceAll(" '", "'");
-            cqlString = cqlString.replaceAll("USING'", "USING '");
-            cqlString = cqlString.replaceAll("'='", "' : '");
-            cqlString = cqlString.replaceAll("'= '", "' : '");
-            cqlString = cqlString.replaceAll("' ='", "' : '");
-            cqlString = cqlString.replaceAll("' = '", "' : '");
-        }*/
-        System.out.println("CreateIndexStatement.translateToCQL: " + cqlString);
         return cqlString;
     }
         

@@ -67,26 +67,53 @@ public abstract class MetaStatement {
         this.command = command;
     }
 
+    /**
+     * Whether the query is an internal command or not.
+     * @return The boolean value.
+     */
     public boolean isCommand() {
         return command;
     }
 
+    /**
+     * Set whether the query is a command or not.
+     * @param command The boolean value.
+     */
     public void setAsCommand(boolean command) {
         this.command = command;
-    }        
-    
+    }
+
+    /**
+     * Get the query introduced by the user.
+     * @return The query.
+     */
     public String getQuery() {
         return query;
     }
 
+    /**
+     * Set the query introduced by the user.
+     * @param query The string representation of the submitted query.
+     */
     public void setQuery(String query) {
         this.query = query;
-    }        
+    }
 
+    /**
+     * Get the path required to execute the query.
+     * @return The {@link com.stratio.meta.core.utils.MetaPath} with a
+     * {@link com.stratio.meta.core.utils.Tree} representation of the different
+     * steps involved.
+     */
     public MetaPath getPath() {
         return path;
     }
 
+    /**
+     * Set the {@link com.stratio.meta.core.utils.MetaPath} required to
+     * execute this query.
+     * @param path The path.
+     */
     public void setPath(MetaPath path) {
         this.path = path;
     }        

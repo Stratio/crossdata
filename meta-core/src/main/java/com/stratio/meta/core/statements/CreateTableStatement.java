@@ -36,27 +36,102 @@ import com.stratio.meta.core.utils.Tree;
 
 import java.util.*;
 
+/**
+ * Class that models a {@code CREATE TABLE} statement of the META language.
+ */
 public class CreateTableStatement extends MetaStatement{
-    
+
+    /**
+     * Whether the keyspace has been specified in the Create Table statement or it should be taken from the
+     * environment.
+     */
     private boolean keyspaceInc = false;
+
+    /**
+     * The keyspace specified in the create table statement.
+     */
     private String keyspace;
+
+    /**
+     * The name of the target table.
+     */
     private String tablename;
-    private LinkedHashMap<String, String> columns;    
-    private List<String> primaryKey;    
+
+    /**
+     * A map with the name of the columns in the table and the associated data type.
+     */
+    private LinkedHashMap<String, String> columns;
+
+    /**
+     * The list of columns that are part of the primary key.
+     */
+    private List<String> primaryKey;
+
+    /**
+     * The list of columns that are part of the clustering key.
+     */
     private List<String> clusterKey;
+
+    /**
+     * The list of {@link com.stratio.meta.core.structures.Property} of the table.
+     */
     private List<Property> properties;
-    private int Type_Primary_Key;
+
+    /**
+     * The type of primary key. Accepted values are:
+     * <ul>
+     *     <li>1: If the primary key contains a single column and it is the first
+     *     one declared.</li>
+     *     <li>2: If the primary key contains a single column and it is not the
+     *     first one declared.</li>
+     *     <li>3: If the primary key is composed of several columns but it does not
+     *     contain a clustering key.</li>
+     *     <li>4: If both the primary key and clustering key are specified.</li>
+     * </ul>
+     */
+    private int primaryKeyType;
+
+    /**
+     * Whether the table should be created only if not exists.
+     */
     private boolean ifNotExists;
+
+    /**
+     * Whether the table contains a clustering key.
+     */
     private boolean withClusterKey;
+
+    /**
+     * The number of the column associated with the primary key. This
+     * value is only used if the type of primary key is {@code 1}.
+     */
     private int columnNumberPK;
+
+    /**
+     * Whether the table should be created with a set of properties.
+     */
     private boolean withProperties;
 
+    /**
+     * Class constructor.
+     * @param name_table The name of the table.
+     * @param columns A map with the name of the columns in the table and the associated data type.
+     * @param primaryKey The list of columns that are part of the primary key.
+     * @param clusterKey The list of columns that are part of the clustering key.
+     * @param properties The list of {@link com.stratio.meta.core.structures.Property} of the table.
+     * @param primaryKeyType The type of primary key.
+     * @param ifNotExists Whether the table should be created only if not exists.
+     * @param withClusterKey Whether the table contains a clustering key.
+     * @param columnNumberPK The number of the column associated with the primary key. This
+     * value is only used if the type of primary key is {@code 1}.
+     * @param withProperties Whether the table should be created with a set of properties.
+     */
     public CreateTableStatement(String name_table, 
                                 LinkedHashMap<String, String> columns, 
                                 List<String> primaryKey, 
                                 List<String> clusterKey, 
                                 List<Property> properties,
-                                int Type_Primary_Key, 
+                                int primaryKeyType,
                                 boolean ifNotExists, 
                                 boolean withClusterKey, 
                                 int columnNumberPK, 
@@ -73,41 +148,73 @@ public class CreateTableStatement extends MetaStatement{
         this.primaryKey = primaryKey;
         this.clusterKey = clusterKey;
         this.properties = properties;
-        this.Type_Primary_Key = Type_Primary_Key;
+        this.primaryKeyType = primaryKeyType;
         this.ifNotExists = ifNotExists;
         this.withClusterKey = withClusterKey;
         this.columnNumberPK = columnNumberPK;
         this.withProperties=withProperties;
     }
 
+    /**
+     * Get the keyspace specified in the create table statement.
+     * @return The keyspace or null if not specified.
+     */
     public String getKeyspace() {
         return keyspace;
     }
 
+    /**
+     * Set the keyspace specified in the create table statement.
+     * @param keyspace The name of the keyspace.
+     */
     public void setKeyspace(String keyspace) {
         this.keyspace = keyspace;
     }
 
+    /**
+     * Get the list of properties.
+     * @return The list or null if not set.
+     */
     public List<Property> getProperties() {
         return properties;
     }
 
+    /**
+     * Set the list of {@link com.stratio.meta.core.structures.Property}.
+     * @param properties The list.
+     */
     public void setProperties(List<Property> properties) {
         this.properties = properties;
     }
 
+    /**
+     * Get the map of column names and their associated data types.
+     * @return The map.
+     */
     public LinkedHashMap<String, String> getColumns() {
         return columns;
     }
 
+    /**
+     * Set the map of column names and their associated data types.
+     * @param columns The map.
+     */
     public void setColumns(LinkedHashMap<String, String> columns) {
         this.columns = columns;
-    }   
-    
+    }
+
+    /**
+     * Get the name of the table.
+     * @return The name.
+     */
     public String getTablename() {
         return tablename;
     }
 
+    /**
+     * Set the table name.
+     * @param tablename The name.
+     */
     public void setTablename(String tablename) {
         if(tablename.contains(".")){
             String[] ksAndTablename = tablename.split("\\.");
@@ -128,7 +235,7 @@ public class CreateTableStatement extends MetaStatement{
         } 
         sb.append(tablename);
         
-        switch(Type_Primary_Key){
+        switch(primaryKeyType){
             case 1: {
                 Set<String> keySet = columns.keySet();
                 int i = 0;
