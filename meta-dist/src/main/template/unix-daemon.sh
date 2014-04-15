@@ -62,7 +62,7 @@ fi
 # JSVC support
 if [ -z "$JSVCCMD" ] ; then
   if [ -x "/usr/bin/jsvc" ] ; then
-    JSVCCMD="$JAVA_HOME/jre/sh/java"
+    JSVCCMD="/usr/bin/jsvc"
   else
     JSVCCMD=`which jsvc`
   fi
