@@ -39,16 +39,8 @@ public class ConnectTest extends DriverParentTest {
 
     }
 
-    @Test(groups = "create Ks")
 
-    public void ExecuteCreateTest(){
-
-        //msg ="drop keyspace ks_demo;";
-        //driver.executeQuery("TEST_USER","ks_demo",msg);
-
-
-    }
-    @Test(groups = "create Tb", dependsOnGroups = {"create Ks"})
+    @Test(groups = "create Tb")
     public void ExecuteCreatewitherrorTest(){
         String msg= "create KEYSPAC ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};";
         Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
@@ -65,11 +57,6 @@ public class ConnectTest extends DriverParentTest {
     public void ExecuteCreateTableTest(){
         String msg= "create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);";
         Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
-        //assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n" );
-
-
-
-
     }
     @Test(groups = "use", dependsOnGroups = {"create Ks"})
     public void ExecuteUseKsest(){
@@ -126,7 +113,6 @@ public class ConnectTest extends DriverParentTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n" );
 
     }
 
