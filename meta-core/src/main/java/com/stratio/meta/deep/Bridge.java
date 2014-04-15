@@ -48,6 +48,7 @@ public class Bridge {
 
     public static final DeepSparkContext deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
 
+    //TODO: TO be removed
     public static int executeCount(String keyspaceName, String tableName, Session cassandraSession){
 
         System.out.println("TRACE: Executing deep for: "+keyspaceName+"."+tableName);
@@ -84,10 +85,6 @@ public class Bridge {
 
     public static ResultSet execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot, Session cassandraSession){
 
-        System.out.println("TRACE: Deep.execution");
-
-        //DeepSparkContext deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
-
         System.out.println("TRACE: Executing deep for: "+stmt.toString());
 
         if(!(stmt instanceof SelectStatement)){
@@ -119,13 +116,17 @@ public class Bridge {
             }
 
             // Configuration and initialization
-            IDeepJobConfig config = DeepJobConfigFactory.create()
-                    .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
-                    .keyspace(ss.getKeyspace()).table(ss.getTableName());
-            if(!allCols){
-                config = config.inputColumns(columnsSet);
+            IDeepJobConfig config = null;
+            if(allCols){
+                config = DeepJobConfigFactory.create()
+                        .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
+                        .keyspace(ss.getKeyspace()).table(ss.getTableName()).initialize();
+            } else {
+                config = DeepJobConfigFactory.create()
+                        .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
+                        .keyspace(ss.getKeyspace()).table(ss.getTableName())
+                        .inputColumns(columnsSet).initialize();
             }
-            config = config.initialize();
 
             JavaRDD rdd = deepContext.cassandraJavaRDD(config);
 
