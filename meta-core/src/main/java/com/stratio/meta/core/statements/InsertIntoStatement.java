@@ -374,7 +374,9 @@ public class InsertIntoStatement extends MetaStatement {
                 if(valueCell.toString().matches("[0123456789.]+")){
                     insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.getStringValue()));
                 } else if (valueCell.toString().contains("-")){
-                        insertStmt = insertStmt.value(id, UUID.fromString(valueCell.getStringValue()));
+                    insertStmt = insertStmt.value(id, UUID.fromString(valueCell.getStringValue()));
+                } else if(valueCell.toString().equalsIgnoreCase("true") || valueCell.toString().equalsIgnoreCase("false")) {
+                    insertStmt = insertStmt.value(id, Boolean.valueOf(valueCell.toString()));
                 } else {
                     insertStmt = insertStmt.value(id, valueCell.getStringValue());
                 }
@@ -411,7 +413,6 @@ public class InsertIntoStatement extends MetaStatement {
         if(optionsStmt==null){
             return insertStmt;
         }
-
         return optionsStmt;        
     }
     
