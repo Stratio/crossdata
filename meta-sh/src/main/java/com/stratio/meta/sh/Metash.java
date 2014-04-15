@@ -33,6 +33,7 @@ import jline.console.ConsoleReader;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -113,6 +114,10 @@ public class Metash {
             String cmd = "";
             while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
                 cmd = console.readLine();
+                if(cmd.toLowerCase().trim().startsWith("random")){
+                    insertRandomData(cmd.toLowerCase().trim(), metaDriver);
+                    continue;
+                }
                 if(cmd.equalsIgnoreCase("") || cmd.equalsIgnoreCase(System.lineSeparator())){
                     System.out.println();
                     continue;
@@ -156,7 +161,45 @@ public class Metash {
             logger.error("Cannot launch Metash, no console present", ex);
         }
     }
- 
+
+    private void insertRandomData(String cmd, BasicDriver metaDriver) {
+        int limit = 0;
+        String[] namesGroup = {"Max", "Molly", "Buddy", "Bella", "Jake", "Lucy", "Bailey", "Maggie",
+                "Rocky", "Daisy", "Charlie", "Sadie", "Jack", "Chloe", "Toby", "Sophie",
+                "Cody", "Bailey", "Buster", "Zoe", "Duke", "Lola", "Cooper", "Abby"};
+        String[] gender = {"Male", "Female"};
+        if(cmd.contains(";")){
+            cmd = cmd.replace(";", "").trim();
+        }
+        limit = Integer.parseInt(cmd.split(" ", 3)[2]);
+        if(cmd.startsWith("random clients")){
+
+            for(int i=0; i<limit; i++){
+                int random = (int) (Math.random()*99.0);
+                cmd = "INSERT INTO demo.clients (alias, address, comment, year, previous) VALUES " +
+                        "('"+ RandomStringUtils.randomAlphabetic(3).toLowerCase() +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(15) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(15) +"', "
+                        + ((int) (Math.random()*2014.0)) +", "
+                        + ((random % 2) == 0) +");";
+                metaDriver.executeQuery(user, "", cmd);
+            }
+        }
+        if(cmd.startsWith("random customers")){
+
+            for(int i=0; i<limit; i++){
+                int random = (int) (Math.random()*99.00);
+                cmd = "INSERT INTO demo.customers (name, job, origin, value, gender) VALUES " +
+                        "('"+ RandomStringUtils.randomAlphabetic(3).toLowerCase() +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(10) +"', " +
+                        "'"+ RandomStringUtils.randomAlphabetic(12) +"', " +
+                        ((int) (Math.random()*9000.0))+", " +
+                        "'"+gender[random % 2]+"');";
+                metaDriver.executeQuery(user, "", cmd);
+            }
+        }
+    }
+
     /**
      * Launch the META server shell.
      * @param args The list of arguments. Not supported at the moment.
