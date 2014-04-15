@@ -26,22 +26,6 @@ if [ -f "$META_CONF/meta-env.sh" ]; then
     source "$META_CONF/meta-env.sh"
 fi
 
-if [ -z "$META_HOME" ]; then
-    META_HOME="$BASEDIR"
-fi
-
-if [ -z "$META_LIB" ]; then
-    META_LIB="$META_HOME/lib"
-fi
-
-if [ -z "$META_BIN" ]; then
-    META_BIN="$META_HOME/bin"
-fi
-
-echo "META_HOME = $META_HOME"
-echo "META_CONF = $META_CONF"
-echo "META_LIB  = $META_LIB"
-echo "META_BIN  = $META_BIN"
 
 
 # Reset the REPO variable. If you need to influence this use the environment setup file.
