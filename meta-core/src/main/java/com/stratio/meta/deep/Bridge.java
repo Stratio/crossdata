@@ -36,6 +36,7 @@ import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import com.stratio.meta.deep.context.Context;
 import com.stratio.meta.deep.functions.*;
+import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 
@@ -45,6 +46,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class Bridge {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger logger = Logger.getLogger(Bridge.class);
 
     public static final DeepSparkContext deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
 
@@ -184,7 +190,7 @@ public class Bridge {
             }
             rs.add(metaRow);
         }
-        System.out.println("Deep Result:"+ rs.size()+ " rows");
+        logger.info("Deep Result: " + rs.size() + " rows & " + rs.iterator().next().size() + " columns");
         return rs;
     }
 
