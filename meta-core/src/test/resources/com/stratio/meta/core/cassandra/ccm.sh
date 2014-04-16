@@ -38,7 +38,7 @@ sudo apt-get install python-setuptools
 sudo easy_install pyYaml
 
 echo " Checking ccm installation ... "
-unset $CASSANDRA_HOME
+unset ${CASSANDRA_HOME}
 
 if [ -z "$CCM_DIR" ]; then
 	echo " Installing ccm ... "

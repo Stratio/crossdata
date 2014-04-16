@@ -106,7 +106,6 @@ public class LuceneIndexHelper {
             JsonNode root = mapper.readTree(jp);
             JsonNode schema = root.get("schema");
             if(schema != null){
-                JsonNode node = null;
                 String schemaString = schema.toString()
                         .substring(1, schema.toString().length() - 1)
                         .replace("\\", "");

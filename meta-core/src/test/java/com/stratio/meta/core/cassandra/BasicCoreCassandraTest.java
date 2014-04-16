@@ -31,7 +31,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -140,7 +139,7 @@ public class BasicCoreCassandraTest {
      * @param keyspace The name of the keyspace.
      * @param path The path of the CQL script.
      */
-    public static void loadTestData(String keyspace, String path){
+    protected static void loadTestData(String keyspace, String path){
         KeyspaceMetadata metadata = _session.getCluster().getMetadata().getKeyspace(keyspace);
         if(metadata == null){
             logger.info("Creating keyspace " + keyspace + " using " + path);

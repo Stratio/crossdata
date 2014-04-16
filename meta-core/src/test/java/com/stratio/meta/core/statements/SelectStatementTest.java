@@ -48,7 +48,7 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
 
 
     public static String getLuceneQuery(String ... clauses){
-        StringBuilder sb = new StringBuilder("{query:{type:\"boolean\",must:[");
+        StringBuilder sb = new StringBuilder("{filter:{type:\"boolean\",must:[");
         for(String clause : clauses){
             sb.append("{").append(clause).append("},");
         }

@@ -23,7 +23,7 @@ import java.util.Iterator;
 
 public abstract class ResultSet implements Iterable<Row> {
 
-    public abstract Iterator iterator();
+    public abstract Iterator<Row> iterator();
 
     public abstract int size();
 

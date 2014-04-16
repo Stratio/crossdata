@@ -27,7 +27,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 public class HelpManager {
 
-	private final String HELP_PATH = "com/stratio/meta/sh/help/MetaClientHelp.yaml";
+	private final static String HELP_PATH = "com/stratio/meta/sh/help/MetaClientHelp.yaml";
 	
 	public HelpContent loadHelpContent(){
 		HelpContent result = null;

@@ -26,6 +26,8 @@ import java.util.List;
 
 public class CassandraResultSet extends ResultSet implements Serializable {
 
+    private static final long serialVersionUID = 6673808320950075999L;
+
     private List<Row> rows;
 
     public CassandraResultSet() {

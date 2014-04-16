@@ -23,6 +23,7 @@ import com.stratio.meta.common.data.ResultSet;
 
 public class QueryResult extends Result {
 
+    private static final long serialVersionUID = -5367895767326893839L;
     private final ResultSet resultSet;
 
     private QueryResult(ResultSet resultSet,boolean error, String errorMessage, boolean ksChanged, String currentKeyspace){

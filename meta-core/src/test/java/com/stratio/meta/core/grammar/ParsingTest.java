@@ -52,8 +52,8 @@ public class ParsingTest {
         assertFalse(mq.hasError(), "Parsing expecting '" + inputText
                 + "' from '" + st.toString() + "' returned: " + mq.getResult().getErrorMessage());
         
-        System.out.println("inputText:"+inputText);
-        System.out.println("st.toStrg:"+st.toString()+";");
+        //System.out.println("inputText:"+inputText);
+        //System.out.println("st.toStrg:"+st.toString()+";");
         
         assertTrue(inputText.equalsIgnoreCase(st.toString()+";"),
                 "Cannot parse " + methodName

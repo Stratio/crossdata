@@ -28,12 +28,12 @@ import org.apache.log4j.Logger;
 public class Validator {
 
     private final Logger logger = Logger.getLogger(Validator.class);
-    private final Session session;
+    //private final Session session;
 
     private final MetadataManager _metadata;
 
     public Validator(Session session){
-        this.session = session;
+        //this.session = session;
         _metadata = new MetadataManager(session);
         _metadata.loadMetadata();
     }

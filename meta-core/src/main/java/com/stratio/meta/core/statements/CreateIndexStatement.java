@@ -136,10 +136,10 @@ public class CreateIndexStatement extends MetaStatement {
 
     /**
      * Set whether the keyspace has been specified in the create index statement.
-     * @param _keyspaceInc The boolean value.
+     * @param keyspaceInc The boolean value.
      */
-    public void setKeyspaceInc(boolean _keyspaceInc) {
-        this._keyspaceInc = _keyspaceInc;
+    public void setKeyspaceInc(boolean keyspaceInc) {
+        _keyspaceInc = keyspaceInc;
     }
 
     /**
@@ -261,8 +261,8 @@ public class CreateIndexStatement extends MetaStatement {
 
     /**
      * Add an options to the index.
-     * @param key
-     * @param value
+     * @param key The option key.
+     * @param value The option value.
      */
     public void addOption(ValueProperty key, ValueProperty value){
         _options.put(key, value);
@@ -282,8 +282,8 @@ public class CreateIndexStatement extends MetaStatement {
      * will be named using the concatenation of the target column names.
      * @return The name of the index.
      */
-    public String getIndexName(){
-        String result = _name;
+    protected String getIndexName(){
+        String result = null;
         if(_name == null){
             StringBuilder sb = new StringBuilder();
             if(IndexType.LUCENE.equals(_type)){
@@ -474,7 +474,7 @@ public class CreateIndexStatement extends MetaStatement {
      * Generate the set of Lucene options required to create an index.
      * @return The set of options.
      */
-    public HashMap<ValueProperty, ValueProperty> generateLuceneOptions(){
+    protected HashMap<ValueProperty, ValueProperty> generateLuceneOptions(){
         HashMap<ValueProperty, ValueProperty> result = new HashMap<>();
 
         // CREATE CUSTOM INDEX demo_banks
@@ -492,7 +492,7 @@ public class CreateIndexStatement extends MetaStatement {
         //  };
         //TODO: Read parameters from default configuration and merge with the user specification.
         result.put(new IdentifierProperty("'refresh_seconds'"), new IdentifierProperty("'1'"));
-        result.put(new IdentifierProperty("'num_cached_filters'"), new IdentifierProperty("'0'"));
+        result.put(new IdentifierProperty("'num_cached_filters'"), new IdentifierProperty("'1'"));
         result.put(new IdentifierProperty("'ram_buffer_mb'"), new IdentifierProperty("'32'"));
         result.put(new IdentifierProperty("'max_merge_mb'"), new IdentifierProperty("'5'"));
         result.put(new IdentifierProperty("'max_cached_mb'"), new IdentifierProperty("'30'"));
@@ -591,6 +591,7 @@ public class CreateIndexStatement extends MetaStatement {
                 cqlString = cqlString.replace(" WITH OPTIONS", "' WITH OPTIONS");
             }
         }
+        //System.out.println("CQL string: " + cqlString);
         return cqlString;
     }
         

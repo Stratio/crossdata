@@ -25,22 +25,24 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 
+/**
+ * Class that models an {@code EXPLAIN PLAN} statement from the META language.
+ */
 public class ExplainPlanStatement extends MetaStatement {
-    
+
+    /**
+     * The {@link com.stratio.meta.core.statements.MetaStatement} to be analyzed.
+     */
     private MetaStatement metaStatement;
 
+    /**
+     * Class constructor.
+     * @param metaStatement The {@link com.stratio.meta.core.statements.MetaStatement} to be analyzed.
+     */
     public ExplainPlanStatement(MetaStatement metaStatement) {
         this.command = true;
         this.metaStatement = metaStatement;
     }    
-    
-    public MetaStatement getMetaStatement() {
-        return metaStatement;
-    }
-
-    public void setMetaStatement(MetaStatement metaStatement) {
-        this.metaStatement = metaStatement;
-    }
 
     @Override
     public String toString() {
@@ -65,7 +67,6 @@ public class ExplainPlanStatement extends MetaStatement {
         return this.toString();
     }
 
-    
     @Override
     public Statement getDriverStatement() {
         return null;

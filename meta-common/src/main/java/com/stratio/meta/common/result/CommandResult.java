@@ -22,11 +22,12 @@ package com.stratio.meta.common.result;
 
 public class CommandResult extends Result {
 
-    
+
+    private static final long serialVersionUID = -6987780936081295180L;
     private final String result;
 
-    private CommandResult(String result,boolean error, String errorMessage, boolean ksChanged, String currentKeyspace){
-        super(error,errorMessage,ksChanged,currentKeyspace);
+    private CommandResult(String result,boolean error, String errorMessage, String currentKeyspace){
+        super(error, errorMessage, false, currentKeyspace);
         this.result=result;
     }
 
@@ -35,11 +36,11 @@ public class CommandResult extends Result {
     }
 
     public static CommandResult CreateSuccessCommandResult(String result){
-        return new CommandResult(result,false,null,false,null);
+        return new CommandResult(result, false, null, null);
     }
 
     public static CommandResult CreateFailCommanResult(String errorMessage){
-        return new CommandResult(null,true,errorMessage,false,null);
+        return new CommandResult(null, true, errorMessage, null);
     }
 
 

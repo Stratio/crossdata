@@ -23,6 +23,7 @@ import java.io.Serializable;
 
 public abstract class Result implements Serializable {
 
+    private static final long serialVersionUID = 8596330240278204430L;
     private final boolean error ;
     private final String errorMessage ;
     private final boolean ksChanged ;

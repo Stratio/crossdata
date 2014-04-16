@@ -41,7 +41,7 @@ public class UpdateTableStatement extends MetaStatement {
     private boolean optsInc;
     private List<Option> options;
     private List<Assignment> assignments;
-    private List<Relation> whereclauses;
+    private List<Relation> whereClauses;
     private boolean condsInc;
     private Map<String, Term> conditions;
 
@@ -49,7 +49,7 @@ public class UpdateTableStatement extends MetaStatement {
                                 boolean optsInc, 
                                 List<Option> options, 
                                 List<Assignment> assignments, 
-                                List<Relation> whereclauses,
+                                List<Relation> whereClauses,
                                 boolean condsInc, 
                                 Map<String, Term> conditions) {
         this.command = false;
@@ -63,7 +63,7 @@ public class UpdateTableStatement extends MetaStatement {
         this.optsInc = optsInc;
         this.options = options;
         this.assignments = assignments;
-        this.whereclauses = whereclauses;
+        this.whereClauses = whereClauses;
         this.condsInc = condsInc;
         this.conditions = conditions;
     }        
@@ -158,12 +158,12 @@ public class UpdateTableStatement extends MetaStatement {
         this.assignments = assignments;
     }        
 
-    public List<Relation> getWhereclauses() {
-        return whereclauses;
+    public List<Relation> getWhereClauses() {
+        return whereClauses;
     }
 
-    public void setWhereclauses(List<Relation> whereclauses) {
-        this.whereclauses = whereclauses;
+    public void setWhereClauses(List<Relation> whereClauses) {
+        this.whereClauses = whereClauses;
     }
 
     public boolean isIncConds() {
@@ -196,7 +196,7 @@ public class UpdateTableStatement extends MetaStatement {
         sb.append(" ").append("SET ");
         sb.append(ParserUtils.stringList(assignments, ", "));
         sb.append(" ").append("WHERE ");
-        sb.append(ParserUtils.stringList(whereclauses, " AND "));
+        sb.append(ParserUtils.stringList(whereClauses, " AND "));
         if(condsInc){
             sb.append(" ").append("IF ");
             sb.append(ParserUtils.stringMap(conditions, " = ", " AND "));

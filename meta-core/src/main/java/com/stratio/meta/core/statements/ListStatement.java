@@ -26,10 +26,20 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ListType;
 import com.stratio.meta.core.utils.Tree;
 
+/**
+ * Class that models a {@code LIST} statement from the META language.
+ */
 public class ListStatement extends MetaStatement {
 
+    /**
+     * The {@link com.stratio.meta.core.structures.ListType} to be executed.
+     */
     private ListType _type = null;
 
+    /**
+     * Class constructor.
+     * @param type The {@link com.stratio.meta.core.structures.ListType} to be executed.
+     */
     public ListStatement(String type){
         this.command = true;
         _type = ListType.valueOf(type.toUpperCase());

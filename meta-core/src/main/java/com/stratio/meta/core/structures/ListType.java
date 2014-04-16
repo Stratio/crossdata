@@ -39,5 +39,5 @@ public enum ListType {
 	/**
 	 * List all known triggers.
 	 */
-	TRIGGER;
+	TRIGGER
 }

@@ -54,9 +54,9 @@ public class CommandExecutor {
                 result =  ksInfo.exportAsString();
             }
         } else { // TABLE
-            TableMetadata tableInfo = mm.getTableMetadata(dscrStatement.getKeyspace(), dscrStatement.getTablename());
+            TableMetadata tableInfo = mm.getTableMetadata(dscrStatement.getKeyspace(), dscrStatement.getTableName());
             if(tableInfo == null){
-                throw new RuntimeException("TABLE "+dscrStatement.getTablename()+" was not found");
+                throw new RuntimeException("TABLE "+dscrStatement.getTableName()+" was not found");
             } else {
                 result = tableInfo.exportAsString();
             }

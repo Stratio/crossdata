@@ -33,98 +33,75 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
+/**
+ * Class that models an {@code ALTER TABLE} statement from the META language.
+ */
 public class AlterTableStatement extends MetaStatement{
-    
+
+    /**
+     * Whether the keyspace has been specified in the Select statement or it should be taken from the
+     * environment.
+     */
     private boolean keyspaceInc = false;
+
+    /**
+     * The keyspace specified in the select statement.
+     */
     private String keyspace;
-    private String name_table;
+
+    /**
+     * The name of the target table.
+     */
+    private String tableName;
+
+    /**
+     * Type of alter. Accepted values are:
+     * <ul>
+     *     <li>1: Alter a column data type using {@code ALTER}.</li>
+     *     <li>2: Add a new column using {@code ADD}.</li>
+     *     <li>3: Drop a column using {@code DROP}.</li>
+     *     <li>4: Establish a set of options using {@code WITH}.</li>
+     * </ul>
+     */
     private int prop;
+
+    /**
+     * Target column name.
+     */
     private String column;
+
+    /**
+     * Target column datatype used with {@code ALTER} or {@code ADD}.
+     */
     private String type;
+
+    /**
+     * The map of properties.
+     */
     private LinkedHashMap<String, ValueProperty> option;
-        
-        
-    public AlterTableStatement(String name_table, String column, String type, LinkedHashMap<String, ValueProperty> option, int prop) {
+
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param column The name of the column.
+     * @param type The data type of the column.
+     * @param option The map of options.
+     * @param prop The type of modification.
+     */
+    public AlterTableStatement(String tableName, String column, String type, LinkedHashMap<String, ValueProperty> option, int prop) {
         this.command = false;
-        if(name_table.contains(".")){
-            String[] ksAndTablename = name_table.split("\\.");
-            keyspace = ksAndTablename[0];
-            name_table = ksAndTablename[1];
+        if(tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            tableName = ksAndTableName[1];
             keyspaceInc = true;
         }
-        this.name_table = name_table;
+        this.tableName = tableName;
         this.column = column;
         this.type = type;
         this.option = option;
         this.prop = prop;          
     }
-    
-    //Setters and getters Name table
-    public String getName_table() {
-        return name_table;
-    }
-    
-    public void setName_table(String name_table) {
-        if(name_table.contains(".")){
-            String[] ksAndTablename = name_table.split("\\.");
-            keyspace = ksAndTablename[0];
-            name_table = ksAndTablename[1];
-            keyspaceInc = true;
-        }
-        this.name_table = name_table;
-    }
-
-    public boolean isKeyspaceInc() {
-        return keyspaceInc;
-    }
-
-    public void setKeyspaceInc(boolean keyspaceInc) {
-        this.keyspaceInc = keyspaceInc;
-    }
-
-    public String getKeyspace() {
-        return keyspace;
-    }
-
-    public void setKeyspace(String keyspace) {
-        this.keyspace = keyspace;
-    }
-
-    //Seeters and getters columns
-    public String getColumn() {
-        return column;
-    }  
-    
-    public void setColumn(String column) {
-        this.column = column;
-    }
-    
-    //Setter and getter type 
-    public String getType() {
-        return type;
-    }
-    
-    public void setType(String type) {
-        this.type = type;
-    }
-    
-    //Setter and getter option
-     public LinkedHashMap<String, ValueProperty> getOption() {
-        return option;
-    }
-
-    public void setOption(LinkedHashMap<String, ValueProperty> option) {
-        this.option = option;
-    }
-    
-    //Setter and getter  prop
-    public int getProp() {
-        return prop;
-    }
-    
-    public void setProp(int prop) {
-        this.prop = prop;
-    }  
 
     @Override
     public String toString() {
@@ -132,7 +109,7 @@ public class AlterTableStatement extends MetaStatement{
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
-        sb.append(name_table);
+        sb.append(tableName);
         switch(prop){
             case 1: {
                 sb.append(" alter ");
@@ -169,7 +146,7 @@ public class AlterTableStatement extends MetaStatement{
     /** {@inheritDoc} */
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
-        return QueryResult.CreateSuccessQueryResult();
+        return null;
     }
 
     @Override
@@ -182,7 +159,6 @@ public class AlterTableStatement extends MetaStatement{
         return this.toString();
     }
 
-        
     @Override
     public Statement getDriverStatement() {
         return null;

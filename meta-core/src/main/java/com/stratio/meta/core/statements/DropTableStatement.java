@@ -30,44 +30,68 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
+/**
+ * Class that models a {@code DROP TABLE} statement from the META language.
+ */
 public class DropTableStatement extends MetaStatement {
-    
+
+    /**
+     * Whether the keyspace has been specified in the Select statement or it should be taken from the
+     * environment.
+     */
     private boolean keyspaceInc = false;
+
+    /**
+     * The keyspace specified in the select statement.
+     */
     private String keyspace;
-    private String tablename;
+
+    /**
+     * The name of the target table.
+     */
+    private String tableName;
+
+    /**
+     * Whether the table should be dropped only if exists.
+     */
     private boolean ifExists;
 
-    public DropTableStatement(String tablename, boolean ifExists) {
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param ifExists Whether it should be dropped only if exists.
+     */
+    public DropTableStatement(String tableName, boolean ifExists) {
+        if(tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            tableName = ksAndTableName[1];
             keyspaceInc = true;
         }
-        this.tablename = tablename;
+        this.tableName = tableName;
         this.ifExists = ifExists;
     }
-    
-    public String getTablename() {
-        return tablename;
+
+    /**
+     * Get the name of the table.
+     * @return The name.
+     */
+    public String getTableName() {
+        return tableName;
     }
 
-    public void setTablename(String tablename) {
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+    /**
+     * Set the name of the table.
+     * @param tableName The name of the table.
+     */
+    public void setTableName(String tableName) {
+        if(tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            tableName = ksAndTableName[1];
             keyspaceInc = true;
         }
-        this.tablename = tablename;
-    }
-
-    public boolean isIfExists() {
-        return ifExists;
-    }
-
-    public void setIfExists(boolean ifExists) {
-        this.ifExists = ifExists;
+        this.tableName = tableName;
     }
 
     @Override
@@ -79,7 +103,7 @@ public class DropTableStatement extends MetaStatement {
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
-        sb.append(tablename);
+        sb.append(tableName);
         return sb.toString();
     }
 
@@ -101,9 +125,9 @@ public class DropTableStatement extends MetaStatement {
             if(ksMetadata == null){
                 result= QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
             }else {
-                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
+                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
                 if (tableMetadata == null) {
-                    result= QueryResult.CreateFailQueryResult("Table " + tablename + " does not exists.");
+                    result= QueryResult.CreateFailQueryResult("Table " + tableName + " does not exists.");
                 }
             }
 

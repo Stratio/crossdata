@@ -39,7 +39,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
     within(2000 millis){
 
-      assertEquals(myCommandResult.getErrorMessage,"Not recognized object")
+      assertEquals(myCommandResult.getErrorMessage, "Message not recognized")
     }
   }
 

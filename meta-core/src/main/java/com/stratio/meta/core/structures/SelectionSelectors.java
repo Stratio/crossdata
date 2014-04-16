@@ -63,8 +63,7 @@ public class SelectionSelectors extends Selection {
     
     @Override
     public String toString() {
-        String sb = ParserUtils.stringList(selectors, ", ");
-        return sb;
+        return ParserUtils.stringList(selectors, ", ");
     }
     
 }

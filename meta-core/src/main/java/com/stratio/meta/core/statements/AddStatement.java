@@ -25,10 +25,20 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 
+/**
+ * Class that models an {@code ADD} statement from the META language.
+ */
 public class AddStatement extends MetaStatement {
 
+    /**
+     * The path to load the jar file.
+     */
     private String _path = null;
 
+    /**
+     * Class constructor.
+     * @param path The path of the jar file.
+     */
     public AddStatement(String path){
         this.command = true;
         _path = path;

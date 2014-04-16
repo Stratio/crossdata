@@ -32,9 +32,9 @@ public class TruncateStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void validate_notExists_tablename(){
+    public void validate_notExists_tableName(){
         String inputText = "TRUNCATE unknown_table;";
-        validateFail(inputText, "validate_notExists_tablename");
+        validateFail(inputText, "validate_notExists_tableName");
     }
 
     @Test

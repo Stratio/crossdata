@@ -659,7 +659,7 @@ public class SelectStatement extends MetaStatement {
         if(luceneIndex != null) {
 
             //TODO: Check in the validator that the query uses AND with the lucene mapped columns.
-            StringBuilder sb = new StringBuilder("{query:{type:\"boolean\",must:[");
+            StringBuilder sb = new StringBuilder("{filter:{type:\"boolean\",must:[");
 
             //Iterate throughout the relations of the where clause looking for MATCH.
             for (Relation relation : where) {
@@ -955,7 +955,7 @@ public class SelectStatement extends MetaStatement {
         } else {
             whereStmt = sel.where();
         }
-
+        //System.out.println("C* SELECT stmt: " + whereStmt);
         return whereStmt;
     }
     
@@ -1009,8 +1009,8 @@ public class SelectStatement extends MetaStatement {
 
             // ADD WHERE CLAUSES IF ANY
             if(whereInc){
-                ArrayList<Relation> firstWhere = new ArrayList<Relation>();
-                ArrayList<Relation> secondWhere = new ArrayList<Relation>();
+                ArrayList<Relation> firstWhere = new ArrayList<>();
+                ArrayList<Relation> secondWhere = new ArrayList<>();
                 for(Relation relation: where){
                     String id = relation.getIdentifiers().iterator().next();
                     if(id.contains(".")){

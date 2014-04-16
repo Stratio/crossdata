@@ -23,6 +23,7 @@ import java.io.Serializable;
 
 public class Cell implements Serializable {
 
+    private static final long serialVersionUID = 7100387802412023310L;
     private final Class<?> datatype;
     private final Object value;
 

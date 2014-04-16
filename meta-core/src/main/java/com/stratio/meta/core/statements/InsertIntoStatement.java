@@ -42,18 +42,58 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Class that models an {@code INSERT INTO} statement from the META language.
+ */
 public class InsertIntoStatement extends MetaStatement {
 
+    /**
+     * Constant to define an {@code INSERT INTO} that takes the input values from a
+     * {@code SELECT} subquery.
+     */
     public static final int TYPE_SELECT_CLAUSE = 1;
+
+    /**
+     * Constant to define an {@code INSERT INTO} that takes literal values as input.
+     */
     public static final int TYPE_VALUES_CLAUSE = 2;
-    
+
+    /**
+     * Class logger.
+     */
     private final Logger logger = Logger.getLogger(InsertIntoStatement.class);
-    
+
+    /**
+     * Whether the keyspace has been specified in the Select statement or it should be taken from the
+     * environment.
+     */
     private boolean keyspaceInc = false;
+
+    /**
+     * The keyspace specified in the select statement.
+     */
     private String keyspace;
+
+    /**
+     * The name of the target table.
+     */
     private String tableName;
+
+    /**
+     * The list of columns to be assigned.
+     */
     private List<String> ids;
+
+    /**
+     * A {@link com.stratio.meta.core.statements.SelectStatement} to retrieve data if the insert type
+     * is matches {@code TYPE_SELECT_CLAUSE}.
+     */
     private SelectStatement selectStatement;
+
+    /**
+     * A list of {@link com.stratio.meta.core.structures.ValueCell} with the literal values to be assigned
+     * if the insert type matches {@code TYPE_VALUES_CLAUSE}.
+     */
     private List<ValueCell> cellValues;
     private boolean ifNotExists;
     private boolean optsInc;
@@ -90,7 +130,7 @@ public class InsertIntoStatement extends MetaStatement {
                                boolean ifNotExists, 
                                List<Option> options) {
         this(tableName, ids, selectStatement, null, ifNotExists, true, options, 1);
-    }        
+    }
 
     public InsertIntoStatement(String tableName,
                                List<String> ids, 
@@ -113,129 +153,6 @@ public class InsertIntoStatement extends MetaStatement {
                                boolean ifNotExists) {
         this(tableName, ids, null, cellValues, ifNotExists, false, null, 2);
     }
-
-    public boolean isKeyspaceInc() {
-        return keyspaceInc;
-    }
-
-    public void setKeyspaceInc(boolean keyspaceInc) {
-        this.keyspaceInc = keyspaceInc;
-    }
-
-    public String getKeyspace() {
-        return keyspace;
-    }
-
-    public void setKeyspace(String keyspace) {
-        this.keyspace = keyspace;
-    }
-
-    public boolean isOptsInc() {
-        return optsInc;
-    }
-
-    public void setOptsInc(boolean optsInc) {
-        this.optsInc = optsInc;
-    }        
-    
-    public List<String> getIds() {
-        return ids;
-    }
-
-    public String getId(int index) {
-        return ids.get(index);
-    }
-    
-    public void setIds(List<String> ids) {
-        this.ids = ids;
-    }
-    
-    public void addId(String id) {
-        ids.add(id);
-    }
-    
-    public void removeId(String id){
-        ids.remove(id);
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(String tableName) {
-        if(tableName.contains(".")){
-            String[] ksAndTablename = tableName.split("\\.");
-            keyspace = ksAndTablename[0];
-            tableName = ksAndTablename[1];
-            keyspaceInc = true;
-        }
-        this.tableName = tableName;
-
-    }
-
-    public SelectStatement getSelectStatement() {
-        return selectStatement;
-    }
-
-    public void setSelectStatement(SelectStatement selectStatement) {
-        this.selectStatement = selectStatement;
-    }
-
-    public List<ValueCell> getCellValues() {
-        return cellValues;
-    }
-
-    public ValueCell getCellValue(int index) {
-        return cellValues.get(index);
-    }
-    
-    public void setCellValues(List<ValueCell> cellValues) {
-        this.cellValues = cellValues;
-    }
-
-    public void addCellValue(ValueCell valueCell) {
-        cellValues.add(valueCell);
-    }
-    
-    public void removeCellValue(ValueCell valueCell) {
-        cellValues.remove(valueCell);
-    }
-    
-    public boolean isIfNotExists() {
-        return ifNotExists;
-    }
-
-    public void setIfNotExists(boolean ifNotExists) {
-        this.ifNotExists = ifNotExists;
-    }
-
-    public List<Option> getOptions() {
-        return options;
-    }
-
-    public Option getOption(int n){
-        return options.get(n);
-    }
-    
-    public void setOptions(List<Option> options) {
-        this.options = options;
-    }
-    
-    public void addOption(Option option) {
-        options.add(option);
-    }
-    
-    public void remove(Option option) {
-        options.remove(option);
-    }
-
-    public int getTypeValues() {
-        return typeValues;
-    }
-
-    public void setTypeValues(int typeValues) {
-        this.typeValues = typeValues;
-    }        
 
     @Override
     public String toString() {

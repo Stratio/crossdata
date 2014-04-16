@@ -20,11 +20,7 @@ public class GreaterThan extends Function<Cells, Boolean> implements Serializabl
     public Boolean call(Cells cells) throws Exception {
         Object currentValue = cells.getCellByName(field).getCellValue();
         if (currentValue == null){
-            if(value == null){
-                return true;
-            } else {
-                return false;
-            }
+            return value == null;
         }
         return ((Comparable) currentValue).compareTo(value) == 1;
     }

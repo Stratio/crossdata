@@ -21,7 +21,7 @@ import com.stratio.meta.server.config.BeforeAndAfterCassandra
  * Created by aalcocer on 4/8/14.
  * To generate unit test of proxy actor
  */
-class BasicPlannerActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
+class BasicPlannerActorTest extends TestKit(ActorSystem("TestKitUsageExecutorActorSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
 with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
 {
 

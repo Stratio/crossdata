@@ -22,11 +22,7 @@ public class Equals extends Function<Cells, Boolean> implements Serializable{
     public Boolean call(Cells cells) throws Exception {
         Object currentValue = cells.getCellByName(field).getCellValue();
         if (currentValue == null){
-            if(value == null){
-                return true;
-            } else {
-                return false;
-            }
+            return value == null;
         }
         return currentValue.equals(value);
     }

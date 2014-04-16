@@ -28,12 +28,12 @@ import org.apache.log4j.Logger;
 public class Planner {
 
     private final Logger logger = Logger.getLogger(Planner.class);
-    private final Session session;
+    //private final Session session;
 
     private final MetadataManager metadata;
 
     public Planner(Session session){
-        this.session = session;
+        //this.session = session;
         metadata = new MetadataManager(session);
         metadata.loadMetadata();
     }

@@ -30,38 +30,38 @@ import com.stratio.meta.core.utils.Tree;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Class that models an {@code ALTER KEYSPACE} statement from the META language.
+ */
 public class AlterKeyspaceStatement extends MetaStatement {
-    
-    private String keyspaceName;
+
+    /**
+     * The name of the target keyspace.
+     */
+    private String keyspace;
+
+    /**
+     * The map of properties of the keyspace. The different options accepted by a keyspace
+     * are determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
+     */
     private HashMap<String, ValueProperty> properties;
 
-    public AlterKeyspaceStatement(String keyspaceName, Map<String, ValueProperty> properties) {
+    /**
+     * Class constructor.
+     * @param keyspace The name of the keyspace.
+     * @param properties The map of properties.
+     */
+    public AlterKeyspaceStatement(String keyspace, Map<String, ValueProperty> properties) {
         this.command = false;
-        this.keyspaceName = keyspaceName;
+        this.keyspace = keyspace;
         this.properties = new HashMap<>();
         this.properties.putAll(properties);
     }   
-    
-    public String getKeyspaceName() {
-        return keyspaceName;
-    }
-
-    public void setKeyspaceName(String keyspaceName) {
-        this.keyspaceName = keyspaceName;
-    }
-
-    public HashMap<String, ValueProperty> getProperties() {
-        return properties;
-    }
-
-    public void setProperties(HashMap<String, ValueProperty> properties) {
-        this.properties = properties;
-    }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("ALTER KEYSPACE ");
-        sb.append(keyspaceName).append(" WITH ");
+        sb.append(keyspace).append(" WITH ");
         sb.append(ParserUtils.stringMap(properties, " = ", " AND "));
         return sb.toString();
     }

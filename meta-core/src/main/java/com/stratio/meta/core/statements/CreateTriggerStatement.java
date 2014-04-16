@@ -25,53 +25,47 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 
+/**
+ * Class that models a {@code CREATE TRIGGER} statement from the META language.
+ */
 public class CreateTriggerStatement extends MetaStatement {
-    
-    private String trigger_name;
 
-    public CreateTriggerStatement(String trigger_name, String table_name, String class_name) {
+    /**
+     * The name of the trigger.
+     */
+    private String triggerName;
+
+    /**
+     * The name of the target table.
+     */
+    private String tableName;
+
+    /**
+     * The qualified class name that implements the trigger.
+     */
+    private String className;
+
+    /**
+     * Class constructor.
+     * @param triggerName The name of the trigger.
+     * @param tableName The name of the target table.
+     * @param className The name of the class.
+     */
+    public CreateTriggerStatement(String triggerName, String tableName, String className) {
         this.command = true;
-        this.trigger_name = trigger_name;
-        this.table_name = table_name;
-        this.class_name = class_name;
-    }
-
-    public String getTrigger_name() {
-        return trigger_name;
-    }
-
-    public void setTrigger_name(String trigger_name) {
-        this.trigger_name = trigger_name;
-    }
-
-    private String table_name;
-
-    public String getTable_name() {
-        return table_name;
-    }
-
-    public void setTable_name(String table_name) {
-        this.table_name = table_name;
-    }
-
-    private String class_name;
-
-    public String getClass_name() {
-        return class_name;
-    }
-
-    public void setClass_name(String class_name) {
-        this.class_name = class_name;
+        this.triggerName = triggerName;
+        this.tableName = tableName;
+        this.className = className;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Create trigger ");
-        sb.append(trigger_name);
+        sb.append(triggerName);
         sb.append(" on ");
-        sb.append(table_name);
+        sb.append(tableName);
         sb.append(" using ");
-        sb.append(class_name);
+        sb.append(className);
         return sb.toString();
     }
 
@@ -91,7 +85,6 @@ public class CreateTriggerStatement extends MetaStatement {
         return this.toString();
     }
 
-    
     @Override
     public Statement getDriverStatement() {
         return null;

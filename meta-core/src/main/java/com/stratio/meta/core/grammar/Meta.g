@@ -233,7 +233,7 @@ T_PATH: (LETTER | DIGIT | '_' | '.' | '-' | '/')+;
 
 describeStatement returns [DescribeStatement descs]:
     T_DESCRIBE ( T_KEYSPACE keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.KEYSPACE); $descs.setKeyspace($keyspace.text);}
-        | T_TABLE tablename=getTableID { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTablename(tablename);}
+        | T_TABLE tablename=getTableID { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
     )
 ;
 
@@ -250,7 +250,7 @@ deleteStatement returns [DeleteStatement ds]
         T_END_PARENTHESIS
         )?
 	T_FROM
-	tablename=getTableID {$ds.setTablename(tablename);}
+	tableName=getTableID {$ds.setTableName(tableName);}
 	T_WHERE
 	rel1=getRelation {$ds.addRelation(rel1);} (T_AND relN=getRelation {$ds.addRelation(relN);})*
 	;

@@ -25,40 +25,38 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 
+/**
+ * Class that models a {@code DROP TRIGGER} statement from the META language.
+ */
 public class DropTriggerStatement extends MetaStatement{
 
-    private String ident;
+    /**
+     * The name of the trigger.
+     */
+    private String triggerName;
 
-    public DropTriggerStatement(String ident, String ident2) {
+    /**
+     * The name of the table.
+     */
+    private String tableName;
+
+    /**
+     * Class constructor.
+     * @param triggerName
+     * @param tableName
+     */
+    public DropTriggerStatement(String triggerName, String tableName) {
         this.command = true;
-        this.ident = ident;
-        this.ident2 = ident2;
+        this.triggerName = triggerName;
+        this.tableName = tableName;
     }
-    
-    public String getIdent() {
-        return ident;
-    }
-
-    public void setIdent(String ident) {
-        this.ident = ident;
-    }
-
-    private String ident2;
-
-    public String getIdent2() {
-        return ident2;
-    }
-
-    public void setIdent2(String ident2) {
-        this.ident2 = ident2;
-    }   
 
     @Override
     public String toString() {
     StringBuilder sb = new StringBuilder("Drop trigger ");
-        sb.append(ident);
+        sb.append(triggerName);
         sb.append(" on ");
-        sb.append(ident2);
+        sb.append(tableName);
         return sb.toString();
     }
 

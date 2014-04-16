@@ -43,9 +43,9 @@ public class TruncateStatement extends MetaStatement {
         this.command = false;
         this.ident = ident;
         if(ident.contains(".")){
-            String[] ksAndTablename = ident.split("\\.");
-            keyspace = ksAndTablename[0];
-            this.ident = ksAndTablename[1];
+            String[] ksAndTableName = ident.split("\\.");
+            keyspace = ksAndTableName[0];
+            this.ident = ksAndTableName[1];
             keyspaceInc = true;
         }
     }

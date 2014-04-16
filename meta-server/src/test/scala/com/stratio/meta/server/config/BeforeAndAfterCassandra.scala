@@ -171,7 +171,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
     }
 
     def afterCassandraFinish(): Unit = {
-      _session.close
+      _session.close()
     }
 
 }

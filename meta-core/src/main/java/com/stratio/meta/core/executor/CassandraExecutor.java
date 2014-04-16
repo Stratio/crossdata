@@ -47,7 +47,7 @@ public class CassandraExecutor {
         return result;
     }
 
-    public static Result execute(String query, Session session) {
+    protected static Result execute(String query, Session session) {
         try {
             ResultSet resultSet;
             resultSet = session.execute(query);
@@ -59,7 +59,7 @@ public class CassandraExecutor {
         }
     }
 
-    public static Result execute(MetaStatement stmt, Session session) {
+    protected static Result execute(MetaStatement stmt, Session session) {
         Statement driverStmt = null;
         try {
             driverStmt = stmt.getDriverStatement();
@@ -69,7 +69,7 @@ public class CassandraExecutor {
             } else {
                 resultSet = session.execute(stmt.translateToCQL());
             }
-            System.out.println("resultSet="+resultSet.toString());
+            //System.out.println("resultSet="+resultSet.toString());
             if (stmt instanceof UseStatement) {
                 UseStatement useStatement = (UseStatement) stmt;
                 return QueryResult.CreateSuccessQueryResult(CoreUtils.transformToMetaResultSet(resultSet), useStatement.getKeyspaceName());

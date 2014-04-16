@@ -25,6 +25,7 @@ import java.util.Map;
 
 public class Row implements Serializable {
 
+    private static final long serialVersionUID = 2053597366590152927L;
     private Map<String, Cell> cells;
 
     public Row() {

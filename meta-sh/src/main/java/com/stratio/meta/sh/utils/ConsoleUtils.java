@@ -110,7 +110,7 @@ public class ConsoleUtils {
     private static HashMap<String, Integer> calculateColWidths(ResultSet resultSet) {
         HashMap colWidths = new HashMap<String, Integer>();
         // Get column names
-        Row firstRow = (Row) resultSet.iterator().next();
+        Row firstRow = resultSet.iterator().next();
         for(String key: firstRow.getCells().keySet()){
             colWidths.put(key, key.length());
         }

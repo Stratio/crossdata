@@ -34,7 +34,7 @@ if [ "$(ccm status | cut -f2 -d" " | tail -1)" = "UP" ] || [ "$(ccm status | cut
 fi
 
 echo " Checking ccm installation ... "
-unset $CASSANDRA_HOME
+unset ${CASSANDRA_HOME}
 
 if [ -z "$CCM_DIR" ]; then
 	echo " Error. CCM is not installed.  Install CCM or give root privileges to ccm.sh and run it. Script will do it for you"

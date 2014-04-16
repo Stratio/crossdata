@@ -39,71 +39,74 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Delete a set of rows. This class recognizes the following syntax:
+ * Class that models a {@code SELECT} statement from the META language. This class recognizes the following syntax:
  * <p>
  * DELETE ( {@literal <column>}, ( ',' {@literal <column>} )*)? FROM {@literal <tablename>}
  * WHERE {@literal <where_clause>};
  */
 public class DeleteStatement extends MetaStatement {
-	
+
+    /**
+     * The list of columns to be removed.
+     */
     private ArrayList<String> _targetColumn = null;
+
+    /**
+     * Whether the keyspace has been specified in the Select statement or it should be taken from the
+     * environment.
+     */
     private boolean keyspaceInc = false;
+
+    /**
+     * The keyspace specified in the select statement.
+     */
     private String keyspace;
-    private String _tablename = null;
+
+    /**
+     * The name of the targe table.
+     */
+    private String _tableName = null;
+
+    /**
+     * The list of {@link com.stratio.meta.core.structures.Relation} found in the WHERE clause.
+     */
     private List<Relation> _whereClauses;
 
+    /**
+     * Class constructor.
+     */
     public DeleteStatement(){
         this.command = false;
         _targetColumn = new ArrayList<>();
         _whereClauses = new ArrayList<>();
     }
 
-    public ArrayList<String> getTargetColumn() {
-        return _targetColumn;
-    }
-
-    public void setTargetColumn(ArrayList<String> _targetColumn) {
-        this._targetColumn = _targetColumn;
-    }
-
-    public boolean isKeyspaceInc() {
-        return keyspaceInc;
-    }
-
-    public void setKeyspaceInc(boolean keyspaceInc) {
-        this.keyspaceInc = keyspaceInc;
-    }
-
-    public String getKeyspace() {
-        return keyspace;
-    }
-
-    public void setKeyspace(String keyspace) {
-        this.keyspace = keyspace;
-    }
-
-    public List<Relation> getWhereClauses() {
-        return _whereClauses;
-    }
-
-    public void setWhereClauses(List<Relation> _whereClauses) {
-        this._whereClauses = _whereClauses;
-    }        
-
+    /**
+     * Add a new column to be deleted.
+     * @param column The column name.
+     */
     public void addColumn(String column){
             _targetColumn.add(column);
     }
 
-    public void setTablename(String tablename){
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+    /**
+     * Set the name of the table.
+     * @param tableName The name of the table.
+     */
+    public void setTableName(String tableName){
+        if(tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            tableName = ksAndTableName[1];
             keyspaceInc = true;
         }
-        _tablename = tablename;
+        _tableName = tableName;
     }
 
+    /**
+     * Add a new {@link com.stratio.meta.core.structures.Relation} found in a WHERE clause.
+     * @param relation The relation.
+     */
     public void addRelation(Relation relation){
             _whereClauses.add(relation);
     }
@@ -118,7 +121,7 @@ public class DeleteStatement extends MetaStatement {
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         } 
-        sb.append(_tablename);
+        sb.append(_tableName);
         if(_whereClauses.size() > 0){
         	sb.append(" WHERE ");
         	sb.append(ParserUtils.stringList(_whereClauses, " AND "));
@@ -138,7 +141,7 @@ public class DeleteStatement extends MetaStatement {
         TableMetadata tableMetadata = null;
 
         if(!result.hasError()){
-            tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tablename);
+            tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tableName);
             result = validateSelectionColumns(tableMetadata);
         }
         if(!result.hasError()){
@@ -162,7 +165,6 @@ public class DeleteStatement extends MetaStatement {
                 //Check comparison, =, >, <, etc.
                 RelationCompare rc = RelationCompare.class.cast(relation);
                 String column = rc.getIdentifiers().get(0);
-                //System.out.println("column: " + column);
                 if (tableMetadata.getColumn(column) == null) {
                     result= QueryResult.CreateFailQueryResult("Column " + column + " does not exists in table " + tableMetadata.getName());
                 }
@@ -204,7 +206,7 @@ public class DeleteStatement extends MetaStatement {
                         }
                     }
                 }else {
-                    result= QueryResult.CreateFailQueryResult("Column " + column + " not found in table " + _tablename);
+                    result= QueryResult.CreateFailQueryResult("Column " + column + " not found in table " + _tableName);
                 }
 
             }else if(Relation.TYPE_IN == relation.getType()){
@@ -269,9 +271,9 @@ public class DeleteStatement extends MetaStatement {
             if(ksMetadata == null){
                 result= QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
             }else {
-                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tablename);
+                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tableName);
                 if (tableMetadata == null) {
-                    result= QueryResult.CreateFailQueryResult("Table " + _tablename + " does not exists.");
+                    result= QueryResult.CreateFailQueryResult("Table " + _tableName + " does not exists.");
                 }
             }
 
@@ -289,12 +291,7 @@ public class DeleteStatement extends MetaStatement {
     public String translateToCQL() {
         return this.toString();
     }
-    
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
-    
+
     @Override
     public Statement getDriverStatement() {
         return null;

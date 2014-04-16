@@ -23,6 +23,8 @@ import java.io.Serializable;
 import java.util.Iterator;
 
 public class DeepResultSet extends ResultSet implements Serializable {
+    private static final long serialVersionUID = -666878711673568592L;
+
     @Override
     public Iterator iterator() {
         return null;

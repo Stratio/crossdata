@@ -23,11 +23,7 @@ public class In extends Function<Cells, Boolean> implements Serializable{
     public Boolean call(Cells cells) throws Exception {
         Object currentValue = cells.getCellByName(field).getCellValue();
         if (currentValue == null){
-            if(inIDs == null){
-                return true;
-            } else {
-                return false;
-            }
+            return inIDs == null;
         }
         return inIDs.contains(String.valueOf(currentValue));
     }

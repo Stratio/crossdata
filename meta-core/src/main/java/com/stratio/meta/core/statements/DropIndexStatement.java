@@ -33,20 +33,54 @@ import com.stratio.meta.core.utils.Tree;
 
 import java.util.Iterator;
 
+/**
+ * Class that models a {@code DROP INDEX} statement from the META language.
+ */
 public class DropIndexStatement extends MetaStatement {
 
+    /**
+     * Whether the index should be dropped only if exists.
+     */
     private boolean _dropIfExists = false;
+
+    /**
+     * Whether the index will be dropped.
+     */
     private boolean _dropIndex = false;
+
+    /**
+     * The name of the index.
+     */
     private String _name = null;
+
+    /**
+     * The keyspace specified in the drop index statement.
+     */
     private String _keyspace = null;
+
+    /**
+     * Whether the keyspace has been specified in the Drop index statement or it should be taken from the
+     * environment.
+     */
     private boolean _keyspaceInc = false;
+
+    /**
+     * Target column associated with the index.
+     */
     private ColumnMetadata _targetColumn = null;
 
-
+    /**
+     * Class constructor.
+     */
     public DropIndexStatement(){
         this.command = false;
     }
-    
+
+    /**
+     * Class constructor.
+     * @param name The name of the index. The name may contain
+     *             the name of the keyspace where the index is active.
+     */
     public DropIndexStatement(String name){
         this();
         _name = name;
@@ -57,13 +91,20 @@ public class DropIndexStatement extends MetaStatement {
             _keyspaceInc = true;
         }
     }
-    
+
+    /**
+     * Set the option to drop the index only if exists.
+     */
     public void setDropIfExists(){
             _dropIfExists = true;
     }
 
+    /**
+     * Set the index name.
+     * @param name The name of the index. The name may contain
+     *             the name of the keyspace where the index is active.
+     */
     public void setName(String name){
-        System.out.println("name: " + name);
             _name = name;
         if(name.contains(".")){
             String[] ksAndName = name.split("\\.");
@@ -90,7 +131,7 @@ public class DropIndexStatement extends MetaStatement {
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
 
-        Result result = QueryResult.CreateSuccessQueryResult();
+        Result result = null;
         //Get the effective keyspace based on the user specification during the create
         //sentence, or taking the keyspace in use in the user session.
         String effectiveKeyspace = targetKeyspace;

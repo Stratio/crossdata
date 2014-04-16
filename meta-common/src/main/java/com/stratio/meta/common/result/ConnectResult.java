@@ -21,7 +21,8 @@ package com.stratio.meta.common.result;
 
 
 public class ConnectResult extends Result {
-    
+
+    private static final long serialVersionUID = -2632581413648530295L;
     private long sessionId;
 
     private ConnectResult(long sessionId,boolean error, String errorMessage, boolean ksChanged, String currentKeyspace){

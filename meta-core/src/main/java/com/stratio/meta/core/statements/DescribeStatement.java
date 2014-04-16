@@ -33,50 +33,78 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
+/**
+ * Class that models a {@code DESCRIBE} statement from the META language.
+ */
 public class DescribeStatement extends MetaStatement {
 
+    /**
+     * Type of description required: {@code KEYSPACE} or {@code TABLE}.
+     */
     private DescribeType type;
+
+    /**
+     * The target keyspace.
+     */
     private String keyspace;
+
+    /**
+     * The target table.
+     */
     private String tablename;
 
+    /**
+     * Class constructor.
+     * @param type Type of element to be described.
+     */
     public DescribeStatement(DescribeType type) {
         this.type = type;
         this.command = true;
     }
-    
-    public DescribeStatement(DescribeType type, String keyspace, String tablename) {
-        this(type);
-        this.keyspace = keyspace;
-        this.tablename = tablename;
-    }        
-    
+
+    /**
+     * Get the type of element to be described.
+     * @return A {@link com.stratio.meta.core.structures.DescribeType}.
+     */
     public DescribeType getType() {
         return type;
     }
 
-    public void setType(DescribeType type) {
-        this.type = type;
-    }        
-
+    /**
+     * Get the keyspace to be described.
+     * @return The name or null if not set.
+     */
     public String getKeyspace() {
         return keyspace;
     }
 
+    /**
+     * Set the keyspace to be described.
+     * @param keyspace The name.
+     */
     public void setKeyspace(String keyspace) {
         this.keyspace = keyspace;
     }
 
-    public String getTablename() {
+    /**
+     * Get the table to be described.
+     * @return The name or null if not set.
+     */
+    public String getTableName() {
         return tablename;
     }
 
-    public void setTablename(String tablename) {
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+    /**
+     * Set the name of the table to be described.
+     * @param tableName The name.
+     */
+    public void setTableName(String tableName) {
+        if(tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            tableName = ksAndTableName[1];
         }
-        this.tablename = tablename;
+        this.tablename = tableName;
     }   
     
     @Override
@@ -126,27 +154,32 @@ public class DescribeStatement extends MetaStatement {
         steps.setNode(new MetaStep(MetaPath.COMMAND, this));
         return steps;
     }
-    
+
+    /**
+     * Execute the describe command.
+     * @param session The {@link com.datastax.driver.core.Session} used to retrieve the medatada.
+     * @return A {@link com.stratio.meta.common.result.Result}.
+     */
     public Result execute(Session session){
         MetadataManager mm = new MetadataManager(session);
         mm.loadMetadata();
-        String result;
+        Result result = null;
         if(type == DescribeType.KEYSPACE){
             KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(keyspace);
             if(ksInfo == null){
-               throw new RuntimeException("KEYSPACE "+keyspace+" was not found");
+                result = CommandResult.CreateFailCommanResult("KEYSPACE "+keyspace+" was not found");
             } else {
-                result =  ksInfo.exportAsString();
+                result = CommandResult.CreateSuccessCommandResult(ksInfo.exportAsString());
             }
         } else {
             TableMetadata tableInfo = mm.getTableMetadata(keyspace, tablename);
             if(tableInfo == null){
-                throw new RuntimeException("TABLE "+tablename+" was not found");
+                result = CommandResult.CreateFailCommanResult("TABLE "+tablename+" was not found");
             } else {
-                result = tableInfo.exportAsString();
+                result = CommandResult.CreateSuccessCommandResult(tableInfo.exportAsString());
             }
         }        
-        return CommandResult.CreateSuccessCommandResult(result);
+        return result;
     }
     
 }

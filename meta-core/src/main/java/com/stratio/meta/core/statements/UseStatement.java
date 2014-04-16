@@ -28,23 +28,33 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
+/**
+ * Class that models a {@code USE} statement from the META language.
+ */
 public class UseStatement extends MetaStatement {
 
-    private String keyspaceName;
+    /**
+     * The name of the keyspace to be used.
+     */
+    private final String keyspaceName;
 
+    /**
+     * Class constructor.
+     * @param keyspaceName The name of the target keyspace.
+     */
     public UseStatement(String keyspaceName) {
         this.keyspaceName = keyspaceName;
         this.command = false;
-    }   
-    
+    }
+
+    /**
+     * Get the name of the keyspace to be used.
+     * @return The name.
+     */
     public String getKeyspaceName() {
         return keyspaceName;
     }
 
-    public void setKeyspaceName(String keyspaceName) {
-        this.keyspaceName = keyspaceName;
-    }
-    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("USE ");

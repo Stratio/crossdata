@@ -68,7 +68,8 @@ public class ErrorsHelper {
     
     public String toString(String query, MetaStatement stmt){        
         StringBuilder sb = new StringBuilder("\033[31mParser exception: \033[0m");
-        for(AntlrError ae: antlrErrors){
+        if(antlrErrors.size()>0){
+            AntlrError ae = antlrErrors.get(0);
             sb.append(System.getProperty("line.separator"));
             //sb.append(ae.toString()).append(System.getProperty("line.separator"));
             sb.append(ae.toStringWithTokenTranslation()).append(System.getProperty("line.separator"));
@@ -77,7 +78,6 @@ public class ErrorsHelper {
                 sb.append(System.getProperty("line.separator")).append("\t");
                 sb.append(ParserUtils.getSuggestion(query, ae));
             }
-            break;
         }
         return sb.toString(); 
     }

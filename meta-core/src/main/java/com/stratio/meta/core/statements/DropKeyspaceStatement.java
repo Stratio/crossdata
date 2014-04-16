@@ -29,32 +29,31 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
+/**
+ * Class that models a {@code DROP KEYSPACE} statement from the META language.
+ */
 public class DropKeyspaceStatement extends MetaStatement {
-    
-    private String keyspaceName;
-    private boolean ifExists;  
 
-    public DropKeyspaceStatement(String keyspaceName, boolean ifExists) {
+    /**
+     * Target keyspace.
+     */
+    private String keyspace;
+
+    /**
+     * Whether the keyspace should be removed only if exists.
+     */
+    private boolean ifExists;
+
+    /**
+     * Class constructor.
+     * @param keyspace The name of the keyspace.
+     * @param ifExists Whether it should be removed only if exists.
+     */
+    public DropKeyspaceStatement(String keyspace, boolean ifExists) {
         this.command = false;
-        this.keyspaceName = keyspaceName;
+        this.keyspace = keyspace;
         this.ifExists = ifExists;
     }    
-    
-    public String getKeyspaceName() {
-        return keyspaceName;
-    }
-
-    public void setKeyspaceName(String keyspaceName) {
-        this.keyspaceName = keyspaceName;
-    }
-
-    public boolean isIfExists() {
-        return ifExists;
-    }
-
-    public void setIfExists(boolean ifExists) {
-        this.ifExists = ifExists;
-    }
 
     @Override
     public String toString() {
@@ -62,7 +61,7 @@ public class DropKeyspaceStatement extends MetaStatement {
         if(ifExists){
            sb.append("if exists ");
         } 
-        sb.append(keyspaceName);                 
+        sb.append(keyspace);
         return sb.toString();
     }
 
@@ -70,9 +69,9 @@ public class DropKeyspaceStatement extends MetaStatement {
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
         Result result = QueryResult.CreateSuccessQueryResult();
-        KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspaceName);
+        KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspace);
         if(ksMetadata == null && !ifExists){
-            result= QueryResult.CreateFailQueryResult("Keyspace " + keyspaceName + " does not exists.");
+            result= QueryResult.CreateFailQueryResult("Keyspace " + keyspace + " does not exists.");
         }
         return result;
     }
@@ -86,13 +85,10 @@ public class DropKeyspaceStatement extends MetaStatement {
     public String translateToCQL() {
         return this.toString();
     }
-    
 
-    
     @Override
     public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
+        return null;
     }
     
     @Override

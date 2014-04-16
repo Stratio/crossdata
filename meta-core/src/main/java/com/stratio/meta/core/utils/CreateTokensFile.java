@@ -68,8 +68,6 @@ public class CreateTokensFile {
             bw.flush();
             bw.close();            
             logger.info(outFile.getAbsolutePath()+" created");
-        } catch (FileNotFoundException ex) {
-            logger.error(ex.getMessage());
         } catch (IOException ex) {
             logger.error(ex.getMessage());
         }

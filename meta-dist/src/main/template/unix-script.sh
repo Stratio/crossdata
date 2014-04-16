@@ -76,7 +76,7 @@ fi
 CLASSPATH="$CLASSPATH:$META_CONF/:$META_LIB/*:"
 
 
-exec "$JAVACMD" $JAVA_OPTS @EXTRA_JVM_ARGUMENTS@ \
+exec "$JAVACMD" ${JAVA_OPTS} @EXTRA_JVM_ARGUMENTS@ \
   -classpath "$CLASSPATH" \
   -Dapp.name="@APP_NAME@" \
   -Dapp.pid="$$" \
