@@ -26,11 +26,25 @@ import java.io.File
 import org.apache.log4j.Logger
 
 object DriverConfig{
+  /**
+   * Reference configuration name
+   */
   val BASIC_DRIVER_CONFIG= "driver-reference.conf"
-
+  /**
+   * Root config name
+   */
   val PARENT_CONFIG_NAME= "meta-driver"
+  /**
+   * Key to retry times
+   */
   val DRIVER_RETRY_TIMES_KEY = "config.retry.times"
+  /**
+   * Key to duration limit
+   */
   val DRIVER_RETRY_SECONDS_KEY="config.retry.duration"
+  /**
+   *
+   */
   val DRIVER_CONFIG_FILE="external.config.filename"
   val DRIVER_CONFIG_RESOURCE = "external.config.resource"
 }
