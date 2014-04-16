@@ -24,7 +24,6 @@ import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.IDeepJobConfig;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.deep.entity.Cells;
-import com.stratio.deep.rdd.CassandraJavaRDD;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.ResultSet;
@@ -50,46 +49,17 @@ public class Bridge {
     /**
      * Class logger.
      */
-    private static final Logger logger = Logger.getLogger(Bridge.class);
+    private final Logger logger = Logger.getLogger(Bridge.class);
 
-    public static final DeepSparkContext deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
+    private DeepSparkContext deepContext;
+    private Session session;
 
-    //TODO: TO be removed
-    public static int executeCount(String keyspaceName, String tableName, Session cassandraSession){
-
-        System.out.println("TRACE: Executing deep for: "+keyspaceName+"."+tableName);
-
-        // Configuration and initialization
-        IDeepJobConfig config = DeepJobConfigFactory.create().session(cassandraSession)
-                .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
-                .keyspace(keyspaceName).table(tableName).initialize();
-
-        System.out.println("TRACE: table = " + cassandraSession.getCluster().getMetadata().getKeyspace(keyspaceName).getTable(tableName).asCQLQuery());
-
-        System.out.println("TRACE: Cluster in Deep: " + config.getSession().getCluster().getClusterName());
-        System.out.println("TRACE: Keyspace in Deep: " + config.getKeyspace());
-        System.out.println("TRACE: Table in Deep: "+config.getTable());
-        System.out.println("TRACE: Session in Deep: " + config.getSession().toString());
-        System.out.println("TRACE: columnDefinitions in Deep: " + config.columnDefinitions().toString());
-        System.out.println("TRACE: Number of columns: "+config.columnDefinitions().size());
-        // Creating the RDD
-        CassandraJavaRDD rdd = deepContext.cassandraJavaRDD(config);
-
-        System.out.println("TRACE: CassandraJavaRDD created");
-
-        Long rddCount = rdd.count();
-
-        System.out.println("TRACE: Rows in the RDD (JavaClass): " + rddCount.toString());
-
-        //deepContext.stop();
-
-        System.out.println("TRACE: Deep context stopped");
-
-        return rddCount.intValue();
-
+    public Bridge(Session session) {
+        deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
+        this.session = session;
     }
 
-    public static ResultSet execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot, Session cassandraSession){
+    public ResultSet execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot){
 
         System.out.println("TRACE: Executing deep for: "+stmt.toString());
 
@@ -124,11 +94,11 @@ public class Bridge {
             // Configuration and initialization
             IDeepJobConfig config = null;
             if(allCols){
-                config = DeepJobConfigFactory.create()
+                config = DeepJobConfigFactory.create().session(session)
                         .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
                         .keyspace(ss.getKeyspace()).table(ss.getTableName()).initialize();
             } else {
-                config = DeepJobConfigFactory.create()
+                config = DeepJobConfigFactory.create().session(session)
                         .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
                         .keyspace(ss.getKeyspace()).table(ss.getTableName())
                         .inputColumns(columnsSet).initialize();
@@ -180,7 +150,7 @@ public class Bridge {
 
     }
 
-    private static ResultSet returnResult(List<Cells> cells) {
+    private ResultSet returnResult(List<Cells> cells) {
         CassandraResultSet rs = new CassandraResultSet();
         for(Cells deepRow: cells){
             Row metaRow = new Row();
@@ -194,7 +164,7 @@ public class Bridge {
         return rs;
     }
 
-    private static ResultSet returnResult(JavaRDD rdd, boolean isRoot){
+    private ResultSet returnResult(JavaRDD rdd, boolean isRoot){
         if(isRoot){
             return returnResult(rdd.dropTake(0, 10000));
         } else {
@@ -204,11 +174,11 @@ public class Bridge {
         }
     }
 
-    public static void stopContext(){
+    public void stopContext(){
         deepContext.stop();
     }
 
-    private static JavaRDD doWhere(JavaRDD rdd, Relation rel){
+    private JavaRDD doWhere(JavaRDD rdd, Relation rel){
         String operator = rel.getOperator();
         JavaRDD result = null;
         String cn = rel.getIdentifiers().get(0);  //Take first. Common is 1 identifier and 1 termValue
