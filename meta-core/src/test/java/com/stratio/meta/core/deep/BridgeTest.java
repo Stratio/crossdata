@@ -21,9 +21,13 @@ package com.stratio.meta.core.deep;
 
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.executor.Executor;
-import com.stratio.meta.core.utils.MetaQuery;
+import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.*;
+import com.stratio.meta.core.utils.*;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.testng.Assert.*;
 
@@ -52,59 +56,147 @@ public class BridgeTest extends BasicCoreCassandraTest {
         assertTrue(result.hasError(), "Deep execution failed - " + methodName);
     }
 
-    // CORRECT TESTS
+    // TESTS FOR CORRECT PLANS
 
-    @Test
+    //@Test
     public void select_columns_inner_join(){
         MetaQuery metaQuery = new MetaQuery("SELECT users.gender, users_info.info, users.age " +
-                "FROM demo.users INNER JOIN demo.users_info ON users.name = users_info.link_name;");
+                "FROM demo.users INNER JOIN demo.users_info ON users.name=users_info.link_name;");
+
+        // ADD MAIN STATEMENT
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users_info.info")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+        Map<String, String> fields = new HashMap<String, String>();
+        fields.put("users.name", "users_info.link_name");
+        InnerJoin join = new InnerJoin("demo.users_info", fields);
+        SelectStatement ss = new SelectStatement(
+                selectionClause, // SelectionClause selectionClause
+                "demo.users", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                true, join, // boolean joinInc, InnerJoin join
+                false, null, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                true, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+        metaQuery.setStatement(ss);
+        System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
+        System.out.println("DEEP TEST (Stmnt): "+metaQuery.getStatement().toString());
+
+        // FIRST SELECT
+        selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
+        selectionClause = new SelectionList(selectionSelectors);
+        SelectStatement firstSelect = new SelectStatement(
+                selectionClause, // SelectionClause selectionClause
+                "demo.users", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                false, null, // boolean joinInc, InnerJoin join
+                false, null, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                false, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+
+        // SECOND SELECT
+        selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("link_name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("info")));
+        selectionClause = new SelectionList(selectionSelectors);
+        SelectStatement secondSelect = new SelectStatement(
+                selectionClause, // SelectionClause selectionClause
+                "demo.users_info", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                false, null, // boolean joinInc, InnerJoin join
+                false, null, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                false, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+
+        // INNER JOIN
+        fields = new HashMap<String, String>();
+        fields.put("users.name", "users_info.link_name");
+        join = new InnerJoin("", fields);
+        SelectStatement joinSelect = new SelectStatement(
+                null, // SelectionClause selectionClause
+                "", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                true, join, // boolean joinInc, InnerJoin join
+                false, null, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                false, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+
+        // CREATE ROOT
+        Tree tree = new Tree(new MetaStep(MetaPath.DEEP, joinSelect));
+
+        // ADD CHILD
+        tree.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
+
+        // ADD CHILD
+        tree.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
+
+        metaQuery.setPlan(tree);
+        metaQuery.setStatus(QueryStatus.PLANNED);
         validateOk(metaQuery, "select_columns_inner_join");
     }
 
-    @Test
+    //@Test
     public void select_asterisk_inner_join(){
         MetaQuery metaQuery = new MetaQuery("SELECT * FROM demo.users INNER JOIN demo.users_info " +
                 "ON users.name = users_info.link_name;");
         validateOk(metaQuery, "select_asterisk_inner_join");
     }
 
-    @Test
+    //@Test
     public void select_columns_inner_join_and_where(){
         MetaQuery metaQuery = new MetaQuery("SELECT users.gender, types.boolean_column, users.age " +
                 "FROM demo.users INNER JOIN demo.types ON users.name = types.varchar_column WHERE types.int_column > 104;");
         validateOk(metaQuery, "select_columns_inner_join_and_where");
     }
 
-    @Test
+    //@Test
     public void select_asterisk_inner_join_and_where(){
         MetaQuery metaQuery = new MetaQuery("SELECT * FROM demo.users INNER JOIN demo.types ON users.name = types.varchar_column" +
                 " WHERE users.email = 'name_4@domain.com';");
         validateOk(metaQuery, "select_columns_inner_join_and_where");
     }
 
-    // WRONG TESTS
-    @Test
+    // TESTS FOR WRONG PLANS
+
+    //@Test
     public void insert_into_with_deep(){
         MetaQuery metaQuery = new MetaQuery("INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES " +
                 "('name_10', 'male', 'name_10@domain.com', 20, false, '');");
         validateOk(metaQuery, "insert_into_with_deep");
     }
 
-    @Test
+    //@Test
     public void select_columns_inner_join_with_wrong_selected_column(){
         MetaQuery metaQuery = new MetaQuery("SELECT users.gender, types.info, users.age " +
                 "FROM demo.users INNER JOIN demo.users_info ON users.name = users_info.link_name;");
         validateOk(metaQuery, "select_columns_inner_join_with_wrong_selected_column");
     }
 
-    @Test
+    //@Test
     public void select_columns_inner_join_with_wrong_table_in_map(){
         MetaQuery metaQuery = new MetaQuery("SELECT users.gender, users_info.info, users.age " +
                 "FROM demo.users INNER JOIN demo.users_info ON users.name = types.varchar_column;");
         validateOk(metaQuery, "select_columns_inner_join_with_wrong_columns");
     }
 
-    @Test
+    //@Test
     public void select_columns_inner_join_with_nonexistent_column(){
         MetaQuery metaQuery = new MetaQuery("SELECT users.gender, users_info.info, users.comment " +
                 "FROM demo.users INNER JOIN demo.users_info ON users.name = types.varchar_column;");

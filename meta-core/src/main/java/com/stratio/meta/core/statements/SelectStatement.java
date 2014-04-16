@@ -45,6 +45,8 @@ import java.util.regex.Pattern;
  */
 public class SelectStatement extends MetaStatement {
 
+    private final static int MAX_LIMIT = 10000;
+
     /**
      * The {@link com.stratio.meta.core.structures.SelectionClause} of the Select statement.
      */
@@ -205,7 +207,11 @@ public class SelectStatement extends MetaStatement {
         this.groupInc = groupInc;
         this.group = group;
         this.limitInc = limitInc;
-        this.limit = limit;
+        if(limit <= MAX_LIMIT){
+            this.limit = limit;
+        } else {
+            this.limit = MAX_LIMIT;
+        }
         this.disableAnalytics = disableAnalytics;
     }
 
@@ -215,7 +221,7 @@ public class SelectStatement extends MetaStatement {
      * @param tableName The name of the target table.
      */
     public SelectStatement(SelectionClause selectionClause, String tableName) {
-        this(selectionClause, tableName, false, null, false, null, false, null, false, null, false, null, false, 0, false);
+        this(selectionClause, tableName, false, null, false, null, false, null, false, null, false, null, false, MAX_LIMIT, false);
     }
 
     /**
@@ -223,7 +229,7 @@ public class SelectStatement extends MetaStatement {
      * @param tableName The name of the target table.
      */
     public SelectStatement(String tableName) {
-        this(null, tableName, false, null, false, null, false, null, false, null, false, null, false, 0, false);
+        this(null, tableName, false, null, false, null, false, null, false, null, false, null, false, MAX_LIMIT, false);
     }
 
     /**
@@ -342,7 +348,11 @@ public class SelectStatement extends MetaStatement {
      */
     public void setLimit(int limit) {
         this.limitInc = true;
-        this.limit = limit;
+        if (limit <= MAX_LIMIT){
+            this.limit = limit;
+        } else {
+            this.limit = MAX_LIMIT;
+        }
     }
 
     /**
