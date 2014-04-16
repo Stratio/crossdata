@@ -35,16 +35,31 @@ class BasicDriver extends DriverConfig{
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts),"remote-client")
   lazy val proxyActor= system.actorOf(ProxyActor.props(clusterClientActor,actorName), "proxy-actor")
 
+  /**
+   * Release connection to MetaServer,
+   * @param user Login to the user (Audit only)
+   * @return ConnectResult
+   */
   def connect(user:String): Result = {
     println(contactPoints)
     retryPolitics.askRetry(proxyActor,new Connect(user),1 second)
   }
 
-
+  /**
+    * Launch query in Meta Server
+    * @param user Login the user (Audit only)
+    * @param targetKs Target keyspace
+    * @param query Launched query
+    * @return QueryResult
+    */
   def executeQuery(user:String, targetKs: String, query: String): Result = {
     retryPolitics.askRetry(proxyActor,new Query(targetKs,query,user))
   }
 
+
+  /**
+   * Finish connection and actor system
+   */
   def close() {
     system.shutdown()
   }
