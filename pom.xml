@@ -35,7 +35,7 @@
         <module>meta-dist</module>
     </modules>
     <properties>
-        <akka.version>2.3.2</akka.version>
+        <akka.version>2.2.4</akka.version>
         <cassandra.driver>2.0.0</cassandra.driver>
         <meta.version>0.0.4-SNAPSHOT</meta.version>
         <deep.version>0.1.4-SNAPSHOT</deep.version>

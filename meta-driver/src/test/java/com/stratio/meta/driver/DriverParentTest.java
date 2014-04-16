@@ -29,15 +29,20 @@ public class DriverParentTest extends ParentCassandraTest {
     @BeforeClass
     public void init(){
         driver=new BasicDriver();
+        System.out.println(">>>>>>>>>>>>>>>>>");
         metaServer=new MetaServer();
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         metaServer.init(null);
+        System.out.println(">>>>>>>>>>>>>>>>>############");
         metaServer.start();
+        System.out.println("############################");
 
         try {
             Thread.sleep(SLEEP_TIME);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
     }
 
 
