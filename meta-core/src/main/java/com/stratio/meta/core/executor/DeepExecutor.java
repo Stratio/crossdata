@@ -33,7 +33,8 @@ public class DeepExecutor {
     public static Result execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot, Session session) {
         if(stmt instanceof SelectStatement){
             SelectStatement ss = (SelectStatement) stmt;
-            ResultSet resultSet = Bridge.execute(ss, resultsFromChildren, isRoot, session);
+            Bridge bridge = new Bridge(session);
+            ResultSet resultSet = bridge.execute(ss, resultsFromChildren, isRoot);
             return QueryResult.CreateSuccessQueryResult(resultSet);
         } else {
             System.out.println("EMPTY DEEP RESULT");

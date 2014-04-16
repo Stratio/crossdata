@@ -45,6 +45,8 @@ import java.util.regex.Pattern;
  */
 public class SelectStatement extends MetaStatement {
 
+    private final static int MAX_LIMIT = 10000;
+
     /**
      * The {@link com.stratio.meta.core.structures.SelectionClause} of the Select statement.
      */
@@ -205,7 +207,11 @@ public class SelectStatement extends MetaStatement {
         this.groupInc = groupInc;
         this.group = group;
         this.limitInc = limitInc;
-        this.limit = limit;
+        if(limit <= MAX_LIMIT){
+            this.limit = limit;
+        } else {
+            this.limit = MAX_LIMIT;
+        }
         this.disableAnalytics = disableAnalytics;
     }
 
@@ -215,7 +221,7 @@ public class SelectStatement extends MetaStatement {
      * @param tableName The name of the target table.
      */
     public SelectStatement(SelectionClause selectionClause, String tableName) {
-        this(selectionClause, tableName, false, null, false, null, false, null, false, null, false, null, false, 0, false);
+        this(selectionClause, tableName, false, null, false, null, false, null, false, null, false, null, false, MAX_LIMIT, false);
     }
 
     /**
@@ -223,7 +229,7 @@ public class SelectStatement extends MetaStatement {
      * @param tableName The name of the target table.
      */
     public SelectStatement(String tableName) {
-        this(null, tableName, false, null, false, null, false, null, false, null, false, null, false, 0, false);
+        this(null, tableName, false, null, false, null, false, null, false, null, false, null, false, MAX_LIMIT, false);
     }
 
     /**
@@ -257,6 +263,14 @@ public class SelectStatement extends MetaStatement {
      */
     public SelectionClause getSelectionClause() {
         return selectionClause;
+    }
+
+    /**
+     * Set the {@link com.stratio.meta.core.structures.SelectionClause} for selecting columns.
+     * @param selectionClause selection clause.
+     */
+    public void setSelectionClause(SelectionClause selectionClause) {
+        this.selectionClause = selectionClause;
     }
 
     /**
@@ -334,7 +348,11 @@ public class SelectStatement extends MetaStatement {
      */
     public void setLimit(int limit) {
         this.limitInc = true;
-        this.limit = limit;
+        if (limit <= MAX_LIMIT){
+            this.limit = limit;
+        } else {
+            this.limit = MAX_LIMIT;
+        }
     }
 
     /**
@@ -996,15 +1014,21 @@ public class SelectStatement extends MetaStatement {
 
             // ADD FIELDS OF THE SELECT
             SelectionList selectionList = (SelectionList) this.selectionClause;
-            SelectionSelectors selection = (SelectionSelectors) selectionList.getSelection();
-            for (SelectionSelector ss: selection.getSelectors()){
-                SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
+            Selection selection = selectionList.getSelection();
 
-                if(si.getTablename().equalsIgnoreCase(tableName)){
-                    firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
-                } else {
-                    secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
+            if(selection instanceof SelectionSelectors){
+                SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
+                for (SelectionSelector ss: selectionSelectors.getSelectors()){
+                    SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
+                    if(si.getTablename().equalsIgnoreCase(tableName)){
+                        firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
+                    } else {
+                        secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
+                    }
                 }
+            } else { // instanceof SelectionAsterisk
+                firstSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
+                secondSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
             }
 
             // ADD WHERE CLAUSES IF ANY
@@ -1021,37 +1045,44 @@ public class SelectStatement extends MetaStatement {
                         // Where clause corresponding to first table
                         if(tableName.equalsIgnoreCase(whereTablename)){
                             firstWhere.add(new RelationCompare(whereColumnname, relation.getOperator(), relation.getTerms().get(0)));
-                            // Add column to Select clauses if applied
-                            SelectionList sClause = (SelectionList) firstSelect.getSelectionClause();
-                            SelectionSelectors sSelectors = (SelectionSelectors) sClause.getSelection();
-                            boolean addCol = true;
-                            for (SelectionSelector ss: sSelectors.getSelectors()){
-                                SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-                                String ColName = si.getColumnName();
-                                if(ColName.equalsIgnoreCase(whereColumnname)){
-                                    addCol = false;
-                                    break;
+                            Selection selList = ((SelectionList) this.selectionClause).getSelection();
+
+                            if(selList instanceof SelectionSelectors){ //Otherwise, it's an asterisk selection
+                                // Add column to Select clauses if applied
+                                SelectionList sClause = (SelectionList) firstSelect.getSelectionClause();
+                                SelectionSelectors sSelectors = (SelectionSelectors) sClause.getSelection();
+                                boolean addCol = true;
+                                for (SelectionSelector ss: sSelectors.getSelectors()){
+                                    SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
+                                    String ColName = si.getColumnName();
+                                    if(ColName.equalsIgnoreCase(whereColumnname)){
+                                        addCol = false;
+                                        break;
+                                    }
                                 }
-                            }
-                            if(addCol){
-                                firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(whereColumnname)));
+                                if(addCol){
+                                    firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(whereColumnname)));
+                                }
                             }
                         } else { // Where clause corresponding to second table
                             secondWhere.add(new RelationCompare(whereColumnname, relation.getOperator(), relation.getTerms().get(0)));
-                            // Add column to Select clauses if applied
-                            SelectionList sClause = (SelectionList) secondSelect.getSelectionClause();
-                            SelectionSelectors sSelectors = (SelectionSelectors) sClause.getSelection();
-                            boolean addCol = true;
-                            for (SelectionSelector ss: sSelectors.getSelectors()){
-                                SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-                                String ColName = si.getColumnName();
-                                if(ColName.equalsIgnoreCase(whereColumnname)){
-                                    addCol = false;
-                                    break;
+                            Selection selList = ((SelectionList) this.selectionClause).getSelection();
+                            if(selList instanceof SelectionSelectors){
+                                // Add column to Select clauses if applied
+                                SelectionList sClause = (SelectionList) secondSelect.getSelectionClause();
+                                SelectionSelectors sSelectors = (SelectionSelectors) sClause.getSelection();
+                                boolean addCol = true;
+                                for (SelectionSelector ss: sSelectors.getSelectors()){
+                                    SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
+                                    String ColName = si.getColumnName();
+                                    if(ColName.equalsIgnoreCase(whereColumnname)){
+                                        addCol = false;
+                                        break;
+                                    }
                                 }
-                            }
-                            if(addCol){
-                                secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(whereColumnname)));
+                                if(addCol){
+                                    secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(whereColumnname)));
+                                }
                             }
                         }
                     }
