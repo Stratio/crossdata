@@ -6,14 +6,14 @@ import org.apache.spark.api.java.function.Function;
 import java.io.Serializable;
 
 
-public class Equals extends Function<Cells, Boolean> implements Serializable{
+public class DeepEquals extends Function<Cells, Boolean> implements Serializable{
 
     private static final long serialVersionUID = -6143471452730703044L;
 
     private Object value;
     private String field;
 
-    public Equals(String field, Object value){
+    public DeepEquals(String field, Object value){
         this.value=value;
         this.field=field;
     }

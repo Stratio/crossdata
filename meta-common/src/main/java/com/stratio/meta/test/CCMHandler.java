@@ -20,19 +20,33 @@
 package com.stratio.meta.test;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 
 public class CCMHandler {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger logger = Logger.getLogger(CCMHandler.class);
+
+    /**
+     * Start a test Cassandra cluster to execute the unit tests. The method creates a
+     * temporal file with the contents of {@code /com/stratio/meta/test/test.sh} and proceeds
+     * with its execution.
+     */
     public static void StartCCM(){
+        BufferedReader in = null;
         try {
-            File tempFile= File.createTempFile("stratio-start-ccm",".sh");
+            File tempFile = File.createTempFile("stratio-start-ccm",".sh");
             InputStream resourceStream = CCMHandler.class.getResourceAsStream("/com/stratio/meta/test/test.sh");
             FileUtils.copyInputStreamToFile(resourceStream,tempFile);
             tempFile.setExecutable(true);
 
             Process p = Runtime.getRuntime().exec(tempFile.getAbsolutePath());
-            BufferedReader in = new BufferedReader(
+
+            in = new BufferedReader(
                     new InputStreamReader(p.getInputStream()));
             String line;
             while ((line = in.readLine()) != null) {
@@ -41,7 +55,14 @@ public class CCMHandler {
             FileUtils.forceDeleteOnExit(tempFile);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error starting CCM", e);
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                logger.error("IO exception closing ccm output.", e);
+                e.printStackTrace();
+            }
         }
     }
 

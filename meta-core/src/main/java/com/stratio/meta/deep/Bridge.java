@@ -39,10 +39,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Bridge {
 
@@ -51,11 +48,13 @@ public class Bridge {
      */
     private final Logger logger = Logger.getLogger(Bridge.class);
 
-    private DeepSparkContext deepContext;
+    private static DeepSparkContext deepContext = null;
     private Session session;
 
     public Bridge(Session session) {
-        deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
+        if(deepContext == null) {
+            deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
+        }
         this.session = session;
     }
 
@@ -87,6 +86,8 @@ public class Bridge {
                     SelectorIdentifier selId = (SelectorIdentifier) sSel.getSelector();
                     columnsSet[i] = selId.getColumnName();
                 }
+                System.out.println("Select columns: " + Arrays.toString(columnsSet));
+
             } else { // SelectionAsterisk
                 allCols = true;
             }
@@ -134,6 +135,8 @@ public class Bridge {
             String field1 = keys.iterator().next();
             String field2 = fields.get(field1);
 
+            System.out.println("INNER JOIN on: " + field1 + " - " + field2);
+
             JavaRDD rdd1 = children.get(0);
             JavaRDD rdd2 = children.get(1);
 
@@ -166,7 +169,8 @@ public class Bridge {
 
     private ResultSet returnResult(JavaRDD rdd, boolean isRoot){
         if(isRoot){
-            return returnResult(rdd.dropTake(0, 10000));
+            return returnResult(rdd.collect());
+            //return returnResult(rdd.dropTake(0, 10000));
         } else {
             List oneRow = new ArrayList<Row>();
             oneRow.add(new Row("RESULT", new Cell(JavaRDD.class, rdd)));
@@ -184,9 +188,10 @@ public class Bridge {
         String cn = rel.getIdentifiers().get(0);  //Take first. Common is 1 identifier and 1 termValue
         Object termValue = rel.getTerms().get(0).getTermValue();
 
+        System.out.println("Rdd input size: " + rdd.count());
         switch (operator){
             case "=":
-                result = rdd.filter(new Equals(cn, termValue));
+                result = rdd.filter(new DeepEquals(cn, termValue));
                 break;
             case "<>":
                 result = rdd.filter(new NotEquals(cn,termValue));
@@ -210,6 +215,8 @@ public class Bridge {
             default:
                 break;
         }
+
+        System.out.println("Rdd input: " + Arrays.toString(rdd.collect().toArray()) +" filtered size: " + result.count());
 
         return result;
     }

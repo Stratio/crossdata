@@ -207,7 +207,6 @@ public class Metash {
     public static void main(String[] args) {
         Metash sh = new Metash();
         sh.loop();
-        System.exit(0);
     }
 
 }

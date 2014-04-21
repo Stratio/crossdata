@@ -139,19 +139,19 @@ public class SelectStatement extends MetaStatement {
      * The {@link com.stratio.meta.core.metadata.MetadataManager} used to retrieve table metadata during
      * the validation process and the statement execution phase.
      */
-    private MetadataManager _metadata = null;
+    private MetadataManager metadata = null;
 
     /**
      * The {@link com.datastax.driver.core.TableMetadata} associated with the table specified in the
      * FROM of the Select statement.
      */
-    private TableMetadata _tableMetadataFrom = null;
+    private TableMetadata tableMetadataFrom = null;
 
     /**
      * The {@link com.datastax.driver.core.TableMetadata} associated with the table specified in the
      * INNER JOIN of the Select statement.
      */
-    private TableMetadata _tableMetadataJoin = null;
+    private TableMetadata tableMetadataJoin = null;
 
     /**
      * Map with the collection of {@link com.datastax.driver.core.ColumnMetadata} associated with the
@@ -448,11 +448,11 @@ public class SelectStatement extends MetaStatement {
             tableMetadata1 = metadata.getTableMetadata(effectiveKs1, tableName);
             if(joinInc) {
                 tableMetadata2 = metadata.getTableMetadata(effectiveKs2, join.getTablename());
-                _tableMetadataJoin = tableMetadata2;
+                tableMetadataJoin = tableMetadata2;
             }
             //Cache Metadata manager and table metadata for the getDriverStatement.
-            _metadata = metadata;
-            _tableMetadataFrom = tableMetadata1;
+            this.metadata = metadata;
+            tableMetadataFrom = tableMetadata1;
 
             result = validateSelectionColumns(tableMetadata1, tableMetadata2);
         }
@@ -871,7 +871,7 @@ public class SelectStatement extends MetaStatement {
 
         Where whereStmt = null;
         if(this.whereInc){
-            String [] luceneWhere = getLuceneWhereClause(_metadata, _tableMetadataFrom);
+            String [] luceneWhere = getLuceneWhereClause(metadata, tableMetadataFrom);
             if(luceneWhere != null){
                 Clause lc = QueryBuilder.eq(luceneWhere[0], luceneWhere[1]);
                 whereStmt = sel.where(lc);

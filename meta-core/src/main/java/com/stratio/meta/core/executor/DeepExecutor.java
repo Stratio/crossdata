@@ -35,6 +35,7 @@ public class DeepExecutor {
             SelectStatement ss = (SelectStatement) stmt;
             Bridge bridge = new Bridge(session);
             ResultSet resultSet = bridge.execute(ss, resultsFromChildren, isRoot);
+            //bridge.stopContext();
             return QueryResult.CreateSuccessQueryResult(resultSet);
         } else {
             System.out.println("EMPTY DEEP RESULT");

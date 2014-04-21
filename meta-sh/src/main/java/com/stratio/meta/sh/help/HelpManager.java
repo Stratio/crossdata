@@ -22,26 +22,41 @@ package com.stratio.meta.sh.help;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 public class HelpManager {
 
+    /**
+     * Class logger.
+     */
+    private static final Logger logger = Logger.getLogger(HelpManager.class);
+
+    /**
+     * Path of the file with the help contents.
+     */
 	private final static String HELP_PATH = "com/stratio/meta/sh/help/MetaClientHelp.yaml";
-	
-	public HelpContent loadHelpContent(){
-		HelpContent result = null;
-		InputStream is = HelpManager.class.getClassLoader().getResourceAsStream(HELP_PATH);
-        try{
-        	Constructor constructor = new Constructor(HelpContent.class);
-        	Yaml yaml = new Yaml(constructor);
+
+    /**
+     * Load the help contents by reading the contents of {@code HELP_PATH}.
+     * @return A {@link com.stratio.meta.sh.help.HelpContent} with the help.
+     */
+	public HelpContent loadHelpContent() {
+        HelpContent result = null;
+        InputStream is = HelpManager.class.getClassLoader().getResourceAsStream(HELP_PATH);
+        try {
+            Constructor constructor = new Constructor(HelpContent.class);
+            Yaml yaml = new Yaml(constructor);
             result = yaml.loadAs(is, HelpContent.class);
             result.loadMap();
+        } catch(Exception e){
+            logger.error("Cannot read help file", e);
         }finally{
         	try {
 				is.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error("Cannot close help file", e);
 			}
         }
         return result;

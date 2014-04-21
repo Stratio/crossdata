@@ -54,7 +54,6 @@ public class HelpContent {
 	 * @return The help string or null if the help is not available.
 	 */
 	public String searchHelp(HelpType type){
-		System.out.println("Search help for: " + type);
 		return _help.get(type);
 	}
 }
