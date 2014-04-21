@@ -1096,7 +1096,17 @@ public class SelectStatement extends MetaStatement {
             }
 
             // ADD MAP OF THE JOIN
-            joinSelect.setJoin(new InnerJoin("", fields));
+            String keyOfInnerJoin = fields.keySet().iterator().next();
+            String firstTableOfInnerJoin = keyOfInnerJoin.split("\\.")[0];
+            if(firstTableOfInnerJoin.equalsIgnoreCase(tableName)){
+                joinSelect.setJoin(new InnerJoin("", fields));
+            } else {
+                HashMap changedMap = new HashMap<String, String>();
+                String newKey = fields.values().iterator().next();
+                String newValue = keyOfInnerJoin;
+                changedMap.put(newKey, newValue);
+                joinSelect.setJoin(new InnerJoin("", changedMap));
+            }
 
             // ADD STEPS
             steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
