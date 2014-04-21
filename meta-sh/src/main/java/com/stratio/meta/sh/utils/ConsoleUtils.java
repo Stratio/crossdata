@@ -35,6 +35,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 
 import java.io.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,7 +47,19 @@ public class ConsoleUtils {
     /**
      * Class logger.
      */
-    private static final Logger logger = Logger.getLogger(ConsoleUtils.class);
+    private static final Logger LOG = Logger.getLogger(ConsoleUtils.class);
+
+    /**
+     * Number of days a history entry is maintained.
+     */
+    private static final int DAYS_HISTORY_ENTRY_VALID = 30;
+
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private ConsoleUtils(){
+
+    }
 
     public static String stringResult(Result result){
         if(result.hasError()){
@@ -73,7 +86,7 @@ public class ConsoleUtils {
 
         ResultSet resultSet = queryResult.getResultSet();
 
-        HashMap<String, Integer> colWidths = calculateColWidths(resultSet);
+        Map<String, Integer> colWidths = calculateColWidths(resultSet);
 
         String bar = StringUtils.repeat('-', getTotalWidth(colWidths) + (colWidths.values().size() * 3) + 1);
 
@@ -107,8 +120,8 @@ public class ConsoleUtils {
         return sb.toString();
     }
 
-    private static HashMap<String, Integer> calculateColWidths(ResultSet resultSet) {
-        HashMap colWidths = new HashMap<String, Integer>();
+    private static Map<String, Integer> calculateColWidths(ResultSet resultSet) {
+        Map<String, Integer> colWidths = new HashMap<>();
         // Get column names
         Row firstRow = resultSet.iterator().next();
         for(String key: firstRow.getCells().keySet()){
@@ -118,7 +131,7 @@ public class ConsoleUtils {
         for(Row row: resultSet){
             for(String key: row.getCells().keySet()){
                 String cellContent = String.valueOf(row.getCell(key).getValue());
-                int currentWidth = (int) colWidths.get(key);
+                int currentWidth = colWidths.get(key);
                 if(cellContent.length() > currentWidth){
                     colWidths.put(key, cellContent.length());
                 }
@@ -127,7 +140,7 @@ public class ConsoleUtils {
         return colWidths;
     }
 
-    private static int getTotalWidth(HashMap<String, Integer> colWidths) {
+    private static int getTotalWidth(Map<String, Integer> colWidths) {
         int totalWidth = 0;
         for(int width: colWidths.values()){
             totalWidth+=width;
@@ -136,7 +149,6 @@ public class ConsoleUtils {
     }
 
     public static File retrieveHistory(ConsoleReader console, SimpleDateFormat sdf) throws IOException {
-        final int DAYS_HISTORY_ENTRY_VALID = 30;
         Date today = new Date();
         String workingDir = System.getProperty("user.home");
         File dir = new File(workingDir, ".meta");
@@ -147,7 +159,9 @@ public class ConsoleUtils {
         if (!file.exists()){
             file.createNewFile();
         }
-        //logger.info("Retrieving history from "+file.getAbsolutePath());
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Retrieving history from " + file.getAbsolutePath());
+        }
         BufferedReader br = new BufferedReader(new FileReader(file));
         History oldHistory = new MemoryHistory();
         DateTime todayDate = new DateTime(today);
@@ -157,22 +171,20 @@ public class ConsoleUtils {
         String lineStatement;
         try{
             while ((line = br.readLine()) != null) {
-                try {
-                    lineArray = line.split("\\|");
-                    lineDate = sdf.parse(lineArray[0]);
-                    if(Days.daysBetween(new DateTime(lineDate), todayDate).getDays()<DAYS_HISTORY_ENTRY_VALID){
-                        lineStatement = lineArray[1];
-                        oldHistory.add(lineStatement);
-                    }
-                } catch(Exception ex){
-                    logger.error("Cannot parse date", ex);
+                lineArray = line.split("\\|");
+                lineDate = sdf.parse(lineArray[0]);
+                if(Days.daysBetween(new DateTime(lineDate), todayDate).getDays()<DAYS_HISTORY_ENTRY_VALID){
+                    lineStatement = lineArray[1];
+                    oldHistory.add(lineStatement);
                 }
             }
-        } catch(Exception ex){
-            logger.error("Cannot read all the history", ex);
+        }catch(ParseException ex) {
+            LOG.error("Cannot parse date", ex);
+        }catch(Exception ex){
+            LOG.error("Cannot read all the history", ex);
         }
         console.setHistory(oldHistory);
-        logger.info("History retrieved");
+        LOG.info("History retrieved");
         return file;
     }
 
@@ -180,18 +192,18 @@ public class ConsoleUtils {
         if (!file.exists()) {
             file.createNewFile();
         }
-        FileWriter fileWritter = new FileWriter(file, true);
-        try (BufferedWriter bufferWritter = new BufferedWriter(fileWritter)) {
+        FileWriter fileWriter = new FileWriter(file, true);
+        try (BufferedWriter bufferWriter = new BufferedWriter(fileWriter)) {
             History history = console.getHistory();
             ListIterator<History.Entry> histIter = history.entries();
             while(histIter.hasNext()){
                 History.Entry entry = histIter.next();
-                bufferWritter.write(sdf.format(new Date()));
-                bufferWritter.write("|");
-                bufferWritter.write(entry.value().toString());
-                bufferWritter.newLine();
+                bufferWriter.write(sdf.format(new Date()));
+                bufferWriter.write("|");
+                bufferWriter.write(entry.value().toString());
+                bufferWriter.newLine();
             }
-            bufferWritter.flush();
+            bufferWriter.flush();
         }
     }
 

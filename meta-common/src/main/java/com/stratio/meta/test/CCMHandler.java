@@ -29,7 +29,7 @@ public class CCMHandler {
     /**
      * Class logger.
      */
-    private static final Logger logger = Logger.getLogger(CCMHandler.class);
+    private static final Logger LOG = Logger.getLogger(CCMHandler.class);
 
     /**
      * Start a test Cassandra cluster to execute the unit tests. The method creates a
@@ -55,37 +55,14 @@ public class CCMHandler {
             FileUtils.forceDeleteOnExit(tempFile);
 
         } catch (IOException e) {
-            logger.error("Error starting CCM", e);
+            LOG.error("Error starting CCM", e);
         } finally {
             try {
                 in.close();
             } catch (IOException e) {
-                logger.error("IO exception closing ccm output.", e);
-                e.printStackTrace();
+                LOG.error("IO exception closing ccm output.", e);
             }
         }
     }
 
-    public static void FinishCCM(){
-        /*
-        try {
-            File tempFile= File.createTempFile("stratio-close-ccm",".sh");
-            InputStream resourceStream = CCMHandler.class.getResourceAsStream("/com/stratio/meta/test/close.sh");
-            FileUtils.copyInputStreamToFile(resourceStream,tempFile);
-            tempFile.setExecutable(true);
-
-            Process p = Runtime.getRuntime().exec(tempFile.getAbsolutePath());
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(p.getInputStream()));
-            String line;
-            while ((line = in.readLine()) != null) {
-                System.out.println(line);
-            }
-            FileUtils.forceDeleteOnExit(tempFile);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        */
-    }
 }

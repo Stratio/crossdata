@@ -97,7 +97,7 @@ public class SelectStatement extends MetaStatement {
     /**
      * The list of {@link com.stratio.meta.core.structures.Relation} found in the WHERE clause.
      */
-    private ArrayList<Relation> where;
+    private List<Relation> where;
 
     /**
      * Whether an ORDER BY clause has been specified.
@@ -107,7 +107,7 @@ public class SelectStatement extends MetaStatement {
     /**
      * The list of {@link com.stratio.meta.core.structures.Ordering} clauses.
      */
-    private ArrayList<com.stratio.meta.core.structures.Ordering> order;
+    private List<com.stratio.meta.core.structures.Ordering> order;
 
     /**
      * Whether a GROUP BY clause has been specified.
@@ -158,7 +158,7 @@ public class SelectStatement extends MetaStatement {
      * tables specified in the FROM and the INNER JOIN parts of the Select statement. A virtual table
      * named {@code any} is used to match unqualified column names.
      */
-    private HashMap<String, Collection<ColumnMetadata>> columns = new HashMap<>();
+    private Map<String, Collection<ColumnMetadata>> columns = new HashMap<>();
 
     /**
      * Class constructor.
@@ -182,8 +182,8 @@ public class SelectStatement extends MetaStatement {
     public SelectStatement(SelectionClause selectionClause, String tableName,
                            boolean windowInc, WindowSelect window, 
                            boolean joinInc, InnerJoin join, 
-                           boolean whereInc, ArrayList<Relation> where,
-                           boolean orderInc, ArrayList<com.stratio.meta.core.structures.Ordering> order,
+                           boolean whereInc, List<Relation> where,
+                           boolean orderInc, List<com.stratio.meta.core.structures.Ordering> order,
                            boolean groupInc, GroupBy group, 
                            boolean limitInc, int limit, 
                            boolean disableAnalytics) {
@@ -303,7 +303,7 @@ public class SelectStatement extends MetaStatement {
      * Get the list of {@link Relation} in the where clause.
      * @return The list of relations.
      */
-    public ArrayList<Relation> getWhere() {
+    public List<Relation> getWhere() {
         return where;
     }
 
@@ -311,7 +311,7 @@ public class SelectStatement extends MetaStatement {
      * Set the list of {@link Relation} in the where clause.
      * @param where The list of relations.
      */
-    public void setWhere(ArrayList<Relation> where) {
+    public void setWhere(List<Relation> where) {
         this.whereInc = true;
         this.where = where;
     }
@@ -320,7 +320,7 @@ public class SelectStatement extends MetaStatement {
      * Set the {@link Ordering} in the ORDER BY clause.
      * @param order The order.
      */
-    public void setOrder(ArrayList<com.stratio.meta.core.structures.Ordering> order) {
+    public void setOrder(List<com.stratio.meta.core.structures.Ordering> order) {
         this.orderInc = true;
         this.order = order;
     }
@@ -827,7 +827,7 @@ public class SelectStatement extends MetaStatement {
                         }
                     } else if (selectorMeta.getType() == SelectorMeta.TYPE_FUNCTION){                        
                         SelectorFunction selFunction = (SelectorFunction) selectorMeta;
-                        ArrayList<SelectorMeta> params = selFunction.getParams();
+                        List<SelectorMeta> params = selFunction.getParams();
                         Object[] innerFunction = new Object[params.size()];
                         int pos = 0;
                         for(SelectorMeta selMeta: params){
@@ -915,7 +915,7 @@ public class SelectStatement extends MetaStatement {
                         break;
                     case Relation.TYPE_IN:
                         RelationIn relIn = (RelationIn) metaRelation;
-                        ArrayList<Term> terms = relIn.getTerms();                        
+                        List<Term> terms = relIn.getTerms();
                         Object[] values = new Object[relIn.numberOfTerms()];                        
                         int nTerm = 0;
                         for(Term term: terms){
@@ -934,8 +934,8 @@ public class SelectStatement extends MetaStatement {
                         break;
                     case Relation.TYPE_TOKEN:
                         RelationToken relToken = (RelationToken) metaRelation;
-                        ArrayList<String> names = relToken.getIdentifiers();
-                        if(!relToken.isRighSideTokenType()){
+                        List<String> names = relToken.getIdentifiers();
+                        if(!relToken.isRightSideTokenType()){
                             value = relToken.getTerms().get(0).getTermValue();
                             switch(relToken.getOperator()){
                                 case "=":
@@ -1033,8 +1033,8 @@ public class SelectStatement extends MetaStatement {
 
             // ADD WHERE CLAUSES IF ANY
             if(whereInc){
-                ArrayList<Relation> firstWhere = new ArrayList<>();
-                ArrayList<Relation> secondWhere = new ArrayList<>();
+                List<Relation> firstWhere = new ArrayList<>();
+                List<Relation> secondWhere = new ArrayList<>();
                 for(Relation relation: where){
                     String id = relation.getIdentifiers().iterator().next();
                     if(id.contains(".")){
@@ -1105,7 +1105,7 @@ public class SelectStatement extends MetaStatement {
 
         } else if(whereInc) {
             // Get columns of the where clauses
-            ArrayList<String> whereCols = new ArrayList<>();
+            List<String> whereCols = new ArrayList<>();
             for(Relation relation: where){
                 whereCols.addAll(relation.getIdentifiers());
             }

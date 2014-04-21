@@ -31,7 +31,7 @@ public class HelpManager {
     /**
      * Class logger.
      */
-    private static final Logger logger = Logger.getLogger(HelpManager.class);
+    private static final Logger LOG = Logger.getLogger(HelpManager.class);
 
     /**
      * Path of the file with the help contents.
@@ -51,12 +51,12 @@ public class HelpManager {
             result = yaml.loadAs(is, HelpContent.class);
             result.loadMap();
         } catch(Exception e){
-            logger.error("Cannot read help file", e);
+            LOG.error("Cannot read help file", e);
         }finally{
         	try {
 				is.close();
 			} catch (IOException e) {
-				logger.error("Cannot close help file", e);
+                LOG.error("Cannot close help file", e);
 			}
         }
         return result;

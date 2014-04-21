@@ -299,7 +299,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	T_CREATE indexType=getIndexType {$cis.setIndexType(indexType);} T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
 	(name=T_IDENT {$cis.setName($name.text);})? 
-	T_ON tablename=getTableID {$cis.setTablename(tablename);}
+	T_ON tableName=getTableID {$cis.setTableName(tableName);}
 	T_START_PARENTHESIS
             firstField=(T_IDENT | T_LUCENE) {$cis.addColumn($firstField.text);}
 	(T_COMMA

@@ -38,7 +38,46 @@ public class MetaHelpParserTest {
 	 * Class logger.
 	 */
 	private final Logger logger = Logger.getLogger(MetaHelpParserTest.class);
-	
+
+    protected static String [][] supportedHelpCommands = {
+            {"exit", "EXIT"},
+            {"quit", "EXIT"},
+            {"datatypes", "DATATYPES"},
+            {"create", "CREATE"},
+            {"create keyspace", "CREATE_KEYSPACE"},
+            {"create table", "CREATE_TABLE"},
+            {"create index","CREATE_INDEX"},
+            {"create default index","CREATE_INDEX"},
+            {"create lucene index","CREATE_LUCENE_INDEX"},
+            {"update","UPDATE"},
+            {"insert","INSERT_INTO"},
+            {"insert into","INSERT_INTO"},
+            {"truncate","TRUNCATE"},
+            {"drop","DROP"},
+            {"drop index","DROP_INDEX"},
+            {"drop table","DROP_TABLE"},
+            {"drop keyspace","DROP_KEYSPACE"},
+            {"drop trigger","DROP_TRIGGER"},
+            {"select","SELECT"},
+            {"add","ADD"},
+            {"list","LIST"},
+            {"list process","LIST_PROCESS"},
+            {"list udf","LIST_UDF"},
+            {"list trigger","LIST_TRIGGER"},
+            {"remove udf","REMOVE_UDF"},
+            {"delete","DELETE"},
+            {"set options","SET_OPTIONS"},
+            {"explain plan","EXPLAIN_PLAN"},
+            {"alter","ALTER"},
+            {"alter keyspace","ALTER_KEYSPACE"},
+            {"alter table","ALTER_TABLE"},
+            {"stop","STOP"},
+            {"describe","DESCRIBE"},
+            {"describe keyspace","DESCRIBE_KEYSPACE"},
+            {"describe table","DESCRIBE_TABLE"},
+    };
+
+
 	/**
 	 * Parse a input text and return the equivalent HelpStatement.
 	 * @param inputText The input text.
@@ -69,45 +108,8 @@ public class MetaHelpParserTest {
 	
 	@Test
 	public void help_types() {
-		String [][] types = {
-				{"exit", "EXIT"},
-				{"quit", "EXIT"},
-				{"datatypes", "DATATYPES"},
-				{"create", "CREATE"},
-				{"create keyspace", "CREATE_KEYSPACE"},
-				{"create table", "CREATE_TABLE"},
-				{"create index","CREATE_INDEX"},
-				{"create default index","CREATE_INDEX"},
-				{"create lucene index","CREATE_LUCENE_INDEX"},
-				{"update","UPDATE"},
-				{"insert","INSERT_INTO"},
-				{"insert into","INSERT_INTO"},
-				{"truncate","TRUNCATE"},
-				{"drop","DROP"},
-				{"drop index","DROP_INDEX"},
-				{"drop table","DROP_TABLE"},
-				{"drop keyspace","DROP_KEYSPACE"},
-				{"drop trigger","DROP_TRIGGER"},
-				{"select","SELECT"},
-				{"add","ADD"},
-				{"list","LIST"},
-				{"list process","LIST_PROCESS"},
-				{"list udf","LIST_UDF"},
-				{"list trigger","LIST_TRIGGER"},
-				{"remove udf","REMOVE_UDF"},
-				{"delete","DELETE"},
-				{"set options","SET_OPTIONS"},
-				{"explain plan","EXPLAIN_PLAN"},
-				{"alter","ALTER"},
-				{"alter keyspace","ALTER_KEYSPACE"},
-				{"alter table","ALTER_TABLE"},
-				{"stop","STOP"},
-                                {"describe","DESCRIBE"},
-                                {"describe keyspace","DESCRIBE_KEYSPACE"},
-				{"describe table","DESCRIBE_TABLE"},
-		};
 
-		for(String [] test : types){
+		for(String [] test : supportedHelpCommands){
 			HelpStatement st = parseStatement("HELP " + test[0] + ";");
 			assertNotNull(st, "Cannot parse help - type " + test[1]);
 			assertEquals(st.toString(), "HELP "+test[1], "Cannot parse help - basic");

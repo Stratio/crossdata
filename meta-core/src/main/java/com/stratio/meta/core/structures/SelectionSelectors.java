@@ -22,43 +22,28 @@ package com.stratio.meta.core.structures;
 import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SelectionSelectors extends Selection {
 
-    private ArrayList<SelectionSelector> selectors;
+    private List<SelectionSelector> selectors;
 
     public SelectionSelectors() {
         this.type = TYPE_SELECTOR;
         selectors = new ArrayList<>();
     }    
     
-    public SelectionSelectors(ArrayList<SelectionSelector> selectors) {
+    public SelectionSelectors(List<SelectionSelector> selectors) {
         this();
         this.selectors = selectors;
     }   
     
-    public ArrayList<SelectionSelector> getSelectors() {
+    public List<SelectionSelector> getSelectors() {
         return selectors;
     }
 
-    public void setSelectors(ArrayList<SelectionSelector> selectors) {
-        this.selectors = selectors;
-    }   
-    
     public void addSelectionSelector(SelectionSelector ss){
         selectors.add(ss);
-    }
-    
-    public SelectionSelector getSelectionSelector(int index){
-        return selectors.get(index);
-    }
-    
-    public void removeSelectionSelector(int index){
-        selectors.remove(index);
-    }
-    
-    public int numberOfSelectors(){
-        return selectors.size();
     }
     
     @Override

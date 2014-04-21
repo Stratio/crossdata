@@ -50,7 +50,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
      * The map of properties of the keyspace. The different options accepted by a keyspace
      * are determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
      */
-    private HashMap<String, ValueProperty> properties;
+    private Map<String, ValueProperty> properties;
 
     /**
      * Class constructor.
@@ -81,38 +81,6 @@ public class CreateKeyspaceStatement extends MetaStatement {
     public void setName(String name) {
         this.name = name;
     }
-
-    /**
-     * If the IF NOT EXISTS clause has been specified.
-     * @return Whether the keyspace should be created only if not exists.
-     */
-    public boolean isIfNotExists() {
-        return ifNotExists;
-    }
-
-    /**
-     * Set the value of the IF NOT EXISTS clause.
-     * @param ifNotExists If it has been specified or not.
-     */
-    public void setIfNotExists(boolean ifNotExists) {
-        this.ifNotExists = ifNotExists;
-    }
-
-    /**
-     * Get the map of properties.
-     * @return The map.
-     */
-    public HashMap<String, ValueProperty> getProperties() {
-        return properties;
-    }
-
-    /**
-     * Set the map of properties used during the keyspace creation.
-     * @param properties The map of properties.
-     */
-    public void setProperties(HashMap<String, ValueProperty> properties) {
-        this.properties = properties;
-    }        
 
     @Override
     public String toString() {

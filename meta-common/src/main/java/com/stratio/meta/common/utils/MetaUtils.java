@@ -25,7 +25,7 @@ import java.util.Set;
 
 public class MetaUtils {        
     
-    public static Set<String> initials = Sets.newHashSet(
+    public static final Set<String> initials = Sets.newHashSet(
             "CREATE",
             "ALTER",
             "DROP",
@@ -45,7 +45,7 @@ public class MetaUtils {
             "QUIT",
             "DESCRIBE");    
     
-    public static Set<String> noInitials = Sets.newHashSet(                      
+    public static final Set<String> noInitials = Sets.newHashSet(
             "KEYSPACE",
             "NOT",
             "WITH",
@@ -120,7 +120,14 @@ public class MetaUtils {
             "HOURS",
             "DAYS",
             "MATCH");
-    
+
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private MetaUtils(){
+
+    }
+
     public static String getInitialsStatements() {
         String str = initials.toString();
         return str.substring(1, str.length()-1);

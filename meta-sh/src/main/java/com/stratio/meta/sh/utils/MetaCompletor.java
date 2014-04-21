@@ -41,7 +41,6 @@ public class MetaCompletor implements Completer {
     
     @Override
     public int complete(final String buffer, final int cursor, final List<CharSequence> candidates) {
-        //System.out.println("MetaCompletor.complete");
         checkNotNull(candidates);
         if ((buffer == null) || (buffer.length()<1)) {            
             candidates.addAll(MetaUtils.initials);   
@@ -67,30 +66,6 @@ public class MetaCompletor implements Completer {
                 candidates.add(match);
             }
 
-            /*
-            MetaStatement result = null;
-            ANTLRStringStream input = new ANTLRStringStream(buffer);
-            MetaLexer lexer = new MetaLexer(input);
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-            MetaParser parser = new MetaParser(tokens);
-            try {
-                result = parser.query();
-            } catch (RecognitionException ex) {
-                //nothing to do
-            }            
-            for(Parser delegate: parser.getDelegates()){
-                candidates.add(delegate.toString());
-            }
-            for(String rule: parser.getRuleInvocationStack()){
-                candidates.add(rule);
-            }
-            //candidates.addAll(Arrays.asList(parser.getTokenNames()));
-            try {
-                result = parser.query();
-            } catch (RecognitionException ex) {
-                Logger.getLogger(MetaCompletor.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            */            
         }
         if (candidates.size() == 1) {
             candidates.set(0, candidates.get(0) + " ");

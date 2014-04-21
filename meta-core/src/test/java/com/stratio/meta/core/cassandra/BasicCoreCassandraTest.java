@@ -74,7 +74,6 @@ public class BasicCoreCassandraTest {
 
         dropKeyspaceIfExists("testKs");
         closeCassandraConnection();
-        CCMHandler.FinishCCM();
     }
 
     /**

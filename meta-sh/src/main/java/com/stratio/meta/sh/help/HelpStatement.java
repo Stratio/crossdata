@@ -21,18 +21,18 @@ package com.stratio.meta.sh.help;
 
 public class HelpStatement {
 
-	private final HelpType _type;
+	private final HelpType type;
 	
 	public HelpStatement(HelpType type){
-		_type = type;
+		this.type = type;
 	}
 	
 	public HelpType getType(){
-		return _type;
+		return type;
 	}
 	
 	@Override
 	public String toString() {
-		return "HELP " + _type;
+		return "HELP " + type;
 	}
 }

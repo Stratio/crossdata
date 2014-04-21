@@ -55,12 +55,12 @@ public class CreateTableStatement extends MetaStatement{
     /**
      * The name of the target table.
      */
-    private String tablename;
+    private String tableName;
 
     /**
      * A map with the name of the columns in the table and the associated data type.
      */
-    private LinkedHashMap<String, String> columns;
+    private Map<String, String> columns;
 
     /**
      * The list of columns that are part of the primary key.
@@ -114,7 +114,7 @@ public class CreateTableStatement extends MetaStatement{
 
     /**
      * Class constructor.
-     * @param name_table The name of the table.
+     * @param tableName The name of the table.
      * @param columns A map with the name of the columns in the table and the associated data type.
      * @param primaryKey The list of columns that are part of the primary key.
      * @param clusterKey The list of columns that are part of the clustering key.
@@ -126,8 +126,8 @@ public class CreateTableStatement extends MetaStatement{
      * value is only used if the type of primary key is {@code 1}.
      * @param withProperties Whether the table should be created with a set of properties.
      */
-    public CreateTableStatement(String name_table, 
-                                LinkedHashMap<String, String> columns, 
+    public CreateTableStatement(String tableName,
+                                Map<String, String> columns,
                                 List<String> primaryKey, 
                                 List<String> clusterKey, 
                                 List<Property> properties,
@@ -137,13 +137,14 @@ public class CreateTableStatement extends MetaStatement{
                                 int columnNumberPK, 
                                 boolean withProperties) {
         this.command = false;
-        if(name_table.contains(".")){
-            String[] ksAndTablename = name_table.split("\\.");
+        if(tableName.contains(".")){
+            String[] ksAndTablename = tableName.split("\\.");
             keyspace = ksAndTablename[0];
-            name_table = ksAndTablename[1];
+            this.tableName = ksAndTablename[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        this.tablename = name_table;
         this.columns = columns;
         this.primaryKey = primaryKey;
         this.clusterKey = clusterKey;
@@ -191,7 +192,7 @@ public class CreateTableStatement extends MetaStatement{
      * Get the map of column names and their associated data types.
      * @return The map.
      */
-    public LinkedHashMap<String, String> getColumns() {
+    public Map<String, String> getColumns() {
         return columns;
     }
 
@@ -199,30 +200,8 @@ public class CreateTableStatement extends MetaStatement{
      * Set the map of column names and their associated data types.
      * @param columns The map.
      */
-    public void setColumns(LinkedHashMap<String, String> columns) {
+    public void setColumns(Map<String, String> columns) {
         this.columns = columns;
-    }
-
-    /**
-     * Get the name of the table.
-     * @return The name.
-     */
-    public String getTablename() {
-        return tablename;
-    }
-
-    /**
-     * Set the table name.
-     * @param tablename The name.
-     */
-    public void setTablename(String tablename) {
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
-            keyspaceInc = true;
-        }
-        this.tablename = tablename;
     }
 
     @Override
@@ -233,10 +212,11 @@ public class CreateTableStatement extends MetaStatement{
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         } 
-        sb.append(tablename);
+        sb.append(tableName);
         
         switch(primaryKeyType){
-            case 1: {
+            case 1:
+            {
                 Set<String> keySet = columns.keySet();
                 int i = 0;
                 sb.append(" (");
@@ -244,28 +224,44 @@ public class CreateTableStatement extends MetaStatement{
                 for (Iterator<String> it = keySet.iterator();it.hasNext();){
                     String key = it.next();
                     String vp= columns.get(key);
-                    if (i==0) sb.append(key).append(" ").append(vp).append(" PRIMARY KEY");
-                    else sb.append(key).append(" ").append(vp);
+                    if (i==0){
+                        sb.append(key).append(" ").append(vp).append(" PRIMARY KEY");
+                    }else{
+                        sb.append(key).append(" ").append(vp);
+                    }
                     i++;
-                    if (it.hasNext()) sb.append(", ");
-                    else sb.append(")");                      
+                    if (it.hasNext()){
+                        sb.append(", ");
+                    }else{
+                        sb.append(")");
+                    }
                 }         
-            }break;
+            }
+            break;
                 
-            case 2: {
+            case 2:
+            {
                 Set<String> keySet = columns.keySet();
                 int i = 0;
                 sb.append(" (");
                 for (Iterator<String> it = keySet.iterator();it.hasNext();){
                     String key = it.next();
                     String vp= columns.get(key);
-                    if (i == columnNumberPK) sb.append(key).append(" ").append(vp).append(" PRIMARY KEY");
-                    else sb.append(key).append(" ").append(vp);
+                    if (i == columnNumberPK){
+                        sb.append(key).append(" ").append(vp).append(" PRIMARY KEY");
+                    }else{
+                        sb.append(key).append(" ").append(vp);
+                    }
                     i++;
-                    if (it.hasNext()) sb.append(", ");
-                    else sb.append(")");  
+                    if (it.hasNext()){
+                        sb.append(", ");
+                    }else{
+                        sb.append(")");
+                    }
                 }
-            }break;
+            }
+            break;
+
             case 3: {
                 Set<String> keySet = columns.keySet();
                 sb.append(" (");
@@ -278,15 +274,22 @@ public class CreateTableStatement extends MetaStatement{
                 int j=0;
                 for (Iterator<String> it = primaryKey.iterator();it.hasNext();){
                     String key = it.next();
-                    if (j== 0) sb.append(key);
-                    else sb.append(", ").append(key);
+                    if (j== 0){
+                        sb.append(key);
+                    }else{
+                        sb.append(", ").append(key);
+                    }
                     j++;
-                    if (!it.hasNext()) sb.append("))");
+                    if (!it.hasNext()){
+                        sb.append("))");
+                    }
                 }
             
-            }break;
+            }
+            break;
                 
-            case 4: {
+            case 4:
+            {
                 Set<String> keySet = columns.keySet();
                 sb.append(" (");
                 for (String key : keySet) {
@@ -297,25 +300,36 @@ public class CreateTableStatement extends MetaStatement{
                 int j=0;
                 for (Iterator<String> it = primaryKey.iterator();it.hasNext();){
                     String key = it.next();
-                    if (j== 0) sb.append(key);
-                    else sb.append(", ").append(key);
+                    if (j== 0){
+                        sb.append(key);
+                    }else{
+                        sb.append(", ").append(key);
+                    }
                     j++;
-                    if (!it.hasNext()) sb.append(")");
+                    if (!it.hasNext()){
+                        sb.append(")");
+                    }
                 }
 
                 if (withClusterKey){
                     for (Iterator<String> it = clusterKey.iterator();it.hasNext();){
                         String key = it.next();
                         sb.append(", ").append(key);
-                        if (!it.hasNext()) sb.append("))");
+                        if (!it.hasNext()) {
+                            sb.append("))");
+                        }
                     } 
+                }else{
+                    sb.append("))");
                 }
-                else sb.append("))");
-            }break;
+            }
+            break;
                 
-            default:{
+            default:
+            {
                 sb.append("bad option");
-            }break;
+            }
+            break;
                 
         }
         if(withProperties){
@@ -362,9 +376,9 @@ public class CreateTableStatement extends MetaStatement{
             if(ksMetadata == null){
                 result= QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
             }else {
-                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
+                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
                 if (tableMetadata != null && !ifNotExists) {
-                    result= QueryResult.CreateFailQueryResult("Table " + tablename + " already exists.");
+                    result= QueryResult.CreateFailQueryResult("Table " + tableName + " already exists.");
                 }
             }
 
@@ -512,7 +526,7 @@ public class CreateTableStatement extends MetaStatement{
     
     @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        //Check ifNotExists
+        //TODO: Check ifNotExists
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
         return tree;

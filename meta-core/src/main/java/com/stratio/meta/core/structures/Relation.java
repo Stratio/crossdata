@@ -19,30 +19,55 @@
 
 package com.stratio.meta.core.structures;
 
-import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * Class that models the different types of relationships that can be found on a WHERE clause.
+ */
 public abstract class Relation {
-    
+
+    /**
+     * Constant to define compare relationships (e.g., >, <, =, etc.).
+     */
     public static final int TYPE_COMPARE = 1;
+
+    /**
+     * Constant to define inclusion relationships.
+     */
     public static final int TYPE_IN = 2;
+
+    /**
+     * Constant to define comparisons with the {@code TOKEN} cassandra function.
+     */
     public static final int TYPE_TOKEN = 3;
+
+    /**
+     * Constant to define range comparisons.
+     */
     public static final int TYPE_BETWEEN = 4;
-    
-    protected ArrayList<String> identifiers;
+
+    /**
+     * List of identifiers in the left part of the relationship.
+     */
+    protected List<String> identifiers;
+
+    /**
+     * Operator to be applied to solve the relationship.
+     */
     protected String operator;
-    protected ArrayList<Term> terms;
+
+    /**
+     * List of terms on the right part of the relationship.
+     */
+    protected List<Term> terms;
+
+    /**
+     * Type of relationship.
+     */
     protected int type;   
     
-    public ArrayList<String> getIdentifiers() {
+    public List<String> getIdentifiers() {
         return identifiers;
-    }
-
-    public void setIdentifiers(ArrayList<String> identifiers) {
-        this.identifiers = identifiers;
-    }
-    
-    public int numberOfIdentifiers(){
-        return this.identifiers.size();
     }
 
     public String getOperator() {
@@ -53,7 +78,7 @@ public abstract class Relation {
         this.operator = operator;
     }
 
-    public ArrayList<Term> getTerms() {
+    public List<Term> getTerms() {
         return terms;
     }
     
@@ -61,7 +86,7 @@ public abstract class Relation {
         return this.terms.size();
     }
 
-    public void setTerms(ArrayList<Term> terms) {
+    public void setTerms(List<Term> terms) {
         this.terms = terms;
     }
 

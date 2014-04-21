@@ -108,7 +108,7 @@ public class Bridge {
             JavaRDD rdd = deepContext.cassandraJavaRDD(config);
 
             if(ss.isWhereInc()){ // If where
-                ArrayList<Relation> where = ss.getWhere();
+                List<Relation> where = ss.getWhere();
                 for(Relation rel : where){
                     rdd = doWhere(rdd, rel);
                 }
@@ -119,7 +119,7 @@ public class Bridge {
 
         } else { // (INNER NODE) NO LEAF
             // Retrieve RDDs from children
-            ArrayList<JavaRDD> children = new ArrayList<JavaRDD>();
+            List<JavaRDD> children = new ArrayList<JavaRDD>();
             for (Result child: resultsFromChildren){
                 QueryResult qResult = (QueryResult) child;
                 CassandraResultSet crset = (CassandraResultSet) qResult.getResultSet();

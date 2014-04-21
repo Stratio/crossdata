@@ -166,7 +166,6 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
     }
     override def afterAll(): Unit = {
       beforeCassandraFinish()
-      CCMHandler.FinishCCM()
       afterCassandraFinish()
     }
 
