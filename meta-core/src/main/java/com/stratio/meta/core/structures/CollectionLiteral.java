@@ -68,7 +68,6 @@ public class CollectionLiteral extends ValueCell {
             sb.append(term.toString()).append(", ");
         }        
         return sb.substring(0, sb.length()-2)+"}";
-        //return sb.toString();
     }
     
 }

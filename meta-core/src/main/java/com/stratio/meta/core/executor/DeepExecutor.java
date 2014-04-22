@@ -36,10 +36,10 @@ public class DeepExecutor {
             Bridge bridge = new Bridge(session);
             ResultSet resultSet = bridge.execute(ss, resultsFromChildren, isRoot);
             //bridge.stopContext();
-            return QueryResult.CreateSuccessQueryResult(resultSet);
+            return QueryResult.createSuccessQueryResult(resultSet);
         } else {
             System.out.println("EMPTY DEEP RESULT");
-            return QueryResult.CreateSuccessQueryResult();
+            return QueryResult.createSuccessQueryResult();
         }
     }
 }

@@ -31,6 +31,7 @@ import com.stratio.meta.core.utils.Tree;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -78,7 +79,7 @@ public class AlterTableStatement extends MetaStatement{
     /**
      * The map of properties.
      */
-    private LinkedHashMap<String, ValueProperty> option;
+    private Map<String, ValueProperty> option;
 
     /**
      * Class constructor.
@@ -88,7 +89,7 @@ public class AlterTableStatement extends MetaStatement{
      * @param option The map of options.
      * @param prop The type of modification.
      */
-    public AlterTableStatement(String tableName, String column, String type, LinkedHashMap<String, ValueProperty> option, int prop) {
+    public AlterTableStatement(String tableName, String column, String type, Map<String, ValueProperty> option, int prop) {
         this.command = false;
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
@@ -133,7 +134,9 @@ public class AlterTableStatement extends MetaStatement{
                     String key = it.next();
                     ValueProperty vp = option.get(key);
                     sb.append(" ").append(key).append("=").append(String.valueOf(vp));
-                    if(it.hasNext()) sb.append(" AND");
+                    if(it.hasNext()) {
+                        sb.append(" AND");
+                    }
                 }
             }break;
             default:{
@@ -141,12 +144,6 @@ public class AlterTableStatement extends MetaStatement{
             }break;
         }        
         return sb.toString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
     }
 
     @Override

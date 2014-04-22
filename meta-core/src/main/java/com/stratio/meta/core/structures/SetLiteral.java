@@ -26,7 +26,7 @@ import java.util.Set;
 
 public class SetLiteral extends IdentIntOrLiteral {
     
-    public Set<String> literals;
+    private Set<String> literals;
 
     public SetLiteral() {
         literals = new HashSet<>();

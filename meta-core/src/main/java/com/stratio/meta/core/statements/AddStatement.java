@@ -21,7 +21,6 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.data.DeepResultSet;
-import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 
@@ -33,7 +32,7 @@ public class AddStatement extends MetaStatement {
     /**
      * The path to load the jar file.
      */
-    private String _path = null;
+    private String jarPath = null;
 
     /**
      * Class constructor.
@@ -41,18 +40,12 @@ public class AddStatement extends MetaStatement {
      */
     public AddStatement(String path){
         this.command = true;
-        _path = path;
+        jarPath = path;
     }
 
     @Override
     public String toString() {
-            return "ADD \"" + _path + "\"";
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
+            return "ADD \"" + jarPath + "\"";
     }
 
     @Override

@@ -100,26 +100,6 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
 		}
 	}
 
-    //@Test
-    public void luceneMetadata(){
-        String keyspace = "demo";
-        String table = "users";
-        int numColumns = 7;
-
-        TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);
-        assertNotNull(metadata, "Cannot retrieve table metadata");
-        assertEquals(table, metadata.getName(), "Retrieved table name does not match");
-        assertEquals(numColumns, metadata.getColumns().size(), "Invalid number of columns");
-
-        ColumnMetadata cm = metadata.getColumn("lucene_index_1");
-        assertNotNull(cm, "Cannot retrieve lucene indexed column");
-        ColumnMetadata.IndexMetadata im = cm.getIndex();
-        assertNotNull(im, "No index information found");
-
-        fail("Missing checks on the resulting map");
-
-    }
-
     @Test
     public void getKeyspacesNames(){
         List<String> keyspaces = _metadataManager.getKeyspacesNames();
@@ -174,6 +154,37 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
             }
         }
 
+    }
+
+    @Test
+    public void getTableIndex_notFound(){
+        String keyspace = "demo";
+        String table = "users_info";
+        TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);
+        assertNotNull(metadata, "Cannot retrieve table metadata");
+        List<CustomIndexMetadata> indexes = _metadataManager.getTableIndex(metadata);
+        assertNotNull(indexes, "Cannot retrieve list of indexes");
+        assertEquals(indexes.size(), 0, "Table should not contain any index.");
+    }
+
+
+    @Test
+    public void getTableComment(){
+        String keyspace = "demo";
+        String table = "users";
+        String comment = _metadataManager.getTableComment(keyspace, table);
+        assertNotNull(comment, "Cannot retrieve table comment");
+        assertEquals("Users table", comment, "Invalid comment");
+    }
+
+    @Test
+    public void getLuceneIndex_notFound(){
+        String keyspace = "demo";
+        String table = "users_info";
+        TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);
+        assertNotNull(metadata, "Cannot retrieve table metadata");
+        CustomIndexMetadata cim = _metadataManager.getLuceneIndex(metadata);
+        assertNull(cim, "Table should not contain a Lucene index");
     }
 
 }

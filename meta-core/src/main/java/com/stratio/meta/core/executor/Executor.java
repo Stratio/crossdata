@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
 
 public class Executor {
 
-    private final Logger logger = Logger.getLogger(Executor.class);
     private final Session session;
 
     public Executor(Session session) {

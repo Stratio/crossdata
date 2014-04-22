@@ -17,21 +17,16 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.utils;
+package com.stratio.meta.core.validator.statements;
 
-public class RecoverableParserException extends RuntimeException {
+import com.stratio.meta.core.validator.BasicValidatorTest;
+import org.testng.annotations.Test;
 
-    /**
-     * Serial version UID to be {@link java.io.Serializable}.
-     */
-    private static final long serialVersionUID = -4249086668009573593L;
+public class AlterKeyspaceStatementTest extends BasicValidatorTest {
 
-    public RecoverableParserException() {
-        super();
-    }   
-    
-    public RecoverableParserException(String message) {
-        super(message);
-    }       
-    
+    @Test
+    public void validate_not_supported(){
+        String inputText = "ALTER KEYSPACE mykeyspace WITH ident1 = value1 AND ident2 = 54;";
+        validateFail(inputText, "validate_not_supported");
+    }
 }

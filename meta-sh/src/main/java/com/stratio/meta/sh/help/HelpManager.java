@@ -36,13 +36,13 @@ public class HelpManager {
     /**
      * Path of the file with the help contents.
      */
-	private final static String HELP_PATH = "com/stratio/meta/sh/help/MetaClientHelp.yaml";
+    private static final String HELP_PATH = "com/stratio/meta/sh/help/MetaClientHelp.yaml";
 
     /**
      * Load the help contents by reading the contents of {@code HELP_PATH}.
      * @return A {@link com.stratio.meta.sh.help.HelpContent} with the help.
      */
-	public HelpContent loadHelpContent() {
+    public HelpContent loadHelpContent() {
         HelpContent result = null;
         InputStream is = HelpManager.class.getClassLoader().getResourceAsStream(HELP_PATH);
         try {
@@ -53,12 +53,12 @@ public class HelpManager {
         } catch(Exception e){
             LOG.error("Cannot read help file", e);
         }finally{
-        	try {
-				is.close();
-			} catch (IOException e) {
+            try {
+                is.close();
+            } catch (IOException e) {
                 LOG.error("Cannot close help file", e);
-			}
+            }
         }
         return result;
-	}
+    }
 }

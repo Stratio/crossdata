@@ -17,38 +17,16 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.utils;
+package com.stratio.meta.core.validator.statements;
 
-import java.util.List;
+import com.stratio.meta.core.validator.BasicValidatorTest;
+import org.testng.annotations.Test;
 
-public class DeepResult {
-    
-    private String result;
-    private List<String> errors;
+public class StopProcessStatementTest extends BasicValidatorTest {
 
-    public DeepResult(String result, List<String> errors) {
-        this.result = result;
-        this.errors = errors;
-    }   
-    
-    public String getResult() {
-        return result;
+    @Test
+    public void validate_not_supported(){
+        String inputText = "STOP process process1;";
+        validateFail(inputText, "validate_not_supported");
     }
-
-    public void setResult(String result) {
-        this.result = result;
-    }   
-    
-    public boolean hasErrors(){
-        return errors.size() > 0;
-    }
-    
-    public List<String> getErrors() {
-        return errors;
-    }
-
-    public void setErrors(List<String> errors) {
-        this.errors = errors;
-    }
-    
 }

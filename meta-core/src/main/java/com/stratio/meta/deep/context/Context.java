@@ -22,9 +22,9 @@ package com.stratio.meta.deep.context;
 public class Context {
 
     // context properties
-    public static final String cluster = "local";
-    public static final String jobName = "stratioDeepWithMeta";
-    public static final String cassandraHost = "localhost";
-    public static final int cassandraPort = 9160;
+    public static final String CLUSTER = "local";
+    public static final String JOB_NAME = "stratioDeepWithMeta";
+    public static final String CASSANDRA_HOST = "localhost";
+    public static final int CASSANDRA_PORT = 9160;
 
 }

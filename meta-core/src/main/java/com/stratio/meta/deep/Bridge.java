@@ -53,7 +53,7 @@ public class Bridge {
 
     public Bridge(Session session) {
         if(deepContext == null) {
-            deepContext = new DeepSparkContext(Context.cluster, Context.jobName);
+            deepContext = new DeepSparkContext(Context.CLUSTER, Context.JOB_NAME);
         }
         this.session = session;
     }
@@ -96,11 +96,11 @@ public class Bridge {
             IDeepJobConfig config = null;
             if(allCols){
                 config = DeepJobConfigFactory.create().session(session)
-                        .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
+                        .host(Context.CASSANDRA_HOST).rpcPort(Context.CASSANDRA_PORT)
                         .keyspace(ss.getKeyspace()).table(ss.getTableName()).initialize();
             } else {
                 config = DeepJobConfigFactory.create().session(session)
-                        .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
+                        .host(Context.CASSANDRA_HOST).rpcPort(Context.CASSANDRA_PORT)
                         .keyspace(ss.getKeyspace()).table(ss.getTableName())
                         .inputColumns(columnsSet).initialize();
             }

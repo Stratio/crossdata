@@ -2,22 +2,22 @@ package com.stratio.meta.core.structures;
 
 public class IntegerTerm extends Term{
 
-    private final Integer _number;
+    private final Integer number;
 
     public IntegerTerm(String term){
-        _number = Integer.valueOf(term);
+        number = Integer.valueOf(term);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Class<?> getTermClass() {
+    public Class<Integer> getTermClass() {
         return Integer.class;
     }
 
     /** {@inheritDoc} */
     @Override
     public Object getTermValue() {
-        return _number;
+        return number;
     }
 
     @Override
@@ -28,6 +28,6 @@ public class IntegerTerm extends Term{
     /** {@inheritDoc} */
     @Override
     public String toString() {
-        return ""+_number;
+        return ""+ number;
     }
 }

@@ -28,9 +28,12 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 
-public class ParserUtils {    
-    
-    private static final Logger logger = Logger.getLogger(ParserUtils.class);
+public class ParserUtils {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(ParserUtils.class);
     
     public static String stringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
@@ -44,8 +47,7 @@ public class ParserUtils {
         }
     }
 
-    public static String stringValuePropertyMap(HashMap<String, ValueProperty> ids, String conjunction, String separator) {
-        //StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
+    public static String stringValuePropertyMap(Map<String, ValueProperty> ids, String conjunction, String separator) {
         StringBuilder sb = new StringBuilder();
         for(String key: ids.keySet()){
             ValueProperty vp = ids.get(key);
@@ -58,7 +60,6 @@ public class ParserUtils {
     }
 
     public static String stringMap(Map<?, ?> ids, String conjunction, String separator) {
-        //StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
         StringBuilder sb = new StringBuilder();
         for(Object key: ids.keySet()){
             Object vp = ids.get(key);
@@ -83,7 +84,6 @@ public class ParserUtils {
         Set<LevenshteinMatch> result = new HashSet<>();
         for(String word: words){
             int distance = StringUtils.getLevenshteinDistance(str, word, thresold);
-            //System.out.println("'"+str+"' vs '"+word+"' = "+distance);
             if((distance>-1) && (distance<limit)){
                 result.clear();
                 result.add(new LevenshteinMatch(word, distance));
@@ -96,86 +96,67 @@ public class ParserUtils {
     }
     
     public static int getCharPosition(AntlrError antlrError) {
-        if(antlrError.getHeader().contains(":")){
-            return Integer.parseInt(antlrError.getHeader().split(":")[1]);
-        } else {
-            return -1;
+        int result = -1;
+        if(antlrError.getHeader().contains(":")
+                && antlrError.getHeader().split(":").length > 1) {
+                result = Integer.valueOf(antlrError.getHeader().split(":")[1]);
         }
+        return result;
     }
     
     public static String getQueryWithSign(String query, AntlrError ae) {
         StringBuilder sb = new StringBuilder(query);
-        try {
-            int pos = getCharPosition(ae);
-            if(pos >= 0){
-                sb.insert(getCharPosition(ae), "\033[35m|\033[0m");
-            }
-        } catch (NullPointerException npex){
-            return query;
+        int pos = getCharPosition(ae);
+        if(pos >= 0){
+            sb.insert(getCharPosition(ae), "\033[35m|\033[0m");
         }
         return sb.toString();
     }
     
     public static String getSuggestion(String query, AntlrError antlrError){
         String errorWord = query.trim().split(" ")[0].toUpperCase();
-        Set<String> statementTokens = MetaUtils.initials;
+        Set<String> statementTokens = MetaUtils.INITIALS;
         int charPosition = 0;
         String suggestionFromToken = "";
                 
         if(antlrError != null){
             charPosition = getCharPosition(antlrError);
             if(charPosition>0){
-                statementTokens = MetaUtils.noInitials;
+                statementTokens = MetaUtils.NON_INITIALS;
             }
-            
-            /* OLD get error word method */
-            //System.out.println("charPosition: "+charPosition);
-            //errorWord = query.substring(getCharPosition(antlrError));
-            //System.out.println("partial query: "+errorWord);
-            //errorWord = errorWord.trim().split(" ")[0].toUpperCase();
-            //System.out.println("Erroneous word: "+errorWord);
-            
-            /* NEW get error word method */
+
             String errorMessage = antlrError.getMessage();
             if(errorMessage == null){
                 return "";
             }
             errorWord = errorMessage.substring(errorMessage.indexOf("'")+1, errorMessage.lastIndexOf("'"));
             errorWord = errorWord.toUpperCase();
-            //System.out.println("Erroneous word (NEW): "+errorWord);
-            
-            //String errorMessage = antlrError.getMessage(); 
+
             int positionToken = errorMessage.indexOf("T_");
             if(positionToken>-1){
                 suggestionFromToken = errorMessage.substring(positionToken+2);
                 suggestionFromToken = suggestionFromToken.trim().split(" ")[0].toUpperCase();
-                if(!(MetaUtils.initials.contains(suggestionFromToken) || MetaUtils.noInitials.contains(suggestionFromToken))){
+                if(!(MetaUtils.INITIALS.contains(suggestionFromToken) || MetaUtils.NON_INITIALS.contains(suggestionFromToken))){
                     suggestionFromToken = "";
                 }
             }
-            
-            //System.out.println("Suggestion from token: "+suggestionFromToken);
         }                                                  
         
         Set<LevenshteinMatch> bestMatches = getBestMatches(errorWord, statementTokens, 2);
-        StringBuilder sb = new StringBuilder();        
+        StringBuilder sb = new StringBuilder("Did you mean: ");
         if((bestMatches.isEmpty() || antlrError == null) && (charPosition<1)){
-            sb.append("Did you mean: ");
-            sb.append(MetaUtils.getInitialsStatements()).append("?").append(System.getProperty("line.separator"));
+            sb.append(MetaUtils.getInitialsStatements()).append("?").append(System.lineSeparator());
         } else if(!suggestionFromToken.equalsIgnoreCase("")){
-            //System.out.println("Result from suggestion");
-            sb.append("Did you mean: ");
             sb.append("\"").append(suggestionFromToken).append("\"").append("?");
-            sb.append(System.getProperty("line.separator"));
-        } else if (errorWord.matches("[QWERTYUIOPASDFGHJKLZXCVBNM_]+") /*&& query.contains("T_")*/){            
+            sb.append(System.lineSeparator());
+        } else if(errorWord.matches("[QWERTYUIOPASDFGHJKLZXCVBNM_]+")){
             for(LevenshteinMatch match: bestMatches){
-                //System.out.println(match.getWord()+":"+match.getDistance());
                 if(match.getDistance()<1){
                     break;
                 }
-                sb.append("Did you mean: ");
+                sb.append("* ");
                 sb.append("\"").append(match.getWord()).append("\"").append("?");
-                sb.append(System.getProperty("line.separator")).append("\t");              
+                sb.append(System.lineSeparator()).append("\t");
             }
         }
         return sb.substring(0, sb.length());
@@ -184,16 +165,6 @@ public class ParserUtils {
     public static String getSuggestion() {
         return getSuggestion("", null);
     }
-
-    public static void printParserErrors(String cmd, AntlrResult antlrResult, boolean printSuggestions) {
-        if(printSuggestions){
-            //System.out.println("Print suggestion");
-            logger.error(antlrResult.toString(cmd));
-        } else {
-            //System.out.println("Omit suggestion");
-            logger.error(antlrResult.toString(""));
-        }
-    }          
 
     public static String translateToken(String message) {     
         if(message == null){
@@ -226,8 +197,7 @@ public class ParserUtils {
             }
             
             String metaTokens = workingDir+"src/main/resources/com/stratio/meta/parser/tokens.txt";
-            
-            //bufferedReaderF = new BufferedReader(new FileReader(new File(metaTokens)));
+
             bufferedReaderF = new BufferedReader(
                     new InputStreamReader(
                             new FileInputStream(metaTokens), Charset.forName("UTF-8")));
@@ -245,14 +215,14 @@ public class ParserUtils {
                 line = bufferedReaderF.readLine();
             }
         } catch (IOException ex) {
-            logger.error("Cannot read replacement file", ex);
+            LOG.error("Cannot read replacement file", ex);
         }finally{
             try {
                 if (bufferedReaderF != null) {
                     bufferedReaderF.close();
                 }
             } catch (IOException e) {
-                logger.error("Cannot close replacement file", e);
+                LOG.error("Cannot close replacement file", e);
             }
         }
         return replacement;

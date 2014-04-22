@@ -153,7 +153,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
 
     override def beforeAll(): Unit = {
       beforeCassandraStart()
-      CCMHandler.StartCCM()
+      CCMHandler.startCCM()
       afterCassandraStart()
     }
 

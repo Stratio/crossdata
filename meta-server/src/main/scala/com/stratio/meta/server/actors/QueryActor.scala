@@ -43,7 +43,7 @@ class QueryActor(engine: Engine) extends Actor{
       log.info("Finish Query")
     }
     case _ => {
-      sender ! QueryResult.CreateFailQueryResult("Message not recognized")
+      sender ! QueryResult.createFailQueryResult("Message not recognized")
     }
   }
 }

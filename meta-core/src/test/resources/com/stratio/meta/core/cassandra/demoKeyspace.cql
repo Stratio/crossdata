@@ -2,7 +2,7 @@ CREATE KEYSPACE demo WITH REPLICATION = {'class' : 'SimpleStrategy', 'replicatio
 
 USE demo;
 
-CREATE TABLE demo.users ( name varchar, gender varchar, email varchar, age int, bool boolean, phrase varchar, stratio_lucene_index_1 varchar, PRIMARY KEY ((name, gender), email, age));
+CREATE TABLE demo.users ( name varchar, gender varchar, email varchar, age int, bool boolean, phrase varchar, stratio_lucene_index_1 varchar, PRIMARY KEY ((name, gender), email, age)) WITH comment='Users table';
 
 #Create lucene index
 CREATE CUSTOM INDEX stratio_lucene_index_1 ON demo.users (stratio_lucene_index_1) USING 'org.apache.cassandra.db.index.stratio.RowIndex' WITH OPTIONS = {'refresh_seconds':'1', 'schema':'{default_analyzer:"org.apache.lucene.analysis.standard.StandardAnalyzer",fields:{name:{type:"string"}, gender:{type:"string"}, email:{type:"string"}, age:{type:"integer"}, bool:{type:"boolean"}, phrase:{type:"text", analyzer:"org.apache.lucene.analysis.en.EnglishAnalyzer"}}}'};

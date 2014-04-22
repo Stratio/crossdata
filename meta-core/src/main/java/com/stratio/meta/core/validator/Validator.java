@@ -23,27 +23,21 @@ import com.datastax.driver.core.Session;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.QueryStatus;
-import org.apache.log4j.Logger;
 
 public class Validator {
 
-    private final Logger logger = Logger.getLogger(Validator.class);
-    //private final Session session;
-
-    private final MetadataManager _metadata;
+    private final MetadataManager metadata;
 
     public Validator(Session session){
-        //this.session = session;
-        _metadata = new MetadataManager(session);
-        _metadata.loadMetadata();
+        metadata = new MetadataManager(session);
+        metadata.loadMetadata();
     }
 
     public MetaQuery validateQuery(MetaQuery metaQuery) {
         metaQuery.setResult(
                 metaQuery.getStatement()
-                        .validate(_metadata, metaQuery.getTargetKeyspace())
+                        .validate(metadata, metaQuery.getTargetKeyspace())
         );
-        //System.out.println("Validation hasError: " + metaQuery.getResult().hasError());
         if(!metaQuery.hasError()) {
             metaQuery.setStatus(QueryStatus.VALIDATED);
         }

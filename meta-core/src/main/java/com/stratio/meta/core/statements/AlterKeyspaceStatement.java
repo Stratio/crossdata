@@ -44,7 +44,7 @@ public class AlterKeyspaceStatement extends MetaStatement {
      * The map of properties of the keyspace. The different options accepted by a keyspace
      * are determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
      */
-    private HashMap<String, ValueProperty> properties;
+    private Map<String, ValueProperty> properties;
 
     /**
      * Class constructor.
@@ -66,12 +66,6 @@ public class AlterKeyspaceStatement extends MetaStatement {
         return sb.toString();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
-    }
-
     @Override
     public String getSuggestion() {
         return this.getClass().toString().toUpperCase()+" EXAMPLE";
@@ -82,7 +76,6 @@ public class AlterKeyspaceStatement extends MetaStatement {
         return this.toString();
     }
 
-    
     @Override
     public Statement getDriverStatement() {
         return null;

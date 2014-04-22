@@ -19,27 +19,59 @@
 
 package com.stratio.meta.common.result;
 
-
+/**
+ * Result of the execution of a command in META.
+ */
 public class CommandResult extends Result {
 
-
+    /**
+     * Serial version UID in order to be {@link java.io.Serializable}.
+     */
     private static final long serialVersionUID = -6987780936081295180L;
+
+    /**
+     * Execution result.
+     */
     private final String result;
 
-    private CommandResult(String result,boolean error, String errorMessage, String currentKeyspace){
+    /**
+     * Private class constructor of the factory.
+     * @param result The execution result.
+     * @param error Whether an error occurred during the query execution.
+     * @param errorMessage The error message in case of {@code error}.
+     * @param currentKeyspace The current keyspace after the execution of the command.
+     */
+    private CommandResult(String result,
+                          boolean error,
+                          String errorMessage,
+                          String currentKeyspace){
         super(error, errorMessage, false, currentKeyspace);
         this.result=result;
     }
 
+    /**
+     * Get the execution result.
+     * @return The result or null if an error occurred.
+     */
     public String getResult() {
         return result;
     }
 
-    public static CommandResult CreateSuccessCommandResult(String result){
+    /**
+     * Create a successful command result.
+     * @param result The execution result.
+     * @return A {@link com.stratio.meta.common.result.CommandResult}.
+     */
+    public static CommandResult createSuccessCommandResult(String result){
         return new CommandResult(result, false, null, null);
     }
 
-    public static CommandResult CreateFailCommanResult(String errorMessage){
+    /**
+     * Create a failed command result.
+     * @param errorMessage The associated error message.
+     * @return A {@link com.stratio.meta.common.result.CommandResult}.
+     */
+    public static CommandResult createFailCommanResult(String errorMessage){
         return new CommandResult(null, true, errorMessage, null);
     }
 

@@ -21,7 +21,6 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.data.DeepResultSet;
-import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ListType;
 import com.stratio.meta.core.utils.Tree;
@@ -34,7 +33,7 @@ public class ListStatement extends MetaStatement {
     /**
      * The {@link com.stratio.meta.core.structures.ListType} to be executed.
      */
-    private ListType _type = null;
+    private ListType type = null;
 
     /**
      * Class constructor.
@@ -42,18 +41,12 @@ public class ListStatement extends MetaStatement {
      */
     public ListStatement(String type){
         this.command = true;
-        _type = ListType.valueOf(type.toUpperCase());
+        this.type = ListType.valueOf(type.toUpperCase());
     }
 
     @Override
     public String toString() {
-            return "LIST " + _type;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
+            return "LIST " + type;
     }
 
     @Override

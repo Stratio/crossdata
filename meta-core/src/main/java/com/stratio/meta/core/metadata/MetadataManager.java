@@ -36,30 +36,30 @@ public class MetadataManager {
 	/**
 	 * Cluster metadata in Cassandra.
 	 */
-	private Metadata _clusterMetadata = null;
+	private Metadata clusterMetadata = null;
 
     /**
      * Cassandra session used to query the custom index information.
      */
-    private final Session _session;
+    private final Session session;
 
     /**
      * Lucene index helper used to parse custom index options.
      */
-    private final LuceneIndexHelper _luceneHelper;
+    private final LuceneIndexHelper luceneHelper;
 
 	/**
 	 * Class logger.
 	 */
-	private static final Logger _logger = Logger.getLogger(MetadataManager.class.getName());
+	private static final Logger LOG = Logger.getLogger(MetadataManager.class.getName());
 	
 	/**
 	 * Class constructor.
      * @param cassandraSession The Cassandra session used to retrieve index metadata.
 	 */
 	public MetadataManager(Session cassandraSession){
-        _session = cassandraSession;
-        _luceneHelper = new LuceneIndexHelper(_session);
+        session = cassandraSession;
+        luceneHelper = new LuceneIndexHelper(session);
 	}
 
 	/**
@@ -67,8 +67,8 @@ public class MetadataManager {
 	 * @return Whether the metadata has been loaded or not.
 	 */
 	public boolean loadMetadata(){
-		_clusterMetadata = _session.getCluster().getMetadata();
-		return _clusterMetadata != null;
+		clusterMetadata = session.getCluster().getMetadata();
+		return clusterMetadata != null;
 	}
 	
 	/**
@@ -79,13 +79,12 @@ public class MetadataManager {
 	 */
 	public KeyspaceMetadata getKeyspaceMetadata(String keyspace){
 		KeyspaceMetadata result = null;
-		if(_clusterMetadata != null){
-			result = _clusterMetadata.getKeyspace(keyspace);
-			if (_logger.isDebugEnabled()) {
-				_logger.debug("Cluster metadata: " + result);
+		if(clusterMetadata != null){
+			result = clusterMetadata.getKeyspace(keyspace);
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Cluster metadata: " + result);
 			}
 		}
-        //System.out.println("getKeyspaceMetadata: " + _clusterMetadata + " result: " + result);
 		return result;
 	}
 	
@@ -98,18 +97,18 @@ public class MetadataManager {
 	 */
 	public TableMetadata getTableMetadata(String keyspace, String tablename){
 		TableMetadata result = null;
-        _clusterMetadata.getKeyspace(keyspace);
-		if(_clusterMetadata != null && _clusterMetadata.getKeyspace(keyspace) != null){
+        clusterMetadata.getKeyspace(keyspace);
+		if(clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null){
             tablename = tablename.toLowerCase();
             boolean found = false;
             //Iterate through the tables matching the name. We cannot use the getTable
             //method as it changes the names using the Metadata.handleId
-            Iterator<TableMetadata> tables = _clusterMetadata.getKeyspace(keyspace)
+            Iterator<TableMetadata> tables = clusterMetadata.getKeyspace(keyspace)
                     .getTables().iterator();
             TableMetadata tableMetadata = null;
             while(!found && tables.hasNext()){
                 tableMetadata = tables.next();
-                if(tableMetadata.getName().toLowerCase().equals(tablename)){
+                if(tableMetadata.getName().equalsIgnoreCase(tablename)){
                     found = true;
                 }
             }
@@ -130,8 +129,8 @@ public class MetadataManager {
      */
     public String getTableComment(String keyspace, String tablename){
         String result = null;
-        if(_clusterMetadata != null && _clusterMetadata.getKeyspace(keyspace) != null){
-            result = _clusterMetadata.getKeyspace(keyspace).getTable(tablename).getOptions().getComment();
+        if(clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null){
+            result = clusterMetadata.getKeyspace(keyspace).getTable(tablename).getOptions().getComment();
         }
         return result;
     }
@@ -142,8 +141,8 @@ public class MetadataManager {
      */
     public List<String> getKeyspacesNames(){
         List<String> result = new ArrayList<>();
-        if(_clusterMetadata != null){
-            for(KeyspaceMetadata list : _clusterMetadata.getKeyspaces()){
+        if(clusterMetadata != null){
+            for(KeyspaceMetadata list : clusterMetadata.getKeyspaces()){
                 result.add(list.getName());
             }
         }
@@ -158,8 +157,8 @@ public class MetadataManager {
      */
     public List<String> getTablesNames(String keyspace){
         List<String> result = new ArrayList<>();
-        if(_clusterMetadata != null && _clusterMetadata.getKeyspace(keyspace) != null){
-            KeyspaceMetadata km = _clusterMetadata.getKeyspace(keyspace);
+        if(clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null){
+            KeyspaceMetadata km = clusterMetadata.getKeyspace(keyspace);
             for(TableMetadata tm : km.getTables()){
                 result.add(tm.getName());
             }
@@ -195,8 +194,8 @@ public class MetadataManager {
         //Iterate through the table columns.
         for(ColumnMetadata column : tableMetadata.getColumns()) {
             if (column.getIndex() != null) {
-                if (_logger.isTraceEnabled()) {
-                    _logger.trace("Index found in column " + column.getName());
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Index found in column " + column.getName());
                 }
                 CustomIndexMetadata toAdd = null;
                 if (!column.getIndex().isCustomIndex()) {
@@ -204,9 +203,9 @@ public class MetadataManager {
                     toAdd = new CustomIndexMetadata(column, column.getIndex().getName(), IndexType.DEFAULT, column.getName());
                 } else if (column.getIndex().getIndexClassName().compareTo("org.apache.cassandra.db.index.stratio.RowIndex") == 0) {
                     //A Lucene custom index is found that may index several columns.
-                    toAdd = _luceneHelper.getLuceneIndex(column, column.getIndex().getName());
+                    toAdd = luceneHelper.getLuceneIndex(column, column.getIndex().getName());
                 } else {
-                    _logger.error("Index " + column.getIndex().getName()
+                    LOG.error("Index " + column.getIndex().getName()
                             + " on " + column.getName()
                             + " with class " + column.getIndex().getIndexClassName() + " not supported.");
                 }
@@ -214,8 +213,8 @@ public class MetadataManager {
             }
         }
 
-        if(_logger.isDebugEnabled()){
-            _logger.debug("Table " + tableMetadata.getName() + " has " + result.size() + " indexed columns.");
+        if(LOG.isDebugEnabled()){
+            LOG.debug("Table " + tableMetadata.getName() + " has " + result.size() + " indexed columns.");
         }
         return result;
     }

@@ -28,6 +28,6 @@ public abstract class ResultSet implements Iterable<Row> {
     public abstract int size();
 
     public boolean isEmpty(){
-        return (size() < 1);
+        return size() < 1;
     }
 }

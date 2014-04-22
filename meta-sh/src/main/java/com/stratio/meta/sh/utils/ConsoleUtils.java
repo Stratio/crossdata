@@ -90,8 +90,8 @@ public class ConsoleUtils {
 
         String bar = StringUtils.repeat('-', getTotalWidth(colWidths) + (colWidths.values().size() * 3) + 1);
 
-        StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
-        sb.append(bar).append(System.getProperty("line.separator"));
+        StringBuilder sb = new StringBuilder(System.lineSeparator());
+        sb.append(bar).append(System.lineSeparator());
         boolean firstRow = true;
         for(Row row: resultSet){
             sb.append("| ");
@@ -100,9 +100,9 @@ public class ConsoleUtils {
                 for(String key: row.getCells().keySet()){
                     sb.append(StringUtils.rightPad("\033[34;1m"+key+"\033[0m ", colWidths.get(key)+12)).append("| ");
                 }
-                sb.append(System.getProperty("line.separator"));
+                sb.append(System.lineSeparator());
                 sb.append(bar);
-                sb.append(System.getProperty("line.separator"));
+                sb.append(System.lineSeparator());
                 sb.append("| ");
                 firstRow = false;
             }
@@ -114,9 +114,9 @@ public class ConsoleUtils {
                 sb.append(StringUtils.rightPad(str, colWidths.get(key)));
                 sb.append(" | ");
             }
-            sb.append(System.getProperty("line.separator"));
+            sb.append(System.lineSeparator());
         }
-        sb.append(bar).append(System.getProperty("line.separator"));
+        sb.append(bar).append(System.lineSeparator());
         return sb.toString();
     }
 

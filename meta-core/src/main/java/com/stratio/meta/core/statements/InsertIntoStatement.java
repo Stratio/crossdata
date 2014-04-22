@@ -59,11 +59,6 @@ public class InsertIntoStatement extends MetaStatement {
     public static final int TYPE_VALUES_CLAUSE = 2;
 
     /**
-     * Class logger.
-     */
-    private final Logger logger = Logger.getLogger(InsertIntoStatement.class);
-
-    /**
      * Whether the keyspace has been specified in the Select statement or it should be taken from the
      * environment.
      */
@@ -179,7 +174,6 @@ public class InsertIntoStatement extends MetaStatement {
         return sb.toString();
     }
 
-    /** {@inheritDoc} */
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
         Result result = validateKeyspaceAndTable(metadata, targetKeyspace, keyspaceInc, keyspace, tableName);
@@ -192,7 +186,7 @@ public class InsertIntoStatement extends MetaStatement {
             TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
 
             if(typeValues == TYPE_SELECT_CLAUSE){
-                result = QueryResult.CreateFailQueryResult("INSERT INTO with subqueries not supported.");
+                result = QueryResult.createFailQueryResult("INSERT INTO with subqueries not supported.");
             }else {
                 result = validateColumns(tableMetadata);
             }
@@ -207,12 +201,12 @@ public class InsertIntoStatement extends MetaStatement {
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
     private Result validateColumns(TableMetadata tableMetadata) {
-        Result result = QueryResult.CreateSuccessQueryResult();
+        Result result = QueryResult.createSuccessQueryResult();
 
         //Validate target column names
         for(String c : ids){
             if(c.toLowerCase().startsWith("stratio")){
-                result = QueryResult.CreateFailQueryResult("Cannot insert data into column " + c + " reserved for internal use.");
+                result = QueryResult.createFailQueryResult("Cannot insert data into column " + c + " reserved for internal use.");
             }
         }
         if(!result.hasError()) {
@@ -222,19 +216,18 @@ public class InsertIntoStatement extends MetaStatement {
                     cm = tableMetadata.getColumn(ids.get(index));
                     if (cm != null) {
                         Term t = Term.class.cast(cellValues.get(index));
-                        //System.out.println("Term: " + t + " type: " + t.getClass());
                         if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
-                            result = QueryResult.CreateFailQueryResult("Column " + ids.get(index)
+                            result = QueryResult.createFailQueryResult("Column " + ids.get(index)
                                     + " of type " + cm.getType().asJavaClass()
                                     + " does not accept " + t.getTermClass()
                                     + " values (" + cellValues.get(index) + ")");
                         }
                     } else {
-                        result = QueryResult.CreateFailQueryResult("Column " + ids.get(index) + " not found in " + tableMetadata.getName());
+                        result = QueryResult.createFailQueryResult("Column " + ids.get(index) + " not found in " + tableMetadata.getName());
                     }
                 }
             } else {
-                result = QueryResult.CreateFailQueryResult("Number of columns and values does not match.");
+                result = QueryResult.createFailQueryResult("Number of columns and values does not match.");
             }
         }
         return result;

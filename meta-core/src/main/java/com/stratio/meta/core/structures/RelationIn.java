@@ -22,6 +22,7 @@ package com.stratio.meta.core.structures;
 import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class RelationIn extends Relation {
 
@@ -33,7 +34,7 @@ public class RelationIn extends Relation {
         this.identifiers.add(identifier);
     }
     
-    public RelationIn(String identifier, ArrayList<Term> terms) {
+    public RelationIn(String identifier, List<Term> terms) {
         this(identifier);
         this.terms = terms;
     }   

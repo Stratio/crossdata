@@ -37,10 +37,10 @@ class ServerActor(engine:Engine) extends Actor {
     case query:Query => queryActorRef forward query
     case Connect(user)=> {
       log.info("Welcome " + user +"!")
-      sender ! ConnectResult.CreateSuccessConnectResult(Random.nextLong())
+      sender ! ConnectResult.createSuccessConnectResult(Random.nextLong())
     }
     case _ => {
-      sender ! CommandResult.CreateFailCommanResult("Not recognized object")
+      sender ! CommandResult.createFailCommanResult("Not recognized object")
     }
   }
 }

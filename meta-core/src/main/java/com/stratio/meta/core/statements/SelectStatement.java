@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
  */
 public class SelectStatement extends MetaStatement {
 
-    private final static int MAX_LIMIT = 10000;
+    private static final int MAX_LIMIT = 10000;
 
     /**
      * The {@link com.stratio.meta.core.structures.SelectionClause} of the Select statement.
@@ -180,12 +180,12 @@ public class SelectStatement extends MetaStatement {
      * @param disableAnalytics Flag to disable complex analytic functions such as INNER JOIN.
      */
     public SelectStatement(SelectionClause selectionClause, String tableName,
-                           boolean windowInc, WindowSelect window, 
-                           boolean joinInc, InnerJoin join, 
+                           boolean windowInc, WindowSelect window,
+                           boolean joinInc, InnerJoin join,
                            boolean whereInc, List<Relation> where,
                            boolean orderInc, List<com.stratio.meta.core.structures.Ordering> order,
-                           boolean groupInc, GroupBy group, 
-                           boolean limitInc, int limit, 
+                           boolean groupInc, GroupBy group,
+                           boolean limitInc, int limit,
                            boolean disableAnalytics) {
         this.command = false;
         this.selectionClause = selectionClause;
@@ -409,7 +409,7 @@ public class SelectStatement extends MetaStatement {
         }
         if(disableAnalytics){
             sb.append(" DISABLE ANALYTICS");
-        }        
+        }
 
         return sb.toString().replace("  ", " ");
     }
@@ -421,11 +421,12 @@ public class SelectStatement extends MetaStatement {
         Result result = validateKeyspaceAndTable(metadata, targetKeyspace,
                 keyspaceInc, keyspace, tableName);
 
-        if(!result.hasError() && joinInc){
-            if(join.getKeyspace() != null){
-                result = validateKeyspaceAndTable(metadata, targetKeyspace,
-                        join.isKeyspaceInc(), join.getKeyspace(), join.getTablename());
-            }
+        if(!result.hasError()
+                && joinInc
+                && join.getKeyspace() != null){
+            result = validateKeyspaceAndTable(metadata, targetKeyspace,
+                    join.isKeyspaceInc(), join.getKeyspace(), join.getTablename());
+
         }
 
         if(!result.hasError()){
@@ -468,17 +469,17 @@ public class SelectStatement extends MetaStatement {
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
     private Result validateOptions(){
-        Result result = QueryResult.CreateSuccessQueryResult();
+        Result result = QueryResult.createSuccessQueryResult();
         if(windowInc){
-            result= QueryResult.CreateFailQueryResult("Select with streaming options not supported.");
+            result= QueryResult.createFailQueryResult("Select with streaming options not supported.");
         }
 
         if(groupInc){
-            result= QueryResult.CreateFailQueryResult("Select with GROUP BY clause not supported.");
+            result= QueryResult.createFailQueryResult("Select with GROUP BY clause not supported.");
         }
 
         if(orderInc){
-            result= QueryResult.CreateFailQueryResult("Select with ORDER BY clause not supported.");
+            result= QueryResult.createFailQueryResult("Select with ORDER BY clause not supported.");
         }
         return result;
     }
@@ -494,7 +495,7 @@ public class SelectStatement extends MetaStatement {
     private Result validateWhereClause(TableMetadata tableFrom, TableMetadata tableJoin){
         //TODO: Check that the MATCH operator is only used in Lucene mapped columns.
 
-        Result result = QueryResult.CreateSuccessQueryResult();
+        Result result = QueryResult.createSuccessQueryResult();
         for(Relation relation : where){
             if(Relation.TYPE_COMPARE == relation.getType()) {
                 //Check comparison, =, >, <, etc.
@@ -525,7 +526,7 @@ public class SelectStatement extends MetaStatement {
                         found = true;
 
                         if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
-                            result = QueryResult.CreateFailQueryResult("Column " + column
+                            result = QueryResult.createFailQueryResult("Column " + column
                                     + " of type " + cm.getType().asJavaClass()
                                     + " does not accept " + t.getTermClass()
                                     + " values (" + t.toString() + ")");
@@ -550,27 +551,27 @@ public class SelectStatement extends MetaStatement {
                                     break;
                             }
                             if (!supported) {
-                                result = QueryResult.CreateFailQueryResult("Operand " + rc.getOperator() + " not supported for" +
+                                result = QueryResult.createFailQueryResult("Operand " + rc.getOperator() + " not supported for" +
                                         " column " + column + ".");
                             }
                         }
                     }
                 }
 
-            if(!found) {
-                    result= QueryResult.CreateFailQueryResult("Column " + column + " not found in table " + tableName);
-            }
+                if(!found) {
+                    result= QueryResult.createFailQueryResult("Column " + column + " not found in table " + tableName);
+                }
 
 
             }else if(Relation.TYPE_IN == relation.getType()){
                 //TODO: Check IN relation
-                result= QueryResult.CreateFailQueryResult("IN clause not supported.");
+                result= QueryResult.createFailQueryResult("IN clause not supported.");
             }else if(Relation.TYPE_TOKEN == relation.getType()){
                 //TODO: Check IN relation
-                result= QueryResult.CreateFailQueryResult("TOKEN function not supported.");
+                result= QueryResult.createFailQueryResult("TOKEN function not supported.");
             }else if(Relation.TYPE_BETWEEN == relation.getType()){
                 //TODO: Check IN relation
-                result= QueryResult.CreateFailQueryResult("BETWEEN clause not supported.");
+                result= QueryResult.createFailQueryResult("BETWEEN clause not supported.");
             }
         }
 
@@ -585,7 +586,7 @@ public class SelectStatement extends MetaStatement {
      */
     private Result findColumn(String table, String column){
 
-        Result result = QueryResult.CreateSuccessQueryResult();
+        Result result = QueryResult.createSuccessQueryResult();
         boolean found = false;
 
         if(columns.get(table) != null){
@@ -598,12 +599,12 @@ public class SelectStatement extends MetaStatement {
                 }
             }
             if(!found){
-                result= QueryResult.CreateFailQueryResult("Column " + column + " does not " +
+                result= QueryResult.createFailQueryResult("Column " + column + " does not " +
                         "exists in table " + table);
             }
 
         }else{
-            result = QueryResult.CreateFailQueryResult("Column " + column
+            result = QueryResult.createFailQueryResult("Column " + column
                     + " refers to table " + table + " that has not been specified on query.");
         }
         return result;
@@ -618,7 +619,7 @@ public class SelectStatement extends MetaStatement {
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
     private Result validateSelectionColumns(TableMetadata tableFrom, TableMetadata tableJoin) {
-        Result result = QueryResult.CreateSuccessQueryResult();
+        Result result = QueryResult.createSuccessQueryResult();
 
         //Create a HashMap with the columns
         Collection<ColumnMetadata> allColumns = new ArrayList<>();
@@ -652,7 +653,7 @@ public class SelectStatement extends MetaStatement {
                             result = columnResult;
                         }
                     }else{
-                        result= QueryResult.CreateFailQueryResult("Functions on selected fields not supported.");
+                        result= QueryResult.createFailQueryResult("Functions on selected fields not supported.");
                     }
                 }
             }
@@ -682,7 +683,7 @@ public class SelectStatement extends MetaStatement {
             //Iterate throughout the relations of the where clause looking for MATCH.
             for (Relation relation : where) {
                 if (Relation.TYPE_COMPARE == relation.getType()
-                        && relation.getOperator().equalsIgnoreCase("MATCH")) {
+                        && "MATCH".equalsIgnoreCase(relation.getOperator())) {
                     RelationCompare rc = RelationCompare.class.cast(relation);
                     String column = rc.getIdentifiers().get(0);
                     String value = rc.getTerms().get(0).toString();
@@ -751,66 +752,65 @@ public class SelectStatement extends MetaStatement {
 
     @Override
     public String translateToCQL() {
-        StringBuilder sb = new StringBuilder(this.toString());     
+        StringBuilder sb = new StringBuilder(this.toString());
 
         if(sb.toString().contains("TOKEN(")){
             int currentLength = 0;
             int newLength = sb.toString().length();
             while(newLength!=currentLength){
                 currentLength = newLength;
-                //sb = new StringBuilder(sb.toString().replaceAll("(.*[=|<|>|<=|>=|<>|LIKE][\\s]?TOKEN\\()([^'][^\\)]+)(\\).*)", "$1'$2'$3"));
                 sb = new StringBuilder(sb.toString().replaceAll("(.*)" //$1
-                        + "(=|<|>|<=|>=|<>|LIKE)" //$2
-                        + "(\\s?)" //$3
-                        + "(TOKEN\\()" //$4
-                        + "([^'][^\\)]+)" //$5
-                        + "(\\).*)", //$6
-                "$1$2$3$4'$5'$6"));
+                                + "(=|<|>|<=|>=|<>|LIKE)" //$2
+                                + "(\\s?)" //$3
+                                + "(TOKEN\\()" //$4
+                                + "([^'][^\\)]+)" //$5
+                                + "(\\).*)", //$6
+                        "$1$2$3$4'$5'$6"));
                 sb = new StringBuilder(sb.toString().replaceAll("(.*TOKEN\\(')" //$1
-                        + "([^,]+)" //$2
-                        + "(,)" //$3
-                        + "(\\s*)" //$4
-                        + "([^']+)" //$5
-                        + "(')" //$6
-                        + "(\\).*)", //$7 
-                "$1$2'$3$4'$5$6$7"));
+                                + "([^,]+)" //$2
+                                + "(,)" //$3
+                                + "(\\s*)" //$4
+                                + "([^']+)" //$5
+                                + "(')" //$6
+                                + "(\\).*)", //$7
+                        "$1$2'$3$4'$5$6$7"));
                 sb = new StringBuilder(sb.toString().replaceAll("(.*TOKEN\\(')" //$1
-                        + "(.+)" //$2
-                        + "([^'])" //$3
-                        + "(,)" //$4
-                        + "(\\s*)" //$5
-                        + "([^']+)" //$6
-                        + "(')" //$7
-                        + "(\\).*)", //$8 
-                "$1$2$3'$4$5'$6$7$8"));
+                                + "(.+)" //$2
+                                + "([^'])" //$3
+                                + "(,)" //$4
+                                + "(\\s*)" //$5
+                                + "([^']+)" //$6
+                                + "(')" //$7
+                                + "(\\).*)", //$8
+                        "$1$2$3'$4$5'$6$7$8"));
                 sb = new StringBuilder(sb.toString().replaceAll("(.*TOKEN\\(')" //$1
-                        + "(.+)" //$2
-                        + "([^'])" //$3
-                        + "(,)" //$4
-                        + "(\\s*)" //$5
-                        + "([^']+)" //$6
-                        + "(')" //$7
-                        + "([^TOKEN]+)" //$8
-                        + "('\\).*)", //$9 
-                "$1$2$3'$4$5'$6$7$8$9"));
+                                + "(.+)" //$2
+                                + "([^'])" //$3
+                                + "(,)" //$4
+                                + "(\\s*)" //$5
+                                + "([^']+)" //$6
+                                + "(')" //$7
+                                + "([^TOKEN]+)" //$8
+                                + "('\\).*)", //$9
+                        "$1$2$3'$4$5'$6$7$8$9"));
                 newLength = sb.toString().length();
-            }          
+            }
         }
 
         return sb.toString();
     }
 
-    
+
     @Override
-    public Statement getDriverStatement() {                
-        SelectionClause selClause = this.selectionClause;                                                
+    public Statement getDriverStatement() {
+        SelectionClause selClause = this.selectionClause;
         Select.Builder builder;
-        
+        //TODO: Refactor removing the RuntimeExceptions
         if(this.selectionClause.getType() == SelectionClause.TYPE_COUNT){
             builder = QueryBuilder.select().countAll();
         } else {
             SelectionList selList = (SelectionList) selClause;
-            if(selList.getSelection().getType() != Selection.TYPE_ASTERISK){            
+            if(selList.getSelection().getType() != Selection.TYPE_ASTERISK){
                 Select.Selection selection = QueryBuilder.select();
                 if(selList.isDistinct()){
                     selection = selection.distinct();
@@ -819,13 +819,13 @@ public class SelectStatement extends MetaStatement {
                 for(SelectionSelector selSelector: selSelectors.getSelectors()){
                     SelectorMeta selectorMeta = selSelector.getSelector();
                     if(selectorMeta.getType() == SelectorMeta.TYPE_IDENT){
-                        SelectorIdentifier selIdent = (SelectorIdentifier) selectorMeta;    
-                        if(selSelector.isAliasInc()){                            
+                        SelectorIdentifier selIdent = (SelectorIdentifier) selectorMeta;
+                        if(selSelector.isAliasInc()){
                             selection = selection.column(selIdent.getIdentifier()).as(selSelector.getAlias());
                         } else {
-                            selection = selection.column(selIdent.getIdentifier());                        
+                            selection = selection.column(selIdent.getIdentifier());
                         }
-                    } else if (selectorMeta.getType() == SelectorMeta.TYPE_FUNCTION){                        
+                    } else if (selectorMeta.getType() == SelectorMeta.TYPE_FUNCTION){
                         SelectorFunction selFunction = (SelectorFunction) selectorMeta;
                         List<SelectorMeta> params = selFunction.getParams();
                         Object[] innerFunction = new Object[params.size()];
@@ -835,26 +835,26 @@ public class SelectStatement extends MetaStatement {
                             pos++;
                         }
                         selection = selection.fcall(selFunction.getName(), innerFunction);
-                    }               
+                    }
                 }
                 builder = selection;
             } else {
                 builder = QueryBuilder.select().all();
-            }             
-        }                                     
-                        
+            }
+        }
+
         Select sel;
-        
+
         if(this.keyspaceInc){
             sel = builder.from(this.keyspace, this.tableName);
         } else {
             sel = builder.from(this.tableName);
         }
-        
+
         if(this.limitInc){
             sel.limit(this.limit);
-        }                
-        
+        }
+
         if(this.orderInc){
             com.datastax.driver.core.querybuilder.Ordering[] orderings = new com.datastax.driver.core.querybuilder.Ordering[order.size()];
             int nOrdering = 0;
@@ -866,7 +866,7 @@ public class SelectStatement extends MetaStatement {
                 }
                 nOrdering++;
             }
-            sel.orderBy(orderings); 
+            sel.orderBy(orderings);
         }
 
         Where whereStmt = null;
@@ -879,7 +879,7 @@ public class SelectStatement extends MetaStatement {
             for(Relation metaRelation: this.where){
                 Clause clause = null;
                 String name;
-                Object value;                
+                Object value;
                 switch(metaRelation.getType()){
                     case Relation.TYPE_COMPARE:
                         RelationCompare relCompare = (RelationCompare) metaRelation;
@@ -911,17 +911,17 @@ public class SelectStatement extends MetaStatement {
                             default:
                                 clause = null;
                                 throw new UnsupportedOperationException("'"+relCompare.getOperator()+"' operator not supported by C*");
-                        }                                  
+                        }
                         break;
                     case Relation.TYPE_IN:
                         RelationIn relIn = (RelationIn) metaRelation;
                         List<Term> terms = relIn.getTerms();
-                        Object[] values = new Object[relIn.numberOfTerms()];                        
+                        Object[] values = new Object[relIn.numberOfTerms()];
                         int nTerm = 0;
                         for(Term term: terms){
                             values[nTerm] = term.getTermValue();
                             nTerm++;
-                        }     
+                        }
                         if(values[0].toString().matches("[0123456789\\.]+")){
                             int[] intValues = new int[relIn.numberOfTerms()];
                             for(int i= 0; i<values.length; i++){
@@ -963,7 +963,7 @@ public class SelectStatement extends MetaStatement {
                         break;
                 }
                 if(clause != null){
-                    if(whereStmt == null){                
+                    if(whereStmt == null){
                         whereStmt = sel.where(clause);
                     } else {
                         whereStmt = whereStmt.and(clause);
@@ -973,10 +973,9 @@ public class SelectStatement extends MetaStatement {
         } else {
             whereStmt = sel.where();
         }
-        //System.out.println("C* SELECT stmt: " + whereStmt);
         return whereStmt;
     }
-    
+
     @Override
     public DeepResultSet executeDeep() {
         return new DeepResultSet();
@@ -984,6 +983,7 @@ public class SelectStatement extends MetaStatement {
 
     @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+        //TODO: Refactor getPlan
         Tree steps = new Tree();
         if(joinInc){
 
@@ -1001,7 +1001,7 @@ public class SelectStatement extends MetaStatement {
 
             // ADD FIELDS OF THE JOIN
             Map<String, String> fields = this.join.getFields();
-            for(String key: fields.keySet()){                
+            for(String key: fields.keySet()){
                 String value = fields.get(key);
                 if(key.split("\\.")[0].trim().equalsIgnoreCase(tableName)){
                     firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(key.split("\\.")[1])));
@@ -1026,7 +1026,8 @@ public class SelectStatement extends MetaStatement {
                         secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
                     }
                 }
-            } else { // instanceof SelectionAsterisk
+            } else {
+                // instanceof SelectionAsterisk
                 firstSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
                 secondSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
             }
@@ -1047,15 +1048,16 @@ public class SelectStatement extends MetaStatement {
                             firstWhere.add(new RelationCompare(whereColumnname, relation.getOperator(), relation.getTerms().get(0)));
                             Selection selList = ((SelectionList) this.selectionClause).getSelection();
 
-                            if(selList instanceof SelectionSelectors){ //Otherwise, it's an asterisk selection
+                            if(selList instanceof SelectionSelectors){
+                                // Otherwise, it's an asterisk selection
                                 // Add column to Select clauses if applied
                                 SelectionList sClause = (SelectionList) firstSelect.getSelectionClause();
                                 SelectionSelectors sSelectors = (SelectionSelectors) sClause.getSelection();
                                 boolean addCol = true;
                                 for (SelectionSelector ss: sSelectors.getSelectors()){
                                     SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-                                    String ColName = si.getColumnName();
-                                    if(ColName.equalsIgnoreCase(whereColumnname)){
+                                    String colName = si.getColumnName();
+                                    if(colName.equalsIgnoreCase(whereColumnname)){
                                         addCol = false;
                                         break;
                                     }
@@ -1064,7 +1066,8 @@ public class SelectStatement extends MetaStatement {
                                     firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(whereColumnname)));
                                 }
                             }
-                        } else { // Where clause corresponding to second table
+                        } else {
+                            // Where clause corresponding to second table
                             secondWhere.add(new RelationCompare(whereColumnname, relation.getOperator(), relation.getTerms().get(0)));
                             Selection selList = ((SelectionList) this.selectionClause).getSelection();
                             if(selList instanceof SelectionSelectors){
@@ -1074,8 +1077,8 @@ public class SelectStatement extends MetaStatement {
                                 boolean addCol = true;
                                 for (SelectionSelector ss: sSelectors.getSelectors()){
                                     SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-                                    String ColName = si.getColumnName();
-                                    if(ColName.equalsIgnoreCase(whereColumnname)){
+                                    String colName = si.getColumnName();
+                                    if(colName.equalsIgnoreCase(whereColumnname)){
                                         addCol = false;
                                         break;
                                     }
@@ -1101,7 +1104,7 @@ public class SelectStatement extends MetaStatement {
             if(firstTableOfInnerJoin.equalsIgnoreCase(tableName)){
                 joinSelect.setJoin(new InnerJoin("", fields));
             } else {
-                HashMap changedMap = new HashMap<String, String>();
+                Map<String, String> changedMap = new HashMap<>();
                 String newKey = fields.values().iterator().next();
                 String newValue = keyOfInnerJoin;
                 changedMap.put(newKey, newValue);
@@ -1120,7 +1123,7 @@ public class SelectStatement extends MetaStatement {
                 whereCols.addAll(relation.getIdentifiers());
             }
 
-            if((targetKeyspace == null) || (targetKeyspace.equalsIgnoreCase(""))){
+            if((targetKeyspace == null) || "".equals(targetKeyspace)){
                 targetKeyspace = keyspace;
             }
             TableMetadata tableMetadata = metadataManager.getTableMetadata(targetKeyspace, tableName);
@@ -1135,10 +1138,12 @@ public class SelectStatement extends MetaStatement {
             for(ColumnMetadata colMD: tableMetadata.getPrimaryKey()){
                 if(whereCols.contains(colMD.getName())){
                     whereCols.remove(colMD.getName());
-                } else { // Where column detected that is not included in the Primary Key columns
+                } else {
+                    // Where column detected that is not included in the Primary Key columns
                     break;
                 }
-                if(whereCols.isEmpty()){ // All where columns detected
+                if(whereCols.isEmpty()){
+                    // All where columns detected
                     break;
                 }
             }

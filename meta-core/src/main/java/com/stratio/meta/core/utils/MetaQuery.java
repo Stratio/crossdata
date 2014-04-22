@@ -37,7 +37,7 @@ public class MetaQuery {
     
     public MetaQuery() {
         status = QueryStatus.NONE;
-        result = QueryResult.CreateSuccessQueryResult();
+        result = QueryResult.createSuccessQueryResult();
     }
     
     public MetaQuery(String query) {
@@ -71,7 +71,7 @@ public class MetaQuery {
     
     public void setErrorMessage(String errorMsg) {
         hasError = true;
-        result=QueryResult.CreateFailQueryResult(errorMsg);
+        result=QueryResult.createFailQueryResult(errorMsg);
     }
     
     public void setStatement(MetaStatement statement) {

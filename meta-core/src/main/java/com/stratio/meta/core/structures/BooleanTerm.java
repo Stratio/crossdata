@@ -3,22 +3,20 @@ package com.stratio.meta.core.structures;
 
 public class BooleanTerm extends Term{
 
-    private final Boolean _value;
+    private final Boolean value;
 
     public BooleanTerm(String term){
-        _value = Boolean.valueOf(term);
+        value = Boolean.valueOf(term);
     }
 
-    /** {@inheritDoc} */
     @Override
-    public Class<?> getTermClass() {
+    public Class<Boolean> getTermClass() {
         return Boolean.class;
     }
 
-    /** {@inheritDoc} */
     @Override
     public Object getTermValue() {
-        return _value;
+        return value;
     }
 
     @Override
@@ -26,9 +24,8 @@ public class BooleanTerm extends Term{
         return toString();
     }
 
-    /** {@inheritDoc} */
     @Override
     public String toString() {
-        return ""+_value;
+        return ""+ value;
     }
 }

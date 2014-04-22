@@ -30,38 +30,46 @@ import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.structures.DescribeType;
 
 public class CommandExecutor {
+
     public static Result execute(MetaStatement stmt, Session session) {
         try {
             if(stmt instanceof DescribeStatement){
                 return executeDescribe((DescribeStatement) stmt, session);
             } else {
-                return CommandResult.CreateFailCommanResult("Not supported yet.");
+                return CommandResult.createFailCommanResult("Not supported yet.");
             }
         } catch (RuntimeException rex){
-            return CommandResult.CreateFailCommanResult(rex.getMessage());
+            return CommandResult.createFailCommanResult(rex.getMessage());
         }
     }
 
     private static Result executeDescribe(DescribeStatement dscrStatement, Session session){
         MetadataManager mm = new MetadataManager(session);
         mm.loadMetadata();
-        String result;
+        Result result = null;
+        String info = null;
+        String errorMessage = null;
         if(dscrStatement.getType() == DescribeType.KEYSPACE){ // KEYSPACE
             KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(dscrStatement.getKeyspace());
             if(ksInfo == null){
-                throw new RuntimeException("KEYSPACE "+dscrStatement.getKeyspace()+" was not found");
+                errorMessage = "KEYSPACE " + dscrStatement.getKeyspace() + " was not found";
             } else {
-                result =  ksInfo.exportAsString();
+                info = ksInfo.exportAsString();
             }
         } else { // TABLE
             TableMetadata tableInfo = mm.getTableMetadata(dscrStatement.getKeyspace(), dscrStatement.getTableName());
             if(tableInfo == null){
-                throw new RuntimeException("TABLE "+dscrStatement.getTableName()+" was not found");
+                errorMessage = "TABLE " + dscrStatement.getTableName() + " was not found";
             } else {
-                result = tableInfo.exportAsString();
+                info = tableInfo.exportAsString();
             }
         }
-        return CommandResult.CreateSuccessCommandResult(result);
+        if(info!=null){
+            result = CommandResult.createSuccessCommandResult(info);
+        }else{
+            result = CommandResult.createFailCommanResult(errorMessage);
+        }
+        return result;
     }
 
 }
