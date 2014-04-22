@@ -23,16 +23,14 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.executor.Executor;
+import com.stratio.meta.core.statements.InsertIntoStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import com.stratio.meta.core.utils.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.testng.Assert.*;
 
@@ -56,7 +54,12 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     public Result validateRows(MetaQuery metaQuery, String methodName, int expectedNumber){
         QueryResult result = (QueryResult) validateOk(metaQuery, methodName);
-        assertEquals(result.getResultSet().size(), expectedNumber, methodName + ":" + result.getResultSet().size() + " rows found, " + expectedNumber + " rows expected.");
+        if(expectedNumber > 0){
+            assertEquals(result.getResultSet().size(), expectedNumber, methodName + ":" + result.getResultSet().size() + " rows found, " + expectedNumber + " rows expected.");
+        } else {
+            assertNull(result.getResultSet(), methodName + ": Result should be null");
+        }
+
         return result;
     }
 
@@ -341,7 +344,106 @@ public class BridgeTest extends BasicCoreCassandraTest {
     public void select_columns_inner_join_and_where(){
         MetaQuery metaQuery = new MetaQuery("SELECT users.gender, types.boolean_column, users.age " +
                 "FROM demo.users INNER JOIN demo.types ON users.name = types.varchar_column WHERE types.int_column > 104;");
-        validateOk(metaQuery, "select_columns_inner_join_and_where");
+
+        // ADD MAIN STATEMENT
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.boolean_column")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        Map<String, String> fields = new HashMap<String, String>();
+        fields.put("users.name", "types.varchar_column");
+        InnerJoin join = new InnerJoin("demo.types", fields);
+
+        List<Relation> clause = new ArrayList<>();
+        Relation relation = new RelationCompare("types.int_column", ">", new IntegerTerm("104"));
+        clause.add(relation);
+
+        SelectStatement ss = new SelectStatement(
+                selectionClause, // SelectionClause selectionClause
+                "demo.users", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                true, join, // boolean joinInc, InnerJoin join
+                true, clause, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                true, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+        metaQuery.setStatement(ss);
+        System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
+        System.out.println("DEEP TEST (Stmnt): "+ metaQuery.getStatement().toString());
+
+        // FIRST SELECT
+        selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
+        selectionClause = new SelectionList(selectionSelectors);
+
+        SelectStatement firstSelect = new SelectStatement(
+                selectionClause, // SelectionClause selectionClause
+                "demo.users", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                false, null, // boolean joinInc, InnerJoin join
+                false, null, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                false, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+
+        // SECOND SELECT
+        selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.varchar_column")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.boolean_column")));
+        selectionClause = new SelectionList(selectionSelectors);
+
+        clause = new ArrayList<>();
+        relation = new RelationCompare("int_column", ">", new IntegerTerm("104"));
+        clause.add(relation);
+
+        SelectStatement secondSelect = new SelectStatement(
+                selectionClause, // SelectionClause selectionClause
+                "demo.types", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                false, null, // boolean joinInc, InnerJoin join
+                true, clause, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                false, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+
+        // INNER JOIN
+        fields = new HashMap<String, String>();
+        fields.put("users.name", "types.varchar_column");
+        join = new InnerJoin("", fields);
+        SelectStatement joinSelect = new SelectStatement(
+                null, // SelectionClause selectionClause
+                "", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                true, join, // boolean joinInc, InnerJoin join
+                false, null, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                false, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+
+        // CREATE ROOT
+        Tree tree = new Tree(new MetaStep(MetaPath.DEEP, joinSelect));
+
+        // ADD CHILD
+        tree.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
+
+        // ADD CHILD
+        tree.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
+
+        metaQuery.setPlan(tree);
+        metaQuery.setStatus(QueryStatus.PLANNED);
+        validateRows(metaQuery, "select_columns_inner_join_and_where", 5);
     }
 
     @Test
@@ -435,32 +537,55 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // TESTS FOR WRONG PLANS
 
-    //@Test
+    @Test
     public void insert_into_with_deep(){
         MetaQuery metaQuery = new MetaQuery("INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES " +
                 "('name_10', 'male', 'name_10@domain.com', 20, false, '');");
-        validateOk(metaQuery, "insert_into_with_deep");
+
+        List<ValueCell> cellValues = new ArrayList<>();
+        cellValues.add(new StringTerm("name_10"));
+        cellValues.add(new StringTerm("male"));
+        cellValues.add(new StringTerm("name_10@domain.com"));
+        cellValues.add(new IntegerTerm("20"));
+        cellValues.add(new BooleanTerm("false"));
+        cellValues.add(new StringTerm(""));
+
+        InsertIntoStatement iis = new InsertIntoStatement(
+                "demo.users", // String tableName
+                Arrays.asList("name", "gender", "email", "age", "bool", "phrase"), // List<String> ids
+                null, // SelectStatement selectStatement
+                cellValues, // List<ValueCell> cellValues
+                false, // boolean ifNotExists
+                false, null, // boolean optsInc, List<Option> options
+                InsertIntoStatement.TYPE_VALUES_CLAUSE // int typeValues
+        );
+
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, iis));
+        metaQuery.setPlan(tree);
+
+        validateRows(metaQuery, "insert_into_with_deep", 0);
     }
 
     //@Test
     public void select_columns_inner_join_with_wrong_selected_column(){
         MetaQuery metaQuery = new MetaQuery("SELECT users.gender, types.info, users.age " +
                 "FROM demo.users INNER JOIN demo.users_info ON users.name = users_info.link_name;");
-        validateOk(metaQuery, "select_columns_inner_join_with_wrong_selected_column");
+        validateFail(metaQuery, "select_columns_inner_join_with_wrong_selected_column");
     }
 
     //@Test
     public void select_columns_inner_join_with_wrong_table_in_map(){
         MetaQuery metaQuery = new MetaQuery("SELECT users.gender, users_info.info, users.age " +
                 "FROM demo.users INNER JOIN demo.users_info ON users.name = types.varchar_column;");
-        validateOk(metaQuery, "select_columns_inner_join_with_wrong_columns");
+        validateFail(metaQuery, "select_columns_inner_join_with_wrong_columns");
     }
 
     //@Test
     public void select_columns_inner_join_with_nonexistent_column(){
         MetaQuery metaQuery = new MetaQuery("SELECT users.gender, users_info.info, users.comment " +
                 "FROM demo.users INNER JOIN demo.users_info ON types.varchar_column = users.name;");
-        validateOk(metaQuery, "select_columns_inner_join_with_wrong_columns");
+        validateFail(metaQuery, "select_columns_inner_join_with_wrong_columns");
     }
 
 }
