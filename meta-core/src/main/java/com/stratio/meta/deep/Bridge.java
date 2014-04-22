@@ -41,14 +41,14 @@ import org.apache.spark.api.java.JavaRDD;
 
 import java.util.*;
 
+/**
+ * Class that performs as a Bridge betweet Meta and Stratio Deep
+ */
 public class Bridge {
 
-    /**
-     * Class logger.
-     */
     private final Logger logger = Logger.getLogger(Bridge.class);
 
-    private static DeepSparkContext deepContext = null;
+    private static DeepSparkContext deepContext;
     private Session session;
 
     public Bridge(Session session) {
@@ -60,7 +60,7 @@ public class Bridge {
 
     public ResultSet execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot){
 
-        System.out.println("TRACE: Executing deep for: "+stmt.toString());
+        logger.info("TRACE: Executing deep for: "+stmt.toString());
 
         if(!(stmt instanceof SelectStatement)){
             List<Row> oneRow = new ArrayList<Row>();
@@ -69,12 +69,10 @@ public class Bridge {
         }
 
         SelectStatement ss = (SelectStatement) stmt;
-
         if(resultsFromChildren.isEmpty()){ // LEAF
 
             //Retrieve selected column names
             SelectionList sList = (SelectionList) ss.getSelectionClause();
-
             Selection selection = sList.getSelection();
             String [] columnsSet = null;
             boolean allCols = false;
@@ -92,17 +90,14 @@ public class Bridge {
                 allCols = true;
             }
 
-            // Configuration and initialization
-            IDeepJobConfig config = null;
+            IDeepJobConfig config = DeepJobConfigFactory.create().session(session)
+                    .host(Context.CASSANDRA_HOST).rpcPort(Context.CASSANDRA_PORT)
+                    .keyspace(ss.getKeyspace()).table(ss.getTableName());
+
             if(allCols){
-                config = DeepJobConfigFactory.create().session(session)
-                        .host(Context.CASSANDRA_HOST).rpcPort(Context.CASSANDRA_PORT)
-                        .keyspace(ss.getKeyspace()).table(ss.getTableName()).initialize();
+                config = config.initialize();
             } else {
-                config = DeepJobConfigFactory.create().session(session)
-                        .host(Context.CASSANDRA_HOST).rpcPort(Context.CASSANDRA_PORT)
-                        .keyspace(ss.getKeyspace()).table(ss.getTableName())
-                        .inputColumns(columnsSet).initialize();
+                config = config.inputColumns(columnsSet).initialize();
             }
 
             JavaRDD rdd = deepContext.cassandraJavaRDD(config);
@@ -163,7 +158,10 @@ public class Bridge {
             }
             rs.add(metaRow);
         }
-        logger.info("Deep Result: " + rs.size() + " rows & " + rs.iterator().next().size() + " columns");
+        logger.info("Deep Result: " + rs.size());
+        if(rs.size()>0){
+            logger.info(" rows & " + rs.iterator().next().size() + " columns");
+        }
         return rs;
     }
 
@@ -174,6 +172,7 @@ public class Bridge {
         } else {
             List oneRow = new ArrayList<Row>();
             oneRow.add(new Row("RESULT", new Cell(JavaRDD.class, rdd)));
+            System.out.println("LEAF: rdd.count="+((int)rdd.count()));
             return new CassandraResultSet(oneRow);
         }
     }
@@ -208,16 +207,9 @@ public class Bridge {
             case "<=":
                 result = rdd.filter(new LessEqualThan(cn,termValue));
                 break;
-//            case "like":
-//                break;
-//            case "in":
-//                break;
-            default:
-                break;
         }
 
-        System.out.println("Rdd input: " + Arrays.toString(rdd.collect().toArray()) +" filtered size: " + result.count());
-
+        //System.out.println("Rdd input: " + Arrays.toString(rdd.collect().toArray()) +" filtered size: " + result.count());
         return result;
     }
 

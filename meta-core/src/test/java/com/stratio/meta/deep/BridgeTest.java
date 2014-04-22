@@ -17,16 +17,21 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.deep;
+package com.stratio.meta.deep;
 
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import com.stratio.meta.core.utils.*;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.*;
@@ -42,12 +47,11 @@ public class BridgeTest extends BasicCoreCassandraTest {
         executor = new Executor(_session);
     }
 
-    //@AfterClass
-
-    public void validateOk(MetaQuery metaQuery, String methodName){
+    public Result validateOk(MetaQuery metaQuery, String methodName){
         MetaQuery result = executor.executeQuery(metaQuery);
         assertNotNull(result.getResult(), "Result null - " + methodName);
         assertFalse(result.hasError(), "Deep execution failed - " + methodName);
+        return result.getResult();
     }
 
     public void validateFail(MetaQuery metaQuery, String methodName){
@@ -57,9 +61,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
     }
 
     // TESTS FOR CORRECT PLANS
-
-    //@Test
-    public void select_columns_inner_join(){
+   @Test
+    public void testInnerJoin(){
         MetaQuery metaQuery = new MetaQuery("SELECT users.gender, users_info.info, users.age " +
                 "FROM demo.users INNER JOIN demo.users_info ON users.name=users_info.link_name;");
 
@@ -149,14 +152,183 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
         metaQuery.setPlan(tree);
         metaQuery.setStatus(QueryStatus.PLANNED);
-        validateOk(metaQuery, "select_columns_inner_join");
+        validateOk(metaQuery, "testInnerJoin");
     }
 
-    //@Test
-    public void select_asterisk_inner_join(){
-        MetaQuery metaQuery = new MetaQuery("SELECT * FROM demo.users INNER JOIN demo.users_info " +
-                "ON users.name = users_info.link_name;");
-        validateOk(metaQuery, "select_asterisk_inner_join");
+    @Test
+    public void testEqualsFind(){
+        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.email=name_1@domain.com;");
+
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        List<Relation> clause = new ArrayList<>();
+        Relation relation = new RelationCompare("email", "=", new StringTerm("name_1@domain.com"));
+        clause.add(relation);
+        SelectStatement firstSelect = new SelectStatement(
+                selectionClause, // SelectionClause selectionClause
+                "demo.users", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                false, null, // boolean joinInc, InnerJoin join
+                true, clause, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                false, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+        metaQuery.setPlan(tree);
+        QueryResult result = (QueryResult) validateOk(metaQuery, "testEqualsFind");
+        assertEquals(result.getResultSet().size(),1);
+    }
+
+    @Test
+    public void testNotEqual(){
+        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.email<>name_1@domain.com;");
+
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        List<Relation> clause = new ArrayList<>();
+        Relation relation = new RelationCompare("email", "<>", new StringTerm("name_1@domain.com"));
+        clause.add(relation);
+        SelectStatement firstSelect = new SelectStatement(
+                selectionClause, // SelectionClause selectionClause
+                "demo.users", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                false, null, // boolean joinInc, InnerJoin join
+                true, clause, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                false, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+        metaQuery.setPlan(tree);
+        QueryResult result = (QueryResult) validateOk(metaQuery, "testEqualsFind");
+        assertEquals(result.getResultSet().size(),15);
+    }
+
+    @Test
+    public void testGreaterThan(){
+        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.age>100;");
+
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        List<Relation> clause = new ArrayList<>();
+        Relation relation = new RelationCompare("age", ">", new IntegerTerm("100"));
+        clause.add(relation);
+        SelectStatement firstSelect = new SelectStatement(
+                selectionClause, // SelectionClause selectionClause
+                "demo.users", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                false, null, // boolean joinInc, InnerJoin join
+                true, clause, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                false, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+        metaQuery.setPlan(tree);
+        validateOk(metaQuery, "testGreater");
+    }
+
+    @Test
+    public void testGreaterEqualThan(){
+        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.age>=100;");
+
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        List<Relation> clause = new ArrayList<>();
+        Relation relation = new RelationCompare("age", ">=", new IntegerTerm("100"));
+        clause.add(relation);
+        SelectStatement firstSelect = new SelectStatement(
+                selectionClause, // SelectionClause selectionClause
+                "demo.users", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                false, null, // boolean joinInc, InnerJoin join
+                true, clause, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                false, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+        metaQuery.setPlan(tree);
+        validateOk(metaQuery, "testGreaterEqualThan");
+    }
+
+    @Test
+    public void testLessThan(){
+        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.age<100;");
+
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        List<Relation> clause = new ArrayList<>();
+        Relation relation = new RelationCompare("age", "<", new IntegerTerm("100"));
+        clause.add(relation);
+        SelectStatement firstSelect = new SelectStatement(
+                selectionClause, // SelectionClause selectionClause
+                "demo.users", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                false, null, // boolean joinInc, InnerJoin join
+                true, clause, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                false, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+        metaQuery.setPlan(tree);
+        validateOk(metaQuery, "testLessThan");
+    }
+
+    @Test
+    public void testLessEqualThan(){
+        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.age<=100;");
+
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        List<Relation> clause = new ArrayList<>();
+        Relation relation = new RelationCompare("age", "<=", new IntegerTerm("100"));
+        clause.add(relation);
+        SelectStatement firstSelect = new SelectStatement(
+                selectionClause, // SelectionClause selectionClause
+                "demo.users", // String tableName
+                false, null, // boolean windowInc, WindowSelect window
+                false, null, // boolean joinInc, InnerJoin join
+                true, clause, // boolean whereInc, ArrayList<Relation> where
+                false, null, // boolean orderInc, ArrayList<Ordering> order
+                false, null, // boolean groupInc, GroupBy group
+                false, 10000, // boolean limitInc, int limit
+                false // boolean disableAnalytics
+        );
+
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+        metaQuery.setPlan(tree);
+        validateOk(metaQuery, "testLessEqualThan");
     }
 
     //@Test
