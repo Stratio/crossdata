@@ -24,7 +24,7 @@ public class MapKeyForJoin<T> extends PairFunction<Cells, T, Cells> implements S
     }
 
     @Override
-    public Tuple2<T, Cells> call(Cells cells) throws Exception {
+    public Tuple2<T, Cells> call(Cells cells){
         return new Tuple2<T, Cells>((T)cells.getCellByName(key).getCellValue(),cells);
     }
 }

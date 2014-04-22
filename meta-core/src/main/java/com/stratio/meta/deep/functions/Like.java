@@ -18,7 +18,7 @@ public class Like extends Function<Cells, Boolean> implements Serializable{
 
     //TODO Exception Management
     @Override
-    public Boolean call(Cells cells) throws Exception {
+    public Boolean call(Cells cells){
         Object currentValue = cells.getCellByName(field).getCellValue();
         if (currentValue == null){
             return regexp == null;

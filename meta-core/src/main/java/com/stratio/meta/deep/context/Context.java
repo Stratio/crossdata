@@ -19,12 +19,13 @@
 
 package com.stratio.meta.deep.context;
 
-public class Context {
+public final class Context {
+
+    private Context(){}
 
     // context properties
     public static final String CLUSTER = "local[2]";
-    public static final String JOB_NAME = "stratioDeepWithMeta";
-    public static final String CASSANDRA_HOST = "localhost";
-    public static final int CASSANDRA_PORT = 9160;
-
+    public static final String JOBNAME = "stratioDeepWithMeta";
+    public static final String CASSANDRAHOST = "localhost";
+    public static final int CASSANDRAPORT = 9160;
 }

@@ -56,7 +56,7 @@ public class Bridge {
 
     public Bridge(Session session) {
         if(deepContext == null) {
-            deepContext = new DeepSparkContext(Context.CLUSTER, Context.JOB_NAME);
+            deepContext = new DeepSparkContext(Context.CLUSTER, Context.JOBNAME);
         }
         this.session = session;
     }
@@ -73,80 +73,15 @@ public class Bridge {
 
         SelectStatement ss = (SelectStatement) stmt;
         if(resultsFromChildren.isEmpty()){ // LEAF
-
-            //Retrieve selected column names
-            SelectionList sList = (SelectionList) ss.getSelectionClause();
-            Selection selection = sList.getSelection();
-            String [] columnsSet = null;
-            boolean allCols = false;
-            if(selection instanceof SelectionSelectors){
-                SelectionSelectors sSelectors = (SelectionSelectors) selection;
-                columnsSet = new String[sSelectors.getSelectors().size()];
-                for(int i=0;i<sSelectors.getSelectors().size();++i){
-                    SelectionSelector sSel = sSelectors.getSelectors().get(i);
-                    SelectorIdentifier selId = (SelectorIdentifier) sSel.getSelector();
-                    columnsSet[i] = selId.getColumnName();
-                }
-                LOG.info("Select columns: " + Arrays.toString(columnsSet));
-
-            } else { // SelectionAsterisk
-                allCols = true;
-            }
-
-            /*
+            String[] columnsSet = retrieveSelectorFields(ss);
             IDeepJobConfig config = DeepJobConfigFactory.create().session(session)
-                    .host(Context.CASSANDRA_HOST).rpcPort(Context.CASSANDRA_PORT)
+                    .host(Context.CASSANDRAHOST).rpcPort(Context.CASSANDRAPORT)
                     .keyspace(ss.getKeyspace()).table(ss.getTableName());
 
-            if(allCols){
-                config = config.initialize();
-            } else {
-                config = config.inputColumns(columnsSet).initialize();
-            }
-            */
-
-            /*
-            config = DeepJobConfigFactory.create().session(session)
-                    .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
-                    .keyspace(ss.getKeyspace()).table(ss.getTableName()).initialize();
-            System.out.println("TRACE (Before): ");
-            Map colDefs = config.columnDefinitions();
-            for(Object obj: colDefs.keySet()){
-                String key = (String) obj;
-                com.stratio.deep.entity.Cell cell = (com.stratio.deep.entity.Cell) colDefs.get(key);
-                System.out.println("\t" + key + " - " + cell.getCellName());
-            }
-            config = config.inputColumns(columnsSet);
-            System.out.println("TRACE (After): ");
-            colDefs = config.columnDefinitions();
-            for(Object obj: colDefs.keySet()){
-                String key = (String) obj;
-                com.stratio.deep.entity.Cell cell = (com.stratio.deep.entity.Cell) colDefs.get(key);
-                System.out.println("\t" + key + " - " + cell.getCellName());
-            }
-             */
-
-            // Configuration and initialization
-            IDeepJobConfig config = null;
-
-            config = DeepJobConfigFactory.create().session(session)
-                    .host(Context.CASSANDRA_HOST).rpcPort(Context.CASSANDRA_PORT)
-                    .keyspace(ss.getKeyspace()).table(ss.getTableName()).initialize();
-
-            if(!allCols){
-                config = config.inputColumns(columnsSet).initialize();
-            }
-
-            System.out.println("TRACE: ");
-            Map colDefs = config.columnDefinitions();
-            for(Object obj: colDefs.keySet()){
-                String key = (String) obj;
-                com.stratio.deep.entity.Cell cell = (com.stratio.deep.entity.Cell) colDefs.get(key);
-                System.out.println("\t" + key + " - " + cell.getCellName());
-            }
+            //config = (null==columnsSet)? config.initialize() : config.inputColumns(columnsSet).initialize() ;
+            config = config.initialize();
 
             JavaRDD rdd = deepContext.cassandraJavaRDD(config);
-
             if(ss.isWhereInc()){ // If where
                 List<Relation> where = ss.getWhere();
                 for(Relation rel : where){
@@ -154,7 +89,6 @@ public class Bridge {
                 }
             }
 
-            // Return RDD
             return returnResult(rdd, isRoot);
 
         } else { // (INNER NODE) NO LEAF
@@ -185,12 +119,11 @@ public class Bridge {
 
             JavaPairRDD joinRDD = rddLeft.join(rddRight);
 
-            JavaRDD result = joinRDD.map(new JoinCells(field1, field2));
+            JavaRDD result = joinRDD.map(new JoinCells(field1));
 
             // Return MetaResultSet
             return returnResult(result, isRoot);
         }
-
     }
 
     private ResultSet returnResult(List<Cells> cells) {
@@ -207,11 +140,11 @@ public class Bridge {
             rs.add(metaRow);
         }
 
+        StringBuilder logResult = new StringBuilder().append("Deep Result: " + rs.size());
         if(rs.size()>0){
-            LOG.info("Deep Result: " + rs.size() + " rows & " + rs.iterator().next().size() + " columns");
-        } else {
-            LOG.info("Deep Result: Empty");
+            logResult.append(" rows & " + rs.iterator().next().size() + " columns");
         }
+        LOG.info(logResult);
         return rs;
     }
 
@@ -258,10 +191,28 @@ public class Bridge {
                 result = rdd.filter(new LessEqualThan(cn,termValue));
                 break;
         }
-
-        LOG.info("Rdd input: " + Arrays.toString(rdd.collect().toArray()) +" filtered size: " + result.count());
-
         return result;
     }
 
+    /**
+     * Retrieve fields in selection clause.
+     * @param ss SelectStatement of the query
+     * @return Array of fields in selection clause or null if all fields has been selected
+     */
+    public String[] retrieveSelectorFields(SelectStatement ss){
+        //Retrieve selected column names
+        SelectionList sList = (SelectionList) ss.getSelectionClause();
+        Selection selection = sList.getSelection();
+        String [] columnsSet = null;
+        if(selection instanceof SelectionSelectors){
+            SelectionSelectors sSelectors = (SelectionSelectors) selection;
+            columnsSet = new String[sSelectors.getSelectors().size()];
+            for(int i=0;i<sSelectors.getSelectors().size();++i){
+                SelectionSelector sSel = sSelectors.getSelectors().get(i);
+                SelectorIdentifier selId = (SelectorIdentifier) sSel.getSelector();
+                columnsSet[i] = selId.getColumnName();
+            }
+        }
+        return columnsSet;
+    }
 }
