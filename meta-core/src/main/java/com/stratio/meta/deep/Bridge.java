@@ -207,9 +207,10 @@ public class Bridge {
             rs.add(metaRow);
         }
 
-        LOG.info("Deep Result: " + rs.size() + " rows & " + rs.iterator().next().size() + " columns");
         if(rs.size()>0){
-            LOG.info(" rows & " + rs.iterator().next().size() + " columns");
+            LOG.info("Deep Result: " + rs.size() + " rows & " + rs.iterator().next().size() + " columns");
+        } else {
+            LOG.info("Deep Result: Empty");
         }
         return rs;
     }
