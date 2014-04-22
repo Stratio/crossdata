@@ -71,7 +71,6 @@ public class BasicCoreCassandraTest {
 
     @AfterClass
     public static void tearDownAfterClass(){
-
         dropKeyspaceIfExists("testKs");
         closeCassandraConnection();
     }
