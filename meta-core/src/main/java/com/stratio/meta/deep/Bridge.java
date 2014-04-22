@@ -130,7 +130,7 @@ public class Bridge {
             IDeepJobConfig config = null;
 
             config = DeepJobConfigFactory.create().session(session)
-                    .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
+                    .host(Context.CASSANDRA_HOST).rpcPort(Context.CASSANDRA_PORT)
                     .keyspace(ss.getKeyspace()).table(ss.getTableName()).initialize();
 
             if(!allCols){
