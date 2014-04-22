@@ -42,11 +42,14 @@ import org.apache.spark.api.java.JavaRDD;
 import java.util.*;
 
 /**
- * Class that performs as a Bridge betweet Meta and Stratio Deep
+ * Class that performs as a Bridge between Meta and Stratio Deep
  */
 public class Bridge {
 
-    private final Logger logger = Logger.getLogger(Bridge.class);
+    /**
+     * Class logger.
+     */
+    private final Logger LOG = Logger.getLogger(Bridge.class);
 
     private static DeepSparkContext deepContext;
     private Session session;
@@ -60,7 +63,7 @@ public class Bridge {
 
     public ResultSet execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot){
 
-        logger.info("TRACE: Executing deep for: "+stmt.toString());
+        LOG.info("Executing deep for: "+stmt.toString());
 
         if(!(stmt instanceof SelectStatement)){
             List<Row> oneRow = new ArrayList<Row>();
@@ -84,12 +87,13 @@ public class Bridge {
                     SelectorIdentifier selId = (SelectorIdentifier) sSel.getSelector();
                     columnsSet[i] = selId.getColumnName();
                 }
-                System.out.println("Select columns: " + Arrays.toString(columnsSet));
+                LOG.info("Select columns: " + Arrays.toString(columnsSet));
 
             } else { // SelectionAsterisk
                 allCols = true;
             }
 
+            /*
             IDeepJobConfig config = DeepJobConfigFactory.create().session(session)
                     .host(Context.CASSANDRA_HOST).rpcPort(Context.CASSANDRA_PORT)
                     .keyspace(ss.getKeyspace()).table(ss.getTableName());
@@ -98,6 +102,47 @@ public class Bridge {
                 config = config.initialize();
             } else {
                 config = config.inputColumns(columnsSet).initialize();
+            }
+            */
+
+            /*
+            config = DeepJobConfigFactory.create().session(session)
+                    .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
+                    .keyspace(ss.getKeyspace()).table(ss.getTableName()).initialize();
+            System.out.println("TRACE (Before): ");
+            Map colDefs = config.columnDefinitions();
+            for(Object obj: colDefs.keySet()){
+                String key = (String) obj;
+                com.stratio.deep.entity.Cell cell = (com.stratio.deep.entity.Cell) colDefs.get(key);
+                System.out.println("\t" + key + " - " + cell.getCellName());
+            }
+            config = config.inputColumns(columnsSet);
+            System.out.println("TRACE (After): ");
+            colDefs = config.columnDefinitions();
+            for(Object obj: colDefs.keySet()){
+                String key = (String) obj;
+                com.stratio.deep.entity.Cell cell = (com.stratio.deep.entity.Cell) colDefs.get(key);
+                System.out.println("\t" + key + " - " + cell.getCellName());
+            }
+             */
+
+            // Configuration and initialization
+            IDeepJobConfig config = null;
+
+            config = DeepJobConfigFactory.create().session(session)
+                    .host(Context.cassandraHost).rpcPort(Context.cassandraPort)
+                    .keyspace(ss.getKeyspace()).table(ss.getTableName()).initialize();
+
+            if(!allCols){
+                config = config.inputColumns(columnsSet).initialize();
+            }
+
+            System.out.println("TRACE: ");
+            Map colDefs = config.columnDefinitions();
+            for(Object obj: colDefs.keySet()){
+                String key = (String) obj;
+                com.stratio.deep.entity.Cell cell = (com.stratio.deep.entity.Cell) colDefs.get(key);
+                System.out.println("\t" + key + " - " + cell.getCellName());
             }
 
             JavaRDD rdd = deepContext.cassandraJavaRDD(config);
@@ -130,7 +175,7 @@ public class Bridge {
             String field1 = keys.iterator().next();
             String field2 = fields.get(field1);
 
-            System.out.println("INNER JOIN on: " + field1 + " - " + field2);
+            LOG.info("INNER JOIN on: " + field1 + " - " + field2);
 
             JavaRDD rdd1 = children.get(0);
             JavaRDD rdd2 = children.get(1);
@@ -153,26 +198,30 @@ public class Bridge {
         for(Cells deepRow: cells){
             Row metaRow = new Row();
             for(com.stratio.deep.entity.Cell deepCell: deepRow.getCells()){
+                if(deepCell.getCellName().toLowerCase().startsWith("stratio")){
+                    continue;
+                }
                 Cell metaCell = new Cell(deepCell.getValueType(), deepCell.getCellValue());
                 metaRow.addCell(deepCell.getCellName(), metaCell);
             }
             rs.add(metaRow);
         }
-        logger.info("Deep Result: " + rs.size());
+
+        LOG.info("Deep Result: " + rs.size() + " rows & " + rs.iterator().next().size() + " columns");
         if(rs.size()>0){
-            logger.info(" rows & " + rs.iterator().next().size() + " columns");
+            LOG.info(" rows & " + rs.iterator().next().size() + " columns");
         }
         return rs;
     }
 
     private ResultSet returnResult(JavaRDD rdd, boolean isRoot){
         if(isRoot){
-            return returnResult(rdd.collect());
-            //return returnResult(rdd.dropTake(0, 10000));
+            //return returnResult(rdd.collect());
+            return returnResult(rdd.dropTake(0, 10000));
         } else {
             List oneRow = new ArrayList<Row>();
             oneRow.add(new Row("RESULT", new Cell(JavaRDD.class, rdd)));
-            System.out.println("LEAF: rdd.count="+((int)rdd.count()));
+            LOG.info("LEAF: rdd.count="+((int)rdd.count()));
             return new CassandraResultSet(oneRow);
         }
     }
@@ -187,7 +236,7 @@ public class Bridge {
         String cn = rel.getIdentifiers().get(0);  //Take first. Common is 1 identifier and 1 termValue
         Object termValue = rel.getTerms().get(0).getTermValue();
 
-        System.out.println("Rdd input size: " + rdd.count());
+        LOG.info("Rdd input size: " + rdd.count());
         switch (operator){
             case "=":
                 result = rdd.filter(new DeepEquals(cn, termValue));
@@ -209,7 +258,8 @@ public class Bridge {
                 break;
         }
 
-        //System.out.println("Rdd input: " + Arrays.toString(rdd.collect().toArray()) +" filtered size: " + result.count());
+        LOG.info("Rdd input: " + Arrays.toString(rdd.collect().toArray()) +" filtered size: " + result.count());
+
         return result;
     }
 
