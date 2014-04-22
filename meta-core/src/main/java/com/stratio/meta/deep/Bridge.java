@@ -174,6 +174,7 @@ public class Bridge {
         } else {
             List oneRow = new ArrayList<Row>();
             oneRow.add(new Row("RESULT", new Cell(JavaRDD.class, rdd)));
+            System.out.println("LEAF: rdd.count="+((int)rdd.count()));
             return new CassandraResultSet(oneRow);
         }
     }

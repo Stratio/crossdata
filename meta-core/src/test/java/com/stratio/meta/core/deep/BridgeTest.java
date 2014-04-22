@@ -25,6 +25,7 @@ import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import com.stratio.meta.core.utils.*;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,7 +59,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // TESTS FOR CORRECT PLANS
 
-    //@Test
+    @Test
     public void select_columns_inner_join(){
         MetaQuery metaQuery = new MetaQuery("SELECT users.gender, users_info.info, users.age " +
                 "FROM demo.users INNER JOIN demo.users_info ON users.name=users_info.link_name;");
