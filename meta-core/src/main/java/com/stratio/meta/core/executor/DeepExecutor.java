@@ -40,12 +40,11 @@ public class DeepExecutor {
             ResultSet resultSet;
             try {
                 resultSet = bridge.execute(ss, resultsFromChildren, isRoot);
-            } catch(MetaDeepException ex){
-                return QueryResult.createFailQueryResult(ex.getMessage());
+            } catch(Exception ex){
+                return QueryResult.createFailQueryResult("Query cannot be executed on Spark");
             }
             return QueryResult.createSuccessQueryResult(resultSet);
         } else {
-            System.out.println("EMPTY DEEP RESULT");
             return QueryResult.createSuccessQueryResult();
         }
     }
