@@ -20,22 +20,29 @@
 package com.stratio.meta.core.executor;
 
 import com.datastax.driver.core.Session;
+import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.deep.Bridge;
+import com.stratio.meta.deep.exceptions.MetaDeepException;
 
 import java.util.List;
 
 public class DeepExecutor {
-    public static Result execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot, Session session) {
-        if(stmt instanceof SelectStatement){
+    public static Result execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot, Session session, DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
+        if (stmt instanceof SelectStatement) {
             SelectStatement ss = (SelectStatement) stmt;
-            Bridge bridge = new Bridge(session);
-            ResultSet resultSet = bridge.execute(ss, resultsFromChildren, isRoot);
-            //bridge.stopContext();
+            Bridge bridge = new Bridge(session, deepSparkContext, engineConfig);
+            ResultSet resultSet;
+            try {
+                resultSet = bridge.execute(ss, resultsFromChildren, isRoot);
+            } catch(MetaDeepException ex){
+                return QueryResult.createFailQueryResult(ex.getMessage());
+            }
             return QueryResult.createSuccessQueryResult(resultSet);
         } else {
             System.out.println("EMPTY DEEP RESULT");

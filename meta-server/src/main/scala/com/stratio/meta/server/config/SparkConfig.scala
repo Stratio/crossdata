@@ -17,15 +17,18 @@
  * License along with this library.
  */
 
-package com.stratio.meta.deep.context;
+package com.stratio.meta.server.config
 
-public final class Context {
+import com.typesafe.config.Config
 
-    private Context(){}
+object SparkConfig {
 
-    // context properties
-    public static final String CLUSTER = "local[2]";
-    public static final String JOBNAME = "stratioDeepWithMeta";
-    public static final String CASSANDRAHOST = "localhost";
-    public static final int CASSANDRAPORT = 9160;
+  val SPARK_MASTER = "config.spark.master"
+
+}
+
+trait SparkConfig {
+  def config: Config = ???
+
+  lazy val sparkMaster: String = config.getString(SparkConfig.SPARK_MASTER)
 }

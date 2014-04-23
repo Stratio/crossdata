@@ -23,47 +23,49 @@ import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.IDeepJobConfig;
 import com.stratio.deep.context.DeepSparkContext;
-import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
-import com.stratio.meta.core.structures.*;
-import com.stratio.meta.deep.context.Context;
+import com.stratio.meta.core.structures.Relation;
+import com.stratio.meta.deep.exceptions.MetaDeepException;
 import com.stratio.meta.deep.functions.*;
+import com.stratio.meta.deep.utils.DeepUtils;
 import org.apache.log4j.Logger;
+import org.apache.spark.SparkException;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class that performs as a Bridge between Meta and Stratio Deep
  */
 public class Bridge {
 
-    /**
-     * Class logger.
-     */
-    private final Logger LOG = Logger.getLogger(Bridge.class);
+    private final Logger log = Logger.getLogger(Bridge.class);
 
     private static DeepSparkContext deepContext;
     private Session session;
+    private EngineConfig engineConfig;
 
-    public Bridge(Session session) {
-        if(deepContext == null) {
-            deepContext = new DeepSparkContext(Context.CLUSTER, Context.JOBNAME);
-        }
+    public Bridge(Session session, DeepSparkContext deepSparkContext, EngineConfig config) {
+        this.deepContext = deepSparkContext;
         this.session = session;
+        this.engineConfig = config;
     }
 
     public ResultSet execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot){
 
-        LOG.info("Executing deep for: "+stmt.toString());
+        log.info("Executing deep for: " + stmt.toString());
 
         if(!(stmt instanceof SelectStatement)){
             List<Row> oneRow = new ArrayList<Row>();
@@ -73,9 +75,9 @@ public class Bridge {
 
         SelectStatement ss = (SelectStatement) stmt;
         if(resultsFromChildren.isEmpty()){ // LEAF
-            String[] columnsSet = retrieveSelectorFields(ss);
+            String[] columnsSet = DeepUtils.retrieveSelectorFields(ss);
             IDeepJobConfig config = DeepJobConfigFactory.create().session(session)
-                    .host(Context.CASSANDRAHOST).rpcPort(Context.CASSANDRAPORT)
+                    .host(engineConfig.getRandomCassandraHost()).rpcPort(engineConfig.getCassandraPort())
                     .keyspace(ss.getKeyspace()).table(ss.getTableName());
 
             //config = (null==columnsSet)? config.initialize() : config.inputColumns(columnsSet).initialize() ;
@@ -109,53 +111,37 @@ public class Bridge {
             String field1 = keys.iterator().next();
             String field2 = fields.get(field1);
 
-            LOG.info("INNER JOIN on: " + field1 + " - " + field2);
+            log.info("INNER JOIN on: " + field1 + " - " + field2);
 
-            JavaRDD rdd1 = children.get(0);
-            JavaRDD rdd2 = children.get(1);
+            JavaRDD result = null;
 
-            JavaPairRDD rddLeft = rdd1.map(new MapKeyForJoin(field1));
-            JavaPairRDD rddRight = rdd2.map(new MapKeyForJoin(field2));
+            try {
+                JavaRDD rdd1 = children.get(0);
+                JavaRDD rdd2 = children.get(1);
 
-            JavaPairRDD joinRDD = rddLeft.join(rddRight);
+                JavaPairRDD rddLeft = rdd1.map(new MapKeyForJoin(field1));
+                JavaPairRDD rddRight = rdd2.map(new MapKeyForJoin(field2));
 
-            JavaRDD result = joinRDD.map(new JoinCells(field1));
+                JavaPairRDD joinRDD = rddLeft.join(rddRight);
+
+                result = joinRDD.map(new JoinCells(field1));
+            } catch (MetaDeepException ex){
+                throw ex;
+            }
 
             // Return MetaResultSet
             return returnResult(result, isRoot);
         }
     }
 
-    private ResultSet returnResult(List<Cells> cells) {
-        CassandraResultSet rs = new CassandraResultSet();
-        for(Cells deepRow: cells){
-            Row metaRow = new Row();
-            for(com.stratio.deep.entity.Cell deepCell: deepRow.getCells()){
-                if(deepCell.getCellName().toLowerCase().startsWith("stratio")){
-                    continue;
-                }
-                Cell metaCell = new Cell(deepCell.getValueType(), deepCell.getCellValue());
-                metaRow.addCell(deepCell.getCellName(), metaCell);
-            }
-            rs.add(metaRow);
-        }
-
-        StringBuilder logResult = new StringBuilder().append("Deep Result: " + rs.size());
-        if(rs.size()>0){
-            logResult.append(" rows & " + rs.iterator().next().size() + " columns");
-        }
-        LOG.info(logResult);
-        return rs;
-    }
 
     private ResultSet returnResult(JavaRDD rdd, boolean isRoot){
         if(isRoot){
-            //return returnResult(rdd.collect());
-            return returnResult(rdd.dropTake(0, 10000));
+            return DeepUtils.buildResultSet(rdd.dropTake(0, 10000));
         } else {
             List oneRow = new ArrayList<Row>();
             oneRow.add(new Row("RESULT", new Cell(JavaRDD.class, rdd)));
-            LOG.info("LEAF: rdd.count="+((int)rdd.count()));
+            log.info("LEAF: rdd.count=" + ((int) rdd.count()));
             return new CassandraResultSet(oneRow);
         }
     }
@@ -170,7 +156,7 @@ public class Bridge {
         String cn = rel.getIdentifiers().get(0);  //Take first. Common is 1 identifier and 1 termValue
         Object termValue = rel.getTerms().get(0).getTermValue();
 
-        LOG.info("Rdd input size: " + rdd.count());
+        log.info("Rdd input size: " + rdd.count());
         switch (operator){
             case "=":
                 result = rdd.filter(new DeepEquals(cn, termValue));
@@ -192,27 +178,5 @@ public class Bridge {
                 break;
         }
         return result;
-    }
-
-    /**
-     * Retrieve fields in selection clause.
-     * @param ss SelectStatement of the query
-     * @return Array of fields in selection clause or null if all fields has been selected
-     */
-    public String[] retrieveSelectorFields(SelectStatement ss){
-        //Retrieve selected column names
-        SelectionList sList = (SelectionList) ss.getSelectionClause();
-        Selection selection = sList.getSelection();
-        String [] columnsSet = null;
-        if(selection instanceof SelectionSelectors){
-            SelectionSelectors sSelectors = (SelectionSelectors) selection;
-            columnsSet = new String[sSelectors.getSelectors().size()];
-            for(int i=0;i<sSelectors.getSelectors().size();++i){
-                SelectionSelector sSel = sSelectors.getSelectors().get(i);
-                SelectorIdentifier selId = (SelectorIdentifier) sSel.getSelector();
-                columnsSet[i] = selId.getColumnName();
-            }
-        }
-        return columnsSet;
     }
 }

@@ -21,6 +21,7 @@ package com.stratio.meta.core.engine;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
+import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
@@ -42,6 +43,7 @@ public class Engine {
     private final Planner planner;
     private final Executor executor;
     private final Session session;
+    private final DeepSparkContext deepSparkContext;
 
     /**
      * Class logger.
@@ -62,10 +64,12 @@ public class Engine {
                 + Arrays.toString(config.getCassandraHosts()) + ":" + config.getCassandraPort());
         this.session=cluster.connect();
 
+        this.deepSparkContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+
         parser = new Parser();
         validator = new Validator(session);
         planner = new Planner(session);
-        executor = new Executor(session);
+        executor = new Executor(session, deepSparkContext, config);
     }
        
     public Parser getParser() {

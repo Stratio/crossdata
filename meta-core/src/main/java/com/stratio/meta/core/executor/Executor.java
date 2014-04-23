@@ -20,6 +20,9 @@
 package com.stratio.meta.core.executor;
 
 import com.datastax.driver.core.Session;
+import com.stratio.deep.context.DeepSparkContext;
+import com.stratio.meta.core.engine.Engine;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.QueryStatus;
 import com.stratio.meta.core.utils.Tree;
@@ -28,9 +31,13 @@ import org.apache.log4j.Logger;
 public class Executor {
 
     private final Session session;
+    private final DeepSparkContext deepSparkContext;
+    private final EngineConfig engineConfig;
 
-    public Executor(Session session) {
+    public Executor(Session session, DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
         this.session = session;
+        this.deepSparkContext = deepSparkContext;
+        this.engineConfig = engineConfig;
     }
 
     public MetaQuery executeQuery(MetaQuery metaQuery) {
@@ -43,7 +50,7 @@ public class Executor {
         System.out.println("PLAN: "+System.lineSeparator()+plan.toStringDownTop());
 
         // Execute plan
-        metaQuery.setResult(plan.executeTreeDownTop(session));
+        metaQuery.setResult(plan.executeTreeDownTop(session, deepSparkContext, engineConfig));
 
         return metaQuery;
     }
