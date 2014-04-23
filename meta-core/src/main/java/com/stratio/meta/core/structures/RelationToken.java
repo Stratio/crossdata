@@ -48,7 +48,7 @@ public class RelationToken extends Relation {
         this.terms.add(term);
     }
     
-    public RelationToken(List<String> identifiers, String operator, ArrayList<Term> terms) {
+    public RelationToken(List<String> identifiers, String operator, List<Term> terms) {
         this(identifiers, operator); 
         this.terms = terms;
         this.rightSideTokenType = true;

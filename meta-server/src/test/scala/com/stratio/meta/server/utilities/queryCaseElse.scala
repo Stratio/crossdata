@@ -41,10 +41,10 @@ class queryCaseElse{
           myvalue
 
         }
-        case _ => ConnectResult.CreateFailConnectResult("error")
+        case _ => ConnectResult.createFailConnectResult("error")
       }
     }
-    else ConnectResult.CreateFailConnectResult("error")
+    else ConnectResult.createFailConnectResult("error")
   }
 
   def queryelse(actor:ActorRef):Result={
@@ -70,10 +70,10 @@ class queryCaseElse{
           myQueryResult=value
           myQueryResult
         }
-        case _ => CommandResult.CreateFailCommanResult("error")
+        case _ => CommandResult.createFailCommanResult("error")
       }
     }
-    else CommandResult.CreateFailCommanResult("error")
+    else CommandResult.createFailCommanResult("error")
   }
 
 }

@@ -48,19 +48,19 @@ public class LuceneIndexHelper {
     /**
      * Class logger.
      */
-    private static final Logger _logger = Logger.getLogger(LuceneIndexHelper.class.getName());
+    private static final Logger LOG = Logger.getLogger(LuceneIndexHelper.class.getName());
 
     /**
      * Session used to retrieve custom Lucene index metadata.
      */
-    private final Session _session;
+    private final Session session;
 
     /**
      * Class constructor.
      * @param session The session used to retrieve Lucene index metadata.
      */
     public LuceneIndexHelper(Session session){
-        _session = session;
+        this.session = session;
     }
 
     /**
@@ -80,7 +80,7 @@ public class LuceneIndexHelper {
         sb.append("'");
         MetaQuery mq = new MetaQuery();
         mq.setQuery(sb.toString());
-        ResultSet indexOptions = _session.execute(sb.toString());
+        ResultSet indexOptions = session.execute(sb.toString());
         Row options = indexOptions.one();
         if(options != null){
             result = processLuceneMapping(column, indexName, options.getString("index_options"));
@@ -120,17 +120,21 @@ public class LuceneIndexHelper {
 
                     result = new CustomIndexMetadata(metadata, indexName, IndexType.LUCENE, mappedColumns);
                 }else{
-                    _logger.error("Fields not found in Lucene index with JSON: " + root.toString());
+                    LOG.error("Fields not found in Lucene index with JSON: " + root.toString());
                 }
             }else{
-                _logger.error("Schema not found in Lucene index with JSON: " + root.toString());
+                LOG.error("Schema not found in Lucene index with JSON: " + root.toString());
             }
         } catch (IOException e) {
-            _logger.error("Cannot process Lucene index options", e);
+            LOG.error("Cannot process Lucene index options", e);
         } finally {
             try {
-                if (jp != null) { jp.close(); }
-            } catch (IOException e) { _logger.error("Cannot close JSON parser"); }
+                if (jp != null) {
+                    jp.close();
+                }
+            } catch (IOException e) {
+                LOG.error("Cannot close JSON parser", e);
+            }
         }
         return result;
     }

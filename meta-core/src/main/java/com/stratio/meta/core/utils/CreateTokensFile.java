@@ -19,12 +19,17 @@
 
 package com.stratio.meta.core.utils;
 
+import org.apache.log4j.Logger;
+
 import java.io.*;
 import java.nio.charset.Charset;
 
 public class CreateTokensFile {
-    
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(CreateTokensFile.class);
+
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(CreateTokensFile.class);
     
     public static void main(String[] args) {                
         try {
@@ -43,9 +48,8 @@ public class CreateTokensFile {
             File fileGrammar = new File(metaGrammarPath);  
             File outFile = new File(metaTokens);
 
-            logger.info("Reading grammar from "+fileGrammar.getAbsolutePath());
+            LOG.info("Reading grammar from " + fileGrammar.getAbsolutePath());
             BufferedWriter bw;
-            //try (BufferedReader br = new BufferedReader(new FileReader(fileGrammar))) {
             try (BufferedReader br = new BufferedReader(
                     new InputStreamReader(
                             new FileInputStream(fileGrammar), Charset.forName("UTF-8")))) {
@@ -67,9 +71,9 @@ public class CreateTokensFile {
             }
             bw.flush();
             bw.close();            
-            logger.info(outFile.getAbsolutePath()+" created");
+            LOG.info(outFile.getAbsolutePath() + " created");
         } catch (IOException ex) {
-            logger.error(ex.getMessage());
+            LOG.error(ex.getMessage());
         }
     }
     

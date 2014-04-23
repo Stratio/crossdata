@@ -44,7 +44,7 @@ class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTrac
       log.info("Finish Parser Task")
     }
     case _ => {
-      sender ! QueryResult.CreateFailQueryResult("Not recognized object")
+      sender ! QueryResult.createFailQueryResult("Not recognized object")
     }
   }
 

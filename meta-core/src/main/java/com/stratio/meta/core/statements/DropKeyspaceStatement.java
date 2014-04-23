@@ -65,13 +65,12 @@ public class DropKeyspaceStatement extends MetaStatement {
         return sb.toString();
     }
 
-    /** {@inheritDoc} */
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
-        Result result = QueryResult.CreateSuccessQueryResult();
+        Result result = QueryResult.createSuccessQueryResult();
         KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspace);
         if(ksMetadata == null && !ifExists){
-            result= QueryResult.CreateFailQueryResult("Keyspace " + keyspace + " does not exists.");
+            result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " does not exists.");
         }
         return result;
     }

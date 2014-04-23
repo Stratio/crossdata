@@ -1,6 +1,15 @@
 #!/bin/bash
 @LICENSE_HEADER@
 
+DESC="SDS Meta Server"
+NAME=meta
+SCRIPTNAME=/etc/init.d/$NAME
+USER=meta
+GROUP=sds
+
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
 # resolve links - $0 may be a softlink
 PRG="$0"
 
@@ -26,11 +35,34 @@ if [ -f "$META_CONF/meta-env.sh" ]; then
     source "$META_CONF/meta-env.sh"
 fi
 
-
-
 # Reset the REPO variable. If you need to influence this use the environment setup file.
 REPO=
 @ENV_SETUP@
+
+# If JAVA_HOME has not been set, try to determine it.
+JVM_SEARCH_DIRS="/usr/java/default /usr/java/latest /opt/java"
+if [ -z "$JAVA_HOME" ]; then
+   # If java is in PATH, use a JAVA_HOME that corresponds to that.
+   java="`/usr/bin/which java 2>/dev/null`"
+   if [ -n "$java" ]; then
+      java=`readlink --canonicalize "$java"`
+      JAVA_HOME=`dirname "\`dirname \$java\`"`
+   else
+      # No JAVA_HOME set and no java found in PATH; search for a JVM.
+      for jdir in $JVM_SEARCH_DIRS; do
+         if [ -x "$jdir/bin/java" ]; then
+            JAVA_HOME="$jdir"
+            break
+         fi
+      done
+   fi
+fi
+if [ -z "$JAVA_HOME" ]; then
+  echo "Error: JAVA_HOME is not defined correctly." 1>&2
+  echo " We cannot execute $JAVA" 1>&2
+  exit 1
+fi
+export JAVA_HOME
 
 #JAVA_HOME validation
 if [ -z "$JAVA_HOME" ] ; then
@@ -78,9 +110,8 @@ CLASSPATH="$CLASSPATH:$META_CONF/:$META_LIB/*:"
 
 jsvc_exec()
 {
-    cd $FILE_PATH
     $JSVCCMD -home $JAVA_HOME -cp $CLASSPATH -user $META_SERVER_USER -outfile $META_LOG_OUT -errfile $META_LOG_ERR \
-    -pidfile $META_SERVER_PID $JAVA_OPTS @EXTRA_JVM_ARGUMENTS@ $1 @MAINCLASS@ @APP_ARGUMENTS@
+    -pidfile $META_SERVER_PID -user $USER $JAVA_OPTS @EXTRA_JVM_ARGUMENTS@ $1 @MAINCLASS@ @APP_ARGUMENTS@
 }
 
 case "$1" in

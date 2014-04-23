@@ -56,7 +56,7 @@ public class ParentCassandraTest {
 
     @BeforeClass
     public static void setUpBeforeClass(){
-        CCMHandler.StartCCM();
+        CCMHandler.startCCM();
         initCassandraConnection();
         dropKeyspaceIfExists("testKS");
     }

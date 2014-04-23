@@ -62,16 +62,15 @@ public class UseStatement extends MetaStatement {
         return sb.toString();
     }
 
-    /** {@inheritDoc} */
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
-        Result result = QueryResult.CreateSuccessQueryResult();
+        Result result = QueryResult.createSuccessQueryResult();
         if(keyspaceName != null && keyspaceName.length() > 0){
             if(!metadata.getKeyspacesNames().contains(keyspaceName)){
-                result= QueryResult.CreateFailQueryResult("Keyspace " + keyspaceName + " does not exists.");
+                result= QueryResult.createFailQueryResult("Keyspace " + keyspaceName + " does not exists.");
             }
         }else{
-            result= QueryResult.CreateFailQueryResult("Missing keyspace name.");
+            result= QueryResult.createFailQueryResult("Missing keyspace name.");
         }
         return result;
     }

@@ -131,7 +131,10 @@ public abstract class MetaStatement {
      * @param targetKeyspace The target keyspace where the query will be executed.
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    public abstract Result validate(MetadataManager metadata, String targetKeyspace);
+    public Result validate(MetadataManager metadata, String targetKeyspace){
+        return QueryResult.createFailQueryResult("Statement not supported");
+    }
+
 
     /**
      * Validate that a valid keyspace and table is present.
@@ -142,7 +145,7 @@ public abstract class MetaStatement {
      */
     protected Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace,
                                             boolean keyspaceInc, String stmtKeyspace, String tableName){
-        Result result = QueryResult.CreateSuccessQueryResult();
+        Result result = QueryResult.createSuccessQueryResult();
         //Get the effective keyspace based on the user specification during the create
         //sentence, or taking the keyspace in use in the user session.
         String effectiveKeyspace = targetKeyspace;
@@ -152,15 +155,15 @@ public abstract class MetaStatement {
 
         //Check that the keyspace and table exists.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result= QueryResult.CreateFailQueryResult("Target keyspace missing or no keyspace has been selected.");
+            result= QueryResult.createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
         }else{
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
             if(ksMetadata == null){
-                result= QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
+                result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
             }else {
                 TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
                 if (tableMetadata == null) {
-                    result= QueryResult.CreateFailQueryResult("Table " + tableName + " does not exists.");
+                    result= QueryResult.createFailQueryResult("Table " + tableName + " does not exists.");
                 }
             }
 

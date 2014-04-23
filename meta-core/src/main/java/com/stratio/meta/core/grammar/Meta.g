@@ -774,11 +774,11 @@ getSelector returns [SelectorMeta slmt]
         ArrayList<SelectorMeta> params = new ArrayList<>();
         GroupByFunction gbFunc = null;
     }:
-    ( (T_AGGREGATION {gbFunc = GroupByFunction.aggregation;} 
-       | T_MAX {gbFunc = GroupByFunction.max;} 
-       | T_MIN {gbFunc = GroupByFunction.min;} 
-       | T_AVG {gbFunc = GroupByFunction.avg;} 
-       | T_COUNT {gbFunc = GroupByFunction.count;} 
+    ( (T_AGGREGATION {gbFunc = GroupByFunction.AGGREGATION;}
+       | T_MAX {gbFunc = GroupByFunction.MAX;}
+       | T_MIN {gbFunc = GroupByFunction.MIN;}
+       | T_AVG {gbFunc = GroupByFunction.AVG;}
+       | T_COUNT {gbFunc = GroupByFunction.COUNT;}
       ) 
             T_START_PARENTHESIS 
                 (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 

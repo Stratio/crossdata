@@ -51,12 +51,6 @@ public class ExplainPlanStatement extends MetaStatement {
         return sb.toString();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
-    }
-
     @Override
     public String getSuggestion() {
         return this.getClass().toString().toUpperCase()+" EXAMPLE";

@@ -59,7 +59,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll
 
       val metaResultTest=retryPolitics.askRetry(retryTestRef,"Test")
 
-      assertEquals(metaResultTest.getErrorMessage,ConnectResult.CreateFailConnectResult("Not found answer").getErrorMessage)
+      assertEquals(metaResultTest.getErrorMessage,ConnectResult.createFailConnectResult("Not found answer").getErrorMessage)
     }
   }
 

@@ -34,11 +34,11 @@ import org.apache.log4j.Logger;
 
 public class CassandraExecutor {
 
-    private final static Logger logger = Logger.getLogger(CassandraExecutor.class);
+    private final static Logger LOG = Logger.getLogger(CassandraExecutor.class);
 
     public static Result execute(MetaStep step, Session session){
         Result result = null;
-        logger.info("Executing step: " + step.toString());
+        LOG.info("Executing step: " + step.toString());
         if(step.getStmt() != null){
             result = execute(step.getStmt(), session);
         }else{
@@ -51,9 +51,9 @@ public class CassandraExecutor {
         try {
             ResultSet resultSet;
             resultSet = session.execute(query);
-            return QueryResult.CreateSuccessQueryResult(CoreUtils.transformToMetaResultSet(resultSet));
+            return QueryResult.createSuccessQueryResult(CoreUtils.transformToMetaResultSet(resultSet));
         } catch (UnsupportedOperationException unSupportException){
-            return QueryResult.CreateFailQueryResult("Unsupported operation by C*: "+unSupportException.getMessage());
+            return QueryResult.createFailQueryResult("Unsupported operation by C*: " + unSupportException.getMessage());
         } catch (Exception ex) {
             return processException(ex, query);
         }
@@ -69,15 +69,14 @@ public class CassandraExecutor {
             } else {
                 resultSet = session.execute(stmt.translateToCQL());
             }
-            //System.out.println("resultSet="+resultSet.toString());
             if (stmt instanceof UseStatement) {
                 UseStatement useStatement = (UseStatement) stmt;
-                return QueryResult.CreateSuccessQueryResult(CoreUtils.transformToMetaResultSet(resultSet), useStatement.getKeyspaceName());
+                return QueryResult.createSuccessQueryResult(CoreUtils.transformToMetaResultSet(resultSet), useStatement.getKeyspaceName());
             } else {
-                return QueryResult.CreateSuccessQueryResult(CoreUtils.transformToMetaResultSet(resultSet));
+                return QueryResult.createSuccessQueryResult(CoreUtils.transformToMetaResultSet(resultSet));
             }
         } catch (UnsupportedOperationException unSupportException){
-            return QueryResult.CreateFailQueryResult("Unsupported operation by C*: "+unSupportException.getMessage());
+            return QueryResult.createFailQueryResult("Unsupported operation by C*: " + unSupportException.getMessage());
         } catch (Exception ex) {
             String queryStr;
             if(driverStmt != null){
@@ -100,9 +99,9 @@ public class CassandraExecutor {
             }
             AntlrError ae = new AntlrError(cMessageEx[0]+" "+cMessageEx[1], sb.toString());
             queryStr = ParserUtils.getQueryWithSign(queryStr, ae);
-            return QueryResult.CreateFailQueryResult(ex.getMessage()+System.lineSeparator()+"\t"+queryStr);
+            return QueryResult.createFailQueryResult(ex.getMessage() + System.lineSeparator() + "\t" + queryStr);
         } else{
-            return QueryResult.CreateFailQueryResult(ex.getMessage());
+            return QueryResult.createFailQueryResult(ex.getMessage());
         }
     }
 

@@ -32,11 +32,17 @@ public class CCMHandler {
     private static final Logger LOG = Logger.getLogger(CCMHandler.class);
 
     /**
+     * Private class constructor as all methods are static.
+     */
+    private CCMHandler(){
+    }
+
+    /**
      * Start a test Cassandra cluster to execute the unit tests. The method creates a
      * temporal file with the contents of {@code /com/stratio/meta/test/test.sh} and proceeds
      * with its execution.
      */
-    public static void StartCCM(){
+    public static void startCCM(){
         BufferedReader in = null;
         try {
             File tempFile = File.createTempFile("stratio-start-ccm",".sh");
@@ -50,7 +56,7 @@ public class CCMHandler {
                     new InputStreamReader(p.getInputStream()));
             String line;
             while ((line = in.readLine()) != null) {
-                System.out.println(line);
+                LOG.debug(line);
             }
             FileUtils.forceDeleteOnExit(tempFile);
 

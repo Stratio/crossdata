@@ -90,10 +90,9 @@ public class TruncateStatement extends MetaStatement {
         return sb.toString();        
     }
 
-    /** {@inheritDoc} */
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
-        Result result = QueryResult.CreateSuccessQueryResult();
+        Result result = QueryResult.createSuccessQueryResult();
 
         String effectiveKeyspace = targetKeyspace;
         if(keyspaceInc){
@@ -102,15 +101,15 @@ public class TruncateStatement extends MetaStatement {
 
         //Check that the keyspace and table exists.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result= QueryResult.CreateFailQueryResult("Target keyspace missing or no keyspace has been selected.");
+            result= QueryResult.createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
         }else{
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
             if(ksMetadata == null){
-                result= QueryResult.CreateFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
+                result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
             }else {
                 TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, ident);
                 if (tableMetadata == null) {
-                    result= QueryResult.CreateFailQueryResult("Table " + ident + " does not exists.");
+                    result= QueryResult.createFailQueryResult("Table " + ident + " does not exists.");
                 }
             }
         }

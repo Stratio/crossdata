@@ -21,32 +21,79 @@ package com.stratio.meta.common.result;
 
 import com.stratio.meta.common.data.ResultSet;
 
+/**
+ * Result of the execution of a query in META.
+ */
 public class QueryResult extends Result {
 
+    /**
+     * Serial version UID in order to be {@link java.io.Serializable}.
+     */
     private static final long serialVersionUID = -5367895767326893839L;
+
+    /**
+     * Set of tuples returned by the server after successfully executing the query.
+     */
     private final ResultSet resultSet;
 
-    private QueryResult(ResultSet resultSet,boolean error, String errorMessage, boolean ksChanged, String currentKeyspace){
+    /**
+     * Private class constructor of the factory.
+     * @param resultSet The set of tuples returned.
+     * @param error Whether an error occurred during the query execution.
+     * @param errorMessage The error message in case of {@code error}.
+     * @param ksChanged Whether the current keyspace in the user session is modified by the query execution.
+     * @param currentKeyspace The current keyspace in case of {@code ksChanged}.
+     */
+    private QueryResult(ResultSet resultSet,
+                        boolean error,
+                        String errorMessage,
+                        boolean ksChanged,
+                        String currentKeyspace){
         super(error,errorMessage,ksChanged,currentKeyspace);
         this.resultSet=resultSet;
     }
-    
+
+    /**
+     * Get the set of results returned by the query.
+     * @return The set or null if an error occurred.
+     */
     public ResultSet getResultSet() {
         return resultSet;
     }
 
-    public static QueryResult CreateSuccessQueryResult(){
-        return  CreateSuccessQueryResult(null);
+    /**
+     * Create a successful query result.
+     * @return A {@link com.stratio.meta.common.result.QueryResult} without a {@link com.stratio.meta.common.data.ResultSet}.
+     */
+    public static QueryResult createSuccessQueryResult(){
+        return  createSuccessQueryResult(null);
     }
 
-    public static QueryResult CreateSuccessQueryResult(ResultSet resultSet){
+    /**
+     * Create a successful query result.
+     * @param resultSet The associated {@link com.stratio.meta.common.data.ResultSet}
+     * @return A {@link com.stratio.meta.common.result.QueryResult}.
+     */
+    public static QueryResult createSuccessQueryResult(ResultSet resultSet){
         return new QueryResult(resultSet,false,null,false,null);
     }
-    public static QueryResult CreateSuccessQueryResult(ResultSet resultSet, String keySpace){
+
+    /**
+     * Create a successful query result.
+     * @param resultSet The associated {@link com.stratio.meta.common.data.ResultSet}.
+     * @param keySpace The new session keyspace.
+     * @return A {@link com.stratio.meta.common.result.QueryResult}.
+     */
+    public static QueryResult createSuccessQueryResult(ResultSet resultSet, String keySpace){
         return new QueryResult(resultSet,false,null,true,keySpace);
     }
 
-    public static QueryResult CreateFailQueryResult(String errorMessage){
+    /**
+     * Create a failed query result.
+     * @param errorMessage The associated error message.
+     * @return A {@link com.stratio.meta.common.result.QueryResult}.
+     */
+    public static QueryResult createFailQueryResult(String errorMessage){
         return new QueryResult(null,true,errorMessage,false,null);
     }
 

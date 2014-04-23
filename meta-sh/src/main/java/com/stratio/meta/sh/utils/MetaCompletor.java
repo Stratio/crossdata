@@ -43,7 +43,7 @@ public class MetaCompletor implements Completer {
     public int complete(final String buffer, final int cursor, final List<CharSequence> candidates) {
         checkNotNull(candidates);
         if ((buffer == null) || (buffer.length()<1)) {            
-            candidates.addAll(MetaUtils.initials);   
+            candidates.addAll(MetaUtils.INITIALS);
         } else {                       
             // Last char is a space ==> NO completion implemented yet
             if(buffer.charAt(buffer.length()-1) == ' '){ 
@@ -52,10 +52,12 @@ public class MetaCompletor implements Completer {
             strings.clear(); 
             String[] partialTokens = buffer.split(" ");
             String partialQuery = buffer.trim().toUpperCase();
-            if(partialTokens.length == 1) { // First token
-                strings.addAll(MetaUtils.initials);
-            } else { // NO first token and new token initiated
-                strings.addAll(MetaUtils.noInitials);
+            if(partialTokens.length == 1) {
+                // First token
+                strings.addAll(MetaUtils.INITIALS);
+            } else {
+                // NO first token and new token initiated
+                strings.addAll(MetaUtils.NON_INITIALS);
                 partialQuery = partialTokens[partialTokens.length-1].trim().toUpperCase();
             }            
 

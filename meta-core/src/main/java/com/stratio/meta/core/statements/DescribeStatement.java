@@ -125,7 +125,8 @@ public class DescribeStatement extends MetaStatement {
     /** {@inheritDoc} */
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
-        return QueryResult.CreateSuccessQueryResult();
+        //TODO: Validate DescribeStatement
+        return QueryResult.createSuccessQueryResult();
     }
 
     @Override
@@ -167,16 +168,16 @@ public class DescribeStatement extends MetaStatement {
         if(type == DescribeType.KEYSPACE){
             KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(keyspace);
             if(ksInfo == null){
-                result = CommandResult.CreateFailCommanResult("KEYSPACE "+keyspace+" was not found");
+                result = CommandResult.createFailCommanResult("KEYSPACE " + keyspace + " was not found");
             } else {
-                result = CommandResult.CreateSuccessCommandResult(ksInfo.exportAsString());
+                result = CommandResult.createSuccessCommandResult(ksInfo.exportAsString());
             }
         } else {
             TableMetadata tableInfo = mm.getTableMetadata(keyspace, tablename);
             if(tableInfo == null){
-                result = CommandResult.CreateFailCommanResult("TABLE "+tablename+" was not found");
+                result = CommandResult.createFailCommanResult("TABLE " + tablename + " was not found");
             } else {
-                result = CommandResult.CreateSuccessCommandResult(tableInfo.exportAsString());
+                result = CommandResult.createSuccessCommandResult(tableInfo.exportAsString());
             }
         }        
         return result;

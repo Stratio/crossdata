@@ -96,18 +96,18 @@ public class CreateKeyspaceStatement extends MetaStatement {
 
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
-        Result result = QueryResult.CreateSuccessQueryResult();
+        Result result = QueryResult.createSuccessQueryResult();
         if(name!= null && name.length() > 0) {
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(name);
             if(ksMetadata != null && !ifNotExists){
-                result= QueryResult.CreateFailQueryResult("Keyspace " + name + " already exists.");
+                result= QueryResult.createFailQueryResult("Keyspace " + name + " already exists.");
             }
         }else{
-            result= QueryResult.CreateFailQueryResult("Empty keyspace name found.");
+            result= QueryResult.createFailQueryResult("Empty keyspace name found.");
         }
 
         if(properties.size() == 0 || !properties.containsKey("replication")){
-            result= QueryResult.CreateFailQueryResult("Missing mandatory replication property.");
+            result= QueryResult.createFailQueryResult("Missing mandatory replication property.");
         }
 
         return result;

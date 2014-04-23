@@ -46,7 +46,7 @@ public class Engine {
     /**
      * Class logger.
      */
-    private static final Logger _logger = Logger.getLogger(Engine.class.getName());
+    private static final Logger LOG = Logger.getLogger(Engine.class.getName());
 
     /**
      * Class constructor.
@@ -58,7 +58,7 @@ public class Engine {
                 .addContactPoints(config.getCassandraHosts())
                 .withPort(config.getCassandraPort()).build();
 
-        _logger.info("Connecting to Cassandra on "
+        LOG.info("Connecting to Cassandra on "
                 + Arrays.toString(config.getCassandraHosts()) + ":" + config.getCassandraPort());
         this.session=cluster.connect();
 

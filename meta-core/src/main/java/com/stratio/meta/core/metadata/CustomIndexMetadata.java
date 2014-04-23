@@ -30,27 +30,27 @@ public class CustomIndexMetadata {
     /**
      * Type of index associated with the column.
      */
-    private final IndexType _type;
+    private final IndexType type;
 
     /**
      * Cassandra column linked with the index.
      */
-    private final ColumnMetadata _column;
+    private final ColumnMetadata column;
 
     /**
      * List of columns indexed.
      */
-    private final List<String> _indexedColumns;
+    private final List<String> indexedColumns;
 
     /**
      * The name of the index.
      */
-    private final String _indexName;
+    private final String indexName;
 
     /**
      * Index options.
      */
-    private String _options = null;
+    private String options = null;
 
     /**
      * Class constructor for default Cassandra indexes.
@@ -60,11 +60,11 @@ public class CustomIndexMetadata {
      * @param indexedColumn The name of the column indexed by the current index.
      */
     public CustomIndexMetadata(ColumnMetadata columnMetadata, String indexName, IndexType type, String indexedColumn){
-        _type = type;
-        _column = columnMetadata;
-        _indexName = indexName;
-        _indexedColumns = new ArrayList<>();
-        _indexedColumns.add(indexedColumn);
+        this.type = type;
+        column = columnMetadata;
+        this.indexName = indexName;
+        indexedColumns = new ArrayList<>();
+        indexedColumns.add(indexedColumn);
     }
 
     /**
@@ -75,11 +75,11 @@ public class CustomIndexMetadata {
      * @param indexedColumns The names of the columns indexed by the current index.
      */
     public CustomIndexMetadata(ColumnMetadata columnMetadata, String indexName, IndexType type, List<String> indexedColumns){
-        _type = type;
-        _column = columnMetadata;
-        _indexName = indexName;
-        _indexedColumns = new ArrayList<>();
-        _indexedColumns.addAll(indexedColumns);
+        this.type = type;
+        column = columnMetadata;
+        this.indexName = indexName;
+        this.indexedColumns = new ArrayList<>();
+        this.indexedColumns.addAll(indexedColumns);
     }
 
     /**
@@ -87,7 +87,7 @@ public class CustomIndexMetadata {
      * @return The type of index.
      */
     public IndexType getIndexType(){
-        return _type;
+        return type;
     }
 
     /**
@@ -95,7 +95,7 @@ public class CustomIndexMetadata {
      * @return The name.
      */
     public String getIndexName(){
-        return _indexName;
+        return indexName;
     }
 
     /**
@@ -103,7 +103,7 @@ public class CustomIndexMetadata {
      * @param options The options.
      */
     public void setIndexOptions(String options){
-        _options = options;
+        this.options = options;
     }
 
     /**
@@ -111,7 +111,7 @@ public class CustomIndexMetadata {
      * @return The options or null if not set.
      */
     public String getIndexOptions(){
-        return _options;
+        return options;
     }
 
     /**
@@ -119,7 +119,7 @@ public class CustomIndexMetadata {
      * @return The list of indexed columns.
      */
     public List<String> getIndexedColumns(){
-        return _indexedColumns;
+        return indexedColumns;
     }
 
 

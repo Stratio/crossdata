@@ -85,6 +85,11 @@ public class Metash {
     private BasicDriver metaDriver = null;
 
     /**
+     * History date format.
+     */
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
+
+    /**
      * Class constructor.
      */
     public Metash(){
@@ -108,9 +113,7 @@ public class Metash {
         try {
             console = new ConsoleReader();
             setPrompt(null);
-
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy");
-            historyFile = ConsoleUtils.retrieveHistory(console, sdf);
+            historyFile = ConsoleUtils.retrieveHistory(console, dateFormat);
 
             console.setCompletionHandler(new MetaCompletionHandler());
             console.addCompleter(new MetaCompletor());
@@ -136,11 +139,16 @@ public class Metash {
      * @param currentKeyspace The currentKeyspace.
      */
     private void setPrompt(String currentKeyspace){
+        StringBuilder sb = new StringBuilder("\033[36mmetash-sh:");
         if(currentKeyspace == null) {
-            console.setPrompt("\033[36mmetash-sh:" + currentUser + ">\033[0m ");
+            sb.append(currentUser);
         }else{
-            console.setPrompt("\033[36mmetash-sh:" + currentUser + ":" + currentKeyspace + ">\033[0m ");
+            sb.append(currentUser);
+            sb.append(":");
+            sb.append(currentKeyspace);
         }
+        sb.append(">\033[0m ");
+        console.setPrompt(sb.toString());
     }
 
     /**
@@ -194,7 +202,6 @@ public class Metash {
         }else {
             println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
             println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
-            println("Display time: " + ((System.currentTimeMillis() - queryEnd) / 1000) + " seconds");
         }
     }
 
@@ -221,7 +228,7 @@ public class Metash {
      */
     public void closeConsole(){
         try{
-            ConsoleUtils.saveHistory(console, historyFile, new SimpleDateFormat("dd/M/yyyy"));
+            ConsoleUtils.saveHistory(console, historyFile, dateFormat);
             LOG.debug("History saved");
 
             metaDriver.close();

@@ -69,7 +69,6 @@ public class SetOptionsStatement extends MetaStatement {
     
     @Override
     public String toString() {
-        //System.out.println("optionsCheck="+optionsCheck.toString());
         StringBuilder sb = new StringBuilder("Set options ");
         if(optionsCheck.get(0)){
             sb.append("analytics=").append(analytics);            
@@ -82,12 +81,6 @@ public class SetOptionsStatement extends MetaStatement {
             }
         }        
         return sb.toString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
     }
 
     @Override

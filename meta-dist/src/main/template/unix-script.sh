@@ -1,6 +1,9 @@
 #!/bin/bash
 @LICENSE_HEADER@
 
+# Read configuration variable file if it is present
+[ -r /etc/default/meta ] && . /etc/default/meta
+
 # resolve links - $0 may be a softlink
 PRG="$0"
 

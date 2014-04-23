@@ -28,10 +28,13 @@ import org.apache.spark.api.java.JavaRDD;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeepUtils {
-    public static ResultSet convertRDDtoResultSet(JavaRDD rdd) {
+public final class DeepUtils {
+
+    private DeepUtils() {}
+
+    /*public static ResultSet convertRDDtoResultSet(JavaRDD rdd) {
         List oneRow = new ArrayList<Row>();
         oneRow.add(new Row("RESULT", new Cell(String.class, rdd.toString())));
         return new CassandraResultSet(oneRow);
-    }
+    }*/
 }

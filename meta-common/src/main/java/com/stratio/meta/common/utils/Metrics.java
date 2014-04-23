@@ -21,10 +21,27 @@ package com.stratio.meta.common.utils;
 
 import com.codahale.metrics.MetricRegistry;
 
+/**
+ * Class that provides an interface for JMX metrics.
+ */
 public class Metrics {
-    private static final MetricRegistry registry= new MetricRegistry();
 
+    /**
+     * Metrics registry.
+     */
+    private static final MetricRegistry REGISTRY = new MetricRegistry();
+
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private Metrics(){
+    }
+
+    /**
+     * Get the metrics registry.
+     * @return A {@link com.codahale.metrics.MetricRegistry}.
+     */
     public static MetricRegistry getRegistry(){
-        return registry;
+        return REGISTRY;
     }
 }

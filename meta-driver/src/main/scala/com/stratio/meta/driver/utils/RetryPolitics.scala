@@ -28,7 +28,7 @@ import akka.util.Timeout
 class RetryPolitics(retryTimes:Int,waitTime: Timeout) {
   def askRetry(remoteActor:ActorRef, message:AnyRef, waitTime:Timeout = this.waitTime , retry:Int = 0): Result={
     if(retry==retryTimes){
-      ConnectResult.CreateFailConnectResult("Not found answer")
+      ConnectResult.createFailConnectResult("Not found answer")
     } else {
       try {
         val future = remoteActor.ask(message)(waitTime)

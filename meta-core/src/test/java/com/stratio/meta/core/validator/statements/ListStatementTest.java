@@ -17,20 +17,16 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.utils;
+package com.stratio.meta.core.validator.statements;
 
-public class ValidationException extends RuntimeException {
+import com.stratio.meta.core.validator.BasicValidatorTest;
+import org.testng.annotations.Test;
 
-    /**
-     * Serial version UID to be {@link java.io.Serializable}.
-     */
-    private static final long serialVersionUID = -7182399772226658085L;
+public class ListStatementTest extends BasicValidatorTest {
 
-    public ValidationException() {
+    @Test
+    public void validate_not_supported(){
+        String inputText = "LIST PROCESS;";
+        validateFail(inputText, "validate_not_supported");
     }
-
-    public ValidationException(String message) {
-        super(message);
-    }
-            
 }

@@ -29,14 +29,14 @@ import java.util.Map;
 public class HelpContent {
 
     /**
-	 * The list of {@link HelpEntry}.
-	 */
-	private List<HelpEntry> content;
-	
-	/**
-	 * A mapped view of the help entries.
-	 */
-	private Map<HelpType, String> help;
+     * The list of {@link HelpEntry}.
+     */
+    private List<HelpEntry> content;
+
+    /**
+     * A mapped view of the help entries.
+     */
+    private Map<HelpType, String> help;
 
     public List<HelpEntry> getContent() {
         return content;
@@ -54,22 +54,22 @@ public class HelpContent {
         this.help = help;
     }
 
-	/**
-	 * Load the mapped view of the help contents.
-	 */
-	public void loadMap(){
-		help = new HashMap<HelpType, String>();
-		for(HelpEntry e : content){
-			help.put(HelpType.valueOf(e.getEntry()), e.getHelp());
-		}
-	}
-	
-	/**
-	 * Retrieve the help associated with {@link HelpType}.
-	 * @param type The requested {@link HelpType}
-	 * @return The help string or null if the help is not available.
-	 */
-	public String searchHelp(HelpType type){
-		return help.get(type);
-	}
+    /**
+     * Load the mapped view of the help contents.
+     */
+    public void loadMap(){
+        help = new HashMap<HelpType, String>();
+        for(HelpEntry e : content){
+            help.put(HelpType.valueOf(e.getEntry()), e.getHelp());
+        }
+    }
+
+    /**
+     * Retrieve the help associated with {@link HelpType}.
+     * @param type The requested {@link HelpType}
+     * @return The help string or null if the help is not available.
+     */
+    public String searchHelp(HelpType type){
+        return help.get(type);
+    }
 }
