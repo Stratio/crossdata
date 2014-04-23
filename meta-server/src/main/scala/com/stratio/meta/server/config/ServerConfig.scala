@@ -36,7 +36,7 @@ object ServerConfig{
   val SERVER_USER_CONFIG_RESOURCE = "external.config.resource"
 }
 
-trait ServerConfig extends CassandraConfig{
+trait ServerConfig extends CassandraConfig with SparkConfig{
 
   lazy val logger:Logger = ???
 
@@ -80,6 +80,7 @@ trait ServerConfig extends CassandraConfig{
     val result= new EngineConfig()
     result.setCassandraHosts(cassandraHosts)
     result.setCassandraPort(cassandraPort)
+    result.setSparkMaster(sparkMaster)
     result
   }
 

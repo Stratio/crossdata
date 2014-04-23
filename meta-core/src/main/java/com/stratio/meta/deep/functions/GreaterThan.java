@@ -17,7 +17,7 @@ public class GreaterThan extends Function<Cells, Boolean> implements Serializabl
     }
 
     @Override
-    public Boolean call(Cells cells) throws Exception {
+    public Boolean call(Cells cells){
         Object currentValue = cells.getCellByName(field).getCellValue();
         if (currentValue == null){
             return value == null;

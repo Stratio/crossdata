@@ -20,8 +20,10 @@
 package com.stratio.meta.core.utils;
 
 import com.datastax.driver.core.Session;
+import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.executor.CassandraExecutor;
 import com.stratio.meta.core.executor.CommandExecutor;
 import com.stratio.meta.core.executor.DeepExecutor;
@@ -110,17 +112,17 @@ public class Tree {
         return sb.toString();
     }
 
-    public Result executeTreeDownTop(Session session){
+    public Result executeTreeDownTop(Session session, DeepSparkContext deepSparkContext, EngineConfig engineConfig){
         // Get results from my children
         List<Result> resultsFromChildren = new ArrayList<>();
         for(Tree child: children){
-            resultsFromChildren.add(child.executeTreeDownTop(session));
+            resultsFromChildren.add(child.executeTreeDownTop(session,deepSparkContext, engineConfig));
         }
         // Execute myself and return final result
-        return executeMyself(session, resultsFromChildren);
+        return executeMyself(session, deepSparkContext, engineConfig, resultsFromChildren);
     }
 
-    public Result executeMyself(Session session, List<Result> resultsFromChildren){
+    public Result executeMyself(Session session, DeepSparkContext deepSparkContext, EngineConfig engineConfig, List<Result> resultsFromChildren){
         if(node == null){
             return QueryResult.createSuccessQueryResult();
         }
@@ -131,7 +133,7 @@ public class Tree {
         } else if(myPath == MetaPath.CASSANDRA){
             return CassandraExecutor.execute(myStep, session);
         } else if(myPath == MetaPath.DEEP){
-            return DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session);
+            return DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session, deepSparkContext, engineConfig);
         } else if(myPath == MetaPath.UNSUPPORTED){
             return QueryResult.createFailQueryResult("Query not supported.");
         } else {

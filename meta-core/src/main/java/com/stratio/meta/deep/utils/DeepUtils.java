@@ -19,19 +19,73 @@
 
 package com.stratio.meta.deep.utils;
 
+import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
+import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.*;
+import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaRDD;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class DeepUtils {
-    public static ResultSet convertRDDtoResultSet(JavaRDD rdd) {
-        List oneRow = new ArrayList<Row>();
-        oneRow.add(new Row("RESULT", new Cell(String.class, rdd.toString())));
-        return new CassandraResultSet(oneRow);
+public final class DeepUtils {
+
+    private static final Logger log = Logger.getLogger(DeepUtils.class);
+
+    private DeepUtils() {}
+
+    /**
+     * Build ResultSet from list of Cells.
+     * @param cells list of Cells
+     * @return ResultSet
+     */
+    public static ResultSet buildResultSet(List<Cells> cells) {
+        CassandraResultSet rs = new CassandraResultSet();
+        for(Cells deepRow: cells){
+            Row metaRow = new Row();
+            for(com.stratio.deep.entity.Cell deepCell: deepRow.getCells()){
+                if(deepCell.getCellName().toLowerCase().startsWith("stratio")){
+                    continue;
+                }
+                Cell metaCell = new Cell(deepCell.getValueType(), deepCell.getCellValue());
+                metaRow.addCell(deepCell.getCellName(), metaCell);
+            }
+            rs.add(metaRow);
+        }
+
+        StringBuilder logResult = new StringBuilder().append("Deep Result: " + rs.size());
+        if(rs.size()>0){
+            logResult.append(" rows & " + rs.iterator().next().size() + " columns");
+        }
+        log.info(logResult);
+        return rs;
+    }
+
+    /**
+     * Retrieve fields in selection clause.
+     * @param ss SelectStatement of the query
+     * @return Array of fields in selection clause or null if all fields has been selected
+     */
+    public static String[] retrieveSelectorFields(SelectStatement ss){
+        //Retrieve selected column names
+        SelectionList sList = (SelectionList) ss.getSelectionClause();
+        Selection selection = sList.getSelection();
+        String [] columnsSet = null;
+        if(selection instanceof SelectionSelectors){
+            SelectionSelectors sSelectors = (SelectionSelectors) selection;
+            columnsSet = new String[sSelectors.getSelectors().size()];
+            for(int i=0;i<sSelectors.getSelectors().size();++i){
+                SelectionSelector sSel = sSelectors.getSelectors().get(i);
+                SelectorIdentifier selId = (SelectorIdentifier) sSel.getSelector();
+                columnsSet[i] = selId.getColumnName();
+            }
+        }
+        log.info("Selected columns: " + Arrays.toString(columnsSet));
+        return columnsSet;
     }
 }

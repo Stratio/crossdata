@@ -19,7 +19,7 @@ public class DeepEquals extends Function<Cells, Boolean> implements Serializable
     }
 
     @Override
-    public Boolean call(Cells cells) throws Exception {
+    public Boolean call(Cells cells){
         Object currentValue = cells.getCellByName(field).getCellValue();
         if (currentValue == null){
             return value == null;
