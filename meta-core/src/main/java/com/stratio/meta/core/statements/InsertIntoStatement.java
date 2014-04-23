@@ -95,6 +95,11 @@ public class InsertIntoStatement extends MetaStatement {
     private List<Option> options;
     private int typeValues;
 
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(SelectStatement.class);
+
     public InsertIntoStatement(String tableName, List<String> ids,
                                SelectStatement selectStatement, 
                                List<ValueCell> cellValues, 
@@ -301,25 +306,18 @@ public class InsertIntoStatement extends MetaStatement {
         
         Insert.Options optionsStmt = null;
         if(this.optsInc){
-            Using using = null;            
             for(Option option: this.options){
                 if(option.getFixedOption() == Option.OPTION_PROPERTY){
                     if(option.getNameProperty().equalsIgnoreCase("ttl")){
-                        if(using == null){
-                            optionsStmt = insertStmt.using(QueryBuilder.ttl(Integer.parseInt(option.getProperties().toString())));
-                        } else {
-                            optionsStmt = optionsStmt.and(QueryBuilder.ttl(Integer.parseInt(option.getProperties().toString())));
-                        }
+                        optionsStmt = insertStmt.using(QueryBuilder.ttl(Integer.parseInt(option.getProperties().toString())));
                     } else if(option.getNameProperty().equalsIgnoreCase("timestamp")){
-                        if(using == null){
-                            optionsStmt = insertStmt.using(QueryBuilder.timestamp(Integer.parseInt(option.getProperties().toString())));
-                        } else {
-                            optionsStmt = optionsStmt.and(QueryBuilder.timestamp(Integer.parseInt(option.getProperties().toString())));
-                        }
+                        optionsStmt = insertStmt.using(QueryBuilder.timestamp(Integer.parseInt(option.getProperties().toString())));
+                    }else{
+                        LOG.warn("Unsupported option: " + option.getNameProperty());
                     }
                 }
             }
-        }         
+        }
         if(optionsStmt==null){
             return insertStmt;
         }

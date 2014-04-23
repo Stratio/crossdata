@@ -46,19 +46,19 @@ public class DeleteStatementTest extends BasicValidatorTest {
     @Test
     public void validate_where_columnUnknown(){
         String inputText = "DELETE FROM demo.users WHERE unknown = 'name_0';";
-        validateFail(inputText, "validate_notExists_tablename");
+        validateFail(inputText, "validate_where_columnUnknown");
     }
 
     @Test
     public void validate_where_integerFail(){
         String inputText = "DELETE FROM demo.users WHERE name = 'name_0' AND age = '15';";
-        validateFail(inputText, "validate_notExists_tablename");
+        validateFail(inputText, "validate_where_integerFail");
     }
 
     @Test
     public void validate_where_stringFail(){
         String inputText = "DELETE FROM demo.users WHERE name = 15 AND age = 15;";
-        validateFail(inputText, "validate_notExists_tablename");
+        validateFail(inputText, "validate_where_stringFail");
     }
 
 }

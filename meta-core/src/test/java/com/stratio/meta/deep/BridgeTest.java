@@ -75,17 +75,10 @@ public class BridgeTest extends BasicCoreCassandraTest {
         Map<String, String> fields = new HashMap<String, String>();
         fields.put("users.name", "users_info.link_name");
         InnerJoin join = new InnerJoin("demo.users_info", fields);
-        SelectStatement ss = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
-                "demo.users", // String tableName
-                false, null, // boolean windowInc, WindowSelect window
-                true, join, // boolean joinInc, InnerJoin join
-                false, null, // boolean whereInc, ArrayList<Relation> where
-                false, null, // boolean orderInc, ArrayList<Ordering> order
-                false, null, // boolean groupInc, GroupBy group
-                true, 10000, // boolean limitInc, int limit
-                false // boolean disableAnalytics
-        );
+        SelectStatement ss = new SelectStatement(selectionClause, "demo.users");
+        ss.setJoin(join);
+        ss.setLimit(10000);
+
         metaQuery.setStatement(ss);
         System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
         System.out.println("DEEP TEST (Stmnt): "+metaQuery.getStatement().toString());
@@ -96,50 +89,26 @@ public class BridgeTest extends BasicCoreCassandraTest {
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("gender")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
         selectionClause = new SelectionList(selectionSelectors);
-        SelectStatement firstSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
-                "demo.users", // String tableName
-                false, null, // boolean windowInc, WindowSelect window
-                false, null, // boolean joinInc, InnerJoin join
-                false, null, // boolean whereInc, ArrayList<Relation> where
-                false, null, // boolean orderInc, ArrayList<Ordering> order
-                false, null, // boolean groupInc, GroupBy group
-                false, 10000, // boolean limitInc, int limit
-                false // boolean disableAnalytics
-        );
+
+       SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+       firstSelect.setLimit(10000);
 
         // SECOND SELECT
         selectionSelectors = new SelectionSelectors();
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("link_name")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("info")));
         selectionClause = new SelectionList(selectionSelectors);
-        SelectStatement secondSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
-                "demo.users_info", // String tableName
-                false, null, // boolean windowInc, WindowSelect window
-                false, null, // boolean joinInc, InnerJoin join
-                false, null, // boolean whereInc, ArrayList<Relation> where
-                false, null, // boolean orderInc, ArrayList<Ordering> order
-                false, null, // boolean groupInc, GroupBy group
-                false, 10000, // boolean limitInc, int limit
-                false // boolean disableAnalytics
-        );
+       SelectStatement secondSelect = new SelectStatement(selectionClause, "demo.users_info");;
+       ss.setLimit(10000);
 
         // INNER JOIN
         fields = new HashMap<String, String>();
         fields.put("users.name", "users_info.link_name");
         join = new InnerJoin("", fields);
-        SelectStatement joinSelect = new SelectStatement(
-                null, // SelectionClause selectionClause
-                "", // String tableName
-                false, null, // boolean windowInc, WindowSelect window
-                true, join, // boolean joinInc, InnerJoin join
-                false, null, // boolean whereInc, ArrayList<Relation> where
-                false, null, // boolean orderInc, ArrayList<Ordering> order
-                false, null, // boolean groupInc, GroupBy group
-                false, 10000, // boolean limitInc, int limit
-                false // boolean disableAnalytics
-        );
+        SelectStatement joinSelect = new SelectStatement("");
+       joinSelect.setJoin(join);
+       joinSelect.setLimit(10000);
+
 
         // CREATE ROOT
         Tree tree = new Tree(new MetaStep(MetaPath.DEEP, joinSelect));
@@ -166,17 +135,9 @@ public class BridgeTest extends BasicCoreCassandraTest {
         List<Relation> clause = new ArrayList<>();
         Relation relation = new RelationCompare("email", "=", new StringTerm("name_1@domain.com"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
-                "demo.users", // String tableName
-                false, null, // boolean windowInc, WindowSelect window
-                false, null, // boolean joinInc, InnerJoin join
-                true, clause, // boolean whereInc, ArrayList<Relation> where
-                false, null, // boolean orderInc, ArrayList<Ordering> order
-                false, null, // boolean groupInc, GroupBy group
-                false, 10000, // boolean limitInc, int limit
-                false // boolean disableAnalytics
-        );
+        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        firstSelect.setLimit(10000);
+        firstSelect.setWhere(clause);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
@@ -196,17 +157,9 @@ public class BridgeTest extends BasicCoreCassandraTest {
         List<Relation> clause = new ArrayList<>();
         Relation relation = new RelationCompare("email", "<>", new StringTerm("name_1@domain.com"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
-                "demo.users", // String tableName
-                false, null, // boolean windowInc, WindowSelect window
-                false, null, // boolean joinInc, InnerJoin join
-                true, clause, // boolean whereInc, ArrayList<Relation> where
-                false, null, // boolean orderInc, ArrayList<Ordering> order
-                false, null, // boolean groupInc, GroupBy group
-                false, 10000, // boolean limitInc, int limit
-                false // boolean disableAnalytics
-        );
+        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        firstSelect.setLimit(10000);
+        firstSelect.setWhere(clause);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
@@ -226,17 +179,9 @@ public class BridgeTest extends BasicCoreCassandraTest {
         List<Relation> clause = new ArrayList<>();
         Relation relation = new RelationCompare("age", ">", new IntegerTerm("100"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
-                "demo.users", // String tableName
-                false, null, // boolean windowInc, WindowSelect window
-                false, null, // boolean joinInc, InnerJoin join
-                true, clause, // boolean whereInc, ArrayList<Relation> where
-                false, null, // boolean orderInc, ArrayList<Ordering> order
-                false, null, // boolean groupInc, GroupBy group
-                false, 10000, // boolean limitInc, int limit
-                false // boolean disableAnalytics
-        );
+        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        firstSelect.setLimit(10000);
+        firstSelect.setWhere(clause);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
@@ -255,17 +200,9 @@ public class BridgeTest extends BasicCoreCassandraTest {
         List<Relation> clause = new ArrayList<>();
         Relation relation = new RelationCompare("age", ">=", new IntegerTerm("100"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
-                "demo.users", // String tableName
-                false, null, // boolean windowInc, WindowSelect window
-                false, null, // boolean joinInc, InnerJoin join
-                true, clause, // boolean whereInc, ArrayList<Relation> where
-                false, null, // boolean orderInc, ArrayList<Ordering> order
-                false, null, // boolean groupInc, GroupBy group
-                false, 10000, // boolean limitInc, int limit
-                false // boolean disableAnalytics
-        );
+        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        firstSelect.setLimit(10000);
+        firstSelect.setWhere(clause);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
@@ -284,17 +221,9 @@ public class BridgeTest extends BasicCoreCassandraTest {
         List<Relation> clause = new ArrayList<>();
         Relation relation = new RelationCompare("age", "<", new IntegerTerm("100"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
-                "demo.users", // String tableName
-                false, null, // boolean windowInc, WindowSelect window
-                false, null, // boolean joinInc, InnerJoin join
-                true, clause, // boolean whereInc, ArrayList<Relation> where
-                false, null, // boolean orderInc, ArrayList<Ordering> order
-                false, null, // boolean groupInc, GroupBy group
-                false, 10000, // boolean limitInc, int limit
-                false // boolean disableAnalytics
-        );
+        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        firstSelect.setLimit(10000);
+        firstSelect.setWhere(clause);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
@@ -313,17 +242,9 @@ public class BridgeTest extends BasicCoreCassandraTest {
         List<Relation> clause = new ArrayList<>();
         Relation relation = new RelationCompare("age", "<=", new IntegerTerm("100"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
-                "demo.users", // String tableName
-                false, null, // boolean windowInc, WindowSelect window
-                false, null, // boolean joinInc, InnerJoin join
-                true, clause, // boolean whereInc, ArrayList<Relation> where
-                false, null, // boolean orderInc, ArrayList<Ordering> order
-                false, null, // boolean groupInc, GroupBy group
-                false, 10000, // boolean limitInc, int limit
-                false // boolean disableAnalytics
-        );
+        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        firstSelect.setLimit(10000);
+        firstSelect.setWhere(clause);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));

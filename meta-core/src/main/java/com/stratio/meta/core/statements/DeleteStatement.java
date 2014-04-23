@@ -36,6 +36,7 @@ import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -133,13 +134,11 @@ public class DeleteStatement extends MetaStatement {
     @Override
     public Result validate(MetadataManager metadata, String targetKeyspace) {
         Result result = validateKeyspaceAndTable(metadata, targetKeyspace);
-
         String effectiveKeyspace = targetKeyspace;
         if(keyspaceInc){
             effectiveKeyspace = keyspace;
         }
         TableMetadata tableMetadata = null;
-
         if(!result.hasError()){
             tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
             result = validateSelectionColumns(tableMetadata);
@@ -160,55 +159,11 @@ public class DeleteStatement extends MetaStatement {
      */
     private Result validateWhereClause(TableMetadata tableMetadata){
         Result result = QueryResult.createSuccessQueryResult();
-        for(Relation relation : whereClauses){
+        Iterator<Relation> relations = whereClauses.iterator();
+        while(!result.hasError() && relations.hasNext()){
+            Relation relation = relations.next();
             if(Relation.TYPE_COMPARE == relation.getType()) {
-                //Check comparison, =, >, <, etc.
-                RelationCompare rc = RelationCompare.class.cast(relation);
-                String column = rc.getIdentifiers().get(0);
-                if (tableMetadata.getColumn(column) == null) {
-                    result= QueryResult.createFailQueryResult("Column " + column + " does not exists in table " + tableMetadata.getName());
-                }
-
-                Term t = Term.class.cast(rc.getTerms().get(0));
-                ColumnMetadata cm = tableMetadata.getColumn(column);
-                if (cm != null){
-                    if (!tableMetadata.getColumn(column)
-                            .getType().asJavaClass().equals(t.getTermClass())) {
-                        result= QueryResult.createFailQueryResult("Column " + column
-                                + " of type " + tableMetadata.getColumn(rc.getIdentifiers().get(0))
-                                .getType().asJavaClass()
-                                + " does not accept " + t.getTermClass()
-                                + " values (" + t.toString() + ")");
-                    }
-
-                    if (Boolean.class.equals(tableMetadata.getColumn(column)
-                            .getType().asJavaClass())) {
-                        boolean supported = true;
-                        switch (rc.getOperator()) {
-                            case ">":
-                                supported = false;
-                                break;
-                            case "<":
-                                supported = false;
-                                break;
-                            case ">=":
-                                supported = false;
-                                break;
-                            case "<=":
-                                supported = false;
-                                break;
-                            default:
-                                break;
-                        }
-                        if (!supported) {
-                            result= QueryResult.createFailQueryResult("Operand " + rc.getOperator() + " not supported" +
-                                    " for column " + column + ".");
-                        }
-                    }
-                }else {
-                    result= QueryResult.createFailQueryResult("Column " + column + " not found in table " + tableName);
-                }
-
+                result = validateCompareRelation(relation, tableMetadata);
             }else if(Relation.TYPE_IN == relation.getType()){
                 //TODO: Check IN relation
                 result= QueryResult.createFailQueryResult("IN clause not supported.");
@@ -219,8 +174,59 @@ public class DeleteStatement extends MetaStatement {
                 //TODO: Check IN relation
                 result= QueryResult.createFailQueryResult("BETWEEN clause not supported.");
             }
+
+        }
+        return result;
+    }
+
+    private Result validateCompareRelation(Relation relation, TableMetadata tableMetadata){
+        Result result = QueryResult.createSuccessQueryResult();
+        //Check comparison, =, >, <, etc.
+        RelationCompare rc = RelationCompare.class.cast(relation);
+        String column = rc.getIdentifiers().get(0);
+        if (tableMetadata.getColumn(column) == null) {
+            result = QueryResult.createFailQueryResult("Column " + column + " does not exists in table " + tableMetadata.getName());
         }
 
+        Term t = Term.class.cast(rc.getTerms().get(0));
+        ColumnMetadata cm = tableMetadata.getColumn(column);
+        if (cm != null){
+            if (!tableMetadata.getColumn(column)
+                    .getType().asJavaClass().equals(t.getTermClass())) {
+                result = QueryResult.createFailQueryResult("Column " + column
+                        + " of type " + tableMetadata.getColumn(rc.getIdentifiers().get(0))
+                        .getType().asJavaClass()
+                        + " does not accept " + t.getTermClass()
+                        + " values (" + t.toString() + ")");
+            }
+
+            if (Boolean.class.equals(tableMetadata.getColumn(column)
+                    .getType().asJavaClass())) {
+                boolean supported = true;
+                switch (rc.getOperator()) {
+                    case ">":
+                        supported = false;
+                        break;
+                    case "<":
+                        supported = false;
+                        break;
+                    case ">=":
+                        supported = false;
+                        break;
+                    case "<=":
+                        supported = false;
+                        break;
+                    default:
+                        break;
+                }
+                if (!supported) {
+                    result = QueryResult.createFailQueryResult("Operand " + rc.getOperator() + " not supported" +
+                            " for column " + column + ".");
+                }
+            }
+        }else {
+            result = QueryResult.createFailQueryResult("Column " + column + " not found in table " + tableName);
+        }
         return result;
     }
 

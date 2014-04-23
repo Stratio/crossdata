@@ -54,4 +54,10 @@ public class ListStatementTest extends ParsingTest {
         testParseFails(inputText, "list_reserved_word_use");
     }
 
+    @Test
+    public void list_unknown_fail(){
+        String inputText = "LIST UNKNOWN;";
+        testParseFails(inputText, "list_reserved_word_use");
+    }
+
 }

@@ -171,6 +171,13 @@ public abstract class MetaStatement {
         return result;
     }
 
+    protected String getEffectiveKeyspace(String targetKeyspace, boolean keyspaceInc, String stmtKeyspace){
+        String effectiveKs = targetKeyspace;
+        if(keyspaceInc){
+            effectiveKs = stmtKeyspace;
+        }
+        return effectiveKs;
+    }
 
     /**
      * Create a suggestion for a viable statement in case a parsing error occurs.

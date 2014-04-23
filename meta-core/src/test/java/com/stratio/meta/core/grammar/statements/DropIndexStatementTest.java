@@ -25,27 +25,39 @@ import org.testng.annotations.Test;
 public class DropIndexStatementTest extends ParsingTest {
 
     @Test
-    public void dropIndex_basic() {
+    public void basic() {
         String inputText = "DROP INDEX demo.index_name;";
-        testRegularStatement(inputText, "dropIndex_basic");
+        testRegularStatement(inputText, "basic");
     }
 
     @Test
-    public void dropIndex_noKs_ok() {
+    public void noKs_ok() {
         String inputText = "DROP INDEX index_name;";
-        testRegularStatement(inputText, "dropIndex_noKs_ok");
+        testRegularStatement(inputText, "noKs_ok");
     }
 
     @Test
-    public void dropIndex_ifExists() {
+    public void ifExists() {
         String inputText = "DROP INDEX IF EXISTS demo.index_name;";
-        testRegularStatement(inputText, "dropIndex_ifExists");
+        testRegularStatement(inputText, "ifExists");
     }
 
     @Test
-    public void drop_index_wrong_not_word(){
+    public void token_ok() {
+        String inputText = "DROP INDEX lucene;";
+        testRegularStatement(inputText, "token_ok");
+    }
+
+    @Test
+    public void wrongNotToken_fail(){
         String inputText = "DROP INDEX IF NOT EXISTS index_name;";
-        testRecoverableError(inputText, "drop_index_wrong_not_word");
+        testRecoverableError(inputText, "wrongNotToken_fail");
+    }
+
+    @Test
+    public void invalidName_fail(){
+        String inputText = "DROP INDEX IF NOT EXISTS 123name;";
+        testRecoverableError(inputText, "invalidName_fail");
     }
 
 

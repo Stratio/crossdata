@@ -69,8 +69,8 @@ public class Bridge {
         }
 
         SelectStatement ss = (SelectStatement) stmt;
-        if(resultsFromChildren.isEmpty()){ // LEAF
-
+        if(resultsFromChildren.isEmpty()){
+            // LEAF
             //Retrieve selected column names
             SelectionList sList = (SelectionList) ss.getSelectionClause();
             Selection selection = sList.getSelection();
@@ -86,7 +86,8 @@ public class Bridge {
                 }
                 System.out.println("Select columns: " + Arrays.toString(columnsSet));
 
-            } else { // SelectionAsterisk
+            } else {
+                // SelectionAsterisk
                 allCols = true;
             }
 
@@ -94,11 +95,11 @@ public class Bridge {
                     .host(Context.CASSANDRA_HOST).rpcPort(Context.CASSANDRA_PORT)
                     .keyspace(ss.getKeyspace()).table(ss.getTableName());
 
-            if(allCols){
+            //if(allCols){
                 config = config.initialize();
-            } else {
-                config = config.inputColumns(columnsSet).initialize();
-            }
+            //} else {
+            //    config = config.inputColumns(columnsSet).initialize();
+            //}
 
             JavaRDD rdd = deepContext.cassandraJavaRDD(config);
 
@@ -148,6 +149,7 @@ public class Bridge {
 
     }
 
+    //TODO: Move to DeepUtils
     private ResultSet returnResult(List<Cells> cells) {
         CassandraResultSet rs = new CassandraResultSet();
         for(Cells deepRow: cells){

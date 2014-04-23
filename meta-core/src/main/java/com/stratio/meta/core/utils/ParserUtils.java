@@ -47,23 +47,10 @@ public class ParserUtils {
         }
     }
 
-    public static String stringValuePropertyMap(Map<String, ValueProperty> ids, String conjunction, String separator) {
-        StringBuilder sb = new StringBuilder();
-        for(String key: ids.keySet()){
-            ValueProperty vp = ids.get(key);
-            sb.append(key).append(conjunction).append(vp.getStringValue()).append(separator);
-        }
-        if(sb.length() < separator.length()){
-            return "";
-        }
-        return sb.substring(0, sb.length()-separator.length());
-    }
-
     public static String stringMap(Map<?, ?> ids, String conjunction, String separator) {
         StringBuilder sb = new StringBuilder();
-        for(Object key: ids.keySet()){
-            Object vp = ids.get(key);
-            sb.append(key).append(conjunction).append(vp.toString()).append(separator);
+        for(Map.Entry<?, ?> entry : ids.entrySet()){
+            sb.append(entry.getKey()).append(conjunction).append(entry.getValue().toString()).append(separator);
         }
         if(sb.length() < separator.length()){
             return "";

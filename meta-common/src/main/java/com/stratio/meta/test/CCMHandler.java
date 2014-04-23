@@ -63,10 +63,12 @@ public class CCMHandler {
         } catch (IOException e) {
             LOG.error("Error starting CCM", e);
         } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                LOG.error("IO exception closing ccm output.", e);
+            if(in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    LOG.error("IO exception closing ccm output.", e);
+                }
             }
         }
     }

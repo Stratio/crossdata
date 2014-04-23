@@ -36,4 +36,10 @@ public class DescribeStatementTest extends ParsingTest {
         testRegularStatement(inputText, "describe_table_basic");
     }
 
+    @Test
+    public void describe_table_fail() {
+        String inputText = "DESCRIBE UNKNOWN keyspace1.table1;";
+        testParseFails(inputText, "describe_table_fail");
+    }
+
 }

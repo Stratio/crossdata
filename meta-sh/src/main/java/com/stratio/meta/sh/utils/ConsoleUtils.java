@@ -107,11 +107,9 @@ public class ConsoleUtils {
                 firstRow = false;
             }
 
-            Map<String, Cell> cells = row.getCells();
-            for(String key: cells.keySet()){
-                Cell cell = cells.get(key);
-                String str = String.valueOf(cell.getValue());
-                sb.append(StringUtils.rightPad(str, colWidths.get(key)));
+            for(Map.Entry<String, Cell> entry : row.getCells().entrySet()){
+                String str = String.valueOf(entry.getValue().getValue());
+                sb.append(StringUtils.rightPad(str, colWidths.get(entry.getKey())));
                 sb.append(" | ");
             }
             sb.append(System.lineSeparator());
@@ -182,6 +180,8 @@ public class ConsoleUtils {
             LOG.error("Cannot parse date", ex);
         }catch(Exception ex){
             LOG.error("Cannot read all the history", ex);
+        }finally{
+            br.close();
         }
         console.setHistory(oldHistory);
         LOG.info("History retrieved");

@@ -26,15 +26,28 @@ public class RemoveUDFStatementTest extends ParsingTest {
 
     //REMOVE UDF
     @Test
-    public void removeUDF() {
+    public void basic() {
         String inputText = "REMOVE UDF \"jar.name\";";
         testRegularStatement(inputText, "removeUDF");
     }
 
 
     @Test
-    public void remove_udf_not_expected_word() {
+    public void unexpectedWord_fail() {
         String inputText = "REMOVE UDF \"jar.name\" NOW;";
-        testParseFails(inputText, "remove_udf_not_expected_word");
+        testParseFails(inputText, "unexpectedWord_fail");
     }
+
+    @Test
+    public void startingQuoteMissing1_fail(){
+        String inputText = "REMOVE UDF /dir/jar_name-v1.0.jar;\"";
+        testRecoverableError(inputText, "startingQuoteMissing1_fail");
+    }
+
+    @Test
+    public void startingQuoteMissing2_fail(){
+        String inputText = "REMOVE UDF \"/dir/jar_name-v1.0.jar;";
+        testRecoverableError(inputText, "startingQuoteMissing2_fail");
+    }
+
 }

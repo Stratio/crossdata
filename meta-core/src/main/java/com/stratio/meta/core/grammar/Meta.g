@@ -257,7 +257,8 @@ deleteStatement returns [DeleteStatement ds]
 
 //ADD \"index_path\";
 addStatement returns [AddStatement as]:
-	T_ADD (T_QUOTE | T_SINGLE_QUOTE) name=T_PATH (T_QUOTE | T_SINGLE_QUOTE) {$as = new AddStatement($name.text);}
+	//T_ADD (T_QUOTE | T_SINGLE_QUOTE) name=T_PATH (T_QUOTE | T_SINGLE_QUOTE) {$as = new AddStatement($name.text);}
+	T_ADD T_QUOTE name=T_PATH T_QUOTE {$as = new AddStatement($name.text);}
 	;
 
 //LIST ( PROCESS | UDF | TRIGGER) ;
