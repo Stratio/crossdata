@@ -4,13 +4,15 @@ One LANGUAGE to rule them all
 
 # Project description #
 
-Stratio META unifies batch and streaming queries in a single language. META provides a distributed fault-tolerant server architecture that has the unique ability to execute queries in Cassandra, Spark, and/or Stratio Streaming. From an architecture point of view, Stratio META is composed of:
+Stratio META unifies batch and streaming queries in a single language. META provides a distributed fault-tolerant server architecture that has the unique ability to execute queries in Cassandra, Spark, and/or Stratio Streaming. From an architectural point of view, Stratio META is composed of:
 
- * meta-common: Definition of common classes used by meta-server and meta-driver.
- * meta-core: Grammar definition, statement parsing, validation, and execution.
- * meta-server: The META server listens for client connections and executes the requested commands
- * meta-driver: Java API offered to client applications.
- * meta-sh: The interactive shell.
+   * meta-common : Definition of common classes used by other components.
+   * meta-core : Grammar definition, statement parsing, validation, and execution.
+   * meta-deep : Allows meta-server to support advanced capabilities such as SELECT with INNER JOIN.
+   * meta-dist : Contains config files and scripts to start/stop meta-server and meta-sh in production environments.
+   * meta-driver : Java API offered to client applications.
+   * meta-server : Listens for client connections and executes requested commands.
+   * meta-sh : The interactive shell; uses meta-driver to connect to the server.
 
 ## Full documentation ##
 
@@ -22,8 +24,8 @@ See the [Javadoc] () and [Language reference] () for the internal details.
 
 In order to execute META, the following elements are required:
 
-1. A working installation of Cassandra. The Stratio-cassandra fork is required to support the LUCENE indexes.
-2. A working installation of Stratio Deep. Otherwise, advance capabilities such as SELECT with INNER JOIN will not be available.
+1. A working installation of Cassandra. The Stratio-cassandra fork is required to support LUCENE indexes.
+2. A working installation of Stratio Deep. Otherwise, advanced capabilities such as SELECT with INNER JOIN will not be available.
 
 ## Compiling META ##
 
@@ -33,9 +35,17 @@ Compiling META involves generating a set of files (.tokens, Lexers, and Parsers)
    > mvn clean compile install
 ```
 
+## Running the META-server##
+
+```
+   > mvn exec:java -DskipTests -pl meta-server -Dexec.mainClass="com.stratio.meta.server.MetaApplication"
+```
+
 ## Running the META-shell##
 
-The META-shell allows the users to launch interactive queries against a set of META servers. The shell features:
+The META-shell allows users to launch interactive queries against a set of META servers. 
+Works both in Unix and Windows.
+The shell features:
 
  - History support (arrow navigation)
  - History search (ctrl-r)
@@ -45,6 +55,8 @@ The META-shell allows the users to launch interactive queries against a set of M
 ```
    > mvn exec:java -pl meta-sh -Dexec.mainClass="com.stratio.meta.sh.Metash"
 ```
+
+
 
 ## Useful commands ##
 
