@@ -24,6 +24,7 @@ import com.typesafe.config.Config
 object SparkConfig {
 
   val SPARK_MASTER = "config.spark.master"
+  val SPARK_CLASSPATH = "config.spark.classpath"
 
 }
 
@@ -31,4 +32,6 @@ trait SparkConfig {
   def config: Config = ???
 
   lazy val sparkMaster: String = config.getString(SparkConfig.SPARK_MASTER)
+  lazy val sparkClasspath: String = config.getString(SparkConfig.SPARK_CLASSPATH)
+
 }

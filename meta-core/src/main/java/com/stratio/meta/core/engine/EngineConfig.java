@@ -19,7 +19,10 @@
 
 package com.stratio.meta.core.engine;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 public class EngineConfig {
@@ -27,6 +30,8 @@ public class EngineConfig {
     private String [] cassandraHosts;
     private int cassandraPort;
     private String sparkMaster;
+    private List<String> jars;
+    private static String [] forbiddenJars = {"akka"};
 
     public String[] getCassandraHosts() {
         return cassandraHosts;
@@ -63,5 +68,25 @@ public class EngineConfig {
     public String getRandomCassandraHost(){
         Random rand = new Random();
         return cassandraHosts[rand.nextInt(cassandraHosts.length)];
+    }
+
+    public void setClasspathJars(String path){
+        jars = new ArrayList<String>();
+        System.out.println(path);
+        File file = new File(path);
+        File[] files = file.listFiles();
+        for (int i=0; i<files.length;++i){
+            if(filterJars(files[i].getName())){
+                jars.add(path + files[i].getName());
+            }
+        }
+    }
+
+    private boolean filterJars(String jar){
+        for(int i=0;i<forbiddenJars.length;i++){
+            if(jar.startsWith(forbiddenJars[i]))
+                return false;
+        }
+        return true;
     }
 }

@@ -38,7 +38,7 @@
         <akka.version>2.2.4</akka.version>
         <cassandra.driver>2.0.0</cassandra.driver>
         <meta.version>0.0.4-SNAPSHOT</meta.version>
-        <deep.version>0.2.1-SNAPSHOT</deep.version>
+        <deep.version>0.2.1</deep.version>
     </properties>
     <repositories>
         <repository>

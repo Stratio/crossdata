@@ -43,7 +43,7 @@ public class Engine {
     private final Planner planner;
     private final Executor executor;
     private final Session session;
-    private final DeepSparkContext deepSparkContext;
+    private final DeepSparkContext deepContext;
 
     /**
      * Class logger.
@@ -64,12 +64,15 @@ public class Engine {
                 + Arrays.toString(config.getCassandraHosts()) + ":" + config.getCassandraPort());
         this.session=cluster.connect();
 
-        this.deepSparkContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+        this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+        //for(String str : config.getJars()){
+        //deepContext.addJar(str);
+        //}
 
         parser = new Parser();
         validator = new Validator(session);
         planner = new Planner(session);
-        executor = new Executor(session, deepSparkContext, config);
+        executor = new Executor(session, deepContext, config);
     }
        
     public Parser getParser() {

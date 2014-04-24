@@ -81,6 +81,7 @@ trait ServerConfig extends CassandraConfig with SparkConfig{
     result.setCassandraHosts(cassandraHosts)
     result.setCassandraPort(cassandraPort)
     result.setSparkMaster(sparkMaster)
+    result.setClasspathJars(sparkClasspath)
     result
   }
 
