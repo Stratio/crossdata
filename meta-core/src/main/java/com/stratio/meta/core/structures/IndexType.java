@@ -27,12 +27,12 @@ package com.stratio.meta.core.structures;
  * </ul>
  */
 public enum IndexType {
-	/**
-	 * Default index created by Cassandra.
-	 */
-	DEFAULT,
-	/**
-	 * Lucene backed index.
-	 */
-	LUCENE
+    /**
+     * Default index created by Cassandra.
+     */
+    DEFAULT,
+    /**
+     * Lucene backed index.
+     */
+    LUCENE
 }

@@ -30,8 +30,11 @@ import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
 
 public class Parser {
-    
-    private final Logger logger = Logger.getLogger(Parser.class);
+
+    /**
+     * Class logger.
+     */
+    private final Logger LOG = Logger.getLogger(Parser.class);
     
     /**
      * Parse a input text and return the equivalent Statement.
@@ -51,7 +54,7 @@ public class Parser {
             resultStatement = parser.query();
             foundErrors = parser.getFoundErrors();
         } catch (Exception e) {
-            logger.error("Cannot parse statement", e);
+            LOG.error("Cannot parse statement", e);
             if(foundErrors == null){                                    
                 foundErrors = new ErrorsHelper();
             }

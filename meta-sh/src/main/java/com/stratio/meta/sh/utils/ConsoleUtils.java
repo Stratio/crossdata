@@ -150,13 +150,14 @@ public class ConsoleUtils {
         Date today = new Date();
         String workingDir = System.getProperty("user.home");
         File dir = new File(workingDir, ".meta");
-        if(!dir.exists()){
-            dir.mkdir();
+        if(!dir.exists() && !dir.mkdir()){
+            LOG.error("Cannot create history directory: " + dir.getAbsolutePath());
         }
         File file = new File(dir.getPath()+"/history.txt");
-        if (!file.exists()){
-            file.createNewFile();
+        if (!file.exists() && !file.createNewFile()){
+            LOG.error("Cannot create history file: " + file.getAbsolutePath());
         }
+
         if(LOG.isDebugEnabled()) {
             LOG.debug("Retrieving history from " + file.getAbsolutePath());
         }

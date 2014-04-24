@@ -32,11 +32,11 @@ import java.util.List;
  * the metadata associated with the existing keyspaces and tables.
  */
 public class MetadataManager {
-		
-	/**
-	 * Cluster metadata in Cassandra.
-	 */
-	private Metadata clusterMetadata = null;
+
+    /**
+     * Cluster metadata in Cassandra.
+     */
+    private Metadata clusterMetadata = null;
 
     /**
      * Cassandra session used to query the custom index information.
@@ -48,55 +48,55 @@ public class MetadataManager {
      */
     private final LuceneIndexHelper luceneHelper;
 
-	/**
-	 * Class logger.
-	 */
-	private static final Logger LOG = Logger.getLogger(MetadataManager.class.getName());
-	
-	/**
-	 * Class constructor.
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(MetadataManager.class.getName());
+
+    /**
+     * Class constructor.
      * @param cassandraSession The Cassandra session used to retrieve index metadata.
-	 */
-	public MetadataManager(Session cassandraSession){
+     */
+    public MetadataManager(Session cassandraSession){
         session = cassandraSession;
         luceneHelper = new LuceneIndexHelper(session);
-	}
+    }
 
-	/**
-	 * Load all Metadata from Cassandra.
-	 * @return Whether the metadata has been loaded or not.
-	 */
-	public boolean loadMetadata(){
-		clusterMetadata = session.getCluster().getMetadata();
-		return clusterMetadata != null;
-	}
-	
-	/**
-	 * Get the Metadata associated with a keyspace.
-	 * @param keyspace The target keyspace.
-	 * @return The KeyspaceMetadata or null if the keyspace is not found,
-	 * or the client is not connected to Cassandra.
-	 */
-	public KeyspaceMetadata getKeyspaceMetadata(String keyspace){
-		KeyspaceMetadata result = null;
-		if(clusterMetadata != null){
-			result = clusterMetadata.getKeyspace(keyspace);
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Cluster metadata: " + result);
-			}
-		}
-		return result;
-	}
-	
-	/**
-	 * Get the Metadata associated with a {@code tablename} of a {@code keyspace}.
-	 * @param keyspace The target keyspace.
-	 * @param tablename The target table.
-	 * @return The TableMetadata or null if the table does not exist in the keyspace,
-	 * or the client is not connected to Cassandra.
-	 */
-	public TableMetadata getTableMetadata(String keyspace, String tablename){
-		TableMetadata result = null;
+    /**
+     * Load all Metadata from Cassandra.
+     * @return Whether the metadata has been loaded or not.
+     */
+    public boolean loadMetadata(){
+        clusterMetadata = session.getCluster().getMetadata();
+        return clusterMetadata != null;
+    }
+
+    /**
+     * Get the Metadata associated with a keyspace.
+     * @param keyspace The target keyspace.
+     * @return The KeyspaceMetadata or null if the keyspace is not found,
+     * or the client is not connected to Cassandra.
+     */
+    public KeyspaceMetadata getKeyspaceMetadata(String keyspace){
+        KeyspaceMetadata result = null;
+        if(clusterMetadata != null){
+            result = clusterMetadata.getKeyspace(keyspace);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Cluster metadata: " + result);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get the Metadata associated with a {@code tablename} of a {@code keyspace}.
+     * @param keyspace The target keyspace.
+     * @param tablename The target table.
+     * @return The TableMetadata or null if the table does not exist in the keyspace,
+     * or the client is not connected to Cassandra.
+     */
+    public TableMetadata getTableMetadata(String keyspace, String tablename){
+        TableMetadata result = null;
         if(clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null){
             tablename = tablename.toLowerCase();
             boolean found = false;
@@ -115,9 +115,9 @@ public class MetadataManager {
             if(found){
                 result = tableMetadata;
             }
-		}
-		return result;
-	}
+        }
+        return result;
+    }
 
     /**
      * Get the comment associated with a {@code tablename} of a {@code keyspace}.

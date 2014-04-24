@@ -374,33 +374,32 @@ createTableStatement returns [CreateTableStatement crtast]
     LinkedHashMap<String, String> columns = new LinkedHashMap<>();
     ArrayList<String>   primaryKey = new ArrayList<String>();
     ArrayList<String> clusterKey = new ArrayList<String>();
-    int Type_Primary_Key= 0;
+    int primaryKeyType = 0;
     int columnNumberPK= 0;
     int columnNumberPK_inter= 0;
-    boolean ifNotExists_2 = false;
-    boolean withClusterKey = false;
-    boolean withPropierties = false;
+    boolean ifNotExists = false;
+    boolean withProperties = false;
     }:    
     T_CREATE
     T_TABLE
-    (T_IF T_NOT T_EXISTS {ifNotExists_2 = true;})? 
+    (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     tablename=getTableID
     T_START_PARENTHESIS (            
-                ident_column1=(T_IDENT | T_LUCENE | T_KEY) type1=getDataType (T_PRIMARY T_KEY)? {columns.put($ident_column1.text,type1); Type_Primary_Key=1;}
+                ident_column1=(T_IDENT | T_LUCENE | T_KEY) type1=getDataType (T_PRIMARY T_KEY)? {columns.put($ident_column1.text,type1); primaryKeyType=1;}
                 (   
-                    ( T_COMMA ident_columN=(T_IDENT | T_LUCENE | T_KEY) typeN=getDataType (T_PRIMARY T_KEY {Type_Primary_Key=2;columnNumberPK=columnNumberPK_inter +1;})? {columns.put($ident_columN.text,typeN);columnNumberPK_inter+=1;})
+                    ( T_COMMA ident_columN=(T_IDENT | T_LUCENE | T_KEY) typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put($ident_columN.text,typeN);columnNumberPK_inter+=1;})
                     |(  
                         T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS
                         (
-                            (   primaryK=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($primaryK.text);Type_Primary_Key=3;}
+                            (   primaryK=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($primaryK.text);primaryKeyType=2;}
                            
                                 (T_COMMA partitionKN=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionKN.text);})*
                             )
                             |(
-                                T_START_PARENTHESIS partitionK=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionK.text);Type_Primary_Key=4;}
+                                T_START_PARENTHESIS partitionK=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionK.text);primaryKeyType=3;}
                                     (T_COMMA partitionKN=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionKN.text);})*
                                 T_END_PARENTHESIS 
-                                (T_COMMA clusterKN=(T_IDENT | T_LUCENE | T_KEY) {clusterKey.add($clusterKN.text);withClusterKey=true;})*
+                                (T_COMMA clusterKN=(T_IDENT | T_LUCENE | T_KEY) {clusterKey.add($clusterKN.text);})*
 
                             )
                         )
@@ -408,9 +407,14 @@ createTableStatement returns [CreateTableStatement crtast]
                    )
                 )* 
          )             
-    T_END_PARENTHESIS (T_WITH {withPropierties=true;} properties=getMetaProperties 
+    T_END_PARENTHESIS (T_WITH {withProperties=true;} properties=getMetaProperties
     )?            
-    {$crtast = new CreateTableStatement(tablename,columns,primaryKey,clusterKey,properties,Type_Primary_Key,ifNotExists_2,withClusterKey,columnNumberPK,withPropierties);}
+    {
+        $crtast = new CreateTableStatement(tablename, columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
+        $crtast.setProperties(properties);
+        $crtast.setIfNotExists(ifNotExists);
+        $crtast.setWithProperties(withProperties);
+    }
 ;        
 
         

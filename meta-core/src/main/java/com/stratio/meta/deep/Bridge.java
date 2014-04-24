@@ -49,7 +49,7 @@ import java.util.Set;
  */
 public class Bridge {
 
-    private final static Logger LOG = Logger.getLogger(Bridge.class);
+    private static final Logger LOG = Logger.getLogger(Bridge.class);
     public static final int DEFAULT_RESULT_SIZE = 100000;
 
     private static DeepSparkContext deepContext;
@@ -81,8 +81,7 @@ public class Bridge {
                     .keyspace(ss.getKeyspace()).table(ss.getTableName());
 
             config = (null==columnsSet)? config.initialize() : config.inputColumns(columnsSet).initialize() ;
-            //config = config.initialize();
-
+            
             JavaRDD rdd = deepContext.cassandraJavaRDD(config);
             //If where
             if(ss.isWhereInc()){

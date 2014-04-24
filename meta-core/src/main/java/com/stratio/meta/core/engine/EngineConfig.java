@@ -48,9 +48,13 @@ public class EngineConfig {
         return sparkMaster;
     }
 
-    public void setSparkMaster(String sparkMaster){ this.sparkMaster=sparkMaster; }
+    public void setSparkMaster(String sparkMaster){
+        this.sparkMaster=sparkMaster;
+    }
 
-    public String getJobName(){ return jobName;}
+    public String getJobName(){
+        return jobName;
+    }
 
     public void setJobName(String jobName){
         this.jobName=jobName;

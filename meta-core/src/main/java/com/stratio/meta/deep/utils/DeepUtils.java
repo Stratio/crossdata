@@ -27,15 +27,16 @@ import com.stratio.meta.common.data.Row;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaRDD;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public final class DeepUtils {
 
-    private static final Logger log = Logger.getLogger(DeepUtils.class);
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(DeepUtils.class);
 
     private DeepUtils() {}
 
@@ -62,7 +63,7 @@ public final class DeepUtils {
         if(rs.size()>0){
             logResult.append(" rows & " + rs.iterator().next().size() + " columns");
         }
-        log.info(logResult);
+        LOG.info(logResult);
         return rs;
     }
 
@@ -85,7 +86,7 @@ public final class DeepUtils {
                 columnsSet[i] = selId.getColumnName();
             }
         }
-        log.info("Selected columns: " + Arrays.toString(columnsSet));
+        LOG.info("Selected columns: " + Arrays.toString(columnsSet));
         return columnsSet;
     }
 }

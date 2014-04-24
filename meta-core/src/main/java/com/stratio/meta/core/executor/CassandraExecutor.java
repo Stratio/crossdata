@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
 
 public class CassandraExecutor {
 
-    private final static Logger LOG = Logger.getLogger(CassandraExecutor.class);
+    private static final Logger LOG = Logger.getLogger(CassandraExecutor.class);
 
     public static Result execute(MetaStep step, Session session){
         Result result = null;

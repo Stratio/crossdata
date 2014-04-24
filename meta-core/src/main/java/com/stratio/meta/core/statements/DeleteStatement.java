@@ -124,8 +124,8 @@ public class DeleteStatement extends MetaStatement {
         } 
         sb.append(tableName);
         if(whereClauses.size() > 0){
-        	sb.append(" WHERE ");
-        	sb.append(ParserUtils.stringList(whereClauses, " AND "));
+            sb.append(" WHERE ");
+            sb.append(ParserUtils.stringList(whereClauses, " AND "));
         }
         return sb.toString();
     }

@@ -28,16 +28,16 @@ package com.stratio.meta.core.structures;
  * </ul>
  */
 public enum ListType {
-	/**
-	 * List all running processes. 
-	 */
-	PROCESS,
-	/**
-	 * List all known UDF.
-	 */
-	UDF,
-	/**
-	 * List all known triggers.
-	 */
-	TRIGGER
+    /**
+     * List all running processes.
+     */
+    PROCESS,
+    /**
+     * List all known UDF.
+     */
+    UDF,
+    /**
+     * List all known triggers.
+     */
+    TRIGGER
 }
