@@ -80,8 +80,8 @@ public class Bridge {
                     .host(engineConfig.getRandomCassandraHost()).rpcPort(engineConfig.getCassandraPort())
                     .keyspace(ss.getKeyspace()).table(ss.getTableName());
 
-            //config = (null==columnsSet)? config.initialize() : config.inputColumns(columnsSet).initialize() ;
-            config = config.initialize();
+            config = (null==columnsSet)? config.initialize() : config.inputColumns(columnsSet).initialize() ;
+            //config = config.initialize();
 
             JavaRDD rdd = deepContext.cassandraJavaRDD(config);
             //If where
