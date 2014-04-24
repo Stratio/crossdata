@@ -88,7 +88,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
     logger.info("Create Lucene Index iteration: " + iteration)
 
     //Create the index
-    within(15000 millis){
+    within(25000 millis){
       executeStatement(createQuery, "demo_server")
       assertTrue(checkColumnExists("demo_server", "users_info", "stratio_lucene_users_info"), "Stratio column not found")
       waitForLucene()

@@ -28,7 +28,6 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.deep.Bridge;
-import com.stratio.meta.deep.exceptions.MetaDeepException;
 
 import java.util.List;
 
@@ -41,7 +40,8 @@ public class DeepExecutor {
             try {
                 resultSet = bridge.execute(ss, resultsFromChildren, isRoot);
             } catch(Exception ex){
-                return QueryResult.createFailQueryResult("Query cannot be executed on Spark");
+                return QueryResult.createFailQueryResult("Spark exception: " +
+                        System.lineSeparator()+ex.getMessage());
             }
             return QueryResult.createSuccessQueryResult(resultSet);
         } else {

@@ -39,10 +39,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Class that performs as a Bridge between Meta and Stratio Deep
@@ -91,19 +88,30 @@ public class Bridge {
                 }
             }
 
-            return returnResult(rdd, isRoot);
+            return returnResult(rdd, isRoot, Arrays.asList(columnsSet));
 
         } else {
             // (INNER NODE) NO LEAF
-            // Retrieve RDDs from children
-            List<JavaRDD> children = new ArrayList<JavaRDD>();
+            // Retrieve RDDs and selected columns from children
+            List<JavaRDD> children = new ArrayList<>();
+            List<String> selectedCols = new ArrayList<>();
             for (Result child: resultsFromChildren){
                 QueryResult qResult = (QueryResult) child;
                 CassandraResultSet crset = (CassandraResultSet) qResult.getResultSet();
+
+                for(Row rowFromChild: crset.getRows()){
+                    System.out.println(rowFromChild.toString());
+                }
+
                 Map<String, Cell> cells = crset.getRows().get(0).getCells();
-                Cell cell = cells.get(cells.keySet().iterator().next());
+                // RDD from child
+                Cell cell = cells.get("RDD");
                 JavaRDD rdd = (JavaRDD) cell.getValue();
                 children.add(rdd);
+                // Selected columns from child
+                Cell secondCell = cells.get("SELECTED_COLUMNS");
+                List<String> selCols = (List<String>) secondCell.getValue();
+                selectedCols.addAll(selCols);
             }
 
             //JOIN
@@ -127,18 +135,21 @@ public class Bridge {
             result = joinRDD.map(new JoinCells(field1));
 
             // Return MetaResultSet
-            return returnResult(result, isRoot);
+            return returnResult(result, isRoot, selectedCols);
         }
     }
 
-    private ResultSet returnResult(JavaRDD rdd, boolean isRoot){
+    private ResultSet returnResult(JavaRDD rdd, boolean isRoot, List<String> selectedCols){
         if(isRoot){
-            return DeepUtils.buildResultSet(rdd.dropTake(0, DEFAULT_RESULT_SIZE));
+            return DeepUtils.buildResultSet(rdd.dropTake(0, DEFAULT_RESULT_SIZE), selectedCols);
         } else {
-            List oneRow = new ArrayList<Row>();
-            oneRow.add(new Row("RESULT", new Cell(JavaRDD.class, rdd)));
+            List<Row> partialResult = new ArrayList<>();
+            Row partialRow = new Row("RDD", new Cell(JavaRDD.class, rdd));
+            partialRow.addCell("SELECTED_COLUMNS", new Cell(List.class, selectedCols));
+            partialResult.add(partialRow);
+
             LOG.info("LEAF: rdd.count=" + ((int) rdd.count()));
-            return new CassandraResultSet(oneRow);
+            return new CassandraResultSet(partialResult);
         }
     }
 

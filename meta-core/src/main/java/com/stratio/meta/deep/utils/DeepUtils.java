@@ -28,7 +28,10 @@ import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import org.apache.log4j.Logger;
 
+<<<<<<< HEAD
 import java.util.Arrays;
+=======
+>>>>>>> Columns filter from Deep Result added
 import java.util.List;
 
 public final class DeepUtils {
@@ -45,7 +48,7 @@ public final class DeepUtils {
      * @param cells list of Cells
      * @return ResultSet
      */
-    public static ResultSet buildResultSet(List<Cells> cells) {
+    public static ResultSet buildResultSet(List<Cells> cells, List<String> selectedCols) {
         CassandraResultSet rs = new CassandraResultSet();
         for(Cells deepRow: cells){
             Row metaRow = new Row();
@@ -53,8 +56,13 @@ public final class DeepUtils {
                 if(deepCell.getCellName().toLowerCase().startsWith("stratio")){
                     continue;
                 }
-                Cell metaCell = new Cell(deepCell.getValueType(), deepCell.getCellValue());
-                metaRow.addCell(deepCell.getCellName(), metaCell);
+                if(selectedCols.isEmpty()){
+                    Cell metaCell = new Cell(deepCell.getValueType(), deepCell.getCellValue());
+                    metaRow.addCell(deepCell.getCellName(), metaCell);
+                } else if(selectedCols.contains(deepCell.getCellName())){
+                    Cell metaCell = new Cell(deepCell.getValueType(), deepCell.getCellValue());
+                    metaRow.addCell(deepCell.getCellName(), metaCell);
+                }
             }
             rs.add(metaRow);
         }
@@ -86,7 +94,6 @@ public final class DeepUtils {
                 columnsSet[i] = selId.getColumnName();
             }
         }
-        LOG.info("Selected columns: " + Arrays.toString(columnsSet));
         return columnsSet;
     }
 }
