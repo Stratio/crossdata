@@ -24,9 +24,6 @@ import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.MetaQuery;
 import org.testng.annotations.Test;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import static org.testng.Assert.*;
 
 

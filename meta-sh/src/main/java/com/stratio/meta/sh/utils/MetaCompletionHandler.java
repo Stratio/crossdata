@@ -19,11 +19,12 @@
 
 package com.stratio.meta.sh.utils;
 
-import java.io.IOException;
-import java.util.List;
 import jline.console.ConsoleReader;
 import jline.console.CursorBuffer;
 import jline.console.completer.CandidateListCompletionHandler;
+
+import java.io.IOException;
+import java.util.List;
 
 public class MetaCompletionHandler extends CandidateListCompletionHandler {
 

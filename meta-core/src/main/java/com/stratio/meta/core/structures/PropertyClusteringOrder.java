@@ -20,6 +20,7 @@
 package com.stratio.meta.core.structures;
 
 import com.stratio.meta.core.utils.ParserUtils;
+
 import java.util.List;
 
 public class PropertyClusteringOrder extends Property {

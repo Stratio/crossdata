@@ -26,9 +26,7 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.MetaStatement;
 import org.testng.annotations.BeforeClass;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 public class BasicValidatorTest extends BasicCoreCassandraTest {
 

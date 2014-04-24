@@ -19,7 +19,6 @@
 
 package com.stratio.meta.core.statements;
 
-import com.stratio.meta.common.data.DeepResultSet;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Assignment;
 import com.stratio.meta.core.structures.Option;

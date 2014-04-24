@@ -19,12 +19,12 @@
 
 package com.stratio.meta.sh.help;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.apache.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class HelpManager {
 

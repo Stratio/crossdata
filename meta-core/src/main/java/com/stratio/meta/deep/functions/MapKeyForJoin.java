@@ -1,9 +1,6 @@
 package com.stratio.meta.deep.functions;
 
 import com.stratio.deep.entity.Cells;
-import com.stratio.meta.deep.exceptions.MetaDeepException;
-import org.apache.log4j.Logger;
-import org.apache.spark.SparkException;
 import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
 

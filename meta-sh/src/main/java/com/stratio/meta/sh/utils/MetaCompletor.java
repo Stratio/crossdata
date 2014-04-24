@@ -20,11 +20,13 @@
 package com.stratio.meta.sh.utils;
 
 import com.stratio.meta.common.utils.MetaUtils;
+import jline.console.completer.Completer;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import jline.console.completer.Completer;
+
 import static jline.internal.Preconditions.checkNotNull;
 
 public class MetaCompletor implements Completer {

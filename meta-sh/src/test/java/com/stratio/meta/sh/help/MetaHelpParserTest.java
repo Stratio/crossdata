@@ -19,13 +19,11 @@
 
 package com.stratio.meta.sh.help;
 
+import com.stratio.meta.sh.help.generated.MetaHelpLexer;
+import com.stratio.meta.sh.help.generated.MetaHelpParser;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-
-
-import com.stratio.meta.sh.help.generated.MetaHelpLexer;
-import com.stratio.meta.sh.help.generated.MetaHelpParser;
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 

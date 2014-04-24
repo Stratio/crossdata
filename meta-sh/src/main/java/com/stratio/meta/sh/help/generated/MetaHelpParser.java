@@ -1,14 +1,10 @@
 // $ANTLR 3.5.1 MetaHelp.g 2014-03-26 16:24:16
 
 	package com.stratio.meta.sh.help.generated;
-	import com.stratio.meta.sh.help.HelpType;
-	import com.stratio.meta.sh.help.HelpStatement;
 
-
+import com.stratio.meta.sh.help.HelpStatement;
+import com.stratio.meta.sh.help.HelpType;
 import org.antlr.runtime.*;
-import java.util.Stack;
-import java.util.List;
-import java.util.ArrayList;
 
 @SuppressWarnings("all")
 public class MetaHelpParser extends Parser {

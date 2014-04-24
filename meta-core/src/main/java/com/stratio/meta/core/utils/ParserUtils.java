@@ -20,13 +20,18 @@
 package com.stratio.meta.core.utils;
 
 import com.stratio.meta.common.utils.MetaUtils;
-import com.stratio.meta.core.structures.ValueProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ParserUtils {
 

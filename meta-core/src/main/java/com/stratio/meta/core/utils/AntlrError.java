@@ -19,8 +19,6 @@
 
 package com.stratio.meta.core.utils;
 
-import org.apache.log4j.Logger;
-
 public class AntlrError {
 
     private final String header;
