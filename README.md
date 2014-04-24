@@ -4,7 +4,7 @@ One LANGUAGE to rule them all
 
 # Project description #
 
-Stratio META unifies batch and streaming queries in a single language. META provides a distributed fault-tolerant server architecture that has the unique ability to execute queries in Cassandra, Spark, and/or Stratio Streaming. From an architectural point of view, Stratio META is composed of:
+Stratio META brings batch and streaming queries into a single language. META provides a distributed fault-tolerant server architecture that has the unique ability to execute queries in Cassandra, Spark, and/or Stratio Streaming. From an architectural point of view, Stratio META is composed of:
 
    * meta-common : Definition of common classes used by other components.
    * meta-core : Grammar definition, statement parsing, validation, and execution.
@@ -41,7 +41,7 @@ Compiling META involves generating a set of files (.tokens, Lexers, and Parsers)
    > mvn exec:java -DskipTests -pl meta-server -Dexec.mainClass="com.stratio.meta.server.MetaApplication"
 ```
 
-## Running the META-shell##
+## Running the META-shell ##
 
 The META-shell allows users to launch interactive queries against a set of META servers. 
 Works both in Unix and Windows.
@@ -56,6 +56,12 @@ The shell features:
    > mvn exec:java -pl meta-sh -Dexec.mainClass="com.stratio.meta.sh.Metash"
 ```
 
+## Packaging ##
+
+```
+   > mvn package
+```
+See [this link](https://github.com/Stratio/stratio-meta/edit/release/0.0.4/meta-dist/src/main/include/README.md) to know start/stop the server and the shell from the dist packages
 
 
 ## Useful commands ##
