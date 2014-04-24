@@ -20,13 +20,14 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.data.DeepResultSet;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ValueProperty;
-import com.stratio.meta.core.utils.*;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta.core.utils.Tree;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,7 +64,9 @@ public class CreateKeyspaceStatement extends MetaStatement {
         this.command = false;
         this.ifNotExists = ifNotExists;
         this.properties = new HashMap<>();
-        this.properties.putAll(properties);
+        for(String key: properties.keySet()){
+            this.properties.put(key.toLowerCase(), properties.get(key));
+        }
     }
 
     /**
