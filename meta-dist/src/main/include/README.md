@@ -1,10 +1,7 @@
 # Stratio Meta #
 
-## Start the Server ##
+Brief description of META
 
-```
-  > ./meta-server
-```
 
 ## Start/stop/restart the Server as a daemon ##
 jsvc needs to be installed ( http://commons.apache.org/proper/commons-daemon/jsvc.html )
@@ -16,9 +13,20 @@ jsvc needs to be installed ( http://commons.apache.org/proper/commons-daemon/jsv
 ```
 
 
-
-## Start the Client ##
+### Alternative manual server start ###
 
 ```
-  > ./meta-client
+  > ./meta-server
 ```
+
+## Start the Meta shell ##
+
+```
+  > ./meta-sh
+```
+
+## Directory structure ##
+
+Describe the distribution directories: bin, conf, and lib
+
+## License ##
