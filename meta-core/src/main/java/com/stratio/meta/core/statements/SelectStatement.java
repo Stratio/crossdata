@@ -1105,7 +1105,7 @@ public class SelectStatement extends MetaStatement {
         firstSelect.setKeyspace(getEffectiveKeyspace(targetKeyspace, keyspaceInc, keyspace));
 
         SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
-        firstSelect.setKeyspace(getEffectiveKeyspace(targetKeyspace, join.isKeyspaceInc(), join.getKeyspace()));
+        secondSelect.setKeyspace(getEffectiveKeyspace(targetKeyspace, join.isKeyspaceInc(), join.getKeyspace()));
 
         SelectStatement joinSelect = new SelectStatement("");
 
@@ -1195,6 +1195,8 @@ public class SelectStatement extends MetaStatement {
         //By default go through deep.
         boolean cassandraPath = false;
 
+        System.out.println("TRACE: "+Arrays.toString(whereCols.toArray()));
+
         if(whereCols.isEmpty()){
             //All where clauses are included in the primary key.
             cassandraPath = true;
@@ -1205,15 +1207,22 @@ public class SelectStatement extends MetaStatement {
                     whereCols.remove(colMD.getName());
                 }
             }
+
             // Get columns of the custom and lucene indexes
-            List<String> indexedCols = new ArrayList<>();
+            Set<String> indexedCols = new HashSet<>();
             for(CustomIndexMetadata cim: metadataManager.getTableIndex(tableMetadata)){
+                System.out.println(cim.getIndexName() + " - " + Arrays.toString(cim.getIndexedColumns().toArray()));
                 indexedCols.addAll(cim.getIndexedColumns());
             }
 
+            System.out.println("TRACE (whereCols): "+Arrays.toString(whereCols.toArray()));
+            System.out.println("TRACE (indexedCols): "+Arrays.toString(indexedCols.toArray()));
+
             if(indexedCols.containsAll(whereCols)){
                 //If only one indexed column remains go through cassandra
-                cassandraPath = whereCols.size() == 1;
+                //cassandraPath = whereCols.size() == 1;
+
+                cassandraPath = true;
             }
         }
 
@@ -1227,7 +1236,6 @@ public class SelectStatement extends MetaStatement {
 
     @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        //TODO: Refactor getPlan
         Tree steps = new Tree();
         if(joinInc){
             steps = getJoinPlan(metadataManager, targetKeyspace);

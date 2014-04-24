@@ -17,27 +17,7 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.validator;
+package com.stratio.meta.core.planner.statements;
 
-public class MetaValidation {
-    
-    private boolean hasError = false;    
-    private String message;   
-
-    public boolean hasError() {
-        return hasError;
-    }
-
-    public void setHasError() {
-        this.hasError = true;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
+public class SelectStatement {
 }

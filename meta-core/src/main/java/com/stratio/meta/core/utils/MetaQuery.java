@@ -22,7 +22,6 @@ package com.stratio.meta.core.utils;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.MetaStatement;
-import com.stratio.meta.core.validator.MetaValidation;
 
 public class MetaQuery {
     
@@ -31,7 +30,6 @@ public class MetaQuery {
     private boolean hasError = false;
     private MetaStatement statement;
     private Tree plan;
-    private MetaValidation validation;
     private Result result;
     private String targetKeyspace;
     
@@ -97,14 +95,6 @@ public class MetaQuery {
 
     public Result getResult() {
         return result;
-    }
-
-    public MetaValidation getValidation() {
-        return validation;
-    }
-
-    public void setValidation(MetaValidation validation) {
-        this.validation = validation;
     }
 
     public String getTargetKeyspace() {

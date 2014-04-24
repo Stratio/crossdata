@@ -19,24 +19,5 @@
 
 package com.stratio.meta.core.planner;
 
-import com.datastax.driver.core.Session;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.core.utils.QueryStatus;
-
-public class Planner {
-
-    private final MetadataManager metadata;
-
-    public Planner(Session session){
-        metadata = new MetadataManager(session);
-        metadata.loadMetadata();
-    }
-
-    public MetaQuery planQuery(MetaQuery metaQuery) {
-        metaQuery.setStatus(QueryStatus.PLANNED);
-        metaQuery.setPlan(metaQuery.getStatement().getPlan(metadata, metaQuery.getTargetKeyspace()));
-        return metaQuery;
-    }
-    
+public class BasicPlannerTest {
 }

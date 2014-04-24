@@ -21,12 +21,10 @@ package com.stratio.meta.core.executor;
 
 import com.datastax.driver.core.Session;
 import com.stratio.deep.context.DeepSparkContext;
-import com.stratio.meta.core.engine.Engine;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.QueryStatus;
 import com.stratio.meta.core.utils.Tree;
-import org.apache.log4j.Logger;
 
 public class Executor {
 

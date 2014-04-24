@@ -32,10 +32,7 @@ import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.testng.Assert.*;
 
@@ -311,7 +308,6 @@ public class BridgeTest extends BasicCoreCassandraTest {
         ss.setWhere(clause);
         ss.setJoin(join);
 
-
         metaQuery.setStatement(ss);
         System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
         System.out.println("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
@@ -330,6 +326,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         selectionSelectors = new SelectionSelectors();
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.varchar_column")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.boolean_column")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.int_column")));
         selectionClause = new SelectionList(selectionSelectors);
 
         clause = new ArrayList<>();
