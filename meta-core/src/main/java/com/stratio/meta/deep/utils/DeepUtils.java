@@ -28,10 +28,6 @@ import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import org.apache.log4j.Logger;
 
-<<<<<<< HEAD
-import java.util.Arrays;
-=======
->>>>>>> Columns filter from Deep Result added
 import java.util.List;
 
 public final class DeepUtils {

@@ -60,11 +60,6 @@ public class ListStatement extends MetaStatement {
     }
     
     @Override
-    public DeepResultSet executeDeep() {
-        return new DeepResultSet();
-    }
-    
-    @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         return new Tree();
     }

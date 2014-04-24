@@ -200,12 +200,6 @@ public abstract class MetaStatement {
     }
 
     /**
-     * Execute the statement in Stratio Deep.
-     * @return A {@link com.stratio.meta.common.data.DeepResultSet} with the result.
-     */
-    public abstract DeepResultSet executeDeep();
-
-    /**
      * Get a tree that contains the planning for executing the query.
      * The plan will be executed starting from the leaves and finishing at the tree root.
      * @param metadataManager The {@link com.stratio.meta.core.metadata.MetadataManager} that provides

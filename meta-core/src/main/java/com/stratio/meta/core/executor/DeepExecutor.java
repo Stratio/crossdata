@@ -28,10 +28,14 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.deep.Bridge;
+import org.apache.log4j.Logger;
 
 import java.util.List;
 
 public class DeepExecutor {
+
+    private static final Logger LOG = Logger.getLogger(DeepExecutor.class);
+
     public static Result execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot, Session session, DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
         if (stmt instanceof SelectStatement) {
             SelectStatement ss = (SelectStatement) stmt;
@@ -40,6 +44,7 @@ public class DeepExecutor {
             try {
                 resultSet = bridge.execute(ss, resultsFromChildren, isRoot);
             } catch(Exception ex){
+                LOG.error("Spark exception", ex);
                 return QueryResult.createFailQueryResult("Spark exception: " +
                         System.lineSeparator()+ex.getMessage());
             }

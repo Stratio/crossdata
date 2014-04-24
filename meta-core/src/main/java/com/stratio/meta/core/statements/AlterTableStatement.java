@@ -157,11 +157,6 @@ public class AlterTableStatement extends MetaStatement{
     }
 
     @Override
-    public DeepResultSet executeDeep() {
-        return new DeepResultSet();
-    }
-    
-    @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));

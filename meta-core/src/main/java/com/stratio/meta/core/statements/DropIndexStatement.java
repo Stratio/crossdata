@@ -180,11 +180,6 @@ public class DropIndexStatement extends MetaStatement {
     }
 
     @Override
-    public DeepResultSet executeDeep() {
-        return new DeepResultSet();
-    }
-
-    @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         Tree result = new Tree();
         if(dropIndex) {

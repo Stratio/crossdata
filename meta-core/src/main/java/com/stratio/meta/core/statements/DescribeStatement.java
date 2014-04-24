@@ -140,11 +140,6 @@ public class DescribeStatement extends MetaStatement {
     }
 
     @Override
-    public DeepResultSet executeDeep() {
-        return new DeepResultSet();
-    }
-
-    @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         Tree steps = new Tree();
         steps.setNode(new MetaStep(MetaPath.COMMAND, this));

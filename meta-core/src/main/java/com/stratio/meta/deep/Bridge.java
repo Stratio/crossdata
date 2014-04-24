@@ -88,6 +88,9 @@ public class Bridge {
                 }
             }
 
+            if(columnsSet == null){
+                return returnResult(rdd, isRoot, new ArrayList<String>());
+            }
             return returnResult(rdd, isRoot, Arrays.asList(columnsSet));
 
         } else {
@@ -98,11 +101,6 @@ public class Bridge {
             for (Result child: resultsFromChildren){
                 QueryResult qResult = (QueryResult) child;
                 CassandraResultSet crset = (CassandraResultSet) qResult.getResultSet();
-
-                for(Row rowFromChild: crset.getRows()){
-                    System.out.println(rowFromChild.toString());
-                }
-
                 Map<String, Cell> cells = crset.getRows().get(0).getCells();
                 // RDD from child
                 Cell cell = cells.get("RDD");

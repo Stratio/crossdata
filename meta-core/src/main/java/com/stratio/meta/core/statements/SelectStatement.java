@@ -1011,11 +1011,6 @@ public class SelectStatement extends MetaStatement {
         return whereStmt;
     }
 
-    @Override
-    public DeepResultSet executeDeep() {
-        return new DeepResultSet();
-    }
-
     private String findAssociatedTable(String columnName){
         String result = null;
         boolean found = false;
