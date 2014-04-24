@@ -437,6 +437,48 @@ public class SelectStatement extends MetaStatement {
         return QueryResult.createFailQueryResult("Unsupported");
     }
 
+    private Result validateWhereRelation(String targetTable, String column, Term t, String operator){
+        Result result = QueryResult.createSuccessQueryResult();
+
+        ColumnMetadata cm = findColumnMetadata(targetTable, column);
+        if(cm != null) {
+            if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
+                result = QueryResult.createFailQueryResult("Column " + column
+                        + " of type " + cm.getType().asJavaClass()
+                        + " does not accept " + t.getTermClass()
+                        + " values (" + t.toString() + ")");
+            }
+
+            if (Boolean.class.equals(cm.getType().asJavaClass())) {
+                boolean supported = true;
+                switch (operator) {
+                    case ">":
+                        supported = false;
+                        break;
+                    case "<":
+                        supported = false;
+                        break;
+                    case ">=":
+                        supported = false;
+                        break;
+                    case "<=":
+                        supported = false;
+                        break;
+                    default:
+                        break;
+                }
+                if (!supported) {
+                    result = QueryResult.createFailQueryResult("Operand " + operator + " not supported for" +
+                            " column " + column + ".");
+                }
+            }
+        }else{
+            result= QueryResult.createFailQueryResult("Column " + column + " not found in table " + targetTable);
+        }
+
+        return result;
+    }
+
     /**
      * Validate that the where clause is valid by checking that columns exists on the target
      * table and that the comparisons are semantically valid.
@@ -448,7 +490,9 @@ public class SelectStatement extends MetaStatement {
         //TODO: Check that the MATCH operator is only used in Lucene mapped columns.
 
         Result result = QueryResult.createSuccessQueryResult();
-        for(Relation relation : where){
+        Iterator<Relation> relations = where.iterator();
+        while(!result.hasError() && relations.hasNext()){
+            Relation relation = relations.next();
             if(Relation.TYPE_COMPARE == relation.getType()) {
                 //Check comparison, =, >, <, etc.
                 RelationCompare rc = RelationCompare.class.cast(relation);
@@ -463,51 +507,7 @@ public class SelectStatement extends MetaStatement {
 
                 //Get the term and determine its type.
                 Term t = Term.class.cast(rc.getTerms().get(0));
-                boolean found = false;
-                Iterator<ColumnMetadata> it = columns.get(targetTable).iterator();
-                while(!found && it.hasNext()) {
-                    ColumnMetadata cm = it.next();
-
-                    if (cm.getName().equals(column)) {
-                        found = true;
-
-                        if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
-                            result = QueryResult.createFailQueryResult("Column " + column
-                                    + " of type " + cm.getType().asJavaClass()
-                                    + " does not accept " + t.getTermClass()
-                                    + " values (" + t.toString() + ")");
-                        }
-
-                        if (Boolean.class.equals(cm.getType().asJavaClass())) {
-                            boolean supported = true;
-                            switch (rc.getOperator()) {
-                                case ">":
-                                    supported = false;
-                                    break;
-                                case "<":
-                                    supported = false;
-                                    break;
-                                case ">=":
-                                    supported = false;
-                                    break;
-                                case "<=":
-                                    supported = false;
-                                    break;
-                                default:
-                                    break;
-                            }
-                            if (!supported) {
-                                result = QueryResult.createFailQueryResult("Operand " + rc.getOperator() + " not supported for" +
-                                        " column " + column + ".");
-                            }
-                        }
-                    }
-                }
-                //Check that the column exists.
-                if(!found) {
-                    result= QueryResult.createFailQueryResult("Column " + column + " not found in table " + tableName);
-                }
-
+                result = validateWhereRelation(targetTable, column, t, rc.getOperator());
 
             }else if(Relation.TYPE_IN == relation.getType()){
                 //TODO: Check IN relation
@@ -556,6 +556,30 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
+    /**
+     * Find a column in the selected tables.
+     * @param table The target table of the column.
+     * @param column The name of the column.
+     * @return A {@link com.datastax.driver.core.ColumnMetadata} or null if not found.
+     */
+    private ColumnMetadata findColumnMetadata(String table, String column){
+
+        ColumnMetadata result = null;
+        boolean found = false;
+
+        if(columns.get(table) != null){
+            Iterator<ColumnMetadata> it = columns.get(table).iterator();
+            while(!found && it.hasNext()) {
+                ColumnMetadata cm = it.next();
+                if (cm.getName().equals(column)) {
+                    found = true;
+                    result = cm;
+                }
+            }
+        }
+        return result;
+    }
+
 
     /**
      * Validate that the columns specified in the select are valid by checking
@@ -580,31 +604,39 @@ public class SelectStatement extends MetaStatement {
 
         Result columnResult = null;
 
-        //Iterate through the selection columns. If the user specified count(*) skip
-        if(selectionClause.getType() == SelectionClause.TYPE_SELECTION){
-            SelectionList sl = SelectionList.class.cast(selectionClause);
+        boolean check = false;
+        SelectionList sl = null;
+        if(selectionClause.getType() == SelectionClause.TYPE_SELECTION) {
+            sl = SelectionList.class.cast(selectionClause);
             //Check columns only if an asterisk is not selected.
-            if(sl.getSelection().getType() == Selection.TYPE_SELECTOR){
-                SelectionSelectors ss = SelectionSelectors.class.cast(sl.getSelection());
-                for(SelectionSelector selector : ss.getSelectors()){
-                    if(selector.getSelector().getType() == SelectorMeta.TYPE_IDENT){
-                        SelectorIdentifier si = SelectorIdentifier.class.cast(selector.getSelector());
-
-                        String targetTable = "any";
-                        if(si.getTablename() != null){
-                            targetTable = si.getTablename();
-                        }
-
-                        columnResult = findColumn(targetTable, si.getColumnName());
-                        if(columnResult.hasError()){
-                            result = columnResult;
-                        }
-                    }else{
-                        result= QueryResult.createFailQueryResult("Functions on selected fields not supported.");
-                    }
-                }
+            if (sl.getSelection().getType() == Selection.TYPE_SELECTOR) {
+                check = true;
             }
         }
+
+        if(!check){
+            return result;
+        }
+
+        SelectionSelectors ss = SelectionSelectors.class.cast(sl.getSelection());
+        for(SelectionSelector selector : ss.getSelectors()){
+            if(selector.getSelector().getType() == SelectorMeta.TYPE_IDENT){
+                SelectorIdentifier si = SelectorIdentifier.class.cast(selector.getSelector());
+
+                String targetTable = "any";
+                if(si.getTablename() != null){
+                    targetTable = si.getTablename();
+                }
+
+                columnResult = findColumn(targetTable, si.getColumnName());
+                if(columnResult.hasError()){
+                    result = columnResult;
+                }
+            }else{
+                result= QueryResult.createFailQueryResult("Functions on selected fields not supported.");
+            }
+        }
+
         return result;
     }
 

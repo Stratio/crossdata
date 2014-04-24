@@ -23,6 +23,7 @@ class QueryActorTest {
     val result=new EngineConfig
     result.setCassandraHosts(Array[String]("127.0.0.1"))
     result.setCassandraPort(9042)
+    result.setSparkMaster("local[2]")
     result
   }
   lazy val engine: Engine = new Engine(engineConfig)
