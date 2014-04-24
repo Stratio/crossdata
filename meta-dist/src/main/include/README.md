@@ -32,17 +32,7 @@ Stratio META brings batch and streaming queries into a single language. META pro
 
 Describe the distribution directories: bin, conf, and lib
   * bin : Contains the aforementioned scripts to start/stop the server or shell
-  * conf : 
-    * driver-application.conf  
-    * driver-log.properties  
-    * meta-env.sh  
-    * server-application.conf  
-    * server-log.properties
-    * driver-application.conf  
-    * driver-log.properties  
-    * meta-env.sh  
-    * server-application.conf  
-    * server-log.properties
+  * conf : Contains the config files for the server, driver and logs.
   * lib : Contains the necesary jar files to run the scripts in ***bin***
 
 # License #
