@@ -82,11 +82,11 @@ public class ParserUtils {
         return result;
     }
     
-    public static int getCharPosition(AntlrError antlrError) {
-        int result = -1;
+    public static Integer getCharPosition(AntlrError antlrError) {
+        Integer result = -1;
         if(antlrError.getHeader().contains(":")
                 && antlrError.getHeader().split(":").length > 1) {
-                result = Integer.valueOf(antlrError.getHeader().split(":")[1]);
+            result = Integer.valueOf(antlrError.getHeader().split(":")[1]);
         }
         return result;
     }

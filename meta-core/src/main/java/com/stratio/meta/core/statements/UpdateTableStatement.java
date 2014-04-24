@@ -19,9 +19,7 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.data.DeepResultSet;
-import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Assignment;
 import com.stratio.meta.core.structures.Option;
@@ -56,10 +54,12 @@ public class UpdateTableStatement extends MetaStatement {
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
             keyspace = ksAndTableName[0];
-            tableName = ksAndTableName[1];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
+        }else{
+            this.tableName = tableName;
         }
-        this.tableName = tableName;
+
         this.optsInc = optsInc;
         this.options = options;
         this.assignments = assignments;
@@ -112,14 +112,6 @@ public class UpdateTableStatement extends MetaStatement {
         this.keyspace = keyspace;
     }
 
-    public boolean isCondsInc() {
-        return condsInc;
-    }
-
-    public void setCondsInc(boolean condsInc) {
-        this.condsInc = condsInc;
-    }       
-    
     public String getTableName() {
         return tableName;
     }
@@ -134,52 +126,12 @@ public class UpdateTableStatement extends MetaStatement {
         this.tableName = tableName;
     }
 
-    public boolean isOptsInc() {
-        return optsInc;
-    }
-
-    public void setOptsInc(boolean optsInc) {
-        this.optsInc = optsInc;
-    }   
-    
     public List<Option> getOptions() {
         return options;
     }
 
     public void setOptions(List<Option> options) {
         this.options = options;
-    }
-
-    public List<Assignment> getAssignments() {
-        return assignments;
-    }
-
-    public void setAssignments(List<Assignment> assignments) {
-        this.assignments = assignments;
-    }        
-
-    public List<Relation> getWhereClauses() {
-        return whereClauses;
-    }
-
-    public void setWhereClauses(List<Relation> whereClauses) {
-        this.whereClauses = whereClauses;
-    }
-
-    public boolean isIncConds() {
-        return condsInc;
-    }
-
-    public void setIncConds(boolean condsInc) {
-        this.condsInc = condsInc;
-    }
-
-    public Map<String, Term> getConditions() {
-        return conditions;
-    }
-
-    public void setConditions(Map<String, Term> conditions) {
-        this.conditions = conditions;
     }
 
     @Override
@@ -214,12 +166,6 @@ public class UpdateTableStatement extends MetaStatement {
         return this.toString();
     }
 
-
-    @Override
-    public Statement getDriverStatement() {
-        return null;
-    }
-    
     @Override
     public DeepResultSet executeDeep() {
         return new DeepResultSet();

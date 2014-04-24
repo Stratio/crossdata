@@ -145,12 +145,6 @@ public class DropTableStatement extends MetaStatement {
         return this.toString();
     }
 
-
-    @Override
-    public Statement getDriverStatement() {
-        return null;
-    }
-
     @Override
     public DeepResultSet executeDeep() {
         return new DeepResultSet();

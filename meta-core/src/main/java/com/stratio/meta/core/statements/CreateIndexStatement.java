@@ -509,14 +509,7 @@ public class CreateIndexStatement extends MetaStatement {
         }
         return cqlString;
     }
-        
 
-
-    @Override
-    public Statement getDriverStatement() {
-        return null;
-    }
-    
     @Override
     public DeepResultSet executeDeep() {
         return new DeepResultSet();

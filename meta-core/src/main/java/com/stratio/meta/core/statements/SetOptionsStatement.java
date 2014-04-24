@@ -92,12 +92,7 @@ public class SetOptionsStatement extends MetaStatement {
     public String translateToCQL() {
         return this.toString();
     }
-    
-    @Override
-    public Statement getDriverStatement() {
-        return null;
-    }
-    
+
     @Override
     public DeepResultSet executeDeep() {
         return new DeepResultSet();

@@ -59,11 +59,6 @@ public class AddStatement extends MetaStatement {
     }
 
     @Override
-    public Statement getDriverStatement() {
-        return null;
-    }
-    
-    @Override
     public DeepResultSet executeDeep() {
         return new DeepResultSet();
     }

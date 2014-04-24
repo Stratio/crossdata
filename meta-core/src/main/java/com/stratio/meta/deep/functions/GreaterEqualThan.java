@@ -23,6 +23,6 @@ public class GreaterEqualThan extends Function<Cells, Boolean> implements Serial
         if (currentValue == null){
             return value == null;
         }
-        return ((Comparable) currentValue).compareTo(value) != -1;
+        return ((Comparable) currentValue).compareTo(value) >= 0;
     }
 }

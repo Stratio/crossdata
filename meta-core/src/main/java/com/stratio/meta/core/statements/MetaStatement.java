@@ -193,9 +193,11 @@ public abstract class MetaStatement {
 
     /**
      * Get the {@link Statement} equivalent of the current query.
-     * @return The Statement.
+     * @return The Statement or null if the driver translation cannot be done.
      */
-    public abstract Statement getDriverStatement();
+    public Statement getDriverStatement(){
+        return null;
+    }
 
     /**
      * Execute the statement in Stratio Deep.

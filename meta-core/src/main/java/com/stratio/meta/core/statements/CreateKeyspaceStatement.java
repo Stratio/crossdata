@@ -127,12 +127,6 @@ public class CreateKeyspaceStatement extends MetaStatement {
             return metaStr;
         }        
     }
-    
-
-    @Override
-    public Statement getDriverStatement() {
-        return null;
-    }
 
     @Override
     public DeepResultSet executeDeep() {

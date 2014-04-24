@@ -23,6 +23,6 @@ public class LessEqualThan extends Function<Cells, Boolean> implements Serializa
         if (currentValue == null){
             return value == null;
         }
-        return ((Comparable) currentValue).compareTo(value) != 1;
+        return ((Comparable) currentValue).compareTo(value) <= 0;
     }
 }
