@@ -19,6 +19,8 @@
 
 package com.stratio.meta.core.engine;
 
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +34,8 @@ public class EngineConfig {
     private String sparkMaster;
     private List<String> jars;
     private static String [] forbiddenJars = {"akka"};
+
+    private static final Logger LOG = Logger.getLogger(EngineConfig.class.getName());
 
     public String[] getCassandraHosts() {
         return cassandraHosts;
@@ -77,11 +81,15 @@ public class EngineConfig {
     public void setClasspathJars(String path){
         jars = new ArrayList<String>();
         File file = new File(path);
-        File[] files = file.listFiles();
-        for (int i=0; i<files.length;++i){
-            if(filterJars(files[i].getName())){
-                jars.add(path + files[i].getName());
+        if(file.exists() && !sparkMaster.toLowerCase().equals("local")) {
+            File[] files = file.listFiles();
+            for (int i = 0; i < files.length; ++i) {
+                if (filterJars(files[i].getName())) {
+                    jars.add(path + files[i].getName());
+                }
             }
+        }else if(!sparkMaster.equals("local")){
+            LOG.error("Spark classpath null or incorrect directory");
         }
     }
 
