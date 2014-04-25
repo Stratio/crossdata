@@ -2,31 +2,33 @@
 @LICENSE_HEADER@
 
 # Read configuration variable file if it is present
-[ -r /etc/default/meta ] && . /etc/default/meta
+if [ -r /etc/default/meta ]; then
+    . /etc/default/meta
+fi
 
 # resolve links - $0 may be a softlink
 PRG="$0"
 
-while [ -h "$PRG" ]; do
-  ls=`ls -ld "$PRG"`
-  link=`expr "$ls" : '.*-> \(.*\)$'`
-  if expr "$link" : '/.*' > /dev/null; then
-    PRG="$link"
+while [ -h "${PRG}" ]; do
+  ls=`ls -ld "${PRG}"`
+  link=`expr "${ls}" : '.*-> \(.*\)$'`
+  if expr "${link}" : '/.*' > /dev/null; then
+    PRG="${link}"
   else
-    PRG=`dirname "$PRG"`/"$link"
+    PRG=`dirname "${PRG}"`/"${link}"
   fi
 done
 
-PRGDIR=`dirname "$PRG"`
-BASEDIR=`cd "$PRGDIR/.." >/dev/null; pwd`
+PRGDIR=`dirname "${PRG}"`
+BASEDIR=`cd "${PRGDIR}/.." >/dev/null; pwd`
 
 
-if [ -z "$META_CONF" ]; then
-    META_CONF="$BASEDIR/conf"
+if [ -z "${META_CONF}" ]; then
+    META_CONF="${BASEDIR}/conf"
 fi
 
-if [ -f "$META_CONF/meta-env.sh" ]; then
-    source "$META_CONF/meta-env.sh"
+if [ -f "${META_CONF}/meta-env.sh" ]; then
+    source "${META_CONF}/meta-env.sh"
 fi
 
 
@@ -36,35 +38,35 @@ REPO=
 @ENV_SETUP@
 
 # OS specific support.  $var _must_ be set to either true or false.
-if [ -z "$JAVACMD" ] ; then
-  if [ -n "$JAVA_HOME"  ] ; then
-    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+if [ -z "${JAVACMD}" ] ; then
+  if [ -n "${JAVA_HOME}"  ] ; then
+    if [ -x "${JAVA_HOME}/jre/sh/java" ] ; then
       # IBM's JDK on AIX uses strange locations for the executables
-      JAVACMD="$JAVA_HOME/jre/sh/java"
+      JAVACMD="${JAVA_HOME}/jre/sh/java"
     else
-      JAVACMD="$JAVA_HOME/bin/java"
+      JAVACMD="${JAVA_HOME}/bin/java"
     fi
   else
     JAVACMD=`which java`
   fi
 fi
 
-if [ ! -x "$JAVACMD" ] ; then
+if [ ! -x "${JAVACMD}" ] ; then
   echo "Error: JAVA_HOME is not defined correctly." 1>&2
-  echo "  We cannot execute $JAVACMD" 1>&2
+  echo "  We cannot execute ${JAVACMD}" 1>&2
   exit 1
 fi
 
-if [ -z "$REPO" ]
+if [ -z "${REPO}" ]
 then
-  REPO="$BASEDIR"/@REPO@
+  REPO="${BASEDIR}"/@REPO@
 fi
 
-CLASSPATH="$CLASSPATH:$META_CONF/:$META_LIB/*:"
+CLASSPATH="${CLASSPATH}:${META_CONF}/:${META_LIB}/*:"
 
 
-exec "$JAVACMD" ${JAVA_OPTS} @EXTRA_JVM_ARGUMENTS@ \
-  -classpath "$CLASSPATH" \
+exec "${JAVACMD}" ${JAVA_OPTS} @EXTRA_JVM_ARGUMENTS@ \
+  -classpath "${CLASSPATH}" \
   -Dapp.name="@APP_NAME@" \
   -Dapp.pid="$$" \
   @MAINCLASS@ \

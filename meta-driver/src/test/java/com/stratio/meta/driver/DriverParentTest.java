@@ -24,11 +24,15 @@ import org.testng.annotations.*;
 
 public class DriverParentTest extends ParentCassandraTest {
     private static final long SLEEP_TIME = 3000;
+
     BasicDriver driver;
+
     MetaServer metaServer;
+
     @BeforeClass
     public void init(){
         driver=new BasicDriver();
+
         metaServer=new MetaServer();
         metaServer.init(null);
         metaServer.start();
@@ -40,8 +44,6 @@ public class DriverParentTest extends ParentCassandraTest {
         }
 
     }
-
-
 
     @AfterClass
     public void finish(){

@@ -2,7 +2,7 @@ package com.stratio.meta.server.query
 
 import akka.actor.ActorSystem
 import com.stratio.meta.core.engine.{Engine, EngineConfig}
-import org.testng.annotations.Test
+import org.testng.annotations.{AfterClass, Test}
 import akka.testkit.TestActorRef
 import com.stratio.meta.server.actors.QueryActor
 import akka.pattern.ask
@@ -14,8 +14,7 @@ import org.apache.log4j.Logger
 import scala.sys.process._
 import java.io.File
 
-
-class QueryActorTest {
+class QueryActorTest{
 
   val logger: Logger = Logger.getLogger(classOf[Result])
   val system: ActorSystem = ActorSystem.create("TestSystem")
@@ -27,6 +26,13 @@ class QueryActorTest {
     result
   }
   lazy val engine: Engine = new Engine(engineConfig)
+
+
+  @AfterClass
+  def tearDownAfterClass(){
+    engine.shutdown()
+  }
+
 
   @Test def basicTest() = {
     val queryActor = TestActorRef.create(system,QueryActor.props(engine))

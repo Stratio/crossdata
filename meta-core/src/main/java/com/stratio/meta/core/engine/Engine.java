@@ -65,6 +65,9 @@ public class Engine {
         this.session=cluster.connect();
 
         this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+
+        //SparkMaster equals local
+
         //for(String str : config.getJars()){
         //deepContext.addJar(str);
         //}
@@ -89,6 +92,11 @@ public class Engine {
 
     public Executor getExecutor() {
         return executor;
+    }
+
+    public void shutdown(){
+        deepContext.stop();
+        session.close();
     }
 
 }

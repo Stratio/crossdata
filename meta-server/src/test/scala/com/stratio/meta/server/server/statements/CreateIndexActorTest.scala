@@ -74,6 +74,11 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
     loadTestData("demo_server", "demoServerKeyspace.cql")
   }
 
+  override def afterAll() {
+    super.afterAll()
+    engine.shutdown()
+  }
+
   def waitForLucene(){
     Thread.sleep(1100);
   }

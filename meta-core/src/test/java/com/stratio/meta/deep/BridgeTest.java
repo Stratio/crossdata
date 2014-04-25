@@ -29,6 +29,7 @@ import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import com.stratio.meta.core.utils.*;
 import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -43,6 +44,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     protected static Executor executor = null;
 
+    protected static DeepSparkContext deepContext = null;
+
     private final static Logger LOG = Logger.getLogger(BridgeTest.class);
 
     @BeforeClass
@@ -50,9 +53,14 @@ public class BridgeTest extends BasicCoreCassandraTest {
         BasicCoreCassandraTest.setUpBeforeClass();
         BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
         EngineConfig config = initConfig();
-        executor = new Executor(_session, new DeepSparkContext(config.getSparkMaster(), config.getJobName()), config);
+        deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+        executor = new Executor(_session, deepContext, config);
     }
 
+    @AfterClass
+    public static void tearDownAfterClass(){
+        deepContext.stop();
+    }
     public static EngineConfig initConfig() {
         String[] cassandraHosts = {"127.0.0.1"};
         EngineConfig engineConfig = new EngineConfig();

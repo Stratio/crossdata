@@ -63,6 +63,11 @@ class CreateKeyspaceActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Con
     result
   }
 
+  override def afterAll() {
+    super.afterAll()
+    engine.shutdown()
+  }
+
   test ("Create keyspace SimpleStrategy ok"){
     val query = "create KEYSPACE demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
     within(3000 millis){

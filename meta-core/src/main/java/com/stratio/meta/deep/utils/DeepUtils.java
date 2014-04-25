@@ -28,7 +28,6 @@ import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -47,15 +46,10 @@ public final class DeepUtils {
      * @return ResultSet
      */
     public static ResultSet buildResultSet(List<Cells> cells, List<String> selectedCols) {
-        //System.out.println("Selected columns: "+Arrays.toString(selectedCols.toArray()));
         CassandraResultSet rs = new CassandraResultSet();
-        //boolean firstRow = true;
         for(Cells deepRow: cells){
             Row metaRow = new Row();
             for(com.stratio.deep.entity.Cell deepCell: deepRow.getCells()){
-                /*if(firstRow){
-                    System.out.print(deepCell.getCellName()+ " - ");
-                }*/
                 if(deepCell.getCellName().toLowerCase().startsWith("stratio")){
                     continue;
                 }
@@ -67,20 +61,11 @@ public final class DeepUtils {
                     metaRow.addCell(deepCell.getCellName(), metaCell);
                 }
             }
-            /*if(firstRow){
-                System.out.println();
-            }
-            firstRow = false;*/
             rs.add(metaRow);
         }
 
-        boolean firstLine = true;
         for(Row metaRows: rs.getRows()){
             Map<String, Cell> mapOfCells = metaRows.getCells();
-            if(firstLine){
-                System.out.println("Header: "+Arrays.toString(mapOfCells.keySet().toArray()));
-                firstLine = false;
-            }
             for(String key: mapOfCells.keySet()){
                 System.out.print(mapOfCells.get(key).getValue().toString()+" - ");
             }

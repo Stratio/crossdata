@@ -147,30 +147,31 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
     return exists
   }
 
-    def beforeCassandraStart(): Unit = {
-      assertTrue(connect(getHost), "Cannot connect to cassandra")
-    }
+  def beforeCassandraStart(): Unit = {
+    assertTrue(connect(getHost), "Cannot connect to cassandra")
+  }
 
-    override def beforeAll(): Unit = {
-      beforeCassandraStart()
-      CCMHandler.startCCM()
-      afterCassandraStart()
-    }
+  override def beforeAll(): Unit = {
+    beforeCassandraStart()
+    CCMHandler.startCCM()
+    afterCassandraStart()
+  }
 
-    def afterCassandraStart(): Unit = {
+  def afterCassandraStart(): Unit = {
 
-    }
+  }
 
-    def beforeCassandraFinish(): Unit = {
+  def beforeCassandraFinish(): Unit = {
 
-    }
-    override def afterAll(): Unit = {
-      beforeCassandraFinish()
-      afterCassandraFinish()
-    }
+  }
 
-    def afterCassandraFinish(): Unit = {
-      _session.close()
-    }
+  override def afterAll(): Unit = {
+    beforeCassandraFinish()
+    afterCassandraFinish()
+  }
+
+  def afterCassandraFinish(): Unit = {
+    _session.close()
+  }
 
 }

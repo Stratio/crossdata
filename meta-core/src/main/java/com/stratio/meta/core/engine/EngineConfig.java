@@ -70,14 +70,15 @@ public class EngineConfig {
         return cassandraHosts[rand.nextInt(cassandraHosts.length)];
     }
 
-    public void setClasspathJars(String path){
+    public void setClasspathJars(String path) {
         jars = new ArrayList<String>();
-        System.out.println(path);
-        File file = new File(path);
-        File[] files = file.listFiles();
-        for (int i=0; i<files.length;++i){
-            if(filterJars(files[i].getName())){
-                jars.add(path + files[i].getName());
+        if (path != null){
+            File file = new File(path);
+            File[] files = file.listFiles();
+            for (int i = 0; i < files.length; ++i) {
+                if (filterJars(files[i].getName())) {
+                    jars.add(path + files[i].getName());
+                }
             }
         }
     }

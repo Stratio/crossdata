@@ -52,10 +52,11 @@ public class ParentCassandraTest {
     /**
      * Class logger.
      */
-    private static final Logger logger = Logger.getLogger(ParentCassandraTest.class);
+    private static final Logger LOG = Logger.getLogger(ParentCassandraTest.class);
 
     @BeforeClass
     public static void setUpBeforeClass(){
+        LOG.warn("setUpBeforeClass");
         CCMHandler.startCCM();
         initCassandraConnection();
         dropKeyspaceIfExists("testKS");
@@ -118,7 +119,7 @@ public class ParentCassandraTest {
             try{
                 session.execute(q);
             }catch (Exception e){
-                logger.error("Cannot drop keyspace: " + targetKeyspace, e);
+                LOG.error("Cannot drop keyspace: " + targetKeyspace, e);
             }
         }
     }
@@ -132,17 +133,17 @@ public class ParentCassandraTest {
     public static void loadTestData(String keyspace, String path){
         KeyspaceMetadata metadata = session.getCluster().getMetadata().getKeyspace(keyspace);
         if(metadata == null){
-            logger.info("Creating keyspace " + keyspace + " using " + path);
+            LOG.info("Creating keyspace " + keyspace + " using " + path);
             List<String> scriptLines = loadScript(path);
-            logger.info("Executing " + scriptLines.size() + " lines");
+            LOG.info("Executing " + scriptLines.size() + " lines");
             for(String cql : scriptLines){
                 ResultSet result = session.execute(cql);
-                if(logger.isDebugEnabled()){
-                    logger.debug("Executing: " + cql + " -> " + result.toString());
+                if(LOG.isDebugEnabled()){
+                    LOG.debug("Executing: " + cql + " -> " + result.toString());
                 }
             }
         }
-        logger.info("Using existing keyspace " + keyspace);
+        LOG.info("Using existing keyspace " + keyspace);
     }
 
     /**
@@ -154,7 +155,7 @@ public class ParentCassandraTest {
     public static List<String> loadScript(String path){
         List<String> result = new ArrayList<>();
         URL url = ParentCassandraTest.class.getResource(path);
-        logger.info("Loading script from: " + url);
+        LOG.info("Loading script from: " + url);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
             String line;
             while((line = br.readLine()) != null){

@@ -55,6 +55,10 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
     shutdown(system)
   }
 
+  override def afterAll() {
+    super.afterAll()
+    engine.shutdown()
+  }
 
 
   test ("ServerActor Test"){

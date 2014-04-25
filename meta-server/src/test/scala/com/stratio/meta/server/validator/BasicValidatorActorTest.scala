@@ -37,7 +37,10 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
     shutdown(system)
   }
 
-
+  override def afterAll() {
+    super.afterAll()
+    engine.shutdown()
+  }
 
   test("validator resend to planner message 1"){
     within(2000 millis){
