@@ -81,14 +81,14 @@ public class EngineConfig {
     public void setClasspathJars(String path){
         jars = new ArrayList<String>();
         File file = new File(path);
-        if(file.exists() && !sparkMaster.toLowerCase().equals("local")) {
+        if(file.exists() && !sparkMaster.toLowerCase().startsWith("local")) {
             File[] files = file.listFiles();
             for (int i = 0; i < files.length; ++i) {
                 if (filterJars(files[i].getName())) {
                     jars.add(path + files[i].getName());
                 }
             }
-        }else if(!sparkMaster.equals("local")){
+        }else if(!sparkMaster.toLowerCase().startsWith("local")){
             LOG.error("Spark classpath null or incorrect directory");
         }
     }

@@ -47,15 +47,10 @@ public final class DeepUtils {
      * @return ResultSet
      */
     public static ResultSet buildResultSet(List<Cells> cells, List<String> selectedCols) {
-        //System.out.println("Selected columns: "+Arrays.toString(selectedCols.toArray()));
         CassandraResultSet rs = new CassandraResultSet();
-        //boolean firstRow = true;
         for(Cells deepRow: cells){
             Row metaRow = new Row();
             for(com.stratio.deep.entity.Cell deepCell: deepRow.getCells()){
-                /*if(firstRow){
-                    System.out.print(deepCell.getCellName()+ " - ");
-                }*/
                 if(deepCell.getCellName().toLowerCase().startsWith("stratio")){
                     continue;
                 }
@@ -67,10 +62,7 @@ public final class DeepUtils {
                     metaRow.addCell(deepCell.getCellName(), metaCell);
                 }
             }
-            /*if(firstRow){
-                System.out.println();
-            }
-            firstRow = false;*/
+
             rs.add(metaRow);
         }
 
@@ -104,7 +96,7 @@ public final class DeepUtils {
         //Retrieve selected column names
         SelectionList sList = (SelectionList) ss.getSelectionClause();
         Selection selection = sList.getSelection();
-        String [] columnsSet = null;
+        String [] columnsSet = {};
         if(selection instanceof SelectionSelectors){
             SelectionSelectors sSelectors = (SelectionSelectors) selection;
             columnsSet = new String[sSelectors.getSelectors().size()];

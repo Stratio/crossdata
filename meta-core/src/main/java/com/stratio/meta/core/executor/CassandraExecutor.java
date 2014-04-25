@@ -37,7 +37,7 @@ public class CassandraExecutor {
     private static final Logger LOG = Logger.getLogger(CassandraExecutor.class);
 
     public static Result execute(MetaStep step, Session session){
-        Result result = null;
+        Result result;
         LOG.info("Executing step: " + step.toString());
         if(step.getStmt() != null){
             result = execute(step.getStmt(), session);
@@ -49,8 +49,7 @@ public class CassandraExecutor {
 
     protected static Result execute(String query, Session session) {
         try {
-            ResultSet resultSet;
-            resultSet = session.execute(query);
+            ResultSet resultSet = session.execute(query);
             return QueryResult.createSuccessQueryResult(CoreUtils.transformToMetaResultSet(resultSet));
         } catch (UnsupportedOperationException unSupportException){
             return QueryResult.createFailQueryResult("Unsupported operation by C*: " + unSupportException.getMessage());

@@ -77,7 +77,7 @@ public class Bridge {
                     .host(engineConfig.getRandomCassandraHost()).rpcPort(engineConfig.getCassandraPort())
                     .keyspace(ss.getKeyspace()).table(ss.getTableName());
 
-            config = (null==columnsSet)? config.initialize() : config.inputColumns(columnsSet).initialize() ;
+            config = (columnsSet.length==0)? config.initialize() : config.inputColumns(columnsSet).initialize() ;
             
             JavaRDD rdd = deepContext.cassandraJavaRDD(config);
             //If where
@@ -88,9 +88,6 @@ public class Bridge {
                 }
             }
 
-            if(columnsSet == null){
-                return returnResult(rdd, isRoot, new ArrayList<String>());
-            }
             return returnResult(rdd, isRoot, Arrays.asList(columnsSet));
 
         } else {

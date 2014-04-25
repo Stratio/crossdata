@@ -65,7 +65,7 @@ public class Engine {
         this.session=cluster.connect();
 
         this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
-        if(!config.getSparkMaster().toLowerCase().equals("local")){
+        if(!config.getSparkMaster().toLowerCase().startsWith("local")){
             for(String jar : config.getJars()){
                 deepContext.addJar(jar);
             }
