@@ -65,9 +65,9 @@ public class Engine {
         this.session=cluster.connect();
 
         this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
-        //for(String str : config.getJars()){
-        //deepContext.addJar(str);
-        //}
+        for(String jar : config.getJars()){
+            deepContext.addJar(jar);
+        }
 
         parser = new Parser();
         validator = new Validator(session);

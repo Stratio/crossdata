@@ -472,7 +472,7 @@ public class SelectStatement extends MetaStatement {
                 }
             }
         }else{
-            result= QueryResult.createFailQueryResult("Column " + column + " not found in table " + targetTable);
+            result= QueryResult.createFailQueryResult("Column " + column + " not found in " + targetTable + " table.");
         }
 
         return result;

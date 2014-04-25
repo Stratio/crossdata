@@ -223,7 +223,7 @@ public class DeleteStatement extends MetaStatement {
                 }
             }
         }else {
-            result = QueryResult.createFailQueryResult("Column " + column + " not found in table " + tableName);
+            result = QueryResult.createFailQueryResult("Column " + column + " not found in " + tableName + " table.");
         }
         return result;
     }
