@@ -28,9 +28,7 @@ import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public final class DeepUtils {
 
@@ -62,21 +60,7 @@ public final class DeepUtils {
                     metaRow.addCell(deepCell.getCellName(), metaCell);
                 }
             }
-
             rs.add(metaRow);
-        }
-
-        boolean firstLine = true;
-        for(Row metaRows: rs.getRows()){
-            Map<String, Cell> mapOfCells = metaRows.getCells();
-            if(firstLine){
-                System.out.println("Header: "+Arrays.toString(mapOfCells.keySet().toArray()));
-                firstLine = false;
-            }
-            for(String key: mapOfCells.keySet()){
-                System.out.print(mapOfCells.get(key).getValue().toString()+" - ");
-            }
-            System.out.println();
         }
 
         StringBuilder logResult = new StringBuilder().append("Deep Result: " + rs.size());

@@ -1146,6 +1146,9 @@ public class SelectStatement extends MetaStatement {
             }
         }
 
+        // ADD SELECTED COLUMNS TO THE JOIN STATEMENT
+        joinSelect.setSelectionClause(selectionClause);
+
         // ADD MAP OF THE JOIN
         String keyOfInnerJoin = fields.keySet().iterator().next();
         String firstTableOfInnerJoin = keyOfInnerJoin.split("\\.")[0];
@@ -1153,9 +1156,7 @@ public class SelectStatement extends MetaStatement {
             joinSelect.setJoin(new InnerJoin("", fields));
         } else {
             Map<String, String> changedMap = new HashMap<>();
-            String newKey = fields.values().iterator().next();
-            String newValue = keyOfInnerJoin;
-            changedMap.put(newKey, newValue);
+            changedMap.put(fields.values().iterator().next(), keyOfInnerJoin);
             joinSelect.setJoin(new InnerJoin("", changedMap));
         }
 
@@ -1171,9 +1172,11 @@ public class SelectStatement extends MetaStatement {
     private Tree getWherePlan(MetadataManager metadataManager, String targetKeyspace){
         Tree steps = new Tree();
         // Get columns of the where clauses
-        List<String> whereCols = new ArrayList<>();
+        Map<String, String> whereCols = new HashMap<>();
         for(Relation relation: where){
-            whereCols.addAll(relation.getIdentifiers());
+            for(String id: relation.getIdentifiers()){
+                whereCols.put(id, relation.getOperator());
+            }
         }
 
         String effectiveKeyspace = getEffectiveKeyspace(targetKeyspace, keyspaceInc, keyspace);
@@ -1181,7 +1184,7 @@ public class SelectStatement extends MetaStatement {
 
         // Get columns of the primary key
         for(ColumnMetadata colMD: tableMetadata.getPrimaryKey()){
-            if(whereCols.contains(colMD.getName())){
+            if(whereCols.keySet().contains(colMD.getName())){
                 whereCols.remove(colMD.getName());
             }
         }
@@ -1189,34 +1192,42 @@ public class SelectStatement extends MetaStatement {
         //By default go through deep.
         boolean cassandraPath = false;
 
-        System.out.println("TRACE: "+Arrays.toString(whereCols.toArray()));
-
         if(whereCols.isEmpty()){
             //All where clauses are included in the primary key.
             cassandraPath = true;
         } else {
             // Remove all clustering columns.
             for(ColumnMetadata colMD: tableMetadata.getClusteringColumns()){
-                if(whereCols.contains(colMD.getName())){
+                if(whereCols.keySet().contains(colMD.getName())){
                     whereCols.remove(colMD.getName());
                 }
             }
 
             // Get columns of the custom and lucene indexes
             Set<String> indexedCols = new HashSet<>();
+            Set<String> luceneCols = new HashSet<>();
             for(CustomIndexMetadata cim: metadataManager.getTableIndex(tableMetadata)){
-                System.out.println(cim.getIndexName() + " - " + Arrays.toString(cim.getIndexedColumns().toArray()));
-                indexedCols.addAll(cim.getIndexedColumns());
+                if(cim.getIndexType() == IndexType.DEFAULT){
+                    indexedCols.addAll(cim.getIndexedColumns());
+                } else {
+                    luceneCols.addAll(cim.getIndexedColumns());
+                }
             }
 
-            System.out.println("TRACE (whereCols): "+Arrays.toString(whereCols.toArray()));
-            System.out.println("TRACE (indexedCols): "+Arrays.toString(indexedCols.toArray()));
-
-            if(indexedCols.containsAll(whereCols)){
+            if(indexedCols.containsAll(whereCols.keySet())){
                 //If only one indexed column remains go through cassandra
-                //cassandraPath = whereCols.size() == 1;
-
                 cassandraPath = true;
+            }
+
+            if(luceneCols.containsAll(whereCols.keySet())){
+                boolean onlyMatchOperators = true;
+                for(String operator: whereCols.values()){
+                    if(!operator.equalsIgnoreCase("match")){
+                        onlyMatchOperators = false;
+                        break;
+                    }
+                }
+                cassandraPath = onlyMatchOperators;
             }
         }
 
