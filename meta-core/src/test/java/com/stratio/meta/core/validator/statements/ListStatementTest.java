@@ -25,8 +25,8 @@ import org.testng.annotations.Test;
 public class ListStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_not_supported(){
+    public void validateNotSupported(){
         String inputText = "LIST PROCESS;";
-        validateFail(inputText, "validate_not_supported");
+        validateFail(inputText, "validateNotSupported");
     }
 }

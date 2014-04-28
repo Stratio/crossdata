@@ -25,8 +25,8 @@ import org.testng.annotations.Test;
 public class RemoveUDFStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_not_supported(){
+    public void validateNotSupported(){
         String inputText = "REMOVE UDF \"jar.name\";";
-        validateFail(inputText, "validate_not_supported");
+        validateFail(inputText, "validateNotSupported");
     }
 }

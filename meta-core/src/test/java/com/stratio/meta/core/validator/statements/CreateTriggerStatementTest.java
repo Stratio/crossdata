@@ -25,8 +25,8 @@ import org.testng.annotations.Test;
 public class CreateTriggerStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_not_supported(){
+    public void validateNotSupported(){
         String inputText = "CREATE TRIGGER trigger1 ON table1 USING triggerClassName;";
-        validateFail(inputText, "validate_not_supported");
+        validateFail(inputText, "validateNotSupported");
     }
 }

@@ -44,7 +44,7 @@ public class Tree {
     /**
      * Data stored in the root node.
      */
-    private Object node = null;
+    private MetaStep node = null;
 
     /**
      * List of children.
@@ -58,12 +58,12 @@ public class Tree {
         children = new ArrayList<>();
     }         
     
-    public Tree(Object node) {
+    public Tree(MetaStep node) {
         this();
         this.node = node;
     }        
 
-    public Tree(Tree parent, Object node) {
+    public Tree(Tree parent, MetaStep node) {
         this();
         this.parent = parent;
         this.node = node;
@@ -73,7 +73,7 @@ public class Tree {
         this.parent = parent;
     }
 
-    public void setNode(Object node) {
+    public void setNode(MetaStep node) {
         this.node = node;
     }
 
@@ -162,5 +162,13 @@ public class Tree {
         }                
         return sb.toString();
     }
+
+    public boolean isEmpty(){ return (node == null);}
+
+    public MetaStep getNode(){
+        return node;
+    }
+
+    public  List<Tree> getChildren(){ return children; }
 
 }

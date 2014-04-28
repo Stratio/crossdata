@@ -524,5 +524,9 @@ public class CreateIndexStatement extends MetaStatement {
 
         return result;
     }
+
+    public void setCreateIndex(Boolean createIndex){
+        this.createIndex = createIndex;
+    }
     
 }

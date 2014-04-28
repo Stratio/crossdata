@@ -25,8 +25,8 @@ import org.testng.annotations.Test;
 public class UpdateTableStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_not_supported(){
+    public void validateNotSupported(){
         String inputText = "UPDATE table1 SET field1 = value1 WHERE field3 = value3;";
-        validateFail(inputText, "validate_not_supported");
+        validateFail(inputText, "validateNotSupported");
     }
 }

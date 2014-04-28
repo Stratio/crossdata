@@ -25,20 +25,20 @@ import org.testng.annotations.Test;
 public class DropKeyspaceStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_ok(){
+    public void validateOk(){
         String inputText = "DROP KEYSPACE demo;";
-        validateOk(inputText, "validate_ok");
+        validateOk(inputText, "validateOk");
     }
 
     @Test
-    public void validate_ifNotExists(){
+    public void validateIfNotExists(){
         String inputText = "DROP KEYSPACE IF EXISTS unknown;";
-        validateOk(inputText, "validate_ok");
+        validateOk(inputText, "validateIfNotExists");
     }
 
     @Test
-    public void validate_notExists(){
+    public void validateNotExists(){
         String inputText = "DROP KEYSPACE unknown;";
-        validateFail(inputText, "validate_notExists");
+        validateFail(inputText, "validateNotExists");
     }
 }

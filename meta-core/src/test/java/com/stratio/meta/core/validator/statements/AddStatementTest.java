@@ -25,8 +25,8 @@ import org.testng.annotations.Test;
 public class AddStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_not_supported(){
+    public void testValidateNotSupported(){
         String inputText = "ADD \"jar_name-v1.0.jar\";";
-        validateFail(inputText, "validate_not_supported");
+        validateFail(inputText, "testValidateNotSupported");
     }
 }

@@ -34,7 +34,7 @@ import static org.testng.Assert.*;
 public class CreateKeyspaceStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_ok(){
+    public void validateOk(){
         //TODO Migrate the tests to validateOk or validateFail. Take into account the mapping order.
         String name = "not_exists";
         boolean ifNotExists = false;
@@ -50,7 +50,7 @@ public class CreateKeyspaceStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void validate_ifNotExists_ok(){
+    public void validateIfNotExistsOk(){
         String name = "demo";
         boolean ifNotExists = true;
         Map<String, ValueProperty> properties = new HashMap<>();
@@ -65,7 +65,7 @@ public class CreateKeyspaceStatementTest extends BasicValidatorTest {
 
 
     @Test
-    public void validate_missingProperties(){
+    public void validateMissingProperties(){
         String name = "not_exists";
         boolean ifNotExists = false;
         Map<String, ValueProperty> properties = new HashMap<>();
@@ -77,7 +77,7 @@ public class CreateKeyspaceStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void validate_missingReplication(){
+    public void validateMissingReplication(){
         String name = "demo";
         boolean ifNotExists = true;
         Map<String, ValueProperty> properties = new HashMap<>();

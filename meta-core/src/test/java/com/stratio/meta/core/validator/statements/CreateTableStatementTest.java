@@ -25,37 +25,37 @@ import org.testng.annotations.Test;
 public class CreateTableStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_basic_ok(){
+    public void validateBasicOk(){
         String inputText = "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
-        validateOk(inputText, "validate_basic_ok");
+        validateOk(inputText, "validateBasicOk");
     }
 
     @Test
-    public void validate_allSupported_ok(){
+    public void validateAllSupportedOk(){
         String inputText = "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
-        validateOk(inputText, "validate_basic_ok");
+        validateOk(inputText, "validateAllSupportedOk");
     }
 
     @Test
-    public void validate_ifNotExits_ok(){
+    public void validateIfNotExitsOk(){
         String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name VARCHAR, gender VARCHAR, email VARCHAR, age INT, bool BOOLEAN, phrase VARCHAR, PRIMARY KEY ((name, gender), email, age));";
-        validateOk(inputText, "validate_ifNotExits_ok");
+        validateOk(inputText, "validateIfNotExitsOk");
     }
 
     @Test
-    public void validate_pkNotDeclared(){
+    public void validatePkNotDeclared(){
         String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name VARCHAR, gender VARCHAR, email VARCHAR, age INT, bool BOOLEAN, phrase VARCHAR, PRIMARY KEY ((unknown, gender), email, age));";
-        validateFail(inputText, "validate_pkNotDeclared");
+        validateFail(inputText, "validatePkNotDeclared");
     }
 
     @Test
-    public void validate_ckNotDeclared(){
+    public void validateCkNotDeclared(){
         String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name VARCHAR, gender VARCHAR, email VARCHAR, age INT, bool BOOLEAN, phrase VARCHAR, PRIMARY KEY ((name, gender), unknown, age));";
-        validateFail(inputText, "validate_ckNotDeclared");
+        validateFail(inputText, "validateCkNotDeclared");
     }
 
     @Test
-    public void validate_unsupportedType(){
+    public void validateUnsupportedType(){
         String [] unsupported = {
                 "ASCII",  "BLOB",   "DECIMAL",
                 "INET",   "TEXT",   "TIMESTAMP",

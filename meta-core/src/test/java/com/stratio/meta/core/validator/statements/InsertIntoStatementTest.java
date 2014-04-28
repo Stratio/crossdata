@@ -27,45 +27,45 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
 
 
     @Test
-    public void validate_basic_ok(){
+    public void validateBasicOk(){
         String inputText = "INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
-        validateOk(inputText, "validate_basic_ok");
+        validateOk(inputText, "validateBasicOk");
     }
 
     @Test
-    public void validate_basic_noKs(){
+    public void validateBasicNoKs(){
         String inputText = "INSERT INTO users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
-        validateFail(inputText, "validate_basic_noKs");
+        validateFail(inputText, "validateBasicNoKs");
     }
 
     @Test
-    public void validate_unknownColumn(){
+    public void validateUnknownColumn(){
         String inputText = "INSERT INTO users (unknown, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
-        validateFail(inputText, "validate_unknownColumn");
+        validateFail(inputText, "validateUnknownColumn");
     }
 
     @Test
-    public void validate_booleanColumnFail(){
+    public void validateBooleanColumnFail(){
         String inputText = "INSERT INTO users (unknown, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, 'true', '');";
-        validateFail(inputText, "validate_booleanColumnFail");
+        validateFail(inputText, "validateBooleanColumnFail");
     }
 
     @Test
-    public void validate_integerColumnFail(){
+    public void validateIntegerColumnFail(){
         String inputText = "INSERT INTO users (unknown, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', '10', true, '');";
-        validateFail(inputText, "validate_integerColumnFail");
+        validateFail(inputText, "validateIntegerColumnFail");
     }
 
     @Test
-    public void validate_textColumnFail(){
+    public void validateTextColumnFail(){
         String inputText = "INSERT INTO users (name, gender, email, age, bool, phrase) VALUES (true, 'male', 'name_0@domain.com', 10, true, '');";
-        validateFail(inputText, "validate_textColumnFail");
+        validateFail(inputText, "validateTextColumnFail");
     }
 
     @Test
-    public void validate_stratioColumnFail(){
+    public void validateStratioColumnFail(){
         String inputText = "INSERT INTO users (name, gender, email, age, bool, phrase, stratio_lucene_index_1) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '', 'error');";
-        validateFail(inputText, "validate_textColumnFail");
+        validateFail(inputText, "validateStratioColumnFail");
     }
 
 }
