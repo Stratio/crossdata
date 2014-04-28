@@ -66,11 +66,11 @@ public class Engine {
 
         this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
 
-        //SparkMaster equals local
-
-        //for(String str : config.getJars()){
-        //deepContext.addJar(str);
-        //}
+        if(!config.getSparkMaster().toLowerCase().startsWith("local")){
+            for(String jar : config.getJars()){
+                deepContext.addJar(jar);
+            }
+        }
 
         parser = new Parser();
         validator = new Validator(session);

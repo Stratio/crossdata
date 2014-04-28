@@ -19,6 +19,8 @@
 
 package com.stratio.meta.core.engine;
 
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +34,8 @@ public class EngineConfig {
     private String sparkMaster;
     private List<String> jars;
     private static String [] forbiddenJars = {"akka"};
+
+    private static final Logger LOG = Logger.getLogger(EngineConfig.class.getName());
 
     public String[] getCassandraHosts() {
         return cassandraHosts;
@@ -70,22 +74,29 @@ public class EngineConfig {
         return cassandraHosts[rand.nextInt(cassandraHosts.length)];
     }
 
-    public void setClasspathJars(String path) {
-        jars = new ArrayList<String>();
-        if (path != null){
-            File file = new File(path);
+
+    public List<String> getJars(){
+        return jars;
+    }
+
+    public void setClasspathJars(String path){
+        jars = new ArrayList<>();
+        File file = new File(path);
+        if(file.exists() && !sparkMaster.toLowerCase().startsWith("local") && file.listFiles() != null) {
             File[] files = file.listFiles();
-            for (int i = 0; i < files.length; ++i) {
-                if (filterJars(files[i].getName())) {
-                    jars.add(path + files[i].getName());
+            for (File f : files) {
+                if (filterJars(f.getName())) {
+                    jars.add(path + f.getName());
                 }
             }
+        }else if(!sparkMaster.toLowerCase().startsWith("local")){
+            LOG.error("Spark classpath null or incorrect directory");
         }
     }
 
     private boolean filterJars(String jar){
-        for(int i=0;i<forbiddenJars.length;i++){
-            if(jar.startsWith(forbiddenJars[i]))
+        for (String forbiddenJar : forbiddenJars) {
+            if (jar.startsWith(forbiddenJar))
                 return false;
         }
         return true;

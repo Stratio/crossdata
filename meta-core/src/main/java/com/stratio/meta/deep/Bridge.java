@@ -77,7 +77,7 @@ public class Bridge {
                     .host(engineConfig.getRandomCassandraHost()).rpcPort(engineConfig.getCassandraPort())
                     .keyspace(ss.getKeyspace()).table(ss.getTableName());
 
-            config = (null==columnsSet)? config.initialize() : config.inputColumns(columnsSet).initialize() ;
+            config = (columnsSet.length==0)? config.initialize() : config.inputColumns(columnsSet).initialize() ;
             
             JavaRDD rdd = deepContext.cassandraJavaRDD(config);
             //If where
@@ -88,9 +88,6 @@ public class Bridge {
                 }
             }
 
-            if(columnsSet == null){
-                return returnResult(rdd, isRoot, new ArrayList<String>());
-            }
             return returnResult(rdd, isRoot, Arrays.asList(columnsSet));
 
         } else {
@@ -106,10 +103,16 @@ public class Bridge {
                 Cell cell = cells.get("RDD");
                 JavaRDD rdd = (JavaRDD) cell.getValue();
                 children.add(rdd);
-                // Selected columns from child
-                Cell secondCell = cells.get("SELECTED_COLUMNS");
-                List<String> selCols = (List<String>) secondCell.getValue();
-                selectedCols.addAll(selCols);
+            }
+
+            // Retrieve selected columns without tablename
+            System.out.println(ss.getSelectionClause().toString());
+            for(String id: ss.getSelectionClause().getIds()){
+                if(id.contains(".")){
+                    selectedCols.add(id.split("\\.")[1]);
+                } else {
+                    selectedCols.add(id);
+                }
             }
 
             //JOIN
@@ -143,7 +146,6 @@ public class Bridge {
         } else {
             List<Row> partialResult = new ArrayList<>();
             Row partialRow = new Row("RDD", new Cell(JavaRDD.class, rdd));
-            partialRow.addCell("SELECTED_COLUMNS", new Cell(List.class, selectedCols));
             partialResult.add(partialRow);
 
             LOG.info("LEAF: rdd.count=" + ((int) rdd.count()));

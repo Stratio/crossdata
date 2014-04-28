@@ -29,7 +29,6 @@ import com.stratio.meta.core.structures.*;
 import org.apache.log4j.Logger;
 
 import java.util.List;
-import java.util.Map;
 
 public final class DeepUtils {
 
@@ -64,17 +63,9 @@ public final class DeepUtils {
             rs.add(metaRow);
         }
 
-        for(Row metaRows: rs.getRows()){
-            Map<String, Cell> mapOfCells = metaRows.getCells();
-            for(String key: mapOfCells.keySet()){
-                System.out.print(mapOfCells.get(key).getValue().toString()+" - ");
-            }
-            System.out.println();
-        }
-
-        StringBuilder logResult = new StringBuilder().append("Deep Result: " + rs.size());
+        StringBuilder logResult = new StringBuilder("Deep Result: ").append(rs.size());
         if(rs.size()>0){
-            logResult.append(" rows & " + rs.iterator().next().size() + " columns");
+            logResult.append(" rows & ").append(rs.iterator().next().size()).append(" columns");
         }
         LOG.info(logResult);
         return rs;
@@ -89,7 +80,7 @@ public final class DeepUtils {
         //Retrieve selected column names
         SelectionList sList = (SelectionList) ss.getSelectionClause();
         Selection selection = sList.getSelection();
-        String [] columnsSet = null;
+        String [] columnsSet = {};
         if(selection instanceof SelectionSelectors){
             SelectionSelectors sSelectors = (SelectionSelectors) selection;
             columnsSet = new String[sSelectors.getSelectors().size()];

@@ -247,14 +247,13 @@ public class Metash {
         try {
             String cmd = "";
 
-            while(!"exit".equalsIgnoreCase(cmd) && !"quit".equalsIgnoreCase(cmd)){
+            while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
                 cmd = console.readLine();
                 if("".equalsIgnoreCase(cmd) || System.lineSeparator().equalsIgnoreCase(cmd)){
                     println("");
                 }else if(cmd.toLowerCase().startsWith("help")){
                     showHelp(cmd);
-                }else if(!"exit".equalsIgnoreCase(cmd)
-                        && !"quit".equalsIgnoreCase(cmd)){
+                }else if(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
                     executeQuery(cmd);
                 }
             }
