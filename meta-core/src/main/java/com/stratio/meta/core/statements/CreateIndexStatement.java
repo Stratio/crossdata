@@ -98,9 +98,29 @@ public class CreateIndexStatement extends MetaStatement {
     private Map<ValueProperty, ValueProperty> options = null;
 
     /**
+     * Map of lucene types associated with Cassandra data types.
+     */
+    private static Map<String, String> luceneTypes = new HashMap<>();
+
+    /**
      * Table metadata cached on the validate function.
      */
     private transient TableMetadata metadata = null;
+
+    static{
+        luceneTypes.put(DataType.text().toString(), "{type:\"string\"}");
+        luceneTypes.put(DataType.varchar().toString(), "{type:\"string\"}");
+        luceneTypes.put(DataType.inet().toString(), "{type:\"string\"}");
+        luceneTypes.put(DataType.ascii().toString(), "{type:\"string\"}");
+        luceneTypes.put(DataType.bigint().toString(), "{type:\"long\"}");
+        luceneTypes.put(DataType.counter().toString(), "{type:\"long\"}");
+        luceneTypes.put(DataType.cboolean().toString(), "{type:\"boolean\"}");
+        luceneTypes.put(DataType.cdouble().toString(), "{type:\"double\"}");
+        luceneTypes.put(DataType.cfloat().toString(), "{type:\"float\"}");
+        luceneTypes.put(DataType.cint().toString(), "{type:\"integer\"}");
+        luceneTypes.put(DataType.uuid().toString(), "{type:\"uuid\"}");
+    }
+
 
     /**
      * Class constructor.
@@ -158,10 +178,11 @@ public class CreateIndexStatement extends MetaStatement {
         if(name.contains(".")){
             String[] ksAndTablename = name.split("\\.");
             keyspace = ksAndTablename[0];
-            name = ksAndTablename[1];
+            this.name = ksAndTablename[1];
             keyspaceInc = true;
+        }else {
+            this.name = name;
         }
-        this.name = name;
     }
 
     /**
@@ -180,10 +201,11 @@ public class CreateIndexStatement extends MetaStatement {
         if(tableName.contains(".")){
             String[] ksAndTablename = tableName.split("\\.");
             keyspace = ksAndTablename[0];
-            tableName = ksAndTablename[1];
+            this.tableName = ksAndTablename[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        this.tableName = tableName;
 
     }
 
@@ -296,11 +318,8 @@ public class CreateIndexStatement extends MetaStatement {
 
         //Validate target table
         Result result = validateKeyspaceAndTable(metadata, targetKeyspace, keyspaceInc, keyspace, tableName);
+        String effectiveKeyspace = getEffectiveKeyspace(targetKeyspace, keyspaceInc, keyspace);
 
-        String effectiveKeyspace = targetKeyspace;
-        if(keyspaceInc){
-            effectiveKeyspace = keyspace;
-        }
         TableMetadata tableMetadata = null;
         if(!result.hasError()) {
             tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
@@ -311,7 +330,7 @@ public class CreateIndexStatement extends MetaStatement {
         //Validate index name if not exists
         if(!result.hasError()){
             if(name != null && name.toLowerCase().startsWith("stratio")){
-                result= QueryResult.createFailQueryResult("Internal namespace stratio cannot be use on index name " + name);
+                result = QueryResult.createFailQueryResult("Internal namespace stratio cannot be use on index name " + name);
             }else {
                 result = validateIndexName(metadata, tableMetadata);
             }
@@ -441,46 +460,13 @@ public class CreateIndexStatement extends MetaStatement {
         for(String column : targetColumns){
             sb.append(column);
             sb.append(":");
-            sb.append(getLuceneType(metadata.getColumn(column).getType()));
+            sb.append(luceneTypes.get(metadata.getColumn(column).getType().toString()));
             sb.append(",");
         }
 
         sb.append("}}");
         return sb.toString().replace(",}}", "}}");
     }
-
-    /**
-     * Get the Lucene type equivalent to a Cassandra data type.
-     * @param type The {@link com.datastax.driver.core.DataType} to be converted.
-     * @return The result or null if the conversion is not supported.
-     */
-    protected String getLuceneType(DataType type){
-        String result = null;
-
-        if(DataType.text().equals(type)
-                || DataType.varchar().equals(type)
-                || DataType.inet().equals(type)
-                || DataType.ascii().equals(type)){
-            result = "{type:\"string\"}";
-        }else if(DataType.bigint().equals(type)
-                || DataType.counter().equals(type)){
-            result = "{type:\"long\"}";
-        }else if(DataType.cboolean().equals(type)){
-            result = "{type:\"boolean\"}";
-        }else if(DataType.cdouble().equals(type)){
-            result = "{type:\"double\"}";
-        }else if(DataType.cfloat().equals(type)){
-            result = "{type:\"float\"}";
-        }else if(DataType.cint().equals(type)){
-            result = "{type:\"integer\"}";
-        }else if(DataType.uuid().equals(type)){
-            result = "{type:\"uuid\"}";
-        }
-
-
-        return result;
-    }
-
 
     @Override
     public String getSuggestion() {

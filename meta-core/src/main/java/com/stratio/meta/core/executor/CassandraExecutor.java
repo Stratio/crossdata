@@ -34,6 +34,8 @@ import org.apache.log4j.Logger;
 
 public class CassandraExecutor {
 
+    private static CoreUtils utils = new CoreUtils();
+
     private static final Logger LOG = Logger.getLogger(CassandraExecutor.class);
 
     public static Result execute(MetaStep step, Session session){
@@ -50,7 +52,7 @@ public class CassandraExecutor {
     protected static Result execute(String query, Session session) {
         try {
             ResultSet resultSet = session.execute(query);
-            return QueryResult.createSuccessQueryResult(CoreUtils.transformToMetaResultSet(resultSet));
+            return QueryResult.createSuccessQueryResult(utils.transformToMetaResultSet(resultSet));
         } catch (UnsupportedOperationException unSupportException){
             return QueryResult.createFailQueryResult("Unsupported operation by C*: " + unSupportException.getMessage());
         } catch (Exception ex) {
@@ -70,9 +72,9 @@ public class CassandraExecutor {
             }
             if (stmt instanceof UseStatement) {
                 UseStatement useStatement = (UseStatement) stmt;
-                return QueryResult.createSuccessQueryResult(CoreUtils.transformToMetaResultSet(resultSet), useStatement.getKeyspaceName());
+                return QueryResult.createSuccessQueryResult(utils.transformToMetaResultSet(resultSet), useStatement.getKeyspaceName());
             } else {
-                return QueryResult.createSuccessQueryResult(CoreUtils.transformToMetaResultSet(resultSet));
+                return QueryResult.createSuccessQueryResult(utils.transformToMetaResultSet(resultSet));
             }
         } catch (UnsupportedOperationException unSupportException){
             return QueryResult.createFailQueryResult("Unsupported operation by C*: " + unSupportException.getMessage());

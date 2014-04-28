@@ -81,8 +81,10 @@ public class BridgeTest extends BasicCoreCassandraTest {
     public Result validateRows(MetaQuery metaQuery, String methodName, int expectedNumber) {
         QueryResult result = (QueryResult) validateOk(metaQuery, methodName);
         if (expectedNumber > 0) {
+            assertFalse(result.getResultSet().isEmpty(), "Expecting non-empty resultset");
             assertEquals(result.getResultSet().size(), expectedNumber, methodName + ":" + result.getResultSet().size() + " rows found, " + expectedNumber + " rows expected.");
         } else {
+            assertTrue(result.getResultSet().isEmpty(), "Expecting empty resultset.");
             assertNull(result.getResultSet(), methodName + ": Result should be null");
         }
 

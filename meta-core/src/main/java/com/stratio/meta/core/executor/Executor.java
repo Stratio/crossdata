@@ -25,8 +25,11 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.QueryStatus;
 import com.stratio.meta.core.utils.Tree;
+import org.apache.log4j.Logger;
 
 public class Executor {
+
+    private static final Logger LOG = Logger.getLogger(Executor.class.getName());
 
     private final Session session;
     private final DeepSparkContext deepSparkContext;
@@ -45,7 +48,7 @@ public class Executor {
         // Get plan
         Tree plan = metaQuery.getPlan();
 
-        System.out.println("PLAN: "+System.lineSeparator()+plan.toStringDownTop());
+        LOG.debug("Execution plan: "+System.lineSeparator()+plan.toStringDownTop());
 
         // Execute plan
         metaQuery.setResult(plan.executeTreeDownTop(session, deepSparkContext, engineConfig));

@@ -89,14 +89,30 @@ public class AlterTableStatement extends MetaStatement{
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
             keyspace = ksAndTableName[0];
-            tableName = ksAndTableName[1];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        this.tableName = tableName;
         this.column = column;
         this.type = type;
         this.option = option;
         this.prop = prop;          
+    }
+
+    private String getOptionString(){
+        StringBuilder sb = new StringBuilder();
+        Set<String> keySet = option.keySet();
+        sb.append(" with");
+        for (Iterator<String> it = keySet.iterator(); it.hasNext();) {
+            String key = it.next();
+            ValueProperty vp = option.get(key);
+            sb.append(" ").append(key).append("=").append(String.valueOf(vp));
+            if(it.hasNext()) {
+                sb.append(" AND");
+            }
+        }
+        return sb.toString();
     }
 
     @Override
@@ -107,36 +123,25 @@ public class AlterTableStatement extends MetaStatement{
         }
         sb.append(tableName);
         switch(prop){
-            case 1: {
-                sb.append(" alter ");
-                sb.append(column);
-                sb.append(" type ");
-                sb.append(type);
-            }break;
-            case 2: {
+            case 1:
+                sb.append(" alter ").append(column);
+                sb.append(" type ").append(type);
+                break;
+            case 2:
                 sb.append(" add ");
                 sb.append(column).append(" ");
                 sb.append(type);
-            }break;
-            case 3: {
+                break;
+            case 3:
                 sb.append(" drop ");
                 sb.append(column);
-            }break;
-            case 4: {
-                Set<String> keySet = option.keySet();
-                sb.append(" with");
-                for (Iterator<String> it = keySet.iterator(); it.hasNext();) {
-                    String key = it.next();
-                    ValueProperty vp = option.get(key);
-                    sb.append(" ").append(key).append("=").append(String.valueOf(vp));
-                    if(it.hasNext()) {
-                        sb.append(" AND");
-                    }
-                }
-            }break;
-            default:{
+                break;
+            case 4:
+                sb.append(getOptionString());
+                break;
+            default:
                 sb.append("bad option");
-            }break;
+                break;
         }        
         return sb.toString();
     }

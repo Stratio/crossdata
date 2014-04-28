@@ -309,7 +309,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	T_END_PARENTHESIS
 	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.toString());})?
 	(T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=getValueProperty T_COLON value=getValueProperty {$cis.addOption(key, value);}
-		(T_AND keyN=getValueProperty T_COLON valueN=getValueProperty {$cis.addOption(keyN, valueN);} )* T_END_SBRACKET
+		(T_COMMA keyN=getValueProperty T_COLON valueN=getValueProperty {$cis.addOption(keyN, valueN);} )* T_END_SBRACKET
 	)?
 	;
     //identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {properties.put($identProp1.text, valueProp1);}

@@ -72,6 +72,14 @@ public class CreateIndexStatementTest extends ParsingTest{
     }
 
     @Test
+    public void createIndex_withOptions2() {
+        String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 "
+                + "ON table1 (field1, field2) USING com.company.Index.class "
+                + "WITH OPTIONS = {'key1': 'val1' AND 'key2': 'val2'};";
+        testRegularStatement(inputText, "createIndex_withOptions2");
+    }
+
+    @Test
     public void create_index_wrong_option_assignment(){
         String inputText = "CREATE LUCENE INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1:val1;";
         testRecoverableError(inputText, "create_index_wrong_option_assignment");

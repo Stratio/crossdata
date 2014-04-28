@@ -50,7 +50,7 @@ public class DeepExecutor {
             }
             return QueryResult.createSuccessQueryResult(resultSet);
         } else {
-            return QueryResult.createSuccessQueryResult();
+            return QueryResult.createFailQueryResult("Statement " + stmt + " not supported by deep");
         }
     }
 }
