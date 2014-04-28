@@ -447,14 +447,14 @@ public class BridgeTest extends BasicCoreCassandraTest {
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.info")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
-        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+        SelectionClause mainSelectionClause = new SelectionList(selectionSelectors);
 
         Map<String, String> fields = new HashMap<String, String>();
         fields.put("users.name", "users_info.link_name");
         InnerJoin join = new InnerJoin("demo.users_info", fields);
 
         SelectStatement ss = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
+                mainSelectionClause, // SelectionClause selectionClause
                 "demo.users");
         ss.setJoin(join);
         ss.setLimit(10000);
@@ -468,7 +468,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("gender")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
-        selectionClause = new SelectionList(selectionSelectors);
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
         SelectStatement firstSelect = new SelectStatement(
                 selectionClause, // SelectionClause selectionClause
@@ -491,7 +491,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         fields.put("users.name", "users_info.link_name");
         join = new InnerJoin("", fields);
         SelectStatement joinSelect = new SelectStatement(
-                null, // SelectionClause selectionClause
+                mainSelectionClause, // SelectionClause selectionClause
                 "");
         joinSelect.setJoin(join);
         joinSelect.setLimit(10000);
