@@ -36,6 +36,7 @@ public class MetaUtils {
             "UPDATE",
             "DELETE",
             "SELECT",
+            "USE",
             "ADD",
             "LIST",
             "REMOVE",
