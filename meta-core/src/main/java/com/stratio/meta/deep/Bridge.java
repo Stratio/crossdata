@@ -106,7 +106,6 @@ public class Bridge {
             }
 
             // Retrieve selected columns without tablename
-            System.out.println(ss.getSelectionClause().toString());
             for(String id: ss.getSelectionClause().getIds()){
                 if(id.contains(".")){
                     selectedCols.add(id.split("\\.")[1]);
@@ -121,7 +120,7 @@ public class Bridge {
             String field1 = keys.iterator().next();
             String field2 = fields.get(field1);
 
-            LOG.info("INNER JOIN on: " + field1 + " - " + field2);
+            LOG.debug("INNER JOIN on: " + field1 + " - " + field2);
 
             JavaRDD result = null;
 

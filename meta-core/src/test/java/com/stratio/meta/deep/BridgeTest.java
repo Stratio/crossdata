@@ -108,11 +108,11 @@ public class BridgeTest extends BasicCoreCassandraTest {
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users_info.info")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
-        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+        SelectionClause mainSelectionClause = new SelectionList(selectionSelectors);
         Map<String, String> fields = new HashMap<String, String>();
         fields.put("users.name", "users_info.link_name");
         InnerJoin join = new InnerJoin("demo.users_info", fields);
-        SelectStatement ss = new SelectStatement(selectionClause, "demo.users");
+        SelectStatement ss = new SelectStatement(mainSelectionClause, "demo.users");
         ss.setJoin(join);
         ss.setLimit(10000);
 
@@ -125,7 +125,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("gender")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
-        selectionClause = new SelectionList(selectionSelectors);
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
        firstSelect.setLimit(10000);
@@ -135,16 +135,16 @@ public class BridgeTest extends BasicCoreCassandraTest {
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("link_name")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("info")));
         selectionClause = new SelectionList(selectionSelectors);
-       SelectStatement secondSelect = new SelectStatement(selectionClause, "demo.users_info");;
-       secondSelect.setLimit(10000);
+        SelectStatement secondSelect = new SelectStatement(selectionClause, "demo.users_info");;
+        secondSelect.setLimit(10000);
 
         // INNER JOIN
         fields = new HashMap<String, String>();
         fields.put("users.name", "users_info.link_name");
         join = new InnerJoin("", fields);
-        SelectStatement joinSelect = new SelectStatement("");
-       joinSelect.setJoin(join);
-       joinSelect.setLimit(10000);
+        SelectStatement joinSelect = new SelectStatement(mainSelectionClause, "");
+        joinSelect.setJoin(join);
+        joinSelect.setLimit(10000);
 
 
         // CREATE ROOT
@@ -304,7 +304,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.boolean_column")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
-        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+        SelectionClause mainSelectionClause = new SelectionList(selectionSelectors);
 
         Map<String, String> fields = new HashMap<String, String>();
         fields.put("users.name", "types.varchar_column");
@@ -314,7 +314,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         Relation relation = new RelationCompare("types.int_column", ">", new IntegerTerm("104"));
         clause.add(relation);
 
-        SelectStatement ss = new SelectStatement(selectionClause, "demo.users");;
+        SelectStatement ss = new SelectStatement(mainSelectionClause, "demo.users");;
         ss.setLimit(10000);
         ss.setWhere(clause);
         ss.setJoin(join);
@@ -328,7 +328,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.name")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
-        selectionClause = new SelectionList(selectionSelectors);
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
         SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
         firstSelect.setLimit(10000);
@@ -352,7 +352,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         fields = new HashMap<String, String>();
         fields.put("users.name", "types.varchar_column");
         join = new InnerJoin("", fields);
-        SelectStatement joinSelect = new SelectStatement(null, "");
+        SelectStatement joinSelect = new SelectStatement(mainSelectionClause, "");
         joinSelect.setJoin(join);
         joinSelect.setLimit(10000);
 
@@ -417,7 +417,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         fields.put("users.name", "types.varchar_column");
         join = new InnerJoin("", fields);
         SelectStatement joinSelect = new SelectStatement(
-                null, // SelectionClause selectionClause
+                selectionClause, // SelectionClause selectionClause
                 "");
         joinSelect.setJoin(join);
         joinSelect.setLimit(10000);
