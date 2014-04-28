@@ -34,8 +34,15 @@ import java.util.Map;
 
 public class CoreUtils {
 
+    /**
+     * Map of methods required to transform a {@link com.datastax.driver.core.DataType} into the
+     * corresponding object.
+     */
     private static Map<String, Method> transformations = new HashMap<>();
 
+    /**
+     * Class logger.
+     */
     private static final Logger LOG = Logger.getLogger(CoreUtils.class);
 
     static{
@@ -61,12 +68,26 @@ public class CoreUtils {
         }
     }
 
+    /**
+     * Get a {@link com.stratio.meta.common.data.Cell} with the column contents of a Row.
+     * @param type The {@link com.datastax.driver.core.DataType} of the column.
+     * @param r The row that contains the column.
+     * @param columnName The column name.
+     * @return A {@link com.stratio.meta.common.data.Cell} with the contents.
+     * @throws InvocationTargetException If the required method cannot be invoked.
+     * @throws IllegalAccessException If the method cannot be accessed.
+     */
     public Cell getCell(DataType type, Row r, String columnName) throws InvocationTargetException, IllegalAccessException {
         Method m = transformations.get(type.toString());
         Object value = m.invoke(r, columnName);
         return new Cell(type.asJavaClass(), value);
     }
 
+    /**
+     * Transforms a Cassandra {@link com.datastax.driver.core.ResultSet} into a {@link com.stratio.meta.common.data.ResultSet}.
+     * @param resultSet The input Cassandra resultset.
+     * @return An equivalent Meta ResultSet
+     */
     public com.stratio.meta.common.data.ResultSet transformToMetaResultSet(ResultSet resultSet) {
         com.stratio.meta.common.data.CassandraResultSet crs = new com.stratio.meta.common.data.CassandraResultSet();
         List<ColumnDefinitions.Definition> definitions = resultSet.getColumnDefinitions().asList();
@@ -89,63 +110,5 @@ public class CoreUtils {
         }
         return crs;
     }
-
-
-
-    /*public static com.stratio.meta.common.data.ResultSet transformToMetaResultSet(ResultSet resultSet) {
-        com.stratio.meta.common.data.CassandraResultSet crs = new com.stratio.meta.common.data.CassandraResultSet();
-
-        List<ColumnDefinitions.Definition> definitions = resultSet.getColumnDefinitions().asList();
-
-        for(Row row: resultSet.all()){
-            com.stratio.meta.common.data.Row metaRow = new com.stratio.meta.common.data.Row();
-            for (ColumnDefinitions.Definition def: definitions){
-                if(def.getName().toLowerCase().startsWith("stratio")){
-                    continue;
-                }
-                Cell metaCell = null;
-
-                new Cell(defasdf as javaClass, eval("row.get"+def.getType()+()));
-
-                Map<nombre,transformacion>();
-                method=mimap.get(nombre);
-
-
-
-                if((def.getType() == DataType.ascii())
-                        || (def.getType() == DataType.text())
-                        || (def.getType() == DataType.varchar())){
-                    metaCell = new Cell(def.getType().asJavaClass(), row.getString(def.getName()));
-                } else if ((def.getType() == DataType.bigint())
-                        || (def.getType() == DataType.counter())){
-                    metaCell = new Cell(def.getType().asJavaClass(), row.getLong(def.getName()));
-                } else if ((def.getType() == DataType.cboolean())){
-                    metaCell = new Cell(def.getType().asJavaClass(), row.getBool(def.getName()));
-                } else if ((def.getType() == DataType.blob())){
-                    metaCell = new Cell(def.getType().asJavaClass(), row.getBytes(def.getName()));
-                } else if ((def.getType() == DataType.decimal())){
-                    metaCell = new Cell(def.getType().asJavaClass(), row.getDecimal(def.getName()));
-                } else if ((def.getType() == DataType.cdouble())){
-                    metaCell = new Cell(def.getType().asJavaClass(), row.getDouble(def.getName()));
-                } else if ((def.getType() == DataType.cfloat())){
-                    metaCell = new Cell(def.getType().asJavaClass(), row.getFloat(def.getName()));
-                } else if ((def.getType() == DataType.inet())){
-                    metaCell = new Cell(def.getType().asJavaClass(), row.getInet(def.getName()));
-                } else if ((def.getType() == DataType.cint())){
-                    metaCell = new Cell(def.getType().asJavaClass(), row.getInt(def.getName()));
-                } else if ((def.getType() == DataType.timestamp())){
-                    metaCell = new Cell(def.getType().asJavaClass(), row.getDate(def.getName()));
-                } else if ((def.getType() == DataType.uuid())
-                        || (def.getType() == DataType.timeuuid())){
-                    metaCell = new Cell(def.getType().asJavaClass(), row.getUUID(def.getName()));
-                } else if ((def.getType() == DataType.varint())){
-                    metaCell = new Cell(def.getType().asJavaClass(), row.getVarint(def.getName()));
-                }
-                metaRow.addCell(def.getName(), metaCell);
-            }
-            crs.add(metaRow);
-        }
-        return crs;
-    }*/
 
 }
