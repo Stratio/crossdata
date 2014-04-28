@@ -69,7 +69,6 @@ public class CreateIndexStatementTest extends ParsingTest{
         String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 "
                 + "ON table1 (field1, field2) USING com.company.Index.class "
                 + "WITH OPTIONS = {'key1': 'val1'};";
-        System.out.println(inputText+" works");
         testRegularStatement(inputText, "createIndex_default_all");
     }
 
