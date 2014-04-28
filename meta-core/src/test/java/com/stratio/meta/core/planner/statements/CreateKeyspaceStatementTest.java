@@ -39,7 +39,6 @@ public class CreateKeyspaceStatementTest extends BasicPlannerTest{
         Map<String, ValueProperty> properties = new HashMap();
         properties.put("class", new IdentifierProperty("{class: SimpleStrategy, replication_factor: 1}"));
         stmt = new CreateKeyspaceStatement("demo", false, properties);
-        Tree tree = stmt.getPlan(_metadataManager,"demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+        validateCassandraPath();
     }
 }

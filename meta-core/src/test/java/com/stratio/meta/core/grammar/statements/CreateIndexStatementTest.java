@@ -31,26 +31,26 @@ public class CreateIndexStatementTest extends ParsingTest{
     //CUSTOM → custom index. (new feature for release 2)
 
     @Test
-    public void createIndex_default_basic() {
+    public void createIndexDefaultBasic() {
         String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1, field2);";
-        testRegularStatement(inputText, "createIndex_default_basic");
+        testRegularStatement(inputText, "createIndexDefaultBasic");
     }
 
 
     @Test
-    public void createIndex_default_ifNotExist() {
+    public void createIndexDefaultIfNotExist() {
         String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON table1 (field1, field2);";
-        testRegularStatement(inputText, "createIndex_default_ifNotExist");
+        testRegularStatement(inputText, "createIndexDefaultIfNotExist");
     }
 
     @Test
-    public void createIndex_default_using() {
+    public void createIndexDefaultUsing() {
         String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1, field2) USING com.company.Index.class;";
-        testRegularStatement(inputText, "createIndex_default_using");
+        testRegularStatement(inputText, "createIndexDefaultUsing");
     }
 
     @Test
-    public void createIndex_lucene() {
+    public void createIndexLucene() {
         String inputText = "CREATE LUCENE INDEX demo_banks ON banks"
                 + " (day, entry_id, latitude, longitude, name, address, tags)"
                 + " USING \'org.apache.cassandra.db.index.stratio.RowIndex\'"
@@ -61,35 +61,35 @@ public class CreateIndexStatementTest extends ParsingTest{
                 + " entry_id:{type:\"uuid\"}, latitude:{type:\"double\"},"
                 + " longitude:{type:\"double\"}, name:{type:\"text\"},"
                 + " address:{type:\"string\"}, tags:{type:\"boolean\"}}}\'};";
-        testRegularStatement(inputText, "createIndex_lucene");
+        testRegularStatement(inputText, "createIndexLucene");
     }
 
     @Test
-    public void createIndex_default_all() {
+    public void createIndexDefaultAll() {
         String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 "
                 + "ON table1 (field1, field2) USING com.company.Index.class "
                 + "WITH OPTIONS = {'key1': 'val1'};";
-        testRegularStatement(inputText, "createIndex_default_all");
+        testRegularStatement(inputText, "createIndexDefaultAll");
     }
 
     @Test
-    public void createIndex_withOptions2() {
+    public void createIndexWithOptions2() {
         String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 "
                 + "ON table1 (field1, field2) USING com.company.Index.class "
                 + "WITH OPTIONS = {'key1': 'val1', 'key2': 'val2'};";
-        testRegularStatement(inputText, "createIndex_withOptions2");
+        testRegularStatement(inputText, "createIndexWithOptions2");
     }
 
     @Test
-    public void create_index_wrong_option_assignment(){
+    public void createIndexWrongOptionAssignment(){
         String inputText = "CREATE LUCENE INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1:val1;";
-        testRecoverableError(inputText, "create_index_wrong_option_assignment");
+        testRecoverableError(inputText, "createIndexWrongOptionAssignment");
     }
 
     @Test
-    public void createIndex_default_basic_with_space_before_semicolon() {
+    public void createIndexDefaultBasicWithSpaceBeforeSemicolon() {
         String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1; field2);";
-        testRecoverableError(inputText, "createIndex_default_basic_with_space_before_semicolon");
+        testRecoverableError(inputText, "createIndexDefaultBasicWithSpaceBeforeSemicolon");
     }
 
 }

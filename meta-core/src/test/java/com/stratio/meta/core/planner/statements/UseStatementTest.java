@@ -33,7 +33,6 @@ public class UseStatementTest  extends BasicPlannerTest {
     public void testPlan(){
         String inputText = "USE demo;";
         stmt = new UseStatement("demo");
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+        validateCassandraPath();
     }
 }

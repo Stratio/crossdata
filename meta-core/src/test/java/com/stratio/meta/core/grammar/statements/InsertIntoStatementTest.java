@@ -25,44 +25,44 @@ import org.testng.annotations.Test;
 public class InsertIntoStatementTest extends ParsingTest {
 
     @Test
-    public void insert_into() {
+    public void insertInto() {
         String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (term1, term2) "
                 + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
-        testRegularStatement(inputText, "insert_into");
+        testRegularStatement(inputText, "insertInto");
     }
 
     @Test
-    public void insert_into_2() {
+    public void insertInto2() {
         String inputText = "INSERT INTO mykeyspace.tablename (column1, column2) VALUES (value1, value2)"
                 + " IF NOT EXISTS USING TTL = 10;";
-        testRegularStatement(inputText, "insert_into_2");
+        testRegularStatement(inputText, "insertInto2");
     }
 
     @Test
-    public void insert_into_allValueTypes() {
+    public void insertIntoAllValueTypes() {
         String inputText = "INSERT INTO mykeyspace.tablename (c1, c2, c3, c4, c5) VALUES (text, 'quoted_text', 123, 1.23, true);";
-        testRegularStatement(inputText, "insert_into_allValueTypes");
+        testRegularStatement(inputText, "insertIntoAllValueTypes");
     }
 
     @Test
-    public void wrong_into_token(){
+    public void wrongIntoToken(){
         String inputText = "INSERT INTI mykeyspace.tablename (ident1, ident2) VALUES(term1, term2)"
                 + " IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
-        testRecoverableError(inputText, "wrong_into_token");
+        testRecoverableError(inputText, "wrongIntoToken");
     }
 
     @Test
-    public void insert_into_wrong_values_token(){
+    public void insertIntoWrongValuesToken(){
         String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUED (term1, term2)"
                 + " IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
-        testParseFails(inputText, "insert_into_wrong_values_token");
+        testParseFails(inputText, "insertIntoWrongValuesToken");
     }
 
     @Test
-    public void insert_into_select() {
+    public void insertIntoSelect() {
         String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) SELECT a, b from c "
                 + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
-        testRegularStatement(inputText, "insert_into_select");
+        testRegularStatement(inputText, "insertIntoSelect");
     }
 
 

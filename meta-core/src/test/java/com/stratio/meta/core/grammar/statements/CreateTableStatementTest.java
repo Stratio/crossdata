@@ -35,56 +35,56 @@ public class CreateTableStatementTest extends ParsingTest {
     //
 
     @Test
-    public void createTable_basic() {
+    public void createTableBasic() {
         String inputText = "create table adsa (algo text primary key, algo2 int, algo3 bool);";
-        testRegularStatement(inputText, "createTable_basic");
+        testRegularStatement(inputText, "createTableBasic");
     }
 
     @Test
-    public void createTable_basic_2() {
+    public void createTableBasic2() {
         String inputText = "create table adsa (algo text, algo2 int primary key, algo3 bool);";
-        testRegularStatement(inputText, "createTable_basic_2");
+        testRegularStatement(inputText, "createTableBasic2");
     }
 
     @Test
-    public void createTable_basic_3() {
+    public void createTableBasic3() {
         String inputText = "create table adsa (algo text, algo2 int, algo3 bool primary key);";
-        testRegularStatement(inputText, "createTable_basic_3");
+        testRegularStatement(inputText, "createTableBasic3");
     }
 
     @Test
-    public void createTable_basic_4() {
+    public void createTableBasic4() {
         String inputText = "create table adsa (algo text, algo2 int, algo3 bool, primary key (algo));";
-        testRegularStatement(inputText, "createTable_basic_4");
+        testRegularStatement(inputText, "createTableBasic4");
     }
 
     @Test
-    public void createTable_basic_5() {
+    public void createTableBasic5() {
         String inputText = "create table adsa (algo text, algo2 int, algo3 bool, primary key (algo, algo2));";
-        testRegularStatement(inputText, "createTable_basic_5");
+        testRegularStatement(inputText, "createTableBasic5");
     }
 
     @Test
-    public void createTable_basic_6() {
+    public void createTableBasic6() {
         String inputText = "create table adsa (algo text, algo2 int, algo3 bool, primary key ((algo, algo2), algo3));";
-        testRegularStatement(inputText, "createTable_basic_6");
+        testRegularStatement(inputText, "createTableBasic6");
     }
 
     @Test
-    public void createTable_basic_7() {
+    public void createTableBasic7() {
         String inputText = "create table adsa (algo text, algo2 int, algo3 bool, primary key ((algo, algo2), algo3)) "
                 + "with propiedad1=prop1 and propiedad2=2 and propiedad3=3.0;";
-        testRegularStatement(inputText, "createTable_basic_7");
+        testRegularStatement(inputText, "createTableBasic7");
     }
 
     @Test
-    public void createTable_with_many_properties() {
+    public void createTableWithManyProperties() {
         String inputText = "CREATE TABLE key_space1.users (name varchar, password varchar, color varchar, gender varchar,"
                 + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                 + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
                 + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
         MetaStatement st = parser.parseStatement(inputText).getStatement();
-        assertNotNull(st, "Cannot parse createTable_with_many_properties");
+        assertNotNull(st, "Cannot parse createTableWithManyProperties");
 
         boolean originalOK = false;
         boolean alternative1 = false;
@@ -118,25 +118,25 @@ public class CreateTableStatementTest extends ParsingTest {
         }
 
         assertTrue((originalOK || alternative1 || alternative2 || alternative3),
-                "Cannot parse createTable_with_many_properties");
+                "Cannot parse createTableWithManyProperties");
     }
 
     @Test
-    public void createTable_compact_storage() {
+    public void createTableCompactStorage() {
         String inputText = "CREATE TABLE key_space1.sblocks (block_id uuid, subblock_id uuid, data blob, PRIMARY KEY "
                 + "(block_id, subblock_id)) WITH COMPACT STORAGE;";
-        testRegularStatement(inputText, "createTable_compact_storage");
+        testRegularStatement(inputText, "createTableCompactStorage");
     }
 
     @Test
-    public void createTable_clustering() {
+    public void createTableClustering() {
         String inputText = "create table key_space1.timeseries (event_type text, insertion_time timestamp, event blob,"
                 + " PRIMARY KEY (event_type, insertion_time)) WITH CLUSTERING ORDER BY (insertion_time DESC);";
-        testRegularStatement(inputText, "createTable_clustering");
+        testRegularStatement(inputText, "createTableClustering");
     }
 
     @Test
-    public void createTable_with_properties() {
+    public void createTableWithProperties() {
         String inputText = "CREATE TABLE key_space1.test (name varchar, color varchar, gender varchar, food varchar, "
                 + "animal varchar, PRIMARY KEY (name)) WITH compression={sstable_compression: DeflateCompressor, "
                 + "chunk_length_kb: 64} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
@@ -145,7 +145,7 @@ public class CreateTableStatementTest extends ParsingTest {
         MetaQuery mq = parser.parseStatement(inputText);
         MetaStatement st = mq.getStatement();
 
-        assertNotNull(st, "Statement should not be null createTable_with_properties");
+        assertNotNull(st, "Statement should not be null createTableWithProperties");
 
         boolean originalOK = false;
         boolean alternative1 = false;
@@ -179,20 +179,20 @@ public class CreateTableStatementTest extends ParsingTest {
         }
 
         assertTrue((originalOK || alternative1 || alternative2 || alternative3),
-                "Cannot parse createTable_with_properties");
+                "Cannot parse createTableWithProperties");
     }
 
     @Test
-    public void createTable_map_column() {
+    public void createTableMapColumn() {
         String inputText = "CREATE TABLE demo.banks (day text, key uuid, latitude double, longitude double, name text, "
                 + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key));";
-        testRegularStatement(inputText, "createKeyspace_map_column");
+        testRegularStatement(inputText, "createTableMapColumn");
     }
 
     @Test
-    public void create_table_wrong_column_definition(){
+    public void createTableWrongColumnDefinition(){
         String inputText = "CREATE TABLE adsa (algo text, primary key ([algo, algo2],algo3));";
-        testParseFails(inputText, "create_table_wrong_column_definition");
+        testParseFails(inputText, "createTableWrongColumnDefinition");
     }
 
 

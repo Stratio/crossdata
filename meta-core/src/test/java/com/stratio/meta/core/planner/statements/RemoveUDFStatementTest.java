@@ -31,7 +31,6 @@ public class RemoveUDFStatementTest  extends BasicPlannerTest {
     public void planificationNotSupported(){
         String inputText = "REMOVE UDF \"jar.name\";";
         stmt = new RemoveUDFStatement("jar.name");
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
+        validateNotSupported();
     }
 }

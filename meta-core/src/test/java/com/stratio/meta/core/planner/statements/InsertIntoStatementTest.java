@@ -48,7 +48,6 @@ public class InsertIntoStatementTest  extends BasicPlannerTest {
         list.add(new BooleanTerm("false"));
         list.add(new StringTerm(""));
         stmt = new InsertIntoStatement("demo.users", ids, list, false, new ArrayList());
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+        validateCassandraPath();
     }
 }

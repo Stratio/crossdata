@@ -25,15 +25,15 @@ import org.testng.annotations.Test;
 public class ExplainPlanStatementTest extends ParsingTest {
 
     @Test
-    public void explain_plan() {
+    public void explainPlan() {
         String inputText = "EXPLAIN PLAN FOR DROP INDEX indexName;";
-        testRegularStatement(inputText, "explain_plan");
+        testRegularStatement(inputText, "explainPlan");
     }
 
     @Test
-    public void wrong_plan_token(){
+    public void wrongPlanToken(){
         String inputText = "EXPLAIN PLAANS FOR DROP INDEX indexName;";
-        testParseFails(inputText, "wrong_plan_token");
+        testParseFails(inputText, "wrongPlanToken");
     }
 
 }

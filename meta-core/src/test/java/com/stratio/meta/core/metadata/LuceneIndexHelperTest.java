@@ -47,7 +47,6 @@ public class LuceneIndexHelperTest extends BasicCoreCassandraTest {
 
     }
 
-
     @Test
     public void getLuceneIndex(){
         String keyspace = "demo";
@@ -66,5 +65,4 @@ public class LuceneIndexHelperTest extends BasicCoreCassandraTest {
         assertEquals(numIndexedColumns, index.getIndexedColumns().size(), "Invalid number of indexes");
 
     }
-
 }

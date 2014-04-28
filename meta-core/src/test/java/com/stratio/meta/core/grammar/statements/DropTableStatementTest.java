@@ -25,15 +25,15 @@ import org.testng.annotations.Test;
 public class DropTableStatementTest extends ParsingTest {
 
     @Test
-    public void drop_table() {
+    public void dropTable() {
         String inputText = "DROP TABLE IF EXISTS lastTable;";
-        testRegularStatement(inputText, "drop_table");
+        testRegularStatement(inputText, "dropTable");
     }
 
     @Test
-    public void drop_not_missing(){
+    public void dropNotMissing(){
         String inputText = "DROP TABLE IF EXISTS _lastTable;";
-        testRecoverableError(inputText, "drop_not_missing");
+        testRecoverableError(inputText, "dropNotMissing");
     }
 
 }

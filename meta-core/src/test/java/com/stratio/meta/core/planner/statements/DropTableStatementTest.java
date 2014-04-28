@@ -33,7 +33,6 @@ public class DropTableStatementTest  extends BasicPlannerTest {
     public void testPlan(){
         String inputText = "DROP TABLE demo.users;";
         stmt = new DropTableStatement("demo.users", false);
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+        validateCassandraPath();
     }
 }

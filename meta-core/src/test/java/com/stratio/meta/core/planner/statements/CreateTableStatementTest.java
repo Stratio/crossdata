@@ -42,7 +42,6 @@ public class CreateTableStatementTest  extends BasicPlannerTest {
         columns.put("check", "BOOLEAN");
         stmt = new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"), Arrays.asList("name"), 1, 1);
         ((CreateTableStatement)stmt).validate(_metadataManager, "demo");
-        Tree tree = stmt.getPlan(_metadataManager,"demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+        validateCassandraPath();
     }
 }

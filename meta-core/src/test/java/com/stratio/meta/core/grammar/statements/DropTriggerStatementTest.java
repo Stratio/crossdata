@@ -31,9 +31,9 @@ public class DropTriggerStatementTest extends ParsingTest {
     }
 
     @Test
-    public void drop_trigger_wrong_assignment(){
+    public void dropTriggerWrongAssignment(){
         String inputText = "drop trigger trigger1 on table_name = 20;";
-        testParseFails(inputText, "drop_trigger_wrong_assignment");
+        testParseFails(inputText, "dropTriggerWrongAssignment");
     }
 
 }

@@ -33,8 +33,7 @@ public class ListStatementTest  extends BasicPlannerTest {
     public void planificationNotSupported(){
         String inputText = "LIST PROCESS;";
         stmt = new ListStatement(ListType.PROCESS.name());
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
+        validateNotSupported();
 
     }
 }

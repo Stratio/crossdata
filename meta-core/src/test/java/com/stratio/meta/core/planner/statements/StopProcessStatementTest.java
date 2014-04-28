@@ -32,7 +32,6 @@ public class StopProcessStatementTest  extends BasicPlannerTest {
     public void planificationNotSupported(){
         String inputText = "STOP process process1;";
         stmt = new StopProcessStatement("process1");
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
+        validateNotSupported();
     }
 }
