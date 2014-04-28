@@ -128,7 +128,7 @@ public class CreateIndexStatement extends MetaStatement {
     public CreateIndexStatement(){
         this.command = false;
         targetColumns = new ArrayList<>();
-        options = new HashMap<>();
+        options = new LinkedHashMap<>();
     }
 
     /**
