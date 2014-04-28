@@ -36,6 +36,7 @@ public class CreateIndexStatementTest extends ParsingTest{
         testRegularStatement(inputText, "createIndex_default_basic");
     }
 
+
     @Test
     public void createIndex_default_ifNotExist() {
         String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON table1 (field1, field2);";
@@ -68,6 +69,7 @@ public class CreateIndexStatementTest extends ParsingTest{
         String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 "
                 + "ON table1 (field1, field2) USING com.company.Index.class "
                 + "WITH OPTIONS = {'key1': 'val1'};";
+        System.out.println(inputText+" works");
         testRegularStatement(inputText, "createIndex_default_all");
     }
 
@@ -84,6 +86,22 @@ public class CreateIndexStatementTest extends ParsingTest{
         String inputText = "CREATE LUCENE INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1:val1;";
         testRecoverableError(inputText, "create_index_wrong_option_assignment");
     }
+
+    //CREATE HASH INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1=val1 AND opt2=val2;
+    @Test
+    public void createIndex_default_all_and() {
+        String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 "
+                + "ON table1 (field1, field2) USING com.company.Index.class "
+                + "WITH OPTIONS = {'key1': 'val1' AND 'key2': 'val2'};";
+        testRegularStatement(inputText, "createIndex_default_all_and");
+    }
+
+    @Test
+    public void createIndex_default_basic_with_space_before_semicolon() {
+        String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1, field2) ;";
+        testRegularStatement(inputText, "createIndex_default_basic_with_space_before_semicolon");
+    }
+
 
 
 }
