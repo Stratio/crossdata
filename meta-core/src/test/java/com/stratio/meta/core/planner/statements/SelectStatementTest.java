@@ -44,8 +44,8 @@ public class SelectStatementTest extends BasicPlannerTest {
         List<Relation> whereClause = Arrays.asList(relation);
         ((SelectStatement)stmt).setWhere(whereClause);
         Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
-        validateCassandraPath();
+        assertTrue(tree.getNode().getPath().equals(MetaPath.DEEP));
+        validateDeepPath();
     }
 
     @Test
