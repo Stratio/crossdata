@@ -25,8 +25,8 @@ import org.testng.annotations.Test;
 public class AlterKeyspaceStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_not_supported(){
+    public void testValidateNotSupported(){
         String inputText = "ALTER KEYSPACE mykeyspace WITH ident1 = value1 AND ident2 = 54;";
-        validateFail(inputText, "validate_not_supported");
+        validateFail(inputText, "testValidateNotSupported");
     }
 }

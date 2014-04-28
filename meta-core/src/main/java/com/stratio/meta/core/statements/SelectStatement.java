@@ -652,9 +652,8 @@ public class SelectStatement extends MetaStatement {
     public String [] getLuceneWhereClause(MetadataManager metadata, TableMetadata tableMetadata){
         String [] result = null;
         CustomIndexMetadata luceneIndex = metadata.getLuceneIndex(tableMetadata);
-
+        int addedClauses = 0;
         if(luceneIndex != null) {
-
             //TODO: Check in the validator that the query uses AND with the lucene mapped columns.
             StringBuilder sb = new StringBuilder("{filter:{type:\"boolean\",must:[");
 
@@ -674,11 +673,14 @@ public class SelectStatement extends MetaStatement {
                     sb.append("\",value:\"");
                     sb.append(processedQuery[1]);
                     sb.append("\"},");
+                    addedClauses++;
                 }
             }
             sb.replace(sb.length()-1, sb.length(), "");
             sb.append("]}}");
-            result = new String[]{luceneIndex.getIndexName(), sb.toString()};
+            if(addedClauses > 0) {
+                result = new String[]{luceneIndex.getIndexName(), sb.toString()};
+            }
         }
         return result;
     }

@@ -26,21 +26,21 @@ import org.testng.annotations.Test;
 public class TruncateStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_ok(){
+    public void validateOk(){
         String inputText = "TRUNCATE demo.users;";
-        validateOk(inputText, "validate_ok");
+        validateOk(inputText, "validateOk");
     }
 
     @Test
-    public void validate_notExists_tableName(){
+    public void validateNotExistsTableName(){
         String inputText = "TRUNCATE unknown_table;";
-        validateFail(inputText, "validate_notExists_tableName");
+        validateFail(inputText, "validateNotExistsTableName");
     }
 
     @Test
-    public void validate_notExists_keyspace(){
+    public void validateNotExistsKeyspace(){
         String inputText = "TRUNCATE unknown.users;";
-        validateFail(inputText, "validate_notExists_keyspace");
+        validateFail(inputText, "validateNotExistsKeyspace");
     }
 
 }

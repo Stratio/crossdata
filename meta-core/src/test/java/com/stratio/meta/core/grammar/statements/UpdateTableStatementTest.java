@@ -65,7 +65,7 @@ public class UpdateTableStatementTest extends ParsingTest {
     }
 
 
-    @Test
+    //@Test
     public void update_where_using_and() {
         String inputText = "UPDATE table1 USING TTL = 400 AND TTL2 = 400 SET field1 = value1,"
                 + " field2 = value2 WHERE field3 = value3 AND field4 = value4;";

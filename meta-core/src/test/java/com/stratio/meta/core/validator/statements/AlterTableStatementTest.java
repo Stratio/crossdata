@@ -25,8 +25,8 @@ import org.testng.annotations.Test;
 public class AlterTableStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_not_supported(){
+    public void testValidateNotSupported(){
         String inputText = "ALTER TABLE table1 ADD column1 INT;";
-        validateFail(inputText, "validate_not_supported");
+        validateFail(inputText, "testValidateNotSupported");
     }
 }

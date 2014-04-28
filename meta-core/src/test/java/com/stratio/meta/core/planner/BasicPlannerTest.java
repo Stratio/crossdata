@@ -19,5 +19,38 @@
 
 package com.stratio.meta.core.planner;
 
-public class BasicPlannerTest {
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
+import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.core.utils.Tree;
+import org.testng.annotations.BeforeClass;
+
+import static org.testng.Assert.*;
+
+public class BasicPlannerTest extends BasicCoreCassandraTest{
+
+    protected static MetadataManager _metadataManager = null;
+
+    protected MetaStatement stmt;
+
+    @BeforeClass
+    public static void setUpBeforeClass(){
+        BasicCoreCassandraTest.setUpBeforeClass();
+        BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
+        _metadataManager = new MetadataManager(_session);
+        _metadataManager.loadMetadata();
+    }
+
+    public void validateOk(String inputText, String methodName){
+        stmt.getPlan(_metadataManager,"demo");
+        Result result = stmt.validate(_metadataManager, "");
+        assertNotNull(result, "Sentence validation not supported - " + methodName);
+        assertFalse(result.hasError(), "Cannot validate sentence - " + methodName + ": " + result.getErrorMessage());
+    }
+
+    public void validateFail(String inputText, String methodName){
+        Tree tree = stmt.getPlan(_metadataManager,"demo");
+        assertTrue(tree.isEmpty(), "Sentence planification not supported - " + methodName);
+    }
 }
