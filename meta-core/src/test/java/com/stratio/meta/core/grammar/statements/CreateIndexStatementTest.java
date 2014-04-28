@@ -77,5 +77,16 @@ public class CreateIndexStatementTest extends ParsingTest{
         testRecoverableError(inputText, "create_index_wrong_option_assignment");
     }
 
+    //CREATE HASH INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1=val1 AND opt2=val2;
+    @Test
+    public void createIndex_default_all_and() {
+        String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 "
+                + "ON table1 (field1, field2) USING com.company.Index.class "
+                + "WITH OPTIONS 'key1'='val1' AND 'key2'='val2';";
+        testRegularStatement(inputText, "createIndex_default_all");
+    }
+
+
+
 
 }
