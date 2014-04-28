@@ -247,14 +247,17 @@ public class Metash {
         try {
             String cmd = "";
 
-            while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
-                cmd = console.readLine();
-                if("".equalsIgnoreCase(cmd) || System.lineSeparator().equalsIgnoreCase(cmd)){
-                    println("");
-                }else if(cmd.toLowerCase().startsWith("help")){
-                    showHelp(cmd);
-                }else if(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
-                    executeQuery(cmd);
+            while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){  
+                cmd += " "+console.readLine();
+                if(cmd.trim().endsWith(";")){
+                    if(" ".equalsIgnoreCase(cmd) || System.lineSeparator().equalsIgnoreCase(cmd)){
+                        println("");
+                    }else if(cmd.toLowerCase().startsWith("help")){
+                        showHelp(cmd);
+                    }else if(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
+                        executeQuery(cmd);
+                    }
+                    cmd = "";
                 }
             }
 

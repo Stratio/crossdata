@@ -66,6 +66,7 @@ public class CassandraExecutor {
             driverStmt = stmt.getDriverStatement();
             ResultSet resultSet;
             if (driverStmt != null) {
+                System.out.println("TRACE: "+driverStmt.toString());
                 resultSet = session.execute(driverStmt);
             } else {
                 resultSet = session.execute(stmt.translateToCQL());
