@@ -31,9 +31,9 @@ public class DropIndexStatementTest extends ParsingTest {
     }
 
     @Test
-    public void noKs_ok() {
+    public void noKsOk() {
         String inputText = "DROP INDEX index_name;";
-        testRegularStatement(inputText, "noKs_ok");
+        testRegularStatement(inputText, "noKsOk");
     }
 
     @Test
@@ -43,21 +43,21 @@ public class DropIndexStatementTest extends ParsingTest {
     }
 
     @Test
-    public void token_ok() {
+    public void tokenOk() {
         String inputText = "DROP INDEX lucene;";
-        testRegularStatement(inputText, "token_ok");
+        testRegularStatement(inputText, "tokenOk");
     }
 
     @Test
-    public void wrongNotToken_fail(){
+    public void wrongNotTokenFail(){
         String inputText = "DROP INDEX IF NOT EXISTS index_name;";
-        testRecoverableError(inputText, "wrongNotToken_fail");
+        testRecoverableError(inputText, "wrongNotTokenFail");
     }
 
     @Test
-    public void invalidName_fail(){
+    public void invalidNameFail(){
         String inputText = "DROP INDEX IF NOT EXISTS 123name;";
-        testRecoverableError(inputText, "invalidName_fail");
+        testRecoverableError(inputText, "invalidNameFail");
     }
 
 

@@ -31,23 +31,22 @@ public class RemoveUDFStatementTest extends ParsingTest {
         testRegularStatement(inputText, "removeUDF");
     }
 
-
     @Test
-    public void unexpectedWord_fail() {
+    public void unexpectedWordFail() {
         String inputText = "REMOVE UDF \"jar.name\" NOW;";
-        testParseFails(inputText, "unexpectedWord_fail");
+        testParseFails(inputText, "unexpectedWordFail");
     }
 
     @Test
-    public void startingQuoteMissing1_fail(){
+    public void startingQuoteMissing1Fail(){
         String inputText = "REMOVE UDF /dir/jar_name-v1.0.jar;\"";
-        testRecoverableError(inputText, "startingQuoteMissing1_fail");
+        testRecoverableError(inputText, "startingQuoteMissing1Fail");
     }
 
     @Test
-    public void startingQuoteMissing2_fail(){
+    public void startingQuoteMissing2Fail(){
         String inputText = "REMOVE UDF \"/dir/jar_name-v1.0.jar;";
-        testRecoverableError(inputText, "startingQuoteMissing2_fail");
+        testRecoverableError(inputText, "startingQuoteMissing2Fail");
     }
 
 }

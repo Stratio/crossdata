@@ -25,31 +25,31 @@ import org.testng.annotations.Test;
 public class AlterTableStatementTest extends ParsingTest{
 
     @Test
-    public void alterTable_basic() {
+    public void alterTableBasic() {
         String inputText = "alter table tabla1 alter column1 type int;";
-        testRegularStatement(inputText, "alterTable_basic");
+        testRegularStatement(inputText, "alterTableBasic");
     }
 
     @Test
-    public void alterTable_basic_1() {
+    public void alterTableBasic1() {
         String inputText = "alter table tabla1 add column1 int;";
-        testRegularStatement(inputText, "alterTable_basic_1");
+        testRegularStatement(inputText, "alterTableBasic1");
     }
 
     @Test
-    public void alterTable_basic_2() {
+    public void alterTableBasic2() {
         String inputText = "alter table tabla1 drop column1;";
-        testRegularStatement(inputText, "alterTable_basic_2");
+        testRegularStatement(inputText, "alterTableBasic2");
     }
 
     @Test
-    public void alterTable_basic_3() {
+    public void alterTableBasic3() {
         String inputText = "Alter table tabla1 with property1=value1 and property2=2 and property3=3.0;";
-        testRegularStatement(inputText, "alterTable_basic_3");
+        testRegularStatement(inputText, "alterTableBasic3");
     }
 
     @Test
-    public void alter_wrong_property_identifier(){
+    public void alterWrongPropertyIdentifier(){
         String inputText = "ALTER TABLE tabla1 with 2property1=value1;";
         testParseFails(inputText, "set_wrong_boolean");
     }

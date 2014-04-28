@@ -31,9 +31,9 @@ public class DropKeyspaceStatementTest extends ParsingTest {
     }
 
     @Test
-    public void drop_wrong_place_for_if_exists(){
+    public void dropWrongPlaceForIfExists(){
         String inputText = "DROP KEYSPACE mykeyspace IF EXISTS;";
-        testRecoverableError(inputText, "drop_wrong_place_for_if_exists");
+        testRecoverableError(inputText, "dropWrongPlaceForIfExists");
     }
 
 }

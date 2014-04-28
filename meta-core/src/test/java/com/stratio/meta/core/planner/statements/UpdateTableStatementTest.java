@@ -42,6 +42,6 @@ public class UpdateTableStatementTest  extends BasicPlannerTest {
         List<Relation> whereClauses = Arrays.asList(relation);
         stmt = new UpdateTableStatement("table1", listAsig, whereClauses);
         Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
+        validateNotSupported();
     }
 }

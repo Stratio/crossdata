@@ -32,7 +32,6 @@ public class CreateTriggerStatementTest  extends BasicPlannerTest {
     public void planificationNotSupported(){
         String inputText = "CREATE TRIGGER trigger1 ON table1 USING triggerClassName;";
         stmt = new CreateTriggerStatement("trigger1", "table1", "triggerClassName");
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
+        validateNotSupported();
     }
 }

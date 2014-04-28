@@ -35,7 +35,6 @@ public class ExplainPlanStatementTest  extends BasicPlannerTest {
         String inputText = "EXPLAIN PLAN FOR DROP TABLE table1;";
         MetaStatement dropTable = new DropTableStatement("demo.users", false);
         stmt = new ExplainPlanStatement(dropTable);
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
+        validateNotSupported();
     }
 }

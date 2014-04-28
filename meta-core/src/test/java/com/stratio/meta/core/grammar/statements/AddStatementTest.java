@@ -25,39 +25,39 @@ import org.testng.annotations.Test;
 public class AddStatementTest extends ParsingTest{
 
     @Test
-    public void add_basic() {
+    public void addBasic() {
         String inputText = "ADD \"jar_name-v1.0.jar\";";
-        testRegularStatement(inputText, "add_basic");
+        testRegularStatement(inputText, "addBasic");
     }
 
     @Test
-    public void add_relative() {
+    public void addRelative() {
         String inputText = "ADD \"dir/jar_name-v1.0.jar\";";
-        testRegularStatement(inputText, "add_relative");
+        testRegularStatement(inputText, "addRelative");
     }
 
     @Test
-    public void add_absolute() {
+    public void addAbsolute() {
         String inputText = "ADD \"/dir/jar_name-v1.0.jar\";";
-        testRegularStatement(inputText, "add_absolute");
+        testRegularStatement(inputText, "addAbsolute");
     }
 
     @Test
-    public void add_starting_quote_missing1(){
+    public void addStartingQuoteMissing1(){
         String inputText = "ADD /dir/jar_name-v1.0.jar;\"";
-        testRecoverableError(inputText, "add_starting_quote_missing1");
+        testRecoverableError(inputText, "addStartingQuoteMissing1");
     }
 
     @Test
-    public void add_ending_quote_missing2(){
+    public void addEndingQuoteMissing2(){
         String inputText = "ADD \"/dir/jar_name-v1.0.jar;";
-        testRecoverableError(inputText, "add_ending_quote_missing");
+        testRecoverableError(inputText, "addEndingQuoteMissing2");
     }
 
     @Test
-    public void add_invalidPath(){
+    public void addInvalidPath(){
         String inputText = "ADD \"@jar_name-v1.0.jar;\"";
-        testParseFails(inputText, "add_invalidPath");
+        testParseFails(inputText, "addInvalidPath");
     }
 
 

@@ -25,35 +25,35 @@ import org.testng.annotations.Test;
 public class SelectStatementTest extends ParsingTest {
 
     @Test
-    public void select_statement() {
+    public void selectStatement() {
         String inputText = "SELECT ident1 AS name1, myfunction(innerIdent, anotherIdent) AS functionName "
                 + "FROM newks.newtb WITH WINDOW 5 ROWS INNER JOIN tablename ON field1=field2 WHERE ident1 LIKE whatever"
                 + " ORDER BY id1 ASC GROUP BY col1 LIMIT 50 DISABLE ANALYTICS;";
-        testRegularStatement(inputText, "select_statement");
+        testRegularStatement(inputText, "selectStatement");
     }
 
     @Test
-    public void select_statement_2() {
+    public void selectStatement2() {
         String inputText = "SELECT lucene FROM newks.newtb;";
-        testRegularStatement(inputText, "select_statement_2");
+        testRegularStatement(inputText, "selectStatement2");
     }
 
     @Test
-    public void select_withTimeWindow() {
+    public void selectWithTimeWindow() {
         String inputText = "SELECT column1 FROM table1 WITH WINDOW 5 SECONDS WHERE column2 = 3;";
-        testRegularStatement(inputText, "select_withTimeWindow");
+        testRegularStatement(inputText, "selectWithTimeWindow");
     }
 
     @Test
-    public void select_with_match(){
+    public void selectWithMatch(){
         String inputText = "SELECT * FROM demo.emp WHERE first_name MATCH s2o;";
-        testRegularStatement(inputText, "select_with_match");
+        testRegularStatement(inputText, "selectWithMatch");
     }
 
     @Test
-    public void select_wrong_like_word(){
+    public void selectWrongLikeWord(){
         String inputText = "SELECT ident1, myfunction(innerIdent, anotherIdent) LIKE ident1 FROM newks.newtb;";
-        testParseFails(inputText, "select_wrong_like_word");
+        testParseFails(inputText, "selectWrongLikeWord");
     }
 
 

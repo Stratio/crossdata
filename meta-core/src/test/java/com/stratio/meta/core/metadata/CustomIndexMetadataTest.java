@@ -33,5 +33,4 @@ public class CustomIndexMetadataTest {
         assertEquals(IndexType.DEFAULT, cim1.getIndexType(), "Invalid index type");
         assertEquals(IndexType.LUCENE, cim2.getIndexType(), "Invalid index type");
     }
-
 }

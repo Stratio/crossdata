@@ -33,7 +33,6 @@ public class AlterKeyspaceStatementTest extends BasicPlannerTest {
     public void planificationNotSupported(){
         String inputText = "ALTER KEYSPACE demo WITH ident1 = value1 AND ident2 = 54;";
         stmt = new AlterKeyspaceStatement("demo", new HashMap());
-        Tree tree = stmt.getPlan(_metadataManager,"demo");
-        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
+        validateNotSupported();
     }
 }

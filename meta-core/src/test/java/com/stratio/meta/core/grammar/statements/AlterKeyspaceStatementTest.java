@@ -32,9 +32,9 @@ public class AlterKeyspaceStatementTest extends ParsingTest{
     }
 
     @Test
-    public void alter_wrong_keyspace_token(){
+    public void alterWrongKeyspaceToken(){
         String inputText = "ALTER KEYSPACES mykeyspace WITH ident1 = value1;";
-        testParseFails(inputText, "alter_wrong_keyspace_token");
+        testParseFails(inputText, "alterWrongKeyspaceToken");
     }
 
 }
