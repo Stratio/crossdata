@@ -26,39 +26,39 @@ import org.testng.annotations.Test;
 public class DeleteStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_ok(){
+    public void validateOk(){
         String inputText = "DELETE FROM demo.users WHERE name = 'name_0';";
-        validateOk(inputText, "validate_ok");
+        validateOk(inputText, "validateOk");
     }
 
     @Test
-    public void validate_notExists_tablename(){
+    public void validateNotExistsTablename(){
         String inputText = "DELETE FROM unknown_table WHERE name = 'name_0';";
-        validateFail(inputText, "validate_notExists_tablename");
+        validateFail(inputText, "validateNotExistsTablename");
     }
 
     @Test
-    public void validate_where_2columns_ok(){
+    public void validateWhere2columnsOk(){
         String inputText = "DELETE FROM demo.users WHERE name = 'name_0' AND age = 15;";
-        validateOk(inputText, "validate_where_2columns_ok");
+        validateOk(inputText, "validateWhere2columnsOk");
     }
 
     @Test
-    public void validate_where_columnUnknown(){
+    public void validateWhereColumnUnknown(){
         String inputText = "DELETE FROM demo.users WHERE unknown = 'name_0';";
-        validateFail(inputText, "validate_where_columnUnknown");
+        validateFail(inputText, "validateWhereColumnUnknown");
     }
 
     @Test
-    public void validate_where_integerFail(){
+    public void validateWhereIntegerFail(){
         String inputText = "DELETE FROM demo.users WHERE name = 'name_0' AND age = '15';";
-        validateFail(inputText, "validate_where_integerFail");
+        validateFail(inputText, "validateWhereIntegerFail");
     }
 
     @Test
-    public void validate_where_stringFail(){
+    public void validateWhereStringFail(){
         String inputText = "DELETE FROM demo.users WHERE name = 15 AND age = 15;";
-        validateFail(inputText, "validate_where_stringFail");
+        validateFail(inputText, "validateWhereStringFail");
     }
 
 }

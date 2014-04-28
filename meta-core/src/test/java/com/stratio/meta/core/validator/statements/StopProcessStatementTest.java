@@ -25,8 +25,8 @@ import org.testng.annotations.Test;
 public class StopProcessStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_not_supported(){
+    public void validateNotSupported(){
         String inputText = "STOP process process1;";
-        validateFail(inputText, "validate_not_supported");
+        validateFail(inputText, "validateNotSupported");
     }
 }

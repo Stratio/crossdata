@@ -17,29 +17,23 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.validator.statements;
+package com.stratio.meta.core.planner.statements;
 
-import com.stratio.meta.core.validator.BasicValidatorTest;
+import com.stratio.meta.core.planner.BasicPlannerTest;
+import com.stratio.meta.core.statements.TruncateStatement;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
 
-public class DropTableStatementTest extends BasicValidatorTest {
+import static org.testng.Assert.assertTrue;
+
+public class TruncateStatementTest  extends BasicPlannerTest {
 
     @Test
-    public void validateOk(){
-        String inputText = "DROP TABLE demo.users;";
-        validateOk(inputText, "validateOk");
+    public void testPlan(){
+        String inputText = "TRUNCATE demo.users;";
+        stmt = new TruncateStatement("demo.users");
+        Tree tree = stmt.getPlan(_metadataManager, "demo");
+        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
     }
-
-    @Test
-    public void validateNotExistsTablename(){
-        String inputText = "DROP TABLE unknown_table;";
-        validateFail(inputText, "validateNotExistsTablename");
-    }
-
-    @Test
-    public void validateNotExistsKeyspace(){
-        String inputText = "DROP TABLE unknown.users;";
-        validateFail(inputText, "validateNotExistsKeyspace");
-    }
-
 }

@@ -17,29 +17,23 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.validator.statements;
+package com.stratio.meta.core.planner.statements;
 
-import com.stratio.meta.core.validator.BasicValidatorTest;
+import com.stratio.meta.core.planner.BasicPlannerTest;
+import com.stratio.meta.core.statements.AlterKeyspaceStatement;
+import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
 
-public class DropTableStatementTest extends BasicValidatorTest {
+import java.util.HashMap;
 
+import static org.testng.Assert.assertTrue;
+
+public class AlterKeyspaceStatementTest extends BasicPlannerTest {
     @Test
-    public void validateOk(){
-        String inputText = "DROP TABLE demo.users;";
-        validateOk(inputText, "validateOk");
+    public void planificationNotSupported(){
+        String inputText = "ALTER KEYSPACE demo WITH ident1 = value1 AND ident2 = 54;";
+        stmt = new AlterKeyspaceStatement("demo", new HashMap());
+        Tree tree = stmt.getPlan(_metadataManager,"demo");
+        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
     }
-
-    @Test
-    public void validateNotExistsTablename(){
-        String inputText = "DROP TABLE unknown_table;";
-        validateFail(inputText, "validateNotExistsTablename");
-    }
-
-    @Test
-    public void validateNotExistsKeyspace(){
-        String inputText = "DROP TABLE unknown.users;";
-        validateFail(inputText, "validateNotExistsKeyspace");
-    }
-
 }

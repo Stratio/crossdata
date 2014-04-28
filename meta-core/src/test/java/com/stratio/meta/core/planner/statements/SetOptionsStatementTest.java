@@ -17,17 +17,25 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.validator.statements;
+package com.stratio.meta.core.planner.statements;
 
-
-import com.stratio.meta.core.validator.BasicValidatorTest;
+import com.stratio.meta.core.planner.BasicPlannerTest;
+import com.stratio.meta.core.statements.SetOptionsStatement;
+import com.stratio.meta.core.structures.Consistency;
+import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
 
-public class SetOptionsStatementTest extends BasicValidatorTest {
+import java.util.Arrays;
+
+import static org.testng.Assert.assertTrue;
+
+public class SetOptionsStatementTest  extends BasicPlannerTest {
 
     @Test
-    public void validateNotSupported(){
+    public void planificationNotSupported(){
         String inputText = "SET OPTIONS ANALYTICS=true AND CONSISTENCY=LOCAL_ONE;";
-        validateFail(inputText, "validateNotSupported");
+        stmt = new SetOptionsStatement(true, Consistency.LOCAL_ONE, Arrays.asList(Boolean.TRUE));
+        Tree tree = stmt.getPlan(_metadataManager, "demo");
+        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
     }
 }

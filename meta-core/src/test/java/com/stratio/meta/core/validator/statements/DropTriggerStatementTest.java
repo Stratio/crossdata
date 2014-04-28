@@ -25,8 +25,8 @@ import org.testng.annotations.Test;
 public class DropTriggerStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_not_supported(){
+    public void validateNotSupported(){
         String inputText = "DROP TRIGGER trigger1 ON table1;";
-        validateFail(inputText, "validate_not_supported");
+        validateFail(inputText, "validateNotSupported");
     }
 }

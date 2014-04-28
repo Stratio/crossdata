@@ -19,5 +19,21 @@
 
 package com.stratio.meta.core.planner.statements;
 
-public class SelectStatement {
+import com.stratio.meta.core.planner.BasicPlannerTest;
+import com.stratio.meta.core.statements.UseStatement;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.Tree;
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertTrue;
+
+public class UseStatementTest  extends BasicPlannerTest {
+
+    @Test
+    public void testPlan(){
+        String inputText = "USE demo;";
+        stmt = new UseStatement("demo");
+        Tree tree = stmt.getPlan(_metadataManager, "demo");
+        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+    }
 }
