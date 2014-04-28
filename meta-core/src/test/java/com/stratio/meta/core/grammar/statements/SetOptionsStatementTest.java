@@ -26,28 +26,28 @@ public class SetOptionsStatementTest extends ParsingTest {
 
 
     @Test
-    public void set_basic() {
+    public void setBasic() {
         String inputText = "SET OPTIONS ANALYTICS=true AND CONSISTENCY=LOCAL_ONE;";
-        testRegularStatement(inputText, "set_basic");
+        testRegularStatement(inputText, "setBasic");
     }
 
     @Test
-    public void set_wrong_boolean(){
+    public void setWrongBoolean(){
         String inputText = "SET OPTIONS ANALYTICS=5;";
-        testParseFails(inputText, "set_wrong_boolean");
+        testParseFails(inputText, "setWrongBoolean");
     }
 
     @Test
-    public void set_basic_consistency_1() {
+    public void setBasicConsistency1() {
         String inputText = "SET OPTIONS CONSISTENCY=EACH_QUORUM;";
-        testRegularStatement(inputText, "set_basic_consistency_1");
+        testRegularStatement(inputText, "setBasicConsistency1");
     }
 
     @Test
-    public void set_all_consistencies() {
+    public void setAllConsistencies() {
         for (String consistency: new String[]{"ALL", "ANY", "QUORUM", "ONE", "TWO", "THREE", "EACH_QUORUM", "LOCAL_ONE", "LOCAL_QUORUM"}){
             String inputText = "SET OPTIONS ANALYTICS=true AND CONSISTENCY="+consistency+";";
-            testRegularStatement(inputText, "set_basic");
+            testRegularStatement(inputText, "setAllConsistencies");
         }
     }
 
