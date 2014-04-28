@@ -283,7 +283,7 @@ public class CreateIndexStatement extends MetaStatement {
         }
 
         if(name != null){
-            sb.append(name).append(" ");
+            sb.append(getIndexName()).append(" ");
         }
         sb.append("ON ");
         if(keyspaceInc){
@@ -380,10 +380,8 @@ public class CreateIndexStatement extends MetaStatement {
      */
     private Result validateIndexName(MetadataManager metadata, TableMetadata tableMetadata){
         Result result = QueryResult.createSuccessQueryResult();
-        String indexName = name;
-        if(IndexType.LUCENE.equals(type)){
-            indexName = "stratio_lucene_" + name;
-        }
+        String indexName = getIndexName();
+
         List<CustomIndexMetadata> allIndex = metadata.getTableIndex(tableMetadata);
 
         boolean found = false;
