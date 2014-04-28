@@ -58,5 +58,12 @@ public class InsertIntoStatementTest extends ParsingTest {
         testParseFails(inputText, "insert_into_wrong_values_token");
     }
 
+    @Test
+    public void insert_into_select() {
+        String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) SELECT a, b from c "
+                + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
+        testRegularStatement(inputText, "insert_into_select");
+    }
+
 
 }

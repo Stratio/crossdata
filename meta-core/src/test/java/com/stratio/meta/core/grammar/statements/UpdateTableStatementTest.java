@@ -67,12 +67,12 @@ public class UpdateTableStatementTest extends ParsingTest {
 
     @Test
     public void update_where_using_and() {
-        String inputText = "UPDATE table1 USING TTL = 400 TTL2 = 400 SET field1 = value1,"
+        String inputText = "UPDATE table1 USING TTL = 400 AND TTL2 = 400 SET field1 = value1,"
                 + " field2 = value2 WHERE field3 = value3 AND field4 = value4;";
         testRegularStatement(inputText, "update_where_using_and");
     }
 
-    @Test
+    //@Test
     public void update_tablename_if_and() {
         String inputText = "UPDATE tablename SET ident1 = term1, ident2 = term2"
                 + " WHERE ident3 IN (term3, term4) IF field1 = 25 AND field2 = 26;";

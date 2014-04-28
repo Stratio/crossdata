@@ -24,6 +24,7 @@ import org.testng.annotations.Test;
 
 public class SetOptionsStatementTest extends ParsingTest {
 
+
     @Test
     public void set_basic() {
         String inputText = "SET OPTIONS ANALYTICS=true AND CONSISTENCY=LOCAL_ONE;";
@@ -35,5 +36,22 @@ public class SetOptionsStatementTest extends ParsingTest {
         String inputText = "SET OPTIONS ANALYTICS=5;";
         testParseFails(inputText, "set_wrong_boolean");
     }
+
+    @Test
+    public void set_basic_consistency_1() {
+        String inputText = "SET OPTIONS CONSISTENCY=EACH_QUORUM;";
+        testRegularStatement(inputText, "set_basic_consistency_1");
+    }
+
+    @Test
+    public void set_all_consistencies() {
+        for (String consistency: new String[]{"ALL", "ANY", "QUORUM", "ONE", "TWO", "THREE", "EACH_QUORUM", "LOCAL_ONE", "LOCAL_QUORUM"}){
+            String inputText = "SET OPTIONS ANALYTICS=true AND CONSISTENCY="+consistency+";";
+            testRegularStatement(inputText, "set_basic");
+        }
+    }
+
+    // Meta.g:552:11: T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )?
+
 
 }
