@@ -836,7 +836,7 @@ public class SelectStatement extends MetaStatement {
      */
     private Object getWhereCastValue(String columnName, Object value){
         Object result = null;
-        Class<?> clazz = tableMetadataFrom.getColumn(columnName).getType().asJavaClass();
+        Class<?> clazz = tableMetadataFrom.getColumn(splitAndGetFieldName(columnName)).getType().asJavaClass();
 
         if(String.class.equals(clazz)){
             result = String.class.cast(value);
@@ -1178,7 +1178,7 @@ public class SelectStatement extends MetaStatement {
         Map<String, String> whereCols = new HashMap<>();
         for(Relation relation: where){
             for(String id: relation.getIdentifiers()){
-                whereCols.put(id, relation.getOperator());
+                whereCols.put(splitAndGetFieldName(id), relation.getOperator());
             }
         }
 
@@ -1258,6 +1258,14 @@ public class SelectStatement extends MetaStatement {
             steps.setNode(new MetaStep(MetaPath.CASSANDRA, this));
         }
         return steps;
+    }
+
+    public String splitAndGetFieldName(String fullName){
+        if(fullName.contains(".")){
+            String[] ksAndTableName = fullName.split("\\.");
+            return ksAndTableName[1];
+        }
+        return fullName;
     }
 
 }
