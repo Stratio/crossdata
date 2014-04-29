@@ -195,5 +195,14 @@ public class CreateTableStatementTest extends ParsingTest {
         testParseFails(inputText, "createTableWrongColumnDefinition");
     }
 
+    @Test
+    public void createTableOptions() {
+        //for(String o:new String[]{"CLUSTERING","EPHEMERAL"}){
+        for(String o:new String[]{"CLUSTERING"}){
+            String inputText = "create table key_space1.timeseries (event_type text, insertion_time timestamp, event blob,"
+                + " PRIMARY KEY (event_type, insertion_time)) WITH "+o+" ORDER BY (insertion_time DESC);";
+            testRegularStatement(inputText, "createTableOptions");
+        }
+    }
 
 }
