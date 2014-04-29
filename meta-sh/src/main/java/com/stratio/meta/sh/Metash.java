@@ -265,7 +265,6 @@ public class Metash {
                     sb = new StringBuilder();
                 }
             }
-
         } catch (IOException ex) {
             LOG.error("Cannot read from console.", ex);
         }

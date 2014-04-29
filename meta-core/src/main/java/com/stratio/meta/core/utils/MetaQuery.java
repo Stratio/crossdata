@@ -101,7 +101,8 @@ public class MetaQuery {
         return targetKeyspace;
     }
 
-    public void setTargetKeyspace(String targetKeyspace) {
+    public void setSessionKeyspace(String targetKeyspace) {
         this.targetKeyspace = targetKeyspace;
+        statement.setSessionKeyspace(targetKeyspace);
     }
 }

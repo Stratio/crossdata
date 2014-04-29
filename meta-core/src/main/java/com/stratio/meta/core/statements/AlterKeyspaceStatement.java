@@ -33,11 +33,6 @@ import java.util.Map;
 public class AlterKeyspaceStatement extends MetaStatement {
 
     /**
-     * The name of the target keyspace.
-     */
-    private String keyspace;
-
-    /**
      * The map of properties of the keyspace. The different options accepted by a keyspace
      * are determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
      */

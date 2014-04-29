@@ -36,10 +36,7 @@ public class Validator {
     public MetaQuery validateQuery(MetaQuery metaQuery) {
         //TODO: Implement metadata invalidation messages between servers.
         metadata.loadMetadata();
-        metaQuery.setResult(
-                metaQuery.getStatement()
-                        .validate(metadata, metaQuery.getTargetKeyspace())
-        );
+        metaQuery.setResult(metaQuery.getStatement().validate(metadata));
         if(!metaQuery.hasError()) {
             metaQuery.setStatus(QueryStatus.VALIDATED);
         }

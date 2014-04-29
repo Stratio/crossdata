@@ -57,17 +57,6 @@ public class InsertIntoStatement extends MetaStatement {
     public static final int TYPE_VALUES_CLAUSE = 2;
 
     /**
-     * Whether the keyspace has been specified in the Select statement or it should be taken from the
-     * environment.
-     */
-    private boolean keyspaceInc = false;
-
-    /**
-     * The keyspace specified in the select statement.
-     */
-    private String keyspace;
-
-    /**
      * The name of the target table.
      */
     private String tableName;
@@ -178,14 +167,11 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
-        Result result = validateKeyspaceAndTable(metadata, targetKeyspace, keyspaceInc, keyspace, tableName);
-
+    public Result validate(MetadataManager metadata) {
+        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
         if(!result.hasError()) {
-            String effectiveKeyspace = targetKeyspace;
-            if (keyspaceInc) {
-                effectiveKeyspace = keyspace;
-            }
+            String effectiveKeyspace = getEffectiveKeyspace();
+
             TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
 
             if(typeValues == TYPE_SELECT_CLAUSE){

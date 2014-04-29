@@ -32,16 +32,11 @@ import com.stratio.meta.core.utils.Tree;
 public class UseStatement extends MetaStatement {
 
     /**
-     * The name of the keyspace to be used.
-     */
-    private final String keyspaceName;
-
-    /**
      * Class constructor.
-     * @param keyspaceName The name of the target keyspace.
+     * @param keyspace The name of the target keyspace.
      */
-    public UseStatement(String keyspaceName) {
-        this.keyspaceName = keyspaceName;
+    public UseStatement(String keyspace) {
+        super.keyspace = keyspace;
         this.command = false;
     }
 
@@ -50,22 +45,22 @@ public class UseStatement extends MetaStatement {
      * @return The name.
      */
     public String getKeyspaceName() {
-        return keyspaceName;
+        return keyspace;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("USE ");
-        sb.append(keyspaceName);
+        sb.append(keyspace);
         return sb.toString();
     }
 
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata) {
         Result result = QueryResult.createSuccessQueryResult();
-        if(keyspaceName != null && keyspaceName.length() > 0){
-            if(!metadata.getKeyspacesNames().contains(keyspaceName)){
-                result= QueryResult.createFailQueryResult("Keyspace " + keyspaceName + " does not exists.");
+        if(keyspace != null && keyspace.length() > 0){
+            if(!metadata.getKeyspacesNames().contains(keyspace)){
+                result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " does not exists.");
             }
         }else{
             result= QueryResult.createFailQueryResult("Missing keyspace name.");

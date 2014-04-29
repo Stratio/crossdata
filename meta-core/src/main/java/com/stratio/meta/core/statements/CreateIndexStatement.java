@@ -47,17 +47,6 @@ import java.util.Map.Entry;
 public class CreateIndexStatement extends MetaStatement {
 
     /**
-     * Whether the keyspace has been specified in the Create index statement or it should be taken from the
-     * environment.
-     */
-    private boolean keyspaceInc = false;
-
-    /**
-     * The keyspace specified in the create index statement.
-     */
-    private String keyspace = null;
-
-    /**
      * The {@link com.stratio.meta.core.structures.IndexType} to be created.
      */
     private IndexType type = null;
@@ -314,11 +303,11 @@ public class CreateIndexStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata) {
 
         //Validate target table
-        Result result = validateKeyspaceAndTable(metadata, targetKeyspace, keyspaceInc, keyspace, tableName);
-        String effectiveKeyspace = getEffectiveKeyspace(targetKeyspace, keyspaceInc, keyspace);
+        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+        String effectiveKeyspace = getEffectiveKeyspace();
 
         TableMetadata tableMetadata = null;
         if(!result.hasError()) {

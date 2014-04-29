@@ -55,17 +55,6 @@ public class SelectStatement extends MetaStatement {
     private SelectionClause selectionClause = null;
 
     /**
-     * Whether the keyspace has been specified in the Select statement or it should be taken from the
-     * environment.
-     */
-    private boolean keyspaceInc = false;
-
-    /**
-     * The keyspace specified in the select statement.
-     */
-    private String keyspace = null;
-
-    /**
      * The name of the target table.
      */
     private final String tableName;
@@ -372,13 +361,13 @@ public class SelectStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata) {
         //Validate FROM keyspace
-        Result result = validateKeyspaceAndTable(metadata, targetKeyspace,
+        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace,
                 keyspaceInc, keyspace, tableName);
 
         if(!result.hasError() && joinInc){
-            result = validateKeyspaceAndTable(metadata, targetKeyspace,
+            result = validateKeyspaceAndTable(metadata, sessionKeyspace,
                     join.isKeyspaceInc(), join.getKeyspace(), join.getTablename());
 
         }
@@ -387,10 +376,13 @@ public class SelectStatement extends MetaStatement {
             result = validateOptions();
         }
 
-        String effectiveKs1 = getEffectiveKeyspace(targetKeyspace, keyspaceInc, keyspace);
+        String effectiveKs1 = getEffectiveKeyspace();
         String effectiveKs2 = null;
         if(joinInc){
-            effectiveKs2 = getEffectiveKeyspace(targetKeyspace, join.isKeyspaceInc(), join.getKeyspace());
+            SelectStatement secondSelect = new SelectStatement("");
+            secondSelect.setKeyspace(join.getKeyspace());
+            secondSelect.setSessionKeyspace(this.sessionKeyspace);
+            effectiveKs2 = secondSelect.getEffectiveKeyspace();
         }
 
         TableMetadata tableMetadataJoin = null;
@@ -1099,10 +1091,12 @@ public class SelectStatement extends MetaStatement {
     private Tree getJoinPlan(MetadataManager metadataManager, String targetKeyspace){
         Tree steps = new Tree();
         SelectStatement firstSelect = new SelectStatement(tableName);
-        firstSelect.setKeyspace(getEffectiveKeyspace(targetKeyspace, keyspaceInc, keyspace));
+        firstSelect.setSessionKeyspace(this.sessionKeyspace);
+        firstSelect.setKeyspace(getEffectiveKeyspace());
 
         SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
-        secondSelect.setKeyspace(getEffectiveKeyspace(targetKeyspace, join.isKeyspaceInc(), join.getKeyspace()));
+        secondSelect.setKeyspace(join.getKeyspace());
+        secondSelect.setSessionKeyspace(this.sessionKeyspace);
 
         SelectStatement joinSelect = new SelectStatement("");
 
@@ -1182,7 +1176,7 @@ public class SelectStatement extends MetaStatement {
             }
         }
 
-        String effectiveKeyspace = getEffectiveKeyspace(targetKeyspace, keyspaceInc, keyspace);
+        String effectiveKeyspace = getEffectiveKeyspace();
         TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
 
         // Get columns of the partition key

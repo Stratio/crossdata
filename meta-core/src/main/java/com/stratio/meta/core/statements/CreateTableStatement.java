@@ -39,16 +39,6 @@ import java.util.*;
  */
 public class CreateTableStatement extends MetaStatement{
 
-    /**
-     * Whether the keyspace has been specified in the Create Table statement or it should be taken from the
-     * environment.
-     */
-    private boolean keyspaceInc = false;
-
-    /**
-     * The keyspace specified in the create table statement.
-     */
-    private String keyspace;
 
     /**
      * The name of the target table.
@@ -242,8 +232,8 @@ public class CreateTableStatement extends MetaStatement{
 
     /** {@inheritDoc} */
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
-        Result result = validateKeyspaceAndTable(metadata, targetKeyspace);
+    public Result validate(MetadataManager metadata) {
+        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace);
         if(!result.hasError()){
             result = validateColumns();
         }
@@ -265,10 +255,7 @@ public class CreateTableStatement extends MetaStatement{
         Result result = QueryResult.createSuccessQueryResult();
         //Get the effective keyspace based on the user specification during the create
         //sentence, or taking the keyspace in use in the user session.
-        String effectiveKeyspace = targetKeyspace;
-        if(keyspaceInc){
-            effectiveKeyspace = keyspace;
-        }
+        String effectiveKeyspace = getEffectiveKeyspace();
 
         //Check that the keyspace exists, and that the table does not exits.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){

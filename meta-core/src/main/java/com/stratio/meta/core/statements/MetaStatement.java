@@ -49,6 +49,22 @@ public abstract class MetaStatement {
     protected boolean command;
 
     /**
+     * Whether the keyspace has been specified in the statement or it should be taken from the
+     * environment.
+     */
+    protected boolean keyspaceInc = false;
+
+    /**
+     * Keyspace specified from the statement
+     */
+    protected String keyspace = null;
+
+    /**
+     * The current keyspace in the user session
+     */
+    protected String sessionKeyspace = null;
+
+    /**
      * Default class constructor.
      */
     public MetaStatement() {
@@ -127,10 +143,9 @@ public abstract class MetaStatement {
      * or comparisons.
      * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
      *                 the required information.
-     * @param targetKeyspace The target keyspace where the query will be executed.
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    public Result validate(MetadataManager metadata, String targetKeyspace){
+    public Result validate(MetadataManager metadata){
         return QueryResult.createFailQueryResult("Statement not supported");
     }
 
@@ -170,10 +185,10 @@ public abstract class MetaStatement {
         return result;
     }
 
-    protected String getEffectiveKeyspace(String targetKeyspace, boolean keyspaceInc, String stmtKeyspace){
-        String effectiveKs = targetKeyspace;
+    protected String getEffectiveKeyspace(){
+        String effectiveKs = sessionKeyspace;
         if(keyspaceInc){
-            effectiveKs = stmtKeyspace;
+            effectiveKs = keyspace;
         }
         return effectiveKs;
     }
@@ -207,5 +222,9 @@ public abstract class MetaStatement {
      * @return A {@link com.stratio.meta.core.utils.Tree} with the execution plan.
      */
     public abstract Tree getPlan(MetadataManager metadataManager, String targetKeyspace);
-    
+
+    public void setSessionKeyspace(String targetKeyspace){
+        sessionKeyspace = targetKeyspace;
+    }
+
 }

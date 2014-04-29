@@ -27,20 +27,20 @@ class queryString {
     typeActor match {
       case 1=>
         val stmt = engine.getParser.parseStatement(msg)
-        stmt.setTargetKeyspace("ks_demo")
+        stmt.setSessionKeyspace("ks_demo")
         val stmt1=engine.getValidator.validateQuery(stmt)
         val stmt2=engine.getPlanner.planQuery(stmt1)
         actor.ask(stmt2)(5 second)
 
       case 2 =>
         val stmt = engine.getParser.parseStatement(msg)
-        stmt.setTargetKeyspace("ks_demo")
+        stmt.setSessionKeyspace("ks_demo")
         val stmt1=engine.getValidator.validateQuery(stmt)
         actor.ask(stmt1)(5 second)
 
       case 3 =>
         val stmt = engine.getParser.parseStatement(msg)
-        stmt.setTargetKeyspace("ks_demo")
+        stmt.setSessionKeyspace("ks_demo")
         actor.ask(stmt)(5 second)
 
       case 4 =>

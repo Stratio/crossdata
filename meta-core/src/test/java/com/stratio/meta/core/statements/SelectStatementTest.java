@@ -58,7 +58,8 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
     public MetaStatement testIndexStatement(String input, String expected, String keyspace, String methodName){
         MetaStatement stmt = _pt.testRegularStatement(input, methodName);
         //Required to cache the metadata manager.
-        stmt.validate(_metadataManager, keyspace);
+        stmt.setSessionKeyspace(keyspace);
+        stmt.validate(_metadataManager);
         assertEquals(stmt.getDriverStatement().toString(), expected, "Lucene query translation does not match - " + methodName);
         return stmt;
     }

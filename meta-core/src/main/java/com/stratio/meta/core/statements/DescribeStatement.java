@@ -42,11 +42,6 @@ public class DescribeStatement extends MetaStatement {
     private DescribeType type;
 
     /**
-     * The target keyspace.
-     */
-    private String keyspace;
-
-    /**
      * The target table.
      */
     private String tablename;
@@ -123,7 +118,7 @@ public class DescribeStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata) {
         //TODO: Validate DescribeStatement
         return QueryResult.createSuccessQueryResult();
     }
@@ -171,5 +166,5 @@ public class DescribeStatement extends MetaStatement {
         }        
         return result;
     }
-    
+
 }

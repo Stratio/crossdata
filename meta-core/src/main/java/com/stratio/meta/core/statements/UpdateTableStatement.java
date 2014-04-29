@@ -31,9 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 public class UpdateTableStatement extends MetaStatement {
-    
-    private boolean keyspaceInc = false;
-    private String keyspace;
+
     private String tableName;
     private boolean optsInc;
     private List<Option> options;

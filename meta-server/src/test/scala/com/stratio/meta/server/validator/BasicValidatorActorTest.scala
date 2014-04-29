@@ -47,7 +47,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
-      stmt.setTargetKeyspace("ks_demo1")
+      stmt.setSessionKeyspace("ks_demo1")
       validatorRefTest ! stmt
       expectMsg(engine.getValidator.validateQuery(stmt))
     }
@@ -57,7 +57,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
-      stmt.setTargetKeyspace("ks_demo1")
+      stmt.setSessionKeyspace("ks_demo1")
       stmt.setError()
       validatorRefTest ! stmt
       expectNoMsg()
@@ -68,7 +68,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
-      stmt.setTargetKeyspace("ks_demo1")
+      stmt.setSessionKeyspace("ks_demo1")
       stmt.setError()
       stmt.setErrorMessage("it is a test of error")
       var complete:Boolean=true

@@ -38,7 +38,9 @@ class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTrac
       log.debug("Init Parser Task")
       val timer=initTimer()
       val stmt = parser.parseStatement(statement)
-      stmt.setTargetKeyspace(keyspace)
+      if(!stmt.hasError){
+        stmt.setSessionKeyspace(keyspace)
+      }
       validator forward stmt
       finishTimer(timer)
       log.debug("Finish Parser Task")

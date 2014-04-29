@@ -52,17 +52,6 @@ public class DropIndexStatement extends MetaStatement {
     private String name = null;
 
     /**
-     * The keyspace specified in the drop index statement.
-     */
-    private String keyspace = null;
-
-    /**
-     * Whether the keyspace has been specified in the Drop index statement or it should be taken from the
-     * environment.
-     */
-    private boolean keyspaceInc = false;
-
-    /**
      * Target column associated with the index.
      */
     private ColumnMetadata targetColumn = null;
@@ -110,12 +99,12 @@ public class DropIndexStatement extends MetaStatement {
     }
 
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata) {
 
         Result result = null;
         //Get the effective keyspace based on the user specification during the create
         //sentence, or taking the keyspace in use in the user session.
-        String effectiveKeyspace = targetKeyspace;
+        String effectiveKeyspace = getEffectiveKeyspace();
         if(keyspaceInc){
             effectiveKeyspace = keyspace;
         }

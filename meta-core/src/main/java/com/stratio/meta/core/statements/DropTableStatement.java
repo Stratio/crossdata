@@ -34,17 +34,6 @@ import com.stratio.meta.core.utils.Tree;
 public class DropTableStatement extends MetaStatement {
 
     /**
-     * Whether the keyspace has been specified in the Select statement or it should be taken from the
-     * environment.
-     */
-    private boolean keyspaceInc = false;
-
-    /**
-     * The keyspace specified in the select statement.
-     */
-    private String keyspace;
-
-    /**
      * The name of the target table.
      */
     private String tableName;
@@ -108,10 +97,10 @@ public class DropTableStatement extends MetaStatement {
     }
 
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata) {
         Result result = QueryResult.createSuccessQueryResult();
 
-        String effectiveKeyspace = targetKeyspace;
+        String effectiveKeyspace = getEffectiveKeyspace();
         if(keyspaceInc){
             effectiveKeyspace = keyspace;
         }

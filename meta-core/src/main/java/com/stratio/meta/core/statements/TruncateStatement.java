@@ -33,9 +33,7 @@ import com.stratio.meta.core.utils.Tree;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
 
 public class TruncateStatement extends MetaStatement {
-    
-    private boolean keyspaceInc = false;
-    private String keyspace;
+
     private String ident;
     
     public TruncateStatement(String ident){
@@ -91,10 +89,10 @@ public class TruncateStatement extends MetaStatement {
     }
 
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata) {
         Result result = QueryResult.createSuccessQueryResult();
 
-        String effectiveKeyspace = targetKeyspace;
+        String effectiveKeyspace = getEffectiveKeyspace();
         if(keyspaceInc){
             effectiveKeyspace = keyspace;
         }

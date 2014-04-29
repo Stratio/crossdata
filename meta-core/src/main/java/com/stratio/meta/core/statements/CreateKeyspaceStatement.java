@@ -98,7 +98,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
     }
 
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata) {
         Result result = QueryResult.createSuccessQueryResult();
         if(name!= null && name.length() > 0) {
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(name);
