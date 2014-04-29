@@ -505,7 +505,7 @@ public class SelectStatement extends MetaStatement {
                 //Get the term and determine its type.
                 Term t = Term.class.cast(rc.getTerms().get(0));
                 result = validateWhereRelation(targetTable, column, t, rc.getOperator());
-                if(rc.getOperator().equalsIgnoreCase("match") && joinInc){
+                if("match".equalsIgnoreCase(rc.getOperator()) && joinInc){
                     result= QueryResult.createFailQueryResult("Select statements with 'Inner Join' don't support MATCH operator.");
                 }
             }else if(Relation.TYPE_IN == relation.getType()){
@@ -1229,7 +1229,7 @@ public class SelectStatement extends MetaStatement {
             if(luceneCols.containsAll(whereCols.keySet())){
                 boolean onlyMatchOperators = true;
                 for(String operator: whereCols.values()){
-                    if(!operator.equalsIgnoreCase("match")){
+                    if(!"match".equalsIgnoreCase(operator)){
                         onlyMatchOperators = false;
                         break;
                     }

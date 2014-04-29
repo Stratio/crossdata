@@ -338,17 +338,17 @@ public class CreateTableStatement extends MetaStatement{
             Property property = props.next();
             if(property.getType() == Property.TYPE_NAME_VALUE){
                 PropertyNameValue propertyNameValue = (PropertyNameValue) property;
-                if(propertyNameValue.getName().equalsIgnoreCase("ephemeral")
+                if("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
                         && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
                     // If property ephemeral is present, it must be a boolean type
                     result = QueryResult.createFailQueryResult("Property 'ephemeral' must be a boolean");
                     exit = true;
-                } else if(propertyNameValue.getName().equalsIgnoreCase("ephemeral_tuples")
+                } else if("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
                         && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
                     // If property ephemeral_tuples is present, it must be a integer type
                     result= QueryResult.createFailQueryResult("Property 'ephemeral' must be a boolean");
                     exit = true;
-                } else if(propertyNameValue.getName().equalsIgnoreCase("ephemeral_persist_on")
+                } else if("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
                         && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
                     // If property ephemeral_persist_on is present, it must be a string type
                     result= QueryResult.createFailQueryResult("Property 'ephemeral_persist_on' must be a string");

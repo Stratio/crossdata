@@ -288,7 +288,7 @@ public class InsertIntoStatement extends MetaStatement {
                     insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.getStringValue()));
                 } else if (valueCell.toString().contains("-")){
                     insertStmt = insertStmt.value(id, UUID.fromString(valueCell.getStringValue()));
-                } else if(valueCell.toString().equalsIgnoreCase("true") || valueCell.toString().equalsIgnoreCase("false")) {
+                } else if("true".equalsIgnoreCase(valueCell.toString()) || "false".equalsIgnoreCase(valueCell.toString())) {
                     insertStmt = insertStmt.value(id, Boolean.valueOf(valueCell.toString()));
                 } else {
                     insertStmt = insertStmt.value(id, valueCell.getStringValue());
@@ -306,9 +306,9 @@ public class InsertIntoStatement extends MetaStatement {
         if(this.optsInc){
             for(Option option: this.options){
                 if(option.getFixedOption() == Option.OPTION_PROPERTY){
-                    if(option.getNameProperty().equalsIgnoreCase("ttl")){
+                    if("ttl".equalsIgnoreCase(option.getNameProperty())){
                         optionsStmt = insertStmt.using(QueryBuilder.ttl(Integer.parseInt(option.getProperties().toString())));
-                    } else if(option.getNameProperty().equalsIgnoreCase("timestamp")){
+                    } else if("timestamp".equalsIgnoreCase(option.getNameProperty())){
                         optionsStmt = insertStmt.using(QueryBuilder.timestamp(Integer.parseInt(option.getProperties().toString())));
                     }else{
                         LOG.warn("Unsupported option: " + option.getNameProperty());

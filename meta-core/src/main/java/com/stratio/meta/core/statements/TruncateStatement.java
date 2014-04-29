@@ -73,10 +73,11 @@ public class TruncateStatement extends MetaStatement {
         if(ident.contains(".")){
             String[] ksAndTablename = ident.split("\\.");
             keyspace = ksAndTablename[0];
-            ident = ksAndTablename[1];
+            this.ident = ksAndTablename[1];
             keyspaceInc = true;
+        }else {
+            this.ident = ident;
         }
-        this.ident = ident;
     }        
 
     @Override

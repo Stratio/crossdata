@@ -100,9 +100,10 @@ public class DescribeStatement extends MetaStatement {
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
             keyspace = ksAndTableName[0];
-            tableName = ksAndTableName[1];
+            this.tablename = ksAndTableName[1];
+        }else {
+            this.tablename = tableName;
         }
-        this.tablename = tableName;
     }   
     
     @Override

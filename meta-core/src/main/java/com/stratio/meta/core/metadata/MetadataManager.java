@@ -98,7 +98,7 @@ public class MetadataManager {
     public TableMetadata getTableMetadata(String keyspace, String tablename){
         TableMetadata result = null;
         if(clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null){
-            tablename = tablename.toLowerCase();
+            //String targetTablename = tablename.toLowerCase();
             boolean found = false;
             //Iterate through the tables matching the name. We cannot use the getTable
             //method as it changes the names using the Metadata.handleId

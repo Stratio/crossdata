@@ -43,7 +43,7 @@ public class ErrorsHelper {
             sb.append(System.lineSeparator());
             sb.append(ae.toStringWithTokenTranslation()).append(System.lineSeparator());
             sb.append("\t").append(ParserUtils.getQueryWithSign(query, ae));
-            if(!query.equalsIgnoreCase("")){
+            if(!"".equalsIgnoreCase(query)){
                 sb.append(System.lineSeparator()).append("\t");
                 sb.append(ParserUtils.getSuggestion(query, ae));
             }

@@ -119,10 +119,11 @@ public class UpdateTableStatement extends MetaStatement {
         if(tableName.contains(".")){
             String[] ksAndTablename = tableName.split("\\.");
             keyspace = ksAndTablename[0];
-            tableName = ksAndTablename[1];
+            this.tableName = ksAndTablename[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        this.tableName = tableName;
     }
 
     public List<Option> getOptions() {

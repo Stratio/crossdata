@@ -63,10 +63,11 @@ public class DropTableStatement extends MetaStatement {
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
             keyspace = ksAndTableName[0];
-            tableName = ksAndTableName[1];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        this.tableName = tableName;
         this.ifExists = ifExists;
     }
 
@@ -86,10 +87,11 @@ public class DropTableStatement extends MetaStatement {
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
             keyspace = ksAndTableName[0];
-            tableName = ksAndTableName[1];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        this.tableName = tableName;
     }
 
     @Override
