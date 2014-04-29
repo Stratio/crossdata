@@ -166,6 +166,10 @@ public class Bridge {
         String operator = rel.getOperator();
         JavaRDD result = null;
         String cn = rel.getIdentifiers().get(0);
+        if(cn.contains(".")){
+            String[] ksAndTableName = cn.split("\\.");
+            cn = ksAndTableName[1];
+        }
         Object termValue = rel.getTerms().get(0).getTermValue();
 
         LOG.info("Rdd input size: " + rdd.count());
