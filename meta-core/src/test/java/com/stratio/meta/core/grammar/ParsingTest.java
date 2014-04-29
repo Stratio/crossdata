@@ -50,6 +50,25 @@ public class ParsingTest {
         return st;
     }
 
+    public MetaStatement testRegularStatement(String inputText, String expectedQuery, String methodName) {
+        MetaQuery mq = parser.parseStatement(inputText);
+        MetaStatement st = mq.getStatement();
+        assertNotNull(st, "Cannot parse "+methodName
+                + " parser error: " + mq.hasError()
+                + " -> " + mq.getResult().getErrorMessage());
+        assertFalse(mq.hasError(), "Parsing expecting '" + inputText
+                + "' from '" + st.toString() + "' returned: " + mq.getResult().getErrorMessage());
+
+        System.out.println("inputText:"+inputText);
+        System.out.println("st.toStrg:"+st.toString()+";");
+        //System.out.println("Expected: " + expectedQuery);
+        assertTrue(expectedQuery.equalsIgnoreCase(st.toString() + ";"),
+                "Cannot parse " + methodName
+                        + ": expecting '" + expectedQuery
+                        + "' from '" + st.toString()+";");
+        return st;
+    }
+
     public void testParseFails(String inputText, String methodName){
         MetaQuery mq = parser.parseStatement(inputText);
         assertNotNull(mq, "Parser should return a query");

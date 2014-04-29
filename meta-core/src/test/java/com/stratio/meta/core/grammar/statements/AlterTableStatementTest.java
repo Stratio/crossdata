@@ -51,7 +51,7 @@ public class AlterTableStatementTest extends ParsingTest{
     @Test
     public void alterWrongPropertyIdentifier(){
         String inputText = "ALTER TABLE tabla1 with 2property1=value1;";
-        testParseFails(inputText, "set_wrong_boolean");
+        testParseFails(inputText, "alterWrongPropertyIdentifier");
     }
 
 

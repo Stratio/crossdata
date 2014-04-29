@@ -61,7 +61,8 @@ public class CreateIndexStatementTest extends ParsingTest{
                 + " entry_id:{type:\"uuid\"}, latitude:{type:\"double\"},"
                 + " longitude:{type:\"double\"}, name:{type:\"text\"},"
                 + " address:{type:\"string\"}, tags:{type:\"boolean\"}}}\'};";
-        testRegularStatement(inputText, "createIndexLucene");
+        String expectedText = inputText.replace("INDEX demo_banks ON", "INDEX stratio_lucene_demo_banks ON");
+        testRegularStatement(inputText, expectedText, "createIndexLucene");
     }
 
     @Test

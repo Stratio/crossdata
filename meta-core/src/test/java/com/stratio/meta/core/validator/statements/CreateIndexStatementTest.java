@@ -73,19 +73,22 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
     @Test
     public void validateLuceneNamedOk() {
         String inputText = "CREATE LUCENE INDEX new_index ON demo.types (varchar_column);";
-        validateOk(inputText, "validateLuceneNamedOk");
+        String expectedText = inputText.replace("INDEX new_index ON", "INDEX stratio_lucene_new_index ON");
+        validateOk(inputText, expectedText, "validateLuceneNamedOk");
     }
 
     @Test
     public void validateLucene2columnsOk() {
         String inputText = "CREATE LUCENE INDEX new_index ON demo.types (varchar_column, boolean_column);";
-        validateOk(inputText, "validateLucene2columnsOk");
+        String expectedText = inputText.replace("INDEX new_index ON", "INDEX stratio_lucene_new_index ON");
+        validateOk(inputText, expectedText, "validateLucene2columnsOk");
     }
 
     @Test
     public void validateLuceneStratioNameFail() {
         String inputText = "CREATE LUCENE INDEX stratio_new_index ON demo.types (varchar_column, boolean_column);";
-        validateFail(inputText, "validateLuceneStratioNameFail");
+        String expectedText = inputText.replace("INDEX stratio_new_index ON", "INDEX stratio_lucene_stratio_new_index ON");
+        validateFail(inputText, expectedText, "validateLuceneStratioNameFail");
     }
 
     @Test
@@ -97,14 +100,16 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
     @Test
     public void validateLuceneStratioColumnFail() {
         String inputText = "CREATE LUCENE INDEX new_index ON demo.users (email, name, stratio_lucene_index_1);";
-        validateFail(inputText, "validateLuceneStratioColumnFail");
+        String expectedText = inputText.replace("INDEX new_index ON", "INDEX stratio_lucene_new_index ON");
+        validateFail(inputText, expectedText, "validateLuceneStratioColumnFail");
     }
 
     @Test
     public void validateLuceneWithOptionsFail() {
         String inputText = "CREATE LUCENE INDEX new_index ON demo.users (email, bool, age)"
                 + " WITH OPTIONS = {'refresh_seconds': '1'};";
-        validateFail(inputText, "validateLuceneWithOptionsFail");
+        String expectedText = inputText.replace("INDEX new_index ON", "INDEX stratio_lucene_new_index ON");
+        validateFail(inputText, expectedText, "validateLuceneWithOptionsFail");
     }
 
     @Test
@@ -112,7 +117,8 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
         String inputText = "CREATE LUCENE INDEX demo_banks ON demo.banks (lucene) "
                 + "USING org.apache.cassandra.db.index.stratio.RowIndex WITH OPTIONS = "
                 + "{schema: '{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\", fields: {day: {type: \"date\", pattern: \"yyyy-MM-dd\"}, key: {type:\"uuid\"}}}'};";
-        validateFail(inputText, "validateLuceneWithOptionsFullFail");
+        String expectedText = inputText.replace("INDEX demo_banks ON", "INDEX stratio_lucene_demo_banks ON");
+        validateFail(inputText, expectedText, "validateLuceneWithOptionsFullFail");
     }
     
 }
