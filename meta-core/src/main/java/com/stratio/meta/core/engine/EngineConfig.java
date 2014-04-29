@@ -74,6 +74,10 @@ public class EngineConfig {
         return cassandraHosts[rand.nextInt(cassandraHosts.length)];
     }
 
+    public void setJars(List<String> jars){
+        this.jars = jars;
+    }
+
 
     public List<String> getJars(){
         return jars;
