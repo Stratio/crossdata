@@ -38,7 +38,12 @@ public final class DeepUtils {
      */
     private static final Logger LOG = Logger.getLogger(DeepUtils.class);
 
-    private DeepUtils() {}
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private DeepUtils() {
+
+    }
 
     /**
      * Build ResultSet from list of Cells.
@@ -65,7 +70,7 @@ public final class DeepUtils {
         }
 
         StringBuilder logResult = new StringBuilder("Deep Result: ").append(rs.size());
-        if(rs.size()>0){
+        if(!rs.isEmpty()){
             logResult.append(" rows & ").append(rs.iterator().next().size()).append(" columns");
         }
         LOG.info(logResult);

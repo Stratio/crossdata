@@ -39,7 +39,13 @@ public class ParserUtils {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(ParserUtils.class);
-    
+
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private ParserUtils(){
+    }
+
     public static String stringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
         for(Object value: ids){

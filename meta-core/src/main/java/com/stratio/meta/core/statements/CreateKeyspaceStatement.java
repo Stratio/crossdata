@@ -109,7 +109,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
             result= QueryResult.createFailQueryResult("Empty keyspace name found.");
         }
 
-        if(properties.size() == 0 || !properties.containsKey("replication")){
+        if(properties.isEmpty() || !properties.containsKey("replication")){
             result= QueryResult.createFailQueryResult("Missing mandatory replication property.");
         }
 

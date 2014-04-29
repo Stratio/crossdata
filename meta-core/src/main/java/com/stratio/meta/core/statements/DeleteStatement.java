@@ -96,10 +96,11 @@ public class DeleteStatement extends MetaStatement {
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
             keyspace = ksAndTableName[0];
-            tableName = ksAndTableName[1];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        this.tableName = tableName;
     }
 
     /**
@@ -113,7 +114,7 @@ public class DeleteStatement extends MetaStatement {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("DELETE ");
-        if(targetColumns.size() > 0){
+        if(!targetColumns.isEmpty()){
             sb.append("(").append(ParserUtils.stringList(targetColumns, ", ")).append(") ");
         }
         sb.append("FROM ");
@@ -121,7 +122,7 @@ public class DeleteStatement extends MetaStatement {
             sb.append(keyspace).append(".");
         } 
         sb.append(tableName);
-        if(whereClauses.size() > 0){
+        if(!whereClauses.isEmpty()){
             sb.append(" WHERE ");
             sb.append(ParserUtils.stringList(whereClauses, " AND "));
         }

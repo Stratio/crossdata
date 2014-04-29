@@ -38,6 +38,13 @@ public class CassandraExecutor {
 
     private static final Logger LOG = Logger.getLogger(CassandraExecutor.class);
 
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private CassandraExecutor(){
+
+    }
+
     public static Result execute(MetaStep step, Session session){
         Result result;
         LOG.info("Executing step: " + step.toString());

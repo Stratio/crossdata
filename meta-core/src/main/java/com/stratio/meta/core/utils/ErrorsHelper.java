@@ -38,7 +38,7 @@ public class ErrorsHelper {
 
     public String toString(String query, MetaStatement stmt){        
         StringBuilder sb = new StringBuilder("\033[31mParser exception: \033[0m");
-        if(antlrErrors.size()>0){
+        if(!antlrErrors.isEmpty()){
             AntlrError ae = antlrErrors.get(0);
             sb.append(System.lineSeparator());
             sb.append(ae.toStringWithTokenTranslation()).append(System.lineSeparator());

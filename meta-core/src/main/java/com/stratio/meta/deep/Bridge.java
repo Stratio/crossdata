@@ -136,7 +136,6 @@ public class Bridge {
             return new CassandraResultSet(oneRow);
         }
 
-        SelectStatement ss = (SelectStatement) stmt;
         if(resultsFromChildren.isEmpty()){
             // LEAF
             return executeLeafNode(stmt, isRoot);

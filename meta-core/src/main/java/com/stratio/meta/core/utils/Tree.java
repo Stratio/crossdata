@@ -163,12 +163,16 @@ public class Tree {
         return sb.toString();
     }
 
-    public boolean isEmpty(){ return (node == null);}
+    public boolean isEmpty(){
+        return (node == null);
+    }
 
     public MetaStep getNode(){
         return node;
     }
 
-    public  List<Tree> getChildren(){ return children; }
+    public  List<Tree> getChildren(){
+        return children;
+    }
 
 }
