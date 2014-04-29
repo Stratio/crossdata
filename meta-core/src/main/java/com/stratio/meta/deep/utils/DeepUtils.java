@@ -52,16 +52,16 @@ public final class DeepUtils {
      */
     public static ResultSet buildResultSet(List<Cells> cells, List<String> selectedCols) {
         CassandraResultSet rs = new CassandraResultSet();
-        for(Cells deepRow: cells){
+        for (Cells deepRow : cells) {
             Row metaRow = new Row();
-            for(com.stratio.deep.entity.Cell deepCell: deepRow.getCells()){
-                if(deepCell.getCellName().toLowerCase().startsWith("stratio")){
+            for (com.stratio.deep.entity.Cell deepCell : deepRow.getCells()) {
+                if (deepCell.getCellName().toLowerCase().startsWith("stratio")) {
                     continue;
                 }
-                if(selectedCols.isEmpty()){
+                if (selectedCols.isEmpty()) {
                     Cell metaCell = new Cell(deepCell.getValueType(), deepCell.getCellValue());
                     metaRow.addCell(deepCell.getCellName(), metaCell);
-                } else if(selectedCols.contains(deepCell.getCellName())){
+                } else if (selectedCols.contains(deepCell.getCellName())) {
                     Cell metaCell = new Cell(deepCell.getValueType(), deepCell.getCellValue());
                     metaRow.addCell(deepCell.getCellName(), metaCell);
                 }
@@ -70,32 +70,34 @@ public final class DeepUtils {
         }
 
         StringBuilder logResult = new StringBuilder("Deep Result: ").append(rs.size());
-        if(!rs.isEmpty()){
+        if (!rs.isEmpty()) {
             logResult.append(" rows & ").append(rs.iterator().next().size()).append(" columns");
         }
         LOG.info(logResult);
 
         ////////////////////////////////////////////////////////////////////////////
-        StringBuilder sb = new StringBuilder(System.lineSeparator());
-        boolean firstRow = true;
-        for(Row row: rs.getRows()){
-            if(firstRow){
-                for(String colName: row.getCells().keySet()){
-                    sb.append(colName).append(" | ");
+        if(LOG.isDebugEnabled()){
+            StringBuilder sb = new StringBuilder(System.lineSeparator());
+            boolean firstRow = true;
+            for (Row row : rs.getRows()) {
+                if (firstRow) {
+                    for (String colName : row.getCells().keySet()) {
+                        sb.append(colName).append(" | ");
+                    }
+                    sb.append(System.lineSeparator());
+                    sb.append("---------------------------------------------------------------------");
+                    sb.append(System.lineSeparator());
+                }
+                firstRow = false;
+                Map<String, Cell> cols = row.getCells();
+                for(Map.Entry<String, Cell> entry : row.getCells().entrySet()){
+                    sb.append(String.valueOf(entry.getValue())).append(" - ");
                 }
                 sb.append(System.lineSeparator());
-                sb.append("---------------------------------------------------------------------");
-                sb.append(System.lineSeparator());
-            }
-            firstRow = false;
-            Map<String, Cell> cols = row.getCells();
-            for(String colName: cols.keySet()){
-                sb.append(String.valueOf(cols.get(colName).getValue())).append(" - ");
             }
             sb.append(System.lineSeparator());
+            LOG.debug(sb.toString());
         }
-        sb.append(System.lineSeparator());
-        LOG.info(sb.toString());
         /////////////////////////////////////////////////////////////////////////////
 
         return rs;

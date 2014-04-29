@@ -79,7 +79,7 @@ public class CreateTokensFile {
             bw.close();            
             LOG.info(outFile.getAbsolutePath() + " created");
         } catch (IOException ex) {
-            LOG.error(ex.getMessage());
+            LOG.error("IOException creating token file", ex);
         }
     }
     

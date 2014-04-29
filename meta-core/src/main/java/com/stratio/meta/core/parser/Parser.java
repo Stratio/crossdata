@@ -34,7 +34,7 @@ public class Parser {
     /**
      * Class logger.
      */
-    private final Logger LOG = Logger.getLogger(Parser.class);
+    private static final Logger LOG = Logger.getLogger(Parser.class);
     
     /**
      * Parse a input text and return the equivalent Statement.
