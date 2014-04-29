@@ -74,15 +74,22 @@ public class CreateIndexStatementTest extends ParsingTest{
     }
 
     @Test
-    public void createIndexWithOptions2() {
-        //for (String t: new String[]{ "CUSTOM", "DEFAULT", "LUCENE" }){
-        for (String t: new String[]{ "DEFAULT", "LUCENE" }){
-                String inputText = "CREATE " + t + " INDEX IF NOT EXISTS index1 "
+    public void createDefaultIndexWithOptions2() {
+                String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 "
                     + "ON table1 (field1, field2) USING com.company.Index.class "
                     + "WITH OPTIONS = {'key1': 'val1', 'key2': 'val2'};";
                 testRegularStatement(inputText, "createIndexWithOptions2");
-        }
     }
+
+    @Test
+    public void createLuceneIndexWithOptions2() {
+            String inputText = "CREATE LUCENE INDEX IF NOT EXISTS index1 "
+                    + "ON table1 (field1, field2) USING com.company.Index.class "
+                    + "WITH OPTIONS = {'key1': 'val1', 'key2': 'val2'};";
+            String expectedTest = inputText.replace("index1", "stratio_lucene_index1");
+            testRegularStatement(inputText, expectedTest, "createIndexWithOptions2");
+    }
+
 
     @Test
     public void createIndexWrongOptionAssignment(){
