@@ -65,21 +65,21 @@ public class UpdateTableStatementTest extends ParsingTest {
     }
 
 
-    //@Test
+    @Test
     public void updateWhereUsingAnd() {
         String inputText = "UPDATE table1 USING TTL = 400 AND TTL2 = 400 SET field1 = value1,"
                 + " field2 = value2 WHERE field3 = value3 AND field4 = value4;";
         testRegularStatement(inputText, "updateWhereUsingAnd");
     }
 
-    //@Test
+    @Test
     public void updateTablenameIfAnd() {
         String inputText = "UPDATE tablename SET ident1 = term1, ident2 = term2"
-                + " WHERE ident3 IN (term3, term4) IF field1 = 25 AND field2 = 26;";
+                + " WHERE ident3 IN (term3, term4) IF field3 = 26 AND field2 = 25;";
         testRegularStatement(inputText, "updateTablenameIfAnd");
 
         inputText = "UPDATE tablename USING prop1 = 342 SET ident1 = term1, ident2 = term2"
-                + " WHERE ident3 IN (term3, term4) IF field1 = 25 AND field2 = 26;";
+                + " WHERE ident3 IN (term3, term4) IF field3 = 26 AND field2 = 25;";
         testRegularStatement(inputText, "updateTablenameIfAnd");
     }
 
