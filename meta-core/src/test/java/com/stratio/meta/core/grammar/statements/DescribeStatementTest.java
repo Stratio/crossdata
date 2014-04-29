@@ -25,21 +25,21 @@ import org.testng.annotations.Test;
 public class DescribeStatementTest extends ParsingTest {
 
     @Test
-    public void describe_keyspace_basic() {
+    public void describeKeyspaceBasic() {
         String inputText = "DESCRIBE KEYSPACE keyspace1;";
-        testRegularStatement(inputText, "describe_keyspace_basic");
+        testRegularStatement(inputText, "describeKeyspaceBasic");
     }
 
     @Test
-    public void describe_table_basic() {
+    public void describeTableBasic() {
         String inputText = "DESCRIBE TABLE keyspace1.table1;";
-        testRegularStatement(inputText, "describe_table_basic");
+        testRegularStatement(inputText, "describeTableBasic");
     }
 
     @Test
-    public void describe_table_fail() {
+    public void describeTableFail() {
         String inputText = "DESCRIBE UNKNOWN keyspace1.table1;";
-        testParseFails(inputText, "describe_table_fail");
+        testParseFails(inputText, "describeTableFail");
     }
 
 }

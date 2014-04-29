@@ -85,39 +85,39 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
     /* Tests that concentrate on the generated Lucene syntax. */
 
     @Test
-    public void getLuceneWhereClause_1lucene_ok(){
+    public void getLuceneWhereClause1LuceneOk(){
         String inputText = "SELECT * FROM demo.users WHERE name MATCH 'name_1*';";
         String [] luceneClauses = {"type:\"wildcard\",field:\"name\",value:\"name_1*\""};
         String expectedText = getLuceneQuery(luceneClauses);
-        testGetLuceneWhereClause(inputText, expectedText, "demo", "users", "getLuceneWhereClause_1lucene_ok");
+        testGetLuceneWhereClause(inputText, expectedText, "demo", "users", "getLuceneWhereClause1LuceneOk");
     }
 
     /* Tests with complete queries. */
 
     @Test
-    public void translateToCQL_1lucene_ok(){
+    public void translateToCQL1LuceneOk(){
         String inputText = "SELECT * FROM demo.users WHERE name MATCH 'name_1*';";
         String [] luceneClauses = {"type:\"wildcard\",field:\"name\",value:\"name_1*\""};
         String expectedText = "SELECT * FROM demo.users WHERE stratio_lucene_index_1='" + getLuceneQuery(luceneClauses)+ "';";
-        testIndexStatement(inputText, expectedText, "demo", "getLuceneClause_1lucene_ok");
+        testIndexStatement(inputText, expectedText, "demo", "translateToCQL1LuceneOk");
     }
 
     @Test
-    public void translateToCQL_1lucene_1c_ok(){
+    public void translateToCQL1Lucene1cOk(){
         String inputText = "SELECT * FROM demo.users WHERE name MATCH 'name_1*' AND age > 20;";
         String [] luceneClauses = {"type:\"wildcard\",field:\"name\",value:\"name_1*\""};
         String expectedText = "SELECT * FROM demo.users WHERE stratio_lucene_index_1='" + getLuceneQuery(luceneClauses)+ "' AND age>20;";
-        testIndexStatement(inputText, expectedText, "demo", "getLuceneClause_1lucene_1c_ok");
+        testIndexStatement(inputText, expectedText, "demo", "translateToCQL1Lucene1cOk");
     }
 
     @Test
-    public void translateToCQL_2lucene_ok(){
+    public void translateToCQL2LuceneOk(){
         String inputText = "SELECT * FROM demo.users WHERE name MATCH 'name_*' AND name MATCH 'name_1*';";
         String [] luceneClauses = {
                 "type:\"wildcard\",field:\"name\",value:\"name_*\"",
                 "type:\"wildcard\",field:\"name\",value:\"name_1*\""};
         String expectedText = "SELECT * FROM demo.users WHERE stratio_lucene_index_1='" + getLuceneQuery(luceneClauses)+ "';";
-        testIndexStatement(inputText, expectedText, "demo", "getLuceneClause_2lucene_ok");
+        testIndexStatement(inputText, expectedText, "demo", "translateToCQL2LuceneOk");
     }
 
     @Test

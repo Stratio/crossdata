@@ -28,39 +28,39 @@ public class DeleteStatementTest extends ParsingTest {
     //FROM <tablename>
     //WHERE <where-clause>
     @Test
-    public void delete_where() {
+    public void deleteWhere() {
         String inputText = "DELETE FROM table1 WHERE field1 = value1;";
-        testRegularStatement(inputText, "delete_where");
+        testRegularStatement(inputText, "deleteWhere");
     }
 
     @Test
-    public void delete_selection() {
+    public void deleteSelection() {
         String inputText = "DELETE (col1, col2) FROM table1 WHERE field1 = value1;";
-        testRegularStatement(inputText, "delete_selection");
+        testRegularStatement(inputText, "deleteSelection");
     }
 
     @Test
-    public void delete_full() {
+    public void deleteFull() {
         String inputText = "DELETE (col1, col2) FROM table1 WHERE field1 = value1 AND field2 = value2;";
-        testRegularStatement(inputText, "delete_full");
+        testRegularStatement(inputText, "deleteFull");
     }
 
     @Test
-    public void delete_tokenName_ok() {
+    public void deleteTokenNameOk() {
         String inputText = "DELETE (lucene, col2) FROM table1 WHERE field1 = value1 AND field2 = value2;";
-        testRegularStatement(inputText, "delete_tokenName_ok");
+        testRegularStatement(inputText, "deleteTokenNameOk");
     }
 
     @Test
-    public void delete_invalidColumnName_fail() {
+    public void deleteInvalidColumnNameFail() {
         String inputText = "DELETE (123col, col2) FROM table1 WHERE field1 = value1 AND field2 = value2;";
-        testRecoverableError(inputText, "delete_invalidColumnName_fail");
+        testRecoverableError(inputText, "deleteInvalidColumnNameFail");
     }
 
     @Test
-    public void delete_wrong_property_assignment(){
+    public void deleteWrongPropertyAssignment(){
         String inputText = "DELETE (col1 AND col2) FROM table1 WHERE field1: value1;";
-        testRecoverableError(inputText, "delete_wrong_property_assignment");
+        testRecoverableError(inputText, "deleteWrongPropertyAssignment");
     }
 
 

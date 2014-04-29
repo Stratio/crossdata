@@ -84,7 +84,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
   }
 
 
-  def createLuceneIndex_ok(iteration : Int) = {
+  def createLuceneIndexOk(iteration : Int) = {
     val createQuery = "CREATE LUCENE INDEX ON demo_server.users_info(info);"
     val selectQuery = "SELECT * FROM demo_server.users_info WHERE info MATCH 'In*';"
     val expectedTuples = 10;
@@ -106,7 +106,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
   }
 
   test ("Create Lucene index ok"){
-    createLuceneIndex_ok(0)
+    createLuceneIndexOk(0)
   }
 
 /*

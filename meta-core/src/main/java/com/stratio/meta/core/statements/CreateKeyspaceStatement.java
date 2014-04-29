@@ -64,8 +64,8 @@ public class CreateKeyspaceStatement extends MetaStatement {
         this.command = false;
         this.ifNotExists = ifNotExists;
         this.properties = new HashMap<>();
-        for(String key: properties.keySet()){
-            this.properties.put(key.toLowerCase(), properties.get(key));
+        for(Map.Entry<String, ValueProperty> entry : properties.entrySet()){
+            this.properties.put(entry.getKey().toLowerCase(), entry.getValue());
         }
     }
 

@@ -157,7 +157,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
     }
 
     @Test
-    public void getTableIndex_notFound(){
+    public void getTableIndexNotFound(){
         String keyspace = "demo";
         String table = "users_info";
         TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);
@@ -178,7 +178,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
     }
 
     @Test
-    public void getLuceneIndex_notFound(){
+    public void getLuceneIndexNotFound(){
         String keyspace = "demo";
         String table = "users_info";
         TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);

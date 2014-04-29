@@ -49,7 +49,7 @@ public class Bridge {
     private static final Logger LOG = Logger.getLogger(Bridge.class);
     public static final int DEFAULT_RESULT_SIZE = 100000;
 
-    private static DeepSparkContext deepContext;
+    private DeepSparkContext deepContext;
     private Session session;
     private EngineConfig engineConfig;
 
