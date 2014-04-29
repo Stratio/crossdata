@@ -70,7 +70,7 @@ public class CreateKeyspaceStatementTest extends ParsingTest {
         String inputText = "CREATE KEYSPACE key_space1 WITH replication = {class: SimpleStrategy, replication_factor: 1}"
                 + " AND durable_writes = false;";
         MetaStatement st = parser.parseStatement(inputText).getStatement();
-        assertNotNull(st, "Cannot parse createKeyspace_basicOptions");
+        assertNotNull(st, "Cannot parse createKeyspaceBasicOptions");
 
         boolean originalOK = false;
         boolean alternative1 = false;
@@ -114,7 +114,7 @@ public class CreateKeyspaceStatementTest extends ParsingTest {
     @Test
     public void createKeyspaceWrongIdentifier(){
         String inputText = "CREATE KEYSPACE name.key_space1 WITH replication = replicationLevel;";
-        testParseFails(inputText, "create_keyspace_wrong_identifier");
+        testParseFails(inputText, "createKeyspaceWrongIdentifier");
     }
 
 

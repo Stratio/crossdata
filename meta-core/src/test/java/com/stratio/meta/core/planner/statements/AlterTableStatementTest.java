@@ -34,7 +34,6 @@ public class AlterTableStatementTest extends BasicPlannerTest {
     public void testPlan(){
         String inputText = "ALTER TABLE table1 ADD column1 INT;";
         stmt = new AlterTableStatement("table1", "column1", "int", new HashMap(), 1);
-        Tree tree = stmt.getPlan(_metadataManager,"demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+        validateCassandraPath();
     }
 }

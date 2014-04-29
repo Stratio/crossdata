@@ -24,9 +24,6 @@ import org.testng.annotations.Test;
 
 public class DeleteStatementTest extends ParsingTest {
 
-    //DELETE ( <selection> ( ',' <selection> )* )?
-    //FROM <tablename>
-    //WHERE <where-clause>
     @Test
     public void deleteWhere() {
         String inputText = "DELETE FROM table1 WHERE field1 = value1;";

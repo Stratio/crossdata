@@ -75,10 +75,13 @@ public class CreateIndexStatementTest extends ParsingTest{
 
     @Test
     public void createIndexWithOptions2() {
-        String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 "
-                + "ON table1 (field1, field2) USING com.company.Index.class "
-                + "WITH OPTIONS = {'key1': 'val1', 'key2': 'val2'};";
-        testRegularStatement(inputText, "createIndexWithOptions2");
+        //for (String t: new String[]{ "CUSTOM", "DEFAULT", "LUCENE" }){
+        for (String t: new String[]{ "DEFAULT", "LUCENE" }){
+                String inputText = "CREATE " + t + " INDEX IF NOT EXISTS index1 "
+                    + "ON table1 (field1, field2) USING com.company.Index.class "
+                    + "WITH OPTIONS = {'key1': 'val1', 'key2': 'val2'};";
+                testRegularStatement(inputText, "createIndexWithOptions2");
+        }
     }
 
     @Test

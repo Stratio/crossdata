@@ -25,62 +25,62 @@ import org.testng.annotations.Test;
 public class UpdateTableStatementTest extends ParsingTest {
 
     @Test
-    public void update_basic() {
+    public void updateBasic() {
         String inputText = "UPDATE table1 SET field1 = value1 WHERE field3 = value3;";
-        testRegularStatement(inputText, "update_basic");
+        testRegularStatement(inputText, "updateBasic");
     }
 
     @Test
-    public void update_tablename() {
+    public void updateTablename() {
         String inputText = "UPDATE tablename USING prop1 = 342 SET ident1 = term1, ident2 = term2"
                 + " WHERE ident3 IN (term3, term4) IF field1 = 25;";
-        testRegularStatement(inputText, "update_tablename");
+        testRegularStatement(inputText, "updateTablename");
     }
 
     @Test
-    public void update_where() {
+    public void updateWhere() {
         String inputText = "UPDATE table1 USING TTL = 400 SET field1 = value1,"
                 + " field2 = value2 WHERE field3 = value3 AND field4 = value4;";
-        testRegularStatement(inputText, "update_where");
+        testRegularStatement(inputText, "updateWhere");
     }
 
     @Test
-    public void update_full() {
+    public void updateFull() {
         String inputText = "UPDATE table1 USING TTL = 400 SET field1 = value1,"
                 + " field2 = value2 WHERE field3 = value3 AND field4 = value4"
                 + " IF field5 = transaction_value5;";
-        testRegularStatement(inputText, "update_full");
+        testRegularStatement(inputText, "updateFull");
     }
 
     @Test
-    public void update_for_invalid_assignment(){
+    public void updateForInvalidAssignment(){
         String inputText = "UPDATE table1 SET field1 = value1 WHERE field3: value3;";
-        testRecoverableError(inputText, "update_for_invalid_assignment");
+        testRecoverableError(inputText, "updateForInvalidAssignment");
     }
 
     @Test
-    public void update_wrong_spelling(){
+    public void updateWrongSpelling(){
         String inputText = "UPDDATE table1 SET field1 = value1 WHERE field3: value3;";
-        testParseFails(inputText, "update_wrong_spelling");
+        testParseFails(inputText, "updateWrongSpelling");
     }
 
 
     //@Test
-    public void update_where_using_and() {
-        String inputText = "UPDATE table1 USING TTL = 400 TTL2 = 400 SET field1 = value1,"
+    public void updateWhereUsingAnd() {
+        String inputText = "UPDATE table1 USING TTL = 400 AND TTL2 = 400 SET field1 = value1,"
                 + " field2 = value2 WHERE field3 = value3 AND field4 = value4;";
-        testRegularStatement(inputText, "update_where_using_and");
+        testRegularStatement(inputText, "updateWhereUsingAnd");
     }
 
     //@Test
-    public void update_tablename_if_and() {
+    public void updateTablenameIfAnd() {
         String inputText = "UPDATE tablename SET ident1 = term1, ident2 = term2"
                 + " WHERE ident3 IN (term3, term4) IF field1 = 25 AND field2 = 26;";
-        testRegularStatement(inputText, "update_tablename_if_and");
+        testRegularStatement(inputText, "updateTablenameIfAnd");
 
         inputText = "UPDATE tablename USING prop1 = 342 SET ident1 = term1, ident2 = term2"
                 + " WHERE ident3 IN (term3, term4) IF field1 = 25 AND field2 = 26;";
-        testRegularStatement(inputText, "update_tablename_if_and");
+        testRegularStatement(inputText, "updateTablenameIfAnd");
     }
 
 }

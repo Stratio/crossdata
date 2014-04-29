@@ -23,6 +23,7 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.BeforeClass;
 
@@ -42,15 +43,18 @@ public class BasicPlannerTest extends BasicCoreCassandraTest{
         _metadataManager.loadMetadata();
     }
 
-    public void validateOk(String inputText, String methodName){
-        stmt.getPlan(_metadataManager,"demo");
-        Result result = stmt.validate(_metadataManager, "");
-        assertNotNull(result, "Sentence validation not supported - " + methodName);
-        assertFalse(result.hasError(), "Cannot validate sentence - " + methodName + ": " + result.getErrorMessage());
+    public void validateCassandraPath(){
+        Tree tree = stmt.getPlan(_metadataManager,"demo");
+        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
     }
 
-    public void validateFail(String inputText, String methodName){
+    public void validateDeepPath(){
         Tree tree = stmt.getPlan(_metadataManager,"demo");
-        assertTrue(tree.isEmpty(), "Sentence planification not supported - " + methodName);
+        assertTrue(tree.getNode().getPath().equals(MetaPath.DEEP));
+    }
+
+    public void validateNotSupported(){
+        Tree tree = stmt.getPlan(_metadataManager,"demo");
+        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
     }
 }

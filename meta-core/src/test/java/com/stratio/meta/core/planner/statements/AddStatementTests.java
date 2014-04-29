@@ -32,7 +32,6 @@ public class AddStatementTests extends BasicPlannerTest {
     public void planificationNotSupported(){
         String inputText = "ADD \"jar_name-v1.0.jar\";";
         stmt = new AddStatement("jar_name-v1.0.jar");
-        Tree tree = stmt.getPlan(_metadataManager,"demo");
-        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
+        validateNotSupported();
     }
 }

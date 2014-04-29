@@ -85,6 +85,7 @@ public class Bridge {
                 List<Relation> where = ss.getWhere();
                 for(Relation rel : where){
                     rdd = doWhere(rdd, rel);
+                    System.out.println("TRACE(After "+rel.toString()+"): "+rdd.count());
                 }
             }
 

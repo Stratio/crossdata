@@ -31,9 +31,9 @@ public class StopProcessStatementTest extends ParsingTest {
     }
 
     @Test
-    public void stop_wrong_process_identifier(){
+    public void stopWrongProcessIdentifier(){
         String inputText = "STOP process kstest.process1;";
-        testParseFails(inputText, "stop_wrong_process_identifier");
+        testParseFails(inputText, "stopWrongProcessIdentifier");
     }
 
 }

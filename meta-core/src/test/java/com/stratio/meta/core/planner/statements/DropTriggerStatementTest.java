@@ -32,7 +32,6 @@ public class DropTriggerStatementTest  extends BasicPlannerTest {
     public void planificationNotSupported(){
         String inputText = "DROP TRIGGER trigger1 ON table1;";
         stmt = new DropTriggerStatement("trigger1", "table1");
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
+        validateNotSupported();
     }
 }

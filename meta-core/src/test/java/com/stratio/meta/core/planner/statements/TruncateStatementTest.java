@@ -33,7 +33,6 @@ public class TruncateStatementTest  extends BasicPlannerTest {
     public void testPlan(){
         String inputText = "TRUNCATE demo.users;";
         stmt = new TruncateStatement("demo.users");
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+        validateCassandraPath();
     }
 }

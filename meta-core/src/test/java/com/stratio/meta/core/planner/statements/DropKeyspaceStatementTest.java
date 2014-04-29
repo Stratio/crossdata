@@ -33,7 +33,6 @@ public class DropKeyspaceStatementTest  extends BasicPlannerTest {
     public void testPlan(){
         String inputText = "DROP KEYSPACE demo;";
         stmt = new DropKeyspaceStatement("demo", false);
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+        validateCassandraPath();
     }
 }

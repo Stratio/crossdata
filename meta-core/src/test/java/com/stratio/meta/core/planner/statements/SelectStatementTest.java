@@ -44,7 +44,8 @@ public class SelectStatementTest extends BasicPlannerTest {
         List<Relation> whereClause = Arrays.asList(relation);
         ((SelectStatement)stmt).setWhere(whereClause);
         Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+        assertTrue(tree.getNode().getPath().equals(MetaPath.DEEP));
+        validateDeepPath();
     }
 
     @Test
@@ -57,6 +58,7 @@ public class SelectStatementTest extends BasicPlannerTest {
         ((SelectStatement)stmt).setWhere(whereClause);
         Tree tree = stmt.getPlan(_metadataManager, "demo");
         assertTrue(tree.getNode().getPath().equals(MetaPath.DEEP));
+        validateDeepPath();
     }
 
     @Test
@@ -72,8 +74,8 @@ public class SelectStatementTest extends BasicPlannerTest {
         fields.put("users.name", "users_info.link_name");
         InnerJoin join = new InnerJoin("demo.users_info", fields);
         ((SelectStatement)stmt).setJoin(join);
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.DEEP));
+        validateDeepPath();
+
     }
 
     @Test
@@ -95,7 +97,6 @@ public class SelectStatementTest extends BasicPlannerTest {
         Relation relation = new RelationCompare("users.name", "=", new StringTerm("name_3"));
         clause.add(relation);
         ((SelectStatement)stmt).setWhere(clause);
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.DEEP));
+        validateDeepPath();
     }
 }

@@ -40,8 +40,7 @@ public class CreateIndexStatementTest extends BasicPlannerTest {
         ((CreateIndexStatement)stmt).setTableName("demo.users");
         ((CreateIndexStatement)stmt).addColumn("email");
         ((CreateIndexStatement)stmt).setCreateIndex(true);
-        Tree tree = stmt.getPlan(_metadataManager,"demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+        validateCassandraPath();
     }
 
     @Test

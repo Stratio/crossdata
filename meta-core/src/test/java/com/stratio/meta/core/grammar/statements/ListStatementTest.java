@@ -25,39 +25,39 @@ import org.testng.annotations.Test;
 public class ListStatementTest extends ParsingTest {
 
     @Test
-    public void list_process() {
+    public void listProcess() {
         String inputText = "LIST PROCESS;";
-        testRegularStatement(inputText, "list_process");
+        testRegularStatement(inputText, "listProcess");
     }
 
     @Test
-    public void list_process_lowercase() {
+    public void listProcessLowercase() {
         String inputText = "LIST process;";
-        testRegularStatement(inputText, "list_process_lowercase");
+        testRegularStatement(inputText, "listProcessLowercase");
     }
 
     @Test
-    public void list_udf() {
+    public void listUdf() {
         String inputText = "LIST UDF;";
-        testRegularStatement(inputText, "list_udf");
+        testRegularStatement(inputText, "listUdf");
     }
 
     @Test
-    public void list_trigger() {
+    public void listTrigger() {
         String inputText = "LIST TRIGGER;";
-        testRegularStatement(inputText, "list_trigger");
+        testRegularStatement(inputText, "listTrigger");
     }
 
     @Test
-    public void list_reserved_word_use(){
+    public void listReservedWordUse(){
         String inputText = "LIST PROCESS LAST;";
-        testParseFails(inputText, "list_reserved_word_use");
+        testParseFails(inputText, "listReservedWordUse");
     }
 
     @Test
-    public void list_unknown_fail(){
+    public void listUnknownFail(){
         String inputText = "LIST UNKNOWN;";
-        testParseFails(inputText, "list_reserved_word_use");
+        testParseFails(inputText, "listUnknownFail");
     }
 
 }

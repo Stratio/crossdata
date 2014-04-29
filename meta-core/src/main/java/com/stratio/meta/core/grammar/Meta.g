@@ -328,7 +328,7 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
         Map<String, Term> conditions = new HashMap<>();
     }:
     T_UPDATE tablename=getTableID
-    (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (optN=getOption {options.add(optN);})*)?
+    (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (T_AND optN=getOption {options.add(optN);})*)?
     T_SET assig1=getAssignment {assignments.add(assig1);} (T_COMMA assigN=getAssignment {assignments.add(assigN);})*
     T_WHERE rel1=getRelation {whereclauses.add(rel1);} (T_AND relN=getRelation {whereclauses.add(relN);})*
     (T_IF id1=T_IDENT T_EQUAL term1=getTerm {condsInc = true; conditions.put($id1.text, term1);}

@@ -24,16 +24,51 @@ import org.testng.annotations.Test;
 
 public class SetOptionsStatementTest extends ParsingTest {
 
+
     @Test
-    public void set_basic() {
+    public void setBasic() {
         String inputText = "SET OPTIONS ANALYTICS=true AND CONSISTENCY=LOCAL_ONE;";
-        testRegularStatement(inputText, "set_basic");
+        testRegularStatement(inputText, "setBasic");
     }
 
     @Test
-    public void set_wrong_boolean(){
+    public void setWrongBoolean(){
         String inputText = "SET OPTIONS ANALYTICS=5;";
-        testParseFails(inputText, "set_wrong_boolean");
+        testParseFails(inputText, "setWrongBoolean");
     }
+
+    @Test
+    public void setBasicConsistency1() {
+        String inputText = "SET OPTIONS CONSISTENCY=EACH_QUORUM;";
+        testRegularStatement(inputText, "setBasicConsistency1");
+    }
+
+    @Test
+    public void setAllConsistencies() {
+        for (String consistency: new String[]{"ALL", "ANY", "QUORUM", "ONE", "TWO", "THREE", "EACH_QUORUM", "LOCAL_ONE", "LOCAL_QUORUM"}){
+            String inputText = "SET OPTIONS ANALYTICS=true AND CONSISTENCY="+consistency+";";
+            testRegularStatement(inputText, "setAllConsistencies");
+        }
+    }
+
+    @Test
+    public void setAllConsistenciesWithoutAnalytics() {
+        for (String consistency: new String[]{"ALL", "ANY", "QUORUM", "ONE", "TWO", "THREE", "EACH_QUORUM", "LOCAL_ONE", "LOCAL_QUORUM"}){
+            String inputText = "SET OPTIONS CONSISTENCY="+consistency+";";
+            testRegularStatement(inputText, "setAllConsistenciesWithoutAnalytics");
+        }
+    }
+
+    @Test
+    public void setAllConsistenciesWithAnalytics() {
+        for (String consistency: new String[]{"ALL", "ANY", "QUORUM", "ONE", "TWO", "THREE", "EACH_QUORUM", "LOCAL_ONE", "LOCAL_QUORUM"}){
+            for (String trueorfalse: new String[]{"true", "false"}){
+                //String inputText = "SET OPTIONS CONSISTENCY="+consistency+" AND ANALYTICS="+trueorfalse+";";
+                String inputText = "SET OPTIONS ANALYTICS="+trueorfalse+" AND CONSISTENCY="+consistency+";";
+                testRegularStatement(inputText, "setAllConsistenciesWithAnalytics");
+            }
+        }
+    }
+
 
 }

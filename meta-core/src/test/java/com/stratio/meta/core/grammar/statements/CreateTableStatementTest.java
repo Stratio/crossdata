@@ -84,7 +84,7 @@ public class CreateTableStatementTest extends ParsingTest {
                 + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
                 + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
         MetaStatement st = parser.parseStatement(inputText).getStatement();
-        assertNotNull(st, "Cannot parse createTable_with_many_properties");
+        assertNotNull(st, "Cannot parse createTableWithManyProperties");
 
         boolean originalOK = false;
         boolean alternative1 = false;
@@ -118,7 +118,7 @@ public class CreateTableStatementTest extends ParsingTest {
         }
 
         assertTrue((originalOK || alternative1 || alternative2 || alternative3),
-                "Cannot parse createTable_with_many_properties");
+                "Cannot parse createTableWithManyProperties");
     }
 
     @Test
@@ -145,7 +145,7 @@ public class CreateTableStatementTest extends ParsingTest {
         MetaQuery mq = parser.parseStatement(inputText);
         MetaStatement st = mq.getStatement();
 
-        assertNotNull(st, "Statement should not be null createTable_with_properties");
+        assertNotNull(st, "Statement should not be null createTableWithProperties");
 
         boolean originalOK = false;
         boolean alternative1 = false;
@@ -179,7 +179,7 @@ public class CreateTableStatementTest extends ParsingTest {
         }
 
         assertTrue((originalOK || alternative1 || alternative2 || alternative3),
-                "Cannot parse createTable_with_properties");
+                "Cannot parse createTableWithProperties");
     }
 
     @Test

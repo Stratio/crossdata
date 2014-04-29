@@ -40,7 +40,6 @@ public class DeleteStatementTest  extends BasicPlannerTest {
         ((DeleteStatement)stmt).setTableName("demo.users");
         Relation relation = new RelationCompare("name", "=", new StringTerm("name_0"));
         ((DeleteStatement)stmt).addRelation(relation);
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+        validateCassandraPath();
     }
 }

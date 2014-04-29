@@ -38,7 +38,10 @@ public class RelationCompare extends Relation {
     }
     
     public RelationCompare(String identifier, String operator, Term term) {
-        this(identifier, operator);        
+        this(identifier, operator);
+        if(term instanceof StringTerm){
+            ((StringTerm) term).setTerm(term.getStringValue().toLowerCase(), false);
+        }
         this.terms.add(term);
     }
 

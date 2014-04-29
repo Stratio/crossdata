@@ -35,7 +35,6 @@ public class SetOptionsStatementTest  extends BasicPlannerTest {
     public void planificationNotSupported(){
         String inputText = "SET OPTIONS ANALYTICS=true AND CONSISTENCY=LOCAL_ONE;";
         stmt = new SetOptionsStatement(true, Consistency.LOCAL_ONE, Arrays.asList(Boolean.TRUE));
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
+        validateNotSupported();
     }
 }

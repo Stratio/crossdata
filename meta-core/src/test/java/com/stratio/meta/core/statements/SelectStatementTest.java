@@ -122,7 +122,6 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
 
     @Test
     public void processLuceneQueryType(){
-
         String inputText = "SELECT * FROM demo.users WHERE name MATCH 'name_1*' AND age > 20;";
         String methodName = "processLuceneQueryType";
         MetaQuery mq = parser.parseStatement(inputText);

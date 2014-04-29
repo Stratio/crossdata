@@ -34,7 +34,6 @@ public class ParsingTest {
 
     protected final Parser parser = new Parser();
 
-
     public MetaStatement testRegularStatement(String inputText, String methodName) {
         MetaQuery mq = parser.parseStatement(inputText);
         MetaStatement st = mq.getStatement();
@@ -44,13 +43,10 @@ public class ParsingTest {
         assertFalse(mq.hasError(), "Parsing expecting '" + inputText
                 + "' from '" + st.toString() + "' returned: " + mq.getResult().getErrorMessage());
         
-        //System.out.println("inputText:"+inputText);
-        //System.out.println("st.toStrg:"+st.toString()+";");
-        
         assertTrue(inputText.equalsIgnoreCase(st.toString()+";"),
                 "Cannot parse " + methodName
-                        + ": expecting '" + inputText
-                        + "' from '" + st.toString()+";'" );
+                        + ": \nexpecting\n'" + inputText
+                        + "' \nfrom\n'" + st.toString()+";'" );
         return st;
     }
 
@@ -86,7 +82,7 @@ public class ParsingTest {
     }
 
     @Test
-    public void unknown_first_word_of_statement(){
+    public void unknownFirstWordOfStatement(){
         String inputText = "WINDOWS GO HOME;";
         testParseFails(inputText, "unknown_first_word_of_statement");
     }
