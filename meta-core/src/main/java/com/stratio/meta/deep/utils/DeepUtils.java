@@ -29,6 +29,7 @@ import com.stratio.meta.core.structures.*;
 import org.apache.log4j.Logger;
 
 import java.util.List;
+import java.util.Map;
 
 public final class DeepUtils {
 
@@ -68,6 +69,30 @@ public final class DeepUtils {
             logResult.append(" rows & ").append(rs.iterator().next().size()).append(" columns");
         }
         LOG.info(logResult);
+
+        ////////////////////////////////////////////////////////////////////////////
+        StringBuilder sb = new StringBuilder(System.lineSeparator());
+        boolean firstRow = true;
+        for(Row row: rs.getRows()){
+            if(firstRow){
+                for(String colName: row.getCells().keySet()){
+                    sb.append(colName).append(" | ");
+                }
+                sb.append(System.lineSeparator());
+                sb.append("---------------------------------------------------------------------");
+                sb.append(System.lineSeparator());
+            }
+            firstRow = false;
+            Map<String, Cell> cols = row.getCells();
+            for(String colName: cols.keySet()){
+                sb.append(String.valueOf(cols.get(colName).getValue())).append(" - ");
+            }
+            sb.append(System.lineSeparator());
+        }
+        sb.append(System.lineSeparator());
+        LOG.info(sb.toString());
+        /////////////////////////////////////////////////////////////////////////////
+
         return rs;
     }
 

@@ -161,7 +161,7 @@ public class ConsoleUtils {
         if(LOG.isDebugEnabled()) {
             LOG.debug("Retrieving history from " + file.getAbsolutePath());
         }
-        BufferedReader br = new BufferedReader(new FileReader(file));
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
         History oldHistory = new MemoryHistory();
         DateTime todayDate = new DateTime(today);
         String line;
@@ -190,11 +190,14 @@ public class ConsoleUtils {
     }
 
     public static void saveHistory(ConsoleReader console, File file, SimpleDateFormat sdf) throws IOException{
-        if (!file.exists()) {
-            file.createNewFile();
+        boolean created = file.createNewFile();
+        OutputStreamWriter isr;
+        if(created){
+            isr = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+        } else {
+            isr = new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8");
         }
-        FileWriter fileWriter = new FileWriter(file, true);
-        try (BufferedWriter bufferWriter = new BufferedWriter(fileWriter)) {
+        try (BufferedWriter bufferWriter = new BufferedWriter(isr)) {
             History history = console.getHistory();
             ListIterator<History.Entry> histIter = history.entries();
             while(histIter.hasNext()){
