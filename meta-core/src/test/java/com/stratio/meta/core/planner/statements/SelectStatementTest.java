@@ -74,7 +74,8 @@ public class SelectStatementTest extends BasicPlannerTest {
         fields.put("users.name", "users_info.link_name");
         InnerJoin join = new InnerJoin("demo.users_info", fields);
         ((SelectStatement)stmt).setJoin(join);
-        ((SelectStatement)stmt).validate(_metadataManager, "demo");
+        ((SelectStatement)stmt).setSessionKeyspace("demo");
+        ((SelectStatement)stmt).validate(_metadataManager);
         validateDeepPath();
 
     }
@@ -93,7 +94,8 @@ public class SelectStatementTest extends BasicPlannerTest {
         fields.put("users.name", "users_info.link_name");
         InnerJoin join = new InnerJoin("demo.users_info", fields);
         ((SelectStatement)stmt).setJoin(join);
-        ((SelectStatement)stmt).validate(_metadataManager, "demo");
+        ((SelectStatement)stmt).setSessionKeyspace("demo");
+        ((SelectStatement)stmt).validate(_metadataManager);
 
         List<Relation> clause = new ArrayList<>();
         Relation relation = new RelationCompare("users.name", "=", new StringTerm("name_3"));
