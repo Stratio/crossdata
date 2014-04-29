@@ -246,21 +246,23 @@ public class Metash {
     public void loop(){
         try {
             String cmd = "";
+            StringBuilder sb = new StringBuilder(cmd);
 
             while(!cmd.trim().toLowerCase().startsWith("exit") && !cmd.trim().toLowerCase().startsWith("quit")){
-                cmd += " "+console.readLine();
-                if(cmd.trim().endsWith(";")){
-                    if(" ".equalsIgnoreCase(cmd) || System.lineSeparator().equalsIgnoreCase(cmd)){
+                cmd = console.readLine();
+                sb.append(cmd).append(" ");
+                if(sb.toString().trim().endsWith(";")){
+                    if(" ".equalsIgnoreCase(sb.toString()) || System.lineSeparator().equalsIgnoreCase(sb.toString())){
                         println("");
-                    }else if(cmd.toLowerCase().startsWith("help")){
-                        showHelp(cmd);
-                    }else if(!cmd.trim().toLowerCase().startsWith("exit") && !cmd.trim().toLowerCase().startsWith("quit")){
-                        executeQuery(cmd);
+                    }else if(sb.toString().toLowerCase().startsWith("help")){
+                        showHelp(sb.toString());
+                    }else if(!sb.toString().trim().toLowerCase().startsWith("exit") && !sb.toString().trim().toLowerCase().startsWith("quit")){
+                        executeQuery(sb.toString());
                     } else {
                         println("");
                         break;
                     }
-                    cmd = "";
+                    sb = new StringBuilder();
                 }
             }
 

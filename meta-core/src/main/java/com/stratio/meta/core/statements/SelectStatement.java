@@ -485,7 +485,6 @@ public class SelectStatement extends MetaStatement {
      */
     private Result validateWhereClause(){
         //TODO: Check that the MATCH operator is only used in Lucene mapped columns.
-
         Result result = QueryResult.createSuccessQueryResult();
         Iterator<Relation> relations = where.iterator();
         while(!result.hasError() && relations.hasNext()){
@@ -512,10 +511,10 @@ public class SelectStatement extends MetaStatement {
                 //TODO: Check IN relation
                 result= QueryResult.createFailQueryResult("IN clause not supported.");
             }else if(Relation.TYPE_TOKEN == relation.getType()){
-                //TODO: Check IN relation
+                //TODO: Check TOKEN relation
                 result= QueryResult.createFailQueryResult("TOKEN function not supported.");
             }else if(Relation.TYPE_BETWEEN == relation.getType()){
-                //TODO: Check IN relation
+                //TODO: Check BETWEEN relation
                 result= QueryResult.createFailQueryResult("BETWEEN clause not supported.");
             }
         }
@@ -1125,7 +1124,7 @@ public class SelectStatement extends MetaStatement {
             SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
             for (SelectionSelector ss: selectionSelectors.getSelectors()){
                 SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-                if(si.getTablename().equalsIgnoreCase(tableName)){
+                if(tableMetadataFrom.getColumn(si.getColumnName()) != null){
                     firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
                 } else {
                     secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));

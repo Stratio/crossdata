@@ -39,6 +39,7 @@ public class RelationCompare extends Relation {
     
     public RelationCompare(String identifier, String operator, Term term) {
         this(identifier, operator);
+        // TODO: check if column datatype is text
         if(term instanceof StringTerm){
             ((StringTerm) term).setTerm(term.getStringValue().toLowerCase(), false);
         }

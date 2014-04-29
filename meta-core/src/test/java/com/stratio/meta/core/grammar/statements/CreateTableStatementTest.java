@@ -196,12 +196,14 @@ public class CreateTableStatementTest extends ParsingTest {
     }
 
     @Test
-    public void createTableOptions() {
-        //for(String o:new String[]{"CLUSTERING","EPHEMERAL"}){
-        for(String o:new String[]{"CLUSTERING"}){
+    public void createTableWithGetMetaProperty() {
+        for(String o:new String[]{
+                "CLUSTERING ORDER BY (insertion_time DESC)"
+                ,"ephemeral=true"
+        }){
             String inputText = "create table key_space1.timeseries (event_type text, insertion_time timestamp, event blob,"
-                + " PRIMARY KEY (event_type, insertion_time)) WITH "+o+" ORDER BY (insertion_time DESC);";
-            testRegularStatement(inputText, "createTableOptions");
+                + " PRIMARY KEY (event_type, insertion_time)) WITH "+o+";";
+            testRegularStatement(inputText, "createTableWithGetMetaProperty");
         }
     }
 

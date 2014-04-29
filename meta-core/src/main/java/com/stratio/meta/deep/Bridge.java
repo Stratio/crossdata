@@ -112,8 +112,6 @@ public class Bridge {
 
         LOG.debug("INNER JOIN on: " + field1 + " - " + field2);
 
-        JavaRDD result = null;
-
         JavaRDD rdd1 = children.get(0);
         JavaRDD rdd2 = children.get(1);
 
@@ -122,7 +120,7 @@ public class Bridge {
 
         JavaPairRDD joinRDD = rddLeft.join(rddRight);
 
-        result = joinRDD.map(new JoinCells(field1));
+        JavaRDD result = joinRDD.map(new JoinCells(field1));
 
         // Return MetaResultSet
         return returnResult(result, isRoot, selectedCols);
