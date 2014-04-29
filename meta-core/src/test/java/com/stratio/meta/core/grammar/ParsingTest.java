@@ -45,8 +45,8 @@ public class ParsingTest {
         
         assertTrue(inputText.equalsIgnoreCase(st.toString()+";"),
                 "Cannot parse " + methodName
-                        + ": expecting '" + inputText
-                        + "' from '" + st.toString()+";'" );
+                        + ": \nexpecting\n'" + inputText
+                        + "' \nfrom\n'" + st.toString()+";'" );
         return st;
     }
 

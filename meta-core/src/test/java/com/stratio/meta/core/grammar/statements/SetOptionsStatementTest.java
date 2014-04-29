@@ -51,7 +51,24 @@ public class SetOptionsStatementTest extends ParsingTest {
         }
     }
 
-    // Meta.g:552:11: T_CONSISTENCY T_EQUAL ( T_ALL | T_ANY | T_QUORUM | T_ONE | T_TWO | T_THREE | T_EACH_QUORUM | T_LOCAL_ONE | T_LOCAL_QUORUM ) ( T_AND T_ANALYTICS T_EQUAL ( T_TRUE | T_FALSE ) )?
+    @Test
+    public void setAllConsistenciesWithoutAnalytics() {
+        for (String consistency: new String[]{"ALL", "ANY", "QUORUM", "ONE", "TWO", "THREE", "EACH_QUORUM", "LOCAL_ONE", "LOCAL_QUORUM"}){
+            String inputText = "SET OPTIONS CONSISTENCY="+consistency+";";
+            testRegularStatement(inputText, "setAllConsistenciesWithoutAnalytics");
+        }
+    }
+
+    @Test
+    public void setAllConsistenciesWithAnalytics() {
+        for (String consistency: new String[]{"ALL", "ANY", "QUORUM", "ONE", "TWO", "THREE", "EACH_QUORUM", "LOCAL_ONE", "LOCAL_QUORUM"}){
+            for (String trueorfalse: new String[]{"true", "false"}){
+                //String inputText = "SET OPTIONS CONSISTENCY="+consistency+" AND ANALYTICS="+trueorfalse+";";
+                String inputText = "SET OPTIONS ANALYTICS="+trueorfalse+" AND CONSISTENCY="+consistency+";";
+                testRegularStatement(inputText, "setAllConsistenciesWithAnalytics");
+            }
+        }
+    }
 
 
 }
