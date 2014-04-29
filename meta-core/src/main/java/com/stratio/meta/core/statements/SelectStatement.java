@@ -405,7 +405,7 @@ public class SelectStatement extends MetaStatement {
             result = validateSelectionColumns(tableMetadataFrom, tableMetadataJoin);
         }
         if(!result.hasError() && whereInc){
-            result = validateWhereClause(tableMetadataFrom, tableMetadataJoin);
+            result = validateWhereClause();
         }
 
         return result;
@@ -481,11 +481,9 @@ public class SelectStatement extends MetaStatement {
     /**
      * Validate that the where clause is valid by checking that columns exists on the target
      * table and that the comparisons are semantically valid.
-     * @param tableFrom The {@link com.datastax.driver.core.TableMetadata} associated with the FROM table.
-     * @param tableJoin The {@link com.datastax.driver.core.TableMetadata} associated with the JOIN table.
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private Result validateWhereClause(TableMetadata tableFrom, TableMetadata tableJoin){
+    private Result validateWhereClause(){
         //TODO: Check that the MATCH operator is only used in Lucene mapped columns.
 
         Result result = QueryResult.createSuccessQueryResult();
@@ -507,7 +505,9 @@ public class SelectStatement extends MetaStatement {
                 //Get the term and determine its type.
                 Term t = Term.class.cast(rc.getTerms().get(0));
                 result = validateWhereRelation(targetTable, column, t, rc.getOperator());
-
+                if(rc.getOperator().equalsIgnoreCase("match") && joinInc){
+                    result= QueryResult.createFailQueryResult("Select statements with 'Inner Join' don't support MATCH operator.");
+                }
             }else if(Relation.TYPE_IN == relation.getType()){
                 //TODO: Check IN relation
                 result= QueryResult.createFailQueryResult("IN clause not supported.");
@@ -1184,10 +1184,13 @@ public class SelectStatement extends MetaStatement {
         String effectiveKeyspace = getEffectiveKeyspace(targetKeyspace, keyspaceInc, keyspace);
         TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
 
-        // Get columns of the primary key
-        for(ColumnMetadata colMD: tableMetadata.getPrimaryKey()){
+        // Get columns of the partition key
+        boolean allPartitionKeysFound = true;
+        for(ColumnMetadata colMD: tableMetadata.getPartitionKey()){
             if(whereCols.keySet().contains(colMD.getName())){
                 whereCols.remove(colMD.getName());
+            } else {
+                allPartitionKeysFound = false;
             }
         }
 
@@ -1199,9 +1202,11 @@ public class SelectStatement extends MetaStatement {
             cassandraPath = true;
         } else {
             // Remove all clustering columns.
-            for(ColumnMetadata colMD: tableMetadata.getClusteringColumns()){
-                if(whereCols.keySet().contains(colMD.getName())){
-                    whereCols.remove(colMD.getName());
+            if(allPartitionKeysFound){
+                for(ColumnMetadata colMD: tableMetadata.getClusteringColumns()){
+                    if(whereCols.keySet().contains(colMD.getName())){
+                        whereCols.remove(colMD.getName());
+                    }
                 }
             }
 
