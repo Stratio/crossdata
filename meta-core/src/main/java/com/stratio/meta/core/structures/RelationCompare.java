@@ -39,10 +39,11 @@ public class RelationCompare extends Relation {
     
     public RelationCompare(String identifier, String operator, Term term) {
         this(identifier, operator);
-        // TODO: check if column datatype is text
+        // TODO: Fix problem with text fields for Lucene indexes (demo.users.phrase)
+        /*
         if(term instanceof StringTerm){
             ((StringTerm) term).setTerm(term.getStringValue().toLowerCase(), false);
-        }
+        }*/
         this.terms.add(term);
     }
 

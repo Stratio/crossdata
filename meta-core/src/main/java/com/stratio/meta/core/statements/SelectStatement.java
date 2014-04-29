@@ -1046,6 +1046,8 @@ public class SelectStatement extends MetaStatement {
                     break;
                 }
             }
+        } else {
+            addCol = false;
         }
         return addCol;
     }
