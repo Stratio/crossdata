@@ -346,11 +346,6 @@ public class CreateTableStatement extends MetaStatement{
     }
 
     @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
-    }
-
-    @Override
     public String translateToCQL() {
         String cqlString = this.toString();
         if (!cqlString.contains(" WITH ")) {

@@ -25,11 +25,7 @@ import com.stratio.meta.core.statements.DeleteStatement;
 import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.RelationCompare;
 import com.stratio.meta.core.structures.StringTerm;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertTrue;
 
 public class DeleteStatementTest  extends BasicPlannerTest {
 

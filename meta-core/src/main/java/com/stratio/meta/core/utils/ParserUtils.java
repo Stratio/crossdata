@@ -111,7 +111,7 @@ public class ParserUtils {
         }
         return sb.toString();
     }
-    
+
     public static String getSuggestion(String query, AntlrError antlrError){
         String errorWord = query.trim().split(" ")[0].toUpperCase();
         Set<String> statementTokens = MetaUtils.INITIALS;
@@ -139,7 +139,7 @@ public class ParserUtils {
                     suggestionFromToken = "";
                 }
             }
-        }                                                  
+        }
         
         Set<String> bestMatches = getBestMatches(errorWord, statementTokens, 2);
         StringBuilder sb = new StringBuilder("Did you mean: ");
@@ -160,10 +160,6 @@ public class ParserUtils {
         }
         return sb.substring(0, sb.length());
     }    
-    
-    public static String getSuggestion() {
-        return getSuggestion("", null);
-    }
 
     public static String translateToken(String message) {     
         if(message == null){

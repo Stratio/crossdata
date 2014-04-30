@@ -23,14 +23,10 @@ import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.CreateKeyspaceStatement;
 import com.stratio.meta.core.structures.IdentifierProperty;
 import com.stratio.meta.core.structures.ValueProperty;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.testng.Assert.assertTrue;
 
 public class CreateKeyspaceStatementTest extends BasicPlannerTest{
     @Test

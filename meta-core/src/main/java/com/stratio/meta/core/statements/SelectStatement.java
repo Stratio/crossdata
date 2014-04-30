@@ -734,11 +734,6 @@ public class SelectStatement extends MetaStatement {
     }
 
     @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
-    }
-
-    @Override
     public String translateToCQL() {
         StringBuilder sb = new StringBuilder(this.toString());
 

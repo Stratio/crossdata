@@ -21,10 +21,7 @@ package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.CreateTriggerStatement;
-import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertTrue;
 
 public class CreateTriggerStatementTest  extends BasicPlannerTest {
 

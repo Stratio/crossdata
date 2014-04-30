@@ -68,7 +68,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void validate_stratioColumnFail(){
+    public void validateStratioColumnFail(){
         String inputText = "CREATE TABLE demo.table_fail (name VARCHAR, stratio_column VARCHAR, PRIMARY KEY (name));";
         validateFail(inputText, "validate_stratioColumnFail");
     }

@@ -456,11 +456,6 @@ public class CreateIndexStatement extends MetaStatement {
     }
 
     @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
-    }
-
-    @Override
     public String translateToCQL() {
 
         if(IndexType.LUCENE.equals(type)){

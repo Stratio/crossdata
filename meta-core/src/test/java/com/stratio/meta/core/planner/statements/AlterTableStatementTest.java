@@ -21,13 +21,9 @@ package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.AlterTableStatement;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
-
-import static org.testng.Assert.assertTrue;
 
 public class AlterTableStatementTest extends BasicPlannerTest {
     @Test

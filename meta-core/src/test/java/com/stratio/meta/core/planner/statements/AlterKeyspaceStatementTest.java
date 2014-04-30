@@ -21,12 +21,9 @@ package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.AlterKeyspaceStatement;
-import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
-
-import static org.testng.Assert.assertTrue;
 
 public class AlterKeyspaceStatementTest extends BasicPlannerTest {
     @Test

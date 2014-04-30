@@ -117,11 +117,6 @@ public class CreateKeyspaceStatement extends MetaStatement {
     }
 
     @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
-    }
-
-    @Override
     public String translateToCQL() {
         String metaStr = this.toString();
         if(metaStr.contains("{")){

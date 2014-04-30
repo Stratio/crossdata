@@ -48,11 +48,6 @@ public class CustomIndexMetadata {
     private final String indexName;
 
     /**
-     * Index options.
-     */
-    private String options = null;
-
-    /**
      * Class constructor for default Cassandra indexes.
      * @param columnMetadata The column metadata associated with the index.
      * @param indexName The name of the index.

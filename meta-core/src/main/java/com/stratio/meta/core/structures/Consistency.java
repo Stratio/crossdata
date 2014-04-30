@@ -19,14 +19,53 @@
 
 package com.stratio.meta.core.structures;
 
+/**
+ * Consistency levels in Cassandra.
+ * @see <a href="http://www.datastax.com/documentation/cassandra/2.0/cassandra/dml/dml_config_consistency_c.html">Cassandra documentation</a>
+ */
 public enum Consistency {
+    /**
+     * All replica nodes should commit the operation.
+     */
     ALL,
+
+    /**
+     * Any replica node may commit the operation.
+     */
     ANY,
+
+    /**
+     * A set of replica nodes that form a quorum should commit the operation.
+     */
     QUORUM,
+
+    /**
+     * One replica node should commit the operation.
+     */
     ONE,
+
+    /**
+     * Two replica nodes should commit the operation.
+     */
     TWO,
+
+    /**
+     * Three replica nodes should commit the operation.
+     */
     THREE,
+
+    /**
+     * A quorum of replicas per datacenter should commit the operation.
+     */
     EACH_QUORUM,
+
+    /**
+     * Only one replica node in the current datacenter should commit the operation.
+     */
     LOCAL_ONE,
+
+    /**
+     * Only the quorum of replica nodes in the current datacenter should commit the operation.
+     */
     LOCAL_QUORUM
 }

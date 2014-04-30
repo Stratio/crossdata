@@ -144,12 +144,6 @@ public abstract class MetaStatement {
     }
 
     /**
-     * Create a suggestion for a viable statement in case a parsing error occurs.
-     * @return The suggestion for solving the parsing error.
-     */
-    public abstract String getSuggestion();
-
-    /**
      * Translate the statement into the CQL equivalent when possible.
      * @return The CQL equivalent.
      */

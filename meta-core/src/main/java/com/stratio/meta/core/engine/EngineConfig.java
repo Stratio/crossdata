@@ -42,7 +42,7 @@ public class EngineConfig {
     /**
      *
      */
-    private static String [] forbiddenJars = {"akka"};
+    private static final String [] forbiddenJars = {"akka"};
 
     /**
      * Cassandra hosts.

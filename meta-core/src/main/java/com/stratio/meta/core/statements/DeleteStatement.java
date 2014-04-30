@@ -274,11 +274,6 @@ public class DeleteStatement extends MetaStatement {
 
 
     @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
-    }
-
-    @Override
     public String translateToCQL() {
         return this.toString();
     }
