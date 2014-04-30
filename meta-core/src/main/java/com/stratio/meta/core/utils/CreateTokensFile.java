@@ -59,7 +59,7 @@ public class CreateTokensFile {
             try (BufferedReader br = new BufferedReader(
                     new InputStreamReader(
                             new FileInputStream(fileGrammar), Charset.forName("UTF-8")))) {
-                bw = new BufferedWriter(new FileWriter(outFile));
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile, true), "UTF-8"));
                 String line = br.readLine();
                 while (line != null){
                     if(line.startsWith("T_")){

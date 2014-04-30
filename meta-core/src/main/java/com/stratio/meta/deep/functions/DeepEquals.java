@@ -55,9 +55,6 @@ public class DeepEquals extends Function<Cells, Boolean> implements Serializable
     @Override
     public Boolean call(Cells cells){
         Object currentValue = cells.getCellByName(field).getCellValue();
-        if (currentValue == null){
-            return value == null;
-        }
-        return currentValue.equals(value);
+        return value.equals(currentValue);
     }
 }

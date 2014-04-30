@@ -61,6 +61,11 @@ public class ConsoleUtils {
 
     }
 
+    /**
+     * Convert Result {@link com.stratio.meta.common.result.Result} structure to String.
+     * @param result {@link com.stratio.meta.common.result.Result} from execution.
+     * @return String representing the result.
+     */
     public static String stringResult(Result result){
         if(result.hasError()){
             return result.getErrorMessage();
@@ -79,6 +84,11 @@ public class ConsoleUtils {
         }
     }
 
+    /**
+     * Convert QueryResult {@link com.stratio.meta.common.result.QueryResult} structure to String.
+     * @param queryResult {@link com.stratio.meta.common.result.QueryResult} from execution.
+     * @return String representing the result.
+     */
     private static String stringQueryResult(QueryResult queryResult){
         if(queryResult.getResultSet().isEmpty()){
             return "OK";
@@ -118,6 +128,11 @@ public class ConsoleUtils {
         return sb.toString();
     }
 
+    /**
+     * In order to print the result, this method calculates the maximum width of every column.
+     * @param resultSet structure representing the result of a execution.
+     * @return Map<String, Integer> where the key is the name of the column and Integer is the maximum width.
+     */
     private static Map<String, Integer> calculateColWidths(ResultSet resultSet) {
         Map<String, Integer> colWidths = new HashMap<>();
         // Get column names
@@ -138,6 +153,11 @@ public class ConsoleUtils {
         return colWidths;
     }
 
+    /**
+     * In order to create a separator line in tables, this method calculates the total width of a table.
+     * @param colWidths columns widths of a table.
+     * @return total width of a table.
+     */
     private static int getTotalWidth(Map<String, Integer> colWidths) {
         int totalWidth = 0;
         for(int width: colWidths.values()){
@@ -146,6 +166,13 @@ public class ConsoleUtils {
         return totalWidth;
     }
 
+    /**
+     * Get previous history of the Meta console from a file
+     * @param console Meta console created from a JLine console
+     * @param sdf Simple Date Format to read dates from history file
+     * @return File inserted in the JLine console with the previous history
+     * @throws IOException
+     */
     public static File retrieveHistory(ConsoleReader console, SimpleDateFormat sdf) throws IOException {
         Date today = new Date();
         String workingDir = System.getProperty("user.home");
@@ -189,6 +216,13 @@ public class ConsoleUtils {
         return file;
     }
 
+    /**
+     * This method save history extracted from the Meta console to be persisted in the disk
+     * @param console Meta console created from a JLine console
+     * @param file represents the file to be created of updated with the statements from the current session
+     * @param sdf Simple Date Format to create dates for the history file
+     * @throws IOException file couldn't be created or read
+     */
     public static void saveHistory(ConsoleReader console, File file, SimpleDateFormat sdf) throws IOException{
         boolean created = file.createNewFile();
         OutputStreamWriter isr;

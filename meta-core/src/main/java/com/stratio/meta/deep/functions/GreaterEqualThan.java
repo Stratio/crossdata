@@ -54,9 +54,6 @@ public class GreaterEqualThan extends Function<Cells, Boolean> implements Serial
     @Override
     public Boolean call(Cells cells){
         Object currentValue = cells.getCellByName(field).getCellValue();
-        if (currentValue == null){
-            return value == null;
-        }
-        return ((Comparable) currentValue).compareTo(value) >= 0;
+        return ((Comparable) value).compareTo(currentValue) >= 0;
     }
 }

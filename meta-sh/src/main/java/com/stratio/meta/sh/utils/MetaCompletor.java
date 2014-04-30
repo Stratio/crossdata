@@ -22,7 +22,6 @@ package com.stratio.meta.sh.utils;
 import com.stratio.meta.common.utils.MetaUtils;
 import jline.console.completer.Completer;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -31,15 +30,16 @@ import static jline.internal.Preconditions.checkNotNull;
 
 public class MetaCompletor implements Completer {
 
+    /**
+     * Set containing the words used in the Meta Completor
+     */
     private final SortedSet<String> strings = new TreeSet<>();
-    
-    public MetaCompletor() {
-    }        
 
-    public MetaCompletor(final Collection<String> strs) {
-        checkNotNull(strs);
-        strings.addAll(strs);
-    }        
+    /**
+     * Constructor of the Meta Completor for the Meta Console
+     */
+    public MetaCompletor() {
+    }
     
     @Override
     public int complete(final String buffer, final int cursor, final List<CharSequence> candidates) {

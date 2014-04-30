@@ -1234,25 +1234,17 @@ public class SelectStatement extends MetaStatement {
         return steps;
     }
 
-    /**
-     * Get the execution plan of a non JOIN select with a where clause.
-     * @param metadataManager The medata manager.
-     * @return The execution plan.
-     */
-    private Tree getWherePlan(MetadataManager metadataManager){
-        Tree steps = new Tree();
-        // Get columns of the where clauses
+    private Map getColumnsFromWhere(){
         Map<String, String> whereCols = new HashMap<>();
         for(Relation relation: where){
             for(String id: relation.getIdentifiers()){
                 whereCols.put(splitAndGetFieldName(id), relation.getOperator());
             }
         }
+        return whereCols;
+    }
 
-        String effectiveKeyspace = getEffectiveKeyspace();
-        TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
-
-        // Get columns of the partition key
+    private boolean matchWhereColsWithPartitionKeys(TableMetadata tableMetadata, Map whereCols){
         boolean allPartitionKeysFound = true;
         for(ColumnMetadata colMD: tableMetadata.getPartitionKey()){
             if(whereCols.keySet().contains(colMD.getName())){
@@ -1261,6 +1253,34 @@ public class SelectStatement extends MetaStatement {
                 allPartitionKeysFound = false;
             }
         }
+        return allPartitionKeysFound;
+    }
+
+    private void matchWhereColsWithClusteringKeys(boolean allPartitionKeysFound, TableMetadata tableMetadata, Map whereCols){
+        if(allPartitionKeysFound){
+            for(ColumnMetadata colMD: tableMetadata.getClusteringColumns()){
+                if(whereCols.keySet().contains(colMD.getName())){
+                    whereCols.remove(colMD.getName());
+                }
+            }
+        }
+    }
+
+    /**
+     * Get the execution plan of a non JOIN select with a where clause.
+     * @param metadataManager The medata manager.
+     * @return The execution plan.
+     */
+    private Tree getWherePlan(MetadataManager metadataManager){
+        Tree steps = new Tree();
+        // Get columns of the where clauses
+        Map<String, String> whereCols = getColumnsFromWhere();
+
+        String effectiveKeyspace = getEffectiveKeyspace();
+        TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
+
+        // Get columns of the partition key
+        boolean allPartitionKeysFound = matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
 
         //By default go through deep.
         boolean cassandraPath = false;
@@ -1270,13 +1290,7 @@ public class SelectStatement extends MetaStatement {
             cassandraPath = true;
         } else {
             // Remove all clustering columns.
-            if(allPartitionKeysFound){
-                for(ColumnMetadata colMD: tableMetadata.getClusteringColumns()){
-                    if(whereCols.keySet().contains(colMD.getName())){
-                        whereCols.remove(colMD.getName());
-                    }
-                }
-            }
+            matchWhereColsWithClusteringKeys(allPartitionKeysFound, tableMetadata, whereCols);
 
             // Get columns of the custom and lucene indexes
             Set<String> indexedCols = new HashSet<>();
@@ -1306,10 +1320,9 @@ public class SelectStatement extends MetaStatement {
             }
         }
 
+        steps.setNode(new MetaStep(MetaPath.DEEP, this));
         if(cassandraPath){
             steps.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-        } else {
-            steps.setNode(new MetaStep(MetaPath.DEEP, this));
         }
         return steps;
     }
