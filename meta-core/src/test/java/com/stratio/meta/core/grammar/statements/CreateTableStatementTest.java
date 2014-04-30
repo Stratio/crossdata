@@ -207,4 +207,12 @@ public class CreateTableStatementTest extends ParsingTest {
         }
     }
 
+    @Test
+    public void createTableWithOptions(){
+        String inputText = "CREATE TABLE key_space1.wallet (day text, key uuid, latitude double, longitude double, name text, "
+                + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key)) WITH COMPACT STORAGE AND " +
+                "read_repair_chance=1.0;";
+        testRegularStatement(inputText, "createTableWithOptions");
+    }
+
 }

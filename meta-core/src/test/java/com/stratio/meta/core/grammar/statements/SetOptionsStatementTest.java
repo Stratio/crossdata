@@ -63,9 +63,12 @@ public class SetOptionsStatementTest extends ParsingTest {
     public void setAllConsistenciesWithAnalytics() {
         for (String consistency: new String[]{"ALL", "ANY", "QUORUM", "ONE", "TWO", "THREE", "EACH_QUORUM", "LOCAL_ONE", "LOCAL_QUORUM"}){
             for (String trueorfalse: new String[]{"true", "false"}){
-                //String inputText = "SET OPTIONS CONSISTENCY="+consistency+" AND ANALYTICS="+trueorfalse+";";
                 String inputText = "SET OPTIONS ANALYTICS="+trueorfalse+" AND CONSISTENCY="+consistency+";";
                 testRegularStatement(inputText, "setAllConsistenciesWithAnalytics");
+
+                inputText = "SET OPTIONS CONSISTENCY="+consistency+" AND ANALYTICS="+trueorfalse+";";
+                testRegularStatement(inputText, "Set options analytics="+trueorfalse+" AND consistency="+consistency+";",  "setAllConsistenciesWithAnalytics");
+
             }
         }
     }

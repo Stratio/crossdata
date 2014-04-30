@@ -42,7 +42,7 @@ class BasicDriver extends DriverConfig{
    */
   def connect(user:String): Result = {
     println(contactPoints)
-    retryPolitics.askRetry(proxyActor,new Connect(user),1 second)
+    retryPolitics.askRetry(proxyActor,new Connect(user),5 second)
   }
 
   /**
