@@ -277,39 +277,4 @@ public class ParserUtils {
         
     }
     
-    public static String addSingleQuotesToStringList(String strList){
-        String result = "";
-        String[] opts = strList.split("=");
-        for(int i=0; i<opts.length; i++){
-            String currentStr = opts[i];
-            if(currentStr.matches("[0123456789.]+")){
-                result = result.concat(opts[i]);
-            } else {
-                result = result.concat("\'").concat(opts[i]).concat("\'");
-            }
-            if(i % 2 == 0){
-                result = result.concat(": ");
-            } else {
-                if(i<(opts.length-1)){
-                    result = result.concat(", ");
-                }
-            }
-        }
-        return result;
-    }    
-
-    public static String[] fromStringListToArray(List<String> names) {
-        String[] result = new String[names.size()];
-        int n=0;
-        for(String str: names){
-            result[n] = str;
-            n++;
-        }
-        return result;
-    }
-
-    public static String addAllowFiltering(String translatedToCQL) {
-        return translatedToCQL.replace(" ;", ";").replace(";", " ALLOW FILTERING;");
-    }
-    
 }

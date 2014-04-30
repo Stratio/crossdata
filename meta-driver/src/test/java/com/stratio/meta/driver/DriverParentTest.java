@@ -47,6 +47,7 @@ public class DriverParentTest extends ParentCassandraTest {
 
     @AfterClass
     public void finish(){
+        driver.close();
         metaServer.stop();
         metaServer.destroy();
     }

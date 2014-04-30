@@ -61,13 +61,7 @@ public class Tree {
     public Tree(MetaStep node) {
         this();
         this.node = node;
-    }        
-
-    public Tree(Tree parent, MetaStep node) {
-        this();
-        this.parent = parent;
-        this.node = node;
-    }        
+    }
 
     public void setParent(Tree parent) {
         this.parent = parent;
@@ -139,28 +133,6 @@ public class Tree {
         } else {
             return QueryResult.createFailQueryResult("Query not supported yet.");
         }
-    }
-
-    public String toStringTopDown(){
-        StringBuilder sb = new StringBuilder();
-        int deep = 0;
-        sb.append(node.toString()).append(System.lineSeparator());
-        for(Tree child: children){
-            sb.append(child.printTopDown(deep+1)).append(System.lineSeparator());
-        }                
-        return sb.toString();
-    }
-    
-    private String printTopDown(int deep){
-        StringBuilder sb = new StringBuilder();
-        for(int i=0; i<deep; i++){
-            sb.append("\t");
-        }
-        sb.append(node.toString());
-        for(Tree child: children){
-            sb.append(child.printDownTop(deep+1)).append(System.lineSeparator());
-        }                
-        return sb.toString();
     }
 
     public boolean isEmpty(){

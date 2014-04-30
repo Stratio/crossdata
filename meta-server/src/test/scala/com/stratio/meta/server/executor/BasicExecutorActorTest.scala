@@ -65,6 +65,20 @@ with DefaultTimeout with FunSuiteLike with  BeforeAndAfterCassandra{
     }
   }
 
+  test ("QueryActor describe keyspace"){
+    within(3000 millis){
+      val msg="describe keyspace system;"
+      assertEquals(querying.proccess(msg,executorRef,engine,1),"success" )
+    }
+  }
+
+  test ("QueryActor describe table"){
+    within(3000 millis){
+      val msg="describe table system.schema_columns;"
+      assertEquals(querying.proccess(msg,executorRef,engine,1),"success" )
+    }
+  }
+
   test ("QueryActor use KS yet"){
     within(3000 millis){
       val msg="use ks_demo ;"

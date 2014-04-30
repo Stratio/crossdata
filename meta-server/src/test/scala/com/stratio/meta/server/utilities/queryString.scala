@@ -3,7 +3,7 @@ package com.stratio.meta.server.utilities
 import scala.concurrent.{Future, Await}
 import scala.collection.mutable.MutableList
 import scala.util.{Failure, Success}
-import com.stratio.meta.common.result.{QueryResult, Result}
+import com.stratio.meta.common.result.{CommandResult, QueryResult, Result}
 import com.stratio.meta.common.data.{Cell, CassandraResultSet}
 import akka.actor.ActorRef
 import com.stratio.meta.core.engine.Engine
@@ -69,6 +69,7 @@ class queryString {
           if (!value.hasError){
             value match{
               case typeQuery:QueryResult=>
+              case typeQuery:CommandResult=>
             }
             if(value.isInstanceOf[QueryResult]){
 
@@ -97,8 +98,9 @@ class queryString {
               else{
                 "it is not cassandraresult"
               }
-            }
-            else{
+            }else if(value.isInstanceOf[CommandResult]){
+              "success"
+            }else{
               "it is not a queryResult"
             }
 

@@ -34,16 +34,6 @@ import com.stratio.meta.core.utils.Tree;
 public abstract class MetaStatement {
 
     /**
-     * The String representation of the query to be executed prior parsing it.
-     */
-    protected String query;
-
-    /**
-     * The execution path for the query.
-     */
-    protected MetaPath path;
-
-    /**
      * Whether the query is an internal command or it returns a {@link com.stratio.meta.common.data.ResultSet}.
      */
     protected boolean command;
@@ -72,13 +62,9 @@ public abstract class MetaStatement {
 
     /**
      * Class constructor.
-     * @param query The string representation of the submitted query.
-     * @param path The path to be used to execute the query.
      * @param command Whether the query is a command or a query returning a {@link com.stratio.meta.common.data.ResultSet}.
      */
-    public MetaStatement(String query, MetaPath path, boolean command) {
-        this.query = query;
-        this.path = path;
+    public MetaStatement(boolean command) {
         this.command = command;
     }
 
@@ -97,41 +83,6 @@ public abstract class MetaStatement {
     public void setAsCommand(boolean command) {
         this.command = command;
     }
-
-    /**
-     * Get the query introduced by the user.
-     * @return The query.
-     */
-    public String getQuery() {
-        return query;
-    }
-
-    /**
-     * Set the query introduced by the user.
-     * @param query The string representation of the submitted query.
-     */
-    public void setQuery(String query) {
-        this.query = query;
-    }
-
-    /**
-     * Get the path required to execute the query.
-     * @return The {@link com.stratio.meta.core.utils.MetaPath} with a
-     * {@link com.stratio.meta.core.utils.Tree} representation of the different
-     * steps involved.
-     */
-    public MetaPath getPath() {
-        return path;
-    }
-
-    /**
-     * Set the {@link com.stratio.meta.core.utils.MetaPath} required to
-     * execute this query.
-     * @param path The path.
-     */
-    public void setPath(MetaPath path) {
-        this.path = path;
-    }        
     
     @Override
     public abstract String toString();
