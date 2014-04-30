@@ -42,7 +42,7 @@ import org.apache.spark.api.java.JavaRDD;
 import java.util.*;
 
 /**
- * Class that performs as a Bridge between Meta and Stratio Deep
+ * Class that performs as a Bridge between Meta and Stratio Deep.
  */
 public class Bridge {
 

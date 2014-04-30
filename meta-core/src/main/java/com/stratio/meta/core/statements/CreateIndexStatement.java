@@ -40,8 +40,8 @@ import java.util.Map.Entry;
 /**
  * Class that models a {@code CREATE INDEX} statement of the META language. This class recognizes the following syntax:
  * <p>
- * CREATE {@link IndexType} INDEX (IF NOT EXISTS)? {@literal <index_name>} </br>
- * ON {@literal <tableName>} ( {@literal <identifier> , ..., <identifier>}) </br>
+ * CREATE {@link IndexType} INDEX (IF NOT EXISTS)? {@literal <index_name>} <br>
+ * ON {@literal <tableName>} ( {@literal <identifier> , ..., <identifier>}) <br>
  * ( USING {@literal <index_class>} )? ( WITH OPTIONS ( key_1=value_1 AND ... AND key_n=value_n) )?;
  */
 public class CreateIndexStatement extends MetaStatement {

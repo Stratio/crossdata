@@ -45,12 +45,12 @@ public abstract class MetaStatement {
     protected boolean keyspaceInc = false;
 
     /**
-     * Keyspace specified from the statement
+     * Keyspace specified from the statement.
      */
     protected String keyspace = null;
 
     /**
-     * The current keyspace in the user session
+     * The current keyspace in the user session.
      */
     protected String sessionKeyspace = null;
 

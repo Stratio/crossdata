@@ -77,15 +77,15 @@ public class ParserUtils {
         return sb.substring(0, sb.length()-separator.length());
     }   
  
-    public static Set<LevenshteinMatch> getBestMatches(String str, Set<String> words, int maxDistance){
+    public static Set<String> getBestMatches(String str, Set<String> words, int maxDistance){
         int limit = maxDistance + 1;
         int currentLimit = 1;
-        Set<LevenshteinMatch> result = new HashSet<>();
+        Set<String> result = new HashSet<>();
         while(result.isEmpty() && currentLimit < limit){
             for(String word: words){
                 int distance = StringUtils.getLevenshteinDistance(str, word, maxDistance);
                 if((distance>-1) && (distance < currentLimit)){
-                    result.add(new LevenshteinMatch(word, distance));
+                    result.add(word);
                 }
             }
             currentLimit++;
@@ -141,7 +141,7 @@ public class ParserUtils {
             }
         }                                                  
         
-        Set<LevenshteinMatch> bestMatches = getBestMatches(errorWord, statementTokens, 2);
+        Set<String> bestMatches = getBestMatches(errorWord, statementTokens, 2);
         StringBuilder sb = new StringBuilder("Did you mean: ");
         if((bestMatches.isEmpty() || antlrError == null) && (charPosition<1)){
             sb.append(MetaUtils.getInitialsStatements()).append("?").append(System.lineSeparator());
@@ -149,9 +149,9 @@ public class ParserUtils {
             sb.append("\"").append(suggestionFromToken).append("\"").append("?");
             sb.append(System.lineSeparator());
         } else if(errorWord.matches("[QWERTYUIOPASDFGHJKLZXCVBNM_]+")){
-            for(LevenshteinMatch match: bestMatches){
+            for(String match: bestMatches){
                 sb.append("* ");
-                sb.append("\"").append(match.getWord()).append("\"").append("?");
+                sb.append("\"").append(match).append("\"").append("?");
                 sb.append(System.lineSeparator()).append("\t");
             }
         }
