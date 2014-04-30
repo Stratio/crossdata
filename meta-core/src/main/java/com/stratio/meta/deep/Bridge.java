@@ -244,6 +244,9 @@ public class Bridge {
             case "<=":
                 result = rdd.filter(new LessEqualThan(cn,termValue));
                 break;
+            default:
+                LOG.error("Operator not supported: " + operator);
+                result = null;
         }
         return result;
     }

@@ -30,16 +30,56 @@ import com.stratio.meta.core.utils.Tree;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Class that models an {@code UPDATE} statement from the META language.
+ */
 public class UpdateTableStatement extends MetaStatement {
 
+    /**
+     * The name of the table.
+     */
     private String tableName;
+
+    /**
+     * Whether options are included.
+     */
     private boolean optsInc;
+
+    /**
+     * The list of options.
+     */
     private List<Option> options;
+
+    /**
+     * The list of assignments.
+     */
     private List<Assignment> assignments;
+
+    /**
+     * The list of relations.
+     */
     private List<Relation> whereClauses;
+
+    /**
+     * Whether conditions are included.
+     */
     private boolean condsInc;
+
+    /**
+     * Map of conditions.
+     */
     private Map<String, Term> conditions;
 
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param optsInc Whether options are included.
+     * @param options The list of options.
+     * @param assignments The list of assignments.
+     * @param whereClauses The list of relations.
+     * @param condsInc Whether conditions are included.
+     * @param conditions The map of conditions.
+     */
     public UpdateTableStatement(String tableName,
                                 boolean optsInc, 
                                 List<Option> options, 
@@ -63,73 +103,62 @@ public class UpdateTableStatement extends MetaStatement {
         this.whereClauses = whereClauses;
         this.condsInc = condsInc;
         this.conditions = conditions;
-    }        
-    
+    }
+
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param options The list of options.
+     * @param assignments The list of assignments.
+     * @param whereClauses The list of relations.
+     * @param conditions The map of conditions.
+     */
     public UpdateTableStatement(String tableName,
                                 List<Option> options, 
                                 List<Assignment> assignments, 
-                                List<Relation> whereclauses,
+                                List<Relation> whereClauses,
                                 Map<String, Term> conditions) {
-        this(tableName, true, options, assignments, whereclauses, true, conditions);
+        this(tableName, true, options, assignments, whereClauses, true, conditions);
     }
-    
+
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param assignments The list of assignments.
+     * @param whereClauses The list of relations.
+     * @param conditions The map of conditions.
+     */
     public UpdateTableStatement(String tableName,
                                 List<Assignment> assignments, 
-                                List<Relation> whereclauses,
+                                List<Relation> whereClauses,
                                 Map<String, Term> conditions) {
-        this(tableName, false, null, assignments, whereclauses, true, conditions);
+        this(tableName, false, null, assignments, whereClauses, true, conditions);
     }
-    
+
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param options The list of options.
+     * @param assignments The list of assignments.
+     * @param whereClauses The list of relations.
+     */
     public UpdateTableStatement(String tableName,
                                 List<Option> options, 
                                 List<Assignment> assignments, 
-                                List<Relation> whereclauses) {
-        this(tableName, true, options, assignments, whereclauses, false, null);
+                                List<Relation> whereClauses) {
+        this(tableName, true, options, assignments, whereClauses, false, null);
     }
-    
+
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param assignments The list of assignments.
+     * @param whereClauses The list of relations.
+     */
     public UpdateTableStatement(String tableName,
                                 List<Assignment> assignments, 
-                                List<Relation> whereclauses) {
-        this(tableName, false, null, assignments, whereclauses, false, null);
-    }
-
-    public boolean isKeyspaceInc() {
-        return keyspaceInc;
-    }
-
-    public void setKeyspaceInc(boolean keyspaceInc) {
-        this.keyspaceInc = keyspaceInc;
-    }
-
-    public String getKeyspace() {
-        return keyspace;
-    }
-
-    public void setKeyspace(String keyspace) {
-        this.keyspace = keyspace;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(String tableName) {
-        if(tableName.contains(".")){
-            String[] ksAndTablename = tableName.split("\\.");
-            keyspace = ksAndTablename[0];
-            this.tableName = ksAndTablename[1];
-            keyspaceInc = true;
-        }else {
-            this.tableName = tableName;
-        }
-    }
-
-    public List<Option> getOptions() {
-        return options;
-    }
-
-    public void setOptions(List<Option> options) {
-        this.options = options;
+                                List<Relation> whereClauses) {
+        this(tableName, false, null, assignments, whereClauses, false, null);
     }
 
     @Override

@@ -39,9 +39,6 @@
         <cassandra.driver>2.0.0</cassandra.driver>
         <meta.version>0.0.4-SNAPSHOT</meta.version>
         <deep.version>0.2.1</deep.version>
-        <!--scoverage-plugin.version>0.98.2</scoverage-plugin.version>
-        <scala.major>2.10</scala.major>
-        <scala.version>2.10.3</scala.version-->
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
     </properties>
     <repositories>
@@ -57,36 +54,8 @@
         </repository>
     </repositories>
 
-    <!--dependencies>
-        <dependency>
-            <groupId>org.scoverage</groupId>
-            <artifactId>scalac-scoverage-plugin_${scala.major}</artifactId>
-            <version>${scoverage-plugin.version}</version>
-        </dependency>
-    </dependencies-->
-
     <build>
         <plugins>
-
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.0.201403182114</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -99,38 +68,6 @@
                     </formats>
                     <aggregate>true</aggregate>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>src/main/scala</source>
-                                <source>src/main/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>add-test-source</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>src/test/scala</source>
-                                <source>src/test/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
@@ -151,62 +88,6 @@
                     <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
                 </configuration>
             </plugin>
-
-            <!--plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>scala-compile-first</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <args>
-                                <arg>-g:vars</arg>
-                                <arg>-Yrangepos</arg>
-                                <arg>-P:scoverage:dataDir:${coverage.data.dir}</arg>
-                            </args>
-                            <jvmArgs>
-                                <jvmArg>-Xms64m</jvmArg>
-                                <jvmArg>-Xmx1024m</jvmArg>
-                            </jvmArgs>
-                            <compilerPlugins>
-                                <compilerPlugin>
-                                    <groupId>org.scoverage</groupId>
-                                    <artifactId>scalac-scoverage-plugin_${scala.major}</artifactId>
-                                    <version>${scoverage-plugin.version}</version>
-                                </compilerPlugin>
-                            </compilerPlugins>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>scala-test-compile</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin-->
-
-            <!--plugin>
-                <groupId>org.scoverage</groupId>
-                <artifactId>maven-scoverage-plugin</artifactId>
-                <version>${scoverage-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>scala-report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin-->
 
         </plugins>
     </build>
