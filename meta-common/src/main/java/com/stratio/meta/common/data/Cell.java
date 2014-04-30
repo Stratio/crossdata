@@ -28,7 +28,8 @@ public class Cell implements Serializable {
     private final Object value;
 
     /**
-     * Build a Cell
+     * Build a Cell.
+     *
      * @param datatype Class of the value
      * @param value Value object
      */
@@ -38,7 +39,8 @@ public class Cell implements Serializable {
     }
 
     /**
-     * Get the datatype of the cell
+     * Get the datatype of the cell.
+     *
      * @return Datatype of the cell.
      */
     public Class<?> getDatatype() {
@@ -46,7 +48,8 @@ public class Cell implements Serializable {
     }
 
     /**
-     * Get the value of the cell
+     * Get the value of the cell.
+     *
      * @return Object with the value of the cell
      */
     public Object getValue() {

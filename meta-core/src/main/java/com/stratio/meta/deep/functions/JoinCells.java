@@ -30,11 +30,19 @@ import java.util.HashMap;
 
 public class JoinCells<T> extends Function<Tuple2<T, Tuple2<Cells, Cells>>, Cells> implements Serializable{
 
+    /**
+     * Serial version UID.
+     */
     private static final long serialVersionUID = 4534397129761833793L;
+
+    /**
+     * Name of field of the table involved in the inner join.
+     */
     private String key1;
 
     /**
-     * JoinCells join the fields of two Cells as a result of InnerJoin
+     * JoinCells join the fields of two Cells as a result of InnerJoin.
+     *
      * @param key1 Indicates field which inner join has been applied
      */
     public JoinCells(String key1){

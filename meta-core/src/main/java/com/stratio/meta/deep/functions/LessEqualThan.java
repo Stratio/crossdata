@@ -26,9 +26,19 @@ import java.io.Serializable;
 
 public class LessEqualThan extends Function<Cells, Boolean> implements Serializable{
 
+    /**
+     * Serial version UID.
+     */
     private static final long serialVersionUID = 2775666112428131116L;
 
+    /**
+     * Value to compare.
+     */
     private Object value;
+
+    /**
+     * Name of the field of the cell to compare.
+     */
     private String field;
 
     /**

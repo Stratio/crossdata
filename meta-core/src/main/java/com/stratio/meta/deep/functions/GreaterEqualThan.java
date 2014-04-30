@@ -26,9 +26,19 @@ import java.io.Serializable;
 
 public class GreaterEqualThan extends Function<Cells, Boolean> implements Serializable {
 
+    /**
+     * Serial version UID.
+     */
     private static final long serialVersionUID = 2927596112428729111L;
 
+    /**
+     * Value to compare.
+     */
     private Object value;
+
+    /**
+     * Name of the field of the cell to compare.
+     */
     private String field;
 
     /**

@@ -24,19 +24,22 @@ import java.util.Iterator;
 public abstract class ResultSet implements Iterable<Row> {
 
     /**
-     * Get a Iterator over the ResultSet
+     * Get a Iterator over the ResultSet.
+     *
      * @return Iterator
      */
     public abstract Iterator<Row> iterator();
 
     /**
-     * Get the size of ResultSet
+     * Get the size of ResultSet.
+     *
      * @return the size of ResultSet
      */
     public abstract int size();
 
     /**
-     * Check if ResultSet is empty
+     * Check if ResultSet is empty.
+     *
      * @return {@code true} if is empty
      */
     public boolean isEmpty(){

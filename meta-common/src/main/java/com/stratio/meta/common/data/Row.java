@@ -29,14 +29,15 @@ public class Row implements Serializable {
     private Map<String, Cell> cells;
 
     /**
-     * Row default constructor
+     * Row default constructor.
      */
     public Row() {
         cells = new LinkedHashMap<>();
     }
 
     /**
-     * Row params constructor with a cell
+     * Row params constructor with a cell.
+     *
      * @param key Key of the cell
      * @param cell A {@link com.stratio.meta.common.data.Cell}
      */
@@ -46,7 +47,8 @@ public class Row implements Serializable {
     }
 
     /**
-     * Get the size of row
+     * Get the size of row.
+     *
      * @return the size requested
      */
     public int size(){
@@ -54,7 +56,8 @@ public class Row implements Serializable {
     }
 
     /**
-     * Get the cells of current row
+     * Get the cells of current row.
+     *
      * @return A map which contains the cells
      */
     public Map<String, Cell> getCells() {
@@ -62,7 +65,8 @@ public class Row implements Serializable {
     }
 
     /**
-     * Set the cells of the row
+     * Set the cells of the row.
+     *
      * @param cells A map of cells
      */
     public void setCells(Map<String, Cell> cells) {
@@ -70,7 +74,8 @@ public class Row implements Serializable {
     }
 
     /**
-     * Add a Cell to the row
+     * Add a Cell to the row.
+     *
      * @param key Key
      * @param cell Cell
      */
@@ -79,7 +84,8 @@ public class Row implements Serializable {
     }
 
     /**
-     * Get a cell by key
+     * Get a cell by key.
+     *
      * @param key Key of the cell
      * @return Cell requested.
      */

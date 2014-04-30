@@ -38,7 +38,8 @@ public class CassandraResultSet extends ResultSet implements Serializable {
     }
 
     /**
-     * CassandraResultSet param constructor
+     * CassandraResultSet param constructor.
+     *
      * @param rows List of {@link com.stratio.meta.common.data.Row}
      */
     public CassandraResultSet(List<Row> rows) {
@@ -47,6 +48,7 @@ public class CassandraResultSet extends ResultSet implements Serializable {
 
     /**
      * Get the rows of the Result Set.
+     *
      * @return A List of {@link com.stratio.meta.common.data.Row}
      */
     public List<Row> getRows() {
@@ -54,7 +56,8 @@ public class CassandraResultSet extends ResultSet implements Serializable {
     }
 
     /**
-     * Add a row to the Result Set
+     * Add a row to the Result Set.
+     *
      * @param row {@link com.stratio.meta.common.data.Row} to add
      */
     public void add(Row row){
@@ -62,7 +65,8 @@ public class CassandraResultSet extends ResultSet implements Serializable {
     }
 
     /**
-     * Remove a row
+     * Remove a row.
+     *
      * @param index Index of the row to remove
      */
     public void remove(int index) {
@@ -71,6 +75,7 @@ public class CassandraResultSet extends ResultSet implements Serializable {
 
     /**
      * Get the size of the Result Set.
+     *
      * @return Size.
      */
     public int size(){
