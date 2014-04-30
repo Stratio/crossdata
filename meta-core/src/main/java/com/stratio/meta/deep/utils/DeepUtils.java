@@ -85,6 +85,10 @@ public final class DeepUtils {
         return rs;
     }
 
+    /**
+     * Print a List of {@link com.stratio.meta.common.data.Row}
+     * @param rows List of Rows
+     */
     protected static void printDeepResult(List<Row> rows){
         StringBuilder sb = new StringBuilder(System.lineSeparator());
         boolean firstRow = true;

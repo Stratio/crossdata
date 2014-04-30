@@ -47,7 +47,7 @@ import java.util.*;
 public class Bridge {
 
     /**
-     * Serial version UID.
+     * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(Bridge.class);
 

@@ -16,7 +16,6 @@ public class EngineTests extends BasicCoreCassandraTest{
         String [] cassandraHosts = {"127.0.0.1"};
         engineConfig.setCassandraHosts(cassandraHosts);
         engineConfig.setCassandraPort(9042);
-        engineConfig.setJobName("testJob");
         engineConfig.setSparkMaster("local");
         engineConfig.setClasspathJars("/");
         engineConfig.setJars(Arrays.asList("akka-1.0.jar", "deep-0.2.0.jar"));
