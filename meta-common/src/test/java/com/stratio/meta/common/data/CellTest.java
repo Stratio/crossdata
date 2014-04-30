@@ -23,8 +23,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.Random;
-
 public class CellTest {
 
     @BeforeClass
@@ -46,6 +44,6 @@ public class CellTest {
     @Test
     public void testGetValue(){
         Cell cellStr = new Cell(String.class, new String("comment1"));
-        Assert.assertTrue(((String)cellStr.getValue()).equals("comment1"));
+        Assert.assertTrue(((String) cellStr.getValue()).equals("comment1"));
     }
 }

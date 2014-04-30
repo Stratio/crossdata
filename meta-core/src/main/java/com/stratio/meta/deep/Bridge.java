@@ -53,12 +53,24 @@ public class Bridge {
     private Session session;
     private EngineConfig engineConfig;
 
+    /**
+     * Brigde Constructor
+     * @param session Cassandra session. {@link com.datastax.driver.core.Session}
+     * @param deepSparkContext Spark context from Deep
+     * @param config A {@link com.stratio.meta.core.engine.EngineConfig}, contains global configuration
+     */
     public Bridge(Session session, DeepSparkContext deepSparkContext, EngineConfig config) {
         this.deepContext = deepSparkContext;
         this.session = session;
         this.engineConfig = config;
     }
 
+    /**
+     * Execute a Leaf node in the current plan.
+     * @param stmt Statement which corresponds to this node.
+     * @param isRoot Indicates if this node is root in this plan
+     * @return a {@link com.stratio.meta.common.data.ResultSet}
+     */
     public ResultSet executeLeafNode(MetaStatement stmt, boolean isRoot){
         SelectStatement ss = (SelectStatement) stmt;
         // LEAF
@@ -80,7 +92,13 @@ public class Bridge {
         return returnResult(rdd, isRoot, Arrays.asList(columnsSet));
     }
 
-    public ResultSet executeRootNode(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot){
+    /**
+     * Executes a root node statement
+     * @param stmt Statement which corresponds to this node.
+     * @param resultsFromChildren List of results from node children
+     * @return a {@link com.stratio.meta.common.data.ResultSet}
+     */
+    public ResultSet executeRootNode(MetaStatement stmt, List<Result> resultsFromChildren){
         SelectStatement ss = (SelectStatement) stmt;
         // Retrieve RDDs and selected columns from children
         List<JavaRDD> children = new ArrayList<>();
@@ -123,9 +141,16 @@ public class Bridge {
         JavaRDD result = joinRDD.map(new JoinCells(field1));
 
         // Return MetaResultSet
-        return returnResult(result, isRoot, selectedCols);
+        return returnResult(result, true, selectedCols);
     }
 
+    /**
+     * General execution. Depending on the type execution will divide up.
+     * @param stmt Statement which corresponds to this node.
+     * @param resultsFromChildren List of results from node children
+     * @param isRoot Indicates if this node is root in this plan
+     * @return a {@link com.stratio.meta.common.data.ResultSet}
+     */
     public ResultSet execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot){
 
         LOG.info("Executing deep for: " + stmt.toString());
@@ -141,10 +166,17 @@ public class Bridge {
             return executeLeafNode(stmt, isRoot);
         } else {
             // (INNER NODE) NO LEAF
-            return executeRootNode(stmt, resultsFromChildren, isRoot);
+            return executeRootNode(stmt, resultsFromChildren);
         }
     }
 
+    /**
+     * Build a ResultSet from a RDD depending the context.
+     * @param rdd RDD which corresponds to Spark result.
+     * @param isRoot Indicates if this node is root in this plan
+     * @param selectedCols List of columns selected in current SelectStatement.
+     * @return ResultSet containing the result of built.
+     */
     private ResultSet returnResult(JavaRDD rdd, boolean isRoot, List<String> selectedCols){
         if(isRoot){
             return DeepUtils.buildResultSet(rdd.dropTake(0, DEFAULT_RESULT_SIZE), selectedCols);
@@ -158,10 +190,12 @@ public class Bridge {
         }
     }
 
-    public void stopContext(){
-        deepContext.stop();
-    }
-
+    /**
+     * Take a RDD and a Relation and apply suitable filter to the RDD. Execute where clause on Deep.
+     * @param rdd RDD which filter must be applied.
+     * @param rel {@link com.stratio.meta.core.structures.Relation} to apply
+     * @return A new RDD with the result.
+     */
     private JavaRDD doWhere(JavaRDD rdd, Relation rel){
         String operator = rel.getOperator();
         JavaRDD result = null;
