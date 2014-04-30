@@ -34,6 +34,9 @@ import java.util.List;
 
 public class DeepExecutor {
 
+    /**
+     * Class logger.
+     */
     private static final Logger LOG = Logger.getLogger(DeepExecutor.class);
 
     /**
@@ -43,6 +46,16 @@ public class DeepExecutor {
 
     }
 
+    /**
+     * Executes a statement in Spark using Deep.
+     * @param stmt {@link com.stratio.meta.core.statements.MetaStatement}
+     * @param resultsFromChildren List of {@link com.stratio.meta.common.result.Result} of children.
+     * @param isRoot Indicates if these node is root.
+     * @param session Cassandra datastax java driver {@link com.datastax.driver.core.Session}.
+     * @param deepSparkContext Spark context from Deep
+     * @param engineConfig The {@link com.stratio.meta.core.engine.EngineConfig}.
+     * @return a {@link com.stratio.meta.common.result.Result} of execution in Spark.
+     */
     public static Result execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot, Session session, DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
         if (stmt instanceof SelectStatement) {
             SelectStatement ss = (SelectStatement) stmt;

@@ -66,6 +66,7 @@ public class EngineConfig {
 
     /**
      * Get Cassandra hosts.
+     *
      * @return an array of hosts
      */
     public String[] getCassandraHosts() {
@@ -74,6 +75,7 @@ public class EngineConfig {
 
     /**
      * Set cassandra hosts.
+     *
      * @param cassandraHosts an array of String containing cassandra hosts.
      */
     public void setCassandraHosts(String[] cassandraHosts) {
@@ -82,6 +84,7 @@ public class EngineConfig {
 
     /**
      * Get cassandra port.
+     *
      * @return current cassandra port.
      */
     public int getCassandraPort() {
@@ -90,6 +93,7 @@ public class EngineConfig {
 
     /**
      * Set cassandra port.
+     *
      * @param cassandraPort Port of cassandra (CQL).
      */
     public void setCassandraPort(int cassandraPort) {
@@ -98,6 +102,7 @@ public class EngineConfig {
 
     /**
      * Get Spark Master URL.
+     *
      * @return Spark Master URL in a String.
      */
     public String getSparkMaster(){
@@ -106,6 +111,7 @@ public class EngineConfig {
 
     /**
      * Set Spark Master URL.
+     *
      * @param sparkMaster Spark Master URL spark://HOST:PORT/
      */
     public void setSparkMaster(String sparkMaster){
@@ -114,6 +120,7 @@ public class EngineConfig {
 
     /**
      * Get the default Job Name in Spark.
+     *
      * @return the job name.
      */
     public String getJobName(){
@@ -123,6 +130,7 @@ public class EngineConfig {
 
     /**
      * Get cassandra host randomly.
+     *
      * @return random cassandra host.
      */
     public String getRandomCassandraHost(){

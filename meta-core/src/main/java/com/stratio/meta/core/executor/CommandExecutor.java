@@ -34,49 +34,62 @@ public class CommandExecutor {
     /**
      * Private class constructor as all methods are static.
      */
-    private CommandExecutor(){
+    private CommandExecutor() {
 
     }
 
+    /**
+     * Execute a {@link com.stratio.meta.core.statements.MetaStatement} command.
+     *
+     * @param stmt Statement to execute.
+     * @param session Cassandra datastax java driver {@link com.datastax.driver.core.Session}.
+     * @return a {@link com.stratio.meta.common.result.Result}.
+     */
     public static Result execute(MetaStatement stmt, Session session) {
         try {
-            if(stmt instanceof DescribeStatement){
+            if (stmt instanceof DescribeStatement) {
                 return executeDescribe((DescribeStatement) stmt, session);
             } else {
                 return CommandResult.createFailCommanResult("Not supported yet.");
             }
-        } catch (RuntimeException rex){
+        } catch (RuntimeException rex) {
             return CommandResult.createFailCommanResult(rex.getMessage());
         }
     }
 
-    private static Result executeDescribe(DescribeStatement dscrStatement, Session session){
+    /**
+     * Execute a {@link com.stratio.meta.core.statements.DescribeStatement}
+     *
+     * @param dscrStatement Statement to execute.
+     * @param session Cassandra datastax java driver {@link com.datastax.driver.core.Session}.
+     * @return a {@link com.stratio.meta.common.result.Result}.
+     */
+    private static Result executeDescribe(DescribeStatement dscrStatement, Session session) {
         MetadataManager mm = new MetadataManager(session);
         mm.loadMetadata();
         Result result = null;
         String info = null;
         String errorMessage = null;
-        if(dscrStatement.getType() == DescribeType.KEYSPACE){ // KEYSPACE
+        if (dscrStatement.getType() == DescribeType.KEYSPACE) { // KEYSPACE
             KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(dscrStatement.getKeyspace());
-            if(ksInfo == null){
+            if (ksInfo == null) {
                 errorMessage = "KEYSPACE " + dscrStatement.getKeyspace() + " was not found";
             } else {
                 info = ksInfo.exportAsString();
             }
         } else { // TABLE
             TableMetadata tableInfo = mm.getTableMetadata(dscrStatement.getKeyspace(), dscrStatement.getTableName());
-            if(tableInfo == null){
+            if (tableInfo == null) {
                 errorMessage = "TABLE " + dscrStatement.getTableName() + " was not found";
             } else {
                 info = tableInfo.exportAsString();
             }
         }
-        if(info!=null){
+        if (info != null) {
             result = CommandResult.createSuccessCommandResult(info);
-        }else{
+        } else {
             result = CommandResult.createFailCommanResult(errorMessage);
         }
         return result;
     }
-
 }
