@@ -78,29 +78,33 @@ public final class DeepUtils {
 
         ////////////////////////////////////////////////////////////////////////////
         if(LOG.isDebugEnabled()){
-            StringBuilder sb = new StringBuilder(System.lineSeparator());
-            boolean firstRow = true;
-            for (Row row : rs.getRows()) {
-                if (firstRow) {
-                    for (String colName : row.getCells().keySet()) {
-                        sb.append(colName).append(" | ");
-                    }
-                    sb.append(System.lineSeparator());
-                    sb.append("---------------------------------------------------------------------");
-                    sb.append(System.lineSeparator());
-                }
-                firstRow = false;
-                for(Map.Entry<String, Cell> entry : row.getCells().entrySet()){
-                    sb.append(String.valueOf(entry.getValue())).append(" - ");
-                }
-                sb.append(System.lineSeparator());
-            }
-            sb.append(System.lineSeparator());
-            LOG.debug(sb.toString());
+            printDeepResult(rs.getRows());
         }
         /////////////////////////////////////////////////////////////////////////////
 
         return rs;
+    }
+
+    protected static void printDeepResult(List<Row> rows){
+        StringBuilder sb = new StringBuilder(System.lineSeparator());
+        boolean firstRow = true;
+        for (Row row : rows) {
+            if (firstRow) {
+                for (String colName : row.getCells().keySet()) {
+                    sb.append(colName).append(" | ");
+                }
+                sb.append(System.lineSeparator());
+                sb.append("---------------------------------------------------------------------");
+                sb.append(System.lineSeparator());
+            }
+            firstRow = false;
+            for(Map.Entry<String, Cell> entry : row.getCells().entrySet()){
+                sb.append(String.valueOf(entry.getValue())).append(" - ");
+            }
+            sb.append(System.lineSeparator());
+        }
+        sb.append(System.lineSeparator());
+        LOG.debug(sb.toString());
     }
 
     /**

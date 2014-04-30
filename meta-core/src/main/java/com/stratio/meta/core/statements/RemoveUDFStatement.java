@@ -24,8 +24,15 @@ import com.stratio.meta.core.utils.Tree;
 
 public class RemoveUDFStatement extends MetaStatement {
 
+    /**
+     * The target jar name.
+     */
     private String jarName = null;
 
+    /**
+     * Class constructor.
+     * @param jarName The name of the target jar.
+     */
     public RemoveUDFStatement(String jarName){
         this.command = true;
         this.jarName = jarName;

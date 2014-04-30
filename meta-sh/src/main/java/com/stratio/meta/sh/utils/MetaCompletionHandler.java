@@ -28,6 +28,9 @@ import java.util.List;
 
 public class MetaCompletionHandler extends CandidateListCompletionHandler {
 
+    /**
+     * Class constructor that calls the parent constructor.
+     */
     public MetaCompletionHandler() {
         super();
     }

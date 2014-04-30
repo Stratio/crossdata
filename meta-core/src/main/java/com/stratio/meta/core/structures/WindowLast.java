@@ -21,6 +21,9 @@ package com.stratio.meta.core.structures;
 
 public class WindowLast extends WindowSelect {
 
+    /**
+     * Class constructor.
+     */
     public WindowLast() {
         this.type = TYPE_LAST;
     }        
