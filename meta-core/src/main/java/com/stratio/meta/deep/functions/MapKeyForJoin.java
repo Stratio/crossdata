@@ -28,12 +28,18 @@ import java.io.Serializable;
 
 public class MapKeyForJoin<T> extends PairFunction<Cells, T, Cells> implements Serializable{
 
+    /**
+     * Serial version UID.
+     */
     private static final long serialVersionUID = -6677647619149716567L;
 
+    /**
+     * Map key.
+     */
     private String key;
 
     /**
-     * MapKeyForJoin maps a field in a Cell
+     * MapKeyForJoin maps a field in a Cell.
      * @param key Field to map
      */
     public MapKeyForJoin(String key){

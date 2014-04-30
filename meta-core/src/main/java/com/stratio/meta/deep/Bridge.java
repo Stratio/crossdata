@@ -46,15 +46,33 @@ import java.util.*;
  */
 public class Bridge {
 
+    /**
+     * Serial version UID.
+     */
     private static final Logger LOG = Logger.getLogger(Bridge.class);
+
+    /**
+     * Default result size.
+     */
     public static final int DEFAULT_RESULT_SIZE = 100000;
 
+    /**
+     * Deep Spark context.
+     */
     private DeepSparkContext deepContext;
+
+    /**
+     * Datastax Java Driver session.
+     */
     private Session session;
+
+    /**
+     * Global configuration.
+     */
     private EngineConfig engineConfig;
 
     /**
-     * Brigde Constructor
+     * Brigde Constructor.
      * @param session Cassandra session. {@link com.datastax.driver.core.Session}
      * @param deepSparkContext Spark context from Deep
      * @param config A {@link com.stratio.meta.core.engine.EngineConfig}, contains global configuration
@@ -93,7 +111,7 @@ public class Bridge {
     }
 
     /**
-     * Executes a root node statement
+     * Executes a root node statement.
      * @param stmt Statement which corresponds to this node.
      * @param resultsFromChildren List of results from node children
      * @return a {@link com.stratio.meta.common.data.ResultSet}

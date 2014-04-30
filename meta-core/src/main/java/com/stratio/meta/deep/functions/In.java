@@ -28,15 +28,25 @@ import java.util.List;
 
 public class In extends Function<Cells, Boolean> implements Serializable{
 
+    /**
+     * Serial version UID.
+     */
     private static final long serialVersionUID = -6637139616271541577L;
 
+    /**
+     * Name of the field of the cell to compare.
+     */
     private String field;
+
+    /**
+     * IDs in the IN clause.
+     */
     private List<String> inIDs;
 
     /**
      * In apply in filter to a field in a Deep Cell.
      * @param field Name of the field to check.
-     * @param inIDs List of values of the in clause.
+     * @param inIDs List of values of the IN clause.
      */
     public In(String field, List<String> inIDs){
         this.field=field;

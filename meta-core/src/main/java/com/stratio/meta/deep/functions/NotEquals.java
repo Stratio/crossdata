@@ -26,9 +26,20 @@ import java.io.Serializable;
 
 
 public class NotEquals extends Function<Cells, Boolean> implements Serializable {
+
+    /**
+     * Serial version UID.
+     */
     private static final long serialVersionUID = 927384912608139416L;
 
+    /**
+     * Value to compare.
+     */
     private Object value;
+
+    /**
+     * Name of the field of the cell to compare.
+     */
     private String field;
 
     /**

@@ -25,13 +25,24 @@ import org.apache.spark.api.java.function.Function;
 import java.io.Serializable;
 
 public class Like extends Function<Cells, Boolean> implements Serializable{
+
+    /**
+     * Serial version UID.
+     */
     private static final long serialVersionUID = 5642510017426647895L;
 
+    /**
+     * Name of the field of the cell to match.
+     */
     private String field;
+
+    /**
+     * Regular expression.
+     */
     private String regexp;
 
     /**
-     * Like filter
+     * Like filter.
      * @param field Name of the field to check.
      * @param regexp Regular expresion that value must match with.
      */
