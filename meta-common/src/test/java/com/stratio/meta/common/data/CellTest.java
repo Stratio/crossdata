@@ -19,44 +19,33 @@
 
 package com.stratio.meta.common.data;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
-public class CassandraResultSet extends ResultSet implements Serializable {
+import java.util.Random;
 
-    private static final long serialVersionUID = 6673808320950075999L;
+public class CellTest {
 
-    private List<Row> rows;
-
-    public CassandraResultSet() {
-        rows = new ArrayList<>();
+    @BeforeClass
+    public void setUp(){
     }
 
-    public CassandraResultSet(List<Row> rows) {
-        this.rows = rows;
+    @Test
+    public void testConstructor(){
+        Cell cellStr = new Cell(String.class, new String("comment1"));
+        Assert.assertNotNull(cellStr);
     }
 
-    public List<Row> getRows() {
-        return rows;
+    @Test
+    public void testGetDataype(){
+        Cell cellStr = new Cell(String.class, new String("comment1"));
+        Assert.assertEquals(cellStr.getDatatype(),String.class);
     }
 
-    public void add(Row row){
-        rows.add(row);
+    @Test
+    public void testGetValue(){
+        Cell cellStr = new Cell(String.class, new String("comment1"));
+        Assert.assertTrue(((String)cellStr.getValue()).equals("comment1"));
     }
-
-    public void remove(int index) {
-        rows.remove(index);
-    }
-
-    public int size(){
-        return rows.size();
-    }
-
-    @Override
-    public Iterator<Row> iterator() {
-        return new CResultSetIterator(this);
-    }
-
 }
