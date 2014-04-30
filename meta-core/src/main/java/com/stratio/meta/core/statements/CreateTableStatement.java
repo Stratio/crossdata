@@ -190,8 +190,7 @@ public class CreateTableStatement extends MetaStatement{
 
         if(primaryKeyType == 3){
             sb.append(")");
-            for (Iterator<String> it = clusterKey.iterator();it.hasNext();){
-                String key = it.next();
+            for(String key : clusterKey){
                 sb.append(", ").append(key);
             }
         }

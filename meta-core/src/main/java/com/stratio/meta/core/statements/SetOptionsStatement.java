@@ -28,10 +28,27 @@ import java.util.List;
 
 public class SetOptionsStatement extends MetaStatement {
 
+    /**
+     * The consistency level.
+     */
     private Consistency consistency;
+
+    /**
+     * Whether analytics should be used.
+     */
     private boolean analytics;
+
+    /**
+     * The list of options present.
+     */
     private List<Boolean> optionsCheck;
 
+    /**
+     * Class constructor.
+     * @param analytics Whether analytics are used.
+     * @param consistency The level of consistency.
+     * @param optionsCheck The list of options present.
+     */
     public SetOptionsStatement(boolean analytics, Consistency consistency, List<Boolean> optionsCheck) {
         this.command = true;
         this.consistency = consistency;
@@ -39,30 +56,6 @@ public class SetOptionsStatement extends MetaStatement {
         this.optionsCheck = new ArrayList<>();
         this.optionsCheck.addAll(optionsCheck);
     }
-
-    public Consistency getConsistency() {
-        return consistency;
-    }
-
-    public void setConsistency(Consistency consistency) {
-        this.consistency = consistency;
-    }
-
-    public boolean isAnalytics() {
-        return analytics;
-    }
-
-    public void setAnalytics(boolean analytics) {
-        this.analytics = analytics;
-    }        
-
-    public List<Boolean> getOptionsCheck() {
-        return optionsCheck;
-    }
-
-    public void setOptionsCheck(List<Boolean> optionsCheck) {
-        this.optionsCheck = optionsCheck;
-    }        
     
     @Override
     public String toString() {

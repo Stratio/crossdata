@@ -60,7 +60,7 @@ public class InnerJoin {
     }
 
     public Map<String, String> getColNames(){
-        Map<String, String> colNames = new HashMap<String, String>();
+        Map<String, String> colNames = new HashMap<>();
         for(String key: fields.keySet()){
             String field = fields.get(key);
             String[] ksAndTablenameValue= field.split("\\.");

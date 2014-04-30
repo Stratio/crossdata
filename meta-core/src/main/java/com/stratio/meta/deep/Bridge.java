@@ -156,7 +156,7 @@ public class Bridge {
         LOG.info("Executing deep for: " + stmt.toString());
 
         if(!(stmt instanceof SelectStatement)){
-            List<Row> oneRow = new ArrayList<Row>();
+            List<Row> oneRow = new ArrayList<>();
             oneRow.add(new Row("RESULT", new Cell(String.class, "NOT supported yet")));
             return new CassandraResultSet(oneRow);
         }

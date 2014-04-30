@@ -58,7 +58,7 @@ public class HelpContent {
      * Load the mapped view of the help contents.
      */
     public void loadMap(){
-        help = new HashMap<HelpType, String>();
+        help = new HashMap<>();
         for(HelpEntry e : content){
             help.put(HelpType.valueOf(e.getEntry()), e.getHelp());
         }
