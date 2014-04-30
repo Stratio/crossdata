@@ -69,19 +69,18 @@ class CreateKeyspaceActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Con
   }
 
   test ("Create keyspace SimpleStrategy ok"){
+    dropKeyspaceIfExists("demo1")
     val query = "create KEYSPACE demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
-    within(3000 millis){
+    within(5000 millis){
       executeStatement(query, "")
     }
-    dropKeyspaceIfExists("demo1")
-
   }
 
   test ("Create keyspace NetworkTopolyStrategy quoted ok"){
+    dropKeyspaceIfExists("demo1")
     val query = "CREATE KEYSPACE demo1 WITH replication = {'class': 'NetworkTopologyStrategy'};"
-    within(3000 millis){
+    within(5000 millis){
       executeStatement(query, "")
     }
-    dropKeyspaceIfExists("demo1")
   }
 }
