@@ -67,7 +67,6 @@ public class BridgeTest extends BasicCoreCassandraTest {
         engineConfig.setCassandraHosts(cassandraHosts);
         engineConfig.setCassandraPort(9042);
         engineConfig.setSparkMaster("local");
-        engineConfig.setJobName("testJob");
         return engineConfig;
     }
 

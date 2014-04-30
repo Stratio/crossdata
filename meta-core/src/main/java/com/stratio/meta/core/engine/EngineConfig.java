@@ -28,61 +28,131 @@ import java.util.List;
 import java.util.Random;
 
 public class EngineConfig {
-    private String jobName = "stratioDeepWithMeta";
-    private String [] cassandraHosts;
-    private int cassandraPort;
-    private String sparkMaster;
-    private List<String> jars;
-    private static String [] forbiddenJars = {"akka"};
 
+    /**
+     * Class logger.
+     */
     private static final Logger LOG = Logger.getLogger(EngineConfig.class.getName());
 
+    /**
+     * Name of the Job in Spark.
+     */
+    private static final String JOBNAME = "stratioDeepWithMeta";
+
+    /**
+     *
+     */
+    private static String [] forbiddenJars = {"akka"};
+
+    /**
+     * Cassandra hosts.
+     */
+    private String [] cassandraHosts;
+
+    /**
+     * Cassandra port.
+     */
+    private int cassandraPort;
+
+    /**
+     * Spark Master spark://HOST:PORT/.
+     */
+    private String sparkMaster;
+
+    /**
+     * List of *.jar in the classpath.
+     */
+    private List<String> jars;
+
+    /**
+     * Get Cassandra hosts.
+     * @return an array of hosts
+     */
     public String[] getCassandraHosts() {
         return cassandraHosts;
     }
 
+    /**
+     * Set cassandra hosts.
+     * @param cassandraHosts an array of String containing cassandra hosts.
+     */
     public void setCassandraHosts(String[] cassandraHosts) {
         this.cassandraHosts = Arrays.copyOf(cassandraHosts, cassandraHosts.length);
     }
 
+    /**
+     * Get cassandra port.
+     * @return current cassandra port.
+     */
     public int getCassandraPort() {
         return cassandraPort;
     }
 
+    /**
+     * Set cassandra port.
+     * @param cassandraPort Port of cassandra (CQL).
+     */
     public void setCassandraPort(int cassandraPort) {
         this.cassandraPort = cassandraPort;
     }
 
+    /**
+     * Get Spark Master URL.
+     * @return Spark Master URL in a String.
+     */
     public String getSparkMaster(){
         return sparkMaster;
     }
 
+    /**
+     * Set Spark Master URL.
+     * @param sparkMaster Spark Master URL spark://HOST:PORT/
+     */
     public void setSparkMaster(String sparkMaster){
         this.sparkMaster=sparkMaster;
     }
 
+    /**
+     * Get the default Job Name in Spark.
+     * @return the job name.
+     */
     public String getJobName(){
-        return jobName;
+        return JOBNAME;
     }
 
-    public void setJobName(String jobName){
-        this.jobName=jobName;
-    }
 
+    /**
+     * Get cassandra host randomly.
+     * @return random cassandra host.
+     */
     public String getRandomCassandraHost(){
         Random rand = new Random();
         return cassandraHosts[rand.nextInt(cassandraHosts.length)];
     }
 
+    /**
+     * Set List of paths to jars.
+     *
+     * @param jars List of paths.
+     */
     public void setJars(List<String> jars){
         this.jars = jars;
     }
 
-
+    /**
+     * Get List of jars.
+     *
+     * @return list of paths, each point to one jar
+     */
     public List<String> getJars(){
         return jars;
     }
 
+    /**
+     * Set path which cointains spark classpath.
+     *
+     * @param path Path to classpath
+     */
     public void setClasspathJars(String path){
         jars = new ArrayList<>();
         File file = new File(path);
@@ -98,6 +168,12 @@ public class EngineConfig {
         }
     }
 
+    /**
+     * Check if a .jar is forbidden or not depending on {@link EngineConfig#forbiddenJars}.
+     *
+     * @param jar .jar to check
+     * @return {@code true} if is not forbidden.
+     */
     private boolean filterJars(String jar){
         for (String forbiddenJar : forbiddenJars) {
             if (jar.startsWith(forbiddenJar)) {

@@ -38,11 +38,34 @@ import java.util.Arrays;
  */
 public class Engine {
 
+    /**
+     * The {@link com.stratio.meta.core.parser.Parser}. Responsible for parse.
+     */
     private final Parser parser;
+
+    /**
+     * The {@link com.stratio.meta.core.validator.Validator}. Responsible for validation.
+     */
     private final Validator validator;
+
+    /**
+     * The {@link com.stratio.meta.core.planner.Planner}. Responsible for planification.
+     */
     private final Planner planner;
+
+    /**
+     * The {@link com.stratio.meta.core.executor.Executor}. Responsible for execution.
+     */
     private final Executor executor;
+
+    /**
+     * Datastax Java Driver session.
+     */
     private final Session session;
+
+    /**
+     * Deep Spark context.
+     */
     private final DeepSparkContext deepContext;
 
     /**
@@ -52,6 +75,7 @@ public class Engine {
 
     /**
      * Class constructor.
+     *
      * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
      */
     public Engine(EngineConfig config) {
@@ -77,23 +101,46 @@ public class Engine {
         planner = new Planner(session);
         executor = new Executor(session, deepContext, config);
     }
-       
+
+    /**
+     * Get the parser.
+     *
+     * @return a {@link com.stratio.meta.core.parser.Parser}
+     */
     public Parser getParser() {
         return parser;
     }
 
+    /**
+     * Get the validator.
+     *
+     * @return a {@link com.stratio.meta.core.validator.Validator}
+     */
     public Validator getValidator() {
         return validator;
     }
 
+    /**
+     * Get the planner.
+     *
+     * @return a {@link com.stratio.meta.core.planner.Planner}
+     */
     public Planner getPlanner() {
         return planner;
     }
 
+    /**
+     * Get the executor
+     *
+     * @return a {@link com.stratio.meta.core.executor.Executor}
+     */
     public Executor getExecutor() {
         return executor;
     }
 
+    /**
+     * Close open connections
+     */
     public void shutdown(){
         deepContext.stop();
         session.close();
