@@ -155,7 +155,7 @@ public class ParserUtils {
                 sb.append(System.lineSeparator()).append("\t");
             }
         }
-        if(sb.toString().equalsIgnoreCase("Did you mean: ")){
+        if("Did you mean: ".equalsIgnoreCase(sb.toString())){
             return "";
         }
         return sb.substring(0, sb.length());

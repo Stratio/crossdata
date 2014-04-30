@@ -47,6 +47,9 @@ import java.util.regex.Pattern;
  */
 public class SelectStatement extends MetaStatement {
 
+    /**
+     * Maximum limit of rows to be retreived in a query.
+     */
     private static final int MAX_LIMIT = 10000;
 
     /**
@@ -423,11 +426,25 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
+    /**
+     * Validate the JOIN clause.
+     * @param tableFrom The table in the FROM clause.
+     * @param tableJoin The table in the JOIN clause.
+     * @return Whether the specified table names and fields are valid.
+     */
     //TODO validateJoinClause
     private Result validateJoinClause(TableMetadata tableFrom, TableMetadata tableJoin){
         return QueryResult.createFailQueryResult("Unsupported");
     }
 
+    /**
+     * Validate a relation found in a where clause.
+     * @param targetTable The target table.
+     * @param column The name of the column.
+     * @param t The term.
+     * @param operator The operator.
+     * @return Whether the relation is valid.
+     */
     private Result validateWhereRelation(String targetTable, String column, Term t, String operator){
         Result result = QueryResult.createSuccessQueryResult();
 
@@ -771,6 +788,12 @@ public class SelectStatement extends MetaStatement {
         return sb.toString();
     }
 
+    /**
+     * Get the driver representation of the fields found in the selection clause.
+     * @param selSelectors The selectors.
+     * @param selection The current Select.Selection.
+     * @return A {@link com.datastax.driver.core.querybuilder.Select.Selection}.
+     */
     private Select.Selection getDriverBuilderSelection(SelectionSelectors selSelectors,
                                                        Select.Selection selection){
         Select.Selection result = selection;
@@ -798,6 +821,10 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
+    /**
+     * Get the driver builder object with the selection clause.
+     * @return A {@link com.datastax.driver.core.querybuilder.Select.Builder}.
+     */
     private Select.Builder getDriverBuilder(){
         Select.Builder builder;
         if(selectionClause.getType() == SelectionClause.TYPE_COUNT){
@@ -852,6 +879,11 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
+    /**
+     * Get the driver clause associated with a compare relation.
+     * @param metaRelation The {@link com.stratio.meta.core.structures.RelationCompare} clause.
+     * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
+     */
     private Clause getRelationCompareClause(Relation metaRelation){
         Clause clause = null;
         RelationCompare relCompare = (RelationCompare) metaRelation;
@@ -884,6 +916,11 @@ public class SelectStatement extends MetaStatement {
         return clause;
     }
 
+    /**
+     * Get the driver clause associated with an in relation.
+     * @param metaRelation The {@link com.stratio.meta.core.structures.RelationIn} clause.
+     * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
+     */
     private Clause getRelationInClause(Relation metaRelation){
         Clause clause = null;
         RelationIn relIn = (RelationIn) metaRelation;
@@ -899,6 +936,11 @@ public class SelectStatement extends MetaStatement {
         return clause;
     }
 
+    /**
+     * Get the driver clause associated with an token relation.
+     * @param metaRelation The {@link com.stratio.meta.core.structures.RelationToken} clause.
+     * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
+     */
     private Clause getRelationTokenClause(Relation metaRelation){
         Clause clause = null;
         RelationToken relToken = (RelationToken) metaRelation;
@@ -931,6 +973,11 @@ public class SelectStatement extends MetaStatement {
         return clause;
     }
 
+    /**
+     * Get the driver where clause.
+     * @param sel The current Select.
+     * @return A {@link com.datastax.driver.core.querybuilder.Select.Where}.
+     */
     private Where getDriverWhere(Select sel){
         Where whereStmt = null;
         String [] luceneWhere = getLuceneWhereClause(metadata, tableMetadataFrom);
@@ -1003,6 +1050,11 @@ public class SelectStatement extends MetaStatement {
         return whereStmt;
     }
 
+    /**
+     * Find the table that contains the selected column.
+     * @param columnName The name of the column.
+     * @return The name of the table.
+     */
     private String findAssociatedTable(String columnName){
         String result = null;
         boolean found = false;
@@ -1020,7 +1072,13 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
-
+    /**
+     * Check whether a selection clause should be added to the new Select statement that
+     * will be generated as part of the planning process of a JOIN.
+     * @param select The {@link com.stratio.meta.core.statements.SelectStatement}.
+     * @param whereColumnName The name of the column.
+     * @return Whether it should be added or not.
+     */
     private boolean checkAddSelectionJoinWhere(SelectStatement select, String whereColumnName){
         Selection selList = ((SelectionList) this.selectionClause).getSelection();
         boolean addCol = true;
@@ -1044,6 +1102,13 @@ public class SelectStatement extends MetaStatement {
         return addCol;
     }
 
+    /**
+     * Get a map of relations to be added to where clauses of the sub-select queries that will be
+     * executed for a JOIN select.
+     * @param firstSelect The first select statement.
+     * @param secondSelect The second select statement.
+     * @return A map with keys {@code 1} or {@code 2} for each select.
+     */
     private Map<Integer, List<Relation>> getWhereJoinPlan(SelectStatement firstSelect, SelectStatement secondSelect){
         Map<Integer, List<Relation>> result = new HashMap<>();
 
@@ -1088,7 +1153,11 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
-    private Tree getJoinPlan(MetadataManager metadataManager, String targetKeyspace){
+    /**
+     * Get the execution plan of a Join.
+     * @return The execution plan.
+     */
+    private Tree getJoinPlan(){
         Tree steps = new Tree();
         SelectStatement firstSelect = new SelectStatement(tableName);
         firstSelect.setSessionKeyspace(this.sessionKeyspace);
@@ -1165,8 +1234,12 @@ public class SelectStatement extends MetaStatement {
         return steps;
     }
 
-
-    private Tree getWherePlan(MetadataManager metadataManager, String targetKeyspace){
+    /**
+     * Get the execution plan of a non JOIN select with a where clause.
+     * @param metadataManager The medata manager.
+     * @return The execution plan.
+     */
+    private Tree getWherePlan(MetadataManager metadataManager){
         Tree steps = new Tree();
         // Get columns of the where clauses
         Map<String, String> whereCols = new HashMap<>();
@@ -1245,9 +1318,9 @@ public class SelectStatement extends MetaStatement {
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         Tree steps = new Tree();
         if(joinInc){
-            steps = getJoinPlan(metadataManager, targetKeyspace);
+            steps = getJoinPlan();
         } else if(whereInc) {
-            steps = getWherePlan(metadataManager, targetKeyspace);
+            steps = getWherePlan(metadataManager);
         } else {
             steps.setNode(new MetaStep(MetaPath.CASSANDRA, this));
         }

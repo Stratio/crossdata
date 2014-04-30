@@ -90,7 +90,6 @@ public final class DeepUtils {
                     sb.append(System.lineSeparator());
                 }
                 firstRow = false;
-                Map<String, Cell> cols = row.getCells();
                 for(Map.Entry<String, Cell> entry : row.getCells().entrySet()){
                     sb.append(String.valueOf(entry.getValue())).append(" - ");
                 }

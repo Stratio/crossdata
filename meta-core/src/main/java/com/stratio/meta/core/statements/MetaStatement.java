@@ -25,7 +25,6 @@ import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.Tree;
 
 /**
