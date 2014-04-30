@@ -56,62 +56,93 @@ public class Tree {
      */
     public Tree() {
         children = new ArrayList<>();
-    }         
-    
+    }
+
+    /**
+     * Class constructor.
+     * @param node The root node.
+     */
     public Tree(MetaStep node) {
         this();
         this.node = node;
-    }        
+    }
 
-    public Tree(Tree parent, MetaStep node) {
-        this();
-        this.parent = parent;
-        this.node = node;
-    }        
-
+    /**
+     * Set the parent of the tree.
+     * @param parent The parent.
+     */
     public void setParent(Tree parent) {
         this.parent = parent;
     }
 
+    /**
+     * Set the root node of this tree.
+     * @param node The root node.
+     */
     public void setNode(MetaStep node) {
         this.node = node;
     }
 
+    /**
+     * Add a child to the tree.
+     * @param child The child.
+     * @return The added child.
+     */
     public Tree addChild(Tree child){
         child.setParent(this);
         children.add(child);
         return child;
     }
 
+    /**
+     * Check whether the current tree has parent or not.
+     * @return Whether the tree has a null parent.
+     */
     public boolean isRoot() {
         return parent == null;
     }
 
+    /**
+     * Get the string representation of this tree starting from the top.
+     * @return A String representation.
+     */
     public String toStringDownTop(){ 
         StringBuilder sb = new StringBuilder();
         int deep = 0;
         for(Tree child: children){
-            sb.append(child.printDownTop(deep+1)).append(System.getProperty("line.separator"));
+            sb.append(child.printDownTop(deep+1)).append(System.lineSeparator());
         }
         if(node != null){
             sb.append(node.toString());
         }
         return sb.toString();
     }
-    
-    private String printDownTop(int deep){
+
+    /**
+     * Get the string representation of the node adding the current node and their children.
+     * @param depth The current depth.
+     * @return The String representation.
+     */
+    private String printDownTop(int depth){
         StringBuilder sb = new StringBuilder();
         sb.append(node.toString());
         for(Tree child: children){
-            sb.append(child.printDownTop(deep+1)).append(System.getProperty("line.separator"));
+            sb.append(child.printDownTop(depth+1)).append(System.getProperty("line.separator"));
         }        
-        for(int i=0; i<deep; i++){
+        for(int i=0; i<depth; i++){
             sb.append("\t");
         }
 
         return sb.toString();
     }
 
+    /**
+     * Execute the elements of the tree starting from the bottom up.
+     * @param session The Cassandra session.
+     * @param deepSparkContext The Deep context.
+     * @param engineConfig The engine configuration.
+     * @return A {@link com.stratio.meta.common.result.Result}.
+     */
     public Result executeTreeDownTop(Session session, DeepSparkContext deepSparkContext, EngineConfig engineConfig){
         // Get results from my children
         List<Result> resultsFromChildren = new ArrayList<>();
@@ -122,53 +153,60 @@ public class Tree {
         return executeMyself(session, deepSparkContext, engineConfig, resultsFromChildren);
     }
 
-    public Result executeMyself(Session session, DeepSparkContext deepSparkContext, EngineConfig engineConfig, List<Result> resultsFromChildren){
+    /**
+     * Execute the current node of the tree.
+     * @param session The Cassandra session.
+     * @param deepSparkContext The Deep context.
+     * @param engineConfig The engine configuration.
+     * @param resultsFromChildren The results from the children.
+     * @return A {@link com.stratio.meta.common.result.Result}.
+     */
+    public Result executeMyself(Session session,
+                                DeepSparkContext deepSparkContext,
+                                EngineConfig engineConfig,
+                                List<Result> resultsFromChildren){
+        Result result = null;
         if(node == null){
             return QueryResult.createSuccessQueryResult();
         }
-        MetaStep myStep = (MetaStep) node;
+        MetaStep myStep = node;
         MetaPath myPath = myStep.getPath();
         if(myPath == MetaPath.COMMAND){
-            return CommandExecutor.execute(myStep.getStmt(), session);
+            result = CommandExecutor.execute(myStep.getStmt(), session);
         } else if(myPath == MetaPath.CASSANDRA){
-            return CassandraExecutor.execute(myStep, session);
+            result = CassandraExecutor.execute(myStep, session);
         } else if(myPath == MetaPath.DEEP){
-            return DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session, deepSparkContext, engineConfig);
+            result = DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session, deepSparkContext, engineConfig);
         } else if(myPath == MetaPath.UNSUPPORTED){
-            return QueryResult.createFailQueryResult("Query not supported.");
+            result = QueryResult.createFailQueryResult("Query not supported.");
         } else {
-            return QueryResult.createFailQueryResult("Query not supported yet.");
+            result = QueryResult.createFailQueryResult("Query not supported yet.");
         }
+        return result;
     }
 
-    public String toStringTopDown(){
-        StringBuilder sb = new StringBuilder();
-        int deep = 0;
-        sb.append(node.toString()).append(System.lineSeparator());
-        for(Tree child: children){
-            sb.append(child.printTopDown(deep+1)).append(System.lineSeparator());
-        }                
-        return sb.toString();
-    }
-    
-    private String printTopDown(int deep){
-        StringBuilder sb = new StringBuilder();
-        for(int i=0; i<deep; i++){
-            sb.append("\t");
-        }
-        sb.append(node.toString());
-        for(Tree child: children){
-            sb.append(child.printDownTop(deep+1)).append(System.lineSeparator());
-        }                
-        return sb.toString();
+    /**
+     * Determine if the tree has not node.
+     * @return Whether the tree does not contain a node.
+     */
+    public boolean isEmpty(){
+        return node == null;
     }
 
-    public boolean isEmpty(){ return (node == null);}
-
+    /**
+     * Get the node assigned to this vertex of the tree.
+     * @return A {@link com.stratio.meta.core.utils.MetaStep}.
+     */
     public MetaStep getNode(){
         return node;
     }
 
-    public  List<Tree> getChildren(){ return children; }
+    /**
+     * Get the list of childrens.
+     * @return The list.
+     */
+    public  List<Tree> getChildren(){
+        return children;
+    }
 
 }

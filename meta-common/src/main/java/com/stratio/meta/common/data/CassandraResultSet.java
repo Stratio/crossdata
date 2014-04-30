@@ -30,26 +30,54 @@ public class CassandraResultSet extends ResultSet implements Serializable {
 
     private List<Row> rows;
 
+    /**
+     * CassandraResultSet default constructor.
+     */
     public CassandraResultSet() {
         rows = new ArrayList<>();
     }
 
+    /**
+     * CassandraResultSet param constructor.
+     *
+     * @param rows List of {@link com.stratio.meta.common.data.Row}
+     */
     public CassandraResultSet(List<Row> rows) {
         this.rows = rows;
     }
 
+    /**
+     * Get the rows of the Result Set.
+     *
+     * @return A List of {@link com.stratio.meta.common.data.Row}
+     */
     public List<Row> getRows() {
         return rows;
     }
 
+    /**
+     * Add a row to the Result Set.
+     *
+     * @param row {@link com.stratio.meta.common.data.Row} to add
+     */
     public void add(Row row){
         rows.add(row);
     }
 
-    public void remove(int current) {
-        rows.remove(current);
+    /**
+     * Remove a row.
+     *
+     * @param index Index of the row to remove
+     */
+    public void remove(int index) {
+        rows.remove(index);
     }
 
+    /**
+     * Get the size of the Result Set.
+     *
+     * @return Size.
+     */
     public int size(){
         return rows.size();
     }

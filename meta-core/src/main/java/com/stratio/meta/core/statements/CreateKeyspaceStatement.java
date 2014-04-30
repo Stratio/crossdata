@@ -98,7 +98,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
     }
 
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata) {
         Result result = QueryResult.createSuccessQueryResult();
         if(name!= null && name.length() > 0) {
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(name);
@@ -109,7 +109,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
             result= QueryResult.createFailQueryResult("Empty keyspace name found.");
         }
 
-        if(properties.size() == 0 || !properties.containsKey("replication")){
+        if(properties.isEmpty() || !properties.containsKey("replication")){
             result= QueryResult.createFailQueryResult("Missing mandatory replication property.");
         }
 

@@ -31,6 +31,13 @@ import com.stratio.meta.core.structures.DescribeType;
 
 public class CommandExecutor {
 
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private CommandExecutor(){
+
+    }
+
     public static Result execute(MetaStatement stmt, Session session) {
         try {
             if(stmt instanceof DescribeStatement){

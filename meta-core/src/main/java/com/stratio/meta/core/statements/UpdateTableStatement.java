@@ -31,9 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 public class UpdateTableStatement extends MetaStatement {
-    
-    private boolean keyspaceInc = false;
-    private String keyspace;
+
     private String tableName;
     private boolean optsInc;
     private List<Option> options;
@@ -119,10 +117,11 @@ public class UpdateTableStatement extends MetaStatement {
         if(tableName.contains(".")){
             String[] ksAndTablename = tableName.split("\\.");
             keyspace = ksAndTablename[0];
-            tableName = ksAndTablename[1];
+            this.tableName = ksAndTablename[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        this.tableName = tableName;
     }
 
     public List<Option> getOptions() {

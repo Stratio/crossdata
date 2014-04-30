@@ -21,6 +21,9 @@ package com.stratio.meta.core.structures;
 
 public class SelectionAsterisk extends Selection {
 
+    /**
+     * Class constructor.
+     */
     public SelectionAsterisk() {
         this.type = TYPE_ASTERISK;
     }   

@@ -33,12 +33,12 @@ class PlannerActor(executor:ActorRef, planner:Planner) extends Actor with TimeTr
   override val timerName= this.getClass.getName
   def receive = {
     case query:MetaQuery if !query.hasError=> {
-      log.info("Init Planner Task")
+      log.debug("Init Planner Task")
       val timer=initTimer()
 
       executor forward planner.planQuery(query)
       finishTimer(timer)
-      log.info("Finish Planner Task")
+      log.debug("Finish Planner Task")
     }
     case query:MetaQuery if query.hasError=>{
       sender ! query.getResult

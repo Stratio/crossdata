@@ -3,8 +3,15 @@ package com.stratio.meta.core.structures;
 
 public class BooleanTerm extends Term{
 
+    /**
+     * The boolean value stored by this term.
+     */
     private final Boolean value;
 
+    /**
+     * Class constructor.
+     * @param term The string representation of a Boolean value.
+     */
     public BooleanTerm(String term){
         value = Boolean.valueOf(term);
     }

@@ -23,7 +23,7 @@ import com.stratio.meta.server.MetaServer;
 import org.testng.annotations.*;
 
 public class DriverParentTest extends ParentCassandraTest {
-    private static final long SLEEP_TIME = 3000;
+    private static final long SLEEP_TIME = 5000;
 
     BasicDriver driver;
 
@@ -47,6 +47,7 @@ public class DriverParentTest extends ParentCassandraTest {
 
     @AfterClass
     public void finish(){
+        driver.close();
         metaServer.stop();
         metaServer.destroy();
     }

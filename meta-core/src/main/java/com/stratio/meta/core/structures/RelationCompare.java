@@ -39,9 +39,9 @@ public class RelationCompare extends Relation {
     
     public RelationCompare(String identifier, String operator, Term term) {
         this(identifier, operator);
-        if(term instanceof StringTerm){
-            ((StringTerm) term).setTerm(term.getStringValue().toLowerCase(), false);
-        }
+        // TODO: Fix problem with text fields for Lucene indexes (demo.users.phrase)
+        // If we are dealing with a Lucene indexed column and the column type is text, then
+        // we need to lower-case the input text to comply with the Lucene semantics.
         this.terms.add(term);
     }
 

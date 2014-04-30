@@ -74,6 +74,10 @@ public class EngineConfig {
         return cassandraHosts[rand.nextInt(cassandraHosts.length)];
     }
 
+    public void setJars(List<String> jars){
+        this.jars = jars;
+    }
+
 
     public List<String> getJars(){
         return jars;
@@ -96,8 +100,9 @@ public class EngineConfig {
 
     private boolean filterJars(String jar){
         for (String forbiddenJar : forbiddenJars) {
-            if (jar.startsWith(forbiddenJar))
+            if (jar.startsWith(forbiddenJar)) {
                 return false;
+            }
         }
         return true;
     }

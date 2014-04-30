@@ -35,13 +35,15 @@ class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTrac
 
   def receive = {
     case Query(keyspace,statement,user) => {
-      log.info("Init Parser Task")
+      log.debug("Init Parser Task")
       val timer=initTimer()
       val stmt = parser.parseStatement(statement)
-      stmt.setTargetKeyspace(keyspace)
+      if(!stmt.hasError){
+        stmt.setSessionKeyspace(keyspace)
+      }
       validator forward stmt
       finishTimer(timer)
-      log.info("Finish Parser Task")
+      log.debug("Finish Parser Task")
     }
     case _ => {
       sender ! QueryResult.createFailQueryResult("Not recognized object")

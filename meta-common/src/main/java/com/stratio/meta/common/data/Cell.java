@@ -27,15 +27,31 @@ public class Cell implements Serializable {
     private final Class<?> datatype;
     private final Object value;
 
+    /**
+     * Build a Cell.
+     *
+     * @param datatype Class of the value
+     * @param value Value object
+     */
     public Cell(Class<?> datatype, Object value) {
         this.datatype = datatype;
         this.value = value;
     }
 
+    /**
+     * Get the datatype of the cell.
+     *
+     * @return Datatype of the cell.
+     */
     public Class<?> getDatatype() {
         return datatype;
     }
 
+    /**
+     * Get the value of the cell.
+     *
+     * @return Object with the value of the cell
+     */
     public Object getValue() {
         return value;
     }

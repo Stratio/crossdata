@@ -30,7 +30,13 @@ public class CreateTokensFile {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(CreateTokensFile.class);
-    
+
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private CreateTokensFile(){
+    }
+
     public static void main(String[] args) {                
         try {
             String workingDir = System.getProperty("user.dir");
@@ -73,7 +79,7 @@ public class CreateTokensFile {
             bw.close();            
             LOG.info(outFile.getAbsolutePath() + " created");
         } catch (IOException ex) {
-            LOG.error(ex.getMessage());
+            LOG.error("IOException creating token file", ex);
         }
     }
     

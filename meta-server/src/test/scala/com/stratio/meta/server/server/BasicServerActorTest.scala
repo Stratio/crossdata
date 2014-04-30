@@ -63,7 +63,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("ServerActor Test"){
 
-    within(2000 millis){
+    within(5000 millis){
 
       serverRef ! 1
       expectNoMsg()
@@ -76,7 +76,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   test ("ServerActor Test connect without error"){
 
 
-    within(2000 millis){
+    within(5000 millis){
 
 
       assertEquals(queryConnect.hasError,false)
@@ -84,21 +84,21 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("ServerActor Test connect error message"){
 
-    within(2000 millis){
+    within(5000 millis){
 
       assertEquals(queryConnect.getErrorMessage,null)
     }
   }
   test ("ServerActor Test connect ks changed"){
 
-    within(2000 millis){
+    within(5000 millis){
 
       assertEquals(queryConnect.isKsChanged,false)
     }
   }
   test ("ServerActor Test connect current ks"){
 
-    within(2000 millis){
+    within(5000 millis){
 
       assertEquals(queryConnect.getCurrentKeyspace,null)
     }
@@ -108,7 +108,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("ServerActor Test send nothing"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       assertEquals(CommandResult.getErrorMessage,"Not recognized object")
     }
@@ -119,7 +119,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("server Test"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       serverRef ! 1
       expectNoMsg()
@@ -128,7 +128,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("ServerActor create KS"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg= "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       assertEquals(querying.proccess(msg,serverRef,engine,4),"sucess" )
@@ -137,7 +137,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("ServerActor create KS yet"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       assertEquals(querying.proccess(msg,serverRef,engine,4),"Keyspace ks_demo already exists." )
@@ -146,7 +146,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("ServerActor use KS"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="use ks_demo ;"
       assertEquals(querying.proccess(msg,serverRef,engine,4),"sucess" )
@@ -155,7 +155,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("ServerActor use KS yet"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="use ks_demo ;"
       assertEquals(querying.proccess(msg,serverRef,engine,4),"sucess" )
@@ -166,7 +166,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("ServerActor insert into table not create yet without error"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="insert into demo (field1, field2) values ('test1','text2');"
       assertEquals(querying.proccess(msg,serverRef,engine,4),"Table demo does not exists." )
@@ -174,7 +174,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("ServerActor select without table"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="select * from demo ;"
       assertEquals(querying.proccess(msg,serverRef,engine,4),"Table demo does not exists.")
@@ -184,7 +184,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("ServerActor create table not create yet"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
       assertEquals(querying.proccess(msg,serverRef,engine,4),"sucess" )
@@ -193,7 +193,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("ServerActor create table  create yet"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
       assertEquals(querying.proccess(msg,serverRef,engine,4),"Table demo already exists." )
@@ -202,7 +202,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("ServerActor insert into table  create yet without error"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="insert into demo (field1, field2) values ('test1','text2');"
       assertEquals(querying.proccess(msg,serverRef,engine,4),"sucess" )
@@ -210,7 +210,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("ServerActor select"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="select * from demo ;"
       assertEquals(querying.proccess(msg,serverRef,engine,4),collection.mutable.MutableList("test1", "text2").toString() )
@@ -218,7 +218,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("ServerActor drop table "){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="drop table demo ;"
       assertEquals(querying.proccess(msg,serverRef,engine,4),"sucess" )
@@ -234,7 +234,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("ServerActor drop KS  not exit"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="drop keyspace ks_demo ;"
       assertEquals(querying.proccess(msg,serverRef,engine,4),"Keyspace ks_demo does not exists." )

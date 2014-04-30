@@ -36,6 +36,13 @@ public class DeepExecutor {
 
     private static final Logger LOG = Logger.getLogger(DeepExecutor.class);
 
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private DeepExecutor(){
+
+    }
+
     public static Result execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot, Session session, DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
         if (stmt instanceof SelectStatement) {
             SelectStatement ss = (SelectStatement) stmt;

@@ -35,7 +35,7 @@ public class Planner {
 
     public MetaQuery planQuery(MetaQuery metaQuery) {
         metaQuery.setStatus(QueryStatus.PLANNED);
-        metaQuery.setPlan(metaQuery.getStatement().getPlan(metadata, metaQuery.getTargetKeyspace()));
+        metaQuery.setPlan(metaQuery.getStatement().getPlan(metadata, metaQuery.getSessionKeyspace()));
         return metaQuery;
     }
     

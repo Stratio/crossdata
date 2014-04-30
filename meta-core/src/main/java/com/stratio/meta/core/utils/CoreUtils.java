@@ -77,7 +77,7 @@ public class CoreUtils {
      * @throws InvocationTargetException If the required method cannot be invoked.
      * @throws IllegalAccessException If the method cannot be accessed.
      */
-    public Cell getCell(DataType type, Row r, String columnName) throws InvocationTargetException, IllegalAccessException {
+    protected Cell getCell(DataType type, Row r, String columnName) throws InvocationTargetException, IllegalAccessException {
         Method m = transformations.get(type.toString());
         Object value = m.invoke(r, columnName);
         return new Cell(type.asJavaClass(), value);

@@ -33,11 +33,6 @@ import com.stratio.meta.core.utils.Tree;
 public class DropKeyspaceStatement extends MetaStatement {
 
     /**
-     * Target keyspace.
-     */
-    private String keyspace;
-
-    /**
      * Whether the keyspace should be removed only if exists.
      */
     private boolean ifExists;
@@ -64,7 +59,7 @@ public class DropKeyspaceStatement extends MetaStatement {
     }
 
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata) {
         Result result = QueryResult.createSuccessQueryResult();
         KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspace);
         if(ksMetadata == null && !ifExists){

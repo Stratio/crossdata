@@ -28,31 +28,67 @@ public class Row implements Serializable {
     private static final long serialVersionUID = 2053597366590152927L;
     private Map<String, Cell> cells;
 
+    /**
+     * Row default constructor.
+     */
     public Row() {
         cells = new LinkedHashMap<>();
     }
 
+    /**
+     * Row params constructor with a cell.
+     *
+     * @param key Key of the cell
+     * @param cell A {@link com.stratio.meta.common.data.Cell}
+     */
     public Row(String key, Cell cell) {
         this();
         addCell(key, cell);
     }
 
+    /**
+     * Get the size of row.
+     *
+     * @return the size requested
+     */
     public int size(){
         return cells.size();
     }
 
+    /**
+     * Get the cells of current row.
+     *
+     * @return A map which contains the cells
+     */
     public Map<String, Cell> getCells() {
         return cells;
     }
 
+    /**
+     * Set the cells of the row.
+     *
+     * @param cells A map of cells
+     */
     public void setCells(Map<String, Cell> cells) {
         this.cells = cells;
     }
 
+    /**
+     * Add a Cell to the row.
+     *
+     * @param key Key
+     * @param cell Cell
+     */
     public void addCell(String key, Cell cell){
         cells.put(key, cell);
     }
 
+    /**
+     * Get a cell by key.
+     *
+     * @param key Key of the cell
+     * @return Cell requested.
+     */
     public Cell getCell(String key){
         return cells.get(key);
     }

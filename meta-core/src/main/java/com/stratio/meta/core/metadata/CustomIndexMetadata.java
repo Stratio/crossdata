@@ -99,22 +99,6 @@ public class CustomIndexMetadata {
     }
 
     /**
-     * Set the custom index options.
-     * @param options The options.
-     */
-    public void setIndexOptions(String options){
-        this.options = options;
-    }
-
-    /**
-     * Get the options associated with the index.
-     * @return The options or null if not set.
-     */
-    public String getIndexOptions(){
-        return options;
-    }
-
-    /**
      * Get the list of indexed columns.
      * @return The list of indexed columns.
      */

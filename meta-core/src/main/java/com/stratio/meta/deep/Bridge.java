@@ -42,23 +42,133 @@ import org.apache.spark.api.java.JavaRDD;
 import java.util.*;
 
 /**
- * Class that performs as a Bridge between Meta and Stratio Deep
+ * Class that performs as a Bridge between Meta and Stratio Deep.
  */
 public class Bridge {
 
+    /**
+     * Serial version UID.
+     */
     private static final Logger LOG = Logger.getLogger(Bridge.class);
+
+    /**
+     * Default result size.
+     */
     public static final int DEFAULT_RESULT_SIZE = 100000;
 
+    /**
+     * Deep Spark context.
+     */
     private DeepSparkContext deepContext;
+
+    /**
+     * Datastax Java Driver session.
+     */
     private Session session;
+
+    /**
+     * Global configuration.
+     */
     private EngineConfig engineConfig;
 
+    /**
+     * Brigde Constructor.
+     * @param session Cassandra session. {@link com.datastax.driver.core.Session}
+     * @param deepSparkContext Spark context from Deep
+     * @param config A {@link com.stratio.meta.core.engine.EngineConfig}, contains global configuration
+     */
     public Bridge(Session session, DeepSparkContext deepSparkContext, EngineConfig config) {
         this.deepContext = deepSparkContext;
         this.session = session;
         this.engineConfig = config;
     }
 
+    /**
+     * Execute a Leaf node in the current plan.
+     * @param stmt Statement which corresponds to this node.
+     * @param isRoot Indicates if this node is root in this plan
+     * @return a {@link com.stratio.meta.common.data.ResultSet}
+     */
+    public ResultSet executeLeafNode(MetaStatement stmt, boolean isRoot){
+        SelectStatement ss = (SelectStatement) stmt;
+        // LEAF
+        String[] columnsSet = DeepUtils.retrieveSelectorFields(ss);
+        IDeepJobConfig config = DeepJobConfigFactory.create().session(session)
+                .host(engineConfig.getRandomCassandraHost()).rpcPort(engineConfig.getCassandraPort())
+                .keyspace(ss.getKeyspace()).table(ss.getTableName());
+
+        config = (columnsSet.length==0) ? config.initialize() : config.inputColumns(columnsSet).initialize() ;
+
+        JavaRDD rdd = deepContext.cassandraJavaRDD(config);
+        //If where
+        if(ss.isWhereInc()){
+            List<Relation> where = ss.getWhere();
+            for(Relation rel : where){
+                rdd = doWhere(rdd, rel);
+            }
+        }
+        return returnResult(rdd, isRoot, Arrays.asList(columnsSet));
+    }
+
+    /**
+     * Executes a root node statement.
+     * @param stmt Statement which corresponds to this node.
+     * @param resultsFromChildren List of results from node children
+     * @return a {@link com.stratio.meta.common.data.ResultSet}
+     */
+    public ResultSet executeRootNode(MetaStatement stmt, List<Result> resultsFromChildren){
+        SelectStatement ss = (SelectStatement) stmt;
+        // Retrieve RDDs and selected columns from children
+        List<JavaRDD> children = new ArrayList<>();
+        List<String> selectedCols = new ArrayList<>();
+        for (Result child: resultsFromChildren){
+            QueryResult qResult = (QueryResult) child;
+            CassandraResultSet crset = (CassandraResultSet) qResult.getResultSet();
+            Map<String, Cell> cells = crset.getRows().get(0).getCells();
+            // RDD from child
+            Cell cell = cells.get("RDD");
+            JavaRDD rdd = (JavaRDD) cell.getValue();
+            children.add(rdd);
+        }
+
+        // Retrieve selected columns without tablename
+        for(String id: ss.getSelectionClause().getIds()){
+            if(id.contains(".")){
+                selectedCols.add(id.split("\\.")[1]);
+            } else {
+                selectedCols.add(id);
+            }
+        }
+
+        //JOIN
+        Map<String, String> fields = ss.getJoin().getColNames();
+        Set<String> keys = fields.keySet();
+        String field1 = keys.iterator().next();
+        String field2 = fields.get(field1);
+
+        LOG.debug("INNER JOIN on: " + field1 + " - " + field2);
+
+        JavaRDD rdd1 = children.get(0);
+        JavaRDD rdd2 = children.get(1);
+
+        JavaPairRDD rddLeft = rdd1.map(new MapKeyForJoin(field1));
+        JavaPairRDD rddRight = rdd2.map(new MapKeyForJoin(field2));
+
+        JavaPairRDD joinRDD = rddLeft.join(rddRight);
+
+        JavaRDD result = joinRDD.map(new JoinCells(field1));
+
+        // Return MetaResultSet
+        return returnResult(result, true, selectedCols);
+    }
+
+    /**
+     * General execution. Depending on the type execution will divide up.
+     * @param stmt Statement which corresponds to this node.
+     * @param resultsFromChildren List of results from node children
+     * @param isRoot Indicates if this node is root in this plan
+     * @return a {@link com.stratio.meta.common.data.ResultSet}
+     */
     public ResultSet execute(MetaStatement stmt, List<Result> resultsFromChildren, boolean isRoot){
 
         LOG.info("Executing deep for: " + stmt.toString());
@@ -69,77 +179,22 @@ public class Bridge {
             return new CassandraResultSet(oneRow);
         }
 
-        SelectStatement ss = (SelectStatement) stmt;
         if(resultsFromChildren.isEmpty()){
             // LEAF
-            String[] columnsSet = DeepUtils.retrieveSelectorFields(ss);
-            IDeepJobConfig config = DeepJobConfigFactory.create().session(session)
-                    .host(engineConfig.getRandomCassandraHost()).rpcPort(engineConfig.getCassandraPort())
-                    .keyspace(ss.getKeyspace()).table(ss.getTableName());
-
-            config = (columnsSet.length==0)? config.initialize() : config.inputColumns(columnsSet).initialize() ;
-            
-            JavaRDD rdd = deepContext.cassandraJavaRDD(config);
-            //If where
-            if(ss.isWhereInc()){
-                List<Relation> where = ss.getWhere();
-                for(Relation rel : where){
-                    rdd = doWhere(rdd, rel);
-                    System.out.println("TRACE(After "+rel.toString()+"): "+rdd.count());
-                }
-            }
-
-            return returnResult(rdd, isRoot, Arrays.asList(columnsSet));
-
+            return executeLeafNode(stmt, isRoot);
         } else {
             // (INNER NODE) NO LEAF
-            // Retrieve RDDs and selected columns from children
-            List<JavaRDD> children = new ArrayList<>();
-            List<String> selectedCols = new ArrayList<>();
-            for (Result child: resultsFromChildren){
-                QueryResult qResult = (QueryResult) child;
-                CassandraResultSet crset = (CassandraResultSet) qResult.getResultSet();
-                Map<String, Cell> cells = crset.getRows().get(0).getCells();
-                // RDD from child
-                Cell cell = cells.get("RDD");
-                JavaRDD rdd = (JavaRDD) cell.getValue();
-                children.add(rdd);
-            }
-
-            // Retrieve selected columns without tablename
-            for(String id: ss.getSelectionClause().getIds()){
-                if(id.contains(".")){
-                    selectedCols.add(id.split("\\.")[1]);
-                } else {
-                    selectedCols.add(id);
-                }
-            }
-
-            //JOIN
-            Map<String, String> fields = ss.getJoin().getColNames();
-            Set<String> keys = fields.keySet();
-            String field1 = keys.iterator().next();
-            String field2 = fields.get(field1);
-
-            LOG.debug("INNER JOIN on: " + field1 + " - " + field2);
-
-            JavaRDD result = null;
-
-            JavaRDD rdd1 = children.get(0);
-            JavaRDD rdd2 = children.get(1);
-
-            JavaPairRDD rddLeft = rdd1.map(new MapKeyForJoin(field1));
-            JavaPairRDD rddRight = rdd2.map(new MapKeyForJoin(field2));
-
-            JavaPairRDD joinRDD = rddLeft.join(rddRight);
-
-            result = joinRDD.map(new JoinCells(field1));
-
-            // Return MetaResultSet
-            return returnResult(result, isRoot, selectedCols);
+            return executeRootNode(stmt, resultsFromChildren);
         }
     }
 
+    /**
+     * Build a ResultSet from a RDD depending the context.
+     * @param rdd RDD which corresponds to Spark result.
+     * @param isRoot Indicates if this node is root in this plan
+     * @param selectedCols List of columns selected in current SelectStatement.
+     * @return ResultSet containing the result of built.
+     */
     private ResultSet returnResult(JavaRDD rdd, boolean isRoot, List<String> selectedCols){
         if(isRoot){
             return DeepUtils.buildResultSet(rdd.dropTake(0, DEFAULT_RESULT_SIZE), selectedCols);
@@ -153,14 +208,20 @@ public class Bridge {
         }
     }
 
-    public void stopContext(){
-        deepContext.stop();
-    }
-
+    /**
+     * Take a RDD and a Relation and apply suitable filter to the RDD. Execute where clause on Deep.
+     * @param rdd RDD which filter must be applied.
+     * @param rel {@link com.stratio.meta.core.structures.Relation} to apply
+     * @return A new RDD with the result.
+     */
     private JavaRDD doWhere(JavaRDD rdd, Relation rel){
         String operator = rel.getOperator();
         JavaRDD result = null;
         String cn = rel.getIdentifiers().get(0);
+        if(cn.contains(".")){
+            String[] ksAndTableName = cn.split("\\.");
+            cn = ksAndTableName[1];
+        }
         Object termValue = rel.getTerms().get(0).getTermValue();
 
         LOG.info("Rdd input size: " + rdd.count());

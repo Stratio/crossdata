@@ -29,6 +29,7 @@ import com.stratio.meta.core.structures.*;
 import org.apache.log4j.Logger;
 
 import java.util.List;
+import java.util.Map;
 
 public final class DeepUtils {
 
@@ -37,25 +38,31 @@ public final class DeepUtils {
      */
     private static final Logger LOG = Logger.getLogger(DeepUtils.class);
 
-    private DeepUtils() {}
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private DeepUtils() {
+
+    }
 
     /**
      * Build ResultSet from list of Cells.
      * @param cells list of Cells
+     * @param selectedCols List of fields selected in the SelectStatement.
      * @return ResultSet
      */
     public static ResultSet buildResultSet(List<Cells> cells, List<String> selectedCols) {
         CassandraResultSet rs = new CassandraResultSet();
-        for(Cells deepRow: cells){
+        for (Cells deepRow : cells) {
             Row metaRow = new Row();
-            for(com.stratio.deep.entity.Cell deepCell: deepRow.getCells()){
-                if(deepCell.getCellName().toLowerCase().startsWith("stratio")){
+            for (com.stratio.deep.entity.Cell deepCell : deepRow.getCells()) {
+                if (deepCell.getCellName().toLowerCase().startsWith("stratio")) {
                     continue;
                 }
-                if(selectedCols.isEmpty()){
+                if (selectedCols.isEmpty()) {
                     Cell metaCell = new Cell(deepCell.getValueType(), deepCell.getCellValue());
                     metaRow.addCell(deepCell.getCellName(), metaCell);
-                } else if(selectedCols.contains(deepCell.getCellName())){
+                } else if (selectedCols.contains(deepCell.getCellName())) {
                     Cell metaCell = new Cell(deepCell.getValueType(), deepCell.getCellValue());
                     metaRow.addCell(deepCell.getCellName(), metaCell);
                 }
@@ -64,11 +71,40 @@ public final class DeepUtils {
         }
 
         StringBuilder logResult = new StringBuilder("Deep Result: ").append(rs.size());
-        if(rs.size()>0){
+        if (!rs.isEmpty()) {
             logResult.append(" rows & ").append(rs.iterator().next().size()).append(" columns");
         }
         LOG.info(logResult);
+
+        ////////////////////////////////////////////////////////////////////////////
+        if(LOG.isDebugEnabled()){
+            printDeepResult(rs.getRows());
+        }
+        /////////////////////////////////////////////////////////////////////////////
+
         return rs;
+    }
+
+    protected static void printDeepResult(List<Row> rows){
+        StringBuilder sb = new StringBuilder(System.lineSeparator());
+        boolean firstRow = true;
+        for (Row row : rows) {
+            if (firstRow) {
+                for (String colName : row.getCells().keySet()) {
+                    sb.append(colName).append(" | ");
+                }
+                sb.append(System.lineSeparator());
+                sb.append("---------------------------------------------------------------------");
+                sb.append(System.lineSeparator());
+            }
+            firstRow = false;
+            for(Map.Entry<String, Cell> entry : row.getCells().entrySet()){
+                sb.append(String.valueOf(entry.getValue())).append(" - ");
+            }
+            sb.append(System.lineSeparator());
+        }
+        sb.append(System.lineSeparator());
+        LOG.debug(sb.toString());
     }
 
     /**

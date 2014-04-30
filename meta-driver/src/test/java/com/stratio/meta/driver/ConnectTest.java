@@ -19,6 +19,7 @@
 
 package com.stratio.meta.driver;
 
+import com.stratio.meta.common.result.ConnectResult;
 import com.stratio.meta.common.result.Result;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -34,7 +35,8 @@ public class ConnectTest extends DriverParentTest {
     public void ConnectTest(){
         Result metaResult= driver.connect("TEST_USER");
         assertFalse(metaResult.hasError());
-
+        ConnectResult r = ConnectResult.class.cast(metaResult);
+        assertTrue(r.getSessionId() > 0, "Invalid session identifier");
     }
 
 

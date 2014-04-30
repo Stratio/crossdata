@@ -21,15 +21,11 @@ package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.CreateTableStatement;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.testng.Assert.assertTrue;
 
 public class CreateTableStatementTest  extends BasicPlannerTest {
 
@@ -41,7 +37,8 @@ public class CreateTableStatementTest  extends BasicPlannerTest {
         columns.put("name", "VARCHAR");
         columns.put("check", "BOOLEAN");
         stmt = new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"), Arrays.asList("name"), 1, 1);
-        ((CreateTableStatement)stmt).validate(_metadataManager, "demo");
+        stmt.setSessionKeyspace("demo");
+        ((CreateTableStatement)stmt).validate(_metadataManager);
         validateCassandraPath();
     }
 }

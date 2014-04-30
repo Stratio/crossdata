@@ -17,32 +17,33 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.utils;
+package com.stratio.meta.common.data;
 
-public class LevenshteinMatch {
-    
-    private String word;    
-    private int distance;   
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
-    public LevenshteinMatch(String word, int distance) {
-        this.word = word;
-        this.distance = distance;
-    }   
-    
-    public String getWord() {
-        return word;
+public class CellTest {
+
+    @BeforeClass
+    public void setUp(){
     }
 
-    public void setWord(String word) {
-        this.word = word;
+    @Test
+    public void testConstructor(){
+        Cell cellStr = new Cell(String.class, new String("comment1"));
+        Assert.assertNotNull(cellStr);
     }
 
-    public int getDistance() {
-        return distance;
+    @Test
+    public void testGetDataype(){
+        Cell cellStr = new Cell(String.class, new String("comment1"));
+        Assert.assertEquals(cellStr.getDatatype(),String.class);
     }
 
-    public void setDistance(int distance) {
-        this.distance = distance;
+    @Test
+    public void testGetValue(){
+        Cell cellStr = new Cell(String.class, new String("comment1"));
+        Assert.assertTrue(((String) cellStr.getValue()).equals("comment1"));
     }
-    
 }

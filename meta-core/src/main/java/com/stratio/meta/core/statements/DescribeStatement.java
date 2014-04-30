@@ -42,11 +42,6 @@ public class DescribeStatement extends MetaStatement {
     private DescribeType type;
 
     /**
-     * The target keyspace.
-     */
-    private String keyspace;
-
-    /**
      * The target table.
      */
     private String tablename;
@@ -100,9 +95,10 @@ public class DescribeStatement extends MetaStatement {
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
             keyspace = ksAndTableName[0];
-            tableName = ksAndTableName[1];
+            this.tablename = ksAndTableName[1];
+        }else {
+            this.tablename = tableName;
         }
-        this.tablename = tableName;
     }   
     
     @Override
@@ -122,7 +118,7 @@ public class DescribeStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata) {
         //TODO: Validate DescribeStatement
         return QueryResult.createSuccessQueryResult();
     }
@@ -170,5 +166,5 @@ public class DescribeStatement extends MetaStatement {
         }        
         return result;
     }
-    
+
 }

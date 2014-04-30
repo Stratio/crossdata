@@ -39,7 +39,13 @@ public class ParserUtils {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(ParserUtils.class);
-    
+
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private ParserUtils(){
+    }
+
     public static String stringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
         for(Object value: ids){
@@ -71,19 +77,20 @@ public class ParserUtils {
         return sb.substring(0, sb.length()-separator.length());
     }   
  
-    public static Set<LevenshteinMatch> getBestMatches(String str, Set<String> words, int thresold){
-        int limit = thresold+1;
-        Set<LevenshteinMatch> result = new HashSet<>();
-        for(String word: words){
-            int distance = StringUtils.getLevenshteinDistance(str, word, thresold);
-            if((distance>-1) && (distance<limit)){
-                result.clear();
-                result.add(new LevenshteinMatch(word, distance));
-                limit = distance;
-            } else if (distance==limit){
-                result.add(new LevenshteinMatch(word, distance));
+    public static Set<String> getBestMatches(String str, Set<String> words, int maxDistance){
+        int limit = maxDistance + 1;
+        int currentLimit = 1;
+        Set<String> result = new HashSet<>();
+        while(result.isEmpty() && currentLimit < limit){
+            for(String word: words){
+                int distance = StringUtils.getLevenshteinDistance(str, word, maxDistance);
+                if((distance>-1) && (distance < currentLimit)){
+                    result.add(word);
+                }
             }
+            currentLimit++;
         }
+
         return result;
     }
     
@@ -128,28 +135,28 @@ public class ParserUtils {
             if(positionToken>-1){
                 suggestionFromToken = errorMessage.substring(positionToken+2);
                 suggestionFromToken = suggestionFromToken.trim().split(" ")[0].toUpperCase();
-                if(!(MetaUtils.INITIALS.contains(suggestionFromToken) || MetaUtils.NON_INITIALS.contains(suggestionFromToken))){
+                if(!statementTokens.contains(suggestionFromToken)){
                     suggestionFromToken = "";
                 }
             }
         }                                                  
         
-        Set<LevenshteinMatch> bestMatches = getBestMatches(errorWord, statementTokens, 2);
+        Set<String> bestMatches = getBestMatches(errorWord, statementTokens, 2);
         StringBuilder sb = new StringBuilder("Did you mean: ");
         if((bestMatches.isEmpty() || antlrError == null) && (charPosition<1)){
             sb.append(MetaUtils.getInitialsStatements()).append("?").append(System.lineSeparator());
-        } else if(!suggestionFromToken.equalsIgnoreCase("")){
+        } else if(!"".equalsIgnoreCase(suggestionFromToken)){
             sb.append("\"").append(suggestionFromToken).append("\"").append("?");
             sb.append(System.lineSeparator());
         } else if(errorWord.matches("[QWERTYUIOPASDFGHJKLZXCVBNM_]+")){
-            for(LevenshteinMatch match: bestMatches){
-                if(match.getDistance()<1){
-                    break;
-                }
+            for(String match: bestMatches){
                 sb.append("* ");
-                sb.append("\"").append(match.getWord()).append("\"").append("?");
+                sb.append("\"").append(match).append("\"").append("?");
                 sb.append(System.lineSeparator()).append("\t");
             }
+        }
+        if("Did you mean: ".equalsIgnoreCase(sb.toString())){
+            return "";
         }
         return sb.substring(0, sb.length());
     }    
@@ -174,7 +181,7 @@ public class ParserUtils {
     }
 
     private static String getReplacement(String target) {
-        target = target.substring(2);
+        String targetToken = target.substring(2);
         String replacement = "";
         BufferedReader bufferedReaderF = null;
         try {
@@ -197,7 +204,7 @@ public class ParserUtils {
 
             String line = bufferedReaderF.readLine();
             while (line != null){
-                if(line.startsWith(target)){
+                if(line.startsWith(targetToken)){
                     replacement = line.substring(line.indexOf(":")+1);
                     replacement = replacement.replace("[#", "\"");
                     replacement = replacement.replace("#]", "\"");
@@ -271,41 +278,6 @@ public class ParserUtils {
             return sb.substring(0, sb.length());
         }
         
-    }
-    
-    public static String addSingleQuotesToStringList(String strList){
-        String result = "";
-        String[] opts = strList.split("=");
-        for(int i=0; i<opts.length; i++){
-            String currentStr = opts[i];
-            if(currentStr.matches("[0123456789.]+")){
-                result = result.concat(opts[i]);
-            } else {
-                result = result.concat("\'").concat(opts[i]).concat("\'");
-            }
-            if(i % 2 == 0){
-                result = result.concat(": ");
-            } else {
-                if(i<(opts.length-1)){
-                    result = result.concat(", ");
-                }
-            }
-        }
-        return result;
-    }    
-
-    public static String[] fromStringListToArray(List<String> names) {
-        String[] result = new String[names.size()];
-        int n=0;
-        for(String str: names){
-            result[n] = str;
-            n++;
-        }
-        return result;
-    }
-
-    public static String addAllowFiltering(String translatedToCQL) {
-        return translatedToCQL.replace(" ;", ";").replace(";", " ALLOW FILTERING;");
     }
     
 }

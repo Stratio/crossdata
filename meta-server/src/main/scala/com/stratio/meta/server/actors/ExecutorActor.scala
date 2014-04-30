@@ -34,12 +34,12 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker{
 
   override def receive: Receive ={
     case query:MetaQuery if !query.hasError=> {
-      log.info("Init Executor Task")
+      log.debug("Init Executor Task")
       val timer=initTimer()
       val result = executor.executeQuery(query).getResult
       sender ! result
       finishTimer(timer)
-      log.info("Finish Executor Task")
+      log.debug("Finish Executor Task")
     }
     case query:MetaQuery if query.hasError=>{
       sender ! query.getResult

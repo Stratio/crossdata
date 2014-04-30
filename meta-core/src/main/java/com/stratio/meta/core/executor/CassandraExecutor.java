@@ -38,6 +38,13 @@ public class CassandraExecutor {
 
     private static final Logger LOG = Logger.getLogger(CassandraExecutor.class);
 
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private CassandraExecutor(){
+
+    }
+
     public static Result execute(MetaStep step, Session session){
         Result result;
         LOG.info("Executing step: " + step.toString());
@@ -99,8 +106,8 @@ public class CassandraExecutor {
                 sb.append(" ").append(cMessageEx[i]);
             }
             AntlrError ae = new AntlrError(cMessageEx[0]+" "+cMessageEx[1], sb.toString());
-            queryStr = ParserUtils.getQueryWithSign(queryStr, ae);
-            return QueryResult.createFailQueryResult(ex.getMessage() + System.lineSeparator() + "\t" + queryStr);
+            String query = ParserUtils.getQueryWithSign(queryStr, ae);
+            return QueryResult.createFailQueryResult(ex.getMessage() + System.lineSeparator() + "\t" + query);
         } else{
             return QueryResult.createFailQueryResult(ex.getMessage());
         }

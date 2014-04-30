@@ -12,11 +12,6 @@ import com.stratio.meta.server.utilities._
 import scala.collection.mutable
 import com.stratio.meta.server.config.BeforeAndAfterCassandra
 
-
-/**
- * Created by aalcocer on 4/8/14.
- * To generate unit test of proxy actor
- */
 class BasicParserActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
 with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 {
@@ -45,7 +40,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("ServerActor Test send nothing"){
 
-    within(2000 millis){
+    within(5000 millis){
 
       assertEquals(myCommandResult.getErrorMessage,"Not recognized object")
     }
@@ -56,7 +51,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("parser Test"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       validatorRef ! 1
       expectNoMsg()
@@ -65,7 +60,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("parserActor create KS"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg= "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       assertEquals(querying.proccess(msg,parserRef,engine,4),"sucess" )
@@ -74,7 +69,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("parserActor create KS yet"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       assertEquals(querying.proccess(msg,parserRef,engine,4),"Keyspace ks_demo already exists." )
@@ -83,7 +78,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("parserActor use KS"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="use ks_demo ;"
       assertEquals(querying.proccess(msg,parserRef,engine,4),"sucess" )
@@ -92,7 +87,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("parserActor use KS yet"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="use ks_demo ;"
       assertEquals(querying.proccess(msg,parserRef,engine,4),"sucess" )
@@ -103,7 +98,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("parserActor insert into table not create yet without error"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="insert into demo (field1, field2) values ('test1','text2');"
       assertEquals(querying.proccess(msg,parserRef,engine,4),"Table demo does not exists." )
@@ -111,7 +106,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("parserActor select without table"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="select * from demo ;"
       assertEquals(querying.proccess(msg,parserRef,engine,4),"Table demo does not exists.")
@@ -121,7 +116,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("parserActor create table not create yet"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
       assertEquals(querying.proccess(msg,parserRef,engine,4),"sucess" )
@@ -130,7 +125,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("parserActor create table  create yet"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
       assertEquals(querying.proccess(msg,parserRef,engine,4),"Table demo already exists." )
@@ -139,7 +134,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("parserActor insert into table  create yet without error"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="insert into demo (field1, field2) values ('test1','text2');"
       assertEquals(querying.proccess(msg,parserRef,engine,4),"sucess" )
@@ -147,7 +142,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("parserActor select"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="select * from demo ;"
       assertEquals(querying.proccess(msg,parserRef,engine,4),mutable.MutableList("test1", "text2").toString() )
@@ -155,7 +150,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("parserActor drop table "){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="drop table demo ;"
       assertEquals(querying.proccess(msg,parserRef,engine,4),"sucess" )
@@ -171,7 +166,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
   }
   test ("parserActor drop KS  not exit"){
 
-    within(3000 millis){
+    within(5000 millis){
 
       val msg="drop keyspace ks_demo ;"
       assertEquals(querying.proccess(msg,parserRef,engine,4),"Keyspace ks_demo does not exists." )

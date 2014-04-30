@@ -51,17 +51,6 @@ public class DeleteStatement extends MetaStatement {
     private List<String> targetColumns = null;
 
     /**
-     * Whether the keyspace has been specified in the Select statement or it should be taken from the
-     * environment.
-     */
-    private boolean keyspaceInc = false;
-
-    /**
-     * The keyspace specified in the select statement.
-     */
-    private String keyspace;
-
-    /**
      * The name of the targe table.
      */
     private String tableName = null;
@@ -96,10 +85,11 @@ public class DeleteStatement extends MetaStatement {
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
             keyspace = ksAndTableName[0];
-            tableName = ksAndTableName[1];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        this.tableName = tableName;
     }
 
     /**
@@ -113,7 +103,7 @@ public class DeleteStatement extends MetaStatement {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("DELETE ");
-        if(targetColumns.size() > 0){
+        if(!targetColumns.isEmpty()){
             sb.append("(").append(ParserUtils.stringList(targetColumns, ", ")).append(") ");
         }
         sb.append("FROM ");
@@ -121,7 +111,7 @@ public class DeleteStatement extends MetaStatement {
             sb.append(keyspace).append(".");
         } 
         sb.append(tableName);
-        if(whereClauses.size() > 0){
+        if(!whereClauses.isEmpty()){
             sb.append(" WHERE ");
             sb.append(ParserUtils.stringList(whereClauses, " AND "));
         }
@@ -130,9 +120,9 @@ public class DeleteStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public Result validate(MetadataManager metadata, String targetKeyspace) {
-        Result result = validateKeyspaceAndTable(metadata, targetKeyspace);
-        String effectiveKeyspace = targetKeyspace;
+    public Result validate(MetadataManager metadata) {
+        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace);
+        String effectiveKeyspace = getEffectiveKeyspace();
         if(keyspaceInc){
             effectiveKeyspace = keyspace;
         }
@@ -262,10 +252,7 @@ public class DeleteStatement extends MetaStatement {
         Result result =QueryResult.createSuccessQueryResult();
         //Get the effective keyspace based on the user specification during the create
         //sentence, or taking the keyspace in use in the user session.
-        String effectiveKeyspace = targetKeyspace;
-        if(keyspaceInc){
-            effectiveKeyspace = keyspace;
-        }
+        String effectiveKeyspace = getEffectiveKeyspace();
 
         //Check that the keyspace and table exists.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){

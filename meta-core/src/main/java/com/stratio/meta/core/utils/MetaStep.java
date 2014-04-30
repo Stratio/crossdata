@@ -40,25 +40,13 @@ public class MetaStep {
         return path;
     }
 
-    public void setPath(MetaPath path) {
-        this.path = path;
-    }
-
     public String getQuery() {
         return query;
-    }
-
-    public void setQuery(String query) {
-        this.query = query;
     }
 
     public MetaStatement getStmt() {
         return stmt;
     }
-
-    public void setStmt(MetaStatement stmt) {
-        this.stmt = stmt;
-    }        
     
     @Override
     public String toString(){

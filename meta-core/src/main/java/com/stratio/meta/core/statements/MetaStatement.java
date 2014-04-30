@@ -25,7 +25,6 @@ import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.Tree;
 
 /**
@@ -34,19 +33,25 @@ import com.stratio.meta.core.utils.Tree;
 public abstract class MetaStatement {
 
     /**
-     * The String representation of the query to be executed prior parsing it.
-     */
-    protected String query;
-
-    /**
-     * The execution path for the query.
-     */
-    protected MetaPath path;
-
-    /**
      * Whether the query is an internal command or it returns a {@link com.stratio.meta.common.data.ResultSet}.
      */
     protected boolean command;
+
+    /**
+     * Whether the keyspace has been specified in the statement or it should be taken from the
+     * environment.
+     */
+    protected boolean keyspaceInc = false;
+
+    /**
+     * Keyspace specified from the statement.
+     */
+    protected String keyspace = null;
+
+    /**
+     * The current keyspace in the user session.
+     */
+    protected String sessionKeyspace = null;
 
     /**
      * Default class constructor.
@@ -56,13 +61,9 @@ public abstract class MetaStatement {
 
     /**
      * Class constructor.
-     * @param query The string representation of the submitted query.
-     * @param path The path to be used to execute the query.
      * @param command Whether the query is a command or a query returning a {@link com.stratio.meta.common.data.ResultSet}.
      */
-    public MetaStatement(String query, MetaPath path, boolean command) {
-        this.query = query;
-        this.path = path;
+    public MetaStatement(boolean command) {
         this.command = command;
     }
 
@@ -81,41 +82,6 @@ public abstract class MetaStatement {
     public void setAsCommand(boolean command) {
         this.command = command;
     }
-
-    /**
-     * Get the query introduced by the user.
-     * @return The query.
-     */
-    public String getQuery() {
-        return query;
-    }
-
-    /**
-     * Set the query introduced by the user.
-     * @param query The string representation of the submitted query.
-     */
-    public void setQuery(String query) {
-        this.query = query;
-    }
-
-    /**
-     * Get the path required to execute the query.
-     * @return The {@link com.stratio.meta.core.utils.MetaPath} with a
-     * {@link com.stratio.meta.core.utils.Tree} representation of the different
-     * steps involved.
-     */
-    public MetaPath getPath() {
-        return path;
-    }
-
-    /**
-     * Set the {@link com.stratio.meta.core.utils.MetaPath} required to
-     * execute this query.
-     * @param path The path.
-     */
-    public void setPath(MetaPath path) {
-        this.path = path;
-    }        
     
     @Override
     public abstract String toString();
@@ -127,10 +93,9 @@ public abstract class MetaStatement {
      * or comparisons.
      * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
      *                 the required information.
-     * @param targetKeyspace The target keyspace where the query will be executed.
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    public Result validate(MetadataManager metadata, String targetKeyspace){
+    public Result validate(MetadataManager metadata){
         return QueryResult.createFailQueryResult("Statement not supported");
     }
 
@@ -170,10 +135,10 @@ public abstract class MetaStatement {
         return result;
     }
 
-    protected String getEffectiveKeyspace(String targetKeyspace, boolean keyspaceInc, String stmtKeyspace){
-        String effectiveKs = targetKeyspace;
+    protected String getEffectiveKeyspace(){
+        String effectiveKs = sessionKeyspace;
         if(keyspaceInc){
-            effectiveKs = stmtKeyspace;
+            effectiveKs = keyspace;
         }
         return effectiveKs;
     }
@@ -207,5 +172,9 @@ public abstract class MetaStatement {
      * @return A {@link com.stratio.meta.core.utils.Tree} with the execution plan.
      */
     public abstract Tree getPlan(MetadataManager metadataManager, String targetKeyspace);
-    
+
+    public void setSessionKeyspace(String targetKeyspace){
+        sessionKeyspace = targetKeyspace;
+    }
+
 }

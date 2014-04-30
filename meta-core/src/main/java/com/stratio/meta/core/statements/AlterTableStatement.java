@@ -35,17 +35,6 @@ import java.util.Set;
 public class AlterTableStatement extends MetaStatement{
 
     /**
-     * Whether the keyspace has been specified in the Select statement or it should be taken from the
-     * environment.
-     */
-    private boolean keyspaceInc = false;
-
-    /**
-     * The keyspace specified in the select statement.
-     */
-    private String keyspace;
-
-    /**
      * The name of the target table.
      */
     private String tableName;
