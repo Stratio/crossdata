@@ -373,20 +373,18 @@ public class CreateTableStatement extends MetaStatement{
                 }
 
                 insideBracket = insideBracket.trim();
-                String[] strs = insideBracket.split(" ");
-                for (int j = 0; j < strs.length; j++) {
-                    String currentStr = strs[j];
+                String[] splits = insideBracket.split(" ");
+                for (int j = 0; j < splits.length; j++) {
+                    String currentStr = splits[j];
                     if (currentStr.matches("[0123456789.]+")) {
-                        sb.append(strs[j]);
+                        sb.append(splits[j]);
                     } else {
-                        sb.append("\'").append(strs[j]).append("\'");
+                        sb.append("\'").append(splits[j]).append("\'");
                     }
                     if (j % 2 == 0) {
                         sb.append(": ");
-                    } else {
-                        if (j < (strs.length - 1)) {
+                    } else if (j < (splits.length - 1)) {
                             sb.append(", ");
-                        }
                     }
                 }
                 sb.append("}");
