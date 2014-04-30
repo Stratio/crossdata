@@ -48,6 +48,7 @@ public final class DeepUtils {
     /**
      * Build ResultSet from list of Cells.
      * @param cells list of Cells
+     * @param selectedCols List of fields selected in the SelectStatement.
      * @return ResultSet
      */
     public static ResultSet buildResultSet(List<Cells> cells, List<String> selectedCols) {

@@ -27,6 +27,10 @@ public class CResultSetIterator implements Iterator<com.stratio.meta.common.data
     private final CassandraResultSet cResultSet;
     private int current;
 
+    /**
+     * Build a {@link com.stratio.meta.common.data.CResultSetIterator} from a {@link com.stratio.meta.common.data.CassandraResultSet}
+     * @param cResultSet Cassandra Result Set
+     */
     public CResultSetIterator(CassandraResultSet cResultSet) {
         this.cResultSet = cResultSet;
         this.current = 0;

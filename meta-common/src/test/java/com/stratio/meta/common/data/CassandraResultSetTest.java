@@ -59,12 +59,8 @@ public class CassandraResultSetTest {
     }
 
     @Test
-    public void testRemove(){
-        rSet = new CassandraResultSet();
-        rSet.add(new Row("str",new Cell(String.class, new String("comment" + rand.nextInt(100)))));
-        rSet.add(new Row("int", new Cell(Integer.class, new Integer(rand.nextInt(50)))));
-        rSet.remove(0);
-        Assert.assertEquals(rSet.getRows().size(),1);
+    public void testNext(){
+
     }
 
     private List<Row> buildRowList(){
