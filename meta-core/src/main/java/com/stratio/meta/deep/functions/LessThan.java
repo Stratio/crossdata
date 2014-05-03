@@ -54,6 +54,6 @@ public class LessThan extends Function<Cells, Boolean> implements Serializable {
     @Override
     public Boolean call(Cells cells){
         Object obj = cells.getCellByName(field).getCellValue();
-        return ((Comparable)value).compareTo(obj) < 0;
+        return ((Comparable) value).compareTo(obj) > 0;
     }
 }
