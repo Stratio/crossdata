@@ -1240,25 +1240,39 @@ public class SelectStatement extends MetaStatement {
     }
 
     private boolean matchWhereColsWithPartitionKeys(TableMetadata tableMetadata, Map whereCols){
+        Set<String> removedKeys = new HashSet();
         boolean allPartitionKeysFound = true;
         for(ColumnMetadata colMD: tableMetadata.getPartitionKey()){
             if(whereCols.keySet().contains(colMD.getName())){
                 whereCols.remove(colMD.getName());
+                removedKeys.add(colMD.getName());
             } else {
                 allPartitionKeysFound = false;
             }
         }
-        return allPartitionKeysFound;
+
+        return checkAllColsHaveEqualsOperator(allPartitionKeysFound, removedKeys);
     }
 
-    private void matchWhereColsWithClusteringKeys(boolean allPartitionKeysFound, TableMetadata tableMetadata, Map whereCols){
-        if(allPartitionKeysFound){
-            for(ColumnMetadata colMD: tableMetadata.getClusteringColumns()){
-                if(whereCols.keySet().contains(colMD.getName())){
-                    whereCols.remove(colMD.getName());
-                }
+    private boolean matchWhereColsWithClusteringKeys(boolean allPartitionKeysFound, TableMetadata tableMetadata, Map whereCols){
+        Set<String> removedKeys = new HashSet();
+        for(ColumnMetadata colMD: tableMetadata.getClusteringColumns()){
+            if(whereCols.keySet().contains(colMD.getName())){
+                whereCols.remove(colMD.getName());
+                removedKeys.add(colMD.getName());
             }
         }
+        return checkAllColsHaveEqualsOperator(allPartitionKeysFound, removedKeys);
+    }
+
+    private boolean checkAllColsHaveEqualsOperator(boolean allPartitionKeysFound, Set<String> removedKeys){
+        // Check whether all the found cols have the equals operator
+        for(Relation relation: where){
+            if(removedKeys.contains(relation.getIdentifiers()) && !relation.getOperator().equalsIgnoreCase("=")){
+                allPartitionKeysFound = false;
+            }
+        }
+        return allPartitionKeysFound;
     }
 
     /**
@@ -1275,17 +1289,18 @@ public class SelectStatement extends MetaStatement {
         TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
 
         // Get columns of the partition key
-        boolean allPartitionKeysFound = matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
+        boolean allPartitionKeysFoundHaveEqualsComparator = matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
 
         //By default go through deep.
         boolean cassandraPath = false;
 
-        if(whereCols.isEmpty()){
-            //All where clauses are included in the primary key.
+        if(allPartitionKeysFoundHaveEqualsComparator){
+            //All where clauses are included in the primary key with equals comparator.
             cassandraPath = true;
         } else {
+
             // Remove all clustering columns.
-            matchWhereColsWithClusteringKeys(allPartitionKeysFound, tableMetadata, whereCols);
+            boolean allClusterColsFoundHaveEqualsOperator = matchWhereColsWithClusteringKeys(allPartitionKeysFoundHaveEqualsComparator, tableMetadata, whereCols);
 
             // Get columns of the custom and lucene indexes
             Set<String> indexedCols = new HashSet<>();
@@ -1297,7 +1312,17 @@ public class SelectStatement extends MetaStatement {
                     luceneCols.addAll(cim.getIndexedColumns());
                 }
             }
+
+
             if(indexedCols.containsAll(whereCols.keySet()) && !containsRelationalOperators(whereCols.values())){
+                cassandraPath = true;
+            }
+
+            if(allClusterColsFoundHaveEqualsOperator &&
+                    indexedCols.containsAll(whereCols.keySet()) &&
+                    checkAllColsHaveEqualsOperator(allClusterColsFoundHaveEqualsOperator, indexedCols)){
+                //If only one indexed column remains go through cassandra
+
                 cassandraPath = true;
             }
 
@@ -1310,7 +1335,7 @@ public class SelectStatement extends MetaStatement {
                     }
                 }
 
-                cassandraPath = (onlyMatchOperators) ? onlyMatchOperators : cassandraPath;
+                cassandraPath = (onlyMatchOperators)? onlyMatchOperators: cassandraPath;
             }
         }
 
