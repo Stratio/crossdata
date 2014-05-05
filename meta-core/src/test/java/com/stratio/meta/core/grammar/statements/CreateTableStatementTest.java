@@ -207,6 +207,13 @@ public class CreateTableStatementTest extends ParsingTest {
                 + " PRIMARY KEY (event_type, insertion_time)) WITH "+o+";";
             testRegularStatement(inputText, "createTableWithGetMetaProperty");
         }
+
+        //,"ephemeral=false" //TODO: ¿tiene sentido?
+        /*
+        String inputText = "create table key_space1.timeseries (event_type text, insertion_time timestamp, event blob,"
+                + " PRIMARY KEY (event_type, insertion_time)) WITH ephemeral=false;";
+        testRegularStatement(inputText, inputText,"createTableWithGetMetaProperty");
+        */
     }
 
     @Test
