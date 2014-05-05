@@ -200,7 +200,7 @@ public class CreateTableStatementTest extends ParsingTest {
         for(String o:new String[]{
                 "CLUSTERING ORDER BY (insertion_time DESC)"
                 ,"ephemeral=true"
-                ,"ephemeral=false"
+                //,"ephemeral=false" //TODO: ¿tiene sentido?
                 ,"CLUSTERING ORDER BY (insertion_time DESC) and ephemeral=true"
         }){
             String inputText = "create table key_space1.timeseries (event_type text, insertion_time timestamp, event blob,"
