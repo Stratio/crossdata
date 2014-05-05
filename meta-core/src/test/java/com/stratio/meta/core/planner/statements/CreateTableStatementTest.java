@@ -30,7 +30,7 @@ import java.util.Map;
 public class CreateTableStatementTest  extends BasicPlannerTest {
 
     @Test
-    public void testPlan(){
+    public void testPlanForCreateTable(){
         String inputText = "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
         Map<String, String> columns = new HashMap();
         columns.put("id", "INT");
@@ -39,6 +39,6 @@ public class CreateTableStatementTest  extends BasicPlannerTest {
         stmt = new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"), Arrays.asList("name"), 1, 1);
         stmt.setSessionKeyspace("demo");
         ((CreateTableStatement)stmt).validate(_metadataManager);
-        validateCassandraPath();
+        validateCassandraPath("testPlanForCreateTable");
     }
 }

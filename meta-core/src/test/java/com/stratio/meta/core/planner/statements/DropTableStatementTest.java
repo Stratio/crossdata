@@ -26,9 +26,9 @@ import org.testng.annotations.Test;
 public class DropTableStatementTest  extends BasicPlannerTest {
 
     @Test
-    public void testPlan(){
+    public void testPlanForDropTable(){
         String inputText = "DROP TABLE demo.users;";
         stmt = new DropTableStatement("demo.users", false);
-        validateCassandraPath();
+        validateCassandraPath("testPlanForDropTable");
     }
 }

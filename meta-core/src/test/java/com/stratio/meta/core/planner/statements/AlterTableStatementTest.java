@@ -27,9 +27,9 @@ import java.util.HashMap;
 
 public class AlterTableStatementTest extends BasicPlannerTest {
     @Test
-    public void testPlan(){
+    public void testPlanForAlter(){
         String inputText = "ALTER TABLE table1 ADD column1 INT;";
         stmt = new AlterTableStatement("table1", "column1", "int", new HashMap(), 1);
-        validateCassandraPath();
+        validateCassandraPath("testPlanForAlter");
     }
 }

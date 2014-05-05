@@ -41,12 +41,12 @@ public class SelectStatementTest extends BasicPlannerTest {
         List<Relation> whereClause = Arrays.asList(relation);
         ((SelectStatement)stmt).setWhere(whereClause);
         Tree tree = stmt.getPlan(_metadataManager, "demo");
-        validateCassandraPath();
+        validateCassandraPath("testWhereIndexNonRelational");
     }
 
     @Test
     public void testWhereIndexRelational() {
-        String inputText = "SELECT users.name, users.age FROM demo.users WHERE age > 13";
+        String inputText = "SELECT name, age FROM users WHERE age > 13";
         List<SelectionSelector> selectionSelectors = Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(new SelectorIdentifier("age")),
                 new SelectionSelector(new SelectorIdentifier("info")));
 
@@ -56,7 +56,7 @@ public class SelectStatementTest extends BasicPlannerTest {
         List<Relation> whereClause = Arrays.asList(relation);
         ((SelectStatement)stmt).setWhere(whereClause);
         Tree tree = stmt.getPlan(_metadataManager, "demo");
-        validateDeepPath();
+        validateDeepPath("testWhereIndexRelational");
     }
 
     @Test
@@ -68,7 +68,7 @@ public class SelectStatementTest extends BasicPlannerTest {
         List<Relation> whereClause = Arrays.asList(relation);
         ((SelectStatement)stmt).setWhere(whereClause);
         Tree tree = stmt.getPlan(_metadataManager, "demo");
-        validateDeepPath();
+        validateDeepPath("testWhereNoIndex");
     }
 
     @Test
@@ -86,7 +86,7 @@ public class SelectStatementTest extends BasicPlannerTest {
         ((SelectStatement)stmt).setJoin(join);
         ((SelectStatement)stmt).setSessionKeyspace("demo");
         ((SelectStatement)stmt).validate(_metadataManager);
-        validateDeepPath();
+        validateDeepPath("testSimpleJoin");
 
     }
 
@@ -111,6 +111,6 @@ public class SelectStatementTest extends BasicPlannerTest {
         Relation relation = new RelationCompare("users.name", "=", new StringTerm("name_3"));
         clause.add(relation);
         ((SelectStatement)stmt).setWhere(clause);
-        validateDeepPath();
+        validateDeepPath("testComplexJoinNoMatch");
     }
 }

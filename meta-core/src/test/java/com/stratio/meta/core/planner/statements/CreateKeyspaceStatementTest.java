@@ -30,11 +30,11 @@ import java.util.Map;
 
 public class CreateKeyspaceStatementTest extends BasicPlannerTest{
     @Test
-    public void testPlan(){
+    public void testPlanForCreateKeyspace(){
         String inputText = "CREATE KEYSPACE demo WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1};\n";
         Map<String, ValueProperty> properties = new HashMap();
         properties.put("class", new IdentifierProperty("{class: SimpleStrategy, replication_factor: 1}"));
         stmt = new CreateKeyspaceStatement("demo", false, properties);
-        validateCassandraPath();
+        validateCassandraPath("testPlanForCreateKeyspace");
     }
 }

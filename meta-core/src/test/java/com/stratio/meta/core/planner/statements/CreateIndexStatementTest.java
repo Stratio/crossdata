@@ -40,7 +40,7 @@ public class CreateIndexStatementTest extends BasicPlannerTest {
         ((CreateIndexStatement)stmt).setTableName("demo.users");
         ((CreateIndexStatement)stmt).addColumn("email");
         ((CreateIndexStatement)stmt).setCreateIndex(true);
-        validateCassandraPath();
+        validateCassandraPath("testPlanDefaultIndex");
     }
 
     @Test

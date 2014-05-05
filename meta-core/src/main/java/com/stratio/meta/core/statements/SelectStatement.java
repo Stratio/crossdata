@@ -20,6 +20,7 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Clause;
@@ -1239,39 +1240,32 @@ public class SelectStatement extends MetaStatement {
         return whereCols;
     }
 
-    private boolean matchWhereColsWithPartitionKeys(TableMetadata tableMetadata, Map whereCols){
-        Set<String> removedKeys = new HashSet();
-        boolean allPartitionKeysFound = true;
+    private void matchWhereColsWithPartitionKeys(TableMetadata tableMetadata, Map whereCols){
         for(ColumnMetadata colMD: tableMetadata.getPartitionKey()){
-            if(whereCols.keySet().contains(colMD.getName())){
+            String operator = "";
+            for(Relation relation: where){
+                if(relation.getIdentifiers().contains(colMD.getName())){
+                    operator = relation.getOperator();
+                }
+            }
+            if(whereCols.keySet().contains(colMD.getName()) && "=".equals(operator)){
                 whereCols.remove(colMD.getName());
-                removedKeys.add(colMD.getName());
-            } else {
-                allPartitionKeysFound = false;
             }
         }
-
-        return checkAllColsHaveEqualsOperator(allPartitionKeysFound, removedKeys);
     }
 
-    private boolean matchWhereColsWithClusteringKeys(boolean allPartitionKeysFound, TableMetadata tableMetadata, Map whereCols){
-        Set<String> removedKeys = new HashSet();
+    private void matchWhereColsWithClusteringKeys(TableMetadata tableMetadata, Map whereCols){
         for(ColumnMetadata colMD: tableMetadata.getClusteringColumns()){
-            if(whereCols.keySet().contains(colMD.getName())){
-                removedKeys.add(colMD.getName());
+            String operator = "";
+            for(Relation relation: where){
+                if(relation.getIdentifiers().contains(colMD.getName())){
+                    operator = relation.getOperator();
+                }
+            }
+            if(whereCols.keySet().contains(colMD.getName()) && "=".equals(operator)){
+                whereCols.remove(colMD.getName());
             }
         }
-        return checkAllColsHaveEqualsOperator(allPartitionKeysFound, removedKeys);
-    }
-
-    private boolean checkAllColsHaveEqualsOperator(boolean allPartitionKeysFound, Set<String> removedKeys){
-        // Check whether all the found cols have the equals operator
-        for(Relation relation: where){
-            if(removedKeys.contains(relation.getIdentifiers()) && !relation.getOperator().equalsIgnoreCase("=")){
-                allPartitionKeysFound = false;
-            }
-        }
-        return allPartitionKeysFound;
     }
 
     /**
@@ -1281,25 +1275,25 @@ public class SelectStatement extends MetaStatement {
      */
     private Tree getWherePlan(MetadataManager metadataManager){
         Tree steps = new Tree();
-        // Get columns of the where clauses
+        // Get columns of the where clauses (Map<identifier, operator>)
         Map<String, String> whereCols = getColumnsFromWhere();
 
         String effectiveKeyspace = getEffectiveKeyspace();
         TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
 
-        // Get columns of the partition key
-        boolean allPartitionKeysFoundHaveEqualsComparator = matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
+        // Check if all partition columns have an equals operator
+        matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
 
         //By default go through deep.
         boolean cassandraPath = false;
 
-        if(allPartitionKeysFoundHaveEqualsComparator){
+        if(whereCols.isEmpty()){
             //All where clauses are included in the primary key with equals comparator.
             cassandraPath = true;
         } else {
 
-            // Remove all clustering columns.
-            boolean allClusterColsFoundHaveEqualsOperator = matchWhereColsWithClusteringKeys(allPartitionKeysFoundHaveEqualsComparator, tableMetadata, whereCols);
+            // Check if all clustering columns have an equals operator
+            matchWhereColsWithClusteringKeys(tableMetadata, whereCols);
 
             // Get columns of the custom and lucene indexes
             Set<String> indexedCols = new HashSet<>();
@@ -1312,15 +1306,7 @@ public class SelectStatement extends MetaStatement {
                 }
             }
 
-
             if(indexedCols.containsAll(whereCols.keySet()) && !containsRelationalOperators(whereCols.values())){
-                cassandraPath = true;
-            }
-
-            if(allClusterColsFoundHaveEqualsOperator &&
-                    indexedCols.containsAll(whereCols.keySet()) &&
-                    checkAllColsHaveEqualsOperator(allClusterColsFoundHaveEqualsOperator, indexedCols)){
-                //If only one indexed column remains go through cassandra
                 cassandraPath = true;
             }
 
@@ -1334,6 +1320,24 @@ public class SelectStatement extends MetaStatement {
                 }
 
                 cassandraPath = (onlyMatchOperators)? onlyMatchOperators: cassandraPath;
+
+                if(cassandraPath && !whereCols.isEmpty()){
+                    // When querying a text type column with a Lucene index, content must be lowercased
+                    TableMetadata metaData = metadataManager.getTableMetadata(getEffectiveKeyspace(), tableName);
+                    metadataManager.loadMetadata();
+                    String lucenCol = whereCols.keySet().iterator().next();
+                    /*System.out.println("lucenCol = "+lucenCol);
+                    for(ColumnMetadata col: metaData.getColumns()){
+                        System.out.println("col = "+col.getName());
+                    }*/
+                    if(metaData.getColumn(lucenCol).getType() == DataType.text()){
+                        if(where.get(0).getTerms().get(0) instanceof StringTerm){
+                            StringTerm stringTerm = (StringTerm) where.get(0).getTerms().get(0);
+                            ((StringTerm) where.get(0).getTerms().get(0)).setTerm(stringTerm.getStringValue().toLowerCase(), stringTerm.isQuotedLiteral());
+                        }
+
+                    }
+                }
             }
         }
 
@@ -1367,8 +1371,8 @@ public class SelectStatement extends MetaStatement {
 
     private boolean containsRelationalOperators(Collection<String> collection){
         boolean result = false;
-        if(collection.contains("<=") || collection.contains("<") || collection.contains(">") ||
-                collection.contains(">=")){
+        if(collection.contains("<=") || collection.contains("<") ||
+                collection.contains(">") || collection.contains(">=")){
             result = true;
         }
         return result;

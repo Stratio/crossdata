@@ -30,12 +30,12 @@ import org.testng.annotations.Test;
 public class DeleteStatementTest  extends BasicPlannerTest {
 
     @Test
-    public void testPlan(){
+    public void testPlanForDelete(){
         String input = "DELETE FROM demo.users WHERE name = 'name_0';";
         stmt = new DeleteStatement();
         ((DeleteStatement)stmt).setTableName("demo.users");
         Relation relation = new RelationCompare("name", "=", new StringTerm("name_0"));
         ((DeleteStatement)stmt).addRelation(relation);
-        validateCassandraPath();
+        validateCassandraPath("testPlanForDelete");
     }
 }

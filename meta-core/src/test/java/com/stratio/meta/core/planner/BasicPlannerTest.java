@@ -42,14 +42,14 @@ public class BasicPlannerTest extends BasicCoreCassandraTest{
         _metadataManager.loadMetadata();
     }
 
-    public void validateCassandraPath(){
+    public void validateCassandraPath(String method){
         Tree tree = stmt.getPlan(_metadataManager,"demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA), method+": Plan path should be CASSANDRA");
     }
 
-    public void validateDeepPath(){
+    public void validateDeepPath(String method){
         Tree tree = stmt.getPlan(_metadataManager,"demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.DEEP));
+        assertTrue(tree.getNode().getPath().equals(MetaPath.DEEP), method+": Plan path should be DEEP");
     }
 
     public void validateNotSupported(){

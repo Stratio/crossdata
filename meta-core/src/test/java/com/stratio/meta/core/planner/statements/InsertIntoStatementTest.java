@@ -25,20 +25,16 @@ import com.stratio.meta.core.structures.BooleanTerm;
 import com.stratio.meta.core.structures.IntegerTerm;
 import com.stratio.meta.core.structures.StringTerm;
 import com.stratio.meta.core.structures.ValueCell;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.testng.Assert.assertTrue;
-
 public class InsertIntoStatementTest  extends BasicPlannerTest {
 
     @Test
-    public void testPlan(){
+    public void testPlanForInsert(){
         String inputText = "INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
         List<String> ids = Arrays.asList("name", "gender", "email", "age", "bool", "phrase");
         List<ValueCell> list = new ArrayList();
@@ -48,6 +44,6 @@ public class InsertIntoStatementTest  extends BasicPlannerTest {
         list.add(new BooleanTerm("false"));
         list.add(new StringTerm(""));
         stmt = new InsertIntoStatement("demo.users", ids, list, false, new ArrayList());
-        validateCassandraPath();
+        validateCassandraPath("testPlanForInsert");
     }
 }

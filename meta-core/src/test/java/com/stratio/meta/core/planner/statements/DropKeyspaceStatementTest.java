@@ -26,9 +26,9 @@ import org.testng.annotations.Test;
 public class DropKeyspaceStatementTest  extends BasicPlannerTest {
 
     @Test
-    public void testPlan(){
+    public void testPlanForDropKeyspace(){
         String inputText = "DROP KEYSPACE demo;";
         stmt = new DropKeyspaceStatement("demo", false);
-        validateCassandraPath();
+        validateCassandraPath("testPlanForDropKeyspace");
     }
 }
