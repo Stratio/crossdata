@@ -33,13 +33,25 @@ public class SelectStatementTest extends ParsingTest {
     }
 
     @Test
+    public void selectStatementWindows() {
+        for(String w:new String[]{
+                "5 ROWS"
+                ,"LAST"
+        }){
+            String inputText = "SELECT ident1 FROM newks.newtb WITH WINDOW "+w+" WHERE ident1 LIKE whatever;";
+            testRegularStatement(inputText, "selectStatementWindows");
+        }
+    }
+
+
+    @Test
     public void selectStatementJoins() {
         for(String jp:new String[]{
                 "field1=field2"
                 ,"field3=field4 AND field1=field2"
         }){
             String inputText = "SELECT a, b FROM c INNER JOIN tablename ON "+jp+" WHERE x = y;";
-            testRegularStatement(inputText, "selectStatement");
+            testRegularStatement(inputText, "selectStatementJoins");
         }
 
     }
@@ -55,7 +67,7 @@ public class SelectStatementTest extends ParsingTest {
                 ,"DESC, anothercolumn ASC"
         }){
             String inputText = "SELECT a FROM b ORDER BY id1 "+s+" GROUP BY col1 LIMIT 50 DISABLE ANALYTICS;";
-            testRegularStatement(inputText, "selectStatement");
+            testRegularStatement(inputText, "selectStatementCombineOrderby");
         }
 
     }
