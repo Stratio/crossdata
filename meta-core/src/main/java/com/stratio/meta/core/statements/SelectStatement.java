@@ -1316,7 +1316,7 @@ public class SelectStatement extends MetaStatement {
                         break;
                     }
                 }
-                cassandraPath = onlyMatchOperators;
+                cassandraPath = (cassandraPath) ? cassandraPath : onlyMatchOperators;
             }
         }
 
