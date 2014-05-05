@@ -122,7 +122,7 @@ public class SelectStatementTest extends BasicValidatorTest {
                 + "INNER JOIN demo.users ON users.name=users.name;";
         validateOk(inputText, "validateInnerJoinBasicOk");
     }
-
+    
     @Test
     public void validateUnknownKs1Fail(){
         String inputText = "SELECT users.name, users.age, users.email FROM unknown.users "
