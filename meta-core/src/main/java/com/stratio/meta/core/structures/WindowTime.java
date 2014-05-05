@@ -48,6 +48,7 @@ public class WindowTime extends WindowSelect {
             
     @Override
     public String toString() {
+        //return num+" "+(""+unit).charAt(0);
         return num+" "+unit;
     }
     

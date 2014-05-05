@@ -37,9 +37,20 @@ public class SelectStatementTest extends ParsingTest {
         for(String w:new String[]{
                 "5 ROWS"
                 ,"LAST"
+                ,"5 SECONDS"
         }){
             String inputText = "SELECT ident1 FROM newks.newtb WITH WINDOW "+w+" WHERE ident1 LIKE whatever;";
             testRegularStatement(inputText, "selectStatementWindows");
+        }
+
+        //TODO: add "S","M","H","D","s","m","h" and "d"
+        //for(String t:new String[]{"S","M","H","D","s","m","h","d"}){
+        for(String t:new String[]{"SECONDS","MINUTES","HOURS","DAYS"}){
+            for(int i=10;i-->2;){
+                String inputText="SELECT ident1 FROM newks.newtb WITH WINDOW "+i+" "+t+" WHERE ident1 LIKE whatever;";
+                testRegularStatement(inputText, "selectStatementWindows");
+            }
+
         }
     }
 
