@@ -26,13 +26,27 @@ import com.stratio.meta.core.utils.QueryStatus;
 
 public class Planner {
 
+    /**
+     * A {@link com.stratio.meta.core.metadata.MetadataManager}.
+     */
     private final MetadataManager metadata;
 
+    /**
+     * Planner constructor.
+     *
+     * @param session Cassandra datastax java driver session.
+     */
     public Planner(Session session){
         metadata = new MetadataManager(session);
         metadata.loadMetadata();
     }
 
+    /**
+     * Plan a {@link com.stratio.meta.core.utils.MetaQuery}.
+     *
+     * @param metaQuery Query to plan.
+     * @return same {@link com.stratio.meta.core.utils.MetaQuery} planned.
+     */
     public MetaQuery planQuery(MetaQuery metaQuery) {
         metaQuery.setStatus(QueryStatus.PLANNED);
         metaQuery.setPlan(metaQuery.getStatement().getPlan(metadata, metaQuery.getSessionKeyspace()));

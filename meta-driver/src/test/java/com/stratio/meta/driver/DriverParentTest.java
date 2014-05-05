@@ -51,5 +51,4 @@ public class DriverParentTest extends ParentCassandraTest {
         metaServer.stop();
         metaServer.destroy();
     }
-
 }

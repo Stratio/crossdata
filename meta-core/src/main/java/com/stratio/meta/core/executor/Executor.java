@@ -29,18 +29,43 @@ import org.apache.log4j.Logger;
 
 public class Executor {
 
+    /**
+     * Class logger.
+     */
     private static final Logger LOG = Logger.getLogger(Executor.class.getName());
 
+    /**
+     * Cassandra datastax java driver session.
+     */
     private final Session session;
+
+    /**
+     * Deep Spark context.
+     */
     private final DeepSparkContext deepSparkContext;
+
+    /**
+     * Global configuration.
+     */
     private final EngineConfig engineConfig;
 
+    /**
+     * Executor constructor.
+     * @param session Cassandra datastax java driver session.
+     * @param deepSparkContext Spark context.
+     * @param engineConfig a {@link com.stratio.meta.core.engine.EngineConfig}
+     */
     public Executor(Session session, DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
         this.session = session;
         this.deepSparkContext = deepSparkContext;
         this.engineConfig = engineConfig;
     }
 
+    /**
+     * Executes a query.
+     * @param metaQuery Query to execute embedded in a {@link com.stratio.meta.core.utils.MetaQuery}.
+     * @return query executed.
+     */
     public MetaQuery executeQuery(MetaQuery metaQuery) {
 
         metaQuery.setStatus(QueryStatus.EXECUTED);

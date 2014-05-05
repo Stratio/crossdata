@@ -1258,7 +1258,6 @@ public class SelectStatement extends MetaStatement {
         Set<String> removedKeys = new HashSet();
         for(ColumnMetadata colMD: tableMetadata.getClusteringColumns()){
             if(whereCols.keySet().contains(colMD.getName())){
-                whereCols.remove(colMD.getName());
                 removedKeys.add(colMD.getName());
             }
         }
@@ -1322,7 +1321,6 @@ public class SelectStatement extends MetaStatement {
                     indexedCols.containsAll(whereCols.keySet()) &&
                     checkAllColsHaveEqualsOperator(allClusterColsFoundHaveEqualsOperator, indexedCols)){
                 //If only one indexed column remains go through cassandra
-
                 cassandraPath = true;
             }
 

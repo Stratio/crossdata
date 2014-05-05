@@ -40,7 +40,7 @@ public class EngineConfig {
     private static final String JOBNAME = "stratioDeepWithMeta";
 
     /**
-     *
+     * Jars to exclude. Prefixes.
      */
     private static final String [] forbiddenJars = {"akka"};
 
