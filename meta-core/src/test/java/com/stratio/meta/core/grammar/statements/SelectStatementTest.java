@@ -107,5 +107,16 @@ public class SelectStatementTest extends ParsingTest {
         testParseFails(inputText, "selectWrongLikeWord");
     }
 
+    @Test
+    public void selectSelectors() {
+        for(String c:new String[]{
+                "COUNT(*)"
+                ,"myUDF(field0)"
+                ,"field0"
+        }){
+            String inputText = "SELECT "+c+" from table0;";
+            testRegularStatement(inputText, "selectSelectors");
+        }
+    }
 
 }
