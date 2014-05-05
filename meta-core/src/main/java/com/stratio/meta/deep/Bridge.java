@@ -33,6 +33,7 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.Relation;
+import com.stratio.meta.core.structures.SelectionClause;
 import com.stratio.meta.deep.functions.*;
 import com.stratio.meta.deep.utils.DeepUtils;
 import org.apache.log4j.Logger;
@@ -92,12 +93,15 @@ public class Bridge {
     public ResultSet executeLeafNode(MetaStatement stmt, boolean isRoot){
         SelectStatement ss = (SelectStatement) stmt;
         // LEAF
-        String[] columnsSet = DeepUtils.retrieveSelectorFields(ss);
+        String[] columnsSet = {};
+        if(ss.getSelectionClause().getType() == SelectionClause.TYPE_SELECTION){
+            columnsSet = DeepUtils.retrieveSelectorFields(ss);
+        }
         IDeepJobConfig config = DeepJobConfigFactory.create().session(session)
                 .host(engineConfig.getRandomCassandraHost()).rpcPort(engineConfig.getCassandraPort())
                 .keyspace(ss.getKeyspace()).table(ss.getTableName());
 
-        config = (columnsSet.length==0) ? config.initialize() : config.inputColumns(columnsSet).initialize() ;
+        config = (columnsSet.length==0)? config.initialize(): config.inputColumns(columnsSet).initialize();
 
         JavaRDD rdd = deepContext.cassandraJavaRDD(config);
         //If where
@@ -107,7 +111,7 @@ public class Bridge {
                 rdd = doWhere(rdd, rel);
             }
         }
-        return returnResult(rdd, isRoot, Arrays.asList(columnsSet));
+        return returnResult(rdd, isRoot, ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, Arrays.asList(columnsSet));
     }
 
     /**
@@ -159,7 +163,7 @@ public class Bridge {
         JavaRDD result = joinRDD.map(new JoinCells(field1));
 
         // Return MetaResultSet
-        return returnResult(result, true, selectedCols);
+        return returnResult(result, true, false, selectedCols);
     }
 
     /**
@@ -195,8 +199,11 @@ public class Bridge {
      * @param selectedCols List of columns selected in current SelectStatement.
      * @return ResultSet containing the result of built.
      */
-    private ResultSet returnResult(JavaRDD rdd, boolean isRoot, List<String> selectedCols){
+    private ResultSet returnResult(JavaRDD rdd, boolean isRoot, boolean isCount, List<String> selectedCols){
         if(isRoot){
+            if(isCount){
+                return DeepUtils.buildCountResult(rdd);
+            }
             return DeepUtils.buildResultSet(rdd.dropTake(0, DEFAULT_RESULT_SIZE), selectedCols);
         } else {
             List<Row> partialResult = new ArrayList<>();

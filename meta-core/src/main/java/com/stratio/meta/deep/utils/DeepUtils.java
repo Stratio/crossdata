@@ -27,6 +27,7 @@ import com.stratio.meta.common.data.Row;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaRDD;
 
 import java.util.List;
 import java.util.Map;
@@ -76,11 +77,28 @@ public final class DeepUtils {
         }
         LOG.info(logResult);
 
-        ////////////////////////////////////////////////////////////////////////////
         if(LOG.isDebugEnabled()){
             printDeepResult(rs.getRows());
         }
-        /////////////////////////////////////////////////////////////////////////////
+
+        return rs;
+    }
+
+    /**
+     * Create a result with a count
+     * @param rdd rdd to be counted
+     * @return ResultSet Result set with only a cell containing the a number of rows
+     */
+    public static ResultSet buildCountResult(JavaRDD rdd) {
+        CassandraResultSet rs = new CassandraResultSet();
+
+        int numberOfRows = (int) rdd.count();
+
+        Row metaRow = new Row();
+
+        Cell metaCell = new Cell(Integer.class, numberOfRows);
+        metaRow.addCell("COUNT", metaCell);
+        rs.add(metaRow);
 
         return rs;
     }
@@ -132,4 +150,5 @@ public final class DeepUtils {
         }
         return columnsSet;
     }
+
 }

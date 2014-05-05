@@ -22,19 +22,16 @@ package com.stratio.meta.core.planner.statements;
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
-import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
 
 import java.util.*;
 
-import static org.testng.Assert.assertTrue;
-
 public class SelectStatementTest extends BasicPlannerTest {
 
     @Test
     public void testWhereIndexNonRelational() {
-        String inputText = "SELECT users.name, users.age FROM demo.users WHERE age = 10";
+        String inputText = "SELECT name, age FROM demo.users WHERE age = 10";
         List<SelectionSelector> selectionSelectors = Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(new SelectorIdentifier("age")),
                 new SelectionSelector(new SelectorIdentifier("info")));
 
