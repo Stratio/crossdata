@@ -1302,9 +1302,7 @@ public class SelectStatement extends MetaStatement {
                     luceneCols.addAll(cim.getIndexedColumns());
                 }
             }
-
-            if(indexedCols.containsAll(whereCols.keySet())){
-                //If only one indexed column remains go through cassandra
+            if(indexedCols.containsAll(whereCols.keySet()) && !containsRelationalOperators(whereCols.values())){
                 cassandraPath = true;
             }
 
@@ -1347,6 +1345,15 @@ public class SelectStatement extends MetaStatement {
             return ksAndTableName[1];
         }
         return fullName;
+    }
+
+    private boolean containsRelationalOperators(Collection<String> collection){
+        boolean result = false;
+        if(collection.contains("<=") || collection.contains("<") || collection.contains(">") ||
+                collection.contains(">=")){
+            result = true;
+        }
+        return result;
     }
 
 }

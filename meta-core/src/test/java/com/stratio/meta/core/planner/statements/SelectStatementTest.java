@@ -33,18 +33,33 @@ import static org.testng.Assert.assertTrue;
 public class SelectStatementTest extends BasicPlannerTest {
 
     @Test
-    public void testWhereIndex() {
-        String inputText = "SELECT users.name, users.age, users_info.info FROM demo.users WHERE age > 10";
+    public void testWhereIndexNonRelational() {
+        String inputText = "SELECT users.name, users.age FROM demo.users WHERE age = 10";
         List<SelectionSelector> selectionSelectors = Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(new SelectorIdentifier("age")),
                 new SelectionSelector(new SelectorIdentifier("info")));
 
         SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
         stmt = new SelectStatement(selClause, "demo.users");
-        Relation relation = new RelationCompare("age", ">", new IntegerTerm("10"));
+        Relation relation = new RelationCompare("age", "=", new IntegerTerm("10"));
         List<Relation> whereClause = Arrays.asList(relation);
         ((SelectStatement)stmt).setWhere(whereClause);
         Tree tree = stmt.getPlan(_metadataManager, "demo");
         validateCassandraPath();
+    }
+
+    @Test
+    public void testWhereIndexRelational() {
+        String inputText = "SELECT users.name, users.age FROM demo.users WHERE age > 13";
+        List<SelectionSelector> selectionSelectors = Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(new SelectorIdentifier("age")),
+                new SelectionSelector(new SelectorIdentifier("info")));
+
+        SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
+        stmt = new SelectStatement(selClause, "demo.users");
+        Relation relation = new RelationCompare("age", ">", new IntegerTerm("13"));
+        List<Relation> whereClause = Arrays.asList(relation);
+        ((SelectStatement)stmt).setWhere(whereClause);
+        Tree tree = stmt.getPlan(_metadataManager, "demo");
+        validateDeepPath();
     }
 
     @Test
