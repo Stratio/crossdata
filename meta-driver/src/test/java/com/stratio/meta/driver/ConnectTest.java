@@ -23,7 +23,6 @@ import com.stratio.meta.common.result.ConnectResult;
 import com.stratio.meta.common.result.Result;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertFalse;
@@ -36,7 +35,7 @@ public class ConnectTest extends DriverParentTest {
         Result metaResult= driver.connect("TEST_USER");
         assertFalse(metaResult.hasError());
         ConnectResult r = ConnectResult.class.cast(metaResult);
-        assertTrue(r.getSessionId() > 0, "Invalid session identifier");
+        assertTrue(r.getSessionId() != -1, "Invalid session identifier: "+r.getSessionId());
     }
 
 
@@ -92,7 +91,6 @@ public class ConnectTest extends DriverParentTest {
         driver.executeQuery("TEST_USER","ks_demo","drop table demo ;");
 
         driver.executeQuery("TEST_USER","ks_demo","drop keyspace ks_demo ;");
-
 
         String msg= "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};";
         Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
