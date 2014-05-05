@@ -23,6 +23,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.nio.charset.Charset;
 
 public class CCMHandler {
 
@@ -52,8 +53,8 @@ public class CCMHandler {
 
             Process p = Runtime.getRuntime().exec(tempFile.getAbsolutePath());
 
-            in = new BufferedReader(
-                    new InputStreamReader(p.getInputStream()));
+            in = new BufferedReader(new InputStreamReader(p.getInputStream(), Charset.forName("UTF-8")));
+
             String line;
             while ((line = in.readLine()) != null) {
                 LOG.debug(line);

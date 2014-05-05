@@ -27,6 +27,13 @@ public class InsertIntoStatementTest extends ParsingTest {
     @Test
     public void insertInto() {
         String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (term1, term2) "
+                + "IF NOT EXISTS;";
+        testRegularStatement(inputText, "insertInto");
+    }
+
+    @Test
+    public void insertIntoUsing() {
+        String inputText = "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (term1, term2) "
                 + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
         testRegularStatement(inputText, "insertInto");
     }
@@ -64,6 +71,9 @@ public class InsertIntoStatementTest extends ParsingTest {
                 + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
         testRegularStatement(inputText, "insertIntoSelect");
     }
+
+    //T_USING opt1= getOption ( T_AND optN= getOption )*
+
 
 
 }

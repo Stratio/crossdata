@@ -79,6 +79,7 @@ public class CassandraExecutor {
             ResultSet resultSet = session.execute(query);
             return QueryResult.createSuccessQueryResult(utils.transformToMetaResultSet(resultSet));
         } catch (UnsupportedOperationException unSupportException){
+            LOG.debug("Cassandra executor failed", unSupportException);
             return QueryResult.createFailQueryResult("Unsupported operation by C*: " + unSupportException.getMessage());
         } catch (Exception ex) {
             return processException(ex, query);
@@ -109,8 +110,10 @@ public class CassandraExecutor {
                 return QueryResult.createSuccessQueryResult(utils.transformToMetaResultSet(resultSet));
             }
         } catch (UnsupportedOperationException unSupportException){
+            LOG.debug("Cassandra executor failed", unSupportException);
             return QueryResult.createFailQueryResult("Unsupported operation by C*: " + unSupportException.getMessage());
         } catch (Exception ex) {
+            LOG.debug("Cassandra executor failed", ex);
             String queryStr;
             if(driverStmt != null){
                 queryStr = driverStmt.toString();

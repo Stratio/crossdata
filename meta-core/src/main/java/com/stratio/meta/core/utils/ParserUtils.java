@@ -113,52 +113,74 @@ public class ParserUtils {
     }
 
     public static String getSuggestion(String query, AntlrError antlrError){
+        // We initialize the errorWord with the first word of the query
         String errorWord = query.trim().split(" ")[0].toUpperCase();
+        // We initialize the token words with the initial tokens
         Set<String> statementTokens = MetaUtils.INITIALS;
+        // We initialize the char position of the first word
         int charPosition = 0;
+        // We initialize the suggestion from exception messages containing "T_..."
         String suggestionFromToken = "";
                 
-        if(antlrError != null){
+        if(antlrError != null){ // Antlr exception message provided information
+            // Update char position with the information provided by antlr
             charPosition = getCharPosition(antlrError);
+            // It's not a initial token
             if(charPosition>0){
                 statementTokens = MetaUtils.NON_INITIALS;
             }
 
+            // Antlr exception message is not provided
             String errorMessage = antlrError.getMessage();
             if(errorMessage == null){
                 return "";
             }
+
+            // Antlr didn't recognize a token enclosed between single quotes
             errorWord = errorMessage.substring(errorMessage.indexOf("'")+1, errorMessage.lastIndexOf("'"));
             errorWord = errorWord.toUpperCase();
 
+            // Antlr was expecting a determined token
             int positionToken = errorMessage.indexOf("T_");
             if(positionToken>-1){
+
+                // We get the expecting token removing the 'T_' part and the rest of the message
                 suggestionFromToken = errorMessage.substring(positionToken+2);
                 suggestionFromToken = suggestionFromToken.trim().split(" ")[0].toUpperCase();
+
+                // We check if there is a reserved word of Meta grammar equivalent to the expecting token
                 if(!statementTokens.contains(suggestionFromToken)){
                     suggestionFromToken = "";
                 }
             }
         }
-        
+
+        // Get best suggestion words for the incorrect token
         Set<String> bestMatches = getBestMatches(errorWord, statementTokens, 2);
+
         StringBuilder sb = new StringBuilder("Did you mean: ");
         if((bestMatches.isEmpty() || antlrError == null) && (charPosition<1)){
+            //Append all the initial tokens because we didn't find a good match for first token
             sb.append(MetaUtils.getInitialsStatements()).append("?").append(System.lineSeparator());
         } else if(!"".equalsIgnoreCase(suggestionFromToken)){
+            //Antlr returned a T_... token which have a equivalence with the reserved tokens of Meta
             sb.append("\"").append(suggestionFromToken).append("\"").append("?");
             sb.append(System.lineSeparator());
         } else if(errorWord.matches("[QWERTYUIOPASDFGHJKLZXCVBNM_]+")){
+            // There is no a perfect equivalence with the reserved tokens of Meta but
+            // there might be a similar word
             for(String match: bestMatches){
-                sb.append("* ");
-                sb.append("\"").append(match).append("\"").append("?");
-                sb.append(System.lineSeparator()).append("\t");
+                sb.append("\"").append(match).append("\"").append(", ");
             }
+            sb.append("?").append(System.lineSeparator());
         }
-        if("Did you mean: ".equalsIgnoreCase(sb.toString())){
+
+        // No suggestion was found
+        if("Did you mean: ?".startsWith(sb.toString())){
             return "";
         }
-        return sb.substring(0, sb.length());
+
+        return sb.substring(0, sb.length()).replace(", ?", "?");
     }    
 
     public static String translateToken(String message) {     

@@ -20,6 +20,9 @@
 package com.stratio.meta.deep;
 
 import com.stratio.deep.context.DeepSparkContext;
+import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.ResultSet;
+import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
@@ -80,6 +83,13 @@ public class BridgeTest extends BasicCoreCassandraTest {
     public Result validateRows(MetaQuery metaQuery, String methodName, int expectedNumber) {
         QueryResult result = (QueryResult) validateOk(metaQuery, methodName);
         if (expectedNumber > 0) {
+            for(Row row: result.getResultSet()){
+                for(Cell cell: row.getCells().values()){
+                    System.out.print(String.valueOf(cell.getValue())+" | ");
+                }
+                System.out.println();
+            }
+
             assertFalse(result.getResultSet().isEmpty(), "Expecting non-empty resultset");
             assertEquals(result.getResultSet().size(), expectedNumber, methodName + ":" + result.getResultSet().size() + " rows found, " + expectedNumber + " rows expected.");
         } else {
@@ -372,7 +382,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     }
 
     @Test
-    public void testSelectAllandWhere() {
+    public void testSelectAllAndWhere() {
         MetaQuery metaQuery = new MetaQuery("SELECT * FROM demo.users INNER JOIN demo.types ON users.name = types.varchar_column" +
                 " WHERE users.email = 'name_4@domain.com';");
 
@@ -434,7 +444,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
         metaQuery.setPlan(tree);
         metaQuery.setStatus(QueryStatus.PLANNED);
-        validateRows(metaQuery, "testSelectAllandWhere", 1);
+        validateRows(metaQuery, "testSelectAllAndWhere", 1);
     }
 
     // TESTS FOR WRONG PLANS

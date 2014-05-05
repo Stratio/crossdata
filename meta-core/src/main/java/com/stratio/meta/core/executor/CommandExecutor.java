@@ -28,8 +28,11 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.DescribeStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.structures.DescribeType;
+import org.apache.log4j.Logger;
 
 public class CommandExecutor {
+
+    private static final Logger LOG = Logger.getLogger(CommandExecutor.class);
 
     /**
      * Private class constructor as all methods are static.
@@ -52,7 +55,8 @@ public class CommandExecutor {
             } else {
                 return CommandResult.createFailCommanResult("Not supported yet.");
             }
-        } catch (RuntimeException rex) {
+        } catch (RuntimeException rex){
+            LOG.debug("Command executor failed", rex);
             return CommandResult.createFailCommanResult(rex.getMessage());
         }
     }

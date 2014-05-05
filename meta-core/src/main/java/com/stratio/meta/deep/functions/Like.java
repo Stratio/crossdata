@@ -55,9 +55,6 @@ public class Like extends Function<Cells, Boolean> implements Serializable{
     @Override
     public Boolean call(Cells cells){
         Object currentValue = cells.getCellByName(field).getCellValue();
-        if (currentValue == null){
-            return regexp == null;
-        }
-        return String.valueOf(currentValue).matches(regexp);
+        return regexp.matches(String.valueOf(currentValue));
     }
 }
