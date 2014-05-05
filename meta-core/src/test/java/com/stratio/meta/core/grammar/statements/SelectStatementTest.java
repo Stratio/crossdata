@@ -33,6 +33,34 @@ public class SelectStatementTest extends ParsingTest {
     }
 
     @Test
+    public void selectStatementJoins() {
+        for(String jp:new String[]{
+                "field1=field2"
+                ,"field3=field4 AND field1=field2"
+        }){
+            String inputText = "SELECT a, b FROM c INNER JOIN tablename ON "+jp+" WHERE x = y;";
+            testRegularStatement(inputText, "selectStatement");
+        }
+
+    }
+
+    @Test
+    public void selectStatementCombineOrderby() {
+        for(String s:new String[]{
+                "ASC"
+                ,"DESC"
+                ,"ASC, anothercolumn ASC"
+                ,"ASC, anothercolumn DESC"
+                ,"DESC, anothercolumn DESC"
+                ,"DESC, anothercolumn ASC"
+        }){
+            String inputText = "SELECT a FROM b ORDER BY id1 "+s+" GROUP BY col1 LIMIT 50 DISABLE ANALYTICS;";
+            testRegularStatement(inputText, "selectStatement");
+        }
+
+    }
+
+    @Test
     public void selectStatement2() {
         String inputText = "SELECT lucene FROM newks.newtb;";
         testRegularStatement(inputText, "selectStatement2");
