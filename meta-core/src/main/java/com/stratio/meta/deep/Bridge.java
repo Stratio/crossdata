@@ -195,7 +195,8 @@ public class Bridge {
     /**
      * Build a ResultSet from a RDD depending the context.
      * @param rdd RDD which corresponds to Spark result.
-     * @param isRoot Indicates if this node is root in this plan
+     * @param isRoot Indicates if this node is root in this plan.
+     * @param isCount Indicates if this query have a COUNT clause.
      * @param selectedCols List of columns selected in current SelectStatement.
      * @return ResultSet containing the result of built.
      */
