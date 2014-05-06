@@ -112,6 +112,30 @@ public class ParserUtils {
         return sb.toString();
     }
 
+    private static String createSuggestion(Set<String> bestMatches,
+                                           AntlrError antlrError,
+                                           int charPosition,
+                                           String suggestionFromToken,
+                                           String errorWord){
+        StringBuilder sb = new StringBuilder();
+        if((bestMatches.isEmpty() || antlrError == null) && (charPosition<1)){
+            //Append all the initial tokens because we didn't find a good match for first token
+            sb.append(MetaUtils.getInitialsStatements()).append("?").append(System.lineSeparator());
+        } else if(!"".equalsIgnoreCase(suggestionFromToken)){
+            //Antlr returned a T_... token which have a equivalence with the reserved tokens of Meta
+            sb.append("\"").append(suggestionFromToken).append("\"").append("?");
+            sb.append(System.lineSeparator());
+        } else if(errorWord.matches("[QWERTYUIOPASDFGHJKLZXCVBNM_]+")){
+            // There is no a perfect equivalence with the reserved tokens of Meta but
+            // there might be a similar word
+            for(String match: bestMatches){
+                sb.append("\"").append(match).append("\"").append(", ");
+            }
+            sb.append("?").append(System.lineSeparator());
+        }
+        return sb.toString();
+    }
+
     public static String getSuggestion(String query, AntlrError antlrError){
         // We initialize the errorWord with the first word of the query
         String errorWord = query.trim().split(" ")[0].toUpperCase();
@@ -159,21 +183,7 @@ public class ParserUtils {
         Set<String> bestMatches = getBestMatches(errorWord, statementTokens, 2);
 
         StringBuilder sb = new StringBuilder("Did you mean: ");
-        if((bestMatches.isEmpty() || antlrError == null) && (charPosition<1)){
-            //Append all the initial tokens because we didn't find a good match for first token
-            sb.append(MetaUtils.getInitialsStatements()).append("?").append(System.lineSeparator());
-        } else if(!"".equalsIgnoreCase(suggestionFromToken)){
-            //Antlr returned a T_... token which have a equivalence with the reserved tokens of Meta
-            sb.append("\"").append(suggestionFromToken).append("\"").append("?");
-            sb.append(System.lineSeparator());
-        } else if(errorWord.matches("[QWERTYUIOPASDFGHJKLZXCVBNM_]+")){
-            // There is no a perfect equivalence with the reserved tokens of Meta but
-            // there might be a similar word
-            for(String match: bestMatches){
-                sb.append("\"").append(match).append("\"").append(", ");
-            }
-            sb.append("?").append(System.lineSeparator());
-        }
+        sb.append(createSuggestion(bestMatches, antlrError, charPosition, suggestionFromToken, errorWord));
 
         // No suggestion was found
         if("Did you mean: ?".startsWith(sb.toString())){

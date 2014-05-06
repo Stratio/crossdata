@@ -28,13 +28,15 @@ import akka.util.Timeout
 class RetryPolitics(retryTimes:Int,waitTime: Timeout) {
   def askRetry(remoteActor:ActorRef, message:AnyRef, waitTime:Timeout = this.waitTime , retry:Int = 0): Result={
     if(retry==retryTimes){
-      ConnectResult.createFailConnectResult("Not found answer")
+      ConnectResult.createFailConnectResult("Not found answer. After "+retry+" retries, timeout was exceed.")
     } else {
+      if(retry > 0){
+        println("Retry "+retry+" timeout")
+      }
       try {
         val future = remoteActor.ask(message)(waitTime)
         Await.result(future.mapTo[Result], waitTime.duration*2)
       } catch {
-
         case ex: Exception => askRetry(remoteActor, message, waitTime, retry + 1)
       }
     }
