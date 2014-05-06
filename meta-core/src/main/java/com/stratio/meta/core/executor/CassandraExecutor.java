@@ -47,7 +47,8 @@ public class CassandraExecutor {
     /**
      * Private class constructor as all methods are static.
      */
-    private CassandraExecutor(){}
+    private CassandraExecutor(){
+    }
 
     /**
      * Execute a MetaStep as part of a plan.
