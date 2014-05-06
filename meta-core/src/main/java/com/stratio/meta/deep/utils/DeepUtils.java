@@ -104,7 +104,7 @@ public final class DeepUtils {
     }
 
     /**
-     * Print a List of {@link com.stratio.meta.common.data.Row}
+     * Print a List of {@link com.stratio.meta.common.data.Row}.
      * @param rows List of Rows
      */
     protected static void printDeepResult(List<Row> rows){
@@ -121,7 +121,7 @@ public final class DeepUtils {
             }
             firstRow = false;
             for(Map.Entry<String, Cell> entry : row.getCells().entrySet()){
-                sb.append(String.valueOf(entry.getValue())).append(" - ");
+                sb.append(String.valueOf(entry.getValue().getValue())).append(" - ");
             }
             sb.append(System.lineSeparator());
         }
