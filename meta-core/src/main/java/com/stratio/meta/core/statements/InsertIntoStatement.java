@@ -321,22 +321,10 @@ public class InsertIntoStatement extends MetaStatement {
         Insert insertStmt = this.keyspaceInc ? QueryBuilder.insertInto(this.keyspace, this.tableName) :
                                                     QueryBuilder.insertInto(this.tableName);
 
-        Iterator<ValueCell> it = this.cellValues.iterator();
-        for(String id: this.ids){
-            ValueCell valueCell = it.next();
-            try{
-                if(valueCell.toString().matches("[0123456789.]+")){
-                    insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.getStringValue()));
-                } else if (valueCell.toString().contains("-")){
-                    insertStmt = insertStmt.value(id, UUID.fromString(valueCell.getStringValue()));
-                } else if("true".equalsIgnoreCase(valueCell.toString()) || "false".equalsIgnoreCase(valueCell.toString())) {
-                    insertStmt = insertStmt.value(id, Boolean.valueOf(valueCell.toString()));
-                } else {
-                    insertStmt = insertStmt.value(id, valueCell.getStringValue());
-                }
-            } catch(Exception ex){
-                return null;
-            }
+        try{
+            iterateValuesAndInsertThem(insertStmt);
+        } catch(Exception ex){
+            return null;
         }
         
         if(this.ifNotExists){
@@ -353,6 +341,28 @@ public class InsertIntoStatement extends MetaStatement {
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
         return tree;
+    }
+
+    /**
+     * Iterate over {@link com.stratio.meta.core.statements.InsertIntoStatement#cellValues} and add values to
+     * {@link com.datastax.driver.core.querybuilder.Insert} object to be translated in CQL.
+     * 
+     * @param insertStmt
+     */
+    private void iterateValuesAndInsertThem(Insert insertStmt){
+        Iterator<ValueCell> it = this.cellValues.iterator();
+        for(String id: this.ids){
+            ValueCell valueCell = it.next();
+            if(valueCell.toString().matches("[0123456789.]+")){
+                insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.getStringValue()));
+            } else if (valueCell.toString().contains("-")){
+                insertStmt = insertStmt.value(id, UUID.fromString(valueCell.getStringValue()));
+            } else if("true".equalsIgnoreCase(valueCell.toString()) || "false".equalsIgnoreCase(valueCell.toString())) {
+                insertStmt = insertStmt.value(id, Boolean.valueOf(valueCell.toString()));
+            } else {
+                insertStmt = insertStmt.value(id, valueCell.getStringValue());
+            }
+        }
     }
 
 

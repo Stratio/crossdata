@@ -1361,6 +1361,12 @@ public class SelectStatement extends MetaStatement {
         return steps;
     }
 
+    /**
+     * Given a name of table (with or without keyspace), check if contains keyspace and only return table name.
+     *
+     * @param fullName Given table name in query.
+     * @return Only table name.
+     */
     public String splitAndGetFieldName(String fullName){
         if(fullName.contains(".")){
             String[] ksAndTableName = fullName.split("\\.");
@@ -1369,6 +1375,12 @@ public class SelectStatement extends MetaStatement {
         return fullName;
     }
 
+    /**
+     * Check if operators collection contains any relational operator.
+     *
+     * @param collection {@link java.util.Collection} of relational operators.
+     * @return {@code true} if contains any relational operator.
+     */
     private boolean containsRelationalOperators(Collection<String> collection){
         boolean result = false;
         if(collection.contains("<=") || collection.contains("<") ||
