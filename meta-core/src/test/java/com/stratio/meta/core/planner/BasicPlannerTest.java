@@ -26,7 +26,7 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.BeforeClass;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertTrue;
 
 public class BasicPlannerTest extends BasicCoreCassandraTest{
 

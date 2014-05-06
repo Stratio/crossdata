@@ -70,7 +70,7 @@ public class EngineConfig {
      * @return an array of hosts
      */
     public String[] getCassandraHosts() {
-        return Arrays.copyOf(cassandraHosts, cassandraHosts.length);
+        return cassandraHosts.clone();
     }
 
     /**

@@ -48,6 +48,7 @@ public final class DeepUtils {
 
     /**
      * Build ResultSet from list of Cells.
+     *
      * @param cells list of Cells
      * @param selectedCols List of fields selected in the SelectStatement.
      * @return ResultSet
@@ -85,7 +86,8 @@ public final class DeepUtils {
     }
 
     /**
-     * Create a result with a count
+     * Create a result with a count.
+     *
      * @param rdd rdd to be counted
      * @return ResultSet Result set with only a cell containing the a number of rows
      */
@@ -104,7 +106,8 @@ public final class DeepUtils {
     }
 
     /**
-     * Print a List of {@link com.stratio.meta.common.data.Row}
+     * Print a List of {@link com.stratio.meta.common.data.Row}.
+     *
      * @param rows List of Rows
      */
     protected static void printDeepResult(List<Row> rows){
@@ -131,6 +134,7 @@ public final class DeepUtils {
 
     /**
      * Retrieve fields in selection clause.
+     *
      * @param ss SelectStatement of the query
      * @return Array of fields in selection clause or null if all fields has been selected
      */

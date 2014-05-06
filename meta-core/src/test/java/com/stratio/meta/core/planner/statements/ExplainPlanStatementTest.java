@@ -23,10 +23,7 @@ import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.DropTableStatement;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
 import com.stratio.meta.core.statements.MetaStatement;
-import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertTrue;
 
 public class ExplainPlanStatementTest  extends BasicPlannerTest {
 

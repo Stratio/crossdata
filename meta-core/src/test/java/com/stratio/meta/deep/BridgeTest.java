@@ -21,7 +21,6 @@ package com.stratio.meta.deep;
 
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
