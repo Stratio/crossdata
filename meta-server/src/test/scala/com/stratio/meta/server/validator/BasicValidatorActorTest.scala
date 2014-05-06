@@ -219,7 +219,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
     within(5000 millis){
 
       val msg="drop keyspace ks_demo ;"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"Keyspace ks_demo does not exists." )
+      assertEquals(querying.proccess(msg,validatorRef,engine,3),"Keyspace ks_demo does not exist." )
     }
   }
 
