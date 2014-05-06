@@ -27,8 +27,56 @@
         <version>0.0.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
+    <packaging>jar</packaging>
     <artifactId>meta-dist</artifactId>
+    <name>Stratio META distribution</name>
+    <description>Stratio META</description>
+    <url>https://github.com/Stratio/stratio-meta/</url>
+
+    <licenses>
+        <license>
+            <name>GNU General Lesser Public License (LGPL) version 3.0</name>
+            <url>http://www.gnu.org/licenses/lgpl-3.0.html</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>scm:git:git@github.com:Stratio/stratio-meta.git</url>
+        <connection>https://github.com/Stratio/stratio-meta/</connection>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>aagea</id>
+            <name>Álvaro Agea</name>
+            <email>aagea at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>antonioalcocer</id>
+            <name>Antonio Alcocer</name>
+            <email>aalcocer at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>miguel0afd</id>
+            <name>Miguel Angel Fernandez</name>
+            <email>mafernandez at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>gmunoz</id>
+            <name>Gaspar Muñoz</name>
+            <email>gmunoz at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>roclas</id>
+            <name>Carlos Hernandez</name>
+            <email>chernandez at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>dhiguero</id>
+            <name>Daniel Higuero</name>
+            <email>dhiguero at stratio dot com</email>
+        </developer>
+    </developers>
 
     <dependencies>
         <dependency>

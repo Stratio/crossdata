@@ -435,6 +435,9 @@ public class SelectStatement extends MetaStatement {
      */
     //TODO validateJoinClause
     private Result validateJoinClause(TableMetadata tableFrom, TableMetadata tableJoin){
+
+
+
         return QueryResult.createFailQueryResult("Unsupported");
     }
 
@@ -554,7 +557,7 @@ public class SelectStatement extends MetaStatement {
             }
             if(!found){
                 result= QueryResult.createFailQueryResult("Column " + column + " does not " +
-                        "exists in table " + table);
+                        "exist in table " + table);
             }
 
         }else{

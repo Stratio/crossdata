@@ -68,6 +68,7 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
         Result result = stmt.validate(_metadataManager);
         assertNotNull(result, "Sentence validation not supported - " + methodName);
         assertTrue(result.hasError(), "Cannot validate sentence - " + methodName + ": " + result.getErrorMessage());
+        System.out.println(">>>>>>" + result.getErrorMessage());
     }
 
 }
