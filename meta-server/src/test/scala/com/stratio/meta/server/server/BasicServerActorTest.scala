@@ -169,7 +169,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
     within(5000 millis){
 
       val msg="insert into demo (field1, field2) values ('test1','text2');"
-      assertEquals(querying.proccess(msg,serverRef,engine,4),"Table demo does not exists." )
+      assertEquals(querying.proccess(msg,serverRef,engine,4),"Table demo does not exist." )
     }
   }
   test ("ServerActor select without table"){
@@ -177,7 +177,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
     within(5000 millis){
 
       val msg="select * from demo ;"
-      assertEquals(querying.proccess(msg,serverRef,engine,4),"Table demo does not exists.")
+      assertEquals(querying.proccess(msg,serverRef,engine,4),"Table demo does not exist.")
     }
   }
 

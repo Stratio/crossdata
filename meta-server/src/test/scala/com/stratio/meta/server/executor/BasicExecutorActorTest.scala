@@ -91,14 +91,14 @@ with DefaultTimeout with FunSuiteLike with  BeforeAndAfterCassandra{
   test ("QueryActor insert into table not create yet without error"){
     within(5000 millis){
       val msg="insert into demo (field1, field2) values ('test1','text2');"
-      assertEquals(querying.proccess(msg,executorRef,engine,1),"Table demo does not exists." )
+      assertEquals(querying.proccess(msg,executorRef,engine,1),"Table demo does not exist." )
     }
   }
 
   test ("QueryActor select without table"){
     within(5000 millis){
       val msg="select * from demo ;"
-      assertEquals(querying.proccess(msg,executorRef,engine,1),"Table demo does not exists.")
+      assertEquals(querying.proccess(msg,executorRef,engine,1),"Table demo does not exist.")
     }
   }
 
@@ -147,7 +147,7 @@ with DefaultTimeout with FunSuiteLike with  BeforeAndAfterCassandra{
   test ("QueryActor drop KS  not exit"){
     within(5000 millis){
       val msg="drop keyspace ks_demo ;"
-      assertEquals(querying.proccess(msg,executorRef,engine,1),"Keyspace ks_demo does not exists." )
+      assertEquals(querying.proccess(msg,executorRef,engine,1),"Keyspace ks_demo does not exist." )
     }
   }
 

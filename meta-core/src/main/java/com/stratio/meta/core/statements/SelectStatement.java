@@ -326,6 +326,10 @@ public class SelectStatement extends MetaStatement {
         selSelectors.addSelectionSelector(selSelector);
     }
 
+    /**
+     * Creates a String representing the Statement with META syntax
+     * @return String
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("SELECT ");
@@ -734,6 +738,10 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
+    /**
+     * Creates a String representing the Statement with CQL syntax
+     * @return
+     */
     @Override
     public String translateToCQL() {
         StringBuilder sb = new StringBuilder(this.toString());
@@ -1268,6 +1276,38 @@ public class SelectStatement extends MetaStatement {
         }
     }
 
+    private boolean checkWhereColsWithLucene(Set<String> luceneCols,
+                                             Map<String, String> whereCols,
+                                             MetadataManager metadataManager,
+                                             boolean cassandraPath){
+        if(luceneCols.containsAll(whereCols.keySet())){
+            boolean onlyMatchOperators = true;
+            for(String operator: whereCols.values()){
+                if(!"match".equalsIgnoreCase(operator)){
+                    onlyMatchOperators = false;
+                    break;
+                }
+            }
+
+            cassandraPath = (onlyMatchOperators)? onlyMatchOperators: cassandraPath;
+
+            if(cassandraPath && !whereCols.isEmpty()){
+                // When querying a text type column with a Lucene index, content must be lowercased
+                TableMetadata metaData = metadataManager.getTableMetadata(getEffectiveKeyspace(), tableName);
+                metadataManager.loadMetadata();
+                String lucenCol = whereCols.keySet().iterator().next();
+                if(metaData.getColumn(lucenCol).getType() == DataType.text()){
+                    if(where.get(0).getTerms().get(0) instanceof StringTerm){
+                        StringTerm stringTerm = (StringTerm) where.get(0).getTerms().get(0);
+                        ((StringTerm) where.get(0).getTerms().get(0)).setTerm(stringTerm.getStringValue().toLowerCase(), stringTerm.isQuotedLiteral());
+                    }
+
+                }
+            }
+        }
+        return cassandraPath;
+    }
+
     /**
      * Get the execution plan of a non JOIN select with a where clause.
      * @param metadataManager The medata manager.
@@ -1310,35 +1350,8 @@ public class SelectStatement extends MetaStatement {
                 cassandraPath = true;
             }
 
-            if(luceneCols.containsAll(whereCols.keySet())){
-                boolean onlyMatchOperators = true;
-                for(String operator: whereCols.values()){
-                    if(!"match".equalsIgnoreCase(operator)){
-                        onlyMatchOperators = false;
-                        break;
-                    }
-                }
+            cassandraPath = checkWhereColsWithLucene(luceneCols, whereCols, metadataManager, cassandraPath);
 
-                cassandraPath = (onlyMatchOperators)? onlyMatchOperators: cassandraPath;
-
-                if(cassandraPath && !whereCols.isEmpty()){
-                    // When querying a text type column with a Lucene index, content must be lowercased
-                    TableMetadata metaData = metadataManager.getTableMetadata(getEffectiveKeyspace(), tableName);
-                    metadataManager.loadMetadata();
-                    String lucenCol = whereCols.keySet().iterator().next();
-                    /*System.out.println("lucenCol = "+lucenCol);
-                    for(ColumnMetadata col: metaData.getColumns()){
-                        System.out.println("col = "+col.getName());
-                    }*/
-                    if(metaData.getColumn(lucenCol).getType() == DataType.text()){
-                        if(where.get(0).getTerms().get(0) instanceof StringTerm){
-                            StringTerm stringTerm = (StringTerm) where.get(0).getTerms().get(0);
-                            ((StringTerm) where.get(0).getTerms().get(0)).setTerm(stringTerm.getStringValue().toLowerCase(), stringTerm.isQuotedLiteral());
-                        }
-
-                    }
-                }
-            }
         }
 
         steps.setNode(new MetaStep(MetaPath.DEEP, this));

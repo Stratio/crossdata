@@ -151,7 +151,7 @@ public class MetadataManager {
      * Get the list of tables in a Cassandra keyspaces.
      * @param keyspace The name of the keyspace
      * @return The list of tables or empty if the keyspace does
-     * not exists, or the not connected.
+     * not exist, or the not connected.
      */
     public List<String> getTablesNames(String keyspace){
         List<String> result = new ArrayList<>();
