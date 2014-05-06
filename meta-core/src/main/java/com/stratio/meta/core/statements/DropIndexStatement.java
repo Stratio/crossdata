@@ -19,57 +19,141 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
+import java.util.Iterator;
+
+/**
+ * Class that models a {@code DROP INDEX} statement from the META language.
+ */
 public class DropIndexStatement extends MetaStatement {
 
-    private boolean _dropIfExists = false;
-    private String _name = null;
+    /**
+     * Whether the index should be dropped only if exists.
+     */
+    private boolean dropIfExists = false;
 
+    /**
+     * Whether the index will be dropped.
+     */
+    private boolean dropIndex = false;
+
+    /**
+     * The name of the index.
+     */
+    private String name = null;
+
+    /**
+     * Target column associated with the index.
+     */
+    private ColumnMetadata targetColumn = null;
+
+    /**
+     * Class constructor.
+     */
     public DropIndexStatement(){
         this.command = false;
     }
-    
-    public DropIndexStatement(String name){
-        this();
-        _name = name;
-    }
-    
+
+    /**
+     * Set the option to drop the index only if exists.
+     */
     public void setDropIfExists(){
-            _dropIfExists = true;
+            dropIfExists = true;
     }
 
+    /**
+     * Set the index name.
+     * @param name The name of the index. The name may contain
+     *             the name of the keyspace where the index is active.
+     */
     public void setName(String name){
-            _name = name;
+            this.name = name;
+        if(name.contains(".")){
+            String[] ksAndName = name.split("\\.");
+            keyspace = ksAndName[0];
+            this.name = ksAndName[1];
+            keyspaceInc = true;
+        }
     }
 
     @Override
     public String toString() {
             StringBuilder sb = new StringBuilder("DROP INDEX ");
-            if(_dropIfExists){
+            if(dropIfExists){
                     sb.append("IF EXISTS ");
             }
-            sb.append(_name);
+        if(keyspaceInc){
+            sb.append(keyspace).append(".");
+        }
+            sb.append(name);
             return sb.toString();
     }
 
-    /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
+    public Result validate(MetadataManager metadata) {
+
+        Result result = null;
+        //Get the effective keyspace based on the user specification during the create
+        //sentence, or taking the keyspace in use in the user session.
+        String effectiveKeyspace = getEffectiveKeyspace();
+        if(keyspaceInc){
+            effectiveKeyspace = keyspace;
+        }
+
+        //Check that the keyspace and table exists.
+        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+            result= QueryResult.createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
+        }else{
+            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+            if(ksMetadata == null){
+                result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
+            }else{
+                result = validateIndexName(ksMetadata);
+            }
+        }
+        return result;
     }
 
-    @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+    /**
+     * Validate the existence of the index in the selected keyspace.
+     * @param ksMetadata The keyspace metadata.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     */
+    public Result validateIndexName(KeyspaceMetadata ksMetadata){
+        Result result = QueryResult.createSuccessQueryResult();
+        boolean found = false;
+        Iterator<TableMetadata> tables = ksMetadata.getTables().iterator();
+
+        while(tables.hasNext() && !found){
+            TableMetadata tableMetadata = tables.next();
+            Iterator<ColumnMetadata> columns = tableMetadata.getColumns().iterator();
+            while(columns.hasNext() && !found){
+                ColumnMetadata column = columns.next();
+                if(column.getIndex() != null
+                        && (column.getIndex().getName().equals(name)
+                        || column.getIndex().getName().equals("stratio_lucene_"+ name))){
+                    found = true;
+                    targetColumn = column;
+                }
+            }
+        }
+
+        if(!dropIfExists && !found){
+            result = QueryResult.createFailQueryResult("Index " + name + " not found in keyspace " + ksMetadata.getName());
+        }else{
+            dropIndex = true;
+        }
+
+        return result;
     }
 
     @Override
@@ -77,25 +161,34 @@ public class DropIndexStatement extends MetaStatement {
         return this.toString();
     }
 
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
-    
     @Override
-    public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
-    }
-    
-    @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-    
-    @Override
-    public Tree getPlan() {
-        return new Tree();
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+        Tree result = new Tree();
+        if(dropIndex) {
+            //Add CREATE INDEX as the root.
+            StringBuilder sb = new StringBuilder("DROP INDEX ");
+            if(keyspaceInc) {
+                sb.append(keyspace).append(".");
+            }
+            sb.append(targetColumn.getIndex().getName());
+
+            if (targetColumn.getIndex().getName().startsWith("stratio")) {
+                //Remove associated column.
+                StringBuilder sb2 = new StringBuilder("ALTER TABLE ");
+                if(keyspaceInc) {
+                    sb2.append(keyspace).append(".");
+                }
+                sb2.append(targetColumn.getTable().getName());
+                sb2.append(" DROP ").append("stratio_lucene_").append(name);
+
+                result.setNode(new MetaStep(MetaPath.CASSANDRA, sb2.toString()));
+                result.addChild(new Tree(new MetaStep(MetaPath.CASSANDRA, sb.toString())));
+            }else{
+                result.setNode(new MetaStep(MetaPath.CASSANDRA, sb.toString()));
+            }
+
+        }
+        return result;
     }
     
 }

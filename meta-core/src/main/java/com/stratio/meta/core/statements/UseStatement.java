@@ -19,55 +19,56 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
 
+/**
+ * Class that models a {@code USE} statement from the META language.
+ */
 public class UseStatement extends MetaStatement {
 
-    private String keyspaceName;
-
-    public UseStatement(String keyspaceName) {
-        this.keyspaceName = keyspaceName;
+    /**
+     * Class constructor.
+     * @param keyspace The name of the target keyspace.
+     */
+    public UseStatement(String keyspace) {
+        super.keyspace = keyspace;
+        if(!keyspace.contains("'")){
+            super.keyspace = keyspace.toLowerCase();
+        }
         this.command = false;
-    }   
-    
-    public String getKeyspaceName() {
-        return keyspaceName;
     }
 
-    public void setKeyspaceName(String keyspaceName) {
-        this.keyspaceName = keyspaceName;
+    /**
+     * Get the name of the keyspace to be used.
+     * @return The name.
+     */
+    public String getKeyspaceName() {
+        return keyspace;
     }
-    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("USE ");
-        sb.append(keyspaceName);
+        sb.append(keyspace);
         return sb.toString();
     }
 
-    /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = new MetaResult();
-        if(keyspaceName != null && keyspaceName.length() > 0){
-            if(!metadata.getKeyspacesNames().contains(keyspaceName)){
-                result.setErrorMessage("Keyspace " + keyspaceName + " does not exists.");
+    public Result validate(MetadataManager metadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        if(keyspace != null && keyspace.length() > 0){
+            if(!metadata.getKeyspacesNames().contains(keyspace.toLowerCase())){
+                result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " does not exist.");
             }
         }else{
-            result.setErrorMessage("Missing keyspace name.");
+            result= QueryResult.createFailQueryResult("Missing keyspace name.");
         }
         return result;
-    }
-
-    @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
     }
 
     @Override
@@ -75,25 +76,11 @@ public class UseStatement extends MetaStatement {
         return this.toString();
     }
 
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
-
     @Override
-    public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
-    }
-
-    @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-    
-    @Override
-    public Tree getPlan() {
-        return new Tree();
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+        return tree;
     }
     
 }

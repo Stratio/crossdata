@@ -20,14 +20,31 @@
 package com.stratio.meta.sh.help;
 
 public class HelpEntry {
-	public String entry = null;
-	public String help = null;
-	
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder(entry);
-		sb.append("\n");
-		sb.append(help);
-		return sb.toString();
-	}
+
+    private String entry = null;
+    private String help = null;
+
+    public String getEntry() {
+        return entry;
+    }
+
+    public void setEntry(String entry) {
+        this.entry = entry;
+    }
+
+    public String getHelp() {
+        return help;
+    }
+
+    public void setHelp(String help) {
+        this.help = help;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(entry);
+        sb.append("\n");
+        sb.append(help);
+        return sb.toString();
+    }
 }

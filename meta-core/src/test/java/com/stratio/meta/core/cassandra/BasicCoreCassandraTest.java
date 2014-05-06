@@ -25,16 +25,14 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.stratio.meta.core.parser.Parser;
+import com.stratio.meta.test.CCMHandler;
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
-
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +47,9 @@ public class BasicCoreCassandraTest {
      */
     private static final String DEFAULT_HOST = "127.0.0.1";
 
-
+    /**
+     * Parsed used to interpret the testing queries.
+     */
     protected final Parser parser = new Parser();
 
     /**
@@ -64,18 +64,7 @@ public class BasicCoreCassandraTest {
 
     @BeforeClass
     public static void setUpBeforeClass(){
-
-        try {
-            Process p = Runtime.getRuntime().exec("./meta-core/src/test/resources/test.sh");
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(p.getInputStream()));
-            String line = null;
-            while ((line = in.readLine()) != null) {
-                System.out.println(line);
-            }
-        } catch (IOException e) {
-            logger.error("Cannot execute ccm script");
-        }
+        CCMHandler.startCCM();
         initCassandraConnection();
         dropKeyspaceIfExists("testKS");
     }
@@ -117,17 +106,6 @@ public class BasicCoreCassandraTest {
      */
     public static void closeCassandraConnection(){
         _session.close();
-        /*try {
-            Process p = Runtime.getRuntime().exec("./meta-core/src/test/resources/close.sh");
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(p.getInputStream()));
-            String line = null;
-            while ((line = in.readLine()) != null) {
-                System.out.println(line);
-            }
-        } catch (IOException e) {
-            logger.error("Cannot execute ccm close script");
-        }*/
     }
 
     /**
@@ -155,11 +133,11 @@ public class BasicCoreCassandraTest {
 
     /**
      * Load a {@code keyspace} in Cassandra using the CQL sentences in the script
-     * path. The script is executed if the keyspace does not exists in Cassandra.
+     * path. The script is executed if the keyspace does not exist in Cassandra.
      * @param keyspace The name of the keyspace.
      * @param path The path of the CQL script.
      */
-    public static void loadTestData(String keyspace, String path){
+    protected static void loadTestData(String keyspace, String path){
         KeyspaceMetadata metadata = _session.getCluster().getMetadata().getKeyspace(keyspace);
         if(metadata == null){
             logger.info("Creating keyspace " + keyspace + " using " + path);

@@ -29,5 +29,5 @@ package com.stratio.meta.core.structures;
  * </li>
  */
 public enum TimeUnit {
-    SECONDS, HOURS, MINUTES, DAYS
+    SECONDS,MINUTES,HOURS, DAYS
 }

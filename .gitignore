@@ -17,4 +17,5 @@ meta-driver/nb-configuration.xml
 meta-server/nb-configuration.xml
 meta-sh/nb-configuration.xml
 nb-configuration.xml
+*.orig
 

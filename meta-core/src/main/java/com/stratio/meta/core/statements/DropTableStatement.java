@@ -20,91 +20,102 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
+/**
+ * Class that models a {@code DROP TABLE} statement from the META language.
+ */
 public class DropTableStatement extends MetaStatement {
-    
-    private boolean keyspaceInc = false;
-    private String keyspace;
-    private String tablename;
+
+    /**
+     * The name of the target table.
+     */
+    private String tableName;
+
+    /**
+     * Whether the table should be dropped only if exists.
+     */
     private boolean ifExists;
 
-    public DropTableStatement(String tablename, boolean ifExists) {
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param ifExists Whether it should be dropped only if exists.
+     */
+    public DropTableStatement(String tableName, boolean ifExists) {
+        if(tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        this.tablename = tablename;
         this.ifExists = ifExists;
     }
-    
-    public String getTablename() {
-        return tablename;
+
+    /**
+     * Get the name of the table.
+     * @return The name.
+     */
+    public String getTableName() {
+        return tableName;
     }
 
-    public void setTablename(String tablename) {
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+    /**
+     * Set the name of the table.
+     * @param tableName The name of the table.
+     */
+    public void setTableName(String tableName) {
+        if(tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        this.tablename = tablename;
-    }
-
-    public boolean isIfExists() {
-        return ifExists;
-    }
-
-    public void setIfExists(boolean ifExists) {
-        this.ifExists = ifExists;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Drop table ");
+        StringBuilder sb = new StringBuilder("DROP TABLE ");
         if(ifExists){
-            sb.append("if exists ");
+            sb.append("IF EXISTS ");
         }       
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
-        sb.append(tablename);
+        sb.append(tableName);
         return sb.toString();
     }
 
-    /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = new MetaResult();
+    public Result validate(MetadataManager metadata) {
+        Result result = QueryResult.createSuccessQueryResult();
 
-        String effectiveKeyspace = targetKeyspace;
+        String effectiveKeyspace = getEffectiveKeyspace();
         if(keyspaceInc){
             effectiveKeyspace = keyspace;
         }
 
         //Check that the keyspace and table exists.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
+            result= QueryResult.createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
         }else{
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
             if(ksMetadata == null){
-                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
+                result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
             }else {
-                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
+                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
                 if (tableMetadata == null) {
-                    result.setErrorMessage("Table " + tablename + " does not exists.");
+                    result= QueryResult.createFailQueryResult("Table " + tableName + " does not exists.");
                 }
             }
 
@@ -114,34 +125,15 @@ public class DropTableStatement extends MetaStatement {
     }
 
     @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
-    }
-
-    @Override
     public String translateToCQL() {
         return this.toString();
     }
-            
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "Executed successfully";
-//    }
 
     @Override
-    public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
-    }
-
-    @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-       
-    @Override
-    public Tree getPlan() {
-        return new Tree();
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+        return tree;
     }
     
 }

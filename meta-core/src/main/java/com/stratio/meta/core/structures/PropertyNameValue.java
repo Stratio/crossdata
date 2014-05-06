@@ -19,7 +19,7 @@
 
 package com.stratio.meta.core.structures;
 
-public class PropertyNameValue extends MetaProperty{
+public class PropertyNameValue extends Property {
 
     private String name;
     private ValueProperty vp;

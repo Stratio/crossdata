@@ -19,14 +19,18 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.TableMetadata;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.*;
-import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.structures.IdentifierProperty;
+import com.stratio.meta.core.structures.IndexType;
+import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 
@@ -34,153 +38,258 @@ import java.util.*;
 import java.util.Map.Entry;
 
 /**
- * Create index statement of the META language. This class recognizes the following syntax:
+ * Class that models a {@code CREATE INDEX} statement of the META language. This class recognizes the following syntax:
  * <p>
- * CREATE {@link IndexType} INDEX (IF NOT EXISTS)? {@literal <index_name>}
- * ON {@literal <tablename>} ( {@literal <identifier> , ..., <identifier>})
+ * CREATE {@link IndexType} INDEX (IF NOT EXISTS)? {@literal <index_name>} <br>
+ * ON {@literal <tableName>} ( {@literal <identifier> , ..., <identifier>}) <br>
  * ( USING {@literal <index_class>} )? ( WITH OPTIONS ( key_1=value_1 AND ... AND key_n=value_n) )?;
  */
-public class CreateIndexStatement extends MetaStatement {	
-	
-    private boolean _keyspaceInc = false;
-    private String _keyspace = null;
-    private IndexType _type = null;
-    private boolean _createIfNotExists = false;
-    private String _name = null;
-    private String _tablename = null;
-    private ArrayList<String> _targetColumn = null;
-    private String _usingClass = null;
-    private HashMap<ValueProperty, ValueProperty> _options = null;
+public class CreateIndexStatement extends MetaStatement {
 
+    /**
+     * The {@link com.stratio.meta.core.structures.IndexType} to be created.
+     */
+    private IndexType type = null;
+
+    /**
+     * Whether the index should be created only if not exists.
+     */
+    private boolean createIfNotExists = false;
+
+    /**
+     * Determine whether the index should be created or not.
+     */
+    private boolean createIndex = false;
+
+    /**
+     * The name of the index.
+     */
+    private String name = null;
+
+    /**
+     * The name of the target table.
+     */
+    private String tableName = null;
+
+    /**
+     * The list of columns covered by the index. Only one column is allowed for {@code DEFAULT} indexes.
+     */
+    private List<String> targetColumns = null;
+
+    /**
+     * The name of the class that implements the secondary index.
+     */
+    private String usingClass = null;
+
+    /**
+     * The map of options passed to the index during its creation.
+     */
+    private Map<ValueProperty, ValueProperty> options = null;
+
+    /**
+     * Map of lucene types associated with Cassandra data types.
+     */
+    private static Map<String, String> luceneTypes = new HashMap<>();
+
+    /**
+     * Table metadata cached on the validate function.
+     */
+    private transient TableMetadata metadata = null;
+
+    static{
+        luceneTypes.put(DataType.text().toString(), "{type:\"string\"}");
+        luceneTypes.put(DataType.varchar().toString(), "{type:\"string\"}");
+        luceneTypes.put(DataType.inet().toString(), "{type:\"string\"}");
+        luceneTypes.put(DataType.ascii().toString(), "{type:\"string\"}");
+        luceneTypes.put(DataType.bigint().toString(), "{type:\"long\"}");
+        luceneTypes.put(DataType.counter().toString(), "{type:\"long\"}");
+        luceneTypes.put(DataType.cboolean().toString(), "{type:\"boolean\"}");
+        luceneTypes.put(DataType.cdouble().toString(), "{type:\"double\"}");
+        luceneTypes.put(DataType.cfloat().toString(), "{type:\"float\"}");
+        luceneTypes.put(DataType.cint().toString(), "{type:\"integer\"}");
+        luceneTypes.put(DataType.uuid().toString(), "{type:\"uuid\"}");
+    }
+
+
+    /**
+     * Class constructor.
+     */
     public CreateIndexStatement(){
         this.command = false;
-        _targetColumn = new ArrayList<>();
-        _options = new HashMap<>();
+        targetColumns = new ArrayList<>();
+        options = new LinkedHashMap<>();
     }
 
+    /**
+     * Set the type of index.
+     * @param type The type from {@link com.stratio.meta.core.structures.IndexType}.
+     */
     public void setIndexType(String type){
-        _type = IndexType.valueOf(type);
+        this.type = IndexType.valueOf(type);
     }
 
+    /**
+     * Set that the index should be created if not exists.
+     */
     public void setCreateIfNotExists(){
-        _createIfNotExists = true;
+        createIfNotExists = true;
     }
 
-    public boolean isKeyspaceInc() {
-        return _keyspaceInc;
+    /**
+     * Set the type of index.
+     * @param type A {@link com.stratio.meta.core.structures.IndexType}.
+     */
+    public void setType(IndexType type) {
+        this.type = type;
     }
 
-    public void setKeyspaceInc(boolean _keyspaceInc) {
-        this._keyspaceInc = _keyspaceInc;
-    }
-
-    public String getKeyspace() {
-        return _keyspace;
-    }
-
-    public void setKeyspace(String _keyspace) {
-        this._keyspace = _keyspace;
-    }
-
-    public IndexType getType() {
-        return _type;
-    }
-
-    public void setType(IndexType _type) {
-        this._type = _type;
-    }
-
+    /**
+     * If the IF NOT EXISTS clause has been specified.
+     * @return Whether the index should be created only if not exists.
+     */
     public boolean isCreateIfNotExists() {
-        return _createIfNotExists;
+        return createIfNotExists;
     }
 
-    public void setCreateIfNotExists(boolean _createIfNotExists) {
-        this._createIfNotExists = _createIfNotExists;
+    /**
+     * Set the value of the IF NOT EXISTS clause.
+     * @param ifNotExists If it has been specified or not.
+     */
+    public void setCreateIfNotExists(boolean ifNotExists) {
+        this.createIfNotExists = ifNotExists;
     }
 
-    public ArrayList<String> getTargetColumn() {
-        return _targetColumn;
-    }
-
-    public void setTargetColumn(ArrayList<String> _targetColumn) {
-        this._targetColumn = _targetColumn;
-    }	        
-        
+    /**
+     * Set the name of the index.
+     * @param name The name.
+     */
     public void setName(String name){
         if(name.contains(".")){
             String[] ksAndTablename = name.split("\\.");
-            _keyspace = ksAndTablename[0];
-            name = ksAndTablename[1];
-            _keyspaceInc = true;
+            keyspace = ksAndTablename[0];
+            this.name = ksAndTablename[1];
+            keyspaceInc = true;
+        }else {
+            this.name = name;
         }
-        _name = name;
     }
 
+    /**
+     * Get the index name.
+     * @return The name.
+     */
     public String getName(){
-            return _name;
+            return name;
     }
 
-    public void setTablename(String tablename){
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            _keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
-            _keyspaceInc = true;
+    /**
+     * Set the name of the target table.
+     * @param tableName The name.
+     */
+    public void setTableName(String tableName){
+        if(tableName.contains(".")){
+            String[] ksAndTablename = tableName.split("\\.");
+            keyspace = ksAndTablename[0];
+            this.tableName = ksAndTablename[1];
+            keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        _tablename = tablename;
 
     }
 
+    /**
+     * Add a column to the list of indexed columns.
+     * @param column The name of the column.
+     */
     public void addColumn(String column){
-        _targetColumn.add(column);
+        targetColumns.add(column);
     }
 
+    /**
+     * Set a USING class that implements the custom index.
+     * @param using The qualified name of the class.
+     */
     public void setUsingClass(String using){
-        _usingClass = using;
+        usingClass = using;
     }
 
+    /**
+     * Add an options to the index.
+     * @param key The option key.
+     * @param value The option value.
+     */
     public void addOption(ValueProperty key, ValueProperty value){
-        _options.put(key, value);
+        options.put(key, value);
     }
 
-    public HashMap<ValueProperty, ValueProperty> getOptions(){
-        return _options;
+    /**
+     * Get the map of options.
+     * @return The map of options.
+     */
+    public Map<ValueProperty, ValueProperty> getOptions(){
+        return options;
+    }
+
+    /**
+     * Get the name of the index. If a LUCENE index is to be created, the name of the index
+     * is prepended with {@code stratio_lucene_}. If a name for the index is not specified, the index
+     * will be named using the concatenation of the target column names.
+     * @return The name of the index.
+     */
+    protected String getIndexName(){
+        String result = null;
+        if(name == null){
+            StringBuilder sb = new StringBuilder();
+            if(IndexType.LUCENE.equals(type)){
+                sb.append("stratio_lucene_");
+                sb.append(tableName);
+            }else {
+                sb.append(tableName);
+                for (String c : targetColumns) {
+                    sb.append("_");
+                    sb.append(c);
+                }
+                sb.append("_idx");
+            }
+            result = sb.toString();
+        }else{
+            result = name;
+            if(IndexType.LUCENE.equals(type)){
+                result = "stratio_lucene_" + name;
+            }
+        }
+        return result;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("CREATE ");
-        //if(_type == IndexType.HASH){
-        //    sb.append("CUSTOM");
-        //} else {
-            sb.append(_type);
-        //}
+        sb.append(type);
         sb.append(" INDEX ");
-        if(_createIfNotExists){
+        if(createIfNotExists){
                 sb.append("IF NOT EXISTS ");
         }
 
-        if(_name != null){
-            sb.append(_name).append(" ");
+        if(name != null){
+            sb.append(getIndexName()).append(" ");
         }
         sb.append("ON ");
-        if(_keyspaceInc){
-            sb.append(_keyspace).append(".");
+        if(keyspaceInc){
+            sb.append(keyspace).append(".");
         }
-        sb.append(_tablename);
-        sb.append(" (").append(ParserUtils.stringList(_targetColumn, ", ")).append(")");
-        if(_usingClass != null){
+        sb.append(tableName);
+        sb.append(" (").append(ParserUtils.stringList(targetColumns, ", ")).append(")");
+        if(usingClass != null){
                 sb.append(" USING ");
-                sb.append(_usingClass);
+                sb.append(usingClass);
         }
-        if(_options.size() > 0){
-            //sb.append(" WITH OPTIONS ");
+        if(!options.isEmpty()){
             sb.append(" WITH OPTIONS = {");
-            Iterator<Entry<ValueProperty, ValueProperty>> entryIt = _options.entrySet().iterator();
+            Iterator<Entry<ValueProperty, ValueProperty>> entryIt = options.entrySet().iterator();
             Entry<ValueProperty, ValueProperty> e;
             while(entryIt.hasNext()){
                     e = entryIt.next();
-                    //sb.append(e.getKey()).append(" : ").append("'").append(e.getValue()).append("'");
                     sb.append(e.getKey()).append(": ").append(e.getValue());
                     if(entryIt.hasNext()){
                             sb.append(", ");
@@ -194,25 +303,23 @@ public class CreateIndexStatement extends MetaStatement {
 
     /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
+    public Result validate(MetadataManager metadata) {
 
         //Validate target table
-        MetaResult result = validateKeyspaceAndTable(metadata, targetKeyspace);
+        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+        String effectiveKeyspace = getEffectiveKeyspace();
 
-        String effectiveKeyspace = targetKeyspace;
-        if(_keyspaceInc){
-            effectiveKeyspace = _keyspace;
-        }
         TableMetadata tableMetadata = null;
         if(!result.hasError()) {
-            tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tablename);
-            result = validateOptions(metadata);
+            tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+            this.metadata = tableMetadata;
+            result = validateOptions(effectiveKeyspace, tableMetadata);
         }
 
         //Validate index name if not exists
         if(!result.hasError()){
-            if(_name != null && _name.toLowerCase().startsWith("stratio")){
-                result.setErrorMessage("Internal namespace stratio cannot be use on index name " + _name);
+            if(name != null && name.toLowerCase().startsWith("stratio")){
+                result = QueryResult.createFailQueryResult("Internal namespace stratio cannot be use on index name " + name);
             }else {
                 result = validateIndexName(metadata, tableMetadata);
             }
@@ -223,199 +330,185 @@ public class CreateIndexStatement extends MetaStatement {
             result = validateSelectionColumns(tableMetadata);
         }
 
+        //If the syntax is valid and we are dealing with a Lucene index, complete the missing fields.
+        if(!result.hasError()
+                && IndexType.LUCENE.equals(type)
+                && (options.isEmpty() || usingClass == null)){
+            options.clear();
+            options.putAll(generateLuceneOptions());
+            usingClass = "org.apache.cassandra.db.index.stratio.RowIndex";
+        }
+
         return result;
     }
 
     /**
      * Validate that the target columns exists in the table.
      * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateSelectionColumns(TableMetadata tableMetadata) {
-        MetaResult result = new MetaResult();
+    private Result validateSelectionColumns(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
 
-        for(String c : _targetColumn){
+        for(String c : targetColumns){
             if(c.toLowerCase().startsWith("stratio")){
-                result.setErrorMessage("Internal column " + c + " cannot be part of the WHERE clause.");
+                result=  QueryResult.createFailQueryResult("Internal column " + c + " cannot be part of the WHERE clause.");
             }else if(tableMetadata.getColumn(c) == null){
-                result.setErrorMessage("Column " + c + " does not exists in table " + tableMetadata.getName());
+                result= QueryResult.createFailQueryResult("Column " + c + " does not exists in table " + tableMetadata.getName());
             }
         }
 
         return result;
     }
 
-    private MetaResult validateIndexName(MetadataManager metadata, TableMetadata tableMetadata){
-        MetaResult result = new MetaResult();
-        String index_name = _name;
-        if(IndexType.LUCENE.equals(_type)){
-            index_name = "stratio_lucene_" + _name;
-        }
-        List<CustomIndexMetadata> allIndex = new ArrayList<>();
-        for(List<CustomIndexMetadata> l : metadata.getColumnIndexes(tableMetadata).values()){
-            allIndex.addAll(l);
-        }
+    /**
+     * Validate that the index name is valid an has not been previously used.
+     * @param metadata The associated {@link com.stratio.meta.core.metadata.MetadataManager}.
+     * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     */
+    private Result validateIndexName(MetadataManager metadata, TableMetadata tableMetadata){
+        Result result = QueryResult.createSuccessQueryResult();
+        String indexName = getIndexName();
+
+        List<CustomIndexMetadata> allIndex = metadata.getTableIndex(tableMetadata);
+
         boolean found = false;
         for(int index = 0; index < allIndex.size() && !found; index++){
-            if(allIndex.get(index).getIndexName().equalsIgnoreCase(index_name)){
+            if(allIndex.get(index).getIndexName().equalsIgnoreCase(indexName)){
                 found = true;
             }
         }
-        if(found && !_createIfNotExists){
-            result.setErrorMessage("Index " + _name + " already exists in table " + _tablename);
-        }
-        return result;
-    }
-
-    private MetaResult validateOptions(MetadataManager metadata) {
-        MetaResult result = new MetaResult();
-        if(_options.size() > 0){
-            result.setErrorMessage("WITH OPTIONS clause not supported in index creation.");
+        if(found && !createIfNotExists){
+            result= QueryResult.createFailQueryResult("Index " + name + " already exists in table " + tableName);
+        }else{
+            createIndex = true;
         }
         return result;
     }
 
     /**
-     * Validate that a valid keyspace and table is present.
-     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
-     *                 the required information.
-     * @param targetKeyspace The target keyspace where the query will be executed.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * Validate the index options.
+     * @param effectiveKeyspace The effective keyspace used in the validation process.
+     * @param metadata The associated {@link com.datastax.driver.core.TableMetadata}.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
-        MetaResult result = new MetaResult();
-        //Get the effective keyspace based on the user specification during the create
-        //sentence, or taking the keyspace in use in the user session.
-        String effectiveKeyspace = targetKeyspace;
-        if(_keyspaceInc){
-            effectiveKeyspace = _keyspace;
+    private Result validateOptions(String effectiveKeyspace, TableMetadata metadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        if(!options.isEmpty()){
+            result= QueryResult.createFailQueryResult("WITH OPTIONS clause not supported in index creation.");
         }
-
-        //Check that the keyspace and table exists.
-        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
-        }else{
-            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
-            if(ksMetadata == null){
-                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
-            }else {
-                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tablename);
-                if (tableMetadata == null) {
-                    result.setErrorMessage("Table " + _tablename + " does not exists.");
+        if(!createIfNotExists && IndexType.LUCENE.equals(type)) {
+            Iterator<ColumnMetadata> columns = metadata.getColumns().iterator();
+            boolean found = false;
+            ColumnMetadata column = null;
+            while (!found && columns.hasNext()) {
+                column = columns.next();
+                if (column.getName().startsWith("stratio_lucene")) {
+                    found = true;
                 }
             }
-
+            if (found) {
+                result= QueryResult.createFailQueryResult("Cannot create index: A Lucene index already exists on table " + effectiveKeyspace + "."
+                        + metadata.getName() + ". Use DROP INDEX " + column.getName().replace("stratio_lucene_", "") + "; to remove the index.");
+            }
         }
         return result;
     }
 
-/*
-    public void validate(MetadataManager mm, String keyspace) {
+    /**
+     * Generate the set of Lucene options required to create an index.
+     * @return The set of options.
+     */
+    protected Map<ValueProperty, ValueProperty> generateLuceneOptions(){
+        Map<ValueProperty, ValueProperty> result = new HashMap<>();
 
-        boolean result = true;
-        TableMetadata tm = null;
+        //TODO: Read parameters from default configuration and merge with the user specification.
+        result.put(new IdentifierProperty("'refresh_seconds'"), new IdentifierProperty("'1'"));
+        result.put(new IdentifierProperty("'num_cached_filters'"), new IdentifierProperty("'1'"));
+        result.put(new IdentifierProperty("'ram_buffer_mb'"), new IdentifierProperty("'32'"));
+        result.put(new IdentifierProperty("'max_merge_mb'"), new IdentifierProperty("'5'"));
+        result.put(new IdentifierProperty("'max_cached_mb'"), new IdentifierProperty("'30'"));
+        result.put(new IdentifierProperty("'schema'"), new IdentifierProperty("'" + generateLuceneSchema() + "'"));
 
+        return result;
+    }
 
-        if(result){
-            //Check that target columns appear on the table
-            for(String column : _targetColumn){
-                if(tm.getColumn(column)==null){
-                    //TODO Report Column does not exists
-                    result = false;
-                }
-            }
+    /**
+     * Generate the Lucene options schema that corresponds with the selected column.
+     * @return The JSON representation of the Lucene schema.
+     */
+    protected String generateLuceneSchema(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\",");
+        sb.append("fields:{");
+
+        //Iterate throught the columns.
+        for(String column : targetColumns){
+            sb.append(column);
+            sb.append(":");
+            sb.append(luceneTypes.get(metadata.getColumn(column).getType().toString()));
+            sb.append(",");
         }
 
-        if(result){
-            if(IndexType.LUCENE.equals(_type)){
-                //Parse index options.
-                //Check that the index mapping types are compatible with the specified C* types.
-
-            }else if(IndexType.DEFAULT.equals(_type)){
-                //Check that only one column is specified
-
-            }
-        }
-    }*/
-
-    @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+        sb.append("}}");
+        return sb.toString().replace(",}}", "}}");
     }
 
     @Override
     public String translateToCQL() {
-        // EXAMPLE:
-        // META: CREATE LUCENE INDEX demo_banks ON demo.banks(lucene) USING org.apache.cassandra.db.index.stratio.RowIndex WITH OPTIONS schema = '{default_analyzer:"org.apache.lucene.analysis.standard.StandardAnalyzer", fields: {day: {type: "date", pattern: "yyyy-MM-dd"}, key: {type:"uuid"}}}';
-        // CQL: CREATE CUSTOM INDEX demo_banks ON demo.banks (lucene) USING 'org.apache.cassandra.db.index.stratio.RowIndex' WITH OPTIONS = {'schema' : '{default_analyzer:"org.apache.lucene.analysis.standard.StandardAnalyzer", fields: {day: {type: "date", pattern: "yyyy-MM-dd"}, key: {type:"uuid"}}}'}
-        
+
+        if(IndexType.LUCENE.equals(type)){
+            targetColumns.clear();
+            targetColumns.add(getIndexName());
+        }
+
         String cqlString = this.toString().replace(" DEFAULT ", " ");
         if(cqlString.contains(" LUCENE ")){
             cqlString = this.toString().replace("CREATE LUCENE ", "CREATE CUSTOM ");
-        }        
+        }
+
+        if(name == null){
+            cqlString = cqlString.replace("INDEX ON", "INDEX " + getIndexName() + " ON");
+        }
+
         if(cqlString.contains("USING")){
             cqlString = cqlString.replace("USING ", "USING '");
             if(cqlString.contains("WITH ")){
-                cqlString = cqlString.replace(" WITH ", "' WITH ");
-            } /*else {
-                cqlString = cqlString.replace(";", "';");
-            }*/
-        }
-        if(cqlString.contains("OPTIONS")){
-            cqlString = cqlString.replace("OPTIONS", "OPTIONS = { '");
-            cqlString = cqlString.concat("}");
-            cqlString = cqlString.replaceAll("='", "'='");
-            cqlString = cqlString.replaceAll("= '", "' = '");
-            cqlString = cqlString.replaceAll("' ", "'");
-            cqlString = cqlString.replaceAll(" '", "'");
-            cqlString = cqlString.replaceAll("USING'", "USING '");
-            cqlString = cqlString.replaceAll("'='", "' : '");
-            cqlString = cqlString.replaceAll("'= '", "' : '");
-            cqlString = cqlString.replaceAll("' ='", "' : '");
-            cqlString = cqlString.replaceAll("' = '", "' : '");
-            //String cqlOptions = cqlString.substring(cqlString.indexOf("{"), cqlString.lastIndexOf("}")+1);
-            //cqlString = cqlString.substring(0, cqlString.indexOf("{")+1).concat(cqlString.substring(cqlString.lastIndexOf("}")));           
-            /*
-            String[] opts = cqlOptions.split("=");
-            cqlOptions = new String();
-            for(int i=0; i<opts.length; i++){
-                cqlOptions = cqlOptions.concat("\'").concat(opts[i]).concat("\'");
-                if(i % 2 == 0){
-                    cqlOptions = cqlOptions.concat(": ");
-                } else {
-                    if(i<(opts.length-1)){
-                        cqlOptions = cqlOptions.concat(" AND ");
-                    }
-                }
+                cqlString = cqlString.replace(" WITH OPTIONS", "' WITH OPTIONS");
             }
-            cqlString = cqlString.replace("OPTIONS = {", "OPTIONS = {"+cqlOptions);
-            */            
-                    
-            
-            //cqlString = cqlString.replace("OPTIONS = {", "OPTIONS = {"+ParserUtils.addSingleQuotesToStringList(cqlOptions));
         }
         return cqlString;
     }
-        
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
 
     @Override
-    public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+        Tree result = new Tree();
+
+        if(createIndex) {
+            //Add CREATE INDEX as the root.
+            result.setNode(new MetaStep(MetaPath.CASSANDRA, translateToCQL()));
+            //Add alter table as leaf if LUCENE index is selected.
+            if (IndexType.LUCENE.equals(type)) {
+                StringBuilder alterStatement = new StringBuilder("ALTER TABLE ");
+                if (keyspaceInc) {
+                    alterStatement.append(keyspace);
+                    alterStatement.append(".");
+                }
+                alterStatement.append(tableName);
+                alterStatement.append(" ADD ");
+                alterStatement.append(getIndexName());
+                alterStatement.append(" TEXT;");
+
+                result.addChild(new Tree(new MetaStep(MetaPath.CASSANDRA, alterStatement.toString())));
+            }
+        }
+
+        return result;
     }
-    
-    @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-    
-    @Override
-    public Tree getPlan() {
-        return new Tree();
+
+    public void setCreateIndex(Boolean createIndex){
+        this.createIndex = createIndex;
     }
     
 }

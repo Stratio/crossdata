@@ -19,87 +19,51 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
+/**
+ * Class that models a {@code DROP TRIGGER} statement from the META language.
+ */
 public class DropTriggerStatement extends MetaStatement{
 
-    private String ident;
+    /**
+     * The name of the trigger.
+     */
+    private String triggerName;
 
-    public DropTriggerStatement(String ident, String ident2) {
+    /**
+     * The name of the table.
+     */
+    private String tableName;
+
+    /**
+     * Class constructor.
+     * @param triggerName
+     * @param tableName
+     */
+    public DropTriggerStatement(String triggerName, String tableName) {
         this.command = true;
-        this.ident = ident;
-        this.ident2 = ident2;
+        this.triggerName = triggerName;
+        this.tableName = tableName;
     }
-    
-    public String getIdent() {
-        return ident;
-    }
-
-    public void setIdent(String ident) {
-        this.ident = ident;
-    }
-
-    private String ident2;
-
-    public String getIdent2() {
-        return ident2;
-    }
-
-    public void setIdent2(String ident2) {
-        this.ident2 = ident2;
-    }   
 
     @Override
     public String toString() {
     StringBuilder sb = new StringBuilder("Drop trigger ");
-        sb.append(ident);
+        sb.append(triggerName);
         sb.append(" on ");
-        sb.append(ident2);
+        sb.append(tableName);
         return sb.toString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
-    }
-
-    @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
     }
 
     @Override
     public String translateToCQL() {
         return this.toString();
     }
-        
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
-    
+
     @Override
-    public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
-    }
-    
-    @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-    
-    @Override
-    public Tree getPlan() {
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         return new Tree();
     }
     

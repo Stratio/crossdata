@@ -20,48 +20,102 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Using;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.ValueCell;
-import com.stratio.meta.core.utils.ParserUtils;
-import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
+import org.apache.log4j.Logger;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import org.apache.log4j.Logger;
 
+/**
+ * Class that models an {@code INSERT INTO} statement from the META language.
+ */
 public class InsertIntoStatement extends MetaStatement {
 
+    /**
+     * Constant to define an {@code INSERT INTO} that takes the input values from a
+     * {@code SELECT} subquery.
+     */
     public static final int TYPE_SELECT_CLAUSE = 1;
+
+    /**
+     * Constant to define an {@code INSERT INTO} that takes literal values as input.
+     */
     public static final int TYPE_VALUES_CLAUSE = 2;
-    
-    private final Logger logger = Logger.getLogger(InsertIntoStatement.class);
-    
-    private boolean keyspaceInc = false;
-    private String keyspace;
-    private String tablename;    
+
+    /**
+     * The name of the target table.
+     */
+    private String tableName;
+
+    /**
+     * The list of columns to be assigned.
+     */
     private List<String> ids;
+
+    /**
+     * A {@link com.stratio.meta.core.statements.SelectStatement} to retrieve data if the insert type
+     * is matches {@code TYPE_SELECT_CLAUSE}.
+     */
     private SelectStatement selectStatement;
+
+    /**
+     * A list of {@link com.stratio.meta.core.structures.ValueCell} with the literal values to be assigned
+     * if the insert type matches {@code TYPE_VALUES_CLAUSE}.
+     */
     private List<ValueCell> cellValues;
+
+    /**
+     * Indicates if exists "IF NOT EXISTS" clause.
+     */
     private boolean ifNotExists;
+
+    /**
+     * Indicates if there is options in the statement..
+     */
     private boolean optsInc;
+
+    /**
+     * List of options included in the statement.
+     */
     private List<Option> options;
+
+    /**
+     * Type of Insert statement. {@link InsertIntoStatement#TYPE_SELECT_CLAUSE} or {@link InsertIntoStatement#TYPE_VALUES_CLAUSE}.
+     */
     private int typeValues;
 
-    public InsertIntoStatement(String tablename, List<String> ids, 
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(SelectStatement.class);
+
+    /**
+     * InsertIntoStatement general constructor.
+     *
+     * @param tableName Tablename target.
+     * @param ids List of name of fields in the table.
+     * @param selectStatement a {@link com.stratio.meta.core.statements.InsertIntoStatement}
+     * @param cellValues List of {@link com.stratio.meta.core.structures.ValueCell} to insert.
+     * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
+     * @param optsInc Boolean that indicates if there is options in the query.
+     * @param options Query options.
+     * @param typeValues Integer that indicates if values come from insert or select.
+     */
+    public InsertIntoStatement(String tableName, List<String> ids,
                                SelectStatement selectStatement, 
                                List<ValueCell> cellValues, 
                                boolean ifNotExists,
@@ -69,13 +123,13 @@ public class InsertIntoStatement extends MetaStatement {
                                List<Option> options, 
                                int typeValues) {
         this.command = false;
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+        this.tableName = tableName;
+        if(tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
         }
-        this.tablename = tablename;
         this.ids = ids;
         this.selectStatement = selectStatement;
         this.cellValues = cellValues;
@@ -83,159 +137,71 @@ public class InsertIntoStatement extends MetaStatement {
         this.optsInc = optsInc;
         this.options = options;
         this.typeValues = typeValues;
-    }   
+    }
 
-    public InsertIntoStatement(String tablename, 
+    /**
+     * InsertIntoStatement constructor comes from INSERT INTO .. SELECT .. with options.
+     *
+     * @param tableName Tablename target.
+     * @param ids List of name of fields in the table.
+     * @param selectStatement a {@link com.stratio.meta.core.statements.InsertIntoStatement}
+     * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
+     * @param options Query options.
+     */
+    public InsertIntoStatement(String tableName,
                                List<String> ids, 
                                SelectStatement selectStatement, 
                                boolean ifNotExists, 
                                List<Option> options) {
-        this(tablename, ids, selectStatement, null, ifNotExists, true, options, 1);
-    }        
+        this(tableName, ids, selectStatement, null, ifNotExists, true, options, 1);
+    }
 
-    public InsertIntoStatement(String tablename, 
+    /**
+     * InsertIntoStatement constructor comes from INSERT INTO .. VALUES .. with options.
+     *
+     * @param tableName Tablename target.
+     * @param ids List of name of fields in the table.
+     * @param cellValues List of {@link com.stratio.meta.core.structures.ValueCell} to insert.
+     * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
+     * @param options Query options.
+     */
+    public InsertIntoStatement(String tableName,
                                List<String> ids, 
                                List<ValueCell> cellValues, 
                                boolean ifNotExists, 
                                List<Option> options) {
-        this(tablename, ids, null, cellValues, ifNotExists, true, options, 2);
-    }        
-    
-    public InsertIntoStatement(String tablename, 
+        this(tableName, ids, null, cellValues, ifNotExists, true, options, 2);
+    }
+
+    /**
+     * InsertIntoStatement constructor comes from INSERT INTO .. SELECT .. without options.
+     *
+     * @param tableName Tablename target.
+     * @param ids List of name of fields in the table.
+     * @param selectStatement a {@link com.stratio.meta.core.statements.InsertIntoStatement}
+     * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
+     */
+    public InsertIntoStatement(String tableName,
                                List<String> ids, 
                                SelectStatement selectStatement, 
                                boolean ifNotExists) {
-        this(tablename, ids, selectStatement, null, ifNotExists, false, null, 1);
-    }        
+        this(tableName, ids, selectStatement, null, ifNotExists, false, null, 1);
+    }
 
-    public InsertIntoStatement(String tablename, 
+    /**
+     * InsertIntoStatement constructor comes from INSERT INTO .. VALUES .. without options.
+     *
+     * @param tableName Tablename target.
+     * @param ids List of name of fields in the table.
+     * @param cellValues List of {@link com.stratio.meta.core.structures.ValueCell} to insert.
+     * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
+     */
+    public InsertIntoStatement(String tableName,
                                List<String> ids, 
                                List<ValueCell> cellValues, 
                                boolean ifNotExists) {
-        this(tablename, ids, null, cellValues, ifNotExists, false, null, 2);
+        this(tableName, ids, null, cellValues, ifNotExists, false, null, 2);
     }
-
-    public boolean isKeyspaceInc() {
-        return keyspaceInc;
-    }
-
-    public void setKeyspaceInc(boolean keyspaceInc) {
-        this.keyspaceInc = keyspaceInc;
-    }
-
-    public String getKeyspace() {
-        return keyspace;
-    }
-
-    public void setKeyspace(String keyspace) {
-        this.keyspace = keyspace;
-    }
-
-    public boolean isOptsInc() {
-        return optsInc;
-    }
-
-    public void setOptsInc(boolean optsInc) {
-        this.optsInc = optsInc;
-    }        
-    
-    public List<String> getIds() {
-        return ids;
-    }
-
-    public String getId(int index) {
-        return ids.get(index);
-    }
-    
-    public void setIds(List<String> ids) {
-        this.ids = ids;
-    }
-    
-    public void addId(String id) {
-        ids.add(id);
-    }
-    
-    public void removeId(String id){
-        ids.remove(id);
-    }
-
-    public String getTablename() {
-        return tablename;
-    }
-
-    public void setTablename(String tablename) {
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
-            keyspaceInc = true;
-        }
-        this.tablename = tablename;
-    }
-
-    public SelectStatement getSelectStatement() {
-        return selectStatement;
-    }
-
-    public void setSelectStatement(SelectStatement selectStatement) {
-        this.selectStatement = selectStatement;
-    }
-
-    public List<ValueCell> getCellValues() {
-        return cellValues;
-    }
-
-    public ValueCell getCellValue(int index) {
-        return cellValues.get(index);
-    }
-    
-    public void setCellValues(List<ValueCell> cellValues) {
-        this.cellValues = cellValues;
-    }
-
-    public void addCellValue(ValueCell valueCell) {
-        cellValues.add(valueCell);
-    }
-    
-    public void removeCellValue(ValueCell valueCell) {
-        cellValues.remove(valueCell);
-    }
-    
-    public boolean isIfNotExists() {
-        return ifNotExists;
-    }
-
-    public void setIfNotExists(boolean ifNotExists) {
-        this.ifNotExists = ifNotExists;
-    }
-
-    public List<Option> getOptions() {
-        return options;
-    }
-
-    public Option getOption(int n){
-        return options.get(n);
-    }
-    
-    public void setOptions(List<Option> options) {
-        this.options = options;
-    }
-    
-    public void addOption(Option option) {
-        options.add(option);
-    }
-    
-    public void remove(Option option) {
-        options.remove(option);
-    }
-
-    public int getTypeValues() {
-        return typeValues;
-    }
-
-    public void setTypeValues(int typeValues) {
-        this.typeValues = typeValues;
-    }        
 
     @Override
     public String toString() {
@@ -243,7 +209,7 @@ public class InsertIntoStatement extends MetaStatement {
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
-        sb.append(tablename).append(" (");
+        sb.append(tableName).append(" (");
         sb.append(ParserUtils.stringList(ids, ", ")).append(") ");
         if(typeValues == TYPE_SELECT_CLAUSE){
            sb.append(selectStatement.toString());
@@ -262,57 +228,37 @@ public class InsertIntoStatement extends MetaStatement {
         return sb.toString();
     }
 
-    /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = new MetaResult();
-        //Check that the table exists.
+    public Result validate(MetadataManager metadata) {
+        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+        if(!result.hasError()) {
+            String effectiveKeyspace = getEffectiveKeyspace();
 
-        String effectiveKeyspace = targetKeyspace;
-        if(keyspaceInc){
-            effectiveKeyspace = keyspace;
-        }
+            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
 
-        TableMetadata tableMetadata = null;
-        //Check that the keyspace exists, and that the table does not exits.
-        if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
-        }else{
-            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
-            if(ksMetadata == null){
-                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
-            }else {
-                tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tablename);
-                if (tableMetadata != null && !ifNotExists) {
-                    result.setErrorMessage("Table " + tablename + " already exists.");
-                }
-            }
-        }
-
-        if(tableMetadata !=  null){
             if(typeValues == TYPE_SELECT_CLAUSE){
-                result.setErrorMessage("INSERT INTO with subqueries not supported.");
+                result = QueryResult.createFailQueryResult("INSERT INTO with subqueries not supported.");
             }else {
                 result = validateColumns(tableMetadata);
             }
         }
-
         return result;
     }
 
     /**
      * Check that the specified columns exist on the target table and that
      * the semantics of the assigned values match.
+     *
      * @param tableMetadata Table metadata associated with the target table.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateColumns(TableMetadata tableMetadata) {
-        MetaResult result = new MetaResult();
+    private Result validateColumns(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
 
         //Validate target column names
         for(String c : ids){
             if(c.toLowerCase().startsWith("stratio")){
-                result.setErrorMessage("Cannot insert data into column " + c + " reserved for internal use.");
+                result = QueryResult.createFailQueryResult("Cannot insert data into column " + c + " reserved for internal use.");
             }
         }
         if(!result.hasError()) {
@@ -323,25 +269,20 @@ public class InsertIntoStatement extends MetaStatement {
                     if (cm != null) {
                         Term t = Term.class.cast(cellValues.get(index));
                         if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
-                            result.setErrorMessage("Column " + ids.get(index)
+                            result = QueryResult.createFailQueryResult("Column " + ids.get(index)
                                     + " of type " + cm.getType().asJavaClass()
                                     + " does not accept " + t.getTermClass()
                                     + " values (" + cellValues.get(index) + ")");
                         }
                     } else {
-                        result.setErrorMessage("Column " + ids.get(index) + " not found in " + tableMetadata.getName());
+                        result = QueryResult.createFailQueryResult("Column " + ids.get(index) + " not found in " + tableMetadata.getName());
                     }
                 }
             } else {
-                result.setErrorMessage("Number of columns and values does not match.");
+                result = QueryResult.createFailQueryResult("Number of columns and values does not match.");
             }
         }
         return result;
-    }
-
-    @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
     }
 
     @Override
@@ -350,7 +291,7 @@ public class InsertIntoStatement extends MetaStatement {
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
-        sb.append(tablename).append(" (");
+        sb.append(tableName).append(" (");
         sb.append(ParserUtils.stringList(ids, ", "));
         sb.append(") ");        
         if(typeValues == TYPE_SELECT_CLAUSE){
@@ -370,80 +311,84 @@ public class InsertIntoStatement extends MetaStatement {
         }
         return sb.append(";").toString();
     }
-    
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        //return "\t"+resultSet.toString();
-//        return "Executed successfully"+System.getProperty("line.separator");
-//    }
-    
+
     @Override
     public Statement getDriverStatement() {
         if(this.typeValues == TYPE_SELECT_CLAUSE){
             return null;
         }
-            
-        Insert insertStmt;
-        if(this.keyspaceInc){
-            insertStmt = QueryBuilder.insertInto(this.keyspace, this.tablename);            
-        } else {
-            insertStmt = QueryBuilder.insertInto(this.tablename);
-        }
-        Iterator iter = this.cellValues.iterator();
-        for(String id: this.ids){
-            ValueCell valueCell = (ValueCell) iter.next();
-            try{
-                if(valueCell.toString().matches("[0123456789.]+")){
-                    insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.toString()));
-                } else if (valueCell.toString().contains("-")){
-                        insertStmt = insertStmt.value(id, UUID.fromString(valueCell.toString()));
-                } else {
-                    insertStmt = insertStmt.value(id, valueCell.toString());
-                }
-            } catch(Exception ex){
-                return null;
-            }
+
+        Insert insertStmt = this.keyspaceInc ? QueryBuilder.insertInto(this.keyspace, this.tableName) :
+                                                    QueryBuilder.insertInto(this.tableName);
+
+        try{
+            iterateValuesAndInsertThem(insertStmt);
+        } catch(Exception ex){
+            return null;
         }
         
         if(this.ifNotExists){
             insertStmt = insertStmt.ifNotExists();
         }
         
+        Insert.Options optionsStmt = checkOptions(insertStmt);
+
+        return optionsStmt==null ? insertStmt : optionsStmt;
+    }
+    
+    @Override
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+        return tree;
+    }
+
+    /**
+     * Iterate over {@link com.stratio.meta.core.statements.InsertIntoStatement#cellValues} and add values to
+     * {@link com.datastax.driver.core.querybuilder.Insert} object to be translated in CQL.
+     * 
+     * @param insertStmt
+     */
+    private void iterateValuesAndInsertThem(Insert insertStmt){
+        Iterator<ValueCell> it = this.cellValues.iterator();
+        for(String id: this.ids){
+            ValueCell valueCell = it.next();
+            if(valueCell.toString().matches("[0123456789.]+")){
+                insertStmt = insertStmt.value(id, Integer.parseInt(valueCell.getStringValue()));
+            } else if (valueCell.toString().contains("-")){
+                insertStmt = insertStmt.value(id, UUID.fromString(valueCell.getStringValue()));
+            } else if("true".equalsIgnoreCase(valueCell.toString()) || "false".equalsIgnoreCase(valueCell.toString())) {
+                insertStmt = insertStmt.value(id, Boolean.valueOf(valueCell.toString()));
+            } else {
+                insertStmt = insertStmt.value(id, valueCell.getStringValue());
+            }
+        }
+    }
+
+
+    /**
+     * Check the options for InsertIntoStatement.
+     *
+     * @param insertStmt a {@link com.datastax.driver.core.querybuilder.Insert} where insert the options.
+     * @return a {@link com.datastax.driver.core.querybuilder.Insert.Options}
+     */
+    private Insert.Options checkOptions(Insert insertStmt){
         Insert.Options optionsStmt = null;
+
         if(this.optsInc){
-            Using using = null;            
             for(Option option: this.options){
                 if(option.getFixedOption() == Option.OPTION_PROPERTY){
-                    if(option.getNameProperty().equalsIgnoreCase("ttl")){
-                        if(using == null){
-                            optionsStmt = insertStmt.using(QueryBuilder.ttl(Integer.parseInt(option.getProperties().toString())));
-                        } else {
-                            optionsStmt = optionsStmt.and(QueryBuilder.ttl(Integer.parseInt(option.getProperties().toString())));
-                        }
-                    } else if(option.getNameProperty().equalsIgnoreCase("timestamp")){
-                        if(using == null){
-                            optionsStmt = insertStmt.using(QueryBuilder.timestamp(Integer.parseInt(option.getProperties().toString())));
-                        } else {
-                            optionsStmt = optionsStmt.and(QueryBuilder.timestamp(Integer.parseInt(option.getProperties().toString())));
-                        }
+                    if("ttl".equalsIgnoreCase(option.getNameProperty())){
+                        optionsStmt = insertStmt.using(QueryBuilder.ttl(Integer.parseInt(option.getProperties().toString())));
+                    }else if("timestamp".equalsIgnoreCase(option.getNameProperty())){
+                        optionsStmt = insertStmt.using(QueryBuilder.timestamp(Integer.parseInt(option.getProperties().toString())));
+                    }else{
+                        LOG.warn("Unsupported option: " + option.getNameProperty());
                     }
                 }
             }
-        }         
-        if(optionsStmt==null){
-            return insertStmt;
         }
-        return optionsStmt;        
+
+        return optionsStmt;
     }
-    
-    @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-    
-    @Override
-    public Tree getPlan() {
-        return new Tree();
-    }
-    
 }

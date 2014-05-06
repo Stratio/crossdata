@@ -22,39 +22,59 @@ package com.stratio.meta.core.metadata;
 import com.datastax.driver.core.ColumnMetadata;
 import com.stratio.meta.core.structures.IndexType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CustomIndexMetadata {
 
     /**
      * Type of index associated with the column.
      */
-    private final IndexType _type;
+    private final IndexType type;
 
     /**
-     * Index target column.
+     * Cassandra column linked with the index.
      */
-    private final ColumnMetadata _column;
+    private final ColumnMetadata column;
+
+    /**
+     * List of columns indexed.
+     */
+    private final List<String> indexedColumns;
 
     /**
      * The name of the index.
      */
-    private final String _indexName;
-
-    /**
-     * Index options.
-     */
-    private String _options = null;
-
-
+    private final String indexName;
 
     /**
      * Class constructor for default Cassandra indexes.
      * @param columnMetadata The column metadata associated with the index.
+     * @param indexName The name of the index.
      * @param type Type of index.
+     * @param indexedColumn The name of the column indexed by the current index.
      */
-    public CustomIndexMetadata(ColumnMetadata columnMetadata, String indexName, IndexType type){
-        _type = type;
-        _column = columnMetadata;
-        _indexName = indexName;
+    public CustomIndexMetadata(ColumnMetadata columnMetadata, String indexName, IndexType type, String indexedColumn){
+        this.type = type;
+        column = columnMetadata;
+        this.indexName = indexName;
+        indexedColumns = new ArrayList<>();
+        indexedColumns.add(indexedColumn);
+    }
+
+    /**
+     * Class constructor for default Cassandra indexes.
+     * @param columnMetadata The column metadata associated with the index.
+     * @param indexName The name of the index.
+     * @param type Type of index.
+     * @param indexedColumns The names of the columns indexed by the current index.
+     */
+    public CustomIndexMetadata(ColumnMetadata columnMetadata, String indexName, IndexType type, List<String> indexedColumns){
+        this.type = type;
+        column = columnMetadata;
+        this.indexName = indexName;
+        this.indexedColumns = new ArrayList<>();
+        this.indexedColumns.addAll(indexedColumns);
     }
 
     /**
@@ -62,7 +82,7 @@ public class CustomIndexMetadata {
      * @return The type of index.
      */
     public IndexType getIndexType(){
-        return _type;
+        return type;
     }
 
     /**
@@ -70,22 +90,15 @@ public class CustomIndexMetadata {
      * @return The name.
      */
     public String getIndexName(){
-        return _indexName;
+        return indexName;
     }
 
     /**
-     * Set the custom index options.
-     * @param options The options.
+     * Get the list of indexed columns.
+     * @return The list of indexed columns.
      */
-    public void setIndexOptions(String options){
-        _options = options;
+    public List<String> getIndexedColumns(){
+        return indexedColumns;
     }
 
-    /**
-     * Get the options associated with the index.
-     * @return The options or null if not set.
-     */
-    public String getIndexOptions(){
-        return _options;
-    }
 }

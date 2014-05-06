@@ -28,10 +28,9 @@ public class CustomIndexMetadataTest {
 
     @Test
     public void getIndexType(){
-        CustomIndexMetadata cim1 = new CustomIndexMetadata(null, "index_name", IndexType.DEFAULT);
-        CustomIndexMetadata cim2 = new CustomIndexMetadata(null, "stratio_lucene_index", IndexType.LUCENE);
+        CustomIndexMetadata cim1 = new CustomIndexMetadata(null, "index_name", IndexType.DEFAULT, "");
+        CustomIndexMetadata cim2 = new CustomIndexMetadata(null, "stratio_lucene_index", IndexType.LUCENE, "");
         assertEquals(IndexType.DEFAULT, cim1.getIndexType(), "Invalid index type");
         assertEquals(IndexType.LUCENE, cim2.getIndexType(), "Invalid index type");
     }
-
 }

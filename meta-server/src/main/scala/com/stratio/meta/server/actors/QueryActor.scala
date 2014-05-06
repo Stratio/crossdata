@@ -20,28 +20,30 @@
 package com.stratio.meta.server.actors
 
 import akka.actor.{Props, ActorLogging, Actor}
-import com.stratio.meta.common.result.MetaResult
+import com.stratio.meta.common.result.{QueryResult, Result}
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.common.ask.Query
+import org.apache.log4j.Logger
 
 object QueryActor{
   def props(engine: Engine): Props = Props(new QueryActor(engine))
 }
 
-class QueryActor(engine: Engine) extends Actor with ActorLogging{
+class QueryActor(engine: Engine) extends Actor{
+  val log =Logger.getLogger(classOf[QueryActor])
   val executorActorRef = context.actorOf(ExecutorActor.props(engine.getExecutor),"ExecutorActor")
   val plannerActorRef = context.actorOf(PlannerActor.props(executorActorRef,engine.getPlanner),"PlanerActor")
   val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef,engine.getValidator),"ValidatorActor")
-  val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef,engine.getParser))
+  val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef,engine.getParser),"ParserActor")
 
   override def receive: Receive = {
     case Query(keyspace,statement,user) => {
-      log.info("Init Query by "+ user + " --> ("+ keyspace + ")" + statement )
-      parserActorRef forward statement
-      log.info("Finish Query")
+      log.debug("User "+ user + " ks: "+ keyspace + " stmt: " + statement )
+      parserActorRef forward Query(keyspace,statement,user)
+      log.debug("Finish Query")
     }
     case _ => {
-      sender ! MetaResult.createMetaResultError("Not recognized object")
+      sender ! QueryResult.createFailQueryResult("Message not recognized")
     }
   }
 }

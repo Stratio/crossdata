@@ -25,21 +25,21 @@ import org.testng.annotations.Test;
 public class DropTableStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_ok(){
+    public void validateOk(){
         String inputText = "DROP TABLE demo.users;";
-        validateOk(inputText, "validate_ok");
+        validateOk(inputText, "validateOk");
     }
 
     @Test
-    public void validate_notExists_tablename(){
+    public void validateNotExistsTablename(){
         String inputText = "DROP TABLE unknown_table;";
-        validateFail(inputText, "validate_notExists_tablename");
+        validateFail(inputText, "validateNotExistsTablename");
     }
 
     @Test
-    public void validate_notExists_keyspace(){
+    public void validateNotExistsKeyspace(){
         String inputText = "DROP TABLE unknown.users;";
-        validateFail(inputText, "validate_notExists_keyspace");
+        validateFail(inputText, "validateNotExistsKeyspace");
     }
 
 }

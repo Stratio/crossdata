@@ -47,6 +47,11 @@ public class StringTerm extends Term{
         this.quotedLiteral = quotedLiteral;
     }
 
+    @Override
+    public String getStringValue() {
+        return term;
+    }
+
     /** {@inheritDoc} */
     @Override
     public String toString() {
@@ -59,7 +64,7 @@ public class StringTerm extends Term{
 
     /** {@inheritDoc} */
     @Override
-    public Class getTermClass() {
+    public Class<String> getTermClass() {
         return String.class;
     }
 

@@ -22,22 +22,17 @@ package com.stratio.meta.core.validator.statements;
 import com.stratio.meta.core.validator.BasicValidatorTest;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-
-
 public class UseStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_ok(){
+    public void validateOk(){
         String inputText = "USE demo;";
-        validateOk(inputText, "validate_ok");
+        validateOk(inputText, "validateOk");
     }
 
     @Test
-    public void validate_notExists(){
+    public void validateNotExists(){
         String inputText = "USE demo_unknown;";
-        validateFail(inputText, "validate_notExists");
+        validateFail(inputText, "validateNotExists");
     }
 }

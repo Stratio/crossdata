@@ -22,40 +22,44 @@ package com.stratio.meta.core.structures;
 import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class RelationToken extends MetaRelation {
+/**
+ * Class that models a relationship in a {@code WHERE} clause that includes a reference to
+ * the {@code TOKEN} Cassandra function.
+ */
+public class RelationToken extends Relation {
     
-    private boolean righSideTokenType = false;
+    private boolean rightSideTokenType = false;
     
-    public RelationToken(ArrayList<String> identifiers) {
+    public RelationToken(List<String> identifiers) {
         this.terms = new ArrayList<>();
         this.type = TYPE_TOKEN;
         this.identifiers = new ArrayList<>();
-        this.identifiers = identifiers;
     }   
     
-    public RelationToken(ArrayList<String> identifiers, String operator) {
+    public RelationToken(List<String> identifiers, String operator) {
         this(identifiers);
         this.operator = operator;
     }
     
-    public RelationToken(ArrayList<String> identifiers, String operator, Term term) {
+    public RelationToken(List<String> identifiers, String operator, Term term) {
         this(identifiers, operator);        
         this.terms.add(term);
     }
     
-    public RelationToken(ArrayList<String> identifiers, String operator, ArrayList<Term> terms) {
+    public RelationToken(List<String> identifiers, String operator, List<Term> terms) {
         this(identifiers, operator); 
         this.terms = terms;
-        this.righSideTokenType = true;
+        this.rightSideTokenType = true;
     }
 
-    public boolean isRighSideTokenType() {
-        return righSideTokenType;
+    public boolean isRightSideTokenType() {
+        return rightSideTokenType;
     }
 
-    public void setRighSideTokenType(boolean righSideTokenType) {
-        this.righSideTokenType = righSideTokenType;
+    public void setRightSideTokenType(boolean rightSideTokenType) {
+        this.rightSideTokenType = rightSideTokenType;
     }        
 
     @Override
@@ -63,7 +67,7 @@ public class RelationToken extends MetaRelation {
         StringBuilder sb = new StringBuilder("TOKEN(");
         sb.append(ParserUtils.stringList(identifiers, ", ")).append(")");
         sb.append(" ").append(operator).append(" ");
-        if(righSideTokenType){
+        if(rightSideTokenType){
             sb.append("TOKEN(").append(ParserUtils.stringList(terms, ", ")).append(")");
         } else {
             sb.append(ParserUtils.stringList(terms, ", "));

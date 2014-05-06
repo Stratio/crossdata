@@ -19,18 +19,24 @@
 
 package com.stratio.meta.core.utils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import org.apache.log4j.Logger;
+
+import java.io.*;
+import java.nio.charset.Charset;
 
 public class CreateTokensFile {
-    
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(CreateTokensFile.class);
-    
+
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(CreateTokensFile.class);
+
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private CreateTokensFile(){
+    }
+
     public static void main(String[] args) {                
         try {
             String workingDir = System.getProperty("user.dir");
@@ -48,10 +54,12 @@ public class CreateTokensFile {
             File fileGrammar = new File(metaGrammarPath);  
             File outFile = new File(metaTokens);
 
-            logger.info("Reading grammar from "+fileGrammar.getAbsolutePath());
+            LOG.info("Reading grammar from " + fileGrammar.getAbsolutePath());
             BufferedWriter bw;
-            try (BufferedReader br = new BufferedReader(new FileReader(fileGrammar))) {
-                bw = new BufferedWriter(new FileWriter(outFile));
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(fileGrammar), Charset.forName("UTF-8")))) {
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile, true), "UTF-8"));
                 String line = br.readLine();
                 while (line != null){
                     if(line.startsWith("T_")){
@@ -69,11 +77,9 @@ public class CreateTokensFile {
             }
             bw.flush();
             bw.close();            
-            logger.info(outFile.getAbsolutePath()+" created");
-        } catch (FileNotFoundException ex) {
-            logger.error(ex.getMessage());
+            LOG.info(outFile.getAbsolutePath() + " created");
         } catch (IOException ex) {
-            logger.error(ex.getMessage());
+            LOG.error("IOException creating token file", ex);
         }
     }
     

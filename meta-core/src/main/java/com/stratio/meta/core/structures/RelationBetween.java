@@ -23,16 +23,26 @@ import com.stratio.meta.core.utils.ParserUtils;
 
 import java.util.ArrayList;
 
-public class RelationBetween extends MetaRelation {
+public class RelationBetween extends Relation {
 
+    /**
+     * Class constructor.
+     * @param identifier The element to be compared.
+     */
     public RelationBetween(String identifier) {
         this.terms = new ArrayList<>();
         this.type = TYPE_BETWEEN;
         this.operator = "BETWEEN";
         this.identifiers = new ArrayList<>();
         this.identifiers.add(identifier);
-    }       
-    
+    }
+
+    /**
+     * Class constructor.
+     * @param identifier The element to be compared.
+     * @param term1 The lower limit.
+     * @param term2 The upper limit.
+     */
     public RelationBetween(String identifier, Term term1, Term term2) {
         this(identifier);        
         this.terms.add(term1);

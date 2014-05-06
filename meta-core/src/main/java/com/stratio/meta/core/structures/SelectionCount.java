@@ -21,10 +21,16 @@ package com.stratio.meta.core.structures;
 
 public class SelectionCount extends SelectionClause {
 
+    /**
+     * The selection symbol.
+     */
     private char symbol;
     private boolean identInc;
     private String identifier;
 
+    /**
+     * Class constructor.
+     */
     public SelectionCount() {
         this.type = TYPE_COUNT;
     }

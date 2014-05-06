@@ -20,59 +20,70 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ValueProperty;
-import com.stratio.meta.core.utils.ParserUtils;
-import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta.core.utils.ValidationException;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+/**
+ * Class that models a {@code CREATE KEYSPACE} statement from the META language.
+ */
 public class CreateKeyspaceStatement extends MetaStatement {
-    
-    private String name;
-    private boolean ifNotExists;
-    private HashMap<String, ValueProperty> properties;
 
+    /**
+     * The name of the keyspace.
+     */
+    private String name;
+
+    /**
+     * Whether the keyspace should be created only if it not exists.
+     */
+    private boolean ifNotExists;
+
+    /**
+     * The map of properties of the keyspace. The different options accepted by a keyspace
+     * are determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
+     */
+    private Map<String, ValueProperty> properties;
+
+    /**
+     * Class constructor.
+     * @param name The name of the keyspace.
+     * @param ifNotExists Whether it should be created only if it not exists.
+     * @param properties The map of properties.
+     */
     public CreateKeyspaceStatement(String name, boolean ifNotExists, Map<String, ValueProperty> properties) {
         this.name = name;
         this.command = false;
         this.ifNotExists = ifNotExists;
         this.properties = new HashMap<>();
-        this.properties.putAll(properties);
-    }   
-    
+        for(Map.Entry<String, ValueProperty> entry : properties.entrySet()){
+            this.properties.put(entry.getKey().toLowerCase(), entry.getValue());
+        }
+    }
+
+    /**
+     * Get the name of the keyspace.
+     * @return The name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set the name of the keyspace.
+     * @param name The name of the keyspace.
+     */
     public void setName(String name) {
         this.name = name;
     }
-
-    public boolean isIfNotExists() {
-        return ifNotExists;
-    }
-
-    public void setIfNotExists(boolean ifNotExists) {
-        this.ifNotExists = ifNotExists;
-    }
-
-    public HashMap<String, ValueProperty> getProperties() {
-        return properties;
-    }
-
-    public void setProperties(HashMap properties) {
-        this.properties = properties;
-    }        
 
     @Override
     public String toString() {
@@ -87,58 +98,22 @@ public class CreateKeyspaceStatement extends MetaStatement {
     }
 
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = new MetaResult();
+    public Result validate(MetadataManager metadata) {
+        Result result = QueryResult.createSuccessQueryResult();
         if(name!= null && name.length() > 0) {
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(name);
             if(ksMetadata != null && !ifNotExists){
-                result.setErrorMessage("Keyspace " + name + " already exists.");
+                result= QueryResult.createFailQueryResult("Keyspace " + name + " already exists.");
             }
         }else{
-            result.setErrorMessage("Empty keyspace name found.");
+            result= QueryResult.createFailQueryResult("Empty keyspace name found.");
         }
 
-        if(properties.size() == 0 || !properties.containsKey("replication")){
-            result.setErrorMessage("Missing mandatory replication property.");
+        if(properties.isEmpty() || !properties.containsKey("replication")){
+            result= QueryResult.createFailQueryResult("Missing mandatory replication property.");
         }
 
         return result;
-    }
-
-    //TODO Remove
-    public void validate_remove() {
-        /*
-        if(properties.isEmpty()){
-            throw new ValidationException("CREATE KEYSPACE must include at least property 'replication'");
-        }
-        // Check if there are innapropiate properties
-        for(String key: properties.keySet()){
-            if(!key.equalsIgnoreCase("replication") && !key.equalsIgnoreCase("durable_writes")){
-                throw new ValidationException("CREATE KEYSPACE can only include properties 'replication' and 'durable_writes'");
-            }
-        }
-        // Check if replication is present and it's built properly
-        if(!properties.containsKey("replication")){
-            throw new ValidationException("CREATE KEYSPACE must include property 'replication'");
-        }
-        if(properties.get("replication").getType() != ValueProperty.TYPE_MAPLT){
-            throw new ValidationException("'replication' property must be a map");
-        }
-        MapLiteralProperty mlp = (MapLiteralProperty) properties.get("replication");
-        if(mlp.isEmpty()){
-            throw new ValidationException("'replication' property cannot be empty");
-        }*/   
-        // if durable_writes is present then it must be a boolean type
-        if(properties.containsKey("durable_writes")){
-            if(properties.get("durable_writes").getType() != ValueProperty.TYPE_BOOLEAN){
-                throw new ValidationException("Property 'replication' must be a boolean");
-            }
-        }
-    }
-
-    @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
     }
 
     @Override
@@ -150,26 +125,12 @@ public class CreateKeyspaceStatement extends MetaStatement {
             return metaStr;
         }        
     }
-    
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "Executed successfully"+System.getProperty("line.separator");
-//    }
-    
-    @Override
-    public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
-    }
 
     @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-    
-    @Override
-    public Tree getPlan() {
-        return new Tree();
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+        return tree;
     }
     
 }

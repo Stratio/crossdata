@@ -21,28 +21,53 @@ package com.stratio.meta.core.structures;
 
 import com.stratio.meta.core.utils.ParserUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class InnerJoin {
-    
-    private String tablename;
+
+    private String keyspace = null;
+
+    private boolean keyspaceInc = false;
+
+    private String tableName;
+
     private Map<String, String> fields;
 
-    public InnerJoin(String tablename, Map<String, String> fields) {
-        this.tablename = tablename;
+    public InnerJoin(String tableName, Map<String, String> fields) {
+        this.tableName = tableName;
+
+        if(this.tableName.contains(".")){
+            String[] ksAndTablename = this.tableName.split("\\.");
+            keyspace = ksAndTablename[0];
+            this.tableName = ksAndTablename[1];
+            keyspaceInc = true;
+        }
+
         this.fields = fields;
     }   
     
     public String getTablename() {
-        return tablename;
+        return tableName;
     }
 
-    public void setTablename(String tablename) {
-        this.tablename = tablename;
+    public String getKeyspace(){
+        return keyspace;
     }
 
     public Map<String, String> getFields() {
         return fields;
+    }
+
+    public Map<String, String> getColNames(){
+        Map<String, String> colNames = new HashMap<>();
+        for(String key: fields.keySet()){
+            String field = fields.get(key);
+            String[] ksAndTablenameValue= field.split("\\.");
+            String[] ksAndTablenameKey = key.split("\\.");
+            colNames.put(ksAndTablenameKey[1], ksAndTablenameValue[1]);
+        }
+        return colNames;
     }
 
     public void setFields(Map<String, String> fields) {
@@ -51,9 +76,17 @@ public class InnerJoin {
     
     @Override
     public String toString(){
-        StringBuilder sb = new StringBuilder(tablename);
+        StringBuilder sb = new StringBuilder();
+        if(keyspaceInc){
+            sb.append(keyspace);
+            sb.append(".");
+        }
+        sb.append(tableName);
         sb.append(" ON ").append(ParserUtils.stringMap(fields, "=", " AND "));
         return sb.toString();
     }
-    
+
+    public boolean isKeyspaceInc() {
+        return keyspaceInc;
+    }
 }

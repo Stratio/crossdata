@@ -19,124 +19,66 @@
 
 package com.stratio.meta.core.executor;
 
-import com.datastax.driver.core.*;
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.statements.DescribeStatement;
-import com.stratio.meta.core.statements.MetaStatement;
-import com.stratio.meta.core.statements.UseStatement;
-import com.stratio.meta.core.utils.AntlrError;
+import com.stratio.deep.context.DeepSparkContext;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.QueryStatus;
+import com.stratio.meta.core.utils.Tree;
 import org.apache.log4j.Logger;
 
 public class Executor {
 
-    private final Logger logger = Logger.getLogger(Executor.class);
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(Executor.class.getName());
+
+    /**
+     * Cassandra datastax java driver session.
+     */
     private final Session session;
 
-    public Executor(String [] hosts, int port){
-        Cluster cluster = Cluster.builder().addContactPoints(hosts)
-                .withPort(port).build();
-        this.session=cluster.connect();
-    }
-    
-    public Executor(Session session) {
+    /**
+     * Deep Spark context.
+     */
+    private final DeepSparkContext deepSparkContext;
+
+    /**
+     * Global configuration.
+     */
+    private final EngineConfig engineConfig;
+
+    /**
+     * Executor constructor.
+     * @param session Cassandra datastax java driver session.
+     * @param deepSparkContext Spark context.
+     * @param engineConfig a {@link com.stratio.meta.core.engine.EngineConfig}
+     */
+    public Executor(Session session, DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
         this.session = session;
+        this.deepSparkContext = deepSparkContext;
+        this.engineConfig = engineConfig;
     }
-    
+
+    /**
+     * Executes a query.
+     * @param metaQuery Query to execute embedded in a {@link com.stratio.meta.core.utils.MetaQuery}.
+     * @return query executed.
+     */
     public MetaQuery executeQuery(MetaQuery metaQuery) {
-        
+
         metaQuery.setStatus(QueryStatus.EXECUTED);
-        MetaStatement stmt = metaQuery.getStatement();
-        
-        if(stmt.isCommand()){
-            if(stmt instanceof DescribeStatement){
-                DescribeStatement descrStmt =  (DescribeStatement) stmt;
-                metaQuery.setResult(new CommandResult(System.getProperty("line.separator")+descrStmt.execute(session)));
-            } else {
-                metaQuery.setErrorMessage("Not supported yet.");
-                return metaQuery;
-            }
-            return metaQuery;
-        }
-        
-        StringBuilder sb = new StringBuilder();
-        if(!stmt.getPlan().isEmpty()){
-            sb.append("PLAN: ").append(System.getProperty("line.separator"));
-            sb.append(stmt.getPlan().toStringDownTop());
-            logger.info(sb.toString());
-            metaQuery.setErrorMessage("Deep execution is not supported yet");
-            return metaQuery;
-        }       
-                
-        QueryResult queryResult = new QueryResult();
-        Statement driverStmt = null;
-        
-        ResultSet resultSet;
-        try{
-            driverStmt = stmt.getDriverStatement();
-            if(driverStmt != null){
-                resultSet = session.execute(driverStmt);
-            } else {
-                resultSet = session.execute(stmt.translateToCQL());
-            }
-                          
-            queryResult.setResultSet(resultSet);
-            
-            if(stmt instanceof UseStatement){
-                UseStatement useStatement = (UseStatement) stmt;
-                queryResult.setCurrentKeyspace(useStatement.getKeyspaceName());
-            }
-            
-        } catch (Exception ex) {
-            metaQuery.hasError();
-            queryResult.setErrorMessage("Cassandra exception: "+ex.getMessage());
-            if (ex instanceof UnsupportedOperationException){
-                queryResult.setErrorMessage("Unsupported operation by C*: "+ex.getMessage());
-            }
-            if(ex.getMessage().contains("line") && ex.getMessage().contains(":")){
-                String queryStr;
-                if(driverStmt != null){
-                    queryStr = driverStmt.toString();
-                } else {
-                    queryStr = stmt.translateToCQL();
-                }
-                String[] cMessageEx =  ex.getMessage().split(" ");
-                sb = new StringBuilder();
-                sb.append(cMessageEx[2]);
-                for(int i=3; i<cMessageEx.length; i++){
-                    sb.append(" ").append(cMessageEx[i]);
-                }
-                AntlrError ae = new AntlrError(cMessageEx[0]+" "+cMessageEx[1], sb.toString());
-                queryStr = ParserUtils.getQueryWithSign(queryStr, ae);
-                queryResult.setErrorMessage(ex.getMessage()+System.getProperty("line.separator")+"\t"+queryStr);
-                logger.error(queryStr);
-            }
-        }
-        /*
-        if(!queryResult.hasError()){            
-            logger.info("\033[32mResult:\033[0m "+stmt.parseResult(resultSet)+System.getProperty("line.separator"));
-            //logger.info("\033[32mResult:\033[0m Cannot execute command"+System.getProperty("line.separator"));        
-        } else {
-            List<MetaStep> steps = stmt.getPlan();
-            for(MetaStep step: steps){
-                logger.info(step.getPath()+"-->"+step.getQuery());
-            }
-            DeepResult deepResult = stmt.executeDeep();
-            if(deepResult.hasErrors()){
-                logger.error("\033[31mUnsupported operation by Deep:\033[0m "+deepResult.getErrors()+System.getProperty("line.separator"));
-            } else {
-                logger.info("\033[32mResult:\033[0m "+deepResult.getResult()+System.getProperty("line.separator"));
-            }
-        }*/
-        metaQuery.setResult(queryResult);
+
+        // Get plan
+        Tree plan = metaQuery.getPlan();
+
+        LOG.debug("Execution plan: "+System.lineSeparator()+plan.toStringDownTop());
+
+        // Execute plan
+        metaQuery.setResult(plan.executeTreeDownTop(session, deepSparkContext, engineConfig));
+
         return metaQuery;
     }
-    
+
 }

@@ -39,6 +39,11 @@ public class ConstantProperty extends ValueProperty {
     @Override
     public String toString() {
         return Integer.toString(constant);
-    }        
+    }
+
+    @Override
+    public String getStringValue() {
+        return toString();
+    }
 
 }

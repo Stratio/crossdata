@@ -39,6 +39,11 @@ public class IdentifierProperty extends ValueProperty {
     @Override
     public String toString() {
         return identifier;
-    }        
-    
+    }
+
+    @Override
+    public String getStringValue() {
+        return toString();
+    }
+
 }

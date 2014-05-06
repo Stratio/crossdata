@@ -20,43 +20,33 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
+/**
+ * Class that models a {@code DROP KEYSPACE} statement from the META language.
+ */
 public class DropKeyspaceStatement extends MetaStatement {
-    
-    private String keyspaceName;
-    private boolean ifExists;  
 
-    public DropKeyspaceStatement(String keyspaceName, boolean ifExists) {
+    /**
+     * Whether the keyspace should be removed only if exists.
+     */
+    private boolean ifExists;
+
+    /**
+     * Class constructor.
+     * @param keyspace The name of the keyspace.
+     * @param ifExists Whether it should be removed only if exists.
+     */
+    public DropKeyspaceStatement(String keyspace, boolean ifExists) {
         this.command = false;
-        this.keyspaceName = keyspaceName;
+        this.keyspace = keyspace;
         this.ifExists = ifExists;
     }    
-    
-    public String getKeyspaceName() {
-        return keyspaceName;
-    }
-
-    public void setKeyspaceName(String keyspaceName) {
-        this.keyspaceName = keyspaceName;
-    }
-
-    public boolean isIfExists() {
-        return ifExists;
-    }
-
-    public void setIfExists(boolean ifExists) {
-        this.ifExists = ifExists;
-    }
 
     @Override
     public String toString() {
@@ -64,50 +54,30 @@ public class DropKeyspaceStatement extends MetaStatement {
         if(ifExists){
            sb.append("if exists ");
         } 
-        sb.append(keyspaceName);                 
+        sb.append(keyspace);
         return sb.toString();
     }
 
-    /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = new MetaResult();
-        KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspaceName);
+    public Result validate(MetadataManager metadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspace);
         if(ksMetadata == null && !ifExists){
-            result.setErrorMessage("Keyspace " + keyspaceName + " does not exists.");
+            result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " does not exist.");
         }
         return result;
-    }
-
-    @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
     }
 
     @Override
     public String translateToCQL() {
         return this.toString();
     }
-    
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "Executed successfully"+System.getProperty("line.separator");
-//    }
-    
+
     @Override
-    public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
-    }
-    
-    @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-    
-    @Override
-    public Tree getPlan() {
-        return new Tree();
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+        return tree;
     }
     
 }

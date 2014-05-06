@@ -25,39 +25,39 @@ import org.testng.annotations.Test;
 public class CreateIndexStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_default_noName_ok(){
+    public void validateDefaultNoNameOk(){
         String inputText = "CREATE DEFAULT INDEX ON demo.users (email);";
-        validateOk(inputText, "validate_default_noName_ok");
+        validateOk(inputText, "validateDefaultNoNameOk");
     }
 
     @Test
-    public void validate_default_named_ok(){
+    public void validateDefaultNamedOk(){
         String inputText = "CREATE DEFAULT INDEX new_index ON demo.users (email);";
-        validateOk(inputText, "validate_default_named_ok");
+        validateOk(inputText, "validateDefaultNamedOk");
     }
 
     @Test
-    public void validate_default_ifNotExists_ok(){
+    public void validateDefaultIfNotExistsOk(){
         String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS users_gender_idx ON demo.users (gender);";
-        validateOk(inputText, "validate_default_ifNotExists_ok");
+        validateOk(inputText, "validateDefaultIfNotExistsOk");
     }
 
     @Test
-    public void validate_default_exists_fail(){
+    public void validateDefaultExistsFail(){
         String inputText = "CREATE DEFAULT INDEX users_gender_idx ON demo.users (gender);";
-        validateFail(inputText, "validate_default_exists_fail");
+        validateFail(inputText, "validateDefaultExistsFail");
     }
 
     @Test
-    public void validate_notExists_tablename(){
+    public void validateNotExistsTablename(){
         String inputText = "CREATE DEFAULT INDEX users_gender_idx ON demo.unknown (gender);";
-        validateFail(inputText, "validate_notExists_tablename");
+        validateFail(inputText, "validateNotExistsTablename");
     }
 
     @Test
-    public void validate_notExists_keyspace(){
+    public void validateNotExistsKeyspace(){
         String inputText = "CREATE DEFAULT INDEX users_gender_idx ON unknown.users (gender);";
-        validateFail(inputText, "validate_notExists_keyspace");
+        validateFail(inputText, "validateNotExistsKeyspace");
     }
 
     //
@@ -65,48 +65,60 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
     //
 
     @Test
-    public void validate_lucene_noName_ok(){
-        String inputText = "CREATE LUCENE INDEX ON demo.users (email);";
-        validateOk(inputText, "validate_lucene_noName_ok");
+    public void validateLuceneNoNameOk(){
+        String inputText = "CREATE LUCENE INDEX ON demo.types (varchar_column);";
+        validateOk(inputText, "validateLuceneNoNameOk");
     }
 
     @Test
-    public void validate_lucene_named_ok() {
-        String inputText = "CREATE LUCENE INDEX new_index ON demo.users (email);";
-        validateOk(inputText, "validate_lucene_named_ok");
+    public void validateLuceneNamedOk() {
+        String inputText = "CREATE LUCENE INDEX new_index ON demo.types (varchar_column);";
+        String expectedText = inputText.replace("INDEX new_index ON", "INDEX stratio_lucene_new_index ON");
+        validateOk(inputText, expectedText, "validateLuceneNamedOk");
     }
 
     @Test
-    public void validate_lucene_2columns_ok() {
-        String inputText = "CREATE LUCENE INDEX new_index ON demo.users (email, name);";
-        validateOk(inputText, "validate_lucene_2columns_ok");
+    public void validateLucene2columnsOk() {
+        String inputText = "CREATE LUCENE INDEX new_index ON demo.types (varchar_column, boolean_column);";
+        String expectedText = inputText.replace("INDEX new_index ON", "INDEX stratio_lucene_new_index ON");
+        validateOk(inputText, expectedText, "validateLucene2columnsOk");
     }
 
     @Test
-    public void validate_lucene_stratioName_fail() {
-        String inputText = "CREATE LUCENE INDEX stratio_new_index ON demo.users (email, name);";
-        validateFail(inputText, "validate_lucene_stratioName_fail");
+    public void validateLuceneStratioNameFail() {
+        String inputText = "CREATE LUCENE INDEX stratio_new_index ON demo.types (varchar_column, boolean_column);";
+        String expectedText = inputText.replace("INDEX stratio_new_index ON", "INDEX stratio_lucene_stratio_new_index ON");
+        validateFail(inputText, expectedText, "validateLuceneStratioNameFail");
     }
 
     @Test
-    public void validate_lucene_stratioColumn_fail() {
+    public void validateLucene2indexesFail(){
+        String inputText = "CREATE LUCENE INDEX ON demo.users (gender);";
+        validateFail(inputText, "validateLucene2indexesFail");
+    }
+
+    @Test
+    public void validateLuceneStratioColumnFail() {
         String inputText = "CREATE LUCENE INDEX new_index ON demo.users (email, name, stratio_lucene_index_1);";
-        validateFail(inputText, "validate_lucene_stratioColumn_fail");
+        String expectedText = inputText.replace("INDEX new_index ON", "INDEX stratio_lucene_new_index ON");
+        validateFail(inputText, expectedText, "validateLuceneStratioColumnFail");
     }
 
     @Test
-    public void validate_lucene_withOptions_fail() {
+    public void validateLuceneWithOptionsFail() {
         String inputText = "CREATE LUCENE INDEX new_index ON demo.users (email, bool, age)"
-                + " WITH OPTIONS schema = '{refresh_seconds:1}';";
-        validateFail(inputText, "validate_lucene_withOptions_fail");
+                + " WITH OPTIONS = {'refresh_seconds': '1'};";
+        String expectedText = inputText.replace("INDEX new_index ON", "INDEX stratio_lucene_new_index ON");
+        validateFail(inputText, expectedText, "validateLuceneWithOptionsFail");
     }
 
     @Test
-    public void validate_lucene_withOptionsFull_fail() {
+    public void validateLuceneWithOptionsFullFail() {
         String inputText = "CREATE LUCENE INDEX demo_banks ON demo.banks (lucene) "
                 + "USING org.apache.cassandra.db.index.stratio.RowIndex WITH OPTIONS = "
                 + "{schema: '{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\", fields: {day: {type: \"date\", pattern: \"yyyy-MM-dd\"}, key: {type:\"uuid\"}}}'};";
-        validateFail(inputText, "validate_lucene_withOptionsFull_fail");
+        String expectedText = inputText.replace("INDEX demo_banks ON", "INDEX stratio_lucene_demo_banks ON");
+        validateFail(inputText, expectedText, "validateLuceneWithOptionsFullFail");
     }
     
 }

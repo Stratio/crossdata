@@ -20,21 +20,32 @@
 package com.stratio.meta.core.utils;
 
 import com.stratio.meta.common.utils.MetaUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 
-public class ParserUtils {    
-    
-    private static final Logger logger = Logger.getLogger(ParserUtils.class);
-    
+public class ParserUtils {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(ParserUtils.class);
+
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private ParserUtils(){
+    }
+
     public static String stringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
         for(Object value: ids){
@@ -46,13 +57,11 @@ public class ParserUtils {
             return "";
         }
     }
-    
-    public static String stringMap(Map ids, String conjunction, String separator) {
-        //StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
+
+    public static String stringMap(Map<?, ?> ids, String conjunction, String separator) {
         StringBuilder sb = new StringBuilder();
-        for(Object key: ids.keySet()){
-            Object vp = ids.get(key);
-            sb.append(key).append(conjunction).append(vp.toString()).append(separator);
+        for(Map.Entry<?, ?> entry : ids.entrySet()){
+            sb.append(entry.getKey()).append(conjunction).append(entry.getValue().toString()).append(separator);
         }
         if(sb.length() < separator.length()){
             return "";
@@ -68,118 +77,121 @@ public class ParserUtils {
         return sb.substring(0, sb.length()-separator.length());
     }   
  
-    public static Set<LevenshteinMatch> getBestMatches(String str, Set<String> words, int thresold){
-        int limit = thresold+1;
-        Set<LevenshteinMatch> result = new HashSet<>();
-        for(String word: words){
-            int distance = StringUtils.getLevenshteinDistance(str, word, thresold);
-            //System.out.println("'"+str+"' vs '"+word+"' = "+distance);
-            if((distance>-1) && (distance<limit)){
-                result.clear();
-                result.add(new LevenshteinMatch(word, distance));
-                limit = distance;
-            } else if (distance==limit){
-                result.add(new LevenshteinMatch(word, distance));
+    public static Set<String> getBestMatches(String str, Set<String> words, int maxDistance){
+        int limit = maxDistance + 1;
+        int currentLimit = 1;
+        Set<String> result = new HashSet<>();
+        while(result.isEmpty() && currentLimit < limit){
+            for(String word: words){
+                int distance = StringUtils.getLevenshteinDistance(str, word, maxDistance);
+                if((distance>-1) && (distance < currentLimit)){
+                    result.add(word);
+                }
             }
+            currentLimit++;
         }
+
         return result;
     }
     
-    public static int getCharPosition(AntlrError antlrError) {
-        if(antlrError.getHeader().contains(":")){
-            return Integer.parseInt(antlrError.getHeader().split(":")[1]);
-        } else {
-            return -1;
+    public static Integer getCharPosition(AntlrError antlrError) {
+        Integer result = -1;
+        if(antlrError.getHeader().contains(":")
+                && antlrError.getHeader().split(":").length > 1) {
+            result = Integer.valueOf(antlrError.getHeader().split(":")[1]);
         }
+        return result;
     }
     
     public static String getQueryWithSign(String query, AntlrError ae) {
         StringBuilder sb = new StringBuilder(query);
         int pos = getCharPosition(ae);
         if(pos >= 0){
-        sb.insert(getCharPosition(ae), "\033[35m|\033[0m");
+            sb.insert(getCharPosition(ae), "\033[35m|\033[0m");
         }
         return sb.toString();
     }
-    
+
+    private static String createSuggestion(Set<String> bestMatches,
+                                           AntlrError antlrError,
+                                           int charPosition,
+                                           String suggestionFromToken,
+                                           String errorWord){
+        StringBuilder sb = new StringBuilder();
+        if((bestMatches.isEmpty() || antlrError == null) && (charPosition<1)){
+            //Append all the initial tokens because we didn't find a good match for first token
+            sb.append(MetaUtils.getInitialsStatements()).append("?").append(System.lineSeparator());
+        } else if(!"".equalsIgnoreCase(suggestionFromToken)){
+            //Antlr returned a T_... token which have a equivalence with the reserved tokens of Meta
+            sb.append("\"").append(suggestionFromToken).append("\"").append("?");
+            sb.append(System.lineSeparator());
+        } else if(errorWord.matches("[QWERTYUIOPASDFGHJKLZXCVBNM_]+")){
+            // There is no a perfect equivalence with the reserved tokens of Meta but
+            // there might be a similar word
+            for(String match: bestMatches){
+                sb.append("\"").append(match).append("\"").append(", ");
+            }
+            sb.append("?").append(System.lineSeparator());
+        }
+        return sb.toString();
+    }
+
     public static String getSuggestion(String query, AntlrError antlrError){
+        // We initialize the errorWord with the first word of the query
         String errorWord = query.trim().split(" ")[0].toUpperCase();
-        Set<String> statementTokens = MetaUtils.initials;
+        // We initialize the token words with the initial tokens
+        Set<String> statementTokens = MetaUtils.INITIALS;
+        // We initialize the char position of the first word
         int charPosition = 0;
+        // We initialize the suggestion from exception messages containing "T_..."
         String suggestionFromToken = "";
                 
-        if(antlrError != null){
+        if(antlrError != null){ // Antlr exception message provided information
+            // Update char position with the information provided by antlr
             charPosition = getCharPosition(antlrError);
+            // It's not a initial token
             if(charPosition>0){
-                statementTokens = MetaUtils.noInitials;
+                statementTokens = MetaUtils.NON_INITIALS;
             }
-            
-            /* OLD get error word method */
-            //System.out.println("charPosition: "+charPosition);
-            //errorWord = query.substring(getCharPosition(antlrError));
-            //System.out.println("partial query: "+errorWord);
-            //errorWord = errorWord.trim().split(" ")[0].toUpperCase();
-            //System.out.println("Erroneous word: "+errorWord);
-            
-            /* NEW get error word method */
+
+            // Antlr exception message is not provided
             String errorMessage = antlrError.getMessage();
             if(errorMessage == null){
                 return "";
             }
+
+            // Antlr didn't recognize a token enclosed between single quotes
             errorWord = errorMessage.substring(errorMessage.indexOf("'")+1, errorMessage.lastIndexOf("'"));
             errorWord = errorWord.toUpperCase();
-            //System.out.println("Erroneous word (NEW): "+errorWord);
-            
-            //String errorMessage = antlrError.getMessage(); 
+
+            // Antlr was expecting a determined token
             int positionToken = errorMessage.indexOf("T_");
             if(positionToken>-1){
+
+                // We get the expecting token removing the 'T_' part and the rest of the message
                 suggestionFromToken = errorMessage.substring(positionToken+2);
                 suggestionFromToken = suggestionFromToken.trim().split(" ")[0].toUpperCase();
-                if(!(MetaUtils.initials.contains(suggestionFromToken) || MetaUtils.noInitials.contains(suggestionFromToken))){
+
+                // We check if there is a reserved word of Meta grammar equivalent to the expecting token
+                if(!statementTokens.contains(suggestionFromToken)){
                     suggestionFromToken = "";
                 }
             }
-            
-            //System.out.println("Suggestion from token: "+suggestionFromToken);
-        }                                                  
-        
-        Set<LevenshteinMatch> bestMatches = getBestMatches(errorWord, statementTokens, 2);
-        StringBuilder sb = new StringBuilder();        
-        if((bestMatches.isEmpty() || antlrError == null) && (charPosition<1)){
-            sb.append("Did you mean: ");
-            sb.append(MetaUtils.getInitialsStatements()).append("?").append(System.getProperty("line.separator"));
-        } else if(!suggestionFromToken.equalsIgnoreCase("")){
-            //System.out.println("Result from suggestion");
-            sb.append("Did you mean: ");
-            sb.append("\"").append(suggestionFromToken).append("\"").append("?");
-            sb.append(System.getProperty("line.separator"));
-        } else if (errorWord.matches("[QWERTYUIOPASDFGHJKLZXCVBNM_]+") /*&& query.contains("T_")*/){            
-            for(LevenshteinMatch match: bestMatches){
-                //System.out.println(match.getWord()+":"+match.getDistance());
-                if(match.getDistance()<1){
-                    break;
-                }
-                sb.append("Did you mean: ");
-                sb.append("\"").append(match.getWord()).append("\"").append("?");
-                sb.append(System.getProperty("line.separator")).append("\t");              
-            }
         }
-        return sb.substring(0, sb.length());
-    }    
-    
-    public static String getSuggestion() {
-        return getSuggestion("", null);
-    }
 
-    public static void printParserErrors(String cmd, AntlrResult antlrResult, boolean printSuggestions) {
-        if(printSuggestions){
-            //System.out.println("Print suggestion");
-            logger.error(antlrResult.toString(cmd));
-        } else {
-            //System.out.println("Omit suggestion");
-            logger.error(antlrResult.toString(""));
+        // Get best suggestion words for the incorrect token
+        Set<String> bestMatches = getBestMatches(errorWord, statementTokens, 2);
+
+        StringBuilder sb = new StringBuilder("Did you mean: ");
+        sb.append(createSuggestion(bestMatches, antlrError, charPosition, suggestionFromToken, errorWord));
+
+        // No suggestion was found
+        if("Did you mean: ?".startsWith(sb.toString())){
+            return "";
         }
-    }          
+
+        return sb.substring(0, sb.length()).replace(", ?", "?");
+    }    
 
     public static String translateToken(String message) {     
         if(message == null){
@@ -197,7 +209,7 @@ public class ParserUtils {
     }
 
     private static String getReplacement(String target) {
-        target = target.substring(2);
+        String targetToken = target.substring(2);
         String replacement = "";
         BufferedReader bufferedReaderF = null;
         try {
@@ -212,11 +224,15 @@ public class ParserUtils {
             }
             
             String metaTokens = workingDir+"src/main/resources/com/stratio/meta/parser/tokens.txt";
-            
-            bufferedReaderF = new BufferedReader(new FileReader(new File(metaTokens)));
+
+            bufferedReaderF = new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(metaTokens), Charset.forName("UTF-8")));
+
+
             String line = bufferedReaderF.readLine();
             while (line != null){
-                if(line.startsWith(target)){
+                if(line.startsWith(targetToken)){
                     replacement = line.substring(line.indexOf(":")+1);
                     replacement = replacement.replace("[#", "\"");
                     replacement = replacement.replace("#]", "\"");
@@ -226,12 +242,14 @@ public class ParserUtils {
                 line = bufferedReaderF.readLine();
             }
         } catch (IOException ex) {
-            logger.error("Cannot read replacement file", ex);
+            LOG.error("Cannot read replacement file", ex);
         }finally{
             try {
-                bufferedReaderF.close();
+                if (bufferedReaderF != null) {
+                    bufferedReaderF.close();
+                }
             } catch (IOException e) {
-                logger.error("Cannot close replacement file", e);
+                LOG.error("Cannot close replacement file", e);
             }
         }
         return replacement;
@@ -249,11 +267,21 @@ public class ParserUtils {
         String[] props = propsStr.split(",");
         for(String prop: props){
             String[] keyAndValue = prop.trim().split(":");
-            sb.append("'").append(keyAndValue[0].trim()).append("'").append(": ");
+            if(keyAndValue[0].contains("'")) {
+                sb.append(keyAndValue[0].trim()).append(": ");
+            }else{
+                sb.append("'").append(keyAndValue[0].trim()).append("'").append(": ");
+            }
+
             if(keyAndValue[1].trim().matches("[0123456789.]+")){
                 sb.append(keyAndValue[1].trim()).append(", ");
             } else {
-                sb.append("'").append(keyAndValue[1].trim()).append("'").append(", ");
+                if(keyAndValue[1].contains("'")) {
+                    sb.append(keyAndValue[1].trim()).append(", ");
+                }else{
+                    sb.append("'").append(keyAndValue[1].trim()).append("'").append(", ");
+                }
+
             }
         }
         sb = sb.delete(sb.length()-2, sb.length());
@@ -278,41 +306,6 @@ public class ParserUtils {
             return sb.substring(0, sb.length());
         }
         
-    }
-    
-    public static String addSingleQuotesToStringList(String strList){
-        String[] opts = strList.split("=");
-        strList = new String();
-        for(int i=0; i<opts.length; i++){
-            String currentStr = opts[i];
-            if(currentStr.matches("[0123456789.]+")){
-                strList = strList.concat(opts[i]);
-            } else {
-                strList = strList.concat("\'").concat(opts[i]).concat("\'");
-            }
-            if(i % 2 == 0){
-                strList = strList.concat(": ");
-            } else {
-                if(i<(opts.length-1)){
-                    strList = strList.concat(", ");
-                }
-            }
-        }
-        return strList;
-    }    
-
-    public static String[] fromStringListToArray(List<String> names) {
-        String[] result = new String[names.size()];
-        int n=0;
-        for(String str: names){
-            result[n] = str;
-            n++;
-        }
-        return result;
-    }
-
-    public static String addAllowFiltering(String translatedToCQL) {
-        return translatedToCQL.replace(" ;", ";").replace(";", " ALLOW FILTERING;");
     }
     
 }

@@ -19,17 +19,37 @@
 
 package com.stratio.meta.core.planner;
 
+import com.datastax.driver.core.Session;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.QueryStatus;
-import org.apache.log4j.Logger;
 
 public class Planner {
 
-    private final Logger logger = Logger.getLogger(Planner.class);
-    
+    /**
+     * A {@link com.stratio.meta.core.metadata.MetadataManager}.
+     */
+    private final MetadataManager metadata;
+
+    /**
+     * Planner constructor.
+     *
+     * @param session Cassandra datastax java driver session.
+     */
+    public Planner(Session session){
+        metadata = new MetadataManager(session);
+        metadata.loadMetadata();
+    }
+
+    /**
+     * Plan a {@link com.stratio.meta.core.utils.MetaQuery}.
+     *
+     * @param metaQuery Query to plan.
+     * @return same {@link com.stratio.meta.core.utils.MetaQuery} planned.
+     */
     public MetaQuery planQuery(MetaQuery metaQuery) {
         metaQuery.setStatus(QueryStatus.PLANNED);
-        logger.warn("Not supported yet.");
+        metaQuery.setPlan(metaQuery.getStatement().getPlan(metadata, metaQuery.getSessionKeyspace()));
         return metaQuery;
     }
     

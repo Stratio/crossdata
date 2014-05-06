@@ -19,53 +19,43 @@
 
 package com.stratio.meta.core.validator.statements;
 
-import com.stratio.meta.common.result.MetaResult;
-import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
-import com.stratio.meta.core.grammar.ParsingTest;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.validator.BasicValidatorTest;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
 
 public class CreateTableStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_basic_ok(){
+    public void validateBasicOk(){
         String inputText = "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
-        validateOk(inputText, "validate_basic_ok");
+        validateOk(inputText, "validateBasicOk");
     }
 
     @Test
-    public void validate_allSupported_ok(){
+    public void validateAllSupportedOk(){
         String inputText = "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
-        validateOk(inputText, "validate_basic_ok");
+        validateOk(inputText, "validateAllSupportedOk");
     }
 
     @Test
-    public void validate_ifNotExits_ok(){
+    public void validateIfNotExitsOk(){
         String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name VARCHAR, gender VARCHAR, email VARCHAR, age INT, bool BOOLEAN, phrase VARCHAR, PRIMARY KEY ((name, gender), email, age));";
-        validateOk(inputText, "validate_ifNotExits_ok");
+        validateOk(inputText, "validateIfNotExitsOk");
     }
 
     @Test
-    public void validate_pkNotDeclared(){
+    public void validatePkNotDeclared(){
         String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name VARCHAR, gender VARCHAR, email VARCHAR, age INT, bool BOOLEAN, phrase VARCHAR, PRIMARY KEY ((unknown, gender), email, age));";
-        validateFail(inputText, "validate_pkNotDeclared");
+        validateFail(inputText, "validatePkNotDeclared");
     }
 
     @Test
-    public void validate_ckNotDeclared(){
+    public void validateCkNotDeclared(){
         String inputText = "CREATE TABLE IF NOT EXISTS demo.users (name VARCHAR, gender VARCHAR, email VARCHAR, age INT, bool BOOLEAN, phrase VARCHAR, PRIMARY KEY ((name, gender), unknown, age));";
-        validateFail(inputText, "validate_ckNotDeclared");
+        validateFail(inputText, "validateCkNotDeclared");
     }
 
     @Test
-    public void validate_unsupportedType(){
+    public void validateUnsupportedType(){
         String [] unsupported = {
                 "ASCII",  "BLOB",   "DECIMAL",
                 "INET",   "TEXT",   "TIMESTAMP",
@@ -78,7 +68,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void validate_stratioColumnFail(){
+    public void validateStratioColumnFail(){
         String inputText = "CREATE TABLE demo.table_fail (name VARCHAR, stratio_column VARCHAR, PRIMARY KEY (name));";
         validateFail(inputText, "validate_stratioColumnFail");
     }

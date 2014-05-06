@@ -19,7 +19,17 @@
 
 package com.stratio.meta.core.structures;
 
+/**
+ * Types of elements that could be described in META.
+ */
 public enum DescribeType {
+    /**
+     * Describe a keyspace.
+     */
     KEYSPACE,
+
+    /**
+     * Describe a table.
+     */
     TABLE
 }

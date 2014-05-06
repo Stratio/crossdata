@@ -19,97 +19,90 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ValueProperty;
-import com.stratio.meta.core.utils.DeepResult;
+import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+/**
+ * Class that models an {@code ALTER TABLE} statement from the META language.
+ */
 public class AlterTableStatement extends MetaStatement{
-    
-    private boolean keyspaceInc = false;
-    private String keyspace;
-    private String name_table;
+
+    /**
+     * The name of the target table.
+     */
+    private String tableName;
+
+    /**
+     * Type of alter. Accepted values are:
+     * <ul>
+     *     <li>1: Alter a column data type using {@code ALTER}.</li>
+     *     <li>2: Add a new column using {@code ADD}.</li>
+     *     <li>3: Drop a column using {@code DROP}.</li>
+     *     <li>4: Establish a set of options using {@code WITH}.</li>
+     * </ul>
+     */
     private int prop;
+
+    /**
+     * Target column name.
+     */
     private String column;
+
+    /**
+     * Target column datatype used with {@code ALTER} or {@code ADD}.
+     */
     private String type;
-    private LinkedHashMap<String, ValueProperty> option;
-        
-        
-    public AlterTableStatement(String name_table, String column, String type, LinkedHashMap<String, ValueProperty> option, int prop) {
+
+    /**
+     * The map of properties.
+     */
+    private Map<String, ValueProperty> option;
+
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param column The name of the column.
+     * @param type The data type of the column.
+     * @param option The map of options.
+     * @param prop The type of modification.
+     */
+    public AlterTableStatement(String tableName, String column, String type, Map<String, ValueProperty> option, int prop) {
         this.command = false;
-        if(name_table.contains(".")){
-            String[] ksAndTablename = name_table.split("\\.");
-            keyspace = ksAndTablename[0];
-            name_table = ksAndTablename[1];
+        if(tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        this.name_table = name_table;
         this.column = column;
         this.type = type;
         this.option = option;
         this.prop = prop;          
     }
-    
-    //Setters and getters Name table
-    public String getName_table() {
-        return name_table;
-    }
-    
-    public void setName_table(String name_table) {
-        if(name_table.contains(".")){
-            String[] ksAndTablename = name_table.split("\\.");
-            keyspace = ksAndTablename[0];
-            name_table = ksAndTablename[1];
-            keyspaceInc = true;
-        }
-        this.name_table = name_table;
-    }
-    
-    //Seeters and getters columns
-    public String getColumn() {
-        return column;
-    }  
-    
-    public void setColumn(String column) {
-        this.column = column;
-    }
-    
-    //Setter and getter type 
-    public String getType() {
-        return type;
-    }
-    
-    public void setType(String type) {
-        this.type = type;
-    }
-    
-    //Setter and getter option
-     public LinkedHashMap<String, ValueProperty> getOption() {
-        return option;
-    }
 
-    public void setOption(LinkedHashMap<String, ValueProperty> option) {
-        this.option = option;
+    private String getOptionString(){
+        StringBuilder sb = new StringBuilder();
+        Set<String> keySet = option.keySet();
+        sb.append(" with");
+        for (Iterator<String> it = keySet.iterator(); it.hasNext();) {
+            String key = it.next();
+            ValueProperty vp = option.get(key);
+            sb.append(" ").append(key).append("=").append(String.valueOf(vp));
+            if(it.hasNext()) {
+                sb.append(" AND");
+            }
+        }
+        return sb.toString();
     }
-    
-    //Setter and getter  prop
-    public int getProp() {
-        return prop;
-    }
-    
-    public void setProp(int prop) {
-        this.prop = prop;
-    }  
 
     @Override
     public String toString() {
@@ -117,77 +110,41 @@ public class AlterTableStatement extends MetaStatement{
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
-        sb.append(name_table);
+        sb.append(tableName);
         switch(prop){
-            case 1: {
-                sb.append(" alter ");
-                sb.append(column);
-                sb.append(" type ");
-                sb.append(type);
-            }break;
-            case 2: {
+            case 1:
+                sb.append(" alter ").append(column);
+                sb.append(" type ").append(type);
+                break;
+            case 2:
                 sb.append(" add ");
                 sb.append(column).append(" ");
                 sb.append(type);
-            }break;
-            case 3: {
+                break;
+            case 3:
                 sb.append(" drop ");
                 sb.append(column);
-            }break;
-            case 4: {
-                Set keySet = option.keySet();
-                //sb.append(" with:\n\t");
-                sb.append(" with");
-                for (Iterator it = keySet.iterator(); it.hasNext();) {
-                    String key = (String) it.next();
-                    ValueProperty vp = option.get(key);
-                    //sb.append(key).append(": ").append(String.valueOf(vp)).append("\n\t");
-                    sb.append(" ").append(key).append("=").append(String.valueOf(vp));
-                    if(it.hasNext()) sb.append(" AND");
-                }
-            }break;
-            default:{
+                break;
+            case 4:
+                sb.append(getOptionString());
+                break;
+            default:
                 sb.append("bad option");
-            }break;
+                break;
         }        
         return sb.toString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
-    }
-
-    @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
     }
 
     @Override
     public String translateToCQL() {
         return this.toString();
     }
-    
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
-        
+
     @Override
-    public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
-    }
-    
-    @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-    
-    @Override
-    public Tree getPlan() {
-        return new Tree();
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+        return tree;
     }
     
 }

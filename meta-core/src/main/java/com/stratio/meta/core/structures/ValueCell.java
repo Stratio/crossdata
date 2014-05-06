@@ -32,8 +32,14 @@ public abstract class ValueCell {
 
     public void setType(int type) {
         this.type = type;
-    }        
-    
+    }
+
+    /**
+     * Get the String value representation.
+     * @return The String value.
+     */
+    public abstract String getStringValue();
+
     @Override
     public abstract String toString();
     

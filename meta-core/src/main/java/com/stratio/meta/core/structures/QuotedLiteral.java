@@ -39,6 +39,11 @@ public class QuotedLiteral extends ValueProperty {
     @Override
     public String toString() {
         return "'"+literal+"'";
-    }        
-    
+    }
+
+    @Override
+    public String getStringValue() {
+        return literal;
+    }
+
 }

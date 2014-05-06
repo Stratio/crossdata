@@ -233,7 +233,7 @@ T_PATH: (LETTER | DIGIT | '_' | '.' | '-' | '/')+;
 
 describeStatement returns [DescribeStatement descs]:
     T_DESCRIBE ( T_KEYSPACE keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.KEYSPACE); $descs.setKeyspace($keyspace.text);}
-        | T_TABLE tablename=getTableID { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTablename(tablename);}
+        | T_TABLE tablename=getTableID { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
     )
 ;
 
@@ -250,14 +250,15 @@ deleteStatement returns [DeleteStatement ds]
         T_END_PARENTHESIS
         )?
 	T_FROM
-	tablename=getTableID {$ds.setTablename(tablename);}
+	tableName=getTableID {$ds.setTableName(tableName);}
 	T_WHERE
 	rel1=getRelation {$ds.addRelation(rel1);} (T_AND relN=getRelation {$ds.addRelation(relN);})*
 	;
 
 //ADD \"index_path\";
 addStatement returns [AddStatement as]:
-	T_ADD (T_QUOTE | T_SINGLE_QUOTE) name=T_PATH (T_QUOTE | T_SINGLE_QUOTE) {$as = new AddStatement($name.text);}
+	//T_ADD (T_QUOTE | T_SINGLE_QUOTE) name=T_PATH (T_QUOTE | T_SINGLE_QUOTE) {$as = new AddStatement($name.text);}
+	T_ADD T_QUOTE name=T_PATH T_QUOTE {$as = new AddStatement($name.text);}
 	;
 
 //LIST ( PROCESS | UDF | TRIGGER) ;
@@ -285,7 +286,7 @@ dropIndexStatement returns [DropIndexStatement dis]
 	}:
 	T_DROP T_INDEX
 	(T_IF T_EXISTS {$dis.setDropIfExists();})?
-	name=(T_IDENT | T_LUCENE) {$dis.setName($name.text);}
+	name=(T_KS_AND_TN | T_IDENT | T_LUCENE) {$dis.setName($name.text);}
 	;
 
 
@@ -299,7 +300,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	T_CREATE indexType=getIndexType {$cis.setIndexType(indexType);} T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
 	(name=T_IDENT {$cis.setName($name.text);})? 
-	T_ON tablename=getTableID {$cis.setTablename(tablename);}
+	T_ON tableName=getTableID {$cis.setTableName(tableName);}
 	T_START_PARENTHESIS
             firstField=(T_IDENT | T_LUCENE) {$cis.addColumn($firstField.text);}
 	(T_COMMA
@@ -308,7 +309,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	T_END_PARENTHESIS
 	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.toString());})?
 	(T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=getValueProperty T_COLON value=getValueProperty {$cis.addOption(key, value);}
-		(T_AND keyN=getValueProperty T_COLON valueN=getValueProperty {$cis.addOption(keyN, valueN);} )* T_END_SBRACKET
+		(T_COMMA keyN=getValueProperty T_COLON valueN=getValueProperty {$cis.addOption(keyN, valueN);} )* T_END_SBRACKET
 	)?
 	;
     //identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {properties.put($identProp1.text, valueProp1);}
@@ -323,11 +324,11 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
         boolean condsInc = false;
         ArrayList<Option> options = new ArrayList<>();
         ArrayList<Assignment> assignments = new ArrayList<>();
-        ArrayList<MetaRelation> whereclauses = new ArrayList<>();
+        ArrayList<Relation> whereclauses = new ArrayList<>();
         Map<String, Term> conditions = new HashMap<>();
     }:
     T_UPDATE tablename=getTableID
-    (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (optN=getOption {options.add(optN);})*)?
+    (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (T_AND optN=getOption {options.add(optN);})*)?
     T_SET assig1=getAssignment {assignments.add(assig1);} (T_COMMA assigN=getAssignment {assignments.add(assigN);})*
     T_WHERE rel1=getRelation {whereclauses.add(rel1);} (T_AND relN=getRelation {whereclauses.add(relN);})*
     (T_IF id1=T_IDENT T_EQUAL term1=getTerm {condsInc = true; conditions.put($id1.text, term1);}
@@ -373,34 +374,32 @@ createTableStatement returns [CreateTableStatement crtast]
     LinkedHashMap<String, String> columns = new LinkedHashMap<>();
     ArrayList<String>   primaryKey = new ArrayList<String>();
     ArrayList<String> clusterKey = new ArrayList<String>();
-    LinkedHashMap<String, ValueProperty> propierties = new LinkedHashMap<>();
-    int Type_Primary_Key= 0;
+    int primaryKeyType = 0;
     int columnNumberPK= 0;
     int columnNumberPK_inter= 0;
-    boolean ifNotExists_2 = false;
-    boolean withClusterKey = false;
-    boolean withPropierties = false;
+    boolean ifNotExists = false;
+    boolean withProperties = false;
     }:    
     T_CREATE
     T_TABLE
-    (T_IF T_NOT T_EXISTS {ifNotExists_2 = true;})? 
+    (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     tablename=getTableID
     T_START_PARENTHESIS (            
-                ident_column1=(T_IDENT | T_LUCENE | T_KEY) type1=getDataType (T_PRIMARY T_KEY)? {columns.put($ident_column1.text,type1); Type_Primary_Key=1;}
+                ident_column1=(T_IDENT | T_LUCENE | T_KEY) type1=getDataType (T_PRIMARY T_KEY)? {columns.put($ident_column1.text,type1); primaryKeyType=1;}
                 (   
-                    ( T_COMMA ident_columN=(T_IDENT | T_LUCENE | T_KEY) typeN=getDataType (T_PRIMARY T_KEY {Type_Primary_Key=2;columnNumberPK=columnNumberPK_inter +1;})? {columns.put($ident_columN.text,typeN);columnNumberPK_inter+=1;})
+                    ( T_COMMA ident_columN=(T_IDENT | T_LUCENE | T_KEY) typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put($ident_columN.text,typeN);columnNumberPK_inter+=1;})
                     |(  
                         T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS
                         (
-                            (   primaryK=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($primaryK.text);Type_Primary_Key=3;}
+                            (   primaryK=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($primaryK.text);primaryKeyType=2;}
                            
                                 (T_COMMA partitionKN=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionKN.text);})*
                             )
                             |(
-                                T_START_PARENTHESIS partitionK=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionK.text);Type_Primary_Key=4;}
+                                T_START_PARENTHESIS partitionK=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionK.text);primaryKeyType=3;}
                                     (T_COMMA partitionKN=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionKN.text);})*
                                 T_END_PARENTHESIS 
-                                (T_COMMA clusterKN=(T_IDENT | T_LUCENE | T_KEY) {clusterKey.add($clusterKN.text);withClusterKey=true;})*
+                                (T_COMMA clusterKN=(T_IDENT | T_LUCENE | T_KEY) {clusterKey.add($clusterKN.text);})*
 
                             )
                         )
@@ -408,9 +407,14 @@ createTableStatement returns [CreateTableStatement crtast]
                    )
                 )* 
          )             
-    T_END_PARENTHESIS (T_WITH {withPropierties=true;} properties=getMetaProperties 
+    T_END_PARENTHESIS (T_WITH {withProperties=true;} properties=getMetaProperties
     )?            
-    {$crtast = new CreateTableStatement(tablename,columns,primaryKey,clusterKey,properties,Type_Primary_Key,ifNotExists_2,withClusterKey,columnNumberPK,withPropierties);}
+    {
+        $crtast = new CreateTableStatement(tablename, columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
+        $crtast.setProperties(properties);
+        $crtast.setIfNotExists(ifNotExists);
+        $crtast.setWithProperties(withProperties);
+    }
 ;        
 
         
@@ -657,7 +661,7 @@ getIndexType returns [String indexType]:
     {$indexType=$idxType.text;}
 ;
 
-getMetaProperties returns [ArrayList<MetaProperty> props]
+getMetaProperties returns [ArrayList<Property> props]
     @init{
         $props = new ArrayList<>();
     }:
@@ -665,7 +669,7 @@ getMetaProperties returns [ArrayList<MetaProperty> props]
     (T_AND newProp=getMetaProperty {$props.add(newProp);})*
 ;
 
-getMetaProperty returns [MetaProperty mp]
+getMetaProperty returns [Property mp]
     @init{
         BooleanProperty boolProp = new BooleanProperty(true);
     }:
@@ -682,16 +686,16 @@ getDataType returns [String dataType]:
     {$dataType = $ident1.text.concat(ident2==null?"":"<"+$ident2.text).concat(ident3==null?"":","+$ident3.text).concat(ident2==null?"":">");}
 ;
 
-getOrdering returns [ArrayList<MetaOrdering> order]
+getOrdering returns [ArrayList<Ordering> order]
     @init{
         order = new ArrayList<>();
-        MetaOrdering ordering;
+        Ordering ordering;
     }:
-    ident1=T_IDENT {ordering = new MetaOrdering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
-    (T_COMMA identN=T_IDENT {ordering = new MetaOrdering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+    ident1=T_IDENT {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
+    (T_COMMA identN=T_IDENT {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
 ;
 
-getWhereClauses returns [ArrayList<MetaRelation> clauses]
+getWhereClauses returns [ArrayList<Relation> clauses]
     @init{
         clauses = new ArrayList<>();
     }:
@@ -775,11 +779,11 @@ getSelector returns [SelectorMeta slmt]
         ArrayList<SelectorMeta> params = new ArrayList<>();
         GroupByFunction gbFunc = null;
     }:
-    ( (T_AGGREGATION {gbFunc = GroupByFunction.aggregation;} 
-       | T_MAX {gbFunc = GroupByFunction.max;} 
-       | T_MIN {gbFunc = GroupByFunction.min;} 
-       | T_AVG {gbFunc = GroupByFunction.avg;} 
-       | T_COUNT {gbFunc = GroupByFunction.count;} 
+    ( (T_AGGREGATION {gbFunc = GroupByFunction.AGGREGATION;}
+       | T_MAX {gbFunc = GroupByFunction.MAX;}
+       | T_MIN {gbFunc = GroupByFunction.MIN;}
+       | T_AVG {gbFunc = GroupByFunction.AVG;}
+       | T_COUNT {gbFunc = GroupByFunction.COUNT;}
       ) 
             T_START_PARENTHESIS 
                 (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 
@@ -838,10 +842,10 @@ getIntSetOrList returns [IdentIntOrLiteral iiol]:
     | T_START_SBRACKET set=getSet T_END_SBRACKET { $iiol = new SetLiteral(set);}
 ;
 
-getRelation returns [MetaRelation mrel]:
+getRelation returns [Relation mrel]:
     T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}
                             | T_TOKEN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationToken(listIds, operator, terms);})
-    | ident=T_IDENT ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, termR);}
+    | (ident=T_IDENT | ident=T_KS_AND_TN) ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, termR);}
                     | T_IN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationIn($ident.text, terms);}
                     | T_BETWEEN term1=getTerm T_AND term2=getTerm {$mrel = new RelationBetween($ident.text, term1, term2);}
                     )
@@ -952,7 +956,6 @@ getMapLiteral returns [Map<String, String> mapTerms]
 
 getValueProperty returns [ValueProperty value]
     @init{
-        StringBuilder sb = new StringBuilder();
     }:
     ident=T_IDENT {$value = new IdentifierProperty($ident.text);}
     | constant=T_CONSTANT {$value = new ConstantProperty(Integer.parseInt($constant.text));}

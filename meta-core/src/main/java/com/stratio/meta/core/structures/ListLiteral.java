@@ -26,7 +26,7 @@ import java.util.List;
 
 public class ListLiteral extends IdentIntOrLiteral {
     
-    public List<String> literals;
+    private List<String> literals;
 
     public ListLiteral() {
         literals = new ArrayList<>();

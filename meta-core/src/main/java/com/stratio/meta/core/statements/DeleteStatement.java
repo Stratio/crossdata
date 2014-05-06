@@ -21,121 +21,114 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.Relation;
+import com.stratio.meta.core.structures.RelationCompare;
+import com.stratio.meta.core.structures.Term;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta.core.utils.Tree;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-import com.datastax.driver.core.TableMetadata;
-import com.stratio.meta.common.result.MetaResult;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.*;
-import com.stratio.meta.core.utils.ParserUtils;
-import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.Tree;
-import java.util.Arrays;
-
 /**
- * Delete a set of rows. This class recognizes the following syntax:
+ * Class that models a {@code SELECT} statement from the META language. This class recognizes the following syntax:
  * <p>
  * DELETE ( {@literal <column>}, ( ',' {@literal <column>} )*)? FROM {@literal <tablename>}
  * WHERE {@literal <where_clause>};
  */
 public class DeleteStatement extends MetaStatement {
-	
-    private ArrayList<String> _targetColumn = null;
-    private boolean keyspaceInc = false;
-    private String keyspace;
-    private String _tablename = null;
-    private List<MetaRelation> _whereClauses;
 
+    /**
+     * The list of columns to be removed.
+     */
+    private List<String> targetColumns = null;
+
+    /**
+     * The name of the targe table.
+     */
+    private String tableName = null;
+
+    /**
+     * The list of {@link com.stratio.meta.core.structures.Relation} found in the WHERE clause.
+     */
+    private List<Relation> whereClauses;
+
+    /**
+     * Class constructor.
+     */
     public DeleteStatement(){
         this.command = false;
-        _targetColumn = new ArrayList<>();
-        _whereClauses = new ArrayList<>();
+        targetColumns = new ArrayList<>();
+        whereClauses = new ArrayList<>();
     }
 
-    public ArrayList<String> getTargetColumn() {
-        return _targetColumn;
-    }
-
-    public void setTargetColumn(ArrayList<String> _targetColumn) {
-        this._targetColumn = _targetColumn;
-    }
-
-    public boolean isKeyspaceInc() {
-        return keyspaceInc;
-    }
-
-    public void setKeyspaceInc(boolean keyspaceInc) {
-        this.keyspaceInc = keyspaceInc;
-    }
-
-    public String getKeyspace() {
-        return keyspace;
-    }
-
-    public void setKeyspace(String keyspace) {
-        this.keyspace = keyspace;
-    }
-
-    public List<MetaRelation> getWhereClauses() {
-        return _whereClauses;
-    }
-
-    public void setWhereClauses(List<MetaRelation> _whereClauses) {
-        this._whereClauses = _whereClauses;
-    }        
-
+    /**
+     * Add a new column to be deleted.
+     * @param column The column name.
+     */
     public void addColumn(String column){
-            _targetColumn.add(column);
+            targetColumns.add(column);
     }
 
-    public void setTablename(String tablename){
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+    /**
+     * Set the name of the table.
+     * @param tableName The name of the table.
+     */
+    public void setTableName(String tableName){
+        if(tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
+        }else {
+            this.tableName = tableName;
         }
-        _tablename = tablename;
     }
 
-    public void addRelation(MetaRelation relation){
-            _whereClauses.add(relation);
+    /**
+     * Add a new {@link com.stratio.meta.core.structures.Relation} found in a WHERE clause.
+     * @param relation The relation.
+     */
+    public void addRelation(Relation relation){
+            whereClauses.add(relation);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("DELETE ");
-        if(_targetColumn.size() > 0){
-            sb.append("(").append(ParserUtils.stringList(_targetColumn, ", ")).append(") ");
+        if(!targetColumns.isEmpty()){
+            sb.append("(").append(ParserUtils.stringList(targetColumns, ", ")).append(") ");
         }
         sb.append("FROM ");
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         } 
-        sb.append(_tablename);
-        if(_whereClauses.size() > 0){
-        	sb.append(" WHERE ");
-        	sb.append(ParserUtils.stringList(_whereClauses, " AND "));
+        sb.append(tableName);
+        if(!whereClauses.isEmpty()){
+            sb.append(" WHERE ");
+            sb.append(ParserUtils.stringList(whereClauses, " AND "));
         }
         return sb.toString();
     }
 
     /** {@inheritDoc} */
     @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        MetaResult result = validateKeyspaceAndTable(metadata, targetKeyspace);
-
-        String effectiveKeyspace = targetKeyspace;
+    public Result validate(MetadataManager metadata) {
+        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace);
+        String effectiveKeyspace = getEffectiveKeyspace();
         if(keyspaceInc){
             effectiveKeyspace = keyspace;
         }
         TableMetadata tableMetadata = null;
-
         if(!result.hasError()){
-            tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tablename);
+            tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
             result = validateSelectionColumns(tableMetadata);
         }
         if(!result.hasError()){
@@ -150,69 +143,78 @@ public class DeleteStatement extends MetaStatement {
      * Validate that the columns specified in the select are valid by checking
      * that the selection columns exists in the table.
      * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateWhereClause(TableMetadata tableMetadata){
-        MetaResult result = new MetaResult();
-        for(MetaRelation relation : _whereClauses){
-            if(MetaRelation.TYPE_COMPARE == relation.getType()) {
-                //Check comparison, =, >, <, etc.
-                RelationCompare rc = RelationCompare.class.cast(relation);
-                String column = rc.getIdentifiers().get(0);
-                //System.out.println("column: " + column);
-                if (tableMetadata.getColumn(column) == null) {
-                    result.setErrorMessage("Column " + column + " does not exists in table " + tableMetadata.getName());
-                }
-
-                Term t = Term.class.cast(rc.getTerms().get(0));
-                ColumnMetadata cm = tableMetadata.getColumn(column);
-                if (cm != null){
-                    if (!tableMetadata.getColumn(column)
-                            .getType().asJavaClass().equals(t.getTermClass())) {
-                        result.setErrorMessage("Column " + column
-                                + " of type " + tableMetadata.getColumn(rc.getIdentifiers().get(0))
-                                .getType().asJavaClass()
-                                + " does not accept " + t.getTermClass()
-                                + " values (" + t.toString() + ")");
-                    }
-
-                    if (Boolean.class.equals(tableMetadata.getColumn(column)
-                            .getType().asJavaClass())) {
-                        boolean supported = true;
-                        switch (rc.getOperator()) {
-                            case ">":
-                                supported = false;
-                                break;
-                            case "<":
-                                supported = false;
-                                break;
-                            case ">=":
-                                supported = false;
-                                break;
-                            case "<=":
-                                supported = false;
-                                break;
-                        }
-                        if (!supported) {
-                            result.setErrorMessage("Operand " + rc.getOperator() + " not supported for column " + column + ".");
-                        }
-                    }
-                }else {
-                    result.setErrorMessage("Column " + column + " not found in table " + _tablename);
-                }
-
-            }else if(MetaRelation.TYPE_IN == relation.getType()){
+    private Result validateWhereClause(TableMetadata tableMetadata){
+        Result result = QueryResult.createSuccessQueryResult();
+        Iterator<Relation> relations = whereClauses.iterator();
+        while(!result.hasError() && relations.hasNext()){
+            Relation relation = relations.next();
+            if(Relation.TYPE_COMPARE == relation.getType()) {
+                result = validateCompareRelation(relation, tableMetadata);
+            }else if(Relation.TYPE_IN == relation.getType()){
                 //TODO: Check IN relation
-                result.setErrorMessage("IN clause not supported.");
-            }else if(MetaRelation.TYPE_TOKEN == relation.getType()){
+                result= QueryResult.createFailQueryResult("IN clause not supported.");
+            }else if(Relation.TYPE_TOKEN == relation.getType()){
                 //TODO: Check IN relation
-                result.setErrorMessage("TOKEN function not supported.");
-            }else if(MetaRelation.TYPE_BETWEEN == relation.getType()){
+                result= QueryResult.createFailQueryResult("TOKEN function not supported.");
+            }else if(Relation.TYPE_BETWEEN == relation.getType()){
                 //TODO: Check IN relation
-                result.setErrorMessage("BETWEEN clause not supported.");
+                result= QueryResult.createFailQueryResult("BETWEEN clause not supported.");
             }
+
+        }
+        return result;
+    }
+
+    private Result validateCompareRelation(Relation relation, TableMetadata tableMetadata){
+        Result result = QueryResult.createSuccessQueryResult();
+        //Check comparison, =, >, <, etc.
+        RelationCompare rc = RelationCompare.class.cast(relation);
+        String column = rc.getIdentifiers().get(0);
+        if (tableMetadata.getColumn(column) == null) {
+            result = QueryResult.createFailQueryResult("Column " + column + " does not exists in table " + tableMetadata.getName());
         }
 
+        Term t = Term.class.cast(rc.getTerms().get(0));
+        ColumnMetadata cm = tableMetadata.getColumn(column);
+        if (cm != null){
+            if (!tableMetadata.getColumn(column)
+                    .getType().asJavaClass().equals(t.getTermClass())) {
+                result = QueryResult.createFailQueryResult("Column " + column
+                        + " of type " + tableMetadata.getColumn(rc.getIdentifiers().get(0))
+                        .getType().asJavaClass()
+                        + " does not accept " + t.getTermClass()
+                        + " values (" + t.toString() + ")");
+            }
+
+            if (Boolean.class.equals(tableMetadata.getColumn(column)
+                    .getType().asJavaClass())) {
+                boolean supported = true;
+                switch (rc.getOperator()) {
+                    case ">":
+                        supported = false;
+                        break;
+                    case "<":
+                        supported = false;
+                        break;
+                    case ">=":
+                        supported = false;
+                        break;
+                    case "<=":
+                        supported = false;
+                        break;
+                    default:
+                        break;
+                }
+                if (!supported) {
+                    result = QueryResult.createFailQueryResult("Operand " + rc.getOperator() + " not supported" +
+                            " for column " + column + ".");
+                }
+            }
+        }else {
+            result = QueryResult.createFailQueryResult("Column " + column + " not found in " + tableName + " table.");
+        }
         return result;
     }
 
@@ -220,16 +222,18 @@ public class DeleteStatement extends MetaStatement {
      * Validate that the columns specified in the select are valid by checking
      * that the selection columns exists in the table.
      * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateSelectionColumns(TableMetadata tableMetadata) {
-        MetaResult result = new MetaResult();
+    private Result validateSelectionColumns(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
 
-        for(String c : _targetColumn){
+        for(String c : targetColumns){
             if(c.toLowerCase().startsWith("stratio")){
-                result.setErrorMessage("Internal column " + c + " cannot be part of the WHERE clause.");
+                result= QueryResult.createFailQueryResult("Internal column " + c + " cannot be part of the WHERE " +
+                        "clause.");
             }else if(tableMetadata.getColumn(c) == null){
-                result.setErrorMessage("Column " + c + " does not exists in table " + tableMetadata.getName());
+                result= QueryResult.createFailQueryResult("Column " + c + " does not exists in table " +
+                        tableMetadata.getName());
             }
         }
 
@@ -242,28 +246,25 @@ public class DeleteStatement extends MetaStatement {
      * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
      *                 the required information.
      * @param targetKeyspace The target keyspace where the query will be executed.
-     * @return A {@link com.stratio.meta.common.result.MetaResult} with the validation result.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
-    private MetaResult validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
-        MetaResult result = new MetaResult();
+    private Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
+        Result result =QueryResult.createSuccessQueryResult();
         //Get the effective keyspace based on the user specification during the create
         //sentence, or taking the keyspace in use in the user session.
-        String effectiveKeyspace = targetKeyspace;
-        if(keyspaceInc){
-            effectiveKeyspace = keyspace;
-        }
+        String effectiveKeyspace = getEffectiveKeyspace();
 
         //Check that the keyspace and table exists.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result.setErrorMessage("Target keyspace missing or no keyspace has been selected.");
+            result= QueryResult.createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
         }else{
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
             if(ksMetadata == null){
-                result.setErrorMessage("Keyspace " + effectiveKeyspace + " does not exists.");
+                result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
             }else {
-                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, _tablename);
+                TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
                 if (tableMetadata == null) {
-                    result.setErrorMessage("Table " + _tablename + " does not exists.");
+                    result= QueryResult.createFailQueryResult("Table " + tableName + " does not exists.");
                 }
             }
 
@@ -273,34 +274,15 @@ public class DeleteStatement extends MetaStatement {
 
 
     @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
-    }
-
-    @Override
     public String translateToCQL() {
         return this.toString();
     }
-    
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
-    
+
     @Override
-    public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
-    }
-            
-    @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-    
-    @Override
-    public Tree getPlan() {
-        return new Tree();
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+        return tree;
     }
     
 }

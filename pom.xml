@@ -21,22 +21,73 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.stratio</groupId>
-    <artifactId>meta</artifactId>
+    <groupId>com.stratio.meta</groupId>
+    <artifactId>stratio-meta-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.0.4</version>
+    <name>Stratio META parent</name>
+    <description>Stratio META</description>
+    <url>https://github.com/Stratio/stratio-meta/</url>
+
+    <licenses>
+        <license>
+            <name>GNU General Lesser Public License (LGPL) version 3.0</name>
+            <url>http://www.gnu.org/licenses/lgpl-3.0.html</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>scm:git:git@github.com:Stratio/stratio-meta.git</url>
+        <connection>https://github.com/Stratio/stratio-meta/</connection>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>aagea</id>
+            <name>Álvaro Agea</name>
+            <email>aagea at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>antonioalcocer</id>
+            <name>Antonio Alcocer</name>
+            <email>aalcocer at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>miguel0afd</id>
+            <name>Miguel Angel Fernandez</name>
+            <email>mafernandez at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>gmunoz</id>
+            <name>Gaspar Muñoz</name>
+            <email>gmunoz at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>roclas</id>
+            <name>Carlos Hernandez</name>
+            <email>chernandez at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>dhiguero</id>
+            <name>Daniel Higuero</name>
+            <email>dhiguero at stratio dot com</email>
+        </developer>
+    </developers>
+
     <modules>
         <module>meta-core</module>
         <module>meta-common</module>
         <module>meta-driver</module>
         <module>meta-server</module>
         <module>meta-sh</module>
-        <module>meta-deep</module>
+        <module>meta-dist</module>
     </modules>
     <properties>
         <akka.version>2.2.4</akka.version>
-        <cassandra.driver>2.0.0-rc3</cassandra.driver>
-        <meta.version>1.0.0-SNAPSHOT</meta.version>
+        <cassandra.driver>2.0.0</cassandra.driver>
+        <meta.version>0.0.4</meta.version>
+        <deep.version>0.2.1</deep.version>
+        <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
     </properties>
     <repositories>
         <repository>
@@ -49,10 +100,24 @@
             <name>Typesafe Repository</name>
             <url>http://repo.typesafe.com/typesafe/releases/</url>
         </repository>
-    </repositories>                
-            
+    </repositories>
+
     <build>
-        <plugins>            
+        <plugins>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <formats>
+                        <format>html</format>
+                        <format>xml</format>
+                    </formats>
+                    <aggregate>true</aggregate>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -62,6 +127,44 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
              

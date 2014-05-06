@@ -19,170 +19,146 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Assignment;
-import com.stratio.meta.core.structures.MetaRelation;
 import com.stratio.meta.core.structures.Option;
+import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.utils.ParserUtils;
-import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Class that models an {@code UPDATE} statement from the META language.
+ */
 public class UpdateTableStatement extends MetaStatement {
-    
-    private boolean keyspaceInc = false;
-    private String keyspace;
-    private String tablename;
+
+    /**
+     * The name of the table.
+     */
+    private String tableName;
+
+    /**
+     * Whether options are included.
+     */
     private boolean optsInc;
+
+    /**
+     * The list of options.
+     */
     private List<Option> options;
+
+    /**
+     * The list of assignments.
+     */
     private List<Assignment> assignments;
-    private List<MetaRelation> whereclauses;
+
+    /**
+     * The list of relations.
+     */
+    private List<Relation> whereClauses;
+
+    /**
+     * Whether conditions are included.
+     */
     private boolean condsInc;
+
+    /**
+     * Map of conditions.
+     */
     private Map<String, Term> conditions;
 
-    public UpdateTableStatement(String tablename, 
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param optsInc Whether options are included.
+     * @param options The list of options.
+     * @param assignments The list of assignments.
+     * @param whereClauses The list of relations.
+     * @param condsInc Whether conditions are included.
+     * @param conditions The map of conditions.
+     */
+    public UpdateTableStatement(String tableName,
                                 boolean optsInc, 
                                 List<Option> options, 
                                 List<Assignment> assignments, 
-                                List<MetaRelation> whereclauses, 
+                                List<Relation> whereClauses,
                                 boolean condsInc, 
                                 Map<String, Term> conditions) {
         this.command = false;
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
+        if(tableName.contains(".")){
+            String[] ksAndTableName = tableName.split("\\.");
+            keyspace = ksAndTableName[0];
+            this.tableName = ksAndTableName[1];
             keyspaceInc = true;
+        }else{
+            this.tableName = tableName;
         }
-        this.tablename = tablename;
+
         this.optsInc = optsInc;
         this.options = options;
         this.assignments = assignments;
-        this.whereclauses = whereclauses;
+        this.whereClauses = whereClauses;
         this.condsInc = condsInc;
         this.conditions = conditions;
-    }        
-    
-    public UpdateTableStatement(String tablename, 
+    }
+
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param options The list of options.
+     * @param assignments The list of assignments.
+     * @param whereClauses The list of relations.
+     * @param conditions The map of conditions.
+     */
+    public UpdateTableStatement(String tableName,
                                 List<Option> options, 
                                 List<Assignment> assignments, 
-                                List<MetaRelation> whereclauses, 
+                                List<Relation> whereClauses,
                                 Map<String, Term> conditions) {
-        this(tablename, true, options, assignments, whereclauses, true, conditions);
+        this(tableName, true, options, assignments, whereClauses, true, conditions);
     }
-    
-    public UpdateTableStatement(String tablename, 
+
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param assignments The list of assignments.
+     * @param whereClauses The list of relations.
+     * @param conditions The map of conditions.
+     */
+    public UpdateTableStatement(String tableName,
                                 List<Assignment> assignments, 
-                                List<MetaRelation> whereclauses, 
+                                List<Relation> whereClauses,
                                 Map<String, Term> conditions) {
-        this(tablename, false, null, assignments, whereclauses, true, conditions);
+        this(tableName, false, null, assignments, whereClauses, true, conditions);
     }
-    
-    public UpdateTableStatement(String tablename, 
+
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param options The list of options.
+     * @param assignments The list of assignments.
+     * @param whereClauses The list of relations.
+     */
+    public UpdateTableStatement(String tableName,
                                 List<Option> options, 
                                 List<Assignment> assignments, 
-                                List<MetaRelation> whereclauses) {
-        this(tablename, true, options, assignments, whereclauses, false, null);
+                                List<Relation> whereClauses) {
+        this(tableName, true, options, assignments, whereClauses, false, null);
     }
-    
-    public UpdateTableStatement(String tablename,                                 
+
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param assignments The list of assignments.
+     * @param whereClauses The list of relations.
+     */
+    public UpdateTableStatement(String tableName,
                                 List<Assignment> assignments, 
-                                List<MetaRelation> whereclauses) {
-        this(tablename, false, null, assignments, whereclauses, false, null);
-    }
-
-    public boolean isKeyspaceInc() {
-        return keyspaceInc;
-    }
-
-    public void setKeyspaceInc(boolean keyspaceInc) {
-        this.keyspaceInc = keyspaceInc;
-    }
-
-    public String getKeyspace() {
-        return keyspace;
-    }
-
-    public void setKeyspace(String keyspace) {
-        this.keyspace = keyspace;
-    }
-
-    public boolean isCondsInc() {
-        return condsInc;
-    }
-
-    public void setCondsInc(boolean condsInc) {
-        this.condsInc = condsInc;
-    }       
-    
-    public String getTablename() {
-        return tablename;
-    }
-
-    public void setTablename(String tablename) {
-        if(tablename.contains(".")){
-            String[] ksAndTablename = tablename.split("\\.");
-            keyspace = ksAndTablename[0];
-            tablename = ksAndTablename[1];
-            keyspaceInc = true;
-        }
-        this.tablename = tablename;
-    }
-
-    public boolean isOptsInc() {
-        return optsInc;
-    }
-
-    public void setOptsInc(boolean optsInc) {
-        this.optsInc = optsInc;
-    }   
-    
-    public List<Option> getOptions() {
-        return options;
-    }
-
-    public void setOptions(List<Option> options) {
-        this.options = options;
-    }
-
-    public List<Assignment> getAssignments() {
-        return assignments;
-    }
-
-    public void setAssignments(List<Assignment> assignments) {
-        this.assignments = assignments;
-    }        
-
-    public List<MetaRelation> getWhereclauses() {
-        return whereclauses;
-    }
-
-    public void setWhereclauses(List<MetaRelation> whereclauses) {
-        this.whereclauses = whereclauses;
-    }
-
-    public boolean isIncConds() {
-        return condsInc;
-    }
-
-    public void setIncConds(boolean condsInc) {
-        this.condsInc = condsInc;
-    }
-
-    public Map<String, Term> getConditions() {
-        return conditions;
-    }
-
-    public void setConditions(Map<String, Term> conditions) {
-        this.conditions = conditions;
+                                List<Relation> whereClauses) {
+        this(tableName, false, null, assignments, whereClauses, false, null);
     }
 
     @Override
@@ -191,7 +167,7 @@ public class UpdateTableStatement extends MetaStatement {
         if(keyspaceInc){
             sb.append(keyspace).append(".");
         }
-        sb.append(tablename);        
+        sb.append(tableName);
         if(optsInc){
             sb.append(" ").append("USING ");
             sb.append(ParserUtils.stringList(options, " AND "));
@@ -199,7 +175,7 @@ public class UpdateTableStatement extends MetaStatement {
         sb.append(" ").append("SET ");
         sb.append(ParserUtils.stringList(assignments, ", "));
         sb.append(" ").append("WHERE ");
-        sb.append(ParserUtils.stringList(whereclauses, " AND "));
+        sb.append(ParserUtils.stringList(whereClauses, " AND "));
         if(condsInc){
             sb.append(" ").append("IF ");
             sb.append(ParserUtils.stringMap(conditions, " = ", " AND "));
@@ -207,40 +183,13 @@ public class UpdateTableStatement extends MetaStatement {
         return sb.toString();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
-    }
-
-    @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
-    }
-
     @Override
     public String translateToCQL() {
         return this.toString();
     }
-    
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
 
     @Override
-    public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
-    }
-    
-    @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-    
-    @Override
-    public Tree getPlan() {
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         return new Tree();
     }
     

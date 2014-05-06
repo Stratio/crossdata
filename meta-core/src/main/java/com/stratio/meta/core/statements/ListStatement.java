@@ -19,65 +19,41 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ListType;
-import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
+/**
+ * Class that models a {@code LIST} statement from the META language.
+ */
 public class ListStatement extends MetaStatement {
 
-    private ListType _type = null;
+    /**
+     * The {@link com.stratio.meta.core.structures.ListType} to be executed.
+     */
+    private ListType type = null;
 
+    /**
+     * Class constructor.
+     * @param type The {@link com.stratio.meta.core.structures.ListType} to be executed.
+     */
     public ListStatement(String type){
         this.command = true;
-        _type = ListType.valueOf(type.toUpperCase());
+        this.type = ListType.valueOf(type.toUpperCase());
     }
 
     @Override
     public String toString() {
-            return "LIST " + _type;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
-    }
-
-    @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
+            return "LIST " + type;
     }
 
     @Override
     public String translateToCQL() {
         return this.toString();
     }
-
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
     
     @Override
-    public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
-    }
-    
-    @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-    
-    @Override
-    public Tree getPlan() {
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         return new Tree();
     }
     

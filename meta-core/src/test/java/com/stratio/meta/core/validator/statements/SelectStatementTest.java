@@ -19,89 +19,180 @@
 
 package com.stratio.meta.core.validator.statements;
 
-import com.stratio.meta.common.result.MetaResult;
-import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.validator.BasicValidatorTest;
 import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.fail;
 
 public class SelectStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validate_basicColumn_ok(){
+    public void validateBasicColumnOk(){
         String inputText = "SELECT name FROM demo.users;";
-        validateOk(inputText, "validate_basicColumn_ok");
+        validateOk(inputText, "validateBasicColumnOk");
     }
 
     @Test
-    public void validate_basicCount_ok(){
+    public void validateBasicCountOk(){
         String inputText = "SELECT count(*) FROM demo.users;";
-        validateOk(inputText, "validate_basicCount_ok");
+        validateOk(inputText, "validateBasicCountOk");
     }
 
     @Test
-    public void validate_basicSeveralColumns_ok(){
+    public void validateBasicSeveralColumnsOk(){
         String inputText = "SELECT name, age FROM demo.users;";
-        validateOk(inputText, "validate_basicSeveralColumns_ok");
+        validateOk(inputText, "validateBasicSeveralColumnsOk");
     }
 
     @Test
-    public void validate_columnUnknown(){
+    public void validateColumnUnknown(){
         String inputText = "SELECT name, unknown FROM demo.users;";
-        validateFail(inputText, "validate_columnUnknown");
+        validateFail(inputText, "validateColumnUnknown");
     }
 
     @Test
-    public void validate_basicWhere_ok(){
+    public void validateBasicWhereOk(){
         String inputText = "SELECT name, age FROM demo.users WHERE name = 'name_5';";
-        validateOk(inputText, "validate_basicWhere_ok");
+        validateOk(inputText, "validateBasicWhereOk");
     }
 
     @Test
-    public void validate_where_2columns_ok(){
+    public void validateWhere2columnsOk(){
         String inputText = "SELECT name, age FROM demo.users WHERE name = 'name_5' AND age = 15;";
-        validateOk(inputText, "validate_where_2columns_ok");
+        validateOk(inputText, "validateWhere2columnsOk");
     }
 
     @Test
-    public void validate_where_columnUnknown(){
+    public void validateWhereColumnUnknown(){
         String inputText = "SELECT name, age FROM demo.users WHERE unknown = 'name_5' AND age = 15;";
-        validateFail(inputText, "validate_where_columnUnknown");
+        validateFail(inputText, "validateWhereColumnUnknown");
     }
 
     @Test
-    public void validate_where_integerFail(){
+    public void validateWhereIntegerFail(){
         String inputText = "SELECT name, age FROM demo.users WHERE name = 'name_5' AND age = '15';";
-        validateFail(inputText, "validate_where_integerFail");
+        validateFail(inputText, "validateWhereIntegerFail");
     }
 
     @Test
-    public void validate_where_stringFail(){
+    public void validateWhereStringFail(){
         String inputText = "SELECT name, age FROM demo.users WHERE name = 15 AND age = 15;";
-        validateFail(inputText, "validate_where_integerFail");
+        validateFail(inputText, "validateWhereStringFail");
     }
 
     @Test
-    public void validate_operatorString_ok(){
+    public void validateOperatorStringOk(){
         String [] operators = {">", "<", ">=", "<="};
         for(String operator : operators) {
             String inputText = "SELECT name, age FROM demo.users WHERE name "
                     + operator + " 'name_5';";
-            validateOk(inputText, "validate_operatorString_ok on column - operator: " + operator);
+            validateOk(inputText, "validateOperatorStringOk on column - operator: " + operator);
         }
     }
 
     @Test
-    public void validate_operatorBoolean_fail(){
+    public void validateOperatorBooleanFail(){
         String [] operators = {">", "<", ">=", "<="};
         for(String operator : operators) {
             String inputText = "SELECT bool FROM demo.users WHERE bool "
                     + operator + " true;";
-            validateFail(inputText, "validate_operatorBoolean_fail on column - operator: " + operator);
+            validateFail(inputText, "validateOperatorBooleanFail on column - operator: " + operator);
         }
+    }
+
+    //
+    // Tests with table referred columns.
+    //
+    @Test
+    public void validateReferredOk(){
+        String inputText = "SELECT users.name, users.age FROM demo.users WHERE name = 'name_5' AND age = 15;";
+        validateOk(inputText, "validateReferredOk");
+    }
+
+    @Test
+    public void validateReferredFail(){
+        String inputText = "SELECT unknown.name, unknown.age FROM demo.users WHERE name = 'name_5' AND age = 15;";
+        validateFail(inputText, "validateReferredFail");
+    }
+
+    //
+    // Tests with inner joins
+    //
+    @Test
+    public void validateInnerJoinBasicOk(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN demo.users ON users.name=users.name;";
+        validateOk(inputText, "validateInnerJoinBasicOk");
+    }
+    
+    @Test
+    public void validateUnknownKs1Fail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM unknown.users "
+                + "INNER JOIN demo.users ON users.name=users.name;";
+        validateFail(inputText, "validateUnknownKs1Fail");
+    }
+
+    @Test
+    public void validateUnknownKs2Fail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN unknown.users ON users.name=users.name;";
+        validateFail(inputText, "validateUnknownKs2Fail");
+    }
+
+    @Test
+    public void validateUnknownTable2Fail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN demo.unknown ON users.name=users.name;";
+        validateFail(inputText, "validateUnknownTable2Fail");
+    }
+
+    @Test
+    public void validateUnknownTable2WithoutKsFail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN unknown ON users.name=users.name;";
+        validateFail(inputText, "validateUnknownTable2WithoutKsFail");
+    }
+
+    @Test
+    public void validateOnUnknownKsFail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN demo.users ON unknown.name=users.name;";
+        validateFail(inputText, "validateOnUnknownKsFail");
+    }
+
+    @Test
+    public void validateOnUnknownKs2Fail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN demo.users ON users.name=unknown.name;";
+        validateFail(inputText, "validateOnUnknownKs2Fail");
+    }
+
+    @Test
+    public void validateOnUnknownTableFail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN demo.users ON demo.unknown=users.name;";
+        validateFail(inputText, "validateOnUnknownKsFail");
+    }
+
+    @Test
+    public void validateOnUnknownTable2Fail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN demo.users ON users.name=demo.unknown;";
+        validateFail(inputText, "validateOnUnknownKs2Fail");
+    }
+
+
+    @Test
+    public void validateInnerJoin2tablesOk(){
+        String inputText = "SELECT users.name, users.age, users_info.info FROM demo.users "
+                + "INNER JOIN demo.users_info ON users.name=users_info.link_name;";
+        validateOk(inputText, "validateInnerJoin2tablesOk");
+    }
+
+    @Test
+    public void validateInnerJoinWhereOk(){
+        String inputText = "SELECT users.name, users.age, users_info.info FROM demo.users "
+                + "INNER JOIN demo.users_info ON users.name=users_info.link_name "
+                + "WHERE name = 'name_3';";
+        validateOk(inputText, "validateInnerJoinWhereOk");
     }
 
 }

@@ -22,21 +22,24 @@ package com.stratio.meta.server.actors
 import akka.actor.{Props, Actor, ActorLogging}
 import com.stratio.meta.core.utils.MetaQuery
 import com.stratio.meta.core.executor.Executor
+import org.apache.log4j.Logger
 
 object ExecutorActor{
   def props(executor:Executor): Props = Props(new ExecutorActor(executor))
 }
 
-class ExecutorActor(executor:Executor) extends Actor with TimeTracker with ActorLogging{
+class ExecutorActor(executor:Executor) extends Actor with TimeTracker{
+  val log =Logger.getLogger(classOf[ExecutorActor])
   override val timerName: String = this.getClass.getName
 
   override def receive: Receive ={
     case query:MetaQuery if !query.hasError=> {
-      log.info("Init Planner Task")
+      log.debug("Init Executor Task")
       val timer=initTimer()
-      sender ! executor.executeQuery(query).getResult
+      val result = executor.executeQuery(query).getResult
+      sender ! result
       finishTimer(timer)
-      log.info("Finish Planner Task")
+      log.debug("Finish Executor Task")
     }
     case query:MetaQuery if query.hasError=>{
       sender ! query.getResult

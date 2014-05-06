@@ -23,6 +23,11 @@ public class FloatProperty extends ValueProperty {
 
     private float number;
 
+    public FloatProperty(float number) {
+        this.number = number;
+        this.type = TYPE_FLOAT;
+    }
+
     public float getNumber() {
         return number;
     }
@@ -31,15 +36,14 @@ public class FloatProperty extends ValueProperty {
         this.number = number;
     }
 
-    public FloatProperty(float number) {
-        this.number = number;
-        this.type = TYPE_FLOAT;
-  
-    }
-
     @Override
     public String toString() {
             return Float.toString(number);
     }
-    
+
+    @Override
+    public String getStringValue() {
+        return toString();
+    }
+
 }

@@ -19,6 +19,9 @@
 
 package com.stratio.meta.core.structures;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class SelectionClause {
     
     public static final int TYPE_SELECTION = 1;
@@ -36,5 +39,26 @@ public abstract class SelectionClause {
     
     @Override
     public abstract String toString();
-    
+
+    public List<String> getIds() {
+        List<String> ids = new ArrayList<>();
+        if(type == TYPE_COUNT){
+            return ids;
+        }
+        SelectionList sList = (SelectionList) this;
+        Selection selection = sList.getSelection();
+        if(selection.getType() == Selection.TYPE_ASTERISK){
+            return ids;
+        }
+        SelectionSelectors sSelectors = (SelectionSelectors) selection;
+        for(SelectionSelector sSelector: sSelectors.getSelectors()){
+            SelectorMeta selector = sSelector.getSelector();
+            if(selector.getType() == SelectorMeta.TYPE_IDENT){
+                SelectorIdentifier selectorId = (SelectorIdentifier) selector;
+                ids.add(selectorId.getIdentifier());
+            }
+        }
+
+        return ids;
+    }
 }

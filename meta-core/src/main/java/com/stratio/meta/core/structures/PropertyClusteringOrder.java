@@ -20,26 +20,27 @@
 package com.stratio.meta.core.structures;
 
 import com.stratio.meta.core.utils.ParserUtils;
+
 import java.util.List;
 
-public class PropertyClusteringOrder extends MetaProperty{
+public class PropertyClusteringOrder extends Property {
 
-    private List<MetaOrdering> order;
+    private List<Ordering> order;
     
     public PropertyClusteringOrder() {
         super(TYPE_CLUSTERING_ORDER);
     }
 
-    public PropertyClusteringOrder(List<MetaOrdering> order) {
+    public PropertyClusteringOrder(List<Ordering> order) {
         super(TYPE_CLUSTERING_ORDER);
         this.order = order;
     }   
     
-    public List<MetaOrdering> getOrder() {
+    public List<Ordering> getOrder() {
         return order;
     }
 
-    public void setOrder(List<MetaOrdering> order) {
+    public void setOrder(List<Ordering> order) {
         this.order = order;
     }        
 

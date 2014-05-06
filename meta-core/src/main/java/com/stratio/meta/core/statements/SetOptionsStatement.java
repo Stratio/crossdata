@@ -19,24 +19,36 @@
 
 package com.stratio.meta.core.statements;
 
-import com.datastax.driver.core.Statement;
-import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Consistency;
-import com.stratio.meta.core.utils.DeepResult;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class SetOptionsStatement extends MetaStatement {
 
+    /**
+     * The consistency level.
+     */
     private Consistency consistency;
+
+    /**
+     * Whether analytics should be used.
+     */
     private boolean analytics;
+
+    /**
+     * The list of options present.
+     */
     private List<Boolean> optionsCheck;
 
+    /**
+     * Class constructor.
+     * @param analytics Whether analytics are used.
+     * @param consistency The level of consistency.
+     * @param optionsCheck The list of options present.
+     */
     public SetOptionsStatement(boolean analytics, Consistency consistency, List<Boolean> optionsCheck) {
         this.command = true;
         this.consistency = consistency;
@@ -44,34 +56,9 @@ public class SetOptionsStatement extends MetaStatement {
         this.optionsCheck = new ArrayList<>();
         this.optionsCheck.addAll(optionsCheck);
     }
-
-    public Consistency getConsistency() {
-        return consistency;
-    }
-
-    public void setConsistency(Consistency consistency) {
-        this.consistency = consistency;
-    }
-
-    public boolean isAnalytics() {
-        return analytics;
-    }
-
-    public void setAnalytics(boolean analytics) {
-        this.analytics = analytics;
-    }        
-
-    public List<Boolean> getOptionsCheck() {
-        return optionsCheck;
-    }
-
-    public void setOptionsCheck(List<Boolean> optionsCheck) {
-        this.optionsCheck = optionsCheck;
-    }        
     
     @Override
     public String toString() {
-        //System.out.println("optionsCheck="+optionsCheck.toString());
         StringBuilder sb = new StringBuilder("Set options ");
         if(optionsCheck.get(0)){
             sb.append("analytics=").append(analytics);            
@@ -86,40 +73,13 @@ public class SetOptionsStatement extends MetaStatement {
         return sb.toString();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public MetaResult validate(MetadataManager metadata, String targetKeyspace) {
-        return null;
-    }
-
-    @Override
-    public String getSuggestion() {
-        return this.getClass().toString().toUpperCase()+" EXAMPLE";
-    }
-
     @Override
     public String translateToCQL() {
         return this.toString();
     }
-    
-//    @Override
-//    public String parseResult(ResultSet resultSet) {
-//        return "\t"+resultSet.toString();
-//    }
-    
+
     @Override
-    public Statement getDriverStatement() {
-        Statement statement = null;
-        return statement;
-    }
-    
-    @Override
-    public DeepResult executeDeep() {
-        return new DeepResult("", new ArrayList<>(Arrays.asList("Not supported yet")));
-    }
-    
-    @Override
-    public Tree getPlan() {
+    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
         return new Tree();
     }
     

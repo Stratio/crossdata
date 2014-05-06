@@ -19,50 +19,137 @@
 
 package com.stratio.meta.sh;
 
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
-import com.stratio.meta.sh.utils.MetaCompletionHandler;
-import com.stratio.meta.sh.utils.MetaCompletor;
-import com.stratio.meta.common.result.MetaResult;
 import com.stratio.meta.sh.help.HelpContent;
 import com.stratio.meta.sh.help.HelpManager;
 import com.stratio.meta.sh.help.HelpStatement;
 import com.stratio.meta.sh.help.generated.MetaHelpLexer;
 import com.stratio.meta.sh.help.generated.MetaHelpParser;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.ListIterator;
+import com.stratio.meta.sh.utils.ConsoleUtils;
+import com.stratio.meta.sh.utils.MetaCompletionHandler;
+import com.stratio.meta.sh.utils.MetaCompletor;
 import jline.console.ConsoleReader;
-import jline.console.history.History;
-import jline.console.history.History.Entry;
-import jline.console.history.MemoryHistory;
-
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.Days;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+
+/**
+ * Interactive META console.
+ */
 public class Metash {
 
     /**
      * Class logger.
      */
-    private static final Logger logger = Logger.getLogger(Metash.class);
-    private static final String user = "TEST_USER";
+    private static final Logger LOG = Logger.getLogger(Metash.class);
 
-    private final HelpContent _help;
+    /**
+     * Default user to connect to the meta server.
+     */
+    private static final String DEFAULT_USER = "META_USER";
 
+    /**
+     * Help content to be shown when the internal command {@code help} is used.
+     */
+    private final HelpContent help;
+
+    /**
+     * Console reader.
+     */
+    private ConsoleReader console = null;
+
+    /**
+     * History file.
+     */
+    private File historyFile = null;
+
+    /**
+     * Current active user in the system.
+     */
+    private String currentUser = null;
+
+    /**
+     * Current keyspace from the point of view of the user session.
+     */
+    private String currentKeyspace = "";
+
+    /**
+     * Driver that connects to the META servers.
+     */
+    private BasicDriver metaDriver = null;
+
+    /**
+     * History date format.
+     */
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
+
+    /**
+     * Class constructor.
+     */
     public Metash(){
         HelpManager hm = new HelpManager();
-        _help = hm.loadHelpContent();
-    }        
+        help = hm.loadHelpContent();
+        initialize();
+    }
+
+    /**
+     * Initialize the console settings.
+     */
+    private void initialize(){
+
+        //Take the username from the system.
+        currentUser = System.getProperty("user.name");
+        if(currentUser == null){
+            currentUser = DEFAULT_USER;
+        }
+        LOG.debug("Connecting with user: " + currentUser);
+
+        try {
+            console = new ConsoleReader();
+            setPrompt(null);
+            historyFile = ConsoleUtils.retrieveHistory(console, dateFormat);
+
+            console.setCompletionHandler(new MetaCompletionHandler());
+            console.addCompleter(new MetaCompletor());
+        } catch (IOException e) {
+            LOG.error("Cannot create a console.", e);
+        }
+    }
+
+    /**
+     * Print a message on the console.
+     * @param msg The message.
+     */
+    private void println(String msg){
+        try {
+            console.getOutput().write(msg + System.lineSeparator());
+        } catch (IOException e) {
+            LOG.error("Cannot print to console.", e);
+        }
+    }
+
+    /**
+     * Set the console prompt.
+     * @param currentKeyspace The currentKeyspace.
+     */
+    private void setPrompt(String currentKeyspace){
+        StringBuilder sb = new StringBuilder("\033[36mmetash-sh:");
+        if(currentKeyspace == null) {
+            sb.append(currentUser);
+        }else{
+            sb.append(currentUser);
+            sb.append(":");
+            sb.append(currentKeyspace);
+        }
+        sb.append(">\033[0m ");
+        console.setPrompt(sb.toString());
+    }
 
     /**
      * Parse a input text and return the equivalent HelpStatement.
@@ -70,17 +157,17 @@ public class Metash {
      * @return A Statement or null if the process failed.
      */
     private HelpStatement parseHelp(String inputText){
-            HelpStatement result = null;
-            ANTLRStringStream input = new ANTLRStringStream(inputText);
-    MetaHelpLexer lexer = new MetaHelpLexer(input);
-    CommonTokenStream tokens = new CommonTokenStream(lexer);
-    MetaHelpParser parser = new MetaHelpParser(tokens);   
-    try {
-        result = parser.query();
-    } catch (RecognitionException e) {
-        logger.error("Cannot parse statement", e);
-    }
-    return result;
+        HelpStatement result = null;
+        ANTLRStringStream input = new ANTLRStringStream(inputText);
+        MetaHelpLexer lexer = new MetaHelpLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        MetaHelpParser parser = new MetaHelpParser(tokens);
+        try {
+            result = parser.query();
+        } catch (RecognitionException e) {
+            LOG.error("Cannot parse statement", e);
+        }
+        return result;
     }
 
     /**
@@ -88,144 +175,111 @@ public class Metash {
      * @param inputText The help query.
      */
     private void showHelp(String inputText){
-            HelpStatement h = parseHelp(inputText);
-            System.out.println(_help.searchHelp(h.getType()));
-    }	                                             
-        
-    public File retrieveHistory(ConsoleReader console, SimpleDateFormat sdf) throws IOException{
-        final int DAYS_HISTORY_ENTRY_VALID = 30;
-        Date today = new Date();
-        String workingDir = System.getProperty("user.dir");
-        File dir = new File("meta-sh/src/main/resources/");
-        if(workingDir.endsWith("meta-sh")){
-            dir = new File("src/main/resources/");
-        }        
-        if(!dir.exists()){
-            dir.mkdirs();
-        }
-        File file = new File(dir.getPath()+"/history.txt");        
-        if (!file.exists()){
-            file.createNewFile();
-        }
-        //logger.info("Retrieving history from "+file.getAbsolutePath());
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        History oldHistory = new MemoryHistory();                                
-        DateTime todayDate = new DateTime(today);
-        String line;
-        String[] lineArray;
-        Date lineDate;
-        String lineStatement;
-        try{
-            while ((line = br.readLine()) != null) {
-                try {
-                    lineArray = line.split("\\|");
-                    lineDate = sdf.parse(lineArray[0]);
-                    if(Days.daysBetween(new DateTime(lineDate), todayDate).getDays()<DAYS_HISTORY_ENTRY_VALID){
-                        lineStatement = lineArray[1];
-                        oldHistory.add(lineStatement);
-                    }
-                } catch(Exception ex){
-                    logger.error("Cannot parse date", ex);
-                }
-            }
-        } catch(Exception ex){
-            logger.error("Cannot read all the history", ex);
-        }
-        console.setHistory(oldHistory);
-        logger.info("History retrieved");
-        return file;
+        HelpStatement h = parseHelp(inputText);
+        println(help.searchHelp(h.getType()));
     }
 
-    public void saveHistory(ConsoleReader console, File file, SimpleDateFormat sdf) throws IOException{
-        if (!file.exists()) {
-            file.createNewFile();
-        }        
-        FileWriter fileWritter = new FileWriter(file, true);            
-        try (BufferedWriter bufferWritter = new BufferedWriter(fileWritter)) {
-            History history = console.getHistory();
-            ListIterator<Entry> histIter = history.entries();                                 
-            while(histIter.hasNext()){
-                Entry entry = histIter.next();          
-                bufferWritter.write(sdf.format(new Date()));
-                bufferWritter.write("|");
-                bufferWritter.write(entry.value().toString());
-                bufferWritter.newLine();
+    /**
+     * Execute a query on the remote META servers.
+     * @param cmd The query.
+     */
+    private void executeQuery(String cmd){
+
+        LOG.debug("Command: " + cmd);
+        long queryStart = System.currentTimeMillis();
+        Result metaResult = metaDriver.executeQuery(currentUser, currentKeyspace, cmd);
+        long queryEnd = System.currentTimeMillis();
+
+        if(metaResult.isKsChanged()){
+            currentKeyspace = metaResult.getCurrentKeyspace();
+            if(!currentKeyspace.isEmpty()){
+                setPrompt(currentKeyspace);
             }
-            bufferWritter.flush();
+        }
+
+        if(metaResult.hasError()){
+            println("\033[31mError:\033[0m " + metaResult.getErrorMessage());
+        }else {
+            println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
+            println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
         }
     }
-    
+
+    /**
+     * Establish the connection with the META servers.
+     * @return Whether the connection has been successfully established.
+     */
+    public boolean connect(){
+        boolean result = true;
+        metaDriver = new BasicDriver();
+        Result connectionResult = metaDriver.connect(currentUser);
+        if(connectionResult.hasError()){
+            LOG.error(connectionResult.getErrorMessage());
+            result = false;
+        }
+        LOG.info("Driver connections established");
+        LOG.info(ConsoleUtils.stringResult(connectionResult));
+
+        return result;
+    }
+
+    /**
+     * Close the underlying driver and save the user history.
+     */
+    public void closeConsole(){
+        try{
+            ConsoleUtils.saveHistory(console, historyFile, dateFormat);
+            LOG.debug("History saved");
+
+            metaDriver.close();
+            LOG.info("Driver connections closed");
+
+        } catch (IOException ex) {
+            LOG.error("Cannot save user history", ex);
+        }
+    }
+
     /**
      * Shell loop that receives user commands until a {@code exit} or {@code quit} command
      * is introduced.
      */
-    public void loop(){        
+    public void loop(){
         try {
-            ConsoleReader console = new ConsoleReader();
-            console.setPrompt("\033[36mmetash-server:"+System.getProperty("user.name")+">\033[0m ");
-            
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy");
-            File file = retrieveHistory(console, sdf);            
-            
-            console.setCompletionHandler(new MetaCompletionHandler());
-            console.addCompleter(new MetaCompletor());  
-            
-            //MetaDriver metaDriver = new MetaDriver();
-            BasicDriver metaDriver = new BasicDriver();
-            
-            MetaResult connectionResult = metaDriver.connect(user);
-            if(connectionResult.hasError()){
-                logger.error(connectionResult.getErrorMessage());
-                return;
-            }
-            logger.info("Driver connections established");
-            
-            String currentKeyspace = "";
-            
             String cmd = "";
-            while(!cmd.toLowerCase().startsWith("exit") && !cmd.toLowerCase().startsWith("quit")){
+            StringBuilder sb = new StringBuilder(cmd);
+
+            while(!cmd.trim().toLowerCase().startsWith("exit") && !cmd.trim().toLowerCase().startsWith("quit")){
                 cmd = console.readLine();
-                logger.info("\033[34;1mCommand:\033[0m " + cmd);
-                    try {
-                        if(cmd.toLowerCase().startsWith("help")){
-                            showHelp(cmd);
-                        } else if ((!cmd.toLowerCase().equalsIgnoreCase("exit")) && (!cmd.toLowerCase().equalsIgnoreCase("quit"))){
-                            MetaResult metaResult = metaDriver.executeQuery(user,currentKeyspace, cmd);
-                            if(metaResult.isKsChanged()){
-                                currentKeyspace = metaResult.getCurrentKeyspace();
-                                if(currentKeyspace.isEmpty()){
-                                    console.setPrompt("\033[36mmetash-server:"+System.getProperty("user.name")+">\033[0m ");
-                                } else {
-                                    console.setPrompt("\033[36mmetash-server:"+System.getProperty("user.name")+":"+currentKeyspace+">\033[0m ");
-                                }
-                            }
-                            if(metaResult.hasError()){
-                                logger.error("\033[31mError:\033[0m "+metaResult.getErrorMessage());
-                                continue;
-                            } 
-                            logger.info("\033[32mResult:\033[0m "+metaResult.toString());
-                        }
-                    } catch(Exception exc){
-                        logger.error("\033[31mError:\033[0m "+exc.getMessage());
+                sb.append(cmd).append(" ");
+                if(sb.toString().trim().endsWith(";")){
+                    if(" ".equalsIgnoreCase(sb.toString()) || System.lineSeparator().equalsIgnoreCase(sb.toString())){
+                        println("");
+                    }else if(sb.toString().toLowerCase().startsWith("help")){
+                        showHelp(sb.toString());
+                    }else if(!sb.toString().trim().toLowerCase().startsWith("exit") && !sb.toString().trim().toLowerCase().startsWith("quit")){
+                        executeQuery(sb.toString());
+                    } else {
+                        println("");
+                        break;
                     }
+                    sb = new StringBuilder();
+                }
             }
-            saveHistory(console, file, sdf);  
-            logger.info("History saved");
-            metaDriver.close(); 
-            logger.info("Driver connections closed");
         } catch (IOException ex) {
-            logger.error("Cannot launch Metash, no console present", ex);
+            LOG.error("Cannot read from console.", ex);
         }
     }
- 
+
     /**
      * Launch the META server shell.
      * @param args The list of arguments. Not supported at the moment.
      */
     public static void main(String[] args) {
         Metash sh = new Metash();
-        sh.loop();
-        System.exit(0);
+        if(sh.connect()) {
+            sh.loop();
+        }
+        sh.closeConsole();
     }
 
 }

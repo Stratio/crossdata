@@ -40,5 +40,10 @@ public class BooleanProperty extends ValueProperty {
     public String toString() {
         return Boolean.toString(bool);
     }
-    
+
+    @Override
+    public String getStringValue() {
+        return toString();
+    }
+
 }
