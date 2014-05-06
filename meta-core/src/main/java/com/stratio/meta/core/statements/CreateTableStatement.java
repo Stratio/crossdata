@@ -359,8 +359,7 @@ public class CreateTableStatement extends MetaStatement{
                 sb.append("{");
                 int newI = cqlString.indexOf("}", i);
                 String insideBracket = cqlString.substring(i + 1, newI);
-                insideBracket = insideBracket.replace(":", " ");
-                insideBracket = insideBracket.replace(",", " ");
+                insideBracket = insideBracket.replace(":", " ").replace(",", " ");
 
                 boolean wasChanged = true;
                 while (wasChanged) {
@@ -374,25 +373,37 @@ public class CreateTableStatement extends MetaStatement{
 
                 insideBracket = insideBracket.trim();
                 String[] splits = insideBracket.split(" ");
-                for (int j = 0; j < splits.length; j++) {
-                    String currentStr = splits[j];
-                    if (currentStr.matches("[0123456789.]+")) {
-                        sb.append(splits[j]);
-                    } else {
-                        sb.append("\'").append(splits[j]).append("\'");
-                    }
-                    if (j % 2 == 0) {
-                        sb.append(": ");
-                    } else if (j < (splits.length - 1)) {
-                            sb.append(", ");
-                    }
-                }
+                //Check between brackets
+                sb.append(addQuotesAndClassifyParams(splits));
                 sb.append("}");
                 i = newI;
             } else {
                 sb.append(c);
             }
             i++;
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Read splits, add single quotes (if neccesary) and group params in pair to CQL format.
+     * @param splits array of params.
+     * @return params translated to Cql.
+     */
+    private String addQuotesAndClassifyParams(String[] splits){
+        StringBuilder sb = new StringBuilder();
+        for (int j = 0; j < splits.length; j++) {
+            String currentStr = splits[j];
+            if (currentStr.matches("[0123456789.]+")) {
+                sb.append(splits[j]);
+            } else {
+                sb.append("\'").append(splits[j]).append("\'");
+            }
+            if (j % 2 == 0) {
+                sb.append(": ");
+            } else if (j < (splits.length - 1)) {
+                sb.append(", ");
+            }
         }
         return sb.toString();
     }

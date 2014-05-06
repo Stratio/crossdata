@@ -97,7 +97,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
 
   /**
    * Load a {@code keyspace} in Cassandra using the CQL sentences in the script
-   * path. The script is executed if the keyspace does not exists in Cassandra.
+   * path. The script is executed if the keyspace does not exist in Cassandra.
    * @param keyspace The name of the keyspace.
    * @param path The path of the CQL script.
    */

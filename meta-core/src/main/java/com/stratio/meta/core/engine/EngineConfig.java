@@ -42,7 +42,7 @@ public class EngineConfig {
     /**
      * Jars to exclude. Prefixes.
      */
-    private static final String [] forbiddenJars = {"akka"};
+    private static final String [] FORBIDDEN_JARS = {"akka"};
 
     /**
      * Cassandra hosts.
@@ -70,7 +70,7 @@ public class EngineConfig {
      * @return an array of hosts
      */
     public String[] getCassandraHosts() {
-        return cassandraHosts;
+        return Arrays.copyOf(cassandraHosts, cassandraHosts.length);
     }
 
     /**
@@ -172,18 +172,18 @@ public class EngineConfig {
                 }
             }
         }else if(!sparkMaster.toLowerCase().startsWith("local")){
-            LOG.error("Spark classpath null or incorrect directory");
+            LOG.error("Spark classpath null or incorrect directory.");
         }
     }
 
     /**
-     * Check if a .jar is forbidden or not depending on {@link EngineConfig#forbiddenJars}.
+     * Check if a .jar is forbidden or not depending on {@link EngineConfig#FORBIDDEN_JARS}.
      *
      * @param jar .jar to check
      * @return {@code true} if is not forbidden.
      */
     private boolean filterJars(String jar){
-        for (String forbiddenJar : forbiddenJars) {
+        for (String forbiddenJar : FORBIDDEN_JARS) {
             if (jar.startsWith(forbiddenJar)) {
                 return false;
             }
