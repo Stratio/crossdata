@@ -145,6 +145,42 @@ public class SelectStatementTest extends BasicValidatorTest {
     }
 
     @Test
+    public void validateUnknownTable2WithoutKsFail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN unknown ON users.name=users.name;";
+        validateFail(inputText, "validateUnknownTable2WithoutKsFail");
+    }
+
+    @Test
+    public void validateOnUnknownKsFail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN demo.users ON unknown.name=users.name;";
+        validateFail(inputText, "validateOnUnknownKsFail");
+    }
+
+    @Test
+    public void validateOnUnknownKs2Fail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN demo.users ON users.name=unknown.name;";
+        validateFail(inputText, "validateOnUnknownKs2Fail");
+    }
+
+    @Test
+    public void validateOnUnknownTableFail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN demo.users ON demo.unknown=users.name;";
+        validateFail(inputText, "validateOnUnknownKsFail");
+    }
+
+    @Test
+    public void validateOnUnknownTable2Fail(){
+        String inputText = "SELECT users.name, users.age, users.email FROM demo.users "
+                + "INNER JOIN demo.users ON users.name=demo.unknown;";
+        validateFail(inputText, "validateOnUnknownKs2Fail");
+    }
+
+
+    @Test
     public void validateInnerJoin2tablesOk(){
         String inputText = "SELECT users.name, users.age, users_info.info FROM demo.users "
                 + "INNER JOIN demo.users_info ON users.name=users_info.link_name;";

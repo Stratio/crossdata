@@ -131,8 +131,11 @@ case "$1" in
 
         echo "The @APP_NAME@ has stopped."
     ;;
+    status)
+        status -p ${META_SERVER_PID} meta
+    ;;
     restart)
-        if [ -f "${PID}" ]; then
+        if [ -f "${META_SERVER_PID}" ]; then
 
             echo "Restarting the @APP_NAME@..."
 
