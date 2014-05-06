@@ -172,7 +172,7 @@ public class EngineConfig {
                 }
             }
         }else if(!sparkMaster.toLowerCase().startsWith("local")){
-            LOG.error("Spark classpath null or incorrect directory");
+            LOG.error("Spark classpath null or incorrect directory.");
         }
     }
 
