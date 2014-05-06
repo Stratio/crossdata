@@ -377,7 +377,6 @@ public class SelectStatement extends MetaStatement {
         if(!result.hasError() && joinInc){
             result = validateKeyspaceAndTable(metadata, sessionKeyspace,
                     join.isKeyspaceInc(), join.getKeyspace(), join.getTablename());
-
         }
 
         if(!result.hasError()){
@@ -404,6 +403,11 @@ public class SelectStatement extends MetaStatement {
             }
             result = validateSelectionColumns(tableMetadataFrom, tableMetadataJoin);
         }
+
+        if(!result.hasError() && joinInc){
+            result = validateJoinClause(tableMetadataFrom, tableMetadataJoin);
+        }
+
         if(!result.hasError() && whereInc){
             result = validateWhereClause();
         }
@@ -431,6 +435,19 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
+    private boolean checkSelectorExists(String selector){
+        String tableName = "any";
+        String columnName = "";
+        if(selector.contains(".")){
+            String[] tableNameAndColumn = selector.split("\\.");
+            tableName = tableNameAndColumn[0];
+            columnName = tableNameAndColumn[1];
+        }else{
+            columnName = tableName;
+        }
+        return !findColumn(tableName, columnName).hasError();
+    }
+
     /**
      * Validate the JOIN clause.
      * @param tableFrom The table in the FROM clause.
@@ -439,10 +456,24 @@ public class SelectStatement extends MetaStatement {
      */
     //TODO validateJoinClause
     private Result validateJoinClause(TableMetadata tableFrom, TableMetadata tableJoin){
+        Result result = QueryResult.createSuccessQueryResult();
+        if(joinInc){
+            Map<String, String> onFields = join.getFields();
+            String tableName = "";
+            String columnName = "";
+            Iterator<Map.Entry<String, String>> onClauses = onFields.entrySet().iterator();
+            while(!result.hasError() && onClauses.hasNext()){
+                Map.Entry<String, String> onClause = onClauses.next();
+                if(!checkSelectorExists(onClause.getKey())){
+                    result = QueryResult.createFailQueryResult("Join selector " + onClause.getKey() + " table or column name not found");
+                }
+                if(!checkSelectorExists(onClause.getValue())){
+                    result = QueryResult.createFailQueryResult("Join selector " + onClause.getValue() + " table or column name not found");
+                }
+            }
+        }
 
-
-
-        return QueryResult.createFailQueryResult("Unsupported");
+        return result;
     }
 
     /**
