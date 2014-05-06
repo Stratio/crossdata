@@ -156,7 +156,7 @@ with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
     within(5000 millis){
 
       val msg="insert into demo (field1, field2) values ('test1','text2');"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Table demo does not exists." )
+      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Table demo does not exist." )
     }
   }
   test ("PlannerActor select without table"){
@@ -164,7 +164,7 @@ with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
     within(5000 millis){
 
       val msg="select * from demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Table demo does not exists.")
+      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Table demo does not exist.")
     }
   }
 
@@ -224,7 +224,7 @@ with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
     within(5000 millis){
 
       val msg="drop keyspace ks_demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Keyspace ks_demo does not exists." )
+      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Keyspace ks_demo does not exist." )
     }
   }
 }

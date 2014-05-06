@@ -37,6 +37,9 @@ public class UseStatement extends MetaStatement {
      */
     public UseStatement(String keyspace) {
         super.keyspace = keyspace;
+        if(!keyspace.contains("'")){
+            super.keyspace = keyspace.toLowerCase();
+        }
         this.command = false;
     }
 
@@ -59,8 +62,8 @@ public class UseStatement extends MetaStatement {
     public Result validate(MetadataManager metadata) {
         Result result = QueryResult.createSuccessQueryResult();
         if(keyspace != null && keyspace.length() > 0){
-            if(!metadata.getKeyspacesNames().contains(keyspace)){
-                result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " does not exists.");
+            if(!metadata.getKeyspacesNames().contains(keyspace.toLowerCase())){
+                result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " does not exist.");
             }
         }else{
             result= QueryResult.createFailQueryResult("Missing keyspace name.");
