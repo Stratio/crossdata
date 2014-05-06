@@ -1,0 +1,11 @@
+target/
+src/main/java/com/stratio/meta/grammar/generated/
+src/main/java/com/stratio/meta/client/help/generated/
+.classpath
+.project
+.settings
+nbproject/
+build.xml
+nbactions.xml
+.idea
+*.iml

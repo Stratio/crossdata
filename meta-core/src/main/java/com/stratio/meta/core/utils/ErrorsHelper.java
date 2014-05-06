@@ -1,0 +1,59 @@
+/*
+ * Stratio Meta
+ *
+ * Copyright (c) 2014, Stratio, All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
+ */
+
+package com.stratio.meta.core.utils;
+
+import com.stratio.meta.core.statements.MetaStatement;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ErrorsHelper {
+    
+    private List<AntlrError> antlrErrors = new ArrayList<>();
+
+    public void addError(AntlrError antlrError){
+        antlrErrors.add(antlrError);
+    }
+    
+    public boolean isEmpty(){
+        return antlrErrors.isEmpty();
+    }
+
+    public String toString(String query, MetaStatement stmt){        
+        StringBuilder sb = new StringBuilder("\033[31mParser exception: \033[0m");
+        if(!antlrErrors.isEmpty()){
+            AntlrError ae = antlrErrors.get(0);
+            sb.append(System.lineSeparator());
+            sb.append(ae.toStringWithTokenTranslation()).append(System.lineSeparator());
+            sb.append("\t").append(ParserUtils.getQueryWithSign(query, ae));
+            if(!"".equalsIgnoreCase(query)){
+                sb.append(System.lineSeparator()).append("\t");
+                sb.append(ParserUtils.getSuggestion(query, ae));
+            }
+        }
+        return sb.toString(); 
+    }
+
+    @Override
+    public String toString(){
+        return toString(null, null);
+    }
+
+}
