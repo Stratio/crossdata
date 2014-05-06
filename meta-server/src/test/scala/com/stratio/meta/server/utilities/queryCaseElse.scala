@@ -8,7 +8,6 @@ import akka.pattern.ask
 import scala.concurrent.duration._
 import com.stratio.meta.common.result.Result
 /**
- * Created by aalcocer on 4/9/14.
  * To generate unit test of proxy actor
  */
 

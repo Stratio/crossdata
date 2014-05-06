@@ -13,8 +13,7 @@ import org.testng.Assert._
 import com.stratio.meta.driver.BasicDriver
 
 /**
- * Created by aalcocer on 4/3/14.
- *To generate unit test of proxy actor
+ * To generate unit test of proxy actor
  */
 class BasicsTestSpec extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
 with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll
@@ -59,7 +58,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll
 
       val metaResultTest=retryPolitics.askRetry(retryTestRef,"Test")
 
-      assertEquals(metaResultTest.getErrorMessage,ConnectResult.createFailConnectResult("Not found answer").getErrorMessage)
+      assertEquals(metaResultTest.getErrorMessage,ConnectResult.createFailConnectResult("Not found answer. After 3 retries, timeout was exceed.").getErrorMessage)
     }
   }
 

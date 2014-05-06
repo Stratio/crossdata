@@ -14,7 +14,6 @@ import scala.collection.JavaConversions._
 
 
 /**
- * Created by aalcocer on 4/10/14.
  * To generate unit test of proxy actor
  */
 class queryString {

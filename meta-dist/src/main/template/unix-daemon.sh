@@ -111,7 +111,7 @@ CLASSPATH="${CLASSPATH}:${META_CONF}/:${META_LIB}/*:"
 jsvc_exec()
 {
     ${JSVCCMD} -home ${JAVA_HOME} -cp ${CLASSPATH} -user ${META_SERVER_USER} -outfile ${META_LOG_OUT} -errfile ${META_LOG_ERR} \
-    -pidfile ${META_SERVER_PID} -user ${USER} ${JAVA_OPTS} @EXTRA_JVM_ARGUMENTS@ $1 @MAINCLASS@ @APP_ARGUMENTS@
+    -pidfile ${META_SERVER_PID} ${JAVA_OPTS} @EXTRA_JVM_ARGUMENTS@ $1 @MAINCLASS@ @APP_ARGUMENTS@
 }
 
 case "$1" in

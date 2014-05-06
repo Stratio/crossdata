@@ -18,7 +18,6 @@ import scala.collection.mutable
 
 
 /**
- * Created by aalcocer on 4/8/14.
  * To generate unit test of proxy actor
  */
 class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))

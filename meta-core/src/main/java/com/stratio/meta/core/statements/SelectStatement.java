@@ -592,7 +592,7 @@ public class SelectStatement extends MetaStatement {
             }
             if(!found){
                 result= QueryResult.createFailQueryResult("Column " + column + " does not " +
-                        "exist in table " + table);
+                        "exist in " + table + " table.");
             }
 
         }else{
@@ -1085,6 +1085,8 @@ public class SelectStatement extends MetaStatement {
         } else {
             whereStmt = sel.where();
         }
+        LOG.trace("Executing: " + whereStmt.toString());
+
         return whereStmt;
     }
 
@@ -1324,7 +1326,8 @@ public class SelectStatement extends MetaStatement {
             }
 
             cassandraPath = (onlyMatchOperators)? onlyMatchOperators: cassandraPath;
-
+            /*
+            //TODO Retreive original table create metadata and check for text columns.
             if(cassandraPath && !whereCols.isEmpty()){
                 // When querying a text type column with a Lucene index, content must be lowercased
                 TableMetadata metaData = metadataManager.getTableMetadata(getEffectiveKeyspace(), tableName);
@@ -1335,6 +1338,7 @@ public class SelectStatement extends MetaStatement {
                     ((StringTerm) where.get(0).getTerms().get(0)).setTerm(stringTerm.getStringValue().toLowerCase(), stringTerm.isQuotedLiteral());
                 }
             }
+            */
         }
         return cassandraPath;
     }

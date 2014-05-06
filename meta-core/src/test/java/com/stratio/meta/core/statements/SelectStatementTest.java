@@ -41,9 +41,6 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
         BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
         _metadataManager = new MetadataManager(_session);
         _metadataManager.loadMetadata();
-        //for(String k : _metadataManager.getKeyspacesNames()){
-        //    System.out.println("Keyspace: " + k);
-        //}
     }
 
 

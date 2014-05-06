@@ -101,5 +101,4 @@ public class CustomIndexMetadata {
         return indexedColumns;
     }
 
-
 }

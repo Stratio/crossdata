@@ -24,7 +24,7 @@
     <groupId>com.stratio.meta</groupId>
     <artifactId>stratio-meta-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>0.0.4</version>
     <name>Stratio META parent</name>
     <description>Stratio META</description>
     <url>https://github.com/Stratio/stratio-meta/</url>
@@ -85,7 +85,7 @@
     <properties>
         <akka.version>2.2.4</akka.version>
         <cassandra.driver>2.0.0</cassandra.driver>
-        <meta.version>0.0.4-SNAPSHOT</meta.version>
+        <meta.version>0.0.4</meta.version>
         <deep.version>0.2.1</deep.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
     </properties>

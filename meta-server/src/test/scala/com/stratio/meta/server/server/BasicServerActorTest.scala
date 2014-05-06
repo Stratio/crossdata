@@ -33,7 +33,6 @@ import scala.collection
 
 
 /**
- * Created by aalcocer on 4/4/14.
  * To generate unit test of query actor
  */
 class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))

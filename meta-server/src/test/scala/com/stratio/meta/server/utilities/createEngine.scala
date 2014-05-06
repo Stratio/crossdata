@@ -3,7 +3,6 @@ package com.stratio.meta.server.utilities
 import com.stratio.meta.core.engine.{Engine, EngineConfig}
 
 /**
- * Created by aalcocer on 4/10/14.
  * To generate unit test of proxy actor
  */
 object createEngine {
