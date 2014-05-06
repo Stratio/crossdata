@@ -22,12 +22,9 @@ package com.stratio.meta.core.planner.statements;
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.SetOptionsStatement;
 import com.stratio.meta.core.structures.Consistency;
-import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
-
-import static org.testng.Assert.assertTrue;
 
 public class SetOptionsStatementTest  extends BasicPlannerTest {
 

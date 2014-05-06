@@ -31,12 +31,12 @@ import static jline.internal.Preconditions.checkNotNull;
 public class MetaCompletor implements Completer {
 
     /**
-     * Set containing the words used in the Meta Completor
+     * Set containing the words used in the Meta Completor.
      */
     private final SortedSet<String> strings = new TreeSet<>();
 
     /**
-     * Constructor of the Meta Completor for the Meta Console
+     * Constructor of the Meta Completor for the Meta Console.
      */
     public MetaCompletor() {
     }

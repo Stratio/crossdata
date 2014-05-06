@@ -327,7 +327,7 @@ public class SelectStatement extends MetaStatement {
     }
 
     /**
-     * Creates a String representing the Statement with META syntax
+     * Creates a String representing the Statement with META syntax.
      * @return String
      */
     @Override
@@ -773,7 +773,7 @@ public class SelectStatement extends MetaStatement {
     }
 
     /**
-     * Creates a String representing the Statement with CQL syntax
+     * Creates a String representing the Statement with CQL syntax.
      * @return
      */
     @Override
@@ -1330,12 +1330,9 @@ public class SelectStatement extends MetaStatement {
                 TableMetadata metaData = metadataManager.getTableMetadata(getEffectiveKeyspace(), tableName);
                 metadataManager.loadMetadata();
                 String lucenCol = whereCols.keySet().iterator().next();
-                if(metaData.getColumn(lucenCol).getType() == DataType.text()){
-                    if(where.get(0).getTerms().get(0) instanceof StringTerm){
-                        StringTerm stringTerm = (StringTerm) where.get(0).getTerms().get(0);
-                        ((StringTerm) where.get(0).getTerms().get(0)).setTerm(stringTerm.getStringValue().toLowerCase(), stringTerm.isQuotedLiteral());
-                    }
-
+                if(metaData.getColumn(lucenCol).getType() == DataType.text() && where.get(0).getTerms().get(0) instanceof StringTerm){
+                    StringTerm stringTerm = (StringTerm) where.get(0).getTerms().get(0);
+                    ((StringTerm) where.get(0).getTerms().get(0)).setTerm(stringTerm.getStringValue().toLowerCase(), stringTerm.isQuotedLiteral());
                 }
             }
         }

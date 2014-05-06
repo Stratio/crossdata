@@ -62,7 +62,7 @@ public class CommandExecutor {
     }
 
     /**
-     * Execute a {@link com.stratio.meta.core.statements.DescribeStatement}
+     * Execute a {@link com.stratio.meta.core.statements.DescribeStatement}.
      *
      * @param dscrStatement Statement to execute.
      * @param session Cassandra datastax java driver {@link com.datastax.driver.core.Session}.

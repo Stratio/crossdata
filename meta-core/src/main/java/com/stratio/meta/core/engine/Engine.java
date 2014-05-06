@@ -130,7 +130,7 @@ public class Engine {
     }
 
     /**
-     * Get the executor
+     * Get the executor.
      *
      * @return a {@link com.stratio.meta.core.executor.Executor}
      */
@@ -139,7 +139,7 @@ public class Engine {
     }
 
     /**
-     * Close open connections
+     * Close open connections.
      */
     public void shutdown(){
         deepContext.stop();

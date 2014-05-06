@@ -40,7 +40,7 @@ public class CassandraExecutor {
     private static final Logger LOG = Logger.getLogger(CassandraExecutor.class);
 
     /**
-     * The {@link com.stratio.meta.core.utils.CoreUtils}
+     * The {@link com.stratio.meta.core.utils.CoreUtils}.
      */
     private static CoreUtils utils = new CoreUtils();
 
