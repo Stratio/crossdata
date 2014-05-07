@@ -207,7 +207,7 @@ public class Bridge {
             if(isCount){
                 return DeepUtils.buildCountResult(rdd);
             }
-            return DeepUtils.buildResultSet(rdd.dropTake(0, DEFAULT_RESULT_SIZE), selectedCols);
+            return DeepUtils.buildResultSet(rdd.take(DEFAULT_RESULT_SIZE), selectedCols);
         } else {
             CassandraResultSet crs = new CassandraResultSet();
             crs.add(new Row("RDD", new Cell(rdd)));
