@@ -116,8 +116,10 @@ public class MetaQuery {
     /**
      * Set the {@code hasError} to true.
      */
-    public void setError(){
+    public void setError(String errorStr){
+        result=QueryResult.createFailQueryResult("Unknown parser error: "+errorStr);
         hasError = true;
+
     }
 
     /**

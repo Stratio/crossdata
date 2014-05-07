@@ -32,7 +32,7 @@ public abstract class Result implements Serializable {
     private static final long serialVersionUID = 8596330240278204430L;
 
     /**
-     * Whether an error ocurred during the execution of an action.
+     * Whether an error occurred during the execution of an action.
      */
     private final boolean error;
 

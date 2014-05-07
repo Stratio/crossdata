@@ -55,13 +55,17 @@ public class Parser {
             foundErrors = parser.getFoundErrors();
         } catch (Exception e) {
             LOG.error("Cannot parse statement", e);
+            metaQuery.setError(e.getMessage());
             if(foundErrors == null){                                    
                 foundErrors = new ErrorsHelper();
             }
             if(foundErrors.isEmpty()){
                 foundErrors.addError(new AntlrError("Unknown parser error", e.getMessage()));
+            } else if(foundErrors.getAntlrErrors().iterator().next().getMessage().contains("missing")){
+                metaQuery.setErrorMessage(e.getMessage());
+            } else {
+                metaQuery.setErrorMessage(foundErrors.toString(inputText, null));
             }
-            metaQuery.setErrorMessage(foundErrors.toString());
             return metaQuery;
         }
         metaQuery.setStatement(resultStatement);

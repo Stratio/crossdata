@@ -61,7 +61,7 @@ with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
       val stmt = engine.getParser.parseStatement(query)
       stmt.setSessionKeyspace("ks_demo1")
       val stmt1=engine.getValidator.validateQuery(stmt)
-      stmt1.setError()
+      stmt1.setError("Error creating KEYSPACE ks_demo1 - resent 2")
       plannerRefTest ! stmt1
       expectNoMsg()
     }
@@ -73,7 +73,7 @@ with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
       val stmt = engine.getParser.parseStatement(query)
       stmt.setSessionKeyspace("ks_demo1")
       val stmt1=engine.getValidator.validateQuery(stmt)
-      stmt1.setError()
+      stmt1.setError("Error creating KEYSPACE ks_demo1- resent 3")
       stmt1.setErrorMessage("it is a test of error")
       var complete:Boolean=true
       val futureExecutorResponse=plannerRefTest.ask(stmt1)(2 second)
