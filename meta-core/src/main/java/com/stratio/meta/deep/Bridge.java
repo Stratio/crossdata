@@ -205,7 +205,7 @@ public class Bridge {
             if(isCount){
                 return DeepUtils.buildCountResult(rdd);
             }
-            return DeepUtils.buildResultSet(rdd.dropTake(0, DEFAULT_RESULT_SIZE), selectedCols);
+            return DeepUtils.buildResultSet(rdd.take(DEFAULT_RESULT_SIZE), selectedCols);
         } else {
             List<Row> partialResult = new ArrayList<>();
             Row partialRow = new Row("RDD", new Cell(JavaRDD.class, rdd));
