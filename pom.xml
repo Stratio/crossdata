@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.stratio.meta</groupId>
-    <artifactId>stratio-meta-parent</artifactId>
+    <artifactId>meta-parent</artifactId>
     <packaging>pom</packaging>
     <version>0.0.4</version>
     <name>Stratio META parent</name>
