@@ -89,7 +89,7 @@
         <deep.version>0.2.2</deep.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
     </properties>
-    <repositories>
+    <!--repositories>
         <repository>
             <id>scala-tools.org</id>
             <name>Scala-tools Maven2 Repository</name>
@@ -100,7 +100,7 @@
             <name>Typesafe Repository</name>
             <url>http://repo.typesafe.com/typesafe/releases/</url>
         </repository>
-    </repositories>
+    </repositories-->
 
     <build>
         <plugins>
