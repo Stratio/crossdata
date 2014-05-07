@@ -24,27 +24,15 @@ import java.io.Serializable;
 public class Cell implements Serializable {
 
     private static final long serialVersionUID = 7100387802412023310L;
-    private final Class<?> datatype;
     private final Object value;
 
     /**
      * Build a Cell.
      *
-     * @param datatype Class of the value
      * @param value Value object
      */
-    public Cell(Class<?> datatype, Object value) {
-        this.datatype = datatype;
+    public Cell(Object value) {
         this.value = value;
-    }
-
-    /**
-     * Get the datatype of the cell.
-     *
-     * @return Datatype of the cell.
-     */
-    public Class<?> getDatatype() {
-        return datatype;
     }
 
     /**

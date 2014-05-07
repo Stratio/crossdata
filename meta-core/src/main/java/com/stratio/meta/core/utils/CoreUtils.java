@@ -23,7 +23,9 @@ import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.ColumnDefinition;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
@@ -80,7 +82,7 @@ public class CoreUtils {
     protected Cell getCell(DataType type, Row r, String columnName) throws InvocationTargetException, IllegalAccessException {
         Method m = transformations.get(type.toString());
         Object value = m.invoke(r, columnName);
-        return new Cell(type.asJavaClass(), value);
+        return new Cell(value);
     }
 
     /**
@@ -89,10 +91,13 @@ public class CoreUtils {
      * @return An equivalent Meta ResultSet
      */
     public com.stratio.meta.common.data.ResultSet transformToMetaResultSet(ResultSet resultSet) {
-        com.stratio.meta.common.data.CassandraResultSet crs = new com.stratio.meta.common.data.CassandraResultSet();
+        CassandraResultSet crs = new CassandraResultSet();
         List<ColumnDefinitions.Definition> definitions = resultSet.getColumnDefinitions().asList();
 
+        boolean firstRow = true;
+
         try {
+            Map colDefs = new HashMap<String, ColumnDefinition>();
             for(Row row: resultSet.all()){
                 com.stratio.meta.common.data.Row metaRow = new com.stratio.meta.common.data.Row();
                 for (ColumnDefinitions.Definition def: definitions){
@@ -101,12 +106,20 @@ public class CoreUtils {
                     }
                     Cell metaCell = getCell(def.getType(), row, def.getName());
                     metaRow.addCell(def.getName(), metaCell);
+
+                    if(firstRow){
+                        colDefs.put(def.getName(), new ColumnDefinition(def.getType().asJavaClass()));
+                    }
+                }
+                if(firstRow){
+                    crs.setColumnDefinitions(colDefs);
+                    firstRow = false;
                 }
                 crs.add(metaRow);
             }
         } catch (InvocationTargetException | IllegalAccessException e) {
             LOG.error("Cannot transform result set", e);
-            crs = new com.stratio.meta.common.data.CassandraResultSet();
+            crs = new CassandraResultSet();
         }
         return crs;
     }

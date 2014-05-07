@@ -20,15 +20,13 @@
 package com.stratio.meta.deep.utils;
 
 import com.stratio.deep.entity.Cells;
-import com.stratio.meta.common.data.CassandraResultSet;
-import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.data.ResultSet;
-import com.stratio.meta.common.data.Row;
+import com.stratio.meta.common.data.*;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaRDD;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +53,8 @@ public final class DeepUtils {
      */
     public static ResultSet buildResultSet(List<Cells> cells, List<String> selectedCols) {
         CassandraResultSet rs = new CassandraResultSet();
+        boolean firstRow = true;
+        Map colDefs = new HashMap<String, ColumnDefinition>();
         for (Cells deepRow : cells) {
             Row metaRow = new Row();
             for (com.stratio.deep.entity.Cell deepCell : deepRow.getCells()) {
@@ -62,12 +62,19 @@ public final class DeepUtils {
                     continue;
                 }
                 if (selectedCols.isEmpty()) {
-                    Cell metaCell = new Cell(deepCell.getValueType(), deepCell.getCellValue());
+                    Cell metaCell = new Cell(deepCell.getCellValue());
                     metaRow.addCell(deepCell.getCellName(), metaCell);
                 } else if (selectedCols.contains(deepCell.getCellName())) {
-                    Cell metaCell = new Cell(deepCell.getValueType(), deepCell.getCellValue());
+                    Cell metaCell = new Cell(deepCell.getCellValue());
                     metaRow.addCell(deepCell.getCellName(), metaCell);
                 }
+                if(firstRow){
+                    colDefs.put(deepCell.getCellName(), new ColumnDefinition(deepCell.getValueType()));
+                }
+            }
+            if(firstRow){
+                rs.setColumnDefinitions(colDefs);
+                firstRow = false;
             }
             rs.add(metaRow);
         }
@@ -98,7 +105,13 @@ public final class DeepUtils {
 
         Row metaRow = new Row();
 
-        Cell metaCell = new Cell(Integer.class, numberOfRows);
+        Cell metaCell = new Cell(numberOfRows);
+
+        Map colDefs = new HashMap<String, ColumnDefinition>();
+        colDefs.put("COUNT", new ColumnDefinition(Integer.class));
+
+        rs.setColumnDefinitions(colDefs);
+
         metaRow.addCell("COUNT", metaCell);
         rs.add(metaRow);
 

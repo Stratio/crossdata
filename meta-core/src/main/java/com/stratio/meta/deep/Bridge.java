@@ -23,10 +23,7 @@ import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.IDeepJobConfig;
 import com.stratio.deep.context.DeepSparkContext;
-import com.stratio.meta.common.data.CassandraResultSet;
-import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.data.ResultSet;
-import com.stratio.meta.common.data.Row;
+import com.stratio.meta.common.data.*;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
@@ -178,9 +175,14 @@ public class Bridge {
         LOG.info("Executing deep for: " + stmt.toString());
 
         if(!(stmt instanceof SelectStatement)){
-            List<Row> oneRow = new ArrayList<>();
-            oneRow.add(new Row("RESULT", new Cell(String.class, "NOT supported yet")));
-            return new CassandraResultSet(oneRow);
+            CassandraResultSet crs = new CassandraResultSet();
+            crs.add(new Row("RESULT", new Cell("NOT supported yet")));
+
+            Map colDefs = new HashMap<String, ColumnDefinition>();
+            colDefs.put("RESULT", new ColumnDefinition(String.class));
+            crs.setColumnDefinitions(colDefs);
+
+            return crs;
         }
 
         if(resultsFromChildren.isEmpty()){
@@ -207,12 +209,15 @@ public class Bridge {
             }
             return DeepUtils.buildResultSet(rdd.dropTake(0, DEFAULT_RESULT_SIZE), selectedCols);
         } else {
-            List<Row> partialResult = new ArrayList<>();
-            Row partialRow = new Row("RDD", new Cell(JavaRDD.class, rdd));
-            partialResult.add(partialRow);
+            CassandraResultSet crs = new CassandraResultSet();
+            crs.add(new Row("RDD", new Cell(rdd)));
+
+            Map colDefs = new HashMap<String, ColumnDefinition>();
+            colDefs.put("RDD", new ColumnDefinition(JavaRDD.class));
+            crs.setColumnDefinitions(colDefs);
 
             LOG.info("LEAF: rdd.count=" + ((int) rdd.count()));
-            return new CassandraResultSet(partialResult);
+            return crs;
         }
     }
 

@@ -129,7 +129,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
     within(5000 millis){
 
-      val msg= "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
+      val msg= "create KEYSPACE IF NOT EXISTS ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       assertEquals(querying.proccess(msg,serverRef,engine,4),"sucess" )
 
     }

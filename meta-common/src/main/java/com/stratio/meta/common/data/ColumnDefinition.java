@@ -19,31 +19,37 @@
 
 package com.stratio.meta.common.data;
 
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import java.io.Serializable;
 
-public class CellTest {
+public class ColumnDefinition implements Serializable {
 
-    @BeforeClass
-    public void setUp(){
+    private static final long serialVersionUID = 4958734787690152927L;
+
+    private Class<?> datatype;
+
+    public ColumnDefinition() {
+        this.datatype = null;
     }
 
-    @Test
-    public void testConstructor(){
-        Cell cellStr = new Cell(new String("comment1"));
-        Assert.assertNotNull(cellStr);
+    /**
+     * Constructor
+     *
+     * @param datatype Class of the value
+     */
+    public ColumnDefinition(Class<?> datatype) {
+        this.datatype = datatype;
     }
 
-    @Test
-    public void testDataype(){
-        Cell cellStr = new Cell(new String("comment1"));
-        Assert.assertEquals(cellStr.getValue().getClass(), String.class);
+    /**
+     * Get the datatype of the cell.
+     *
+     * @return Datatype of the cell.
+     */
+    public Class<?> getDatatype() {
+        return datatype;
     }
 
-    @Test
-    public void testGetValue(){
-        Cell cellStr = new Cell(new String("comment1"));
-        Assert.assertTrue(((String) cellStr.getValue()).equals("comment1"));
+    public void setDatatype(Class<?> datatype) {
+        this.datatype = datatype;
     }
 }
