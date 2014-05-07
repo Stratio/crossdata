@@ -83,17 +83,6 @@
 		<antlr.version>3.5.1</antlr.version>
 	</properties>
 
-    <repositories>
-        <repository>
-            <id>stratio-releases</id>
-            <url>http://nexus.strat.io:8081/nexus/content/repositories/releases</url>
-        </repository>
-        <repository>
-            <id>stratio-snapshots</id>
-            <url>http://nexus.strat.io:8081/nexus/content/repositories/snapshots</url>
-        </repository>
-    </repositories>
-
 	<dependencies>
         <dependency>
             <groupId>org.testng</groupId>
@@ -181,7 +170,7 @@
         </dependency>
         <dependency>
             <groupId>com.stratio.deep</groupId>
-            <artifactId>StratioDeep</artifactId>
+            <artifactId>deep-core</artifactId>
             <version>${deep.version}</version>
         </dependency>
         <dependency>
