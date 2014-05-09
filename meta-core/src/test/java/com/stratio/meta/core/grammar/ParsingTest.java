@@ -78,12 +78,6 @@ public class ParsingTest {
         assertTrue(metaQuery.hasError(), "No errors reported in "+methodName);
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
-    public void fatalErrorInParser(){
-        String inputText = "REMOVE UDF \";\";";
-        parser.parseStatement(inputText);
-    }
-
     @Test
     public void unknownFirstWordOfStatement(){
         String inputText = "WINDOWS GO HOME;";

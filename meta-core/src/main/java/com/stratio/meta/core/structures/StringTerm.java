@@ -25,6 +25,7 @@ public class StringTerm extends Term{
     private boolean quotedLiteral = false;
 
     public StringTerm(String term, boolean quotedLiteral) {
+        super.clazz = String.class;
         this.term = term;
         this.quotedLiteral = quotedLiteral;
     }
@@ -34,17 +35,8 @@ public class StringTerm extends Term{
         this.type = TYPE_TERM;
     }
 
-    public void setTerm(String term, boolean quotedLiteral) {
-        this.term = term;
-        this.quotedLiteral = quotedLiteral;
-    }
-
     public boolean isQuotedLiteral() {
         return quotedLiteral;
-    }
-
-    public void setQuotedLiteral(boolean quotedLiteral) {
-        this.quotedLiteral = quotedLiteral;
     }
 
     @Override
@@ -60,12 +52,6 @@ public class StringTerm extends Term{
         } else {
             return term;
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Class<String> getTermClass() {
-        return String.class;
     }
 
     /** {@inheritDoc} */

@@ -21,11 +21,20 @@ package com.stratio.meta.core.structures;
 
 public abstract class Term extends ValueCell {
 
+    protected Class<?> clazz;
+    protected Object value;
+
     /**
      * Get the Term Java Class.
      * @return A {@link java.lang.Class}.
      */
-    public abstract Class<?> getTermClass();
+    public Class<?> getTermClass(){
+        return clazz;
+    }
+
+    public void setTermClass(Class<?> clazz){
+        this.clazz = clazz;
+    }
 
     /**
      * Get the term value.

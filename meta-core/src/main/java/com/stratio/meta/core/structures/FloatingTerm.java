@@ -19,28 +19,33 @@
 
 package com.stratio.meta.core.structures;
 
+public class FloatingTerm  extends Term{
 
-public class BooleanTerm extends Term{
+    private final Double number;
 
-    /**
-     * The boolean value stored by this term.
-     */
-    private final Boolean value;
-
-    /**
-     * Class constructor.
-     * @param term The string representation of a Boolean value.
-     */
-    public BooleanTerm(String term){
-        super.clazz = Boolean.class;
-        value = Boolean.valueOf(term);
+    public FloatingTerm(String term) {
+        super.clazz = Double.class;
+        this.number = Double.parseDouble(term);
     }
 
+    /**
+     * Get the term value.
+     *
+     * @return A {@link Object} with the value.
+     */
     @Override
     public Object getTermValue() {
-        return value;
+        if(super.clazz == Float.class){
+            return number.floatValue();
+        }
+        return number;
     }
 
+    /**
+     * Get the String value representation.
+     *
+     * @return The String value.
+     */
     @Override
     public String getStringValue() {
         return toString();
@@ -48,6 +53,6 @@ public class BooleanTerm extends Term{
 
     @Override
     public String toString() {
-        return Boolean.toString(value);
+        return String.valueOf(number);
     }
 }

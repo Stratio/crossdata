@@ -20,7 +20,6 @@
 package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Clause;
@@ -526,12 +525,32 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
+    private void updateTermClasses(){
+        for(Relation rel: where){
+            rel.updateTermClass(tableMetadataFrom);
+        }
+    }
+
     /**
      * Validate that the where clause is valid by checking that columns exists on the target
      * table and that the comparisons are semantically valid.
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
     private Result validateWhereClause(){
+        //TODO: Update Term classes from metadata
+        /*System.out.println("Before:");
+        for(Relation rel: where){
+            for(Term term:rel.getTerms()){
+                System.out.println("- "+term.getTermClass());
+            }
+        }*/
+        updateTermClasses();
+        /*System.out.println("After:");
+        for(Relation rel: where){
+            for(Term term:rel.getTerms()){
+                System.out.println("- "+term.getTermClass());
+            }
+        }*/
         //TODO: Check that the MATCH operator is only used in Lucene mapped columns.
         Result result = QueryResult.createSuccessQueryResult();
         Iterator<Relation> relations = where.iterator();

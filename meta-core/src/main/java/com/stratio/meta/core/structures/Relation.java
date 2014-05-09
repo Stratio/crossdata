@@ -19,6 +19,8 @@
 
 package com.stratio.meta.core.structures;
 
+import com.datastax.driver.core.TableMetadata;
+
 import java.util.List;
 
 /**
@@ -96,9 +98,16 @@ public abstract class Relation {
 
     public void setType(int type) {
         this.type = type;
-    }        
-    
+    }
+
+    public void updateTermClass(TableMetadata tableMetadata){
+        for(int i=0; i<identifiers.size(); i++){
+            String ident = identifiers.get(i);
+            terms.get(i).setTermClass(tableMetadata.getColumn(ident).getType().asJavaClass());
+        }
+    }
+
     @Override
     public abstract String toString();
-    
+
 }

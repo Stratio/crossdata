@@ -21,21 +21,19 @@ package com.stratio.meta.core.structures;
 
 public class IntegerTerm extends Term{
 
-    private final Integer number;
+    private final Long number;
 
     public IntegerTerm(String term){
-        number = Integer.valueOf(term);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Class<Integer> getTermClass() {
-        return Integer.class;
+        super.clazz = Long.class;
+        number = Long.parseLong(term);
     }
 
     /** {@inheritDoc} */
     @Override
     public Object getTermValue() {
+        if(super.clazz == Integer.class){
+            return number.intValue();
+        }
         return number;
     }
 
@@ -47,6 +45,6 @@ public class IntegerTerm extends Term{
     /** {@inheritDoc} */
     @Override
     public String toString() {
-        return ""+ number;
+        return String.valueOf(number);
     }
 }

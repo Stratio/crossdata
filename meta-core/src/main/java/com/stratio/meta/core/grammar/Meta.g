@@ -220,19 +220,19 @@ T_IDENT: LETTER (LETTER | DIGIT | '_')*;
 
 T_KS_AND_TN: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)?; 
 
-T_TERM: (LETTER | DIGIT | '_' | '.')+;
+T_TERM: (LETTER | DIGIT | '_' | POINT)+;
 
-T_FLOAT:   ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
-     |   '.' ('0'..'9')+ EXPONENT?
+T_FLOAT:   ('0'..'9')+ POINT ('0'..'9')* EXPONENT?
+     |   POINT ('0'..'9')+ EXPONENT?
      |   ('0'..'9')+ EXPONENT
      ;
 
-T_PATH: (LETTER | DIGIT | '_' | '.' | '-' | '/')+;
+T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 
 //STATEMENTS
 
 describeStatement returns [DescribeStatement descs]:
-    T_DESCRIBE ( T_KEYSPACE keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.KEYSPACE); $descs.setKeyspace($keyspace.text);}
+    T_DESCRIBE (T_KEYSPACE keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.KEYSPACE); $descs.setKeyspace($keyspace.text);}
         | T_TABLE tablename=getTableID { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
     )
 ;
@@ -938,6 +938,7 @@ getPartialTerm returns [Term term]:
     | '1' {$term = new IntegerTerm("1");}
     | T_FALSE {$term = new BooleanTerm("false");}
     | T_TRUE {$term = new BooleanTerm("true");}
+    | floatingNumber=T_FLOAT {$term = new FloatingTerm($floatingNumber.text);}
     | ksAndTn=T_KS_AND_TN {$term = new StringTerm($ksAndTn.text);}
     | noIdent=T_TERM {$term = new StringTerm($noIdent.text);}
     | path=T_PATH {$term = new StringTerm($path.text);}
@@ -971,10 +972,8 @@ getValueProperty returns [ValueProperty value]
 
 getFloat returns [String floating]:
     termToken=T_TERM {$floating=$termToken.text;}
-    |
-    floatToken = T_FLOAT {$floating=$floatToken.text;} 
+    | floatToken = T_FLOAT {$floating=$floatToken.text;}
     ;
-
 
 WS: (' ' | '\t' | '\n' | '\r')+ { 
         $channel = HIDDEN; 

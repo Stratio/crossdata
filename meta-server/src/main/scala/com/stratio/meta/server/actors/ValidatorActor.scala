@@ -42,7 +42,6 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
       log.debug("Finish Validator Task")
     }
     case query:MetaQuery if query.hasError=>{
-      println("TRACE: query.hasError="+query.hasError)
       sender ! query.getResult
     }
   }
