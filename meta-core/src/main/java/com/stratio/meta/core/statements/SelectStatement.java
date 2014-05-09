@@ -645,7 +645,6 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
-
     /**
      * Validate that the columns specified in the select are valid by checking
      * that the selection columns exists in the table.
