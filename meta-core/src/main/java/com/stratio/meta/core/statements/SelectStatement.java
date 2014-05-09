@@ -480,14 +480,17 @@ public class SelectStatement extends MetaStatement {
      * @param targetTable The target table.
      * @param column The name of the column.
      * @param t The term.
-     * @param operator The operator.
+     * @param rc Relation of Comparator type.
      * @return Whether the relation is valid.
      */
-    private Result validateWhereRelation(String targetTable, String column, Term t, String operator){
+    private Result validateWhereRelation(String targetTable, String column, Term t, RelationCompare rc){
         Result result = QueryResult.createSuccessQueryResult();
+
+        String operator = rc.getOperator();
 
         ColumnMetadata cm = findColumnMetadata(targetTable, column);
         if(cm != null) {
+            rc.updateTermClass(tableMetadataFrom);
             if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
                 result = QueryResult.createFailQueryResult("Column " + column
                         + " of type " + cm.getType().asJavaClass()
@@ -518,17 +521,11 @@ public class SelectStatement extends MetaStatement {
                             " column " + column + ".");
                 }
             }
-        }else{
+        } else {
             result= QueryResult.createFailQueryResult("Column " + column + " not found in " + targetTable + " table.");
         }
 
         return result;
-    }
-
-    private void updateTermClasses(){
-        for(Relation rel: where){
-            rel.updateTermClass(tableMetadataFrom);
-        }
     }
 
     /**
@@ -537,20 +534,6 @@ public class SelectStatement extends MetaStatement {
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
     private Result validateWhereClause(){
-        //TODO: Update Term classes from metadata
-        /*System.out.println("Before:");
-        for(Relation rel: where){
-            for(Term term:rel.getTerms()){
-                System.out.println("- "+term.getTermClass());
-            }
-        }*/
-        updateTermClasses();
-        /*System.out.println("After:");
-        for(Relation rel: where){
-            for(Term term:rel.getTerms()){
-                System.out.println("- "+term.getTermClass());
-            }
-        }*/
         //TODO: Check that the MATCH operator is only used in Lucene mapped columns.
         Result result = QueryResult.createSuccessQueryResult();
         Iterator<Relation> relations = where.iterator();
@@ -570,7 +553,7 @@ public class SelectStatement extends MetaStatement {
 
                 //Get the term and determine its type.
                 Term t = Term.class.cast(rc.getTerms().get(0));
-                result = validateWhereRelation(targetTable, column, t, rc.getOperator());
+                result = validateWhereRelation(targetTable, column, t, rc);
                 if("match".equalsIgnoreCase(rc.getOperator()) && joinInc){
                     result= QueryResult.createFailQueryResult("Select statements with 'Inner Join' don't support MATCH operator.");
                 }

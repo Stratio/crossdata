@@ -103,14 +103,6 @@ public abstract class Relation {
     public void updateTermClass(TableMetadata tableMetadata){
         for(int i=0; i<identifiers.size(); i++){
             String ident = identifiers.get(i);
-            try {
-                System.out.println("tableMetadata.getColumn(ident).getType()="+tableMetadata.getColumn(ident).getType());
-            } catch (NullPointerException npe){
-                System.err.println("ident="+ident);
-                System.err.println("terms.get(i)="+terms.get(i).toString().toString());
-                System.err.println("tableMetadata.getColumn(ident)="+tableMetadata.getColumn(ident));
-            }
-            System.out.println("-----------------------------------------------------------");
             terms.get(i).setTermClass(tableMetadata.getColumn(ident).getType().asJavaClass());
         }
     }
