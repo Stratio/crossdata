@@ -19,6 +19,10 @@
 
 package com.stratio.meta.core.structures;
 
+import com.datastax.driver.core.TableMetadata;
+
+import java.util.List;
+
 public abstract class ValueCell {
 
     public static final int TYPE_TERM = 1;
@@ -34,6 +38,22 @@ public abstract class ValueCell {
         this.type = type;
     }
 
+    public Class<?> getTermClass() {
+        if(this.getClass() == Term.class){
+            Term term = (Term) this;
+            return term.getTermClass();
+        } else {
+            return this.getClass();
+        }
+    }
+
+    public void setTermClass(Class<?> clazz) {
+        if(this.getClass() == Term.class){
+            Term term = (Term) this;
+            term.setTermClass(clazz);
+        }
+    }
+
     /**
      * Get the String value representation.
      * @return The String value.
@@ -42,5 +62,5 @@ public abstract class ValueCell {
 
     @Override
     public abstract String toString();
-    
+
 }

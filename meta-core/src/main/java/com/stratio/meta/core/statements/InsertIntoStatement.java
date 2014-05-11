@@ -245,6 +245,16 @@ public class InsertIntoStatement extends MetaStatement {
         return result;
     }
 
+    public void updateTermClass(TableMetadata tableMetadata){
+        for(int i=0; i<ids.size(); i++){
+            String ident = ids.get(i);
+            if((tableMetadata.getColumn(ident).getType().asJavaClass() == Integer.class && cellValues.get(i).getTermClass() == Long.class)
+                    || (tableMetadata.getColumn(ident).getType().asJavaClass() == Float.class && cellValues.get(i).getTermClass() == Double.class)) {
+                cellValues.get(i).setTermClass(tableMetadata.getColumn(ident).getType().asJavaClass());
+            }
+        }
+    }
+
     /**
      * Check that the specified columns exist on the target table and that
      * the semantics of the assigned values match.
@@ -264,6 +274,7 @@ public class InsertIntoStatement extends MetaStatement {
         if(!result.hasError()) {
             ColumnMetadata cm = null;
             if (cellValues.size() == ids.size()) {
+                updateTermClass(tableMetadata);
                 for (int index = 0; index < cellValues.size(); index++) {
                     cm = tableMetadata.getColumn(ids.get(index));
                     if (cm != null) {

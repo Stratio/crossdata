@@ -179,6 +179,7 @@ public class DeleteStatement extends MetaStatement {
         Term t = Term.class.cast(rc.getTerms().get(0));
         ColumnMetadata cm = tableMetadata.getColumn(column);
         if (cm != null){
+            relation.updateTermClass(tableMetadata);
             if (!tableMetadata.getColumn(column)
                     .getType().asJavaClass().equals(t.getTermClass())) {
                 result = QueryResult.createFailQueryResult("Column " + column

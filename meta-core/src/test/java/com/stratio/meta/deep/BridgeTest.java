@@ -25,6 +25,7 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.executor.Executor;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import com.stratio.meta.core.utils.*;
@@ -46,6 +47,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     protected static DeepSparkContext deepContext = null;
 
+    protected static MetadataManager metadataManager = null;
+
     private final static Logger LOG = Logger.getLogger(BridgeTest.class);
 
     @BeforeClass
@@ -55,6 +58,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
         EngineConfig config = initConfig();
         deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
         executor = new Executor(_session, deepContext, config);
+        metadataManager = new MetadataManager(_session);
+        metadataManager.loadMetadata();
     }
 
     @AfterClass
@@ -176,6 +181,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
         firstSelect.setLimit(10000);
         firstSelect.setWhere(clause);
+        firstSelect.validate(metadataManager);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
@@ -199,6 +205,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
         firstSelect.setLimit(10000);
         firstSelect.setWhere(clause);
+        firstSelect.validate(metadataManager);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
@@ -222,6 +229,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
         firstSelect.setLimit(10000);
         firstSelect.setWhere(clause);
+        firstSelect.validate(metadataManager);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
@@ -244,6 +252,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
         firstSelect.setLimit(10000);
         firstSelect.setWhere(clause);
+        firstSelect.validate(metadataManager);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
@@ -266,6 +275,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
         firstSelect.setLimit(10000);
         firstSelect.setWhere(clause);
+        firstSelect.validate(metadataManager);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
@@ -288,6 +298,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
         firstSelect.setLimit(10000);
         firstSelect.setWhere(clause);
+        firstSelect.validate(metadataManager);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
@@ -361,9 +372,11 @@ public class BridgeTest extends BasicCoreCassandraTest {
         Tree tree = new Tree(new MetaStep(MetaPath.DEEP, joinSelect));
 
         // ADD CHILD
+        firstSelect.validate(metadataManager);
         tree.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
 
         // ADD CHILD
+        secondSelect.validate(metadataManager);
         tree.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
 
         metaQuery.setPlan(tree);
@@ -427,9 +440,11 @@ public class BridgeTest extends BasicCoreCassandraTest {
         Tree tree = new Tree(new MetaStep(MetaPath.DEEP, joinSelect));
 
         // ADD CHILD
+        firstSelect.validate(metadataManager);
         tree.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
 
         // ADD CHILD
+        secondSelect.validate(metadataManager);
         tree.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
 
         metaQuery.setPlan(tree);
@@ -501,9 +516,11 @@ public class BridgeTest extends BasicCoreCassandraTest {
         Tree tree = new Tree(new MetaStep(MetaPath.DEEP, joinSelect));
 
         // ADD CHILD
+        firstSelect.validate(metadataManager);
         tree.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
 
         // ADD CHILD
+        secondSelect.validate(metadataManager);
         tree.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
 
         metaQuery.setPlan(tree);

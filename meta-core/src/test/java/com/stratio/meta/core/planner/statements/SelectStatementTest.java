@@ -44,6 +44,12 @@ public class SelectStatementTest extends BasicPlannerTest {
         validateCassandraPath("testWhereIndexNonRelational");
     }
 
+    //TODO: https://github.com/Stratio/stratio-meta/issues/10
+    @Test
+    public void testWhereWithTwoCols(){
+        String inputText = "SELECT name, age FROM demo.users WHERE name = 'name_5' AND age = 15;";
+    }
+
     @Test
     public void testWhereIndexRelational() {
         String inputText = "SELECT name, age FROM users WHERE age > 13";

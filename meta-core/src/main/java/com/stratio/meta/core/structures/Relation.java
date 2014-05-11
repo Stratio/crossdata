@@ -103,7 +103,10 @@ public abstract class Relation {
     public void updateTermClass(TableMetadata tableMetadata){
         for(int i=0; i<identifiers.size(); i++){
             String ident = identifiers.get(i);
-            terms.get(i).setTermClass(tableMetadata.getColumn(ident).getType().asJavaClass());
+            if((tableMetadata.getColumn(ident).getType().asJavaClass() == Integer.class && terms.get(i).getTermClass() == Long.class)
+                    || (tableMetadata.getColumn(ident).getType().asJavaClass() == Float.class && terms.get(i).getTermClass() == Double.class)) {
+                terms.get(i).setTermClass(tableMetadata.getColumn(ident).getType().asJavaClass());
+            }
         }
     }
 
