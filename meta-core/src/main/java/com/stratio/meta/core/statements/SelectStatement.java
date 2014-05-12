@@ -274,6 +274,18 @@ public class SelectStatement extends MetaStatement {
     }
 
     /**
+     * Return ORDER BY clause.
+     * @return list of {@link com.stratio.meta.core.structures.Ordering}.
+     */
+    public List<Ordering> getOrder(){ return order;}
+
+    /**
+     * Check if ORDER BY clause is included.
+     * @return {@code true} if is included.
+     */
+    public boolean isOrderInc(){ return orderInc;}
+
+    /**
      * Set the {@link com.stratio.meta.core.structures.GroupBy} clause.
      * @param group The group by.
      */

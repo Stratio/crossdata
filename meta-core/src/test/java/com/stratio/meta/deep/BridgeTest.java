@@ -20,6 +20,7 @@
 package com.stratio.meta.deep;
 
 import com.stratio.deep.context.DeepSparkContext;
+import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
@@ -77,6 +78,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     public Result validateOk(MetaQuery metaQuery, String methodName) {
         MetaQuery result = executor.executeQuery(metaQuery);
+        CassandraResultSet cassandraResultSet = ((CassandraResultSet)((QueryResult)result.getResult()).getResultSet());
         assertNotNull(result.getResult(), "Result null - " + methodName);
         assertFalse(result.hasError(), "Deep execution failed - " + methodName + ": " + result.getResult().getErrorMessage());
         return result.getResult();
@@ -527,5 +529,73 @@ public class BridgeTest extends BasicCoreCassandraTest {
         metaQuery.setStatus(QueryStatus.PLANNED);
 
         validateFail(metaQuery, "testInnerJoinWrongSelectedColumn");
+    }
+
+    @Test
+    public void testInnerJoinWithOrderBy(){
+        MetaQuery metaQuery = new MetaQuery("SELECT users.gender, users_info.info, users.age " +
+                "FROM demo.users INNER JOIN demo.users_info ON users.name=users_info.link_name ORDER BY users.age DESC;");
+
+        // ADD MAIN STATEMENT
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users_info.info")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
+        SelectionClause mainSelectionClause = new SelectionList(selectionSelectors);
+        Map<String, String> fields = new HashMap<String, String>();
+        fields.put("users.name", "users_info.link_name");
+        InnerJoin join = new InnerJoin("demo.users_info", fields);
+        SelectStatement ss = new SelectStatement(mainSelectionClause, "demo.users");
+        ss.setJoin(join);
+        ss.setLimit(10000);
+
+        metaQuery.setStatement(ss);
+        System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
+        System.out.println("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
+
+        // FIRST SELECT
+        selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        firstSelect.setLimit(10000);
+
+        // SECOND SELECT
+        selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("link_name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("info")));
+        selectionClause = new SelectionList(selectionSelectors);
+        SelectStatement secondSelect = new SelectStatement(selectionClause, "demo.users_info");;
+        secondSelect.setLimit(10000);
+
+        // INNER JOIN
+        fields = new HashMap<String, String>();
+        fields.put("users.name", "users_info.link_name");
+        join = new InnerJoin("", fields);
+        SelectStatement joinSelect = new SelectStatement(mainSelectionClause, "");
+        joinSelect.setJoin(join);
+        joinSelect.setLimit(10000);
+
+        // ORDERING
+        List<Ordering> orderings = new ArrayList<>();
+        Ordering order1 = new Ordering("age", true, OrderDirection.DESC);
+        orderings.add(order1);
+        joinSelect.setOrder(orderings);
+
+        // CREATE ROOT
+        Tree tree = new Tree(new MetaStep(MetaPath.DEEP, joinSelect));
+
+        // ADD CHILD
+        tree.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
+
+        // ADD CHILD
+        tree.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
+
+        metaQuery.setPlan(tree);
+        metaQuery.setStatus(QueryStatus.PLANNED);
+        validateOk(metaQuery, "testInnerJoin");
     }
 }

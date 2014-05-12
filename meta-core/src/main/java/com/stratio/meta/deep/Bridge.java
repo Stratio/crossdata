@@ -23,19 +23,23 @@ import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.IDeepJobConfig;
 import com.stratio.deep.context.DeepSparkContext;
+import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.data.*;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.Ordering;
 import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.SelectionClause;
+import com.stratio.meta.deep.comparators.DeepComparator;
 import com.stratio.meta.deep.functions.*;
 import com.stratio.meta.deep.utils.DeepUtils;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.rdd.OrderedRDDFunctions;
 
 import java.util.*;
 
@@ -144,20 +148,25 @@ public class Bridge {
         //JOIN
         Map<String, String> fields = ss.getJoin().getColNames();
         Set<String> keys = fields.keySet();
-        String field1 = keys.iterator().next();
-        String field2 = fields.get(field1);
+        String keyTableLeft = keys.iterator().next();
+        String keyTableRight = fields.get(keyTableLeft);
 
-        LOG.debug("INNER JOIN on: " + field1 + " - " + field2);
+        LOG.debug("INNER JOIN on: " + keyTableLeft + " - " + keyTableRight);
 
-        JavaRDD rdd1 = children.get(0);
-        JavaRDD rdd2 = children.get(1);
+        JavaRDD rddTableLeft = children.get(0);
+        JavaRDD rddTableRight = children.get(1);
 
-        JavaPairRDD rddLeft = rdd1.map(new MapKeyForJoin(field1));
-        JavaPairRDD rddRight = rdd2.map(new MapKeyForJoin(field2));
+        JavaPairRDD rddLeft = rddTableLeft.map(new MapKeyForJoin(keyTableLeft));
+        JavaPairRDD rddRight = rddTableRight.map(new MapKeyForJoin(keyTableRight));
 
         JavaPairRDD joinRDD = rddLeft.join(rddRight);
 
-        JavaRDD result = joinRDD.map(new JoinCells(field1));
+        JavaRDD result = joinRDD.map(new JoinCells(keyTableLeft));
+
+        if(ss.isOrderInc()){
+            result = doOrder(result, ss.getOrder());
+        }
+
 
         // Return MetaResultSet
         return returnResult(result, true, false, selectedCols);
@@ -262,5 +271,18 @@ public class Bridge {
                 result = null;
         }
         return result;
+    }
+
+
+    /**
+     * Take {@link com.stratio.meta.deep.Bridge#DEFAULT_RESULT_SIZE} from RDD ordered.
+     *
+     * @param rdd RDD to take and order.
+     * @param orderings Order By clause.
+     * @return RDD result.
+     */
+    public JavaRDD doOrder(JavaRDD rdd, List<Ordering> orderings){
+        List<Cells> list = rdd.takeOrdered(DEFAULT_RESULT_SIZE, new DeepComparator(orderings));
+        return deepContext.parallelize(list);
     }
 }

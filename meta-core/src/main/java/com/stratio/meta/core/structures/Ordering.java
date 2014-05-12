@@ -19,8 +19,12 @@
 
 package com.stratio.meta.core.structures;
 
-public class Ordering {
-    
+import java.io.Serializable;
+
+public class Ordering implements Serializable{
+
+    private static final long serialVersionUID = -5118851402738503002L;
+
     private String identifier;
     private boolean dirInc;
     private OrderDirection orderDir;
