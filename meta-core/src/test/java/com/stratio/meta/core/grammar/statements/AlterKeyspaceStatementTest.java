@@ -32,9 +32,21 @@ public class AlterKeyspaceStatementTest extends ParsingTest{
     }
 
     @Test
+    public void alterKeyspaceWithReplication() {
+        String inputText = "ALTER KEYSPACE mykeyspace WITH replication = {'class':'org.apache.cassandra.locator.NetworkTopologyStrategy'};";
+        testRegularStatement(inputText, "alterKeyspaceWithReplication");
+    }
+
+    @Test
     public void alterWrongKeyspaceToken(){
         String inputText = "ALTER KEYSPACES mykeyspace WITH ident1 = value1;";
         testParseFails(inputText, "alterWrongKeyspaceToken");
+    }
+
+    @Test
+    public void alterWrongPropertyFormat(){
+        String inputText = "ALTER KEYSPACE mykeyspace WITH 'ident1': 'value1';";
+        testParseFails(inputText, "alterWrongPropertyFormat");
     }
 
 }

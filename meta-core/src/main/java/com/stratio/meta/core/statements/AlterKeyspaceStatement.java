@@ -19,8 +19,13 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 
@@ -48,6 +53,9 @@ public class AlterKeyspaceStatement extends MetaStatement {
         this.keyspace = keyspace;
         this.properties = new HashMap<>();
         this.properties.putAll(properties);
+        for(Map.Entry<String, ValueProperty> entry : properties.entrySet()){
+            this.properties.put(entry.getKey().toLowerCase(), entry.getValue());
+        }
     }   
 
     @Override
@@ -64,8 +72,31 @@ public class AlterKeyspaceStatement extends MetaStatement {
     }
 
     @Override
+    public Result validate(MetadataManager metadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+
+        if(keyspace!= null && keyspace.length() > 0) {
+            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspace);
+            if(ksMetadata == null){
+                result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " not found.");
+            }
+        }else{
+            result= QueryResult.createFailQueryResult("Empty keyspace name found.");
+        }
+
+        if(properties.isEmpty() &&
+                (properties.containsKey("replication") || properties.containsKey("durable_writes"))){
+            result= QueryResult.createFailQueryResult("At least one property must be included: 'replication' or 'durable_writes'.");
+        }
+
+        return result;
+    }
+
+    @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        return new Tree();
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+        return tree;
     }
     
 }
