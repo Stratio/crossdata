@@ -745,7 +745,6 @@ public class SelectStatement extends MetaStatement {
         return result;
     }
 
-
     /**
      * Process a query pattern to determine the type of Lucene query.
      * The supported types of queries are:
@@ -1297,7 +1296,8 @@ public class SelectStatement extends MetaStatement {
         return whereCols;
     }
 
-    private void matchWhereColsWithPartitionKeys(TableMetadata tableMetadata, Map whereCols){
+    private boolean matchWhereColsWithPartitionKeys(TableMetadata tableMetadata, Map whereCols){
+        boolean partialMatched = false;
         for(ColumnMetadata colMD: tableMetadata.getPartitionKey()){
             String operator = "";
             for(Relation relation: where){
@@ -1306,9 +1306,14 @@ public class SelectStatement extends MetaStatement {
                 }
             }
             if(whereCols.keySet().contains(colMD.getName()) && "=".equals(operator)){
+                partialMatched = true;
                 whereCols.remove(colMD.getName());
             }
         }
+        if(whereCols.size() == 0){
+            partialMatched = false;
+        }
+        return partialMatched;
     }
 
     private void matchWhereColsWithClusteringKeys(TableMetadata tableMetadata, Map whereCols){
@@ -1370,7 +1375,7 @@ public class SelectStatement extends MetaStatement {
         TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
 
         // Check if all partition columns have an equals operator
-        matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
+        boolean partialMatched = matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
 
         //By default go through deep.
         boolean cassandraPath = false;
@@ -1378,7 +1383,7 @@ public class SelectStatement extends MetaStatement {
         if(whereCols.isEmpty()){
             //All where clauses are included in the primary key with equals comparator.
             cassandraPath = true;
-        } else {
+        } else if(!partialMatched) {
 
             // Check if all clustering columns have an equals operator
             matchWhereColsWithClusteringKeys(tableMetadata, whereCols);
