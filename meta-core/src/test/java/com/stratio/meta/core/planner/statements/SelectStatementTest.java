@@ -44,10 +44,19 @@ public class SelectStatementTest extends BasicPlannerTest {
         validateCassandraPath("testWhereIndexNonRelational");
     }
 
-    //TODO: https://github.com/Stratio/stratio-meta/issues/10
     @Test
-    public void testWhereWithTwoCols(){
+    public void testWhereWithPartialPartitionKey(){
         String inputText = "SELECT name, age FROM demo.users WHERE name = 'name_5' AND age = 15;";
+        List<SelectionSelector> selectionSelectors = Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(new SelectorIdentifier("age")));
+
+        SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
+        stmt = new SelectStatement(selClause, "demo.users");
+        Relation relation1 = new RelationCompare("name", "=", new StringTerm("name_5"));
+        Relation relation2 = new RelationCompare("age", "=", new IntegerTerm("15"));
+        List<Relation> whereClause = Arrays.asList(relation1, relation2);
+        ((SelectStatement)stmt).setWhere(whereClause);
+        Tree tree = stmt.getPlan(_metadataManager, "demo");
+        validateDeepPath("testWhereWithPartialPartitionKey");
     }
 
     @Test
