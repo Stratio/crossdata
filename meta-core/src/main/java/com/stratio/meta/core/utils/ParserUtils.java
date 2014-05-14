@@ -300,7 +300,11 @@ public class ParserUtils {
             if(elto.matches("[0123456789.]+")){
                 sb.append(elto).append(", ");
             } else {
-                sb.append("'").append(elto).append("'").append(", ");
+                if(elto.contains("'")){
+                    sb.append(elto).append(", ");
+                } else {
+                    sb.append("'").append(elto).append("'").append(", ");
+                }
             }
         }
         if(sb.charAt(sb.length()-2)==','){

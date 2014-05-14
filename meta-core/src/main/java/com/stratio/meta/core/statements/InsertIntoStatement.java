@@ -329,7 +329,7 @@ public class InsertIntoStatement extends MetaStatement {
             return null;
         }
 
-        Insert insertStmt = this.keyspaceInc ? QueryBuilder.insertInto(this.keyspace, this.tableName) :
+        Insert insertStmt = this.keyspaceInc? QueryBuilder.insertInto(this.keyspace, this.tableName):
                                                     QueryBuilder.insertInto(this.tableName);
 
         try{
@@ -344,7 +344,7 @@ public class InsertIntoStatement extends MetaStatement {
         
         Insert.Options optionsStmt = checkOptions(insertStmt);
 
-        return optionsStmt==null ? insertStmt : optionsStmt;
+        return optionsStmt==null? insertStmt: optionsStmt;
     }
     
     @Override
