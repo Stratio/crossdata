@@ -19,7 +19,12 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.Property;
+import com.stratio.meta.core.structures.PropertyNameValue;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
@@ -138,6 +143,96 @@ public class AlterTableStatement extends MetaStatement{
     @Override
     public String translateToCQL() {
         return this.toString();
+    }
+
+    /**
+     * Validate the semantics of the current statement. This method checks the
+     * existing metadata to determine that all referenced entities exists in the
+     * {@code targetKeyspace} and the types are compatible with the assignations
+     * or comparisons.
+     *
+     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+     *                 the required information.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     */
+    @Override
+    public Result validate(MetadataManager metadata) {
+        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+        if(!result.hasError()) {
+            String effectiveKeyspace = getEffectiveKeyspace();
+
+            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+
+            switch(prop){
+                case 1:
+                    result = validateAlter(tableMetadata);
+                    break;
+                case 2:
+                    result = validateAdd(tableMetadata);
+                    break;
+                case 3:
+                    result = validateDrop(tableMetadata);
+                    break;
+                case 4:
+                    result = validateProperties(tableMetadata);
+                    break;
+                default:
+            }
+        }
+        return result;
+    }
+
+    private Result validateAlter(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        //Validate target column name
+
+        //Validate type
+
+        return result;
+    }
+
+    private Result validateAdd(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        //Validate target column name
+
+        //Validate type
+
+        return result;
+    }
+
+    private Result validateDrop(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        //Validate target column name
+        return result;
+    }
+
+    private Result validateProperties(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        Iterator<Property> props = option.iterator();
+        boolean exit = false;
+        while(!exit && props.hasNext()){
+            Property property = props.next();
+            if(property.getType() == Property.TYPE_NAME_VALUE){
+                PropertyNameValue propertyNameValue = (PropertyNameValue) property;
+                if("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
+                        && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+                    // If property ephemeral is present, it must be a boolean type
+                    result = QueryResult.createFailQueryResult("Property 'ephemeral' must be a boolean");
+                    exit = true;
+                } else if("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
+                        && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+                    // If property ephemeral_tuples is present, it must be a integer type
+                    result= QueryResult.createFailQueryResult("Property 'ephemeral' must be a boolean");
+                    exit = true;
+                } else if("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
+                        && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+                    // If property ephemeral_persist_on is present, it must be a string type
+                    result= QueryResult.createFailQueryResult("Property 'ephemeral_persist_on' must be a string");
+                    exit = true;
+                }
+            }
+        }
+        return result;
     }
 
     @Override
