@@ -407,8 +407,7 @@ createTableStatement returns [CreateTableStatement crtast]
                    )
                 )* 
          )             
-    T_END_PARENTHESIS (T_WITH {withProperties=true;} properties=getMetaProperties
-    )?            
+    T_END_PARENTHESIS (T_WITH {withProperties=true;} properties=getMetaProperties)?
     {
         $crtast = new CreateTableStatement(tablename, columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
         $crtast.setProperties(properties);
@@ -420,21 +419,17 @@ createTableStatement returns [CreateTableStatement crtast]
         
 alterTableStatement returns [AlterTableStatement altast]
 @init{
-        LinkedHashMap<String, ValueProperty> option = new LinkedHashMap<>();
-        int prop= 0;
+        int option= 0;
     }:
     T_ALTER
     T_TABLE
     tablename=getTableID
-    (T_ALTER column=(T_IDENT | T_LUCENE) T_TYPE type=T_IDENT {prop=1;}
-        |T_ADD column=(T_IDENT | T_LUCENE) type=T_IDENT {prop=2;}
-        |T_DROP column=(T_IDENT | T_LUCENE) {prop=3;}
-        |T_WITH 
-            identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {option.put($identProp1.text, valueProp1);}
-            (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {option.put($identPropN.text, valuePropN);} )*
-            {prop=4;}
+    (T_ALTER column=(T_IDENT | T_LUCENE) T_TYPE type=T_IDENT {option=1;}
+        |T_ADD column=(T_IDENT | T_LUCENE) type=T_IDENT {option=2;}
+        |T_DROP column=(T_IDENT | T_LUCENE) {option=3;}
+        |(T_WITH {option=4;} props=getMetaProperties)?
     )
-    {$altast = new AlterTableStatement(tablename, $column.text, $type.text, option, prop);  }
+    {$altast = new AlterTableStatement(tablename, $column.text, $type.text, props, option);  }
 ;
 
 selectStatement returns [SelectStatement slctst]
