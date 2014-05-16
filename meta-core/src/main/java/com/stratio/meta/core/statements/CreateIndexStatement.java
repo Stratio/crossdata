@@ -125,7 +125,7 @@ public class CreateIndexStatement extends MetaStatement {
      * @param type The type from {@link com.stratio.meta.core.structures.IndexType}.
      */
     public void setIndexType(String type){
-        this.type = IndexType.valueOf(type);
+        this.type = IndexType.valueOf(type.toUpperCase());
     }
 
     /**

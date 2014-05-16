@@ -103,4 +103,17 @@ public class CreateIndexStatementTest extends ParsingTest{
         testRecoverableError(inputText, "createIndexDefaultBasicWithSpaceBeforeSemicolon");
     }
 
+    @Test
+    public void createDefaultIndexLowercase() {
+        String inputText = "create default index index1 on table1 (field1, field2);";
+        testRegularStatement(inputText, "createDefaultIndexLowercase");
+    }
+
+    @Test
+    public void createLuceneIndexLowercase() {
+        String inputText = "create lucene index index1 on table1 (field1, field2);";
+        String expectedTest = inputText.replace("index1", "stratio_lucene_index1");
+        testRegularStatement(inputText, expectedTest, "createLuceneIndexLowercase");
+    }
+
 }
