@@ -72,12 +72,6 @@ public class AlterKeyspaceStatementTest extends BasicExecutorTest {
         metaQuerySelect.setPlan(treeSelect);
         metaQuerySelect.setStatus(QueryStatus.PLANNED);
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         MetaQuery resultSelect = executor.executeQuery(metaQuerySelect);
 
         QueryResult queryResult = (QueryResult) resultSelect.getResult();
