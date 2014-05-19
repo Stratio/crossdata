@@ -19,6 +19,21 @@
 
 package com.stratio.meta.deep;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.result.QueryResult;
@@ -28,19 +43,27 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.SelectStatement;
-import com.stratio.meta.core.structures.*;
-import com.stratio.meta.core.utils.*;
-import org.apache.log4j.Logger;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.testng.Assert.*;
+import com.stratio.meta.core.structures.InnerJoin;
+import com.stratio.meta.core.structures.IntegerTerm;
+import com.stratio.meta.core.structures.OrderDirection;
+import com.stratio.meta.core.structures.Ordering;
+import com.stratio.meta.core.structures.Relation;
+import com.stratio.meta.core.structures.RelationBetween;
+import com.stratio.meta.core.structures.RelationCompare;
+import com.stratio.meta.core.structures.RelationIn;
+import com.stratio.meta.core.structures.SelectionAsterisk;
+import com.stratio.meta.core.structures.SelectionClause;
+import com.stratio.meta.core.structures.SelectionList;
+import com.stratio.meta.core.structures.SelectionSelector;
+import com.stratio.meta.core.structures.SelectionSelectors;
+import com.stratio.meta.core.structures.SelectorIdentifier;
+import com.stratio.meta.core.structures.StringTerm;
+import com.stratio.meta.core.structures.Term;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaQuery;
+import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.QueryStatus;
+import com.stratio.meta.core.utils.Tree;
 
 public class BridgeTest extends BasicCoreCassandraTest {
 
@@ -57,18 +80,20 @@ public class BridgeTest extends BasicCoreCassandraTest {
         BasicCoreCassandraTest.setUpBeforeClass();
         BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
         EngineConfig config = initConfig();
-        deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+        deepContext = new DeepSparkContext(config.getSparkMaster(),
+                config.getJobName());
         executor = new Executor(_session, deepContext, config);
         metadataManager = new MetadataManager(_session);
         metadataManager.loadMetadata();
     }
 
     @AfterClass
-    public static void tearDownAfterClass(){
+    public static void tearDownAfterClass() {
         deepContext.stop();
     }
+
     public static EngineConfig initConfig() {
-        String[] cassandraHosts = {"127.0.0.1"};
+        String[] cassandraHosts = { "127.0.0.1" };
         EngineConfig engineConfig = new EngineConfig();
         engineConfig.setCassandraHosts(cassandraHosts);
         engineConfig.setCassandraPort(9042);
@@ -78,20 +103,27 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     public Result validateOk(MetaQuery metaQuery, String methodName) {
         MetaQuery result = executor.executeQuery(metaQuery);
-        CassandraResultSet cassandraResultSet = ((CassandraResultSet)((QueryResult)result.getResult()).getResultSet());
+        CassandraResultSet cassandraResultSet = ((CassandraResultSet) ((QueryResult) result
+                .getResult()).getResultSet());
         assertNotNull(result.getResult(), "Result null - " + methodName);
-        assertFalse(result.hasError(), "Deep execution failed - " + methodName + ": " + result.getResult().getErrorMessage());
+        assertFalse(result.hasError(), "Deep execution failed - " + methodName
+                + ": " + result.getResult().getErrorMessage());
         return result.getResult();
     }
 
-    public Result validateRows(MetaQuery metaQuery, String methodName, int expectedNumber) {
+    public Result validateRows(MetaQuery metaQuery, String methodName,
+            int expectedNumber) {
         QueryResult result = (QueryResult) validateOk(metaQuery, methodName);
         if (expectedNumber > 0) {
-            assertFalse(result.getResultSet().isEmpty(), "Expecting non-empty resultset");
-            assertEquals(result.getResultSet().size(), expectedNumber, methodName + ":" + result.getResultSet().size() + " rows found, " + expectedNumber + " rows expected.");
+            assertFalse(result.getResultSet().isEmpty(),
+                    "Expecting non-empty resultset");
+            assertEquals(result.getResultSet().size(), expectedNumber,
+                    methodName + ":" + result.getResultSet().size()
+                            + " rows found, " + expectedNumber
+                            + " rows expected.");
         } else {
-            assertTrue(result.getResultSet().isEmpty(), "Expecting empty resultset.");
-            assertNull(result.getResultSet(), methodName + ": Result should be null");
+            assertTrue(result.getResultSet().isEmpty(),
+                    "Expecting empty resultset.");
         }
 
         return result;
@@ -99,7 +131,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     public void validateFail(MetaQuery metaQuery, String methodName) {
         try {
-            MetaQuery result = executor.executeQuery(metaQuery);
+            executor.executeQuery(metaQuery);
         } catch (Exception ex) {
             LOG.info("Correctly catched exception");
         }
@@ -108,52 +140,68 @@ public class BridgeTest extends BasicCoreCassandraTest {
     // TESTS FOR CORRECT PLANS
     @Test
     public void testInnerJoin() {
-        MetaQuery metaQuery = new MetaQuery("SELECT users.gender, users_info.info, users.age " +
-                "FROM demo.users INNER JOIN demo.users_info ON users.name=users_info.link_name;");
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.gender, users_info.info, users.age "
+                        + "FROM demo.users INNER JOIN demo.users_info ON users.name=users_info.link_name;");
 
         // ADD MAIN STATEMENT
         SelectionSelectors selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users_info.info")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
-        SelectionClause mainSelectionClause = new SelectionList(selectionSelectors);
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users.gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users_info.info")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users.age")));
+        SelectionClause mainSelectionClause = new SelectionList(
+                selectionSelectors);
         Map<String, String> fields = new HashMap<String, String>();
         fields.put("users.name", "users_info.link_name");
         InnerJoin join = new InnerJoin("demo.users_info", fields);
-        SelectStatement ss = new SelectStatement(mainSelectionClause, "demo.users");
+        SelectStatement ss = new SelectStatement(mainSelectionClause,
+                "demo.users");
         ss.setJoin(join);
         ss.setLimit(10000);
 
         metaQuery.setStatement(ss);
         System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
-        System.out.println("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
+        System.out.println("DEEP TEST (Stmnt): "
+                + metaQuery.getStatement().toString());
 
         // FIRST SELECT
         selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("gender")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("age")));
         SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
-       SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
-       firstSelect.setLimit(10000);
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        ;
+        firstSelect.setLimit(10000);
 
         // SECOND SELECT
         selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("link_name")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("info")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("link_name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("info")));
         selectionClause = new SelectionList(selectionSelectors);
-        SelectStatement secondSelect = new SelectStatement(selectionClause, "demo.users_info");;
+        SelectStatement secondSelect = new SelectStatement(selectionClause,
+                "demo.users_info");
+        ;
         secondSelect.setLimit(10000);
 
         // INNER JOIN
         fields = new HashMap<String, String>();
         fields.put("users.name", "users_info.link_name");
         join = new InnerJoin("", fields);
-        SelectStatement joinSelect = new SelectStatement(mainSelectionClause, "");
+        SelectStatement joinSelect = new SelectStatement(mainSelectionClause,
+                "");
         joinSelect.setJoin(join);
         joinSelect.setLimit(10000);
-
 
         // CREATE ROOT
         Tree tree = new Tree(new MetaStep(MetaPath.DEEP, joinSelect));
@@ -171,16 +219,21 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     @Test
     public void testEqualsFind() {
-        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.email=name_1@domain.com;");
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.name FROM demo.users WHERE users.email=name_1@domain.com;");
 
         SelectionSelectors selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
         SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
         List<Relation> clause = new ArrayList<>();
-        Relation relation = new RelationCompare("email", "=", new StringTerm("name_1@domain.com"));
+        Relation relation = new RelationCompare("email", "=", new StringTerm(
+                "name_1@domain.com"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        ;
         firstSelect.setLimit(10000);
         firstSelect.setWhere(clause);
         firstSelect.validate(metadataManager);
@@ -189,22 +242,27 @@ public class BridgeTest extends BasicCoreCassandraTest {
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
         metaQuery.setPlan(tree);
         metaQuery.setStatus(QueryStatus.PLANNED);
-        QueryResult result = (QueryResult) validateOk(metaQuery, "testEqualsFind");
+        QueryResult result = (QueryResult) validateOk(metaQuery,
+                "testEqualsFind");
         assertEquals(result.getResultSet().size(), 1);
     }
 
     @Test
     public void testNotEqual() {
-        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.email<>name_1@domain.com;");
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.name FROM demo.users WHERE users.email<>name_1@domain.com;");
 
         SelectionSelectors selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
         SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
         List<Relation> clause = new ArrayList<>();
-        Relation relation = new RelationCompare("email", "<>", new StringTerm("name_1@domain.com"));
+        Relation relation = new RelationCompare("email", "<>", new StringTerm(
+                "name_1@domain.com"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
         firstSelect.setLimit(10000);
         firstSelect.setWhere(clause);
         firstSelect.validate(metadataManager);
@@ -213,22 +271,28 @@ public class BridgeTest extends BasicCoreCassandraTest {
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
         metaQuery.setPlan(tree);
         metaQuery.setStatus(QueryStatus.PLANNED);
-        QueryResult result = (QueryResult) validateOk(metaQuery, "testEqualsFind");
+        QueryResult result = (QueryResult) validateOk(metaQuery,
+                "testEqualsFind");
         assertEquals(result.getResultSet().size(), 15);
     }
 
     @Test
     public void testGreaterThan() {
-        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.age>100;");
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.name FROM demo.users WHERE users.age>100;");
 
         SelectionSelectors selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
         SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
         List<Relation> clause = new ArrayList<>();
-        Relation relation = new RelationCompare("age", ">", new IntegerTerm("100"));
+        Relation relation = new RelationCompare("age", ">", new IntegerTerm(
+                "100"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        ;
         firstSelect.setLimit(10000);
         firstSelect.setWhere(clause);
         firstSelect.validate(metadataManager);
@@ -242,16 +306,21 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     @Test
     public void testGreaterEqualThan() {
-        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.age>=100;");
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.name FROM demo.users WHERE users.age>=100;");
 
         SelectionSelectors selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
         SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
         List<Relation> clause = new ArrayList<>();
-        Relation relation = new RelationCompare("age", ">=", new IntegerTerm("100"));
+        Relation relation = new RelationCompare("age", ">=", new IntegerTerm(
+                "100"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        ;
         firstSelect.setLimit(10000);
         firstSelect.setWhere(clause);
         firstSelect.validate(metadataManager);
@@ -265,16 +334,21 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     @Test
     public void testLessThan() {
-        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.age<100;");
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.name FROM demo.users WHERE users.age<100;");
 
         SelectionSelectors selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
         SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
         List<Relation> clause = new ArrayList<>();
-        Relation relation = new RelationCompare("age", "<", new IntegerTerm("100"));
+        Relation relation = new RelationCompare("age", "<", new IntegerTerm(
+                "100"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        ;
         firstSelect.setLimit(10000);
         firstSelect.setWhere(clause);
         firstSelect.validate(metadataManager);
@@ -288,16 +362,21 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     @Test
     public void testLessEqualThan() {
-        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.age<=100;");
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.name FROM demo.users WHERE users.age<=100;");
 
         SelectionSelectors selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
         SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
         List<Relation> clause = new ArrayList<>();
-        Relation relation = new RelationCompare("age", "<=", new IntegerTerm("100"));
+        Relation relation = new RelationCompare("age", "<=", new IntegerTerm(
+                "100"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        ;
         firstSelect.setLimit(10000);
         firstSelect.setWhere(clause);
         firstSelect.validate(metadataManager);
@@ -310,55 +389,75 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     @Test
     public void testInnerJoinAndWhere() {
-        MetaQuery metaQuery = new MetaQuery("SELECT users.gender, types.boolean_column, users.age " +
-                "FROM demo.users INNER JOIN demo.types ON users.name = types.varchar_column WHERE types.int_column > 104;");
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.gender, types.boolean_column, users.age "
+                        + "FROM demo.users INNER JOIN demo.types ON users.name = types.varchar_column WHERE types.int_column > 104;");
 
         // ADD MAIN STATEMENT
         SelectionSelectors selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.boolean_column")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
-        SelectionClause mainSelectionClause = new SelectionList(selectionSelectors);
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users.gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("types.boolean_column")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users.age")));
+        SelectionClause mainSelectionClause = new SelectionList(
+                selectionSelectors);
 
         Map<String, String> fields = new HashMap<String, String>();
         fields.put("users.name", "types.varchar_column");
         InnerJoin join = new InnerJoin("demo.types", fields);
 
         List<Relation> clause = new ArrayList<>();
-        Relation relation = new RelationCompare("types.int_column", ">", new IntegerTerm("104"));
+        Relation relation = new RelationCompare("types.int_column", ">",
+                new IntegerTerm("104"));
         clause.add(relation);
 
-        SelectStatement ss = new SelectStatement(mainSelectionClause, "demo.users");;
+        SelectStatement ss = new SelectStatement(mainSelectionClause,
+                "demo.users");
+        ;
         ss.setLimit(10000);
         ss.setWhere(clause);
         ss.setJoin(join);
 
         metaQuery.setStatement(ss);
         System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
-        System.out.println("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
+        System.out.println("DEEP TEST (Stmnt): "
+                + metaQuery.getStatement().toString());
 
         // FIRST SELECT
         selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.name")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users.name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users.gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users.age")));
         SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
-        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        ;
         firstSelect.setLimit(10000);
 
         // SECOND SELECT
         selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.varchar_column")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.boolean_column")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.int_column")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("types.varchar_column")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("types.boolean_column")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("types.int_column")));
         selectionClause = new SelectionList(selectionSelectors);
 
         clause = new ArrayList<>();
-        relation = new RelationCompare("int_column", ">", new IntegerTerm("104"));
+        relation = new RelationCompare("int_column", ">",
+                new IntegerTerm("104"));
         clause.add(relation);
 
-        SelectStatement secondSelect = new SelectStatement(selectionClause, "demo.types");;
+        SelectStatement secondSelect = new SelectStatement(selectionClause,
+                "demo.types");
+        ;
         secondSelect.setLimit(10000);
         secondSelect.setWhere(clause);
 
@@ -366,7 +465,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
         fields = new HashMap<String, String>();
         fields.put("users.name", "types.varchar_column");
         join = new InnerJoin("", fields);
-        SelectStatement joinSelect = new SelectStatement(mainSelectionClause, "");
+        SelectStatement joinSelect = new SelectStatement(mainSelectionClause,
+                "");
         joinSelect.setJoin(join);
         joinSelect.setLimit(10000);
 
@@ -388,21 +488,24 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     @Test
     public void testSelectAllAndWhere() {
-        MetaQuery metaQuery = new MetaQuery("SELECT * FROM demo.users INNER JOIN demo.types ON users.name = types.varchar_column" +
-                " WHERE users.email = 'name_4@domain.com';");
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT * FROM demo.users INNER JOIN demo.types ON users.name = types.varchar_column"
+                        + " WHERE users.email = 'name_4@domain.com';");
 
         // ADD MAIN STATEMENT
-        SelectionClause selectionClause = new SelectionList(new SelectionAsterisk());
+        SelectionClause selectionClause = new SelectionList(
+                new SelectionAsterisk());
         Map<String, String> fields = new HashMap<String, String>();
         fields.put("users.name", "types.varchar_column");
         InnerJoin join = new InnerJoin("demo.types", fields);
 
         List<Relation> clause = new ArrayList<>();
-        Relation relation = new RelationCompare("users.email", "=", new StringTerm("name_4@domain.com"));
+        Relation relation = new RelationCompare("users.email", "=",
+                new StringTerm("name_4@domain.com"));
         clause.add(relation);
 
-        SelectStatement ss = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
+        SelectStatement ss = new SelectStatement(selectionClause, // SelectionClause
+                                                                  // selectionClause
                 "demo.users");
         ss.setJoin(join);
         ss.setWhere(clause);
@@ -410,21 +513,23 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
         metaQuery.setStatement(ss);
         System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
-        System.out.println("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
+        System.out.println("DEEP TEST (Stmnt): "
+                + metaQuery.getStatement().toString());
 
         // FIRST SELECT
         clause = new ArrayList<>();
-        relation = new RelationCompare("email", "=", new StringTerm("name_4@domain.com"));
+        relation = new RelationCompare("email", "=", new StringTerm(
+                "name_4@domain.com"));
         clause.add(relation);
-        SelectStatement firstSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
+        SelectStatement firstSelect = new SelectStatement(selectionClause, // SelectionClause
+                                                                           // selectionClause
                 "demo.users");
         firstSelect.setWhere(clause);
         firstSelect.setLimit(10000);
 
         // SECOND SELECT
-        SelectStatement secondSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
+        SelectStatement secondSelect = new SelectStatement(selectionClause, // SelectionClause
+                                                                            // selectionClause
                 "demo.types");
         secondSelect.setLimit(10000);
 
@@ -432,8 +537,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
         fields = new HashMap<String, String>();
         fields.put("users.name", "types.varchar_column");
         join = new InnerJoin("", fields);
-        SelectStatement joinSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
+        SelectStatement joinSelect = new SelectStatement(selectionClause, // SelectionClause
+                                                                          // selectionClause
                 "");
         joinSelect.setJoin(join);
         joinSelect.setLimit(10000);
@@ -457,50 +562,61 @@ public class BridgeTest extends BasicCoreCassandraTest {
     // TESTS FOR WRONG PLANS
     @Test
     public void testInnerJoinWrongSelectedColumn() {
-        MetaQuery metaQuery = new MetaQuery("SELECT users.gender, types.info, users.age " +
-                "FROM demo.users INNER JOIN demo.users_info ON users.name = users_info.link_name;");
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.gender, types.info, users.age "
+                        + "FROM demo.users INNER JOIN demo.users_info ON users.name = users_info.link_name;");
 
         // ADD MAIN STATEMENT
         SelectionSelectors selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("types.info")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
-        SelectionClause mainSelectionClause = new SelectionList(selectionSelectors);
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users.gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("types.info")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users.age")));
+        SelectionClause mainSelectionClause = new SelectionList(
+                selectionSelectors);
 
         Map<String, String> fields = new HashMap<String, String>();
         fields.put("users.name", "users_info.link_name");
         InnerJoin join = new InnerJoin("demo.users_info", fields);
 
-        SelectStatement ss = new SelectStatement(
-                mainSelectionClause, // SelectionClause selectionClause
+        SelectStatement ss = new SelectStatement(mainSelectionClause, // SelectionClause
+                                                                      // selectionClause
                 "demo.users");
         ss.setJoin(join);
         ss.setLimit(10000);
 
         metaQuery.setStatement(ss);
         System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
-        System.out.println("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
+        System.out.println("DEEP TEST (Stmnt): "
+                + metaQuery.getStatement().toString());
 
         // FIRST SELECT
         selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("gender")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("age")));
         SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
-        SelectStatement firstSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
+        SelectStatement firstSelect = new SelectStatement(selectionClause, // SelectionClause
+                                                                           // selectionClause
                 "demo.users");
         firstSelect.setLimit(10000);
 
         // SECOND SELECT
         selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("link_name")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("info")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("link_name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("info")));
         selectionClause = new SelectionList(selectionSelectors);
 
-        SelectStatement secondSelect = new SelectStatement(
-                selectionClause, // SelectionClause selectionClause
+        SelectStatement secondSelect = new SelectStatement(selectionClause, // SelectionClause
+                                                                            // selectionClause
                 "demo.users_info");
         secondSelect.setLimit(10000);
 
@@ -508,8 +624,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
         fields = new HashMap<String, String>();
         fields.put("users.name", "users_info.link_name");
         join = new InnerJoin("", fields);
-        SelectStatement joinSelect = new SelectStatement(
-                mainSelectionClause, // SelectionClause selectionClause
+        SelectStatement joinSelect = new SelectStatement(mainSelectionClause, // SelectionClause
+                                                                              // selectionClause
                 "");
         joinSelect.setJoin(join);
         joinSelect.setLimit(10000);
@@ -532,50 +648,67 @@ public class BridgeTest extends BasicCoreCassandraTest {
     }
 
     @Test
-    public void testInnerJoinWithOrderBy(){
-        MetaQuery metaQuery = new MetaQuery("SELECT users.gender, users_info.info, users.age " +
-                "FROM demo.users INNER JOIN demo.users_info ON users.name=users_info.link_name ORDER BY users.age DESC;");
+    public void testInnerJoinWithOrderBy() {
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.gender, users_info.info, users.age "
+                        + "FROM demo.users INNER JOIN demo.users_info ON users.name=users_info.link_name ORDER BY users.age DESC;");
 
         // ADD MAIN STATEMENT
         SelectionSelectors selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.gender")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users_info.info")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("users.age")));
-        SelectionClause mainSelectionClause = new SelectionList(selectionSelectors);
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users.gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users_info.info")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("users.age")));
+        SelectionClause mainSelectionClause = new SelectionList(
+                selectionSelectors);
         Map<String, String> fields = new HashMap<String, String>();
         fields.put("users.name", "users_info.link_name");
         InnerJoin join = new InnerJoin("demo.users_info", fields);
-        SelectStatement ss = new SelectStatement(mainSelectionClause, "demo.users");
+        SelectStatement ss = new SelectStatement(mainSelectionClause,
+                "demo.users");
         ss.setJoin(join);
         ss.setLimit(10000);
 
         metaQuery.setStatement(ss);
         System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
-        System.out.println("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
+        System.out.println("DEEP TEST (Stmnt): "
+                + metaQuery.getStatement().toString());
 
         // FIRST SELECT
         selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("gender")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("gender")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("age")));
         SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
-        SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        ;
         firstSelect.setLimit(10000);
 
         // SECOND SELECT
         selectionSelectors = new SelectionSelectors();
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("link_name")));
-        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("info")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("link_name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("info")));
         selectionClause = new SelectionList(selectionSelectors);
-        SelectStatement secondSelect = new SelectStatement(selectionClause, "demo.users_info");;
+        SelectStatement secondSelect = new SelectStatement(selectionClause,
+                "demo.users_info");
+        ;
         secondSelect.setLimit(10000);
 
         // INNER JOIN
         fields = new HashMap<String, String>();
         fields.put("users.name", "users_info.link_name");
         join = new InnerJoin("", fields);
-        SelectStatement joinSelect = new SelectStatement(mainSelectionClause, "");
+        SelectStatement joinSelect = new SelectStatement(mainSelectionClause,
+                "");
         joinSelect.setJoin(join);
         joinSelect.setLimit(10000);
 
@@ -597,5 +730,219 @@ public class BridgeTest extends BasicCoreCassandraTest {
         metaQuery.setPlan(tree);
         metaQuery.setStatus(QueryStatus.PLANNED);
         validateOk(metaQuery, "testInnerJoin");
+    }
+
+    @Test
+    public void testBasicInClauseWithStrings() {
+
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.name FROM demo.users WHERE users.email IN ('name_11@domain.com','name_9@domain.com');");
+
+        // Fields to retrieve
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        // IN clause
+        List<Relation> clause = new ArrayList<>();
+        List<Term> inTerms = new ArrayList<>();
+        inTerms.add(new StringTerm("name_11@domain.com"));
+        inTerms.add(new StringTerm("name_9@domain.com"));
+        Relation relation = new RelationIn("email", inTerms);
+
+        clause.add(relation);
+
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        firstSelect.setWhere(clause);
+
+        // Query execution
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+        metaQuery.setPlan(tree);
+        metaQuery.setStatus(QueryStatus.PLANNED);
+        Result results = validateRows(metaQuery,
+                "testBasicInClauseWithStrings", 2);
+
+        results.toString();
+    }
+
+    @Test
+    public void testBasicInClauseWithIntegers() {
+
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.name FROM demo.users WHERE users.age IN (19,31);");
+
+        // Fields to retrieve
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        // IN clause
+        List<Relation> clause = new ArrayList<>();
+        List<Term> inTerms = new ArrayList<>();
+        inTerms.add(new IntegerTerm("19"));
+        inTerms.add(new IntegerTerm("31"));
+        Relation relation = new RelationIn("age", inTerms);
+
+        clause.add(relation);
+
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        firstSelect.setWhere(clause);
+
+        // Query execution
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+        metaQuery.setPlan(tree);
+        metaQuery.setStatus(QueryStatus.PLANNED);
+        Result results = validateRows(metaQuery,
+                "testBasicInClauseWithIntegers", 1);
+
+        results.toString();
+    }
+
+    @Test
+    public void testBasicInClauseWithMixedData() {
+
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.name FROM demo.users WHERE users.email IN ('name_11@domain.com', 19);");
+
+        // Fields to retrieve
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        // IN clause
+        List<Relation> clause = new ArrayList<>();
+        List<Term> inTerms = new ArrayList<>();
+        inTerms.add(new StringTerm("name_11@domain.com"));
+        inTerms.add(new IntegerTerm("19"));
+        Relation relation = new RelationIn("email", inTerms);
+
+        clause.add(relation);
+
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        firstSelect.setWhere(clause);
+
+        // Query execution
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+        metaQuery.setPlan(tree);
+        metaQuery.setStatus(QueryStatus.PLANNED);
+        Result results = validateRows(metaQuery,
+                "testBasicInClauseWithMixedData", 1);
+
+        results.toString();
+    }
+
+    @Test
+    public void testBasicBetweenClauseWithStringData() {
+
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.name FROM demo.users WHERE users.email BETWEEN 'aaaa_00@domain.com' AND 'zzzz_99@domain.com';");
+
+        // Fields to retrieve
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        // IN clause
+        List<Relation> clause = new ArrayList<>();
+        Relation relation = new RelationBetween("email", new StringTerm(
+                "aaaa_00@domain.com"), new StringTerm("zzzz_99@domain.com"));
+
+        clause.add(relation);
+
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        firstSelect.setWhere(clause);
+
+        // Query execution
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+        metaQuery.setPlan(tree);
+        metaQuery.setStatus(QueryStatus.PLANNED);
+        Result results = validateRows(metaQuery,
+                "testBasicBetweenClauseWithStringData", 16);
+
+        results.toString();
+    }
+
+    @Test
+    public void testBasicBetweenClauseWithoutResults() {
+
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.name FROM demo.users WHERE users.email BETWEEN 'a' AND 'b';");
+
+        // Fields to retrieve
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        // IN clause
+        List<Relation> clause = new ArrayList<>();
+        Relation relation = new RelationBetween("email", new StringTerm("a"),
+                new StringTerm("b"));
+
+        clause.add(relation);
+
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        firstSelect.setWhere(clause);
+
+        // Query execution
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+        metaQuery.setPlan(tree);
+        metaQuery.setStatus(QueryStatus.PLANNED);
+        Result results = validateRows(metaQuery,
+                "testBasicBetweenClauseWithoutResults", 0);
+
+        results.toString();
+    }
+
+    @Test
+    public void testBasicBetweenClauseWithIntegerData() {
+
+        MetaQuery metaQuery = new MetaQuery(
+                "SELECT users.name FROM demo.users WHERE users.age BETWEEN 10 AND 25;");
+
+        // Fields to retrieve
+        SelectionSelectors selectionSelectors = new SelectionSelectors();
+        selectionSelectors.addSelectionSelector(new SelectionSelector(
+                new SelectorIdentifier("name")));
+        SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+        // IN clause
+        List<Relation> clause = new ArrayList<>();
+        IntegerTerm integerTermLower = new IntegerTerm("10");
+        integerTermLower.setTermClass(Integer.class);
+        IntegerTerm integerTermUpper = new IntegerTerm("25");
+        integerTermUpper.setTermClass(Integer.class);
+        Relation relation = new RelationBetween("age", integerTermLower,
+                integerTermUpper);
+
+        clause.add(relation);
+
+        SelectStatement firstSelect = new SelectStatement(selectionClause,
+                "demo.users");
+        firstSelect.setWhere(clause);
+
+        // Query execution
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+        metaQuery.setPlan(tree);
+        metaQuery.setStatus(QueryStatus.PLANNED);
+        Result results = validateRows(metaQuery,
+                "testBasicBetweenClauseWithIntegerData", 10);
+
+        results.toString();
     }
 }

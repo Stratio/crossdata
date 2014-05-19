@@ -19,12 +19,15 @@
 
 package com.stratio.meta.core.structures;
 
-import com.datastax.driver.core.TableMetadata;
-
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import com.datastax.driver.core.TableMetadata;
+
 /**
- * Class that models the different types of relationships that can be found on a WHERE clause.
+ * Class that models the different types of relationships that can be found on a
+ * WHERE clause.
  */
 public abstract class Relation {
 
@@ -66,8 +69,8 @@ public abstract class Relation {
     /**
      * Type of relationship.
      */
-    protected int type;   
-    
+    protected int type;
+
     public List<String> getIdentifiers() {
         return identifiers;
     }
@@ -83,7 +86,7 @@ public abstract class Relation {
     public List<Term> getTerms() {
         return terms;
     }
-    
+
     public int numberOfTerms() {
         return this.terms.size();
     }
@@ -100,12 +103,15 @@ public abstract class Relation {
         this.type = type;
     }
 
-    public void updateTermClass(TableMetadata tableMetadata){
-        for(int i=0; i<identifiers.size(); i++){
+    public void updateTermClass(TableMetadata tableMetadata) {
+        for (int i = 0; i < identifiers.size(); i++) {
             String ident = identifiers.get(i);
-            if((tableMetadata.getColumn(ident).getType().asJavaClass() == Integer.class && terms.get(i).getTermClass() == Long.class)
-                    || (tableMetadata.getColumn(ident).getType().asJavaClass() == Float.class && terms.get(i).getTermClass() == Double.class)) {
-                terms.get(i).setTermClass(tableMetadata.getColumn(ident).getType().asJavaClass());
+            if ((tableMetadata.getColumn(ident).getType().asJavaClass() == Integer.class && terms
+                    .get(i).getTermClass() == Long.class)
+                    || (tableMetadata.getColumn(ident).getType().asJavaClass() == Float.class && terms
+                            .get(i).getTermClass() == Double.class)) {
+                terms.get(i).setTermClass(
+                        tableMetadata.getColumn(ident).getType().asJavaClass());
             }
         }
     }
@@ -113,4 +119,21 @@ public abstract class Relation {
     @Override
     public abstract String toString();
 
+    /**
+     * Gets the string values list for the terms
+     * 
+     * @return Terms string values
+     */
+    public List<String> getTermsStringValues() {
+
+        List<String> termsValuesList = new ArrayList<>();
+
+        Iterator<Term> terms = this.getTerms().iterator();
+        while (terms.hasNext()) {
+            Term term = terms.next();
+            termsValuesList.add(term.getStringValue());
+        }
+
+        return termsValuesList;
+    }
 }

@@ -20,18 +20,17 @@
 package com.stratio.meta.deep.functions;
 
 import java.io.Serializable;
-import java.util.List;
 
 import org.apache.spark.api.java.function.Function;
 
 import com.stratio.deep.entity.Cells;
 
-public class In extends Function<Cells, Boolean> implements Serializable {
+public class Between extends Function<Cells, Boolean> implements Serializable {
 
     /**
      * Serial version UID.
      */
-    private static final long serialVersionUID = -6637139616271541577L;
+    private static final long serialVersionUID = -4498262312538738011L;
 
     /**
      * Name of the field of the cell to compare.
@@ -39,9 +38,14 @@ public class In extends Function<Cells, Boolean> implements Serializable {
     private String field;
 
     /**
-     * IDs in the IN clause.
+     * Lower bound
      */
-    private List<String> inIDs;
+    private Object lowerBound;
+
+    /**
+     * Upper bound
+     */
+    private Object upperBound;
 
     /**
      * In apply in filter to a field in a Deep Cell.
@@ -51,21 +55,22 @@ public class In extends Function<Cells, Boolean> implements Serializable {
      * @param inIDs
      *            List of values of the IN clause.
      */
-    public In(String field, List<String> inIDs) {
+    public Between(String field, Object lowerBound, Object upperBound) {
         this.field = field;
-        this.inIDs = inIDs;
+        this.lowerBound = lowerBound;
+        this.upperBound = upperBound;
     }
 
     @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Boolean call(Cells cells) {
-        
+
         Boolean isValid = false;
-        Object cellValue = cells.getCellByName(field)
-                .getCellValue();
-        
-        String currentValue = String.valueOf(cellValue);
-        if (currentValue != null) {
-            isValid = inIDs.contains(currentValue);
+        Object cellValue = cells.getCellByName(field).getCellValue();
+
+        if (cellValue != null) {
+            isValid = (((Comparable) lowerBound).compareTo(cellValue) <= 0)
+                    && (((Comparable) upperBound).compareTo(cellValue) >= 0);
         }
 
         return isValid;
