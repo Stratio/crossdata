@@ -55,7 +55,7 @@ public class ListLiteral extends IdentIntOrLiteral {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(string());
-        sb.append(ParserUtils.stringList(literals, ", "));
+        sb.append("[ ").append(ParserUtils.stringList(literals, ", ")).append(" ]");
         return sb.toString();
     }
     

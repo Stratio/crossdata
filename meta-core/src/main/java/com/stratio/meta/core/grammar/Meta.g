@@ -820,15 +820,15 @@ getValueAssign returns [ValueAssignment valueAssign]:
                                                                 $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '+', ((SetLiteral) value1).getLiterals()));
                                                          }
                            ) 
-        | T_SUBTRACT value2=getIntSetOrList { 
+                    | T_SUBTRACT value2=getIntSetOrList {
                                                 if(value2 instanceof IntTerm)
                                                     $valueAssign = new ValueAssignment(new IntTerm($ident.text, '-', ((IntTerm) value2).getTerm()));
                                                 else if(value2 instanceof ListLiteral)
                                                     $valueAssign = new ValueAssignment(new ListLiteral($ident.text, '-', ((ListLiteral) value2).getLiterals()));
                                                 else
                                                     $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '-', ((SetLiteral) value2).getLiterals()));
-                                            }
-    )
+                                                }
+                )
 ;
 
 getIntSetOrList returns [IdentIntOrLiteral iiol]:
