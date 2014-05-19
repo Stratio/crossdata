@@ -19,6 +19,10 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Assignment;
 import com.stratio.meta.core.structures.Option;
@@ -98,7 +102,13 @@ public class UpdateTableStatement extends MetaStatement {
         }
 
         this.optsInc = optsInc;
-        this.options = options;
+
+        //this.options = options;
+        for(Option opt: options){
+            opt.setNameProperty(opt.getNameProperty().toLowerCase());
+            this.options.add(opt);
+        }
+
         this.assignments = assignments;
         this.whereClauses = whereClauses;
         this.condsInc = condsInc;
@@ -186,6 +196,88 @@ public class UpdateTableStatement extends MetaStatement {
     @Override
     public String translateToCQL() {
         return this.toString();
+    }
+
+    /**
+     * Validate the semantics of the current statement. This method checks the
+     * existing metadata to determine that all referenced entities exists in the
+     * {@code targetKeyspace} and the types are compatible with the assignations
+     * or comparisons.
+     *
+     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+     *                 the required information.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     */
+    @Override
+    public Result validate(MetadataManager metadata) {
+        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+        if(!result.hasError()) {
+            String effectiveKeyspace = getEffectiveKeyspace();
+
+            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+
+            if(optsInc){
+                result = validateOptions();
+            }
+
+            if(!result.hasError()){
+                result = validateAssignments(tableMetadata);
+            }
+
+            if(!result.hasError()){
+                result = validateWhereClauses(tableMetadata);
+            }
+
+        }
+        return result;
+    }
+
+    private Result validateOptions() {
+        Result result = QueryResult.createSuccessQueryResult();
+        if (!options.contains("timestamp") && !options.contains("ttl")){
+            result = QueryResult.createFailQueryResult("TIMESTAMP and TTL are the only accepted options.");
+        }
+        return result;
+    }
+
+    /**
+     * Check that the specified columns exist on the target table
+     *
+     * @param tableMetadata Table metadata associated with the target table.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     */
+    private Result validateAssignments(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        for (int index = 0; index < assignments.size(); index++) {
+            if (tableMetadata.getColumn(assignments.get(index).getIdent().getIdentifier()) == null) {
+                result = QueryResult.createFailQueryResult("Column " + assignments.get(index).getIdent().getIdentifier() + " not found in " + tableMetadata.getName());
+                break;
+            }
+        }
+        return result;
+    }
+
+    private Result validateWhereClauses(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        for(Relation rel: whereClauses){
+            for(String id: rel.getIdentifiers()){
+                boolean found = false;
+                for(ColumnMetadata cm: tableMetadata.getColumns()){
+                    if(cm.getName().equalsIgnoreCase(id)){
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found){
+                    result = QueryResult.createFailQueryResult("Column " + id + " not found in " + tableMetadata.getName());
+                    break;
+                }
+            }
+            if(result.hasError()){
+                break;
+            }
+        }
+        return result;
     }
 
     @Override
