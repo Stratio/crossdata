@@ -82,7 +82,7 @@ public class CommandExecutor {
                 info = ksInfo.exportAsString();
             }
         } else { // TABLE
-            TableMetadata tableInfo = mm.getTableMetadata(dscrStatement.getKeyspace(), dscrStatement.getTableName());
+            TableMetadata tableInfo = mm.getTableMetadata(dscrStatement.getEffectiveKeyspace(), dscrStatement.getTableName());
             if (tableInfo == null) {
                 errorMessage = "TABLE " + dscrStatement.getTableName() + " was not found";
             } else {
