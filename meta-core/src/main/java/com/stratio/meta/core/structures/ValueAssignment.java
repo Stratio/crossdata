@@ -95,7 +95,23 @@ public class ValueAssignment {
      */
     public ValueAssignment(IdentMap identMap) {
         this(null, null, identMap, TYPE_IDENT_MAP);
-    }           
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public Term getTerm() {
+        return term;
+    }
+
+    public IdentIntOrLiteral getIiol() {
+        return iiol;
+    }
+
+    public IdentMap getIdentMap() {
+        return identMap;
+    }
 
     @Override
     public String toString(){

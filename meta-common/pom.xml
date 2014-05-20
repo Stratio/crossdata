@@ -119,7 +119,7 @@
         </dependency>
     </dependencies>
 
-    <repositories>
+    <!--repositories>
         <repository>
             <id>scala-tools.org</id>
             <name>Scala-tools Maven2 Repository</name>
@@ -132,7 +132,7 @@
             <name>Scala-tools Maven2 Repository</name>
             <url>http://scala-tools.org/repo-releases</url>
         </pluginRepository>
-    </pluginRepositories>
+    </pluginRepositories-->
 
     <build>
         <pluginManagement>

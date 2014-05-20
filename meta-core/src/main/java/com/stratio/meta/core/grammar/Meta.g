@@ -448,7 +448,7 @@ selectStatement returns [SelectStatement slctst]
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses)?
     (T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
     (T_GROUP T_BY {groupInc = true;} groupby=getList)?
-    (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
+    (T_LIMIT {limitInc = true;} constant=getConstant)?
     (T_DISABLE T_ANALYTICS {disable = true;})?
     {
         $slctst = new SelectStatement(selClause, tablename);        
@@ -463,7 +463,7 @@ selectStatement returns [SelectStatement slctst]
         if(groupInc)
             $slctst.setGroup(new GroupBy(groupby)); 
         if(limitInc)
-            $slctst.setLimit(Integer.parseInt($constant.text));
+            $slctst.setLimit(Integer.parseInt(constant));
         if(disable)
             $slctst.setDisableAnalytics(true);
     };
@@ -707,8 +707,8 @@ getFields returns [Map<String, String> fields]
 
 getWindow returns [WindowSelect ws]:
     (T_LAST {$ws = new WindowLast();} 
-    | cnstnt=T_CONSTANT (T_ROWS {$ws = new WindowRows(Integer.parseInt($cnstnt.text));} 
-                       | unit=getTimeUnit {$ws = new WindowTime(Integer.parseInt($cnstnt.text), unit);}
+    | cnstnt=getConstant (T_ROWS {$ws = new WindowRows(Integer.parseInt(cnstnt));}
+                       | unit=getTimeUnit {$ws = new WindowTime(Integer.parseInt(cnstnt), unit);}
                        )
     );
 
@@ -738,7 +738,7 @@ getSelectionCount returns [SelectionCount scc]
         boolean identInc = false;
         char symbol = '*';
     }:
-    T_COUNT T_START_PARENTHESIS ( T_ASTERISK | '1' {symbol = '1';} ) T_END_PARENTHESIS
+    T_COUNT T_START_PARENTHESIS ( symbolStr=getCountSymbol { symbol=symbolStr.charAt(0); } ) T_END_PARENTHESIS
     (T_AS {identInc = true;} ident=T_IDENT )? 
     {
         if(identInc)
@@ -747,6 +747,11 @@ getSelectionCount returns [SelectionCount scc]
             $scc = new SelectionCount(symbol);
     }
 ;
+
+getCountSymbol returns [String str]:
+    T_ASTERISK {$str = new String("*");}
+    | '1' {$str = new String("1");}
+    ;
 
 getSelectionList returns [SelectionList scl]
     @init{
@@ -801,8 +806,7 @@ getListTypes returns [String listType]:
 getAssignment returns [Assignment assign]:
     ident=T_IDENT (
         T_EQUAL value=getValueAssign {$assign = new Assignment(new IdentifierAssignment($ident.text), value);} 
-    |
-        T_START_BRACKET termL=getTerm T_END_BRACKET T_EQUAL termR=getTerm { 
+        | T_START_BRACKET termL=getTerm T_END_BRACKET T_EQUAL termR=getTerm {
             $assign = new Assignment (new IdentifierAssignment($ident.text, termL), new ValueAssignment(termR));
         }
     )
@@ -811,7 +815,7 @@ getAssignment returns [Assignment assign]:
 getValueAssign returns [ValueAssignment valueAssign]:
     term1=getTerm { $valueAssign = new ValueAssignment(term1);}
     | ident=T_IDENT (T_PLUS (T_START_SBRACKET mapLiteral=getMapLiteral T_END_SBRACKET { $valueAssign = new ValueAssignment(new IdentMap($ident.text, new MapLiteralProperty(mapLiteral)));}
-                                | value1=getIntSetOrList { 
+                                | value1=getIntSetOrList {
                                                             if(value1 instanceof IntTerm)
                                                                 $valueAssign = new ValueAssignment(new IntTerm($ident.text, '+', ((IntTerm) value1).getTerm()));
                                                             else if(value1 instanceof ListLiteral)
@@ -820,19 +824,19 @@ getValueAssign returns [ValueAssignment valueAssign]:
                                                                 $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '+', ((SetLiteral) value1).getLiterals()));
                                                          }
                            ) 
-        | T_SUBTRACT value2=getIntSetOrList { 
+                    | T_SUBTRACT value2=getIntSetOrList {
                                                 if(value2 instanceof IntTerm)
                                                     $valueAssign = new ValueAssignment(new IntTerm($ident.text, '-', ((IntTerm) value2).getTerm()));
                                                 else if(value2 instanceof ListLiteral)
                                                     $valueAssign = new ValueAssignment(new ListLiteral($ident.text, '-', ((ListLiteral) value2).getLiterals()));
                                                 else
                                                     $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '-', ((SetLiteral) value2).getLiterals()));
-                                            }
-    )
+                                                }
+                )
 ;
 
 getIntSetOrList returns [IdentIntOrLiteral iiol]:
-    constant=T_CONSTANT { $iiol = new IntTerm(Integer.parseInt($constant.text));}
+    constant=getConstant { $iiol = new IntTerm(Integer.parseInt(constant));}
     | T_START_BRACKET list=getList T_END_BRACKET { $iiol = new ListLiteral(list);}
     | T_START_SBRACKET set=getSet T_END_SBRACKET { $iiol = new SetLiteral(set);}
 ;
@@ -929,8 +933,7 @@ getTerm returns [Term term]:
 
 getPartialTerm returns [Term term]:
     ident=T_IDENT {$term = new StringTerm($ident.text);}
-    | constant=T_CONSTANT {$term = new IntegerTerm($constant.text);}
-    | '1' {$term = new IntegerTerm("1");}
+    | constant=getConstant {$term = new IntegerTerm(constant);}
     | T_FALSE {$term = new BooleanTerm("false");}
     | T_TRUE {$term = new BooleanTerm("true");}
     | floatingNumber=T_FLOAT {$term = new FloatingTerm($floatingNumber.text);}
@@ -950,11 +953,9 @@ getMapLiteral returns [Map<String, String> mapTerms]
     T_END_SBRACKET
     ;
 
-getValueProperty returns [ValueProperty value]
-    @init{
-    }:
+getValueProperty returns [ValueProperty value]:
     ident=T_IDENT {$value = new IdentifierProperty($ident.text);}
-    | constant=T_CONSTANT {$value = new ConstantProperty(Integer.parseInt($constant.text));}
+    | constant=getConstant {$value = new ConstantProperty(Integer.parseInt(constant));}
     | mapliteral=getMapLiteral {$value = new MapLiteralProperty(mapliteral);}
     | number=getFloat {$value = new FloatProperty(Float.parseFloat(number));}
     | T_FALSE {$value = new BooleanProperty(false);}
@@ -964,6 +965,10 @@ getValueProperty returns [ValueProperty value]
     | quotedLiteral=QUOTED_LITERAL {$value = new QuotedLiteral($quotedLiteral.text);}
     ;
 
+getConstant returns [String constStr]:
+    constToken=T_CONSTANT {$constStr = new String($constToken.text);}
+    | '1' {$constStr = new String("1");}
+    ;
 
 getFloat returns [String floating]:
     termToken=T_TERM {$floating=$termToken.text;}

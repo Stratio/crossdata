@@ -19,14 +19,16 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.Assignment;
-import com.stratio.meta.core.structures.Option;
-import com.stratio.meta.core.structures.Relation;
-import com.stratio.meta.core.structures.Term;
-import com.stratio.meta.core.utils.ParserUtils;
-import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta.core.structures.*;
+import com.stratio.meta.core.utils.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -98,7 +100,16 @@ public class UpdateTableStatement extends MetaStatement {
         }
 
         this.optsInc = optsInc;
-        this.options = options;
+
+        //this.options = options;
+        if(optsInc){
+            this.options = new ArrayList<>();
+            for(Option opt: options){
+                opt.setNameProperty(opt.getNameProperty().toLowerCase());
+                this.options.add(opt);
+            }
+        }
+
         this.assignments = assignments;
         this.whereClauses = whereClauses;
         this.condsInc = condsInc;
@@ -188,9 +199,187 @@ public class UpdateTableStatement extends MetaStatement {
         return this.toString();
     }
 
+    /**
+     * Validate the semantics of the current statement. This method checks the
+     * existing metadata to determine that all referenced entities exists in the
+     * {@code targetKeyspace} and the types are compatible with the assignations
+     * or comparisons.
+     *
+     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+     *                 the required information.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     */
+    @Override
+    public Result validate(MetadataManager metadata) {
+        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+        if(!result.hasError()) {
+            String effectiveKeyspace = getEffectiveKeyspace();
+
+            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+
+            if(optsInc){
+                result = validateOptions();
+            }
+
+            if(!result.hasError()){
+                result = validateAssignments(tableMetadata);
+            }
+
+            if(!result.hasError()){
+                result = validateWhereClauses(tableMetadata);
+            }
+
+        }
+        return result;
+    }
+
+    private Result validateOptions() {
+        Result result = QueryResult.createSuccessQueryResult();
+        for(Option opt: options){
+            if(!(opt.getNameProperty().equalsIgnoreCase("ttl") || opt.getNameProperty().equalsIgnoreCase("timestamp"))){
+                result = QueryResult.createFailQueryResult("TIMESTAMP and TTL are the only accepted options.");
+            }
+        }
+        for(Option opt: options){
+            if(opt.getProperties().getType() != ValueProperty.TYPE_CONST){
+                result = QueryResult.createFailQueryResult("TIMESTAMP and TTL must have a constant value.");
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Check that the specified columns exist on the target table
+     *
+     * @param tableMetadata Table metadata associated with the target table.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     */
+    private Result validateAssignments(TableMetadata tableMetadata) {
+        updateTermClasses(tableMetadata);
+        Result result = QueryResult.createSuccessQueryResult();
+        for (int index = 0; index < assignments.size(); index++) {
+            Assignment assignment = assignments.get(index);
+
+            IdentifierAssignment assignmentId = assignment.getIdent();
+
+            // Check if identifier exists
+            ColumnMetadata cm = tableMetadata.getColumn(assignmentId.getIdentifier());
+            if (cm == null) {
+                result = QueryResult.createFailQueryResult(
+                                "Column " + assignmentId.getIdentifier() + " not found in " + tableMetadata.getName() + ".");
+                break;
+            }
+
+            // Check if column data type of the identifier is one of the supported types
+            Class<?> idClazz = cm.getType().asJavaClass();
+            if(!result.hasError()){
+                if(!CoreUtils.supportedTypes.contains(idClazz.getSimpleName().toLowerCase())){
+                    result = QueryResult.createFailQueryResult(
+                            "Column " + assignmentId.getIdentifier() + " is of type " + cm.getType().asJavaClass().getSimpleName() + ", which is not supported yet.");
+                }
+            }
+
+            // Check if identifier is simple, otherwise it refers to a collection, which are not supported yet
+            if(!result.hasError()){
+                if(assignmentId.getType() == IdentifierAssignment.TYPE_COMPOUND){
+                    result = QueryResult.createFailQueryResult("Collections are not supported yet.");
+                }
+            }
+
+            if(!result.hasError()){
+                ValueAssignment valueAssignment = assignment.getValue();
+                if(valueAssignment.getType() == ValueAssignment.TYPE_TERM){
+                    Term valueTerm = valueAssignment.getTerm();
+                    System.out.println("valueTerm: "+valueTerm.toString());
+                    System.out.println("valueTerm.class: "+valueTerm.getTermClass());
+                    // Check data type between column of the identifier and term type of the statement
+                    Class<?> valueClazz = valueTerm.getTermClass();
+                    System.out.println("valueClazz.toString:"+valueClazz.toString());
+                    String valueClass = valueClazz.getSimpleName();
+                    if(!idClazz.getSimpleName().equalsIgnoreCase(valueClass)){
+                        result = QueryResult.createFailQueryResult(cm.getName()+" and "+valueTerm.getTermValue()+" are not compatible type.");
+                    }
+                } else if(valueAssignment.getType() == ValueAssignment.TYPE_IDENT_MAP){
+                    result = QueryResult.createFailQueryResult("Collections are not supported yet.");
+                } else {
+                    IdentIntOrLiteral iiol = valueAssignment.getIiol();
+                    if(iiol instanceof IntTerm){
+                        // Check if identifier is of int type
+                        if(!Arrays.asList("integer", "int").contains(idClazz.getSimpleName().toLowerCase())){
+                            result = QueryResult.createFailQueryResult("Column "+cm.getName()+" should be integer type.");
+                        }
+                        if(!result.hasError()){
+                            // Check if value identifier exists
+                            String valueId = iiol.getIdentifier();
+                            ColumnMetadata colValue = tableMetadata.getColumn(valueId);
+                            if(colValue == null){
+                                result = QueryResult.createFailQueryResult("Column "+valueId+" not found.");
+                            }
+                            if(!result.hasError()){
+                                // Check if value identifier is int type
+                                if(!Arrays.asList("integer", "int").contains(colValue.getType().asJavaClass().getSimpleName().toLowerCase())){
+                                    result = QueryResult.createFailQueryResult("Column "+colValue.getName()+" should be integer type.");
+                                }
+                            }
+                        }
+
+                    } else { // Set or List
+                        result = QueryResult.createFailQueryResult("Collections are not supported yet.");
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private void updateTermClasses(TableMetadata tableMetadata) {
+        for(Assignment assignment: assignments){
+            String ident = assignment.getIdent().getIdentifier();
+            ColumnMetadata cm = tableMetadata.getColumn(ident);
+            if((cm != null) && assignment.getValue().getTerm() != null){
+                if(assignment.getValue().getTerm() instanceof IntegerTerm){
+                    if((cm.getType().asJavaClass() == Integer.class) || (cm.getType().asJavaClass() == Long.class)){
+                        assignment.getValue().getTerm().setTermClass(cm.getType().asJavaClass());
+                    }
+                } else if (assignment.getValue().getTerm() instanceof FloatingTerm){
+                    if((cm.getType().asJavaClass() == Double.class) || (cm.getType().asJavaClass() == Float.class)){
+                        assignment.getValue().getTerm().setTermClass(cm.getType().asJavaClass());
+                    }
+                }
+            }
+        }
+    }
+
+    private Result validateWhereClauses(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        for(Relation rel: whereClauses){
+            Term term = rel.getTerms().get(0);
+            Class<?> valueClazz = term.getTermClass();
+            for(String id: rel.getIdentifiers()){
+                boolean foundAndSameType = false;
+                for(ColumnMetadata cm: tableMetadata.getColumns()){
+                    if(cm.getName().equalsIgnoreCase(id) && (cm.getType().asJavaClass() == valueClazz)){
+                        foundAndSameType = true;
+                        break;
+                    }
+                }
+                if(!foundAndSameType){
+                    result = QueryResult.createFailQueryResult("Column " + id + " not found in " + tableMetadata.getName());
+                    break;
+                }
+            }
+            if(result.hasError()){
+                break;
+            }
+        }
+        return result;
+    }
+
     @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        return new Tree();
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+        return tree;
     }
     
 }

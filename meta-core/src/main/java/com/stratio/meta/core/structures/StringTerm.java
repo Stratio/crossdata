@@ -27,12 +27,12 @@ public class StringTerm extends Term{
     public StringTerm(String term, boolean quotedLiteral) {
         super.clazz = String.class;
         this.term = term;
+        this.type = TYPE_TERM;
         this.quotedLiteral = quotedLiteral;
     }
 
     public StringTerm(String term) {
-        this.term = term;
-        this.type = TYPE_TERM;
+        this(term, false);
     }
 
     public boolean isQuotedLiteral() {

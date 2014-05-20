@@ -73,6 +73,24 @@ public class UpdateTableStatementTest extends ParsingTest {
     }
 
     @Test
+    public void updateWhereWithCollectionMap() {
+        String inputText = "UPDATE table1 SET emails[admin] = myemail@mycompany.org WHERE field3 = value3;";
+        testRegularStatement(inputText, "updateWhereWithCollectionMap");
+    }
+
+    @Test
+    public void updateWhereWithCollectionSet() {
+        String inputText = "UPDATE table1 SET emails = emails + { myemail@mycompany.org } WHERE field3 = value3;";
+        testRegularStatement(inputText, "updateWhereWithCollectionSet");
+    }
+
+    @Test
+    public void updateWhereWithCollectionList() {
+        String inputText = "UPDATE table1 SET emails = emails + [ myemail@mycompany.org ] WHERE field3 = value3;";
+        testRegularStatement(inputText, "updateWhereWithCollectionList");
+    }
+
+    @Test
     public void updateTablenameIfAnd() {
         String inputText = "UPDATE tablename SET ident1 = term1, ident2 = term2"
                 + " WHERE ident3 IN (term3, term4) IF field3 = 26 AND field2 = 25;";

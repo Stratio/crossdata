@@ -38,7 +38,7 @@ import java.util.Map;
 public class CoreUtils {
 
     public static final List<String> supportedTypes = Arrays.asList("bigint", "boolean", "counter",
-            "double", "float", "int", "varchar");
+            "double", "float", "int", "integer", "varchar");
     // SOON: "date", "uuid", "timeuuid"
 
     /**
