@@ -229,8 +229,45 @@ public class UpdateTableStatement extends MetaStatement {
                 result = validateWhereClauses(tableMetadata);
             }
 
+            if((!result.hasError()) && condsInc){
+                result = validateConds(tableMetadata);
+            }
         }
         return result;
+    }
+
+    private Result validateConds(TableMetadata tableMetadata) {
+        updateTermClassesInConditions(tableMetadata);
+        Result result = QueryResult.createSuccessQueryResult();
+        for(String key: conditions.keySet()){
+            ColumnMetadata cm = tableMetadata.getColumn(key);
+            if(cm != null){
+                if(!(cm.getType().asJavaClass() == conditions.get(key).getTermClass())){
+                    result = QueryResult.createFailQueryResult("Column "+key+" should be type "+cm.getType().asJavaClass().getSimpleName());
+                }
+            } else {
+                result = QueryResult.createFailQueryResult("Column "+key+" was not found in table "+tableName);
+            }
+        }
+        return result;
+    }
+
+    private void updateTermClassesInConditions(TableMetadata tableMetadata) {
+        for(String ident: conditions.keySet()){
+            ColumnMetadata cm = tableMetadata.getColumn(ident);
+            Term term = conditions.get(ident);
+            if((cm != null) && (term != null)){
+                if(term instanceof IntegerTerm){
+                    if((cm.getType().asJavaClass() == Integer.class) || (cm.getType().asJavaClass() == Long.class)){
+                        term.setTermClass(cm.getType().asJavaClass());
+                    }
+                } else if (term instanceof FloatingTerm){
+                    if((cm.getType().asJavaClass() == Double.class) || (cm.getType().asJavaClass() == Float.class)){
+                        term.setTermClass(cm.getType().asJavaClass());
+                    }
+                }
+            }
+        }
     }
 
     private Result validateOptions() {
@@ -255,7 +292,7 @@ public class UpdateTableStatement extends MetaStatement {
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
     private Result validateAssignments(TableMetadata tableMetadata) {
-        updateTermClasses(tableMetadata);
+        updateTermClassesInAssignments(tableMetadata);
         Result result = QueryResult.createSuccessQueryResult();
         for (int index = 0; index < assignments.size(); index++) {
             Assignment assignment = assignments.get(index);
@@ -332,11 +369,11 @@ public class UpdateTableStatement extends MetaStatement {
         return result;
     }
 
-    private void updateTermClasses(TableMetadata tableMetadata) {
+    private void updateTermClassesInAssignments(TableMetadata tableMetadata) {
         for(Assignment assignment: assignments){
             String ident = assignment.getIdent().getIdentifier();
             ColumnMetadata cm = tableMetadata.getColumn(ident);
-            if((cm != null) && assignment.getValue().getTerm() != null){
+            if((cm != null) && (assignment.getValue().getTerm() != null)){
                 if(assignment.getValue().getTerm() instanceof IntegerTerm){
                     if((cm.getType().asJavaClass() == Integer.class) || (cm.getType().asJavaClass() == Long.class)){
                         assignment.getValue().getTerm().setTermClass(cm.getType().asJavaClass());

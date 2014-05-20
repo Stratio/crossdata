@@ -50,6 +50,12 @@ public class UpdateTableStatementTest extends BasicValidatorTest {
         validateOk(inputText, "validateSetPlus");
     }
 
+    @Test
+    public void validateUpdateSetPlusAndCondition(){
+        String inputText = "UPDATE demo.users SET age = age + 1 WHERE name = name_5 AND gender = male IF email = whatever@bestcompany.com;";
+        validateOk(inputText, "validateUpdateSetPlusAndCondition");
+    }
+
     // TEST FOR WRONG QUERIES
 
     @Test
@@ -110,6 +116,18 @@ public class UpdateTableStatementTest extends BasicValidatorTest {
     public void validateUpdateListLiteral(){
         String inputText = "UPDATE demo.users SET email = email - [ whatever@bestcompany.com ] WHERE name = name_5 AND gender = male;";
         validateFail(inputText, "validateUpdateListLiteral");
+    }
+
+    @Test
+    public void validateUpdateSetPlusAndWrongCondition(){
+        String inputText = "UPDATE demo.users SET age = age + 1 WHERE name = name_5 AND gender = male IF address = whatever@bestcompany.com;";
+        validateFail(inputText, "validateUpdateSetPlusAndWrongCondition");
+    }
+
+    @Test
+    public void validateUpdateSetPlusAndTypeWrongCondition(){
+        String inputText = "UPDATE demo.users SET age = age + 1 WHERE name = name_5 AND gender = male IF age = whatever@bestcompany.com;";
+        validateFail(inputText, "validateUpdateSetPlusAndTypeWrongCondition");
     }
 
 }
