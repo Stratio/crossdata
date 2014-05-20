@@ -21,6 +21,7 @@ package com.stratio.meta.deep;
 
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.data.CassandraResultSet;
+import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
@@ -214,6 +215,16 @@ public class BridgeTest extends BasicCoreCassandraTest {
         metaQuery.setPlan(tree);
         metaQuery.setStatus(QueryStatus.PLANNED);
         QueryResult result = (QueryResult) validateOk(metaQuery, "testEqualsFind");
+        ///////////////////////////////////////////////////////////////////////////
+        System.out.println("--------------");
+        for(Row row: result.getResultSet()){
+            for(String key: row.getCells().keySet()){
+                System.out.print(" | "+row.getCell(key).getValue());
+            }
+            System.out.println(" | ");
+        }
+        System.out.println("--------------");
+        ///////////////////////////////////////////////////////////////////////////
         assertEquals(result.getResultSet().size(), 15);
     }
 
