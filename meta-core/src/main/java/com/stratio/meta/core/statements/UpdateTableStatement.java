@@ -103,7 +103,7 @@ public class UpdateTableStatement extends MetaStatement {
 
         //this.options = options;
         if(optsInc){
-            this.options = new ArrayList<Option>();
+            this.options = new ArrayList<>();
             for(Option opt: options){
                 opt.setNameProperty(opt.getNameProperty().toLowerCase());
                 this.options.add(opt);
@@ -235,8 +235,10 @@ public class UpdateTableStatement extends MetaStatement {
 
     private Result validateOptions() {
         Result result = QueryResult.createSuccessQueryResult();
-        if (!options.contains("timestamp") && !options.contains("ttl")){
-            result = QueryResult.createFailQueryResult("TIMESTAMP and TTL are the only accepted options.");
+        for(Option opt: options){
+            if(!(opt.getNameProperty().equalsIgnoreCase("ttl") || opt.getNameProperty().equalsIgnoreCase("timestamp"))){
+                result = QueryResult.createFailQueryResult("TIMESTAMP and TTL are the only accepted options.");
+            }
         }
         for(Option opt: options){
             if(opt.getProperties().getType() != ValueProperty.TYPE_CONST){
@@ -288,8 +290,13 @@ public class UpdateTableStatement extends MetaStatement {
                 ValueAssignment valueAssignment = assignment.getValue();
                 if(valueAssignment.getType() == ValueAssignment.TYPE_TERM){
                     Term valueTerm = valueAssignment.getTerm();
-                    // TODO: Check data type between column of the identifier and term type of the statement
-                    if(!idClazz.getSimpleName().equalsIgnoreCase(valueTerm.getTermClass().getSimpleName())){
+                    System.out.println("valueTerm: "+valueTerm.toString());
+                    System.out.println("valueTerm.class: "+valueTerm.getTermClass());
+                    // Check data type between column of the identifier and term type of the statement
+                    Class<?> valueClazz = valueTerm.getTermClass();
+                    System.out.println("valueClazz.toString:"+valueClazz.toString());
+                    String valueClass = valueClazz.getSimpleName();
+                    if(!idClazz.getSimpleName().equalsIgnoreCase(valueClass)){
                         result = QueryResult.createFailQueryResult(cm.getName()+" and "+valueTerm.getTermValue()+" are not compatible type.");
                     }
                 } else if(valueAssignment.getType() == ValueAssignment.TYPE_IDENT_MAP){
@@ -321,7 +328,6 @@ public class UpdateTableStatement extends MetaStatement {
                     }
                 }
             }
-
         }
         return result;
     }
@@ -347,15 +353,17 @@ public class UpdateTableStatement extends MetaStatement {
     private Result validateWhereClauses(TableMetadata tableMetadata) {
         Result result = QueryResult.createSuccessQueryResult();
         for(Relation rel: whereClauses){
+            Term term = rel.getTerms().get(0);
+            Class<?> valueClazz = term.getTermClass();
             for(String id: rel.getIdentifiers()){
-                boolean found = false;
+                boolean foundAndSameType = false;
                 for(ColumnMetadata cm: tableMetadata.getColumns()){
-                    if(cm.getName().equalsIgnoreCase(id)){
-                        found = true;
+                    if(cm.getName().equalsIgnoreCase(id) && (cm.getType().asJavaClass() == valueClazz)){
+                        foundAndSameType = true;
                         break;
                     }
                 }
-                if(!found){
+                if(!foundAndSameType){
                     result = QueryResult.createFailQueryResult("Column " + id + " not found in " + tableMetadata.getName());
                     break;
                 }
