@@ -25,8 +25,51 @@ import org.testng.annotations.Test;
 public class AlterTableStatementTest extends BasicValidatorTest {
 
     @Test
-    public void testValidateNotSupported(){
-        String inputText = "ALTER TABLE table1 ADD column1 INT;";
-        validateFail(inputText, "testValidateNotSupported");
+    public void testValidateAddColumn(){
+        String inputText = "ALTER TABLE demo.users ADD column1 INT;";
+        validateOk(inputText, "testValidateAddColumn");
     }
+
+    @Test
+    public void testValidateAlterColumn(){
+        String inputText = "ALTER TABLE demo.users ALTER age TYPE FLOAT;";
+        validateOk(inputText, "testValidateAlterColumn");
+    }
+
+    @Test
+    public void testValidateDropColumn(){
+        String inputText = "ALTER TABLE demo.users DROP age;";
+        validateOk(inputText, "testValidateDropColumn");
+    }
+
+    @Test
+    public void testValidateWithOptions(){
+        String inputText = "ALTER TABLE demo.users WITH comment='Table for testing purposes';";
+        validateOk(inputText, "testValidateWithOptions");
+    }
+
+    @Test
+    public void testValidateUnknownKS(){
+        String inputText = "ALTER TABLE unknownks.table1 ADD column1 INT;";
+        validateFail(inputText, "testValidateUnknownKS");
+    }
+
+    @Test
+    public void testValidateUnknownTable(){
+        String inputText = "ALTER TABLE demo.table1 ADD column1 INT;";
+        validateFail(inputText, "testValidateUnknownTable");
+    }
+
+    @Test
+    public void testValidateUnknownType(){
+        String inputText = "ALTER TABLE demo.users ADD column1 NONTYPE;";
+        validateFail(inputText, "testValidateUnknownType");
+    }
+
+    @Test
+    public void testValidateUnknownCol(){
+        String inputText = "ALTER TABLE demo.users ALTER unknowncolumn TYPE INT;";
+        validateFail(inputText, "testValidateUnknownType");
+    }
+
 }

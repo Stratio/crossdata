@@ -1278,6 +1278,9 @@ public class SelectStatement extends MetaStatement {
             joinSelect.setJoin(new InnerJoin("", changedMap));
         }
 
+        firstSelect.validate(metadata);
+        secondSelect.validate(metadata);
+
         // ADD STEPS
         steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
         steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));

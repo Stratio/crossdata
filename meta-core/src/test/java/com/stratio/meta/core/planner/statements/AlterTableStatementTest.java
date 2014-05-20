@@ -21,15 +21,16 @@ package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.AlterTableStatement;
+import com.stratio.meta.core.structures.Property;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public class AlterTableStatementTest extends BasicPlannerTest {
     @Test
     public void testPlanForAlter(){
         String inputText = "ALTER TABLE table1 ADD column1 INT;";
-        stmt = new AlterTableStatement("table1", "column1", "int", new HashMap(), 1);
+        stmt = new AlterTableStatement("table1", "column1", "int", new ArrayList<Property>(), 1);
         validateCassandraPath("testPlanForAlter");
     }
 }

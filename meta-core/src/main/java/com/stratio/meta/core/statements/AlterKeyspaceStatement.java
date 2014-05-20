@@ -52,7 +52,6 @@ public class AlterKeyspaceStatement extends MetaStatement {
         this.command = false;
         this.keyspace = keyspace;
         this.properties = new HashMap<>();
-        this.properties.putAll(properties);
         for(Map.Entry<String, ValueProperty> entry : properties.entrySet()){
             this.properties.put(entry.getKey().toLowerCase(), entry.getValue());
         }
@@ -73,6 +72,7 @@ public class AlterKeyspaceStatement extends MetaStatement {
 
     @Override
     public Result validate(MetadataManager metadata) {
+
         Result result = QueryResult.createSuccessQueryResult();
 
         if(keyspace!= null && keyspace.length() > 0) {
@@ -80,12 +80,12 @@ public class AlterKeyspaceStatement extends MetaStatement {
             if(ksMetadata == null){
                 result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " not found.");
             }
-        }else{
+        } else {
             result= QueryResult.createFailQueryResult("Empty keyspace name found.");
         }
 
-        if(properties.isEmpty() &&
-                (properties.containsKey("replication") || properties.containsKey("durable_writes"))){
+        if(properties.isEmpty() || (!properties.containsKey("replication")
+                                    & !properties.containsKey("durable_writes"))){
             result= QueryResult.createFailQueryResult("At least one property must be included: 'replication' or 'durable_writes'.");
         }
 
