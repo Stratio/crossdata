@@ -24,7 +24,6 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.core.structures.IndexType;
-import com.stratio.meta.core.utils.MetaQuery;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
@@ -78,8 +77,6 @@ public class LuceneIndexHelper {
         sb.append("' AND column_name='");
         sb.append(column.getName());
         sb.append("'");
-        MetaQuery mq = new MetaQuery();
-        mq.setQuery(sb.toString());
         ResultSet indexOptions = session.execute(sb.toString());
         Row options = indexOptions.one();
         if(options != null){
