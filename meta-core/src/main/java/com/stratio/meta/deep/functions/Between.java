@@ -24,6 +24,7 @@ import java.io.Serializable;
 import org.apache.spark.api.java.function.Function;
 
 import com.stratio.deep.entity.Cells;
+import com.stratio.meta.core.structures.Term;
 
 public class Between extends Function<Cells, Boolean> implements Serializable {
 
@@ -40,12 +41,12 @@ public class Between extends Function<Cells, Boolean> implements Serializable {
     /**
      * Lower bound
      */
-    private Object lowerBound;
+    private Term lowerBound;
 
     /**
      * Upper bound
      */
-    private Object upperBound;
+    private Term upperBound;
 
     /**
      * In apply in filter to a field in a Deep Cell.
@@ -55,7 +56,7 @@ public class Between extends Function<Cells, Boolean> implements Serializable {
      * @param inIDs
      *            List of values of the IN clause.
      */
-    public Between(String field, Object lowerBound, Object upperBound) {
+    public Between(String field, Term lowerBound, Term upperBound) {
         this.field = field;
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;

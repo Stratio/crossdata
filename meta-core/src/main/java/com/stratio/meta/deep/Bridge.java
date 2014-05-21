@@ -305,33 +305,28 @@ public class Bridge {
         LOG.info("Rdd input size: " + rdd.count());
         switch (operator.toLowerCase()) {
         case "=":
-            result = rdd
-                    .filter(new DeepEquals(cn, terms.get(0).getTermValue()));
+            result = rdd.filter(new DeepEquals(cn, terms.get(0)));
             break;
         case "<>":
-            result = rdd.filter(new NotEquals(cn, terms.get(0).getTermValue()));
+            result = rdd.filter(new NotEquals(cn, terms.get(0)));
             break;
         case ">":
-            result = rdd
-                    .filter(new GreaterThan(cn, terms.get(0).getTermValue()));
+            result = rdd.filter(new GreaterThan(cn, terms.get(0)));
             break;
         case ">=":
-            result = rdd.filter(new GreaterEqualThan(cn, terms.get(0)
-                    .getTermValue()));
+            result = rdd.filter(new GreaterEqualThan(cn, terms.get(0)));
             break;
         case "<":
-            result = rdd.filter(new LessThan(cn, terms.get(0).getTermValue()));
+            result = rdd.filter(new LessThan(cn, terms.get(0)));
             break;
         case "<=":
-            result = rdd.filter(new LessEqualThan(cn, terms.get(0)
-                    .getTermValue()));
+            result = rdd.filter(new LessEqualThan(cn, terms.get(0)));
             break;
         case "in":
-            result = rdd.filter(new In(cn, rel.getTermsStringValues()));
+            result = rdd.filter(new In(cn, terms));
             break;
         case "between":
-            result = rdd.filter(new Between(cn, terms.get(0).getTermValue(),
-                    terms.get(1).getTermValue()));
+            result = rdd.filter(new Between(cn, terms.get(0), terms.get(1)));
             break;
         default:
             LOG.error("Operator not supported: " + operator);
