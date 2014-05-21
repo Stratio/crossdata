@@ -24,9 +24,29 @@ import org.testng.annotations.Test;
 
 public class ExplainPlanStatementTest extends BasicValidatorTest {
 
+    // Test with CORRECT statements
     @Test
-    public void validateNotSupported(){
-        String inputText = "EXPLAIN PLAN FOR DROP INDEX indexName;";
-        validateFail(inputText, "validateNotSupported");
+    public void validateExplainPlanForSelect(){
+        String inputText = "EXPLAIN PLAN FOR SELECT name FROM demo.users;";
+        validateOk(inputText, "validateExplainPlanForSelect");
+    }
+
+    @Test
+    public void validateExplainPlanForDropIndex(){
+        String inputText = "EXPLAIN PLAN FOR DROP INDEX users_gender_idx;";
+        validateOk(inputText, "validateExplainPlanForDropIndex");
+    }
+
+    // Test with WRONG statements
+    @Test
+    public void validateExplainPlanForWrongSelect(){
+        String inputText = "EXPLAIN PLAN FOR SELECT name FROM demo.idk;";
+        validateFail(inputText, "validateExplainPlanForWrongSelect");
+    }
+
+    @Test
+    public void validateExplainPlanForWrongDropIndex(){
+        String inputText = "EXPLAIN PLAN FOR DROP INDEX idk;";
+        validateFail(inputText, "validateExplainPlanForWrongDropIndex");
     }
 }

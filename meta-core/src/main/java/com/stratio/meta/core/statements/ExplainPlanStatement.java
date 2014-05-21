@@ -19,7 +19,10 @@
 
 package com.stratio.meta.core.statements;
 
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
 /**
@@ -39,7 +42,11 @@ public class ExplainPlanStatement extends MetaStatement {
     public ExplainPlanStatement(MetaStatement metaStatement) {
         this.command = true;
         this.metaStatement = metaStatement;
-    }    
+    }
+
+    public MetaStatement getMetaStatement() {
+        return metaStatement;
+    }
 
     @Override
     public String toString() {
@@ -53,9 +60,26 @@ public class ExplainPlanStatement extends MetaStatement {
         return this.toString();
     }
 
+    /**
+     * Validate the semantics of the current statement. This method checks the
+     * existing metadata to determine that all referenced entities exists in the
+     * {@code targetKeyspace} and the types are compatible with the assignations
+     * or comparisons.
+     *
+     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+     *                 the required information.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     */
+    @Override
+    public Result validate(MetadataManager metadata) {
+        return metaStatement.validate(metadata);
+    }
+
     @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        return new Tree();
+        Tree tree = new Tree();
+        tree.setNode(new MetaStep(MetaPath.COMMAND, this));
+        return tree;
     }
     
 }
