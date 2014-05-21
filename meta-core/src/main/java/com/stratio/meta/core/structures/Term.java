@@ -58,4 +58,54 @@ public abstract class Term<T extends Comparable<T>> extends ValueCell<T>
     public int compareTo(T o) {
         return this.value.compareTo(o);
     }
+
+    /**
+     * Returns a hash code value for the object. This method is supported for
+     * the benefit of hash tables such as those provided by
+     * {@link java.util.HashMap}.
+     * 
+     * @return a hash code value for this object.
+     * @see Object#equals(Object)
+     * @see System#identityHashCode
+     */
+    @Override
+    public int hashCode() {
+        return clazz.hashCode() * this.getTermValue().hashCode();
+    }
+
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     * <p/>
+     * The {@code equals} method implements an equivalence relation on non-null
+     * object references:
+     * 
+     * @param obj
+     *            the reference object with which to compare.
+     * @return {@code true} if this object is the same as the obj argument;
+     *         {@code false} otherwise.
+     * @see #hashCode()
+     * @see java.util.HashMap
+     */
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj == null) {
+            return false;
+        }
+
+        if (!(obj instanceof Term)) {
+            return false;
+        }
+
+        Term other = (Term) obj;
+        if (other.getClass() != this.getClass()) {
+            return false;
+        }
+
+        if (other.clazz != this.clazz) {
+            return false;
+        }
+
+        return other.getTermValue().equals(this.getTermValue());
+    }
 }
