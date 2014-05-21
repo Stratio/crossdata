@@ -39,7 +39,11 @@ public class ExplainPlanStatement extends MetaStatement {
     public ExplainPlanStatement(MetaStatement metaStatement) {
         this.command = true;
         this.metaStatement = metaStatement;
-    }    
+    }
+
+    public MetaStatement getMetaStatement() {
+        return metaStatement;
+    }
 
     @Override
     public String toString() {
