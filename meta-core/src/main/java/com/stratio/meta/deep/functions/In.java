@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.spark.api.java.function.Function;
 
 import com.stratio.deep.entity.Cells;
+import com.stratio.meta.core.structures.Term;
 
 public class In extends Function<Cells, Boolean> implements Serializable {
 
@@ -41,31 +42,30 @@ public class In extends Function<Cells, Boolean> implements Serializable {
     /**
      * IDs in the IN clause.
      */
-    private List<String> inIDs;
+    private List<Term> terms;
 
     /**
      * In apply in filter to a field in a Deep Cell.
      * 
      * @param field
      *            Name of the field to check.
-     * @param inIDs
-     *            List of values of the IN clause.
+     * @param terms
+     *            List of terms of the IN clause.
      */
-    public In(String field, List<String> inIDs) {
+    public In(String field, List<Term> terms) {
         this.field = field;
-        this.inIDs = inIDs;
+        this.terms = terms;
     }
 
     @Override
     public Boolean call(Cells cells) {
-        
+
         Boolean isValid = false;
-        Object cellValue = cells.getCellByName(field)
-                .getCellValue();
-        
+        Object cellValue = cells.getCellByName(field).getCellValue();
+
         String currentValue = String.valueOf(cellValue);
         if (currentValue != null) {
-            isValid = inIDs.contains(currentValue);
+            isValid = terms.contains(currentValue);
         }
 
         return isValid;
