@@ -19,8 +19,10 @@
 
 package com.stratio.meta.deep;
 
+import com.datastax.driver.core.ResultSet;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.data.CassandraResultSet;
+import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
@@ -195,10 +197,11 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     @Test
     public void testNotEqual() {
-        MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.email<>name_1@domain.com;");
+        MetaQuery metaQuery = new MetaQuery("SELECT users.name, users.age FROM demo.users WHERE users.email<>name_1@domain.com;");
 
         SelectionSelectors selectionSelectors = new SelectionSelectors();
         selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+        selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
         SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
         List<Relation> clause = new ArrayList<>();
@@ -213,7 +216,26 @@ public class BridgeTest extends BasicCoreCassandraTest {
         tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
         metaQuery.setPlan(tree);
         metaQuery.setStatus(QueryStatus.PLANNED);
-        QueryResult result = (QueryResult) validateOk(metaQuery, "testEqualsFind");
+        QueryResult result = (QueryResult) validateOk(metaQuery, "testNotEqual");
+        ///////////////////////////////////////////////////////////////////////////
+        ResultSet result2 = _session.execute("SELECT name, age FROM demo.users;");
+        System.out.println("-------CASSANDRA-------");
+        for(com.datastax.driver.core.Row row: result2.all()){
+            System.out.print(" | "+row.getString("name"));
+            System.out.print(" | "+row.getInt("age"));
+            System.out.println(" | ");
+        }
+        System.out.println("------------------");
+        ///////////////////////////////////////////////////////////////////////////
+        System.out.println("-------METARESULT-------");
+        for(Row row: result.getResultSet()){
+            for(String key: row.getCells().keySet()){
+                System.out.print(" | "+row.getCell(key).getValue());
+            }
+            System.out.println(" | ");
+        }
+        System.out.println("------------------");
+        ///////////////////////////////////////////////////////////////////////////
         assertEquals(result.getResultSet().size(), 15);
     }
 

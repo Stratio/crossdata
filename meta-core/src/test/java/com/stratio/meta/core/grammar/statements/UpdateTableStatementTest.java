@@ -64,7 +64,6 @@ public class UpdateTableStatementTest extends ParsingTest {
         testParseFails(inputText, "updateWrongSpelling");
     }
 
-
     @Test
     public void updateWhereUsingAnd() {
         String inputText = "UPDATE table1 USING TTL = 400 AND TTL2 = 400 SET field1 = value1,"
