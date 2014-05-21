@@ -30,6 +30,7 @@ import static org.testng.Assert.assertNotNull;
 
 public class ExplainPlanStatementTest extends BasicValidatorTest {
 
+    // Test with CORRECT statements
     @Test
     public void validateExplainPlanForSelect(){
         String inputText = "EXPLAIN PLAN FOR SELECT name FROM demo.users;";
