@@ -19,21 +19,20 @@
 
 package com.stratio.meta.core.structures;
 
-public class IntegerTerm extends Term{
+public class IntegerTerm<T extends Number & Comparable<T>> extends Term<T> {
 
-    private final Long number;
+    private static final long serialVersionUID = 7097178218828822792L;
 
-    public IntegerTerm(String term){
-        super.clazz = Long.class;
-        number = Long.parseLong(term);
+    private final T number;
+
+    public IntegerTerm(String term) {
+        super.clazz = (Class<T>) Long.class;
+        number = (T) Long.valueOf(term);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Object getTermValue() {
-        if(super.clazz == Integer.class){
-            return number.intValue();
-        }
+    public T getTermValue() {
         return number;
     }
 

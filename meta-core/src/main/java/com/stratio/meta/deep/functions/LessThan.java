@@ -19,10 +19,12 @@
 
 package com.stratio.meta.deep.functions;
 
-import com.stratio.deep.entity.Cells;
+import java.io.Serializable;
+
 import org.apache.spark.api.java.function.Function;
 
-import java.io.Serializable;
+import com.stratio.deep.entity.Cells;
+import com.stratio.meta.core.structures.Term;
 
 public class LessThan extends Function<Cells, Boolean> implements Serializable {
 
@@ -32,9 +34,9 @@ public class LessThan extends Function<Cells, Boolean> implements Serializable {
     private static final long serialVersionUID = 2675616112608139116L;
 
     /**
-     * Value to compare.
+     * Term to compare.
      */
-    private Object value;
+    private Term term;
 
     /**
      * Name of the field of the cell to compare.
@@ -43,17 +45,20 @@ public class LessThan extends Function<Cells, Boolean> implements Serializable {
 
     /**
      * LessEqualThan apply > filter to a field in a Deep Cell.
-     * @param field Name of the field to check.
-     * @param value Value to compare to.
+     * 
+     * @param field
+     *            Name of the field to check.
+     * @param term
+     *            Term to compare to.
      */
-    public LessThan(String field, Object value){
-        this.value=value;
-        this.field=field;
+    public LessThan(String field, Term term) {
+        this.term = term;
+        this.field = field;
     }
 
     @Override
-    public Boolean call(Cells cells){
+    public Boolean call(Cells cells) {
         Object obj = cells.getCellByName(field).getCellValue();
-        return ((Comparable) value).compareTo(obj) > 0;
+        return ((Comparable) term).compareTo(obj) > 0;
     }
 }

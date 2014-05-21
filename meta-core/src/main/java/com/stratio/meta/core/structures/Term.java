@@ -19,27 +19,43 @@
 
 package com.stratio.meta.core.structures;
 
-public abstract class Term extends ValueCell {
+import java.io.Serializable;
 
-    protected Class<?> clazz;
-    protected Object value;
+public abstract class Term<T extends Comparable<T>> extends ValueCell<T>
+        implements Comparable<T>, Serializable {
+
+    private static final long serialVersionUID = -4258938152892510227L;
+
+    protected Class<T> clazz;
+    protected T value;
 
     /**
      * Get the Term Java Class.
+     * 
      * @return A {@link java.lang.Class}.
      */
-    public Class<?> getTermClass(){
+    public Class<?> getTermClass() {
         return clazz;
     }
 
-    public void setTermClass(Class<?> clazz){
+    public void setTermClass(Class<T> clazz) {
         this.clazz = clazz;
     }
 
     /**
      * Get the term value.
+     * 
      * @return A {@link java.lang.Object} with the value.
      */
-    public abstract Object getTermValue();
-    
+    public abstract T getTermValue();
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo(T o) {
+        return this.value.compareTo(o);
+    }
 }

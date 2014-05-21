@@ -19,31 +19,30 @@
 
 package com.stratio.meta.core.structures;
 
-public class FloatingTerm  extends Term{
+public class FloatingTerm<T extends Number & Comparable<T>> extends Term<T> {
 
-    private final Double number;
+    private static final long serialVersionUID = -578510540271635667L;
+
+    private final T number;
 
     public FloatingTerm(String term) {
-        super.clazz = Double.class;
-        this.number = Double.parseDouble(term);
+        super.clazz = (Class<T>) Double.class;
+        this.number = (T) Double.valueOf(term);
     }
 
     /**
      * Get the term value.
-     *
+     * 
      * @return A {@link Object} with the value.
      */
     @Override
-    public Object getTermValue() {
-        if(super.clazz == Float.class){
-            return number.floatValue();
-        }
+    public T getTermValue() {
         return number;
     }
 
     /**
      * Get the String value representation.
-     *
+     * 
      * @return The String value.
      */
     @Override

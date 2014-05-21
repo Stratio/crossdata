@@ -19,8 +19,9 @@
 
 package com.stratio.meta.core.structures;
 
+public class BooleanTerm extends Term<Boolean> {
 
-public class BooleanTerm extends Term{
+    private static final long serialVersionUID = 2872212148572680680L;
 
     /**
      * The boolean value stored by this term.
@@ -29,15 +30,17 @@ public class BooleanTerm extends Term{
 
     /**
      * Class constructor.
-     * @param term The string representation of a Boolean value.
+     * 
+     * @param term
+     *            The string representation of a Boolean value.
      */
-    public BooleanTerm(String term){
+    public BooleanTerm(String term) {
         super.clazz = Boolean.class;
         value = Boolean.valueOf(term);
     }
 
     @Override
-    public Object getTermValue() {
+    public Boolean getTermValue() {
         return value;
     }
 

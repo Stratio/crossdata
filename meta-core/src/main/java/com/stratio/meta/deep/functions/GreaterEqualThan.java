@@ -19,12 +19,15 @@
 
 package com.stratio.meta.deep.functions;
 
-import com.stratio.deep.entity.Cells;
-import org.apache.spark.api.java.function.Function;
-
 import java.io.Serializable;
 
-public class GreaterEqualThan extends Function<Cells, Boolean> implements Serializable {
+import org.apache.spark.api.java.function.Function;
+
+import com.stratio.deep.entity.Cells;
+import com.stratio.meta.core.structures.Term;
+
+public class GreaterEqualThan extends Function<Cells, Boolean> implements
+        Serializable {
 
     /**
      * Serial version UID.
@@ -34,7 +37,7 @@ public class GreaterEqualThan extends Function<Cells, Boolean> implements Serial
     /**
      * Value to compare.
      */
-    private Object value;
+    private Term term;
 
     /**
      * Name of the field of the cell to compare.
@@ -43,17 +46,20 @@ public class GreaterEqualThan extends Function<Cells, Boolean> implements Serial
 
     /**
      * GreaterEqualThan apply >= filter to a field in a Deep Cell.
-     * @param field Name of the field to check.
-     * @param value Value to compare to.
+     * 
+     * @param field
+     *            Name of the field to check.
+     * @param term
+     *            Term to compare to.
      */
-    public GreaterEqualThan(String field, Object value){
-        this.value=value;
-        this.field=field;
+    public GreaterEqualThan(String field, Term term) {
+        this.term = term;
+        this.field = field;
     }
 
     @Override
-    public Boolean call(Cells cells){
+    public Boolean call(Cells cells) {
         Object obj = cells.getCellByName(field).getCellValue();
-        return ((Comparable) value).compareTo(obj) <= 0;
+        return ((Comparable) term).compareTo(obj) <= 0;
     }
 }

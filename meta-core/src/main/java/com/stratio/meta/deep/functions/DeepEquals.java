@@ -19,13 +19,15 @@
 
 package com.stratio.meta.deep.functions;
 
-import com.stratio.deep.entity.Cells;
-import org.apache.spark.api.java.function.Function;
-
 import java.io.Serializable;
 
+import org.apache.spark.api.java.function.Function;
 
-public class DeepEquals extends Function<Cells, Boolean> implements Serializable{
+import com.stratio.deep.entity.Cells;
+import com.stratio.meta.core.structures.Term;
+
+public class DeepEquals extends Function<Cells, Boolean> implements
+        Serializable {
 
     /**
      * Serial version UID.
@@ -33,9 +35,9 @@ public class DeepEquals extends Function<Cells, Boolean> implements Serializable
     private static final long serialVersionUID = -6143471452730703044L;
 
     /**
-     * Value to compare.
+     * Term to compare.
      */
-    private Object value;
+    private Term term;
 
     /**
      * Name of the field of the cell to compare.
@@ -44,17 +46,20 @@ public class DeepEquals extends Function<Cells, Boolean> implements Serializable
 
     /**
      * DeepEquals apply = filter to a field in a Deep Cell.
-     * @param field Name of the field to check.
-     * @param value Value to compare to.
+     * 
+     * @param field
+     *            Name of the field to check.
+     * @param term
+     *            Term to compare to.
      */
-    public DeepEquals(String field, Object value){
-        this.value=value;
-        this.field=field;
+    public DeepEquals(String field, Term term) {
+        this.term = term;
+        this.field = field;
     }
 
     @Override
-    public Boolean call(Cells cells){
+    public Boolean call(Cells cells) {
         Object currentValue = cells.getCellByName(field).getCellValue();
-        return value.equals(currentValue);
+        return term.equals(currentValue);
     }
 }

@@ -19,7 +19,9 @@
 
 package com.stratio.meta.core.structures;
 
-public class StringTerm extends Term{
+public class StringTerm extends Term<String> {
+
+    private static final long serialVersionUID = 4470491967411363431L;
 
     private String term;
     private boolean quotedLiteral = false;
@@ -47,8 +49,8 @@ public class StringTerm extends Term{
     /** {@inheritDoc} */
     @Override
     public String toString() {
-        if(this.isQuotedLiteral()){
-            return "'"+term+"'";
+        if (this.isQuotedLiteral()) {
+            return "'" + term + "'";
         } else {
             return term;
         }
@@ -56,7 +58,7 @@ public class StringTerm extends Term{
 
     /** {@inheritDoc} */
     @Override
-    public Object getTermValue() {
+    public String getTermValue() {
         return term;
     }
 }
