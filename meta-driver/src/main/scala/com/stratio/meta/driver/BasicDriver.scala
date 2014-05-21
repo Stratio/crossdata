@@ -24,7 +24,7 @@ import com.stratio.meta.driver.config.DriverConfig
 import akka.contrib.pattern.ClusterClient
 import com.stratio.meta.driver.actor.ProxyActor
 import com.stratio.meta.common.result.Result
-import com.stratio.meta.common.ask.{Query, Connect}
+import com.stratio.meta.common.ask.{APICommand, Command, Query, Connect}
 import org.apache.log4j.Logger
 import  scala.concurrent.duration._
 
@@ -36,7 +36,7 @@ class BasicDriver extends DriverConfig{
   lazy val proxyActor= system.actorOf(ProxyActor.props(clusterClientActor,actorName), "proxy-actor")
 
   /**
-   * Release connection to MetaServer,
+   * Release connection to MetaServer.
    * @param user Login to the user (Audit only)
    * @return ConnectResult
    */
@@ -54,6 +54,30 @@ class BasicDriver extends DriverConfig{
     */
   def executeQuery(user:String, targetKs: String, query: String): Result = {
     retryPolitics.askRetry(proxyActor,new Query(targetKs,query,user))
+  }
+
+  /**
+   * List the existing catalogs in the underlying database.
+   * @return A CommandResult with a list of catalogs in the form of String.
+   */
+  def listCatalogs(): Result = {
+    retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS))
+  }
+
+  /**
+   * List the existing tables in a database catalog.
+   * @return A CommandResult with a list of tables in the form of String.
+   */
+  def listTables(catalogName: String): Result = {
+    retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, catalogName))
+  }
+
+  /**
+   * List the existing tables in a database catalog.
+   * @return A CommandResult with a maps of columns.
+   */
+  def listFields(catalogName: String, tableName: String): Result = {
+    retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, catalogName, tableName))
   }
 
 
