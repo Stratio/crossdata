@@ -75,7 +75,7 @@ public class ConsoleUtils {
             return stringQueryResult(queryResult);
         } else if (result instanceof CommandResult){
             CommandResult commandResult = (CommandResult) result;
-            return commandResult.getResult();
+            return String.class.cast(commandResult.getResult());
         } else if (result instanceof ConnectResult){
             ConnectResult connectResult = (ConnectResult) result;
             return String.valueOf("Connected with SessionId=" + connectResult.getSessionId());

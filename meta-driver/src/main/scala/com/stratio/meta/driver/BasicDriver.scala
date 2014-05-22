@@ -23,7 +23,7 @@ import akka.actor.{ ActorSelection, ActorSystem}
 import com.stratio.meta.driver.config.DriverConfig
 import akka.contrib.pattern.ClusterClient
 import com.stratio.meta.driver.actor.ProxyActor
-import com.stratio.meta.common.result.Result
+import com.stratio.meta.common.result.{MetadataResult, CommandResult, Result}
 import com.stratio.meta.common.ask.{APICommand, Command, Query, Connect}
 import org.apache.log4j.Logger
 import  scala.concurrent.duration._
@@ -58,28 +58,32 @@ class BasicDriver extends DriverConfig{
 
   /**
    * List the existing catalogs in the underlying database.
-   * @return A CommandResult with a list of catalogs in the form of String.
+   * @return A MetadataResult with a list of catalogs, or the object with hasError set
+   *         containing the error message.
    */
-  def listCatalogs(): Result = {
-    retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS))
+  def listCatalogs(): MetadataResult = {
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS))
+    result.asInstanceOf[MetadataResult]
   }
 
   /**
    * List the existing tables in a database catalog.
-   * @return A CommandResult with a list of tables in the form of String.
+   * @return A MetadataResult with a list of tables, or the object with hasError set
+   *         containing the error message.
    */
-  def listTables(catalogName: String): Result = {
-    retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, catalogName))
+  def listTables(catalogName: String): MetadataResult = {
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, catalogName))
+    result.asInstanceOf[MetadataResult]
   }
 
   /**
    * List the existing tables in a database catalog.
-   * @return A CommandResult with a maps of columns.
+   * @return A MetadataResult with a map of columns.
    */
-  def listFields(catalogName: String, tableName: String): Result = {
-    retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, catalogName, tableName))
+  def listFields(catalogName: String, tableName: String): MetadataResult = {
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, catalogName, tableName))
+    result.asInstanceOf[MetadataResult]
   }
-
 
   /**
    * Finish connection and actor system
@@ -87,7 +91,5 @@ class BasicDriver extends DriverConfig{
   def close() {
     system.shutdown()
   }
-
-
 
 }
