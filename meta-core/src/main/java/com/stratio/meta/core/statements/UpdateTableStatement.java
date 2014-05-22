@@ -266,11 +266,9 @@ public class UpdateTableStatement extends MetaStatement {
       Term<?> term = conditions.get(ident);
       if ((cm != null) && (term != null)) {
         if (term instanceof Term) {
-          if ((cm.getType().asJavaClass() == Integer.class)
-              || (cm.getType().asJavaClass() == Long.class)) {
+          if (CoreUtils.castForLongType(cm, term)) {
             conditions.put(ident, new IntegerTerm((Term<Long>) term));
-          } else if ((cm.getType().asJavaClass() == Double.class)
-              || (cm.getType().asJavaClass() == Float.class)) {
+          } else if (CoreUtils.castForDoubleType(cm, term)) {
             conditions.put(ident, new FloatTerm((Term<Double>) term));
           }
         }
@@ -280,7 +278,7 @@ public class UpdateTableStatement extends MetaStatement {
 
   private Result validateOptions() {
     Result result = QueryResult.createSuccessQueryResult();
-    for (Option opt : options) {
+    for (Option opt: options) {
       if (!(opt.getNameProperty().equalsIgnoreCase("ttl") || opt.getNameProperty()
           .equalsIgnoreCase("timestamp"))) {
         result =
@@ -341,11 +339,8 @@ public class UpdateTableStatement extends MetaStatement {
         ValueAssignment valueAssignment = assignment.getValue();
         if (valueAssignment.getType() == ValueAssignment.TYPE_TERM) {
           Term<?> valueTerm = valueAssignment.getTerm();
-          System.out.println("valueTerm: " + valueTerm.toString());
-          System.out.println("valueTerm.class: " + valueTerm.getTermClass());
           // Check data type between column of the identifier and term type of the statement
           Class<?> valueClazz = valueTerm.getTermClass();
-          System.out.println("valueClazz.toString:" + valueClazz.toString());
           String valueClass = valueClazz.getSimpleName();
           if (!idClazz.getSimpleName().equalsIgnoreCase(valueClass)) {
             result =
@@ -397,11 +392,9 @@ public class UpdateTableStatement extends MetaStatement {
       Term<?> term = assignment.getValue().getTerm();
       if ((cm != null) && (term != null)) {
         if (term instanceof Term) {
-          if ((cm.getType().asJavaClass() == Integer.class)
-              || (cm.getType().asJavaClass() == Long.class)) {
+          if (CoreUtils.castForLongType(cm, term)) {
             assignment.getValue().setTerm(new IntegerTerm((Term<Long>) term));
-          } else if ((cm.getType().asJavaClass() == Double.class)
-              || (cm.getType().asJavaClass() == Float.class)) {
+          } else if (CoreUtils.castForDoubleType(cm, term)) {
             assignment.getValue().setTerm(new FloatTerm((Term<Double>) term));
           }
         }

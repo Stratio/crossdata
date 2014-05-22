@@ -19,13 +19,13 @@
 
 package com.stratio.meta.core.utils;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
+import com.datastax.driver.core.*;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.ColumnDefinition;
+import com.stratio.meta.core.structures.FloatTerm;
+import com.stratio.meta.core.structures.IntegerTerm;
+import com.stratio.meta.core.structures.Term;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
@@ -127,6 +127,28 @@ public class CoreUtils {
             crs = new CassandraResultSet();
         }
         return crs;
+    }
+
+    public static boolean castForLongType(ColumnMetadata cm, Term<?> term){
+        boolean required = false;
+        if (((cm.getType().asJavaClass() == Integer.class)
+                || (cm.getType().asJavaClass() == Long.class))
+                && ((term.getTermClass() == Integer.class)
+                || (term.getTermClass() == Long.class))) {
+            required = true;
+        }
+        return required;
+    }
+
+    public static boolean castForDoubleType(ColumnMetadata cm, Term<?> term){
+        boolean required = false;
+        if ((cm.getType().asJavaClass() == Double.class)
+                || (cm.getType().asJavaClass() == Float.class)
+                && ((term.getTermClass() == Double.class)
+                || (term.getTermClass() == Float.class))) {
+            required = true;
+        }
+        return required;
     }
 
 }
