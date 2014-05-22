@@ -37,7 +37,7 @@ public class SelectStatementTest extends BasicPlannerTest {
 
         SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
         stmt = new SelectStatement(selClause, "demo.users");
-        Relation relation = new RelationCompare("age", "=", new IntegerTerm("10"));
+        Relation relation = new RelationCompare("age", "=", new LongTerm("10"));
         List<Relation> whereClause = Arrays.asList(relation);
         ((SelectStatement)stmt).setWhere(whereClause);
         Tree tree = stmt.getPlan(_metadataManager, "demo");
@@ -52,7 +52,7 @@ public class SelectStatementTest extends BasicPlannerTest {
         SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
         stmt = new SelectStatement(selClause, "demo.users");
         Relation relation1 = new RelationCompare("name", "=", new StringTerm("name_5"));
-        Relation relation2 = new RelationCompare("age", "=", new IntegerTerm("15"));
+        Relation relation2 = new RelationCompare("age", "=", new LongTerm("15"));
         List<Relation> whereClause = Arrays.asList(relation1, relation2);
         ((SelectStatement)stmt).setWhere(whereClause);
         Tree tree = stmt.getPlan(_metadataManager, "demo");
@@ -67,7 +67,7 @@ public class SelectStatementTest extends BasicPlannerTest {
 
         SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
         stmt = new SelectStatement(selClause, "demo.users");
-        Relation relation = new RelationCompare("age", ">", new IntegerTerm("13"));
+        Relation relation = new RelationCompare("age", ">", new LongTerm("13"));
         List<Relation> whereClause = Arrays.asList(relation);
         ((SelectStatement)stmt).setWhere(whereClause);
         Tree tree = stmt.getPlan(_metadataManager, "demo");
@@ -79,7 +79,7 @@ public class SelectStatementTest extends BasicPlannerTest {
         String inputText = "SELECT * FROM demo.types WHERE int_column=104;";
         SelectionClause selClause = new SelectionList(new SelectionAsterisk());
         stmt = new SelectStatement(selClause, "demo.types");
-        Relation relation = new RelationCompare("int_column", "=", new IntegerTerm("104"));
+        Relation relation = new RelationCompare("int_column", "=", new LongTerm("104"));
         List<Relation> whereClause = Arrays.asList(relation);
         ((SelectStatement)stmt).setWhere(whereClause);
         Tree tree = stmt.getPlan(_metadataManager, "demo");

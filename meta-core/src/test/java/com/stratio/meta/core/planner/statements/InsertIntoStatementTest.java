@@ -19,31 +19,35 @@
 
 package com.stratio.meta.core.planner.statements;
 
-import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.InsertIntoStatement;
-import com.stratio.meta.core.structures.BooleanTerm;
-import com.stratio.meta.core.structures.IntegerTerm;
-import com.stratio.meta.core.structures.StringTerm;
-import com.stratio.meta.core.structures.ValueCell;
-import org.testng.annotations.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class InsertIntoStatementTest  extends BasicPlannerTest {
+import org.testng.annotations.Test;
 
-    @Test
-    public void testPlanForInsert(){
-        String inputText = "INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
-        List<String> ids = Arrays.asList("name", "gender", "email", "age", "bool", "phrase");
-        List<ValueCell> list = new ArrayList();
-        list.add(new StringTerm("name_0"));
-        list.add(new StringTerm("male"));
-        list.add(new IntegerTerm("10"));
-        list.add(new BooleanTerm("false"));
-        list.add(new StringTerm(""));
-        stmt = new InsertIntoStatement("demo.users", ids, list, false, new ArrayList());
-        validateCassandraPath("testPlanForInsert");
-    }
+import com.stratio.meta.core.planner.BasicPlannerTest;
+import com.stratio.meta.core.statements.InsertIntoStatement;
+import com.stratio.meta.core.structures.BooleanTerm;
+import com.stratio.meta.core.structures.LongTerm;
+import com.stratio.meta.core.structures.Option;
+import com.stratio.meta.core.structures.StringTerm;
+import com.stratio.meta.core.structures.ValueCell;
+
+public class InsertIntoStatementTest extends BasicPlannerTest {
+
+	@Test
+	public void testPlanForInsert() {
+		String inputText = "INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
+		List<String> ids = Arrays.asList("name", "gender", "email", "age",
+				"bool", "phrase");
+		List<ValueCell<?>> list = new ArrayList<>();
+		list.add(new StringTerm("name_0"));
+		list.add(new StringTerm("male"));
+		list.add(new LongTerm("10"));
+		list.add(new BooleanTerm("false"));
+		list.add(new StringTerm(""));
+		stmt = new InsertIntoStatement("demo.users", ids, list, false,
+				new ArrayList<Option>());
+		validateCassandraPath("testPlanForInsert");
+	}
 }

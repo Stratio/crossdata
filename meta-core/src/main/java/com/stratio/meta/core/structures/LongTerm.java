@@ -19,15 +19,11 @@
 
 package com.stratio.meta.core.structures;
 
-public class IntegerTerm extends Term<Integer> {
+public class LongTerm extends Term<Long> {
 
 	private static final long serialVersionUID = 7097178218828822792L;
 
-	public IntegerTerm(String term) {
-		super(Integer.class, Integer.valueOf(term));
-	}
-
-	public IntegerTerm(Term<Long> term) {
-		super(Integer.class, term.getTermValue().intValue());
+	public LongTerm(String term) {
+		super(Long.class, Long.valueOf(term));
 	}
 }

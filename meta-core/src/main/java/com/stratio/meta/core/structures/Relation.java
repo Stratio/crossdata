@@ -1,20 +1,17 @@
 /*
  * Stratio Meta
- *
+ * 
  * Copyright (c) 2014, Stratio, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation; either version
+ * 3.0 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
 package com.stratio.meta.core.structures;
@@ -26,114 +23,116 @@ import java.util.List;
 import com.datastax.driver.core.TableMetadata;
 
 /**
- * Class that models the different types of relationships that can be found on a
- * WHERE clause.
+ * Class that models the different types of relationships that can be found on a WHERE clause.
  */
 public abstract class Relation {
 
-    /**
-     * Constant to define compare relationships (e.g., >, <, =, etc.).
-     */
-    public static final int TYPE_COMPARE = 1;
+  /**
+   * Constant to define compare relationships (e.g., >, <, =, etc.).
+   */
+  public static final int TYPE_COMPARE = 1;
 
-    /**
-     * Constant to define inclusion relationships.
-     */
-    public static final int TYPE_IN = 2;
+  /**
+   * Constant to define inclusion relationships.
+   */
+  public static final int TYPE_IN = 2;
 
-    /**
-     * Constant to define comparisons with the {@code TOKEN} cassandra function.
-     */
-    public static final int TYPE_TOKEN = 3;
+  /**
+   * Constant to define comparisons with the {@code TOKEN} cassandra function.
+   */
+  public static final int TYPE_TOKEN = 3;
 
-    /**
-     * Constant to define range comparisons.
-     */
-    public static final int TYPE_BETWEEN = 4;
+  /**
+   * Constant to define range comparisons.
+   */
+  public static final int TYPE_BETWEEN = 4;
 
-    /**
-     * List of identifiers in the left part of the relationship.
-     */
-    protected List<String> identifiers;
+  /**
+   * List of identifiers in the left part of the relationship.
+   */
+  protected List<String> identifiers;
 
-    /**
-     * Operator to be applied to solve the relationship.
-     */
-    protected String operator;
+  /**
+   * Operator to be applied to solve the relationship.
+   */
+  protected String operator;
 
-    /**
-     * List of terms on the right part of the relationship.
-     */
-    protected List<Term> terms;
+  /**
+   * List of terms on the right part of the relationship.
+   */
+  protected List<Term<?>> terms;
 
-    /**
-     * Type of relationship.
-     */
-    protected int type;
+  /**
+   * Type of relationship.
+   */
+  protected int type;
 
-    public List<String> getIdentifiers() {
-        return identifiers;
-    }
+  public List<String> getIdentifiers() {
+    return identifiers;
+  }
 
-    public String getOperator() {
-        return operator;
-    }
+  public String getOperator() {
+    return operator;
+  }
 
-    public void setOperator(String operator) {
-        this.operator = operator;
-    }
+  public void setOperator(String operator) {
+    this.operator = operator;
+  }
 
-    public List<Term> getTerms() {
-        return terms;
-    }
+  public List<Term<?>> getTerms() {
+    return terms;
+  }
 
-    public int numberOfTerms() {
-        return this.terms.size();
-    }
+  public int numberOfTerms() {
+    return this.terms.size();
+  }
 
-    public void setTerms(List<Term> terms) {
-        this.terms = terms;
-    }
+  public void setTerms(List<Term<?>> terms) {
+    this.terms = terms;
+  }
 
-    public int getType() {
-        return type;
-    }
+  public int getType() {
+    return type;
+  }
 
-    public void setType(int type) {
-        this.type = type;
-    }
+  public void setType(int type) {
+    this.type = type;
+  }
 
-    public void updateTermClass(TableMetadata tableMetadata) {
-        for (int i = 0; i < identifiers.size(); i++) {
-            String ident = identifiers.get(i);
-            if ((tableMetadata.getColumn(ident).getType().asJavaClass() == Integer.class && terms
-                    .get(i).getTermClass() == Long.class)
-                    || (tableMetadata.getColumn(ident).getType().asJavaClass() == Float.class && terms
-                            .get(i).getTermClass() == Double.class)) {
-                terms.get(i).setTermClass(
-                        tableMetadata.getColumn(ident).getType().asJavaClass());
-            }
+  public void updateTermClass(TableMetadata tableMetadata) {
+    for (int i = 0; i < identifiers.size(); i++) {
+      Class<? extends Comparable<?>> dataType =
+          (Class<? extends Comparable<?>>) tableMetadata.getColumn(identifiers.get(i)).getType()
+              .asJavaClass();
+      if (terms.get(i) instanceof Term) {
+        Term<?> term = terms.get(i);
+        if (dataType == Integer.class && term.getTermClass() == Long.class) {
+          terms.set(i, new IntegerTerm((Term<Long>) term));
+        } else if (dataType == Float.class && term.getTermClass() == Double.class) {
+          terms.set(i, new FloatTerm((Term<Double>) term));
         }
+      }
+    }
+  }
+
+  @Override
+  public abstract String toString();
+
+  /**
+   * Gets the string values list for the terms
+   * 
+   * @return Terms string values
+   */
+  public List<String> getTermsStringValues() {
+
+    List<String> termsValuesList = new ArrayList<>();
+
+    Iterator<Term<?>> terms = this.getTerms().iterator();
+    while (terms.hasNext()) {
+      Term term = terms.next();
+      termsValuesList.add(term.getStringValue());
     }
 
-    @Override
-    public abstract String toString();
-
-    /**
-     * Gets the string values list for the terms
-     * 
-     * @return Terms string values
-     */
-    public List<String> getTermsStringValues() {
-
-        List<String> termsValuesList = new ArrayList<>();
-
-        Iterator<Term> terms = this.getTerms().iterator();
-        while (terms.hasNext()) {
-            Term term = terms.next();
-            termsValuesList.add(term.getStringValue());
-        }
-
-        return termsValuesList;
-    }
+    return termsValuesList;
+  }
 }

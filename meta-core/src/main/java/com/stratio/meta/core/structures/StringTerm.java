@@ -21,44 +21,31 @@ package com.stratio.meta.core.structures;
 
 public class StringTerm extends Term<String> {
 
-    private static final long serialVersionUID = 4470491967411363431L;
+	private static final long serialVersionUID = 4470491967411363431L;
 
-    private String term;
-    private boolean quotedLiteral = false;
+	private boolean quotedLiteral = false;
 
-    public StringTerm(String term, boolean quotedLiteral) {
-        super.clazz = String.class;
-        this.term = term;
-        this.quotedLiteral = quotedLiteral;
-    }
+	public StringTerm(String term, boolean quotedLiteral) {
+		super(String.class, term);
+		this.quotedLiteral = quotedLiteral;
+	}
 
-    public StringTerm(String term) {
-        this.term = term;
-        this.type = TYPE_TERM;
-    }
+	public StringTerm(String term) {
+		super(String.class, term);
+		this.type = TYPE_TERM;
+	}
 
-    public boolean isQuotedLiteral() {
-        return quotedLiteral;
-    }
+	public boolean isQuotedLiteral() {
+		return quotedLiteral;
+	}
 
-    @Override
-    public String getStringValue() {
-        return term;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String toString() {
-        if (this.isQuotedLiteral()) {
-            return "'" + term + "'";
-        } else {
-            return term;
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getTermValue() {
-        return term;
-    }
+	/** {@inheritDoc} */
+	@Override
+	public String toString() {
+		if (this.isQuotedLiteral()) {
+			return "'" + value + "'";
+		} else {
+			return value;
+		}
+	}
 }
