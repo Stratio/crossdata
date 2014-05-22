@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.TableMetadata;
 
 /**
@@ -101,15 +102,17 @@ public abstract class Relation {
 
   public void updateTermClass(TableMetadata tableMetadata) {
     for (int i = 0; i < identifiers.size(); i++) {
-      Class<? extends Comparable<?>> dataType =
-          (Class<? extends Comparable<?>>) tableMetadata.getColumn(identifiers.get(i)).getType()
-              .asJavaClass();
-      if (terms.get(i) instanceof Term) {
-        Term<?> term = terms.get(i);
-        if (dataType == Integer.class && term.getTermClass() == Long.class) {
-          terms.set(i, new IntegerTerm((Term<Long>) term));
-        } else if (dataType == Float.class && term.getTermClass() == Double.class) {
-          terms.set(i, new FloatTerm((Term<Double>) term));
+      ColumnMetadata column = tableMetadata.getColumn(identifiers.get(i));
+      if (column != null) {
+        Class<? extends Comparable<?>> dataType =
+            (Class<? extends Comparable<?>>) column.getType().asJavaClass();
+        if (terms.get(i) instanceof Term) {
+          Term<?> term = terms.get(i);
+          if (dataType == Integer.class && term.getTermClass() == Long.class) {
+            terms.set(i, new IntegerTerm((Term<Long>) term));
+          } else if (dataType == Float.class && term.getTermClass() == Double.class) {
+            terms.set(i, new FloatTerm((Term<Double>) term));
+          }
         }
       }
     }
