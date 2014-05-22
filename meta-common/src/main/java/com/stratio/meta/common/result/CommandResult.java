@@ -53,7 +53,7 @@ public class CommandResult extends Result {
      * Get the execution result.
      * @return The result or null if an error occurred.
      */
-    public String getResult() {
+    public Object getResult() {
         return result;
     }
 

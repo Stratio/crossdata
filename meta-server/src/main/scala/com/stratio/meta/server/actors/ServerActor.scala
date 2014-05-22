@@ -22,7 +22,7 @@ package com.stratio.meta.server.actors
 import akka.actor.{Props, ActorLogging, Actor}
 import com.stratio.meta.common.result.{CommandResult, ConnectResult, QueryResult, Result}
 import com.stratio.meta.core.engine.Engine
-import com.stratio.meta.common.ask.{Connect, Query}
+import com.stratio.meta.common.ask.{Command, Connect, Query}
 import scala.util.Random
 import org.apache.log4j.Logger
 
@@ -33,11 +33,15 @@ object ServerActor{
 class ServerActor(engine:Engine) extends Actor {
   val log =Logger.getLogger(classOf[ServerActor])
   val queryActorRef= context.actorOf(QueryActor.props(engine),"QueryActor")
+  val cmdActorRef= context.actorOf(APIActor.props(engine.getAPIManager),"APIActor")
   def receive = {
     case query:Query => queryActorRef forward query
     case Connect(user)=> {
       log.info("Welcome " + user +"!")
       sender ! ConnectResult.createSuccessConnectResult(Random.nextLong())
+    }
+    case cmd: Command => {
+      log.info("API Command call " + cmd.commandType)
     }
     case _ => {
       sender ! CommandResult.createFailCommanResult("Not recognized object")

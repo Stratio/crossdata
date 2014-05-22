@@ -22,6 +22,7 @@ package com.stratio.meta.core.engine;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.stratio.deep.context.DeepSparkContext;
+import com.stratio.meta.core.api.APIManager;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
@@ -39,24 +40,29 @@ import java.util.Arrays;
 public class Engine {
 
     /**
-     * The {@link com.stratio.meta.core.parser.Parser}. Responsible for parse.
+     * The {@link com.stratio.meta.core.parser.Parser} responsible for parse.
      */
     private final Parser parser;
 
     /**
-     * The {@link com.stratio.meta.core.validator.Validator}. Responsible for validation.
+     * The {@link com.stratio.meta.core.validator.Validator} responsible for validation.
      */
     private final Validator validator;
 
     /**
-     * The {@link com.stratio.meta.core.planner.Planner}. Responsible for planification.
+     * The {@link com.stratio.meta.core.planner.Planner} responsible for planification.
      */
     private final Planner planner;
 
     /**
-     * The {@link com.stratio.meta.core.executor.Executor}. Responsible for execution.
+     * The {@link com.stratio.meta.core.executor.Executor} responsible for execution.
      */
     private final Executor executor;
+
+    /**
+     * The {@link com.stratio.meta.core.api.APIManager} responsible for API calls.
+     */
+    private final APIManager manager;
 
     /**
      * Datastax Java Driver session.
@@ -98,6 +104,7 @@ public class Engine {
 
         parser = new Parser();
         validator = new Validator(session);
+        manager = new APIManager(session);
         planner = new Planner(session);
         executor = new Executor(session, deepContext, config);
     }
@@ -136,6 +143,14 @@ public class Engine {
      */
     public Executor getExecutor() {
         return executor;
+    }
+
+    /**
+     * Get the API manager.
+     * @return A {@link com.stratio.meta.core.api.APIManager}.
+     */
+    public APIManager getAPIManager(){
+        return manager;
     }
 
     /**
