@@ -33,7 +33,7 @@ public class AlterKeyspaceStatementTest extends ParsingTest{
 
     @Test
     public void alterKeyspaceWithReplication() {
-        String inputText = "ALTER KEYSPACE mykeyspace WITH replication = {'class':'org.apache.cassandra.locator.NetworkTopologyStrategy'};";
+        String inputText = "ALTER KEYSPACE mykeyspace WITH replication = {'class': 'org.apache.cassandra.locator.NetworkTopologyStrategy'};";
         testRegularStatement(inputText, "alterKeyspaceWithReplication");
     }
 

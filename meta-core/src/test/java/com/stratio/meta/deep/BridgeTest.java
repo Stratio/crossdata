@@ -31,8 +31,10 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.datastax.driver.core.ResultSet;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.data.CassandraResultSet;
+import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
@@ -221,31 +223,6 @@ public class BridgeTest extends BasicCoreCassandraTest {
     metaQuery.setStatus(QueryStatus.PLANNED);
     QueryResult result = (QueryResult) validateOk(metaQuery, "testEqualsFind");
     assertEquals(result.getResultSet().size(), 1);
-  }
-
-  @Test
-  public void testNotEqual() {
-    MetaQuery metaQuery =
-        new MetaQuery("SELECT users.name FROM demo.users WHERE users.email<>name_1@domain.com;");
-
-    SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
-    SelectionClause selectionClause = new SelectionList(selectionSelectors);
-
-    List<Relation> clause = new ArrayList<>();
-    Relation relation = new RelationCompare("email", "<>", new StringTerm("name_1@domain.com"));
-    clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");
-    firstSelect.setLimit(10000);
-    firstSelect.setWhere(clause);
-    firstSelect.validate(metadataManager);
-
-    Tree tree = new Tree();
-    tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
-    metaQuery.setPlan(tree);
-    metaQuery.setStatus(QueryStatus.PLANNED);
-    QueryResult result = (QueryResult) validateOk(metaQuery, "testEqualsFind");
-    assertEquals(result.getResultSet().size(), 15);
   }
 
   @Test
@@ -819,6 +796,52 @@ public class BridgeTest extends BasicCoreCassandraTest {
     Result results = validateRows(metaQuery, "testBasicBetweenClauseWithoutResults", 0);
 
     results.toString();
+  }
+
+  @Test
+  public void testNotEqual() {
+    MetaQuery metaQuery =
+        new MetaQuery(
+            "SELECT users.name, users.age FROM demo.users WHERE users.email<>name_1@domain.com;");
+
+    SelectionSelectors selectionSelectors = new SelectionSelectors();
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
+    SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+    List<Relation> clause = new ArrayList<>();
+    Relation relation = new RelationCompare("email", "<>", new StringTerm("name_1@domain.com"));
+    clause.add(relation);
+    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    firstSelect.setLimit(10000);
+    firstSelect.setWhere(clause);
+    firstSelect.validate(metadataManager);
+
+    Tree tree = new Tree();
+    tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+    metaQuery.setPlan(tree);
+    metaQuery.setStatus(QueryStatus.PLANNED);
+    QueryResult result = (QueryResult) validateOk(metaQuery, "testNotEqual");
+    // /////////////////////////////////////////////////////////////////////////
+    ResultSet result2 = _session.execute("SELECT name, age FROM demo.users;");
+    System.out.println("-------CASSANDRA-------");
+    for (com.datastax.driver.core.Row row : result2.all()) {
+      System.out.print(" | " + row.getString("name"));
+      System.out.print(" | " + row.getInt("age"));
+      System.out.println(" | ");
+    }
+    System.out.println("------------------");
+    // /////////////////////////////////////////////////////////////////////////
+    System.out.println("-------METARESULT-------");
+    for (Row row : result.getResultSet()) {
+      for (String key : row.getCells().keySet()) {
+        System.out.print(" | " + row.getCell(key).getValue());
+      }
+      System.out.println(" | ");
+    }
+    System.out.println("------------------");
+    // /////////////////////////////////////////////////////////////////////////
+    assertEquals(result.getResultSet().size(), 15);
   }
 
   @Test

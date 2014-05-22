@@ -26,32 +26,32 @@ public class AlterTableStatementTest extends ParsingTest{
 
     @Test
     public void alterTableBasic() {
-        String inputText = "alter table tabla1 alter column1 type int;";
+        String inputText = "alter table table1 alter column1 type int;";
         testRegularStatement(inputText, "alterTableBasic");
     }
 
     @Test
     public void alterTableBasic1() {
-        String inputText = "alter table tabla1 add column1 int;";
+        String inputText = "alter table table1 add column1 int;";
         testRegularStatement(inputText, "alterTableBasic1");
     }
 
     @Test
     public void alterTableBasic2() {
-        String inputText = "alter table tabla1 drop column1;";
+        String inputText = "alter table table1 drop column1;";
         testRegularStatement(inputText, "alterTableBasic2");
     }
 
     @Test
     public void alterTableBasic3() {
-        String inputText = "Alter table tabla1 with property1=value1 and property2=2 and property3=3.0;";
+        String inputText = "Alter table table1 with property1=value1 and property2=2 and property3=3.0;";
         testRegularStatement(inputText, "alterTableBasic3");
     }
 
     @Test
     public void alterWrongPropertyIdentifier(){
-        String inputText = "ALTER TABLE tabla1 with 2property1=value1;";
-        testParseFails(inputText, "alterWrongPropertyIdentifier");
+        String inputText = "ALTER TABLE table1 with 2property1=value1;";
+        testRecoverableError(inputText, "alterWrongPropertyIdentifier");
     }
 
 

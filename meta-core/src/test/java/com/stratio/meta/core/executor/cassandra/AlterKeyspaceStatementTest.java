@@ -67,16 +67,12 @@ public class AlterKeyspaceStatementTest extends BasicExecutorTest {
         clause.add(relation);
         selectStmt.setWhere(clause);
 
+        selectStmt.validate(metadataManager);
+
         Tree treeSelect = new Tree();
         treeSelect.setNode(new MetaStep(MetaPath.CASSANDRA, selectStmt));
         metaQuerySelect.setPlan(treeSelect);
         metaQuerySelect.setStatus(QueryStatus.PLANNED);
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         MetaQuery resultSelect = executor.executeQuery(metaQuerySelect);
 
@@ -123,6 +119,8 @@ public class AlterKeyspaceStatementTest extends BasicExecutorTest {
         Relation relation = new RelationCompare("keyspace_name", "=", new StringTerm("demo", true));
         clause.add(relation);
         selectStmt.setWhere(clause);
+
+        selectStmt.validate(metadataManager);
 
         Tree treeSelect = new Tree();
         treeSelect.setNode(new MetaStep(MetaPath.CASSANDRA, selectStmt));

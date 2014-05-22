@@ -31,7 +31,7 @@ public class SelectStatementTest extends BasicPlannerTest {
 
     @Test
     public void testWhereIndexNonRelational() {
-        String inputText = "SELECT name, age FROM demo.users WHERE age = 10";
+        String inputText = "SELECT name, age, info FROM demo.users WHERE age = 10";
         List<SelectionSelector> selectionSelectors = Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(new SelectorIdentifier("age")),
                 new SelectionSelector(new SelectorIdentifier("info")));
 

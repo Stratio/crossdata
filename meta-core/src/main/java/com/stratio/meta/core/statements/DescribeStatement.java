@@ -94,6 +94,7 @@ public class DescribeStatement extends MetaStatement {
     public void setTableName(String tableName) {
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
+            keyspaceInc = true;
             keyspace = ksAndTableName[0];
             this.tablename = ksAndTableName[1];
         }else {
@@ -108,9 +109,7 @@ public class DescribeStatement extends MetaStatement {
         if(type == DescribeType.KEYSPACE){
             sb.append(keyspace);            
         } else {
-            if(keyspace != null){
-                sb.append(keyspace).append(".");
-            }
+            sb.append(getEffectiveKeyspace()).append(".");
             sb.append(tablename);
         }
         return sb.toString();

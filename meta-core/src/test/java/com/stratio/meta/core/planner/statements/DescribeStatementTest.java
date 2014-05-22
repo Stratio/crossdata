@@ -20,17 +20,26 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.AlterTableStatement;
-import com.stratio.meta.core.structures.Property;
+import com.stratio.meta.core.statements.DescribeStatement;
+import com.stratio.meta.core.structures.DescribeType;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
+public class DescribeStatementTest extends BasicPlannerTest {
 
-public class AlterTableStatementTest extends BasicPlannerTest {
     @Test
-    public void testPlanForAlter(){
-        String inputText = "ALTER TABLE table1 ADD column1 INT;";
-        stmt = new AlterTableStatement("table1", "column1", "int", new ArrayList<Property>(), 1);
-        validateCassandraPath("testPlanForAlter");
+    public void testPlanForDescribeKeyspace(){
+        String input = "DESCRIBE KEYSPACE demo;";
+        stmt = new DescribeStatement(DescribeType.KEYSPACE);
+        ((DescribeStatement) stmt).setKeyspace("demo");
+        validateCommandPath("testPlanForDescribeKeyspace");
     }
+
+    @Test
+    public void testPlanForDescribeTablename(){
+        String input = "DESCRIBE TABLENAME demo.users;";
+        stmt = new DescribeStatement(DescribeType.TABLE);
+        ((DescribeStatement) stmt).setTableName("demo.users");
+        validateCommandPath("testPlanForDescribeTablename");
+    }
+
 }

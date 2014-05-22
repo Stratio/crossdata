@@ -134,7 +134,9 @@ public class CassandraExecutor {
      * @return a {@link com.stratio.meta.common.result.Result} with errors.
      */
     public static Result processException(Exception ex, String queryStr){
-        if(ex.getMessage().contains("line") && ex.getMessage().contains(":")){
+        if(ex.getMessage() == null){
+            return QueryResult.createFailQueryResult("Unknown exception");
+        } else if(ex.getMessage().contains("line") && ex.getMessage().contains(":")){
             String[] cMessageEx =  ex.getMessage().split(" ");
             StringBuilder sb = new StringBuilder();
             sb.append(cMessageEx[2]);

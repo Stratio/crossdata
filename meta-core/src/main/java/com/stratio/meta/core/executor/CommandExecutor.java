@@ -26,6 +26,7 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.DescribeStatement;
+import com.stratio.meta.core.statements.ExplainPlanStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.structures.DescribeType;
 import org.apache.log4j.Logger;
@@ -52,13 +53,20 @@ public class CommandExecutor {
         try {
             if (stmt instanceof DescribeStatement) {
                 return executeDescribe((DescribeStatement) stmt, session);
+            } else if(stmt instanceof ExplainPlanStatement) {
+                return executeExplainPlan((ExplainPlanStatement) stmt, session);
             } else {
-                return CommandResult.createFailCommanResult("Not supported yet.");
+                return CommandResult.createFailCommanResult("Command not supported yet.");
             }
         } catch (RuntimeException rex){
             LOG.debug("Command executor failed", rex);
             return CommandResult.createFailCommanResult(rex.getMessage());
         }
+    }
+
+    private static Result executeExplainPlan(ExplainPlanStatement stmt, Session session) {
+        return CommandResult.createSuccessCommandResult(
+                stmt.getMetaStatement().getPlan(new MetadataManager(session), stmt.getMetaStatement().getEffectiveKeyspace()).toStringDownTop());
     }
 
     /**
@@ -82,7 +90,7 @@ public class CommandExecutor {
                 info = ksInfo.exportAsString();
             }
         } else { // TABLE
-            TableMetadata tableInfo = mm.getTableMetadata(dscrStatement.getKeyspace(), dscrStatement.getTableName());
+            TableMetadata tableInfo = mm.getTableMetadata(dscrStatement.getEffectiveKeyspace(), dscrStatement.getTableName());
             if (tableInfo == null) {
                 errorMessage = "TABLE " + dscrStatement.getTableName() + " was not found";
             } else {

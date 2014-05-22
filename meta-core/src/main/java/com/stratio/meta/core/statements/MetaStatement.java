@@ -135,7 +135,7 @@ public abstract class MetaStatement {
         return result;
     }
 
-    protected String getEffectiveKeyspace(){
+    public String getEffectiveKeyspace(){
         String effectiveKs = sessionKeyspace;
         if(keyspaceInc){
             effectiveKs = keyspace;

@@ -1,51 +1,48 @@
 /*
  * Stratio Meta
- *
+ * 
  * Copyright (c) 2014, Stratio, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation; either version
+ * 3.0 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
 package com.stratio.meta.core.structures;
 
 public class StringTerm extends Term<String> {
 
-	private static final long serialVersionUID = 4470491967411363431L;
+  private static final long serialVersionUID = 4470491967411363431L;
 
-	private boolean quotedLiteral = false;
+  private boolean quotedLiteral = false;
 
-	public StringTerm(String term, boolean quotedLiteral) {
-		super(String.class, term);
-		this.quotedLiteral = quotedLiteral;
-	}
+  public StringTerm(String term, boolean quotedLiteral) {
+    super(String.class, term);
+    this.type = TYPE_TERM;
+    this.quotedLiteral = quotedLiteral;
+  }
 
-	public StringTerm(String term) {
-		super(String.class, term);
-		this.type = TYPE_TERM;
-	}
+  public StringTerm(String term) {
+    this(term, false);
+  }
 
-	public boolean isQuotedLiteral() {
-		return quotedLiteral;
-	}
+  public boolean isQuotedLiteral() {
+    return quotedLiteral;
+  }
 
-	/** {@inheritDoc} */
-	@Override
-	public String toString() {
-		if (this.isQuotedLiteral()) {
-			return "'" + value + "'";
-		} else {
-			return value;
-		}
-	}
+  /** {@inheritDoc} */
+  @Override
+  public String toString() {
+    if (this.isQuotedLiteral()) {
+      return "'" + value + "'";
+    } else {
+      return value;
+    }
+  }
 }

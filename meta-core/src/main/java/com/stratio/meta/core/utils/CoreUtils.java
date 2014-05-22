@@ -30,11 +30,16 @@ import org.apache.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class CoreUtils {
+
+    public static final List<String> supportedTypes = Arrays.asList("bigint", "boolean", "counter",
+            "double", "float", "int", "integer", "varchar");
+    // SOON: "date", "uuid", "timeuuid"
 
     /**
      * Map of methods required to transform a {@link com.datastax.driver.core.DataType} into the
