@@ -556,34 +556,35 @@ public class SelectStatement extends MetaStatement {
    * @param rc Relation of Comparator type.
    * @return Whether the relation is valid.
    */
-  private Result validateWhereRelation(String targetTable, String column, Term t, RelationCompare rc) {
+  private Result validateWhereSingleColumnRelation(String targetTable, String column,
+      List<Term<?>> terms, Relation rc) {
     Result result = QueryResult.createSuccessQueryResult();
 
     String operator = rc.getOperator();
 
     ColumnMetadata cm = findColumnMetadata(targetTable, column);
     if (cm != null) {
-      // rc.updateTermClass(tableMetadataFrom);
-      if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
-        result =
-            QueryResult.createFailQueryResult("Column " + column + " of type "
-                + cm.getType().asJavaClass() + " does not accept " + t.getTermClass() + " values ("
-                + t.toString() + ")");
+      Iterator<Term<?>> termsIt = terms.iterator();
+      Class<?> columnType = cm.getType().asJavaClass();
+      while (!result.hasError() && termsIt.hasNext()) {
+        Term<?> term = termsIt.next();
+        if (!columnType.equals(term.getTermClass())) {
+          result =
+              QueryResult.createFailQueryResult("Column [" + column + "] of type [" + columnType
+                  + "] does not accept " + term.getTermClass() + " values (" + term.toString()
+                  + ")");
+        }
       }
 
-      if (Boolean.class.equals(cm.getType().asJavaClass())) {
+      if (Boolean.class.equals(columnType)) {
         boolean supported = true;
         switch (operator) {
           case ">":
-            supported = false;
-            break;
           case "<":
-            supported = false;
-            break;
           case ">=":
-            supported = false;
-            break;
           case "<=":
+          case "in":
+          case "between":
             supported = false;
             break;
           default:
@@ -604,6 +605,21 @@ public class SelectStatement extends MetaStatement {
     return result;
   }
 
+  private Class<? extends Comparable<?>> retrieveTermsType(List<Term<?>> terms) {
+
+    Class<? extends Comparable<?>> termsType = null;
+    for (Term<?> term : terms) {
+
+      if (termsType == null) {
+        termsType = term.getTermClass();
+      }
+
+
+    }
+
+    return termsType;
+  }
+
   /**
    * Validate that the where clause is valid by checking that columns exists on the target table and
    * that the comparisons are semantically valid.
@@ -617,10 +633,11 @@ public class SelectStatement extends MetaStatement {
     while (!result.hasError() && relations.hasNext()) {
       Relation relation = relations.next();
       relation.updateTermClass(tableMetadata);
-      if (Relation.TYPE_COMPARE == relation.getType()) {
+      if (Relation.TYPE_COMPARE == relation.getType() || Relation.TYPE_IN == relation.getType()
+          || Relation.TYPE_BETWEEN == relation.getType()) {
         // Check comparison, =, >, <, etc.
-        RelationCompare rc = RelationCompare.class.cast(relation);
-        String column = rc.getIdentifiers().get(0);
+        // RelationCompare rc = RelationCompare.class.cast(relation);
+        String column = relation.getIdentifiers().get(0);
         // Determine the target table the column belongs to.
         String targetTable = "any";
         if (column.contains(".")) {
@@ -629,23 +646,17 @@ public class SelectStatement extends MetaStatement {
           column = tableAndColumn[1];
         }
 
-        // Get the term and determine its type.
-        Term t = Term.class.cast(rc.getTerms().get(0));
-        result = validateWhereRelation(targetTable, column, t, rc);
-        if ("match".equalsIgnoreCase(rc.getOperator()) && joinInc) {
+        // Check terms types
+        result =
+            validateWhereSingleColumnRelation(targetTable, column, relation.getTerms(), relation);
+        if ("match".equalsIgnoreCase(relation.getOperator()) && joinInc) {
           result =
               QueryResult
                   .createFailQueryResult("Select statements with 'Inner Join' don't support MATCH operator.");
         }
-      } else if (Relation.TYPE_IN == relation.getType()) {
-        // TODO: Check IN relation
-        result = QueryResult.createFailQueryResult("IN clause not supported.");
       } else if (Relation.TYPE_TOKEN == relation.getType()) {
         // TODO: Check TOKEN relation
         result = QueryResult.createFailQueryResult("TOKEN function not supported.");
-      } else if (Relation.TYPE_BETWEEN == relation.getType()) {
-        // TODO: Check BETWEEN relation
-        result = QueryResult.createFailQueryResult("BETWEEN clause not supported.");
       }
     }
 
@@ -1390,8 +1401,8 @@ public class SelectStatement extends MetaStatement {
       joinSelect.setJoin(new InnerJoin("", changedMap));
     }
 
-        firstSelect.validate(metadata);
-        secondSelect.validate(metadata);
+    firstSelect.validate(metadata);
+    secondSelect.validate(metadata);
 
     // ADD STEPS
     steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));

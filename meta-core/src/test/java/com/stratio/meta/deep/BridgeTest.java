@@ -702,40 +702,6 @@ public class BridgeTest extends BasicCoreCassandraTest {
   }
 
   @Test
-  public void testBasicInClauseWithMixedData() {
-
-    MetaQuery metaQuery =
-        new MetaQuery(
-            "SELECT users.name FROM demo.users WHERE users.email IN ('name_11@domain.com', 19);");
-
-    // Fields to retrieve
-    SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
-    SelectionClause selectionClause = new SelectionList(selectionSelectors);
-
-    // IN clause
-    List<Relation> clause = new ArrayList<>();
-    List<Term<?>> inTerms = new ArrayList<>();
-    inTerms.add(new StringTerm("name_11@domain.com"));
-    inTerms.add(new IntegerTerm("19"));
-    Relation relation = new RelationIn("email", inTerms);
-
-    clause.add(relation);
-
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");
-    firstSelect.setWhere(clause);
-
-    // Query execution
-    Tree tree = new Tree();
-    tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
-    metaQuery.setPlan(tree);
-    metaQuery.setStatus(QueryStatus.PLANNED);
-    Result results = validateRows(metaQuery, "testBasicInClauseWithMixedData", 1);
-
-    results.toString();
-  }
-
-  @Test
   public void testBasicBetweenClauseWithStringData() {
 
     MetaQuery metaQuery =

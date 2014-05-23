@@ -101,8 +101,12 @@ public abstract class Relation {
   }
 
   public void updateTermClass(TableMetadata tableMetadata) {
-    for (int i = 0; i < identifiers.size(); i++) {
-      ColumnMetadata column = tableMetadata.getColumn(identifiers.get(i));
+    for (int i = 0; i < terms.size(); i++) {
+
+      String columnFullName = identifiers.get(0);
+      String columnName = columnFullName.substring(columnFullName.indexOf(".") + 1);
+
+      ColumnMetadata column = tableMetadata.getColumn(columnName);
       if (column != null) {
         Class<? extends Comparable<?>> dataType =
             (Class<? extends Comparable<?>>) column.getType().asJavaClass();
@@ -132,7 +136,7 @@ public abstract class Relation {
 
     Iterator<Term<?>> terms = this.getTerms().iterator();
     while (terms.hasNext()) {
-      Term term = terms.next();
+      Term<?> term = terms.next();
       termsValuesList.add(term.getStringValue());
     }
 
