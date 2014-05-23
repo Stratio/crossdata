@@ -37,6 +37,7 @@ public class MetadataResult extends Result{
     /**
      * Map of columns in a table.
      */
+    //TODO List<IColumnMetadata>
     private Map<String, String> columnMap = null;
 
     /**

@@ -42,6 +42,7 @@ class ServerActor(engine:Engine) extends Actor {
     }
     case cmd: Command => {
       log.info("API Command call " + cmd.commandType)
+      cmdActorRef forward cmd
     }
     case _ => {
       sender ! CommandResult.createFailCommanResult("Not recognized object")

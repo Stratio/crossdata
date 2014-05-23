@@ -62,7 +62,7 @@ class BasicDriver extends DriverConfig{
    *         containing the error message.
    */
   def listCatalogs(): MetadataResult = {
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS))
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, null))
     result.asInstanceOf[MetadataResult]
   }
 

@@ -105,7 +105,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
       result = executeAPICommand(cmd, true)
     }
     //Check that table demo_server exists
-    assertNotNull(result.getCatalogList, "Cannot obtain catalog list")
+    assertNotNull(result.getTableList, "Cannot obtain table list")
     val toCheck = List("users", "users_info")
     toCheck.foreach(
       table => assertTrue(result.getTableList.contains(table), "Cannot find table " + table))
