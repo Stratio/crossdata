@@ -526,8 +526,6 @@ public class SelectStatement extends MetaStatement {
     Result result = QueryResult.createSuccessQueryResult();
     if (joinInc) {
       Map<String, String> onFields = join.getFields();
-      String tableName = "";
-      String columnName = "";
       Iterator<Map.Entry<String, String>> onClauses = onFields.entrySet().iterator();
       while (!result.hasError() && onClauses.hasNext()) {
         Map.Entry<String, String> onClause = onClauses.next();
@@ -603,21 +601,6 @@ public class SelectStatement extends MetaStatement {
     }
 
     return result;
-  }
-
-  private Class<? extends Comparable<?>> retrieveTermsType(List<Term<?>> terms) {
-
-    Class<? extends Comparable<?>> termsType = null;
-    for (Term<?> term : terms) {
-
-      if (termsType == null) {
-        termsType = term.getTermClass();
-      }
-
-
-    }
-
-    return termsType;
   }
 
   /**
@@ -1412,7 +1395,7 @@ public class SelectStatement extends MetaStatement {
     return steps;
   }
 
-  private Map getColumnsFromWhere() {
+  private Map<String, String> getColumnsFromWhere() {
     Map<String, String> whereCols = new HashMap<>();
     for (Relation relation : where) {
       for (String id : relation.getIdentifiers()) {
@@ -1422,7 +1405,8 @@ public class SelectStatement extends MetaStatement {
     return whereCols;
   }
 
-  private boolean matchWhereColsWithPartitionKeys(TableMetadata tableMetadata, Map whereCols) {
+  private boolean matchWhereColsWithPartitionKeys(TableMetadata tableMetadata,
+      Map<String, String> whereCols) {
     boolean partialMatched = false;
     for (ColumnMetadata colMD : tableMetadata.getPartitionKey()) {
       String operator = "";
@@ -1442,7 +1426,8 @@ public class SelectStatement extends MetaStatement {
     return partialMatched;
   }
 
-  private void matchWhereColsWithClusteringKeys(TableMetadata tableMetadata, Map whereCols) {
+  private void matchWhereColsWithClusteringKeys(TableMetadata tableMetadata,
+      Map<String, String> whereCols) {
     for (ColumnMetadata colMD : tableMetadata.getClusteringColumns()) {
       String operator = "";
       for (Relation relation : where) {
