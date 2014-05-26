@@ -146,14 +146,14 @@ public class DescribeStatement extends MetaStatement {
         if(type == DescribeType.KEYSPACE){
             KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(keyspace);
             if(ksInfo == null){
-                result = CommandResult.createFailCommanResult("KEYSPACE " + keyspace + " was not found");
+                result = CommandResult.createFailCommandResult("KEYSPACE " + keyspace + " was not found");
             } else {
                 result = CommandResult.createSuccessCommandResult(ksInfo.exportAsString());
             }
         } else {
             TableMetadata tableInfo = mm.getTableMetadata(keyspace, tablename);
             if(tableInfo == null){
-                result = CommandResult.createFailCommanResult("TABLE " + tablename + " was not found");
+                result = CommandResult.createFailCommandResult("TABLE " + tablename + " was not found");
             } else {
                 result = CommandResult.createSuccessCommandResult(tableInfo.exportAsString());
             }

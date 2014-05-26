@@ -45,7 +45,7 @@ class ServerActor(engine:Engine) extends Actor {
       cmdActorRef forward cmd
     }
     case _ => {
-      sender ! CommandResult.createFailCommanResult("Not recognized object")
+      sender ! CommandResult.createFailCommandResult("Not recognized object")
     }
   }
 }

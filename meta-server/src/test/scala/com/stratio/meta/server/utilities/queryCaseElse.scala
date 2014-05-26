@@ -69,10 +69,10 @@ class queryCaseElse{
           myQueryResult=value
           myQueryResult
         }
-        case _ => CommandResult.createFailCommanResult("error")
+        case _ => CommandResult.createFailCommandResult("error")
       }
     }
-    else CommandResult.createFailCommanResult("error")
+    else CommandResult.createFailCommandResult("error")
   }
 
 }

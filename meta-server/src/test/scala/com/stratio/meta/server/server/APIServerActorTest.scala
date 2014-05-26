@@ -34,6 +34,8 @@ import scala.concurrent.{Await, Future}
 import akka.pattern.ask
 import scala.concurrent.duration._
 import scala.collection.JavaConversions._
+import com.stratio.meta.common.metadata.structures.TableMetadata
+import scala.collection.mutable.ListBuffer
 
 /**
  * To generate unit test of query actor
@@ -106,9 +108,15 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
     }
     //Check that table demo_server exists
     assertNotNull(result.getTableList, "Cannot obtain table list")
+    var retrieved = ListBuffer[String]()
+    val it = result.getTableList.iterator
+    while(it.hasNext){
+      retrieved += it.next().getTableName
+    }
+
     val toCheck = List("users", "users_info")
     toCheck.foreach(
-      table => assertTrue(result.getTableList.contains(table), "Cannot find table " + table))
+      table => assertTrue(retrieved.contains(table), "Cannot find table " + table))
 
   }
 

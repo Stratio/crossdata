@@ -47,12 +47,12 @@ public abstract class AbstractMetadataHelper {
      */
     public CatalogMetadata toCatalogMetadata(KeyspaceMetadata keyspaceMetadata){
         Set<TableMetadata> tables = new HashSet<>(keyspaceMetadata.getTables().size());
-        CatalogMetadata result = new CatalogMetadata(
-                keyspaceMetadata.getName(),
-                tables);
         for(com.datastax.driver.core.TableMetadata table: keyspaceMetadata.getTables()){
             tables.add(toTableMetadata(keyspaceMetadata.getName(), table));
         }
+        CatalogMetadata result = new CatalogMetadata(
+                keyspaceMetadata.getName(),
+                tables);
         return result;
     }
 

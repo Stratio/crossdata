@@ -95,7 +95,7 @@ public class CassandraMetadataHelper extends AbstractMetadataHelper{
         ColumnType result = typeMapping.get(dbTypeName.toUpperCase());
         if(result == null) {
             try {
-                DataType.Name cassandraType = DataType.Name.valueOf(dbTypeName);
+                DataType.Name cassandraType = DataType.Name.valueOf(dbTypeName.toUpperCase());
                 result = ColumnType.NATIVE;
                 result.setDBMapping(cassandraType.name(), cassandraType.asJavaClass());
                 result.setODBCType(nativeODBCType.get(cassandraType));

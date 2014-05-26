@@ -72,7 +72,9 @@ class BasicDriver extends DriverConfig{
    *         containing the error message.
    */
   def listTables(catalogName: String): MetadataResult = {
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, catalogName))
+    var params : java.util.List[String] = new java.util.ArrayList[String]
+    params.add(catalogName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, params))
     result.asInstanceOf[MetadataResult]
   }
 
@@ -81,7 +83,10 @@ class BasicDriver extends DriverConfig{
    * @return A MetadataResult with a map of columns.
    */
   def listFields(catalogName: String, tableName: String): MetadataResult = {
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, catalogName, tableName))
+    var params : java.util.List[String] = new java.util.ArrayList[String]
+    params.add(catalogName)
+    params.add(tableName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, params))
     result.asInstanceOf[MetadataResult]
   }
 

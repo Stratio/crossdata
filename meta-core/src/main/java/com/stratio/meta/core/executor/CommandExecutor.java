@@ -60,7 +60,7 @@ public class CommandExecutor {
             }
         } catch (RuntimeException rex){
             LOG.debug("Command executor failed", rex);
-            return CommandResult.createFailCommanResult(rex.getMessage());
+            return CommandResult.createFailCommandResult(rex.getMessage());
         }
     }
 
@@ -100,7 +100,7 @@ public class CommandExecutor {
         if (info != null) {
             result = CommandResult.createSuccessCommandResult(info);
         } else {
-            result = CommandResult.createFailCommanResult(errorMessage);
+            result = CommandResult.createFailCommandResult(errorMessage);
         }
         return result;
     }
