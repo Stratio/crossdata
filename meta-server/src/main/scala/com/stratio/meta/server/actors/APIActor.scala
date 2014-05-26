@@ -41,7 +41,7 @@ class APIActor(metadata: APIManager) extends Actor with TimeTracker {
       finishTimer(timer)
     }
     case _ => {
-      sender ! CommandResult.createFailCommanResult("Unsupported command: ");
+      sender ! CommandResult.createFailCommandResult("Unsupported command: ");
     }
   }
 }

@@ -49,7 +49,7 @@ public class CatalogMetadata {
      */
     public CatalogMetadata(String catalogName, Set<TableMetadata> tables){
         this(catalogName);
-        tables.addAll(tables);
+        this.tables.addAll(tables);
     }
 
     /**

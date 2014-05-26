@@ -19,8 +19,10 @@
 
 package com.stratio.meta.common.result;
 
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta.common.metadata.structures.TableMetadata;
+
 import java.util.List;
-import java.util.Map;
 
 public class MetadataResult extends Result{
 
@@ -32,13 +34,12 @@ public class MetadataResult extends Result{
     /**
      * List of tables in a catalog.
      */
-    private List<String> tableList = null;
+    private List<TableMetadata> tableList = null;
 
     /**
      * Map of columns in a table.
      */
-    //TODO List<IColumnMetadata>
-    private Map<String, String> columnMap = null;
+    private List<ColumnMetadata> columnList = null;
 
     /**
      * Private constructor of the factory.
@@ -52,57 +53,35 @@ public class MetadataResult extends Result{
     }
 
     /**
-     * Private constructor of the factory.
-     * @param error           Whether an error occurred during the execution.
-     * @param errorMessage    The error message in case of {@code error}.
-     * @param ksChanged       Whether the current keyspace in the user session is modified by the execution.
-     * @param currentKeyspace The current keyspace after the execution.
-     * @param content         List of catalogs or tables.
-     * @param catalogs     Whether the list contains catalogs or tables.
+     * Set the catalog list.
+     * @param catalogList The list.
      */
-    private MetadataResult(boolean error, String errorMessage,
-                           boolean ksChanged, String currentKeyspace,
-                           List<String> content, boolean catalogs) {
-        super(error, errorMessage, ksChanged, currentKeyspace);
-        if(catalogs){
-            catalogList = content;
-        }else{
-            tableList = content;
-        }
+    public void setCatalogList(List<String> catalogList){
+        this.catalogList = catalogList;
     }
 
     /**
-     * Private constructor of the factory.
-     * @param error           Whether an error occurred during the execution.
-     * @param errorMessage    The error message in case of {@code error}.
-     * @param ksChanged       Whether the current keyspace in the user session is modified by the execution.
-     * @param currentKeyspace The current keyspace after the execution.
-     * @param columnMap       Map with the columns in a table.
+     * Set the table list.
+     * @param tableList The list.
      */
-    private MetadataResult(boolean error, String errorMessage,
-                           boolean ksChanged, String currentKeyspace,
-                           Map<String, String> columnMap) {
-        super(error, errorMessage, ksChanged, currentKeyspace);
-        this.columnMap = columnMap;
+    public void setTableList(List<TableMetadata> tableList) {
+        this.tableList = tableList;
+    }
+
+    /**
+     * Set the column list.
+     * @param columnList The list.
+     */
+    public void setColumnList(List<ColumnMetadata> columnList) {
+        this.columnList = columnList;
     }
 
     /**
      * Create a successful query.
-     * @param content List of catalogs or tables.
-     * @param catalogs Whether the list contains catalogs or tables.
      * @return A {@link com.stratio.meta.common.result.MetadataResult}.
      */
-    public static MetadataResult createSuccessMetadataResult(List<String> content, boolean catalogs){
-        return new MetadataResult(false, null, false, null, content, catalogs);
-    }
-
-    /**
-     * Create a successful query.
-     * @param columnMap Map with the columns in a table.
-     * @return A {@link com.stratio.meta.common.result.MetadataResult}.
-     */
-    public static MetadataResult createSuccessMetadataResult(Map<String, String> columnMap){
-        return new MetadataResult(false, null, false, null, columnMap);
+    public static MetadataResult createSuccessMetadataResult(){
+        return new MetadataResult(false, null, false, null);
     }
 
     /**
@@ -118,11 +97,11 @@ public class MetadataResult extends Result{
         return catalogList;
     }
 
-    public List<String> getTableList(){
+    public List<TableMetadata> getTableList(){
         return tableList;
     }
 
-    public Map<String, String> getColumnMap(){
-        return columnMap;
+    public List<ColumnMetadata> getColumnList(){
+        return columnList;
     }
 }
