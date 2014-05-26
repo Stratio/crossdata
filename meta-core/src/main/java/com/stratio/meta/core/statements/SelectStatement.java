@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -1480,49 +1481,73 @@ public class SelectStatement extends MetaStatement {
     // Get columns of the where clauses (Map<identifier, operator>)
     Map<String, String> whereCols = getColumnsFromWhere();
 
-    String effectiveKeyspace = getEffectiveKeyspace();
-    TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
-
-    // Check if all partition columns have an equals operator
-    boolean partialMatched = matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
-
     // By default go through deep.
     boolean cassandraPath = false;
 
     if (whereCols.isEmpty()) {
       // All where clauses are included in the primary key with equals comparator.
       cassandraPath = true;
-    } else if (!partialMatched) {
+    } else if (areOperatorsCassandraCompatible(whereCols)) {
+      String effectiveKeyspace = getEffectiveKeyspace();
+      TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
 
-      // Check if all clustering columns have an equals operator
-      matchWhereColsWithClusteringKeys(tableMetadata, whereCols);
+      // Check if all partition columns have an equals operator
+      boolean partialMatched = matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
 
-      // Get columns of the custom and lucene indexes
-      Set<String> indexedCols = new HashSet<>();
-      Set<String> luceneCols = new HashSet<>();
-      for (CustomIndexMetadata cim : metadataManager.getTableIndex(tableMetadata)) {
-        if (cim.getIndexType() == IndexType.DEFAULT) {
-          indexedCols.addAll(cim.getIndexedColumns());
-        } else {
-          luceneCols.addAll(cim.getIndexedColumns());
+      if (!partialMatched) {
+
+        // Check if all clustering columns have an equals operator
+        matchWhereColsWithClusteringKeys(tableMetadata, whereCols);
+
+        // Get columns of the custom and lucene indexes
+        Set<String> indexedCols = new HashSet<>();
+        Set<String> luceneCols = new HashSet<>();
+        for (CustomIndexMetadata cim : metadataManager.getTableIndex(tableMetadata)) {
+          if (cim.getIndexType() == IndexType.DEFAULT) {
+            indexedCols.addAll(cim.getIndexedColumns());
+          } else {
+            luceneCols.addAll(cim.getIndexedColumns());
+          }
         }
+
+        if (indexedCols.containsAll(whereCols.keySet())
+            && !containsRelationalOperators(whereCols.values())) {
+          cassandraPath = true;
+        }
+
+        cassandraPath =
+            checkWhereColsWithLucene(luceneCols, whereCols, metadataManager, cassandraPath);
+
       }
-
-      if (indexedCols.containsAll(whereCols.keySet())
-          && !containsRelationalOperators(whereCols.values())) {
-        cassandraPath = true;
-      }
-
-      cassandraPath =
-          checkWhereColsWithLucene(luceneCols, whereCols, metadataManager, cassandraPath);
-
     }
 
-    steps.setNode(new MetaStep(MetaPath.DEEP, this));
     if (cassandraPath) {
       steps.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+    } else {
+      steps.setNode(new MetaStep(MetaPath.DEEP, this));
     }
+
     return steps;
+  }
+
+  private boolean areOperatorsCassandraCompatible(Map<String, String> whereCols) {
+
+    boolean compatible = true;
+
+    Iterator<Entry<String, String>> whereColsIt = whereCols.entrySet().iterator();
+    while (compatible && whereColsIt.hasNext()) {
+
+      Entry<String, String> whereCol = whereColsIt.next();
+
+      switch (whereCol.getValue().toLowerCase()) {
+        case "in":
+        case "between":
+          compatible = false;
+          break;
+      }
+    }
+
+    return compatible;
   }
 
   @Override
