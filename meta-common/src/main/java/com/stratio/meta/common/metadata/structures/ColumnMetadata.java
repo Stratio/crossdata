@@ -17,14 +17,9 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.metadata.structures;
+package com.stratio.meta.common.metadata.structures;
 
 public class ColumnMetadata {
-
-    /**
-     * Catalog associated with the parent table.
-     */
-    private final String catalogName;
 
     /**
      * Parent table.
@@ -37,16 +32,46 @@ public class ColumnMetadata {
     private final String columnName;
 
     /**
+     * Column type.
+     */
+    private ColumnType type;
+
+    /**
      * Class constructor.
-     * @param catalogName Name of the catalog associated with the parent table.
      * @param tableName Parent table name.
      * @param columnName Column name.
      */
-    public ColumnMetadata(String catalogName, String tableName, String columnName){
-        this.catalogName = catalogName;
+    public ColumnMetadata(String tableName, String columnName){
         this.tableName = tableName;
         this.columnName = columnName;
     }
 
+    public String getTableName() {
+        return tableName;
+    }
 
+    public String getColumnName(){
+        return columnName;
+    }
+
+    /**
+     * Set the column type.
+     * @param type The column type.
+     */
+    public void setType(ColumnType type){
+        this.type = type;
+    }
+
+    /**
+     * Get the column type.
+     * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
+     */
+    public ColumnType getType(){
+        return type;
+    }
+
+    @Override
+    public String toString() {
+        return this.columnName + ' ' + this.getType();
+    }
 }
