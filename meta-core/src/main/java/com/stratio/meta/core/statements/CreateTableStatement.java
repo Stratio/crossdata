@@ -24,6 +24,7 @@ import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.BooleanProperty;
 import com.stratio.meta.core.structures.Property;
 import com.stratio.meta.core.structures.PropertyNameValue;
 import com.stratio.meta.core.structures.ValueProperty;
@@ -413,6 +414,22 @@ public class CreateTableStatement extends MetaStatement{
         Tree tree = new Tree();
         if(createTable) {
             tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+            boolean streamingMode = false;
+            for(Property property: properties){
+                if(property.getType() == Property.TYPE_NAME_VALUE){
+                    PropertyNameValue pnv = (PropertyNameValue) property;
+                    String propName = pnv.getName();
+                    if(propName.equalsIgnoreCase("ephemeral")
+                            && (pnv.getVp().getType() == ValueProperty.TYPE_BOOLEAN)
+                            && ((BooleanProperty) pnv.getVp()).getBool()){
+                        streamingMode = true;
+                        break;
+                    }
+                }
+            }
+            if(streamingMode){
+                tree.setNode(new MetaStep(MetaPath.STREAMING, this));
+            }
         }
         return tree;
     }
