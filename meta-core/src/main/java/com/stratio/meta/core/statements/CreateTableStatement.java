@@ -433,7 +433,7 @@ public class CreateTableStatement extends MetaStatement{
 
     @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        System.out.println("Planning");
+        System.out.println("Planning: "+toString());
         Tree tree = new Tree();
         if(createTable) {
             tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
@@ -442,6 +442,7 @@ public class CreateTableStatement extends MetaStatement{
                 if(property.getType() == Property.TYPE_NAME_VALUE){
                     PropertyNameValue pnv = (PropertyNameValue) property;
                     String propName = pnv.getName();
+                    System.out.println("propName:("+pnv.getType()+") "+ propName);
                     if(propName.equalsIgnoreCase("ephemeral")
                             && (pnv.getVp().getType() == ValueProperty.TYPE_BOOLEAN)
                             && ((BooleanProperty) pnv.getVp()).getBool()){
