@@ -24,6 +24,7 @@ import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.BooleanProperty;
 import com.stratio.meta.core.structures.Property;
 import com.stratio.meta.core.structures.PropertyNameValue;
 import com.stratio.meta.core.structures.ValueProperty;
@@ -31,6 +32,7 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta.streaming.MetaStream;
 
 import java.util.*;
 
@@ -128,6 +130,14 @@ public class CreateTableStatement extends MetaStatement{
         this.primaryKeyType = primaryKeyType;
         this.columnNumberPK = columnNumberPK;
     }
+
+  public Map<String, String> getColumns() {
+    return columns;
+  }
+
+  public String getTableName() {
+    return tableName;
+  }
 
     /**
      * Set the keyspace specified in the create table statement.
@@ -233,6 +243,9 @@ public class CreateTableStatement extends MetaStatement{
     @Override
     public Result validate(MetadataManager metadata) {
         Result result = validateKeyspaceAndTable(metadata, sessionKeyspace);
+        if (result.hasError()){
+            result=validateEphimeral();
+        }
         if(!result.hasError()){
             result = validateColumns();
         }
@@ -242,7 +255,17 @@ public class CreateTableStatement extends MetaStatement{
         return result;
     }
 
-    /**
+  private Result validateEphimeral() {
+      Result result = QueryResult.createSuccessQueryResult();
+      createTable = true;
+      if (MetaStream.checkstream(tableName)){
+          result= QueryResult.createFailQueryResult(tableName+ " exists yet.");
+          createTable = false;
+      }
+      return result;
+  }
+
+  /**
      * Validate that a valid keyspace is present, and that the table does not
      * exits unless {@code ifNotExists} has been specified.
      * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
@@ -267,7 +290,7 @@ public class CreateTableStatement extends MetaStatement{
                 TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
                 if (tableMetadata != null && !ifNotExists) {
                     result= QueryResult.createFailQueryResult("Table " + tableName + " already exists.");
-                }else if (tableMetadata == null){
+                } else if (tableMetadata == null){
                     createTable = true;
                 }
             }
@@ -413,6 +436,22 @@ public class CreateTableStatement extends MetaStatement{
         Tree tree = new Tree();
         if(createTable) {
             tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+            boolean streamingMode = false;
+            for(Property property: properties){
+                if(property.getType() == Property.TYPE_NAME_VALUE){
+                    PropertyNameValue pnv = (PropertyNameValue) property;
+                    String propName = pnv.getName();
+                    if(propName.equalsIgnoreCase("ephemeral")
+                            && (pnv.getVp().getType() == ValueProperty.TYPE_BOOLEAN)
+                            && ((BooleanProperty) pnv.getVp()).getBool()){
+                        streamingMode = true;
+                        break;
+                    }
+                }
+            }
+            if(streamingMode){
+                tree.setNode(new MetaStep(MetaPath.STREAMING, this));
+            }
         }
         return tree;
     }
