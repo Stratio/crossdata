@@ -31,19 +31,19 @@ public class CellTest {
 
     @Test
     public void testConstructor(){
-        Cell cellStr = new Cell(String.class, new String("comment1"));
+        Cell cellStr = new Cell(new String("comment1"));
         Assert.assertNotNull(cellStr);
     }
 
     @Test
-    public void testGetDataype(){
-        Cell cellStr = new Cell(String.class, new String("comment1"));
-        Assert.assertEquals(cellStr.getDatatype(),String.class);
+    public void testDataype(){
+        Cell cellStr = new Cell(new String("comment1"));
+        Assert.assertEquals(cellStr.getValue().getClass(), String.class);
     }
 
     @Test
     public void testGetValue(){
-        Cell cellStr = new Cell(String.class, new String("comment1"));
+        Cell cellStr = new Cell(new String("comment1"));
         Assert.assertTrue(((String) cellStr.getValue()).equals("comment1"));
     }
 }

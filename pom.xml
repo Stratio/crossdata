@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.stratio.meta</groupId>
-    <artifactId>stratio-meta-parent</artifactId>
+    <artifactId>meta-parent</artifactId>
     <packaging>pom</packaging>
     <version>0.0.5-SNAPSHOT</version>
     <name>Stratio META parent</name>
@@ -72,6 +72,11 @@
             <name>Daniel Higuero</name>
             <email>dhiguero at stratio dot com</email>
         </developer>
+        <developer>
+            <id>opuertas</id>
+            <name>Óscar Puertas</name>
+            <email>opuertas at stratio dot com</email>
+        </developer>
     </developers>
 
     <modules>
@@ -86,21 +91,9 @@
         <akka.version>2.2.4</akka.version>
         <cassandra.driver>2.0.0</cassandra.driver>
         <meta.version>0.0.5-SNAPSHOT</meta.version>
-        <deep.version>0.2.1</deep.version>
+        <deep.version>0.2.5</deep.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
     </properties>
-    <repositories>
-        <repository>
-            <id>scala-tools.org</id>
-            <name>Scala-tools Maven2 Repository</name>
-            <url>http://scala-tools.org/repo-releases</url>
-        </repository>
-        <repository>
-            <id>typesafe.com</id>
-            <name>Typesafe Repository</name>
-            <url>http://repo.typesafe.com/typesafe/releases/</url>
-        </repository>
-    </repositories>
 
     <build>
         <plugins>

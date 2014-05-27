@@ -30,14 +30,14 @@ class RetryPolitics(retryTimes:Int,waitTime: Timeout) {
     if(retry==retryTimes){
       ConnectResult.createFailConnectResult("Not found answer. After "+retry+" retries, timeout was exceed.")
     } else {
-      if(retry > 0){
-        println("Retry "+retry+" timeout")
-      }
       try {
         val future = remoteActor.ask(message)(waitTime)
         Await.result(future.mapTo[Result], waitTime.duration*2)
       } catch {
-        case ex: Exception => askRetry(remoteActor, message, waitTime, retry + 1)
+        case ex: Exception => {
+          println("Retry "+(retry+1)+" timeout")
+          askRetry(remoteActor, message, waitTime, retry + 1)
+        }
       }
     }
   }

@@ -23,9 +23,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class CassandraResultSetTest {
 
@@ -46,16 +44,31 @@ public class CassandraResultSetTest {
     @Test
     public void testConstructorWithList(){
         rSet = new CassandraResultSet(buildRowList());
+        rSet.setColumnDefinitions(buildColumnDefinitions());
         Assert.assertNotNull(rSet);
-        Assert.assertEquals(rSet.size(),4);
+        Assert.assertEquals(rSet.size(), 4);
     }
 
     @Test
     public void testGetRows(){
         rSet = new CassandraResultSet();
-        rSet.add(new Row("str",new Cell(String.class, new String("comment" + rand.nextInt(100)))));
-        rSet.add(new Row("int", new Cell(Integer.class, new Integer(rand.nextInt(50)))));
-        Assert.assertEquals(rSet.getRows().size(),2);
+        rSet.add(new Row("str",new Cell(new String("comment" + rand.nextInt(100)))));
+        rSet.add(new Row("int", new Cell(new Integer(rand.nextInt(50)))));
+
+        Assert.assertEquals(rSet.getRows().size(), 2);
+    }
+
+    @Test
+    public void testColDefs(){
+        rSet = new CassandraResultSet();
+
+        Map colDefs = new HashMap<String, ColumnDefinition>();
+        colDefs.put("str", new ColumnDefinition(String.class));
+        colDefs.put("int", new ColumnDefinition(Integer.class));
+
+        rSet.setColumnDefinitions(colDefs);
+
+        Assert.assertEquals(rSet.getColumnDefinitions().get("int").getDatatype(), Integer.class);
     }
 
     @Test
@@ -64,10 +77,10 @@ public class CassandraResultSetTest {
     }
 
     private List<Row> buildRowList(){
-        Cell cellStr = new Cell(String.class, new String("comment" + rand.nextInt(100)));
-        Cell cellInt = new Cell(Integer.class, new Integer(rand.nextInt(50)));
-        Cell cellBool = new Cell(Boolean.class, new Boolean(rand.nextBoolean()));
-        Cell cellLong = new Cell(Long.class, new Long(rand.nextLong()));
+        Cell cellStr = new Cell(new String("comment" + rand.nextInt(100)));
+        Cell cellInt = new Cell(new Integer(rand.nextInt(50)));
+        Cell cellBool = new Cell(new Boolean(rand.nextBoolean()));
+        Cell cellLong = new Cell(new Long(rand.nextLong()));
         List<Row> list = new ArrayList();
         list.add(new Row("str", cellStr));
         list.add(new Row("int", cellInt));
@@ -76,4 +89,14 @@ public class CassandraResultSetTest {
 
         return list;
     }
+
+    private Map<String, ColumnDefinition> buildColumnDefinitions() {
+        Map colDefs = new HashMap<String, ColumnDefinition>();
+        colDefs.put("str", new ColumnDefinition(String.class));
+        colDefs.put("int", new ColumnDefinition(Integer.class));
+        colDefs.put("bool", new ColumnDefinition(Boolean.class));
+        colDefs.put("long", new ColumnDefinition(Long.class));
+        return colDefs;
+    }
+
 }

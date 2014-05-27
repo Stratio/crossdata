@@ -23,6 +23,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class CResultSetIteratorTest {
@@ -58,15 +60,24 @@ public class CResultSetIteratorTest {
 
 
     private CassandraResultSet buildRandomResultSet(){
-        Cell cellStr = new Cell(String.class, new String("comment" + rand.nextInt(100)));
-        Cell cellInt = new Cell(Integer.class, new Integer(rand.nextInt(50)));
-        Cell cellBool = new Cell(Boolean.class, new Boolean(rand.nextBoolean()));
-        Cell cellLong = new Cell(Long.class, new Long(rand.nextLong()));
         CassandraResultSet rSet = new CassandraResultSet();
+
+        Cell cellStr = new Cell(new String("comment" + rand.nextInt(100)));
+        Cell cellInt = new Cell(new Integer(rand.nextInt(50)));
+        Cell cellBool = new Cell(new Boolean(rand.nextBoolean()));
+        Cell cellLong = new Cell(new Long(rand.nextLong()));
         rSet.add(new Row("str", cellStr));
         rSet.add(new Row("int", cellInt));
         rSet.add(new Row("bool", cellBool));
         rSet.add(new Row("long", cellLong));
+
+        Map colDefs = new HashMap<String, ColumnDefinition>();
+        colDefs.put("str", String.class);
+        colDefs.put("int", Integer.class);
+        colDefs.put("bool", Boolean.class);
+        colDefs.put("long", Long.class);
+
+        rSet.setColumnDefinitions(colDefs);
 
         return rSet;
     }

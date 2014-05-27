@@ -23,15 +23,37 @@ import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.DropTableStatement;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
 import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.*;
 import org.testng.annotations.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class ExplainPlanStatementTest  extends BasicPlannerTest {
 
     @Test
-    public void planificationNotSupported(){
+    public void testPlanForExplainDrop(){
         String inputText = "EXPLAIN PLAN FOR DROP TABLE table1;";
         MetaStatement dropTable = new DropTableStatement("demo.users", false);
         stmt = new ExplainPlanStatement(dropTable);
-        validateNotSupported();
+        validateCommandPath("testPlanForExplain");
+    }
+
+    @Test
+    public void testPlanForExplainSelect(){
+        String inputText = "EXPLAIN PLAN FOR SELECT name, age, info FROM demo.users WHERE age = 10;";
+
+        List<SelectionSelector> selectionSelectors = Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(new SelectorIdentifier("age")),
+                new SelectionSelector(new SelectorIdentifier("info")));
+
+        SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
+        SelectStatement selectStmt = new SelectStatement(selClause, "demo.users");
+        Relation relation = new RelationCompare("age", "=", new IntegerTerm("10"));
+        List<Relation> whereClause = Arrays.asList(relation);
+        selectStmt.setWhere(whereClause);
+
+        stmt = new ExplainPlanStatement(selectStmt);
+        validateCommandPath("testPlanForExplainSelect");
     }
 }

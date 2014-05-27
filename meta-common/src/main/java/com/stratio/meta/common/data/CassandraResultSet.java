@@ -23,12 +23,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class CassandraResultSet extends ResultSet implements Serializable {
 
     private static final long serialVersionUID = 6673808320950075999L;
 
     private List<Row> rows;
+    private Map<String, ColumnDefinition> columnDefinitions;
 
     /**
      * CassandraResultSet default constructor.
@@ -46,6 +48,15 @@ public class CassandraResultSet extends ResultSet implements Serializable {
         this.rows = rows;
     }
 
+    public CassandraResultSet(Map<String, ColumnDefinition> columnDefinitions) {
+        this.columnDefinitions = columnDefinitions;
+    }
+
+    public CassandraResultSet(List<Row> rows, Map<String, ColumnDefinition> columnDefinitions) {
+        this.rows = rows;
+        this.columnDefinitions = columnDefinitions;
+    }
+
     /**
      * Get the rows of the Result Set.
      *
@@ -53,6 +64,14 @@ public class CassandraResultSet extends ResultSet implements Serializable {
      */
     public List<Row> getRows() {
         return rows;
+    }
+
+    public Map<String, ColumnDefinition> getColumnDefinitions() {
+        return columnDefinitions;
+    }
+
+    public void setColumnDefinitions(Map<String, ColumnDefinition> columnDefinitions) {
+        this.columnDefinitions = columnDefinitions;
     }
 
     /**

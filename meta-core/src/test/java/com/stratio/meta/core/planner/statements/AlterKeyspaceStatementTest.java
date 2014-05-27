@@ -21,15 +21,24 @@ package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.AlterKeyspaceStatement;
+import com.stratio.meta.core.structures.IdentifierProperty;
+import com.stratio.meta.core.structures.ValueProperty;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class AlterKeyspaceStatementTest extends BasicPlannerTest {
+
     @Test
-    public void planificationNotSupported(){
-        String inputText = "ALTER KEYSPACE demo WITH ident1 = value1 AND ident2 = 54;";
-        stmt = new AlterKeyspaceStatement("demo", new HashMap());
-        validateNotSupported();
+    public void planForAlterKeyspace(){
+        String inputText = "ALTER KEYSPACE demo WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1};";
+
+        Map<String, ValueProperty> properties = new HashMap();
+        properties.put("REPLICATION", new IdentifierProperty("{'class': 'SimpleStrategy', 'replication_factor': 1}"));
+
+        stmt = new AlterKeyspaceStatement("demo", properties);
+
+        validateCassandraPath("planForAlterKeyspace");
     }
 }

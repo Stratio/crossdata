@@ -19,20 +19,27 @@
 
 package com.stratio.meta.core.utils;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
+import com.datastax.driver.core.*;
+import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.ColumnDefinition;
+import com.stratio.meta.core.structures.FloatTerm;
+import com.stratio.meta.core.structures.IntegerTerm;
+import com.stratio.meta.core.structures.Term;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class CoreUtils {
+
+    public static final List<String> supportedTypes = Arrays.asList("bigint", "boolean", "counter",
+            "double", "float", "int", "integer", "varchar");
+    // SOON: "date", "uuid", "timeuuid"
 
     /**
      * Map of methods required to transform a {@link com.datastax.driver.core.DataType} into the
@@ -80,7 +87,7 @@ public class CoreUtils {
     protected Cell getCell(DataType type, Row r, String columnName) throws InvocationTargetException, IllegalAccessException {
         Method m = transformations.get(type.toString());
         Object value = m.invoke(r, columnName);
-        return new Cell(type.asJavaClass(), value);
+        return new Cell(value);
     }
 
     /**
@@ -89,10 +96,13 @@ public class CoreUtils {
      * @return An equivalent Meta ResultSet
      */
     public com.stratio.meta.common.data.ResultSet transformToMetaResultSet(ResultSet resultSet) {
-        com.stratio.meta.common.data.CassandraResultSet crs = new com.stratio.meta.common.data.CassandraResultSet();
+        CassandraResultSet crs = new CassandraResultSet();
         List<ColumnDefinitions.Definition> definitions = resultSet.getColumnDefinitions().asList();
 
+        boolean firstRow = true;
+
         try {
+            Map colDefs = new HashMap<String, ColumnDefinition>();
             for(Row row: resultSet.all()){
                 com.stratio.meta.common.data.Row metaRow = new com.stratio.meta.common.data.Row();
                 for (ColumnDefinitions.Definition def: definitions){
@@ -101,14 +111,44 @@ public class CoreUtils {
                     }
                     Cell metaCell = getCell(def.getType(), row, def.getName());
                     metaRow.addCell(def.getName(), metaCell);
+
+                    if(firstRow){
+                        colDefs.put(def.getName(), new ColumnDefinition(def.getType().asJavaClass()));
+                    }
+                }
+                if(firstRow){
+                    crs.setColumnDefinitions(colDefs);
+                    firstRow = false;
                 }
                 crs.add(metaRow);
             }
         } catch (InvocationTargetException | IllegalAccessException e) {
             LOG.error("Cannot transform result set", e);
-            crs = new com.stratio.meta.common.data.CassandraResultSet();
+            crs = new CassandraResultSet();
         }
         return crs;
+    }
+
+    public static boolean castForLongType(ColumnMetadata cm, Term<?> term){
+        boolean required = false;
+        if (((cm.getType().asJavaClass() == Integer.class)
+                || (cm.getType().asJavaClass() == Long.class))
+                && ((term.getTermClass() == Integer.class)
+                || (term.getTermClass() == Long.class))) {
+            required = true;
+        }
+        return required;
+    }
+
+    public static boolean castForDoubleType(ColumnMetadata cm, Term<?> term){
+        boolean required = false;
+        if ((cm.getType().asJavaClass() == Double.class)
+                || (cm.getType().asJavaClass() == Float.class)
+                && ((term.getTermClass() == Double.class)
+                || (term.getTermClass() == Float.class))) {
+            required = true;
+        }
+        return required;
     }
 
 }

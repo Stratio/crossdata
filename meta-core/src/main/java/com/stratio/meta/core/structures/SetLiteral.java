@@ -55,7 +55,7 @@ public class SetLiteral extends IdentIntOrLiteral {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(string());        
-        sb.append(ParserUtils.stringSet(literals, ", "));        
+        sb.append("{ ").append(ParserUtils.stringSet(literals, ", ")).append(" }");
         return sb.toString();
     }
     

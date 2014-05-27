@@ -68,6 +68,10 @@ See [this link](https://github.com/Stratio/stratio-meta/edit/release/0.0.4/meta-
 
 Once the shell is running, you can exit the program introducing the word **exit** or **quit** in the query prompt. A command help system is available by introducing the command **help**. A help entry is available per command, to check specify help topics use **help command**.
 
+## More about the project ##
+
+You can find more information about this project (tutorials, examples, etc...) in http://wordpress.dev.strat.io/
+
 # License #
 
 Stratio Meta is licensed as [LGPL](https://www.gnu.org/licenses/gpl-howto.html)

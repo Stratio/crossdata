@@ -22,7 +22,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>stratio-meta-parent</artifactId>
+        <artifactId>meta-parent</artifactId>
         <groupId>com.stratio.meta</groupId>
         <version>0.0.5-SNAPSHOT</version>
     </parent>
@@ -82,17 +82,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<antlr.version>3.5.1</antlr.version>
 	</properties>
-
-    <repositories>
-        <repository>
-            <id>stratio-releases</id>
-            <url>http://nexus.strat.io:8081/nexus/content/repositories/releases</url>
-        </repository>
-        <repository>
-            <id>stratio-snapshots</id>
-            <url>http://nexus.strat.io:8081/nexus/content/repositories/snapshots</url>
-        </repository>
-    </repositories>
 
 	<dependencies>
         <dependency>
@@ -181,7 +170,7 @@
         </dependency>
         <dependency>
             <groupId>com.stratio.deep</groupId>
-            <artifactId>StratioDeep</artifactId>
+            <artifactId>deep-core</artifactId>
             <version>${deep.version}</version>
         </dependency>
         <dependency>
