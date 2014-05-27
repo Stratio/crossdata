@@ -56,7 +56,7 @@ public class CommandExecutor {
             } else if(stmt instanceof ExplainPlanStatement) {
                 return executeExplainPlan((ExplainPlanStatement) stmt, session);
             } else {
-                return CommandResult.createFailCommanResult("Command not supported yet.");
+                return CommandResult.createFailCommandResult("Command not supported yet.");
             }
         } catch (RuntimeException rex){
             LOG.debug("Command executor failed", rex);

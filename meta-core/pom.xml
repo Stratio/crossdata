@@ -220,5 +220,15 @@
 			</plugin>
 		</plugins>
 	</build>
+    <repositories>
+        <repository>
+            <id>stratio-snapshots</id>
+            <url>http://nexus.strat.io:8081/nexus/content/repositories/snapshots</url>
+            <snapshots>
+                <updatePolicy>daily</updatePolicy>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
 

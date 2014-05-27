@@ -1,22 +1,15 @@
 package com.stratio.meta.streaming;
 
-/**
- * Created by aalcocer on 5/27/14. To generate unit test of proxy actor
- */
-
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
-import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
 import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
-import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
 import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
 
 import java.util.List;
 
-public class metaStream {
-
-
+public class MetaStream {
 
   private static final IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
 
@@ -45,12 +38,15 @@ public class metaStream {
     return false;
   }
 
-  public static void createStream(String streamName,List<ColumnNameType> columnList)
-      throws StratioEngineOperationException {
-
-      stratioStreamingAPI.createStream(streamName, columnList);
-
+  public static QueryResult createStream(String streamName, List<ColumnNameType> columnList){
+      QueryResult result = QueryResult.createSuccessQueryResult();
+      try {
+          stratioStreamingAPI.createStream(streamName, columnList);
+      } catch (Throwable t) {
+          result = QueryResult.createFailQueryResult(streamName + " couldn't be created");
+      }
+      return result;
   }
-  }
+}
 
 

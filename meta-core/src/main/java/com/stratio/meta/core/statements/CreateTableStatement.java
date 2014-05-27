@@ -32,7 +32,7 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta.streaming.metaStream;
+import com.stratio.meta.streaming.MetaStream;
 
 import java.util.*;
 
@@ -258,7 +258,7 @@ public class CreateTableStatement extends MetaStatement{
   private Result validateEphimeral() {
 
         Result result = QueryResult.createSuccessQueryResult();
-        if (metaStream.checkstream(tableName)) result= QueryResult.createFailQueryResult(tableName+ " exists yet.");
+        if (MetaStream.checkstream(tableName)) result= QueryResult.createFailQueryResult(tableName+ " exists yet.");
         return result;
   }
 
