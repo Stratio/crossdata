@@ -34,7 +34,7 @@ public class StreamExecutor {
                 else if (column.getValue().equalsIgnoreCase("boolean")){
                     type=ColumnType.BOOLEAN;
                 }
-                else if (column.getValue().equalsIgnoreCase("doble")){
+                else if (column.getValue().equalsIgnoreCase("double")){
                     type=ColumnType.DOUBLE;
                 }
                 else if (column.getValue().equalsIgnoreCase("float")){
