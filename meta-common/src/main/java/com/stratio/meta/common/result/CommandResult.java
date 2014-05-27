@@ -53,7 +53,7 @@ public class CommandResult extends Result {
      * Get the execution result.
      * @return The result or null if an error occurred.
      */
-    public String getResult() {
+    public Object getResult() {
         return result;
     }
 
@@ -71,9 +71,8 @@ public class CommandResult extends Result {
      * @param errorMessage The associated error message.
      * @return A {@link com.stratio.meta.common.result.CommandResult}.
      */
-    public static CommandResult createFailCommanResult(String errorMessage){
+    public static CommandResult createFailCommandResult(String errorMessage){
         return new CommandResult(null, true, errorMessage, null);
     }
-
 
 }

@@ -23,8 +23,8 @@ import akka.actor.{ ActorSelection, ActorSystem}
 import com.stratio.meta.driver.config.DriverConfig
 import akka.contrib.pattern.ClusterClient
 import com.stratio.meta.driver.actor.ProxyActor
-import com.stratio.meta.common.result.Result
-import com.stratio.meta.common.ask.{Query, Connect}
+import com.stratio.meta.common.result.{MetadataResult, CommandResult, Result}
+import com.stratio.meta.common.ask.{APICommand, Command, Query, Connect}
 import org.apache.log4j.Logger
 import  scala.concurrent.duration._
 
@@ -36,7 +36,7 @@ class BasicDriver extends DriverConfig{
   lazy val proxyActor= system.actorOf(ProxyActor.props(clusterClientActor,actorName), "proxy-actor")
 
   /**
-   * Release connection to MetaServer,
+   * Release connection to MetaServer.
    * @param user Login to the user (Audit only)
    * @return ConnectResult
    */
@@ -56,6 +56,39 @@ class BasicDriver extends DriverConfig{
     retryPolitics.askRetry(proxyActor,new Query(targetKs,query,user))
   }
 
+  /**
+   * List the existing catalogs in the underlying database.
+   * @return A MetadataResult with a list of catalogs, or the object with hasError set
+   *         containing the error message.
+   */
+  def listCatalogs(): MetadataResult = {
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, null))
+    result.asInstanceOf[MetadataResult]
+  }
+
+  /**
+   * List the existing tables in a database catalog.
+   * @return A MetadataResult with a list of tables, or the object with hasError set
+   *         containing the error message.
+   */
+  def listTables(catalogName: String): MetadataResult = {
+    var params : java.util.List[String] = new java.util.ArrayList[String]
+    params.add(catalogName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, params))
+    result.asInstanceOf[MetadataResult]
+  }
+
+  /**
+   * List the existing tables in a database catalog.
+   * @return A MetadataResult with a map of columns.
+   */
+  def listFields(catalogName: String, tableName: String): MetadataResult = {
+    var params : java.util.List[String] = new java.util.ArrayList[String]
+    params.add(catalogName)
+    params.add(tableName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, params))
+    result.asInstanceOf[MetadataResult]
+  }
 
   /**
    * Finish connection and actor system
@@ -63,7 +96,5 @@ class BasicDriver extends DriverConfig{
   def close() {
     system.shutdown()
   }
-
-
 
 }

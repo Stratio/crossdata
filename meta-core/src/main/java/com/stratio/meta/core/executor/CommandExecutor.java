@@ -56,11 +56,11 @@ public class CommandExecutor {
             } else if(stmt instanceof ExplainPlanStatement) {
                 return executeExplainPlan((ExplainPlanStatement) stmt, session);
             } else {
-                return CommandResult.createFailCommanResult("Command not supported yet.");
+                return CommandResult.createFailCommandResult("Command not supported yet.");
             }
         } catch (RuntimeException rex){
             LOG.debug("Command executor failed", rex);
-            return CommandResult.createFailCommanResult(rex.getMessage());
+            return CommandResult.createFailCommandResult(rex.getMessage());
         }
     }
 
@@ -100,7 +100,7 @@ public class CommandExecutor {
         if (info != null) {
             result = CommandResult.createSuccessCommandResult(info);
         } else {
-            result = CommandResult.createFailCommanResult(errorMessage);
+            result = CommandResult.createFailCommandResult(errorMessage);
         }
         return result;
     }

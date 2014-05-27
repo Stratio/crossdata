@@ -51,7 +51,7 @@ public class ExplainPlanStatementTest extends BasicExecutorTest {
 
         String expectedPlan = "(CASSANDRA) Drop keyspace demo";
 
-        String resultPlan = ((CommandResult) result).getResult();
+        String resultPlan = String.class.cast(((CommandResult) result).getResult());
 
         assertEquals(expectedPlan, resultPlan, "  RESULT PLAN: "+resultPlan+System.lineSeparator()+"EXPECTED PLAN: "+expectedPlan);
     }
