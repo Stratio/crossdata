@@ -29,13 +29,13 @@ public class MetaStream {
     }
 
   public static boolean checkstream(String ephimeralTable){
-
-    for (StratioStream stream: listStreams()) {
-      if (stream.getStreamName().equalsIgnoreCase(ephimeralTable)){
-        return true;
+      for (StratioStream stream: listStreams()) {
+          System.out.println("Checking stream: "+stream.getStreamName());
+          if (stream.getStreamName().equalsIgnoreCase(ephimeralTable)){
+              return true;
+          }
       }
-    }
-    return false;
+      return false;
   }
 
   public static QueryResult createStream(String streamName, List<ColumnNameType> columnList){

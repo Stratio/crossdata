@@ -244,7 +244,7 @@ public class CreateTableStatement extends MetaStatement{
     public Result validate(MetadataManager metadata) {
         Result result = validateKeyspaceAndTable(metadata, sessionKeyspace);
         if (result.hasError()){
-        result=validateEphimeral();
+            result=validateEphimeral();
         }
         if(!result.hasError()){
             result = validateColumns();
@@ -256,10 +256,13 @@ public class CreateTableStatement extends MetaStatement{
     }
 
   private Result validateEphimeral() {
-
-        Result result = QueryResult.createSuccessQueryResult();
-        if (MetaStream.checkstream(tableName)) result= QueryResult.createFailQueryResult(tableName+ " exists yet.");
-        return result;
+      System.out.println("TRACE: validating ephimeral");
+      Result result = QueryResult.createSuccessQueryResult();
+      if (MetaStream.checkstream(tableName)){
+          result= QueryResult.createFailQueryResult(tableName+ " exists yet.");
+      }
+      System.out.println("TRACE: ephimeral validated");
+      return result;
   }
 
   /**
