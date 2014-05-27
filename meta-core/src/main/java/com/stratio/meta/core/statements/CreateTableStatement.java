@@ -256,12 +256,12 @@ public class CreateTableStatement extends MetaStatement{
     }
 
   private Result validateEphimeral() {
-      System.out.println("TRACE: validating ephimeral");
       Result result = QueryResult.createSuccessQueryResult();
+      createTable = true;
       if (MetaStream.checkstream(tableName)){
           result= QueryResult.createFailQueryResult(tableName+ " exists yet.");
+          createTable = false;
       }
-      System.out.println("TRACE: ephimeral validated");
       return result;
   }
 
@@ -290,7 +290,7 @@ public class CreateTableStatement extends MetaStatement{
                 TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
                 if (tableMetadata != null && !ifNotExists) {
                     result= QueryResult.createFailQueryResult("Table " + tableName + " already exists.");
-                }else if (tableMetadata == null){
+                } else if (tableMetadata == null){
                     createTable = true;
                 }
             }
@@ -433,7 +433,6 @@ public class CreateTableStatement extends MetaStatement{
 
     @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        System.out.println("Planning: "+toString());
         Tree tree = new Tree();
         if(createTable) {
             tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
@@ -442,12 +441,10 @@ public class CreateTableStatement extends MetaStatement{
                 if(property.getType() == Property.TYPE_NAME_VALUE){
                     PropertyNameValue pnv = (PropertyNameValue) property;
                     String propName = pnv.getName();
-                    System.out.println("propName:("+pnv.getType()+") "+ propName);
                     if(propName.equalsIgnoreCase("ephemeral")
                             && (pnv.getVp().getType() == ValueProperty.TYPE_BOOLEAN)
                             && ((BooleanProperty) pnv.getVp()).getBool()){
                         streamingMode = true;
-                        System.out.println("Streaming mode");
                         break;
                     }
                 }

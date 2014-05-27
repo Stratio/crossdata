@@ -8,7 +8,7 @@ import com.stratio.meta.streaming.MetaStream;
 import com.stratio.streaming.commons.constants.ColumnType;
 import com.stratio.streaming.messaging.ColumnNameType;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,19 +24,32 @@ public class StreamExecutor {
         if (stmt instanceof CreateTableStatement) {
             CreateTableStatement cts= (CreateTableStatement) stmt;
             String tableEphimeralName= cts.getTableName() ;
-            List<ColumnNameType> columnList = Arrays.asList();
+            List<ColumnNameType> columnList = new ArrayList<>();
             for (Map.Entry<String, String> column : cts.getColumns().entrySet()) {
                 System.out.println("Adding column: "+column);
                 ColumnType type=null;
-                if (column.getValue().equalsIgnoreCase("string")) type=ColumnType.STRING;
-                else if (column.getValue().equalsIgnoreCase("boolean")) type=ColumnType.BOOLEAN;
-                else if (column.getValue().equalsIgnoreCase("doble")) type=ColumnType.DOUBLE;
-                else if (column.getValue().equalsIgnoreCase("float")) type=ColumnType.FLOAT;
-                else if (column.getValue().equalsIgnoreCase("integer")) type=ColumnType.INTEGER;
-                else if (column.getValue().equalsIgnoreCase("long")) type=ColumnType.LONG;
-                else type = ColumnType.valueOf(column.getValue());
-                ColumnNameType StreamColumn= new ColumnNameType(column.getKey(), type);
-                columnList.add(StreamColumn);
+                if (column.getValue().equalsIgnoreCase("string")){
+                    type=ColumnType.STRING;
+                }
+                else if (column.getValue().equalsIgnoreCase("boolean")){
+                    type=ColumnType.BOOLEAN;
+                }
+                else if (column.getValue().equalsIgnoreCase("doble")){
+                    type=ColumnType.DOUBLE;
+                }
+                else if (column.getValue().equalsIgnoreCase("float")){
+                    type=ColumnType.FLOAT;
+                }
+                else if (column.getValue().equalsIgnoreCase("integer") || column.getValue().equalsIgnoreCase("int")){
+                    type=ColumnType.INTEGER;
+                }
+                else if (column.getValue().equalsIgnoreCase("long")){
+                    type=ColumnType.LONG;
+                } else {
+                    type = ColumnType.valueOf(column.getValue());
+                }
+                ColumnNameType streamColumn = new ColumnNameType(column.getKey(), type);
+                columnList.add(streamColumn);
             }
             System.out.println("Creating stream");
             return MetaStream.createStream(tableEphimeralName, columnList);
