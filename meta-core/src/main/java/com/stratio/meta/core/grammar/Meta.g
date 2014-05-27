@@ -325,7 +325,7 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
         ArrayList<Option> options = new ArrayList<>();
         ArrayList<Assignment> assignments = new ArrayList<>();
         ArrayList<Relation> whereclauses = new ArrayList<>();
-        Map<String, Term> conditions = new HashMap<>();
+        Map<String, Term<?>> conditions = new HashMap<>();
     }:
     T_UPDATE tablename=getTableID
     (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (T_AND optN=getOption {options.add(optN);})*)?
@@ -473,7 +473,7 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
         ArrayList<String> ids = new ArrayList<>();
         boolean ifNotExists = false;
         int typeValues = InsertIntoStatement.TYPE_VALUES_CLAUSE;
-        ArrayList<ValueCell> cellValues = new ArrayList<>();
+        ArrayList<ValueCell<?>> cellValues = new ArrayList<>();
         boolean optsInc = false;
         ArrayList<Option> options = new ArrayList<>();
     }:
@@ -933,10 +933,10 @@ getTerm returns [Term term]:
 
 getPartialTerm returns [Term term]:
     ident=T_IDENT {$term = new StringTerm($ident.text);}
-    | constant=getConstant {$term = new IntegerTerm(constant);}
+    | constant=getConstant {$term = new LongTerm(constant);}
     | T_FALSE {$term = new BooleanTerm("false");}
     | T_TRUE {$term = new BooleanTerm("true");}
-    | floatingNumber=T_FLOAT {$term = new FloatingTerm($floatingNumber.text);}
+    | floatingNumber=T_FLOAT {$term = new DoubleTerm($floatingNumber.text);}
     | ksAndTn=T_KS_AND_TN {$term = new StringTerm($ksAndTn.text);}
     | noIdent=T_TERM {$term = new StringTerm($noIdent.text);}
     | path=T_PATH {$term = new StringTerm($path.text);}

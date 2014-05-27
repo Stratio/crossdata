@@ -19,15 +19,11 @@
 
 package com.stratio.meta.core.structures;
 
-import com.datastax.driver.core.TableMetadata;
-
-import java.util.List;
-
-public abstract class ValueCell {
+public abstract class ValueCell<T extends Comparable<T>> {
 
     public static final int TYPE_TERM = 1;
     public static final int TYPE_COLLECTION_LITERAL = 2;
-    
+
     protected int type;
 
     public int getType() {
@@ -38,24 +34,9 @@ public abstract class ValueCell {
         this.type = type;
     }
 
-    public Class<?> getTermClass() {
-        if(this.getClass() == Term.class){
-            Term term = (Term) this;
-            return term.getTermClass();
-        } else {
-            return this.getClass();
-        }
-    }
-
-    public void setTermClass(Class<?> clazz) {
-        if(this.getClass() == Term.class){
-            Term term = (Term) this;
-            term.setTermClass(clazz);
-        }
-    }
-
     /**
      * Get the String value representation.
+     * 
      * @return The String value.
      */
     public abstract String getStringValue();
