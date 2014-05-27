@@ -32,6 +32,7 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta.streaming.metaStream;
 
 import java.util.*;
 
@@ -129,6 +130,14 @@ public class CreateTableStatement extends MetaStatement{
         this.primaryKeyType = primaryKeyType;
         this.columnNumberPK = columnNumberPK;
     }
+
+  public Map<String, String> getColumns() {
+    return columns;
+  }
+
+  public String getTableName() {
+    return tableName;
+  }
 
     /**
      * Set the keyspace specified in the create table statement.
@@ -234,6 +243,9 @@ public class CreateTableStatement extends MetaStatement{
     @Override
     public Result validate(MetadataManager metadata) {
         Result result = validateKeyspaceAndTable(metadata, sessionKeyspace);
+        if (result.hasError()){
+        result=validateEphimeral();
+        }
         if(!result.hasError()){
             result = validateColumns();
         }
@@ -243,7 +255,14 @@ public class CreateTableStatement extends MetaStatement{
         return result;
     }
 
-    /**
+  private Result validateEphimeral() {
+
+        Result result = QueryResult.createSuccessQueryResult();
+        if (metaStream.checkstream(tableName)) result= QueryResult.createFailQueryResult(tableName+ " exists yet.");
+        return result;
+  }
+
+  /**
      * Validate that a valid keyspace is present, and that the table does not
      * exits unless {@code ifNotExists} has been specified.
      * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
