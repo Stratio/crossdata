@@ -433,6 +433,7 @@ public class CreateTableStatement extends MetaStatement{
 
     @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+        System.out.println("Planning");
         Tree tree = new Tree();
         if(createTable) {
             tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
@@ -445,6 +446,7 @@ public class CreateTableStatement extends MetaStatement{
                             && (pnv.getVp().getType() == ValueProperty.TYPE_BOOLEAN)
                             && ((BooleanProperty) pnv.getVp()).getBool()){
                         streamingMode = true;
+                        System.out.println("Streaming mode");
                         break;
                     }
                 }

@@ -166,6 +166,7 @@ public class Tree {
                                 DeepSparkContext deepSparkContext,
                                 EngineConfig engineConfig,
                                 List<Result> resultsFromChildren){
+        System.out.println("Executing myself");
         Result result = null;
         if(node == null){
             return QueryResult.createSuccessQueryResult();
@@ -179,7 +180,7 @@ public class Tree {
         } else if(myPath == MetaPath.DEEP){
             result = DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session, deepSparkContext, engineConfig);
         }else if(myPath == MetaPath.STREAMING){
-          result = StreamExecutor.execute(myStep.getStmt());
+            result = StreamExecutor.execute(myStep.getStmt());
         }
         else if(myPath == MetaPath.UNSUPPORTED){
             result = QueryResult.createFailQueryResult("Query not supported.");
