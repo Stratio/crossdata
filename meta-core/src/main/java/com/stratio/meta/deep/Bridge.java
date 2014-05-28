@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta.common.metadata.structures.ColumnType;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -228,10 +230,12 @@ public class Bridge {
       CassandraResultSet crs = new CassandraResultSet();
       crs.add(new Row("RESULT", new Cell("NOT supported yet")));
 
-      Map colDefs = new HashMap<String, ColumnDefinition>();
-      colDefs.put("RESULT", new ColumnDefinition(String.class));
-      crs.setColumnDefinitions(colDefs);
-
+      List<ColumnMetadata> columns = new ArrayList<>();
+      ColumnMetadata metadata = new ColumnMetadata("result", "result");
+      ColumnType type = ColumnType.VARCHAR;
+      type.setDBMapping("varchar", String.class);
+      metadata.setType(type);
+      crs.setColumnMetadata(columns);
       return crs;
     }
 
@@ -264,9 +268,12 @@ public class Bridge {
       CassandraResultSet crs = new CassandraResultSet();
       crs.add(new Row("RDD", new Cell(rdd)));
 
-      Map colDefs = new HashMap<String, ColumnDefinition>();
-      colDefs.put("RDD", new ColumnDefinition(JavaRDD.class));
-      crs.setColumnDefinitions(colDefs);
+      List<ColumnMetadata> columns = new ArrayList<>();
+      ColumnMetadata metadata = new ColumnMetadata("RDD", "RDD");
+      ColumnType type = ColumnType.VARCHAR;
+      type.setDBMapping("class", JavaRDD.class);
+      metadata.setType(type);
+      crs.setColumnMetadata(columns);
 
       LOG.info("LEAF: rdd.count=" + ((int) rdd.count()));
       return crs;

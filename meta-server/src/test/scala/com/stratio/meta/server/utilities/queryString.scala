@@ -78,14 +78,14 @@ class queryString {
 
                 if(!typeQuery.asInstanceOf[CassandraResultSet].isEmpty){
                   val cells=typeQuery.asInstanceOf[CassandraResultSet].getRows.get(0).getCells
+                  println("Cells: " + cells)
                   for( key <- cells.keySet()){
                     val cell:Cell=cells.get(key)
-                    //val str= cell.getDatatype.cast(cell.getValue)
-                    val colDefs = typeQuery.asInstanceOf[CassandraResultSet].getColumnDefinitions;
-                    val str= colDefs.get(colDefs.keySet().iterator().next()).getDatatype.cast(cell.getValue)
-
+                    println("cell: " + cell)
+                    val colDefs = typeQuery.asInstanceOf[CassandraResultSet].getColumnMetadata;
+                    println("colDefs: " + colDefs)
+                    val str = colDefs.get(0).getType.getDbClass.cast(cell.getValue)
                     valueTable += str.toString
-
                   }
 
                   valueTable.toString()

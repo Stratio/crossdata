@@ -19,10 +19,16 @@
 
 package com.stratio.meta.common.metadata.structures;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class TableMetadata {
+public class TableMetadata implements Serializable{
+
+    /**
+     * Serial version UID in order to be Serializable.
+     */
+    private static final long serialVersionUID = 8495217651370053187L;
 
     /**
      * Parent catalog.

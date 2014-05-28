@@ -19,13 +19,13 @@
 
 package com.stratio.meta.common.data;
 
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta.common.metadata.structures.ColumnType;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class CResultSetIteratorTest {
 
@@ -71,13 +71,33 @@ public class CResultSetIteratorTest {
         rSet.add(new Row("bool", cellBool));
         rSet.add(new Row("long", cellLong));
 
-        Map colDefs = new HashMap<String, ColumnDefinition>();
-        colDefs.put("str", String.class);
-        colDefs.put("int", Integer.class);
-        colDefs.put("bool", Boolean.class);
-        colDefs.put("long", Long.class);
+        List<ColumnMetadata> columnMetadataList = new ArrayList<>();
 
-        rSet.setColumnDefinitions(colDefs);
+        ColumnMetadata cmStr = new ColumnMetadata("table", "str");
+        ColumnType str = ColumnType.VARCHAR;
+        str.setDBMapping("VARCHAR", String.class);
+        cmStr.setType(str);
+        columnMetadataList.add(cmStr);
+
+        ColumnMetadata cmInt = new ColumnMetadata("table", "int");
+        ColumnType integer = ColumnType.INT;
+        integer.setDBMapping("INT", Integer.class);
+        cmInt.setType(integer);
+        columnMetadataList.add(cmInt);
+
+        ColumnMetadata cmBool = new ColumnMetadata("table", "bool");
+        ColumnType bool = ColumnType.BOOLEAN;
+        bool.setDBMapping("BOOLEAN", Boolean.class);
+        cmBool.setType(bool);
+        columnMetadataList.add(cmBool);
+
+        ColumnMetadata cmLong = new ColumnMetadata("table", "long");
+        ColumnType longInteger = ColumnType.INT;
+        longInteger.setDBMapping("LONG", Long.class);
+        cmLong.setType(longInteger);
+        columnMetadataList.add(cmLong);
+
+        rSet.setColumnMetadata(columnMetadataList);
 
         return rSet;
     }

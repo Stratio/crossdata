@@ -19,6 +19,8 @@
 
 package com.stratio.meta.common.data;
 
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta.common.metadata.structures.ColumnType;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -42,61 +44,50 @@ public class CassandraResultSetTest {
     }
 
     @Test
-    public void testConstructorWithList(){
-        rSet = new CassandraResultSet(buildRowList());
-        rSet.setColumnDefinitions(buildColumnDefinitions());
-        Assert.assertNotNull(rSet);
-        Assert.assertEquals(rSet.size(), 4);
-    }
-
-    @Test
     public void testGetRows(){
         rSet = new CassandraResultSet();
         rSet.add(new Row("str",new Cell(new String("comment" + rand.nextInt(100)))));
         rSet.add(new Row("int", new Cell(new Integer(rand.nextInt(50)))));
-
         Assert.assertEquals(rSet.getRows().size(), 2);
     }
 
     @Test
     public void testColDefs(){
         rSet = new CassandraResultSet();
+        rSet.setColumnMetadata(buildColumnDefinitions());
 
-        Map colDefs = new HashMap<String, ColumnDefinition>();
-        colDefs.put("str", new ColumnDefinition(String.class));
-        colDefs.put("int", new ColumnDefinition(Integer.class));
-
-        rSet.setColumnDefinitions(colDefs);
-
-        Assert.assertEquals(rSet.getColumnDefinitions().get("int").getDatatype(), Integer.class);
+        Assert.assertEquals(rSet.getColumnMetadata().get(0).getColumnName(), "str", "Invalid column name");
+        Assert.assertEquals(rSet.getColumnMetadata().get(0).getType().getDbClass(), String.class, "Invalid column class");
     }
 
-    @Test
-    public void testNext(){
+    private List<ColumnMetadata> buildColumnDefinitions() {
+        List<ColumnMetadata> columnMetadataList = new ArrayList<>();
 
-    }
+        ColumnMetadata cmStr = new ColumnMetadata("table", "str");
+        ColumnType str = ColumnType.VARCHAR;
+        str.setDBMapping("VARCHAR", String.class);
+        cmStr.setType(str);
+        columnMetadataList.add(cmStr);
 
-    private List<Row> buildRowList(){
-        Cell cellStr = new Cell(new String("comment" + rand.nextInt(100)));
-        Cell cellInt = new Cell(new Integer(rand.nextInt(50)));
-        Cell cellBool = new Cell(new Boolean(rand.nextBoolean()));
-        Cell cellLong = new Cell(new Long(rand.nextLong()));
-        List<Row> list = new ArrayList();
-        list.add(new Row("str", cellStr));
-        list.add(new Row("int", cellInt));
-        list.add(new Row("bool", cellBool));
-        list.add(new Row("long", cellLong));
+        ColumnMetadata cmInt = new ColumnMetadata("table", "int");
+        ColumnType integer = ColumnType.INT;
+        integer.setDBMapping("INT", Integer.class);
+        cmInt.setType(integer);
+        columnMetadataList.add(cmInt);
 
-        return list;
-    }
+        ColumnMetadata cmBool = new ColumnMetadata("table", "bool");
+        ColumnType bool = ColumnType.BOOLEAN;
+        bool.setDBMapping("BOOLEAN", Boolean.class);
+        cmBool.setType(bool);
+        columnMetadataList.add(cmBool);
 
-    private Map<String, ColumnDefinition> buildColumnDefinitions() {
-        Map colDefs = new HashMap<String, ColumnDefinition>();
-        colDefs.put("str", new ColumnDefinition(String.class));
-        colDefs.put("int", new ColumnDefinition(Integer.class));
-        colDefs.put("bool", new ColumnDefinition(Boolean.class));
-        colDefs.put("long", new ColumnDefinition(Long.class));
-        return colDefs;
+        ColumnMetadata cmLong = new ColumnMetadata("table", "long");
+        ColumnType longInteger = ColumnType.INT;
+        longInteger.setDBMapping("LONG", Long.class);
+        cmLong.setType(longInteger);
+        columnMetadataList.add(cmLong);
+
+        return columnMetadataList;
     }
 
 }
