@@ -19,12 +19,14 @@
 
 package com.stratio.meta.common.metadata.structures;
 
+import java.io.Serializable;
+
 /**
  * Types of columns supported by META with their equivalence in
  * ODBC data types. Notice that a NATIVE type has been added to map
  * those types that are not generic and database dependant.
  */
-public enum ColumnType {
+public enum ColumnType{
     BIGINT("SQL_BIGINT"),
     BOOLEAN("BOOLEAN"),
     DOUBLE("SQL_DOUBLE"),

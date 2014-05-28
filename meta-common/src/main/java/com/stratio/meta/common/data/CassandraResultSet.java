@@ -19,6 +19,8 @@
 
 package com.stratio.meta.common.data;
 
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,10 +29,20 @@ import java.util.Map;
 
 public class CassandraResultSet extends ResultSet implements Serializable {
 
-    private static final long serialVersionUID = 6673808320950075999L;
+    /**
+     * Serial version UID in order to be Serializable.
+     */
+    private static final long serialVersionUID = -5989403621101496698L;
 
+    /**
+     * List of {@link com.stratio.meta.common.data.Row}.
+     */
     private List<Row> rows;
-    private Map<String, ColumnDefinition> columnDefinitions;
+
+    /**
+     * List of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata}.
+     */
+    private List<ColumnMetadata> columnMetadata;
 
     /**
      * CassandraResultSet default constructor.
@@ -40,21 +52,11 @@ public class CassandraResultSet extends ResultSet implements Serializable {
     }
 
     /**
-     * CassandraResultSet param constructor.
-     *
-     * @param rows List of {@link com.stratio.meta.common.data.Row}
+     * Set the list of rows.
+     * @param rows The list.
      */
-    public CassandraResultSet(List<Row> rows) {
+    public void setRows(List<Row> rows) {
         this.rows = rows;
-    }
-
-    public CassandraResultSet(Map<String, ColumnDefinition> columnDefinitions) {
-        this.columnDefinitions = columnDefinitions;
-    }
-
-    public CassandraResultSet(List<Row> rows, Map<String, ColumnDefinition> columnDefinitions) {
-        this.rows = rows;
-        this.columnDefinitions = columnDefinitions;
     }
 
     /**
@@ -66,12 +68,20 @@ public class CassandraResultSet extends ResultSet implements Serializable {
         return rows;
     }
 
-    public Map<String, ColumnDefinition> getColumnDefinitions() {
-        return columnDefinitions;
+    /**
+     * Set the list of column metadata.
+     * @param columnMetadata A list of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata} in order.
+     */
+    public void setColumnMetadata(List<ColumnMetadata> columnMetadata) {
+        this.columnMetadata = columnMetadata;
     }
 
-    public void setColumnDefinitions(Map<String, ColumnDefinition> columnDefinitions) {
-        this.columnDefinitions = columnDefinitions;
+    /**
+     * Get the column metadata in order.
+     * @return A list of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata}.
+     */
+    public List<ColumnMetadata> getColumnMetadata(){
+        return columnMetadata;
     }
 
     /**

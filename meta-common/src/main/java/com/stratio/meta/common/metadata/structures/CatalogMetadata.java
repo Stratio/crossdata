@@ -19,10 +19,16 @@
 
 package com.stratio.meta.common.metadata.structures;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CatalogMetadata {
+public class CatalogMetadata implements Serializable{
+
+    /**
+     * Serial version UID in order to be Serializable.
+     */
+    private static final long serialVersionUID = -5970771778306568496L;
 
     /**
      * Name of the catalog.
