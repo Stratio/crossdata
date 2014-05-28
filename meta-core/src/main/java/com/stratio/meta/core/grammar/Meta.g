@@ -787,10 +787,10 @@ getSelector returns [SelectorMeta slmt]
        | T_COUNT {gbFunc = GroupByFunction.COUNT;}
       ) 
             T_START_PARENTHESIS 
-                (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*
+                (select1=getSelector {params.add(select1);}
                 | T_ASTERISK {params.add(new SelectorIdentifier("*"));}
                 )?
-            T_END_PARENTHESIS {$slmt = new SelectorGroupBy(gbFunc, params);}
+            T_END_PARENTHESIS {$slmt = new SelectorGroupBy(gbFunc, params.get(0));}
         | (identID=getTableID | luceneID=T_LUCENE) (
             {if (identID != null) $slmt = new SelectorIdentifier(identID); else $slmt = new SelectorIdentifier($luceneID.text);}
             | T_START_PARENTHESIS (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 

@@ -16,19 +16,15 @@
 
 package com.stratio.meta.core.structures;
 
-import java.util.List;
-
-import com.stratio.meta.core.utils.ParserUtils;
-
 public class SelectorGroupBy extends SelectorMeta {
 
   private GroupByFunction gbFunction;
-  private List<SelectorMeta> params;
+  private SelectorMeta param;
 
-  public SelectorGroupBy(GroupByFunction gbFunction, List<SelectorMeta> params) {
+  public SelectorGroupBy(GroupByFunction gbFunction, SelectorMeta param) {
     this.type = SelectorMeta.TYPE_GROUPBY;
     this.gbFunction = gbFunction;
-    this.params = params;
+    this.param = param;
   }
 
   public GroupByFunction getGbFunction() {
@@ -39,18 +35,18 @@ public class SelectorGroupBy extends SelectorMeta {
     this.gbFunction = gbFunction;
   }
 
-  public List<SelectorMeta> getParams() {
-    return params;
+  public SelectorMeta getParam() {
+    return param;
   }
 
-  public void setParams(List<SelectorMeta> params) {
-    this.params = params;
+  public void setParam(SelectorMeta param) {
+    this.param = param;
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(gbFunction.name());
-    sb.append("(").append(ParserUtils.stringList(params, ", ")).append(")");
+    sb.append("(").append(param).append(")");
     return sb.toString();
   }
 
