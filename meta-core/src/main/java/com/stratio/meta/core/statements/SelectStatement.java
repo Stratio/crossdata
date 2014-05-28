@@ -60,6 +60,7 @@ import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelector;
 import com.stratio.meta.core.structures.SelectionSelectors;
 import com.stratio.meta.core.structures.SelectorFunction;
+import com.stratio.meta.core.structures.SelectorGroupBy;
 import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.SelectorMeta;
 import com.stratio.meta.core.structures.Term;
@@ -445,9 +446,6 @@ public class SelectStatement extends MetaStatement {
               join.getKeyspace(), join.getTablename());
     }
 
-    if (!result.hasError()) {
-      result = validateOptions();
-    }
 
     String effectiveKs1 = getEffectiveKeyspace();
     String effectiveKs2 = null;
@@ -468,6 +466,10 @@ public class SelectStatement extends MetaStatement {
         tableMetadataJoin = metadata.getTableMetadata(effectiveKs2, join.getTablename());
       }
       result = validateSelectionColumns(tableMetadataFrom, tableMetadataJoin);
+
+      if (!result.hasError()) {
+        result = validateOptions();
+      }
     }
 
     if (!result.hasError() && joinInc) {
@@ -493,7 +495,7 @@ public class SelectStatement extends MetaStatement {
     }
 
     if (groupInc) {
-      result = QueryResult.createFailQueryResult("Select with GROUP BY clause not supported.");
+      result = validateGroupByClause();
     }
 
     if (orderInc) {
@@ -648,6 +650,28 @@ public class SelectStatement extends MetaStatement {
   }
 
   /**
+   * Validate whether the group by clause is valid or not by checking columns exist on the target
+   * table and comparisons are semantically correct.
+   * 
+   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+   */
+  private Result validateGroupByClause() {
+
+    Result result = QueryResult.createSuccessQueryResult();
+
+    List<String> selectionCols = this.getSelectionClause().getIds();
+    List<String> groupByCols = this.group.getColNames();
+    for (String col : groupByCols) {
+      if (!selectionCols.contains(col)) {
+        result =
+            QueryResult.createFailQueryResult("The GROUP BY column [" + col
+                + "] must be included in the selection columns.");
+      }
+    }
+    return result;
+  }
+
+  /**
    * Find a column in the selected tables.
    * 
    * @param table The target table of the column.
@@ -749,7 +773,7 @@ public class SelectStatement extends MetaStatement {
 
     SelectionSelectors ss = SelectionSelectors.class.cast(sl.getSelection());
     for (SelectionSelector selector : ss.getSelectors()) {
-      if (selector.getSelector().getType() == SelectorMeta.TYPE_IDENT) {
+      if (selector.getSelector() instanceof SelectorIdentifier) {
         SelectorIdentifier si = SelectorIdentifier.class.cast(selector.getSelector());
 
         String targetTable = "any";
@@ -761,15 +785,43 @@ public class SelectStatement extends MetaStatement {
         if (columnResult.hasError()) {
           result = columnResult;
         }
+      } else if (selector.getSelector() instanceof SelectorGroupBy) {
+        SelectorGroupBy selectorMeta = (SelectorGroupBy) selector.getSelector();
+
+        // Checking column in the group by aggregation function
+        if (selectorMeta.getParams().size() <= 1) {
+          for (SelectorMeta subselector : selectorMeta.getParams()) {
+            if (subselector.getType() == SelectorMeta.TYPE_IDENT) {
+              SelectorIdentifier subselectorIdentifier = (SelectorIdentifier) subselector;
+
+              String targetTable = "any";
+              if (subselectorIdentifier.getTablename() != null) {
+                targetTable = subselectorIdentifier.getTablename();
+              }
+
+              columnResult = findColumn(targetTable, subselectorIdentifier.getColumnName());
+              if (columnResult.hasError()) {
+                result = columnResult;
+              }
+            } else {
+              result =
+                  QueryResult
+                      .createFailQueryResult("Nested functions on selected fields not supported.");
+            }
+          }
+        } else {
+          result =
+              QueryResult
+                  .createFailQueryResult("Aggregation functions can't be applied to more than one column.");
+        }
       } else {
-        result = QueryResult.createFailQueryResult("Functions on selected fields not supported.");
+        result =
+            QueryResult.createFailQueryResult("Functions type on selected fields not supported.");
       }
     }
 
     return result;
   }
-
-
 
   /**
    * Get the processed where clause to be sent to Cassandra related with lucene indexes.
@@ -1553,7 +1605,9 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-    if (joinInc) {
+    if (groupInc) {
+      steps.setNode(new MetaStep(MetaPath.DEEP, this));
+    } else if (joinInc) {
       steps = getJoinPlan();
     } else if (whereInc) {
       steps = getWherePlan(metadataManager);

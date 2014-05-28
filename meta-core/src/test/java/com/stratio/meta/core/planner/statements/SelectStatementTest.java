@@ -26,6 +26,8 @@ import org.testng.annotations.Test;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.GroupBy;
+import com.stratio.meta.core.structures.GroupByFunction;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta.core.structures.LongTerm;
 import com.stratio.meta.core.structures.Relation;
@@ -37,7 +39,9 @@ import com.stratio.meta.core.structures.SelectionClause;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelector;
 import com.stratio.meta.core.structures.SelectionSelectors;
+import com.stratio.meta.core.structures.SelectorGroupBy;
 import com.stratio.meta.core.structures.SelectorIdentifier;
+import com.stratio.meta.core.structures.SelectorMeta;
 import com.stratio.meta.core.structures.StringTerm;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.utils.Tree;
@@ -190,6 +194,26 @@ public class SelectStatementTest extends BasicPlannerTest {
     Relation relation2 = new RelationCompare("age", "=", new LongTerm("15"));
     List<Relation> whereClause = Arrays.asList(relation1, relation2);
     ((SelectStatement) stmt).setWhere(whereClause);
+    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    validateDeepPath("testWhereWithPartialPartitionKey");
+  }
+
+  @Test
+  public void testGroupByWithCount() {
+
+    String inputText = "SELECT gender, COUNT(*) FROM demo.users GROUP BY gender;";
+
+    List<SelectorMeta> metaParams = new ArrayList<>();
+    metaParams.add(new SelectorIdentifier("*"));
+
+    List<SelectionSelector> selectionSelectors =
+        Arrays.asList(new SelectionSelector(new SelectorIdentifier("gender")),
+            new SelectionSelector(new SelectorGroupBy(GroupByFunction.COUNT, metaParams)));
+
+    SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
+    stmt = new SelectStatement(selClause, "demo.users");
+    GroupBy groupClause = new GroupBy(Arrays.asList("gender"));
+    ((SelectStatement) stmt).setGroup(groupClause);
     Tree tree = stmt.getPlan(_metadataManager, "demo");
     validateDeepPath("testWhereWithPartialPartitionKey");
   }

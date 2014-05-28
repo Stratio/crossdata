@@ -151,4 +151,25 @@ public class SelectStatementTest extends ParsingTest {
         "SELECT users.name FROM demo.users WHERE users.email BETWEEN 'aaaa_00@domain.com';";
     testRecoverableError(inputText, "selectWithInClauseOneValueOk");
   }
+
+  @Test
+  public void selectGroupedWithCountOk() {
+
+    String inputText = "SELECT users.gender,COUNT() FROM demo.users GROUP BY gender;";
+    testRegularStatement(inputText, "selectGroupedWithCountOk");
+  }
+
+  @Test
+  public void selectGroupedWithSumOk() {
+
+    String inputText = "SELECT users.gender,SUM(age) FROM demo.users GROUP BY gender;";
+    testRegularStatement(inputText, "selectGroupedWithSumOk");
+  }
+
+  @Test
+  public void selectGroupedFail() {
+
+    String inputText = "SELECT users.gender FROM demo.users GROUP BY sum(age);";
+    testParseFails(inputText, "selectGroupedWithSumOk");
+  }
 }

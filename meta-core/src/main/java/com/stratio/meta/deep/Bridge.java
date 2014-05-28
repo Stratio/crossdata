@@ -26,6 +26,9 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.PairFunction;
+
+import scala.Tuple2;
 
 import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
@@ -135,6 +138,19 @@ public class Bridge {
         rdd = doWhere(rdd, rel);
       }
     }
+
+    rdd.map(new PairFunction<Cells, Tuple2<String, String>, Cells>() {
+
+      private static final long serialVersionUID = -4048407367855355336L;
+
+      @Override
+      public Tuple2<Tuple2<String, String>, Cells> call(Cells arg0) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+    });
+
     return returnResult(rdd, isRoot,
         ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, Arrays.asList(columnsSet));
   }
