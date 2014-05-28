@@ -183,12 +183,12 @@
             <groupId>com.stratio.streaming</groupId>
             <artifactId>streaming-api</artifactId>
             <version>0.2.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+            <!--exclusions>
+                <exclusion>
                     <groupId>org.apache.kafka</groupId>
                     <artifactId>kafka_2.10</artifactId>
                 </exclusion>
-            </exclusions>
+            </exclusions-->
         </dependency>
 	</dependencies>
 

@@ -16,25 +16,8 @@
 
 package com.stratio.meta.deep;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import com.datastax.driver.core.ResultSet;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.data.CassandraResultSet;
-import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
@@ -64,6 +47,21 @@ import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.QueryStatus;
 import com.stratio.meta.core.utils.Tree;
+
+import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class BridgeTest extends BasicCoreCassandraTest {
 
@@ -788,25 +786,6 @@ public class BridgeTest extends BasicCoreCassandraTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
     QueryResult result = (QueryResult) validateOk(metaQuery, "testNotEqual");
-    // /////////////////////////////////////////////////////////////////////////
-    ResultSet result2 = _session.execute("SELECT name, age FROM demo.users;");
-    System.out.println("-------CASSANDRA-------");
-    for (com.datastax.driver.core.Row row : result2.all()) {
-      System.out.print(" | " + row.getString("name"));
-      System.out.print(" | " + row.getInt("age"));
-      System.out.println(" | ");
-    }
-    System.out.println("------------------");
-    // /////////////////////////////////////////////////////////////////////////
-    System.out.println("-------METARESULT-------");
-    for (Row row : result.getResultSet()) {
-      for (String key : row.getCells().keySet()) {
-        System.out.print(" | " + row.getCell(key).getValue());
-      }
-      System.out.println(" | ");
-    }
-    System.out.println("------------------");
-    // /////////////////////////////////////////////////////////////////////////
     assertEquals(result.getResultSet().size(), 15);
   }
 

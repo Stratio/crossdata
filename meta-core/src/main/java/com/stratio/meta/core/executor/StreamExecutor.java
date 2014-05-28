@@ -28,7 +28,7 @@ public class StreamExecutor {
             for (Map.Entry<String, String> column : cts.getColumns().entrySet()) {
                 System.out.println("Adding column: "+column);
                 ColumnType type=null;
-                if (column.getValue().equalsIgnoreCase("string")){
+                if (column.getValue().equalsIgnoreCase("varchar") || column.getValue().equalsIgnoreCase("text")){
                     type=ColumnType.STRING;
                 }
                 else if (column.getValue().equalsIgnoreCase("boolean")){
