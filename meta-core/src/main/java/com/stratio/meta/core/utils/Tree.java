@@ -166,7 +166,6 @@ public class Tree {
                                 DeepSparkContext deepSparkContext,
                                 EngineConfig engineConfig,
                                 List<Result> resultsFromChildren){
-        System.out.println("Executing myself");
         Result result = null;
         if(node == null){
             return QueryResult.createSuccessQueryResult();

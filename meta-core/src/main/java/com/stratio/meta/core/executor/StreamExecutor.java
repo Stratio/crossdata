@@ -17,8 +17,6 @@ public class StreamExecutor {
 
     public static Result execute(MetaStatement stmt) {
 
-        System.out.println("TRACE: StreamExecutor");
-
         Result result = QueryResult.createSuccessQueryResult();
 
         if (stmt instanceof CreateTableStatement) {
@@ -51,10 +49,9 @@ public class StreamExecutor {
                 ColumnNameType streamColumn = new ColumnNameType(column.getKey(), type);
                 columnList.add(streamColumn);
             }
-            System.out.println("Creating stream");
             return MetaStream.createStream(tableEphimeralName, columnList);
         } else {
-            return QueryResult.createFailQueryResult("Not sopported yet");
+            return QueryResult.createFailQueryResult("Not supported yet");
         }
     }
 
