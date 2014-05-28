@@ -780,7 +780,7 @@ getSelector returns [SelectorMeta slmt]
         ArrayList<SelectorMeta> params = new ArrayList<>();
         GroupByFunction gbFunc = null;
     }:
-    ( (T_SUM {gbFunc = GroupByFunction.AGGREGATION;}
+    ( (T_SUM {gbFunc = GroupByFunction.SUM;}
        | T_MAX {gbFunc = GroupByFunction.MAX;}
        | T_MIN {gbFunc = GroupByFunction.MIN;}
        | T_AVG {gbFunc = GroupByFunction.AVG;}

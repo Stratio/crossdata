@@ -20,7 +20,7 @@
 package com.stratio.meta.core.structures;
 
 public enum GroupByFunction {
-    AGGREGATION,
+    SUM,
     MAX,
     MIN,
     AVG,
