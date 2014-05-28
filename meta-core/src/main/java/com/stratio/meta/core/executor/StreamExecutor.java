@@ -15,45 +15,45 @@ import java.util.Map;
 
 public class StreamExecutor {
 
-    public static Result execute(MetaStatement stmt) {
+  public static Result execute(MetaStatement stmt) {
 
-        Result result = QueryResult.createSuccessQueryResult();
+    Result result = QueryResult.createSuccessQueryResult();
 
-        if (stmt instanceof CreateTableStatement) {
-            CreateTableStatement cts= (CreateTableStatement) stmt;
-            String tableEphimeralName= cts.getEffectiveKeyspace()+"."+cts.getTableName() ;
-            List<ColumnNameType> columnList = new ArrayList<>();
-            for (Map.Entry<String, String> column : cts.getColumns().entrySet()) {
-                System.out.println("Adding column: "+column);
-                ColumnType type=null;
-                if (column.getValue().equalsIgnoreCase("varchar") || column.getValue().equalsIgnoreCase("text")){
-                    type=ColumnType.STRING;
-                }
-                else if (column.getValue().equalsIgnoreCase("boolean")){
-                    type=ColumnType.BOOLEAN;
-                }
-                else if (column.getValue().equalsIgnoreCase("double")){
-                    type=ColumnType.DOUBLE;
-                }
-                else if (column.getValue().equalsIgnoreCase("float")){
-                    type=ColumnType.FLOAT;
-                }
-                else if (column.getValue().equalsIgnoreCase("integer") || column.getValue().equalsIgnoreCase("int")){
-                    type=ColumnType.INTEGER;
-                }
-                else if (column.getValue().equalsIgnoreCase("long")){
-                    type=ColumnType.LONG;
-                } else {
-                    type = ColumnType.valueOf(column.getValue());
-                }
-                ColumnNameType streamColumn = new ColumnNameType(column.getKey(), type);
-                columnList.add(streamColumn);
-            }
-            return MetaStream.createStream(tableEphimeralName, columnList);
-        } else {
-            return QueryResult.createFailQueryResult("Not supported yet");
+    if (stmt instanceof CreateTableStatement) {
+      CreateTableStatement cts= (CreateTableStatement) stmt;
+      String tableEphimeralName= cts.getEffectiveKeyspace()+"."+cts.getTableName() ;
+      List<ColumnNameType> columnList = new ArrayList<>();
+      for (Map.Entry<String, String> column : cts.getColumns().entrySet()) {
+        ColumnType type=null;
+        if (column.getValue().equalsIgnoreCase("varchar") || column.getValue().equalsIgnoreCase("text") || column.getValue().equalsIgnoreCase("uuid")
+            || column.getValue().equalsIgnoreCase("timestamp") || column.getValue().equalsIgnoreCase("timeuuid")){
+          type=ColumnType.STRING;
         }
+        else if (column.getValue().equalsIgnoreCase("boolean")){
+          type=ColumnType.BOOLEAN;
+        }
+        else if (column.getValue().equalsIgnoreCase("double")){
+          type=ColumnType.DOUBLE;
+        }
+        else if (column.getValue().equalsIgnoreCase("float")){
+          type=ColumnType.FLOAT;
+        }
+        else if (column.getValue().equalsIgnoreCase("integer") || column.getValue().equalsIgnoreCase("int")){
+          type=ColumnType.INTEGER;
+        }
+        else if (column.getValue().equalsIgnoreCase("long") || column.getValue().equalsIgnoreCase("counter")){
+          type=ColumnType.LONG;
+        } else {
+          type = ColumnType.valueOf(column.getValue());
+        }
+        ColumnNameType streamColumn = new ColumnNameType(column.getKey(), type);
+        columnList.add(streamColumn);
+      }
+      return MetaStream.createStream(tableEphimeralName, columnList);
+    } else {
+      return QueryResult.createFailQueryResult("Not supported yet");
     }
+  }
 
 }
 

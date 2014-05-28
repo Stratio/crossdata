@@ -29,16 +29,30 @@ import java.util.Map;
 
 public class CreateTableStatementTest  extends BasicPlannerTest {
 
-    @Test
-    public void testPlanForCreateTable(){
-        String inputText = "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
-        Map<String, String> columns = new HashMap();
-        columns.put("id", "INT");
-        columns.put("name", "VARCHAR");
-        columns.put("check", "BOOLEAN");
-        stmt = new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"), Arrays.asList("name"), 1, 1);
-        stmt.setSessionKeyspace("demo");
-        ((CreateTableStatement)stmt).validate(_metadataManager);
-        validateCassandraPath("testPlanForCreateTable");
-    }
+  @Test
+  public void testPlanForCreateTable(){
+    String inputText = "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
+    Map<String, String> columns = new HashMap();
+    columns.put("id", "INT");
+    columns.put("name", "VARCHAR");
+    columns.put("check", "BOOLEAN");
+    stmt = new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"), Arrays.asList("name"), 1, 1);
+    stmt.setSessionKeyspace("demo");
+    ((CreateTableStatement)stmt).validate(_metadataManager);
+    validateCassandraPath("testPlanForCreateTable");
+  }
+
+  @Test
+  public void testPlanForEphemeralCreateTable(){
+    String inputText = "CREATE TABLE demo.table_temporal (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id)) WITH ephemeral = true;";
+    Map<String, String> columns = new HashMap();
+    columns.put("id", "INT");
+    columns.put("name", "VARCHAR");
+    columns.put("check", "BOOLEAN");
+    stmt = new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"), Arrays.asList("name"), 1, 1);
+    stmt.setSessionKeyspace("demo");
+    ((CreateTableStatement)stmt).validate(_metadataManager);
+    validateStreamingPath("testPlanForEphemeralCreateTable");
+  }
+
 }
