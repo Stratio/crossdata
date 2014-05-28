@@ -21,7 +21,7 @@ public class StreamExecutor {
 
         if (stmt instanceof CreateTableStatement) {
             CreateTableStatement cts= (CreateTableStatement) stmt;
-            String tableEphimeralName= cts.getTableName() ;
+            String tableEphimeralName= cts.getEffectiveKeyspace()+"."+cts.getTableName() ;
             List<ColumnNameType> columnList = new ArrayList<>();
             for (Map.Entry<String, String> column : cts.getColumns().entrySet()) {
                 System.out.println("Adding column: "+column);
