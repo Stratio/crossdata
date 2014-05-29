@@ -20,6 +20,7 @@
 package com.stratio.meta.core.metadata;
 
 import com.datastax.driver.core.KeyspaceMetadata;
+import com.stratio.deep.entity.Cell;
 import com.stratio.meta.common.metadata.structures.CatalogMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnType;
@@ -82,8 +83,14 @@ public abstract class AbstractMetadataHelper {
     /**
      * Obtain the ColumnType associated with a database type.
      * @param dbTypeName The name of the database type.
-     * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType} or null
-     * if the type should be considered native.
+     * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
      */
     public abstract ColumnType toColumnType(String dbTypeName);
+
+    /**
+     * Obtain the ColumnType associated with a Deep cell.
+     * @param deepCell The deep cell.
+     * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
+     */
+    public abstract ColumnType toColumnType(Cell deepCell);
 }
