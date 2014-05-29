@@ -4,7 +4,6 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
-import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
 import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
 import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
@@ -53,8 +52,8 @@ public class MetaStream {
   public static void dropStream(String s) {
     try {
       stratioStreamingAPI.dropStream(s);
-    } catch (StratioEngineOperationException e) {
-      e.printStackTrace();
+    } catch (Throwable t) {
+      t.printStackTrace();
     }
   }
 }
