@@ -18,16 +18,14 @@ package com.stratio.meta.deep;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.ColumnType;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
 
 import scala.Tuple2;
@@ -39,9 +37,10 @@ import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.data.ColumnDefinition;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
@@ -50,6 +49,8 @@ import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.Ordering;
 import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.SelectionClause;
+import com.stratio.meta.core.structures.SelectorGroupBy;
+import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.deep.comparators.DeepComparator;
 import com.stratio.meta.deep.functions.Between;
@@ -62,6 +63,7 @@ import com.stratio.meta.deep.functions.LessEqualThan;
 import com.stratio.meta.deep.functions.LessThan;
 import com.stratio.meta.deep.functions.MapKeyForJoin;
 import com.stratio.meta.deep.functions.NotEquals;
+import com.stratio.meta.deep.functions.aggregators.Sum;
 import com.stratio.meta.deep.utils.DeepUtils;
 
 /**
@@ -117,6 +119,7 @@ public class Bridge {
    */
   public ResultSet executeLeafNode(MetaStatement stmt, boolean isRoot) {
     SelectStatement ss = (SelectStatement) stmt;
+
     // LEAF
     String[] columnsSet = {};
     if (ss.getSelectionClause().getType() == SelectionClause.TYPE_SELECTION) {
@@ -141,20 +144,54 @@ public class Bridge {
       }
     }
 
-    rdd.map(new PairFunction<Cells, Tuple2<String, String>, Cells>() {
+    final List<String> colNames = ss.getGroup().getColNames();
+
+    // Mapping the rdd to execute the group by clause
+    JavaPairRDD<Cells, Cells> groupedRdd = rdd.map(new PairFunction<Cells, Cells, Cells>() {
 
       private static final long serialVersionUID = -4048407367855355336L;
 
       @Override
-      public Tuple2<Tuple2<String, String>, Cells> call(Cells arg0) throws Exception {
-        // TODO Auto-generated method stub
-        return null;
+      public Tuple2<Cells, Cells> call(Cells cells) throws Exception {
+
+        Cells headers = new Cells();
+        for (String colName : colNames) {
+          headers.add(com.stratio.deep.entity.Cell.create(colName));
+        }
+
+        return new Tuple2<>(headers, cells);
       }
 
     });
 
+    List<SelectorGroupBy> selectorsGroupBy = ss.getSelectionClause().getSelectorsGroupBy();
+
+    JavaPairRDD<Cells, Cells> aggregatedRdd = groupedRdd;
+    for (SelectorGroupBy selectorGroupBy : selectorsGroupBy) {
+      applyAggregationFunction(groupedRdd, selectorGroupBy);
+    }
+
+    groupedRdd.reduceByKey(new Function2<Cells, Cells, Cells>() {
+
+      private static final long serialVersionUID = 2269465242453693573L;
+
+      @Override
+      public Cells call(Cells arg0, Cells arg1) throws Exception {
+
+        return null;
+      }
+    });
+
     return returnResult(rdd, isRoot,
         ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, Arrays.asList(columnsSet));
+  }
+
+  private JavaPairRDD<Cells, Cells> applyAggregationFunction(JavaPairRDD<Cells, Cells> rdd,
+      SelectorGroupBy selector) {
+
+    // TODO Modify when nested aggregation functions are supported. E.g. SUM(AVG(field_1))
+    String field = ((SelectorIdentifier) selector.getParam()).getIdentifier();
+    return rdd.reduceByKey(new Sum(field));
   }
 
   /**

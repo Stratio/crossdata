@@ -41,7 +41,6 @@ import com.stratio.meta.core.structures.SelectionSelector;
 import com.stratio.meta.core.structures.SelectionSelectors;
 import com.stratio.meta.core.structures.SelectorGroupBy;
 import com.stratio.meta.core.structures.SelectorIdentifier;
-import com.stratio.meta.core.structures.SelectorMeta;
 import com.stratio.meta.core.structures.StringTerm;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.utils.Tree;
@@ -203,12 +202,10 @@ public class SelectStatementTest extends BasicPlannerTest {
 
     String inputText = "SELECT gender, COUNT(*) FROM demo.users GROUP BY gender;";
 
-    List<SelectorMeta> metaParams = new ArrayList<>();
-    metaParams.add(new SelectorIdentifier("*"));
-
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("gender")),
-            new SelectionSelector(new SelectorGroupBy(GroupByFunction.COUNT, metaParams)));
+            new SelectionSelector(new SelectorGroupBy(GroupByFunction.COUNT,
+                new SelectorIdentifier("*"))));
 
     SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
     stmt = new SelectStatement(selClause, "demo.users");
