@@ -22,6 +22,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,8 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.GroupBy;
+import com.stratio.meta.core.structures.GroupByFunction;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta.core.structures.IntegerTerm;
 import com.stratio.meta.core.structures.LongTerm;
@@ -56,6 +59,7 @@ import com.stratio.meta.core.structures.SelectionClause;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelector;
 import com.stratio.meta.core.structures.SelectionSelectors;
+import com.stratio.meta.core.structures.SelectorGroupBy;
 import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.StringTerm;
 import com.stratio.meta.core.structures.Term;
@@ -831,6 +835,33 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");
     firstSelect.setWhere(clause);
+
+    // Query execution
+    Tree tree = new Tree();
+    tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+    metaQuery.setPlan(tree);
+    metaQuery.setStatus(QueryStatus.PLANNED);
+    Result results = validateRows(metaQuery, "testBasicBetweenClauseWithIntegerData", 10);
+
+    results.toString();
+  }
+
+  @Test
+  public void testBasicGroupByClause() {
+
+    MetaQuery metaQuery =
+        new MetaQuery("SELECT users.gender,count(*) FROM demo.users GROUP BY users.gender;");
+
+    List<SelectionSelector> selectionSelectors =
+        Arrays.asList(new SelectionSelector(new SelectorIdentifier("users.gender")),
+            new SelectionSelector(new SelectorGroupBy(GroupByFunction.COUNT,
+                new SelectorIdentifier("*"))));
+
+    SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
+    GroupBy groupClause = new GroupBy(Arrays.asList("users.gender"));
+
+    SelectStatement firstSelect = new SelectStatement(selClause, "demo.users");
+    firstSelect.setGroup(groupClause);
 
     // Query execution
     Tree tree = new Tree();

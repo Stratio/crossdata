@@ -16,6 +16,23 @@
 
 package com.stratio.meta.core.statements;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
+
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -27,18 +44,31 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.*;
+import com.stratio.meta.core.structures.GroupBy;
+import com.stratio.meta.core.structures.IndexType;
+import com.stratio.meta.core.structures.InnerJoin;
+import com.stratio.meta.core.structures.OrderDirection;
+import com.stratio.meta.core.structures.Ordering;
+import com.stratio.meta.core.structures.Relation;
+import com.stratio.meta.core.structures.RelationCompare;
+import com.stratio.meta.core.structures.RelationIn;
+import com.stratio.meta.core.structures.RelationToken;
+import com.stratio.meta.core.structures.Selection;
+import com.stratio.meta.core.structures.SelectionAsterisk;
+import com.stratio.meta.core.structures.SelectionClause;
+import com.stratio.meta.core.structures.SelectionList;
+import com.stratio.meta.core.structures.SelectionSelector;
+import com.stratio.meta.core.structures.SelectionSelectors;
+import com.stratio.meta.core.structures.SelectorFunction;
+import com.stratio.meta.core.structures.SelectorGroupBy;
+import com.stratio.meta.core.structures.SelectorIdentifier;
+import com.stratio.meta.core.structures.SelectorMeta;
+import com.stratio.meta.core.structures.Term;
+import com.stratio.meta.core.structures.WindowSelect;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-import org.apache.log4j.Logger;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -311,6 +341,15 @@ public class SelectStatement extends MetaStatement {
   public void setGroup(GroupBy group) {
     this.groupInc = true;
     this.group = group;
+  }
+
+  /**
+   * Return GROUP BY clause.
+   * 
+   * @return list of {@link com.stratio.meta.core.structures.GroupBy}.
+   */
+  public GroupBy getGroup() {
+    return group;
   }
 
   /**
@@ -759,30 +798,22 @@ public class SelectStatement extends MetaStatement {
         SelectorGroupBy selectorMeta = (SelectorGroupBy) selector.getSelector();
 
         // Checking column in the group by aggregation function
-        if (selectorMeta.getParams().size() <= 1) {
-          for (SelectorMeta subselector : selectorMeta.getParams()) {
-            if (subselector.getType() == SelectorMeta.TYPE_IDENT) {
-              SelectorIdentifier subselectorIdentifier = (SelectorIdentifier) subselector;
+        if (selectorMeta.getParam().getType() == SelectorMeta.TYPE_IDENT) {
+          SelectorIdentifier subselectorIdentifier = (SelectorIdentifier) selectorMeta.getParam();
 
-              String targetTable = "any";
-              if (subselectorIdentifier.getTablename() != null) {
-                targetTable = subselectorIdentifier.getTablename();
-              }
+          String targetTable = "any";
+          if (subselectorIdentifier.getTablename() != null) {
+            targetTable = subselectorIdentifier.getTablename();
+          }
 
-              columnResult = findColumn(targetTable, subselectorIdentifier.getColumnName());
-              if (columnResult.hasError()) {
-                result = columnResult;
-              }
-            } else {
-              result =
-                  QueryResult
-                      .createFailQueryResult("Nested functions on selected fields not supported.");
-            }
+          columnResult = findColumn(targetTable, subselectorIdentifier.getColumnName());
+          if (columnResult.hasError()) {
+            result = columnResult;
           }
         } else {
           result =
               QueryResult
-                  .createFailQueryResult("Aggregation functions can't be applied to more than one column.");
+                  .createFailQueryResult("Nested functions on selected fields not supported.");
         }
       } else {
         result =

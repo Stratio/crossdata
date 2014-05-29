@@ -155,14 +155,14 @@ public class SelectStatementTest extends ParsingTest {
   @Test
   public void selectGroupedWithCountOk() {
 
-    String inputText = "SELECT users.gender,COUNT() FROM demo.users GROUP BY gender;";
+    String inputText = "SELECT users.gender, COUNT(*) FROM demo.users GROUP BY gender;";
     testRegularStatement(inputText, "selectGroupedWithCountOk");
   }
 
   @Test
   public void selectGroupedWithSumOk() {
 
-    String inputText = "SELECT users.gender,SUM(age) FROM demo.users GROUP BY gender;";
+    String inputText = "SELECT users.gender, SUM(age) FROM demo.users GROUP BY gender;";
     testRegularStatement(inputText, "selectGroupedWithSumOk");
   }
 
