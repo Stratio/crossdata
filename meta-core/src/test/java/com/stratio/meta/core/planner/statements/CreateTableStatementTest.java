@@ -21,9 +21,16 @@ package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.CreateTableStatement;
+import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.core.structures.BooleanProperty;
+import com.stratio.meta.core.structures.Property;
+import com.stratio.meta.core.structures.PropertyNameValue;
+
 import org.testng.annotations.Test;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,7 +45,16 @@ public class CreateTableStatementTest  extends BasicPlannerTest {
     columns.put("check", "BOOLEAN");
     stmt = new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"), Arrays.asList("name"), 1, 1);
     stmt.setSessionKeyspace("demo");
-    ((CreateTableStatement)stmt).validate(_metadataManager);
+
+    try {
+      Class<? extends MetaStatement> clazz = stmt.getClass();
+      Field field = clazz.getDeclaredField("createTable");
+      field.setAccessible(true);
+      field.setBoolean(stmt, true);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      e.printStackTrace();
+    }
+
     validateCassandraPath("testPlanForCreateTable");
   }
 
@@ -51,7 +67,20 @@ public class CreateTableStatementTest  extends BasicPlannerTest {
     columns.put("check", "BOOLEAN");
     stmt = new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"), Arrays.asList("name"), 1, 1);
     stmt.setSessionKeyspace("demo");
-    ((CreateTableStatement)stmt).validate(_metadataManager);
+
+    Property prop = new PropertyNameValue("ephemeral", new BooleanProperty(true));
+
+    ((CreateTableStatement) stmt).setProperties(Collections.singletonList(prop));
+
+    try {
+      Class<? extends MetaStatement> clazz = stmt.getClass();
+      Field field = clazz.getDeclaredField("createTable");
+      field.setAccessible(true);
+      field.setBoolean(stmt, true);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      e.printStackTrace();
+    }
+
     validateStreamingPath("testPlanForEphemeralCreateTable");
   }
 

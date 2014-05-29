@@ -79,7 +79,7 @@ public class CreateTableStatementTest extends ParsingTest {
   @Test
   public void createEphemeralTable() {
     String inputText = "create table temporal (name varchar, age int, rating double, member boolean, primary key (name)) "
-                       + "with ephemeral = true;";
+                       + "with ephemeral=true;";
     testRegularStatement(inputText, "createEphemeralTable");
   }
 

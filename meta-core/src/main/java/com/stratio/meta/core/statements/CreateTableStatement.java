@@ -65,7 +65,7 @@ public class CreateTableStatement extends MetaStatement{
   /**
    * The list of {@link com.stratio.meta.core.structures.Property} of the table.
    */
-  private List<Property> properties = null;
+  private List<Property> properties = new ArrayList<>();
 
   /**
    * The type of primary key. Accepted values are:
@@ -77,6 +77,10 @@ public class CreateTableStatement extends MetaStatement{
    * </ul>
    */
   private int primaryKeyType;
+
+  private static final int PRIMARY_SINGLE = 1;
+  private static final int PRIMARY_COMPOSED = 2;
+  private static final int PRIMARY_AND_CLUSTERING_SPECIFIED = 3;
 
   /**
    * Whether the table should be created only if not exists.
@@ -186,7 +190,7 @@ public class CreateTableStatement extends MetaStatement{
 
   public String getCompositePKString(){
     StringBuilder sb = new StringBuilder("PRIMARY KEY (");
-    if(primaryKeyType == 3){
+    if(primaryKeyType == PRIMARY_AND_CLUSTERING_SPECIFIED){
       sb.append("(");
     }
 
@@ -198,7 +202,7 @@ public class CreateTableStatement extends MetaStatement{
       }
     }
 
-    if(primaryKeyType == 3){
+    if(primaryKeyType == PRIMARY_AND_CLUSTERING_SPECIFIED){
       sb.append(")");
       for(String key : clusterKey){
         sb.append(", ").append(key);
@@ -221,7 +225,7 @@ public class CreateTableStatement extends MetaStatement{
     }
     sb.append(tableName);
 
-    if(primaryKeyType == 1){
+    if(primaryKeyType == PRIMARY_SINGLE){
       sb.append(getSinglePKString());
     }else{
       Set<String> keySet = columns.keySet();
@@ -242,7 +246,7 @@ public class CreateTableStatement extends MetaStatement{
   /** {@inheritDoc} */
   @Override
   public Result validate(MetadataManager metadata) {
-    Result result = validateKeyspaceAndTable(metadata, sessionKeyspace);
+    Result result = validateKeyspaceAndTable(metadata);
     if (!result.hasError()){
       result=validateEphimeral();
     }
@@ -270,10 +274,9 @@ public class CreateTableStatement extends MetaStatement{
    * exits unless {@code ifNotExists} has been specified.
    * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
    *                 the required information.
-   * @param targetKeyspace The target keyspace where the query will be executed.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace){
+  private Result validateKeyspaceAndTable(MetadataManager metadata){
     Result result = QueryResult.createSuccessQueryResult();
     //Get the effective keyspace based on the user specification during the create
     //sentence, or taking the keyspace in use in the user session.
@@ -379,7 +382,7 @@ public class CreateTableStatement extends MetaStatement{
       char c = cqlString.charAt(i);
       if (c == '{') {
         sb.append("{");
-        int newI = cqlString.indexOf("}", i);
+        int newI = cqlString.indexOf('}', i);
         String insideBracket = cqlString.substring(i + 1, newI);
         insideBracket = insideBracket.replace(":", " ").replace(",", " ");
 
