@@ -21,6 +21,7 @@ package com.stratio.meta.streaming;
 
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.executor.StreamExecutor;
 import com.stratio.meta.core.statements.CreateTableStatement;
 import com.stratio.meta.core.structures.BooleanProperty;
@@ -35,7 +36,7 @@ import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 
-public class StreamTest {
+public class StreamTest extends BasicCoreCassandraTest {
 
   @Test
   public void testEphemeralCreation() {

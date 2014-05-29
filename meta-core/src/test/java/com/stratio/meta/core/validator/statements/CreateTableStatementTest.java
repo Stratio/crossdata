@@ -45,7 +45,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
   @Test
   public void validateEphemeralOk(){
     String inputText = "CREATE TABLE demo.temporal (name VARCHAR, gender VARCHAR, email VARCHAR, age INT, bool BOOLEAN, phrase VARCHAR, PRIMARY KEY (name))"
-                       + " WITH ephemeral = true;";
+                       + " WITH ephemeral=true;";
     validateOk(inputText, "validateEphemeralOk");
   }
 
