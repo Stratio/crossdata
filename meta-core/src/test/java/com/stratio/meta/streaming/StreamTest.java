@@ -27,7 +27,6 @@ import com.stratio.meta.core.statements.CreateTableStatement;
 import com.stratio.meta.core.structures.BooleanProperty;
 import com.stratio.meta.core.structures.Property;
 import com.stratio.meta.core.structures.PropertyNameValue;
-import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -42,11 +41,7 @@ public class StreamTest extends BasicCoreCassandraTest {
 
   @BeforeClass
   public void removeEphemeralTable(){
-    try {
-      MetaStream.dropStream("demo.temporal_test");
-    } catch (StratioEngineOperationException e) {
-      e.printStackTrace();
-    }
+    MetaStream.dropStream("demo.temporal_test");
   }
 
   @Test

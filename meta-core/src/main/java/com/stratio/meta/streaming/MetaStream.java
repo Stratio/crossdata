@@ -50,8 +50,12 @@ public class MetaStream {
     return result;
   }
 
-  public static void dropStream(String s) throws StratioEngineOperationException {
-    stratioStreamingAPI.dropStream(s);
+  public static void dropStream(String s) {
+    try {
+      stratioStreamingAPI.dropStream(s);
+    } catch (StratioEngineOperationException e) {
+      e.printStackTrace();
+    }
   }
 }
 
