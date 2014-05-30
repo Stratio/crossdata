@@ -157,6 +157,11 @@ public class CreateTableStatement extends MetaStatement{
    */
   public void setProperties(List<Property> properties) {
     this.properties = properties;
+    if((properties == null) || properties.isEmpty()){
+      withProperties = false;
+    } else {
+      withProperties = true;
+    }
   }
 
   public void setIfNotExists(boolean ifNotExists){
