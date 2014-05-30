@@ -16,10 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
@@ -33,6 +29,10 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Class that models a {@code SELECT} statement from the META language. This class recognizes the
@@ -177,7 +177,7 @@ public class DeleteStatement extends MetaStatement {
     String column = rc.getIdentifiers().get(0);
     if (tableMetadata.getColumn(column) == null) {
       result =
-          QueryResult.createFailQueryResult("Column " + column + " does not exists in table "
+          QueryResult.createFailQueryResult("Column " + column + " does not exist in table "
               + tableMetadata.getName());
     }
 
@@ -274,11 +274,11 @@ public class DeleteStatement extends MetaStatement {
       if (ksMetadata == null) {
         result =
             QueryResult
-                .createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
+                .createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
       } else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata == null) {
-          result = QueryResult.createFailQueryResult("Table " + tableName + " does not exists.");
+          result = QueryResult.createFailQueryResult("Table " + tableName + " does not exist.");
         }
       }
 

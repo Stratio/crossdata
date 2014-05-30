@@ -27,7 +27,6 @@ public class ColumnMetadata implements Serializable{
      * Serial version UID in order to be Serializable.
      */
     private static final long serialVersionUID = -2151960196552242173L;
-
     /**
      * Parent table.
      */

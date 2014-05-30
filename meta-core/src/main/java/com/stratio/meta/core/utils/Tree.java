@@ -27,6 +27,7 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.executor.CassandraExecutor;
 import com.stratio.meta.core.executor.CommandExecutor;
 import com.stratio.meta.core.executor.DeepExecutor;
+import com.stratio.meta.core.executor.StreamExecutor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -177,7 +178,10 @@ public class Tree {
             result = CassandraExecutor.execute(myStep, session);
         } else if(myPath == MetaPath.DEEP){
             result = DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session, deepSparkContext, engineConfig);
-        } else if(myPath == MetaPath.UNSUPPORTED){
+        }else if(myPath == MetaPath.STREAMING){
+            result = StreamExecutor.execute(myStep.getStmt());
+        }
+        else if(myPath == MetaPath.UNSUPPORTED){
             result = QueryResult.createFailQueryResult("Query not supported.");
         } else {
             result = QueryResult.createFailQueryResult("Query not supported yet.");

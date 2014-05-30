@@ -21,24 +21,67 @@ package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.CreateTableStatement;
+import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.core.structures.BooleanProperty;
+import com.stratio.meta.core.structures.Property;
+import com.stratio.meta.core.structures.PropertyNameValue;
+
 import org.testng.annotations.Test;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CreateTableStatementTest  extends BasicPlannerTest {
 
-    @Test
-    public void testPlanForCreateTable(){
-        String inputText = "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
-        Map<String, String> columns = new HashMap();
-        columns.put("id", "INT");
-        columns.put("name", "VARCHAR");
-        columns.put("check", "BOOLEAN");
-        stmt = new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"), Arrays.asList("name"), 1, 1);
-        stmt.setSessionKeyspace("demo");
-        ((CreateTableStatement)stmt).validate(_metadataManager);
-        validateCassandraPath("testPlanForCreateTable");
+  @Test
+  public void testPlanForCreateTable(){
+    String inputText = "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
+    Map<String, String> columns = new HashMap();
+    columns.put("id", "INT");
+    columns.put("name", "VARCHAR");
+    columns.put("check", "BOOLEAN");
+    stmt = new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"), Arrays.asList("name"), 1, 1);
+    stmt.setSessionKeyspace("demo");
+
+    try {
+      Class<? extends MetaStatement> clazz = stmt.getClass();
+      Field field = clazz.getDeclaredField("createTable");
+      field.setAccessible(true);
+      field.setBoolean(stmt, true);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      e.printStackTrace();
     }
+
+    validateCassandraPath("testPlanForCreateTable");
+  }
+
+  @Test
+  public void testPlanForEphemeralCreateTable(){
+    String inputText = "CREATE TABLE demo.table_temporal (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id)) WITH ephemeral = true;";
+    Map<String, String> columns = new HashMap();
+    columns.put("id", "INT");
+    columns.put("name", "VARCHAR");
+    columns.put("check", "BOOLEAN");
+    stmt = new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"), Arrays.asList("name"), 1, 1);
+    stmt.setSessionKeyspace("demo");
+
+    Property prop = new PropertyNameValue("ephemeral", new BooleanProperty(true));
+
+    ((CreateTableStatement) stmt).setProperties(Collections.singletonList(prop));
+
+    try {
+      Class<? extends MetaStatement> clazz = stmt.getClass();
+      Field field = clazz.getDeclaredField("createTable");
+      field.setAccessible(true);
+      field.setBoolean(stmt, true);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      e.printStackTrace();
+    }
+
+    validateStreamingPath("testPlanForEphemeralCreateTable");
+  }
+
 }

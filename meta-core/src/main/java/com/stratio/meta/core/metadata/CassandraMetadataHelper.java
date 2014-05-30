@@ -115,6 +115,4 @@ public class CassandraMetadataHelper extends AbstractMetadataHelper{
     public ColumnType toColumnType(Cell deepCell) {
       return toColumnType(deepCell.getCellValidator().getCqlTypeName().toString());
     }
-
-
 }

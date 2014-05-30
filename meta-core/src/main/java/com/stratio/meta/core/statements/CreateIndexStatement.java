@@ -354,7 +354,7 @@ public class CreateIndexStatement extends MetaStatement {
             if(c.toLowerCase().startsWith("stratio")){
                 result=  QueryResult.createFailQueryResult("Internal column " + c + " cannot be part of the WHERE clause.");
             }else if(tableMetadata.getColumn(c) == null){
-                result= QueryResult.createFailQueryResult("Column " + c + " does not exists in table " + tableMetadata.getName());
+                result= QueryResult.createFailQueryResult("Column " + c + " does not exist in table " + tableMetadata.getName());
             }
         }
 
