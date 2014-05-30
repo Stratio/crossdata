@@ -32,9 +32,14 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta.streaming.MetaStream;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class that models a {@code CREATE TABLE} statement of the META language.
@@ -267,6 +272,8 @@ public class CreateTableStatement extends MetaStatement{
     return result;
   }
 
+  // TODO: To be included when streaming integration is fully accomplished
+  /*
   private Result validateEphimeral() {
     Result result = QueryResult.createSuccessQueryResult();
     createTable = true;
@@ -276,6 +283,7 @@ public class CreateTableStatement extends MetaStatement{
     }
     return result;
   }
+  */
 
   /**
    * Validate that a valid keyspace is present, and that the table does not

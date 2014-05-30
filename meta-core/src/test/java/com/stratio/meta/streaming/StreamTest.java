@@ -19,6 +19,8 @@
 
 package com.stratio.meta.streaming;
 
+// TODO: To be included when streaming integration is fully accomplished
+/*
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
@@ -33,17 +35,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+*/
 
-public class StreamTest extends BasicCoreCassandraTest {
+// TODO: To be included when streaming integration is fully accomplished
+public class StreamTest /*extends BasicCoreCassandraTest*/ {
 
   // TODO: To be included when streaming integration is fully accomplished
-  //@BeforeClass
+  /*
+  @BeforeClass
   public void removeEphemeralTable(){
     MetaStream.dropStream("demo.temporal_test");
   }
 
-  // TODO: To be included when streaming integration is fully accomplished
-  //@Test
+  @Test
   public void testEphemeralCreation() {
     String streamName = "demo.temporal_test";
     Map<String, String> columns = new HashMap<>();
@@ -67,5 +71,5 @@ public class StreamTest extends BasicCoreCassandraTest {
                  resultStr,
                  "testEphemeralCreation: Ephemeral table couldn't be created");
   }
-
+  */
 }

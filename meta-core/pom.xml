@@ -179,17 +179,11 @@
             <version>2.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>com.stratio.streaming</groupId>
             <artifactId>streaming-api</artifactId>
             <version>0.2.0-SNAPSHOT</version>
-            <!--exclusions>
-                <exclusion>
-                    <groupId>org.apache.kafka</groupId>
-                    <artifactId>kafka_2.10</artifactId>
-                </exclusion>
-            </exclusions-->
-        </dependency>
+        </dependency-->
 	</dependencies>
 
 	<build>
