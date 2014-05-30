@@ -17,12 +17,20 @@ import kafka.message.MessageAndMetadata;
 
 public class MetaStream {
 
-  private static final IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
+  private static
+  IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
+
+  static {
+    try {
+      stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
+  }
 
   public static IStratioStreamingAPI getStratioStreamingAPI() {
     return stratioStreamingAPI;
   }
-
 
   public static List<StratioStream> listStreams ()  {
     List<StratioStream> streamsList = null;
