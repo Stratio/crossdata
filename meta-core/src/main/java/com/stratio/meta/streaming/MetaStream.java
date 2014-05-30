@@ -18,7 +18,7 @@ import kafka.message.MessageAndMetadata;
 public class MetaStream {
 
   private static
-  IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
+  IStratioStreamingAPI stratioStreamingAPI = null;
 
   static {
     try {
