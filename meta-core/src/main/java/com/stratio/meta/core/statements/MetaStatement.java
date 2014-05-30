@@ -22,6 +22,7 @@ package com.stratio.meta.core.statements;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -130,6 +131,8 @@ public abstract class MetaStatement {
         if (tableMetadata == null) {
           if(!MetaStream.checkstream(effectiveKeyspace + "." + tableName)){
             result= QueryResult.createFailQueryResult("Table " + tableName + " does not exist in "+effectiveKeyspace+".");
+          } else {
+            result = CommandResult.createSuccessCommandResult("streaming");
           }
 
         }

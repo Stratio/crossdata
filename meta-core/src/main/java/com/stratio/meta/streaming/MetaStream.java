@@ -9,7 +9,10 @@ import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
 import com.stratio.streaming.commons.messages.StratioStreamingMessage;
 import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
+import com.stratio.streaming.messaging.ColumnNameValue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import kafka.consumer.KafkaStream;
@@ -73,6 +76,7 @@ public class MetaStream {
   public static String listenStream(String streamName, int seconds){
     try {
       long start = System.currentTimeMillis();
+      insertRandomData(streamName);
       KafkaStream<String, StratioStreamingMessage> streams = stratioStreamingAPI.listenStream(streamName);
       StringBuilder sb = new StringBuilder();
       for (MessageAndMetadata stream: streams) {
@@ -87,11 +91,32 @@ public class MetaStream {
           sb.append(". Type: " + column.getType());
           sb.append(System.lineSeparator());
         }
+        insertRandomData(streamName);
       }
       return sb.toString();
     } catch (Throwable t) {
       t.printStackTrace();
       return "ERROR";
+    }
+  }
+
+  private static void insertRandomData(String streamName) {
+    double randomDouble = Math.random()*100;
+    int randomInt = (int) (randomDouble*Math.random()*2);
+    StringBuilder sb = new StringBuilder(String.valueOf(randomDouble));
+    sb.append(randomInt);
+    String str = sb.toString().replace('0', 'o').replace('1', 'i').replace('2', 'u').replace('3', 'e').replace('4', 'a').
+        replace('5', 'b').replace('6', 'c').replace('7', 'd').replace('8', 'f').replace('9', 'g');
+    ColumnNameValue firstColumnValue = new ColumnNameValue("name", str);
+    ColumnNameValue secondColumnValue = new ColumnNameValue("age", new Integer(randomInt));
+    ColumnNameValue thirdColumnValue = new ColumnNameValue("rating", new Double(randomDouble));
+    ColumnNameValue fourthColumnValue = new ColumnNameValue("member", new Boolean((randomInt % 2) == 0));
+    List<ColumnNameValue> streamData = Arrays
+        .asList(firstColumnValue, secondColumnValue, thirdColumnValue, fourthColumnValue);
+    try {
+      stratioStreamingAPI.insertData(streamName, streamData);
+    } catch (Throwable t) {
+      t.printStackTrace();
     }
   }
 
@@ -103,6 +128,18 @@ public class MetaStream {
     }
   }
 
+  public static List<String> getColumnNames(String tablename) {
+    List<String> colNames = new ArrayList<>();
+    try {
+      List<ColumnNameTypeValue> cols = stratioStreamingAPI.columnsFromStream(tablename);
+      for(ColumnNameTypeValue ctp: cols){
+        colNames.add(ctp.getColumn().toLowerCase());
+      }
+    } catch (Throwable t){
+      t.printStackTrace();
+    }
+    return colNames;
+  }
 }
 
 
