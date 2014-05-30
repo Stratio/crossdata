@@ -5,10 +5,15 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
+import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
+import com.stratio.streaming.commons.messages.StratioStreamingMessage;
 import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
 
 import java.util.List;
+
+import kafka.consumer.KafkaStream;
+import kafka.message.MessageAndMetadata;
 
 public class MetaStream {
 
@@ -49,13 +54,49 @@ public class MetaStream {
     return result;
   }
 
-  public static void dropStream(String s) {
+  public static void dropStream(String streamName) {
     try {
-      stratioStreamingAPI.dropStream(s);
+      stratioStreamingAPI.dropStream(streamName);
     } catch (Throwable t) {
       t.printStackTrace();
     }
   }
+
+  public static String listenStream(String streamName, int seconds){
+    try {
+      long start = System.currentTimeMillis();
+      KafkaStream<String, StratioStreamingMessage>
+          streams =
+          stratioStreamingAPI.listenStream(streamName);
+      StringBuilder sb = new StringBuilder();
+      for (MessageAndMetadata stream: streams) {
+        if((System.currentTimeMillis()-start) > (seconds*1000)){
+          stopListenStream(streamName);
+          return sb.toString();
+        }
+        StratioStreamingMessage theMessage = (StratioStreamingMessage)stream.message();
+        for (ColumnNameTypeValue column: theMessage.getColumns()) {
+          sb.append("Column: " + column.getColumn());
+          sb.append(". Value: " + column.getValue());
+          sb.append(". Type: " + column.getType());
+          sb.append(System.lineSeparator());
+        }
+      }
+      return sb.toString();
+    } catch (Throwable t) {
+      t.printStackTrace();
+      return "ERROR";
+    }
+  }
+
+  public static void stopListenStream(String streamName){
+    try {
+      stratioStreamingAPI.stopListenStream(streamName);
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
+  }
+
 }
 
 
