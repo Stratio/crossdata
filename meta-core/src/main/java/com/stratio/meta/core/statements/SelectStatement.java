@@ -16,23 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -68,6 +51,24 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta.streaming.MetaStream;
+
+import org.apache.log4j.Logger;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -551,7 +552,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @param targetTable The target table.
    * @param column The name of the column.
-   * @param t The term.
+   * @param terms The terms.
    * @param rc Relation of Comparator type.
    * @return Whether the relation is valid.
    */
@@ -1553,7 +1554,9 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-    if (joinInc) {
+    if(MetaStream.checkstream(getEffectiveKeyspace()+"."+tableName)){
+      steps.setNode(new MetaStep(MetaPath.STREAMING, this));
+    } else if (joinInc) {
       steps = getJoinPlan();
     } else if (whereInc) {
       steps = getWherePlan(metadataManager);

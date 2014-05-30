@@ -65,9 +65,7 @@ public class MetaStream {
   public static String listenStream(String streamName, int seconds){
     try {
       long start = System.currentTimeMillis();
-      KafkaStream<String, StratioStreamingMessage>
-          streams =
-          stratioStreamingAPI.listenStream(streamName);
+      KafkaStream<String, StratioStreamingMessage> streams = stratioStreamingAPI.listenStream(streamName);
       StringBuilder sb = new StringBuilder();
       for (MessageAndMetadata stream: streams) {
         if((System.currentTimeMillis()-start) > (seconds*1000)){
