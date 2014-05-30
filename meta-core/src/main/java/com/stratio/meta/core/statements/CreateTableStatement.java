@@ -442,15 +442,17 @@ public class CreateTableStatement extends MetaStatement{
     if(createTable) {
       tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
       boolean streamingMode = false;
-      for(Property property: properties){
-        if(property.getType() == Property.TYPE_NAME_VALUE){
-          PropertyNameValue pnv = (PropertyNameValue) property;
-          String propName = pnv.getName();
-          if(propName.equalsIgnoreCase("ephemeral")
-             && (pnv.getVp().getType() == ValueProperty.TYPE_BOOLEAN)
-             && ((BooleanProperty) pnv.getVp()).getBool()){
-            streamingMode = true;
-            break;
+      if (withProperties){
+        for(Property property: properties){
+          if(property.getType() == Property.TYPE_NAME_VALUE){
+            PropertyNameValue pnv = (PropertyNameValue) property;
+            String propName = pnv.getName();
+            if(propName.equalsIgnoreCase("ephemeral")
+               && (pnv.getVp().getType() == ValueProperty.TYPE_BOOLEAN)
+               && ((BooleanProperty) pnv.getVp()).getBool()){
+              streamingMode = true;
+              break;
+            }
           }
         }
       }
