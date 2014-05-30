@@ -36,11 +36,13 @@ import static org.testng.Assert.assertEquals;
 
 public class StreamTest extends BasicCoreCassandraTest {
 
+  // TODO: To be included when streaming integration is fully accomplished
   //@BeforeClass
   public void removeEphemeralTable(){
     MetaStream.dropStream("demo.temporal_test");
   }
 
+  // TODO: To be included when streaming integration is fully accomplished
   //@Test
   public void testEphemeralCreation() {
     String streamName = "demo.temporal_test";

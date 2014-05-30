@@ -247,9 +247,12 @@ public class CreateTableStatement extends MetaStatement{
   @Override
   public Result validate(MetadataManager metadata) {
     Result result = validateKeyspaceAndTable(metadata);
+    // TODO: To be included when streaming integration is fully accomplished
+    /*
     if (!result.hasError()){
       result=validateEphimeral();
     }
+    */
     if(!result.hasError()){
       result = validateColumns();
     }
