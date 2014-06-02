@@ -11,6 +11,8 @@ import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
 import com.stratio.streaming.messaging.ColumnNameValue;
 
+import org.apache.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +21,11 @@ import kafka.consumer.KafkaStream;
 import kafka.message.MessageAndMetadata;
 
 public class MetaStream {
+
+  /**
+   * Class logger.
+   */
+  private static final Logger LOG = Logger.getLogger(MetaStream.class);
 
   private static
   IStratioStreamingAPI stratioStreamingAPI = null;
@@ -47,7 +54,6 @@ public class MetaStream {
 
   public static boolean checkstream(String ephimeralTable){
       for (StratioStream stream: listStreams()) {
-          System.out.println("Checking stream: "+stream.getStreamName());
           if (stream.getStreamName().equalsIgnoreCase(ephimeralTable)){
               return true;
           }
@@ -76,37 +82,27 @@ public class MetaStream {
   public static String listenStream(String streamName, int seconds){
     try {
       long start = System.currentTimeMillis();
-      System.out.println("TRACE: listenStream");
       insertRandomData(streamName);
-      System.out.println("TRACE: Random data");
       KafkaStream<String, StratioStreamingMessage> streams = stratioStreamingAPI.listenStream(streamName);
-      System.out.println("TRACE: streams gotten");
       StringBuilder sb = new StringBuilder(System.lineSeparator());
       insertRandomData(streamName);
-      System.out.println("TRACE: Random data");
       for (MessageAndMetadata stream: streams) {
-        System.out.println("TRACE: MessageAndMetadata gotten");
         long elapsed_time = (System.currentTimeMillis() - start);
-        System.out.println("Elapsed time: "+elapsed_time+" milliseconds.");
         long limit_time = (seconds * 1000);
-        System.out.println("Limit time: "+limit_time+" milliseconds.");
         if(elapsed_time > limit_time){
           stopListenStream(streamName);
           return sb.toString();
         }
         StratioStreamingMessage theMessage = (StratioStreamingMessage)stream.message();
-        System.out.println("TRACE: theMessage gotten");
-        sb.append("------------------------------------------------------").append(System.lineSeparator());
+        sb.append("----------------------------------------------------------").append(System.lineSeparator());
         for (ColumnNameTypeValue column: theMessage.getColumns()) {
           sb.append("Column: " + column.getColumn());
           sb.append(" | Value: " + column.getValue());
           sb.append(" | Type: " + column.getType());
           sb.append(System.lineSeparator());
         }
-        sb.append("------------------------------------------------------").append(System.lineSeparator());
-        System.out.println("TRACE: Inserting new data");
+        sb.append("----------------------------------------------------------").append(System.lineSeparator());
         insertRandomData(streamName);
-        System.out.println("TRACE: New random data");
       }
       return sb.toString();
     } catch (Throwable t) {

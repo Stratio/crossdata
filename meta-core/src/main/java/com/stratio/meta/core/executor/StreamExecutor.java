@@ -37,9 +37,6 @@ import java.util.Map;
 public class StreamExecutor {
 
   public static Result execute(MetaStatement stmt) {
-
-    Result result = QueryResult.createSuccessQueryResult();
-
     if (stmt instanceof CreateTableStatement) {
       CreateTableStatement cts= (CreateTableStatement) stmt;
       String tableEphimeralName= cts.getEffectiveKeyspace()+"."+cts.getTableName() ;
@@ -76,7 +73,7 @@ public class StreamExecutor {
       String resultStream = MetaStream.listenStream(ss.getEffectiveKeyspace()+"."+ss.getTableName(), 20);
       return CommandResult.createSuccessCommandResult(resultStream);
     } else {
-      return QueryResult.createFailQueryResult("Not supported yet");
+      return QueryResult.createFailQueryResult("Not supported yet.");
     }
   }
 
