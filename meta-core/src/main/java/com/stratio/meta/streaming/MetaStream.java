@@ -97,12 +97,13 @@ public class MetaStream {
         StratioStreamingMessage theMessage = (StratioStreamingMessage)stream.message();
         System.out.println("TRACE: theMessage gotten");
         for (ColumnNameTypeValue column: theMessage.getColumns()) {
-          sb.append("---------------------------------------------");
           sb.append("Column: " + column.getColumn());
           sb.append(". Value: " + column.getValue());
           sb.append(". Type: " + column.getType());
           sb.append(System.lineSeparator());
         }
+        sb.append("-----------------------------------------------");
+        sb.append(System.lineSeparator());
         System.out.println("TRACE: Inserting new data");
         insertRandomData(streamName);
         System.out.println("TRACE: New random data");
