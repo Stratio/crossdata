@@ -96,14 +96,14 @@ public class MetaStream {
         }
         StratioStreamingMessage theMessage = (StratioStreamingMessage)stream.message();
         System.out.println("TRACE: theMessage gotten");
+        sb.append("------------------------------------------------------").append(System.lineSeparator());
         for (ColumnNameTypeValue column: theMessage.getColumns()) {
           sb.append("Column: " + column.getColumn());
-          sb.append(". Value: " + column.getValue());
-          sb.append(". Type: " + column.getType());
+          sb.append(" | Value: " + column.getValue());
+          sb.append(" | Type: " + column.getType());
           sb.append(System.lineSeparator());
         }
-        sb.append("-----------------------------------------------");
-        sb.append(System.lineSeparator());
+        sb.append("------------------------------------------------------").append(System.lineSeparator());
         System.out.println("TRACE: Inserting new data");
         insertRandomData(streamName);
         System.out.println("TRACE: New random data");
@@ -121,7 +121,7 @@ public class MetaStream {
     StringBuilder sb = new StringBuilder(String.valueOf(randomDouble));
     sb.append(randomInt);
     String str = sb.toString().replace('0', 'o').replace('1', 'i').replace('2', 'u').replace('3', 'e').replace('4', 'a').
-        replace('5', 'b').replace('6', 'c').replace('7', 'd').replace('8', 'f').replace('9', 'g');
+        replace('5', 'b').replace('6', 'c').replace('7', 'd').replace('8', 'f').replace('9', 'g').replace('.', 'm');
     ColumnNameValue firstColumnValue = new ColumnNameValue("name", str);
     ColumnNameValue secondColumnValue = new ColumnNameValue("age", new Integer(randomInt));
     ColumnNameValue thirdColumnValue = new ColumnNameValue("rating", new Double(randomDouble));
