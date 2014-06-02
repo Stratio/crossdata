@@ -82,6 +82,8 @@ public class MetaStream {
       KafkaStream<String, StratioStreamingMessage> streams = stratioStreamingAPI.listenStream(streamName);
       System.out.println("TRACE: streams gotten");
       StringBuilder sb = new StringBuilder();
+      insertRandomData(streamName);
+      System.out.println("TRACE: Random data");
       for (MessageAndMetadata stream: streams) {
         System.out.println("TRACE: MessageAndMetadata gotten");
         if((System.currentTimeMillis()-start) > (seconds*1000)){
