@@ -35,4 +35,5 @@ public abstract class SelectorMeta {
   @Override
   public abstract String toString();
 
+  public abstract void addTablename(String tablename);
 }

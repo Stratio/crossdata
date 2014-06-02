@@ -16,20 +16,6 @@
 
 package com.stratio.meta.deep;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.Function2;
-import org.apache.spark.api.java.function.PairFunction;
-
-import scala.Tuple2;
-
 import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.IDeepJobConfig;
@@ -65,6 +51,20 @@ import com.stratio.meta.deep.functions.MapKeyForJoin;
 import com.stratio.meta.deep.functions.NotEquals;
 import com.stratio.meta.deep.functions.aggregators.Sum;
 import com.stratio.meta.deep.utils.DeepUtils;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.api.java.function.PairFunction;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import scala.Tuple2;
 
 /**
  * Class that performs as a Bridge between Meta and Stratio Deep.
@@ -120,6 +120,8 @@ public class Bridge {
   public ResultSet executeLeafNode(MetaStatement stmt, boolean isRoot) {
     SelectStatement ss = (SelectStatement) stmt;
 
+    ss.addTablenameToIds();
+
     // LEAF
     String[] columnsSet = {};
     if (ss.getSelectionClause().getType() == SelectionClause.TYPE_SELECTION) {
@@ -135,7 +137,7 @@ public class Bridge {
             .initialize();
 
     JavaRDD<Cells> rdd = deepContext.cassandraJavaRDD(config);
-    List<Cells> cells = rdd.toArray();
+
     // If where
     if (ss.isWhereInc()) {
       List<Relation> where = ss.getWhere();
@@ -203,6 +205,9 @@ public class Bridge {
    */
   public ResultSet executeRootNode(MetaStatement stmt, List<Result> resultsFromChildren) {
     SelectStatement ss = (SelectStatement) stmt;
+
+    ss.addTablenameToIds();
+
     // Retrieve RDDs and selected columns from children
     List<JavaRDD> children = new ArrayList<>();
     List<String> selectedCols = new ArrayList<>();

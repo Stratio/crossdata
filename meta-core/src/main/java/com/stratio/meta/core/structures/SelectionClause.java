@@ -39,4 +39,6 @@ public abstract class SelectionClause {
   public abstract List<String> getIds();
 
   public abstract List<SelectorGroupBy> getSelectorsGroupBy();
+
+  public abstract void addTablename(String tablename);
 }

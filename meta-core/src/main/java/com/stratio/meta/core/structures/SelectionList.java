@@ -137,4 +137,10 @@ public class SelectionList extends SelectionClause {
 
     return ids;
   }
+
+  @Override
+  public void addTablename(String tablename) {
+    selection.addTablename(tablename);
+  }
+
 }

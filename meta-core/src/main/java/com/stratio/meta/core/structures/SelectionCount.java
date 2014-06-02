@@ -101,4 +101,9 @@ public class SelectionCount extends SelectionClause {
 
     return new ArrayList<>();
   }
+
+  @Override
+  public void addTablename(String tablename) {
+
+  }
 }
