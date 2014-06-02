@@ -76,22 +76,29 @@ public class MetaStream {
   public static String listenStream(String streamName, int seconds){
     try {
       long start = System.currentTimeMillis();
+      System.out.println("TRACE: listenStream");
       insertRandomData(streamName);
+      System.out.println("TRACE: Random data");
       KafkaStream<String, StratioStreamingMessage> streams = stratioStreamingAPI.listenStream(streamName);
+      System.out.println("TRACE: streams gotten");
       StringBuilder sb = new StringBuilder();
       for (MessageAndMetadata stream: streams) {
+        System.out.println("TRACE: MessageAndMetadata gotten");
         if((System.currentTimeMillis()-start) > (seconds*1000)){
           stopListenStream(streamName);
           return sb.toString();
         }
         StratioStreamingMessage theMessage = (StratioStreamingMessage)stream.message();
+        System.out.println("TRACE: theMessage gotten");
         for (ColumnNameTypeValue column: theMessage.getColumns()) {
           sb.append("Column: " + column.getColumn());
           sb.append(". Value: " + column.getValue());
           sb.append(". Type: " + column.getType());
           sb.append(System.lineSeparator());
         }
+        System.out.println("TRACE: Inserting new data");
         insertRandomData(streamName);
+        System.out.println("TRACE: New random data");
       }
       return sb.toString();
     } catch (Throwable t) {
