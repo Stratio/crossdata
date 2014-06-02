@@ -1544,10 +1544,14 @@ public class SelectStatement extends MetaStatement {
       String effectiveKeyspace = getEffectiveKeyspace();
       TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
 
+      int previousSize = whereCols.size();
+
       // Check if all partition columns have an equals operator
       boolean partialMatched = matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
 
-      if (!partialMatched) {
+      boolean notPrimaryKeysPresent = (previousSize == whereCols.size());
+
+      if ((!partialMatched) || notPrimaryKeysPresent) {
 
         // Check if all clustering columns have an equals operator
         matchWhereColsWithClusteringKeys(tableMetadata, whereCols);
