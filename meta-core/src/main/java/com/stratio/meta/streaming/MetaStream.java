@@ -86,7 +86,11 @@ public class MetaStream {
       System.out.println("TRACE: Random data");
       for (MessageAndMetadata stream: streams) {
         System.out.println("TRACE: MessageAndMetadata gotten");
-        if((System.currentTimeMillis()-start) > (seconds*1000)){
+        long elapsed_time = (System.currentTimeMillis() - start);
+        System.out.println("Elapsed time: "+elapsed_time+" milliseconds.");
+        long limit_time = (seconds * 1000);
+        System.out.println("Limit time: "+limit_time+" milliseconds.");
+        if(elapsed_time > limit_time){
           stopListenStream(streamName);
           return sb.toString();
         }
