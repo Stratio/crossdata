@@ -81,7 +81,7 @@ public class MetaStream {
       System.out.println("TRACE: Random data");
       KafkaStream<String, StratioStreamingMessage> streams = stratioStreamingAPI.listenStream(streamName);
       System.out.println("TRACE: streams gotten");
-      StringBuilder sb = new StringBuilder();
+      StringBuilder sb = new StringBuilder(System.lineSeparator());
       insertRandomData(streamName);
       System.out.println("TRACE: Random data");
       for (MessageAndMetadata stream: streams) {
@@ -97,6 +97,7 @@ public class MetaStream {
         StratioStreamingMessage theMessage = (StratioStreamingMessage)stream.message();
         System.out.println("TRACE: theMessage gotten");
         for (ColumnNameTypeValue column: theMessage.getColumns()) {
+          sb.append("---------------------------------------------");
           sb.append("Column: " + column.getColumn());
           sb.append(". Value: " + column.getValue());
           sb.append(". Type: " + column.getType());
