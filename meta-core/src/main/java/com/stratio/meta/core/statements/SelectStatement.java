@@ -1551,7 +1551,9 @@ public class SelectStatement extends MetaStatement {
 
       boolean notPrimaryKeysPresent = (previousSize == whereCols.size());
 
-      if ((!partialMatched) || notPrimaryKeysPresent) {
+      System.out.println("TRACE: notPrimaryKeysPresent="+notPrimaryKeysPresent);
+
+      if ((!partialMatched) && (!notPrimaryKeysPresent)) {
 
         // Check if all clustering columns have an equals operator
         matchWhereColsWithClusteringKeys(tableMetadata, whereCols);
