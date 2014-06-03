@@ -829,12 +829,14 @@ public class BridgeTest extends BasicCoreCassandraTest {
   public void testBasicGroupByClause() {
 
     MetaQuery metaQuery =
-        new MetaQuery("SELECT users.gender,count(*) FROM demo.users GROUP BY users.gender;");
+        new MetaQuery(
+            "SELECT users.gender,count(*),sum(users.age) FROM demo.users GROUP BY users.gender;");
 
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("users.gender")),
             new SelectionSelector(new SelectorGroupBy(GroupByFunction.COUNT,
-                new SelectorIdentifier("*"))));
+                new SelectorIdentifier("*"))), new SelectionSelector(new SelectorGroupBy(
+                GroupByFunction.SUM, new SelectorIdentifier("users.age"))));
 
     SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
     GroupBy groupClause = new GroupBy(Arrays.asList("users.gender"));
@@ -847,7 +849,40 @@ public class BridgeTest extends BasicCoreCassandraTest {
     tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
-    Result results = validateRows(metaQuery, "testBasicBetweenClauseWithIntegerData", 10);
+    Result results = validateRows(metaQuery, "testBasicGroupByClause", 2);
+
+    results.toString();
+  }
+
+  @Test
+  public void testFullGroupByClause() {
+
+    MetaQuery metaQuery =
+        new MetaQuery(
+            "SELECT users.gender,count(*),sum(users.age),avg(users.age),min(age),max(age) FROM demo.users GROUP BY users.gender;");
+
+    List<SelectionSelector> selectionSelectors =
+        Arrays.asList(new SelectionSelector(new SelectorIdentifier("users.gender")),
+            new SelectionSelector(new SelectorGroupBy(GroupByFunction.COUNT,
+                new SelectorIdentifier("*"))), new SelectionSelector(new SelectorGroupBy(
+                GroupByFunction.SUM, new SelectorIdentifier("users.age"))), new SelectionSelector(
+                new SelectorGroupBy(GroupByFunction.AVG, new SelectorIdentifier("users.age"))),
+            new SelectionSelector(new SelectorGroupBy(GroupByFunction.MIN, new SelectorIdentifier(
+                "users.age"))), new SelectionSelector(new SelectorGroupBy(GroupByFunction.MAX,
+                new SelectorIdentifier("users.age"))));
+
+    SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
+    GroupBy groupClause = new GroupBy(Arrays.asList("users.gender"));
+
+    SelectStatement firstSelect = new SelectStatement(selClause, "demo.users");
+    firstSelect.setGroup(groupClause);
+
+    // Query execution
+    Tree tree = new Tree();
+    tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+    metaQuery.setPlan(tree);
+    metaQuery.setStatus(QueryStatus.PLANNED);
+    Result results = validateRows(metaQuery, "testBasicGroupByClause", 2);
 
     results.toString();
   }

@@ -16,9 +16,14 @@
 
 package com.stratio.meta.core.structures;
 
-public class SelectorGroupBy extends SelectorMeta {
+import java.io.Serializable;
+
+public class SelectorGroupBy extends SelectorMeta implements Serializable {
+
+  private static final long serialVersionUID = 7595223293190216610L;
 
   private GroupByFunction gbFunction;
+
   private SelectorMeta param;
 
   public SelectorGroupBy(GroupByFunction gbFunction, SelectorMeta param) {

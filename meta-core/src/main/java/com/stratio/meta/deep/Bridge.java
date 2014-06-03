@@ -16,6 +16,18 @@
 
 package com.stratio.meta.deep;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+
+import scala.Tuple2;
+
 import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.IDeepJobConfig;
@@ -32,11 +44,12 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.Ordering;
 import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.SelectionClause;
+import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectorGroupBy;
-import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.deep.comparators.DeepComparator;
 import com.stratio.meta.deep.functions.Between;
@@ -49,22 +62,11 @@ import com.stratio.meta.deep.functions.LessEqualThan;
 import com.stratio.meta.deep.functions.LessThan;
 import com.stratio.meta.deep.functions.MapKeyForJoin;
 import com.stratio.meta.deep.functions.NotEquals;
-import com.stratio.meta.deep.functions.aggregators.Sum;
+import com.stratio.meta.deep.transformation.AverageAggregatorMapping;
+import com.stratio.meta.deep.transformation.GroupByAggregation;
+import com.stratio.meta.deep.transformation.GroupByMapping;
+import com.stratio.meta.deep.transformation.KeyRemover;
 import com.stratio.meta.deep.utils.DeepUtils;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.Function2;
-import org.apache.spark.api.java.function.PairFunction;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import scala.Tuple2;
 
 /**
  * Class that performs as a Bridge between Meta and Stratio Deep.
@@ -137,6 +139,7 @@ public class Bridge {
             .initialize();
 
     JavaRDD<Cells> rdd = deepContext.cassandraJavaRDD(config);
+    List<Cells> cells = rdd.toArray();
 
     // If where
     if (ss.isWhereInc()) {
@@ -146,54 +149,13 @@ public class Bridge {
       }
     }
 
-    final List<String> colNames = ss.getGroup().getColNames();
-
-    // Mapping the rdd to execute the group by clause
-    JavaPairRDD<Cells, Cells> groupedRdd = rdd.map(new PairFunction<Cells, Cells, Cells>() {
-
-      private static final long serialVersionUID = -4048407367855355336L;
-
-      @Override
-      public Tuple2<Cells, Cells> call(Cells cells) throws Exception {
-
-        Cells headers = new Cells();
-        for (String colName : colNames) {
-          headers.add(com.stratio.deep.entity.Cell.create(colName));
-        }
-
-        return new Tuple2<>(headers, cells);
-      }
-
-    });
-
-    List<SelectorGroupBy> selectorsGroupBy = ss.getSelectionClause().getSelectorsGroupBy();
-
-    JavaPairRDD<Cells, Cells> aggregatedRdd = groupedRdd;
-    for (SelectorGroupBy selectorGroupBy : selectorsGroupBy) {
-      applyAggregationFunction(groupedRdd, selectorGroupBy);
+    // Group by clause
+    if (ss.isGroupInc()) {
+      rdd = doGroupBy(rdd, ss.getGroup(), (SelectionList) ss.getSelectionClause());
     }
-
-    groupedRdd.reduceByKey(new Function2<Cells, Cells, Cells>() {
-
-      private static final long serialVersionUID = 2269465242453693573L;
-
-      @Override
-      public Cells call(Cells arg0, Cells arg1) throws Exception {
-
-        return null;
-      }
-    });
 
     return returnResult(rdd, isRoot,
         ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, Arrays.asList(columnsSet));
-  }
-
-  private JavaPairRDD<Cells, Cells> applyAggregationFunction(JavaPairRDD<Cells, Cells> rdd,
-      SelectorGroupBy selector) {
-
-    // TODO Modify when nested aggregation functions are supported. E.g. SUM(AVG(field_1))
-    String field = ((SelectorIdentifier) selector.getParam()).getIdentifier();
-    return rdd.reduceByKey(new Sum(field));
   }
 
   /**
@@ -370,6 +332,64 @@ public class Bridge {
         result = null;
     }
     return result;
+  }
+
+  /**
+   * Take a RDD and the group by information, and apply the requested grouping. If there is any
+   * aggregation function, apply it to the desired column.
+   * 
+   * @param rdd RDD which filter must be applied.
+   * @param groupByClause {@link com.stratio.meta.core.structures.GroupBy} to retrieve the grouping
+   *        columns.
+   * @param selectionClause {@link com.stratio.meta.core.structures.SelectionClause} containing the
+   *        aggregation functions.
+   * @return A new RDD with the result.
+   */
+  private JavaRDD<Cells> doGroupBy(JavaRDD<Cells> rdd, GroupBy groupByClause,
+      SelectionList selectionClause) {
+
+    final List<String> groupByCols = groupByClause.getColNames();
+
+    final List<String> fieldCols = selectionClause.getIds();
+
+    final List<String> aggregationCols =
+        DeepUtils.retrieveSelectorAggegationFunctions(selectionClause.getSelection());
+
+    List<Cells> originalSet = rdd.collect();
+
+    // Mapping the rdd to execute the group by clause
+    JavaPairRDD<Cells, Cells> groupedRdd =
+        rdd.map(new GroupByMapping(aggregationCols, groupByCols));
+
+    List<Tuple2<Cells, Cells>> resultGrouped = groupedRdd.collect();
+
+    List<SelectorGroupBy> selectorsGroupBy = selectionClause.getSelectorsGroupBy();
+
+    JavaPairRDD<Cells, Cells> aggregatedRdd = applyAggregations(groupedRdd, aggregationCols);
+
+    List<Tuple2<Cells, Cells>> numRows = aggregatedRdd.collect();
+
+    JavaRDD<Cells> map = aggregatedRdd.map(new KeyRemover());
+
+    List<Cells> resultResult = map.collect();
+    return map;
+
+  }
+
+  private JavaPairRDD<Cells, Cells> applyAggregations(JavaPairRDD<Cells, Cells> groupedRdd,
+      List<String> aggregationCols) {
+
+    JavaPairRDD<Cells, Cells> aggregatedRdd =
+        groupedRdd.reduceByKey(new GroupByAggregation(aggregationCols));
+
+    // Looking for the average aggregator to complete it
+    for (String aggregation : aggregationCols) {
+
+      if (aggregation.toLowerCase().startsWith("avg(")) {
+        aggregatedRdd = aggregatedRdd.mapValues(new AverageAggregatorMapping(aggregation));
+      }
+    }
+    return aggregatedRdd;
   }
 
   /**

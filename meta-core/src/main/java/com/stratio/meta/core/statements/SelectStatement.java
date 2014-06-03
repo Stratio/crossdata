@@ -353,6 +353,15 @@ public class SelectStatement extends MetaStatement {
   }
 
   /**
+   * Check if GROUP BY clause is included.
+   * 
+   * @return {@code true} if is included.
+   */
+  public boolean isGroupInc() {
+    return groupInc;
+  }
+
+  /**
    * Check if a WHERE clause is included.
    * 
    * @return Whether it is included.
