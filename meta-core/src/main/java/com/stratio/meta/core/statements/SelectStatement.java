@@ -1584,7 +1584,7 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-    if(MetaStream.checkstream(getEffectiveKeyspace()+"."+tableName)) {
+    if(MetaStream.checkstream(getEffectiveKeyspace()+"_"+tableName)) {
       steps.setNode(new MetaStep(MetaPath.STREAMING, this));
     } else if (joinInc) {
       steps = getJoinPlan();
