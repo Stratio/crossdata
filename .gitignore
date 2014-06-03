@@ -18,7 +18,6 @@ meta-server/nb-configuration.xml
 meta-sh/nb-configuration.xml
 nb-configuration.xml
 *.orig
-meta-common/.cache
+*/.cache
 meta-core/test-output/*
-meta-driver/.cache
 .gitignore
