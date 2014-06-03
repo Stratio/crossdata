@@ -280,4 +280,28 @@ public class SelectStatementTest extends BasicValidatorTest {
 
     validateFail(inputText, "testValidateBasicBetweenClauseWithMixedDataTypeFail");
   }
+
+  @Test
+  public void testValidateGroupByClauseCountOk() {
+
+    String inputText = "SELECT users.gender, COUNT(*) FROM demo.users GROUP BY users.gender;";
+
+    validateOk(inputText, "testValidateGroupByClauseCountOk");
+  }
+
+  @Test
+  public void testValidateGroupByClauseSumOk() {
+
+    String inputText = "SELECT users.gender, SUM(age) FROM demo.users GROUP BY users.gender;";
+
+    validateOk(inputText, "testValidateGroupByClauseSumOk");
+  }
+
+  @Test
+  public void testValidateGroupMissingFieldFail() {
+
+    String inputText = "SELECT SUM(age) FROM demo.users GROUP BY users.gender;";
+
+    validateFail(inputText, "testValidateGroupByWrongSumClauseFail");
+  }
 }

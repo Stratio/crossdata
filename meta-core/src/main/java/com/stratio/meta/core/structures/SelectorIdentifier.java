@@ -21,46 +21,53 @@ package com.stratio.meta.core.structures;
 
 public class SelectorIdentifier extends SelectorMeta {
 
-    private String identifier;
+  private String identifier;
 
-    public SelectorIdentifier(String identifier) {
-        this.type = TYPE_IDENT;
-        this.identifier = identifier;
-    }
+  public SelectorIdentifier(String identifier) {
+    this.type = TYPE_IDENT;
+    this.identifier = identifier;
+  }
 
-    public String getIdentifier() {
-        return identifier;
-    }
+  public String getIdentifier() {
+    return identifier;
+  }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
-    }        
-    
-    public boolean isColumnSelector(){
-        return identifier.contains(".");
-    }
+  public void setIdentifier(String identifier) {
+    this.identifier = identifier;
+  }
 
-    /**
-     * Get the tablename associated with the selected column.
-     * @return The tablename or null if none have been specified.
-     */
-    public String getTablename(){
-        if(identifier.contains(".")){
-            return identifier.split("\\.")[0];
-        }
-        return null;
+  public boolean isColumnSelector(){
+    return identifier.contains(".");
+  }
+
+  /**
+   * Get the tablename associated with the selected column.
+   * @return The tablename or null if none have been specified.
+   */
+  public String getTablename(){
+    if(identifier.contains(".")){
+      return identifier.split("\\.")[0];
     }
-    
-    public String getColumnName(){
-        if(identifier.contains(".")){
-            return identifier.split("\\.")[1];
-        }
-        return identifier;
+    return null;
+  }
+
+  public String getColumnName(){
+    if(identifier.contains(".")){
+      return identifier.split("\\.")[1];
     }
-    
-    @Override
-    public String toString() {
-        return identifier;
+    return identifier;
+  }
+
+  @Override
+  public String toString() {
+    return identifier;
+  }
+
+  @Override
+  public void addTablename(String tablename) {
+    if(!identifier.contains(".")){
+      identifier = tablename+"."+identifier;
     }
-    
+  }
+
 }

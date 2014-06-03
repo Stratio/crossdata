@@ -18,13 +18,10 @@ package com.stratio.meta.deep;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.ColumnType;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -36,17 +33,20 @@ import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.data.ColumnDefinition;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.Ordering;
 import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.SelectionClause;
+import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.deep.comparators.DeepComparator;
 import com.stratio.meta.deep.functions.Between;
@@ -59,6 +59,10 @@ import com.stratio.meta.deep.functions.LessEqualThan;
 import com.stratio.meta.deep.functions.LessThan;
 import com.stratio.meta.deep.functions.MapKeyForJoin;
 import com.stratio.meta.deep.functions.NotEquals;
+import com.stratio.meta.deep.transformation.AverageAggregatorMapping;
+import com.stratio.meta.deep.transformation.GroupByAggregation;
+import com.stratio.meta.deep.transformation.GroupByMapping;
+import com.stratio.meta.deep.transformation.KeyRemover;
 import com.stratio.meta.deep.utils.DeepUtils;
 
 /**
@@ -114,12 +118,15 @@ public class Bridge {
    */
   public ResultSet executeLeafNode(MetaStatement stmt, boolean isRoot) {
     SelectStatement ss = (SelectStatement) stmt;
+
+    ss.addTablenameToIds();
+
     // LEAF
     String[] columnsSet = {};
     if (ss.getSelectionClause().getType() == SelectionClause.TYPE_SELECTION) {
       columnsSet = DeepUtils.retrieveSelectorFields(ss);
     }
-    IDeepJobConfig config =
+    IDeepJobConfig<Cells> config =
         DeepJobConfigFactory.create().session(session).host(engineConfig.getRandomCassandraHost())
             .rpcPort(engineConfig.getCassandraPort()).keyspace(ss.getKeyspace())
             .table(ss.getTableName());
@@ -129,7 +136,7 @@ public class Bridge {
             .initialize();
 
     JavaRDD<Cells> rdd = deepContext.cassandraJavaRDD(config);
-    List<Cells> cells = rdd.toArray();
+
     // If where
     if (ss.isWhereInc()) {
       List<Relation> where = ss.getWhere();
@@ -137,8 +144,18 @@ public class Bridge {
         rdd = doWhere(rdd, rel);
       }
     }
+
+    // Group by clause
+    if (ss.isGroupInc()) {
+      rdd = doGroupBy(rdd, ss.getGroup(), (SelectionList) ss.getSelectionClause());
+    }
+
+    List<String> cols = new ArrayList<>(Arrays.asList(columnsSet));
+    cols.addAll(DeepUtils.retrieveSelectorAggegationFunctions(((SelectionList) ss
+        .getSelectionClause()).getSelection()));
+
     return returnResult(rdd, isRoot,
-        ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, Arrays.asList(columnsSet));
+        ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, cols);
   }
 
   /**
@@ -150,8 +167,11 @@ public class Bridge {
    */
   public ResultSet executeRootNode(MetaStatement stmt, List<Result> resultsFromChildren) {
     SelectStatement ss = (SelectStatement) stmt;
+
+    ss.addTablenameToIds();
+
     // Retrieve RDDs and selected columns from children
-    List<JavaRDD> children = new ArrayList<>();
+    List<JavaRDD<Cells>> children = new ArrayList<>();
     List<String> selectedCols = new ArrayList<>();
     for (Result child : resultsFromChildren) {
       QueryResult qResult = (QueryResult) child;
@@ -159,7 +179,7 @@ public class Bridge {
       Map<String, Cell> cells = crset.getRows().get(0).getCells();
       // RDD from child
       Cell cell = cells.get("RDD");
-      JavaRDD rdd = (JavaRDD) cell.getValue();
+      JavaRDD<Cells> rdd = (JavaRDD<Cells>) cell.getValue();
       children.add(rdd);
     }
 
@@ -180,8 +200,8 @@ public class Bridge {
 
     LOG.debug("INNER JOIN on: " + keyTableLeft + " - " + keyTableRight);
 
-    JavaRDD rddTableLeft = children.get(0);
-    JavaRDD rddTableRight = children.get(1);
+    JavaRDD<Cells> rddTableLeft = children.get(0);
+    JavaRDD<Cells> rddTableRight = children.get(1);
 
     JavaPairRDD rddLeft = rddTableLeft.map(new MapKeyForJoin(keyTableLeft));
     JavaPairRDD rddRight = rddTableRight.map(new MapKeyForJoin(keyTableRight));
@@ -241,7 +261,7 @@ public class Bridge {
    * @param selectedCols List of columns selected in current SelectStatement.
    * @return ResultSet containing the result of built.
    */
-  private ResultSet returnResult(JavaRDD rdd, boolean isRoot, boolean isCount,
+  private ResultSet returnResult(JavaRDD<Cells> rdd, boolean isRoot, boolean isCount,
       List<String> selectedCols) {
     if (isRoot) {
       if (isCount) {
@@ -315,13 +335,60 @@ public class Bridge {
   }
 
   /**
+   * Take a RDD and the group by information, and apply the requested grouping. If there is any
+   * aggregation function, apply it to the desired column.
+   * 
+   * @param rdd RDD which filter must be applied.
+   * @param groupByClause {@link com.stratio.meta.core.structures.GroupBy} to retrieve the grouping
+   *        columns.
+   * @param selectionClause {@link com.stratio.meta.core.structures.SelectionClause} containing the
+   *        aggregation functions.
+   * @return A new RDD with the result.
+   */
+  private JavaRDD<Cells> doGroupBy(JavaRDD<Cells> rdd, GroupBy groupByClause,
+      SelectionList selectionClause) {
+
+    final List<String> groupByCols = groupByClause.getColNames();
+
+    final List<String> aggregationCols =
+        DeepUtils.retrieveSelectorAggegationFunctions(selectionClause.getSelection());
+
+    // Mapping the rdd to execute the group by clause
+    JavaPairRDD<Cells, Cells> groupedRdd =
+        rdd.map(new GroupByMapping(aggregationCols, groupByCols));
+
+    JavaPairRDD<Cells, Cells> aggregatedRdd = applyAggregations(groupedRdd, aggregationCols);
+
+    JavaRDD<Cells> map = aggregatedRdd.map(new KeyRemover());
+
+    return map;
+
+  }
+
+  private JavaPairRDD<Cells, Cells> applyAggregations(JavaPairRDD<Cells, Cells> groupedRdd,
+      List<String> aggregationCols) {
+
+    JavaPairRDD<Cells, Cells> aggregatedRdd =
+        groupedRdd.reduceByKey(new GroupByAggregation(aggregationCols));
+
+    // Looking for the average aggregator to complete it
+    for (String aggregation : aggregationCols) {
+
+      if (aggregation.toLowerCase().startsWith("avg(")) {
+        aggregatedRdd = aggregatedRdd.mapValues(new AverageAggregatorMapping(aggregation));
+      }
+    }
+    return aggregatedRdd;
+  }
+
+  /**
    * Take {@link com.stratio.meta.deep.Bridge#DEFAULT_RESULT_SIZE} from RDD ordered.
    * 
    * @param rdd RDD to take and order.
    * @param orderings Order By clause.
    * @return RDD result.
    */
-  public JavaRDD doOrder(JavaRDD rdd, List<Ordering> orderings) {
+  public JavaRDD<Cells> doOrder(JavaRDD<Cells> rdd, List<Ordering> orderings) {
     List<Cells> list = rdd.takeOrdered(DEFAULT_RESULT_SIZE, new DeepComparator(orderings));
     return deepContext.parallelize(list);
   }

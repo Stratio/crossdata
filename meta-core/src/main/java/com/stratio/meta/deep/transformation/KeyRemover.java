@@ -14,26 +14,27 @@
  * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.deep.transformation;
 
-public abstract class SelectorMeta {
+import java.io.Serializable;
 
-  public static final int TYPE_IDENT = 1;
-  public static final int TYPE_FUNCTION = 2;
-  public static final int TYPE_GROUPBY = 3;
+import org.apache.spark.api.java.function.Function;
 
-  protected int type;
+import scala.Tuple2;
 
-  public int getType() {
-    return type;
-  }
+import com.stratio.deep.entity.Cells;
 
-  public void setType(int type) {
-    this.type = type;
-  }
+
+public class KeyRemover extends Function<Tuple2<Cells, Cells>, Cells> implements Serializable {
+
+  /**
+   * Serial version UID.
+   */
+  private static final long serialVersionUID = 5540221408306143803L;
 
   @Override
-  public abstract String toString();
+  public Cells call(Tuple2<Cells, Cells> tuple) throws Exception {
 
-  public abstract void addTablename(String tablename);
+    return tuple._2;
+  }
 }
