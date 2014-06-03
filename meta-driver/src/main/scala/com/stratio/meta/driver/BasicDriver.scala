@@ -27,6 +27,7 @@ import com.stratio.meta.common.result.{MetadataResult, CommandResult, Result}
 import com.stratio.meta.common.ask.{APICommand, Command, Query, Connect}
 import org.apache.log4j.Logger
 import  scala.concurrent.duration._
+import java.util.UUID
 
 class BasicDriver extends DriverConfig{
   override lazy val logger = Logger.getLogger(getClass)
@@ -53,7 +54,8 @@ class BasicDriver extends DriverConfig{
     * @return QueryResult
     */
   def executeQuery(user:String, targetKs: String, query: String): Result = {
-    retryPolitics.askRetry(proxyActor,new Query(targetKs,query,user))
+    val queryId = UUID.randomUUID()
+    retryPolitics.askRetry(proxyActor,new Query(queryId.toString, targetKs,query,user))
   }
 
   /**

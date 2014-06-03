@@ -37,9 +37,9 @@ class QueryActor(engine: Engine) extends Actor{
   val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef,engine.getParser),"ParserActor")
 
   override def receive: Receive = {
-    case Query(keyspace,statement,user) => {
-      log.debug("User "+ user + " ks: "+ keyspace + " stmt: " + statement )
-      parserActorRef forward Query(keyspace,statement,user)
+    case Query(queryId, keyspace, statement, user) => {
+      log.debug("User "+ user + " ks: "+ keyspace + " stmt: " + statement + " id: " + queryId)
+      parserActorRef forward Query(queryId, keyspace, statement, user)
       log.debug("Finish Query")
     }
     case _ => {

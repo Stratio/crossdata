@@ -43,7 +43,7 @@ class queryString {
         actor.ask(stmt)(5 second)
 
       case 4 =>
-        val stmt=Query ("ks_demo", msg, "usr_demo")
+        val stmt=Query ("demo", "ks_demo", msg, "usr_demo")
         actor.ask(stmt)(5 second)
       case _ =>
         actor.ask("error")(5 second)

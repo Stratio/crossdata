@@ -34,6 +34,11 @@ public class MetaQuery {
      */
     private String query;
 
+  /**
+   * Unique query identifier.
+   */
+  private String queryId;
+
     /**
      * The query status.
      */
@@ -97,7 +102,23 @@ public class MetaQuery {
         this.query = query;
     }
 
-    /**
+  /**
+   * Get the query identifier.
+   * @return The identifier.
+   */
+  public String getQueryId() {
+    return queryId;
+  }
+
+  /**
+   * Set the query identifier.
+   * @param queryId The identifier.
+   */
+  public void setQueryId(String queryId) {
+    this.queryId = queryId;
+  }
+
+  /**
      * Set the execution status.
      * @param status A {@link com.stratio.meta.core.utils.QueryStatus}.
      */

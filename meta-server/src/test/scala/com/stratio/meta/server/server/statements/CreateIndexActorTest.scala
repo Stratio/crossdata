@@ -49,7 +49,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
   private final val logger: Logger = Logger.getLogger(classOf[CreateIndexActorTest])
 
   def executeStatement(query: String, keyspace: String) : Result = {
-    val stmt = Query(keyspace, query, "test_actor")
+    val stmt = Query("create-index", keyspace, query, "test_actor")
     val futureExecutorResponse:Future[Any]= {
       serverRef.ask(stmt)(20 second)
     }

@@ -43,7 +43,7 @@ class CreateKeyspaceActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Con
   lazy val serverRef = system.actorOf(Props(classOf[ServerActor],engine),"create-keyspace-actor")
 
   def executeStatement(query: String, keyspace: String) : Result = {
-    val stmt = Query(keyspace, query, "test_actor")
+    val stmt = Query("create-keyspace", keyspace, query, "test_actor")
     val futureExecutorResponse:Future[Any]= {
       serverRef.ask(stmt)(3 second)
     }

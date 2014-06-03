@@ -11,8 +11,6 @@ import com.stratio.meta.common.result.Result
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import org.apache.log4j.Logger
-import scala.sys.process._
-import java.io.File
 
 class QueryActorTest{
 
@@ -39,14 +37,14 @@ class QueryActorTest{
     val queryActor = TestActorRef.create(system,QueryActor.props(engine))
     val createKs: String = "CREATE KEYSPACE testKS WITH replication = {class: SimpleStrategy, replication_factor: 1};"
 
-    val futureCreate: Future[Any] = queryActor.ask(new Query("system",createKs, "test"))(1000 second)
+    val futureCreate: Future[Any] = queryActor.ask(new Query("query-actor", "system", createKs, "test"))(1000 second)
     val resultCreate= Await.result(futureCreate.mapTo[Result],1000 second)
     logger.info(resultCreate)
 
 
     val dropKs: String = "DROP KEYSPACE testks;"
 
-    val futureDrop: Future[Any] = queryActor.ask(new Query("system",dropKs, "test"))(1000 second)
+    val futureDrop: Future[Any] = queryActor.ask(new Query("query-actor", "system", dropKs, "test"))(1000 second)
     val resultDrop= Await.result(futureDrop.mapTo[Result],1000 second)
     logger.info(resultDrop)
 

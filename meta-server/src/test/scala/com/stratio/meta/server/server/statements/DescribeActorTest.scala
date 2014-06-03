@@ -43,7 +43,7 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
   lazy val serverRef = system.actorOf(Props(classOf[ServerActor],engine),"describe-actor")
 
   def executeStatement(query: String, keyspace: String, shouldExecute: Boolean) : Result = {
-    val stmt = Query(keyspace, query, "test_actor")
+    val stmt = Query("describe", keyspace, query, "test_actor")
     val futureExecutorResponse:Future[Any]= {
       serverRef.ask(stmt)(3 second)
     }
