@@ -1551,9 +1551,7 @@ public class SelectStatement extends MetaStatement {
 
       boolean notPrimaryKeysPresent = (previousSize == whereCols.size());
 
-      System.out.println("TRACE: notPrimaryKeysPresent="+notPrimaryKeysPresent);
-
-      if ((!partialMatched) && (!notPrimaryKeysPresent)) {
+      if (!partialMatched) {
 
         // Check if all clustering columns have an equals operator
         matchWhereColsWithClusteringKeys(tableMetadata, whereCols);
@@ -1574,9 +1572,10 @@ public class SelectStatement extends MetaStatement {
           cassandraPath = true;
         }
 
-        cassandraPath =
-            checkWhereColsWithLucene(luceneCols, whereCols, metadataManager, cassandraPath);
-
+        if(!whereCols.isEmpty()){
+          cassandraPath =
+              checkWhereColsWithLucene(luceneCols, whereCols, metadataManager, cassandraPath);
+        }
       }
     }
 
