@@ -16,6 +16,23 @@
 
 package com.stratio.meta.core.statements;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
+
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -28,6 +45,7 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.GroupBy;
+import com.stratio.meta.core.structures.GroupByFunction;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta.core.structures.OrderDirection;
@@ -52,23 +70,6 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-
-import org.apache.log4j.Logger;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Pattern;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -806,23 +807,25 @@ public class SelectStatement extends MetaStatement {
       } else if (selector.getSelector() instanceof SelectorGroupBy) {
         SelectorGroupBy selectorMeta = (SelectorGroupBy) selector.getSelector();
 
-        // Checking column in the group by aggregation function
-        if (selectorMeta.getParam().getType() == SelectorMeta.TYPE_IDENT) {
-          SelectorIdentifier subselectorIdentifier = (SelectorIdentifier) selectorMeta.getParam();
+        if (!selectorMeta.getGbFunction().equals(GroupByFunction.COUNT)) {
+          // Checking column in the group by aggregation function
+          if (selectorMeta.getParam().getType() == SelectorMeta.TYPE_IDENT) {
+            SelectorIdentifier subselectorIdentifier = (SelectorIdentifier) selectorMeta.getParam();
 
-          String targetTable = "any";
-          if (subselectorIdentifier.getTablename() != null) {
-            targetTable = subselectorIdentifier.getTablename();
-          }
+            String targetTable = "any";
+            if (subselectorIdentifier.getTablename() != null) {
+              targetTable = subselectorIdentifier.getTablename();
+            }
 
-          columnResult = findColumn(targetTable, subselectorIdentifier.getColumnName());
-          if (columnResult.hasError()) {
-            result = columnResult;
+            columnResult = findColumn(targetTable, subselectorIdentifier.getColumnName());
+            if (columnResult.hasError()) {
+              result = columnResult;
+            }
+          } else {
+            result =
+                QueryResult
+                    .createFailQueryResult("Nested functions on selected fields not supported.");
           }
-        } else {
-          result =
-              QueryResult
-                  .createFailQueryResult("Nested functions on selected fields not supported.");
         }
       } else {
         result =
@@ -1581,7 +1584,7 @@ public class SelectStatement extends MetaStatement {
           cassandraPath = true;
         }
 
-        if(!whereCols.isEmpty()){
+        if (!whereCols.isEmpty()) {
           cassandraPath =
               checkWhereColsWithLucene(luceneCols, whereCols, metadataManager, cassandraPath);
         }

@@ -26,8 +26,6 @@ import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 
-import scala.Tuple2;
-
 import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.IDeepJobConfig;
@@ -49,7 +47,6 @@ import com.stratio.meta.core.structures.Ordering;
 import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.SelectionClause;
 import com.stratio.meta.core.structures.SelectionList;
-import com.stratio.meta.core.structures.SelectorGroupBy;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.deep.comparators.DeepComparator;
 import com.stratio.meta.deep.functions.Between;
@@ -129,7 +126,7 @@ public class Bridge {
     if (ss.getSelectionClause().getType() == SelectionClause.TYPE_SELECTION) {
       columnsSet = DeepUtils.retrieveSelectorFields(ss);
     }
-    IDeepJobConfig config =
+    IDeepJobConfig<Cells> config =
         DeepJobConfigFactory.create().session(session).host(engineConfig.getRandomCassandraHost())
             .rpcPort(engineConfig.getCassandraPort()).keyspace(ss.getKeyspace())
             .table(ss.getTableName());
@@ -139,7 +136,6 @@ public class Bridge {
             .initialize();
 
     JavaRDD<Cells> rdd = deepContext.cassandraJavaRDD(config);
-    List<Cells> cells = rdd.toArray();
 
     // If where
     if (ss.isWhereInc()) {
@@ -154,8 +150,12 @@ public class Bridge {
       rdd = doGroupBy(rdd, ss.getGroup(), (SelectionList) ss.getSelectionClause());
     }
 
+    List<String> cols = new ArrayList<>(Arrays.asList(columnsSet));
+    cols.addAll(DeepUtils.retrieveSelectorAggegationFunctions(((SelectionList) ss
+        .getSelectionClause()).getSelection()));
+
     return returnResult(rdd, isRoot,
-        ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, Arrays.asList(columnsSet));
+        ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, cols);
   }
 
   /**
@@ -171,7 +171,7 @@ public class Bridge {
     ss.addTablenameToIds();
 
     // Retrieve RDDs and selected columns from children
-    List<JavaRDD> children = new ArrayList<>();
+    List<JavaRDD<Cells>> children = new ArrayList<>();
     List<String> selectedCols = new ArrayList<>();
     for (Result child : resultsFromChildren) {
       QueryResult qResult = (QueryResult) child;
@@ -179,7 +179,7 @@ public class Bridge {
       Map<String, Cell> cells = crset.getRows().get(0).getCells();
       // RDD from child
       Cell cell = cells.get("RDD");
-      JavaRDD rdd = (JavaRDD) cell.getValue();
+      JavaRDD<Cells> rdd = (JavaRDD<Cells>) cell.getValue();
       children.add(rdd);
     }
 
@@ -200,8 +200,8 @@ public class Bridge {
 
     LOG.debug("INNER JOIN on: " + keyTableLeft + " - " + keyTableRight);
 
-    JavaRDD rddTableLeft = children.get(0);
-    JavaRDD rddTableRight = children.get(1);
+    JavaRDD<Cells> rddTableLeft = children.get(0);
+    JavaRDD<Cells> rddTableRight = children.get(1);
 
     JavaPairRDD rddLeft = rddTableLeft.map(new MapKeyForJoin(keyTableLeft));
     JavaPairRDD rddRight = rddTableRight.map(new MapKeyForJoin(keyTableRight));
@@ -261,7 +261,7 @@ public class Bridge {
    * @param selectedCols List of columns selected in current SelectStatement.
    * @return ResultSet containing the result of built.
    */
-  private ResultSet returnResult(JavaRDD rdd, boolean isRoot, boolean isCount,
+  private ResultSet returnResult(JavaRDD<Cells> rdd, boolean isRoot, boolean isCount,
       List<String> selectedCols) {
     if (isRoot) {
       if (isCount) {
@@ -350,28 +350,17 @@ public class Bridge {
 
     final List<String> groupByCols = groupByClause.getColNames();
 
-    final List<String> fieldCols = selectionClause.getIds();
-
     final List<String> aggregationCols =
         DeepUtils.retrieveSelectorAggegationFunctions(selectionClause.getSelection());
-
-    List<Cells> originalSet = rdd.collect();
 
     // Mapping the rdd to execute the group by clause
     JavaPairRDD<Cells, Cells> groupedRdd =
         rdd.map(new GroupByMapping(aggregationCols, groupByCols));
 
-    List<Tuple2<Cells, Cells>> resultGrouped = groupedRdd.collect();
-
-    List<SelectorGroupBy> selectorsGroupBy = selectionClause.getSelectorsGroupBy();
-
     JavaPairRDD<Cells, Cells> aggregatedRdd = applyAggregations(groupedRdd, aggregationCols);
-
-    List<Tuple2<Cells, Cells>> numRows = aggregatedRdd.collect();
 
     JavaRDD<Cells> map = aggregatedRdd.map(new KeyRemover());
 
-    List<Cells> resultResult = map.collect();
     return map;
 
   }
@@ -399,7 +388,7 @@ public class Bridge {
    * @param orderings Order By clause.
    * @return RDD result.
    */
-  public JavaRDD doOrder(JavaRDD rdd, List<Ordering> orderings) {
+  public JavaRDD<Cells> doOrder(JavaRDD<Cells> rdd, List<Ordering> orderings) {
     List<Cells> list = rdd.takeOrdered(DEFAULT_RESULT_SIZE, new DeepComparator(orderings));
     return deepContext.parallelize(list);
   }

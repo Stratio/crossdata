@@ -124,7 +124,8 @@ public class SelectionList extends SelectionClause {
     List<String> ids = new ArrayList<>();
     if (selector instanceof SelectorGroupBy) {
       SelectorGroupBy selectorGroupBy = (SelectorGroupBy) selector;
-      ids.addAll(retrieveIdsFromFunctionSelector(selectorGroupBy.getParam()));
+      if (!selectorGroupBy.getGbFunction().equals(GroupByFunction.COUNT))
+        ids.addAll(retrieveIdsFromFunctionSelector(selectorGroupBy.getParam()));
     } else if (selector instanceof SelectorFunction) {
       SelectorFunction selectorFunction = (SelectorFunction) selector;
       List<SelectorMeta> params = selectorFunction.getParams();
