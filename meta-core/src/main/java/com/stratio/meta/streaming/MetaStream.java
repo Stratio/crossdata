@@ -81,6 +81,11 @@ public class MetaStream {
 
   public static String listenStream(String streamName, int seconds){
     try {
+      //////////////////////////////////////////////////////////////
+      String query = "from "+streamName+" select name, age, rating insert into pof for result-pof";
+      String queryId = stratioStreamingAPI.addQuery(streamName, query);
+      System.out.println("queryId = "+queryId);
+      //////////////////////////////////////////////////////////////
       long start = System.currentTimeMillis();
       insertRandomData(streamName);
       KafkaStream<String, StratioStreamingMessage> streams = stratioStreamingAPI.listenStream(streamName);
