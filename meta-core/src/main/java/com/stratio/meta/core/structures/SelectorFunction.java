@@ -25,32 +25,39 @@ import java.util.List;
 
 public class SelectorFunction extends SelectorMeta {
 
-    private String name;
-    private List<SelectorMeta> params;
+  private String name;
+  private List<SelectorMeta> params;
 
-    public SelectorFunction(String name, List<SelectorMeta> params) {
-        this.type = TYPE_FUNCTION;
-        this.name = name;
-        this.params = params;
-    }
+  public SelectorFunction(String name, List<SelectorMeta> params) {
+    this.type = TYPE_FUNCTION;
+    this.name = name;
+    this.params = params;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public List<SelectorMeta> getParams() {
-        return params;
-    }
+  public List<SelectorMeta> getParams() {
+    return params;
+  }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(name);
-        sb.append("(").append(ParserUtils.stringList(params, ", ")).append(")");
-        return sb.toString();
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(name);
+    sb.append("(").append(ParserUtils.stringList(params, ", ")).append(")");
+    return sb.toString();
+  }
+
+  @Override
+  public void addTablename(String tablename) {
+    for(SelectorMeta param: params){
+      param.addTablename(tablename);
     }
-    
+  }
+
 }

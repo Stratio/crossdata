@@ -50,4 +50,9 @@ public class SelectorGroupBy extends SelectorMeta {
     return sb.toString();
   }
 
+  @Override
+  public void addTablename(String tablename) {
+    param.addTablename(tablename);
+  }
+
 }

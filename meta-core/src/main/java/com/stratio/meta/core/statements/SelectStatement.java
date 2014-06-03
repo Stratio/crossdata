@@ -16,23 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -69,6 +52,23 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+
+import org.apache.log4j.Logger;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -1544,8 +1544,12 @@ public class SelectStatement extends MetaStatement {
       String effectiveKeyspace = getEffectiveKeyspace();
       TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
 
+      int previousSize = whereCols.size();
+
       // Check if all partition columns have an equals operator
       boolean partialMatched = matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
+
+      boolean notPrimaryKeysPresent = (previousSize == whereCols.size());
 
       if (!partialMatched) {
 
@@ -1568,9 +1572,10 @@ public class SelectStatement extends MetaStatement {
           cassandraPath = true;
         }
 
-        cassandraPath =
-            checkWhereColsWithLucene(luceneCols, whereCols, metadataManager, cassandraPath);
-
+        if(!whereCols.isEmpty()){
+          cassandraPath =
+              checkWhereColsWithLucene(luceneCols, whereCols, metadataManager, cassandraPath);
+        }
       }
     }
 
@@ -1648,4 +1653,7 @@ public class SelectStatement extends MetaStatement {
     return result;
   }
 
+  public void addTablenameToIds() {
+    selectionClause.addTablename(tableName);
+  }
 }
