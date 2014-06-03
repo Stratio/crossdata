@@ -30,77 +30,78 @@ import static org.testng.Assert.assertTrue;
 
 public class ConnectTest extends DriverParentTest {
 
-    @Test
-    public void ConnectTest(){
-        Result metaResult= driver.connect("TEST_USER");
-        assertFalse(metaResult.hasError());
-        ConnectResult r = ConnectResult.class.cast(metaResult);
-        assertTrue(r.getSessionId() != -1, "Invalid session identifier: "+r.getSessionId());
+  @Test
+  public void ConnectTest(){
+    Result metaResult= driver.connect("TEST_USER");
+    assertFalse(metaResult.hasError());
+    ConnectResult r = ConnectResult.class.cast(metaResult);
+    assertTrue(r.getSessionId() != -1, "Invalid session identifier: "+r.getSessionId());
+  }
+
+
+  @Test(groups = "create Ks")
+  public void ExecuteCreatewitherrorTest(){
+    String msg= "create KEYSPAC ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};";
+    Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
+    assertTrue(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n");
+  }
+
+
+  @Test(groups = "create Tb", dependsOnGroups = {"use"})
+  public void ExecuteCreateTableTest(){
+    String msg= "create TABLE IF NOT EXISTS demo (field1 varchar PRIMARY KEY , field2 varchar);";
+    Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
+    assertFalse(metaResult.hasError());
+  }
+
+  @Test(groups = "use", dependsOnGroups = {"create Ks"})
+  public void ExecuteUseKsest(){
+    String msg= "use ks_demo ;";
+    Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
+    assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n" );
+  }
+
+  @Test(groups = "insert", dependsOnGroups = {"create Tb"})
+  public void ExecuteInsertTest(){
+    String msg= "insert into demo (field1, field2) values ('test1','text2');";
+    Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
+    assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n" );
+  }
+
+  @Test(groups = "select", dependsOnGroups = {"insert"})
+  public void ExecuteSelectTbTest(){
+    //String msg= "insert into demo (field1, field2) values ('test1','text2');";
+    //Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
+    //assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n" );
+
+    //msg ="drop keyspace ks_demo;";
+    //driver.executeQuery("TEST_USER","ks_demo",msg);
+
+  }
+  @AfterClass
+  public void ExecuteDropTestAfter(){
+
+    driver.executeQuery("TEST_USER","ks_demo","drop table demo ;");
+
+    driver.executeQuery("TEST_USER","ks_demo","drop keyspace ks_demo ;");
+
+  }
+  @BeforeClass
+  public void ExecuteDropTestBefore()  {
+
+    driver.executeQuery("TEST_USER","ks_demo","drop table demo ;");
+
+    driver.executeQuery("TEST_USER","ks_demo","drop keyspace ks_demo ;");
+
+    String msg= "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};";
+    Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
 
-
-    @Test(groups = "create Ks")
-    public void ExecuteCreatewitherrorTest(){
-        String msg= "create KEYSPAC ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};";
-        Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
-        assertTrue(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n");
-    }
-
-
-    @Test(groups = "create Tb", dependsOnGroups = {"use"})
-    public void ExecuteCreateTableTest(){
-        String msg= "create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);";
-        Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
-    }
-
-    @Test(groups = "use", dependsOnGroups = {"create Ks"})
-    public void ExecuteUseKsest(){
-        String msg= "use ks_demo ;";
-        Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
-        assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n" );
-    }
-
-    @Test(groups = "insert", dependsOnGroups = {"create Tb"})
-    public void ExecuteInsertTest(){
-        String msg= "insert into demo (field1, field2) values ('test1','text2');";
-        Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
-        assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n" );
-    }
-
-    @Test(groups = "select", dependsOnGroups = {"insert"})
-    public void ExecuteSelectTbTest(){
-        //String msg= "insert into demo (field1, field2) values ('test1','text2');";
-        //Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
-        //assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n" );
-
-        //msg ="drop keyspace ks_demo;";
-        //driver.executeQuery("TEST_USER","ks_demo",msg);
-
-    }
-    @AfterClass
-    public void ExecuteDropTestAfter(){
-
-        driver.executeQuery("TEST_USER","ks_demo","drop table demo ;");
-
-        driver.executeQuery("TEST_USER","ks_demo","drop keyspace ks_demo ;");
-
-   }
-    @BeforeClass
-    public void ExecuteDropTestBefore()  {
-
-        driver.executeQuery("TEST_USER","ks_demo","drop table demo ;");
-
-        driver.executeQuery("TEST_USER","ks_demo","drop keyspace ks_demo ;");
-
-        String msg= "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};";
-        Result metaResult= driver.executeQuery("TEST_USER","ks_demo",msg);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-    }
+  }
 
 
 

@@ -115,7 +115,7 @@ public class DropIndexStatement extends MetaStatement {
         }else{
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
             if(ksMetadata == null){
-                result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
+                result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
             }else{
                 result = validateIndexName(ksMetadata);
             }

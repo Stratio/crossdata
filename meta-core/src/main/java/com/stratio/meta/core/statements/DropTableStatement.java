@@ -111,11 +111,11 @@ public class DropTableStatement extends MetaStatement {
         }else{
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
             if(ksMetadata == null){
-                result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
+                result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
             }else {
                 TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
                 if (tableMetadata == null) {
-                    result= QueryResult.createFailQueryResult("Table " + tableName + " does not exists.");
+                    result= QueryResult.createFailQueryResult("Table " + tableName + " does not exist.");
                 }
             }
 
