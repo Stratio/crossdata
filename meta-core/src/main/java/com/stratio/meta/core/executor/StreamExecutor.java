@@ -39,7 +39,7 @@ public class StreamExecutor {
   public static Result execute(MetaStatement stmt) {
     if (stmt instanceof CreateTableStatement) {
       CreateTableStatement cts= (CreateTableStatement) stmt;
-      String tableEphimeralName= cts.getEffectiveKeyspace()+"."+cts.getTableName() ;
+      String tableEphimeralName= cts.getEffectiveKeyspace()+"_"+cts.getTableName() ;
       List<ColumnNameType> columnList = new ArrayList<>();
       for (Map.Entry<String, String> column : cts.getColumns().entrySet()) {
         ColumnType type=null;
@@ -70,7 +70,7 @@ public class StreamExecutor {
       return MetaStream.createStream(tableEphimeralName, columnList);
     } else if (stmt instanceof SelectStatement){
       SelectStatement ss = (SelectStatement) stmt;
-      String resultStream = MetaStream.listenStream(ss.getEffectiveKeyspace()+"."+ss.getTableName(), 20);
+      String resultStream = MetaStream.listenStream(ss.getEffectiveKeyspace()+"_"+ss.getTableName(), 20);
       return CommandResult.createSuccessCommandResult(resultStream);
     } else {
       return QueryResult.createFailQueryResult("Not supported yet.");
