@@ -198,6 +198,7 @@ public class MetaQuery {
      * @return A {@link com.stratio.meta.common.result.Result}.
      */
     public Result getResult() {
+      result.setQueryId(getQueryId());
         return result;
     }
 
