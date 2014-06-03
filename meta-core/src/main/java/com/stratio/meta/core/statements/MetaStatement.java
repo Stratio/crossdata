@@ -129,7 +129,7 @@ public abstract class MetaStatement {
       }else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata == null) {
-          if(!MetaStream.checkstream(effectiveKeyspace + "." + tableName)){
+          if(!MetaStream.checkstream(effectiveKeyspace + "_" + tableName)){
             result= QueryResult.createFailQueryResult("Table " + tableName + " does not exist in "+effectiveKeyspace+".");
           } else {
             result = CommandResult.createSuccessCommandResult("streaming");
