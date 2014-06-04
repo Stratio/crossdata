@@ -15,6 +15,7 @@ import com.stratio.streaming.messaging.ColumnNameValue;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.streaming.Duration;
+import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka.KafkaUtils;
@@ -49,13 +50,15 @@ public class MetaStream {
 
   public static void setDeepContext(DeepSparkContext deepContext) {
     if(jssc == null){
-      System.out.println("TRACE: Creating new JavaSparkContext");
       JavaSparkContext sparkContext = new JavaSparkContext("local", "MetaStreaming");
-      System.out.println("TRACE: JavaSparkContext created");
-      System.out.println("TRACE: Creating new JavaStreamingContext");
-      jssc = new JavaStreamingContext(sparkContext.getConf().set("spark.cleaner.ttl", "-1").set("spark.driver.port", "-1"),
-                                      new Duration(2000));
-      System.out.println("TRACE: JavaStreamingContext created");
+      double randomPort = Math.random()*49152+(65535-49152);
+      while(jssc == null){
+        randomPort = Math.random()*49152+(65535-49152);
+        jssc = new JavaStreamingContext(
+            sparkContext.getConf().set("spark.cleaner.ttl", "-1").set("spark.driver.port", String.valueOf(randomPort)),
+            new Duration(2000));
+      }
+      System.out.println("TRACE: JavaStreamingContext created. Port = "+randomPort);
     }
   }
 
@@ -201,7 +204,10 @@ public class MetaStream {
       JavaPairDStream<String, String>
           dstream =
           KafkaUtils.createStream(jssc, "ingestion.stratio.com", "stratio", topics);
-      System.out.println("TRACE: dstream.class="+dstream.getClass());
+      System.out.println("TRACE: dstream.class = "+dstream.getClass());
+      System.out.println("TRACE: dstream.context = " + dstream.context().toString());
+      JavaDStream<Long> counts = dstream.count();
+      System.out.println("TRACE: counts = " + counts.toString());    
       ///////////////////////////////////////////////////////////////////////////////////
       return sb.toString();
     } catch (Throwable t) {
