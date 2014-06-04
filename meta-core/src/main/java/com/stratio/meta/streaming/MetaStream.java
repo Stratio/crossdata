@@ -154,6 +154,7 @@ public class MetaStream {
       List<KafkaStream<byte[], byte[]>>
           result =
           consumer.createMessageStreamsByFilter(new Whitelist("pof"));
+      System.out.println("result.size = "+result.size());
       for(KafkaStream<byte[], byte[]> kafkaStream: result){
         ConsumerIterator<byte[], byte[]> iter = kafkaStream.iterator();
         while(iter.hasNext()){
