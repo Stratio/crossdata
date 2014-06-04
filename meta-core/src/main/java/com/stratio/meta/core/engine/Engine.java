@@ -39,126 +39,128 @@ import java.util.Arrays;
  */
 public class Engine {
 
-    /**
-     * The {@link com.stratio.meta.core.parser.Parser} responsible for parse.
-     */
-    private final Parser parser;
+  /**
+   * The {@link com.stratio.meta.core.parser.Parser} responsible for parse.
+   */
+  private final Parser parser;
 
-    /**
-     * The {@link com.stratio.meta.core.validator.Validator} responsible for validation.
-     */
-    private final Validator validator;
+  /**
+   * The {@link com.stratio.meta.core.validator.Validator} responsible for validation.
+   */
+  private final Validator validator;
 
-    /**
-     * The {@link com.stratio.meta.core.planner.Planner} responsible for planification.
-     */
-    private final Planner planner;
+  /**
+   * The {@link com.stratio.meta.core.planner.Planner} responsible for planification.
+   */
+  private final Planner planner;
 
-    /**
-     * The {@link com.stratio.meta.core.executor.Executor} responsible for execution.
-     */
-    private final Executor executor;
+  /**
+   * The {@link com.stratio.meta.core.executor.Executor} responsible for execution.
+   */
+  private final Executor executor;
 
-    /**
-     * The {@link com.stratio.meta.core.api.APIManager} responsible for API calls.
-     */
-    private final APIManager manager;
+  /**
+   * The {@link com.stratio.meta.core.api.APIManager} responsible for API calls.
+   */
+  private final APIManager manager;
 
-    /**
-     * Datastax Java Driver session.
-     */
-    private final Session session;
+  /**
+   * Datastax Java Driver session.
+   */
+  private final Session session;
 
-    /**
-     * Deep Spark context.
-     */
-    private final DeepSparkContext deepContext;
+  /**
+   * Deep Spark context.
+   */
+  private final DeepSparkContext deepContext;
 
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = Logger.getLogger(Engine.class.getName());
+  /**
+   * Class logger.
+   */
+  private static final Logger LOG = Logger.getLogger(Engine.class.getName());
 
-    /**
-     * Class constructor.
-     *
-     * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
-     */
-    public Engine(EngineConfig config) {
+  /**
+   * Class constructor.
+   *
+   * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
+   */
+  public Engine(EngineConfig config) {
 
-        Cluster cluster = Cluster.builder()
-                .addContactPoints(config.getCassandraHosts())
-                .withPort(config.getCassandraPort()).build();
+    Cluster cluster = Cluster.builder()
+        .addContactPoints(config.getCassandraHosts())
+        .withPort(config.getCassandraPort()).build();
 
-        LOG.info("Connecting to Cassandra on "
-                + Arrays.toString(config.getCassandraHosts()) + ":" + config.getCassandraPort());
-        this.session=cluster.connect();
+    LOG.info("Connecting to Cassandra on "
+             + Arrays.toString(config.getCassandraHosts()) + ":" + config.getCassandraPort());
+    this.session=cluster.connect();
 
-        this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+    this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
 
-        if(!config.getSparkMaster().toLowerCase().startsWith("local")){
-            for(String jar : config.getJars()){
-                deepContext.addJar(jar);
-            }
-        }
+    System.out.println("TRACE: DeepSparkContext created");
 
-        parser = new Parser();
-        validator = new Validator(session);
-        manager = new APIManager(session);
-        planner = new Planner(session);
-        executor = new Executor(session, deepContext, config);
+    if(!config.getSparkMaster().toLowerCase().startsWith("local")){
+      for(String jar : config.getJars()){
+        deepContext.addJar(jar);
+      }
     }
 
-    /**
-     * Get the parser.
-     *
-     * @return a {@link com.stratio.meta.core.parser.Parser}
-     */
-    public Parser getParser() {
-        return parser;
-    }
+    parser = new Parser();
+    validator = new Validator(session);
+    manager = new APIManager(session);
+    planner = new Planner(session);
+    executor = new Executor(session, deepContext, config);
+  }
 
-    /**
-     * Get the validator.
-     *
-     * @return a {@link com.stratio.meta.core.validator.Validator}
-     */
-    public Validator getValidator() {
-        return validator;
-    }
+  /**
+   * Get the parser.
+   *
+   * @return a {@link com.stratio.meta.core.parser.Parser}
+   */
+  public Parser getParser() {
+    return parser;
+  }
 
-    /**
-     * Get the planner.
-     *
-     * @return a {@link com.stratio.meta.core.planner.Planner}
-     */
-    public Planner getPlanner() {
-        return planner;
-    }
+  /**
+   * Get the validator.
+   *
+   * @return a {@link com.stratio.meta.core.validator.Validator}
+   */
+  public Validator getValidator() {
+    return validator;
+  }
 
-    /**
-     * Get the executor.
-     *
-     * @return a {@link com.stratio.meta.core.executor.Executor}
-     */
-    public Executor getExecutor() {
-        return executor;
-    }
+  /**
+   * Get the planner.
+   *
+   * @return a {@link com.stratio.meta.core.planner.Planner}
+   */
+  public Planner getPlanner() {
+    return planner;
+  }
 
-    /**
-     * Get the API manager.
-     * @return A {@link com.stratio.meta.core.api.APIManager}.
-     */
-    public APIManager getAPIManager(){
-        return manager;
-    }
+  /**
+   * Get the executor.
+   *
+   * @return a {@link com.stratio.meta.core.executor.Executor}
+   */
+  public Executor getExecutor() {
+    return executor;
+  }
 
-    /**
-     * Close open connections.
-     */
-    public void shutdown(){
-        deepContext.stop();
-        session.close();
-    }
+  /**
+   * Get the API manager.
+   * @return A {@link com.stratio.meta.core.api.APIManager}.
+   */
+  public APIManager getAPIManager(){
+    return manager;
+  }
+
+  /**
+   * Close open connections.
+   */
+  public void shutdown(){
+    deepContext.stop();
+    session.close();
+  }
 
 }
