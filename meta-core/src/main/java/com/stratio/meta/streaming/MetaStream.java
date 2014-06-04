@@ -101,6 +101,7 @@ public class MetaStream {
       String query = "from "+streamName+" select name, age, rating insert into pof";
       String queryId = stratioStreamingAPI.addQuery(streamName, query);
       System.out.println("queryId = "+queryId);
+      stratioStreamingAPI.listenStream("pof");
       //////////////////////////////////////////////////////////////
       long start = System.currentTimeMillis();
       insertRandomData(streamName);
@@ -152,7 +153,7 @@ public class MetaStream {
       //consumer.createMessageStreams(new HashMap<String, Integer>());
       List<KafkaStream<byte[], byte[]>>
           result =
-          consumer.createMessageStreamsByFilter(new Whitelist("."));
+          consumer.createMessageStreamsByFilter(new Whitelist("pof"));
       for(KafkaStream<byte[], byte[]> kafkaStream: result){
         ConsumerIterator<byte[], byte[]> iter = kafkaStream.iterator();
         while(iter.hasNext()){
