@@ -51,9 +51,9 @@ public class MetaStream {
   public static void setDeepContext(DeepSparkContext deepContext) {
     if(jssc == null){
       JavaSparkContext sparkContext = new JavaSparkContext("local", "MetaStreaming");
-      double randomPort = Math.random()*49152+(65535-49152);
+      int randomPort = (int) (Math.random()*49152+(65535-49152));
       while(jssc == null){
-        randomPort = Math.random()*49152+(65535-49152);
+        randomPort = (int) (Math.random()*49152+(65535-49152));
         jssc = new JavaStreamingContext(
             sparkContext.getConf().set("spark.cleaner.ttl", "-1").set("spark.driver.port", String.valueOf(randomPort)),
             new Duration(2000));
@@ -207,7 +207,7 @@ public class MetaStream {
       System.out.println("TRACE: dstream.class = "+dstream.getClass());
       System.out.println("TRACE: dstream.context = " + dstream.context().toString());
       JavaDStream<Long> counts = dstream.count();
-      System.out.println("TRACE: counts = " + counts.toString());    
+      System.out.println("TRACE: counts = " + counts.toString());
       ///////////////////////////////////////////////////////////////////////////////////
       return sb.toString();
     } catch (Throwable t) {
