@@ -30,6 +30,7 @@ import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.GroupByFunction;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta.core.structures.LongTerm;
+import com.stratio.meta.core.structures.Ordering;
 import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.RelationBetween;
 import com.stratio.meta.core.structures.RelationCompare;
@@ -175,7 +176,7 @@ public class SelectStatementTest extends BasicPlannerTest {
     List<Relation> whereClause = Arrays.asList(relation1, relation2);
     ((SelectStatement) stmt).setWhere(whereClause);
     Tree tree = stmt.getPlan(_metadataManager, "demo");
-    validateDeepPath("testWhereWithPartialPartitionKey");
+    validateDeepPath("testWhereWithInClause");
   }
 
   @Test
@@ -194,7 +195,7 @@ public class SelectStatementTest extends BasicPlannerTest {
     List<Relation> whereClause = Arrays.asList(relation1, relation2);
     ((SelectStatement) stmt).setWhere(whereClause);
     Tree tree = stmt.getPlan(_metadataManager, "demo");
-    validateDeepPath("testWhereWithPartialPartitionKey");
+    validateDeepPath("testWhereWithBetweenClause");
   }
 
   @Test
@@ -211,7 +212,29 @@ public class SelectStatementTest extends BasicPlannerTest {
     stmt = new SelectStatement(selClause, "demo.users");
     GroupBy groupClause = new GroupBy(Arrays.asList("gender"));
     ((SelectStatement) stmt).setGroup(groupClause);
-    Tree tree = stmt.getPlan(_metadataManager, "demo");
-    validateDeepPath("testWhereWithPartialPartitionKey");
+    stmt.getPlan(_metadataManager, "demo");
+    validateDeepPath("testGroupByWithCount");
   }
+
+  @Test
+  public void testSimpleOrderByOk() {
+
+    String inputText = "SELECT age FROM demo.users ORDER BY age;";
+
+    List<SelectionSelector> selectionSelectors =
+        Arrays.asList(new SelectionSelector(new SelectorIdentifier("age")));
+
+    SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
+    stmt = new SelectStatement(selClause, "demo.users");
+
+    // Order by clause
+    List<Ordering> orderFieldsList = new ArrayList<>();
+    Ordering order = new Ordering("users.age");
+    orderFieldsList.add(order);
+
+    ((SelectStatement) stmt).setOrder(orderFieldsList);
+    stmt.getPlan(_metadataManager, "demo");
+    validateDeepPath("testSimpleOrderByOk");
+  }
+
 }

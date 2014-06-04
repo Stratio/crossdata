@@ -996,6 +996,85 @@ public class BridgeTest extends BasicCoreCassandraTest {
   @Test
   public void testSimpleOrderByOk() {
 
+    MetaQuery metaQuery = new MetaQuery("SELECT * FROM demo.users ORDER BY users.age;");
+
+    // Fields to retrieve
+    SelectionClause selectionClause = new SelectionList(new SelectionAsterisk());
+
+    // Order by clause
+    List<Ordering> orderFieldsList = new ArrayList<>();
+    Ordering order = new Ordering("users.age");
+    orderFieldsList.add(order);
+
+    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    firstSelect.setLimit(10000);
+    firstSelect.setOrder(orderFieldsList);
+    firstSelect.validate(metadataManager);
+
+    // Query execution
+    Tree tree = new Tree();
+    tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+    metaQuery.setPlan(tree);
+    metaQuery.setStatus(QueryStatus.PLANNED);
+    Result results = validateRowsAndCols(metaQuery, "testSimpleOrderByOk", 16, 6);
+
+    results.toString();
   }
 
+  @Test
+  public void testMultipleOrderByOk() {
+
+    MetaQuery metaQuery =
+        new MetaQuery("SELECT * FROM demo.users ORDER BY users.gender, users.age;");
+
+    // Fields to retrieve
+    SelectionClause selectionClause = new SelectionList(new SelectionAsterisk());
+
+    // Order by clause
+    List<Ordering> orderFieldsList = new ArrayList<>();
+    orderFieldsList.add(new Ordering("users.gender"));
+    orderFieldsList.add(new Ordering("users.age"));
+
+    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    firstSelect.setLimit(10000);
+    firstSelect.setOrder(orderFieldsList);
+    firstSelect.validate(metadataManager);
+
+    // Query execution
+    Tree tree = new Tree();
+    tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+    metaQuery.setPlan(tree);
+    metaQuery.setStatus(QueryStatus.PLANNED);
+    Result results = validateRowsAndCols(metaQuery, "testMultipleOrderByOk", 16, 6);
+
+    results.toString();
+  }
+
+  @Test
+  public void testComplexQueryWithSimpleOrderByOk() {
+
+    MetaQuery metaQuery = new MetaQuery("SELECT * FROM demo.users ORDER BY users.name;");
+
+    // Fields to retrieve
+    SelectionClause selectionClause = new SelectionList(new SelectionAsterisk());
+
+    // Order by clause
+    List<Ordering> orderFieldsList = new ArrayList<>();
+    orderFieldsList.add(new Ordering("users.gender"));
+    orderFieldsList.add(new Ordering("users.age"));
+
+    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    firstSelect.setLimit(10000);
+    firstSelect.setOrder(orderFieldsList);
+    firstSelect.validate(metadataManager);
+
+    // Query execution
+    Tree tree = new Tree();
+    tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+    metaQuery.setPlan(tree);
+    metaQuery.setStatus(QueryStatus.PLANNED);
+    Result results = validateRowsAndCols(metaQuery, "testMultipleOrderByOk", 16, 6);
+
+    results.toString();
+  }
 }

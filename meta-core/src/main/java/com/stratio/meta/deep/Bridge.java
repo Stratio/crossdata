@@ -150,6 +150,10 @@ public class Bridge {
       rdd = doGroupBy(rdd, ss.getGroup(), (SelectionList) ss.getSelectionClause());
     }
 
+    if (ss.isOrderInc()) {
+      rdd = doOrder(rdd, ss.getOrder());
+    }
+
     List<String> cols = new ArrayList<>(Arrays.asList(columnsSet));
     cols.addAll(DeepUtils.retrieveSelectorAggegationFunctions(((SelectionList) ss
         .getSelectionClause()).getSelection()));

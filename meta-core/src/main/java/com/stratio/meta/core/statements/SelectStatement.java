@@ -508,7 +508,9 @@ public class SelectStatement extends MetaStatement {
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateOptions() {
+
     Result result = QueryResult.createSuccessQueryResult();
+
     if (windowInc) {
       result = QueryResult.createFailQueryResult("Select with streaming options not supported.");
     }
@@ -518,8 +520,9 @@ public class SelectStatement extends MetaStatement {
     }
 
     if (orderInc) {
-      result = QueryResult.createFailQueryResult("Select with ORDER BY clause not supported.");
+      result = validateOrderByClause();
     }
+
     return result;
   }
 
@@ -687,6 +690,36 @@ public class SelectStatement extends MetaStatement {
                 + "] must be included in the selection columns.");
       }
     }
+    return result;
+  }
+
+  /**
+   * Validate whether the group by clause is valid or not by checking columns exist on the target
+   * table and comparisons are semantically correct.
+   * 
+   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+   */
+  private Result validateOrderByClause() {
+
+    Result result = QueryResult.createSuccessQueryResult();
+
+    for (Ordering orderField : order) {
+
+      String field = orderField.getIdentifier();
+
+      String targetTable = "any";
+      String columnName = field;
+      if (field.contains(".")) {
+        targetTable = field.substring(0, field.indexOf("."));
+        columnName = field.substring(field.indexOf(".") + 1);
+      }
+
+      Result columnResult = findColumn(targetTable, columnName);
+      if (columnResult.hasError()) {
+        result = columnResult;
+      }
+    }
+
     return result;
   }
 
@@ -1623,7 +1656,7 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-    if (groupInc) {
+    if (groupInc || orderInc) {
       steps.setNode(new MetaStep(MetaPath.DEEP, this));
     } else if (joinInc) {
       steps = getJoinPlan();
