@@ -19,11 +19,14 @@ import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
-import kafka.api.FetchRequestBuilder;
+import kafka.consumer.Consumer;
+import kafka.consumer.ConsumerConfig;
+import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
-import kafka.javaapi.consumer.SimpleConsumer;
-import kafka.javaapi.message.ByteBufferMessageSet;
+import kafka.consumer.Whitelist;
+import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
 
 public class MetaStream {
@@ -122,7 +125,7 @@ public class MetaStream {
         sb.append("----------------------------------------------------------").append(System.lineSeparator());
         insertRandomData(streamName);
       }
-      ///////////////////////////////////////////////////////////////////////////////////
+      /*
       SimpleConsumer
           simpleConsumer = new SimpleConsumer("ingestion.stratio.com", 9092, 100000, 64 * 1024, "stratio");
 
@@ -135,6 +138,29 @@ public class MetaStream {
       ByteBufferMessageSet response = fetchResponse.messageSet("pof", 0);
 
       System.out.println("TRACE: "+new String(response.getBuffer().array(), "UTF-8"));
+      */
+      ////////////////////////////////////////////////////////////////////////////////////
+      Properties props = new Properties();
+      props.put("zookeeper.connect", "ingestion.stratio.com");
+      props.put("group.id", "stratio");
+      props.put("zookeeper.session.timeout.ms", "400");
+      props.put("zookeeper.sync.time.ms", "200");
+      props.put("auto.commit.interval.ms", "1000");
+
+      ConsumerConnector consumer = Consumer.createJavaConsumerConnector(new ConsumerConfig(props));
+
+      //consumer.createMessageStreams(new HashMap<String, Integer>());
+      List<KafkaStream<byte[], byte[]>>
+          result =
+          consumer.createMessageStreamsByFilter(new Whitelist("."));
+      for(KafkaStream<byte[], byte[]> kafkaStream: result){
+        ConsumerIterator<byte[], byte[]> iter = kafkaStream.iterator();
+        while(iter.hasNext()){
+          MessageAndMetadata<byte[], byte[]> row = iter.next();
+          System.out.println("TRACE: "+new String(row.message()));
+        }
+
+      }
       ///////////////////////////////////////////////////////////////////////////////////
       return sb.toString();
     } catch (Throwable t) {
