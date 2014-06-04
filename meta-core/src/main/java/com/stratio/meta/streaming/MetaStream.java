@@ -14,19 +14,17 @@ import com.stratio.streaming.messaging.ColumnNameValue;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.streaming.Duration;
+import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
+import org.apache.spark.streaming.kafka.KafkaUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
-import kafka.consumer.Consumer;
-import kafka.consumer.ConsumerConfig;
-import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
-import kafka.consumer.Whitelist;
-import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
 
 public class MetaStream {
@@ -141,6 +139,7 @@ public class MetaStream {
       System.out.println("TRACE: "+new String(response.getBuffer().array(), "UTF-8"));
       */
       ////////////////////////////////////////////////////////////////////////////////////
+      /*
       Properties props = new Properties();
       props.put("zookeeper.connect", "ingestion.stratio.com");
       props.put("group.id", "stratio");
@@ -162,7 +161,34 @@ public class MetaStream {
           System.out.println("TRACE: "+new String(row.message()));
         }
 
+      }*/
+
+      /**
+       * Create an input stream that pulls messages form a Kafka Broker.
+       * Storage level of the data will be the default StorageLevel.MEMORY_AND_DISK_SER_2.
+       * param jssc      JavaStreamingContext object
+       * param zkQuorum  Zookeeper quorum (hostname:port,hostname:port,..)
+       * param groupId   The group id for this consumer
+       * param topics    Map of (topic_name -> numPartitions) to consume. Each partition is consumed
+       *                  in its own thread
+       *
+      def createStream(
+          jssc: JavaStreamingContext,
+          zkQuorum: String,
+          groupId: String,
+          topics: JMap[String, JInt]
+      ): JavaPairDStream[String, String] = {
+        implicit val cmt: ClassTag[String] =
+            implicitly[ClassTag[AnyRef]].asInstanceOf[ClassTag[String]]
+        createStream(jssc.ssc, zkQuorum, groupId, Map(topics.mapValues(_.intValue()).toSeq: _*))
       }
+      */
+      Map<String, Integer> topics = new HashMap<>();
+      topics.put("pof", 100);
+      JavaPairDStream<String, String>
+          dstream =
+          KafkaUtils.createStream(jssc, "ingestion.stratio.com", "stratio", topics);
+      System.out.println("TRACE: dstream.class="+dstream.getClass());
       ///////////////////////////////////////////////////////////////////////////////////
       return sb.toString();
     } catch (Throwable t) {
@@ -213,5 +239,4 @@ public class MetaStream {
   }
 
 }
-
 
