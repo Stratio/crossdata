@@ -1,5 +1,6 @@
 package com.stratio.meta.streaming;
 
+import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.streaming.api.IStratioStreamingAPI;
@@ -12,12 +13,17 @@ import com.stratio.streaming.messaging.ColumnNameType;
 import com.stratio.streaming.messaging.ColumnNameValue;
 
 import org.apache.log4j.Logger;
+import org.apache.spark.streaming.Duration;
+import org.apache.spark.streaming.api.java.JavaStreamingContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import kafka.api.FetchRequestBuilder;
 import kafka.consumer.KafkaStream;
+import kafka.javaapi.consumer.SimpleConsumer;
+import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.message.MessageAndMetadata;
 
 public class MetaStream {
@@ -27,14 +33,21 @@ public class MetaStream {
    */
   private static final Logger LOG = Logger.getLogger(MetaStream.class);
 
-  private static
-  IStratioStreamingAPI stratioStreamingAPI = null;
+  private static IStratioStreamingAPI stratioStreamingAPI = null;
+
+  private static JavaStreamingContext jssc = null;
 
   static {
     try {
       stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
     } catch (Throwable t) {
       t.printStackTrace();
+    }
+  }
+
+  public static void setDeepContext(DeepSparkContext deepContext) {
+    if(jssc != null){
+      jssc = new JavaStreamingContext(deepContext.getConf(), new Duration(1000));
     }
   }
 
@@ -82,7 +95,7 @@ public class MetaStream {
   public static String listenStream(String streamName, int seconds){
     try {
       //////////////////////////////////////////////////////////////
-      String query = "from "+streamName+" select name, age, rating insert into pof for result-pof";
+      String query = "from "+streamName+" select name, age, rating insert into pof";
       String queryId = stratioStreamingAPI.addQuery(streamName, query);
       System.out.println("queryId = "+queryId);
       //////////////////////////////////////////////////////////////
@@ -109,6 +122,20 @@ public class MetaStream {
         sb.append("----------------------------------------------------------").append(System.lineSeparator());
         insertRandomData(streamName);
       }
+      ///////////////////////////////////////////////////////////////////////////////////
+      SimpleConsumer
+          simpleConsumer = new SimpleConsumer("127.0.0.1", 9092, 100000, 64 * 1024, "stratio");
+
+      kafka.api.FetchRequest req = new FetchRequestBuilder()
+          .clientId("stratio")
+          .addFetch("pof", 0, 0, 100)
+          .build();
+      kafka.javaapi.FetchResponse fetchResponse = simpleConsumer.fetch(req);
+
+      ByteBufferMessageSet response = fetchResponse.messageSet("pof", 0);
+
+      System.out.println("TRACE: "+new String(response.getBuffer().array(), "UTF-8"));
+      ///////////////////////////////////////////////////////////////////////////////////
       return sb.toString();
     } catch (Throwable t) {
       t.printStackTrace();
@@ -156,6 +183,7 @@ public class MetaStream {
     }
     return colNames;
   }
+
 }
 
 

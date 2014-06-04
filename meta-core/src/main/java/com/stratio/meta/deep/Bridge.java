@@ -16,17 +16,6 @@
 
 package com.stratio.meta.deep;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-
 import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.IDeepJobConfig;
@@ -58,6 +47,17 @@ import com.stratio.meta.deep.functions.LessThan;
 import com.stratio.meta.deep.functions.MapKeyForJoin;
 import com.stratio.meta.deep.functions.NotEquals;
 import com.stratio.meta.deep.utils.DeepUtils;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class that performs as a Bridge between Meta and Stratio Deep.

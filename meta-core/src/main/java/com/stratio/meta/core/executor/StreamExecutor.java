@@ -19,6 +19,7 @@
 
 package com.stratio.meta.core.executor;
 
+import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -36,7 +37,8 @@ import java.util.Map;
 
 public class StreamExecutor {
 
-  public static Result execute(MetaStatement stmt) {
+  public static Result execute(MetaStatement stmt, DeepSparkContext dsc) {
+    MetaStream.setDeepContext(dsc);
     if (stmt instanceof CreateTableStatement) {
       CreateTableStatement cts= (CreateTableStatement) stmt;
       String tableEphimeralName= cts.getEffectiveKeyspace()+"_"+cts.getTableName() ;
