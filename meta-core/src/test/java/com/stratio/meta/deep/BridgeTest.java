@@ -243,7 +243,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
     QueryResult result = (QueryResult) validateOk(metaQuery, "testEqualsFind");
-    assertEquals(result.getResultSet().size(), 2);
+    assertEquals(result.getResultSet().size(), 1);
   }
 
   @Test
@@ -423,7 +423,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
-    validateRows(metaQuery, "testInnerJoinAndWhere", 7);
+    validateRows(metaQuery, "testInnerJoinAndWhere", 5);
   }
 
   @Test
@@ -753,7 +753,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
-    Result results = validateRows(metaQuery, "testBasicBetweenClauseWithStringData", 20);
+    Result results = validateRows(metaQuery, "testBasicBetweenClauseWithStringData", 16);
 
     results.toString();
   }
@@ -813,7 +813,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
     QueryResult result = (QueryResult) validateOk(metaQuery, "testNotEqual");
-    assertEquals(result.getResultSet().size(), 18);
+    assertEquals(result.getResultSet().size(), 15);
   }
 
   @Test
@@ -844,7 +844,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
-    Result results = validateRows(metaQuery, "testBasicBetweenClauseWithIntegerData", 14);
+    Result results = validateRows(metaQuery, "testBasicBetweenClauseWithIntegerData", 10);
 
     results.toString();
   }
@@ -992,4 +992,10 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     results.toString();
   }
+
+  @Test
+  public void testSimpleOrderByOk() {
+
+  }
+
 }
