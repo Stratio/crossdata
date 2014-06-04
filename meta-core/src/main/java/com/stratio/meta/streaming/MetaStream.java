@@ -13,7 +13,9 @@ import com.stratio.streaming.messaging.ColumnNameType;
 import com.stratio.streaming.messaging.ColumnNameValue;
 
 import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
@@ -54,9 +56,13 @@ public class MetaStream {
       int randomPort = (int) (Math.random()*(65535-49152)+49152);
       while(jssc == null){
         randomPort = (int) (Math.random()*(65535-49152)+49152);
-        jssc = new JavaStreamingContext(
-            sparkContext.getConf().set("spark.cleaner.ttl", "-1").set("spark.driver.port", String.valueOf(randomPort)),
-            new Duration(2000));
+        try {
+          jssc = new JavaStreamingContext(
+              sparkContext.getConf().set("spark.cleaner.ttl", "-1").set("spark.driver.port", String.valueOf(randomPort)),
+              new Duration(2000));
+        } catch (Throwable t){
+          System.out.println("TRACE: Port "+randomPort+" already in use");
+        }
       }
       System.out.println("TRACE: JavaStreamingContext created. Port = "+randomPort);
     }
@@ -206,7 +212,16 @@ public class MetaStream {
           KafkaUtils.createStream(jssc, "ingestion.stratio.com", "stratio", topics);
       System.out.println("TRACE: dstream.class = "+dstream.getClass());
       JavaDStream<Long> counts = dstream.count();
-      System.out.println("TRACE: counts = " + counts.toString());
+      counts.foreachRDD(new Function<JavaRDD<Long>, Void>(){
+        @Override
+        public Void call(JavaRDD<Long> longJavaRDD) throws Exception {
+          for(Long number: longJavaRDD.collect()){
+            System.out.println("TRACE: Count = "+number);
+          }
+          return null;
+        }
+      });
+      jssc.start();
       ///////////////////////////////////////////////////////////////////////////////////
       return sb.toString();
     } catch (Throwable t) {
