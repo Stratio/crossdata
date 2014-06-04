@@ -96,8 +96,6 @@ public class Engine {
 
     this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
 
-    System.out.println("TRACE: DeepSparkContext created");
-
     if(!config.getSparkMaster().toLowerCase().startsWith("local")){
       for(String jar : config.getJars()){
         deepContext.addJar(jar);
