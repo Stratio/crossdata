@@ -49,8 +49,12 @@ public class MetaStream {
 
   public static void setDeepContext(DeepSparkContext deepContext) {
     if(jssc == null){
+      System.out.println("TRACE: Creating new JavaSparkContext");
       JavaSparkContext sparkContext = new JavaSparkContext("local", "MetaStreaming");
+      System.out.println("TRACE: JavaSparkContext created");
+      System.out.println("TRACE: Creating new JavaStreamingContext");
       jssc = new JavaStreamingContext(sparkContext.getConf().set("spark.cleaner.ttl", "-1"), new Duration(2000));
+      System.out.println("TRACE: JavaStreamingContext created");
     }
   }
 
