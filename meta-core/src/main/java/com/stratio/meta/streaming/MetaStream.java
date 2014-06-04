@@ -47,8 +47,9 @@ public class MetaStream {
   }
 
   public static void setDeepContext(DeepSparkContext deepContext) {
+    System.out.println("Setting SparkContext for Streaming");
     if(jssc != null){
-      jssc = new JavaStreamingContext(deepContext.getConf(), new Duration(1000));
+      jssc = new JavaStreamingContext(deepContext, new Duration(1000));
     }
   }
 
