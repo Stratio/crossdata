@@ -185,6 +185,12 @@ public class MetaStream {
       */
       Map<String, Integer> topics = new HashMap<>();
       topics.put("pof", 100);
+      if(jssc == null){
+        System.out.println("TRACE: jssc is NULL");
+      }
+      if(topics == null){
+        System.out.println("TRACE: topics is NULL");
+      }
       JavaPairDStream<String, String>
           dstream =
           KafkaUtils.createStream(jssc, "ingestion.stratio.com", "stratio", topics);
