@@ -200,7 +200,7 @@ public class MetaStream {
       }
       */
       Map<String, Integer> topics = new HashMap<>();
-      topics.put("pof", 100);
+      topics.put("demo_temporal", 100);
       if(jssc == null){
         System.out.println("TRACE: jssc is NULL");
       }
