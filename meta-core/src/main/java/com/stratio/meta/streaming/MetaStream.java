@@ -124,7 +124,7 @@ public class MetaStream {
       }
       ///////////////////////////////////////////////////////////////////////////////////
       SimpleConsumer
-          simpleConsumer = new SimpleConsumer("127.0.0.1", 9092, 100000, 64 * 1024, "stratio");
+          simpleConsumer = new SimpleConsumer("ingestion.stratio.com", 9092, 100000, 64 * 1024, "stratio");
 
       kafka.api.FetchRequest req = new FetchRequestBuilder()
           .clientId("stratio")
