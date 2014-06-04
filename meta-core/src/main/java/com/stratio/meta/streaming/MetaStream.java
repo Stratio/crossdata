@@ -109,7 +109,7 @@ public class MetaStream {
         long limit_time = (seconds * 1000);
         if(elapsed_time > limit_time){
           stopListenStream(streamName);
-          return sb.toString();
+          break;
         }
         StratioStreamingMessage theMessage = (StratioStreamingMessage)stream.message();
         sb.append("----------------------------------------------------------").append(System.lineSeparator());
