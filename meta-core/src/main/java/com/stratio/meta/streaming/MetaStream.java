@@ -48,7 +48,7 @@ public class MetaStream {
 
   public static void setDeepContext(DeepSparkContext deepContext) {
     if(jssc == null){
-      jssc = new JavaStreamingContext(deepContext.getConf().set("spark.cleaner.ttl", "-1"), new Duration(1000));
+      jssc = new JavaStreamingContext(deepContext, new Duration(1000));
     }
   }
 

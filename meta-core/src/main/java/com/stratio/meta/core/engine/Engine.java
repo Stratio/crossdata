@@ -27,9 +27,12 @@ import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
 import com.stratio.meta.core.validator.Validator;
+
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
@@ -94,7 +97,9 @@ public class Engine {
              + Arrays.toString(config.getCassandraHosts()) + ":" + config.getCassandraPort());
     this.session=cluster.connect();
 
-    this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+    Map<String, String> sparkEnvs = new HashMap<>();
+    sparkEnvs.put("spark.cleaner.ttl", "-1");
+    this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName(), null, null, sparkEnvs);
 
     if(!config.getSparkMaster().toLowerCase().startsWith("local")){
       for(String jar : config.getJars()){
