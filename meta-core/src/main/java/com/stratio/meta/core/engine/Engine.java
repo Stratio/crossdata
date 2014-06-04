@@ -31,8 +31,6 @@ import com.stratio.meta.core.validator.Validator;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
@@ -97,9 +95,7 @@ public class Engine {
              + Arrays.toString(config.getCassandraHosts()) + ":" + config.getCassandraPort());
     this.session=cluster.connect();
 
-    Map<String, String> sparkEnvs = new HashMap<>();
-    sparkEnvs.put("spark.cleaner.ttl", "-1");
-    this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName(), null, null, sparkEnvs);
+    this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
 
     if(!config.getSparkMaster().toLowerCase().startsWith("local")){
       for(String jar : config.getJars()){

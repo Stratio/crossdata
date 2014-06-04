@@ -13,6 +13,7 @@ import com.stratio.streaming.messaging.ColumnNameType;
 import com.stratio.streaming.messaging.ColumnNameValue;
 
 import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
@@ -48,7 +49,8 @@ public class MetaStream {
 
   public static void setDeepContext(DeepSparkContext deepContext) {
     if(jssc == null){
-      jssc = new JavaStreamingContext(deepContext, new Duration(1000));
+      JavaSparkContext sparkContext = new JavaSparkContext("local", "MetaStreaming");
+      jssc = new JavaStreamingContext(sparkContext, new Duration(2000));
     }
   }
 
