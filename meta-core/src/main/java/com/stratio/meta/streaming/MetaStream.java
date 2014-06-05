@@ -129,22 +129,28 @@ public class MetaStream {
           KafkaUtils.createStream(jssc, "ingestion.stratio.com", "stratio", topics);
 
       // Insert data
-      //Thread thread = new Thread(){
-        //public void run(){
+      Thread thread = new Thread(){
+        public void run(){
           System.out.println("TRACE: Inserting data.");
-          long longStart = System.currentTimeMillis();
-          while(System.currentTimeMillis()-longStart < 30*1000){
-            insertRandomData(streamName);
-            try {
-              Thread.sleep(1000);
-            } catch (InterruptedException e) {
-              e.printStackTrace();
-            }
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
           }
+          System.out.println("TRACE: Inserting data.");
+          //long longStart = System.currentTimeMillis();
+          for(int i=0; i<30; i++){
+            insertRandomData(streamName);
+          }
+          /*
+          while(System.currentTimeMillis()-longStart < 40*1000){
+            insertRandomData(streamName);
+          }
+          */
           System.out.println("TRACE: Data inserted.");
-        //}
-      //};
-      //thread.start();
+        }
+      };
+      thread.start();
 
       dstream.print();
 
@@ -160,6 +166,7 @@ public class MetaStream {
               sb.append("Count = "+numberCount).append(System.lineSeparator());
               sb.append("Dstream = " + dstream.toString());
               stopListenStream("poc");
+              System.out.println("TRACE: Response");
               return null;
             }
           }
