@@ -141,10 +141,6 @@ public class MetaStream {
         }
       });
 
-      System.out.println("TRACE: Starting the streaming context.");
-      jssc.start();
-      jssc.awaitTermination();
-
       // Insert data
       Thread thread = new Thread(){
         public void run(){
@@ -157,10 +153,15 @@ public class MetaStream {
             } catch (InterruptedException e) {
               e.printStackTrace();
             }
+            System.out.println("TRACE: Data inserted.");
           }
         }
       };
       thread.start();
+
+      System.out.println("TRACE: Starting the streaming context.");
+      jssc.start();
+      jssc.awaitTermination();
 
       return sb.toString();
     } catch (Throwable t) {
