@@ -136,6 +136,7 @@ public class MetaStream {
             System.out.println("TRACE: Count = "+number);
             sb.append("TRACE: Count = "+number);
           }
+          stopListenStream("poc");
           return null;
         }
       });
