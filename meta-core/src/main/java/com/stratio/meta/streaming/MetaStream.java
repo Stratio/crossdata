@@ -59,8 +59,9 @@ public class MetaStream {
         try {
           jssc = new JavaStreamingContext(
               sparkContext.getConf().set("spark.cleaner.ttl", "-1").set("spark.driver.port", String.valueOf(randomPort)),
-              new Duration(2000));
+              new Duration(5000));
         } catch (Throwable t){
+          jssc = null;
           System.out.println("TRACE: Port "+randomPort+" already in use");
         }
       }
@@ -80,7 +81,7 @@ public class MetaStream {
       e.printStackTrace();
     }
     return streamsList;
-    }
+  }
 
   public static boolean checkstream(String ephimeralTable){
       for (StratioStream stream: listStreams()) {
@@ -109,7 +110,7 @@ public class MetaStream {
     }
   }
 
-  public static String listenStream(String streamName, int seconds){
+  public static String listenStream(final String streamName, int seconds){
     try {
       // Create topic
       String query = "from "+streamName+" select name, age, rating insert into pof";
@@ -118,12 +119,9 @@ public class MetaStream {
       stratioStreamingAPI.listenStream("pof");
       // Read topic
       Map<String, Integer> topics = new HashMap<>();
-      topics.put("demo_temporal", 100);
+      topics.put("pof", 100);
       if(jssc == null){
         System.out.println("TRACE: jssc is NULL");
-      }
-      if(topics == null){
-        System.out.println("TRACE: topics is NULL");
       }
       JavaPairDStream<String, String>
           dstream =
@@ -141,12 +139,20 @@ public class MetaStream {
           return null;
         }
       });
+
+      // Insert data
+      Thread thread = new Thread(){
+        public void run(){
+          for(int i=0; i<5; i++){
+            insertRandomData(streamName);
+          }
+        }
+      };
+      thread.start();
+
       jssc.start();
       jssc.awaitTermination();
-      // Insert data
-      for(int i=0; i<5; i++){
-        insertRandomData(streamName);
-      }
+
       return sb.toString();
     } catch (Throwable t) {
       t.printStackTrace();
