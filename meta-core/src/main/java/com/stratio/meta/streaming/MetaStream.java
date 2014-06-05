@@ -13,6 +13,7 @@ import com.stratio.streaming.messaging.ColumnNameType;
 import com.stratio.streaming.messaging.ColumnNameValue;
 
 import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
@@ -155,6 +156,26 @@ public class MetaStream {
       thread.start();
 
       // Process data
+      final StringBuilder sb = new StringBuilder();
+      dstream.foreachRDD(new Function<JavaPairRDD<String, String>, Void>(){
+        @Override
+        public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
+          Map<String, String> result = stringStringJavaPairRDD.collectAsMap();
+          for(String key: result.keySet()){
+            sb.append(System.lineSeparator());
+            sb.append("Key: ").append(key).append(" | ").append("Value: ").append(result.get(key));
+          }
+          if((result.size() > 0) && dataInserted[0]){
+            stratioStreamingAPI.stopListenStream("pof");
+            stratioStreamingAPI.removeQuery(streamName, "pof");
+            jssc.stop();
+          }
+          return null;
+        }
+      });
+
+      /*
+      // Process data
       JavaDStream<Long> counts = dstream.count();
       final StringBuilder sb = new StringBuilder();
       counts.foreachRDD(new Function<JavaRDD<Long>, Void>(){
@@ -166,12 +187,15 @@ public class MetaStream {
               sb.append("Count = "+numberCount).append(System.lineSeparator());
               sb.append("Dstream = " + dstream.toString());
               System.out.println("TRACE: Response");
+              stratioStreamingAPI.stopListenStream("pof");
+              stratioStreamingAPI.removeQuery(streamName, "pof");
               jssc.stop();
             }
           }
           return null;
         }
       });
+      */
 
       System.out.println("TRACE: Starting the streaming context.");
       jssc.start();
