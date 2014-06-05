@@ -128,11 +128,13 @@ public class MetaStream {
           dstream =
           KafkaUtils.createStream(jssc, "ingestion.stratio.com", "stratio", topics);
 
+      final Boolean[] dataInserted = {false};
+
       // Insert data
       Thread thread = new Thread(){
         public void run(){
           try {
-            Thread.sleep(10*1000);
+            Thread.sleep(5*1000);
           } catch (InterruptedException e) {
             e.printStackTrace();
           }
@@ -141,6 +143,7 @@ public class MetaStream {
           for(int i=0; i<30; i++){
             insertRandomData(streamName);
           }
+          dataInserted[0] = true;
           /*
           while(System.currentTimeMillis()-longStart < 40*1000){
             insertRandomData(streamName);
@@ -151,8 +154,6 @@ public class MetaStream {
       };
       thread.start();
 
-      dstream.print();
-
       // Process data
       JavaDStream<Long> counts = dstream.count();
       final StringBuilder sb = new StringBuilder();
@@ -161,7 +162,7 @@ public class MetaStream {
         public Void call(JavaRDD<Long> longJavaRDD) throws Exception {
           for(Long numberCount: longJavaRDD.collect()){
             System.out.println("TRACE: Count = "+numberCount);
-            if(numberCount > 1){
+            if((dataInserted[0]) && (numberCount > 1)){
               sb.append("Count = "+numberCount).append(System.lineSeparator());
               sb.append("Dstream = " + dstream.toString());
               //stopListenStream("poc");
