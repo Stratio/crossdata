@@ -111,6 +111,51 @@ public class MetaStream {
 
   public static String listenStream(String streamName, int seconds){
     try {
+      // Create topic
+      String query = "from "+streamName+" select name, age, rating insert into pof";
+      String queryId = stratioStreamingAPI.addQuery(streamName, query);
+      System.out.println("queryId = "+queryId);
+      stratioStreamingAPI.listenStream("pof");
+      // Read topic
+      Map<String, Integer> topics = new HashMap<>();
+      topics.put("demo_temporal", 100);
+      if(jssc == null){
+        System.out.println("TRACE: jssc is NULL");
+      }
+      if(topics == null){
+        System.out.println("TRACE: topics is NULL");
+      }
+      JavaPairDStream<String, String>
+          dstream =
+          KafkaUtils.createStream(jssc, "ingestion.stratio.com", "stratio", topics);
+      System.out.println("TRACE: dstream.class = "+dstream.getClass());
+      JavaDStream<Long> counts = dstream.count();
+      final StringBuilder sb = new StringBuilder();
+      counts.foreachRDD(new Function<JavaRDD<Long>, Void>(){
+        @Override
+        public Void call(JavaRDD<Long> longJavaRDD) throws Exception {
+          for(Long number: longJavaRDD.collect()){
+            System.out.println("TRACE: Count = "+number);
+            sb.append("TRACE: Count = "+number);
+          }
+          return null;
+        }
+      });
+      jssc.start();
+      jssc.awaitTermination();
+      // Insert data
+      for(int i=0; i<5; i++){
+        insertRandomData(streamName);
+      }
+      return sb.toString();
+    } catch (Throwable t) {
+      t.printStackTrace();
+      return "ERROR";
+    }
+  }
+
+  public static String listenStreamBackUp(String streamName, int seconds){
+    try {
       //////////////////////////////////////////////////////////////
       String query = "from "+streamName+" select name, age, rating insert into pof";
       String queryId = stratioStreamingAPI.addQuery(streamName, query);
@@ -188,17 +233,17 @@ public class MetaStream {
        * param topics    Map of (topic_name -> numPartitions) to consume. Each partition is consumed
        *                  in its own thread
        *
-      def createStream(
-          jssc: JavaStreamingContext,
-          zkQuorum: String,
-          groupId: String,
-          topics: JMap[String, JInt]
-      ): JavaPairDStream[String, String] = {
-        implicit val cmt: ClassTag[String] =
-            implicitly[ClassTag[AnyRef]].asInstanceOf[ClassTag[String]]
-        createStream(jssc.ssc, zkQuorum, groupId, Map(topics.mapValues(_.intValue()).toSeq: _*))
-      }
-      */
+       def createStream(
+       jssc: JavaStreamingContext,
+       zkQuorum: String,
+       groupId: String,
+       topics: JMap[String, JInt]
+       ): JavaPairDStream[String, String] = {
+       implicit val cmt: ClassTag[String] =
+       implicitly[ClassTag[AnyRef]].asInstanceOf[ClassTag[String]]
+       createStream(jssc.ssc, zkQuorum, groupId, Map(topics.mapValues(_.intValue()).toSeq: _*))
+       }
+       */
       Map<String, Integer> topics = new HashMap<>();
       topics.put("demo_temporal", 100);
       if(jssc == null){
@@ -222,6 +267,7 @@ public class MetaStream {
         }
       });
       jssc.start();
+      jssc.awaitTermination();
       ///////////////////////////////////////////////////////////////////////////////////
       return sb.toString();
     } catch (Throwable t) {
