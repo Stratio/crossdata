@@ -143,7 +143,8 @@ public class MetaStream {
       // Insert data
       Thread thread = new Thread(){
         public void run(){
-          for(int i=0; i<5; i++){
+          long longStart = System.currentTimeMillis();
+          while(System.currentTimeMillis()-longStart < 60*1000){
             insertRandomData(streamName);
           }
         }
