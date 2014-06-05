@@ -165,10 +165,8 @@ public class MetaStream {
             if((dataInserted[0]) && (numberCount > 1)){
               sb.append("Count = "+numberCount).append(System.lineSeparator());
               sb.append("Dstream = " + dstream.toString());
-              //stopListenStream("poc");
               System.out.println("TRACE: Response");
-              //jssc.stop();
-              stratioStreamingAPI.removeQuery(streamName, queryId);
+              jssc.stop();
             }
           }
           return null;
