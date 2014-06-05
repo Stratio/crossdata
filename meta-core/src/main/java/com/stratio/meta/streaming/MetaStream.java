@@ -124,13 +124,13 @@ public class MetaStream {
       if(jssc == null){
         System.out.println("TRACE: jssc is NULL");
       }
-      JavaPairDStream<String, String>
+      final JavaPairDStream<String, String>
           dstream =
           KafkaUtils.createStream(jssc, "ingestion.stratio.com", "stratio", topics);
 
       // Insert data
-      Thread thread = new Thread(){
-        public void run(){
+      //Thread thread = new Thread(){
+        //public void run(){
           System.out.println("TRACE: Inserting data.");
           long longStart = System.currentTimeMillis();
           while(System.currentTimeMillis()-longStart < 30*1000){
@@ -142,9 +142,9 @@ public class MetaStream {
             }
           }
           System.out.println("TRACE: Data inserted.");
-        }
-      };
-      thread.start();
+        //}
+      //};
+      //thread.start();
 
       dstream.print();
 
@@ -154,9 +154,14 @@ public class MetaStream {
       counts.foreachRDD(new Function<JavaRDD<Long>, Void>(){
         @Override
         public Void call(JavaRDD<Long> longJavaRDD) throws Exception {
-          for(Long number: longJavaRDD.collect()){
-            System.out.println("TRACE: Count = "+number);
-            sb.append("TRACE: Count = "+number);
+          for(Long numberCount: longJavaRDD.collect()){
+            System.out.println("TRACE: Count = "+numberCount);
+            if(numberCount > 1){
+              sb.append("Count = "+numberCount).append(System.lineSeparator());
+              sb.append("Dstream = " + dstream.toString());
+              stopListenStream("poc");
+              return null;
+            }
           }
           stopListenStream("poc");
           return null;
