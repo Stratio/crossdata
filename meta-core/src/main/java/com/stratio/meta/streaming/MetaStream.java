@@ -113,7 +113,7 @@ public class MetaStream {
   public static String listenStream(final String streamName, int seconds){
     try {
       // Create topic
-      String query = "from "+streamName+" select name, age, rating insert into pof";
+      String query = "from "+streamName+"#window.time(30 sec) select name, age, rating insert into pof for all-events";
       String queryId = stratioStreamingAPI.addQuery(streamName, query);
       System.out.println("queryId = "+queryId);
       stratioStreamingAPI.listenStream("pof");
@@ -126,7 +126,7 @@ public class MetaStream {
       JavaPairDStream<String, String>
           dstream =
           KafkaUtils.createStream(jssc, "ingestion.stratio.com", "stratio", topics);
-      System.out.println("TRACE: dstream.class = "+dstream.getClass());
+      dstream.print();
       JavaDStream<Long> counts = dstream.count();
       final StringBuilder sb = new StringBuilder();
       counts.foreachRDD(new Function<JavaRDD<Long>, Void>(){
@@ -137,16 +137,20 @@ public class MetaStream {
             sb.append("TRACE: Count = "+number);
           }
           stopListenStream("poc");
-          jssc.stop();
           return null;
         }
       });
 
+      System.out.println("TRACE: Starting the streaming context.");
+      jssc.start();
+      jssc.awaitTermination();
+
       // Insert data
       Thread thread = new Thread(){
         public void run(){
+          System.out.println("TRACE: Inserting data.");
           long longStart = System.currentTimeMillis();
-          while(System.currentTimeMillis()-longStart < 60*1000){
+          while(System.currentTimeMillis()-longStart < 30*1000){
             insertRandomData(streamName);
             try {
               Thread.sleep(1000);
@@ -157,9 +161,6 @@ public class MetaStream {
         }
       };
       thread.start();
-
-      jssc.start();
-      jssc.awaitTermination();
 
       return sb.toString();
     } catch (Throwable t) {
