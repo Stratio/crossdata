@@ -98,10 +98,12 @@ T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
 T_ALTER: A L T E R;
 T_KEYSPACE: K E Y S P A C E;
+T_KEYSPACES: K E Y S P A C E S;
 T_NOT: N O T;
 T_WITH: W I T H;
 T_DROP: D R O P;
 T_TABLE: T A B L E;
+T_TABLES: T A B L E S;
 T_IF: I F;
 T_EXISTS: E X I S T S;
 T_AND: A N D;
@@ -234,7 +236,10 @@ T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 
 describeStatement returns [DescribeStatement descs]:
     T_DESCRIBE (T_KEYSPACE keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.KEYSPACE); $descs.setKeyspace($keyspace.text);}
+    	| T_KEYSPACE {$descs = new DescribeStatement(DescribeType.KEYSPACE);}
+    	| T_KEYSPACES {$descs = new DescribeStatement(DescribeType.KEYSPACES);}
         | T_TABLE tablename=getTableID { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
+        | T_TABLES {$descs = new DescribeStatement(DescribeType.TABLES);}
     )
 ;
 
