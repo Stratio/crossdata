@@ -24,7 +24,7 @@ import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.ErrorsHelper;
 import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.core.utils.QueryStatus;
+import com.stratio.meta.common.result.QueryStatus;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;

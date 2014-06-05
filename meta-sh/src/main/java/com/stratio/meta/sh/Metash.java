@@ -189,7 +189,7 @@ public class Metash {
         long queryStart = System.currentTimeMillis();
         Result metaResult = metaDriver.executeQuery(currentUser, currentKeyspace, cmd);
         long queryEnd = System.currentTimeMillis();
-
+        System.out.println("Result: " + metaResult.getClass().toString());
         if(metaResult.isKsChanged()){
             currentKeyspace = metaResult.getCurrentKeyspace();
             if(!currentKeyspace.isEmpty()){

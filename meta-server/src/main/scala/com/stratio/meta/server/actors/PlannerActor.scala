@@ -23,6 +23,8 @@ import akka.actor.{Props, ActorLogging, Actor, ActorRef}
 import com.stratio.meta.core.planner.Planner
 import com.stratio.meta.core.utils.MetaQuery
 import org.apache.log4j.Logger
+import com.stratio.meta.communication.ACK
+import com.stratio.meta.common.result.QueryStatus
 
 object PlannerActor{
   def props(executor:ActorRef, planner:Planner): Props =Props(new PlannerActor(executor,planner))
@@ -36,6 +38,10 @@ class PlannerActor(executor:ActorRef, planner:Planner) extends Actor with TimeTr
       log.debug("Init Planner Task")
       val timer=initTimer()
 
+      val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
+      println("Sending ack: " + ack)
+      sender ! ack
+      println("Execute the plan");
       executor forward planner.planQuery(query)
       finishTimer(timer)
       log.debug("Finish Planner Task")

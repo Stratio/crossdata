@@ -17,12 +17,15 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.utils;
+package com.stratio.meta.common.exceptions;
 
-public enum QueryStatus {
-    NONE,
-    PARSED,
-    VALIDATED,
-    PLANNED,
-    EXECUTED
+/**
+ * Created by dhiguero on 5/06/14.
+ */
+public class ParsingException extends Exception{
+
+  public ParsingException(String message){
+    super(message);
+  }
+
 }

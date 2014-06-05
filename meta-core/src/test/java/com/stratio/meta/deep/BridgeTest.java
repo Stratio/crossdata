@@ -62,7 +62,7 @@ import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.QueryStatus;
+import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.core.utils.Tree;
 
 public class BridgeTest extends BasicCoreCassandraTest {

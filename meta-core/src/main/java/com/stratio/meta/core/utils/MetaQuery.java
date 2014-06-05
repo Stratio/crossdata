@@ -20,6 +20,7 @@
 package com.stratio.meta.core.utils;
 
 import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.MetaStatement;
 
@@ -120,7 +121,7 @@ public class MetaQuery {
 
   /**
      * Set the execution status.
-     * @param status A {@link com.stratio.meta.core.utils.QueryStatus}.
+     * @param status A {@link com.stratio.meta.common.result.QueryStatus}.
      */
     public void setStatus(QueryStatus status) {
         this.status = status;
