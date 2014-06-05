@@ -59,7 +59,7 @@ public class MetaStream {
         try {
           jssc = new JavaStreamingContext(
               sparkContext.getConf().set("spark.cleaner.ttl", "-1").set("spark.driver.port", String.valueOf(randomPort)),
-              new Duration(2000));
+              new Duration(4000));
         } catch (Throwable t){
           jssc = null;
           System.out.println("TRACE: Port "+randomPort+" already in use");
@@ -113,8 +113,8 @@ public class MetaStream {
   public static String listenStream(final String streamName, int seconds){
     try {
       // Create topic
-      String query = "from "+streamName+"#window.timeBatch(30 sec) select name, age, rating insert into pof";
-      String queryId = stratioStreamingAPI.addQuery(streamName, query);
+      String query = "from "+streamName+"#window.timeBatch(20 sec) select name, age, rating insert into pof";
+      final String queryId = stratioStreamingAPI.addQuery(streamName, query);
       System.out.println("queryId = "+queryId);
       stratioStreamingAPI.listenStream("pof");
 
@@ -131,9 +131,8 @@ public class MetaStream {
       // Insert data
       Thread thread = new Thread(){
         public void run(){
-          System.out.println("TRACE: Inserting data.");
           try {
-            Thread.sleep(1000);
+            Thread.sleep(10*1000);
           } catch (InterruptedException e) {
             e.printStackTrace();
           }
@@ -165,12 +164,12 @@ public class MetaStream {
             if(numberCount > 1){
               sb.append("Count = "+numberCount).append(System.lineSeparator());
               sb.append("Dstream = " + dstream.toString());
-              stopListenStream("poc");
+              //stopListenStream("poc");
               System.out.println("TRACE: Response");
-              return null;
+              //jssc.stop();
+              stratioStreamingAPI.removeQuery(streamName, queryId);
             }
           }
-          stopListenStream("poc");
           return null;
         }
       });
