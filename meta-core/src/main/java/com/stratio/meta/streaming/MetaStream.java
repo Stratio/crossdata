@@ -137,6 +137,7 @@ public class MetaStream {
             sb.append("TRACE: Count = "+number);
           }
           stopListenStream("poc");
+          jssc.stop();
           return null;
         }
       });
@@ -147,6 +148,11 @@ public class MetaStream {
           long longStart = System.currentTimeMillis();
           while(System.currentTimeMillis()-longStart < 60*1000){
             insertRandomData(streamName);
+            try {
+              Thread.sleep(1000);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
           }
         }
       };
