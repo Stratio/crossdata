@@ -59,7 +59,7 @@ public class MetaStream {
         try {
           jssc = new JavaStreamingContext(
               sparkContext.getConf().set("spark.cleaner.ttl", "-1").set("spark.driver.port", String.valueOf(randomPort)),
-              new Duration(5000));
+              new Duration(2000));
         } catch (Throwable t){
           jssc = null;
           System.out.println("TRACE: Port "+randomPort+" already in use");
@@ -113,10 +113,11 @@ public class MetaStream {
   public static String listenStream(final String streamName, int seconds){
     try {
       // Create topic
-      String query = "from "+streamName+"#window.time(30 sec) select name, age, rating insert into pof for all-events";
+      String query = "from "+streamName+"#window.timeBatch(30 sec) select name, age, rating insert into pof";
       String queryId = stratioStreamingAPI.addQuery(streamName, query);
       System.out.println("queryId = "+queryId);
       stratioStreamingAPI.listenStream("pof");
+
       // Read topic
       Map<String, Integer> topics = new HashMap<>();
       topics.put("pof", 100);
@@ -126,20 +127,6 @@ public class MetaStream {
       JavaPairDStream<String, String>
           dstream =
           KafkaUtils.createStream(jssc, "ingestion.stratio.com", "stratio", topics);
-      dstream.print();
-      JavaDStream<Long> counts = dstream.count();
-      final StringBuilder sb = new StringBuilder();
-      counts.foreachRDD(new Function<JavaRDD<Long>, Void>(){
-        @Override
-        public Void call(JavaRDD<Long> longJavaRDD) throws Exception {
-          for(Long number: longJavaRDD.collect()){
-            System.out.println("TRACE: Count = "+number);
-            sb.append("TRACE: Count = "+number);
-          }
-          stopListenStream("poc");
-          return null;
-        }
-      });
 
       // Insert data
       Thread thread = new Thread(){
@@ -153,11 +140,28 @@ public class MetaStream {
             } catch (InterruptedException e) {
               e.printStackTrace();
             }
-            System.out.println("TRACE: Data inserted.");
           }
+          System.out.println("TRACE: Data inserted.");
         }
       };
       thread.start();
+
+      dstream.print();
+
+      // Process data
+      JavaDStream<Long> counts = dstream.count();
+      final StringBuilder sb = new StringBuilder();
+      counts.foreachRDD(new Function<JavaRDD<Long>, Void>(){
+        @Override
+        public Void call(JavaRDD<Long> longJavaRDD) throws Exception {
+          for(Long number: longJavaRDD.collect()){
+            System.out.println("TRACE: Count = "+number);
+            sb.append("TRACE: Count = "+number);
+          }
+          stopListenStream("poc");
+          return null;
+        }
+      });
 
       System.out.println("TRACE: Starting the streaming context.");
       jssc.start();
