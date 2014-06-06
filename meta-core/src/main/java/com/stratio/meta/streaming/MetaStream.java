@@ -160,6 +160,8 @@ public class MetaStream {
       dstream.foreachRDD(new Function<JavaPairRDD<String, String>, Void>(){
         @Override
         public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
+          System.out.println("TRACE: Count="+stringStringJavaPairRDD.count());
+          System.out.println("TRACE: Values: "+stringStringJavaPairRDD.values());
           Map<String, String> result = stringStringJavaPairRDD.collectAsMap();
           System.out.println("TRACE: foreachRDD. Size="+result.size());
           for(String key: result.keySet()){
