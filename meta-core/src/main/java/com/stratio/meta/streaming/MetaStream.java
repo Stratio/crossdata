@@ -23,6 +23,7 @@ import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka.KafkaUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -167,7 +168,9 @@ public class MetaStream {
           stringStringJavaPairRDD.values().foreach(new VoidFunction<String>(){
             @Override
             public void call(String s) throws Exception {
-              sb.append(System.lineSeparator()).append(s);
+              ObjectMapper objectMapper = new ObjectMapper();
+              Map<String,String> myMap = objectMapper.readValue(s, HashMap.class);
+              sb.append(System.lineSeparator()).append(myMap.get("columns"));
               System.out.println("TRACE: sb = "+sb.toString());
             }
           });
