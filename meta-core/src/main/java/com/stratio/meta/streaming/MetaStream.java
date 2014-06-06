@@ -44,6 +44,8 @@ public class MetaStream {
 
   private static JavaStreamingContext jssc = null;
 
+  private static final StringBuilder sb = new StringBuilder();
+
   static {
     try {
       stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
@@ -157,7 +159,6 @@ public class MetaStream {
       thread.start();
 
       // Process data
-      final StringBuilder sb = new StringBuilder();
       dstream.foreachRDD(new Function<JavaPairRDD<String, String>, Void>(){
         @Override
         public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
@@ -166,8 +167,8 @@ public class MetaStream {
           stringStringJavaPairRDD.values().foreach(new VoidFunction<String>(){
             @Override
             public void call(String s) throws Exception {
-              System.out.println("TRACE: RDD = "+s);
               sb.append(System.lineSeparator()).append(s);
+              System.out.println("TRACE: sb = "+sb.toString());
             }
           });
           if((totalCount > 0) && dataInserted[0]){
