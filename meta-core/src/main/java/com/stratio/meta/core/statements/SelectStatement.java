@@ -369,6 +369,10 @@ public class SelectStatement extends MetaStatement {
     }
   }
 
+  public WindowSelect getWindow() {
+    return window;
+  }
+
   /**
    * Disable the analytics mode.
    * 
@@ -448,6 +452,10 @@ public class SelectStatement extends MetaStatement {
       streamMode = true;
     }
 
+    if(!streamMode && windowInc){
+      result = QueryResult.createFailQueryResult("Window option can only be applied to ephemeral tables.");
+    }
+
     if (!result.hasError() && joinInc) {
       result =
           validateKeyspaceAndTable(metadata, sessionKeyspace, join.isKeyspaceInc(),
@@ -497,10 +505,6 @@ public class SelectStatement extends MetaStatement {
    */
   private Result validateOptions() {
     Result result = QueryResult.createSuccessQueryResult();
-    if (windowInc) {
-      result = QueryResult.createFailQueryResult("Select with streaming options not supported.");
-    }
-
     if (groupInc) {
       result = QueryResult.createFailQueryResult("Select with GROUP BY clause not supported.");
     }

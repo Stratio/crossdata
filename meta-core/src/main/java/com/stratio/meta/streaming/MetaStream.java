@@ -3,6 +3,7 @@ package com.stratio.meta.streaming;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
@@ -115,17 +116,26 @@ public class MetaStream {
     }
   }
 
-  public static String listenStream(final String streamName, int seconds){
+  public static String listenStream(SelectStatement ss){
+    final String streamName = ss.getEffectiveKeyspace()+"_"+ss.getTableName();
     try {
       // Create topic
-      String query = "from "+streamName+"#window.timeBatch(10 sec) select name, age, rating insert into pof";
+      StringBuilder querySb = new StringBuilder("from ");
+      querySb.append(streamName);
+      if(ss.isWhereInc()){
+        querySb.append("#window.timeBatch(").append(ss.getWindow().translateToCql()).append(")");
+      }
+      querySb.append(" select * insert into ");
+      final String outgoing = streamName+"_outgoing";
+      querySb.append(outgoing);
+      String query = sb.toString();
       final String queryId = stratioStreamingAPI.addQuery(streamName, query);
       System.out.println("queryId = "+queryId);
-      stratioStreamingAPI.listenStream("pof");
+      stratioStreamingAPI.listenStream(outgoing);
 
       // Read topic
       Map<String, Integer> topics = new HashMap<>();
-      topics.put("pof", 100);
+      topics.put(outgoing, 100);
       if(jssc == null){
         System.out.println("TRACE: jssc is NULL");
       }
@@ -178,7 +188,7 @@ public class MetaStream {
           });
           if((totalCount > 0) && dataInserted[0]){
             System.out.println("TRACE: Stopping Spark streaming");
-            stratioStreamingAPI.stopListenStream("pof");
+            stratioStreamingAPI.stopListenStream(outgoing);
             stratioStreamingAPI.removeQuery(streamName, queryId);
             stratioStreamingAPI.stopListenStream(streamName);
             stratioStreamingAPI.dropStream(streamName);

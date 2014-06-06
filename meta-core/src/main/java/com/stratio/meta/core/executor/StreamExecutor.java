@@ -72,7 +72,7 @@ public class StreamExecutor {
       return MetaStream.createStream(tableEphimeralName, columnList);
     } else if (stmt instanceof SelectStatement){
       SelectStatement ss = (SelectStatement) stmt;
-      String resultStream = MetaStream.listenStream(ss.getEffectiveKeyspace()+"_"+ss.getTableName(), 20);
+      String resultStream = MetaStream.listenStream(ss);
       return CommandResult.createSuccessCommandResult(resultStream);
     } else {
       return QueryResult.createFailQueryResult("Not supported yet.");
