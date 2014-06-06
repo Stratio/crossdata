@@ -289,10 +289,6 @@ public class SelectStatement extends MetaStatement {
     this.join = join;
   }
 
-  public TableMetadata getTableMetadata() {
-    return tableMetadataFrom;
-  }
-
   /**
    * Get the list of {@link Relation} in the where clause.
    * 
@@ -375,6 +371,10 @@ public class SelectStatement extends MetaStatement {
 
   public WindowSelect getWindow() {
     return window;
+  }
+
+  public MetadataManager getMetadata() {
+    return metadata;
   }
 
   /**

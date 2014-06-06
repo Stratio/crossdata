@@ -1,5 +1,6 @@
 package com.stratio.meta.streaming;
 
+import com.datastax.driver.core.TableMetadata;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
@@ -125,7 +126,10 @@ public class MetaStream {
       if(ss.isWhereInc()){
         querySb.append("#window.timeBatch(").append(ss.getWindow().translateToCql()).append(")");
       }
-      String ids = Arrays.toString(ss.getSelectionClause().getAllIds(ss.getTableMetadata()).toArray());
+      TableMetadata
+          mm =
+          ss.getMetadata().getTableMetadata(ss.getEffectiveKeyspace(), ss.getTableName());
+      String ids = Arrays.toString(ss.getSelectionClause().getAllIds(mm).toArray());
       querySb.append(" select ").append(ids).append(" insert into ");
       final String outgoing = streamName+"_outgoing";
       querySb.append(outgoing);
