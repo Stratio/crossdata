@@ -169,9 +169,10 @@ public class MetaStream {
             @Override
             public void call(String s) throws Exception {
               ObjectMapper objectMapper = new ObjectMapper();
-              Map<String,Object> myMap = objectMapper.readValue(s, HashMap.class);
-              String columns = Arrays.toString((Object[]) myMap.get("columns"));
-              sb.append(System.lineSeparator()).append(columns);
+              Map<String, Object> myMap = objectMapper.readValue(s, HashMap.class);
+              ArrayList columns = (ArrayList) myMap.get("columns");
+              String cols = Arrays.toString(columns.toArray());
+              sb.append(System.lineSeparator()).append(cols);
               System.out.println("TRACE: sb = "+sb.toString());
             }
           });
