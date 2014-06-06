@@ -161,13 +161,21 @@ public class MetaStream {
       dstream.foreachRDD(new Function<JavaPairRDD<String, String>, Void>(){
         @Override
         public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
-          System.out.println("TRACE: Count="+stringStringJavaPairRDD.count());
+          long totalCount = stringStringJavaPairRDD.count();
+          System.out.println("TRACE: Count="+totalCount);
           stringStringJavaPairRDD.values().foreach(new VoidFunction<String>(){
             @Override
             public void call(String s) throws Exception {
-              System.out.println("TRACE: value = "+s);
+              sb.append(System.lineSeparator()).append(s);
             }
           });
+          if((totalCount > 0) && dataInserted[0]){
+            stratioStreamingAPI.stopListenStream("pof");
+            stratioStreamingAPI.removeQuery(streamName, "pof");
+            stratioStreamingAPI.stopListenStream(streamName);
+            stratioStreamingAPI.dropStream(streamName);
+            jssc.stop();
+          }
           return null;
           /*
           Map<String, String> result = stringStringJavaPairRDD.collectAsMap();
