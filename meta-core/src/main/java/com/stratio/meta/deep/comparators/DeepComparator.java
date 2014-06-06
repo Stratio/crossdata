@@ -61,11 +61,7 @@ public class DeepComparator implements Comparator<Cells>, Serializable {
    */
   private int checkOrderDirection(int result, Ordering ordering) {
     if (ordering.isDirInc() && ordering.getOrderDir() == OrderDirection.DESC) {
-      if (result == 1) {
-        result = -1;
-      } else {
-        result = 1;
-      }
+      result = result * -1;
     }
     return result;
   }

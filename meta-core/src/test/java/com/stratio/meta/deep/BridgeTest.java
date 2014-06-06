@@ -1073,7 +1073,38 @@ public class BridgeTest extends BasicCoreCassandraTest {
     tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
-    Result results = validateRowsAndCols(metaQuery, "testMultipleOrderByOk", 16, 6);
+    Result results = validateRowsAndCols(metaQuery, "testComplexQueryWithSimpleOrderByOk", 16, 6);
+
+    results.toString();
+  }
+
+  @Test
+  public void testDescOrderByOk() {
+
+    MetaQuery metaQuery =
+        new MetaQuery("SELECT users.gender FROM demo.users ORDER BY users.gender DESC;");
+
+    // Fields to retrieve
+    SelectionSelectors selectionSelectors = new SelectionSelectors();
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        "users.gender")));
+    SelectionClause selectionClause = new SelectionList(selectionSelectors);
+
+    // Order by clause
+    List<Ordering> orderFieldsList = new ArrayList<>();
+    orderFieldsList.add(new Ordering("users.gender", true, OrderDirection.DESC));
+
+    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    firstSelect.setLimit(10000);
+    firstSelect.setOrder(orderFieldsList);
+    firstSelect.validate(metadataManager);
+
+    // Query execution
+    Tree tree = new Tree();
+    tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
+    metaQuery.setPlan(tree);
+    metaQuery.setStatus(QueryStatus.PLANNED);
+    Result results = validateRowsAndCols(metaQuery, "testDescOrderByOk", 16, 1);
 
     results.toString();
   }
