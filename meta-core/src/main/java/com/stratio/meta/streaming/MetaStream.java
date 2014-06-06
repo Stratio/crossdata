@@ -1,10 +1,12 @@
 package com.stratio.meta.streaming;
 
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.Selection;
+import com.stratio.meta.core.structures.SelectionClause;
+import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
@@ -126,11 +128,28 @@ public class MetaStream {
       if(ss.isWhereInc()){
         querySb.append("#window.timeBatch(").append(ss.getWindow().translateToCql()).append(")");
       }
-      TableMetadata
-          mm =
-          ss.getMetadata().getTableMetadata(ss.getEffectiveKeyspace(), ss.getTableName());
-      String ids = Arrays.toString(ss.getSelectionClause().getAllIds(mm).toArray());
-      querySb.append(" select ").append(ids).append(" insert into ");
+
+      List<String> ids = new ArrayList<>();
+      boolean asterisk = false;
+      SelectionClause selectionClause = ss.getSelectionClause();
+      if(selectionClause.getType() == SelectionClause.TYPE_SELECTION){
+        SelectionList selectionList = (SelectionList) selectionClause;
+        Selection selection = selectionList.getSelection();
+        if(selection.getType() == Selection.TYPE_ASTERISK){
+          asterisk = true;
+        }
+      }
+      if(asterisk){
+        List<ColumnNameTypeValue> cols = stratioStreamingAPI.columnsFromStream(streamName);
+        for(ColumnNameTypeValue ctv: cols){
+          ids.add(ctv.getColumn());
+        }
+      } else {
+        ids = ss.getSelectionClause().getIds();
+      }
+
+      String idsStr = Arrays.toString(ids.toArray()).replace("[", "").replace("]", "");
+      querySb.append(" select ").append(idsStr).append(" insert into ");
       final String outgoing = streamName+"_outgoing";
       querySb.append(outgoing);
       String query = querySb.toString();
