@@ -17,6 +17,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
@@ -161,7 +162,14 @@ public class MetaStream {
         @Override
         public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
           System.out.println("TRACE: Count="+stringStringJavaPairRDD.count());
-          System.out.println("TRACE: Values: "+stringStringJavaPairRDD.values());
+          stringStringJavaPairRDD.values().foreach(new VoidFunction<String>(){
+            @Override
+            public void call(String s) throws Exception {
+              System.out.println("TRACE: value = "+s);
+            }
+          });
+          return null;
+          /*
           Map<String, String> result = stringStringJavaPairRDD.collectAsMap();
           System.out.println("TRACE: foreachRDD. Size="+result.size());
           for(String key: result.keySet()){
@@ -169,14 +177,13 @@ public class MetaStream {
             sb.append("Key: ").append(key).append(" | Value: ").append(result.get(key));
           }
           System.out.println("TRACE: "+sb.toString());
-          /*
           if((result.size() > 0) && dataInserted[0]){
             stratioStreamingAPI.stopListenStream("pof");
             stratioStreamingAPI.removeQuery(streamName, "pof");
             jssc.stop();
           }
-          */
           return null;
+          */
         }
       });
 
