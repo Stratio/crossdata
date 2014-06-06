@@ -19,46 +19,72 @@
 
 package com.stratio.meta.core.structures;
 
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.TableMetadata;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class SelectionClause {
-    
-    public static final int TYPE_SELECTION = 1;
-    public static final int TYPE_COUNT = 2;
-    
-    protected int type;
 
-    public int getType() {
-        return type;
+  public static final int TYPE_SELECTION = 1;
+  public static final int TYPE_COUNT = 2;
+
+  protected int type;
+
+  public int getType() {
+    return type;
+  }
+
+  public void setType(int type) {
+    this.type = type;
+  }
+
+  @Override
+  public abstract String toString();
+
+  public List<String> getIds() {
+    List<String> ids = new ArrayList<>();
+    if(type == TYPE_COUNT){
+      return ids;
     }
-
-    public void setType(int type) {
-        this.type = type;
-    }        
-    
-    @Override
-    public abstract String toString();
-
-    public List<String> getIds() {
-        List<String> ids = new ArrayList<>();
-        if(type == TYPE_COUNT){
-            return ids;
-        }
-        SelectionList sList = (SelectionList) this;
-        Selection selection = sList.getSelection();
-        if(selection.getType() == Selection.TYPE_ASTERISK){
-            return ids;
-        }
-        SelectionSelectors sSelectors = (SelectionSelectors) selection;
-        for(SelectionSelector sSelector: sSelectors.getSelectors()){
-            SelectorMeta selector = sSelector.getSelector();
-            if(selector.getType() == SelectorMeta.TYPE_IDENT){
-                SelectorIdentifier selectorId = (SelectorIdentifier) selector;
-                ids.add(selectorId.getIdentifier());
-            }
-        }
-
-        return ids;
+    SelectionList sList = (SelectionList) this;
+    Selection selection = sList.getSelection();
+    if(selection.getType() == Selection.TYPE_ASTERISK){
+      return ids;
     }
+    SelectionSelectors sSelectors = (SelectionSelectors) selection;
+    for(SelectionSelector sSelector: sSelectors.getSelectors()){
+      SelectorMeta selector = sSelector.getSelector();
+      if(selector.getType() == SelectorMeta.TYPE_IDENT){
+        SelectorIdentifier selectorId = (SelectorIdentifier) selector;
+        ids.add(selectorId.getIdentifier());
+      }
+    }
+    return ids;
+  }
+
+  public List<String> getAllIds(TableMetadata tableMetadata) {
+    List<String> ids = new ArrayList<>();
+    if(type == TYPE_COUNT){
+      return ids;
+    }
+    SelectionList sList = (SelectionList) this;
+    Selection selection = sList.getSelection();
+    if(selection.getType() == Selection.TYPE_ASTERISK){
+      for(ColumnMetadata cm: tableMetadata.getColumns()){
+        ids.add(cm.getName());
+      }
+      return ids;
+    }
+    SelectionSelectors sSelectors = (SelectionSelectors) selection;
+    for(SelectionSelector sSelector: sSelectors.getSelectors()){
+      SelectorMeta selector = sSelector.getSelector();
+      if(selector.getType() == SelectorMeta.TYPE_IDENT){
+        SelectorIdentifier selectorId = (SelectorIdentifier) selector;
+        ids.add(selectorId.getIdentifier());
+      }
+    }
+    return ids;
+  }
 }

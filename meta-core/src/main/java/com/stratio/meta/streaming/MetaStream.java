@@ -125,10 +125,11 @@ public class MetaStream {
       if(ss.isWhereInc()){
         querySb.append("#window.timeBatch(").append(ss.getWindow().translateToCql()).append(")");
       }
-      querySb.append(" select * insert into ");
+      String ids = Arrays.toString(ss.getSelectionClause().getAllIds(ss.getTableMetadata()).toArray());
+      querySb.append(" select ").append(ids).append(" insert into ");
       final String outgoing = streamName+"_outgoing";
       querySb.append(outgoing);
-      String query = sb.toString();
+      String query = querySb.toString();
       final String queryId = stratioStreamingAPI.addQuery(streamName, query);
       System.out.println("queryId = "+queryId);
       stratioStreamingAPI.listenStream(outgoing);
@@ -159,11 +160,6 @@ public class MetaStream {
             insertRandomData(streamName);
           }
           dataInserted[0] = true;
-          /*
-          while(System.currentTimeMillis()-longStart < 40*1000){
-            insertRandomData(streamName);
-          }
-          */
           System.out.println("TRACE: Data inserted.");
         }
       };
