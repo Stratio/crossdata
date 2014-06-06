@@ -160,18 +160,20 @@ public class MetaStream {
       dstream.foreachRDD(new Function<JavaPairRDD<String, String>, Void>(){
         @Override
         public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
-          System.out.println("TRACE: foreachRDD");
           Map<String, String> result = stringStringJavaPairRDD.collectAsMap();
+          System.out.println("TRACE: foreachRDD. Size="+result.size());
           for(String key: result.keySet()){
             sb.append(System.lineSeparator());
             sb.append("Key: ").append(key).append(" | Value: ").append(result.get(key));
-            System.out.println("TRACE: Key: "+key+" | Value: "+result.get(key));
           }
+          System.out.println("TRACE: "+sb.toString());
+          /*
           if((result.size() > 0) && dataInserted[0]){
             stratioStreamingAPI.stopListenStream("pof");
             stratioStreamingAPI.removeQuery(streamName, "pof");
             jssc.stop();
           }
+          */
           return null;
         }
       });
