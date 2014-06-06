@@ -115,7 +115,7 @@ public class MetaStream {
   public static String listenStream(final String streamName, int seconds){
     try {
       // Create topic
-      String query = "from "+streamName+"#window.timeBatch(20 sec) select name, age, rating insert into pof";
+      String query = "from "+streamName+"#window.timeBatch(10 sec) select name, age, rating insert into pof";
       final String queryId = stratioStreamingAPI.addQuery(streamName, query);
       System.out.println("queryId = "+queryId);
       stratioStreamingAPI.listenStream("pof");
@@ -142,7 +142,7 @@ public class MetaStream {
           }
           System.out.println("TRACE: Inserting data.");
           //long longStart = System.currentTimeMillis();
-          for(int i=0; i<30; i++){
+          for(int i=0; i<4; i++){
             insertRandomData(streamName);
           }
           dataInserted[0] = true;
@@ -166,12 +166,14 @@ public class MetaStream {
           stringStringJavaPairRDD.values().foreach(new VoidFunction<String>(){
             @Override
             public void call(String s) throws Exception {
+              System.out.println("TRACE: RDD = "+s);
               sb.append(System.lineSeparator()).append(s);
             }
           });
           if((totalCount > 0) && dataInserted[0]){
+            System.out.println("TRACE: Stopping Spark streaming");
             stratioStreamingAPI.stopListenStream("pof");
-            stratioStreamingAPI.removeQuery(streamName, "pof");
+            stratioStreamingAPI.removeQuery(streamName, queryId);
             stratioStreamingAPI.stopListenStream(streamName);
             stratioStreamingAPI.dropStream(streamName);
             jssc.stop();
