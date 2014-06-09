@@ -152,6 +152,11 @@ public class BridgeTest extends BasicCoreCassandraTest {
     }
   }
 
+  private Result validateError(MetaQuery metaQuery, String methodName) {
+
+    return executor.executeQuery(metaQuery).getResult();
+  }
+
   // TESTS FOR CORRECT PLANS
   @Test
   public void testInnerJoin() {
@@ -937,32 +942,9 @@ public class BridgeTest extends BasicCoreCassandraTest {
     tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
-    validateFail(metaQuery, "testGroupByWithWrongAggregationFunctionFail");
-  }
 
-  @Test
-  public void testGroupByWithMissingSelectorFieldFail() {
-
-    MetaQuery metaQuery =
-        new MetaQuery("SELECT sum(users.age) FROM demo.users GROUP BY users.gender;");
-
-    List<SelectionSelector> selectionSelectors =
-        Arrays.asList(new SelectionSelector(new SelectorGroupBy(GroupByFunction.SUM,
-            new SelectorIdentifier("users.age"))));
-
-    SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
-    GroupBy groupClause = new GroupBy(Arrays.asList("users.gender"));
-
-    SelectStatement firstSelect = new SelectStatement(selClause, "demo.users");
-    firstSelect.setGroup(groupClause);
-    firstSelect.validate(metadataManager);
-
-    // Query execution
-    Tree tree = new Tree();
-    tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
-    metaQuery.setPlan(tree);
-    metaQuery.setStatus(QueryStatus.PLANNED);
-    validateFail(metaQuery, "testGroupByWithMissingSelectorFieldFail");
+    Result result = validateError(metaQuery, "testGroupByWithWrongAggregationFunctionFail");
+    assertTrue(result.hasError(), "Error expected");
   }
 
   @Test

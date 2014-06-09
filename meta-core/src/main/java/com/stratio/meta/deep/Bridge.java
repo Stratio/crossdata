@@ -128,7 +128,7 @@ public class Bridge {
     }
     IDeepJobConfig<Cells> config =
         DeepJobConfigFactory.create().session(session).host(engineConfig.getRandomCassandraHost())
-            .rpcPort(engineConfig.getCassandraPort()).keyspace(ss.getKeyspace())
+            .rpcPort(engineConfig.getCassandraPort()).keyspace(ss.getEffectiveKeyspace())
             .table(ss.getTableName());
 
     config =

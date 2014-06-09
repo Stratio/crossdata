@@ -838,27 +838,33 @@ public class SelectStatement extends MetaStatement {
           result = columnResult;
         }
       } else if (selector.getSelector() instanceof SelectorGroupBy) {
-        SelectorGroupBy selectorMeta = (SelectorGroupBy) selector.getSelector();
 
-        if (!selectorMeta.getGbFunction().equals(GroupByFunction.COUNT)) {
-          // Checking column in the group by aggregation function
-          if (selectorMeta.getParam().getType() == SelectorMeta.TYPE_IDENT) {
-            SelectorIdentifier subselectorIdentifier = (SelectorIdentifier) selectorMeta.getParam();
+        if (groupInc) {
+          SelectorGroupBy selectorMeta = (SelectorGroupBy) selector.getSelector();
 
-            String targetTable = "any";
-            if (subselectorIdentifier.getTablename() != null) {
-              targetTable = subselectorIdentifier.getTablename();
+          if (!selectorMeta.getGbFunction().equals(GroupByFunction.COUNT)) {
+            // Checking column in the group by aggregation function
+            if (selectorMeta.getParam().getType() == SelectorMeta.TYPE_IDENT) {
+              SelectorIdentifier subselectorIdentifier =
+                  (SelectorIdentifier) selectorMeta.getParam();
+
+              String targetTable = "any";
+              if (subselectorIdentifier.getTablename() != null) {
+                targetTable = subselectorIdentifier.getTablename();
+              }
+
+              columnResult = findColumn(targetTable, subselectorIdentifier.getColumnName());
+              if (columnResult.hasError()) {
+                result = columnResult;
+              }
+            } else {
+              result =
+                  QueryResult
+                      .createFailQueryResult("Nested functions on selected fields not supported.");
             }
-
-            columnResult = findColumn(targetTable, subselectorIdentifier.getColumnName());
-            if (columnResult.hasError()) {
-              result = columnResult;
-            }
-          } else {
-            result =
-                QueryResult
-                    .createFailQueryResult("Nested functions on selected fields not supported.");
           }
+        } else {
+          result = QueryResult.createFailQueryResult("Missing group by clause.");
         }
       } else {
         result =

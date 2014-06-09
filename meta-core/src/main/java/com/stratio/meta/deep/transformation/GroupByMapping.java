@@ -67,8 +67,9 @@ public class GroupByMapping extends PairFunction<Cells, Cells, Cells> implements
     }
 
     for (String colName : groupByCols) {
+
       String[] fieldParts = colName.split("\\.");
-      grouppingKeys.add(cells.getCellByName(fieldParts[1]));
+      grouppingKeys.add(cells.getCellByName(fieldParts[fieldParts.length - 1]));
     }
 
     return new Tuple2<>(grouppingKeys, cellsExtended);

@@ -306,6 +306,22 @@ public class SelectStatementTest extends BasicValidatorTest {
   }
 
   @Test
+  public void testGroupByWithMissingSelectorFieldFail() {
+
+    String inputText = "SELECT sum(users.age) FROM demo.users GROUP BY users.gender;";
+    validateFail(inputText, "testGroupByWithMissingSelectorFieldFail");
+  }
+
+  @Test
+  public void testNoGroupWithAggregationFunctionFail() {
+
+    String inputText = "SELECT gender, sum(age) FROM demo.users;";
+    validateFail(inputText, "testNoGroupWithAggregationFunctionFail");
+  }
+
+
+
+  @Test
   public void testValidateSimpleOrderByOk() {
 
     String inputText = "SELECT * FROM demo.users ORDER BY age;";
