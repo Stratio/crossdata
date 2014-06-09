@@ -74,7 +74,7 @@ class BasicDriver extends DriverConfig{
   def listTables(catalogName: String): MetadataResult = {
     var params : java.util.List[String] = new java.util.ArrayList[String]
     params.add(catalogName)
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, params))
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_TABLES, params))
     result.asInstanceOf[MetadataResult]
   }
 
@@ -86,7 +86,7 @@ class BasicDriver extends DriverConfig{
     var params : java.util.List[String] = new java.util.ArrayList[String]
     params.add(catalogName)
     params.add(tableName)
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, params))
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_COLUMNS, params))
     result.asInstanceOf[MetadataResult]
   }
 
