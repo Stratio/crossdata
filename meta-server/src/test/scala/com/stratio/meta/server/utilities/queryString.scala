@@ -18,7 +18,6 @@ import scala.collection.JavaConversions._
  */
 class queryString {
 
-
   def proccess (msg:String,actor:ActorRef, engine:Engine, typeActor:Int) : (String) ={
 //typeActor is: 1 Executor, 2: Planner, 3:Validator, 4:Parser,Query,Server
     var complete:Boolean= true

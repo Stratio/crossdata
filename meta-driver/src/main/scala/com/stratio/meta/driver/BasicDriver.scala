@@ -29,10 +29,6 @@ import org.apache.log4j.Logger
 import  scala.concurrent.duration._
 import java.util.UUID
 import akka.pattern.ask
-import com.stratio.meta.common.ask.Connect
-import com.stratio.meta.communication.ACK
-import com.stratio.meta.common.ask.Command
-import com.stratio.meta.common.ask.Query
 import com.stratio.meta.driver.result.SyncResultHandler
 
 class BasicDriver extends DriverConfig{
@@ -89,7 +85,9 @@ class BasicDriver extends DriverConfig{
     val callback = new SyncResultHandler
     queries.put(queryId.toString, callback)
     sendQuery(new Query(queryId.toString, targetKs,query,user))
-    callback.waitForResult()
+    var r = callback.waitForResult()
+    println("Class: " + r)
+    r
   }
 
   /**
@@ -110,7 +108,7 @@ class BasicDriver extends DriverConfig{
   def listTables(catalogName: String): MetadataResult = {
     var params : java.util.List[String] = new java.util.ArrayList[String]
     params.add(catalogName)
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, params))
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_TABLES, params))
     result.asInstanceOf[MetadataResult]
   }
 
@@ -122,7 +120,7 @@ class BasicDriver extends DriverConfig{
     var params : java.util.List[String] = new java.util.ArrayList[String]
     params.add(catalogName)
     params.add(tableName)
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, params))
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_COLUMNS, params))
     result.asInstanceOf[MetadataResult]
   }
 

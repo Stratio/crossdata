@@ -82,10 +82,10 @@ class SyncResultHandler extends IResultHandler{
     }
 
     if(queryResult != null){
-      
-      queryResult
+      println("QueryResult ksChanged: " + queryResult.isKsChanged)
+      return queryResult
     }
 
-    nonQueryResult
+    return nonQueryResult
   }
 }
