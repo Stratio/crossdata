@@ -41,7 +41,7 @@ class QueryActor(engine: Engine) extends Actor{
   override def receive: Receive = {
     case Query(queryId, keyspace, statement, user) => {
       log.debug("User "+ user + " ks: "+ keyspace + " stmt: " + statement + " id: " + queryId)
-      println("Sender: " + sender)
+      //println("Sender: " + sender)
       //querySender = sender
       parserActorRef forward Query(queryId, keyspace, statement, user)
       //parserActorRef ! Query(queryId, keyspace, statement, user)
@@ -51,7 +51,8 @@ class QueryActor(engine: Engine) extends Actor{
     //  querySender ! r
     //}
     case _ => {
+      println("Unknown message!")
       sender ! QueryResult.createFailQueryResult("Message not recognized")
-    }
+  }
   }
 }

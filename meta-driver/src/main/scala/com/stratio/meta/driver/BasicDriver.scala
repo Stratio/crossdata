@@ -86,7 +86,7 @@ class BasicDriver extends DriverConfig{
     queries.put(queryId.toString, callback)
     sendQuery(new Query(queryId.toString, targetKs,query,user))
     var r = callback.waitForResult()
-    println("Class: " + r)
+    //println("Class: " + r)
     r
   }
 

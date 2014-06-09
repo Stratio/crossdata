@@ -255,7 +255,6 @@ public class CreateTableStatement extends MetaStatement{
         //Get the effective keyspace based on the user specification during the create
         //sentence, or taking the keyspace in use in the user session.
         String effectiveKeyspace = getEffectiveKeyspace();
-
         //Check that the keyspace exists, and that the table does not exits.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
             result= QueryResult.createFailQueryResult("Target keyspace missing or no keyspace has been selected.");

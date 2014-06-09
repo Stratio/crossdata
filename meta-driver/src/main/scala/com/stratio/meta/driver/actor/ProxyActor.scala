@@ -84,7 +84,7 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
 
     /* ACK received */
     case ack : ACK => {
-      println("ACK received! " + ack);
+      //println("ACK received! " + ack);
       val handler = driver.getResultHandler(ack.queryId)
       if(handler != null){
         handler.processAck(ack.queryId, ack.status)
@@ -95,7 +95,7 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
 
     /* Send a query to the remote meta-server infrastructure. */
     case message:Query => {
-      println("Send query: " + message)
+      //println("Send query: " + message)
 
       //val future = clusterClientActor.ask(ClusterClient.Send(ProxyActor.remotePath(remoteActor),message,localAffinity = true), 10 seconds)
       //val future = ask ClusterClient.Send(ProxyActor.remotePath(remoteActor),message,localAffinity = true)
@@ -118,7 +118,7 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
       //clusterClientActor forward  ClusterClient.Send(ProxyActor.remotePath(remoteActor),message,localAffinity = true)
     }
     case result:Result => {
-      println("Result message received:" + result.getQueryId)
+      //println("Result message received:" + result.getQueryId)
 
       val handler = driver.getResultHandler(result.getQueryId)
       if(handler != null){

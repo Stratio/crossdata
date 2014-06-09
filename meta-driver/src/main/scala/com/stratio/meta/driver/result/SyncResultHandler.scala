@@ -42,11 +42,11 @@ class SyncResultHandler extends IResultHandler{
 
   override def processAck(queryId: String, status: QueryStatus): Unit = {
     lastStatus = status
-    println("ACK: " + lastStatus)
+    //println("ACK: " + lastStatus)
   }
 
   override def processResult(result: Result): Unit = synchronized {
-    println("Results received: " + result.getClass.toString)
+    //println("Results received: " + result.getClass.toString)
     if(result.isInstanceOf[QueryResult]){
       var r = result.asInstanceOf[QueryResult]
       if(queryResult == null){
@@ -68,13 +68,13 @@ class SyncResultHandler extends IResultHandler{
     exception = new ParsingException(errorResult.getErrorMessage)
     errorFound = true;
     notify()
-    println("notifyAll")
+    //println("notifyAll")
   }
 
   @throws(classOf[ParsingException])
   def waitForResult() : Result = synchronized {
     while(!errorFound && !allResults){
-      println("Waiting for results, errorFound: " + errorFound + " allResults: " + allResults)
+      //println("Waiting for results, errorFound: " + errorFound + " allResults: " + allResults)
       wait()
     }
     if(errorFound){
@@ -82,7 +82,7 @@ class SyncResultHandler extends IResultHandler{
     }
 
     if(queryResult != null){
-      println("QueryResult ksChanged: " + queryResult.isKsChanged)
+      //println("QueryResult ksChanged: " + queryResult.isKsChanged)
       return queryResult
     }
 

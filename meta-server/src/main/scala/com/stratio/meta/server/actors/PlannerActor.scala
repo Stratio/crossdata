@@ -39,9 +39,9 @@ class PlannerActor(executor:ActorRef, planner:Planner) extends Actor with TimeTr
       val timer=initTimer()
 
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
-      println("Sending ack: " + ack)
+      //println("Sending ack: " + ack)
       sender ! ack
-      println("Execute the plan");
+      //println("Execute the plan");
       executor forward planner.planQuery(query)
       finishTimer(timer)
       log.debug("Finish Planner Task")

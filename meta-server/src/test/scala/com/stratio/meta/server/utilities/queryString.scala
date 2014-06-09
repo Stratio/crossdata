@@ -113,7 +113,7 @@ class queryString {
 
 
         case Failure(ex) => "ERROR"
-        case _ => "not sopported"
+        case unknown : Any => "Message not supported: " + unknown
       }
 
 
