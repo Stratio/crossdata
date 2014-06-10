@@ -42,21 +42,24 @@ public class ResultHandlerWrapper implements IResultHandler{
   private static final Logger LOG = Logger.getLogger(ResultHandlerWrapper.class);
 
   @Override
-  public void processAck(String queryId, QueryStatus status) {
+  public synchronized void processAck(String queryId, QueryStatus status) {
     LOG.info("Query: " + queryId + " status: " + status);
+    System.out.println("Query: " + queryId + " status: " + status);
     ackReceived = true;
     this.status = status;
   }
 
   @Override
-  public void processError(Result errorResult) {
+  public synchronized void processError(Result errorResult) {
     LOG.error("Error reported: " + errorResult);
+    System.out.println("Error reported: " + errorResult);
     errorReceived = true;
   }
 
   @Override
-  public void processResult(Result result){
+  public synchronized void processResult(Result result){
     LOG.info("Result: " + result);
+    System.out.println("Result: " + result);
     resultReceived = true;
   }
 

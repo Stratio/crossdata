@@ -64,11 +64,11 @@ class SyncResultHandler extends IResultHandler{
   }
 
   override def processError(errorResult: Result): Unit = synchronized {
-    println("Error found! " + errorResult.getErrorMessage)
+    //println("Error found! " + errorResult.getErrorMessage)
     exception = new ParsingException(errorResult.getErrorMessage)
     errorFound = true;
     notify()
-    //println("notifyAll")
+    //println("processError: notifyAll")
   }
 
   @throws(classOf[ParsingException])

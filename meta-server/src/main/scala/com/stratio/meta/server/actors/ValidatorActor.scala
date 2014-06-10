@@ -23,6 +23,7 @@ import akka.actor.{Props, ActorRef, ActorLogging, Actor}
 import com.stratio.meta.core.utils.MetaQuery
 import com.stratio.meta.core.validator.Validator
 import org.apache.log4j.Logger
+import com.stratio.meta.common.result.CommandResult
 
 object ValidatorActor{
   def props(planner:ActorRef, validator:Validator): Props= Props(new ValidatorActor(planner,validator))
@@ -43,6 +44,9 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
     }
     case query:MetaQuery if query.hasError=>{
       sender ! query.getResult
+    }
+    case _ => {
+      sender ! CommandResult.createFailCommandResult("Message not recognized")
     }
   }
 }

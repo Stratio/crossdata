@@ -19,7 +19,7 @@
 
 package com.stratio.meta.server.server.statements
 
-import akka.testkit.{DefaultTimeout, TestKit}
+import akka.testkit.{ImplicitSender, DefaultTimeout, TestKit}
 import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
 import com.stratio.meta.server.utilities.{createEngine, TestKitUsageSpec}
@@ -34,10 +34,10 @@ import com.stratio.meta.common.ask.Query
 import akka.pattern.ask
 import scala.concurrent.duration._
 import org.apache.log4j.Logger
-
+import com.stratio.meta.communication.ACK
 
 class CreateIndexActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
+                                   with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra{
 
   lazy val engine:Engine =  createEngine.create()
 
@@ -50,18 +50,10 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
 
   def executeStatement(query: String, keyspace: String) : Result = {
     val stmt = Query("create-index", keyspace, query, "test_actor")
-    val futureExecutorResponse:Future[Any]= {
-      serverRef.ask(stmt)(20 second)
-    }
 
-    var result : Result = null
-    try{
-      val r = Await.result(futureExecutorResponse, 20 seconds)
-      result = r.asInstanceOf[Result]
-    }catch{
-      case ex:Exception =>
-        fail("Cannot execute statement: " + stmt.toString + " Exception: " + ex.getMessage)
-    }
+    serverRef ! stmt
+    expectMsgClass(classOf[ACK])
+    val result = expectMsgClass(classOf[Result])
 
     assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
       + "\n error: " + result.getErrorMessage)
@@ -82,7 +74,6 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
   def waitForLucene(){
     Thread.sleep(1100);
   }
-
 
   def createLuceneIndexOk(iteration : Int) = {
     val createQuery = "CREATE LUCENE INDEX ON demo_server.users_info(info);"
@@ -108,15 +99,5 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
   test ("Create Lucene index ok"){
     createLuceneIndexOk(0)
   }
-
-/*
-  test ("Create Lucene index stress ok"){
-    var iteration = 0
-    for(iteration <- 1 to 100){
-      createLuceneIndex_ok(iteration)
-    }
-  }
-*/
-
 
 }

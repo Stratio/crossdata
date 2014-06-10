@@ -73,13 +73,14 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
 
     /* The driver sends the connect message. */
     case c : Connect => {
-      println("Send connect " + c)
+      //println("Send connect " + c)
       clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = true)
     }
 
     /* API Command */
     case cmd : Command => {
       println("Send command: " + cmd);
+      clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), cmd, localAffinity = true)
     }
 
     /* ACK received */
@@ -95,11 +96,11 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
 
     /* Send a query to the remote meta-server infrastructure. */
     case message:Query => {
-      //println("Send query: " + message)
+      //println("Send query: " + message + " remoteActor: " + remoteActor)
 
       //val future = clusterClientActor.ask(ClusterClient.Send(ProxyActor.remotePath(remoteActor),message,localAffinity = true), 10 seconds)
       //val future = ask ClusterClient.Send(ProxyActor.remotePath(remoteActor),message,localAffinity = true)
-      clusterClientActor ! ClusterClient.Send(ProxyActor.remotePath(remoteActor),message,localAffinity = true)
+      clusterClientActor ! ClusterClient.Send(ProxyActor.remotePath(remoteActor), message, localAffinity = true)
       /*future onSuccess {
           case r: Result => {
             println("Result received:" + r)
@@ -108,6 +109,7 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
             println("ACK: " + a)
           }
       }*/
+      //println("Query sent!")
 
       //wait future
       //onSuccess ACK on IRESULTHANDLER
@@ -133,7 +135,8 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
       //clusterClientActor forward result
     }
     case unknown: Any => {
-      println("Unknown: " + unknown)
+      logger.warn("Unknown message: " + unknown)
+      sender ! "Message type not supported"
     }
   }
 }

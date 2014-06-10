@@ -24,7 +24,7 @@ import com.stratio.meta.core.planner.Planner
 import com.stratio.meta.core.utils.MetaQuery
 import org.apache.log4j.Logger
 import com.stratio.meta.communication.ACK
-import com.stratio.meta.common.result.QueryStatus
+import com.stratio.meta.common.result.{QueryResult, QueryStatus}
 
 object PlannerActor{
   def props(executor:ActorRef, planner:Planner): Props =Props(new PlannerActor(executor,planner))
@@ -48,6 +48,9 @@ class PlannerActor(executor:ActorRef, planner:Planner) extends Actor with TimeTr
     }
     case query:MetaQuery if query.hasError=>{
       sender ! query.getResult
+    }
+    case _ => {
+      sender ! QueryResult.createFailQueryResult("Not recognized object")
     }
   }
 

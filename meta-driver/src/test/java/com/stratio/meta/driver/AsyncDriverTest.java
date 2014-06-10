@@ -19,10 +19,7 @@
 
 package com.stratio.meta.driver;
 
-import com.stratio.meta.common.result.IResultHandler;
-import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.common.result.Result;
-
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertFalse;
@@ -37,18 +34,23 @@ public class AsyncDriverTest extends DriverParentTest {
   public void basicSelect(){
     String query = "select * from system.schema_columns;";
     ResultHandlerWrapper rhw = new ResultHandlerWrapper();
-    driver.asyncExecuteQuery("user", "", query, rhw);
-    waitForAnswer();
-    assertTrue(rhw.isAckReceived(), "Ack has not been received.");
-    assertFalse(rhw.isErrorReceived(), "No error expected.");
-    assertTrue(rhw.isResultReceived(), "Result has not been received.");
-  }
-
-  public void waitForAnswer(){
+    driver.asyncExecuteQuery("test-user", "", query, rhw);
     try {
       Thread.sleep(5000);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
+    //waitForAnswer();
+    assertTrue(rhw.isAckReceived(), "ACK has not been received.");
+    assertFalse(rhw.isErrorReceived(), "No error expected.");
+    assertTrue(rhw.isResultReceived(), "Result has not been received.");
   }
+/*
+  public void waitForAnswer(){
+    try {
+      Thread.sleep(15000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }*/
 }

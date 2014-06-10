@@ -30,67 +30,70 @@ import java.util.*;
 
 public abstract class AbstractMetadataHelper {
 
-    /**
-     * Database type mappings.
-     */
-    protected static Map<ColumnType, String> dbType = new HashMap<>();
+  /**
+   * Database type mappings.
+   */
+  protected static Map<ColumnType, String> dbType = new HashMap<>();
 
-    /**
-     * Database Java class mappings.
-     */
-    protected static Map<ColumnType, Class<?>> dbClass = new HashMap<>();
+  /**
+   * Database Java class mappings.
+   */
+  protected static Map<ColumnType, Class<?>> dbClass = new HashMap<>();
 
-    /**
-     * Transform a Cassandra {@link com.datastax.driver.core.KeyspaceMetadata} into
-     * a META CatalogMetadata.
-     * @param keyspaceMetadata The keyspace metadata.
-     * @return A {@link com.stratio.meta.common.metadata.structures.CatalogMetadata}.
-     */
-    public CatalogMetadata toCatalogMetadata(KeyspaceMetadata keyspaceMetadata){
-        Set<TableMetadata> tables = new HashSet<>(keyspaceMetadata.getTables().size());
-        for(com.datastax.driver.core.TableMetadata table: keyspaceMetadata.getTables()){
-            tables.add(toTableMetadata(keyspaceMetadata.getName(), table));
-        }
-        CatalogMetadata result = new CatalogMetadata(
-                keyspaceMetadata.getName(),
-                tables);
-        return result;
+  /**
+   * Transform a Cassandra {@link com.datastax.driver.core.KeyspaceMetadata} into a META
+   * CatalogMetadata.
+   *
+   * @param keyspaceMetadata The keyspace metadata.
+   * @return A {@link com.stratio.meta.common.metadata.structures.CatalogMetadata}.
+   */
+  public CatalogMetadata toCatalogMetadata(KeyspaceMetadata keyspaceMetadata) {
+    Set<TableMetadata> tables = new HashSet<>(keyspaceMetadata.getTables().size());
+    for (com.datastax.driver.core.TableMetadata table : keyspaceMetadata.getTables()) {
+      tables.add(toTableMetadata(keyspaceMetadata.getName(), table));
     }
+    CatalogMetadata result = new CatalogMetadata(
+        keyspaceMetadata.getName(),
+        tables);
+    return result;
+  }
 
-    public TableMetadata toTableMetadata(String parentCatalog,
-                                         com.datastax.driver.core.TableMetadata tableMetadata){
-        Set<ColumnMetadata> columns = new HashSet<>(tableMetadata.getColumns().size());
-        for(com.datastax.driver.core.ColumnMetadata column: tableMetadata.getColumns()){
-            columns.add(toColumnMetadata(tableMetadata.getName(), column));
-        }
-        TableMetadata result = new TableMetadata(
-                tableMetadata.getName(),
-                parentCatalog,
-                columns);
-        return result;
+  public TableMetadata toTableMetadata(String parentCatalog,
+                                       com.datastax.driver.core.TableMetadata tableMetadata) {
+    Set<ColumnMetadata> columns = new HashSet<>(tableMetadata.getColumns().size());
+    for (com.datastax.driver.core.ColumnMetadata column : tableMetadata.getColumns()) {
+      columns.add(toColumnMetadata(tableMetadata.getName(), column));
     }
+    TableMetadata result = new TableMetadata(
+        tableMetadata.getName(),
+        parentCatalog,
+        columns);
+    return result;
+  }
 
-    public ColumnMetadata toColumnMetadata(String parentTable,
-                                           com.datastax.driver.core.ColumnMetadata columnMetadata){
-        ColumnMetadata result = new ColumnMetadata(
-                parentTable,
-                columnMetadata.getName());
-        ColumnType type = toColumnType(columnMetadata.getType().getName().toString());
-        result.setType(type);
-        return result;
-    }
+  public ColumnMetadata toColumnMetadata(String parentTable,
+                                         com.datastax.driver.core.ColumnMetadata columnMetadata) {
+    ColumnMetadata result = new ColumnMetadata(
+        parentTable,
+        columnMetadata.getName());
+    ColumnType type = toColumnType(columnMetadata.getType().getName().toString());
+    result.setType(type);
+    return result;
+  }
 
-    /**
-     * Obtain the ColumnType associated with a database type.
-     * @param dbTypeName The name of the database type.
-     * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
-     */
-    public abstract ColumnType toColumnType(String dbTypeName);
+  /**
+   * Obtain the ColumnType associated with a database type.
+   *
+   * @param dbTypeName The name of the database type.
+   * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
+   */
+  public abstract ColumnType toColumnType(String dbTypeName);
 
-    /**
-     * Obtain the ColumnType associated with a Deep cell.
-     * @param deepCell The deep cell.
-     * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
-     */
-    public abstract ColumnType toColumnType(Cell deepCell);
+  /**
+   * Obtain the ColumnType associated with a Deep cell.
+   *
+   * @param deepCell The deep cell.
+   * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
+   */
+  public abstract ColumnType toColumnType(Cell deepCell);
 }

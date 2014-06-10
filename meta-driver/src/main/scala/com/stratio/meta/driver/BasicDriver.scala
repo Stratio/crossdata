@@ -55,7 +55,8 @@ class BasicDriver extends DriverConfig{
    * @return ConnectResult
    */
   def connect(user:String): Result = {
-    println(contactPoints)
+    //println(contactPoints)
+    //println("Connecting user: " + user)
     retryPolitics.askRetry(proxyActor,new Connect(user),5 second)
   }
 

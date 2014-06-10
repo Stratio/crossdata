@@ -18,7 +18,7 @@ import com.stratio.meta.communication.ACK
 class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
                                   with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra{
 
-  lazy val engine:Engine =  createEngine.create()
+  lazy val engine:Engine = createEngine.create()
 
   lazy val queryRef = system.actorOf(Props(classOf[QueryActor],engine))
 
@@ -39,10 +39,10 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
     }
   }
 
-  test ("Create KS"){
+  test ("Create catalog"){
     within(5000 millis){
-      val createKs = "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
-      queryRef ! new Query("query-actor", "", createKs, "test")
+      val query = "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
+      queryRef ! new Query("query-actor", "", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
       assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
@@ -154,7 +154,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
       val query = "drop keyspace ks_demo ;"
       queryRef ! new Query("query-actor", "ks_demo", query, "test")
       val result = expectMsgClass(classOf[QueryResult])
-      assertTrue(result.hasError, "Expecting table exists")
+      assertTrue(result.hasError, "Expecting keyspace not exists")
     }
   }
 

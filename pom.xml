@@ -80,8 +80,8 @@
     </developers>
 
     <modules>
-        <module>meta-core</module>
         <module>meta-common</module>
+        <module>meta-core</module>
         <module>meta-driver</module>
         <module>meta-server</module>
         <module>meta-sh</module>

@@ -20,9 +20,11 @@
 package com.stratio.meta.common.exceptions;
 
 /**
- * Created by dhiguero on 5/06/14.
+ * Parsing exception thrown by the Driver if the statement could not be parsed.
  */
 public class ParsingException extends Exception{
+
+  private static final long serialVersionUID = -1125608075378630223L;
 
   public ParsingException(String message){
     super(message);

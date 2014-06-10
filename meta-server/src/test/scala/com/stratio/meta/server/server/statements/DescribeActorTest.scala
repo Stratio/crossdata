@@ -19,7 +19,7 @@
 
 package com.stratio.meta.server.server.statements
 
-import akka.testkit.{DefaultTimeout, TestKit}
+import akka.testkit.{ImplicitSender, DefaultTimeout, TestKit}
 import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
 import com.stratio.meta.server.utilities.{createEngine, TestKitUsageSpec}
@@ -33,10 +33,10 @@ import com.stratio.meta.common.ask.Query
 import scala.concurrent.{Await, Future}
 import akka.pattern.ask
 import scala.concurrent.duration._
-
+import com.stratio.meta.communication.ACK
 
 class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-  with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
+                                with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
 
   lazy val engine:Engine =  createEngine.create()
 
@@ -44,18 +44,10 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
 
   def executeStatement(query: String, keyspace: String, shouldExecute: Boolean) : Result = {
     val stmt = Query("describe", keyspace, query, "test_actor")
-    val futureExecutorResponse:Future[Any]= {
-      serverRef.ask(stmt)(3 second)
-    }
 
-    var result : Result = null
-    try{
-      val r = Await.result(futureExecutorResponse, 3 seconds)
-      result = r.asInstanceOf[Result]
-    }catch{
-      case ex:Exception =>
-      fail("Cannot execute statement: " + stmt.toString + " Exception: " + ex.getMessage)
-    }
+    serverRef ! stmt
+    expectMsgClass(classOf[ACK])
+    val result = expectMsgClass(classOf[Result])
 
     if(shouldExecute) {
       assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
