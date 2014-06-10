@@ -19,9 +19,11 @@
 
 package com.stratio.meta.streaming;
 
+import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.executor.StreamExecutor;
 import com.stratio.meta.core.statements.CreateTableStatement;
 import com.stratio.meta.core.structures.BooleanProperty;
@@ -52,6 +54,7 @@ public class StreamTest extends BasicCoreCassandraTest {
     columns.put("id", "long");
     columns.put("age", "int");
     columns.put("rating", "double");
+    DeepSparkContext spc = new DeepSparkContext("local","null");
     CreateTableStatement cts =
         new CreateTableStatement(streamName,
                                  columns,
@@ -62,7 +65,7 @@ public class StreamTest extends BasicCoreCassandraTest {
     Property property = new PropertyNameValue("ephemeral", new BooleanProperty(true));
     cts.setProperties(Collections.singletonList(property));
     System.out.println("TRACE: "+cts.toString());
-    Result result = StreamExecutor.execute(cts);
+    Result result = StreamExecutor.execute(cts, spc);
     String resultStr = ((CommandResult) result).getResult().toString();
     assertEquals("Ephemeral table '"+streamName+"' created.",
                  resultStr,

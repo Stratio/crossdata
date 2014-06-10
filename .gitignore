@@ -21,4 +21,5 @@ nb-configuration.xml
 meta-common/.cache
 meta-core/test-output/*
 meta-driver/.cache
+meta-server/src/main/resources/server-reference.conf
 .gitignore
