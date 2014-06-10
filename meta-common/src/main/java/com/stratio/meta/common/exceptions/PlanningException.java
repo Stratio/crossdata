@@ -17,13 +17,17 @@
  * License along with this library.
  */
 
-package com.stratio.meta.communication
+package com.stratio.meta.common.exceptions;
 
-import com.stratio.meta.common.result.QueryStatus
+/**
+ * Planning exception thrown by the Driver if the statement could not be planned.
+ */
+public class PlanningException extends Exception{
 
-case class ACK(queryId:String, status:QueryStatus)
+  private static final long serialVersionUID = 1878003904827417242L;
 
-case class Connect(msg:String)
+  public PlanningException(String message){
+    super(message);
+  }
 
-case class Reply(msg:String)
-
+}

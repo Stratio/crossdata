@@ -17,12 +17,17 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.utils;
+package com.stratio.meta.common.exceptions;
 
-public enum QueryStatus {
-    NONE,
-    PARSED,
-    VALIDATED,
-    PLANNED,
-    EXECUTED
+/**
+ * Execution exception thrown by the Driver if the statement could not be executed.
+ */
+public class ExecutionException extends Exception{
+
+  private static final long serialVersionUID = 9044542877799283335L;
+
+  public ExecutionException(String message){
+    super(message);
+  }
+
 }

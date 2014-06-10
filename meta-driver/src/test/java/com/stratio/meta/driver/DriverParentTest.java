@@ -20,35 +20,44 @@
 package com.stratio.meta.driver;
 
 import com.stratio.meta.server.MetaServer;
+
 import org.testng.annotations.*;
 
 public class DriverParentTest extends ParentCassandraTest {
-    private static final long SLEEP_TIME = 5000;
 
-    BasicDriver driver;
+  private static final long SLEEP_TIME = 5000;
 
-    MetaServer metaServer;
+  protected static BasicDriver driver = null;
 
-    @BeforeClass
-    public void init(){
-        driver=new BasicDriver();
+  protected static MetaServer metaServer = null;
 
-        metaServer=new MetaServer();
-        metaServer.init(null);
-        metaServer.start();
+  @BeforeClass
+  public void init() {
+    System.out.println("INIT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+      metaServer = new MetaServer();
+      metaServer.init(null);
+      metaServer.start();
 
-        try {
-            Thread.sleep(SLEEP_TIME);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+      try {
+        Thread.sleep(SLEEP_TIME);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
 
+      driver = new BasicDriver();
+      driver.connect("TEST_USER");
+
+  }
+
+  @AfterClass(alwaysRun=true)
+  public void finish() {
+    driver.close();
+    metaServer.stop();
+    metaServer.destroy();
+    try {
+      Thread.sleep(SLEEP_TIME*2);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
-
-    @AfterClass
-    public void finish(){
-        driver.close();
-        metaServer.stop();
-        metaServer.destroy();
-    }
+  }
 }

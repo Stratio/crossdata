@@ -5,7 +5,7 @@ import akka.actor.ActorSystem
 import com.stratio.meta.server.actors.{ValidatorActor, PlannerActor, ExecutorActor}
 import akka.testkit._
 import org.scalatest.FunSuiteLike
-import com.stratio.meta.common.result.Result
+import com.stratio.meta.common.result.{QueryResult, CommandResult, Result}
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import akka.pattern.ask
@@ -15,22 +15,24 @@ import com.stratio.meta.server.utilities._
 import com.stratio.meta.server.config.BeforeAndAfterCassandra
 import com.typesafe.config.ConfigFactory
 import scala.collection.mutable
-
+import com.stratio.meta.common.ask.Query
+import com.stratio.meta.communication.ACK
 
 /**
- * To generate unit test of proxy actor
+ * Validator actor tests.
  */
 class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
-{
-  lazy val engine:Engine =  createEngine.create()
+                                      with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra{
 
+  lazy val engine:Engine =  createEngine.create()
   lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
   lazy val plannerRef = system.actorOf(PlannerActor.props(executorRef,engine.getPlanner),"TestPlanerActor")
   lazy val validatorRef = system.actorOf(ValidatorActor.props(plannerRef,engine.getValidator),"TestValidatorActor")
 
+  /**
+   * Validator actor that sends messages to the current actor.
+   */
   lazy val validatorRefTest= system.actorOf(ValidatorActor.props(testActor,engine.getValidator),"TestPlanerActorTest")
-
 
   override def beforeCassandraFinish() {
     shutdown(system)
@@ -41,30 +43,50 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
     engine.shutdown()
   }
 
+  def executeStatement(query: String, keyspace: String, shouldExecute: Boolean, errorMessage: String) : Result = {
+    val stmt = engine.getParser.parseStatement(query)
+    stmt.setSessionKeyspace(keyspace)
+    validatorRef ! stmt
+    if(shouldExecute) {
+      expectMsgClass(classOf[ACK])
+    }
+
+    val result = expectMsgClass(classOf[Result])
+
+    if(shouldExecute) {
+      assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
+                                   + "\n error: " + result.getErrorMessage + " " + errorMessage)
+    }else{
+      assertTrue(result.hasError, "Statement should report an error. " + errorMessage)
+    }
+
+    result
+  }
+
   test("validator resend to planner message 1"){
     within(5000 millis){
-
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
-      stmt.setSessionKeyspace("ks_demo1")
+      stmt.setSessionKeyspace("")
       validatorRefTest ! stmt
       expectMsg(engine.getValidator.validateQuery(stmt))
     }
   }
+
   test("validator resend to planner message 2"){
     within(5000 millis){
-
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
       stmt.setSessionKeyspace("ks_demo1")
       stmt.setError("Error creating KEYSPACE ks_demo1- resent 2")
       validatorRefTest ! stmt
-      expectNoMsg()
+      val result = expectMsgClass(classOf[Result])
+      assertTrue(result.hasError, "Error expected");
     }
   }
+
   test("validator resend to planner message 3"){
     within(5000 millis){
-
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
       stmt.setSessionKeyspace("ks_demo1")
@@ -96,129 +118,112 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
     }
   }
 
-  val querying= new queryString
-
-  test ("validator Test"){
-
+  test ("Unknown message"){
     within(5000 millis){
-
       validatorRef ! 1
-      expectNoMsg()
-
+      val result = expectMsgClass(classOf[CommandResult])
+      assertTrue(result.hasError, "Expecting error message")
     }
   }
-  test ("validatorActor create KS"){
 
+  test ("Create catalog"){
     within(5000 millis){
-
       val msg= "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
-
+      executeStatement(msg, "", true, "Keyspace should be created")
     }
   }
-  test ("validatorActor create KS yet"){
 
+  test ("Create existing catalog"){
     within(5000 millis){
-
       val msg="create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"Keyspace ks_demo already exists." )
+      executeStatement(msg, "", false, "Keyspace ks_demo already exists.")
     }
   }
 
-  test ("validatorActor use KS"){
-
+  test ("Use keyspace"){
     within(5000 millis){
-
-      val msg="use ks_demo ;"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
+      val msg = "use ks_demo ;"
+      val result = executeStatement(msg, "", true, "Keyspace should be used.")
+      assertTrue(result.isKsChanged, "New keyspace should be used");
+      assertEquals(result.getCurrentKeyspace, "ks_demo", "New keyspace should be used");
     }
   }
 
-  test ("validatorActor use KS yet"){
-
+  test ("validatorActor use KS from current catalog"){
     within(5000 millis){
-
-      val msg="use ks_demo ;"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
+      val msg = "use ks_demo ;"
+      val result = executeStatement(msg, "ks_demo", true, "Keyspace should be used.")
+      assertTrue(result.isKsChanged, "New keyspace should be used");
+      assertEquals(result.getCurrentKeyspace, "ks_demo", "New keyspace should be used");
     }
   }
 
-
-
-  test ("validatorActor insert into table not create yet without error"){
-
+  test ("Insert into non-existing table"){
     within(5000 millis){
-
       val msg="insert into demo (field1, field2) values ('test1','text2');"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"Table demo does not exist." )
-    }
-  }
-  test ("validatorActor select without table"){
-
-    within(5000 millis){
-
-      val msg="select * from demo ;"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"Table demo does not exist.")
+      executeStatement(msg, "ks_demo", false, "Table demo does not exist.")
     }
   }
 
+  test ("Select from non-existing table"){
+  within(5000 millis){
+      val msg="select * from unknown ;"
+      executeStatement(msg, "ks_demo", false, "Table unknown does not exist.")
+    }
+  }
 
-  test ("validatorActor create table not create yet"){
-
+  test ("Create table"){
     within(5000 millis){
-
       val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
+      executeStatement(msg, "ks_demo", true, "Table should be created.")
     }
   }
 
-  test ("validatorActor create table  create yet"){
-
+  test ("Create existing table"){
     within(5000 millis){
-
       val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"Table demo already exists." )
+      executeStatement(msg, "ks_demo", false, "Table already exists.")
     }
   }
 
-  test ("validatorActor insert into table  create yet without error"){
-
+  test ("Insert into table"){
     within(5000 millis){
-
-      val msg="insert into demo (field1, field2) values ('test1','text2');"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
+      val msg="insert into demo (field1, field2) values ('text1','text2');"
+      executeStatement(msg, "ks_demo", true, "Insert should be possible.")
     }
   }
-  test ("validatorActor select"){
 
+  test ("Select"){
     within(5000 millis){
-
       val msg="select * from demo ;"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),mutable.MutableList("test1", "text2").toString() )
+      var result = executeStatement(msg, "ks_demo", true, "Select should work.")
+      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      val queryResult = result.asInstanceOf[QueryResult]
+      assertEquals(queryResult.getResultSet.size(), 1, "Cannot retrieve data")
+      val r = queryResult.getResultSet.iterator().next()
+      assertEquals(r.getCells.get("field1").getValue, "text1", "Invalid row content")
+      assertEquals(r.getCells.get("field2").getValue, "text2", "Invalid row content")
     }
   }
-  test ("validatorActor drop table "){
 
+  test ("Drop table"){
     within(5000 millis){
-
       val msg="drop table demo ;"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
+      executeStatement(msg, "ks_demo", true, "Drop should work.")
     }
   }
-  test ("validatorActor drop KS "){
 
+  test ("Drop keyspace"){
     within(5000 millis){
-
       val msg="drop keyspace ks_demo ;"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"sucess" )
+      executeStatement(msg, "ks_demo", true, "Drop should work.")
     }
   }
-  test ("validatorActor drop KS  not exit"){
 
+  test ("Drop non-existing keyspace"){
     within(5000 millis){
-
       val msg="drop keyspace ks_demo ;"
-      assertEquals(querying.proccess(msg,validatorRef,engine,3),"Keyspace ks_demo does not exist." )
+      executeStatement(msg, "ks_demo", false, "Expecting keyspace not exists.")
     }
   }
 

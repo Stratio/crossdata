@@ -17,13 +17,17 @@
  * License along with this library.
  */
 
-package com.stratio.meta.communication
+package com.stratio.meta.common.exceptions;
 
-import com.stratio.meta.common.result.QueryStatus
+/**
+ * Validation exception thrown by the Driver if the statement could not be validated.
+ */
+public class ValidationException extends Exception{
 
-case class ACK(queryId:String, status:QueryStatus)
+  private static final long serialVersionUID = -1429028331466675420L;
 
-case class Connect(msg:String)
+  public ValidationException(String message){
+    super(message);
+  }
 
-case class Reply(msg:String)
-
+}

@@ -20,6 +20,7 @@
 package com.stratio.meta.core.executor.command;
 
 import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.executor.BasicExecutorTest;
 import com.stratio.meta.core.statements.DropKeyspaceStatement;

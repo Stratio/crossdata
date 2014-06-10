@@ -21,6 +21,7 @@ package com.stratio.meta.core.executor.cassandra;
 
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.core.executor.BasicExecutorTest;
 import com.stratio.meta.core.statements.AlterKeyspaceStatement;
 import com.stratio.meta.core.statements.SelectStatement;

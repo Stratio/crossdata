@@ -18,6 +18,7 @@ package com.stratio.meta.core.executor.command;
 
 import org.testng.annotations.Test;
 
+import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.executor.BasicExecutorTest;
 import com.stratio.meta.core.statements.DescribeStatement;
@@ -25,7 +26,6 @@ import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.QueryStatus;
 import com.stratio.meta.core.utils.Tree;
 
 public class DescribeStatementTest extends BasicExecutorTest {

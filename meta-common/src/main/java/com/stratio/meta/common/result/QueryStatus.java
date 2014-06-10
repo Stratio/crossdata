@@ -17,13 +17,16 @@
  * License along with this library.
  */
 
-package com.stratio.meta.communication
+package com.stratio.meta.common.result;
 
-import com.stratio.meta.common.result.QueryStatus
-
-case class ACK(queryId:String, status:QueryStatus)
-
-case class Connect(msg:String)
-
-case class Reply(msg:String)
-
+/**
+ * Possible status of a query.
+ */
+public enum QueryStatus {
+  NONE,
+  PARSED,
+  VALIDATED,
+  PLANNED,
+  IN_PROGRESS,
+  EXECUTED
+}

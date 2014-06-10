@@ -36,6 +36,11 @@ public class QueryResult extends Result {
      */
     private final ResultSet resultSet;
 
+  /**
+   * Determine whether this query result contains the last resultset of the query.
+   */
+  private boolean lastResultSet = false;
+
     /**
      * Private class constructor of the factory.
      * @param resultSet The set of tuples returned.
@@ -97,4 +102,11 @@ public class QueryResult extends Result {
         return new QueryResult(null,true,errorMessage,false,null);
     }
 
+  public void setLastResultSet() {
+    this.lastResultSet = true;
+  }
+
+  public boolean isLastResultSet() {
+    return lastResultSet;
+  }
 }

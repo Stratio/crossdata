@@ -18,7 +18,6 @@ import scala.collection.JavaConversions._
  */
 class queryString {
 
-
   def proccess (msg:String,actor:ActorRef, engine:Engine, typeActor:Int) : (String) ={
 //typeActor is: 1 Executor, 2: Planner, 3:Validator, 4:Parser,Query,Server
     var complete:Boolean= true
@@ -43,7 +42,7 @@ class queryString {
         actor.ask(stmt)(5 second)
 
       case 4 =>
-        val stmt=Query ("ks_demo", msg, "usr_demo")
+        val stmt=Query ("demo", "ks_demo", msg, "usr_demo")
         actor.ask(stmt)(5 second)
       case _ =>
         actor.ask("error")(5 second)
@@ -114,7 +113,7 @@ class queryString {
 
 
         case Failure(ex) => "ERROR"
-        case _ => "not sopported"
+        case unknown : Any => "Message not supported: " + unknown
       }
 
 

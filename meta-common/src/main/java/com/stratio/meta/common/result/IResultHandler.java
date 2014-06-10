@@ -17,13 +17,32 @@
  * License along with this library.
  */
 
-package com.stratio.meta.communication
+package com.stratio.meta.common.result;
 
-import com.stratio.meta.common.result.QueryStatus
+/**
+ * Callback interface for classes receiving asynchronous results from meta servers.
+ */
+public interface IResultHandler {
 
-case class ACK(queryId:String, status:QueryStatus)
+  /**
+   * Process an acknowledgement message for a specific query.
+   *
+   * @param queryId The query identifier.
+   * @param status  The query status.
+   */
+  public void processAck(String queryId, QueryStatus status);
 
-case class Connect(msg:String)
+  /**
+   * Process an error result.
+   *
+   * @param errorResult The error.
+   */
+  public void processError(Result errorResult);
 
-case class Reply(msg:String)
-
+  /**
+   * Process a successful result.
+   *
+   * @param result The result.
+   */
+  public void processResult(Result result);
+}
