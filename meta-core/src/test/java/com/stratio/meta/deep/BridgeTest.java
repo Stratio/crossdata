@@ -33,7 +33,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.stratio.deep.context.DeepSparkContext;
-import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -70,6 +69,24 @@ import com.stratio.meta.core.utils.Tree;
 
 public class BridgeTest extends BasicCoreCassandraTest {
 
+  private final static String CONSTANT_USERS_GENDER = "users.gender";
+
+  private final static String CONSTANT_USERS_AGE = "users.age";
+
+  private final static String CONSTANT_USERS_NAME = "users.name";
+
+  private final static String CONSTANT_GENDER = "gender";
+
+  private final static String CONSTANT_AGE = "age";
+
+  private final static String CONSTANT_NAME = "name";
+
+  private final static String CONSTANT_USERS_INFO_LINK_NAME = "users_info.link_name";
+
+  private final static String CONSTANT_DEMO_USERS = "demo.users";
+
+  private final static String CONSTANT_DEMO_USERS_INFO = "demo.users_info";
+
   protected static Executor executor = null;
 
   protected static DeepSparkContext deepContext = null;
@@ -105,8 +122,6 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
   private Result validateOk(MetaQuery metaQuery, String methodName) {
     MetaQuery result = executor.executeQuery(metaQuery);
-    CassandraResultSet cassandraResultSet =
-        ((CassandraResultSet) ((QueryResult) result.getResult()).getResultSet());
     assertNotNull(result.getResult(), "Result null - " + methodName);
     assertFalse(result.hasError(), "Deep execution failed - " + methodName + ": "
         + result.getResult().getErrorMessage());
@@ -144,7 +159,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     return result;
   }
 
-  private void validateFail(MetaQuery metaQuery, String methodName) {
+  private void validateFail(MetaQuery metaQuery) {
     try {
       executor.executeQuery(metaQuery);
     } catch (Exception ex) {
@@ -167,16 +182,16 @@ public class BridgeTest extends BasicCoreCassandraTest {
     // ADD MAIN STATEMENT
     SelectionSelectors selectionSelectors = new SelectionSelectors();
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
-        "users.gender")));
+        CONSTANT_USERS_GENDER)));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
         "users_info.info")));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
-        "users.age")));
+        CONSTANT_USERS_AGE)));
     SelectionClause mainSelectionClause = new SelectionList(selectionSelectors);
     Map<String, String> fields = new HashMap<String, String>();
-    fields.put("users.name", "users_info.link_name");
-    InnerJoin join = new InnerJoin("demo.users_info", fields);
-    SelectStatement ss = new SelectStatement(mainSelectionClause, "demo.users");
+    fields.put(CONSTANT_USERS_NAME, CONSTANT_USERS_INFO_LINK_NAME);
+    InnerJoin join = new InnerJoin(CONSTANT_DEMO_USERS_INFO, fields);
+    SelectStatement ss = new SelectStatement(mainSelectionClause, CONSTANT_DEMO_USERS);
     ss.setJoin(join);
     ss.setLimit(10000);
 
@@ -186,13 +201,15 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // FIRST SELECT
     selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
-    selectionSelectors
-        .addSelectionSelector(new SelectionSelector(new SelectorIdentifier("gender")));
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_GENDER)));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_AGE)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
 
     // SECOND SELECT
@@ -201,12 +218,12 @@ public class BridgeTest extends BasicCoreCassandraTest {
         "link_name")));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("info")));
     selectionClause = new SelectionList(selectionSelectors);
-    SelectStatement secondSelect = new SelectStatement(selectionClause, "demo.users_info");;
+    SelectStatement secondSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS_INFO);;
     secondSelect.setLimit(10000);
 
     // INNER JOIN
     fields = new HashMap<String, String>();
-    fields.put("users.name", "users_info.link_name");
+    fields.put(CONSTANT_USERS_NAME, CONSTANT_USERS_INFO_LINK_NAME);
     join = new InnerJoin("", fields);
     SelectStatement joinSelect = new SelectStatement(mainSelectionClause, "");
     joinSelect.setJoin(join);
@@ -232,13 +249,14 @@ public class BridgeTest extends BasicCoreCassandraTest {
         new MetaQuery("SELECT users.name FROM demo.users WHERE users.email=name_1@domain.com;");
 
     SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare("email", "=", new StringTerm("name_1@domain.com"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -256,13 +274,14 @@ public class BridgeTest extends BasicCoreCassandraTest {
     MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.age>100;");
 
     SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     List<Relation> clause = new ArrayList<>();
-    Relation relation = new RelationCompare("age", ">", new LongTerm("100"));
+    Relation relation = new RelationCompare(CONSTANT_AGE, ">", new LongTerm("100"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -279,13 +298,14 @@ public class BridgeTest extends BasicCoreCassandraTest {
     MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.age>=100;");
 
     SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     List<Relation> clause = new ArrayList<>();
-    Relation relation = new RelationCompare("age", ">=", new LongTerm("100"));
+    Relation relation = new RelationCompare(CONSTANT_AGE, ">=", new LongTerm("100"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -302,13 +322,14 @@ public class BridgeTest extends BasicCoreCassandraTest {
     MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.age<100;");
 
     SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     List<Relation> clause = new ArrayList<>();
-    Relation relation = new RelationCompare("age", "<", new LongTerm("100"));
+    Relation relation = new RelationCompare(CONSTANT_AGE, "<", new LongTerm("100"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -325,13 +346,14 @@ public class BridgeTest extends BasicCoreCassandraTest {
     MetaQuery metaQuery = new MetaQuery("SELECT users.name FROM demo.users WHERE users.age<=100;");
 
     SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     List<Relation> clause = new ArrayList<>();
-    Relation relation = new RelationCompare("age", "<=", new LongTerm("100"));
+    Relation relation = new RelationCompare(CONSTANT_AGE, "<=", new LongTerm("100"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -352,22 +374,22 @@ public class BridgeTest extends BasicCoreCassandraTest {
     // ADD MAIN STATEMENT
     SelectionSelectors selectionSelectors = new SelectionSelectors();
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
-        "users.gender")));
+        CONSTANT_USERS_GENDER)));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
         "types.boolean_column")));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
-        "users.age")));
+        CONSTANT_USERS_AGE)));
     SelectionClause mainSelectionClause = new SelectionList(selectionSelectors);
 
     Map<String, String> fields = new HashMap<String, String>();
-    fields.put("users.name", "types.varchar_column");
+    fields.put(CONSTANT_USERS_NAME, "types.varchar_column");
     InnerJoin join = new InnerJoin("demo.types", fields);
 
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare("types.int_column", ">", new LongTerm("104"));
     clause.add(relation);
 
-    SelectStatement ss = new SelectStatement(mainSelectionClause, "demo.users");;
+    SelectStatement ss = new SelectStatement(mainSelectionClause, CONSTANT_DEMO_USERS);;
     ss.setLimit(10000);
     ss.setWhere(clause);
     ss.setJoin(join);
@@ -379,14 +401,14 @@ public class BridgeTest extends BasicCoreCassandraTest {
     // FIRST SELECT
     selectionSelectors = new SelectionSelectors();
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
-        "users.name")));
+        CONSTANT_USERS_NAME)));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
-        "users.gender")));
+        CONSTANT_USERS_GENDER)));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
-        "users.age")));
+        CONSTANT_USERS_AGE)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
 
     // SECOND SELECT
@@ -409,7 +431,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // INNER JOIN
     fields = new HashMap<String, String>();
-    fields.put("users.name", "types.varchar_column");
+    fields.put(CONSTANT_USERS_NAME, "types.varchar_column");
     join = new InnerJoin("", fields);
     SelectStatement joinSelect = new SelectStatement(mainSelectionClause, "");
     joinSelect.setJoin(join);
@@ -441,7 +463,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     // ADD MAIN STATEMENT
     SelectionClause selectionClause = new SelectionList(new SelectionAsterisk());
     Map<String, String> fields = new HashMap<String, String>();
-    fields.put("users.name", "types.varchar_column");
+    fields.put(CONSTANT_USERS_NAME, "types.varchar_column");
     InnerJoin join = new InnerJoin("demo.types", fields);
 
     List<Relation> clause = new ArrayList<>();
@@ -451,7 +473,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     SelectStatement ss = new SelectStatement(selectionClause, // SelectionClause
         // selectionClause
-        "demo.users");
+        CONSTANT_DEMO_USERS);
     ss.setJoin(join);
     ss.setWhere(clause);
     ss.setLimit(10000);
@@ -466,7 +488,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     clause.add(relation);
     SelectStatement firstSelect = new SelectStatement(selectionClause, // SelectionClause
         // selectionClause
-        "demo.users");
+        CONSTANT_DEMO_USERS);
     firstSelect.setWhere(clause);
     firstSelect.setLimit(10000);
 
@@ -478,7 +500,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // INNER JOIN
     fields = new HashMap<String, String>();
-    fields.put("users.name", "types.varchar_column");
+    fields.put(CONSTANT_USERS_NAME, "types.varchar_column");
     join = new InnerJoin("", fields);
     SelectStatement joinSelect = new SelectStatement(selectionClause, // SelectionClause
         // selectionClause
@@ -512,20 +534,20 @@ public class BridgeTest extends BasicCoreCassandraTest {
     // ADD MAIN STATEMENT
     SelectionSelectors selectionSelectors = new SelectionSelectors();
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
-        "users.gender")));
+        CONSTANT_USERS_GENDER)));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
         "types.info")));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
-        "users.age")));
+        CONSTANT_USERS_AGE)));
     SelectionClause mainSelectionClause = new SelectionList(selectionSelectors);
 
     Map<String, String> fields = new HashMap<String, String>();
-    fields.put("users.name", "users_info.link_name");
-    InnerJoin join = new InnerJoin("demo.users_info", fields);
+    fields.put(CONSTANT_USERS_NAME, CONSTANT_USERS_INFO_LINK_NAME);
+    InnerJoin join = new InnerJoin(CONSTANT_DEMO_USERS_INFO, fields);
 
     SelectStatement ss = new SelectStatement(mainSelectionClause, // SelectionClause
         // selectionClause
-        "demo.users");
+        CONSTANT_DEMO_USERS);
     ss.setJoin(join);
     ss.setLimit(10000);
 
@@ -535,15 +557,17 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // FIRST SELECT
     selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
-    selectionSelectors
-        .addSelectionSelector(new SelectionSelector(new SelectorIdentifier("gender")));
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_GENDER)));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_AGE)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     SelectStatement firstSelect = new SelectStatement(selectionClause, // SelectionClause
         // selectionClause
-        "demo.users");
+        CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
 
     // SECOND SELECT
@@ -555,12 +579,12 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     SelectStatement secondSelect = new SelectStatement(selectionClause, // SelectionClause
         // selectionClause
-        "demo.users_info");
+        CONSTANT_DEMO_USERS_INFO);
     secondSelect.setLimit(10000);
 
     // INNER JOIN
     fields = new HashMap<String, String>();
-    fields.put("users.name", "users_info.link_name");
+    fields.put(CONSTANT_USERS_NAME, CONSTANT_USERS_INFO_LINK_NAME);
     join = new InnerJoin("", fields);
     SelectStatement joinSelect = new SelectStatement(mainSelectionClause, // SelectionClause
         // selectionClause
@@ -582,7 +606,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
 
-    validateFail(metaQuery, "testInnerJoinWrongSelectedColumn");
+    validateFail(metaQuery);
   }
 
   @Test
@@ -595,16 +619,16 @@ public class BridgeTest extends BasicCoreCassandraTest {
     // ADD MAIN STATEMENT
     SelectionSelectors selectionSelectors = new SelectionSelectors();
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
-        "users.gender")));
+        CONSTANT_USERS_GENDER)));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
         "users_info.info")));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
-        "users.age")));
+        CONSTANT_USERS_AGE)));
     SelectionClause mainSelectionClause = new SelectionList(selectionSelectors);
     Map<String, String> fields = new HashMap<String, String>();
-    fields.put("users.name", "users_info.link_name");
-    InnerJoin join = new InnerJoin("demo.users_info", fields);
-    SelectStatement ss = new SelectStatement(mainSelectionClause, "demo.users");
+    fields.put(CONSTANT_USERS_NAME, CONSTANT_USERS_INFO_LINK_NAME);
+    InnerJoin join = new InnerJoin(CONSTANT_DEMO_USERS_INFO, fields);
+    SelectStatement ss = new SelectStatement(mainSelectionClause, CONSTANT_DEMO_USERS);
     ss.setJoin(join);
     ss.setLimit(10000);
 
@@ -614,13 +638,15 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // FIRST SELECT
     selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
-    selectionSelectors
-        .addSelectionSelector(new SelectionSelector(new SelectorIdentifier("gender")));
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_GENDER)));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_AGE)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
 
     // SECOND SELECT
@@ -629,12 +655,12 @@ public class BridgeTest extends BasicCoreCassandraTest {
         "link_name")));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("info")));
     selectionClause = new SelectionList(selectionSelectors);
-    SelectStatement secondSelect = new SelectStatement(selectionClause, "demo.users_info");;
+    SelectStatement secondSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS_INFO);;
     secondSelect.setLimit(10000);
 
     // INNER JOIN
     fields = new HashMap<String, String>();
-    fields.put("users.name", "users_info.link_name");
+    fields.put(CONSTANT_USERS_NAME, CONSTANT_USERS_INFO_LINK_NAME);
     join = new InnerJoin("", fields);
     SelectStatement joinSelect = new SelectStatement(mainSelectionClause, "");
     joinSelect.setJoin(join);
@@ -642,7 +668,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // ORDERING
     List<Ordering> orderings = new ArrayList<>();
-    Ordering order1 = new Ordering("age", true, OrderDirection.DESC);
+    Ordering order1 = new Ordering(CONSTANT_AGE, true, OrderDirection.DESC);
     orderings.add(order1);
     joinSelect.setOrder(orderings);
 
@@ -669,7 +695,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // Fields to retrieve
     SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     // IN clause
@@ -681,7 +708,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     clause.add(relation);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
 
@@ -703,7 +730,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // Fields to retrieve
     SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     // IN clause
@@ -711,11 +739,11 @@ public class BridgeTest extends BasicCoreCassandraTest {
     List<Term<?>> inTerms = new ArrayList<>();
     inTerms.add(new IntegerTerm("19"));
     inTerms.add(new IntegerTerm("31"));
-    Relation relation = new RelationIn("age", inTerms);
+    Relation relation = new RelationIn(CONSTANT_AGE, inTerms);
 
     clause.add(relation);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
 
@@ -738,7 +766,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // Fields to retrieve
     SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     // IN clause
@@ -749,7 +778,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     clause.add(relation);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
 
@@ -771,7 +800,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // Fields to retrieve
     SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     // IN clause
@@ -780,7 +810,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     clause.add(relation);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
 
@@ -801,14 +831,16 @@ public class BridgeTest extends BasicCoreCassandraTest {
             "SELECT users.name, users.age FROM demo.users WHERE users.email<>name_1@domain.com;");
 
     SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("age")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_AGE)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare("email", "<>", new StringTerm("name_1@domain.com"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -829,18 +861,19 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // Fields to retrieve
     SelectionSelectors selectionSelectors = new SelectionSelectors();
-    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("name")));
+    selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
+        CONSTANT_NAME)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     // IN clause
     List<Relation> clause = new ArrayList<>();
     IntegerTerm integerTermLower = new IntegerTerm("10");
     IntegerTerm integerTermUpper = new IntegerTerm("25");
-    Relation relation = new RelationBetween("age", integerTermLower, integerTermUpper);
+    Relation relation = new RelationBetween(CONSTANT_AGE, integerTermLower, integerTermUpper);
 
     clause.add(relation);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
 
@@ -862,15 +895,15 @@ public class BridgeTest extends BasicCoreCassandraTest {
             "SELECT users.gender,count(*),sum(users.age) FROM demo.users GROUP BY users.gender;");
 
     List<SelectionSelector> selectionSelectors =
-        Arrays.asList(new SelectionSelector(new SelectorIdentifier("users.gender")),
+        Arrays.asList(new SelectionSelector(new SelectorIdentifier(CONSTANT_USERS_GENDER)),
             new SelectionSelector(new SelectorGroupBy(GroupByFunction.COUNT,
                 new SelectorIdentifier("*"))), new SelectionSelector(new SelectorGroupBy(
-                GroupByFunction.SUM, new SelectorIdentifier("users.age"))));
+                GroupByFunction.SUM, new SelectorIdentifier(CONSTANT_USERS_AGE))));
 
     SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
-    GroupBy groupClause = new GroupBy(Arrays.asList("users.gender"));
+    GroupBy groupClause = new GroupBy(Arrays.asList(CONSTANT_USERS_GENDER));
 
-    SelectStatement firstSelect = new SelectStatement(selClause, "demo.users");
+    SelectStatement firstSelect = new SelectStatement(selClause, CONSTANT_DEMO_USERS);
     firstSelect.setGroup(groupClause);
     firstSelect.validate(metadataManager);
 
@@ -892,19 +925,20 @@ public class BridgeTest extends BasicCoreCassandraTest {
             "SELECT users.gender,count(*),sum(users.age),avg(users.age),min(users.age),max(users.age) FROM demo.users GROUP BY users.gender;");
 
     List<SelectionSelector> selectionSelectors =
-        Arrays.asList(new SelectionSelector(new SelectorIdentifier("users.gender")),
+        Arrays.asList(new SelectionSelector(new SelectorIdentifier(CONSTANT_USERS_GENDER)),
             new SelectionSelector(new SelectorGroupBy(GroupByFunction.COUNT,
                 new SelectorIdentifier("*"))), new SelectionSelector(new SelectorGroupBy(
-                GroupByFunction.SUM, new SelectorIdentifier("users.age"))), new SelectionSelector(
-                new SelectorGroupBy(GroupByFunction.AVG, new SelectorIdentifier("users.age"))),
-            new SelectionSelector(new SelectorGroupBy(GroupByFunction.MIN, new SelectorIdentifier(
-                "users.age"))), new SelectionSelector(new SelectorGroupBy(GroupByFunction.MAX,
-                new SelectorIdentifier("users.age"))));
+                GroupByFunction.SUM, new SelectorIdentifier(CONSTANT_USERS_AGE))),
+            new SelectionSelector(new SelectorGroupBy(GroupByFunction.AVG, new SelectorIdentifier(
+                CONSTANT_USERS_AGE))), new SelectionSelector(new SelectorGroupBy(
+                GroupByFunction.MIN, new SelectorIdentifier(CONSTANT_USERS_AGE))),
+            new SelectionSelector(new SelectorGroupBy(GroupByFunction.MAX, new SelectorIdentifier(
+                CONSTANT_USERS_AGE))));
 
     SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
-    GroupBy groupClause = new GroupBy(Arrays.asList("users.gender"));
+    GroupBy groupClause = new GroupBy(Arrays.asList(CONSTANT_USERS_GENDER));
 
-    SelectStatement firstSelect = new SelectStatement(selClause, "demo.users");
+    SelectStatement firstSelect = new SelectStatement(selClause, CONSTANT_DEMO_USERS);
     firstSelect.setGroup(groupClause);
     firstSelect.validate(metadataManager);
 
@@ -926,14 +960,14 @@ public class BridgeTest extends BasicCoreCassandraTest {
             "SELECT users.gender,sum(users.gender) FROM demo.users GROUP BY users.gender;");
 
     List<SelectionSelector> selectionSelectors =
-        Arrays.asList(new SelectionSelector(new SelectorIdentifier("users.gender")),
+        Arrays.asList(new SelectionSelector(new SelectorIdentifier(CONSTANT_USERS_GENDER)),
             new SelectionSelector(new SelectorGroupBy(GroupByFunction.SUM, new SelectorIdentifier(
-                "users.gender"))));
+                CONSTANT_USERS_GENDER))));
 
     SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
-    GroupBy groupClause = new GroupBy(Arrays.asList("users.gender"));
+    GroupBy groupClause = new GroupBy(Arrays.asList(CONSTANT_USERS_GENDER));
 
-    SelectStatement firstSelect = new SelectStatement(selClause, "demo.users");
+    SelectStatement firstSelect = new SelectStatement(selClause, CONSTANT_DEMO_USERS);
     firstSelect.setGroup(groupClause);
     firstSelect.validate(metadataManager);
 
@@ -960,7 +994,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare("email", "=", new StringTerm("name_2@domain.com"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -985,10 +1019,10 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // Order by clause
     List<Ordering> orderFieldsList = new ArrayList<>();
-    Ordering order = new Ordering("users.age");
+    Ordering order = new Ordering(CONSTANT_USERS_AGE);
     orderFieldsList.add(order);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
     firstSelect.setOrder(orderFieldsList);
     firstSelect.validate(metadataManager);
@@ -1014,10 +1048,10 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // Order by clause
     List<Ordering> orderFieldsList = new ArrayList<>();
-    orderFieldsList.add(new Ordering("users.gender"));
-    orderFieldsList.add(new Ordering("users.age"));
+    orderFieldsList.add(new Ordering(CONSTANT_USERS_GENDER));
+    orderFieldsList.add(new Ordering(CONSTANT_USERS_AGE));
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
     firstSelect.setOrder(orderFieldsList);
     firstSelect.validate(metadataManager);
@@ -1042,10 +1076,10 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // Order by clause
     List<Ordering> orderFieldsList = new ArrayList<>();
-    orderFieldsList.add(new Ordering("users.gender"));
-    orderFieldsList.add(new Ordering("users.age"));
+    orderFieldsList.add(new Ordering(CONSTANT_USERS_GENDER));
+    orderFieldsList.add(new Ordering(CONSTANT_USERS_AGE));
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
     firstSelect.setOrder(orderFieldsList);
     firstSelect.validate(metadataManager);
@@ -1069,14 +1103,14 @@ public class BridgeTest extends BasicCoreCassandraTest {
     // Fields to retrieve
     SelectionSelectors selectionSelectors = new SelectionSelectors();
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier(
-        "users.gender")));
+        CONSTANT_USERS_GENDER)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
     // Order by clause
     List<Ordering> orderFieldsList = new ArrayList<>();
-    orderFieldsList.add(new Ordering("users.gender", true, OrderDirection.DESC));
+    orderFieldsList.add(new Ordering(CONSTANT_USERS_GENDER, true, OrderDirection.DESC));
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, "demo.users");;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
     firstSelect.setLimit(10000);
     firstSelect.setOrder(orderFieldsList);
     firstSelect.validate(metadataManager);
