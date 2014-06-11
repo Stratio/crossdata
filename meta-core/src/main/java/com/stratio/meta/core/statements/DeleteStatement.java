@@ -16,6 +16,10 @@
 
 package com.stratio.meta.core.statements;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
@@ -29,10 +33,6 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Class that models a {@code SELECT} statement from the META language. This class recognizes the
@@ -174,7 +174,7 @@ public class DeleteStatement extends MetaStatement {
     Result result = QueryResult.createSuccessQueryResult();
     // Check comparison, =, >, <, etc.
     RelationCompare rc = RelationCompare.class.cast(relation);
-    String column = rc.getIdentifiers().get(0);
+    String column = rc.getIdentifiers().get(0).toString();
     if (tableMetadata.getColumn(column) == null) {
       result =
           QueryResult.createFailQueryResult("Column " + column + " does not exist in table "
@@ -187,9 +187,12 @@ public class DeleteStatement extends MetaStatement {
       Term t = Term.class.cast(rc.getTerms().get(0));
       if (!tableMetadata.getColumn(column).getType().asJavaClass().equals(t.getTermClass())) {
         result =
-            QueryResult.createFailQueryResult("Column " + column + " of type "
-                + tableMetadata.getColumn(rc.getIdentifiers().get(0)).getType().asJavaClass()
-                + " does not accept " + t.getTermClass() + " values (" + t.toString() + ")");
+            QueryResult.createFailQueryResult("Column "
+                + column
+                + " of type "
+                + tableMetadata.getColumn(rc.getIdentifiers().get(0).toString()).getType()
+                    .asJavaClass() + " does not accept " + t.getTermClass() + " values ("
+                + t.toString() + ")");
       }
 
       if (Boolean.class.equals(tableMetadata.getColumn(column).getType().asJavaClass())) {
@@ -273,8 +276,7 @@ public class DeleteStatement extends MetaStatement {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if (ksMetadata == null) {
         result =
-            QueryResult
-                .createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
+            QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
       } else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata == null) {

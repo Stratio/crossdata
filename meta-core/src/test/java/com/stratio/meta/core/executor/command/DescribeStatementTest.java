@@ -19,7 +19,6 @@ package com.stratio.meta.core.executor.command;
 import org.testng.annotations.Test;
 
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.executor.BasicExecutorTest;
 import com.stratio.meta.core.statements.DescribeStatement;
 import com.stratio.meta.core.structures.DescribeType;
@@ -45,7 +44,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
 
-    Result result = validateOk(metaQuery, "testDescribeDemoKeyspaceOk");
+    validateOk(metaQuery, "testDescribeDemoKeyspaceOk");
   }
 
   @Test
@@ -63,7 +62,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
 
-    Result result = validateOk(metaQuery, "testDescribeCurrentKeyspaceOk");
+    validateOk(metaQuery, "testDescribeCurrentKeyspaceOk");
   }
 
   @Test
@@ -80,7 +79,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
 
-    Result result = validateOk(metaQuery, "testDescribeKeyspacesOk");
+    validateOk(metaQuery, "testDescribeKeyspacesOk");
   }
 
   @Test
@@ -99,7 +98,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
 
-    Result result = validateOk(metaQuery, "testDescribeTableOk");
+    validateOk(metaQuery, "testDescribeTableOk");
   }
 
   @Test
@@ -117,6 +116,6 @@ public class DescribeStatementTest extends BasicExecutorTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
 
-    Result result = validateOk(metaQuery, "testDescribeTablesOk");
+    validateOk(metaQuery, "testDescribeTablesOk");
   }
 }

@@ -298,11 +298,7 @@ public class Bridge {
   private JavaRDD<Cells> doWhere(JavaRDD<Cells> rdd, Relation rel) {
     String operator = rel.getOperator();
     JavaRDD<Cells> result = null;
-    String cn = rel.getIdentifiers().get(0);
-    if (cn.contains(".")) {
-      String[] ksAndTableName = cn.split("\\.");
-      cn = ksAndTableName[1];
-    }
+    String cn = rel.getIdentifiers().get(0).getField();
     List<Term<?>> terms = rel.getTerms();
 
     LOG.info("Rdd input size: " + rdd.count());

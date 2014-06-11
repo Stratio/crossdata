@@ -34,6 +34,7 @@ import com.stratio.meta.core.structures.IntTerm;
 import com.stratio.meta.core.structures.IntegerTerm;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.structures.Relation;
+import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.ValueAssignment;
 import com.stratio.meta.core.structures.ValueProperty;
@@ -278,7 +279,7 @@ public class UpdateTableStatement extends MetaStatement {
 
   private Result validateOptions() {
     Result result = QueryResult.createSuccessQueryResult();
-    for (Option opt: options) {
+    for (Option opt : options) {
       if (!(opt.getNameProperty().equalsIgnoreCase("ttl") || opt.getNameProperty()
           .equalsIgnoreCase("timestamp"))) {
         result =
@@ -407,10 +408,11 @@ public class UpdateTableStatement extends MetaStatement {
     for (Relation rel : whereClauses) {
       Term<?> term = rel.getTerms().get(0);
       Class<?> valueClazz = term.getTermClass();
-      for (String id : rel.getIdentifiers()) {
+      for (SelectorIdentifier id : rel.getIdentifiers()) {
         boolean foundAndSameType = false;
         for (ColumnMetadata cm : tableMetadata.getColumns()) {
-          if (cm.getName().equalsIgnoreCase(id) && (cm.getType().asJavaClass() == valueClazz)) {
+          if (cm.getName().equalsIgnoreCase(id.toString())
+              && (cm.getType().asJavaClass() == valueClazz)) {
             foundAndSameType = true;
             break;
           }

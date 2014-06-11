@@ -26,7 +26,7 @@ public class SelectStatementTest extends ParsingTest {
   public void selectStatement() {
     String inputText =
         "SELECT newtb.ident1 AS name1, myfunction(newtb.innerIdent, newtb.anotherIdent) AS functionName "
-            + "FROM newks.newtb WITH WINDOW 5 ROWS INNER JOIN tablename ON field1=field2 WHERE ident1 LIKE whatever"
+            + "FROM newks.newtb WITH WINDOW 5 ROWS INNER JOIN tablename ON field1=field2 WHERE newtb.ident1 LIKE whatever"
             + " ORDER BY newtb.id1 ASC GROUP BY newtb.col1 LIMIT 50 DISABLE ANALYTICS;";
     testRegularStatement(inputText, "selectStatement");
   }
@@ -52,7 +52,6 @@ public class SelectStatementTest extends ParsingTest {
 
     }
   }
-
 
   @Test
   public void selectStatementJoins() {
@@ -89,7 +88,7 @@ public class SelectStatementTest extends ParsingTest {
 
   @Test
   public void selectWithMatch() {
-    String inputText = "SELECT * FROM demo.emp WHERE first_name MATCH s2o;";
+    String inputText = "SELECT * FROM demo.emp WHERE emp.first_name MATCH s2o;";
     testRegularStatement(inputText, "selectWithMatch");
   }
 
@@ -162,6 +161,13 @@ public class SelectStatementTest extends ParsingTest {
   }
 
   @Test
+  public void selectAliasGroupedWithCountOk() {
+
+    String inputText = "SELECT users.gender as g, COUNT(*) FROM demo.users GROUP BY users.gender;";
+    testRegularStatement(inputText, "selectAliasGroupedWithCountOk");
+  }
+
+  @Test
   public void selectGroupedWithSumOk() {
 
     String inputText = "SELECT users.gender, SUM(users.age) FROM demo.users GROUP BY users.gender;";
@@ -223,5 +229,33 @@ public class SelectStatementTest extends ParsingTest {
 
     String inputText = "SELECT users.gender FROM demo.users ORDER BY sum(users.age);";
     testRecoverableError(inputText, "selectGroupedWithSumOk");
+  }
+
+  @Test
+  public void testSimpleQueryWithAliasesOk() {
+
+    String inputText = "SELECT users.gender as genero FROM demo.users;";
+
+    testRegularStatement(inputText, "testSimpleGroupQueryWithAliasesOk");
+  }
+
+  @Test
+  public void testSimpleGroupQueryWithAliasesOk() {
+
+    String inputText =
+        "SELECT users.gender, min(users.age) as minimo FROM demo.users GROUP BY users.gender;";
+
+    testRegularStatement(inputText, "testSimpleGroupQueryWithAliasesOk");
+  }
+
+
+  @Test
+  public void testComplexQueryWithAliasesOk() {
+
+    String inputText =
+        "SELECT users.age AS edad, users.gender AS genero, sum(users.age) AS suma, min(users.gender) AS minimo, count(*) AS contador FROM demo.users "
+            + "WHERE users.age > 13 AND users.gender IN ('male', 'female') ORDER BY users.age DESC GROUP BY users.gender;";
+
+    testRegularStatement(inputText, "testComplexQueryWithAliasesOk");
   }
 }

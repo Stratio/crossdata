@@ -457,25 +457,24 @@ selectStatement returns [SelectStatement slctst]
     (T_LIMIT {limitInc = true;} constant=getConstant)?
     (T_DISABLE T_ANALYTICS {disable = true;})?
     {
-        $slctst = new SelectStatement(selClause, tablename);        
+        $slctst = new SelectStatement(selClause, tablename);
         if(windowInc)
             $slctst.setWindow(window);
         if(joinInc)
             $slctst.setJoin(new InnerJoin(identJoin, fields)); 
         if(whereInc)
              $slctst.setWhere(whereClauses); 
-        if(orderInc) {
+        if(orderInc)
              $slctst.setOrder(ordering);
-             $slctst.updateTableNameInOrderByClause();
-        }
-        if(groupInc) {
-            $slctst.setGroup(groupby);
-            $slctst.updateTableNameInGroupByClause();
-        }
+        if(groupInc)
+             $slctst.setGroup(groupby);
         if(limitInc)
-            $slctst.setLimit(Integer.parseInt(constant));
+             $slctst.setLimit(Integer.parseInt(constant));
         if(disable)
             $slctst.setDisableAnalytics(true);
+            
+        $slctst.replaceAliasesWithName();
+        $slctst.updateTableNames();
     };
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
@@ -731,12 +730,13 @@ getWindow returns [WindowSelect ws]:
                        )
     );
 
+/*'s' {$unit=TimeUnit.SECONDS;}*/
+
 getTimeUnit returns [TimeUnit unit]:
-    ( 'S' {$unit=TimeUnit.SECONDS;}
+    ( S {$unit=TimeUnit.SECONDS;}
     | 'M' {$unit=TimeUnit.MINUTES;}
     | 'H' {$unit=TimeUnit.HOURS;}
     | 'D' {$unit=TimeUnit.DAYS;}
-    | 's' {$unit=TimeUnit.SECONDS;}
     | 'm' {$unit=TimeUnit.MINUTES;}
     | 'h' {$unit=TimeUnit.HOURS;}
     | 'd' {$unit=TimeUnit.DAYS;}
@@ -787,11 +787,16 @@ getSelection returns [Selection slct]
     }:
     (
         T_ASTERISK { $slct = new SelectionAsterisk();}       
-        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS ident1=T_IDENT {slsl.setAlias($ident1.text);})? {selections.add(slsl);}
-            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS identN=T_IDENT {slsl.setAlias($identN.text);})? {selections.add(slsl);})*
+        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS alias1=getAlias {slsl.setAlias($alias1.text);})? {selections.add(slsl);}
+            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS aliasN=getAlias {slsl.setAlias($aliasN.text);})? {selections.add(slsl);})*
             { $slct = new SelectionSelectors(selections);}
     )
 ;
+
+getAlias returns [String alias]:
+	ident=T_IDENT {$alias=$ident.text;}
+;
+	
 
 getSelector returns [SelectorMeta slmt]
     @init{

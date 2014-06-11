@@ -79,4 +79,20 @@ public class SelectorIdentifier extends SelectorMeta implements Serializable {
       this.table = tablename;
   }
 
+  /**
+   * Set field and tables fields through the given identifier
+   * 
+   * @param identifier Column identifier. It must be composed by a table, a dot ('.') and a field,
+   *        or just a field.
+   */
+  public void setIdentifier(String identifier) {
+
+    if (identifier.contains(".")) {
+      String[] idParts = identifier.split("\\.");
+      this.table = idParts[0];
+      this.field = idParts[1];
+    } else {
+      this.field = identifier;
+    }
+  }
 }

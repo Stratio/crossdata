@@ -297,6 +297,14 @@ public class SelectStatementTest extends BasicValidatorTest {
   }
 
   @Test
+  public void testValidateGroupByClauseCountWithAliasOk() {
+
+    String inputText = "SELECT users.gender AS g, COUNT(*) FROM demo.users GROUP BY g;";
+
+    validateOk(inputText, "testValidateGroupByClauseCountWithAliasOk");
+  }
+
+  @Test
   public void testValidateGroupByClauseSumOk() {
 
     String inputText = "SELECT users.gender, SUM(users.age) FROM demo.users GROUP BY users.gender;";
@@ -325,8 +333,6 @@ public class SelectStatementTest extends BasicValidatorTest {
     String inputText = "SELECT users.gender, sum(users.age) FROM demo.users;";
     validateFail(inputText, "testNoGroupWithAggregationFunctionFail");
   }
-
-
 
   @Test
   public void testValidateSimpleOrderByOk() {
@@ -366,5 +372,15 @@ public class SelectStatementTest extends BasicValidatorTest {
     String inputText = "SELECT * FROM demo.users ORDER BY users.gender, users.unknown;";
 
     validateFail(inputText, "testValidateSimpleOrderByUnknownFieldFail");
+  }
+
+  @Test
+  public void testComplexQueryWithAliasesOk() {
+
+    String inputText =
+        "SELECT age AS edad, users.gender AS genero, sum(users.age) AS suma, min(gender) AS minimo, count(*) AS contador FROM demo.users "
+            + "WHERE edad > 13 AND genero IN ('male', 'female') ORDER BY edad DESC GROUP BY genero;";
+
+    validateOk(inputText, "testComplexQueryWithAliasesOk");
   }
 }

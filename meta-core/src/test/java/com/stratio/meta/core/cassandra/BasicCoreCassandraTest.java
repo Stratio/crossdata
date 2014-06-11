@@ -115,7 +115,7 @@ public class BasicCoreCassandraTest {
     String query = "USE " + targetKeyspace;
     boolean ksExists = true;
     try {
-      ResultSet result = _session.execute(query);
+      _session.execute(query);
     } catch (InvalidQueryException iqe) {
       ksExists = false;
     }

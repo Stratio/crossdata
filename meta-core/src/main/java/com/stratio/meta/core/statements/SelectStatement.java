@@ -130,7 +130,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * The list of {@link com.stratio.meta.core.structures.Ordering} clauses.
    */
-  private List<com.stratio.meta.core.structures.Ordering> order = null;
+  private List<Ordering> order = null;
 
   /**
    * Whether a GROUP BY clause has been specified.
@@ -312,7 +312,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @param order The order.
    */
-  public void setOrder(List<com.stratio.meta.core.structures.Ordering> order) {
+  public void setOrder(List<Ordering> order) {
     this.orderInc = true;
     this.order = order;
   }
@@ -646,7 +646,7 @@ public class SelectStatement extends MetaStatement {
           || Relation.TYPE_BETWEEN == relation.getType()) {
         // Check comparison, =, >, <, etc.
         // RelationCompare rc = RelationCompare.class.cast(relation);
-        String column = relation.getIdentifiers().get(0);
+        String column = relation.getIdentifiers().get(0).toString();
         // Determine the target table the column belongs to.
         String targetTable = "any";
         if (column.contains(".")) {
@@ -889,7 +889,7 @@ public class SelectStatement extends MetaStatement {
         if (Relation.TYPE_COMPARE == relation.getType()
             && "MATCH".equalsIgnoreCase(relation.getOperator())) {
           RelationCompare rc = RelationCompare.class.cast(relation);
-          String column = rc.getIdentifiers().get(0);
+          String column = rc.getIdentifiers().get(0).toString();
           String value = rc.getTerms().get(0).toString();
           // Generate query for column
           String[] processedQuery = processLuceneQueryType(value);
@@ -1085,8 +1085,7 @@ public class SelectStatement extends MetaStatement {
    */
   private Object getWhereCastValue(String columnName, Object value) {
     Object result = null;
-    Class<?> clazz =
-        tableMetadataFrom.getColumn(splitAndGetFieldName(columnName)).getType().asJavaClass();
+    Class<?> clazz = tableMetadataFrom.getColumn(columnName).getType().asJavaClass();
 
     if (String.class.equals(clazz)) {
       result = String.class.cast(value);
@@ -1120,24 +1119,24 @@ public class SelectStatement extends MetaStatement {
   private Clause getRelationCompareClause(Relation metaRelation) {
     Clause clause = null;
     RelationCompare relCompare = (RelationCompare) metaRelation;
-    String name = relCompare.getIdentifiers().get(0);
+    String field = relCompare.getIdentifiers().get(0).getField();
     Object value = relCompare.getTerms().get(0).getTermValue();
-    value = getWhereCastValue(name, value);
+    value = getWhereCastValue(field, value);
     switch (relCompare.getOperator().toUpperCase()) {
       case "=":
-        clause = QueryBuilder.eq(name, value);
+        clause = QueryBuilder.eq(field, value);
         break;
       case ">":
-        clause = QueryBuilder.gt(name, value);
+        clause = QueryBuilder.gt(field, value);
         break;
       case ">=":
-        clause = QueryBuilder.gte(name, value);
+        clause = QueryBuilder.gte(field, value);
         break;
       case "<":
-        clause = QueryBuilder.lt(name, value);
+        clause = QueryBuilder.lt(field, value);
         break;
       case "<=":
-        clause = QueryBuilder.lte(name, value);
+        clause = QueryBuilder.lte(field, value);
         break;
       case "MATCH":
         // Processed as LuceneIndex
@@ -1159,14 +1158,14 @@ public class SelectStatement extends MetaStatement {
     Clause clause = null;
     RelationIn relIn = (RelationIn) metaRelation;
     List<Term<?>> terms = relIn.getTerms();
-    String name = relIn.getIdentifiers().get(0);
+    String field = relIn.getIdentifiers().get(0).getField();
     Object[] values = new Object[relIn.numberOfTerms()];
     int nTerm = 0;
     for (Term<?> term : terms) {
-      values[nTerm] = getWhereCastValue(name, term.getTermValue());
+      values[nTerm] = getWhereCastValue(field, term.getTermValue());
       nTerm++;
     }
-    clause = QueryBuilder.in(relIn.getIdentifiers().get(0), values);
+    clause = QueryBuilder.in(relIn.getIdentifiers().get(0).toString(), values);
     return clause;
   }
 
@@ -1179,7 +1178,12 @@ public class SelectStatement extends MetaStatement {
   private Clause getRelationTokenClause(Relation metaRelation) {
     Clause clause = null;
     RelationToken relToken = (RelationToken) metaRelation;
-    List<String> names = relToken.getIdentifiers();
+
+    List<String> names = new ArrayList<>();
+    for (SelectorIdentifier identifier : relToken.getIdentifiers()) {
+      names.add(identifier.toString());
+    }
+
     if (!relToken.isRightSideTokenType()) {
       Object value = relToken.getTerms().get(0).getTermValue();
       switch (relToken.getOperator()) {
@@ -1272,7 +1276,7 @@ public class SelectStatement extends MetaStatement {
       com.datastax.driver.core.querybuilder.Ordering[] orderings =
           new com.datastax.driver.core.querybuilder.Ordering[order.size()];
       int nOrdering = 0;
-      for (com.stratio.meta.core.structures.Ordering metaOrdering : this.order) {
+      for (Ordering metaOrdering : this.order) {
         if (metaOrdering.isDirInc() && (metaOrdering.getOrderDir() == OrderDirection.DESC)) {
           orderings[nOrdering] = QueryBuilder.desc(metaOrdering.getSelectorIdentifier().toString());
         } else {
@@ -1368,7 +1372,7 @@ public class SelectStatement extends MetaStatement {
     List<Relation> targetWhere = null;
     SelectStatement targetSelect = null;
     for (Relation relation : where) {
-      String id = relation.getIdentifiers().iterator().next();
+      String id = relation.getIdentifiers().iterator().next().toString();
 
       String whereTableName = null;
       String whereColumnName = null;
@@ -1494,8 +1498,8 @@ public class SelectStatement extends MetaStatement {
   private Map<String, String> getColumnsFromWhere() {
     Map<String, String> whereCols = new HashMap<>();
     for (Relation relation : where) {
-      for (String id : relation.getIdentifiers()) {
-        whereCols.put(splitAndGetFieldName(id), relation.getOperator());
+      for (SelectorIdentifier id : relation.getIdentifiers()) {
+        whereCols.put(id.getField(), relation.getOperator());
       }
     }
     return whereCols;
@@ -1666,21 +1670,6 @@ public class SelectStatement extends MetaStatement {
   }
 
   /**
-   * Given a name of table (with or without keyspace), check if contains keyspace and only return
-   * table name.
-   * 
-   * @param fullName Given table name in query.
-   * @return Only table name.
-   */
-  public String splitAndGetFieldName(String fullName) {
-    if (fullName.contains(".")) {
-      String[] ksAndTableName = fullName.split("\\.");
-      return ksAndTableName[1];
-    }
-    return fullName;
-  }
-
-  /**
    * Check if operators collection contains any relational operator.
    * 
    * @param collection {@link java.util.Collection} of relational operators.
@@ -1699,17 +1688,89 @@ public class SelectStatement extends MetaStatement {
     selectionClause.addTablename(tableName);
   }
 
-  public void updateTableNameInGroupByClause() {
+  public void replaceAliasesWithName() {
 
-    for (GroupBy groupByCol : this.group) {
-      groupByCol.getSelectorIdentifier().addTablename(this.tableName);
+    Map<String, String> aliasesMap = retrieveAliasesMap(this.getSelectionClause());
+
+    // Replacing alias in WHERE clause
+    if (this.where != null) {
+      for (Relation whereCol : this.where) {
+        for (SelectorIdentifier id : whereCol.getIdentifiers()) {
+          String identifier = aliasesMap.get(id.toString());
+          if (identifier != null) {
+            id.setIdentifier(identifier);
+          }
+        }
+      }
     }
+
+    // Replacing alias in GROUP BY clause
+    if (this.group != null) {
+      for (GroupBy groupByCol : this.group) {
+        String identifier = aliasesMap.get(groupByCol.getSelectorIdentifier().toString());
+        if (identifier != null) {
+          groupByCol.getSelectorIdentifier().setIdentifier(identifier);
+        }
+      }
+    }
+
+    // Replacing alias in ORDER BY clause
+    if (this.order != null) {
+      for (Ordering orderBycol : this.order) {
+        String identifier = aliasesMap.get(orderBycol.getSelectorIdentifier().toString());
+        if (identifier != null) {
+          orderBycol.getSelectorIdentifier().setIdentifier(identifier);
+        }
+      }
+    }
+
   }
 
-  public void updateTableNameInOrderByClause() {
+  private Map<String, String> retrieveAliasesMap(SelectionClause selectionClause) {
 
-    for (Ordering orderByCol : this.order) {
-      orderByCol.getSelectorIdentifier().addTablename(this.tableName);
+    Map<String, String> aliasesMap = new HashMap<>();
+
+    if (selectionClause instanceof SelectionList) {
+      SelectionList selectionList = (SelectionList) selectionClause;
+
+      if (selectionList.getSelection() instanceof SelectionSelectors) {
+        SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
+
+        List<SelectionSelector> selectors = selectionSelectors.getSelectors();
+        for (SelectionSelector selector : selectors) {
+          if (selector.getAlias() != null) {
+            aliasesMap.put(selector.getAlias(), selector.getSelector().toString());
+          }
+        }
+      }
+    }
+
+    return aliasesMap;
+  }
+
+  public void updateTableNames() {
+
+    // Adding table name to the identifiers in WHERE clause
+    if (this.where != null) {
+      for (Relation whereCol : this.where) {
+        for (SelectorIdentifier identifier : whereCol.getIdentifiers()) {
+          identifier.addTablename(this.tableName);
+        }
+      }
+    }
+
+    // Adding table name to the identifiers in GROUP BY clause
+    if (this.group != null) {
+      for (GroupBy groupByCol : this.group) {
+        groupByCol.getSelectorIdentifier().addTablename(this.tableName);
+      }
+    }
+
+    // Adding table name to the identifiers in ORDER BY clause
+    if (this.order != null) {
+      for (Ordering orderByCol : this.order) {
+        orderByCol.getSelectorIdentifier().addTablename(this.tableName);
+      }
     }
   }
 
