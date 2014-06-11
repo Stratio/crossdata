@@ -300,15 +300,15 @@ public class CreateTableStatement extends MetaStatement{
 
     //Check that the keyspace exists, and that the table does not exits.
     if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-      result= QueryResult.createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
+      result = Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
     }else{
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if(ksMetadata == null){
-        result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
+        result = Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
       }else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata != null && !ifNotExists) {
-          result= QueryResult.createFailQueryResult("Table " + tableName + " already exists.");
+          result = Result.createValidationErrorResult("Table " + tableName + " already exists.");
         } else if (tableMetadata == null){
           createTable = true;
         }
@@ -328,17 +328,17 @@ public class CreateTableStatement extends MetaStatement{
     //The columns in the primary key must be declared.
     for (String pk : primaryKey) {
       if(!columns.containsKey(pk)){
-        result= QueryResult.createFailQueryResult("Missing declaration for Primary Key column " + pk);
+        result= Result.createValidationErrorResult("Missing declaration for Primary Key column " + pk);
       }
     }
 
     //The columns in the clustering key must be declared and not part of the primary key.
     for(String ck : clusterKey){
       if(!columns.containsKey(ck)){
-        result= QueryResult.createFailQueryResult("Missing declaration for Clustering Key column " + ck);
+        result= Result.createValidationErrorResult("Missing declaration for Clustering Key column " + ck);
       }
       if(primaryKey.contains(ck)){
-        result= QueryResult.createFailQueryResult("Column " + ck + " found as part of primary and clustering key.");
+        result= Result.createValidationErrorResult("Column " + ck + " found as part of primary and clustering key.");
       }
     }
 
@@ -346,7 +346,7 @@ public class CreateTableStatement extends MetaStatement{
     Set<String> supportedColumns = new HashSet<>(Arrays.asList(supported));
     for(String c : columns.keySet()){
       if(!supportedColumns.contains(columns.get(c).toUpperCase()) || c.toLowerCase().startsWith("stratio")){
-        result= QueryResult.createFailQueryResult("Column " + c + " with datatype " + columns.get(c) + " not supported.");
+        result= Result.createValidationErrorResult("Column " + c + " with datatype " + columns.get(c) + " not supported.");
       }
     }
 
@@ -368,17 +368,17 @@ public class CreateTableStatement extends MetaStatement{
         if("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
            && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
           // If property ephemeral is present, it must be a boolean type
-          result = QueryResult.createFailQueryResult("Property 'ephemeral' must be a boolean");
+          result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
           exit = true;
         } else if("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
                   && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
           // If property ephemeral_tuples is present, it must be a integer type
-          result= QueryResult.createFailQueryResult("Property 'ephemeral' must be a boolean");
+          result= Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
           exit = true;
         } else if("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
                   && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
           // If property ephemeral_persist_on is present, it must be a string type
-          result= QueryResult.createFailQueryResult("Property 'ephemeral_persist_on' must be a string");
+          result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
           exit = true;
         }
       }

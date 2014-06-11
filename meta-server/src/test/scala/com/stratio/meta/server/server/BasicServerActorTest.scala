@@ -30,9 +30,12 @@ import org.testng.Assert._
 import com.stratio.meta.server.utilities._
 import com.stratio.meta.server.config.BeforeAndAfterCassandra
 import scala.collection
-import com.stratio.meta.common.result.{CommandResult, ConnectResult, QueryResult}
+import com.stratio.meta.common.result._
 import com.stratio.meta.common.ask.{Query, Connect}
 import com.stratio.meta.communication.ACK
+import com.stratio.meta.common.ask.Connect
+import com.stratio.meta.communication.ACK
+import com.stratio.meta.common.ask.Query
 
 /**
  * Server Actor tests.
@@ -53,10 +56,19 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
     engine.shutdown()
   }
 
+  def receiveActorMessages() : Result = {
+    val r = receiveN(2)
+    val ackFound = r.filter( msg => msg.isInstanceOf[ACK]).size
+    val filteredResult = r.filter( msg => msg.isInstanceOf[Result])
+    assertEquals(ackFound, 1, "ACK not received");
+    assertEquals(filteredResult.size, 1, "Result not received")
+    filteredResult.iterator.next().asInstanceOf[Result]
+  }
+
   test ("Unknown message"){
     within(5000 millis){
       serverRef ! 1
-      val result = expectMsgClass(classOf[CommandResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting error message")
     }
   }
@@ -67,8 +79,6 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
       val result = expectMsgClass(classOf[ConnectResult])
       assertFalse(result.hasError, "Error not expected")
       assertNotEquals(result.asInstanceOf[ConnectResult].getSessionId, -1, "Expecting session id")
-      assertFalse(result.isKsChanged, "Catalog should not change.")
-      assertNull(result.getCurrentKeyspace, "Expecting null catalog.")
     }
   }
 
@@ -78,7 +88,7 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
       serverRef ! new Query("server-actor", "", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
     }
   }
 
@@ -86,7 +96,7 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
     within(5000 millis){
       val query = "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       serverRef ! new Query("server-actor", "", query, "test")
-      val result = expectMsgClass(classOf[QueryResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting ks exists error")
     }
   }
@@ -97,7 +107,7 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
       serverRef ! new Query("server-actor", "", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
     }
   }
 
@@ -105,7 +115,7 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
     within(5000 millis){
       val query = "use unknown ;"
       serverRef ! new Query("server-actor", "", query, "test")
-      val result = expectMsgClass(classOf[QueryResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting ks not exists error")
     }
   }
@@ -114,7 +124,7 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
     within(5000 millis){
       val query = "insert into demo (field1, field2) values ('test1','text2');"
       serverRef ! new Query("server-actor", "ks_demo", query, "test")
-      val result = expectMsgClass(classOf[QueryResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting table not exists")
     }
   }
@@ -123,9 +133,10 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
     within(5000 millis){
       val query = "create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
       serverRef ! new Query("server-actor", "ks_demo", query, "test")
-      expectMsgClass(classOf[ACK])
-      val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      val result = receiveActorMessages
+      //expectMsgClass(classOf[ACK])
+      //val result = expectMsgClass(classOf[QueryResult])
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
     }
   }
 
@@ -133,7 +144,7 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
     within(5000 millis){
       val query = "create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
       serverRef ! new Query("server-actor", "ks_demo", query, "test")
-      val result = expectMsgClass(classOf[QueryResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting table exists")
     }
   }
@@ -144,7 +155,7 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
       serverRef ! new Query("server-actor", "ks_demo", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
     }
   }
 
@@ -154,7 +165,7 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
       serverRef ! new Query("server-actor", "ks_demo", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
       assertEquals(result.getResultSet.size(), 1, "Cannot retrieve data")
       val r = result.getResultSet.iterator().next()
       assertEquals(r.getCells.get("field1").getValue, "text1", "Invalid row content")
@@ -168,7 +179,7 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
       serverRef ! new Query("server-actor", "ks_demo", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
     }
   }
 
@@ -178,7 +189,7 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
       serverRef ! new Query("server-actor", "ks_demo", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
     }
   }
 
@@ -186,7 +197,7 @@ class BasicServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
     within(5000 millis){
       val query = "drop keyspace ks_demo ;"
       serverRef ! new Query("server-actor", "ks_demo", query, "test")
-      val result = expectMsgClass(classOf[QueryResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting table exists")
     }
   }

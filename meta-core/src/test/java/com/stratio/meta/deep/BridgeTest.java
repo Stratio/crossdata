@@ -124,7 +124,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     MetaQuery result = executor.executeQuery(metaQuery);
     assertNotNull(result.getResult(), "Result null - " + methodName);
     assertFalse(result.hasError(), "Deep execution failed - " + methodName + ": "
-        + result.getResult().getErrorMessage());
+        + getErrorMessage(result.getResult()));
     return result.getResult();
   }
 

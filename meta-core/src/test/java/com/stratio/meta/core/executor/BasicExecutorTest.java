@@ -69,7 +69,7 @@ public class BasicExecutorTest extends BasicCoreCassandraTest {
     public Result validateOk(MetaQuery metaQuery, String methodName) {
         MetaQuery result = executor.executeQuery(metaQuery);
         assertNotNull(result.getResult(), "Result null - " + methodName);
-        assertFalse(result.hasError(), metaQuery.getPlan().getNode().getPath()+" execution failed - " + methodName + ": " + result.getResult().getErrorMessage());
+        assertFalse(result.hasError(), metaQuery.getPlan().getNode().getPath()+" execution failed - " + methodName + ": " + getErrorMessage(result.getResult()));
         return result.getResult();
     }
 

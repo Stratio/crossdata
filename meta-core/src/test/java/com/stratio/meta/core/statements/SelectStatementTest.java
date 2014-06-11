@@ -67,9 +67,9 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
         MetaStatement st = mq.getStatement();
         assertNotNull(st, "Cannot parse "+methodName
                 + " parser error: " + mq.hasError()
-                + " -> " + mq.getResult().getErrorMessage());
+                + " -> " + getErrorMessage(mq.getResult()));
         assertFalse(mq.hasError(), "Parsing expecting '" + inputText
-                + "' from '" + st.toString() + "' returned: " + mq.getResult().getErrorMessage());
+                + "' from '" + st.toString() + "' returned: " + getErrorMessage(mq.getResult()));
 
         TableMetadata tableMetadata = _metadataManager.getTableMetadata(keyspace, tablename);
 
@@ -126,9 +126,9 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
         MetaStatement st = mq.getStatement();
         assertNotNull(st, "Cannot parse "+methodName
                 + " parser error: " + mq.hasError()
-                + " -> " + mq.getResult().getErrorMessage());
+                + " -> " + getErrorMessage(mq.getResult()));
         assertFalse(mq.hasError(), "Parsing expecting '" + inputText
-                + "' from '" + st.toString() + "' returned: " + mq.getResult().getErrorMessage());
+                + "' from '" + st.toString() + "' returned: " + getErrorMessage(mq.getResult()));
         SelectStatement ss = SelectStatement.class.cast(st);
 
         String [][] queries = {

@@ -512,7 +512,7 @@ public class SelectStatement extends MetaStatement {
     Result result = QueryResult.createSuccessQueryResult();
 
     if (windowInc) {
-      result = QueryResult.createFailQueryResult("Select with streaming options not supported.");
+      result = Result.createValidationErrorResult("Select with streaming options not supported.");
     }
 
     if (groupInc) {
@@ -556,12 +556,12 @@ public class SelectStatement extends MetaStatement {
         Map.Entry<String, String> onClause = onClauses.next();
         if (!checkSelectorExists(onClause.getKey())) {
           result =
-              QueryResult.createFailQueryResult("Join selector " + onClause.getKey()
+              Result.createValidationErrorResult("Join selector " + onClause.getKey()
                   + " table or column name not found");
         }
         if (!checkSelectorExists(onClause.getValue())) {
           result =
-              QueryResult.createFailQueryResult("Join selector " + onClause.getValue()
+              Result.createValidationErrorResult("Join selector " + onClause.getValue()
                   + " table or column name not found");
         }
       }
@@ -593,7 +593,7 @@ public class SelectStatement extends MetaStatement {
         Term<?> term = termsIt.next();
         if (!columnType.equals(term.getTermClass())) {
           result =
-              QueryResult.createFailQueryResult("Column [" + column + "] of type [" + columnType
+              Result.createValidationErrorResult("Column [" + column + "] of type [" + columnType
                   + "] does not accept " + term.getTermClass() + " values (" + term.toString()
                   + ")");
         }
@@ -615,13 +615,13 @@ public class SelectStatement extends MetaStatement {
         }
         if (!supported) {
           result =
-              QueryResult.createFailQueryResult("Operand " + operator + " not supported for"
+              Result.createValidationErrorResult("Operand " + operator + " not supported for"
                   + " column " + column + ".");
         }
       }
     } else {
       result =
-          QueryResult.createFailQueryResult("Column " + column + " not found in " + targetTable
+          Result.createValidationErrorResult("Column " + column + " not found in " + targetTable
               + " table.");
     }
 
@@ -659,12 +659,11 @@ public class SelectStatement extends MetaStatement {
             validateWhereSingleColumnRelation(targetTable, column, relation.getTerms(), relation);
         if ("match".equalsIgnoreCase(relation.getOperator()) && joinInc) {
           result =
-              QueryResult
-                  .createFailQueryResult("Select statements with 'Inner Join' don't support MATCH operator.");
+              Result.createValidationErrorResult("Select statements with 'Inner Join' don't support MATCH operator.");
         }
       } else if (Relation.TYPE_TOKEN == relation.getType()) {
         // TODO: Check TOKEN relation
-        result = QueryResult.createFailQueryResult("TOKEN function not supported.");
+        result = Result.createValidationErrorResult("TOKEN function not supported.");
       }
     }
 
@@ -686,7 +685,7 @@ public class SelectStatement extends MetaStatement {
     for (String col : groupByCols) {
       if (!selectionCols.contains(col)) {
         result =
-            QueryResult.createFailQueryResult("The GROUP BY column [" + col
+            Result.createValidationErrorResult("The GROUP BY column [" + col
                 + "] must be included in the selection columns.");
       }
     }
@@ -746,13 +745,13 @@ public class SelectStatement extends MetaStatement {
       }
       if (!found) {
         result =
-            QueryResult.createFailQueryResult("Column " + column + " does not " + "exist in "
+            Result.createValidationErrorResult("Column " + column + " does not " + "exist in "
                 + table + " table.");
       }
 
     } else {
       result =
-          QueryResult.createFailQueryResult("Column " + column + " refers to table " + table
+          Result.createValidationErrorResult("Column " + column + " refers to table " + table
               + " that has not been specified on query.");
     }
     return result;
@@ -859,16 +858,15 @@ public class SelectStatement extends MetaStatement {
               }
             } else {
               result =
-                  QueryResult
-                      .createFailQueryResult("Nested functions on selected fields not supported.");
+                  Result.createValidationErrorResult("Nested functions on selected fields not supported.");
             }
           }
         } else {
-          result = QueryResult.createFailQueryResult("Missing group by clause.");
+          result = Result.createValidationErrorResult("Missing group by clause.");
         }
       } else {
         result =
-            QueryResult.createFailQueryResult("Functions type on selected fields not supported.");
+            Result.createValidationErrorResult("Functions type on selected fields not supported.");
       }
     }
 

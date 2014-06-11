@@ -51,7 +51,7 @@ class QueryActor(engine: Engine) extends Actor{
     //}
     case _ => {
       println("Unknown message!")
-      sender ! QueryResult.createFailQueryResult("Message not recognized")
+      sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
   }
   }
 }

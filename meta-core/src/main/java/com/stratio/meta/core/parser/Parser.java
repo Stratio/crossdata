@@ -19,6 +19,7 @@
 
 package com.stratio.meta.core.parser;
 
+import com.stratio.meta.common.result.ErrorType;
 import com.stratio.meta.core.grammar.generated.MetaLexer;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.AntlrError;
@@ -55,23 +56,23 @@ public class Parser {
             foundErrors = parser.getFoundErrors();
         } catch (Exception e) {
             LOG.error("Cannot parse statement", e);
-            metaQuery.setError(e.getMessage());
+            metaQuery.setErrorMessage(ErrorType.PARSING, e.getMessage());
             if(foundErrors == null){                                    
                 foundErrors = new ErrorsHelper();
             }
             if(foundErrors.isEmpty()){
                 foundErrors.addError(new AntlrError("Unknown parser error", e.getMessage()));
             } else if(foundErrors.getAntlrErrors().iterator().next().getMessage().contains("missing")){
-                metaQuery.setErrorMessage(e.getMessage());
+                metaQuery.setErrorMessage(ErrorType.PARSING, e.getMessage());
             } else {
-                metaQuery.setErrorMessage(foundErrors.toString(inputText, null));
+                metaQuery.setErrorMessage(ErrorType.PARSING, foundErrors.toString(inputText, null));
             }
             return metaQuery;
         }
         metaQuery.setStatement(resultStatement);
         if((foundErrors!=null) && (!foundErrors.isEmpty())){
             String foundErrorsStr = foundErrors.toString(inputText, resultStatement);
-            metaQuery.setErrorMessage(foundErrorsStr);
+            metaQuery.setErrorMessage(ErrorType.PARSING, foundErrorsStr);
         }
         return metaQuery;                 
     }

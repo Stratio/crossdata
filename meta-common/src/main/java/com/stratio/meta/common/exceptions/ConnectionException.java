@@ -20,17 +20,17 @@
 package com.stratio.meta.common.exceptions;
 
 /**
- * Execution exception thrown by the Driver if the statement could not be executed.
+ * Exception thrown if the connection cannot be established with
+ * a remote meta server.
  */
-public class ExecutionException extends Exception{
+public class ConnectionException extends Exception{
 
   /**
    * Serial version UID in order to be {@link java.io.Serializable}.
    */
-  private static final long serialVersionUID = 9044542877799283335L;
+  private static final long serialVersionUID = 5733609562968522778L;
 
-  public ExecutionException(String message){
+  public ConnectionException(String message){
     super(message);
   }
-
 }

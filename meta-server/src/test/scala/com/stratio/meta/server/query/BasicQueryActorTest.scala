@@ -12,7 +12,7 @@ import com.stratio.meta.server.config.BeforeAndAfterCassandra
 import com.stratio.meta.common.ask.Query
 import akka.pattern.ask
 import org.testng.Assert._
-import com.stratio.meta.common.result.QueryResult
+import com.stratio.meta.common.result.{ErrorResult, QueryResult}
 import com.stratio.meta.communication.ACK
 
 class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
@@ -34,7 +34,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
   test ("Unknown message"){
     within(5000 millis){
       queryRef ! 1
-      val result = expectMsgClass(classOf[QueryResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting error message")
     }
   }
@@ -45,7 +45,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
       queryRef ! new Query("query-actor", "", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
     }
   }
 
@@ -53,7 +53,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
     within(5000 millis){
       val query = "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       queryRef ! new Query("query-actor", "", query, "test")
-      val result = expectMsgClass(classOf[QueryResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting ks exists error")
     }
   }
@@ -64,7 +64,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
       queryRef ! new Query("query-actor", "", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
     }
   }
 
@@ -72,7 +72,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
     within(5000 millis){
       val query = "use unknown ;"
       queryRef ! new Query("query-actor", "", query, "test")
-      val result = expectMsgClass(classOf[QueryResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting ks not exists error")
     }
   }
@@ -81,7 +81,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
     within(5000 millis){
       val query = "insert into demo (field1, field2) values ('test1','text2');"
       queryRef ! new Query("query-actor", "ks_demo", query, "test")
-      val result = expectMsgClass(classOf[QueryResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting table not exists")
     }
   }
@@ -92,7 +92,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
       queryRef ! new Query("query-actor", "ks_demo", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
     }
   }
 
@@ -100,7 +100,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
     within(5000 millis){
       val query = "create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
       queryRef ! new Query("query-actor", "ks_demo", query, "test")
-      val result = expectMsgClass(classOf[QueryResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting table exists")
     }
   }
@@ -111,7 +111,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
       queryRef ! new Query("query-actor", "ks_demo", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
     }
   }
 
@@ -121,7 +121,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
       queryRef ! new Query("query-actor", "ks_demo", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
       assertEquals(result.getResultSet.size(), 1, "Cannot retrieve data")
       val r = result.getResultSet.iterator().next()
       assertEquals(r.getCells.get("field1").getValue, "text1", "Invalid row content")
@@ -135,7 +135,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
       queryRef ! new Query("query-actor", "ks_demo", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
     }
   }
 
@@ -145,7 +145,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
       queryRef ! new Query("query-actor", "ks_demo", query, "test")
       expectMsgClass(classOf[ACK])
       val result = expectMsgClass(classOf[QueryResult])
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
     }
   }
 
@@ -153,7 +153,7 @@ class BasicQueryActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigF
     within(5000 millis){
       val query = "drop keyspace ks_demo ;"
       queryRef ! new Query("query-actor", "ks_demo", query, "test")
-      val result = expectMsgClass(classOf[QueryResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting keyspace not exists")
     }
   }

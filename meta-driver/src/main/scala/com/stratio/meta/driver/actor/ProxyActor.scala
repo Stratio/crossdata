@@ -21,7 +21,7 @@ package com.stratio.meta.driver.actor
 
 import akka.actor.{Actor, Props, ActorRef}
 import com.stratio.meta.common.ask.{Command, Query, Connect}
-import com.stratio.meta.common.result.Result
+import com.stratio.meta.common.result.{ErrorResult, Result}
 import com.stratio.meta.communication.{ACK}
 import scala.concurrent.duration._
 import akka.util.Timeout
@@ -124,7 +124,7 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
 
       val handler = driver.getResultHandler(result.getQueryId)
       if(handler != null){
-        if(!result.hasError) {
+        if(!result.isInstanceOf[ErrorResult]) {
           handler.processResult(result)
         }else{
           handler.processError(result)

@@ -111,11 +111,11 @@ public class DropIndexStatement extends MetaStatement {
 
         //Check that the keyspace and table exists.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result= QueryResult.createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
+            result= Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
         }else{
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
             if(ksMetadata == null){
-                result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
+                result= Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
             }else{
                 result = validateIndexName(ksMetadata);
             }
@@ -148,7 +148,7 @@ public class DropIndexStatement extends MetaStatement {
         }
 
         if(!dropIfExists && !found){
-            result = QueryResult.createFailQueryResult("Index " + name + " not found in keyspace " + ksMetadata.getName());
+            result = Result.createValidationErrorResult("Index " + name + " not found in keyspace " + ksMetadata.getName());
         }else{
             dropIndex = true;
         }

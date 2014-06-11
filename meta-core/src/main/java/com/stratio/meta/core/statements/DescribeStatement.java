@@ -134,7 +134,7 @@ public class DescribeStatement extends MetaStatement {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(this.keyspace);
       if (ksMetadata == null) {
         result =
-            QueryResult.createFailQueryResult("Keyspace " + this.keyspace + " does not exist.");
+            Result.createValidationErrorResult("Keyspace " + this.keyspace + " does not exist.");
       }
     }
 
@@ -171,30 +171,30 @@ public class DescribeStatement extends MetaStatement {
     if (type == DescribeType.KEYSPACE) {
       KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(this.getEffectiveKeyspace());
       if (ksInfo == null) {
-        result = CommandResult.createFailCommandResult("KEYSPACE " + keyspace + " was not found");
+        result = Result.createExecutionErrorResult("KEYSPACE " + keyspace + " was not found");
       } else {
-        result = CommandResult.createSuccessCommandResult(ksInfo.exportAsString());
+        result = CommandResult.createCommandResult(ksInfo.exportAsString());
       }
     } else if (type == DescribeType.KEYSPACES) {
       List<String> keyspacesNames = mm.getKeyspacesNames();
       if (keyspacesNames == null) {
-        result = CommandResult.createFailCommandResult("No keyspaces found");
+        result = Result.createExecutionErrorResult("No keyspaces found");
       } else {
-        result = CommandResult.createSuccessCommandResult(keyspacesNames.toString());
+        result = CommandResult.createCommandResult(keyspacesNames.toString());
       }
     } else if (type == DescribeType.TABLE) {
       TableMetadata tableInfo = mm.getTableMetadata(this.getEffectiveKeyspace(), tableName);
       if (tableInfo == null) {
-        result = CommandResult.createFailCommandResult("TABLE " + tableName + " was not found");
+        result = Result.createExecutionErrorResult("TABLE " + tableName + " was not found");
       } else {
-        result = CommandResult.createSuccessCommandResult(tableInfo.exportAsString());
+        result = CommandResult.createCommandResult(tableInfo.exportAsString());
       }
     } else {
       List<String> tablesNames = mm.getTablesNames(this.getEffectiveKeyspace());
       if (tablesNames == null) {
-        result = CommandResult.createFailCommandResult("No tables found");
+        result = Result.createExecutionErrorResult("No tables found");
       } else {
-        result = CommandResult.createSuccessCommandResult(tablesNames.toString());
+        result = CommandResult.createCommandResult(tablesNames.toString());
       }
     }
     return result;

@@ -11,7 +11,7 @@ import org.testng.Assert._
 import com.stratio.meta.server.utilities._
 import scala.collection.mutable
 import com.stratio.meta.server.config.BeforeAndAfterCassandra
-import com.stratio.meta.common.result.{QueryResult, CommandResult, Result}
+import com.stratio.meta.common.result.{ErrorResult, QueryResult, CommandResult, Result}
 import com.stratio.meta.communication.ACK
 import com.stratio.meta.common.ask.Query
 
@@ -26,10 +26,6 @@ class BasicParserActorTest extends TestKit(ActorSystem("TestKitUsageExectutorAct
   lazy val validatorRef = system.actorOf(ValidatorActor.props(plannerRef,engine.getValidator),"TestValidatorActor")
   lazy val parserRef = system.actorOf(ParserActor.props(validatorRef,engine.getParser),"TestParserActor")
   lazy val parserRefTest= system.actorOf(ParserActor.props(testActor,engine.getParser),"TestParserActorTest")
-
-  lazy val process2=new queryCaseElse
-  lazy val myCommandResult=process2.queryelse(parserRef)
-
 
   override def beforeCassandraFinish() {
     shutdown(system)
@@ -51,7 +47,7 @@ class BasicParserActorTest extends TestKit(ActorSystem("TestKitUsageExectutorAct
 
     if(shouldExecute) {
       assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
-                                   + "\n error: " + result.getErrorMessage + " " + errorMessage)
+                                   + "\n error: " + getErrorMessage(result) + " " + errorMessage)
     }else{
       assertTrue(result.hasError, "Statement should report an error. " + errorMessage)
     }
@@ -62,7 +58,7 @@ class BasicParserActorTest extends TestKit(ActorSystem("TestKitUsageExectutorAct
   test ("Unknown message"){
     within(5000 millis){
       parserRef ! 1
-      val result = expectMsgClass(classOf[QueryResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting error message")
     }
   }
@@ -85,8 +81,10 @@ class BasicParserActorTest extends TestKit(ActorSystem("TestKitUsageExectutorAct
     within(5000 millis){
       val msg="use ks_demo ;"
       val result = executeStatement(msg, "", true, "Keyspace should be used.")
-      assertTrue(result.isKsChanged, "New keyspace should be used");
-      assertEquals(result.getCurrentKeyspace, "ks_demo", "New keyspace should be used");
+      assertTrue(result.isInstanceOf[QueryResult], "Invalid result type")
+      val r = result.asInstanceOf[QueryResult]
+      assertTrue(r.isCatalogChanged, "New keyspace should be used");
+      assertEquals(r.getCurrentCatalog, "ks_demo", "New keyspace should be used");
     }
   }
 
@@ -94,8 +92,10 @@ class BasicParserActorTest extends TestKit(ActorSystem("TestKitUsageExectutorAct
     within(5000 millis){
       val msg = "use ks_demo ;"
       val result = executeStatement(msg, "ks_demo", true, "Keyspace should be used.")
-      assertTrue(result.isKsChanged, "New keyspace should be used");
-      assertEquals(result.getCurrentKeyspace, "ks_demo", "New keyspace should be used");
+      assertTrue(result.isInstanceOf[QueryResult], "Invalid result type")
+      val r = result.asInstanceOf[QueryResult]
+      assertTrue(r.isCatalogChanged, "New keyspace should be used");
+      assertEquals(r.getCurrentCatalog, "ks_demo", "New keyspace should be used");
     }
   }
 
@@ -138,7 +138,7 @@ class BasicParserActorTest extends TestKit(ActorSystem("TestKitUsageExectutorAct
     within(5000 millis){
       val msg="select * from demo ;"
       var result = executeStatement(msg, "ks_demo", true, "Select should work.")
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
       val queryResult = result.asInstanceOf[QueryResult]
       assertEquals(queryResult.getResultSet.size(), 1, "Cannot retrieve data")
       val r = queryResult.getResultSet.iterator().next()

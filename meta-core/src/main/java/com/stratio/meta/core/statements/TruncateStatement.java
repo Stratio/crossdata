@@ -99,15 +99,15 @@ public class TruncateStatement extends MetaStatement {
 
         //Check that the keyspace and table exists.
         if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-            result= QueryResult.createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
+            result= Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
         }else{
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
             if(ksMetadata == null){
-                result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
+                result= Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
             }else {
                 TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, ident);
                 if (tableMetadata == null) {
-                    result= QueryResult.createFailQueryResult("Table " + ident + " does not exist.");
+                    result= Result.createValidationErrorResult("Table " + ident + " does not exist.");
                 }
             }
         }

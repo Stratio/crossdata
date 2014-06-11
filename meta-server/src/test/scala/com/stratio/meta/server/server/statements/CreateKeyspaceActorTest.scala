@@ -49,7 +49,7 @@ class CreateKeyspaceActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Con
     val result = expectMsgClass(classOf[Result])
 
     assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
-      + "\n error: " + result.getErrorMessage)
+      + "\n error: " + getErrorMessage(result))
 
     result
   }

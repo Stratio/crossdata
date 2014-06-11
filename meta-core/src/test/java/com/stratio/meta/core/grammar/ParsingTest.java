@@ -19,6 +19,9 @@
 
 package com.stratio.meta.core.grammar;
 
+import com.stratio.meta.common.result.ErrorResult;
+import com.stratio.meta.common.result.ErrorType;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.MetaQuery;
@@ -37,11 +40,16 @@ public class ParsingTest {
     public MetaStatement testRegularStatement(String inputText, String methodName) {
         MetaQuery mq = parser.parseStatement(inputText);
         MetaStatement st = mq.getStatement();
+      ErrorResult er = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "null");
+      if(ErrorResult.class.isInstance(mq.getResult())){
+        er = ErrorResult.class.cast(mq.getResult());
+      }
+
         assertNotNull(st, "Cannot parse "+methodName
                 + " parser error: " + mq.hasError()
-                + " -> " + mq.getResult().getErrorMessage());
+                + " -> " + er.getErrorMessage());
         assertFalse(mq.hasError(), "Parsing expecting '" + inputText
-                + "' from '" + st.toString() + "' returned: " + mq.getResult().getErrorMessage());
+                + "' from '" + st.toString() + "' returned: " + er.getErrorMessage());
         
         assertTrue(inputText.equalsIgnoreCase(st.toString()+";"),
                 "Cannot parse " + methodName
@@ -53,11 +61,15 @@ public class ParsingTest {
     public MetaStatement testRegularStatement(String inputText, String expectedQuery, String methodName) {
         MetaQuery mq = parser.parseStatement(inputText);
         MetaStatement st = mq.getStatement();
+      ErrorResult er = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "null");
+      if(ErrorResult.class.isInstance(mq.getResult())){
+        er = ErrorResult.class.cast(mq.getResult());
+      }
         assertNotNull(st, "Cannot parse "+methodName
                 + " parser error: " + mq.hasError()
-                + " -> " + mq.getResult().getErrorMessage());
+                + " -> " + er.getErrorMessage());
         assertFalse(mq.hasError(), "Parsing expecting '" + inputText
-                + "' from '" + st.toString() + "' returned: " + mq.getResult().getErrorMessage());
+                + "' from '" + st.toString() + "' returned: " + er.getErrorMessage());
 
         assertTrue(expectedQuery.equalsIgnoreCase(st.toString() + ";"),
                 "Cannot parse " + methodName

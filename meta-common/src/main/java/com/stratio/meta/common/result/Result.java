@@ -39,78 +39,7 @@ public abstract class Result implements Serializable {
   /**
    * Whether an error occurred during the execution of an action.
    */
-  private final boolean error;
-
-  /**
-   * The associated error message in case of {@code error}.
-   */
-  private final String errorMessage;
-
-  /**
-   * Whether the user session keyspace is changed by the execution of the action.
-   */
-  private final boolean ksChanged;
-
-  /**
-   * The current user session keyspace in case of {@code ksChanged}.
-   */
-  private final String currentKeyspace;
-
-  /**
-   * Build a generic result of execution an action in a META server.
-   *
-   * @param error           Whether an error occurred during the execution.
-   * @param errorMessage    The error message in case of {@code error}.
-   * @param ksChanged       Whether the current keyspace in the user session is modified by the
-   *                        execution.
-   * @param currentKeyspace The current keyspace after the execution.
-   */
-  Result(
-      boolean error,
-      String errorMessage,
-      boolean ksChanged,
-      String currentKeyspace) {
-    this.error = error;
-    this.errorMessage = errorMessage;
-    this.ksChanged = ksChanged;
-    this.currentKeyspace = currentKeyspace;
-  }
-
-  /**
-   * Whether the result contains an error.
-   *
-   * @return True if the result contains errors.
-   */
-  public boolean hasError() {
-    return error;
-  }
-
-  /**
-   * Get the error message.
-   *
-   * @return The message or null if no error occurred.
-   */
-  public String getErrorMessage() {
-    return errorMessage;
-  }
-
-  /**
-   * Whether the keyspace is changed by the execution.
-   *
-   * @return True if the user session keyspace is changed.
-   */
-  public boolean isKsChanged() {
-    return ksChanged;
-  }
-
-  /**
-   * Get the current user session keyspace.
-   *
-   * @return The keyspace or null if the keyspace is not changed.
-   */
-  public String getCurrentKeyspace() {
-    return currentKeyspace;
-  }
+  protected boolean error = false;
 
   /**
    * Set the query identifier.
@@ -128,5 +57,38 @@ public abstract class Result implements Serializable {
    */
   public String getQueryId() {
     return queryId;
+  }
+
+  /**
+   * Whether the result contains an error.
+   *
+   * @return True if the result contains errors.
+   */
+  public boolean hasError() {
+    return error;
+  }
+
+  public static ErrorResult createErrorResult(ErrorType type, String errorMessage){
+    return new ErrorResult(type, errorMessage);
+  }
+
+  public static ErrorResult createConnectionErrorResult(String errorMessage){
+    return new ErrorResult(ErrorType.CONNECTION, errorMessage);
+  }
+
+  public static ErrorResult createParsingErrorResult(String errorMessage){
+    return new ErrorResult(ErrorType.PARSING, errorMessage);
+  }
+
+  public static ErrorResult createValidationErrorResult(String errorMessage){
+    return new ErrorResult(ErrorType.VALIDATION, errorMessage);
+  }
+
+  public static ErrorResult createExecutionErrorResult(String errorMessage){
+    return new ErrorResult(ErrorType.EXECUTION, errorMessage);
+  }
+
+  public static ErrorResult createUnsupportedOperationErrorResult(String errorMessage){
+    return new ErrorResult(ErrorType.NOT_SUPPORTED, errorMessage);
   }
 }

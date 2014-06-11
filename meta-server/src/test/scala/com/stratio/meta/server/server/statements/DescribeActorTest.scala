@@ -53,7 +53,7 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
 
     if(shouldExecute) {
       assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
-        + "\n error: " + result.getErrorMessage)
+        + "\n error: " + getErrorMessage(result))
     }else{
       assertTrue(result.hasError, "Statement should report an error")
     }

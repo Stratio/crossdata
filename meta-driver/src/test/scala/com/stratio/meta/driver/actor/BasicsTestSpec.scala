@@ -8,7 +8,7 @@ import akka.actor.Props
 import scala.concurrent.duration._
 import akka.contrib.pattern.ClusterClient.Send
 import com.stratio.meta.driver.utils.RetryPolitics
-import com.stratio.meta.common.result.ConnectResult
+import com.stratio.meta.common.result.{ErrorResult, ConnectResult}
 import org.testng.Assert._
 import com.stratio.meta.driver.BasicDriver
 
@@ -37,7 +37,7 @@ class BasicsTestSpec extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactor
 
   test("testing retryPolitics 1"){
     within(500 millis){
-      val r = retryPolitics.askRetry(retryTestRef, "Test").asInstanceOf[ConnectResult]
+      val r = retryPolitics.askRetry(retryTestRef, "Test").asInstanceOf[ErrorResult]
       assertTrue(r.hasError, "The actor should not forward the message");
     }
   }

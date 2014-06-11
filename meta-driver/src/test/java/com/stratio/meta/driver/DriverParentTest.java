@@ -19,6 +19,8 @@
 
 package com.stratio.meta.driver;
 
+import com.stratio.meta.common.result.ErrorResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.server.MetaServer;
 
 import org.testng.annotations.*;
@@ -46,7 +48,13 @@ public class DriverParentTest extends ParentCassandraTest {
       }
 
       driver = new BasicDriver();
-      driver.connect("TEST_USER");
+      try {
+        driver.connect("TEST_USER");
+      }catch (Exception e){
+        e.printStackTrace();
+        driver = null;
+        finish();
+      }
     }
   }
 
@@ -64,4 +72,13 @@ public class DriverParentTest extends ParentCassandraTest {
 //    }
     System.out.println("FINISH <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
   }
+
+  public static String getErrorMessage(Result metaResult){
+    String result = "Invalid class: " + metaResult.getClass();
+    if(ErrorResult.class.isInstance(metaResult)){
+      result = ErrorResult.class.cast(metaResult).getErrorMessage();
+    }
+    return result;
+  }
+
 }

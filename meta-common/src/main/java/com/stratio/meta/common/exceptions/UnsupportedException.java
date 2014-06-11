@@ -20,17 +20,17 @@
 package com.stratio.meta.common.exceptions;
 
 /**
- * Execution exception thrown by the Driver if the statement could not be executed.
+ * Exception thrown when the operation is not currently supported
+ * by the meta server.
  */
-public class ExecutionException extends Exception{
+public class UnsupportedException extends Exception{
 
   /**
    * Serial version UID in order to be {@link java.io.Serializable}.
    */
-  private static final long serialVersionUID = 9044542877799283335L;
+  private static final long serialVersionUID = 5194419221361563613L;
 
-  public ExecutionException(String message){
+  public UnsupportedException(String message){
     super(message);
   }
-
 }

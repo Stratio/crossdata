@@ -34,6 +34,8 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
+import com.stratio.meta.common.result.ErrorResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.test.CCMHandler;
 
@@ -172,6 +174,14 @@ public class BasicCoreCassandraTest {
       }
     } catch (IOException e) {
       logger.error(e.getStackTrace());
+    }
+    return result;
+  }
+
+  public static String getErrorMessage(Result metaResult){
+    String result = "Invalid class: " + metaResult.getClass();
+    if(ErrorResult.class.isInstance(metaResult)){
+      result = ErrorResult.class.cast(metaResult).getErrorMessage();
     }
     return result;
   }

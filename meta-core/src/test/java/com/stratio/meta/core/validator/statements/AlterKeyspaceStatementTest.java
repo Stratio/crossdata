@@ -42,7 +42,7 @@ public class AlterKeyspaceStatementTest extends BasicValidatorTest {
         properties.put("replication", new IdentifierProperty("{'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '2'}"));
 
         AlterKeyspaceStatement aks = new AlterKeyspaceStatement("demo", properties);
-        Result result = aks.validate(_metadataManager);
+        Result result = aks.validate(metadataManager);
 
         assertNotNull(result, "Sentence validation not supported");
         assertFalse(result.hasError(), "Cannot validate sentence");
@@ -58,7 +58,7 @@ public class AlterKeyspaceStatementTest extends BasicValidatorTest {
         properties.put("durable_writes", new IdentifierProperty("True"));
 
         AlterKeyspaceStatement aks = new AlterKeyspaceStatement("demo", properties);
-        Result result = aks.validate(_metadataManager);
+        Result result = aks.validate(metadataManager);
 
         assertNotNull(result, "Sentence validation not supported");
         assertFalse(result.hasError(), "Cannot validate sentence");

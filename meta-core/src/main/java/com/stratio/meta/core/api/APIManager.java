@@ -25,6 +25,7 @@ import com.stratio.meta.common.ask.APICommand;
 import com.stratio.meta.common.ask.Command;
 import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
@@ -84,12 +85,12 @@ public class APIManager {
             new ArrayList<>(helper.toCatalogMetadata(keyspaceMetadata).getTables()));
       } else {
         result =
-            CommandResult.createFailCommandResult("Keyspace " + cmd.params().get(0) + " not found");
+            Result.createExecutionErrorResult("Keyspace " + cmd.params().get(0) + " not found");
       }
     } else {
       result =
-          CommandResult.createFailCommandResult("Command " + cmd.commandType() + " not supported");
-      LOG.error(result.getErrorMessage());
+          Result.createExecutionErrorResult("Command " + cmd.commandType() + " not supported");
+      LOG.error(ErrorResult.class.cast(result).getErrorMessage());
     }
     return result;
   }
