@@ -48,7 +48,7 @@ public class MetaStream {
    * e.printStackTrace(); } return streamsList; }
    * 
    * public static boolean checkstream(String ephimeralTable){ for (StratioStream stream:
-   * listStreams()) { System.out.println("Checking stream: "+stream.getStreamName()); if
+   * listStreams()) { logger.info("Checking stream: "+stream.getStreamName()); if
    * (stream.getStreamName().equalsIgnoreCase(ephimeralTable)){ return true; } } return false; }
    * 
    * public static Result createStream(String streamName, List<ColumnNameType> columnList){

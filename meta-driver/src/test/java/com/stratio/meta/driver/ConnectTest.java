@@ -1,57 +1,55 @@
 /*
  * Stratio Meta
- *
+ * 
  * Copyright (c) 2014, Stratio, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation; either version
+ * 3.0 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
 package com.stratio.meta.driver;
+
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+
+import org.apache.log4j.Logger;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import com.stratio.meta.common.exceptions.ParsingException;
 import com.stratio.meta.common.result.ConnectResult;
 import com.stratio.meta.common.result.Result;
 
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
-
 public class ConnectTest extends DriverParentTest {
 
+  private final static Logger logger = Logger.getLogger(ConnectTest.class);
+
   @BeforeClass
-  public void ExecuteDropTestBefore() {
+  public void executeDropTestBefore() {
 
     try {
       driver.executeQuery("TEST_USER", "ks_demo", "drop table demo ;");
     } catch (Exception e) {
-      System.out.println("Not removing table demo as it does not exists.");
+      logger.info("Not removing table demo as it does not exists.");
     }
 
     try {
       driver.executeQuery("TEST_USER", "ks_demo", "drop keyspace ks_demo ;");
     } catch (Exception e) {
-      System.out.println("Not removing ks_demo as it does not exists.");
+      logger.info("Not removing ks_demo as it does not exists.");
     }
 
-    String
-        msg =
+    String msg =
         "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};";
     try {
-      Result metaResult = driver.executeQuery("TEST_USER", "ks_demo", msg);
+      driver.executeQuery("TEST_USER", "ks_demo", msg);
     } catch (Exception e) {
       System.err.println("Cannot create test keyspace.");
     }
@@ -64,15 +62,15 @@ public class ConnectTest extends DriverParentTest {
 
   }
 
-//  @AfterClass
-//  public void ExecuteDropTestAfter(){
-//    try{
-//      driver.executeQuery("TEST_USER","ks_demo","drop table demo ;");
-//      driver.executeQuery("TEST_USER","ks_demo","drop keyspace ks_demo ;");
-//    } catch (Exception e) {
-//      System.out.println("Cannot perform test cleanup.");
-//    }
-//  }
+  // @AfterClass
+  // public void ExecuteDropTestAfter(){
+  // try{
+  // driver.executeQuery("TEST_USER","ks_demo","drop table demo ;");
+  // driver.executeQuery("TEST_USER","ks_demo","drop keyspace ks_demo ;");
+  // } catch (Exception e) {
+  // logger.info("Cannot perform test cleanup.");
+  // }
+  // }
 
   @Test
   public void connect() {
@@ -83,35 +81,36 @@ public class ConnectTest extends DriverParentTest {
   }
 
   @Test(groups = "create Ks", expectedExceptions = ParsingException.class)
-  public void ExecuteCreatewitherrorTest() {
-    String msg = "create KEYSPAC ks_demo WITH replication = "
-                 + "{class: SimpleStrategy, replication_factor: 1};";
-    Result metaResult = driver.executeQuery("TEST_USER", "ks_demo", msg);
+  public void executeCreatewitherrorTest() {
+    String msg =
+        "create KEYSPAC ks_demo WITH replication = "
+            + "{class: SimpleStrategy, replication_factor: 1};";
+    driver.executeQuery("TEST_USER", "ks_demo", msg);
   }
 
   @Test(groups = "use", dependsOnGroups = {"create Ks"})
-  public void ExecuteUseKsest() {
+  public void executeUseKsest() {
     String msg = "use ks_demo ;";
     Result metaResult = driver.executeQuery("TEST_USER", "ks_demo", msg);
-    assertFalse(metaResult.hasError(),
-                "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n");
+    assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage()
+        + "\n\n");
     assertTrue(metaResult.isKsChanged(), "Expecting new keyspace.");
   }
 
   @Test(groups = "create Tb", dependsOnGroups = {"use"})
-  public void ExecuteCreateTableTest() {
+  public void executeCreateTableTest() {
     String msg = "create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);";
     Result metaResult = driver.executeQuery("TEST_USER", "ks_demo", msg);
-    assertFalse(metaResult.hasError(),
-                "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n");
+    assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage()
+        + "\n\n");
   }
 
   @Test(groups = "insert", dependsOnGroups = {"create Tb"})
-  public void ExecuteInsertTest() {
+  public void executeInsertTest() {
     String msg = "insert into demo (field1, field2) values ('test1','text2');";
     Result metaResult = driver.executeQuery("TEST_USER", "ks_demo", msg);
-    assertFalse(metaResult.hasError(),
-                "\n\nerror message is:\n" + metaResult.getErrorMessage() + "\n\n");
+    assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + metaResult.getErrorMessage()
+        + "\n\n");
   }
 
 }

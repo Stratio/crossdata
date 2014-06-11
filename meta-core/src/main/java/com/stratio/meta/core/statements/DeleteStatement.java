@@ -122,11 +122,10 @@ public class DeleteStatement extends MetaStatement {
   /** {@inheritDoc} */
   @Override
   public Result validate(MetadataManager metadata) {
+
     Result result = validateKeyspaceAndTable(metadata, sessionKeyspace);
     String effectiveKeyspace = getEffectiveKeyspace();
-    if (keyspaceInc) {
-      effectiveKeyspace = keyspace;
-    }
+
     TableMetadata tableMetadata = null;
     if (!result.hasError()) {
       tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);

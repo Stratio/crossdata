@@ -64,7 +64,7 @@ public class StreamTest /*extends BasicCoreCassandraTest*/ {
                                  1);
     Property property = new PropertyNameValue("ephemeral", new BooleanProperty(true));
     cts.setProperties(Collections.singletonList(property));
-    System.out.println("TRACE: "+cts.toString());
+    logger.info("TRACE: "+cts.toString());
     Result result = StreamExecutor.execute(cts);
     String resultStr = ((CommandResult) result).getResult().toString();
     assertEquals("Ephemeral table '"+streamName+"' created.",

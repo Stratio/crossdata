@@ -51,7 +51,7 @@ public class GroupByMapping extends PairFunction<Cells, Cells, Cells> implements
     Cells cellsExtended = cells;
     // Copying aggregation columns to not apply the function over the original data
     for (String aggCol : aggregationCols) {
-      if (aggCol.toLowerCase().equals("count(*)")) {
+      if ("count(*)".equalsIgnoreCase(aggCol)) {
         cellsExtended.add(com.stratio.deep.entity.Cell.create(aggCol, new BigInteger("1")));
       } else if (aggCol.toLowerCase().startsWith("avg(")) {
         String fieldName = aggCol.substring(aggCol.indexOf("(") + 1, aggCol.indexOf(")"));

@@ -35,6 +35,7 @@ import org.testng.annotations.Test;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.engine.EngineConfig;
@@ -64,7 +65,6 @@ import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.core.utils.Tree;
 
 public class BridgeTest extends BasicCoreCassandraTest {
@@ -196,8 +196,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
     ss.setLimit(10000);
 
     metaQuery.setStatement(ss);
-    System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
-    System.out.println("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
+    LOG.info("DEEP TEST (Query): " + metaQuery.getQuery());
+    LOG.info("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
 
     // FIRST SELECT
     selectionSelectors = new SelectionSelectors();
@@ -209,7 +209,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         CONSTANT_AGE)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
 
     // SECOND SELECT
@@ -218,7 +218,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         "link_name")));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("info")));
     selectionClause = new SelectionList(selectionSelectors);
-    SelectStatement secondSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS_INFO);;
+    SelectStatement secondSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS_INFO);
     secondSelect.setLimit(10000);
 
     // INNER JOIN
@@ -256,7 +256,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare("email", "=", new StringTerm("name_1@domain.com"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -281,7 +281,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare(CONSTANT_AGE, ">", new LongTerm("100"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -305,7 +305,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare(CONSTANT_AGE, ">=", new LongTerm("100"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -329,7 +329,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare(CONSTANT_AGE, "<", new LongTerm("100"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -353,7 +353,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare(CONSTANT_AGE, "<=", new LongTerm("100"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -389,14 +389,14 @@ public class BridgeTest extends BasicCoreCassandraTest {
     Relation relation = new RelationCompare("types.int_column", ">", new LongTerm("104"));
     clause.add(relation);
 
-    SelectStatement ss = new SelectStatement(mainSelectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement ss = new SelectStatement(mainSelectionClause, CONSTANT_DEMO_USERS);
     ss.setLimit(10000);
     ss.setWhere(clause);
     ss.setJoin(join);
 
     metaQuery.setStatement(ss);
-    System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
-    System.out.println("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
+    LOG.info("DEEP TEST (Query): " + metaQuery.getQuery());
+    LOG.info("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
 
     // FIRST SELECT
     selectionSelectors = new SelectionSelectors();
@@ -408,7 +408,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         CONSTANT_USERS_AGE)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
 
     // SECOND SELECT
@@ -425,7 +425,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     relation = new RelationCompare("int_column", ">", new LongTerm("104"));
     clause.add(relation);
 
-    SelectStatement secondSelect = new SelectStatement(selectionClause, "demo.types");;
+    SelectStatement secondSelect = new SelectStatement(selectionClause, "demo.types");
     secondSelect.setLimit(10000);
     secondSelect.setWhere(clause);
 
@@ -479,8 +479,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
     ss.setLimit(10000);
 
     metaQuery.setStatement(ss);
-    System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
-    System.out.println("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
+    LOG.info("DEEP TEST (Query): " + metaQuery.getQuery());
+    LOG.info("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
 
     // FIRST SELECT
     clause = new ArrayList<>();
@@ -552,8 +552,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
     ss.setLimit(10000);
 
     metaQuery.setStatement(ss);
-    System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
-    System.out.println("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
+    LOG.info("DEEP TEST (Query): " + metaQuery.getQuery());
+    LOG.info("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
 
     // FIRST SELECT
     selectionSelectors = new SelectionSelectors();
@@ -633,8 +633,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
     ss.setLimit(10000);
 
     metaQuery.setStatement(ss);
-    System.out.println("DEEP TEST (Query): " + metaQuery.getQuery());
-    System.out.println("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
+    LOG.info("DEEP TEST (Query): " + metaQuery.getQuery());
+    LOG.info("DEEP TEST (Stmnt): " + metaQuery.getStatement().toString());
 
     // FIRST SELECT
     selectionSelectors = new SelectionSelectors();
@@ -646,7 +646,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         CONSTANT_AGE)));
     SelectionClause selectionClause = new SelectionList(selectionSelectors);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
 
     // SECOND SELECT
@@ -655,7 +655,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
         "link_name")));
     selectionSelectors.addSelectionSelector(new SelectionSelector(new SelectorIdentifier("info")));
     selectionClause = new SelectionList(selectionSelectors);
-    SelectStatement secondSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS_INFO);;
+    SelectStatement secondSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS_INFO);
     secondSelect.setLimit(10000);
 
     // INNER JOIN
@@ -840,7 +840,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare("email", "<>", new StringTerm("name_1@domain.com"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -997,7 +997,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare("email", "=", new StringTerm("name_2@domain.com"));
     clause.add(relation);
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
     firstSelect.setWhere(clause);
     firstSelect.validate(metadataManager);
@@ -1025,7 +1025,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     Ordering order = new Ordering(CONSTANT_USERS_AGE);
     orderFieldsList.add(order);
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
     firstSelect.setOrder(orderFieldsList);
     firstSelect.validate(metadataManager);
@@ -1054,7 +1054,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     orderFieldsList.add(new Ordering(CONSTANT_USERS_GENDER));
     orderFieldsList.add(new Ordering(CONSTANT_USERS_AGE));
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
     firstSelect.setOrder(orderFieldsList);
     firstSelect.validate(metadataManager);
@@ -1082,7 +1082,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     orderFieldsList.add(new Ordering(CONSTANT_USERS_GENDER));
     orderFieldsList.add(new Ordering(CONSTANT_USERS_AGE));
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
     firstSelect.setOrder(orderFieldsList);
     firstSelect.validate(metadataManager);
@@ -1113,7 +1113,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     List<Ordering> orderFieldsList = new ArrayList<>();
     orderFieldsList.add(new Ordering(CONSTANT_USERS_GENDER, true, OrderDirection.DESC));
 
-    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);;
+    SelectStatement firstSelect = new SelectStatement(selectionClause, CONSTANT_DEMO_USERS);
     firstSelect.setLimit(10000);
     firstSelect.setOrder(orderFieldsList);
     firstSelect.validate(metadataManager);

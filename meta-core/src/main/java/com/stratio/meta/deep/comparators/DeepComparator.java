@@ -59,10 +59,13 @@ public class DeepComparator implements Comparator<Cells>, Serializable {
    * @param ordering current {@link com.stratio.meta.core.structures.Ordering}.
    * @return same result or contrary depending on direction.
    */
-  private int checkOrderDirection(int result, Ordering ordering) {
+  private int checkOrderDirection(int input, Ordering ordering) {
+
+    int result = input;
     if (ordering.isDirInc() && ordering.getOrderDir() == OrderDirection.DESC) {
-      result = result * -1;
+      result = input * -1;
     }
+
     return result;
   }
 }

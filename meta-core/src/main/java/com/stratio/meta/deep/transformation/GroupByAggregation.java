@@ -47,7 +47,7 @@ public class GroupByAggregation extends Function2<Cells, Cells, Cells> implement
       String[] pieces = aggregation.split("\\(");
       String function = pieces[0].toLowerCase();
 
-      if (!function.equalsIgnoreCase("avg")) {
+      if (!"avg".equalsIgnoreCase(function)) {
 
         Cell resultCell = null;
 

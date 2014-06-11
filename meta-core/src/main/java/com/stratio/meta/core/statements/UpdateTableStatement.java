@@ -218,9 +218,7 @@ public class UpdateTableStatement extends MetaStatement {
     Result result =
         validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
     if (!result.hasError()) {
-      String effectiveKeyspace = getEffectiveKeyspace();
-
-      TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+      TableMetadata tableMetadata = metadata.getTableMetadata(getEffectiveKeyspace(), tableName);
 
       if (optsInc) {
         result = validateOptions();
@@ -280,8 +278,8 @@ public class UpdateTableStatement extends MetaStatement {
   private Result validateOptions() {
     Result result = QueryResult.createSuccessQueryResult();
     for (Option opt : options) {
-      if (!(opt.getNameProperty().equalsIgnoreCase("ttl") || opt.getNameProperty()
-          .equalsIgnoreCase("timestamp"))) {
+      if (!("ttl".equalsIgnoreCase(opt.getNameProperty()) || "timestamp".equalsIgnoreCase(opt
+          .getNameProperty()))) {
         result =
             QueryResult.createFailQueryResult("TIMESTAMP and TTL are the only accepted options.");
       }

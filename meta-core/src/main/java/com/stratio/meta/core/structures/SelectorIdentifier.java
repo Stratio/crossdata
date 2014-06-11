@@ -69,7 +69,7 @@ public class SelectorIdentifier extends SelectorMeta implements Serializable {
   @Override
   public String toString() {
 
-    return (this.table == null || field.equals("*")) ? this.field : this.table + "." + this.field;
+    return (this.table == null || "*".equals(field)) ? this.field : this.table + "." + this.field;
   }
 
   @Override

@@ -20,7 +20,7 @@ nb-configuration.xml
 *.orig
 */.cache
 meta-core/test-output/*
-*/sonar-project.properties
+sonar-project.properties
 */.sonar
 */test-output
 .gitignore

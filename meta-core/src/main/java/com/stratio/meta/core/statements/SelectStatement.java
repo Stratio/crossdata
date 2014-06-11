@@ -1595,6 +1595,7 @@ public class SelectStatement extends MetaStatement {
       // Check if all partition columns have an equals operator
       boolean partialMatched = matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
 
+      // TODO Remove??
       boolean notPrimaryKeysPresent = (previousSize == whereCols.size());
 
       if (!partialMatched) {

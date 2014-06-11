@@ -14,27 +14,33 @@ import com.stratio.meta.core.structures.Ordering;
 
 public class DeepComparatorTest {
 
+  private static final String CONSTANT_NAME = "name";
+
+  private static final String CONSTANT_AGE = "age";
+
   @Test
   public void testSimpleCompareOk() {
 
     List<Ordering> fieldsOrdering = new ArrayList<>();
-    fieldsOrdering.add(new Ordering("name"));
+    fieldsOrdering.add(new Ordering(CONSTANT_NAME));
 
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
     // Cells1
-    Cell cellName1 = Cell.create("name", "aaa");
-    Cell cellAge1 = Cell.create("age", "10");
-
-    Cells cells1 = new Cells(cellName1, cellAge1);
+    Cells cells1 = createNameAndAgeCells("aaa", "10");
 
     // Cells2
-    Cell cellName2 = Cell.create("name", "b");
-    Cell cellAge2 = Cell.create("age", "20");
-
-    Cells cells2 = new Cells(cellName2, cellAge2);
+    Cells cells2 = createNameAndAgeCells("b", "20");
 
     assertTrue("Error comparing cells", comparator.compare(cells1, cells2) < 0);
+  }
+
+  private Cells createNameAndAgeCells(String valueName, String valueAge) {
+
+    Cell cellName = Cell.create(CONSTANT_NAME, valueName);
+    Cell cellAge = Cell.create(CONSTANT_AGE, valueAge);
+
+    return new Cells(cellName, cellAge);
   }
 
   @Test
@@ -46,16 +52,10 @@ public class DeepComparatorTest {
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
     // Cells1
-    Cell cellName1 = Cell.create("name", "aaa");
-    Cell cellAge1 = Cell.create("age", "10");
-
-    Cells cells1 = new Cells(cellName1, cellAge1);
+    Cells cells1 = createNameAndAgeCells("aaa", "10");
 
     // Cells2
-    Cell cellName2 = Cell.create("name", "b");
-    Cell cellAge2 = Cell.create("age", "20");
-
-    Cells cells2 = new Cells(cellName2, cellAge2);
+    Cells cells2 = createNameAndAgeCells("b", "20");
 
     assertTrue("Error comparing cells", comparator.compare(cells1, cells2) < 0);
   }
@@ -69,16 +69,10 @@ public class DeepComparatorTest {
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
     // Cells1
-    Cell cellName1 = Cell.create("name", "aaa");
-    Cell cellAge1 = Cell.create("age", "10");
-
-    Cells cells1 = new Cells(cellName1, cellAge1);
+    Cells cells1 = createNameAndAgeCells("aaa", "10");
 
     // Cells2
-    Cell cellName2 = Cell.create("name", "b");
-    Cell cellAge2 = Cell.create("age", "20");
-
-    Cells cells2 = new Cells(cellName2, cellAge2);
+    Cells cells2 = createNameAndAgeCells("b", "20");
 
     assertTrue("Error comparing cells", comparator.compare(cells1, cells2) > 0);
   }
@@ -92,16 +86,10 @@ public class DeepComparatorTest {
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
     // Cells1
-    Cell cellName1 = Cell.create("name", "aaa");
-    Cell cellAge1 = Cell.create("age", "10");
-
-    Cells cells1 = new Cells(cellName1, cellAge1);
+    Cells cells1 = createNameAndAgeCells("aaa", "10");
 
     // Cells2
-    Cell cellName2 = Cell.create("name", "aaa");
-    Cell cellAge2 = Cell.create("age", "20");
-
-    Cells cells2 = new Cells(cellName2, cellAge2);
+    Cells cells2 = createNameAndAgeCells("aaa", "20");
 
     assertTrue("Error comparing cells", comparator.compare(cells1, cells2) == 0);
   }
@@ -116,16 +104,10 @@ public class DeepComparatorTest {
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
     // Cells1
-    Cell cellName1 = Cell.create("name", "aaa");
-    Cell cellAge1 = Cell.create("age", "30");
-
-    Cells cells1 = new Cells(cellName1, cellAge1);
+    Cells cells1 = createNameAndAgeCells("aaa", "30");
 
     // Cells2
-    Cell cellName2 = Cell.create("name", "b");
-    Cell cellAge2 = Cell.create("age", "20");
-
-    Cells cells2 = new Cells(cellName2, cellAge2);
+    Cells cells2 = createNameAndAgeCells("b", "20");
 
     assertTrue("Error comparing cells", comparator.compare(cells1, cells2) < 0);
   }
@@ -140,16 +122,10 @@ public class DeepComparatorTest {
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
     // Cells1
-    Cell cellName1 = Cell.create("name", "aaa");
-    Cell cellAge1 = Cell.create("age", "30");
-
-    Cells cells1 = new Cells(cellName1, cellAge1);
+    Cells cells1 = createNameAndAgeCells("aaa", "30");
 
     // Cells2
-    Cell cellName2 = Cell.create("name", "b");
-    Cell cellAge2 = Cell.create("age", "20");
-
-    Cells cells2 = new Cells(cellName2, cellAge2);
+    Cells cells2 = createNameAndAgeCells("b", "20");
 
     assertTrue("Error comparing cells", comparator.compare(cells1, cells2) < 0);
   }
@@ -164,16 +140,10 @@ public class DeepComparatorTest {
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
     // Cells1
-    Cell cellName1 = Cell.create("name", "aaa");
-    Cell cellAge1 = Cell.create("age", "30");
-
-    Cells cells1 = new Cells(cellName1, cellAge1);
+    Cells cells1 = createNameAndAgeCells("aaa", "30");
 
     // Cells2
-    Cell cellName2 = Cell.create("name", "b");
-    Cell cellAge2 = Cell.create("age", "20");
-
-    Cells cells2 = new Cells(cellName2, cellAge2);
+    Cells cells2 = createNameAndAgeCells("b", "20");
 
     assertTrue("Error comparing cells", comparator.compare(cells1, cells2) > 0);
   }
@@ -188,16 +158,10 @@ public class DeepComparatorTest {
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
     // Cells1
-    Cell cellName1 = Cell.create("name", "aaa");
-    Cell cellAge1 = Cell.create("age", "30");
-
-    Cells cells1 = new Cells(cellName1, cellAge1);
+    Cells cells1 = createNameAndAgeCells("aaa", "30");
 
     // Cells2
-    Cell cellName2 = Cell.create("name", "aaa");
-    Cell cellAge2 = Cell.create("age", "20");
-
-    Cells cells2 = new Cells(cellName2, cellAge2);
+    Cells cells2 = createNameAndAgeCells("aaa", "20");
 
     assertTrue("Error comparing cells", comparator.compare(cells1, cells2) > 0);
   }
@@ -212,16 +176,10 @@ public class DeepComparatorTest {
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
     // Cells1
-    Cell cellName1 = Cell.create("name", "aaa");
-    Cell cellAge1 = Cell.create("age", "30");
-
-    Cells cells1 = new Cells(cellName1, cellAge1);
+    Cells cells1 = createNameAndAgeCells("aaa", "30");
 
     // Cells2
-    Cell cellName2 = Cell.create("name", "aaa");
-    Cell cellAge2 = Cell.create("age", "20");
-
-    Cells cells2 = new Cells(cellName2, cellAge2);
+    Cells cells2 = createNameAndAgeCells("aaa", "20");
 
     assertTrue("Error comparing cells", comparator.compare(cells1, cells2) > 0);
   }
@@ -236,16 +194,10 @@ public class DeepComparatorTest {
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
     // Cells1
-    Cell cellName1 = Cell.create("name", "aaa");
-    Cell cellAge1 = Cell.create("age", "30");
-
-    Cells cells1 = new Cells(cellName1, cellAge1);
+    Cells cells1 = createNameAndAgeCells("aaa", "30");
 
     // Cells2
-    Cell cellName2 = Cell.create("name", "aaa");
-    Cell cellAge2 = Cell.create("age", "20");
-
-    Cells cells2 = new Cells(cellName2, cellAge2);
+    Cells cells2 = createNameAndAgeCells("aaa", "20");
 
     assertTrue("Error comparing cells", comparator.compare(cells1, cells2) < 0);
   }
@@ -260,16 +212,10 @@ public class DeepComparatorTest {
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
     // Cells1
-    Cell cellName1 = Cell.create("name", "aaa");
-    Cell cellAge1 = Cell.create("age", "10");
-
-    Cells cells1 = new Cells(cellName1, cellAge1);
+    Cells cells1 = createNameAndAgeCells("aaa", "10");
 
     // Cells2
-    Cell cellName2 = Cell.create("name", "aaa");
-    Cell cellAge2 = Cell.create("age", "10");
-
-    Cells cells2 = new Cells(cellName2, cellAge2);
+    Cells cells2 = createNameAndAgeCells("aaa", "10");
 
     assertTrue("Error comparing cells", comparator.compare(cells1, cells2) == 0);
   }
