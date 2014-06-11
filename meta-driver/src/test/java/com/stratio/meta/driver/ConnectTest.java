@@ -37,6 +37,11 @@ public class ConnectTest extends DriverParentTest {
 
     try {
       driver.executeQuery("TEST_USER", "ks_demo", "drop table demo ;");
+    } catch (Exception e) {
+      System.out.println("Not removing table demo as it does not exists.");
+    }
+
+    try {
       driver.executeQuery("TEST_USER", "ks_demo", "drop keyspace ks_demo ;");
     } catch (Exception e) {
       System.out.println("Not removing ks_demo as it does not exists.");
@@ -59,15 +64,15 @@ public class ConnectTest extends DriverParentTest {
 
   }
 
-  @AfterClass
-  public void ExecuteDropTestAfter(){
-    try{
-      driver.executeQuery("TEST_USER","ks_demo","drop table demo ;");
-      driver.executeQuery("TEST_USER","ks_demo","drop keyspace ks_demo ;");
-    } catch (Exception e) {
-      System.out.println("Cannot perform test cleanup.");
-    }
-  }
+//  @AfterClass
+//  public void ExecuteDropTestAfter(){
+//    try{
+//      driver.executeQuery("TEST_USER","ks_demo","drop table demo ;");
+//      driver.executeQuery("TEST_USER","ks_demo","drop keyspace ks_demo ;");
+//    } catch (Exception e) {
+//      System.out.println("Cannot perform test cleanup.");
+//    }
+//  }
 
   @Test
   public void connect() {

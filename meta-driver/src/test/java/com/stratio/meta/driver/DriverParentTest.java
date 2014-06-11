@@ -34,6 +34,7 @@ public class DriverParentTest extends ParentCassandraTest {
   @BeforeClass
   public void init() {
     System.out.println("INIT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+    if(metaServer == null) {
       metaServer = new MetaServer();
       metaServer.init(null);
       metaServer.start();
@@ -46,18 +47,21 @@ public class DriverParentTest extends ParentCassandraTest {
 
       driver = new BasicDriver();
       driver.connect("TEST_USER");
-
+    }
   }
 
-  @AfterClass(alwaysRun=true)
+  //@AfterClass(alwaysRun=true)
+  @AfterSuite
   public void finish() {
+    System.out.println("FINISHING ------------------------------");
     driver.close();
     metaServer.stop();
     metaServer.destroy();
-    try {
-      Thread.sleep(SLEEP_TIME*2);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+//    try {
+//      Thread.sleep(SLEEP_TIME*2);
+//    } catch (InterruptedException e) {
+//      e.printStackTrace();
+//    }
+    System.out.println("FINISH <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
   }
 }

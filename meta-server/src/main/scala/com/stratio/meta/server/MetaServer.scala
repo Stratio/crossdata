@@ -41,6 +41,7 @@ class MetaServer extends Daemon with ServerConfig{
   override def stop(): Unit = {
     system.shutdown()
     engine.shutdown()
+    logger.info("Meta Server stop")
   }
 
   override def start(): Unit = {

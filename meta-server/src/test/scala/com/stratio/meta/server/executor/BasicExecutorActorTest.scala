@@ -29,6 +29,11 @@ class BasicExecutorActorTest extends TestKit(ActorSystem("TestKitUsageExectutorA
     shutdown(system)
   }
 
+  override def beforeAll(){
+    super.beforeAll()
+    dropKeyspaceIfExists("ks_demo")
+  }
+
   override def afterAll() {
     super.afterAll()
     engine.shutdown()
