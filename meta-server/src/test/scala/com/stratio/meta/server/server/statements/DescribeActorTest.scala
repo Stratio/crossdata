@@ -46,7 +46,9 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
     val stmt = Query("describe", keyspace, query, "test_actor")
 
     serverRef ! stmt
-    expectMsgClass(classOf[ACK])
+    if(shouldExecute) {
+      expectMsgClass(classOf[ACK])
+    }
     val result = expectMsgClass(classOf[Result])
 
     if(shouldExecute) {
