@@ -184,7 +184,7 @@ public final class DeepUtils {
         SelectorMeta selectorMeta = sSelectors.getSelectors().get(i).getSelector();
         if (selectorMeta instanceof SelectorIdentifier) {
           SelectorIdentifier selId = (SelectorIdentifier) selectorMeta;
-          columnsSet.add(selId.getColumnName());
+          columnsSet.add(selId.getField());
         }
       }
     }
@@ -208,7 +208,7 @@ public final class DeepUtils {
         if (selectorMeta instanceof SelectorGroupBy) {
           SelectorGroupBy selGroup = (SelectorGroupBy) selectorMeta;
           columnsSet.add(selGroup.getGbFunction().name() + "("
-              + ((SelectorIdentifier) selGroup.getParam()).getColumnName() + ")");
+              + ((SelectorIdentifier) selGroup.getParam()).getField() + ")");
         }
       }
     }

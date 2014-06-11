@@ -24,7 +24,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
   @Test
   public void validateBasicColumnOk() {
-    String inputText = "SELECT name FROM demo.users;";
+    String inputText = "SELECT users.name FROM demo.users;";
     validateOk(inputText, "validateBasicColumnOk");
   }
 
@@ -36,43 +36,47 @@ public class SelectStatementTest extends BasicValidatorTest {
 
   @Test
   public void validateBasicSeveralColumnsOk() {
-    String inputText = "SELECT name, age FROM demo.users;";
+    String inputText = "SELECT users.name, users.age FROM demo.users;";
     validateOk(inputText, "validateBasicSeveralColumnsOk");
   }
 
   @Test
   public void validateColumnUnknown() {
-    String inputText = "SELECT name, unknown FROM demo.users;";
+    String inputText = "SELECT users.name, users.unknown FROM demo.users;";
     validateFail(inputText, "validateColumnUnknown");
   }
 
   @Test
   public void validateBasicWhereOk() {
-    String inputText = "SELECT name, age FROM demo.users WHERE name = 'name_5';";
+    String inputText = "SELECT users.name, users.age FROM demo.users WHERE users.name = 'name_5';";
     validateOk(inputText, "validateBasicWhereOk");
   }
 
   @Test
   public void validateWhere2columnsOk() {
-    String inputText = "SELECT name, age FROM demo.users WHERE name = 'name_5' AND age = 15;";
+    String inputText =
+        "SELECT users.name, users.age FROM demo.users WHERE users.name = 'name_5' AND users.age = 15;";
     validateOk(inputText, "validateWhere2columnsOk");
   }
 
   @Test
   public void validateWhereColumnUnknown() {
-    String inputText = "SELECT name, age FROM demo.users WHERE unknown = 'name_5' AND age = 15;";
+    String inputText =
+        "SELECT users.name, users.age FROM demo.users WHERE users.unknown = 'name_5' AND users.age = 15;";
     validateFail(inputText, "validateWhereColumnUnknown");
   }
 
   @Test
   public void validateWhereIntegerFail() {
-    String inputText = "SELECT name, age FROM demo.users WHERE name = 'name_5' AND age = '15';";
+    String inputText =
+        "SELECT users.name, users.age FROM demo.users WHERE users.name = 'name_5' AND users.age = '15';";
     validateFail(inputText, "validateWhereIntegerFail");
   }
 
   @Test
   public void validateWhereStringFail() {
-    String inputText = "SELECT name, age FROM demo.users WHERE name = 15 AND age = 15;";
+    String inputText =
+        "SELECT users.name, users.age FROM demo.users WHERE users.name = 15 AND users.age = 15;";
     validateFail(inputText, "validateWhereStringFail");
   }
 
@@ -80,7 +84,9 @@ public class SelectStatementTest extends BasicValidatorTest {
   public void validateOperatorStringOk() {
     String[] operators = {">", "<", ">=", "<="};
     for (String operator : operators) {
-      String inputText = "SELECT name, age FROM demo.users WHERE name " + operator + " 'name_5';";
+      String inputText =
+          "SELECT users.name, users.age FROM demo.users WHERE users.name " + operator
+              + " 'name_5';";
       validateOk(inputText, "validateOperatorStringOk on column - operator: " + operator);
     }
   }
@@ -89,7 +95,8 @@ public class SelectStatementTest extends BasicValidatorTest {
   public void validateOperatorBooleanFail() {
     String[] operators = {">", "<", ">=", "<="};
     for (String operator : operators) {
-      String inputText = "SELECT bool FROM demo.users WHERE bool " + operator + " true;";
+      String inputText =
+          "SELECT users.bool FROM demo.users WHERE users.bool " + operator + " true;";
       validateFail(inputText, "validateOperatorBooleanFail on column - operator: " + operator);
     }
   }
@@ -117,14 +124,14 @@ public class SelectStatementTest extends BasicValidatorTest {
   @Test
   public void validateReferredOk() {
     String inputText =
-        "SELECT users.name, users.age FROM demo.users WHERE name = 'name_5' AND age = 15;";
+        "SELECT users.name, users.age FROM demo.users WHERE users.name = 'name_5' AND users.age = 15;";
     validateOk(inputText, "validateReferredOk");
   }
 
   @Test
   public void validateReferredFail() {
     String inputText =
-        "SELECT unknown.name, unknown.age FROM demo.users WHERE name = 'name_5' AND age = 15;";
+        "SELECT unknown.name, unknown.age FROM demo.users WHERE users.name = 'name_5' AND users.age = 15;";
     validateFail(inputText, "validateReferredFail");
   }
 
@@ -217,7 +224,7 @@ public class SelectStatementTest extends BasicValidatorTest {
     String inputText =
         "SELECT users.name, users.age, users_info.info FROM demo.users "
             + "INNER JOIN demo.users_info ON users.name=users_info.link_name "
-            + "WHERE name = 'name_3';";
+            + "WHERE users.name = 'name_3';";
     validateOk(inputText, "validateInnerJoinWhereOk");
   }
 
@@ -292,7 +299,7 @@ public class SelectStatementTest extends BasicValidatorTest {
   @Test
   public void testValidateGroupByClauseSumOk() {
 
-    String inputText = "SELECT users.gender, SUM(age) FROM demo.users GROUP BY users.gender;";
+    String inputText = "SELECT users.gender, SUM(users.age) FROM demo.users GROUP BY users.gender;";
 
     validateOk(inputText, "testValidateGroupByClauseSumOk");
   }
@@ -300,7 +307,7 @@ public class SelectStatementTest extends BasicValidatorTest {
   @Test
   public void testValidateGroupMissingFieldFail() {
 
-    String inputText = "SELECT SUM(age) FROM demo.users GROUP BY users.gender;";
+    String inputText = "SELECT SUM(users.age) FROM demo.users GROUP BY users.gender;";
 
     validateFail(inputText, "testValidateGroupByWrongSumClauseFail");
   }
@@ -315,7 +322,7 @@ public class SelectStatementTest extends BasicValidatorTest {
   @Test
   public void testNoGroupWithAggregationFunctionFail() {
 
-    String inputText = "SELECT gender, sum(age) FROM demo.users;";
+    String inputText = "SELECT users.gender, sum(users.age) FROM demo.users;";
     validateFail(inputText, "testNoGroupWithAggregationFunctionFail");
   }
 
@@ -324,7 +331,7 @@ public class SelectStatementTest extends BasicValidatorTest {
   @Test
   public void testValidateSimpleOrderByOk() {
 
-    String inputText = "SELECT * FROM demo.users ORDER BY age;";
+    String inputText = "SELECT * FROM demo.users ORDER BY users.age;";
 
     validateOk(inputText, "testValidateSimpleOrderByOk");
   }
@@ -332,7 +339,7 @@ public class SelectStatementTest extends BasicValidatorTest {
   @Test
   public void testValidateMultipleOrderByOk() {
 
-    String inputText = "SELECT * FROM demo.users ORDER BY gender, age;";
+    String inputText = "SELECT * FROM demo.users ORDER BY users.gender, users.age;";
 
     validateOk(inputText, "testValidateMultipleOrderByOk");
   }
@@ -348,7 +355,7 @@ public class SelectStatementTest extends BasicValidatorTest {
   @Test
   public void testValidateSimpleOrderByUnknownFieldFail() {
 
-    String inputText = "SELECT * FROM demo.users ORDER BY unknown;";
+    String inputText = "SELECT * FROM demo.users ORDER BY users.unknown;";
 
     validateFail(inputText, "testValidateSimpleOrderByUnknownFieldFail");
   }
@@ -356,7 +363,7 @@ public class SelectStatementTest extends BasicValidatorTest {
   @Test
   public void testValidateMultipleOrderByUnknownFieldFail() {
 
-    String inputText = "SELECT * FROM demo.users ORDER BY gender, unknown;";
+    String inputText = "SELECT * FROM demo.users ORDER BY users.gender, users.unknown;";
 
     validateFail(inputText, "testValidateSimpleOrderByUnknownFieldFail");
   }

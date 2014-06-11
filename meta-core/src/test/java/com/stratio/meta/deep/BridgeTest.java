@@ -901,7 +901,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
                 GroupByFunction.SUM, new SelectorIdentifier(CONSTANT_USERS_AGE))));
 
     SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
-    GroupBy groupClause = new GroupBy(Arrays.asList(CONSTANT_USERS_GENDER));
+    List<GroupBy> groupClause = new ArrayList<>();
+    groupClause.add(new GroupBy(CONSTANT_USERS_GENDER));
 
     SelectStatement firstSelect = new SelectStatement(selClause, CONSTANT_DEMO_USERS);
     firstSelect.setGroup(groupClause);
@@ -936,7 +937,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
                 CONSTANT_USERS_AGE))));
 
     SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
-    GroupBy groupClause = new GroupBy(Arrays.asList(CONSTANT_USERS_GENDER));
+    List<GroupBy> groupClause = new ArrayList<>();
+    groupClause.add(new GroupBy(CONSTANT_USERS_GENDER));
 
     SelectStatement firstSelect = new SelectStatement(selClause, CONSTANT_DEMO_USERS);
     firstSelect.setGroup(groupClause);
@@ -965,7 +967,8 @@ public class BridgeTest extends BasicCoreCassandraTest {
                 CONSTANT_USERS_GENDER))));
 
     SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
-    GroupBy groupClause = new GroupBy(Arrays.asList(CONSTANT_USERS_GENDER));
+    List<GroupBy> groupClause = new ArrayList<>();
+    groupClause.add(new GroupBy(CONSTANT_USERS_GENDER));
 
     SelectStatement firstSelect = new SelectStatement(selClause, CONSTANT_DEMO_USERS);
     firstSelect.setGroup(groupClause);

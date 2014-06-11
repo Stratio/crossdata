@@ -82,7 +82,7 @@ public class SelectionList extends SelectionClause {
         SelectorMeta selector = sSelector.getSelector();
         if (selector.getType() == SelectorMeta.TYPE_IDENT) {
           SelectorIdentifier selectorId = (SelectorIdentifier) selector;
-          ids.add(selectorId.getIdentifier());
+          ids.add(selectorId.toString());
         } else {
           ids.addAll(retrieveIdsFromFunctionSelector(selector));
         }
@@ -133,7 +133,7 @@ public class SelectionList extends SelectionClause {
         ids.addAll(retrieveIdsFromFunctionSelector(subselector));
       }
     } else {
-      return Arrays.asList(((SelectorIdentifier) selector).getIdentifier());
+      return Arrays.asList(((SelectorIdentifier) selector).getField());
     }
 
     return ids;

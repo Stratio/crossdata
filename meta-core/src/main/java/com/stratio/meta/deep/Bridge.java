@@ -349,17 +349,15 @@ public class Bridge {
    *        aggregation functions.
    * @return A new RDD with the result.
    */
-  private JavaRDD<Cells> doGroupBy(JavaRDD<Cells> rdd, GroupBy groupByClause,
+  private JavaRDD<Cells> doGroupBy(JavaRDD<Cells> rdd, List<GroupBy> groupByClause,
       SelectionList selectionClause) {
-
-    final List<String> groupByCols = groupByClause.getColNames();
 
     final List<String> aggregationCols =
         DeepUtils.retrieveSelectorAggegationFunctions(selectionClause.getSelection());
 
     // Mapping the rdd to execute the group by clause
     JavaPairRDD<Cells, Cells> groupedRdd =
-        rdd.map(new GroupByMapping(aggregationCols, groupByCols));
+        rdd.map(new GroupByMapping(aggregationCols, groupByClause));
 
     JavaPairRDD<Cells, Cells> aggregatedRdd = applyAggregations(groupedRdd, aggregationCols);
 

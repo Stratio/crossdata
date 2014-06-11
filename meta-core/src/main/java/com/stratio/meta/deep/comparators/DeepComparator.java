@@ -39,7 +39,7 @@ public class DeepComparator implements Comparator<Cells>, Serializable {
     Iterator<Ordering> it = orderings.iterator();
     while (!resolution && it.hasNext()) {
       Ordering ordering = it.next();
-      String currentField = splitAndGetFieldName(ordering.getIdentifier());
+      String currentField = ordering.getSelectorIdentifier().getField();
       result =
           ((Comparable) o1.getCellByName(currentField).getCellValue()).compareTo(o2.getCellByName(
               currentField).getCellValue());
@@ -64,20 +64,5 @@ public class DeepComparator implements Comparator<Cells>, Serializable {
       result = result * -1;
     }
     return result;
-  }
-
-  /**
-   * Given a name of table (with or without keyspace), check if contains keyspace and only return
-   * table name.
-   * 
-   * @param fullName Given table name in query.
-   * @return Only table name.
-   */
-  private String splitAndGetFieldName(String fullName) {
-    if (fullName.contains(".")) {
-      String[] ksAndTableName = fullName.split("\\.");
-      return ksAndTableName[1];
-    }
-    return fullName;
   }
 }

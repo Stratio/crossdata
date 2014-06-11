@@ -140,7 +140,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * The {@link com.stratio.meta.core.structures.GroupBy} clause.
    */
-  private GroupBy group = null;
+  private List<GroupBy> group = null;
 
   /**
    * Whether a LIMIT clause has been specified.
@@ -210,6 +210,7 @@ public class SelectStatement extends MetaStatement {
   public SelectStatement(SelectionClause selectionClause, String tableName) {
     this(tableName);
     this.selectionClause = selectionClause;
+    this.selectionClause.addTablename(this.tableName);
   }
 
   /**
@@ -339,7 +340,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @param group The group by.
    */
-  public void setGroup(GroupBy group) {
+  public void setGroup(List<GroupBy> group) {
     this.groupInc = true;
     this.group = group;
   }
@@ -349,7 +350,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @return list of {@link com.stratio.meta.core.structures.GroupBy}.
    */
-  public GroupBy getGroup() {
+  public List<GroupBy> getGroup() {
     return group;
   }
 
@@ -440,7 +441,7 @@ public class SelectStatement extends MetaStatement {
       sb.append(" ORDER BY ").append(ParserUtils.stringList(order, ", "));
     }
     if (groupInc) {
-      sb.append(group);
+      sb.append(" GROUP BY ").append(ParserUtils.stringList(group, ", "));
     }
     if (limitInc) {
       sb.append(" LIMIT ").append(limit);
@@ -682,8 +683,9 @@ public class SelectStatement extends MetaStatement {
     Result result = QueryResult.createSuccessQueryResult();
 
     List<String> selectionCols = this.getSelectionClause().getIds();
-    List<String> groupByCols = this.group.getColNames();
-    for (String col : groupByCols) {
+
+    for (GroupBy groupByCol : this.group) {
+      String col = groupByCol.toString();
       if (!selectionCols.contains(col)) {
         result =
             QueryResult.createFailQueryResult("The GROUP BY column [" + col
@@ -705,7 +707,7 @@ public class SelectStatement extends MetaStatement {
 
     for (Ordering orderField : order) {
 
-      String field = orderField.getIdentifier();
+      String field = orderField.getSelectorIdentifier().toString();
 
       String targetTable = "any";
       String columnName = field;
@@ -828,12 +830,7 @@ public class SelectStatement extends MetaStatement {
       if (selector.getSelector() instanceof SelectorIdentifier) {
         SelectorIdentifier si = SelectorIdentifier.class.cast(selector.getSelector());
 
-        String targetTable = "any";
-        if (si.getTablename() != null) {
-          targetTable = si.getTablename();
-        }
-
-        columnResult = findColumn(targetTable, si.getColumnName());
+        columnResult = findColumn(si.getTable(), si.getField());
         if (columnResult.hasError()) {
           result = columnResult;
         }
@@ -848,12 +845,8 @@ public class SelectStatement extends MetaStatement {
               SelectorIdentifier subselectorIdentifier =
                   (SelectorIdentifier) selectorMeta.getParam();
 
-              String targetTable = "any";
-              if (subselectorIdentifier.getTablename() != null) {
-                targetTable = subselectorIdentifier.getTablename();
-              }
-
-              columnResult = findColumn(targetTable, subselectorIdentifier.getColumnName());
+              columnResult =
+                  findColumn(subselectorIdentifier.getTable(), subselectorIdentifier.getField());
               if (columnResult.hasError()) {
                 result = columnResult;
               }
@@ -1037,9 +1030,9 @@ public class SelectStatement extends MetaStatement {
       if (selectorMeta.getType() == SelectorMeta.TYPE_IDENT) {
         SelectorIdentifier selIdent = (SelectorIdentifier) selectorMeta;
         if (selSelector.isAliasInc()) {
-          result = result.column(selIdent.getIdentifier()).as(selSelector.getAlias());
+          result = result.column(selIdent.getField()).as(selSelector.getAlias());
         } else {
-          result = result.column(selIdent.getIdentifier());
+          result = result.column(selIdent.getField());
         }
       } else if (selectorMeta.getType() == SelectorMeta.TYPE_FUNCTION) {
         SelectorFunction selFunction = (SelectorFunction) selectorMeta;
@@ -1281,9 +1274,9 @@ public class SelectStatement extends MetaStatement {
       int nOrdering = 0;
       for (com.stratio.meta.core.structures.Ordering metaOrdering : this.order) {
         if (metaOrdering.isDirInc() && (metaOrdering.getOrderDir() == OrderDirection.DESC)) {
-          orderings[nOrdering] = QueryBuilder.desc(metaOrdering.getIdentifier());
+          orderings[nOrdering] = QueryBuilder.desc(metaOrdering.getSelectorIdentifier().toString());
         } else {
-          orderings[nOrdering] = QueryBuilder.asc(metaOrdering.getIdentifier());
+          orderings[nOrdering] = QueryBuilder.asc(metaOrdering.getSelectorIdentifier().toString());
         }
         nOrdering++;
       }
@@ -1343,7 +1336,7 @@ public class SelectStatement extends MetaStatement {
 
       for (SelectionSelector ss : sSelectors.getSelectors()) {
         SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-        String colName = si.getColumnName();
+        String colName = si.getField();
         if (colName.equalsIgnoreCase(whereColumnName)) {
           addCol = false;
           break;
@@ -1450,12 +1443,10 @@ public class SelectStatement extends MetaStatement {
       SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
       for (SelectionSelector ss : selectionSelectors.getSelectors()) {
         SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-        if (tableMetadataFrom.getColumn(si.getColumnName()) != null) {
-          firstSelect
-              .addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
+        if (tableMetadataFrom.getColumn(si.getField()) != null) {
+          firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
         } else {
-          secondSelect.addSelection(new SelectionSelector(
-              new SelectorIdentifier(si.getColumnName())));
+          secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
         }
       }
     } else {
@@ -1707,4 +1698,19 @@ public class SelectStatement extends MetaStatement {
   public void addTablenameToIds() {
     selectionClause.addTablename(tableName);
   }
+
+  public void updateTableNameInGroupByClause() {
+
+    for (GroupBy groupByCol : this.group) {
+      groupByCol.getSelectorIdentifier().addTablename(this.tableName);
+    }
+  }
+
+  public void updateTableNameInOrderByClause() {
+
+    for (Ordering orderByCol : this.order) {
+      orderByCol.getSelectorIdentifier().addTablename(this.tableName);
+    }
+  }
+
 }

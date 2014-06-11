@@ -453,7 +453,7 @@ selectStatement returns [SelectStatement slctst]
     (T_INNER T_JOIN { joinInc = true;} identJoin=getTableID T_ON fields=getFields)?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses)?
     (T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
-    (T_GROUP T_BY {groupInc = true;} groupby=getList)?
+    (T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
     (T_LIMIT {limitInc = true;} constant=getConstant)?
     (T_DISABLE T_ANALYTICS {disable = true;})?
     {
@@ -464,10 +464,14 @@ selectStatement returns [SelectStatement slctst]
             $slctst.setJoin(new InnerJoin(identJoin, fields)); 
         if(whereInc)
              $slctst.setWhere(whereClauses); 
-        if(orderInc)
+        if(orderInc) {
              $slctst.setOrder(ordering);
-        if(groupInc)
-            $slctst.setGroup(new GroupBy(groupby)); 
+             $slctst.updateTableNameInOrderByClause();
+        }
+        if(groupInc) {
+            $slctst.setGroup(groupby);
+            $slctst.updateTableNameInGroupByClause();
+        }
         if(limitInc)
             $slctst.setLimit(Integer.parseInt(constant));
         if(disable)
@@ -694,6 +698,15 @@ getOrdering returns [ArrayList<Ordering> order]
     }:
     ident1=(T_KS_AND_TN | T_IDENT) {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
     (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+;
+
+getGroupBy returns [ArrayList<GroupBy> groups]
+    @init{
+        groups = new ArrayList<>();
+        GroupBy groupBy;
+    }:
+    ident1=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($ident1.text); groups.add(groupBy);}
+    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($identN.text); groups.add(groupBy);})*
 ;
 
 getWhereClauses returns [ArrayList<Relation> clauses]

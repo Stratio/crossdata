@@ -44,13 +44,12 @@ import com.stratio.meta.core.structures.SelectorGroupBy;
 import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.StringTerm;
 import com.stratio.meta.core.structures.Term;
-import com.stratio.meta.core.utils.Tree;
 
 public class SelectStatementTest extends BasicPlannerTest {
 
   @Test
   public void testWhereIndexNonRelational() {
-    String inputText = "SELECT name, age, info FROM demo.users WHERE age = 10";
+    // "SELECT name, age, info FROM demo.users WHERE age = 10";
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(
             new SelectorIdentifier("age")), new SelectionSelector(new SelectorIdentifier("info")));
@@ -60,13 +59,13 @@ public class SelectStatementTest extends BasicPlannerTest {
     Relation relation = new RelationCompare("age", "=", new LongTerm("10"));
     List<Relation> whereClause = Arrays.asList(relation);
     ((SelectStatement) stmt).setWhere(whereClause);
-    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    stmt.getPlan(_metadataManager, "demo");
     validateCassandraPath("testWhereIndexNonRelational");
   }
 
   @Test
   public void testWhereWithPartialPartitionKey() {
-    String inputText = "SELECT name, age FROM demo.users WHERE name = 'name_5' AND age = 15;";
+    // "SELECT name, age FROM demo.users WHERE name = 'name_5' AND age = 15;";
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(
             new SelectorIdentifier("age")));
@@ -77,13 +76,13 @@ public class SelectStatementTest extends BasicPlannerTest {
     Relation relation2 = new RelationCompare("age", "=", new LongTerm("15"));
     List<Relation> whereClause = Arrays.asList(relation1, relation2);
     ((SelectStatement) stmt).setWhere(whereClause);
-    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    stmt.getPlan(_metadataManager, "demo");
     validateDeepPath("testWhereWithPartialPartitionKey");
   }
 
   @Test
   public void testWhereIndexRelational() {
-    String inputText = "SELECT name, age FROM users WHERE age > 13";
+    // "SELECT name, age FROM users WHERE age > 13";
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(
             new SelectorIdentifier("age")), new SelectionSelector(new SelectorIdentifier("info")));
@@ -93,27 +92,26 @@ public class SelectStatementTest extends BasicPlannerTest {
     Relation relation = new RelationCompare("age", ">", new LongTerm("13"));
     List<Relation> whereClause = Arrays.asList(relation);
     ((SelectStatement) stmt).setWhere(whereClause);
-    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    stmt.getPlan(_metadataManager, "demo");
     validateDeepPath("testWhereIndexRelational");
   }
 
   @Test
   public void testWhereNoIndex() {
-    String inputText = "SELECT * FROM demo.types WHERE int_column=104;";
+    // "SELECT * FROM demo.types WHERE int_column=104;";
     SelectionClause selClause = new SelectionList(new SelectionAsterisk());
     stmt = new SelectStatement(selClause, "demo.types");
     Relation relation = new RelationCompare("int_column", "=", new LongTerm("104"));
     List<Relation> whereClause = Arrays.asList(relation);
     ((SelectStatement) stmt).setWhere(whereClause);
-    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    stmt.getPlan(_metadataManager, "demo");
     validateDeepPath("testWhereNoIndex");
   }
 
   @Test
   public void testSimpleJoin() {
-    String inputText =
-        "SELECT users.name, users.age, users_info.info FROM demo.users "
-            + "INNER JOIN demo.users_info ON users.name=users_info.link_name;";
+
+    // "SELECT users.name, users.age, users_info.info FROM demo.users INNER JOIN demo.users_info ON users.name=users_info.link_name;";
 
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("users.name")),
@@ -133,10 +131,8 @@ public class SelectStatementTest extends BasicPlannerTest {
 
   @Test
   public void testComplexJoinNoMatch() {
-    String inputText =
-        "SELECT users.name, users.age, users_info.info FROM demo.users "
-            + "INNER JOIN demo.users_info ON users.name=users_info.link_name "
-            + "WHERE name = 'name_3';";
+
+    // "SELECT users.name, users.age, users_info.info FROM demo.users INNER JOIN demo.users_info ON users.name=users_info.link_name WHERE name = 'name_3';";
 
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("users.name")),
@@ -160,8 +156,8 @@ public class SelectStatementTest extends BasicPlannerTest {
 
   @Test
   public void testWhereWithInClause() {
-    String inputText =
-        "SELECT name, age FROM demo.users WHERE name IN ('name_5', 'name_11') AND age = 15;";
+
+    // "SELECT name, age FROM demo.users WHERE name IN ('name_5', 'name_11') AND age = 15;";
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(
             new SelectorIdentifier("age")));
@@ -175,14 +171,13 @@ public class SelectStatementTest extends BasicPlannerTest {
     Relation relation2 = new RelationCompare("age", "=", new LongTerm("15"));
     List<Relation> whereClause = Arrays.asList(relation1, relation2);
     ((SelectStatement) stmt).setWhere(whereClause);
-    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    stmt.getPlan(_metadataManager, "demo");
     validateDeepPath("testWhereWithInClause");
   }
 
   @Test
   public void testWhereWithBetweenClause() {
-    String inputText =
-        "SELECT name, age FROM demo.users WHERE name IN ('name_5', 'name_11') AND age = 15;";
+    // "SELECT name, age FROM demo.users WHERE name IN ('name_5', 'name_11') AND age = 15;";
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(
             new SelectorIdentifier("age")));
@@ -194,14 +189,14 @@ public class SelectStatementTest extends BasicPlannerTest {
     Relation relation2 = new RelationCompare("age", "=", new LongTerm("15"));
     List<Relation> whereClause = Arrays.asList(relation1, relation2);
     ((SelectStatement) stmt).setWhere(whereClause);
-    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    stmt.getPlan(_metadataManager, "demo");
     validateDeepPath("testWhereWithBetweenClause");
   }
 
   @Test
   public void testGroupByWithCount() {
 
-    String inputText = "SELECT gender, COUNT(*) FROM demo.users GROUP BY gender;";
+    // "SELECT gender, COUNT(*) FROM demo.users GROUP BY gender;";
 
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("gender")),
@@ -210,7 +205,10 @@ public class SelectStatementTest extends BasicPlannerTest {
 
     SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
     stmt = new SelectStatement(selClause, "demo.users");
-    GroupBy groupClause = new GroupBy(Arrays.asList("gender"));
+
+    List<GroupBy> groupClause = new ArrayList<>();
+    groupClause.add(new GroupBy("gender"));
+
     ((SelectStatement) stmt).setGroup(groupClause);
     stmt.getPlan(_metadataManager, "demo");
     validateDeepPath("testGroupByWithCount");
@@ -219,7 +217,7 @@ public class SelectStatementTest extends BasicPlannerTest {
   @Test
   public void testSimpleOrderByOk() {
 
-    String inputText = "SELECT age FROM demo.users ORDER BY age;";
+    // "SELECT age FROM demo.users ORDER BY age;";
 
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("age")));
