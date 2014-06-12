@@ -47,7 +47,7 @@ class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTrac
       log.debug("Finish Parser Task")
     }
     case _ => {
-      sender ! QueryResult.createFailQueryResult("Not recognized object")
+      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
     }
   }
 

@@ -100,21 +100,21 @@ public class DropIndexStatement extends MetaStatement {
   public Result validate(MetadataManager metadata) {
 
     Result result = null;
-    // Get the effective keyspace based on the user specification during the create
-    // sentence, or taking the keyspace in use in the user session.
+    //Get the effective keyspace based on the user specification during the create
+    //sentence, or taking the keyspace in use in the user session.
     String effectiveKeyspace = getEffectiveKeyspace();
+    if(keyspaceInc){
+      effectiveKeyspace = keyspace;
+    }
 
-    // Check that the keyspace and table exists.
-    if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
-      result =
-          QueryResult
-              .createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
-    } else {
+    //Check that the keyspace and table exists.
+    if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+      result= Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+    }else{
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
-      if (ksMetadata == null) {
-        result =
-            QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
-      } else {
+      if(ksMetadata == null){
+        result= Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
+      }else{
         result = validateIndexName(ksMetadata);
       }
     }
@@ -123,34 +123,31 @@ public class DropIndexStatement extends MetaStatement {
 
   /**
    * Validate the existence of the index in the selected keyspace.
-   * 
    * @param ksMetadata The keyspace metadata.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  public Result validateIndexName(KeyspaceMetadata ksMetadata) {
+  public Result validateIndexName(KeyspaceMetadata ksMetadata){
     Result result = QueryResult.createSuccessQueryResult();
     boolean found = false;
     Iterator<TableMetadata> tables = ksMetadata.getTables().iterator();
 
-    while (tables.hasNext() && !found) {
+    while(tables.hasNext() && !found){
       TableMetadata tableMetadata = tables.next();
       Iterator<ColumnMetadata> columns = tableMetadata.getColumns().iterator();
-      while (columns.hasNext() && !found) {
+      while(columns.hasNext() && !found){
         ColumnMetadata column = columns.next();
-        if (column.getIndex() != null
-            && (column.getIndex().getName().equals(name) || column.getIndex().getName()
-                .equals("stratio_lucene_" + name))) {
+        if(column.getIndex() != null
+           && (column.getIndex().getName().equals(name)
+               || column.getIndex().getName().equals("stratio_lucene_"+ name))){
           found = true;
           targetColumn = column;
         }
       }
     }
 
-    if (!dropIfExists && !found) {
-      result =
-          QueryResult.createFailQueryResult("Index " + name + " not found in keyspace "
-              + ksMetadata.getName());
-    } else {
+    if(!dropIfExists && !found){
+      result = Result.createValidationErrorResult("Index " + name + " not found in keyspace " + ksMetadata.getName());
+    }else{
       dropIndex = true;
     }
 
@@ -165,18 +162,18 @@ public class DropIndexStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree result = new Tree();
-    if (dropIndex) {
-      // Add CREATE INDEX as the root.
+    if(dropIndex) {
+      //Add CREATE INDEX as the root.
       StringBuilder sb = new StringBuilder("DROP INDEX ");
-      if (keyspaceInc) {
+      if(keyspaceInc) {
         sb.append(keyspace).append(".");
       }
       sb.append(targetColumn.getIndex().getName());
 
       if (targetColumn.getIndex().getName().startsWith("stratio")) {
-        // Remove associated column.
+        //Remove associated column.
         StringBuilder sb2 = new StringBuilder("ALTER TABLE ");
-        if (keyspaceInc) {
+        if(keyspaceInc) {
           sb2.append(keyspace).append(".");
         }
         sb2.append(targetColumn.getTable().getName());
@@ -184,7 +181,7 @@ public class DropIndexStatement extends MetaStatement {
 
         result.setNode(new MetaStep(MetaPath.CASSANDRA, sb2.toString()));
         result.addChild(new Tree(new MetaStep(MetaPath.CASSANDRA, sb.toString())));
-      } else {
+      }else{
         result.setNode(new MetaStep(MetaPath.CASSANDRA, sb.toString()));
       }
 

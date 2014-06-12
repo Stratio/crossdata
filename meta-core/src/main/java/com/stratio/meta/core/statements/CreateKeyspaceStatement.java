@@ -103,14 +103,14 @@ public class CreateKeyspaceStatement extends MetaStatement {
         if(name!= null && name.length() > 0) {
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(name);
             if(ksMetadata != null && !ifNotExists){
-                result= QueryResult.createFailQueryResult("Keyspace " + name + " already exists.");
+                result = Result.createValidationErrorResult("Keyspace " + name + " already exists.");
             }
         }else{
-            result= QueryResult.createFailQueryResult("Empty keyspace name found.");
+            result = Result.createValidationErrorResult("Empty keyspace name found.");
         }
 
         if(properties.isEmpty() || !properties.containsKey("replication")){
-            result= QueryResult.createFailQueryResult("Missing mandatory replication property.");
+            result = Result.createValidationErrorResult("Missing mandatory replication property.");
         }
 
         return result;

@@ -42,15 +42,8 @@ public class MetadataResult extends Result {
 
   /**
    * Private constructor of the factory.
-   * 
-   * @param error Whether an error occurred during the execution.
-   * @param errorMessage The error message in case of {@code error}.
-   * @param ksChanged Whether the current keyspace in the user session is modified by the execution.
-   * @param currentKeyspace The current keyspace after the execution.
    */
-  private MetadataResult(boolean error, String errorMessage, boolean ksChanged,
-      String currentKeyspace) {
-    super(error, errorMessage, ksChanged, currentKeyspace);
+  private MetadataResult() {
   }
 
   /**
@@ -86,17 +79,7 @@ public class MetadataResult extends Result {
    * @return A {@link com.stratio.meta.common.result.MetadataResult}.
    */
   public static MetadataResult createSuccessMetadataResult() {
-    return new MetadataResult(false, null, false, null);
-  }
-
-  /**
-   * Create a failed query result.
-   * 
-   * @param errorMessage The associated error message.
-   * @return A {@link com.stratio.meta.common.result.QueryResult}.
-   */
-  public static MetadataResult createFailMetadataResult(String errorMessage) {
-    return new MetadataResult(true, errorMessage, false, null);
+    return new MetadataResult();
   }
 
   public List<String> getCatalogList() {

@@ -65,12 +65,12 @@ public class DeepExecutor {
                 resultSet = bridge.execute(ss, resultsFromChildren, isRoot);
             } catch(Exception ex){
                 LOG.error("Spark exception", ex);
-                return QueryResult.createFailQueryResult("Spark exception: " +
+                return Result.createExecutionErrorResult("Spark exception: " +
                         System.lineSeparator()+ex.getMessage());
             }
-            return QueryResult.createSuccessQueryResult(resultSet);
+            return QueryResult.createQueryResult(resultSet);
         } else {
-            return QueryResult.createFailQueryResult("Statement " + stmt + " not supported by deep");
+            return Result.createExecutionErrorResult("Statement " + stmt + " not supported by deep");
         }
     }
 }

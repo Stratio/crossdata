@@ -5,7 +5,7 @@ import akka.actor.ActorSystem
 import com.stratio.meta.server.actors.{ValidatorActor, PlannerActor, ExecutorActor}
 import akka.testkit._
 import org.scalatest.FunSuiteLike
-import com.stratio.meta.common.result.{QueryResult, CommandResult, Result}
+import com.stratio.meta.common.result._
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import akka.pattern.ask
@@ -17,6 +17,8 @@ import com.typesafe.config.ConfigFactory
 import scala.collection.mutable
 import com.stratio.meta.common.ask.Query
 import com.stratio.meta.communication.ACK
+import com.stratio.meta.communication.ACK
+import scala.util.Success
 
 /**
  * Validator actor tests.
@@ -55,7 +57,7 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
 
     if(shouldExecute) {
       assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
-                                   + "\n error: " + result.getErrorMessage + " " + errorMessage)
+                                   + "\n error: " + getErrorMessage(result) + " " + errorMessage)
     }else{
       assertTrue(result.hasError, "Statement should report an error. " + errorMessage)
     }
@@ -78,7 +80,7 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
       stmt.setSessionKeyspace("ks_demo1")
-      stmt.setError("Error creating KEYSPACE ks_demo1- resent 2")
+      stmt.setErrorMessage(ErrorType.VALIDATION, "Error creating KEYSPACE ks_demo1- resent 2")
       validatorRefTest ! stmt
       val result = expectMsgClass(classOf[Result])
       assertTrue(result.hasError, "Error expected");
@@ -90,8 +92,7 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
       stmt.setSessionKeyspace("ks_demo1")
-      stmt.setError("Error creating KEYSPACE ks_demo1- resent 3")
-      stmt.setErrorMessage("it is a test of error")
+      stmt.setErrorMessage(ErrorType.VALIDATION, "it is a test of error")
       var complete:Boolean=true
       val futureExecutorResponse=validatorRefTest.ask(stmt)(2 second)
       try{
@@ -108,7 +109,7 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
         value_response match{
           case Success(value:Result)=>
             if (value.hasError){
-              assertEquals(value.getErrorMessage,"it is a test of error")
+              assertEquals(getErrorMessage(value),"it is a test of error")
 
           }
           case _ =>
@@ -121,7 +122,7 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
   test ("Unknown message"){
     within(5000 millis){
       validatorRef ! 1
-      val result = expectMsgClass(classOf[CommandResult])
+      val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting error message")
     }
   }
@@ -144,8 +145,10 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
     within(5000 millis){
       val msg = "use ks_demo ;"
       val result = executeStatement(msg, "", true, "Keyspace should be used.")
-      assertTrue(result.isKsChanged, "New keyspace should be used");
-      assertEquals(result.getCurrentKeyspace, "ks_demo", "New keyspace should be used");
+      assertTrue(result.isInstanceOf[QueryResult], "Invalid result type")
+      val r = result.asInstanceOf[QueryResult]
+      assertTrue(r.isCatalogChanged, "New keyspace should be used");
+      assertEquals(r.getCurrentCatalog, "ks_demo", "New keyspace should be used");
     }
   }
 
@@ -153,8 +156,10 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
     within(5000 millis){
       val msg = "use ks_demo ;"
       val result = executeStatement(msg, "ks_demo", true, "Keyspace should be used.")
-      assertTrue(result.isKsChanged, "New keyspace should be used");
-      assertEquals(result.getCurrentKeyspace, "ks_demo", "New keyspace should be used");
+      assertTrue(result.isInstanceOf[QueryResult], "Invalid result type")
+      val r = result.asInstanceOf[QueryResult]
+      assertTrue(r.isCatalogChanged, "New keyspace should be used");
+      assertEquals(r.getCurrentCatalog, "ks_demo", "New keyspace should be used");
     }
   }
 
@@ -197,7 +202,7 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
     within(5000 millis){
       val msg="select * from demo ;"
       var result = executeStatement(msg, "ks_demo", true, "Select should work.")
-      assertFalse(result.hasError, "Error not expected: " + result.getErrorMessage)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
       val queryResult = result.asInstanceOf[QueryResult]
       assertEquals(queryResult.getResultSet.size(), 1, "Cannot retrieve data")
       val r = queryResult.getResultSet.iterator().next()

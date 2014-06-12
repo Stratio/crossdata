@@ -85,31 +85,6 @@ public class TruncateStatement extends MetaStatement {
     return sb.toString();
   }
 
-  @Override
-  public Result validate(MetadataManager metadata) {
-    Result result = QueryResult.createSuccessQueryResult();
-
-    String effectiveKeyspace = getEffectiveKeyspace();
-
-    // Check that the keyspace and table exists.
-    if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
-      result =
-          QueryResult
-              .createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
-    } else {
-      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
-      if (ksMetadata == null) {
-        result =
-            QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
-      } else {
-        TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, ident);
-        if (tableMetadata == null) {
-          result = QueryResult.createFailQueryResult("Table " + ident + " does not exist.");
-        }
-      }
-    }
-    return result;
-  }
 
   @Override
   public String translateToCQL() {
@@ -126,6 +101,33 @@ public class TruncateStatement extends MetaStatement {
     }
     return truncateQuery;
   }
+
+    @Override
+    public Result validate(MetadataManager metadata) {
+      Result result = QueryResult.createSuccessQueryResult();
+
+      String effectiveKeyspace = getEffectiveKeyspace();
+      if(keyspaceInc){
+        effectiveKeyspace = keyspace;
+      }
+
+      //Check that the keyspace and table exists.
+      if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+        result= Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+      }else{
+        KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+        if(ksMetadata == null){
+          result= Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
+        }else {
+          TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, ident);
+          if (tableMetadata == null) {
+            result= Result.createValidationErrorResult("Table " + ident + " does not exist.");
+          }
+        }
+      }
+      return result;
+
+    }
 
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {

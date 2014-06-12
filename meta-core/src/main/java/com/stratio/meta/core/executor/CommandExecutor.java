@@ -52,16 +52,16 @@ public class CommandExecutor {
       } else if (stmt instanceof ExplainPlanStatement) {
         return executeExplainPlan((ExplainPlanStatement) stmt, session);
       } else {
-        return CommandResult.createFailCommandResult("Command not supported yet.");
+        return Result.createExecutionErrorResult("Command not supported yet.");
       }
     } catch (RuntimeException rex) {
       LOG.debug("Command executor failed", rex);
-      return CommandResult.createFailCommandResult(rex.getMessage());
+      return Result.createExecutionErrorResult(rex.getMessage());
     }
   }
 
   private static Result executeExplainPlan(ExplainPlanStatement stmt, Session session) {
-    return CommandResult.createSuccessCommandResult(stmt.getMetaStatement()
+    return CommandResult.createCommandResult(stmt.getMetaStatement()
         .getPlan(new MetadataManager(session), stmt.getMetaStatement().getEffectiveKeyspace())
         .toStringDownTop());
   }

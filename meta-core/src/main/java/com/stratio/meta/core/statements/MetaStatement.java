@@ -97,7 +97,7 @@ public abstract class MetaStatement {
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   public Result validate(MetadataManager metadata) {
-    return QueryResult.createFailQueryResult("Statement not supported");
+    return Result.createValidationErrorResult("Statement not supported");
   }
 
 
@@ -121,18 +121,16 @@ public abstract class MetaStatement {
 
     // Check that the keyspace and table exists.
     if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
-      result =
-          QueryResult
-              .createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
+      result = Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
     } else {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if (ksMetadata == null) {
         result =
-            QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
+            Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
       } else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata == null) {
-          result = QueryResult.createFailQueryResult("Table " + tableName + " does not exist.");
+          result = Result.createValidationErrorResult("Table " + tableName + " does not exist.");
         }
       }
 

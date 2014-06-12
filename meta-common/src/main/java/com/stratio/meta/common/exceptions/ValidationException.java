@@ -24,6 +24,9 @@ package com.stratio.meta.common.exceptions;
  */
 public class ValidationException extends Exception{
 
+  /**
+   * Serial version UID in order to be {@link java.io.Serializable}.
+   */
   private static final long serialVersionUID = -1429028331466675420L;
 
   public ValidationException(String message){

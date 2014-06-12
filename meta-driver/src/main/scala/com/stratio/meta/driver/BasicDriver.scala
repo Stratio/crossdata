@@ -30,6 +30,10 @@ import  scala.concurrent.duration._
 import java.util.UUID
 import akka.pattern.ask
 import com.stratio.meta.driver.result.SyncResultHandler
+import com.stratio.meta.common.exceptions._
+import com.stratio.meta.common.ask.Connect
+import com.stratio.meta.common.ask.Command
+import com.stratio.meta.common.ask.Query
 
 class BasicDriver extends DriverConfig{
 
@@ -54,10 +58,14 @@ class BasicDriver extends DriverConfig{
    * @param user Login to the user (Audit only)
    * @return ConnectResult
    */
+  @throws(classOf[ConnectionException])
   def connect(user:String): Result = {
-    //println(contactPoints)
-    //println("Connecting user: " + user)
-    retryPolitics.askRetry(proxyActor,new Connect(user),5 second)
+    logger.info("Establishing connection with user: " + user + " to " + contactPoints)
+    val result = retryPolitics.askRetry(proxyActor,new Connect(user),5 second)
+    if(result.isInstanceOf[ErrorResult]){
+      throw new ConnectionException(result.asInstanceOf[ErrorResult].getErrorMessage)
+    }
+    result
   }
 
   /**
@@ -80,6 +88,10 @@ class BasicDriver extends DriverConfig{
     * @param query Launched query
     * @return QueryResult
     */
+  @throws(classOf[ParsingException])
+  @throws(classOf[ValidationException])
+  @throws(classOf[ExecutionException])
+  @throws(classOf[UnsupportedException])
   def executeQuery(user:String, targetKs: String, query: String): Result = {
     val queryId = UUID.randomUUID()
     //retryPolitics.askRetry(proxyActor,new Query(queryId.toString, targetKs,query,user))
@@ -87,6 +99,7 @@ class BasicDriver extends DriverConfig{
     queries.put(queryId.toString, callback)
     sendQuery(new Query(queryId.toString, targetKs,query,user))
     var r = callback.waitForResult()
+    queries.remove(queryId.toString)
     //println("Class: " + r)
     r
   }

@@ -22,7 +22,7 @@ package com.stratio.meta.server.actors
 import akka.actor.{Actor, Props}
 import com.stratio.meta.core.metadata.MetadataManager
 import org.apache.log4j.Logger
-import com.stratio.meta.common.result.{MetadataResult, CommandResult}
+import com.stratio.meta.common.result.{Result, MetadataResult, CommandResult}
 import com.stratio.meta.common.ask.Command
 import com.stratio.meta.core.api.APIManager
 
@@ -41,7 +41,7 @@ class APIActor(metadata: APIManager) extends Actor with TimeTracker {
       finishTimer(timer)
     }
     case _ => {
-      sender ! CommandResult.createFailCommandResult("Unsupported command: ");
+      sender ! Result.createUnsupportedOperationErrorResult("Unsupported command")
     }
   }
 }

@@ -60,6 +60,7 @@ public class BasicExecutorTest extends BasicCoreCassandraTest {
     deepContext.stop();
   }
 
+
   public static EngineConfig initConfig() {
     String[] cassandraHosts = {"127.0.0.1"};
     EngineConfig engineConfig = new EngineConfig();
@@ -69,20 +70,25 @@ public class BasicExecutorTest extends BasicCoreCassandraTest {
     return engineConfig;
   }
 
+
   public Result validateOk(MetaQuery metaQuery, String methodName) {
     MetaQuery result = executor.executeQuery(metaQuery);
     assertNotNull(result.getResult(), "Result null - " + methodName);
-    assertFalse(result.hasError(), metaQuery.getPlan().getNode().getPath() + " execution failed - "
-        + methodName + ": " + result.getResult().getErrorMessage());
+    assertFalse(result.hasError(),
+                metaQuery.getPlan().getNode().getPath() + " execution failed - " + methodName + ": "
+                + getErrorMessage(result.getResult()));
     return result.getResult();
   }
+
 
   public Result validateRows(MetaQuery metaQuery, String methodName, int expectedNumber) {
     QueryResult result = (QueryResult) validateOk(metaQuery, methodName);
     if (expectedNumber > 0) {
       assertFalse(result.getResultSet().isEmpty(), "Expecting non-empty resultset");
       assertEquals(result.getResultSet().size(), expectedNumber, methodName + ":"
-          + result.getResultSet().size() + " rows found, " + expectedNumber + " rows expected.");
+                                                                 + result.getResultSet().size()
+                                                                 + " rows found, " + expectedNumber
+                                                                 + " rows expected.");
     } else {
       assertTrue(result.getResultSet().isEmpty(), "Expecting empty resultset.");
       assertNull(result.getResultSet(), methodName + ": Result should be null");

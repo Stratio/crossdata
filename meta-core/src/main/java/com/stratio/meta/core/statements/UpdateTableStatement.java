@@ -247,12 +247,12 @@ public class UpdateTableStatement extends MetaStatement {
       if (cm != null) {
         if (!(cm.getType().asJavaClass() == conditions.get(key).getTermClass())) {
           result =
-              QueryResult.createFailQueryResult("Column " + key + " should be type "
+              Result.createValidationErrorResult("Column " + key + " should be type "
                   + cm.getType().asJavaClass().getSimpleName());
         }
       } else {
         result =
-            QueryResult.createFailQueryResult("Column " + key + " was not found in table "
+            Result.createValidationErrorResult("Column " + key + " was not found in table "
                 + tableName);
       }
     }
@@ -281,12 +281,12 @@ public class UpdateTableStatement extends MetaStatement {
       if (!("ttl".equalsIgnoreCase(opt.getNameProperty()) || "timestamp".equalsIgnoreCase(opt
           .getNameProperty()))) {
         result =
-            QueryResult.createFailQueryResult("TIMESTAMP and TTL are the only accepted options.");
+            Result.createValidationErrorResult("TIMESTAMP and TTL are the only accepted options.");
       }
     }
     for (Option opt : options) {
       if (opt.getProperties().getType() != ValueProperty.TYPE_CONST) {
-        result = QueryResult.createFailQueryResult("TIMESTAMP and TTL must have a constant value.");
+        result = Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
       }
     }
     return result;
@@ -310,7 +310,7 @@ public class UpdateTableStatement extends MetaStatement {
       ColumnMetadata cm = tableMetadata.getColumn(assignmentId.getIdentifier());
       if (cm == null) {
         result =
-            QueryResult.createFailQueryResult("Column " + assignmentId.getIdentifier()
+            Result.createValidationErrorResult("Column " + assignmentId.getIdentifier()
                 + " not found in " + tableMetadata.getName() + ".");
         break;
       }
@@ -320,7 +320,7 @@ public class UpdateTableStatement extends MetaStatement {
       if (!result.hasError()) {
         if (!CoreUtils.supportedTypes.contains(idClazz.getSimpleName().toLowerCase())) {
           result =
-              QueryResult.createFailQueryResult("Column " + assignmentId.getIdentifier()
+              Result.createValidationErrorResult("Column " + assignmentId.getIdentifier()
                   + " is of type " + cm.getType().asJavaClass().getSimpleName()
                   + ", which is not supported yet.");
         }
@@ -330,7 +330,7 @@ public class UpdateTableStatement extends MetaStatement {
       // yet
       if (!result.hasError()) {
         if (assignmentId.getType() == IdentifierAssignment.TYPE_COMPOUND) {
-          result = QueryResult.createFailQueryResult("Collections are not supported yet.");
+          result = Result.createValidationErrorResult("Collections are not supported yet.");
         }
       }
 
@@ -343,18 +343,18 @@ public class UpdateTableStatement extends MetaStatement {
           String valueClass = valueClazz.getSimpleName();
           if (!idClazz.getSimpleName().equalsIgnoreCase(valueClass)) {
             result =
-                QueryResult.createFailQueryResult(cm.getName() + " and " + valueTerm.getTermValue()
+                Result.createValidationErrorResult(cm.getName() + " and " + valueTerm.getTermValue()
                     + " are not compatible type.");
           }
         } else if (valueAssignment.getType() == ValueAssignment.TYPE_IDENT_MAP) {
-          result = QueryResult.createFailQueryResult("Collections are not supported yet.");
+          result = Result.createValidationErrorResult("Collections are not supported yet.");
         } else {
           IdentIntOrLiteral iiol = valueAssignment.getIiol();
           if (iiol instanceof IntTerm) {
             // Check if identifier is of int type
             if (!Arrays.asList("integer", "int").contains(idClazz.getSimpleName().toLowerCase())) {
               result =
-                  QueryResult.createFailQueryResult("Column " + cm.getName()
+                  Result.createValidationErrorResult("Column " + cm.getName()
                       + " should be integer type.");
             }
             if (!result.hasError()) {
@@ -362,21 +362,21 @@ public class UpdateTableStatement extends MetaStatement {
               String valueId = iiol.getIdentifier();
               ColumnMetadata colValue = tableMetadata.getColumn(valueId);
               if (colValue == null) {
-                result = QueryResult.createFailQueryResult("Column " + valueId + " not found.");
+                result = Result.createValidationErrorResult("Column " + valueId + " not found.");
               }
               if (!result.hasError()) {
                 // Check if value identifier is int type
                 if (!Arrays.asList("integer", "int").contains(
                     colValue.getType().asJavaClass().getSimpleName().toLowerCase())) {
                   result =
-                      QueryResult.createFailQueryResult("Column " + colValue.getName()
+                      Result.createValidationErrorResult("Column " + colValue.getName()
                           + " should be integer type.");
                 }
               }
             }
 
           } else { // Set or List
-            result = QueryResult.createFailQueryResult("Collections are not supported yet.");
+            result = Result.createValidationErrorResult("Collections are not supported yet.");
           }
         }
       }
@@ -417,7 +417,7 @@ public class UpdateTableStatement extends MetaStatement {
         }
         if (!foundAndSameType) {
           result =
-              QueryResult.createFailQueryResult("Column " + id + " not found in "
+              Result.createValidationErrorResult("Column " + id + " not found in "
                   + tableMetadata.getName());
           break;
         }

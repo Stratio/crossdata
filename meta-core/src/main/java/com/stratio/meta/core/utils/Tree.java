@@ -183,9 +183,9 @@ public class Tree {
             result = StreamExecutor.execute(myStep.getStmt());
         }*/
         else if(myPath == MetaPath.UNSUPPORTED){
-            result = QueryResult.createFailQueryResult("Query not supported.");
+            result = Result.createUnsupportedOperationErrorResult("Query not supported.");
         } else {
-            result = QueryResult.createFailQueryResult("Query not supported yet.");
+            result = Result.createUnsupportedOperationErrorResult("Query not supported yet.");
         }
         return result;
     }

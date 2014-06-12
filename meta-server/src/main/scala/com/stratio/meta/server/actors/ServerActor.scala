@@ -41,7 +41,7 @@ class ServerActor(engine:Engine) extends Actor {
     case Connect(user)=> {
       log.info("Welcome " + user +"!")
       //println("Welcome " + user +"!")
-      sender ! ConnectResult.createSuccessConnectResult(Random.nextLong())
+      sender ! ConnectResult.createConnectResult(Random.nextLong())
     }
     case cmd: Command => {
       log.info("API Command call " + cmd.commandType)
@@ -49,7 +49,7 @@ class ServerActor(engine:Engine) extends Actor {
     }
     case _ => {
       println("Unknown!!!!");
-      sender ! CommandResult.createFailCommandResult("Not recognized object")
+      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
     }
   }
 }

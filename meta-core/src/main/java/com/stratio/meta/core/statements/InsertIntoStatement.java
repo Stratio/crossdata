@@ -225,7 +225,7 @@ public class InsertIntoStatement extends MetaStatement {
       TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
 
       if (typeValues == TYPE_SELECT_CLAUSE) {
-        result = QueryResult.createFailQueryResult("INSERT INTO with subqueries not supported.");
+        result = Result.createValidationErrorResult("INSERT INTO with subqueries not supported.");
       } else {
         result = validateColumns(tableMetadata);
       }
@@ -263,7 +263,7 @@ public class InsertIntoStatement extends MetaStatement {
     for (String c : ids) {
       if (c.toLowerCase().startsWith("stratio")) {
         result =
-            QueryResult.createFailQueryResult("Cannot insert data into column " + c
+            Result.createValidationErrorResult("Cannot insert data into column " + c
                 + " reserved for internal use.");
       }
     }
@@ -277,18 +277,18 @@ public class InsertIntoStatement extends MetaStatement {
             Term<?> t = Term.class.cast(cellValues.get(index));
             if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
               result =
-                  QueryResult.createFailQueryResult("Column " + ids.get(index) + " of type "
+                  Result.createValidationErrorResult("Column " + ids.get(index) + " of type "
                       + cm.getType().asJavaClass() + " does not accept " + t.getTermClass()
                       + " values (" + cellValues.get(index) + ")");
             }
           } else {
             result =
-                QueryResult.createFailQueryResult("Column " + ids.get(index) + " not found in "
+                Result.createValidationErrorResult("Column " + ids.get(index) + " not found in "
                     + tableMetadata.getName());
           }
         }
       } else {
-        result = QueryResult.createFailQueryResult("Number of columns and values does not match.");
+        result = Result.createValidationErrorResult("Number of columns and values does not match.");
       }
     }
     return result;

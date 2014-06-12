@@ -275,34 +275,30 @@ public class CreateTableStatement extends MetaStatement {
    */
 
   /**
-   * Validate that a valid keyspace is present, and that the table does not exits unless
-   * {@code ifNotExists} has been specified.
-   * 
-   * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
-   *        required information.
+   * Validate that a valid keyspace is present, and that the table does not
+   * exits unless {@code ifNotExists} has been specified.
+   * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+   *                 the required information.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateKeyspaceAndTable(MetadataManager metadata) {
+  private Result validateKeyspaceAndTable(MetadataManager metadata){
     Result result = QueryResult.createSuccessQueryResult();
-    // Get the effective keyspace based on the user specification during the create
-    // sentence, or taking the keyspace in use in the user session.
+    //Get the effective keyspace based on the user specification during the create
+    //sentence, or taking the keyspace in use in the user session.
     String effectiveKeyspace = getEffectiveKeyspace();
 
-    // Check that the keyspace exists, and that the table does not exits.
-    if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
-      result =
-          QueryResult
-              .createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
-    } else {
+    //Check that the keyspace exists, and that the table does not exits.
+    if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+      result = Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+    }else{
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
-      if (ksMetadata == null) {
-        result =
-            QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
-      } else {
+      if(ksMetadata == null){
+        result = Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
+      }else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata != null && !ifNotExists) {
-          result = QueryResult.createFailQueryResult("Table " + tableName + " already exists.");
-        } else if (tableMetadata == null) {
+          result = Result.createValidationErrorResult("Table " + tableName + " already exists.");
+        } else if (tableMetadata == null){
           createTable = true;
         }
       }
@@ -311,43 +307,35 @@ public class CreateTableStatement extends MetaStatement {
   }
 
   /**
-   * Validate that the primary key is created and uses a set of existing columns. The same checks
-   * are applied to the clustering key if it exists.
-   * 
+   * Validate that the primary key is created and uses a set
+   * of existing columns. The same checks are applied to the clustering
+   * key if it exists.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateColumns() {
+  private Result validateColumns(){
     Result result = QueryResult.createSuccessQueryResult();
-    // The columns in the primary key must be declared.
+    //The columns in the primary key must be declared.
     for (String pk : primaryKey) {
-      if (!columns.containsKey(pk)) {
-        result =
-            QueryResult.createFailQueryResult("Missing declaration for Primary Key column " + pk);
+      if(!columns.containsKey(pk)){
+        result= Result.createValidationErrorResult("Missing declaration for Primary Key column " + pk);
       }
     }
 
-    // The columns in the clustering key must be declared and not part of the primary key.
-    for (String ck : clusterKey) {
-      if (!columns.containsKey(ck)) {
-        result =
-            QueryResult
-                .createFailQueryResult("Missing declaration for Clustering Key column " + ck);
+    //The columns in the clustering key must be declared and not part of the primary key.
+    for(String ck : clusterKey){
+      if(!columns.containsKey(ck)){
+        result= Result.createValidationErrorResult("Missing declaration for Clustering Key column " + ck);
       }
-      if (primaryKey.contains(ck)) {
-        result =
-            QueryResult.createFailQueryResult("Column " + ck
-                + " found as part of primary and clustering key.");
+      if(primaryKey.contains(ck)){
+        result= Result.createValidationErrorResult("Column " + ck + " found as part of primary and clustering key.");
       }
     }
 
-    String[] supported = {"BIGINT", "BOOLEAN", "COUNTER", "DOUBLE", "FLOAT", "INT", "VARCHAR"};
+    String [] supported = {"BIGINT", "BOOLEAN", "COUNTER", "DOUBLE", "FLOAT", "INT", "VARCHAR"};
     Set<String> supportedColumns = new HashSet<>(Arrays.asList(supported));
-    for (String c : columns.keySet()) {
-      if (!supportedColumns.contains(columns.get(c).toUpperCase())
-          || c.toLowerCase().startsWith("stratio")) {
-        result =
-            QueryResult.createFailQueryResult("Column " + c + " with datatype " + columns.get(c)
-                + " not supported.");
+    for(String c : columns.keySet()){
+      if(!supportedColumns.contains(columns.get(c).toUpperCase()) || c.toLowerCase().startsWith("stratio")){
+        result= Result.createValidationErrorResult("Column " + c + " with datatype " + columns.get(c) + " not supported.");
       }
     }
 
@@ -370,18 +358,17 @@ public class CreateTableStatement extends MetaStatement {
         if ("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
             && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
           // If property ephemeral is present, it must be a boolean type
-          result = QueryResult.createFailQueryResult("Property 'ephemeral' must be a boolean");
+          result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
           exit = true;
         } else if ("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
             && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
           // If property ephemeral_tuples is present, it must be a integer type
-          result = QueryResult.createFailQueryResult("Property 'ephemeral' must be a boolean");
+          result= Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
           exit = true;
         } else if ("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
             && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
           // If property ephemeral_persist_on is present, it must be a string type
-          result =
-              QueryResult.createFailQueryResult("Property 'ephemeral_persist_on' must be a string");
+          result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
           exit = true;
         }
       }

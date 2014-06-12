@@ -39,13 +39,13 @@ public class ExplainPlanStatementTest extends BasicValidatorTest {
   public void validateExplainPlanForDropIndex() {
     String methodName = "validateExplainPlanForDropIndex";
     String inputText = "EXPLAIN PLAN FOR DROP INDEX users_gender_idx;";
-    MetaStatement stmt = _pt.testRegularStatement(inputText, methodName);
+    MetaStatement stmt = pt.testRegularStatement(inputText, methodName);
     stmt.setSessionKeyspace("demo");
     ((ExplainPlanStatement) stmt).getMetaStatement().setSessionKeyspace("demo");
-    Result result = stmt.validate(_metadataManager);
+    Result result = stmt.validate(metadataManager);
     assertNotNull(result, "Sentence validation not supported - " + methodName);
     assertFalse(result.hasError(),
-        "Cannot validate sentence - " + methodName + ": " + result.getErrorMessage());
+                "Cannot validate sentence - " + methodName + ": " + getErrorMessage(result));
   }
 
   // Test with WRONG statements
@@ -60,4 +60,5 @@ public class ExplainPlanStatementTest extends BasicValidatorTest {
     String inputText = "EXPLAIN PLAN FOR DROP INDEX idk;";
     validateFail(inputText, "validateExplainPlanForWrongDropIndex");
   }
+
 }

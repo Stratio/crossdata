@@ -20,45 +20,42 @@
 package com.stratio.meta.common.result;
 
 /**
- * Result of the execution of a command in META.
+ * Error result of a given type.
+ * <ul>
+ *   <li>Parsing</li>
+ *   <li>Validation</li>
+ *   <li>Execution</li>
+ *   <li>Not supported</li>
+ * </ul>
  */
-public class CommandResult extends Result {
+public class ErrorResult extends Result{
 
   /**
-   * Serial version UID in order to be {@link java.io.Serializable}.
+   * Type of error.
    */
+  private final ErrorType type;
 
   /**
-   * Execution result.
+   * The associated error message in case of {@code error}.
    */
-  private final String result;
+  private final String errorMessage;
 
-  /**
-   * Private class constructor of the factory.
-   *
-   * @param result          The execution result.
-   */
-  private CommandResult(String result) {
-    this.result = result;
+  public ErrorResult(ErrorType type, String errorMessage){
+    this.type = type;
+    this.errorMessage = errorMessage;
+    this.error = true;
   }
 
   /**
-   * Get the execution result.
+   * Get the error message.
    *
-   * @return The result or null if an error occurred.
+   * @return The message or null if no error occurred.
    */
-  public Object getResult() {
-    return result;
+  public String getErrorMessage() {
+    return errorMessage;
   }
 
-  /**
-   * Create a successful command result.
-   *
-   * @param result The execution result.
-   * @return A {@link com.stratio.meta.common.result.CommandResult}.
-   */
-  public static CommandResult createCommandResult(String result) {
-    return new CommandResult(result);
+  public ErrorType getType() {
+    return type;
   }
-
 }

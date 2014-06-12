@@ -78,7 +78,8 @@ class APIServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFa
 
     if(shouldExecute) {
       assertFalse(returned.asInstanceOf[Result].hasError,
-        "API execution failed for:\n" + cmd.toString + "\n error: " + returned.asInstanceOf[Result].getErrorMessage)
+        "API execution failed for:\n" + cmd.toString
+        + "\n error: " + getErrorMessage(returned.asInstanceOf[Result]))
       result = returned.asInstanceOf[MetadataResult]
     }else{
       assertTrue(returned.asInstanceOf[Result].hasError, "API execution should report an error")

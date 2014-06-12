@@ -19,8 +19,8 @@
 
 package com.stratio.meta.driver.result
 
-import com.stratio.meta.common.result.{QueryResult, QueryStatus, Result, IResultHandler}
-import com.stratio.meta.common.exceptions.ParsingException
+import com.stratio.meta.common.result._
+import com.stratio.meta.common.exceptions.{ExecutionException, ValidationException, UnsupportedException, ParsingException}
 import com.stratio.meta.common.data.{ResultSet, CassandraResultSet}
 
 /**
@@ -64,14 +64,30 @@ class SyncResultHandler extends IResultHandler{
   }
 
   override def processError(errorResult: Result): Unit = synchronized {
-    //println("Error found! " + errorResult.getErrorMessage)
-    exception = new ParsingException(errorResult.getErrorMessage)
+    //println("Error found! " + errorResult.asInstanceOf[ErrorResult].getErrorMessage)
+    val e = errorResult.asInstanceOf[ErrorResult]
+
+    if(ErrorType.PARSING.equals(e.getType)){
+      exception = new ParsingException(e.getErrorMessage)
+    }else if(ErrorType.VALIDATION.equals(e.getType)){
+      exception = new ValidationException(e.getErrorMessage)
+    }else if(ErrorType.EXECUTION.equals(e.getType)){
+      exception = new ExecutionException(e.getErrorMessage);
+    }else if(ErrorType.NOT_SUPPORTED.equals(e.getType)){
+      exception = new UnsupportedException(e.getErrorMessage);
+    }else{
+      exception = new UnsupportedException(e.getErrorMessage);
+    }
+
     errorFound = true;
     notify()
     //println("processError: notifyAll")
   }
 
   @throws(classOf[ParsingException])
+  @throws(classOf[ValidationException])
+  @throws(classOf[ExecutionException])
+  @throws(classOf[UnsupportedException])
   def waitForResult() : Result = synchronized {
     while(!errorFound && !allResults){
       //println("Waiting for results, errorFound: " + errorFound + " allResults: " + allResults)

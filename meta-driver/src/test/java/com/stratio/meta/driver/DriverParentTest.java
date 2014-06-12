@@ -16,10 +16,13 @@
 
 package com.stratio.meta.driver;
 
+
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 
+import com.stratio.meta.common.result.ErrorResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.server.MetaServer;
 
 public class DriverParentTest extends ParentCassandraTest {
@@ -47,7 +50,13 @@ public class DriverParentTest extends ParentCassandraTest {
       }
 
       driver = new BasicDriver();
-      driver.connect("TEST_USER");
+      try {
+        driver.connect("TEST_USER");
+      }catch (Exception e){
+        e.printStackTrace();
+        driver = null;
+        finish();
+      }
     }
   }
 
@@ -65,4 +74,13 @@ public class DriverParentTest extends ParentCassandraTest {
     // }
     logger.info("FINISH <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
   }
+
+  public static String getErrorMessage(Result metaResult){
+    String result = "Invalid class: " + metaResult.getClass();
+    if(ErrorResult.class.isInstance(metaResult)){
+      result = ErrorResult.class.cast(metaResult).getErrorMessage();
+    }
+    return result;
+  }
+
 }

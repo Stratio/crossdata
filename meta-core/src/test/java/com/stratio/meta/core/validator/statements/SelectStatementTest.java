@@ -300,8 +300,8 @@ public class SelectStatementTest extends BasicValidatorTest {
   public void testValidateGroupByClauseCountWithAliasOk() {
 
     String inputText = "SELECT users.gender AS g, COUNT(*) FROM demo.users GROUP BY g;";
-
-    validateOk(inputText, "testValidateGroupByClauseCountWithAliasOk");
+    String expectedText = "SELECT users.gender AS g, COUNT(*) FROM demo.users GROUP BY users.gender;";
+    validateOk(inputText, expectedText, "testValidateGroupByClauseCountWithAliasOk");
   }
 
   @Test
@@ -378,9 +378,13 @@ public class SelectStatementTest extends BasicValidatorTest {
   public void testComplexQueryWithAliasesOk() {
 
     String inputText =
-        "SELECT age AS edad, users.gender AS genero, sum(users.age) AS suma, min(gender) AS minimo, count(*) AS contador FROM demo.users "
-            + "WHERE edad > 13 AND genero IN ('male', 'female') ORDER BY edad DESC GROUP BY genero;";
+        "SELECT users.age AS edad, users.gender AS genero, sum(users.age) AS suma, min(gender) AS minimo, count(*) AS contador FROM demo.users "
+        + "WHERE edad > 13 AND genero IN ('male', 'female') ORDER BY edad DESC GROUP BY genero;";
 
-    validateOk(inputText, "testComplexQueryWithAliasesOk");
+    String expectedText =
+        "SELECT users.age AS edad, users.gender AS genero, sum(users.age) AS suma, min(users.gender) AS minimo, count(*) AS contador FROM demo.users "
+        + "WHERE users.age > 13 AND users.gender IN ('male', 'female') ORDER BY users.age DESC GROUP BY users.gender;";
+
+    validateOk(inputText, expectedText, "testComplexQueryWithAliasesOk");
   }
 }

@@ -63,10 +63,10 @@ public class UseStatement extends MetaStatement {
         Result result = QueryResult.createSuccessQueryResult();
         if(keyspace != null && keyspace.length() > 0){
             if(!metadata.getKeyspacesNames().contains(keyspace.toLowerCase())){
-                result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " does not exist.");
+                result= Result.createValidationErrorResult("Keyspace " + keyspace + " does not exist.");
             }
         }else{
-            result= QueryResult.createFailQueryResult("Missing keyspace name.");
+            result= Result.createValidationErrorResult("Missing keyspace name.");
         }
         return result;
     }
