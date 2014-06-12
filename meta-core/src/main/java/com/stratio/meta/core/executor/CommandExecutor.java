@@ -29,9 +29,11 @@ import com.stratio.meta.core.statements.DescribeStatement;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
 import com.stratio.meta.core.statements.ListStatement;
 import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.core.statements.StopProcessStatement;
 import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
+import com.stratio.streaming.commons.exceptions.StratioStreamingException;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
 
@@ -91,7 +93,23 @@ public class CommandExecutor {
 
              return CommandResult.createSuccessCommandResult(sb.toString());
 
-            } else {
+            }else if (stmt instanceof StopProcessStatement){
+              try{
+                IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
+                try {
+                  stratioStreamingAPI.removeQuery(((StopProcessStatement) stmt).getStream(), ((StopProcessStatement) stmt).getIdent());
+                } catch(StratioStreamingException ssEx) {
+                  ssEx.printStackTrace();
+                }
+              }
+              catch (Throwable t){
+                t.printStackTrace();
+              }
+              return CommandResult.createSuccessCommandResult("delete "+ ((StopProcessStatement) stmt).getIdent());
+
+
+
+            }else {
               return CommandResult.createFailCommandResult("Command not supported yet.");
             }
         } catch (RuntimeException rex){
