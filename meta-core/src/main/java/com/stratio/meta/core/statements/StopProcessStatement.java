@@ -19,12 +19,26 @@
 
 package com.stratio.meta.core.statements;
 
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.ListType;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.api.StratioStreamingAPIFactory;
+import com.stratio.streaming.commons.messages.StreamQuery;
+import com.stratio.streaming.commons.streams.StratioStream;
+
+import org.apache.log4j.Logger;
+
+import java.util.List;
 
 public class StopProcessStatement extends MetaStatement {
 
     private String ident;
+  private static final Logger LOG = Logger.getLogger(StopProcessStatement.class);
 
     public StopProcessStatement(String ident) {
         this.command = true;
@@ -33,6 +47,27 @@ public class StopProcessStatement extends MetaStatement {
     
     public String getIdent() {
         return ident;
+    }
+    public String getStream() {
+      String StreamName="";
+      try {
+        IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
+        List<StratioStream> streamsList = stratioStreamingAPI.listStreams();
+        for (StratioStream stream : streamsList) {
+          if (stream.getQueries().size() > 0) {
+            for (StreamQuery query : stream.getQueries()) {
+              if (ident.contentEquals(query.getQueryId())){
+               StreamName=stream.getStreamName();
+              }
+            }
+          }
+        }
+
+      } catch (Throwable t) {
+
+        t.printStackTrace();
+      }
+      return StreamName;
     }
 
     public void setIdent(String ident) {
@@ -53,7 +88,34 @@ public class StopProcessStatement extends MetaStatement {
 
     @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        return new Tree();
+        return new Tree(new MetaStep(MetaPath.COMMAND,this));
     }
-    
+
+  @Override
+  public Result validate(MetadataManager metadata) {
+
+    QueryResult result= QueryResult.createFailQueryResult("UDF and TRIGGER not supported yet");
+
+    try {
+      IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
+      List<StratioStream> streamsList = stratioStreamingAPI.listStreams();
+      for (StratioStream stream : streamsList) {
+        if (stream.getQueries().size() > 0) {
+          for (StreamQuery query : stream.getQueries()) {
+            if (ident.contentEquals(query.getQueryId())){
+              result = QueryResult.createSuccessQueryResult();
+            }
+          }
+        }
+      }
+
+    } catch (Throwable t) {
+
+      t.printStackTrace();
+    }
+
+
+
+    return result;
+  }
 }

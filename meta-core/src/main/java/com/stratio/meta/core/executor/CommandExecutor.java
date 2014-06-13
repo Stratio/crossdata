@@ -27,9 +27,19 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.DescribeStatement;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
+import com.stratio.meta.core.statements.ListStatement;
 import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta.core.statements.StopProcessStatement;
 import com.stratio.meta.core.structures.DescribeType;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.api.StratioStreamingAPIFactory;
+import com.stratio.streaming.commons.exceptions.StratioStreamingException;
+import com.stratio.streaming.commons.messages.StreamQuery;
+import com.stratio.streaming.commons.streams.StratioStream;
+
 import org.apache.log4j.Logger;
+
+import java.util.List;
 
 public class CommandExecutor {
 
@@ -55,8 +65,52 @@ public class CommandExecutor {
                 return executeDescribe((DescribeStatement) stmt, session);
             } else if(stmt instanceof ExplainPlanStatement) {
                 return executeExplainPlan((ExplainPlanStatement) stmt, session);
-            } else {
-                return CommandResult.createFailCommandResult("Command not supported yet.");
+
+            }else if (stmt instanceof ListStatement) {
+
+              StringBuilder sb= new StringBuilder();
+
+              try {
+                IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
+                List<StratioStream> streamsList = stratioStreamingAPI.listStreams();
+                LOG.debug("Number of streams: " + streamsList.size());
+                for (StratioStream stream : streamsList) {
+                  LOG.debug("--> Stream Name: " + stream.getStreamName());
+                  if (stream.getQueries().size() > 0) {
+                    for (StreamQuery query : stream.getQueries()) {
+                      sb.append(query.getQueryId());
+                      sb.append(", ").append(stream.getStreamName());
+                      sb.append(", ").append(query.getQuery()).append(System.lineSeparator());
+                      LOG.debug("Query: " + query.getQuery());
+                    }
+                  }
+                }
+
+              } catch (Throwable t) {
+
+                t.printStackTrace();
+              }
+
+             return CommandResult.createSuccessCommandResult(sb.toString());
+
+            }else if (stmt instanceof StopProcessStatement){
+              try{
+                IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
+                try {
+                  stratioStreamingAPI.removeQuery(((StopProcessStatement) stmt).getStream(), ((StopProcessStatement) stmt).getIdent());
+                } catch(StratioStreamingException ssEx) {
+                  ssEx.printStackTrace();
+                }
+              }
+              catch (Throwable t){
+                t.printStackTrace();
+              }
+              return CommandResult.createSuccessCommandResult("delete "+ ((StopProcessStatement) stmt).getIdent());
+
+
+
+            }else {
+              return CommandResult.createFailCommandResult("Command not supported yet.");
             }
         } catch (RuntimeException rex){
             LOG.debug("Command executor failed", rex);

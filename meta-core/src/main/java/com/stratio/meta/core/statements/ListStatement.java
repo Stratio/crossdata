@@ -19,8 +19,12 @@
 
 package com.stratio.meta.core.statements;
 
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ListType;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
 /**
@@ -54,7 +58,17 @@ public class ListStatement extends MetaStatement {
     
     @Override
     public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        return new Tree();
+        return new Tree(new MetaStep(MetaPath.COMMAND,this));
     }
-    
+
+  @Override
+  public Result validate(MetadataManager metadata) {
+
+    QueryResult result = QueryResult.createSuccessQueryResult();
+    if (type.equals(ListType.TRIGGER)||type.equals(ListType.UDF)){
+      result= QueryResult.createFailQueryResult("UDF and TRIGGER not supported yet");
+    }
+
+    return result;
+  }
 }
