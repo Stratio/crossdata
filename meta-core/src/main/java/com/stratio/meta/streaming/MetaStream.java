@@ -1,29 +1,21 @@
 package com.stratio.meta.streaming;
 
-import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.SelectStatement;
-import com.stratio.meta.core.structures.Selection;
-import com.stratio.meta.core.structures.SelectionClause;
-import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.streaming.api.StratioStreamingAPIFactory;
 import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
-import com.stratio.streaming.commons.messages.StratioStreamingMessage;
 import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
-import com.stratio.streaming.messaging.ColumnNameValue;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.streaming.Duration;
-import org.apache.spark.streaming.api.java.JavaDStream;
+import org.apache.spark.streaming.Time;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka.KafkaUtils;
@@ -35,9 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import kafka.consumer.KafkaStream;
-import kafka.message.MessageAndMetadata;
-
 public class MetaStream {
 
   /**
@@ -45,44 +34,15 @@ public class MetaStream {
    */
   private static final Logger LOG = Logger.getLogger(MetaStream.class);
 
-  private static IStratioStreamingAPI stratioStreamingAPI = null;
+  private static StringBuilder sb = new StringBuilder();
 
-  private static JavaStreamingContext jssc = null;
+  private static final int SPARK_STREAMING_DURATION = 4000;
 
-  private static final StringBuilder sb = new StringBuilder();
+  private static final String ZK_QUORUM = "ingestion.stratio.com";
 
-  static {
-    try {
-      stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
-    } catch (Throwable t) {
-      t.printStackTrace();
-    }
-  }
+  private static final String GROUP_ID = "stratio";
 
-  public static void setDeepContext(DeepSparkContext deepContext) {
-    if(jssc == null){
-      JavaSparkContext sparkContext = new JavaSparkContext("local", "MetaStreaming");
-      int randomPort = (int) (Math.random()*(65535-49152)+49152);
-      while(jssc == null){
-        randomPort = (int) (Math.random()*(65535-49152)+49152);
-        try {
-          jssc = new JavaStreamingContext(
-              sparkContext.getConf().set("spark.cleaner.ttl", "-1").set("spark.driver.port", String.valueOf(randomPort)),
-              new Duration(4000));
-        } catch (Throwable t){
-          jssc = null;
-          System.out.println("TRACE: Port "+randomPort+" already in use");
-        }
-      }
-      System.out.println("TRACE: JavaStreamingContext created. Port = "+randomPort);
-    }
-  }
-
-  public static IStratioStreamingAPI getStratioStreamingAPI() {
-    return stratioStreamingAPI;
-  }
-
-  public static List<StratioStream> listStreams ()  {
+  public static List<StratioStream> listStreams(IStratioStreamingAPI stratioStreamingAPI)  {
     List<StratioStream> streamsList = null;
     try {
       streamsList = stratioStreamingAPI.listStreams();
@@ -92,26 +52,29 @@ public class MetaStream {
     return streamsList;
   }
 
-  public static boolean checkstream(String ephimeralTable){
-      for (StratioStream stream: listStreams()) {
-          if (stream.getStreamName().equalsIgnoreCase(ephimeralTable)){
-              return true;
-          }
+  public static boolean checkstream(IStratioStreamingAPI stratioStreamingAPI, String ephemeralTable){
+    for (StratioStream stream: listStreams(stratioStreamingAPI)) {
+      if (stream.getStreamName().equalsIgnoreCase(ephemeralTable)){
+        return true;
       }
-      return false;
+    }
+    return false;
   }
 
-  public static Result createStream(String streamName, List<ColumnNameType> columnList){
-    CommandResult result = CommandResult.createSuccessCommandResult("Ephemeral table '" + streamName + "' created.");
+  public static Result createStream(IStratioStreamingAPI stratioStreamingAPI, String streamName, List<ColumnNameType> columnList){
+    CommandResult
+        result = CommandResult
+        .createSuccessCommandResult("Ephemeral table '" + streamName + "' created.");
     try {
       stratioStreamingAPI.createStream(streamName, columnList);
+      stratioStreamingAPI.listenStream(streamName);
     } catch (Throwable t) {
-      result = CommandResult.createFailCommandResult(streamName + " couldn't be created");
+      result = CommandResult.createFailCommandResult(streamName + " couldn't be created"+System.lineSeparator()+t.getMessage());
     }
     return result;
   }
 
-  public static void dropStream(String streamName) {
+  public static void dropStream(IStratioStreamingAPI stratioStreamingAPI, String streamName) {
     try {
       stratioStreamingAPI.dropStream(streamName);
     } catch (Throwable t) {
@@ -119,296 +82,92 @@ public class MetaStream {
     }
   }
 
-  public static String listenStream(SelectStatement ss){
+  public static String listenStream(IStratioStreamingAPI stratioStreamingAPI, SelectStatement ss){
     final String streamName = ss.getEffectiveKeyspace()+"_"+ss.getTableName();
     try {
+      JavaSparkContext sparkContext = new JavaSparkContext("local", "MetaStreaming");
+      LOG.info("Creating new JavaStreamingContext.");
+      JavaStreamingContext jssc = null;
+      int randomPort = (int) (Math.random()*(65535-49152)+49152);
+      while(jssc == null){
+        randomPort = (int) (Math.random()*(65535-49152)+49152);
+        try {
+          jssc = new JavaStreamingContext(
+              sparkContext.getConf().set("spark.cleaner.ttl", "-1").set("spark.driver.port", String.valueOf(randomPort)),
+              new Duration(SPARK_STREAMING_DURATION));
+        } catch (Throwable t){
+          jssc = null;
+          LOG.debug("Port "+randomPort+" already in use");
+        }
+      }
+      LOG.info("JavaStreamingContext created. Port = "+randomPort);
+
+      String outgoing = streamName+"_"+StreamingUtils.convertRandomNumberToString(
+          String.valueOf(System.currentTimeMillis()));
+      //String outgoing = streamName+"_outgoing";
       // Create topic
-      StringBuilder querySb = new StringBuilder("from ");
-      querySb.append(streamName);
-      if(ss.isWhereInc()){
-        querySb.append("#window.timeBatch(").append(ss.getWindow().translateToCql()).append(")");
-      }
-
-      List<String> ids = new ArrayList<>();
-      boolean asterisk = false;
-      SelectionClause selectionClause = ss.getSelectionClause();
-      if(selectionClause.getType() == SelectionClause.TYPE_SELECTION){
-        SelectionList selectionList = (SelectionList) selectionClause;
-        Selection selection = selectionList.getSelection();
-        if(selection.getType() == Selection.TYPE_ASTERISK){
-          asterisk = true;
-        }
-      }
-      if(asterisk){
-        List<ColumnNameTypeValue> cols = stratioStreamingAPI.columnsFromStream(streamName);
-        for(ColumnNameTypeValue ctv: cols){
-          ids.add(ctv.getColumn());
-        }
-      } else {
-        ids = ss.getSelectionClause().getIds();
-      }
-
-      String idsStr = Arrays.toString(ids.toArray()).replace("[", "").replace("]", "");
-      querySb.append(" select ").append(idsStr).append(" insert into ");
-      final String outgoing = streamName+"_outgoing";
-      querySb.append(outgoing);
-      String query = querySb.toString();
+      String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
       final String queryId = stratioStreamingAPI.addQuery(streamName, query);
-      System.out.println("queryId = "+queryId);
+      LOG.info("queryId = " + queryId);
       stratioStreamingAPI.listenStream(outgoing);
 
-      // Read topic
+      // Create stream reading outgoing Kafka topic
       Map<String, Integer> topics = new HashMap<>();
+      //Map of (topic_name -> numPartitions) to consume. Each partition is consumed in its own thread
       topics.put(outgoing, 100);
-      if(jssc == null){
-        System.out.println("TRACE: jssc is NULL");
-      }
+      // jssc: JavaStreamingContext, zkQuorum: String, groupId: String, topics: Map<String, integer>
       final JavaPairDStream<String, String>
           dstream =
-          KafkaUtils.createStream(jssc, "ingestion.stratio.com", "stratio", topics);
+          KafkaUtils.createStream(jssc, ZK_QUORUM, GROUP_ID, topics);
 
-      final Boolean[] dataInserted = {false};
+      final long duration = ss.getWindow().getDurationInMilliseconds();
 
-      // Insert data
-      Thread thread = new Thread(){
-        public void run(){
-          try {
-            Thread.sleep(5*1000);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
-          System.out.println("TRACE: Inserting data.");
-          //long longStart = System.currentTimeMillis();
-          for(int i=0; i<4; i++){
-            insertRandomData(streamName);
-          }
-          dataInserted[0] = true;
-          System.out.println("TRACE: Data inserted.");
-        }
-      };
-      thread.start();
+      StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, duration);
 
-      // Process data
-      dstream.foreachRDD(new Function<JavaPairRDD<String, String>, Void>(){
+      Time timeWindow = new Time(duration);
+      LOG.debug("Time = "+timeWindow.toString());
+      JavaPairDStream<String, String>
+          dstreamWindowed =
+          dstream.window(new Duration(duration), new Duration(duration));
+
+      dstreamWindowed.foreachRDD(new Function<JavaPairRDD<String, String>, Void>() {
         @Override
         public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
-          long totalCount = stringStringJavaPairRDD.count();
-          System.out.println("TRACE: Count="+totalCount);
-          stringStringJavaPairRDD.values().foreach(new VoidFunction<String>(){
-            @Override
-            public void call(String s) throws Exception {
-              ObjectMapper objectMapper = new ObjectMapper();
-              Map<String, Object> myMap = objectMapper.readValue(s, HashMap.class);
-              ArrayList columns = (ArrayList) myMap.get("columns");
-              String cols = Arrays.toString(columns.toArray());
-              sb.append(System.lineSeparator()).append(cols);
-              System.out.println("TRACE: sb = "+sb.toString());
-            }
-          });
-          if((totalCount > 0) && dataInserted[0]){
-            System.out.println("TRACE: Stopping Spark streaming");
-            stratioStreamingAPI.stopListenStream(outgoing);
-            stratioStreamingAPI.removeQuery(streamName, queryId);
-            stratioStreamingAPI.stopListenStream(streamName);
-            stratioStreamingAPI.dropStream(streamName);
-            jssc.stop();
-          }
-          return null;
-          /*
-          Map<String, String> result = stringStringJavaPairRDD.collectAsMap();
-          System.out.println("TRACE: foreachRDD. Size="+result.size());
-          for(String key: result.keySet()){
-            sb.append(System.lineSeparator());
-            sb.append("Key: ").append(key).append(" | Value: ").append(result.get(key));
-          }
-          System.out.println("TRACE: "+sb.toString());
-          if((result.size() > 0) && dataInserted[0]){
-            stratioStreamingAPI.stopListenStream("pof");
-            stratioStreamingAPI.removeQuery(streamName, "pof");
-            jssc.stop();
-          }
-          return null;
-          */
-        }
-      });
-
-      /*
-      // Process data
-      JavaDStream<Long> counts = dstream.count();
-      final StringBuilder sb = new StringBuilder();
-      counts.foreachRDD(new Function<JavaRDD<Long>, Void>(){
-        @Override
-        public Void call(JavaRDD<Long> longJavaRDD) throws Exception {
-          for(Long numberCount: longJavaRDD.collect()){
-            System.out.println("TRACE: Count = "+numberCount);
-            if((dataInserted[0]) && (numberCount > 1)){
-              sb.append("Count = "+numberCount).append(System.lineSeparator());
-              sb.append("Dstream = " + dstream.toString());
-              System.out.println("TRACE: Response");
-              stratioStreamingAPI.stopListenStream("pof");
-              stratioStreamingAPI.removeQuery(streamName, "pof");
-              jssc.stop();
-            }
+          final long totalCount = stringStringJavaPairRDD.count();
+          LOG.debug(queryId+": Count=" + totalCount);
+          if(totalCount > 0){
+            stringStringJavaPairRDD.values().foreach(new VoidFunction<String>() {
+              @Override
+              public void call(String s) throws Exception {
+                ObjectMapper objectMapper = new ObjectMapper();
+                Map<String, Object> myMap = objectMapper.readValue(s, HashMap.class);
+                ArrayList columns = (ArrayList) myMap.get("columns");
+                String cols = Arrays.toString(columns.toArray());
+                LOG.debug("Columns = "+cols);
+                sb.append(cols).append(System.lineSeparator());
+              }
+            });
           }
           return null;
         }
       });
-      */
 
-      System.out.println("TRACE: Starting the streaming context.");
+      LOG.info("Starting the streaming context.");
       jssc.start();
-      jssc.awaitTermination();
+      jssc.awaitTermination((long) (duration*1.4));
 
-      return sb.toString();
+      String str = sb.toString();
+
+      sb = new StringBuilder();
+
+      return str;
     } catch (Throwable t) {
       t.printStackTrace();
-      return "ERROR";
+      return "ERROR: "+t.getMessage();
     }
   }
 
-  public static String listenStreamBackUp(String streamName, int seconds){
-    try {
-      //////////////////////////////////////////////////////////////
-      String query = "from "+streamName+" select name, age, rating insert into pof";
-      String queryId = stratioStreamingAPI.addQuery(streamName, query);
-      System.out.println("queryId = "+queryId);
-      stratioStreamingAPI.listenStream("pof");
-      //////////////////////////////////////////////////////////////
-      long start = System.currentTimeMillis();
-      insertRandomData(streamName);
-      KafkaStream<String, StratioStreamingMessage> streams = stratioStreamingAPI.listenStream(streamName);
-      StringBuilder sb = new StringBuilder(System.lineSeparator());
-      insertRandomData(streamName);
-      for (MessageAndMetadata stream: streams) {
-        long elapsed_time = (System.currentTimeMillis() - start);
-        long limit_time = (seconds * 1000);
-        if(elapsed_time > limit_time){
-          stopListenStream(streamName);
-          break;
-        }
-        StratioStreamingMessage theMessage = (StratioStreamingMessage)stream.message();
-        sb.append("----------------------------------------------------------").append(System.lineSeparator());
-        for (ColumnNameTypeValue column: theMessage.getColumns()) {
-          sb.append("Column: " + column.getColumn());
-          sb.append(" | Value: " + column.getValue());
-          sb.append(" | Type: " + column.getType());
-          sb.append(System.lineSeparator());
-        }
-        sb.append("----------------------------------------------------------").append(System.lineSeparator());
-        insertRandomData(streamName);
-      }
-      /*
-      SimpleConsumer
-          simpleConsumer = new SimpleConsumer("ingestion.stratio.com", 9092, 100000, 64 * 1024, "stratio");
-
-      kafka.api.FetchRequest req = new FetchRequestBuilder()
-          .clientId("stratio")
-          .addFetch("pof", 0, 0, 100)
-          .build();
-      kafka.javaapi.FetchResponse fetchResponse = simpleConsumer.fetch(req);
-
-      ByteBufferMessageSet response = fetchResponse.messageSet("pof", 0);
-
-      System.out.println("TRACE: "+new String(response.getBuffer().array(), "UTF-8"));
-      */
-      ////////////////////////////////////////////////////////////////////////////////////
-      /*
-      Properties props = new Properties();
-      props.put("zookeeper.connect", "ingestion.stratio.com");
-      props.put("group.id", "stratio");
-      props.put("zookeeper.session.timeout.ms", "400");
-      props.put("zookeeper.sync.time.ms", "200");
-      props.put("auto.commit.interval.ms", "1000");
-
-      ConsumerConnector consumer = Consumer.createJavaConsumerConnector(new ConsumerConfig(props));
-
-      //consumer.createMessageStreams(new HashMap<String, Integer>());
-      List<KafkaStream<byte[], byte[]>>
-          result =
-          consumer.createMessageStreamsByFilter(new Whitelist("pof"));
-      System.out.println("result.size = "+result.size());
-      for(KafkaStream<byte[], byte[]> kafkaStream: result){
-        ConsumerIterator<byte[], byte[]> iter = kafkaStream.iterator();
-        while(iter.hasNext()){
-          MessageAndMetadata<byte[], byte[]> row = iter.next();
-          System.out.println("TRACE: "+new String(row.message()));
-        }
-
-      }*/
-
-      /**
-       * Create an input stream that pulls messages form a Kafka Broker.
-       * Storage level of the data will be the default StorageLevel.MEMORY_AND_DISK_SER_2.
-       * param jssc      JavaStreamingContext object
-       * param zkQuorum  Zookeeper quorum (hostname:port,hostname:port,..)
-       * param groupId   The group id for this consumer
-       * param topics    Map of (topic_name -> numPartitions) to consume. Each partition is consumed
-       *                  in its own thread
-       *
-       def createStream(
-       jssc: JavaStreamingContext,
-       zkQuorum: String,
-       groupId: String,
-       topics: JMap[String, JInt]
-       ): JavaPairDStream[String, String] = {
-       implicit val cmt: ClassTag[String] =
-       implicitly[ClassTag[AnyRef]].asInstanceOf[ClassTag[String]]
-       createStream(jssc.ssc, zkQuorum, groupId, Map(topics.mapValues(_.intValue()).toSeq: _*))
-       }
-       */
-      Map<String, Integer> topics = new HashMap<>();
-      topics.put("demo_temporal", 100);
-      if(jssc == null){
-        System.out.println("TRACE: jssc is NULL");
-      }
-      if(topics == null){
-        System.out.println("TRACE: topics is NULL");
-      }
-      JavaPairDStream<String, String>
-          dstream =
-          KafkaUtils.createStream(jssc, "ingestion.stratio.com", "stratio", topics);
-      System.out.println("TRACE: dstream.class = "+dstream.getClass());
-      JavaDStream<Long> counts = dstream.count();
-      counts.foreachRDD(new Function<JavaRDD<Long>, Void>(){
-        @Override
-        public Void call(JavaRDD<Long> longJavaRDD) throws Exception {
-          for(Long number: longJavaRDD.collect()){
-            System.out.println("TRACE: Count = "+number);
-          }
-          return null;
-        }
-      });
-      jssc.start();
-      jssc.awaitTermination();
-      ///////////////////////////////////////////////////////////////////////////////////
-      return sb.toString();
-    } catch (Throwable t) {
-      t.printStackTrace();
-      return "ERROR";
-    }
-  }
-
-  private static void insertRandomData(String streamName) {
-    double randomDouble = Math.random()*100;
-    int randomInt = (int) (randomDouble*Math.random()*2);
-    StringBuilder sb = new StringBuilder(String.valueOf(randomDouble));
-    sb.append(randomInt);
-    String str = sb.toString().replace('0', 'o').replace('1', 'i').replace('2', 'u').replace('3', 'e').replace('4', 'a').
-        replace('5', 'b').replace('6', 'c').replace('7', 'd').replace('8', 'f').replace('9', 'g').replace('.', 'm');
-    ColumnNameValue firstColumnValue = new ColumnNameValue("name", str);
-    ColumnNameValue secondColumnValue = new ColumnNameValue("age", new Integer(randomInt));
-    ColumnNameValue thirdColumnValue = new ColumnNameValue("rating", new Double(randomDouble));
-    ColumnNameValue fourthColumnValue = new ColumnNameValue("member", new Boolean((randomInt % 2) == 0));
-    List<ColumnNameValue> streamData = Arrays
-        .asList(firstColumnValue, secondColumnValue, thirdColumnValue, fourthColumnValue);
-    try {
-      stratioStreamingAPI.insertData(streamName, streamData);
-    } catch (Throwable t) {
-      t.printStackTrace();
-    }
-  }
-
-  public static void stopListenStream(String streamName){
+  public static void stopListenStream(IStratioStreamingAPI stratioStreamingAPI, String streamName){
     try {
       stratioStreamingAPI.stopListenStream(streamName);
     } catch (Throwable t) {
@@ -416,7 +175,7 @@ public class MetaStream {
     }
   }
 
-  public static List<String> getColumnNames(String tablename) {
+  public static List<String> getColumnNames(IStratioStreamingAPI stratioStreamingAPI, String tablename) {
     List<String> colNames = new ArrayList<>();
     try {
       List<ColumnNameTypeValue> cols = stratioStreamingAPI.columnsFromStream(tablename);

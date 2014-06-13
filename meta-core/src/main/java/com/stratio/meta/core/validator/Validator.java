@@ -23,24 +23,25 @@ import com.datastax.driver.core.Session;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.QueryStatus;
+import com.stratio.streaming.api.IStratioStreamingAPI;
 
 public class Validator {
 
-    private final MetadataManager metadata;
+  private final MetadataManager metadata;
 
-    public Validator(Session session){
-        metadata = new MetadataManager(session);
-        metadata.loadMetadata();
-    }
+  public Validator(Session session, IStratioStreamingAPI stratioStreamingAPI){
+    metadata = new MetadataManager(session, stratioStreamingAPI);
+    metadata.loadMetadata();
+  }
 
-    public MetaQuery validateQuery(MetaQuery metaQuery) {
-        //TODO: Implement metadata invalidation messages between servers.
-        metadata.loadMetadata();
-        metaQuery.setResult(metaQuery.getStatement().validate(metadata));
-        if(!metaQuery.hasError()) {
-            metaQuery.setStatus(QueryStatus.VALIDATED);
-        }
-        return metaQuery;
+  public MetaQuery validateQuery(MetaQuery metaQuery) {
+    //TODO: Implement metadata invalidation messages between servers.
+    metadata.loadMetadata();
+    metaQuery.setResult(metaQuery.getStatement().validate(metadata));
+    if(!metaQuery.hasError()) {
+      metaQuery.setStatus(QueryStatus.VALIDATED);
     }
-    
+    return metaQuery;
+  }
+
 }

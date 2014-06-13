@@ -29,6 +29,7 @@ import com.stratio.meta.core.statements.CreateTableStatement;
 import com.stratio.meta.core.structures.BooleanProperty;
 import com.stratio.meta.core.structures.Property;
 import com.stratio.meta.core.structures.PropertyNameValue;
+import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -41,9 +42,14 @@ import static org.testng.Assert.assertEquals;
 
 public class StreamTest extends BasicCoreCassandraTest {
 
+  private EngineConfig config = new EngineConfig();
+
+  private IStratioStreamingAPI stratioStreamingAPI = new IStratioStreamingAPI();
+
   @BeforeClass
   public void removeEphemeralTable(){
-    MetaStream.dropStream("demo.temporal_test");
+    config.setSparkMaster("local");
+    MetaStream.dropStream(stratioStreamingAPI, "demo.temporal_test");
   }
 
   @Test
@@ -65,7 +71,9 @@ public class StreamTest extends BasicCoreCassandraTest {
     Property property = new PropertyNameValue("ephemeral", new BooleanProperty(true));
     cts.setProperties(Collections.singletonList(property));
     System.out.println("TRACE: "+cts.toString());
-    Result result = StreamExecutor.execute(cts, spc);
+
+    Result result = StreamExecutor.execute(cts, stratioStreamingAPI);
+
     String resultStr = ((CommandResult) result).getResult().toString();
     assertEquals("Ephemeral table '"+streamName+"' created.",
                  resultStr,

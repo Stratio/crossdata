@@ -27,7 +27,7 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta.streaming.MetaStream;
+import com.stratio.streaming.api.IStratioStreamingAPI;
 
 /**
  * Class that models a generic Statement supported by the META language.
@@ -129,12 +129,11 @@ public abstract class MetaStatement {
       }else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata == null) {
-          if(!MetaStream.checkstream(effectiveKeyspace + "_" + tableName)){
+          if(!metadata.checkStream(effectiveKeyspace + "_" + tableName)){
             result= QueryResult.createFailQueryResult("Table " + tableName + " does not exist in "+effectiveKeyspace+".");
           } else {
             result = CommandResult.createSuccessCommandResult("streaming");
           }
-
         }
       }
 
@@ -155,6 +154,10 @@ public abstract class MetaStatement {
    * @return The CQL equivalent.
    */
   public abstract String translateToCQL();
+
+  public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName, String outgoing){
+    return toString();
+  }
 
   /**
    * Get the {@link Statement} equivalent of the current query.

@@ -32,9 +32,14 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta.streaming.MetaStream;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class that models a {@code CREATE TABLE} statement of the META language.
@@ -248,7 +253,7 @@ public class CreateTableStatement extends MetaStatement{
   public Result validate(MetadataManager metadata) {
     Result result = validateKeyspaceAndTable(metadata);
     if (!result.hasError()){
-      result=validateEphimeral();
+      result=validateEphimeral(metadata);
     }
     if(!result.hasError()){
       result = validateColumns();
@@ -259,10 +264,10 @@ public class CreateTableStatement extends MetaStatement{
     return result;
   }
 
-  private Result validateEphimeral() {
+  private Result validateEphimeral(MetadataManager metadata) {
     Result result = QueryResult.createSuccessQueryResult();
     createTable = true;
-    if (MetaStream.checkstream(getEffectiveKeyspace()+"."+tableName)){
+    if (metadata.checkStream(getEffectiveKeyspace()+"."+tableName)){
       result= QueryResult.createFailQueryResult(tableName+ " already exists in keyspace "+getEffectiveKeyspace());
       createTable = false;
     }
