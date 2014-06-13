@@ -52,13 +52,15 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta.streaming.MetaStream;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
 
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -488,7 +490,7 @@ public class SelectStatement extends MetaStatement {
       if (joinInc) {
         tableMetadataJoin = metadata.getTableMetadata(effectiveKs2, join.getTablename());
       }
-      result = validateSelectionColumns(tableMetadataFrom, tableMetadataJoin);
+      result = validateSelectionColumns(metadata, tableMetadataFrom, tableMetadataJoin);
     }
 
     if (!result.hasError() && joinInc) {
@@ -734,12 +736,12 @@ public class SelectStatement extends MetaStatement {
    *        table.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateSelectionColumns(TableMetadata tableFrom, TableMetadata tableJoin) {
+  private Result validateSelectionColumns(MetadataManager metadata, TableMetadata tableFrom, TableMetadata tableJoin) {
     Result result = QueryResult.createSuccessQueryResult();
 
     if(streamMode && (selectionClause instanceof SelectionList) && (((SelectionList) selectionClause).getTypeSelection() == Selection.TYPE_SELECTOR)){
 
-      List<String> colNames = MetaStream.getColumnNames(getEffectiveKeyspace()+"."+tableName);
+      List<String> colNames = metadata.getStreamingColumnNames(getEffectiveKeyspace()+"."+tableName);
 
       SelectionList selectionList = (SelectionList) selectionClause;
       SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
@@ -955,6 +957,44 @@ public class SelectStatement extends MetaStatement {
     }
 
     return sb.toString();
+  }
+
+  @Override
+  public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName, String outgoing){
+    StringBuilder querySb = new StringBuilder("from ");
+    querySb.append(streamName);
+    if(isWhereInc()){
+      querySb.append("#window.timeBatch(").append(getWindow().translateToCql()).append(")");
+    }
+
+    List<String> ids = new ArrayList<>();
+    boolean asterisk = false;
+    SelectionClause selectionClause = getSelectionClause();
+    if(selectionClause.getType() == SelectionClause.TYPE_SELECTION){
+      SelectionList selectionList = (SelectionList) selectionClause;
+      Selection selection = selectionList.getSelection();
+      if(selection.getType() == Selection.TYPE_ASTERISK){
+        asterisk = true;
+      }
+    }
+    if(asterisk){
+      List<ColumnNameTypeValue> cols = null;
+      try {
+        cols = stratioStreamingAPI.columnsFromStream(streamName);
+      } catch (Throwable t) {
+        t.printStackTrace();
+      }
+      for(ColumnNameTypeValue ctv: cols){
+        ids.add(ctv.getColumn());
+      }
+    } else {
+      ids = getSelectionClause().getIds();
+    }
+
+    String idsStr = Arrays.toString(ids.toArray()).replace("[", "").replace("]", "");
+    querySb.append(" select ").append(idsStr).append(" insert into ");
+    querySb.append(outgoing);
+    return querySb.toString();
   }
 
   /**
@@ -1592,7 +1632,7 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-    if(MetaStream.checkstream(getEffectiveKeyspace()+"_"+tableName)) {
+    if(metadataManager.checkStream(getEffectiveKeyspace()+"_"+tableName)) {
       steps.setNode(new MetaStep(MetaPath.STREAMING, this));
     } else if (joinInc) {
       steps = getJoinPlan();

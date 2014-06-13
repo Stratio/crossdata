@@ -23,13 +23,14 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.common.ask.APICommand;
 import com.stratio.meta.common.ask.Command;
-import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -55,8 +56,8 @@ public class APIManager {
      * Class constructor.
      * @param session Cassandra session used to retrieve the metadata.
      */
-    public APIManager(Session session){
-        metadata = new MetadataManager(session);
+    public APIManager(Session session, IStratioStreamingAPI stratioStreamingAPI){
+        metadata = new MetadataManager(session, stratioStreamingAPI);
         metadata.loadMetadata();
         helper = new CassandraMetadataHelper();
     }

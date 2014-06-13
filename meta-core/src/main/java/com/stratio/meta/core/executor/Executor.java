@@ -25,60 +25,64 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.QueryStatus;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+
 import org.apache.log4j.Logger;
 
 public class Executor {
 
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = Logger.getLogger(Executor.class.getName());
+  /**
+   * Class logger.
+   */
+  private static final Logger LOG = Logger.getLogger(Executor.class.getName());
 
-    /**
-     * Cassandra datastax java driver session.
-     */
-    private final Session session;
+  /**
+   * Cassandra datastax java driver session.
+   */
+  private final Session session;
 
-    /**
-     * Deep Spark context.
-     */
-    private final DeepSparkContext deepSparkContext;
+  /**
+   * Deep Spark context.
+   */
+  private final DeepSparkContext deepSparkContext;
 
-    /**
-     * Global configuration.
-     */
-    private final EngineConfig engineConfig;
+  /**
+   * Global configuration.
+   */
+  private final EngineConfig engineConfig;
 
-    /**
-     * Executor constructor.
-     * @param session Cassandra datastax java driver session.
-     * @param deepSparkContext Spark context.
-     * @param engineConfig a {@link com.stratio.meta.core.engine.EngineConfig}
-     */
-    public Executor(Session session, DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
-        this.session = session;
-        this.deepSparkContext = deepSparkContext;
-        this.engineConfig = engineConfig;
-    }
+  private final IStratioStreamingAPI stratioStreamingAPI;
 
-    /**
-     * Executes a query.
-     * @param metaQuery Query to execute embedded in a {@link com.stratio.meta.core.utils.MetaQuery}.
-     * @return query executed.
-     */
-    public MetaQuery executeQuery(MetaQuery metaQuery) {
+  /**
+   * Executor constructor.
+   * @param session Cassandra datastax java driver session.
+   * @param deepSparkContext Spark context.
+   * @param engineConfig a {@link com.stratio.meta.core.engine.EngineConfig}
+   */
+  public Executor(Session session, IStratioStreamingAPI stratioStreamingAPI, DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
+    this.session = session;
+    this.deepSparkContext = deepSparkContext;
+    this.engineConfig = engineConfig;
+    this.stratioStreamingAPI = stratioStreamingAPI;
+  }
 
-        metaQuery.setStatus(QueryStatus.EXECUTED);
+  /**
+   * Executes a query.
+   * @param metaQuery Query to execute embedded in a {@link com.stratio.meta.core.utils.MetaQuery}.
+   * @return query executed.
+   */
+  public MetaQuery executeQuery(MetaQuery metaQuery) {
 
-        // Get plan
-        Tree plan = metaQuery.getPlan();
+    metaQuery.setStatus(QueryStatus.EXECUTED);
 
-        LOG.debug("Execution plan: "+System.lineSeparator()+plan.toStringDownTop());
+    // Get plan
+    Tree plan = metaQuery.getPlan();
 
-        // Execute plan
-        metaQuery.setResult(plan.executeTreeDownTop(session, deepSparkContext, engineConfig));
+    LOG.debug("Execution plan: " + System.lineSeparator() + plan.toStringDownTop());
+    
+    // Execute plan
+    metaQuery.setResult(plan.executeTreeDownTop(session, stratioStreamingAPI, deepSparkContext, engineConfig));
 
-        return metaQuery;
-    }
-
+    return metaQuery;
+  }
 }

@@ -22,6 +22,7 @@ package com.stratio.meta.streaming;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.executor.StreamExecutor;
 import com.stratio.meta.core.statements.CreateTableStatement;
 import com.stratio.meta.core.structures.BooleanProperty;
@@ -39,9 +40,13 @@ import static org.testng.Assert.assertEquals;
 
 public class StreamTest extends BasicCoreCassandraTest {
 
+  private EngineConfig config = new EngineConfig();
+
   @BeforeClass
   public void removeEphemeralTable(){
-    MetaStream.dropStream("demo.temporal_test");
+    config.setSparkMaster("local");
+    MetaStream metaStream = new MetaStream(config);
+    metaStream.dropStream("demo.temporal_test");
   }
 
   @Test
@@ -62,7 +67,7 @@ public class StreamTest extends BasicCoreCassandraTest {
     Property property = new PropertyNameValue("ephemeral", new BooleanProperty(true));
     cts.setProperties(Collections.singletonList(property));
     System.out.println("TRACE: "+cts.toString());
-    Result result = StreamExecutor.execute(cts);
+    Result result = StreamExecutor.execute(cts, config);
     String resultStr = ((CommandResult) result).getResult().toString();
     assertEquals("Ephemeral table '"+streamName+"' created.",
                  resultStr,
