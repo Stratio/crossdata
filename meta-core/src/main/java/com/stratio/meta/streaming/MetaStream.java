@@ -62,14 +62,13 @@ public class MetaStream {
   }
 
   public static Result createStream(IStratioStreamingAPI stratioStreamingAPI, String streamName, List<ColumnNameType> columnList){
-    CommandResult
-        result = CommandResult
-        .createSuccessCommandResult("Ephemeral table '" + streamName + "' created.");
+    Result
+        result = CommandResult.createCommandResult("Ephemeral table '" + streamName + "' created.");
     try {
       stratioStreamingAPI.createStream(streamName, columnList);
       stratioStreamingAPI.listenStream(streamName);
     } catch (Throwable t) {
-      result = CommandResult.createFailCommandResult(streamName + " couldn't be created"+System.lineSeparator()+t.getMessage());
+      result = Result.createExecutionErrorResult(streamName + " couldn't be created"+System.lineSeparator()+t.getMessage());
     }
     return result;
   }
@@ -189,4 +188,3 @@ public class MetaStream {
   }
 
 }
-

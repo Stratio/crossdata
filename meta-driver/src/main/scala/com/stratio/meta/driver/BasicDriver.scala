@@ -23,26 +23,62 @@ import akka.actor.{ ActorSelection, ActorSystem}
 import com.stratio.meta.driver.config.DriverConfig
 import akka.contrib.pattern.ClusterClient
 import com.stratio.meta.driver.actor.ProxyActor
-import com.stratio.meta.common.result.{MetadataResult, CommandResult, Result}
+import com.stratio.meta.common.result._
 import com.stratio.meta.common.ask.{APICommand, Command, Query, Connect}
 import org.apache.log4j.Logger
 import  scala.concurrent.duration._
+import java.util.UUID
+import akka.pattern.ask
+import com.stratio.meta.driver.result.SyncResultHandler
+import com.stratio.meta.common.exceptions._
+import com.stratio.meta.common.ask.Connect
+import com.stratio.meta.common.ask.Command
+import com.stratio.meta.common.ask.Query
 
 class BasicDriver extends DriverConfig{
+
+  /**
+   * Class logger.
+   */
   override lazy val logger = Logger.getLogger(getClass)
+
+  lazy val queries: java.util.Map[String, IResultHandler] = new java.util.HashMap[String, IResultHandler]
+
   lazy val system = ActorSystem("MetaDriverSystem",config)
+  //For Futures
+  implicit val context = system.dispatcher
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact=> system.actorSelection(contact)).toSet
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts),"remote-client")
-  lazy val proxyActor= system.actorOf(ProxyActor.props(clusterClientActor,actorName), "proxy-actor")
+  lazy val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor,actorName, this), "proxy-actor")
+
+
 
   /**
    * Release connection to MetaServer.
    * @param user Login to the user (Audit only)
    * @return ConnectResult
    */
+  @throws(classOf[ConnectionException])
   def connect(user:String): Result = {
-    println(contactPoints)
-    retryPolitics.askRetry(proxyActor,new Connect(user),5 second)
+    logger.info("Establishing connection with user: " + user + " to " + contactPoints)
+    val result = retryPolitics.askRetry(proxyActor,new Connect(user),5 second)
+    if(result.isInstanceOf[ErrorResult]){
+      throw new ConnectionException(result.asInstanceOf[ErrorResult].getErrorMessage)
+    }
+    result
+  }
+
+  /**
+   * Execute a query in the Meta server asynchronously.
+   * @param user The user login.
+   * @param targetCatalog The target catalog.
+   * @param query The query.
+   * @param callback The callback object.
+   */
+  def asyncExecuteQuery(user:String, targetCatalog: String, query: String, callback: IResultHandler){
+    val queryId = UUID.randomUUID()
+    queries.put(queryId.toString, callback)
+    sendQuery(new Query(queryId.toString, targetCatalog, query, user))
   }
 
   /**
@@ -52,8 +88,20 @@ class BasicDriver extends DriverConfig{
     * @param query Launched query
     * @return QueryResult
     */
+  @throws(classOf[ParsingException])
+  @throws(classOf[ValidationException])
+  @throws(classOf[ExecutionException])
+  @throws(classOf[UnsupportedException])
   def executeQuery(user:String, targetKs: String, query: String): Result = {
-    retryPolitics.askRetry(proxyActor,new Query(targetKs,query,user))
+    val queryId = UUID.randomUUID()
+    //retryPolitics.askRetry(proxyActor,new Query(queryId.toString, targetKs,query,user))
+    val callback = new SyncResultHandler
+    queries.put(queryId.toString, callback)
+    sendQuery(new Query(queryId.toString, targetKs,query,user))
+    var r = callback.waitForResult()
+    queries.remove(queryId.toString)
+    //println("Class: " + r)
+    r
   }
 
   /**
@@ -74,7 +122,7 @@ class BasicDriver extends DriverConfig{
   def listTables(catalogName: String): MetadataResult = {
     var params : java.util.List[String] = new java.util.ArrayList[String]
     params.add(catalogName)
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, params))
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_TABLES, params))
     result.asInstanceOf[MetadataResult]
   }
 
@@ -86,8 +134,21 @@ class BasicDriver extends DriverConfig{
     var params : java.util.List[String] = new java.util.ArrayList[String]
     params.add(catalogName)
     params.add(tableName)
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, params))
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_COLUMNS, params))
     result.asInstanceOf[MetadataResult]
+  }
+
+  def sendQuery(message: AnyRef){
+    proxyActor.ask(message)(5 second)
+  }
+
+  /**
+   * Get the IResultHandler associated with a query identifier.
+   * @param queryId Query identifier.
+   * @return The result handler.
+   */
+  def getResultHandler(queryId: String): IResultHandler = {
+    queries.get(queryId)
   }
 
   /**

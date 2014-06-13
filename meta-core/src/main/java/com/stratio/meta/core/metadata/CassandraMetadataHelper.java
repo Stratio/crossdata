@@ -20,6 +20,7 @@
 package com.stratio.meta.core.metadata;
 
 import com.datastax.driver.core.DataType;
+import com.stratio.deep.entity.Cell;
 import com.stratio.meta.common.metadata.structures.ColumnType;
 import org.apache.log4j.Logger;
 
@@ -108,5 +109,10 @@ public class CassandraMetadataHelper extends AbstractMetadataHelper{
         }
 
         return result;
+    }
+
+    @Override
+    public ColumnType toColumnType(Cell deepCell) {
+      return toColumnType(deepCell.getCellValidator().getCqlTypeName().toString());
     }
 }

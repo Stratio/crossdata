@@ -82,8 +82,10 @@ T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
 T_ALTER: A L T E R;
 T_KEYSPACE: K E Y S P A C E;
+T_KEYSPACES: K E Y S P A C E S;
 T_DROP: D R O P;
 T_TABLE: T A B L E;
+T_TABLES: T A B L E S;
 T_USE: U S E;
 T_SET: S E T;
 T_OPTIONS: O P T I O N S;
@@ -137,7 +139,9 @@ T_SEMICOLON: ';';
 describeHelpStatement returns [HelpType type]:
 	T_DESCRIBE {$type = HelpType.DESCRIBE;}
 	(
-		T_KEYSPACE {$type = HelpType.DESCRIBE_KEYSPACE;}
+		T_KEYSPACES {$type = HelpType.DESCRIBE_KEYSPACES;}
+		| T_KEYSPACE {$type = HelpType.DESCRIBE_KEYSPACE;}
+		| T_TABLES {$type = HelpType.DESCRIBE_TABLES;}
 		| T_TABLE {$type = HelpType.DESCRIBE_TABLE;}
 	)?
 	;
@@ -207,8 +211,8 @@ helpStatement returns [HelpType type]
 	| (T_EXPLAIN T_PLAN) {t = HelpType.EXPLAIN_PLAN;}
 	| (alterType=alterHelpStatement) {t = alterType;}
 	| (T_STOP) {t = HelpType.STOP;}
-        | (describeType=describeHelpStatement) {t = describeType;}
-	;
+    | (describeType=describeHelpStatement) {t = describeType;}
+    ;
 	finally{
 		$type = t;
 	}

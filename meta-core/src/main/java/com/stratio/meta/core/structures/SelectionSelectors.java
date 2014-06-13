@@ -26,29 +26,36 @@ import java.util.List;
 
 public class SelectionSelectors extends Selection {
 
-    private List<SelectionSelector> selectors;
+  private List<SelectionSelector> selectors;
 
-    public SelectionSelectors() {
-        this.type = TYPE_SELECTOR;
-        selectors = new ArrayList<>();
-    }    
-    
-    public SelectionSelectors(List<SelectionSelector> selectors) {
-        this();
-        this.selectors = selectors;
-    }   
-    
-    public List<SelectionSelector> getSelectors() {
-        return selectors;
-    }
+  public SelectionSelectors() {
+    this.type = TYPE_SELECTOR;
+    selectors = new ArrayList<>();
+  }
 
-    public void addSelectionSelector(SelectionSelector ss){
-        selectors.add(ss);
+  public SelectionSelectors(List<SelectionSelector> selectors) {
+    this();
+    this.selectors = selectors;
+  }
+
+  public List<SelectionSelector> getSelectors() {
+    return selectors;
+  }
+
+  public void addSelectionSelector(SelectionSelector ss){
+    selectors.add(ss);
+  }
+
+  @Override
+  public String toString() {
+    return ParserUtils.stringList(selectors, ", ");
+  }
+
+  @Override
+  public void addTablename(String tablename) {
+    for(SelectionSelector selectionSelector: selectors){
+      selectionSelector.addTablename(tablename);
     }
-    
-    @Override
-    public String toString() {
-        return ParserUtils.stringList(selectors, ", ");
-    }
-    
+  }
+
 }

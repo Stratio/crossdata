@@ -32,5 +32,10 @@ public class SelectionAsterisk extends Selection {
     public String toString() {
         return "*";
     }
-    
+
+  @Override
+  public void addTablename(String tablename) {
+
+  }
+
 }

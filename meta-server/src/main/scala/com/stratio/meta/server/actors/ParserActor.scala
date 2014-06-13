@@ -34,10 +34,11 @@ class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTrac
   override val timerName= this.getClass.getName
 
   def receive = {
-    case Query(keyspace,statement,user) => {
+    case Query(queryId, keyspace, statement, user) => {
       log.debug("Init Parser Task")
       val timer=initTimer()
       val stmt = parser.parseStatement(statement)
+      stmt.setQueryId(queryId)
       if(!stmt.hasError){
         stmt.setSessionKeyspace(keyspace)
       }
@@ -46,7 +47,7 @@ class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTrac
       log.debug("Finish Parser Task")
     }
     case _ => {
-      sender ! QueryResult.createFailQueryResult("Not recognized object")
+      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
     }
   }
 

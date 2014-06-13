@@ -32,6 +32,7 @@ import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -147,23 +148,6 @@ public class Tree {
   }
 
   /**
-   * Execute the elements of the tree starting from the bottom up.
-   * @param session The Cassandra session.
-   * @param deepSparkContext The Deep context.
-   * @param engineConfig The engine configuration.
-   * @return A {@link com.stratio.meta.common.result.Result}.
-   */
-  public Result executeTreeDownTop(Session session, IStratioStreamingAPI stratioStreamingAPI, DeepSparkContext deepSparkContext, EngineConfig engineConfig){
-    // Get results from my children
-    List<Result> resultsFromChildren = new ArrayList<>();
-    for(Tree child: children){
-      resultsFromChildren.add(child.executeTreeDownTop(session, stratioStreamingAPI, deepSparkContext, engineConfig));
-    }
-    // Execute myself and return final result
-    return executeMyself(session, stratioStreamingAPI, deepSparkContext, engineConfig, resultsFromChildren);
-  }
-
-  /**
    * Execute the current node of the tree.
    * @param session The Cassandra session.
    * @param deepSparkContext The Deep context.
@@ -191,11 +175,28 @@ public class Tree {
     } else if(myPath == MetaPath.STREAMING){
       result = StreamExecutor.execute(myStep.getStmt(), stratioStreamingAPI);
     } else if(myPath == MetaPath.UNSUPPORTED){
-      result = QueryResult.createFailQueryResult("Query not supported.");
+      result = Result.createUnsupportedOperationErrorResult("Query not supported.");
     } else {
-      result = QueryResult.createFailQueryResult("Query not supported yet.");
+      result = Result.createUnsupportedOperationErrorResult("Query not supported yet.");
     }
     return result;
+  }
+
+  /**
+   * Execute the elements of the tree starting from the bottom up.
+   * @param session The Cassandra session.
+   * @param deepSparkContext The Deep context.
+   * @param engineConfig The engine configuration.
+   * @return A {@link com.stratio.meta.common.result.Result}.
+   */
+  public Result executeTreeDownTop(Session session, IStratioStreamingAPI stratioStreamingAPI, DeepSparkContext deepSparkContext, EngineConfig engineConfig){
+    // Get results from my children
+    List<Result> resultsFromChildren = new ArrayList<>();
+    for(Tree child: children){
+      resultsFromChildren.add(child.executeTreeDownTop(session, stratioStreamingAPI, deepSparkContext, engineConfig));
+    }
+    // Execute myself and return final result
+    return executeMyself(session, stratioStreamingAPI, deepSparkContext, engineConfig, resultsFromChildren);
   }
 
   /**

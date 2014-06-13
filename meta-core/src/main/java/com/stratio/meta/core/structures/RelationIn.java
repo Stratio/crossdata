@@ -28,7 +28,7 @@ public class RelationIn extends Relation {
     this.type = TYPE_IN;
     this.operator = "IN";
     this.identifiers = new ArrayList<>();
-    this.identifiers.add(identifier);
+    this.identifiers.add(new SelectorIdentifier(identifier));
   }
 
   public RelationIn(String identifier, List<Term<?>> terms) {
@@ -38,7 +38,7 @@ public class RelationIn extends Relation {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(identifiers.get(0));
+    StringBuilder sb = new StringBuilder(identifiers.get(0).toString());
     sb.append(" ").append(operator).append(" ").append("(")
         .append(ParserUtils.stringList(terms, ", ")).append(")");
     return sb.toString();

@@ -23,7 +23,7 @@ import com.datastax.driver.core.Session;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.core.utils.QueryStatus;
+import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 

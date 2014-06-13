@@ -64,9 +64,9 @@ public class ListStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata) {
 
-    QueryResult result = QueryResult.createSuccessQueryResult();
+    Result result = QueryResult.createSuccessQueryResult();
     if (type.equals(ListType.TRIGGER)||type.equals(ListType.UDF)){
-      result= QueryResult.createFailQueryResult("UDF and TRIGGER not supported yet");
+      result= Result.createValidationErrorResult("UDF and TRIGGER not supported yet");
     }
 
     return result;

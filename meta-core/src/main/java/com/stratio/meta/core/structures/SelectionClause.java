@@ -1,20 +1,17 @@
 /*
  * Stratio Meta
- *
+ * 
  * Copyright (c) 2014, Stratio, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation; either version
+ * 3.0 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
 package com.stratio.meta.core.structures;
@@ -40,29 +37,14 @@ public abstract class SelectionClause {
     this.type = type;
   }
 
+  public abstract List<SelectorGroupBy> getSelectorsGroupBy();
+
+  public abstract void addTablename(String tablename);
+
+  public abstract List<String> getIds();
+
   @Override
   public abstract String toString();
-
-  public List<String> getIds() {
-    List<String> ids = new ArrayList<>();
-    if(type == TYPE_COUNT){
-      return ids;
-    }
-    SelectionList sList = (SelectionList) this;
-    Selection selection = sList.getSelection();
-    if(selection.getType() == Selection.TYPE_ASTERISK){
-      return ids;
-    }
-    SelectionSelectors sSelectors = (SelectionSelectors) selection;
-    for(SelectionSelector sSelector: sSelectors.getSelectors()){
-      SelectorMeta selector = sSelector.getSelector();
-      if(selector.getType() == SelectorMeta.TYPE_IDENT){
-        SelectorIdentifier selectorId = (SelectorIdentifier) selector;
-        ids.add(selectorId.getIdentifier());
-      }
-    }
-    return ids;
-  }
 
   public List<String> getAllIds(TableMetadata tableMetadata) {
     List<String> ids = new ArrayList<>();
@@ -82,9 +64,10 @@ public abstract class SelectionClause {
       SelectorMeta selector = sSelector.getSelector();
       if(selector.getType() == SelectorMeta.TYPE_IDENT){
         SelectorIdentifier selectorId = (SelectorIdentifier) selector;
-        ids.add(selectorId.getIdentifier());
+        ids.add(selectorId.getField());
       }
     }
     return ids;
   }
+
 }

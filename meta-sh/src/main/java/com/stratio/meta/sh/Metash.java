@@ -19,6 +19,8 @@
 
 package com.stratio.meta.sh;
 
+import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
 import com.stratio.meta.sh.help.HelpContent;
@@ -29,7 +31,9 @@ import com.stratio.meta.sh.help.generated.MetaHelpParser;
 import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
+
 import jline.console.ConsoleReader;
+
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -79,6 +83,8 @@ public class Metash {
    */
   private String currentKeyspace = "";
 
+  private String currentCatalog = "";
+
   /**
    * Driver that connects to the META servers.
    */
@@ -92,7 +98,7 @@ public class Metash {
   /**
    * Class constructor.
    */
-  public Metash(){
+  public Metash() {
     HelpManager hm = new HelpManager();
     help = hm.loadHelpContent();
     initialize();
@@ -101,11 +107,10 @@ public class Metash {
   /**
    * Initialize the console settings.
    */
-  private void initialize(){
-
+  private void initialize() {
     //Take the username from the system.
     currentUser = System.getProperty("user.name");
-    if(currentUser == null){
+    if (currentUser == null) {
       currentUser = DEFAULT_USER;
     }
     LOG.debug("Connecting with user: " + currentUser);
@@ -181,47 +186,62 @@ public class Metash {
 
   /**
    * Execute a query on the remote META servers.
+   *
    * @param cmd The query.
    */
-  private void executeQuery(String cmd){
-
+  private void executeQuery(String cmd) {
     LOG.debug("Command: " + cmd);
     long queryStart = System.currentTimeMillis();
-    Result metaResult = metaDriver.executeQuery(currentUser, currentKeyspace, cmd);
-    long queryEnd = System.currentTimeMillis();
-
-    if(metaResult.isKsChanged()){
-      currentKeyspace = metaResult.getCurrentKeyspace();
-      if(!currentKeyspace.isEmpty()){
-        setPrompt(currentKeyspace);
-      }
-    }
-
-    if(metaResult.hasError()){
-      println("\033[31mError:\033[0m " + metaResult.getErrorMessage());
-    }else {
+    long queryEnd = queryStart;
+    Result metaResult = null;
+    try {
+      metaResult = metaDriver.executeQuery(currentUser, currentCatalog, cmd);
+      queryEnd = System.currentTimeMillis();
+      updatePrompt(metaResult);
       println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
       println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
+    } catch (Exception e) {
+      queryEnd = System.currentTimeMillis();
+      println("\033[31mError:\033[0m " + e.getMessage());
+    }
+  }
+
+  /**
+   * Update the current prompt if a {@link com.stratio.meta.common.result.QueryResult} is
+   * returned, and the current catalog has changed.
+   * @param result The result returned by the driver.
+   */
+  private void updatePrompt(Result result) {
+    if (QueryResult.class.isInstance(result)) {
+      QueryResult qr = QueryResult.class.cast(result);
+      if (qr.isCatalogChanged()) {
+        currentCatalog = qr.getCurrentCatalog();
+        if (!currentCatalog.isEmpty()) {
+          setPrompt(currentCatalog);
+        }
+      }
     }
   }
 
   /**
    * Establish the connection with the META servers.
+   *
    * @return Whether the connection has been successfully established.
    */
-  public boolean connect(){
+  public boolean connect() {
     boolean result = true;
     metaDriver = new BasicDriver();
-    Result connectionResult = metaDriver.connect(currentUser);
-    if(connectionResult.hasError()){
-      LOG.error(connectionResult.getErrorMessage());
+    try {
+      Result connectionResult = metaDriver.connect(currentUser);
+      LOG.info("Driver connections established");
+      LOG.info(ConsoleUtils.stringResult(connectionResult));
+    }catch (ConnectionException ce){
       result = false;
+      LOG.error(ce.getMessage());
     }
-    LOG.info("Driver connections established");
-    LOG.info(ConsoleUtils.stringResult(connectionResult));
-
     return result;
   }
+
 
   /**
    * Close the underlying driver and save the user history.
@@ -240,23 +260,26 @@ public class Metash {
   }
 
   /**
-   * Shell loop that receives user commands until a {@code exit} or {@code quit} command
-   * is introduced.
+   * Shell loop that receives user commands until a {@code exit} or {@code quit} command is
+   * introduced.
    */
-  public void loop(){
+  public void loop() {
     try {
       String cmd = "";
       StringBuilder sb = new StringBuilder(cmd);
 
-      while(!cmd.trim().toLowerCase().startsWith("exit") && !cmd.trim().toLowerCase().startsWith("quit")){
+      while (!cmd.trim().toLowerCase().startsWith("exit") && !cmd.trim().toLowerCase()
+          .startsWith("quit")) {
         cmd = console.readLine();
         sb.append(cmd).append(" ");
-        if(sb.toString().trim().endsWith(";")){
-          if(" ".equalsIgnoreCase(sb.toString()) || System.lineSeparator().equalsIgnoreCase(sb.toString())){
+        if (sb.toString().trim().endsWith(";")) {
+          if (" ".equalsIgnoreCase(sb.toString()) || System.lineSeparator()
+              .equalsIgnoreCase(sb.toString())) {
             println("");
-          }else if(sb.toString().toLowerCase().startsWith("help")){
+          } else if (sb.toString().toLowerCase().startsWith("help")) {
             showHelp(sb.toString());
-          }else if(!sb.toString().trim().toLowerCase().startsWith("exit") && !sb.toString().trim().toLowerCase().startsWith("quit")){
+          } else if (!sb.toString().trim().toLowerCase().startsWith("exit") && !sb.toString().trim()
+              .toLowerCase().startsWith("quit")) {
             executeQuery(sb.toString());
           } else {
             println("");
@@ -272,6 +295,7 @@ public class Metash {
 
   /**
    * Launch the META server shell.
+   *
    * @param args The list of arguments. Not supported at the moment.
    */
   public static void main(String[] args) {

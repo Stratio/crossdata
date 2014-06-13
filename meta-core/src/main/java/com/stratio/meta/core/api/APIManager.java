@@ -23,7 +23,7 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.common.ask.APICommand;
 import com.stratio.meta.common.ask.Command;
-import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
@@ -37,51 +37,58 @@ import java.util.ArrayList;
 
 public class APIManager {
 
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = Logger.getLogger(APIManager.class);
+  /**
+   * Class logger.
+   */
+  private static final Logger LOG = Logger.getLogger(APIManager.class);
 
-    /**
-     * Metadata manager.
-     */
-    private final MetadataManager metadata;
+  /**
+   * Metadata manager.
+   */
+  private final MetadataManager metadata;
 
-    /**
-     * Metadata helper.
-     */
-    private final AbstractMetadataHelper helper;
+  /**
+   * Metadata helper.
+   */
+  private final AbstractMetadataHelper helper;
 
-    /**
-     * Class constructor.
-     * @param session Cassandra session used to retrieve the metadata.
-     */
-    public APIManager(Session session, IStratioStreamingAPI stratioStreamingAPI){
-        metadata = new MetadataManager(session, stratioStreamingAPI);
-        metadata.loadMetadata();
-        helper = new CassandraMetadataHelper();
+  /**
+   * Class constructor.
+   * @param session Cassandra session used to retrieve the metadata.
+   */
+  public APIManager(Session session, IStratioStreamingAPI stratioStreamingAPI){
+    metadata = new MetadataManager(session, stratioStreamingAPI);
+    metadata.loadMetadata();
+    helper = new CassandraMetadataHelper();
+  }
+  /**
+   * Process an incoming API request.
+   *
+   * @param cmd The commnand to be executed.
+   * @return A {@link com.stratio.meta.common.result.MetadataResult}.
+   */
+  public Result processRequest(Command cmd) {
+    Result result = null;
+    if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
+      LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
+      result = MetadataResult.createSuccessMetadataResult();
+      MetadataResult.class.cast(result).setCatalogList(metadata.getKeyspacesNames());
+    } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
+      LOG.info("Processing " + APICommand.LIST_TABLES().toString());
+      KeyspaceMetadata keyspaceMetadata = metadata.getKeyspaceMetadata(cmd.params().get(0));
+      if (keyspaceMetadata != null) {
+        result = MetadataResult.createSuccessMetadataResult();
+        MetadataResult.class.cast(result).setTableList(
+            new ArrayList<>(helper.toCatalogMetadata(keyspaceMetadata).getTables()));
+      } else {
+        result =
+            Result.createExecutionErrorResult("Keyspace " + cmd.params().get(0) + " not found");
+      }
+    } else {
+      result =
+          Result.createExecutionErrorResult("Command " + cmd.commandType() + " not supported");
+      LOG.error(ErrorResult.class.cast(result).getErrorMessage());
     }
-
-    /**
-     * Process an incoming API request.
-     * @param cmd The commnand to be executed.
-     * @return A {@link com.stratio.meta.common.result.MetadataResult}.
-     */
-    public Result processRequest(Command cmd){
-        Result result = null;
-        if(APICommand.LIST_CATALOGS().equals(cmd.commandType())){
-            LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
-            result = MetadataResult.createSuccessMetadataResult();
-            MetadataResult.class.cast(result).setCatalogList(metadata.getKeyspacesNames());
-        }else if(APICommand.LIST_TABLES().equals(cmd.commandType())){
-            LOG.info("Processing " + APICommand.LIST_TABLES().toString());
-            result = MetadataResult.createSuccessMetadataResult();
-            KeyspaceMetadata keyspaceMetadata = metadata.getKeyspaceMetadata(cmd.params().get(0));
-            MetadataResult.class.cast(result).setTableList(new ArrayList<>(helper.toCatalogMetadata(keyspaceMetadata).getTables()));
-        }else{
-            result = CommandResult.createFailCommandResult("Command " + cmd.commandType() + " not supported");
-            LOG.error(result.getErrorMessage());
-        }
-        return result;
-    }
+    return result;
+  }
 }

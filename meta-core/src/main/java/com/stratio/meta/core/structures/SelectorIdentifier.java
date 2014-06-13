@@ -1,66 +1,101 @@
 /*
  * Stratio Meta
- *
+ * 
  * Copyright (c) 2014, Stratio, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation; either version
+ * 3.0 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
 package com.stratio.meta.core.structures;
 
-public class SelectorIdentifier extends SelectorMeta {
+import java.io.Serializable;
 
-    private String identifier;
+public class SelectorIdentifier extends SelectorMeta implements Serializable {
 
-    public SelectorIdentifier(String identifier) {
-        this.type = TYPE_IDENT;
-        this.identifier = identifier;
-    }
+  private static final long serialVersionUID = -8632253820536763413L;
 
-    public String getIdentifier() {
-        return identifier;
-    }
+  private String table;
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
-    }        
-    
-    public boolean isColumnSelector(){
-        return identifier.contains(".");
-    }
+  private String field;
 
-    /**
-     * Get the tablename associated with the selected column.
-     * @return The tablename or null if none have been specified.
-     */
-    public String getTablename(){
-        if(identifier.contains(".")){
-            return identifier.split("\\.")[0];
-        }
-        return null;
+  public SelectorIdentifier(String identifier) {
+
+    this.type = TYPE_IDENT;
+
+    if (identifier.contains(".")) {
+      String[] idParts = identifier.split("\\.");
+      this.table = idParts[0];
+      this.field = idParts[1];
+    } else {
+      this.field = identifier;
     }
-    
-    public String getColumnName(){
-        if(identifier.contains(".")){
-            return identifier.split("\\.")[1];
-        }
-        return identifier;
+  }
+
+  public SelectorIdentifier(String tableName, String fieldName) {
+
+    this.type = TYPE_IDENT;
+    this.table = tableName;
+    this.field = fieldName;
+  }
+
+  public String getTable() {
+    return table;
+  }
+
+  public void setTable(String table) {
+    this.table = table;
+  }
+
+  public String getField() {
+    return field;
+  }
+
+  public void setField(String field) {
+    this.field = field;
+  }
+
+  public boolean isColumnSelector() {
+    return field.contains(".");
+  }
+
+  @Override
+  public String toString() {
+
+    return (this.table == null || "*".equals(field)) ? this.field : this.table + "." + this.field;
+  }
+
+  @Override
+  public void addTablename(String tablename) {
+
+    if (this.table == null)
+      this.table = tablename;
+  }
+
+  /**
+   * Set field and tables fields through the given identifier
+   * 
+   * @param identifier Column identifier. It must be composed by a table, a dot ('.') and a field,
+   *        or just a field.
+   */
+  public void setIdentifier(String identifier) {
+
+    if (identifier.contains(".")) {
+      String[] idParts = identifier.split("\\.");
+      this.table = idParts[0];
+      this.field = idParts[1];
+    } else {
+      this.field = identifier;
     }
-    
-    @Override
-    public String toString() {
-        return identifier;
-    }
-    
+  }
+
+
+
 }

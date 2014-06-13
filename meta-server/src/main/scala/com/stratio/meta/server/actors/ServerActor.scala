@@ -35,17 +35,21 @@ class ServerActor(engine:Engine) extends Actor {
   val queryActorRef= context.actorOf(QueryActor.props(engine),"QueryActor")
   val cmdActorRef= context.actorOf(APIActor.props(engine.getAPIManager),"APIActor")
   def receive = {
-    case query:Query => queryActorRef forward query
+    case query:Query =>
+      //println("query: " + query)
+      queryActorRef forward query
     case Connect(user)=> {
       log.info("Welcome " + user +"!")
-      sender ! ConnectResult.createSuccessConnectResult(Random.nextLong())
+      //println("Welcome " + user +"!")
+      sender ! ConnectResult.createConnectResult(Random.nextLong())
     }
     case cmd: Command => {
       log.info("API Command call " + cmd.commandType)
       cmdActorRef forward cmd
     }
     case _ => {
-      sender ! CommandResult.createFailCommandResult("Not recognized object")
+      println("Unknown!!!!");
+      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
     }
   }
 }

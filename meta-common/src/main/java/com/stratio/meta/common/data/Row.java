@@ -20,6 +20,7 @@
 package com.stratio.meta.common.data;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -65,6 +66,14 @@ public class Row implements Serializable {
     }
 
     /**
+     * Get the collection of cells.
+     * @return A collection of Cells.
+     */
+    public Collection<Cell> getCellList(){
+        return cells.values();
+    }
+
+    /**
      * Set the cells of the row.
      *
      * @param cells A map of cells
@@ -81,6 +90,7 @@ public class Row implements Serializable {
      */
     public void addCell(String key, Cell cell){
         cells.put(key, cell);
+        cells.values();
     }
 
     /**

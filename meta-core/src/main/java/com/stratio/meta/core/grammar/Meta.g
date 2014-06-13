@@ -98,10 +98,12 @@ T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
 T_ALTER: A L T E R;
 T_KEYSPACE: K E Y S P A C E;
+T_KEYSPACES: K E Y S P A C E S;
 T_NOT: N O T;
 T_WITH: W I T H;
 T_DROP: D R O P;
 T_TABLE: T A B L E;
+T_TABLES: T A B L E S;
 T_IF: I F;
 T_EXISTS: E X I S T S;
 T_AND: A N D;
@@ -189,6 +191,7 @@ T_INTERROGATION: '?';
 T_ASTERISK: '*';
 T_GROUP: G R O U P;
 T_AGGREGATION: A G G R E G A T I O N;
+T_SUM: S U M;
 T_MAX: M A X;
 T_MIN: M I N;
 T_AVG: A V G;
@@ -233,7 +236,10 @@ T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 
 describeStatement returns [DescribeStatement descs]:
     T_DESCRIBE (T_KEYSPACE keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.KEYSPACE); $descs.setKeyspace($keyspace.text);}
+    	| T_KEYSPACE {$descs = new DescribeStatement(DescribeType.KEYSPACE);}
+    	| T_KEYSPACES {$descs = new DescribeStatement(DescribeType.KEYSPACES);}
         | T_TABLE tablename=getTableID { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
+        | T_TABLES {$descs = new DescribeStatement(DescribeType.TABLES);}
     )
 ;
 
@@ -447,11 +453,11 @@ selectStatement returns [SelectStatement slctst]
     (T_INNER T_JOIN { joinInc = true;} identJoin=getTableID T_ON fields=getFields)?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses)?
     (T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
-    (T_GROUP T_BY {groupInc = true;} groupby=getList)?
+    (T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
     (T_LIMIT {limitInc = true;} constant=getConstant)?
     (T_DISABLE T_ANALYTICS {disable = true;})?
     {
-        $slctst = new SelectStatement(selClause, tablename);        
+        $slctst = new SelectStatement(selClause, tablename);
         if(windowInc)
             $slctst.setWindow(window);
         if(joinInc)
@@ -461,11 +467,14 @@ selectStatement returns [SelectStatement slctst]
         if(orderInc)
              $slctst.setOrder(ordering);
         if(groupInc)
-            $slctst.setGroup(new GroupBy(groupby)); 
+             $slctst.setGroup(groupby);
         if(limitInc)
-            $slctst.setLimit(Integer.parseInt(constant));
+             $slctst.setLimit(Integer.parseInt(constant));
         if(disable)
             $slctst.setDisableAnalytics(true);
+            
+        $slctst.replaceAliasesWithName();
+        $slctst.updateTableNames();
     };
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
@@ -686,8 +695,17 @@ getOrdering returns [ArrayList<Ordering> order]
         order = new ArrayList<>();
         Ordering ordering;
     }:
-    ident1=T_IDENT {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
-    (T_COMMA identN=T_IDENT {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+    ident1=(T_KS_AND_TN | T_IDENT) {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
+    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+;
+
+getGroupBy returns [ArrayList<GroupBy> groups]
+    @init{
+        groups = new ArrayList<>();
+        GroupBy groupBy;
+    }:
+    ident1=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($ident1.text); groups.add(groupBy);}
+    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($identN.text); groups.add(groupBy);})*
 ;
 
 getWhereClauses returns [ArrayList<Relation> clauses]
@@ -712,12 +730,13 @@ getWindow returns [WindowSelect ws]:
                        )
     );
 
+/*'s' {$unit=TimeUnit.SECONDS;}*/
+
 getTimeUnit returns [TimeUnit unit]:
-    ( 'S' {$unit=TimeUnit.SECONDS;}
+    ( S {$unit=TimeUnit.SECONDS;}
     | 'M' {$unit=TimeUnit.MINUTES;}
     | 'H' {$unit=TimeUnit.HOURS;}
     | 'D' {$unit=TimeUnit.DAYS;}
-    | 's' {$unit=TimeUnit.SECONDS;}
     | 'm' {$unit=TimeUnit.MINUTES;}
     | 'h' {$unit=TimeUnit.HOURS;}
     | 'd' {$unit=TimeUnit.DAYS;}
@@ -738,7 +757,7 @@ getSelectionCount returns [SelectionCount scc]
         boolean identInc = false;
         char symbol = '*';
     }:
-    T_COUNT T_START_PARENTHESIS ( symbolStr=getCountSymbol { symbol=symbolStr.charAt(0); } ) T_END_PARENTHESIS
+    T_COUNT T_START_PARENTHESIS symbolStr=getCountSymbol { symbol=symbolStr.charAt(0); } T_END_PARENTHESIS
     (T_AS {identInc = true;} ident=T_IDENT )? 
     {
         if(identInc)
@@ -749,7 +768,7 @@ getSelectionCount returns [SelectionCount scc]
 ;
 
 getCountSymbol returns [String str]:
-    T_ASTERISK {$str = new String("*");}
+    '*' {$str = new String("*");}
     | '1' {$str = new String("1");}
     ;
 
@@ -768,26 +787,33 @@ getSelection returns [Selection slct]
     }:
     (
         T_ASTERISK { $slct = new SelectionAsterisk();}       
-        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS ident1=T_IDENT {slsl.setAlias($ident1.text);})? {selections.add(slsl);}
-            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS identN=T_IDENT {slsl.setAlias($identN.text);})? {selections.add(slsl);})*
+        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS alias1=getAlias {slsl.setAlias($alias1.text);})? {selections.add(slsl);}
+            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS aliasN=getAlias {slsl.setAlias($aliasN.text);})? {selections.add(slsl);})*
             { $slct = new SelectionSelectors(selections);}
     )
 ;
+
+getAlias returns [String alias]:
+	ident=T_IDENT {$alias=$ident.text;}
+;
+	
 
 getSelector returns [SelectorMeta slmt]
     @init{
         ArrayList<SelectorMeta> params = new ArrayList<>();
         GroupByFunction gbFunc = null;
     }:
-    ( (T_AGGREGATION {gbFunc = GroupByFunction.AGGREGATION;}
+    ( (T_SUM {gbFunc = GroupByFunction.SUM;}
        | T_MAX {gbFunc = GroupByFunction.MAX;}
        | T_MIN {gbFunc = GroupByFunction.MIN;}
        | T_AVG {gbFunc = GroupByFunction.AVG;}
        | T_COUNT {gbFunc = GroupByFunction.COUNT;}
       ) 
             T_START_PARENTHESIS 
-                (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 
-            T_END_PARENTHESIS {$slmt = new SelectorGroupBy(gbFunc, params);}
+                (select1=getSelector {params.add(select1);}
+                | T_ASTERISK {params.add(new SelectorIdentifier("*"));}
+                )?
+            T_END_PARENTHESIS {$slmt = new SelectorGroupBy(gbFunc, params.get(0));}
         | (identID=getTableID | luceneID=T_LUCENE) (
             {if (identID != null) $slmt = new SelectorIdentifier(identID); else $slmt = new SelectorIdentifier($luceneID.text);}
             | T_START_PARENTHESIS (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 

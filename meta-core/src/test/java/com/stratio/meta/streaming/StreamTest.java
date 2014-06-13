@@ -30,6 +30,8 @@ import com.stratio.meta.core.structures.BooleanProperty;
 import com.stratio.meta.core.structures.Property;
 import com.stratio.meta.core.structures.PropertyNameValue;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.api.StratioStreamingAPIFactory;
+import com.stratio.streaming.commons.exceptions.StratioEngineConnectionException;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -44,10 +46,15 @@ public class StreamTest extends BasicCoreCassandraTest {
 
   private EngineConfig config = new EngineConfig();
 
-  private IStratioStreamingAPI stratioStreamingAPI = new IStratioStreamingAPI();
+  private IStratioStreamingAPI stratioStreamingAPI;
 
   @BeforeClass
   public void removeEphemeralTable(){
+    try {
+      stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
+    } catch (StratioEngineConnectionException e) {
+      e.printStackTrace();
+    }
     config.setSparkMaster("local");
     MetaStream.dropStream(stratioStreamingAPI, "demo.temporal_test");
   }

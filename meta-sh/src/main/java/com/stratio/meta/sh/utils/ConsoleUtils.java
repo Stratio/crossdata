@@ -24,6 +24,7 @@ import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
+import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import jline.console.ConsoleReader;
@@ -67,8 +68,8 @@ public class ConsoleUtils {
    * @return String representing the result.
    */
   public static String stringResult(Result result){
-    if(result.hasError()){
-      return result.getErrorMessage();
+    if(ErrorResult.class.isInstance(result)){
+      return ErrorResult.class.cast(result).getErrorMessage();
     }
     if(result instanceof QueryResult){
       QueryResult queryResult = (QueryResult) result;
@@ -105,7 +106,6 @@ public class ConsoleUtils {
     boolean firstRow = true;
     for(Row row: resultSet){
       sb.append("| ");
-
       if(firstRow){
         for(String key: row.getCells().keySet()){
           sb.append(StringUtils.rightPad("\033[34;1m"+key+"\033[0m ", colWidths.get(key)+12)).append("| ");

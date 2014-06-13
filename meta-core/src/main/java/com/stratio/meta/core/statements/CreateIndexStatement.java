@@ -319,7 +319,7 @@ public class CreateIndexStatement extends MetaStatement {
         //Validate index name if not exists
         if(!result.hasError()){
             if(name != null && name.toLowerCase().startsWith("stratio")){
-                result = QueryResult.createFailQueryResult("Internal namespace stratio cannot be use on index name " + name);
+                result = Result.createValidationErrorResult("Internal namespace stratio cannot be use on index name " + name);
             }else {
                 result = validateIndexName(metadata, tableMetadata);
             }
@@ -352,9 +352,9 @@ public class CreateIndexStatement extends MetaStatement {
 
         for(String c : targetColumns){
             if(c.toLowerCase().startsWith("stratio")){
-                result=  QueryResult.createFailQueryResult("Internal column " + c + " cannot be part of the WHERE clause.");
+                result = Result.createValidationErrorResult("Internal column " + c + " cannot be part of the WHERE clause.");
             }else if(tableMetadata.getColumn(c) == null){
-                result= QueryResult.createFailQueryResult("Column " + c + " does not exist in table " + tableMetadata.getName());
+                result = Result.createValidationErrorResult("Column " + c + " does not exist in table " + tableMetadata.getName());
             }
         }
 
@@ -380,7 +380,7 @@ public class CreateIndexStatement extends MetaStatement {
             }
         }
         if(found && !createIfNotExists){
-            result= QueryResult.createFailQueryResult("Index " + name + " already exists in table " + tableName);
+            result = Result.createValidationErrorResult("Index " + name + " already exists in table " + tableName);
         }else{
             createIndex = true;
         }
@@ -396,7 +396,7 @@ public class CreateIndexStatement extends MetaStatement {
     private Result validateOptions(String effectiveKeyspace, TableMetadata metadata) {
         Result result = QueryResult.createSuccessQueryResult();
         if(!options.isEmpty()){
-            result= QueryResult.createFailQueryResult("WITH OPTIONS clause not supported in index creation.");
+            result = Result.createValidationErrorResult("WITH OPTIONS clause not supported in index creation.");
         }
         if(!createIfNotExists && IndexType.LUCENE.equals(type)) {
             Iterator<ColumnMetadata> columns = metadata.getColumns().iterator();
@@ -409,7 +409,7 @@ public class CreateIndexStatement extends MetaStatement {
                 }
             }
             if (found) {
-                result= QueryResult.createFailQueryResult("Cannot create index: A Lucene index already exists on table " + effectiveKeyspace + "."
+                result = Result.createValidationErrorResult("Cannot create index: A Lucene index already exists on table " + effectiveKeyspace + "."
                         + metadata.getName() + ". Use DROP INDEX " + column.getName().replace("stratio_lucene_", "") + "; to remove the index.");
             }
         }

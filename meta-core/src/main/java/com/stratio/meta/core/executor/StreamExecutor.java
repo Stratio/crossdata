@@ -1,5 +1,6 @@
 /*
  * Stratio Meta
+<<<<<<< HEAD
  *
  * Copyright (c) 2014, Stratio, All rights reserved.
  *
@@ -35,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
 public class StreamExecutor {
 
   public StreamExecutor() {
@@ -56,11 +56,10 @@ public class StreamExecutor {
     } else if (stmt instanceof SelectStatement){
       SelectStatement ss = (SelectStatement) stmt;
       String resultStream = MetaStream.listenStream(stratioStreamingAPI, ss);
-      return CommandResult.createSuccessCommandResult(resultStream);
+      return CommandResult.createCommandResult(resultStream);
     } else {
-      return QueryResult.createFailQueryResult("Not supported yet.");
+      return Result.createExecutionErrorResult("Not supported yet.");
     }
   }
 
 }
-
