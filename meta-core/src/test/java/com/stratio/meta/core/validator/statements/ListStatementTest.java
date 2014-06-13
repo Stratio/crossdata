@@ -25,8 +25,20 @@ import org.testng.annotations.Test;
 public class ListStatementTest extends BasicValidatorTest {
 
     @Test
-    public void validateNotSupported(){
+    public void validateOk(){
         String inputText = "LIST PROCESS;";
-        validateFail(inputText, "validateNotSupported");
+      validateOk(inputText, "validateNotSupported");
     }
+  @Test
+  public void validateNotSopportedTriggerYet(){
+
+    String inputText = "LIST TRIGGER;";
+    validateFail(inputText, "NotSupportTriggerYet");
+  }
+  @Test
+  public void validateNotSopportedUdfYet(){
+
+    String inputText = "LIST UDF;";
+    validateFail(inputText, "NotSupportUdfYet");
+  }
 }
