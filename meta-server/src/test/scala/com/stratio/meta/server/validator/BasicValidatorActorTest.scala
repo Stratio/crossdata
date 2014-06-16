@@ -12,7 +12,7 @@ import akka.pattern.ask
 import org.testng.Assert._
 import scala.util.Success
 import com.stratio.meta.server.utilities._
-import com.stratio.meta.server.config.BeforeAndAfterCassandra
+import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
 import com.typesafe.config.ConfigFactory
 import scala.collection.mutable
 import com.stratio.meta.common.ask.Query
@@ -23,8 +23,7 @@ import scala.util.Success
 /**
  * Validator actor tests.
  */
-class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutorActorSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-                                      with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra{
+class BasicValidatorActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
   lazy val engine:Engine =  createEngine.create()
   lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
@@ -49,11 +48,8 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
     val stmt = engine.getParser.parseStatement(query)
     stmt.setSessionKeyspace(keyspace)
     validatorRef ! stmt
-    if(shouldExecute) {
-      expectMsgClass(classOf[ACK])
-    }
 
-    val result = expectMsgClass(classOf[Result])
+    val result = receiveActorMessages(shouldExecute, false, !shouldExecute)
 
     if(shouldExecute) {
       assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
@@ -135,7 +131,7 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
   }
 
   test ("Create existing catalog"){
-    within(5000 millis){
+    within(7000 millis){
       val msg="create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       executeStatement(msg, "", false, "Keyspace ks_demo already exists.")
     }
@@ -164,14 +160,14 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
   }
 
   test ("Insert into non-existing table"){
-    within(5000 millis){
+    within(7000 millis){
       val msg="insert into demo (field1, field2) values ('test1','text2');"
       executeStatement(msg, "ks_demo", false, "Table demo does not exist.")
     }
   }
 
   test ("Select from non-existing table"){
-  within(5000 millis){
+  within(7000 millis){
       val msg="select * from unknown ;"
       executeStatement(msg, "ks_demo", false, "Table unknown does not exist.")
     }
@@ -185,7 +181,7 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
   }
 
   test ("Create existing table"){
-    within(5000 millis){
+    within(7000 millis){
       val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
       executeStatement(msg, "ks_demo", false, "Table already exists.")
     }
@@ -226,7 +222,7 @@ class BasicValidatorActorTest extends TestKit(ActorSystem("TestKitUsageExectutor
   }
 
   test ("Drop non-existing keyspace"){
-    within(5000 millis){
+    within(7000 millis){
       val msg="drop keyspace ks_demo ;"
       executeStatement(msg, "ks_demo", false, "Expecting keyspace not exists.")
     }

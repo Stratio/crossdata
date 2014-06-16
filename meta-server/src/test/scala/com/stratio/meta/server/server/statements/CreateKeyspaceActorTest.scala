@@ -24,7 +24,7 @@ import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
 import com.stratio.meta.server.utilities.{createEngine, TestKitUsageSpec}
 import org.scalatest.FunSuiteLike
-import com.stratio.meta.server.config.BeforeAndAfterCassandra
+import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.server.actors.ServerActor
 import org.testng.Assert._
@@ -35,8 +35,7 @@ import akka.pattern.ask
 import scala.concurrent.duration._
 import com.stratio.meta.communication.ACK
 
-class CreateKeyspaceActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-                                      with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
+class CreateKeyspaceActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
   lazy val engine:Engine =  createEngine.create()
 
@@ -45,8 +44,7 @@ class CreateKeyspaceActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Con
   def executeStatement(query: String, keyspace: String) : Result = {
     val stmt = Query("create-keyspace", keyspace, query, "test_actor")
     serverRef ! stmt
-    expectMsgClass(classOf[ACK])
-    val result = expectMsgClass(classOf[Result])
+    val result = receiveActorMessages(true, false, false)
 
     assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
       + "\n error: " + getErrorMessage(result))

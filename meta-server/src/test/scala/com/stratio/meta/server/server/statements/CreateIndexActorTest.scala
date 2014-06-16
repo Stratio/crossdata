@@ -19,25 +19,19 @@
 
 package com.stratio.meta.server.server.statements
 
-import akka.testkit.{ImplicitSender, DefaultTimeout, TestKit}
-import akka.actor.{Props, ActorSystem}
-import com.typesafe.config.ConfigFactory
-import com.stratio.meta.server.utilities.{createEngine, TestKitUsageSpec}
+import akka.actor.{Props}
+import com.stratio.meta.server.utilities.{createEngine}
 import org.scalatest.FunSuiteLike
-import com.stratio.meta.server.config.BeforeAndAfterCassandra
+import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.server.actors.ServerActor
 import com.stratio.meta.common.result.{QueryResult, Result}
-import scala.concurrent.{Await, Future}
 import org.testng.Assert._
 import com.stratio.meta.common.ask.Query
-import akka.pattern.ask
 import scala.concurrent.duration._
 import org.apache.log4j.Logger
-import com.stratio.meta.communication.ACK
 
-class CreateIndexActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-                                   with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra{
+class CreateIndexActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra{
 
   lazy val engine:Engine =  createEngine.create()
 
@@ -48,21 +42,27 @@ class CreateIndexActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
    */
   private final val logger: Logger = Logger.getLogger(classOf[CreateIndexActorTest])
 
-  def executeStatement(query: String, keyspace: String) : Result = {
-    val stmt = Query("create-index", keyspace, query, "test_actor")
-
+  /**
+   * Launch a query to the remote server.
+   * @param query The query.
+   * @param catalog The catalog.
+   * @return The result message.
+   */
+  def executeStatement(query: String, catalog: String) : Result = {
+  println("Execute: " + query)
+    val stmt = Query("create-index", catalog, query, "test_actor")
     serverRef ! stmt
-    expectMsgClass(classOf[ACK])
-    val result = expectMsgClass(classOf[Result])
+    val result = receiveActorMessages(true, false, false)
 
     assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
-      + "\n error: " + getErrorMessage(result))
+                                 + "\n error: " + getErrorMessage(result))
 
     result
   }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
+    dropKeyspaceIfExists("demo_server")
     loadTestData("demo_server", "demoServerKeyspace.cql")
   }
 
@@ -82,9 +82,8 @@ class CreateIndexActorTest extends TestKit(ActorSystem("TestKitUsageSpec",Config
     val dropQuery = "DROP INDEX demo_server.users_info;"
 
     logger.info("Create Lucene Index iteration: " + iteration)
-
     //Create the index
-    within(25000 millis){
+    within(35000 millis){
       executeStatement(createQuery, "demo_server")
       assertTrue(checkColumnExists("demo_server", "users_info", "stratio_lucene_users_info"), "Stratio column not found")
       waitForLucene()
