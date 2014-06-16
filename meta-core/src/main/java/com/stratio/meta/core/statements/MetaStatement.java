@@ -62,7 +62,7 @@ public abstract class MetaStatement {
 
   /**
    * Class constructor.
-   * 
+   *
    * @param command Whether the query is a command or a query returning a
    *        {@link com.stratio.meta.common.data.ResultSet}.
    */
@@ -103,18 +103,16 @@ public abstract class MetaStatement {
     return Result.createValidationErrorResult("Statement not supported");
   }
 
-
   /**
    * Validate that a valid keyspace and table is present.
-   * 
+   *
    * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
    *        required information.
    * @param targetKeyspace The target keyspace where the query will be executed.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   protected Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace,
-
-      boolean keyspaceInc, String stmtKeyspace, String tableName) {
+                                            boolean keyspaceInc, String stmtKeyspace, String tableName) {
     Result result = QueryResult.createSuccessQueryResult();
     // Get the effective keyspace based on the user specification during the create
     // sentence, or taking the keyspace in use in the user session.
@@ -135,10 +133,13 @@ public abstract class MetaStatement {
       } else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata == null) {
-          result = Result.createValidationErrorResult("Table " + tableName + " does not exist.");
+          if(!metadata.checkStream(effectiveKeyspace + "_" + tableName)){
+            result= Result.createValidationErrorResult("Table " + tableName + " does not exist in "+effectiveKeyspace+".");
+          } else {
+            result = CommandResult.createCommandResult("streaming");
+          }
         }
       }
-
     }
     return result;
   }
@@ -159,7 +160,7 @@ public abstract class MetaStatement {
 
   /**
    * Get the {@link Statement} equivalent of the current query.
-   * 
+   *
    * @return The Statement or null if the driver translation cannot be done.
    */
   public Statement getDriverStatement() {
@@ -169,7 +170,7 @@ public abstract class MetaStatement {
   /**
    * Get a tree that contains the planning for executing the query. The plan will be executed
    * starting from the leaves and finishing at the tree root.
-   * 
+   *
    * @param metadataManager The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
    *        the required information.
    * @param targetKeyspace The target keyspace where the query will be executed.

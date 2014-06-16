@@ -40,7 +40,6 @@ public class SelectorIdentifier extends SelectorMeta implements Serializable {
   }
 
   public SelectorIdentifier(String tableName, String fieldName) {
-
     this.type = TYPE_IDENT;
     this.table = tableName;
     this.field = fieldName;
@@ -95,7 +94,5 @@ public class SelectorIdentifier extends SelectorMeta implements Serializable {
       this.field = identifier;
     }
   }
-
-
 
 }

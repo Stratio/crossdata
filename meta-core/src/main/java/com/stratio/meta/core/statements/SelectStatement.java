@@ -474,8 +474,8 @@ public class SelectStatement extends MetaStatement {
     Result result =
         validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
 
-    if((!result.hasError()) && (result instanceof CommandResult) && ("streaming".equalsIgnoreCase(
-        ((CommandResult) result).getResult().toString()))){
+    if((!result.hasError()) && (result instanceof CommandResult) &&
+       ("streaming".equalsIgnoreCase(((CommandResult) result).getResult().toString()))){
       streamMode = true;
     }
 
@@ -532,12 +532,7 @@ public class SelectStatement extends MetaStatement {
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateOptions() {
-
     Result result = QueryResult.createSuccessQueryResult();
-
-    if (windowInc) {
-      result = Result.createValidationErrorResult("Select with streaming options not supported.");
-    }
 
     if (groupInc) {
       result = validateGroupByClause();
@@ -819,6 +814,28 @@ public class SelectStatement extends MetaStatement {
    */
   private Result validateSelectionColumns(TableMetadata tableFrom, TableMetadata tableJoin) {
     Result result = QueryResult.createSuccessQueryResult();
+
+    if(streamMode && (selectionClause instanceof SelectionList) && (((SelectionList) selectionClause).getTypeSelection() == Selection.TYPE_SELECTOR)){
+      List<String> colNames = metadata.getStreamingColumnNames(getEffectiveKeyspace()+"."+tableName);
+      SelectionList selectionList = (SelectionList) selectionClause;
+      SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
+      selectionSelectors.getSelectors();
+
+      for(SelectionSelector selectionSelector: selectionSelectors.getSelectors()){
+        SelectorIdentifier selectorIdentifier =
+            (SelectorIdentifier) selectionSelector.getSelector();
+        String colName = selectorIdentifier.getField();
+        if(!colNames.contains(colName.toLowerCase())){
+          return Result.createValidationErrorResult(
+              "Column '" + colName + "' not found in ephemeral table '" + getEffectiveKeyspace()
+              + "." + tableName + "'.");
+        }
+      }
+    }
+
+    if(streamMode){
+      return result;
+    }
 
     // Create a HashMap with the columns
     Collection<ColumnMetadata> allColumns = new ArrayList<>();

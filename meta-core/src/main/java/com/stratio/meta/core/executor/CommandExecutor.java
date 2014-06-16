@@ -68,24 +68,4 @@ public class CommandExecutor {
     }
   }
 
-  /*
-      else if (stmt instanceof StopProcessStatement){
-        try{
-          IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
-          try {
-            stratioStreamingAPI.removeQuery(((StopProcessStatement) stmt).getStream(), ((StopProcessStatement) stmt).getIdent());
-          } catch(StratioStreamingException ssEx) {
-            ssEx.printStackTrace();
-          }
-        }
-        catch (Throwable t){
-          t.printStackTrace();
-        }
-        return Result.createExecutionErrorResult(
-            "delete " + ((StopProcessStatement) stmt).getIdent());
-
-
-
-      }
-  */
 }
