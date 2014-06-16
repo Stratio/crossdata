@@ -33,8 +33,6 @@ import org.testng.Assert._
 import scala.concurrent.{Await, Future}
 import akka.pattern.ask
 import scala.concurrent.duration._
-import scala.collection.JavaConversions._
-import com.stratio.meta.common.metadata.structures.TableMetadata
 import scala.collection.mutable.ListBuffer
 
 /**
