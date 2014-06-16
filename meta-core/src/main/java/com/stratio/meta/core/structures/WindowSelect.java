@@ -38,11 +38,6 @@ public abstract class WindowSelect {
   @Override
   public abstract String toString();
 
-  public String translateToCql() {
-    return toString().replace("s", "sec").replace("m", "min").replace("h", "hours").replace("d", "days")
-        .replace("S", "sec").replace("M", "min").replace("H", "hours").replace("D", "days");
-  }
-
   public long getDurationInMilliseconds(){
     long millis = 0;
     if(this instanceof WindowTime){

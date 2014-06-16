@@ -1059,8 +1059,8 @@ public class SelectStatement extends MetaStatement {
   public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName, String outgoing){
     StringBuilder querySb = new StringBuilder("from ");
     querySb.append(streamName);
-    if(isWhereInc()){
-      querySb.append("#window.timeBatch(").append(getWindow().translateToCql()).append(")");
+    if(windowInc){
+      querySb.append("#window.timeBatch( ").append(getWindow().toString().toLowerCase()).append(" )");
     }
 
     List<String> ids = new ArrayList<>();

@@ -21,8 +21,8 @@
 package com.stratio.meta.core.executor;
 
 import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.CreateTableStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
@@ -42,7 +42,7 @@ public class StreamExecutor {
 
   }
 
-  public static Result execute(MetaStatement stmt, IStratioStreamingAPI stratioStreamingAPI) {
+  public static Result execute(MetaStatement stmt, IStratioStreamingAPI stratioStreamingAPI, EngineConfig config) {
     if (stmt instanceof CreateTableStatement) {
       CreateTableStatement cts= (CreateTableStatement) stmt;
       String tableEphemeralName= cts.getEffectiveKeyspace()+"_"+cts.getTableName() ;
@@ -55,7 +55,7 @@ public class StreamExecutor {
       return MetaStream.createStream(stratioStreamingAPI, tableEphemeralName, columnList);
     } else if (stmt instanceof SelectStatement){
       SelectStatement ss = (SelectStatement) stmt;
-      String resultStream = MetaStream.listenStream(stratioStreamingAPI, ss);
+      String resultStream = MetaStream.listenStream(stratioStreamingAPI, ss, config);
       return CommandResult.createCommandResult(resultStream);
     } else {
       return Result.createExecutionErrorResult("Not supported yet.");

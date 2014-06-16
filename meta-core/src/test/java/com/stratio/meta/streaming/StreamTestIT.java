@@ -77,7 +77,7 @@ public class StreamTestIT extends BasicCoreCassandraTest {
     Property property = new PropertyNameValue("ephemeral", new BooleanProperty(true));
     cts.setProperties(Collections.singletonList(property));
 
-    Result result = StreamExecutor.execute(cts, stratioStreamingAPI);
+    Result result = StreamExecutor.execute(cts, stratioStreamingAPI, null);
 
     String resultStr = ((CommandResult) result).getResult().toString();
     assertEquals("Ephemeral table '"+streamName+"' created.",

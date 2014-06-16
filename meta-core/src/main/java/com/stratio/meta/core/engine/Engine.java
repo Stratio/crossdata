@@ -115,7 +115,11 @@ public class Engine {
 
     IStratioStreamingAPI stratioStreamingAPI = null;
     try {
-      stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
+      stratioStreamingAPI = StratioStreamingAPIFactory.create().initializeWithServerConfig(
+          config.getKafkaServer(),
+          config.getKafkaPort(),
+          config.getZookeeperServer(),
+          config.getZookeeperPort());
     } catch (Throwable t) {
       t.printStackTrace();
     }

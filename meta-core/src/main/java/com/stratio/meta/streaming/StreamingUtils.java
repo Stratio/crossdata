@@ -25,6 +25,8 @@ import com.stratio.streaming.messaging.ColumnNameValue;
 
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Arrays;
 import java.util.List;
 
@@ -66,7 +68,7 @@ public class StreamingUtils {
     Thread randomThread = new Thread(){
       public void run(){
         try {
-          Thread.sleep(duration/2);
+          Thread.sleep((long) (duration/1.9));
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
@@ -109,6 +111,19 @@ public class StreamingUtils {
   public static String convertRandomNumberToString(String str){
     return str.replace('0', 'o').replace('1', 'i').replace('2', 'u').replace('3', 'e').replace('4', 'a').
         replace('5', 'b').replace('6', 'c').replace('7', 'd').replace('8', 'f').replace('9', 'g').replace('.', 'm');
+  }
+
+  public static int findFreePort() {
+    ServerSocket socket = null;
+    try {
+      socket = new ServerSocket(0);
+      socket.setReuseAddress(true);
+      int port = socket.getLocalPort();
+      socket.close();
+      return port;
+    } catch (IOException e) {
+      throw new IllegalStateException("Could not find a free TCP/IP port to start embedded Jetty HTTP Server on");
+    }
   }
 
 }

@@ -2,6 +2,7 @@ package com.stratio.meta.streaming;
 
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
@@ -35,12 +36,6 @@ public class MetaStream {
   private static final Logger LOG = Logger.getLogger(MetaStream.class);
 
   private static StringBuilder sb = new StringBuilder();
-
-  private static final int SPARK_STREAMING_DURATION = 4000;
-
-  private static final String ZK_QUORUM = "ingestion.stratio.com";
-
-  private static final String GROUP_ID = "stratio";
 
   public static List<StratioStream> listStreams(IStratioStreamingAPI stratioStreamingAPI)  {
     List<StratioStream> streamsList = null;
@@ -81,31 +76,27 @@ public class MetaStream {
     }
   }
 
-  public static String listenStream(IStratioStreamingAPI stratioStreamingAPI, SelectStatement ss){
+  public static String listenStream(IStratioStreamingAPI stratioStreamingAPI, SelectStatement ss, EngineConfig config){
     final String streamName = ss.getEffectiveKeyspace()+"_"+ss.getTableName();
     try {
-      JavaSparkContext sparkContext = new JavaSparkContext("local", "MetaStreaming");
+      JavaSparkContext sparkContext = new JavaSparkContext(config.getSparkMaster(), "MetaStreaming");
       LOG.info("Creating new JavaStreamingContext.");
       JavaStreamingContext jssc = null;
-      int randomPort = (int) (Math.random()*(65535-49152)+49152);
       while(jssc == null){
-        randomPort = (int) (Math.random()*(65535-49152)+49152);
         try {
           jssc = new JavaStreamingContext(
-              sparkContext.getConf().set("spark.cleaner.ttl", "-1").set("spark.driver.port", String.valueOf(randomPort)),
-              new Duration(SPARK_STREAMING_DURATION));
+              sparkContext.getConf().set("spark.driver.port", String.valueOf(StreamingUtils.findFreePort())),
+              new Duration(config.getStreamingDuration()));
         } catch (Throwable t){
           jssc = null;
-          LOG.debug("Port "+randomPort+" already in use");
+          LOG.debug("Cannot create Streaming Context. Trying it again.");
         }
       }
-      LOG.info("JavaStreamingContext created. Port = "+randomPort);
 
-      String outgoing = streamName+"_"+StreamingUtils.convertRandomNumberToString(
-          String.valueOf(System.currentTimeMillis()));
-      //String outgoing = streamName+"_outgoing";
+      String outgoing = streamName+"_"+String.valueOf(System.currentTimeMillis());
       // Create topic
       String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
+      System.out.println("TRACE: Query = "+query);
       final String queryId = stratioStreamingAPI.addQuery(streamName, query);
       LOG.info("queryId = " + queryId);
       stratioStreamingAPI.listenStream(outgoing);
@@ -113,11 +104,11 @@ public class MetaStream {
       // Create stream reading outgoing Kafka topic
       Map<String, Integer> topics = new HashMap<>();
       //Map of (topic_name -> numPartitions) to consume. Each partition is consumed in its own thread
-      topics.put(outgoing, 100);
+      topics.put(outgoing, 8);
       // jssc: JavaStreamingContext, zkQuorum: String, groupId: String, topics: Map<String, integer>
       final JavaPairDStream<String, String>
           dstream =
-          KafkaUtils.createStream(jssc, ZK_QUORUM, GROUP_ID, topics);
+          KafkaUtils.createStream(jssc, config.getZookeeperServer(), config.getStreamingGroupId(), topics);
 
       final long duration = ss.getWindow().getDurationInMilliseconds();
 
@@ -133,8 +124,9 @@ public class MetaStream {
         @Override
         public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
           final long totalCount = stringStringJavaPairRDD.count();
-          LOG.debug(queryId+": Count=" + totalCount);
+          LOG.info(queryId+": Count=" + totalCount);
           if(totalCount > 0){
+            sb = new StringBuilder();
             stringStringJavaPairRDD.values().foreach(new VoidFunction<String>() {
               @Override
               public void call(String s) throws Exception {
@@ -142,7 +134,7 @@ public class MetaStream {
                 Map<String, Object> myMap = objectMapper.readValue(s, HashMap.class);
                 ArrayList columns = (ArrayList) myMap.get("columns");
                 String cols = Arrays.toString(columns.toArray());
-                LOG.debug("Columns = "+cols);
+                LOG.debug("Columns = " + cols);
                 sb.append(cols).append(System.lineSeparator());
               }
             });
@@ -155,11 +147,7 @@ public class MetaStream {
       jssc.start();
       jssc.awaitTermination((long) (duration*1.4));
 
-      String str = sb.toString();
-
-      sb = new StringBuilder();
-
-      return str;
+      return sb.toString();
     } catch (Throwable t) {
       t.printStackTrace();
       return "ERROR: "+t.getMessage();
