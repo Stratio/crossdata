@@ -27,12 +27,9 @@ import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
 import com.stratio.meta.core.validator.Validator;
-import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.streaming.api.StratioStreamingAPIFactory;
 
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -106,13 +103,17 @@ public class Engine {
       }
     }
 
+    /*
     System.out.println("Start Stratio Streaming now.");
     try {
       System.in.read();
     } catch (IOException e) {
       e.printStackTrace();
     }
+    */
 
+    //TODO: (Streaming)
+    /*
     IStratioStreamingAPI stratioStreamingAPI = null;
     try {
       stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
@@ -125,6 +126,12 @@ public class Engine {
     manager = new APIManager(session, stratioStreamingAPI);
     planner = new Planner(session, stratioStreamingAPI);
     executor = new Executor(session, stratioStreamingAPI, deepContext, config);
+    */
+    parser = new Parser();
+    validator = new Validator(session, null);
+    manager = new APIManager(session, null);
+    planner = new Planner(session, null);
+    executor = new Executor(session, null, deepContext, config);
   }
 
   /**

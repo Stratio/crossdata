@@ -16,14 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
@@ -37,6 +29,14 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class that models a {@code CREATE TABLE} statement of the META language.
@@ -253,11 +253,15 @@ public class CreateTableStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata) {
     Result result = validateKeyspaceAndTable(metadata);
+
+    //TODO: (Streaming)
+    /*
     if (!result.hasError()){
       result=validateEphimeral(metadata);
     }
-    if(!result.hasError()){
+    */
 
+    if(!result.hasError()){
       result = validateColumns();
     }
     if (!result.hasError() && withProperties) {

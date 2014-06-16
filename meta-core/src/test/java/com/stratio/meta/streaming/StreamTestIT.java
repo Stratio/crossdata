@@ -33,22 +33,20 @@ import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 import com.stratio.streaming.commons.exceptions.StratioEngineConnectionException;
 
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 
-public class StreamTest extends BasicCoreCassandraTest {
+public class StreamTestIT extends BasicCoreCassandraTest {
 
   private EngineConfig config = new EngineConfig();
 
   private IStratioStreamingAPI stratioStreamingAPI;
 
-  @BeforeClass
+  //TODO: (Streaming)
+  //@BeforeClass
   public void removeEphemeralTable(){
     try {
       stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
@@ -59,7 +57,8 @@ public class StreamTest extends BasicCoreCassandraTest {
     MetaStream.dropStream(stratioStreamingAPI, "demo.temporal_test");
   }
 
-  @Test
+  //TODO: (Streaming)
+  //@Test
   public void testEphemeralCreation() {
     String streamName = "demo.temporal_test";
     Map<String, String> columns = new HashMap<>();
@@ -77,7 +76,6 @@ public class StreamTest extends BasicCoreCassandraTest {
                                  1);
     Property property = new PropertyNameValue("ephemeral", new BooleanProperty(true));
     cts.setProperties(Collections.singletonList(property));
-    System.out.println("TRACE: "+cts.toString());
 
     Result result = StreamExecutor.execute(cts, stratioStreamingAPI);
 

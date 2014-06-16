@@ -20,13 +20,13 @@
 package com.stratio.meta.core.validator.statements;
 
 import com.stratio.meta.core.validator.BasicValidatorTest;
-import org.testng.annotations.Test;
 
 public class ListStatementTest extends BasicValidatorTest {
 
-    @Test
-    public void validateNotSupported(){
-        String inputText = "LIST PROCESS;";
-        validateFail(inputText, "validateNotSupported");
-    }
+  //TODO: (Streaming)
+  //@Test
+  public void validateNotSupported(){
+    String inputText = "LIST PROCESS;";
+    validateFail(inputText, "validateNotSupported");
+  }
 }

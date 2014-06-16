@@ -16,27 +16,15 @@
 
 package com.stratio.meta.core.executor;
 
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.DescribeStatement;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
-import com.stratio.meta.core.statements.ListStatement;
 import com.stratio.meta.core.statements.MetaStatement;
-import com.stratio.meta.core.statements.StopProcessStatement;
-import com.stratio.meta.core.structures.DescribeType;
-import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.streaming.api.StratioStreamingAPIFactory;
-import com.stratio.streaming.commons.exceptions.StratioStreamingException;
-import com.stratio.streaming.commons.messages.StreamQuery;
-import com.stratio.streaming.commons.streams.StratioStream;
 
 import org.apache.log4j.Logger;
-
-import java.util.List;
 
 public class CommandExecutor {
 
@@ -56,6 +44,39 @@ public class CommandExecutor {
    * @param session Cassandra datastax java driver {@link com.datastax.driver.core.Session}.
    * @return a {@link com.stratio.meta.common.result.Result}.
    */
+  public static Result execute(MetaStatement stmt, Session session) {
+    try {
+      if (stmt instanceof DescribeStatement) {
+        DescribeStatement descStmt = (DescribeStatement) stmt;
+        return descStmt.execute(session);
+      } else if (stmt instanceof ExplainPlanStatement) {
+        return executeExplainPlan((ExplainPlanStatement) stmt, session);
+      } else {
+        return Result.createExecutionErrorResult("Command not supported yet.");
+      }
+    } catch (RuntimeException rex) {
+      LOG.debug("Command executor failed", rex);
+      return Result.createExecutionErrorResult(rex.getMessage());
+    }
+  }
+
+  private static Result executeExplainPlan(ExplainPlanStatement stmt, Session session) {
+    return CommandResult.createCommandResult(stmt.getMetaStatement()
+                                                 .getPlan(new MetadataManager(session, null),
+                                                          stmt.getMetaStatement()
+                                                              .getEffectiveKeyspace())
+                                                 .toStringDownTop());
+  }
+
+
+  /**
+   * Execute a {@link com.stratio.meta.core.statements.MetaStatement} command.
+   *
+   * @param stmt Statement to execute.
+   * @param session Cassandra datastax java driver {@link com.datastax.driver.core.Session}.
+   * @return a {@link com.stratio.meta.common.result.Result}.
+   */
+  /*
   public static Result execute(MetaStatement stmt, Session session) {
     try {
       if (stmt instanceof DescribeStatement) {
@@ -116,14 +137,16 @@ public class CommandExecutor {
     }
 
   }
+  */
 
-
+  /*
   private static Result executeExplainPlan(ExplainPlanStatement stmt, Session session) {
     return CommandResult.createCommandResult(
         stmt.getMetaStatement()
             .getPlan(new MetadataManager(session, null), stmt.getMetaStatement().getEffectiveKeyspace())
             .toStringDownTop());
   }
+  */
 
   /**
    * Execute a {@link com.stratio.meta.core.statements.DescribeStatement}.
@@ -132,6 +155,7 @@ public class CommandExecutor {
    * @param session Cassandra datastax java driver {@link com.datastax.driver.core.Session}.
    * @return a {@link com.stratio.meta.common.result.Result}.
    */
+  /*
   private static Result executeDescribe(DescribeStatement dscrStatement, Session session) {
     MetadataManager mm = new MetadataManager(session, null);
     mm.loadMetadata();
@@ -161,5 +185,6 @@ public class CommandExecutor {
     }
     return result;
   }
+  */
 
 }

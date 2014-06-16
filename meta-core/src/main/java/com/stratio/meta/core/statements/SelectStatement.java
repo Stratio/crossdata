@@ -1720,9 +1720,10 @@ public class SelectStatement extends MetaStatement {
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
 
-    if(metadataManager.checkStream(getEffectiveKeyspace()+"_"+tableName)) {
+    //TODO: (Streaming)
+    /*if(metadataManager.checkStream(getEffectiveKeyspace()+"_"+tableName)) {
       steps.setNode(new MetaStep(MetaPath.STREAMING, this));
-    } else if (groupInc || orderInc) {
+    } else*/ if (groupInc || orderInc) {
       steps.setNode(new MetaStep(MetaPath.DEEP, this));
     } else if (joinInc) {
       steps = getJoinPlan();
