@@ -254,12 +254,9 @@ public class CreateTableStatement extends MetaStatement {
   public Result validate(MetadataManager metadata) {
     Result result = validateKeyspaceAndTable(metadata);
 
-    //TODO: (Streaming)
-    /*
     if (!result.hasError()){
       result=validateEphimeral(metadata);
     }
-    */
 
     if(!result.hasError()){
       result = validateColumns();

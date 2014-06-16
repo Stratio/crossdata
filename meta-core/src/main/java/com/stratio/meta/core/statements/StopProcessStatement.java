@@ -19,6 +19,7 @@
 
 package com.stratio.meta.core.statements;
 
+import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -27,6 +28,7 @@ import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
+import com.stratio.streaming.commons.exceptions.StratioStreamingException;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
 
@@ -47,6 +49,7 @@ public class StopProcessStatement extends MetaStatement {
   public String getIdent() {
     return ident;
   }
+
   public String getStream() {
     String StreamName="";
     try {
@@ -108,5 +111,14 @@ public class StopProcessStatement extends MetaStatement {
       t.printStackTrace();
     }
     return result;
+  }
+
+  public Result execute(IStratioStreamingAPI stratioStreamingAPI) {
+    try {
+      stratioStreamingAPI.removeQuery(getStream(), ident);
+    } catch(StratioStreamingException ssEx) {
+      return Result.createExecutionErrorResult("Cannot remove process"+ident);
+    }
+    return CommandResult.createCommandResult(ident + "removed.");
   }
 }

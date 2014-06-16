@@ -167,7 +167,7 @@ public class Tree {
     MetaStep myStep = node;
     MetaPath myPath = myStep.getPath();
     if(myPath == MetaPath.COMMAND){
-      result = CommandExecutor.execute(myStep.getStmt(), session);
+      result = CommandExecutor.execute(myStep.getStmt(), session, stratioStreamingAPI);
     } else if(myPath == MetaPath.CASSANDRA){
       result = CassandraExecutor.execute(myStep, session);
     } else if(myPath == MetaPath.DEEP){
