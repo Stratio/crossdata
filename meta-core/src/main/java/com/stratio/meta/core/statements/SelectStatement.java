@@ -660,7 +660,8 @@ public class SelectStatement extends MetaStatement {
             validateWhereSingleColumnRelation(targetTable, column, relation.getTerms(), relation);
         if ("match".equalsIgnoreCase(relation.getOperator()) && joinInc) {
           result =
-              Result.createValidationErrorResult("Select statements with 'Inner Join' don't support MATCH operator.");
+              Result
+                  .createValidationErrorResult("Select statements with 'Inner Join' don't support MATCH operator.");
         }
       } else if (Relation.TYPE_TOKEN == relation.getType()) {
         // TODO: Check TOKEN relation
@@ -851,7 +852,8 @@ public class SelectStatement extends MetaStatement {
               }
             } else {
               result =
-                  Result.createValidationErrorResult("Nested functions on selected fields not supported.");
+                  Result
+                      .createValidationErrorResult("Nested functions on selected fields not supported.");
             }
           }
         } else {
@@ -887,7 +889,7 @@ public class SelectStatement extends MetaStatement {
         if (Relation.TYPE_COMPARE == relation.getType()
             && "MATCH".equalsIgnoreCase(relation.getOperator())) {
           RelationCompare rc = RelationCompare.class.cast(relation);
-          //String column = rc.getIdentifiers().get(0).toString();
+          // String column = rc.getIdentifiers().get(0).toString();
           String column = rc.getIdentifiers().get(0).getField();
           String value = rc.getTerms().get(0).toString();
           // Generate query for column
@@ -1688,15 +1690,16 @@ public class SelectStatement extends MetaStatement {
     selectionClause.addTablename(tableName);
   }
 
-  public void replaceAliasesWithName() {
+  public void replaceAliasesWithName(Map<String, String> fieldsAliasesMap,
+      Map<String, String> tablesAliasesMap) {
 
-    Map<String, String> aliasesMap = retrieveAliasesMap(this.getSelectionClause());
+    // Map<String, String> aliasesMap = retrieveAliasesMap(this.getSelectionClause());
 
     // Replacing alias in WHERE clause
     if (this.where != null) {
       for (Relation whereCol : this.where) {
         for (SelectorIdentifier id : whereCol.getIdentifiers()) {
-          String identifier = aliasesMap.get(id.toString());
+          String identifier = fieldsAliasesMap.get(id.toString());
           if (identifier != null) {
             id.setIdentifier(identifier);
           }
@@ -1707,7 +1710,7 @@ public class SelectStatement extends MetaStatement {
     // Replacing alias in GROUP BY clause
     if (this.group != null) {
       for (GroupBy groupByCol : this.group) {
-        String identifier = aliasesMap.get(groupByCol.getSelectorIdentifier().toString());
+        String identifier = fieldsAliasesMap.get(groupByCol.getSelectorIdentifier().toString());
         if (identifier != null) {
           groupByCol.getSelectorIdentifier().setIdentifier(identifier);
         }
@@ -1717,7 +1720,7 @@ public class SelectStatement extends MetaStatement {
     // Replacing alias in ORDER BY clause
     if (this.order != null) {
       for (Ordering orderBycol : this.order) {
-        String identifier = aliasesMap.get(orderBycol.getSelectorIdentifier().toString());
+        String identifier = fieldsAliasesMap.get(orderBycol.getSelectorIdentifier().toString());
         if (identifier != null) {
           orderBycol.getSelectorIdentifier().setIdentifier(identifier);
         }

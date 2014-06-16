@@ -447,10 +447,12 @@ selectStatement returns [SelectStatement slctst]
         boolean groupInc = false;
         boolean limitInc = false;
         boolean disable = false;
+        Map fieldsAliasesMap = new HashMap<String, String>();
+        Map tablesAliasesMap = new HashMap<String, String>();
     }:
-    T_SELECT selClause=getSelectClause T_FROM tablename=getTableID 
+    T_SELECT selClause=getSelectClause[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?    
-    (T_INNER T_JOIN { joinInc = true;} identJoin=getTableID T_ON fields=getFields)?
+    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON fields=getFields)?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses)?
     (T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
     (T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
@@ -473,7 +475,7 @@ selectStatement returns [SelectStatement slctst]
         if(disable)
             $slctst.setDisableAnalytics(true);
             
-        $slctst.replaceAliasesWithName();
+        $slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
         $slctst.updateTableNames();
     };
 
@@ -747,9 +749,9 @@ getTimeUnit returns [TimeUnit unit]:
     )
 ;
 
-getSelectClause returns [SelectionClause sc]:
+getSelectClause[Map fieldsAliasesMap] returns [SelectionClause sc]:
     scc=getSelectionCount {$sc = scc;}
-    | scl=getSelectionList {$sc = scl;}
+    | scl=getSelectionList[fieldsAliasesMap] {$sc = scl;}
 ;
 
 getSelectionCount returns [SelectionCount scc]
@@ -772,23 +774,23 @@ getCountSymbol returns [String str]:
     | '1' {$str = new String("1");}
     ;
 
-getSelectionList returns [SelectionList scl]
+getSelectionList[Map fieldsAliasesMap] returns [SelectionList scl]
     @init{
         boolean distinct = false;
     }:
-    (T_DISTINCT {distinct = true;})? selections=getSelection
+    (T_DISTINCT {distinct = true;})? selections=getSelection[fieldsAliasesMap]
     { $scl = new SelectionList(distinct, selections);}
 ;
 
-getSelection returns [Selection slct]
+getSelection[Map fieldsAliasesMap] returns [Selection slct]
     @init{
         SelectionSelector slsl;
         ArrayList<SelectionSelector> selections = new ArrayList<>();
     }:
     (
         T_ASTERISK { $slct = new SelectionAsterisk();}       
-        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS alias1=getAlias {slsl.setAlias($alias1.text);})? {selections.add(slsl);}
-            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS aliasN=getAlias {slsl.setAlias($aliasN.text);})? {selections.add(slsl);})*
+        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS alias1=getAlias {slsl.setAlias($alias1.text); fieldsAliasesMap.put($alias1.text, selector1);})? {selections.add(slsl);}
+            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS aliasN=getAlias {slsl.setAlias($aliasN.text); fieldsAliasesMap.put($aliasN.text, selectorN);})? {selections.add(slsl);})*
             { $slct = new SelectionSelectors(selections);}
     )
 ;
@@ -944,10 +946,12 @@ getTermOrLiteral returns [ValueCell vc]
     T_END_SBRACKET {$vc=cl;}
 ;
 
-getTableID returns [String tableID]
-    @init{
-        $tableID="";
-    }: 
+getAliasedTableID[Map tablesAliasesMap] returns [String tableID]:
+	(ident1=T_IDENT {$tableID = new String($ident1.text);}    
+    | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);}) (alias=T_IDENT {tablesAliasesMap.put($alias.text, $tableID);})?
+    ;
+    
+getTableID returns [String tableID]:
     (ident1=T_IDENT {$tableID = new String($ident1.text);}    
     | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);})
     ;
