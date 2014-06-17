@@ -23,10 +23,23 @@ import com.stratio.meta.core.validator.BasicValidatorTest;
 
 public class ListStatementTest extends BasicValidatorTest {
 
-  //TODO: (Streaming)
+
+    //@Test
+    public void validateOk(){
+        String inputText = "LIST PROCESS;";
+      validateOk(inputText, "validateNotSupported");
+    }
   //@Test
-  public void validateNotSupported(){
-    String inputText = "LIST PROCESS;";
-    validateFail(inputText, "validateNotSupported");
+  public void validateNotSopportedTriggerYet(){
+
+    String inputText = "LIST TRIGGER;";
+    validateFail(inputText, "NotSupportTriggerYet");
   }
+  //@Test
+  public void validateNotSopportedUdfYet(){
+
+    String inputText = "LIST UDF;";
+    validateFail(inputText, "NotSupportUdfYet");
+
+}
 }

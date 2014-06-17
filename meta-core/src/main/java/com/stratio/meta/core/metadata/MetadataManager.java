@@ -21,10 +21,13 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.api.StratioStreamingAPIFactory;
 import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
+import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
 
 import org.apache.log4j.Logger;
@@ -265,5 +268,26 @@ public class MetadataManager {
       t.printStackTrace();
     }
     return colNames;
+  }
+
+  public StratioStream checkQuery (String s){
+
+    StratioStream result= null;
+    try{
+
+    List<StratioStream> streamsList = stratioStreamingAPI.listStreams();
+    for (StratioStream stream : streamsList) {
+      if (stream.getQueries().size() > 0) {
+        for (StreamQuery query : stream.getQueries()) {
+          if (s.contentEquals(query.getQueryId())){
+            result = stream;
+          }
+        }
+      }
+    }
+  } catch (Throwable t) {
+    t.printStackTrace();
+  }
+    return result;
   }
 }

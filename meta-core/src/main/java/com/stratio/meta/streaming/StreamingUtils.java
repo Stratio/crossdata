@@ -63,18 +63,18 @@ public class StreamingUtils {
     return type;
   }
 
-  public static void insertRandomData(final IStratioStreamingAPI stratioStreamingAPI, final String streamName, final long duration) {
+  public static void insertRandomData(final IStratioStreamingAPI stratioStreamingAPI, final String streamName, final long duration, final int nRows) {
     // Insert random data
     Thread randomThread = new Thread(){
       public void run(){
         try {
-          Thread.sleep((long) (duration/1.9));
+          Thread.sleep((long) (duration/2));
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
         for(int i=0; i<1; i++){
           LOG.debug("Inserting data");
-          for(int j=0; j<4; j++){
+          for(int j=0; j<nRows; j++){
             insertRandomData(stratioStreamingAPI, streamName);
           }
           LOG.debug("Data inserted");
@@ -122,7 +122,7 @@ public class StreamingUtils {
       socket.close();
       return port;
     } catch (IOException e) {
-      throw new IllegalStateException("Could not find a free TCP/IP port to start embedded Jetty HTTP Server on");
+      throw new IllegalStateException("Could not find a free port.");
     }
   }
 
