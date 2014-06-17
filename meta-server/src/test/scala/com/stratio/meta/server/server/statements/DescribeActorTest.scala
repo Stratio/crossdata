@@ -24,7 +24,7 @@ import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
 import com.stratio.meta.server.utilities.{createEngine, TestKitUsageSpec}
 import org.scalatest.FunSuiteLike
-import com.stratio.meta.server.config.BeforeAndAfterCassandra
+import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.server.actors.ServerActor
 import org.testng.Assert._
@@ -35,8 +35,7 @@ import akka.pattern.ask
 import scala.concurrent.duration._
 import com.stratio.meta.communication.ACK
 
-class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-                                with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
+class DescribeActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
   lazy val engine:Engine =  createEngine.create()
 
@@ -46,11 +45,8 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
     val stmt = Query("describe", keyspace, query, "test_actor")
 
     serverRef ! stmt
-    if(shouldExecute) {
-      expectMsgClass(classOf[ACK])
-    }
-    val result = expectMsgClass(classOf[Result])
-
+    val result = receiveActorMessages(shouldExecute, false, !shouldExecute)
+  
     if(shouldExecute) {
       assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
         + "\n error: " + getErrorMessage(result))
@@ -68,7 +64,7 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
 
   test ("describe keyspace system"){
     val query = "describe keyspace system;"
-    within(5000 millis){
+    within(7000 millis){
       val result = executeStatement(query, "", true)
       assertNotNull(result, "Cannot describe keyspace system")
     }
@@ -76,7 +72,7 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
 
   test ("describe table system.schema_columns"){
     val query = "describe table system.schema_columns;"
-    within(5000 millis){
+    within(7000 millis){
       val result = executeStatement(query, "", true)
       assertNotNull(result, "Cannot describe table system.schema_columns")
     }
@@ -84,7 +80,7 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
 
   test ("describe table schema_columns on keyspace system"){
     val query = "describe table schema_columns;"
-    within(5000 millis){
+    within(7000 millis){
       val result = executeStatement(query, "system", true)
       assertNotNull(result, "Cannot describe schema_columns on keyspace system")
     }
@@ -92,14 +88,14 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
 
   test ("describe keyspace unknown should fail"){
     val query = "describe keyspace unknown;"
-    within(5000 millis){
+    within(7000 millis){
       val result = executeStatement(query, "", false)
     }
   }
 
   test ("describe table schema_columns on unknown keyspace should fail"){
     val query = "describe table unknown.schema_columns;"
-    within(5000 millis){
+    within(7000 millis){
       val result = executeStatement(query, "", false)
     }
   }
