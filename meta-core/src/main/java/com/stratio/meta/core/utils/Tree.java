@@ -63,6 +63,12 @@ public class Tree {
   private List<Tree> children = null;
 
   /**
+   * Variable that determines whether any child of the tree, or the node itself contains a
+   * streaming query.
+   */
+  private boolean involvesStreaming = false;
+
+  /**
    * Class constructor.
    */
   public Tree() {
@@ -223,4 +229,19 @@ public class Tree {
     return children;
   }
 
+  /**
+   * Set whether any child of the tree, or the node itself involves Streaming.
+   * @param involvesStreaming The boolean value.
+   */
+  public void setInvolvesStreaming(boolean involvesStreaming) {
+    this.involvesStreaming = involvesStreaming;
+  }
+
+  /**
+   * Whether any child of the tree, or the node itself involves Streaming.
+   * @return The boolean value.
+   */
+  public boolean involvesStreaming() {
+    return involvesStreaming;
+  }
 }

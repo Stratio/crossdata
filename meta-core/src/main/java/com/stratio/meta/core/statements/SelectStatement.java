@@ -1738,9 +1738,9 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-
     if(metadataManager.checkStream(getEffectiveKeyspace()+"_"+tableName)) {
       steps.setNode(new MetaStep(MetaPath.STREAMING, this));
+      steps.setInvolvesStreaming(true);
     } else if (groupInc || orderInc) {
       steps.setNode(new MetaStep(MetaPath.DEEP, this));
     } else if (joinInc) {
