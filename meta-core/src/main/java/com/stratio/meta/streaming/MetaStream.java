@@ -109,10 +109,7 @@ public class MetaStream {
     JavaSparkContext sparkContext = new JavaSparkContext(config.getSparkMaster(), "MetaStreaming");
     LOG.info("Creating new JavaStreamingContext.");
     JavaStreamingContext jssc = null;
-    int i = 1;
     while(jssc == null){
-      System.out.println("TRACE: Try "+i);
-      i++;
       try {
         jssc = new JavaStreamingContext(
             sparkContext.getConf()
