@@ -176,9 +176,9 @@ public class AlterTableStatement extends MetaStatement{
         Result result = QueryResult.createSuccessQueryResult();
         //Validate target column name
         if(!existsColumn(tableMetadata)){
-            result = QueryResult.createFailQueryResult("Column '"+this.column+"' not found.");
+            result = Result.createValidationErrorResult("Column '"+this.column+"' not found.");
         } else if(!existsType(tableMetadata)){ //Validate type
-            result = QueryResult.createFailQueryResult("Type '"+this.type+"' not found.");
+            result = Result.createValidationErrorResult("Type '"+this.type+"' not found.");
         }
         // TODO: validate that conversion is compatible as for current type and target type
         return result;
@@ -188,9 +188,9 @@ public class AlterTableStatement extends MetaStatement{
         Result result = QueryResult.createSuccessQueryResult();
         //Validate target column name
         if(existsColumn(tableMetadata)){
-            result = QueryResult.createFailQueryResult("Column '"+this.column+"' already exists.");
+            result = Result.createValidationErrorResult("Column '"+this.column+"' already exists.");
         } else if(!existsType(tableMetadata)){ //Validate type
-            result = QueryResult.createFailQueryResult("Type '"+this.type+"' not found.");
+            result = Result.createValidationErrorResult("Type '"+this.type+"' not found.");
         }
         return result;
     }
@@ -199,7 +199,7 @@ public class AlterTableStatement extends MetaStatement{
         Result result = QueryResult.createSuccessQueryResult();
         //Validate target column name
         if(!existsColumn(tableMetadata)){
-            result = QueryResult.createFailQueryResult("Column '"+this.column+"' not found.");
+            result = Result.createValidationErrorResult("Column '"+this.column+"' not found.");
         }
         return result;
     }
@@ -215,17 +215,17 @@ public class AlterTableStatement extends MetaStatement{
                 if("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
                         && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
                     // If property ephemeral is present, it must be a boolean type
-                    result = QueryResult.createFailQueryResult("Property 'ephemeral' must be a boolean");
+                    result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
                     exit = true;
                 } else if("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
                         && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
                     // If property ephemeral_tuples is present, it must be a integer type
-                    result= QueryResult.createFailQueryResult("Property 'ephemeral' must be a boolean");
+                    result= Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
                     exit = true;
                 } else if("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
                         && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
                     // If property ephemeral_persist_on is present, it must be a string type
-                    result= QueryResult.createFailQueryResult("Property 'ephemeral_persist_on' must be a string");
+                    result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
                     exit = true;
                 }
             }

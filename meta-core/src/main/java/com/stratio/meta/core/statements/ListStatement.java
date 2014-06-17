@@ -19,6 +19,7 @@
 
 package com.stratio.meta.core.statements;
 
+import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -26,13 +27,22 @@ import com.stratio.meta.core.structures.ListType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
+import com.stratio.streaming.commons.messages.StreamQuery;
+import com.stratio.streaming.commons.streams.StratioStream;
+
+import org.apache.log4j.Logger;
+
+import java.util.List;
 
 /**
  * Class that models a {@code LIST} statement from the META language.
  */
 public class ListStatement extends MetaStatement {
 
-    /**
+  private static final Logger LOG = Logger.getLogger(ListStatement.class);
+  /**
      * The {@link com.stratio.meta.core.structures.ListType} to be executed.
      */
     private ListType type = null;
@@ -64,11 +74,34 @@ public class ListStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata) {
 
-    QueryResult result = QueryResult.createSuccessQueryResult();
+    Result result = QueryResult.createSuccessQueryResult();
     if (type.equals(ListType.TRIGGER)||type.equals(ListType.UDF)){
-      result= QueryResult.createFailQueryResult("UDF and TRIGGER not supported yet");
+      result= Result.createValidationErrorResult("UDF and TRIGGER not supported yet");
     }
 
     return result;
+  }
+
+  public Result execute(IStratioStreamingAPI stratioStreamingAPI) {
+    List<StratioStream> streamsList = null;
+    try {
+      streamsList = stratioStreamingAPI.listStreams();
+    } catch (StratioEngineStatusException e) {
+      return Result.createExecutionErrorResult("Cannot retrieve streams");
+    }
+    LOG.debug("Number of streams: " + streamsList.size());
+    StringBuilder sb = new StringBuilder();
+    for (StratioStream stream : streamsList) {
+      LOG.debug("--> Stream Name: " + stream.getStreamName());
+      if (stream.getQueries().size() > 0) {
+        for (StreamQuery query : stream.getQueries()) {
+          sb.append(query.getQueryId());
+          sb.append(", ").append(stream.getStreamName());
+          sb.append(", ").append(query.getQuery()).append(System.lineSeparator());
+          LOG.debug("Query: " + query.getQuery());
+        }
+      }
+    }
+    return CommandResult.createCommandResult(sb.toString());
   }
 }

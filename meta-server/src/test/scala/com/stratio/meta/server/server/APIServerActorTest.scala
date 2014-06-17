@@ -20,8 +20,8 @@
 package com.stratio.meta.server.server
 
 import com.stratio.meta.common.ask.{APICommand, Command}
-import com.stratio.meta.common.result.MetadataResult
-import akka.testkit.{DefaultTimeout, TestKit}
+import com.stratio.meta.common.result.{Result, MetadataResult}
+import akka.testkit.{ImplicitSender, DefaultTimeout, TestKit}
 import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
 import com.stratio.meta.server.utilities.{createEngine, TestKitUsageSpec}
@@ -33,16 +33,13 @@ import org.testng.Assert._
 import scala.concurrent.{Await, Future}
 import akka.pattern.ask
 import scala.concurrent.duration._
-import scala.collection.JavaConversions._
-import com.stratio.meta.common.metadata.structures.TableMetadata
 import scala.collection.mutable.ListBuffer
 
 /**
  * To generate unit test of query actor
  */
 class APIServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
-{
+                                 with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra{
 
   lazy val engine:Engine =  createEngine.create()
 
@@ -69,19 +66,21 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
     }
 
     var result : MetadataResult = null
+    var returned : Any = null
     try{
-      val r = Await.result(futureExecutorResponse, 3 seconds)
-      result = r.asInstanceOf[MetadataResult]
+      returned = Await.result(futureExecutorResponse, 3 seconds)
     }catch{
       case ex:Exception =>
         fail("Cannot execute API command: " + cmd.toString + " Exception: " + ex.getMessage)
     }
 
     if(shouldExecute) {
-      assertFalse(result.hasError,
-        "API execution failed for:\n" + cmd.toString + "\n error: " + result.getErrorMessage)
+      assertFalse(returned.asInstanceOf[Result].hasError,
+        "API execution failed for:\n" + cmd.toString
+        + "\n error: " + getErrorMessage(returned.asInstanceOf[Result]))
+      result = returned.asInstanceOf[MetadataResult]
     }else{
-      assertTrue(result.hasError, "API execution should report an error")
+      assertTrue(returned.asInstanceOf[Result].hasError, "API execution should report an error")
     }
 
     result
@@ -100,7 +99,7 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
 
   test ("API List tables"){
     var params : java.util.List[String] = new java.util.ArrayList[String]
-    params.add("demo")
+    params.add("demo_server")
     val cmd: Command = new Command(APICommand.LIST_TABLES, params)
     var result : MetadataResult = null
     within(5000 millis){
@@ -118,6 +117,16 @@ with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra
     toCheck.foreach(
       table => assertTrue(retrieved.contains(table), "Cannot find table " + table))
 
+  }
+
+  test ("API List tables from unknown catalog"){
+    var params : java.util.List[String] = new java.util.ArrayList[String]
+    params.add("unknown")
+    val cmd: Command = new Command(APICommand.LIST_TABLES, params)
+    var result : MetadataResult = null
+    within(5000 millis){
+      result = executeAPICommand(cmd, false)
+    }
   }
 
 }

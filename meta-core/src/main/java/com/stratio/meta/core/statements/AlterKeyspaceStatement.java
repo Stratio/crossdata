@@ -78,15 +78,15 @@ public class AlterKeyspaceStatement extends MetaStatement {
         if(keyspace!= null && keyspace.length() > 0) {
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspace);
             if(ksMetadata == null){
-                result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " not found.");
+                result= Result.createValidationErrorResult("Keyspace " + keyspace + " not found.");
             }
         } else {
-            result= QueryResult.createFailQueryResult("Empty keyspace name found.");
+            result= Result.createValidationErrorResult("Empty keyspace name found.");
         }
 
         if(properties.isEmpty() || (!properties.containsKey("replication")
                                     & !properties.containsKey("durable_writes"))){
-            result= QueryResult.createFailQueryResult("At least one property must be included: 'replication' or 'durable_writes'.");
+            result= Result.createValidationErrorResult("At least one property must be included: 'replication' or 'durable_writes'.");
         }
 
         return result;

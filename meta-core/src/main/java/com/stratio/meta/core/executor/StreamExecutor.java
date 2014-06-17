@@ -1,5 +1,6 @@
 /*
  * Stratio Meta
+<<<<<<< HEAD
  *
  * Copyright (c) 2014, Stratio, All rights reserved.
  *
@@ -20,8 +21,8 @@
 package com.stratio.meta.core.executor;
 
 import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.CreateTableStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
@@ -35,14 +36,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
 public class StreamExecutor {
 
   public StreamExecutor() {
 
   }
 
-  public static Result execute(MetaStatement stmt, IStratioStreamingAPI stratioStreamingAPI) {
+  public static Result execute(MetaStatement stmt, IStratioStreamingAPI stratioStreamingAPI, EngineConfig config) {
     if (stmt instanceof CreateTableStatement) {
       CreateTableStatement cts= (CreateTableStatement) stmt;
       String tableEphemeralName= cts.getEffectiveKeyspace()+"_"+cts.getTableName() ;
@@ -52,15 +52,14 @@ public class StreamExecutor {
         ColumnNameType streamColumn = new ColumnNameType(column.getKey(), type);
         columnList.add(streamColumn);
       }
-      return MetaStream.createStream(stratioStreamingAPI, tableEphemeralName, columnList);
+      return MetaStream.createStream(stratioStreamingAPI, tableEphemeralName, columnList, config);
     } else if (stmt instanceof SelectStatement){
       SelectStatement ss = (SelectStatement) stmt;
-      String resultStream = MetaStream.listenStream(stratioStreamingAPI, ss);
-      return CommandResult.createSuccessCommandResult(resultStream);
+      String resultStream = MetaStream.listenStream(stratioStreamingAPI, ss, config);
+      return CommandResult.createCommandResult(resultStream);
     } else {
-      return QueryResult.createFailQueryResult("Not supported yet.");
+      return Result.createExecutionErrorResult("Not supported yet.");
     }
   }
 
 }
-

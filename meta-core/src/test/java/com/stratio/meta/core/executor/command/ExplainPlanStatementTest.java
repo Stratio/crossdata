@@ -20,6 +20,7 @@
 package com.stratio.meta.core.executor.command;
 
 import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.executor.BasicExecutorTest;
 import com.stratio.meta.core.statements.DropKeyspaceStatement;
@@ -51,9 +52,7 @@ public class ExplainPlanStatementTest extends BasicExecutorTest {
 
         String expectedPlan = "(CASSANDRA) Drop keyspace demo";
 
-        CommandResult cr = (CommandResult) result;
-
-        String resultPlan = String.valueOf(cr.getResult());
+        String resultPlan = String.class.cast(((CommandResult) result).getResult());
 
         assertEquals(expectedPlan, resultPlan, "  RESULT PLAN: "+resultPlan+System.lineSeparator()+"EXPECTED PLAN: "+expectedPlan);
     }

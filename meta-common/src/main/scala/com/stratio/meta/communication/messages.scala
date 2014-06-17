@@ -19,7 +19,9 @@
 
 package com.stratio.meta.communication
 
-case class ACK(msg:String)
+import com.stratio.meta.common.result.QueryStatus
+
+case class ACK(queryId:String, status:QueryStatus)
 
 case class Connect(msg:String)
 

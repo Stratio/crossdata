@@ -23,6 +23,7 @@ import akka.actor.{Props, Actor, ActorLogging}
 import com.stratio.meta.core.utils.MetaQuery
 import com.stratio.meta.core.executor.Executor
 import org.apache.log4j.Logger
+import com.stratio.meta.common.result.{Result, QueryResult}
 
 object ExecutorActor{
   def props(executor:Executor): Props = Props(new ExecutorActor(executor))
@@ -43,6 +44,9 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker{
     }
     case query:MetaQuery if query.hasError=>{
       sender ! query.getResult
+    }
+    case _ => {
+      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
     }
   }
 }

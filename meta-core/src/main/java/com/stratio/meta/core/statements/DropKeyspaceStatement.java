@@ -63,7 +63,7 @@ public class DropKeyspaceStatement extends MetaStatement {
         Result result = QueryResult.createSuccessQueryResult();
         KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspace);
         if(ksMetadata == null && !ifExists){
-            result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " does not exist.");
+            result = Result.createValidationErrorResult("Keyspace " + keyspace + " does not exist.");
         }
         return result;
     }

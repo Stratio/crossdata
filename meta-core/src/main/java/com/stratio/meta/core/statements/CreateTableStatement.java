@@ -1,20 +1,17 @@
 /*
  * Stratio Meta
- *
+ * 
  * Copyright (c) 2014, Stratio, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation; either version
+ * 3.0 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
 package com.stratio.meta.core.statements;
@@ -44,7 +41,7 @@ import java.util.Set;
 /**
  * Class that models a {@code CREATE TABLE} statement of the META language.
  */
-public class CreateTableStatement extends MetaStatement{
+public class CreateTableStatement extends MetaStatement {
 
 
   /**
@@ -75,10 +72,10 @@ public class CreateTableStatement extends MetaStatement{
   /**
    * The type of primary key. Accepted values are:
    * <ul>
-   *     <li>1: If the primary key contains a single column.</li>
-   *     <li>2: If the primary key is composed of several columns but it does not
-   *     contain a clustering key.</li>
-   *     <li>3: If both the primary key and clustering key are specified.</li>
+   * <li>1: If the primary key contains a single column.</li>
+   * <li>2: If the primary key is composed of several columns but it does not contain a clustering
+   * key.</li>
+   * <li>3: If both the primary key and clustering key are specified.</li>
    * </ul>
    */
   private int primaryKeyType;
@@ -98,8 +95,8 @@ public class CreateTableStatement extends MetaStatement{
   private boolean createTable = false;
 
   /**
-   * The number of the column associated with the primary key. This
-   * value is only used if the type of primary key is {@code 1}.
+   * The number of the column associated with the primary key. This value is only used if the type
+   * of primary key is {@code 1}.
    */
   private int columnNumberPK;
 
@@ -110,27 +107,24 @@ public class CreateTableStatement extends MetaStatement{
 
   /**
    * Class constructor.
+   *
    * @param tableName The name of the table.
    * @param columns A map with the name of the columns in the table and the associated data type.
    * @param primaryKey The list of columns that are part of the primary key.
    * @param clusterKey The list of columns that are part of the clustering key.
    * @param primaryKeyType The type of primary key.
-   * @param columnNumberPK The number of the column associated with the primary key. This
-   * value is only used if the type of primary key is {@code 1}.
+   * @param columnNumberPK The number of the column associated with the primary key. This value is
+   *        only used if the type of primary key is {@code 1}.
    */
-  public CreateTableStatement(String tableName,
-                              Map<String, String> columns,
-                              List<String> primaryKey,
-                              List<String> clusterKey,
-                              int primaryKeyType,
-                              int columnNumberPK) {
+  public CreateTableStatement(String tableName, Map<String, String> columns,
+                              List<String> primaryKey, List<String> clusterKey, int primaryKeyType, int columnNumberPK) {
     this.command = false;
-    if(tableName.contains(".")){
+    if (tableName.contains(".")) {
       String[] ksAndTablename = tableName.split("\\.");
       keyspace = ksAndTablename[0];
       this.tableName = ksAndTablename[1];
       keyspaceInc = true;
-    }else {
+    } else {
       this.tableName = tableName;
     }
     this.columns = columns;
@@ -150,6 +144,7 @@ public class CreateTableStatement extends MetaStatement{
 
   /**
    * Set the keyspace specified in the create table statement.
+   *
    * @param keyspace The name of the keyspace.
    */
   public void setKeyspace(String keyspace) {
@@ -158,58 +153,64 @@ public class CreateTableStatement extends MetaStatement{
 
   /**
    * Set the list of {@link com.stratio.meta.core.structures.Property}.
+   *
    * @param properties The list.
    */
   public void setProperties(List<Property> properties) {
     this.properties = properties;
+    if ((properties == null) || properties.isEmpty()) {
+      withProperties = false;
+    } else {
+      withProperties = true;
+    }
   }
 
-  public void setIfNotExists(boolean ifNotExists){
+  public void setIfNotExists(boolean ifNotExists) {
     this.ifNotExists = ifNotExists;
   }
 
-  public void setWithProperties(boolean withProperties){
+  public void setWithProperties(boolean withProperties) {
     this.withProperties = withProperties;
   }
 
-  public String getSinglePKString(){
+  public String getSinglePKString() {
     StringBuilder sb = new StringBuilder(" (");
     Set<String> keySet = columns.keySet();
     int i = 0;
-    for (Iterator<String> it = keySet.iterator();it.hasNext();){
+    for (Iterator<String> it = keySet.iterator(); it.hasNext();) {
       String key = it.next();
-      String vp= columns.get(key);
+      String vp = columns.get(key);
       sb.append(key).append(" ").append(vp);
-      if (i == columnNumberPK){
+      if (i == columnNumberPK) {
         sb.append(" PRIMARY KEY");
       }
       i++;
-      if (it.hasNext()){
+      if (it.hasNext()) {
         sb.append(", ");
-      }else{
+      } else {
         sb.append(")");
       }
     }
     return sb.toString();
   }
 
-  public String getCompositePKString(){
+  public String getCompositePKString() {
     StringBuilder sb = new StringBuilder("PRIMARY KEY (");
-    if(primaryKeyType == PRIMARY_AND_CLUSTERING_SPECIFIED){
+    if (primaryKeyType == PRIMARY_AND_CLUSTERING_SPECIFIED) {
       sb.append("(");
     }
 
     Iterator<String> pks = primaryKey.iterator();
-    while(pks.hasNext()){
+    while (pks.hasNext()) {
       sb.append(pks.next());
-      if(pks.hasNext()){
+      if (pks.hasNext()) {
         sb.append(", ");
       }
     }
 
-    if(primaryKeyType == PRIMARY_AND_CLUSTERING_SPECIFIED){
+    if (primaryKeyType == PRIMARY_AND_CLUSTERING_SPECIFIED) {
       sb.append(")");
-      for(String key : clusterKey){
+      for (String key : clusterKey) {
         sb.append(", ").append(key);
       }
     }
@@ -221,18 +222,18 @@ public class CreateTableStatement extends MetaStatement{
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("Create table ");
-    if(ifNotExists) {
+    if (ifNotExists) {
       sb.append("IF NOT EXISTS ");
     }
 
-    if(keyspaceInc){
+    if (keyspaceInc) {
       sb.append(keyspace).append(".");
     }
     sb.append(tableName);
 
-    if(primaryKeyType == PRIMARY_SINGLE){
+    if (primaryKeyType == PRIMARY_SINGLE) {
       sb.append(getSinglePKString());
-    }else{
+    } else {
       Set<String> keySet = columns.keySet();
       sb.append(" (");
       for (String key : keySet) {
@@ -242,7 +243,7 @@ public class CreateTableStatement extends MetaStatement{
       sb.append(getCompositePKString());
     }
 
-    if(withProperties){
+    if (withProperties) {
       sb.append(" WITH ").append(ParserUtils.stringList(properties, " AND "));
     }
     return sb.toString();
@@ -252,13 +253,15 @@ public class CreateTableStatement extends MetaStatement{
   @Override
   public Result validate(MetadataManager metadata) {
     Result result = validateKeyspaceAndTable(metadata);
+
     if (!result.hasError()){
       result=validateEphimeral(metadata);
     }
+
     if(!result.hasError()){
       result = validateColumns();
     }
-    if(!result.hasError() && withProperties) {
+    if (!result.hasError() && withProperties) {
       result = validateProperties();
     }
     return result;
@@ -268,7 +271,7 @@ public class CreateTableStatement extends MetaStatement{
     Result result = QueryResult.createSuccessQueryResult();
     createTable = true;
     if (metadata.checkStream(getEffectiveKeyspace()+"."+tableName)){
-      result= QueryResult.createFailQueryResult(tableName+ " already exists in keyspace "+getEffectiveKeyspace());
+      result= Result.createValidationErrorResult(tableName+ " already exists in keyspace "+getEffectiveKeyspace());
       createTable = false;
     }
     return result;
@@ -289,15 +292,15 @@ public class CreateTableStatement extends MetaStatement{
 
     //Check that the keyspace exists, and that the table does not exits.
     if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-      result= QueryResult.createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
+      result = Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
     }else{
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if(ksMetadata == null){
-        result= QueryResult.createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exist.");
+        result = Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
       }else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata != null && !ifNotExists) {
-          result= QueryResult.createFailQueryResult("Table " + tableName + " already exists.");
+          result = Result.createValidationErrorResult("Table " + tableName + " already exists.");
         } else if (tableMetadata == null){
           createTable = true;
         }
@@ -317,17 +320,17 @@ public class CreateTableStatement extends MetaStatement{
     //The columns in the primary key must be declared.
     for (String pk : primaryKey) {
       if(!columns.containsKey(pk)){
-        result= QueryResult.createFailQueryResult("Missing declaration for Primary Key column " + pk);
+        result= Result.createValidationErrorResult("Missing declaration for Primary Key column " + pk);
       }
     }
 
     //The columns in the clustering key must be declared and not part of the primary key.
     for(String ck : clusterKey){
       if(!columns.containsKey(ck)){
-        result= QueryResult.createFailQueryResult("Missing declaration for Clustering Key column " + ck);
+        result= Result.createValidationErrorResult("Missing declaration for Clustering Key column " + ck);
       }
       if(primaryKey.contains(ck)){
-        result= QueryResult.createFailQueryResult("Column " + ck + " found as part of primary and clustering key.");
+        result= Result.createValidationErrorResult("Column " + ck + " found as part of primary and clustering key.");
       }
     }
 
@@ -335,7 +338,7 @@ public class CreateTableStatement extends MetaStatement{
     Set<String> supportedColumns = new HashSet<>(Arrays.asList(supported));
     for(String c : columns.keySet()){
       if(!supportedColumns.contains(columns.get(c).toUpperCase()) || c.toLowerCase().startsWith("stratio")){
-        result= QueryResult.createFailQueryResult("Column " + c + " with datatype " + columns.get(c) + " not supported.");
+        result= Result.createValidationErrorResult("Column " + c + " with datatype " + columns.get(c) + " not supported.");
       }
     }
 
@@ -344,30 +347,31 @@ public class CreateTableStatement extends MetaStatement{
 
   /**
    * Validate the semantics of the ephemeral properties.
+   *
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateProperties(){
+  private Result validateProperties() {
     Result result = QueryResult.createSuccessQueryResult();
     Iterator<Property> props = properties.iterator();
     boolean exit = false;
-    while(!exit && props.hasNext()){
+    while (!exit && props.hasNext()) {
       Property property = props.next();
-      if(property.getType() == Property.TYPE_NAME_VALUE){
+      if (property.getType() == Property.TYPE_NAME_VALUE) {
         PropertyNameValue propertyNameValue = (PropertyNameValue) property;
-        if("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
-           && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+        if ("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
+            && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
           // If property ephemeral is present, it must be a boolean type
-          result = QueryResult.createFailQueryResult("Property 'ephemeral' must be a boolean");
+          result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
           exit = true;
-        } else if("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
-                  && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+        } else if ("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
+                   && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
           // If property ephemeral_tuples is present, it must be a integer type
-          result= QueryResult.createFailQueryResult("Property 'ephemeral' must be a boolean");
+          result= Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
           exit = true;
-        } else if("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
-                  && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+        } else if ("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
+                   && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
           // If property ephemeral_persist_on is present, it must be a string type
-          result= QueryResult.createFailQueryResult("Property 'ephemeral_persist_on' must be a string");
+          result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
           exit = true;
         }
       }
@@ -403,7 +407,7 @@ public class CreateTableStatement extends MetaStatement{
 
         insideBracket = insideBracket.trim();
         String[] splits = insideBracket.split(" ");
-        //Check between brackets
+        // Check between brackets
         sb.append(addQuotesAndClassifyParams(splits));
         sb.append("}");
         i = newI;
@@ -417,10 +421,11 @@ public class CreateTableStatement extends MetaStatement{
 
   /**
    * Read splits, add single quotes (if neccesary) and group params in pair to CQL format.
+   *
    * @param splits array of params.
    * @return params translated to Cql.
    */
-  private String addQuotesAndClassifyParams(String[] splits){
+  private String addQuotesAndClassifyParams(String[] splits) {
     StringBuilder sb = new StringBuilder();
     for (int j = 0; j < splits.length; j++) {
       String currentStr = splits[j];
@@ -441,22 +446,24 @@ public class CreateTableStatement extends MetaStatement{
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree tree = new Tree();
-    if(createTable) {
+    if (createTable) {
       tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
       boolean streamingMode = false;
-      for(Property property: properties){
-        if(property.getType() == Property.TYPE_NAME_VALUE){
-          PropertyNameValue pnv = (PropertyNameValue) property;
-          String propName = pnv.getName();
-          if(propName.equalsIgnoreCase("ephemeral")
-             && (pnv.getVp().getType() == ValueProperty.TYPE_BOOLEAN)
-             && ((BooleanProperty) pnv.getVp()).getBool()){
-            streamingMode = true;
-            break;
+      if (withProperties) {
+        for (Property property : properties) {
+          if (property.getType() == Property.TYPE_NAME_VALUE) {
+            PropertyNameValue pnv = (PropertyNameValue) property;
+            String propName = pnv.getName();
+            if ("ephemeral".equalsIgnoreCase(propName)
+                && (pnv.getVp().getType() == ValueProperty.TYPE_BOOLEAN)
+                && ((BooleanProperty) pnv.getVp()).getBool()) {
+              streamingMode = true;
+              break;
+            }
           }
         }
       }
-      if(streamingMode){
+      if (streamingMode) {
         tree.setNode(new MetaStep(MetaPath.STREAMING, this));
       }
     }

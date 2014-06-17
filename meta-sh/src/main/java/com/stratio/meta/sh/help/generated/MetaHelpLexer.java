@@ -1,28 +1,12 @@
-/*
- * Stratio Meta
- *
- * Copyright (c) 2014, Stratio, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
- */
-
-// $ANTLR 3.5.1 MetaHelp.g 2014-03-26 16:24:17
+// $ANTLR 3.5.1 MetaHelp.g 2014-06-09 11:45:59
 
 	package com.stratio.meta.sh.help.generated;
 
 
 import org.antlr.runtime.*;
+import java.util.Stack;
+import java.util.List;
+import java.util.ArrayList;
 
 @SuppressWarnings("all")
 public class MetaHelpLexer extends Lexer {
@@ -79,37 +63,39 @@ public class MetaHelpLexer extends Lexer {
 	public static final int T_INTO=53;
 	public static final int T_KEY=54;
 	public static final int T_KEYSPACE=55;
-	public static final int T_LIKE=56;
-	public static final int T_LIST=57;
-	public static final int T_LUCENE=58;
-	public static final int T_OPTIONS=59;
-	public static final int T_ORDER=60;
-	public static final int T_PLAN=61;
-	public static final int T_PRIMARY=62;
-	public static final int T_PROCESS=63;
-	public static final int T_QUIT=64;
-	public static final int T_REMOVE=65;
-	public static final int T_SELECT=66;
-	public static final int T_SEMICOLON=67;
-	public static final int T_SET=68;
-	public static final int T_STOP=69;
-	public static final int T_STORAGE=70;
-	public static final int T_TABLE=71;
-	public static final int T_TRIGGER=72;
-	public static final int T_TRUNCATE=73;
-	public static final int T_TYPE=74;
-	public static final int T_UDF=75;
-	public static final int T_UPDATE=76;
-	public static final int T_USE=77;
-	public static final int T_USING=78;
-	public static final int T_VALUES=79;
-	public static final int U=80;
-	public static final int V=81;
-	public static final int W=82;
-	public static final int WS=83;
-	public static final int X=84;
-	public static final int Y=85;
-	public static final int Z=86;
+	public static final int T_KEYSPACES=56;
+	public static final int T_LIKE=57;
+	public static final int T_LIST=58;
+	public static final int T_LUCENE=59;
+	public static final int T_OPTIONS=60;
+	public static final int T_ORDER=61;
+	public static final int T_PLAN=62;
+	public static final int T_PRIMARY=63;
+	public static final int T_PROCESS=64;
+	public static final int T_QUIT=65;
+	public static final int T_REMOVE=66;
+	public static final int T_SELECT=67;
+	public static final int T_SEMICOLON=68;
+	public static final int T_SET=69;
+	public static final int T_STOP=70;
+	public static final int T_STORAGE=71;
+	public static final int T_TABLE=72;
+	public static final int T_TABLES=73;
+	public static final int T_TRIGGER=74;
+	public static final int T_TRUNCATE=75;
+	public static final int T_TYPE=76;
+	public static final int T_UDF=77;
+	public static final int T_UPDATE=78;
+	public static final int T_USE=79;
+	public static final int T_USING=80;
+	public static final int T_VALUES=81;
+	public static final int U=82;
+	public static final int V=83;
+	public static final int W=84;
+	public static final int WS=85;
+	public static final int X=86;
+	public static final int Y=87;
+	public static final int Z=88;
 
 
 
@@ -952,13 +938,50 @@ public class MetaHelpLexer extends Lexer {
 	}
 	// $ANTLR end "T_KEYSPACE"
 
+	// $ANTLR start "T_KEYSPACES"
+	public final void mT_KEYSPACES() throws RecognitionException {
+		try {
+			int _type = T_KEYSPACES;
+			int _channel = DEFAULT_TOKEN_CHANNEL;
+			// MetaHelp.g:85:12: ( K E Y S P A C E S )
+			// MetaHelp.g:85:14: K E Y S P A C E S
+			{
+			mK(); 
+
+			mE(); 
+
+			mY(); 
+
+			mS(); 
+
+			mP(); 
+
+			mA(); 
+
+			mC(); 
+
+			mE(); 
+
+			mS(); 
+
+			}
+
+			state.type = _type;
+			state.channel = _channel;
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "T_KEYSPACES"
+
 	// $ANTLR start "T_DROP"
 	public final void mT_DROP() throws RecognitionException {
 		try {
 			int _type = T_DROP;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:85:7: ( D R O P )
-			// MetaHelp.g:85:9: D R O P
+			// MetaHelp.g:86:7: ( D R O P )
+			// MetaHelp.g:86:9: D R O P
 			{
 			mD(); 
 
@@ -984,8 +1007,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_TABLE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:86:8: ( T A B L E )
-			// MetaHelp.g:86:10: T A B L E
+			// MetaHelp.g:87:8: ( T A B L E )
+			// MetaHelp.g:87:10: T A B L E
 			{
 			mT(); 
 
@@ -1008,13 +1031,44 @@ public class MetaHelpLexer extends Lexer {
 	}
 	// $ANTLR end "T_TABLE"
 
+	// $ANTLR start "T_TABLES"
+	public final void mT_TABLES() throws RecognitionException {
+		try {
+			int _type = T_TABLES;
+			int _channel = DEFAULT_TOKEN_CHANNEL;
+			// MetaHelp.g:88:9: ( T A B L E S )
+			// MetaHelp.g:88:11: T A B L E S
+			{
+			mT(); 
+
+			mA(); 
+
+			mB(); 
+
+			mL(); 
+
+			mE(); 
+
+			mS(); 
+
+			}
+
+			state.type = _type;
+			state.channel = _channel;
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "T_TABLES"
+
 	// $ANTLR start "T_USE"
 	public final void mT_USE() throws RecognitionException {
 		try {
 			int _type = T_USE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:87:6: ( U S E )
-			// MetaHelp.g:87:8: U S E
+			// MetaHelp.g:89:6: ( U S E )
+			// MetaHelp.g:89:8: U S E
 			{
 			mU(); 
 
@@ -1038,8 +1092,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_SET;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:88:6: ( S E T )
-			// MetaHelp.g:88:8: S E T
+			// MetaHelp.g:90:6: ( S E T )
+			// MetaHelp.g:90:8: S E T
 			{
 			mS(); 
 
@@ -1063,8 +1117,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_OPTIONS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:89:10: ( O P T I O N S )
-			// MetaHelp.g:89:12: O P T I O N S
+			// MetaHelp.g:91:10: ( O P T I O N S )
+			// MetaHelp.g:91:12: O P T I O N S
 			{
 			mO(); 
 
@@ -1096,8 +1150,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_ANALYTICS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:90:12: ( A N A L Y T I C S )
-			// MetaHelp.g:90:14: A N A L Y T I C S
+			// MetaHelp.g:92:12: ( A N A L Y T I C S )
+			// MetaHelp.g:92:14: A N A L Y T I C S
 			{
 			mA(); 
 
@@ -1133,8 +1187,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_CONSISTENCY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:91:14: ( C O N S I S T E N C Y )
-			// MetaHelp.g:91:16: C O N S I S T E N C Y
+			// MetaHelp.g:93:14: ( C O N S I S T E N C Y )
+			// MetaHelp.g:93:16: C O N S I S T E N C Y
 			{
 			mC(); 
 
@@ -1174,8 +1228,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_EXPLAIN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:92:10: ( E X P L A I N )
-			// MetaHelp.g:92:12: E X P L A I N
+			// MetaHelp.g:94:10: ( E X P L A I N )
+			// MetaHelp.g:94:12: E X P L A I N
 			{
 			mE(); 
 
@@ -1207,8 +1261,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_PLAN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:93:7: ( P L A N )
-			// MetaHelp.g:93:9: P L A N
+			// MetaHelp.g:95:7: ( P L A N )
+			// MetaHelp.g:95:9: P L A N
 			{
 			mP(); 
 
@@ -1234,8 +1288,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_FOR;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:94:6: ( F O R )
-			// MetaHelp.g:94:8: F O R
+			// MetaHelp.g:96:6: ( F O R )
+			// MetaHelp.g:96:8: F O R
 			{
 			mF(); 
 
@@ -1259,8 +1313,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_INDEX;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:95:8: ( I N D E X )
-			// MetaHelp.g:95:10: I N D E X
+			// MetaHelp.g:97:8: ( I N D E X )
+			// MetaHelp.g:97:10: I N D E X
 			{
 			mI(); 
 
@@ -1288,8 +1342,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_HASH;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:96:7: ( H A S H )
-			// MetaHelp.g:96:9: H A S H
+			// MetaHelp.g:98:7: ( H A S H )
+			// MetaHelp.g:98:9: H A S H
 			{
 			mH(); 
 
@@ -1315,8 +1369,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_LIST;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:97:7: ( L I S T )
-			// MetaHelp.g:97:9: L I S T
+			// MetaHelp.g:99:7: ( L I S T )
+			// MetaHelp.g:99:9: L I S T
 			{
 			mL(); 
 
@@ -1342,8 +1396,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_REMOVE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:98:9: ( R E M O V E )
-			// MetaHelp.g:98:11: R E M O V E
+			// MetaHelp.g:100:9: ( R E M O V E )
+			// MetaHelp.g:100:11: R E M O V E
 			{
 			mR(); 
 
@@ -1373,8 +1427,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_UDF;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:99:6: ( U D F )
-			// MetaHelp.g:99:8: U D F
+			// MetaHelp.g:101:6: ( U D F )
+			// MetaHelp.g:101:8: U D F
 			{
 			mU(); 
 
@@ -1398,8 +1452,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_PROCESS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:100:10: ( P R O C E S S )
-			// MetaHelp.g:100:12: P R O C E S S
+			// MetaHelp.g:102:10: ( P R O C E S S )
+			// MetaHelp.g:102:12: P R O C E S S
 			{
 			mP(); 
 
@@ -1431,8 +1485,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_TRIGGER;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:101:10: ( T R I G G E R )
-			// MetaHelp.g:101:12: T R I G G E R
+			// MetaHelp.g:103:10: ( T R I G G E R )
+			// MetaHelp.g:103:12: T R I G G E R
 			{
 			mT(); 
 
@@ -1464,8 +1518,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_STOP;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:102:7: ( S T O P )
-			// MetaHelp.g:102:9: S T O P
+			// MetaHelp.g:104:7: ( S T O P )
+			// MetaHelp.g:104:9: S T O P
 			{
 			mS(); 
 
@@ -1491,8 +1545,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_USING;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:103:8: ( U S I N G )
-			// MetaHelp.g:103:10: U S I N G
+			// MetaHelp.g:105:8: ( U S I N G )
+			// MetaHelp.g:105:10: U S I N G
 			{
 			mU(); 
 
@@ -1520,8 +1574,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_TYPE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:104:7: ( T Y P E )
-			// MetaHelp.g:104:9: T Y P E
+			// MetaHelp.g:106:7: ( T Y P E )
+			// MetaHelp.g:106:9: T Y P E
 			{
 			mT(); 
 
@@ -1547,8 +1601,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_ADD;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:105:6: ( A D D )
-			// MetaHelp.g:105:8: A D D
+			// MetaHelp.g:107:6: ( A D D )
+			// MetaHelp.g:107:8: A D D
 			{
 			mA(); 
 
@@ -1572,8 +1626,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_PRIMARY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:106:10: ( P R I M A R Y )
-			// MetaHelp.g:106:12: P R I M A R Y
+			// MetaHelp.g:108:10: ( P R I M A R Y )
+			// MetaHelp.g:108:12: P R I M A R Y
 			{
 			mP(); 
 
@@ -1605,8 +1659,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_KEY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:107:6: ( K E Y )
-			// MetaHelp.g:107:8: K E Y
+			// MetaHelp.g:109:6: ( K E Y )
+			// MetaHelp.g:109:8: K E Y
 			{
 			mK(); 
 
@@ -1630,8 +1684,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_INSERT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:108:9: ( I N S E R T )
-			// MetaHelp.g:108:11: I N S E R T
+			// MetaHelp.g:110:9: ( I N S E R T )
+			// MetaHelp.g:110:11: I N S E R T
 			{
 			mI(); 
 
@@ -1661,8 +1715,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_INTO;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:109:7: ( I N T O )
-			// MetaHelp.g:109:9: I N T O
+			// MetaHelp.g:111:7: ( I N T O )
+			// MetaHelp.g:111:9: I N T O
 			{
 			mI(); 
 
@@ -1688,8 +1742,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_COMPACT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:110:10: ( C O M P A C T )
-			// MetaHelp.g:110:12: C O M P A C T
+			// MetaHelp.g:112:10: ( C O M P A C T )
+			// MetaHelp.g:112:12: C O M P A C T
 			{
 			mC(); 
 
@@ -1721,8 +1775,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_STORAGE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:111:10: ( S T O R A G E )
-			// MetaHelp.g:111:12: S T O R A G E
+			// MetaHelp.g:113:10: ( S T O R A G E )
+			// MetaHelp.g:113:12: S T O R A G E
 			{
 			mS(); 
 
@@ -1754,8 +1808,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_CLUSTERING;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:112:13: ( C L U S T E R I N G )
-			// MetaHelp.g:112:15: C L U S T E R I N G
+			// MetaHelp.g:114:13: ( C L U S T E R I N G )
+			// MetaHelp.g:114:15: C L U S T E R I N G
 			{
 			mC(); 
 
@@ -1793,8 +1847,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_ORDER;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:113:8: ( O R D E R )
-			// MetaHelp.g:113:10: O R D E R
+			// MetaHelp.g:115:8: ( O R D E R )
+			// MetaHelp.g:115:10: O R D E R
 			{
 			mO(); 
 
@@ -1822,8 +1876,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_SELECT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:114:9: ( S E L E C T )
-			// MetaHelp.g:114:11: S E L E C T
+			// MetaHelp.g:116:9: ( S E L E C T )
+			// MetaHelp.g:116:11: S E L E C T
 			{
 			mS(); 
 
@@ -1853,8 +1907,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_VALUES;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:115:9: ( V A L U E S )
-			// MetaHelp.g:115:11: V A L U E S
+			// MetaHelp.g:117:9: ( V A L U E S )
+			// MetaHelp.g:117:11: V A L U E S
 			{
 			mV(); 
 
@@ -1884,8 +1938,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_UPDATE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:116:9: ( U P D A T E )
-			// MetaHelp.g:116:11: U P D A T E
+			// MetaHelp.g:118:9: ( U P D A T E )
+			// MetaHelp.g:118:11: U P D A T E
 			{
 			mU(); 
 
@@ -1915,8 +1969,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_FROM;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:117:7: ( F R O M )
-			// MetaHelp.g:117:9: F R O M
+			// MetaHelp.g:119:7: ( F R O M )
+			// MetaHelp.g:119:9: F R O M
 			{
 			mF(); 
 
@@ -1942,8 +1996,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_DELETE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:118:9: ( D E L E T E )
-			// MetaHelp.g:118:11: D E L E T E
+			// MetaHelp.g:120:9: ( D E L E T E )
+			// MetaHelp.g:120:11: D E L E T E
 			{
 			mD(); 
 
@@ -1973,8 +2027,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_DISABLE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:119:10: ( D I S A B L E )
-			// MetaHelp.g:119:12: D I S A B L E
+			// MetaHelp.g:121:10: ( D I S A B L E )
+			// MetaHelp.g:121:12: D I S A B L E
 			{
 			mD(); 
 
@@ -2006,8 +2060,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_DISTINCT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:120:11: ( D I S T I N C T )
-			// MetaHelp.g:120:13: D I S T I N C T
+			// MetaHelp.g:122:11: ( D I S T I N C T )
+			// MetaHelp.g:122:13: D I S T I N C T
 			{
 			mD(); 
 
@@ -2041,8 +2095,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_COUNT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:121:8: ( C O U N T )
-			// MetaHelp.g:121:10: C O U N T
+			// MetaHelp.g:123:8: ( C O U N T )
+			// MetaHelp.g:123:10: C O U N T
 			{
 			mC(); 
 
@@ -2070,8 +2124,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_AS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:122:5: ( A S )
-			// MetaHelp.g:122:7: A S
+			// MetaHelp.g:124:5: ( A S )
+			// MetaHelp.g:124:7: A S
 			{
 			mA(); 
 
@@ -2093,8 +2147,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_BETWEEN;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:123:10: ( B E T W E E N )
-			// MetaHelp.g:123:12: B E T W E E N
+			// MetaHelp.g:125:10: ( B E T W E E N )
+			// MetaHelp.g:125:12: B E T W E E N
 			{
 			mB(); 
 
@@ -2126,8 +2180,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_ASC;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:124:6: ( A S C )
-			// MetaHelp.g:124:8: A S C
+			// MetaHelp.g:126:6: ( A S C )
+			// MetaHelp.g:126:8: A S C
 			{
 			mA(); 
 
@@ -2151,8 +2205,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_DESC;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:125:7: ( D E S C )
-			// MetaHelp.g:125:9: D E S C
+			// MetaHelp.g:127:7: ( D E S C )
+			// MetaHelp.g:127:9: D E S C
 			{
 			mD(); 
 
@@ -2178,8 +2232,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_LIKE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:126:7: ( L I K E )
-			// MetaHelp.g:126:9: L I K E
+			// MetaHelp.g:128:7: ( L I K E )
+			// MetaHelp.g:128:9: L I K E
 			{
 			mL(); 
 
@@ -2205,8 +2259,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_HELP;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:127:7: ( H E L P )
-			// MetaHelp.g:127:9: H E L P
+			// MetaHelp.g:129:7: ( H E L P )
+			// MetaHelp.g:129:9: H E L P
 			{
 			mH(); 
 
@@ -2232,8 +2286,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_EXIT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:128:7: ( E X I T )
-			// MetaHelp.g:128:9: E X I T
+			// MetaHelp.g:130:7: ( E X I T )
+			// MetaHelp.g:130:9: E X I T
 			{
 			mE(); 
 
@@ -2259,8 +2313,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_QUIT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:129:7: ( Q U I T )
-			// MetaHelp.g:129:9: Q U I T
+			// MetaHelp.g:131:7: ( Q U I T )
+			// MetaHelp.g:131:9: Q U I T
 			{
 			mQ(); 
 
@@ -2286,8 +2340,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_DATATYPES;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:130:12: ( D A T A T Y P E S )
-			// MetaHelp.g:130:14: D A T A T Y P E S
+			// MetaHelp.g:132:12: ( D A T A T Y P E S )
+			// MetaHelp.g:132:14: D A T A T Y P E S
 			{
 			mD(); 
 
@@ -2323,8 +2377,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_LUCENE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:131:9: ( L U C E N E )
-			// MetaHelp.g:131:11: L U C E N E
+			// MetaHelp.g:133:9: ( L U C E N E )
+			// MetaHelp.g:133:11: L U C E N E
 			{
 			mL(); 
 
@@ -2354,8 +2408,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_DEFAULT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:132:10: ( D E F A U L T )
-			// MetaHelp.g:132:12: D E F A U L T
+			// MetaHelp.g:134:10: ( D E F A U L T )
+			// MetaHelp.g:134:12: D E F A U L T
 			{
 			mD(); 
 
@@ -2387,8 +2441,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_DESCRIBE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:133:11: ( D E S C R I B E )
-			// MetaHelp.g:133:13: D E S C R I B E
+			// MetaHelp.g:135:11: ( D E S C R I B E )
+			// MetaHelp.g:135:13: D E S C R I B E
 			{
 			mD(); 
 
@@ -2422,8 +2476,8 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = T_SEMICOLON;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:135:12: ( ';' )
-			// MetaHelp.g:135:14: ';'
+			// MetaHelp.g:137:12: ( ';' )
+			// MetaHelp.g:137:14: ';'
 			{
 			match(';'); 
 			}
@@ -2442,10 +2496,10 @@ public class MetaHelpLexer extends Lexer {
 		try {
 			int _type = WS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// MetaHelp.g:228:3: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
-			// MetaHelp.g:228:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
+			// MetaHelp.g:232:3: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
+			// MetaHelp.g:232:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
 			{
-			// MetaHelp.g:228:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
+			// MetaHelp.g:232:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
 			int cnt3=0;
 			loop3:
 			while (true) {
@@ -2494,8 +2548,8 @@ public class MetaHelpLexer extends Lexer {
 
 	@Override
 	public void mTokens() throws RecognitionException {
-		// MetaHelp.g:1:8: ( T_TRUNCATE | T_CREATE | T_ALTER | T_KEYSPACE | T_DROP | T_TABLE | T_USE | T_SET | T_OPTIONS | T_ANALYTICS | T_CONSISTENCY | T_EXPLAIN | T_PLAN | T_FOR | T_INDEX | T_HASH | T_LIST | T_REMOVE | T_UDF | T_PROCESS | T_TRIGGER | T_STOP | T_USING | T_TYPE | T_ADD | T_PRIMARY | T_KEY | T_INSERT | T_INTO | T_COMPACT | T_STORAGE | T_CLUSTERING | T_ORDER | T_SELECT | T_VALUES | T_UPDATE | T_FROM | T_DELETE | T_DISABLE | T_DISTINCT | T_COUNT | T_AS | T_BETWEEN | T_ASC | T_DESC | T_LIKE | T_HELP | T_EXIT | T_QUIT | T_DATATYPES | T_LUCENE | T_DEFAULT | T_DESCRIBE | T_SEMICOLON | WS )
-		int alt4=55;
+		// MetaHelp.g:1:8: ( T_TRUNCATE | T_CREATE | T_ALTER | T_KEYSPACE | T_KEYSPACES | T_DROP | T_TABLE | T_TABLES | T_USE | T_SET | T_OPTIONS | T_ANALYTICS | T_CONSISTENCY | T_EXPLAIN | T_PLAN | T_FOR | T_INDEX | T_HASH | T_LIST | T_REMOVE | T_UDF | T_PROCESS | T_TRIGGER | T_STOP | T_USING | T_TYPE | T_ADD | T_PRIMARY | T_KEY | T_INSERT | T_INTO | T_COMPACT | T_STORAGE | T_CLUSTERING | T_ORDER | T_SELECT | T_VALUES | T_UPDATE | T_FROM | T_DELETE | T_DISABLE | T_DISTINCT | T_COUNT | T_AS | T_BETWEEN | T_ASC | T_DESC | T_LIKE | T_HELP | T_EXIT | T_QUIT | T_DATATYPES | T_LUCENE | T_DEFAULT | T_DESCRIBE | T_SEMICOLON | WS )
+		int alt4=57;
 		alt4 = dfa4.predict(input);
 		switch (alt4) {
 			case 1 :
@@ -2527,357 +2581,371 @@ public class MetaHelpLexer extends Lexer {
 				}
 				break;
 			case 5 :
-				// MetaHelp.g:1:49: T_DROP
+				// MetaHelp.g:1:49: T_KEYSPACES
+				{
+				mT_KEYSPACES(); 
+
+				}
+				break;
+			case 6 :
+				// MetaHelp.g:1:61: T_DROP
 				{
 				mT_DROP(); 
 
 				}
 				break;
-			case 6 :
-				// MetaHelp.g:1:56: T_TABLE
+			case 7 :
+				// MetaHelp.g:1:68: T_TABLE
 				{
 				mT_TABLE(); 
 
 				}
 				break;
-			case 7 :
-				// MetaHelp.g:1:64: T_USE
+			case 8 :
+				// MetaHelp.g:1:76: T_TABLES
+				{
+				mT_TABLES(); 
+
+				}
+				break;
+			case 9 :
+				// MetaHelp.g:1:85: T_USE
 				{
 				mT_USE(); 
 
 				}
 				break;
-			case 8 :
-				// MetaHelp.g:1:70: T_SET
+			case 10 :
+				// MetaHelp.g:1:91: T_SET
 				{
 				mT_SET(); 
 
 				}
 				break;
-			case 9 :
-				// MetaHelp.g:1:76: T_OPTIONS
+			case 11 :
+				// MetaHelp.g:1:97: T_OPTIONS
 				{
 				mT_OPTIONS(); 
 
 				}
 				break;
-			case 10 :
-				// MetaHelp.g:1:86: T_ANALYTICS
+			case 12 :
+				// MetaHelp.g:1:107: T_ANALYTICS
 				{
 				mT_ANALYTICS(); 
 
 				}
 				break;
-			case 11 :
-				// MetaHelp.g:1:98: T_CONSISTENCY
+			case 13 :
+				// MetaHelp.g:1:119: T_CONSISTENCY
 				{
 				mT_CONSISTENCY(); 
 
 				}
 				break;
-			case 12 :
-				// MetaHelp.g:1:112: T_EXPLAIN
+			case 14 :
+				// MetaHelp.g:1:133: T_EXPLAIN
 				{
 				mT_EXPLAIN(); 
 
 				}
 				break;
-			case 13 :
-				// MetaHelp.g:1:122: T_PLAN
+			case 15 :
+				// MetaHelp.g:1:143: T_PLAN
 				{
 				mT_PLAN(); 
 
 				}
 				break;
-			case 14 :
-				// MetaHelp.g:1:129: T_FOR
+			case 16 :
+				// MetaHelp.g:1:150: T_FOR
 				{
 				mT_FOR(); 
 
 				}
 				break;
-			case 15 :
-				// MetaHelp.g:1:135: T_INDEX
+			case 17 :
+				// MetaHelp.g:1:156: T_INDEX
 				{
 				mT_INDEX(); 
 
 				}
 				break;
-			case 16 :
-				// MetaHelp.g:1:143: T_HASH
+			case 18 :
+				// MetaHelp.g:1:164: T_HASH
 				{
 				mT_HASH(); 
 
 				}
 				break;
-			case 17 :
-				// MetaHelp.g:1:150: T_LIST
+			case 19 :
+				// MetaHelp.g:1:171: T_LIST
 				{
 				mT_LIST(); 
 
 				}
 				break;
-			case 18 :
-				// MetaHelp.g:1:157: T_REMOVE
+			case 20 :
+				// MetaHelp.g:1:178: T_REMOVE
 				{
 				mT_REMOVE(); 
 
 				}
 				break;
-			case 19 :
-				// MetaHelp.g:1:166: T_UDF
+			case 21 :
+				// MetaHelp.g:1:187: T_UDF
 				{
 				mT_UDF(); 
 
 				}
 				break;
-			case 20 :
-				// MetaHelp.g:1:172: T_PROCESS
+			case 22 :
+				// MetaHelp.g:1:193: T_PROCESS
 				{
 				mT_PROCESS(); 
 
 				}
 				break;
-			case 21 :
-				// MetaHelp.g:1:182: T_TRIGGER
+			case 23 :
+				// MetaHelp.g:1:203: T_TRIGGER
 				{
 				mT_TRIGGER(); 
 
 				}
 				break;
-			case 22 :
-				// MetaHelp.g:1:192: T_STOP
+			case 24 :
+				// MetaHelp.g:1:213: T_STOP
 				{
 				mT_STOP(); 
 
 				}
 				break;
-			case 23 :
-				// MetaHelp.g:1:199: T_USING
+			case 25 :
+				// MetaHelp.g:1:220: T_USING
 				{
 				mT_USING(); 
 
 				}
 				break;
-			case 24 :
-				// MetaHelp.g:1:207: T_TYPE
+			case 26 :
+				// MetaHelp.g:1:228: T_TYPE
 				{
 				mT_TYPE(); 
 
 				}
 				break;
-			case 25 :
-				// MetaHelp.g:1:214: T_ADD
+			case 27 :
+				// MetaHelp.g:1:235: T_ADD
 				{
 				mT_ADD(); 
 
 				}
 				break;
-			case 26 :
-				// MetaHelp.g:1:220: T_PRIMARY
+			case 28 :
+				// MetaHelp.g:1:241: T_PRIMARY
 				{
 				mT_PRIMARY(); 
 
 				}
 				break;
-			case 27 :
-				// MetaHelp.g:1:230: T_KEY
+			case 29 :
+				// MetaHelp.g:1:251: T_KEY
 				{
 				mT_KEY(); 
 
 				}
 				break;
-			case 28 :
-				// MetaHelp.g:1:236: T_INSERT
+			case 30 :
+				// MetaHelp.g:1:257: T_INSERT
 				{
 				mT_INSERT(); 
 
 				}
 				break;
-			case 29 :
-				// MetaHelp.g:1:245: T_INTO
+			case 31 :
+				// MetaHelp.g:1:266: T_INTO
 				{
 				mT_INTO(); 
 
 				}
 				break;
-			case 30 :
-				// MetaHelp.g:1:252: T_COMPACT
+			case 32 :
+				// MetaHelp.g:1:273: T_COMPACT
 				{
 				mT_COMPACT(); 
 
 				}
 				break;
-			case 31 :
-				// MetaHelp.g:1:262: T_STORAGE
+			case 33 :
+				// MetaHelp.g:1:283: T_STORAGE
 				{
 				mT_STORAGE(); 
 
 				}
 				break;
-			case 32 :
-				// MetaHelp.g:1:272: T_CLUSTERING
+			case 34 :
+				// MetaHelp.g:1:293: T_CLUSTERING
 				{
 				mT_CLUSTERING(); 
 
 				}
 				break;
-			case 33 :
-				// MetaHelp.g:1:285: T_ORDER
+			case 35 :
+				// MetaHelp.g:1:306: T_ORDER
 				{
 				mT_ORDER(); 
 
 				}
 				break;
-			case 34 :
-				// MetaHelp.g:1:293: T_SELECT
+			case 36 :
+				// MetaHelp.g:1:314: T_SELECT
 				{
 				mT_SELECT(); 
 
 				}
 				break;
-			case 35 :
-				// MetaHelp.g:1:302: T_VALUES
+			case 37 :
+				// MetaHelp.g:1:323: T_VALUES
 				{
 				mT_VALUES(); 
 
 				}
 				break;
-			case 36 :
-				// MetaHelp.g:1:311: T_UPDATE
+			case 38 :
+				// MetaHelp.g:1:332: T_UPDATE
 				{
 				mT_UPDATE(); 
 
 				}
 				break;
-			case 37 :
-				// MetaHelp.g:1:320: T_FROM
+			case 39 :
+				// MetaHelp.g:1:341: T_FROM
 				{
 				mT_FROM(); 
 
 				}
 				break;
-			case 38 :
-				// MetaHelp.g:1:327: T_DELETE
+			case 40 :
+				// MetaHelp.g:1:348: T_DELETE
 				{
 				mT_DELETE(); 
 
 				}
 				break;
-			case 39 :
-				// MetaHelp.g:1:336: T_DISABLE
+			case 41 :
+				// MetaHelp.g:1:357: T_DISABLE
 				{
 				mT_DISABLE(); 
 
 				}
 				break;
-			case 40 :
-				// MetaHelp.g:1:346: T_DISTINCT
+			case 42 :
+				// MetaHelp.g:1:367: T_DISTINCT
 				{
 				mT_DISTINCT(); 
 
 				}
 				break;
-			case 41 :
-				// MetaHelp.g:1:357: T_COUNT
+			case 43 :
+				// MetaHelp.g:1:378: T_COUNT
 				{
 				mT_COUNT(); 
 
 				}
 				break;
-			case 42 :
-				// MetaHelp.g:1:365: T_AS
+			case 44 :
+				// MetaHelp.g:1:386: T_AS
 				{
 				mT_AS(); 
 
 				}
 				break;
-			case 43 :
-				// MetaHelp.g:1:370: T_BETWEEN
+			case 45 :
+				// MetaHelp.g:1:391: T_BETWEEN
 				{
 				mT_BETWEEN(); 
 
 				}
 				break;
-			case 44 :
-				// MetaHelp.g:1:380: T_ASC
+			case 46 :
+				// MetaHelp.g:1:401: T_ASC
 				{
 				mT_ASC(); 
 
 				}
 				break;
-			case 45 :
-				// MetaHelp.g:1:386: T_DESC
+			case 47 :
+				// MetaHelp.g:1:407: T_DESC
 				{
 				mT_DESC(); 
 
 				}
 				break;
-			case 46 :
-				// MetaHelp.g:1:393: T_LIKE
+			case 48 :
+				// MetaHelp.g:1:414: T_LIKE
 				{
 				mT_LIKE(); 
 
 				}
 				break;
-			case 47 :
-				// MetaHelp.g:1:400: T_HELP
+			case 49 :
+				// MetaHelp.g:1:421: T_HELP
 				{
 				mT_HELP(); 
 
 				}
 				break;
-			case 48 :
-				// MetaHelp.g:1:407: T_EXIT
+			case 50 :
+				// MetaHelp.g:1:428: T_EXIT
 				{
 				mT_EXIT(); 
 
 				}
 				break;
-			case 49 :
-				// MetaHelp.g:1:414: T_QUIT
+			case 51 :
+				// MetaHelp.g:1:435: T_QUIT
 				{
 				mT_QUIT(); 
 
 				}
 				break;
-			case 50 :
-				// MetaHelp.g:1:421: T_DATATYPES
+			case 52 :
+				// MetaHelp.g:1:442: T_DATATYPES
 				{
 				mT_DATATYPES(); 
 
 				}
 				break;
-			case 51 :
-				// MetaHelp.g:1:433: T_LUCENE
+			case 53 :
+				// MetaHelp.g:1:454: T_LUCENE
 				{
 				mT_LUCENE(); 
 
 				}
 				break;
-			case 52 :
-				// MetaHelp.g:1:442: T_DEFAULT
+			case 54 :
+				// MetaHelp.g:1:463: T_DEFAULT
 				{
 				mT_DEFAULT(); 
 
 				}
 				break;
-			case 53 :
-				// MetaHelp.g:1:452: T_DESCRIBE
+			case 55 :
+				// MetaHelp.g:1:473: T_DESCRIBE
 				{
 				mT_DESCRIBE(); 
 
 				}
 				break;
-			case 54 :
-				// MetaHelp.g:1:463: T_SEMICOLON
+			case 56 :
+				// MetaHelp.g:1:484: T_SEMICOLON
 				{
 				mT_SEMICOLON(); 
 
 				}
 				break;
-			case 55 :
-				// MetaHelp.g:1:475: WS
+			case 57 :
+				// MetaHelp.g:1:496: WS
 				{
 				mWS(); 
 
@@ -2890,30 +2958,34 @@ public class MetaHelpLexer extends Lexer {
 
 	protected DFA4 dfa4 = new DFA4(this);
 	static final String DFA4_eotS =
-		"\36\uffff\1\72\35\uffff\1\117\24\uffff\1\126\6\uffff";
+		"\36\uffff\1\73\36\uffff\1\121\25\uffff\1\132\4\uffff\1\134\7\uffff\1\141"+
+		"\2\uffff";
 	static final String DFA4_eofS =
-		"\130\uffff";
+		"\143\uffff";
 	static final String DFA4_minS =
 		"\1\11\1\101\1\114\1\104\1\105\1\101\1\104\1\105\1\120\1\130\1\114\1\117"+
-		"\1\116\1\101\1\111\6\uffff\1\111\3\uffff\1\115\4\uffff\1\103\1\131\1\uffff"+
-		"\1\106\1\123\1\uffff\1\105\2\uffff\1\114\1\117\2\uffff\1\111\1\uffff\1"+
-		"\111\2\uffff\1\104\2\uffff\1\113\10\uffff\1\123\1\uffff\1\103\1\uffff"+
-		"\1\101\4\uffff\1\120\13\uffff\1\122\6\uffff";
+		"\1\116\1\101\1\111\6\uffff\1\111\1\102\2\uffff\1\115\4\uffff\1\103\1\131"+
+		"\1\uffff\1\106\1\123\1\uffff\1\105\2\uffff\1\114\1\117\2\uffff\1\111\1"+
+		"\uffff\1\111\2\uffff\1\104\2\uffff\1\113\3\uffff\1\114\5\uffff\1\123\1"+
+		"\uffff\1\103\1\uffff\1\101\4\uffff\1\120\11\uffff\1\105\1\uffff\1\120"+
+		"\1\122\4\uffff\1\123\1\101\4\uffff\1\103\1\105\1\123\2\uffff";
 	static final String DFA4_maxS =
 		"\1\166\1\171\1\162\1\163\1\145\1\162\1\163\1\164\1\162\1\170\2\162\1\156"+
-		"\1\145\1\165\6\uffff\1\165\3\uffff\1\165\4\uffff\1\143\1\171\1\uffff\2"+
-		"\163\1\uffff\1\151\2\uffff\1\164\1\157\2\uffff\1\160\1\uffff\1\157\2\uffff"+
-		"\1\164\2\uffff\1\163\10\uffff\1\163\1\uffff\1\143\1\uffff\1\164\4\uffff"+
-		"\1\162\13\uffff\1\162\6\uffff";
+		"\1\145\1\165\6\uffff\1\165\1\142\2\uffff\1\165\4\uffff\1\143\1\171\1\uffff"+
+		"\2\163\1\uffff\1\151\2\uffff\1\164\1\157\2\uffff\1\160\1\uffff\1\157\2"+
+		"\uffff\1\164\2\uffff\1\163\3\uffff\1\154\5\uffff\1\163\1\uffff\1\143\1"+
+		"\uffff\1\164\4\uffff\1\162\11\uffff\1\145\1\uffff\1\160\1\162\4\uffff"+
+		"\1\163\1\141\4\uffff\1\143\1\145\1\163\2\uffff";
 	static final String DFA4_acceptS =
-		"\17\uffff\1\22\1\43\1\53\1\61\1\66\1\67\1\uffff\1\6\1\30\1\2\1\uffff\1"+
-		"\40\1\3\1\12\1\31\2\uffff\1\5\2\uffff\1\62\1\uffff\1\23\1\44\2\uffff\1"+
-		"\11\1\41\1\uffff\1\15\1\uffff\1\16\1\45\1\uffff\1\20\1\57\1\uffff\1\63"+
-		"\1\1\1\25\1\13\1\36\1\51\1\52\1\54\1\uffff\1\46\1\uffff\1\64\1\uffff\1"+
-		"\7\1\27\1\10\1\42\1\uffff\1\14\1\60\1\24\1\32\1\17\1\34\1\35\1\21\1\56"+
-		"\1\33\1\4\1\uffff\1\47\1\50\1\26\1\37\1\55\1\65";
+		"\17\uffff\1\24\1\45\1\55\1\63\1\70\1\71\2\uffff\1\32\1\2\1\uffff\1\42"+
+		"\1\3\1\14\1\33\2\uffff\1\6\2\uffff\1\64\1\uffff\1\25\1\46\2\uffff\1\13"+
+		"\1\43\1\uffff\1\17\1\uffff\1\20\1\47\1\uffff\1\22\1\61\1\uffff\1\65\1"+
+		"\1\1\27\1\uffff\1\15\1\40\1\53\1\54\1\56\1\uffff\1\50\1\uffff\1\66\1\uffff"+
+		"\1\11\1\31\1\12\1\44\1\uffff\1\16\1\62\1\26\1\34\1\21\1\36\1\37\1\23\1"+
+		"\60\1\uffff\1\35\2\uffff\1\51\1\52\1\30\1\41\2\uffff\1\57\1\67\1\7\1\10"+
+		"\3\uffff\1\4\1\5";
 	static final String DFA4_specialS =
-		"\130\uffff}>";
+		"\143\uffff}>";
 	static final String[] DFA4_transitionS = {
 			"\2\24\2\uffff\1\24\22\uffff\1\24\32\uffff\1\23\5\uffff\1\3\1\21\1\2\1"+
 			"\5\1\11\1\13\1\uffff\1\15\1\14\1\uffff\1\4\1\16\2\uffff\1\10\1\12\1\22"+
@@ -2945,55 +3017,56 @@ public class MetaHelpLexer extends Lexer {
 			"",
 			"",
 			"\1\66\13\uffff\1\65\23\uffff\1\66\13\uffff\1\65",
+			"\1\67\37\uffff\1\67",
+			"",
+			"",
+			"\1\71\1\70\6\uffff\1\72\27\uffff\1\71\1\70\6\uffff\1\72",
 			"",
 			"",
 			"",
-			"\1\70\1\67\6\uffff\1\71\27\uffff\1\70\1\67\6\uffff\1\71",
 			"",
-			"",
-			"",
-			"",
-			"\1\73\37\uffff\1\73",
 			"\1\74\37\uffff\1\74",
+			"\1\75\37\uffff\1\75",
 			"",
-			"\1\77\5\uffff\1\75\6\uffff\1\76\22\uffff\1\77\5\uffff\1\75\6\uffff\1"+
-			"\76",
-			"\1\100\37\uffff\1\100",
+			"\1\100\5\uffff\1\76\6\uffff\1\77\22\uffff\1\100\5\uffff\1\76\6\uffff"+
+			"\1\77",
+			"\1\101\37\uffff\1\101",
 			"",
-			"\1\101\3\uffff\1\102\33\uffff\1\101\3\uffff\1\102",
-			"",
-			"",
-			"\1\104\7\uffff\1\103\27\uffff\1\104\7\uffff\1\103",
-			"\1\105\37\uffff\1\105",
+			"\1\102\3\uffff\1\103\33\uffff\1\102\3\uffff\1\103",
 			"",
 			"",
-			"\1\107\6\uffff\1\106\30\uffff\1\107\6\uffff\1\106",
-			"",
-			"\1\111\5\uffff\1\110\31\uffff\1\111\5\uffff\1\110",
-			"",
-			"",
-			"\1\112\16\uffff\1\113\1\114\17\uffff\1\112\16\uffff\1\113\1\114",
+			"\1\105\7\uffff\1\104\27\uffff\1\105\7\uffff\1\104",
+			"\1\106\37\uffff\1\106",
 			"",
 			"",
-			"\1\116\7\uffff\1\115\27\uffff\1\116\7\uffff\1\115",
+			"\1\110\6\uffff\1\107\30\uffff\1\110\6\uffff\1\107",
+			"",
+			"\1\112\5\uffff\1\111\31\uffff\1\112\5\uffff\1\111",
 			"",
 			"",
+			"\1\113\16\uffff\1\114\1\115\17\uffff\1\113\16\uffff\1\114\1\115",
 			"",
 			"",
-			"",
+			"\1\117\7\uffff\1\116\27\uffff\1\117\7\uffff\1\116",
 			"",
 			"",
 			"",
 			"\1\120\37\uffff\1\120",
 			"",
-			"\1\121\37\uffff\1\121",
-			"",
-			"\1\122\22\uffff\1\123\14\uffff\1\122\22\uffff\1\123",
 			"",
 			"",
 			"",
 			"",
-			"\1\124\1\uffff\1\125\35\uffff\1\124\1\uffff\1\125",
+			"\1\122\37\uffff\1\122",
+			"",
+			"\1\123\37\uffff\1\123",
+			"",
+			"\1\124\22\uffff\1\125\14\uffff\1\124\22\uffff\1\125",
+			"",
+			"",
+			"",
+			"",
+			"\1\126\1\uffff\1\127\35\uffff\1\126\1\uffff\1\127",
 			"",
 			"",
 			"",
@@ -3003,13 +3076,23 @@ public class MetaHelpLexer extends Lexer {
 			"",
 			"",
 			"",
+			"\1\130\37\uffff\1\130",
+			"",
+			"\1\131\37\uffff\1\131",
+			"\1\133\37\uffff\1\133",
 			"",
 			"",
-			"\1\127\37\uffff\1\127",
+			"",
+			"",
+			"\1\135\37\uffff\1\135",
+			"\1\136\37\uffff\1\136",
 			"",
 			"",
 			"",
 			"",
+			"\1\137\37\uffff\1\137",
+			"\1\140\37\uffff\1\140",
+			"\1\142\37\uffff\1\142",
 			"",
 			""
 	};
@@ -3045,7 +3128,7 @@ public class MetaHelpLexer extends Lexer {
 		}
 		@Override
 		public String getDescription() {
-			return "1:1: Tokens : ( T_TRUNCATE | T_CREATE | T_ALTER | T_KEYSPACE | T_DROP | T_TABLE | T_USE | T_SET | T_OPTIONS | T_ANALYTICS | T_CONSISTENCY | T_EXPLAIN | T_PLAN | T_FOR | T_INDEX | T_HASH | T_LIST | T_REMOVE | T_UDF | T_PROCESS | T_TRIGGER | T_STOP | T_USING | T_TYPE | T_ADD | T_PRIMARY | T_KEY | T_INSERT | T_INTO | T_COMPACT | T_STORAGE | T_CLUSTERING | T_ORDER | T_SELECT | T_VALUES | T_UPDATE | T_FROM | T_DELETE | T_DISABLE | T_DISTINCT | T_COUNT | T_AS | T_BETWEEN | T_ASC | T_DESC | T_LIKE | T_HELP | T_EXIT | T_QUIT | T_DATATYPES | T_LUCENE | T_DEFAULT | T_DESCRIBE | T_SEMICOLON | WS );";
+			return "1:1: Tokens : ( T_TRUNCATE | T_CREATE | T_ALTER | T_KEYSPACE | T_KEYSPACES | T_DROP | T_TABLE | T_TABLES | T_USE | T_SET | T_OPTIONS | T_ANALYTICS | T_CONSISTENCY | T_EXPLAIN | T_PLAN | T_FOR | T_INDEX | T_HASH | T_LIST | T_REMOVE | T_UDF | T_PROCESS | T_TRIGGER | T_STOP | T_USING | T_TYPE | T_ADD | T_PRIMARY | T_KEY | T_INSERT | T_INTO | T_COMPACT | T_STORAGE | T_CLUSTERING | T_ORDER | T_SELECT | T_VALUES | T_UPDATE | T_FROM | T_DELETE | T_DISABLE | T_DISTINCT | T_COUNT | T_AS | T_BETWEEN | T_ASC | T_DESC | T_LIKE | T_HELP | T_EXIT | T_QUIT | T_DATATYPES | T_LUCENE | T_DEFAULT | T_DESCRIBE | T_SEMICOLON | WS );";
 		}
 	}
 

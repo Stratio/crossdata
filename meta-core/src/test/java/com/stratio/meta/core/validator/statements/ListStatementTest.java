@@ -20,25 +20,25 @@
 package com.stratio.meta.core.validator.statements;
 
 import com.stratio.meta.core.validator.BasicValidatorTest;
-import org.testng.annotations.Test;
 
 public class ListStatementTest extends BasicValidatorTest {
 
-    @Test
+
+    //@Test
     public void validateOk(){
         String inputText = "LIST PROCESS;";
       validateOk(inputText, "validateNotSupported");
     }
-  @Test
+  //@Test
   public void validateNotSopportedTriggerYet(){
 
     String inputText = "LIST TRIGGER;";
     validateFail(inputText, "NotSupportTriggerYet");
   }
-  @Test
+  //@Test
   public void validateNotSopportedUdfYet(){
 
     String inputText = "LIST UDF;";
     validateFail(inputText, "NotSupportUdfYet");
-  }
+
 }

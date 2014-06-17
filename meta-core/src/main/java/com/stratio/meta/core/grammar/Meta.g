@@ -94,14 +94,17 @@ fragment EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
 fragment POINT: '.';
 
 // Case-insensitive keywords
+T_DESCRIBE: D E S C R I B E;
 T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
 T_ALTER: A L T E R;
 T_KEYSPACE: K E Y S P A C E;
+T_KEYSPACES: K E Y S P A C E S;
 T_NOT: N O T;
 T_WITH: W I T H;
 T_DROP: D R O P;
 T_TABLE: T A B L E;
+T_TABLES: T A B L E S;
 T_IF: I F;
 T_EXISTS: E X I S T S;
 T_AND: A N D;
@@ -189,6 +192,7 @@ T_INTERROGATION: '?';
 T_ASTERISK: '*';
 T_GROUP: G R O U P;
 T_AGGREGATION: A G G R E G A T I O N;
+T_SUM: S U M;
 T_MAX: M A X;
 T_MIN: M I N;
 T_AVG: A V G;
@@ -198,12 +202,17 @@ T_GTE: '>' '=';
 T_LTE: '<' '=';
 T_NOT_EQUAL: '<' '>'; 
 T_TOKEN: T O K E N;
-T_SECONDS: S E C O N D S;
-T_MINUTES: M I N U T E S;
-T_HOURS: H O U R S;
-T_DAYS: D A Y S;
 T_MATCH: M A T C H;
-T_DESCRIBE: D E S C R I B E;
+T_SEC: S E C;
+T_SECS: S E C S;
+T_SECONDS: S E C O N D S;
+T_MINS: M I N S;
+T_MINUTES: M I N U T E S;
+T_HOUR: H O U R;
+T_HOURS: H O U R S;
+T_DAY: D A Y;
+T_DAYS: D A Y S;
+
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -233,7 +242,10 @@ T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 
 describeStatement returns [DescribeStatement descs]:
     T_DESCRIBE (T_KEYSPACE keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.KEYSPACE); $descs.setKeyspace($keyspace.text);}
+    	| T_KEYSPACE {$descs = new DescribeStatement(DescribeType.KEYSPACE);}
+    	| T_KEYSPACES {$descs = new DescribeStatement(DescribeType.KEYSPACES);}
         | T_TABLE tablename=getTableID { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
+        | T_TABLES {$descs = new DescribeStatement(DescribeType.TABLES);}
     )
 ;
 
@@ -441,17 +453,19 @@ selectStatement returns [SelectStatement slctst]
         boolean groupInc = false;
         boolean limitInc = false;
         boolean disable = false;
+        Map fieldsAliasesMap = new HashMap<String, String>();
+        Map tablesAliasesMap = new HashMap<String, String>();
     }:
-    T_SELECT selClause=getSelectClause T_FROM tablename=getTableID 
+    T_SELECT selClause=getSelectClause[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?    
-    (T_INNER T_JOIN { joinInc = true;} identJoin=getTableID T_ON fields=getFields)?
+    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON fields=getFields)?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses)?
     (T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
-    (T_GROUP T_BY {groupInc = true;} groupby=getList)?
+    (T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
     (T_LIMIT {limitInc = true;} constant=getConstant)?
     (T_DISABLE T_ANALYTICS {disable = true;})?
     {
-        $slctst = new SelectStatement(selClause, tablename);        
+        $slctst = new SelectStatement(selClause, tablename);
         if(windowInc)
             $slctst.setWindow(window);
         if(joinInc)
@@ -461,11 +475,14 @@ selectStatement returns [SelectStatement slctst]
         if(orderInc)
              $slctst.setOrder(ordering);
         if(groupInc)
-            $slctst.setGroup(new GroupBy(groupby)); 
+             $slctst.setGroup(groupby);
         if(limitInc)
-            $slctst.setLimit(Integer.parseInt(constant));
+             $slctst.setLimit(Integer.parseInt(constant));
         if(disable)
             $slctst.setDisableAnalytics(true);
+            
+        $slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
+        $slctst.updateTableNames();
     };
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
@@ -686,8 +703,17 @@ getOrdering returns [ArrayList<Ordering> order]
         order = new ArrayList<>();
         Ordering ordering;
     }:
-    ident1=T_IDENT {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
-    (T_COMMA identN=T_IDENT {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+    ident1=(T_KS_AND_TN | T_IDENT) {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
+    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+;
+
+getGroupBy returns [ArrayList<GroupBy> groups]
+    @init{
+        groups = new ArrayList<>();
+        GroupBy groupBy;
+    }:
+    ident1=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($ident1.text); groups.add(groupBy);}
+    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($identN.text); groups.add(groupBy);})*
 ;
 
 getWhereClauses returns [ArrayList<Relation> clauses]
@@ -713,24 +739,22 @@ getWindow returns [WindowSelect ws]:
     );
 
 getTimeUnit returns [TimeUnit unit]:
-    ( 'S' {$unit=TimeUnit.SECONDS;}
-    | 'M' {$unit=TimeUnit.MINUTES;}
-    | 'H' {$unit=TimeUnit.HOURS;}
-    | 'D' {$unit=TimeUnit.DAYS;}
-    | 's' {$unit=TimeUnit.SECONDS;}
-    | 'm' {$unit=TimeUnit.MINUTES;}
-    | 'h' {$unit=TimeUnit.HOURS;}
-    | 'd' {$unit=TimeUnit.DAYS;}
+    ( T_SEC {$unit=TimeUnit.SECONDS;}
+    | T_SECS {$unit=TimeUnit.SECONDS;}
     | T_SECONDS {$unit=TimeUnit.SECONDS;}
+    | T_MIN {$unit=TimeUnit.MINUTES;}
+    | T_MINS {$unit=TimeUnit.MINUTES;}
     | T_MINUTES {$unit=TimeUnit.MINUTES;}
+    | T_HOUR {$unit=TimeUnit.HOURS;}
     | T_HOURS {$unit=TimeUnit.HOURS;}
+    | T_DAY {$unit=TimeUnit.DAYS;}
     | T_DAYS {$unit=TimeUnit.DAYS;}
     )
 ;
 
-getSelectClause returns [SelectionClause sc]:
+getSelectClause[Map fieldsAliasesMap] returns [SelectionClause sc]:
     scc=getSelectionCount {$sc = scc;}
-    | scl=getSelectionList {$sc = scl;}
+    | scl=getSelectionList[fieldsAliasesMap] {$sc = scl;}
 ;
 
 getSelectionCount returns [SelectionCount scc]
@@ -738,7 +762,7 @@ getSelectionCount returns [SelectionCount scc]
         boolean identInc = false;
         char symbol = '*';
     }:
-    T_COUNT T_START_PARENTHESIS ( symbolStr=getCountSymbol { symbol=symbolStr.charAt(0); } ) T_END_PARENTHESIS
+    T_COUNT T_START_PARENTHESIS symbolStr=getCountSymbol { symbol=symbolStr.charAt(0); } T_END_PARENTHESIS
     (T_AS {identInc = true;} ident=T_IDENT )? 
     {
         if(identInc)
@@ -749,45 +773,52 @@ getSelectionCount returns [SelectionCount scc]
 ;
 
 getCountSymbol returns [String str]:
-    T_ASTERISK {$str = new String("*");}
+    '*' {$str = new String("*");}
     | '1' {$str = new String("1");}
     ;
 
-getSelectionList returns [SelectionList scl]
+getSelectionList[Map fieldsAliasesMap] returns [SelectionList scl]
     @init{
         boolean distinct = false;
     }:
-    (T_DISTINCT {distinct = true;})? selections=getSelection
+    (T_DISTINCT {distinct = true;})? selections=getSelection[fieldsAliasesMap]
     { $scl = new SelectionList(distinct, selections);}
 ;
 
-getSelection returns [Selection slct]
+getSelection[Map fieldsAliasesMap] returns [Selection slct]
     @init{
         SelectionSelector slsl;
         ArrayList<SelectionSelector> selections = new ArrayList<>();
     }:
     (
         T_ASTERISK { $slct = new SelectionAsterisk();}       
-        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS ident1=T_IDENT {slsl.setAlias($ident1.text);})? {selections.add(slsl);}
-            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS identN=T_IDENT {slsl.setAlias($identN.text);})? {selections.add(slsl);})*
+        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS alias1=getAlias {slsl.setAlias($alias1.text); fieldsAliasesMap.put($alias1.text, selector1);})? {selections.add(slsl);}
+            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS aliasN=getAlias {slsl.setAlias($aliasN.text); fieldsAliasesMap.put($aliasN.text, selectorN);})? {selections.add(slsl);})*
             { $slct = new SelectionSelectors(selections);}
     )
 ;
+
+getAlias returns [String alias]:
+	ident=T_IDENT {$alias=$ident.text;}
+;
+	
 
 getSelector returns [SelectorMeta slmt]
     @init{
         ArrayList<SelectorMeta> params = new ArrayList<>();
         GroupByFunction gbFunc = null;
     }:
-    ( (T_AGGREGATION {gbFunc = GroupByFunction.AGGREGATION;}
+    ( (T_SUM {gbFunc = GroupByFunction.SUM;}
        | T_MAX {gbFunc = GroupByFunction.MAX;}
        | T_MIN {gbFunc = GroupByFunction.MIN;}
        | T_AVG {gbFunc = GroupByFunction.AVG;}
        | T_COUNT {gbFunc = GroupByFunction.COUNT;}
       ) 
             T_START_PARENTHESIS 
-                (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 
-            T_END_PARENTHESIS {$slmt = new SelectorGroupBy(gbFunc, params);}
+                (select1=getSelector {params.add(select1);}
+                | T_ASTERISK {params.add(new SelectorIdentifier("*"));}
+                )?
+            T_END_PARENTHESIS {$slmt = new SelectorGroupBy(gbFunc, params.get(0));}
         | (identID=getTableID | luceneID=T_LUCENE) (
             {if (identID != null) $slmt = new SelectorIdentifier(identID); else $slmt = new SelectorIdentifier($luceneID.text);}
             | T_START_PARENTHESIS (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 
@@ -918,10 +949,12 @@ getTermOrLiteral returns [ValueCell vc]
     T_END_SBRACKET {$vc=cl;}
 ;
 
-getTableID returns [String tableID]
-    @init{
-        $tableID="";
-    }: 
+getAliasedTableID[Map tablesAliasesMap] returns [String tableID]:
+	(ident1=T_IDENT {$tableID = new String($ident1.text);}    
+    | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);}) (alias=T_IDENT {tablesAliasesMap.put($alias.text, $tableID);})?
+    ;
+    
+getTableID returns [String tableID]:
     (ident1=T_IDENT {$tableID = new String($ident1.text);}    
     | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);})
     ;

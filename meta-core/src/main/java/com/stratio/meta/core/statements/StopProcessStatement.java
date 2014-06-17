@@ -19,15 +19,16 @@
 
 package com.stratio.meta.core.statements;
 
+import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.ListType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
+import com.stratio.streaming.commons.exceptions.StratioStreamingException;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
 
@@ -37,64 +38,62 @@ import java.util.List;
 
 public class StopProcessStatement extends MetaStatement {
 
-    private String ident;
+  private String ident;
   private static final Logger LOG = Logger.getLogger(StopProcessStatement.class);
 
-    public StopProcessStatement(String ident) {
-        this.command = true;
-        this.ident = ident;
-    }    
-    
-    public String getIdent() {
-        return ident;
-    }
-    public String getStream() {
-      String StreamName="";
-      try {
-        IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
-        List<StratioStream> streamsList = stratioStreamingAPI.listStreams();
-        for (StratioStream stream : streamsList) {
-          if (stream.getQueries().size() > 0) {
-            for (StreamQuery query : stream.getQueries()) {
-              if (ident.contentEquals(query.getQueryId())){
-               StreamName=stream.getStreamName();
-              }
+  public StopProcessStatement(String ident) {
+    this.command = true;
+    this.ident = ident;
+  }
+
+  public String getIdent() {
+    return ident;
+  }
+
+  public String getStream() {
+    String StreamName="";
+    try {
+      IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
+      List<StratioStream> streamsList = stratioStreamingAPI.listStreams();
+      for (StratioStream stream : streamsList) {
+        if (stream.getQueries().size() > 0) {
+          for (StreamQuery query : stream.getQueries()) {
+            if (ident.contentEquals(query.getQueryId())){
+              StreamName=stream.getStreamName();
             }
           }
         }
-
-      } catch (Throwable t) {
-
-        t.printStackTrace();
       }
-      return StreamName;
+    } catch (Throwable t) {
+      t.printStackTrace();
     }
+    return StreamName;
+  }
 
-    public void setIdent(String ident) {
-        this.ident = ident;
-    }
+  public void setIdent(String ident) {
+    this.ident = ident;
+  }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("Stop process ");
-        sb.append(ident);
-        return sb.toString();
-    }
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("Stop process ");
+    sb.append(ident);
+    return sb.toString();
+  }
 
-    @Override
-    public String translateToCQL() {
-        return this.toString();
-    }
+  @Override
+  public String translateToCQL() {
+    return this.toString();
+  }
 
-    @Override
-    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        return new Tree(new MetaStep(MetaPath.COMMAND,this));
-    }
+  @Override
+  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+    return new Tree(new MetaStep(MetaPath.COMMAND,this));
+  }
 
   @Override
   public Result validate(MetadataManager metadata) {
-
-    QueryResult result= QueryResult.createFailQueryResult("UDF and TRIGGER not supported yet");
+    Result result= Result.createValidationErrorResult("UDF and TRIGGER not supported yet");
 
     try {
       IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
@@ -108,14 +107,18 @@ public class StopProcessStatement extends MetaStatement {
           }
         }
       }
-
     } catch (Throwable t) {
-
       t.printStackTrace();
     }
-
-
-
     return result;
+  }
+
+  public Result execute(IStratioStreamingAPI stratioStreamingAPI) {
+    try {
+      stratioStreamingAPI.removeQuery(getStream(), ident);
+    } catch(StratioStreamingException ssEx) {
+      return Result.createExecutionErrorResult("Cannot remove process"+ident);
+    }
+    return CommandResult.createCommandResult(ident + "removed.");
   }
 }

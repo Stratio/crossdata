@@ -19,12 +19,12 @@
 
 package com.stratio.meta.server.server.statements
 
-import akka.testkit.{DefaultTimeout, TestKit}
+import akka.testkit.{ImplicitSender, DefaultTimeout, TestKit}
 import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
 import com.stratio.meta.server.utilities.{createEngine, TestKitUsageSpec}
 import org.scalatest.FunSuiteLike
-import com.stratio.meta.server.config.BeforeAndAfterCassandra
+import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.server.actors.ServerActor
 import org.testng.Assert._
@@ -33,33 +33,23 @@ import com.stratio.meta.common.ask.Query
 import scala.concurrent.{Await, Future}
 import akka.pattern.ask
 import scala.concurrent.duration._
+import com.stratio.meta.communication.ACK
 
-
-class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-  with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
+class DescribeActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
   lazy val engine:Engine =  createEngine.create()
 
   lazy val serverRef = system.actorOf(Props(classOf[ServerActor],engine),"describe-actor")
 
   def executeStatement(query: String, keyspace: String, shouldExecute: Boolean) : Result = {
-    val stmt = Query(keyspace, query, "test_actor")
-    val futureExecutorResponse:Future[Any]= {
-      serverRef.ask(stmt)(3 second)
-    }
+    val stmt = Query("describe", keyspace, query, "test_actor")
 
-    var result : Result = null
-    try{
-      val r = Await.result(futureExecutorResponse, 3 seconds)
-      result = r.asInstanceOf[Result]
-    }catch{
-      case ex:Exception =>
-      fail("Cannot execute statement: " + stmt.toString + " Exception: " + ex.getMessage)
-    }
-
+    serverRef ! stmt
+    val result = receiveActorMessages(shouldExecute, false, !shouldExecute)
+  
     if(shouldExecute) {
       assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
-        + "\n error: " + result.getErrorMessage)
+        + "\n error: " + getErrorMessage(result))
     }else{
       assertTrue(result.hasError, "Statement should report an error")
     }
@@ -74,7 +64,7 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
 
   test ("describe keyspace system"){
     val query = "describe keyspace system;"
-    within(5000 millis){
+    within(7000 millis){
       val result = executeStatement(query, "", true)
       assertNotNull(result, "Cannot describe keyspace system")
     }
@@ -82,7 +72,7 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
 
   test ("describe table system.schema_columns"){
     val query = "describe table system.schema_columns;"
-    within(5000 millis){
+    within(7000 millis){
       val result = executeStatement(query, "", true)
       assertNotNull(result, "Cannot describe table system.schema_columns")
     }
@@ -90,7 +80,7 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
 
   test ("describe table schema_columns on keyspace system"){
     val query = "describe table schema_columns;"
-    within(5000 millis){
+    within(7000 millis){
       val result = executeStatement(query, "system", true)
       assertNotNull(result, "Cannot describe schema_columns on keyspace system")
     }
@@ -98,14 +88,14 @@ class DescribeActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
 
   test ("describe keyspace unknown should fail"){
     val query = "describe keyspace unknown;"
-    within(5000 millis){
+    within(7000 millis){
       val result = executeStatement(query, "", false)
     }
   }
 
   test ("describe table schema_columns on unknown keyspace should fail"){
     val query = "describe table unknown.schema_columns;"
-    within(5000 millis){
+    within(7000 millis){
       val result = executeStatement(query, "", false)
     }
   }
