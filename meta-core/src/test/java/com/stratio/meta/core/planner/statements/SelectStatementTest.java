@@ -119,9 +119,7 @@ public class SelectStatementTest extends BasicPlannerTest {
                 new SelectorIdentifier("users_info.info")));
     SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
     stmt = new SelectStatement(selClause, "demo.users");
-    Map<String, String> fields = new HashMap<String, String>();
-    fields.put("users.name", "users_info.link_name");
-    InnerJoin join = new InnerJoin("demo.users_info", fields);
+    InnerJoin join = new InnerJoin("demo.users_info", "users.name", "users_info.link_name");
     ((SelectStatement) stmt).setJoin(join);
     ((SelectStatement) stmt).setSessionKeyspace("demo");
     ((SelectStatement) stmt).validate(_metadataManager);
@@ -140,9 +138,7 @@ public class SelectStatementTest extends BasicPlannerTest {
                 new SelectorIdentifier("users_info.info")));
     SelectionClause selClause = new SelectionList(new SelectionSelectors(selectionSelectors));
     stmt = new SelectStatement(selClause, "demo.users");
-    Map<String, String> fields = new HashMap<String, String>();
-    fields.put("users.name", "users_info.link_name");
-    InnerJoin join = new InnerJoin("demo.users_info", fields);
+    InnerJoin join = new InnerJoin("demo.users_info", "users.name", "users_info.link_name");
     ((SelectStatement) stmt).setJoin(join);
     ((SelectStatement) stmt).setSessionKeyspace("demo");
     ((SelectStatement) stmt).validate(_metadataManager);
