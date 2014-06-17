@@ -23,62 +23,69 @@ import java.io.Serializable;
 
 public class ColumnMetadata implements Serializable{
 
-    /**
-     * Serial version UID in order to be Serializable.
-     */
-    private static final long serialVersionUID = -2151960196552242173L;
+  /**
+   * Serial version UID in order to be Serializable.
+   */
+  private static final long serialVersionUID = -2151960196552242173L;
 
-    /**
-     * Parent table.
-     */
-    private final String tableName;
+  /**
+   * Parent table.
+   */
+  private final String tableName;
 
-    /**
-     * Name of the column.
-     */
-    private final String columnName;
+  /**
+   * Name of the column.
+   */
+  private final String columnName;
 
-    /**
-     * Column type.
-     */
-    private ColumnType type;
+  /**
+   * Column type.
+   */
+  private ColumnType type;
 
-    /**
-     * Class constructor.
-     * @param tableName Parent table name.
-     * @param columnName Column name.
-     */
-    public ColumnMetadata(String tableName, String columnName){
-        this.tableName = tableName;
-        this.columnName = columnName;
-    }
+  /**
+   * Class constructor.
+   * @param tableName Parent table name.
+   * @param columnName Column name.
+   */
+  public ColumnMetadata(String tableName, String columnName){
+    this.tableName = tableName;
+    this.columnName = columnName;
+  }
 
-    public String getTableName() {
-        return tableName;
-    }
+  public ColumnMetadata(String tableName, String columnName,
+                        ColumnType type) {
+    this.tableName = tableName;
+    this.columnName = columnName;
+    this.type = type;
+  }
 
-    public String getColumnName(){
-        return columnName;
-    }
+  public String getTableName() {
+    return tableName;
+  }
 
-    /**
-     * Set the column type.
-     * @param type The column type.
-     */
-    public void setType(ColumnType type){
-        this.type = type;
-    }
+  public String getColumnName(){
+    return columnName;
+  }
 
-    /**
-     * Get the column type.
-     * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
-     */
-    public ColumnType getType(){
-        return type;
-    }
+  /**
+   * Set the column type.
+   * @param type The column type.
+   */
+  public void setType(ColumnType type){
+    this.type = type;
+  }
 
-    @Override
-    public String toString() {
-        return this.columnName + ' ' + this.getType();
-    }
+  /**
+   * Get the column type.
+   * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
+   */
+  public ColumnType getType(){
+    return type;
+  }
+
+  @Override
+  public String toString() {
+    return this.columnName + ' ' + this.getType();
+  }
 }
