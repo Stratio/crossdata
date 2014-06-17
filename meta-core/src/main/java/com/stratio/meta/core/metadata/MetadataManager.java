@@ -57,6 +57,9 @@ public class MetadataManager {
    */
   private final LuceneIndexHelper luceneHelper;
 
+  /**
+   * Link with the Stratio streaming API.
+   */
   private final IStratioStreamingAPI stratioStreamingAPI;
 
   /**

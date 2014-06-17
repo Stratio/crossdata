@@ -21,6 +21,7 @@ package com.stratio.meta.core.engine;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.core.api.APIManager;
 import com.stratio.meta.core.executor.Executor;
@@ -32,6 +33,7 @@ import com.stratio.streaming.api.StratioStreamingAPIFactory;
 
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -89,22 +91,32 @@ public class Engine {
    */
   public Engine(EngineConfig config) {
 
-    Cluster cluster = Cluster.builder()
-        .addContactPoints(config.getCassandraHosts())
-        .withPort(config.getCassandraPort()).build();
+    this.deepContext = initializeDeep(config);
 
-    LOG.info("Connecting to Cassandra on "
-             + Arrays.toString(config.getCassandraHosts()) + ":" + config.getCassandraPort());
-    this.session=cluster.connect();
+    this.session=initializeDB(config);
 
-    this.deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
-
-    if(!config.getSparkMaster().toLowerCase().startsWith("local")){
-      for(String jar : config.getJars()){
-        deepContext.addJar(jar);
-      }
+    System.out.println("Start Stratio Streaming now.");
+    try {
+      System.in.read();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
 
+    IStratioStreamingAPI stratioStreamingAPI = initializeStreaming(config);
+
+    parser = new Parser();
+    validator = new Validator(session, stratioStreamingAPI);
+    manager = new APIManager(session, stratioStreamingAPI);
+    planner = new Planner(session, stratioStreamingAPI);
+    executor = new Executor(session, stratioStreamingAPI, deepContext, config);
+  }
+
+  /**
+   * Initialize the connection with Stratio Streaming.
+   * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
+   * @return An instance of {@link com.stratio.streaming.api.IStratioStreamingAPI}.
+   */
+  private IStratioStreamingAPI initializeStreaming(EngineConfig config){
     IStratioStreamingAPI stratioStreamingAPI = null;
     try {
       stratioStreamingAPI = StratioStreamingAPIFactory.create().initializeWithServerConfig(
@@ -113,14 +125,57 @@ public class Engine {
           config.getZookeeperServer(),
           config.getZookeeperPort());
     } catch (Throwable t) {
-      t.printStackTrace();
+      StringBuilder sb = new StringBuilder("Cannot connect with Stratio Streaming");
+      sb.append(System.lineSeparator());
+      sb.append("Zookeeper: ");
+      sb.append(config.getZookeeperServer());
+      sb.append(":");
+      sb.append(config.getZookeeperPort());
+      sb.append(", Kafka: ");
+      sb.append(config.getKafkaServer());
+      sb.append(":");
+      sb.append(config.getKafkaPort());
+      LOG.error(sb.toString(), t);
+    }
+    return stratioStreamingAPI;
+  }
+
+  /**
+   * Initialize the connection to the underlying database.
+   * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
+   * @return A new Session.
+   */
+  private Session initializeDB(EngineConfig config){
+    Cluster cluster = Cluster.builder()
+        .addContactPoints(config.getCassandraHosts())
+        .withPort(config.getCassandraPort()).build();
+
+    LOG.info("Connecting to Cassandra on "
+             + Arrays.toString(config.getCassandraHosts()) + ":" + config.getCassandraPort());
+    Session result = null;
+
+    try {
+      result = cluster.connect();
+    }catch(NoHostAvailableException nhae){
+      LOG.error("Cannot connect to Cassandra", nhae);
     }
 
-    parser = new Parser();
-    validator = new Validator(session, stratioStreamingAPI);
-    manager = new APIManager(session, stratioStreamingAPI);
-    planner = new Planner(session, stratioStreamingAPI);
-    executor = new Executor(session, stratioStreamingAPI, deepContext, config);
+    return result;
+  }
+
+  /**
+   * Initialize the DeepSparkContext adding the required jars if the deployment is not local.
+   * @param config The {@link com.stratio.meta.core.engine.EngineConfig}
+   * @return A new context.
+   */
+  private DeepSparkContext initializeDeep(EngineConfig config){
+    DeepSparkContext result = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+    if(!config.getSparkMaster().toLowerCase().startsWith("local")){
+      for(String jar : config.getJars()){
+        result.addJar(jar);
+      }
+    }
+    return  result;
   }
 
   /**

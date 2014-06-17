@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class MetaStream {
 
@@ -67,6 +68,7 @@ public class MetaStream {
         result = CommandResult.createCommandResult("Ephemeral table '" + streamName + "' created.");
     try {
       stratioStreamingAPI.createStream(streamName, columnList);
+      //Listen so it is created.
       stratioStreamingAPI.listenStream(streamName);
 
       /*
@@ -132,8 +134,7 @@ public class MetaStream {
     final String ks = ss.getEffectiveKeyspace();
     final String streamName = ks+"_"+ss.getTableName();
     try {
-
-      final String outgoing = streamName+"_"+String.valueOf(System.currentTimeMillis());
+      final String outgoing = streamName+"_"+ UUID.randomUUID().toString();
       // Create topic
       String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
       final String queryId = stratioStreamingAPI.addQuery(streamName, query);
@@ -181,6 +182,7 @@ public class MetaStream {
           final long totalCount = stringStringJavaPairRDD.count();
           LOG.info(queryId+": Count=" + totalCount);
           if(totalCount > 0){
+            //Create resultset
             sb = new StringBuilder();
             stringStringJavaPairRDD.values().foreach(new VoidFunction<String>() {
               public CassandraResultSet resultSet = new CassandraResultSet();
@@ -216,6 +218,7 @@ public class MetaStream {
                 }
               }
             });
+            //Send resultset to client
           }
           return null;
         }
