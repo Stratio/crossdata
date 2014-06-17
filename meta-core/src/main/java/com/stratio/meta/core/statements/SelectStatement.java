@@ -494,7 +494,9 @@ public class SelectStatement extends MetaStatement {
     String effectiveKs2 = null;
     if (joinInc) {
       SelectStatement secondSelect = new SelectStatement("");
-      secondSelect.setKeyspace(join.getKeyspace());
+      if (join.getKeyspace() != null) {
+        secondSelect.setKeyspace(join.getKeyspace());
+      }
       secondSelect.setSessionKeyspace(this.sessionKeyspace);
       effectiveKs2 = secondSelect.getEffectiveKeyspace();
     }
@@ -545,17 +547,8 @@ public class SelectStatement extends MetaStatement {
     return result;
   }
 
-  private boolean checkSelectorExists(String selector) {
-    String tableName = "any";
-    String columnName = "";
-    if (selector.contains(".")) {
-      String[] tableNameAndColumn = selector.split("\\.");
-      tableName = tableNameAndColumn[0];
-      columnName = tableNameAndColumn[1];
-    } else {
-      columnName = tableName;
-    }
-    return !findColumn(tableName, columnName).hasError();
+  private boolean checkSelectorExists(SelectorIdentifier selector) {
+    return !findColumn(selector.getTable(), selector.getField()).hasError();
   }
 
   /**
@@ -569,20 +562,15 @@ public class SelectStatement extends MetaStatement {
   private Result validateJoinClause(TableMetadata tableFrom, TableMetadata tableJoin) {
     Result result = QueryResult.createSuccessQueryResult();
     if (joinInc) {
-      Map<String, String> onFields = join.getFields();
-      Iterator<Map.Entry<String, String>> onClauses = onFields.entrySet().iterator();
-      while (!result.hasError() && onClauses.hasNext()) {
-        Map.Entry<String, String> onClause = onClauses.next();
-        if (!checkSelectorExists(onClause.getKey())) {
-          result =
-              Result.createValidationErrorResult("Join selector " + onClause.getKey()
-                  + " table or column name not found");
-        }
-        if (!checkSelectorExists(onClause.getValue())) {
-          result =
-              Result.createValidationErrorResult("Join selector " + onClause.getValue()
-                  + " table or column name not found");
-        }
+      if (!checkSelectorExists(join.getLeftField())) {
+        result =
+            Result.createValidationErrorResult("Join selector " + join.getLeftField().toString()
+                + " table or column name not found");
+      }
+      if (!checkSelectorExists(join.getRightField())) {
+        result =
+            Result.createValidationErrorResult("Join selector " + join.getRightField().toString()
+                + " table or column name not found");
       }
     }
 
@@ -1498,25 +1486,20 @@ public class SelectStatement extends MetaStatement {
     firstSelect.setKeyspace(getEffectiveKeyspace());
 
     SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
-    secondSelect.setKeyspace(join.getKeyspace());
+    if (this.join.getKeyspace() != null) {
+      secondSelect.setKeyspace(join.getKeyspace());
+    }
     secondSelect.setSessionKeyspace(this.sessionKeyspace);
 
     SelectStatement joinSelect = new SelectStatement("");
 
     // ADD FIELDS OF THE JOIN
-    Map<String, String> fields = this.join.getFields();
-    for (Map.Entry<String, String> entry : fields.entrySet()) {
-      if (entry.getKey().split("\\.")[0].trim().equalsIgnoreCase(tableName)) {
-        firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(entry.getKey().split(
-            "\\.")[1])));
-        secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(entry.getValue()
-            .split("\\.")[1])));
-      } else {
-        firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(entry.getValue()
-            .split("\\.")[1])));
-        secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(entry.getKey()
-            .split("\\.")[1])));
-      }
+    if (this.join.getLeftField().getTable().trim().equalsIgnoreCase(tableName)) {
+      firstSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
+      secondSelect.addSelection(new SelectionSelector(this.join.getRightField()));
+    } else {
+      firstSelect.addSelection(new SelectionSelector(this.join.getRightField()));
+      secondSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
     }
 
     // ADD FIELDS OF THE SELECT
@@ -1554,14 +1537,10 @@ public class SelectStatement extends MetaStatement {
     joinSelect.setSelectionClause(selectionClause);
 
     // ADD MAP OF THE JOIN
-    String keyOfInnerJoin = fields.keySet().iterator().next();
-    String firstTableOfInnerJoin = keyOfInnerJoin.split("\\.")[0];
-    if (firstTableOfInnerJoin.equalsIgnoreCase(tableName)) {
-      joinSelect.setJoin(new InnerJoin("", fields));
+    if (this.join.getLeftField().getTable().equalsIgnoreCase(tableName)) {
+      joinSelect.setJoin(new InnerJoin("", this.join.getLeftField(), this.join.getRightField()));
     } else {
-      Map<String, String> changedMap = new HashMap<>();
-      changedMap.put(fields.values().iterator().next(), keyOfInnerJoin);
-      joinSelect.setJoin(new InnerJoin("", changedMap));
+      joinSelect.setJoin(new InnerJoin("", this.join.getRightField(), this.join.getLeftField()));
     }
 
     firstSelect.validate(metadata);
@@ -1670,13 +1649,8 @@ public class SelectStatement extends MetaStatement {
       String effectiveKeyspace = getEffectiveKeyspace();
       TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
 
-      int previousSize = whereCols.size();
-
       // Check if all partition columns have an equals operator
       boolean partialMatched = matchWhereColsWithPartitionKeys(tableMetadata, whereCols);
-
-      // TODO Remove??
-      boolean notPrimaryKeysPresent = (previousSize == whereCols.size());
 
       if (!partialMatched) {
 
@@ -1772,15 +1746,43 @@ public class SelectStatement extends MetaStatement {
     selectionClause.addTablename(tableName);
   }
 
-  public void replaceAliasesWithName(Map<String, String> fieldsAliasesMap,
+  private void replaceAliasesInSelect(Map<String, String> tablesAliasesMap) {
+
+    if (this.selectionClause instanceof SelectionList
+        && ((SelectionList) this.selectionClause).getSelection() instanceof SelectionSelectors) {
+      List<SelectionSelector> selectors =
+          ((SelectionSelectors) ((SelectionList) this.selectionClause).getSelection())
+              .getSelectors();
+
+      for (SelectionSelector selector : selectors) {
+        SelectorIdentifier identifier = null;
+        if (selector.getSelector() instanceof SelectorIdentifier) {
+          identifier = (SelectorIdentifier) selector.getSelector();
+        } else if (selector.getSelector() instanceof SelectorGroupBy) {
+          identifier = (SelectorIdentifier) ((SelectorGroupBy) selector.getSelector()).getParam();
+        }
+
+        if (identifier != null) {
+          String table = tablesAliasesMap.get(identifier.getTable());
+          if (table != null) {
+            identifier.setTable(table);
+          }
+        }
+      }
+    }
+  }
+
+  private void replaceAliasesInWhere(Map<String, String> fieldsAliasesMap,
       Map<String, String> tablesAliasesMap) {
 
-    // Map<String, String> aliasesMap = retrieveAliasesMap(this.getSelectionClause());
-
-    // Replacing alias in WHERE clause
     if (this.where != null) {
       for (Relation whereCol : this.where) {
         for (SelectorIdentifier id : whereCol.getIdentifiers()) {
+          String table = tablesAliasesMap.get(id.getTable());
+          if (table != null) {
+            id.setTable(table);
+          }
+
           String identifier = fieldsAliasesMap.get(id.toString());
           if (identifier != null) {
             id.setIdentifier(identifier);
@@ -1788,49 +1790,83 @@ public class SelectStatement extends MetaStatement {
         }
       }
     }
-
-    // Replacing alias in GROUP BY clause
-    if (this.group != null) {
-      for (GroupBy groupByCol : this.group) {
-        String identifier = fieldsAliasesMap.get(groupByCol.getSelectorIdentifier().toString());
-        if (identifier != null) {
-          groupByCol.getSelectorIdentifier().setIdentifier(identifier);
-        }
-      }
-    }
-
-    // Replacing alias in ORDER BY clause
-    if (this.order != null) {
-      for (Ordering orderBycol : this.order) {
-        String identifier = fieldsAliasesMap.get(orderBycol.getSelectorIdentifier().toString());
-        if (identifier != null) {
-          orderBycol.getSelectorIdentifier().setIdentifier(identifier);
-        }
-      }
-    }
-
   }
 
-  private Map<String, String> retrieveAliasesMap(SelectionClause selectionClause) {
+  private void replaceAliasesInGroupBy(Map<String, String> fieldsAliasesMap,
+      Map<String, String> tablesAliasesMap) {
 
-    Map<String, String> aliasesMap = new HashMap<>();
+    if (this.group != null) {
+      for (GroupBy groupByCol : this.group) {
+        SelectorIdentifier selectorIdentifier = groupByCol.getSelectorIdentifier();
 
-    if (selectionClause instanceof SelectionList) {
-      SelectionList selectionList = (SelectionList) selectionClause;
+        String table = tablesAliasesMap.get(selectorIdentifier.getTable());
+        if (table != null) {
+          selectorIdentifier.setTable(table);
+        }
 
-      if (selectionList.getSelection() instanceof SelectionSelectors) {
-        SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
-
-        List<SelectionSelector> selectors = selectionSelectors.getSelectors();
-        for (SelectionSelector selector : selectors) {
-          if (selector.getAlias() != null) {
-            aliasesMap.put(selector.getAlias(), selector.getSelector().toString());
-          }
+        String identifier = fieldsAliasesMap.get(selectorIdentifier.toString());
+        if (identifier != null) {
+          selectorIdentifier.setIdentifier(identifier);
         }
       }
     }
+  }
 
-    return aliasesMap;
+  private void replaceAliasesInOrderBy(Map<String, String> fieldsAliasesMap,
+      Map<String, String> tablesAliasesMap) {
+
+    if (this.order != null) {
+      for (Ordering orderBycol : this.order) {
+        SelectorIdentifier selectorIdentifier = orderBycol.getSelectorIdentifier();
+
+        String table = tablesAliasesMap.get(selectorIdentifier.getTable());
+        if (table != null) {
+          selectorIdentifier.setTable(table);
+        }
+
+        String identifier = fieldsAliasesMap.get(selectorIdentifier.toString());
+        if (identifier != null) {
+          selectorIdentifier.setIdentifier(identifier);
+        }
+      }
+    }
+  }
+
+  private void replaceAliasesInJoin(Map<String, String> tablesAliasesMap) {
+
+    if (this.join != null) {
+      String leftTable = this.join.getLeftField().getTable();
+      String tableName = tablesAliasesMap.get(leftTable);
+      if (tableName != null) {
+        this.join.getLeftField().setTable(tableName);
+      }
+
+      String rightTable = this.join.getRightField().getTable();
+      tableName = tablesAliasesMap.get(rightTable);
+      if (tableName != null) {
+        this.join.getRightField().setTable(tableName);
+      }
+    }
+  }
+
+  public void replaceAliasesWithName(Map<String, String> fieldsAliasesMap,
+      Map<String, String> tablesAliasesMap) {
+
+    // Replacing alias in SELECT clause
+    replaceAliasesInSelect(tablesAliasesMap);
+
+    // Replacing alias in WHERE clause
+    replaceAliasesInWhere(fieldsAliasesMap, tablesAliasesMap);
+
+    // Replacing alias in GROUP BY clause
+    replaceAliasesInGroupBy(fieldsAliasesMap, tablesAliasesMap);
+
+    // Replacing alias in ORDER BY clause
+    replaceAliasesInOrderBy(fieldsAliasesMap, tablesAliasesMap);
+
+    // Replacing alias in JOIN clause
+    replaceAliasesInJoin(tablesAliasesMap);
+
   }
 
   public void updateTableNames() {

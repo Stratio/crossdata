@@ -54,11 +54,64 @@ public class SelectStatementTest extends ParsingTest {
   }
 
   @Test
-  public void selectStatementJoins() {
-    for (String jp : new String[] {"field1=field2", "field3=field4 AND field1=field2"}) {
-      String inputText = "SELECT c.a, c.b FROM c INNER JOIN tablename ON " + jp + " WHERE c.x = y;";
-      testRegularStatement(inputText, "selectStatementJoins");
-    }
+  public void selectStatementJoin() {
+
+    String inputText =
+        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON field1=field2 WHERE c.x = y;";
+
+    String expectedText =
+        "SELECT c.a, c.b FROM c INNER JOIN tablename ON field1=field2 WHERE c.x = y;";
+
+    testRegularStatement(inputText, expectedText, "selectStatementJoins");
+  }
+
+  @Test
+  public void selectStatementAliasedColumnsJoin() {
+
+    String inputText =
+        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON c.field1=tablename.field2 WHERE c.x = y;";
+
+    String expectedText =
+        "SELECT c.a, c.b FROM c INNER JOIN tablename ON c.field1=tablename.field2 WHERE c.x = y;";
+
+    testRegularStatement(inputText, expectedText, "selectStatementJoins");
+  }
+
+  @Test
+  public void selectStatementAliasedInversedColumnsJoins() {
+
+    String inputText =
+        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON tablename.field2=c.field1 WHERE c.x = y;";
+
+    String expectedText =
+        "SELECT c.a, c.b FROM c INNER JOIN tablename ON tablename.field2=c.field1 WHERE c.x = y;";
+
+    testRegularStatement(inputText, expectedText, "selectStatementJoins");
+
+  }
+
+  @Test
+  public void selectStatementAliasedTableJoins() {
+
+    String inputText =
+        "SELECT c.a, c.b FROM table_c c INNER JOIN tablename t ON t.field2=c.field1 WHERE c.x = y;";
+
+    String expectedText =
+        "SELECT table_c.a, table_c.b FROM table_c INNER JOIN tablename ON tablename.field2=table_c.field1 WHERE table_c.x = y;";
+
+    testRegularStatement(inputText, expectedText, "selectStatementJoins");
+  }
+
+  @Test
+  public void selectStatementAliasedTableAndInversedColumnsJoins() {
+
+    String inputText =
+        "SELECT c.a, c.b FROM table_c c INNER JOIN tablename t ON c.field2=t.field1 WHERE c.x = y;";
+
+    String expectedText =
+        "SELECT table_c.a, table_c.b FROM table_c INNER JOIN tablename ON table_c.field2=tablename.field1 WHERE table_c.x = y;";
+
+    testRegularStatement(inputText, expectedText, "selectStatementJoins");
 
   }
 
