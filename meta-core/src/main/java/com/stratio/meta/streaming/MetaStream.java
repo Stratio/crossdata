@@ -3,6 +3,7 @@ package com.stratio.meta.streaming;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta.core.executor.StreamExecutor;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.constants.StreamAction;
@@ -114,15 +115,15 @@ public class MetaStream {
     return jssc;
   }
 
-  public static String listenStream(IStratioStreamingAPI stratioStreamingAPI, SelectStatement ss, EngineConfig config){
+  public static String listenStream(IStratioStreamingAPI stratioStreamingAPI, SelectStatement ss, EngineConfig config, JavaStreamingContext jssc){
     final String streamName = ss.getEffectiveKeyspace()+"_"+ss.getTableName();
     try {
-      JavaStreamingContext jssc = createSparkStreamingContext(config);
 
       String outgoing = streamName+"_"+String.valueOf(System.currentTimeMillis());
       // Create topic
       String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
       final String queryId = stratioStreamingAPI.addQuery(streamName, query);
+      StreamExecutor.addContext(queryId, jssc);
       LOG.info("queryId = " + queryId);
       stratioStreamingAPI.listenStream(outgoing);
 
