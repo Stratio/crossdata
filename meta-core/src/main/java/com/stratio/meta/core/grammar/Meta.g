@@ -33,6 +33,7 @@ options {
     import java.util.Map;
     import java.util.Set;
     import java.util.HashSet;
+    import org.apache.commons.lang3.tuple.MutablePair;
 }
 
 @members {
@@ -449,10 +450,11 @@ selectStatement returns [SelectStatement slctst]
         boolean disable = false;
         Map fieldsAliasesMap = new HashMap<String, String>();
         Map tablesAliasesMap = new HashMap<String, String>();
+        MutablePair<String, String> pair = new MutablePair<>();
     }:
     T_SELECT selClause=getSelectClause[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?    
-    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON fields=getFields)?
+    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON getFields[pair])?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses)?
     (T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
     (T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
@@ -463,7 +465,7 @@ selectStatement returns [SelectStatement slctst]
         if(windowInc)
             $slctst.setWindow(window);
         if(joinInc)
-            $slctst.setJoin(new InnerJoin(identJoin, fields)); 
+            $slctst.setJoin(new InnerJoin(identJoin, pair.getLeft(), pair.getRight())); 
         if(whereInc)
              $slctst.setWhere(whereClauses); 
         if(orderInc)
@@ -717,12 +719,8 @@ getWhereClauses returns [ArrayList<Relation> clauses]
     rel1=getRelation {clauses.add(rel1);} (T_AND relN=getRelation {clauses.add(relN);})*
 ;
 
-getFields returns [Map<String, String> fields]
-    @init{
-        fields = new HashMap<>();
-    }:
-    ident1L=getTableID T_EQUAL ident1R=getTableID { fields.put(ident1L, ident1R);}
-    (T_AND identNL=getTableID T_EQUAL identNR=getTableID { fields.put(identNL, identNR);})* 
+getFields[MutablePair pair]:
+    ident1L=getTableID { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableID { pair.setRight(ident1R); } 
 ;
 
 getWindow returns [WindowSelect ws]:
@@ -789,8 +787,8 @@ getSelection[Map fieldsAliasesMap] returns [Selection slct]
     }:
     (
         T_ASTERISK { $slct = new SelectionAsterisk();}       
-        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS alias1=getAlias {slsl.setAlias($alias1.text); fieldsAliasesMap.put($alias1.text, selector1);})? {selections.add(slsl);}
-            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS aliasN=getAlias {slsl.setAlias($aliasN.text); fieldsAliasesMap.put($aliasN.text, selectorN);})? {selections.add(slsl);})*
+        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS alias1=getAlias {slsl.setAlias($alias1.text); fieldsAliasesMap.put($alias1.text, selector1.toString());})? {selections.add(slsl);}
+            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS aliasN=getAlias {slsl.setAlias($aliasN.text); fieldsAliasesMap.put($aliasN.text, selectorN.toString());})? {selections.add(slsl);})*
             { $slct = new SelectionSelectors(selections);}
     )
 ;

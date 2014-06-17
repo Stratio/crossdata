@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -197,10 +196,8 @@ public class Bridge {
     }
 
     // JOIN
-    Map<String, String> fields = ss.getJoin().getColNames();
-    Set<String> keys = fields.keySet();
-    String keyTableLeft = keys.iterator().next();
-    String keyTableRight = fields.get(keyTableLeft);
+    String keyTableLeft = ss.getJoin().getLeftField().getField();
+    String keyTableRight = ss.getJoin().getRightField().getField();
 
     LOG.debug("INNER JOIN on: " + keyTableLeft + " - " + keyTableRight);
 
