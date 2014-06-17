@@ -42,3 +42,4 @@ public class ListStatementTest extends BasicValidatorTest {
     validateFail(inputText, "NotSupportUdfYet");
 
 }
+}
