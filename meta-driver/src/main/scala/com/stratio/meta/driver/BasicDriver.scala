@@ -26,14 +26,11 @@ import com.stratio.meta.driver.actor.ProxyActor
 import com.stratio.meta.common.result._
 import com.stratio.meta.common.ask.{APICommand, Command, Query, Connect}
 import org.apache.log4j.Logger
-import  scala.concurrent.duration._
+import scala.concurrent.duration._
 import java.util.UUID
 import akka.pattern.ask
 import com.stratio.meta.driver.result.SyncResultHandler
 import com.stratio.meta.common.exceptions._
-import com.stratio.meta.common.ask.Connect
-import com.stratio.meta.common.ask.Command
-import com.stratio.meta.common.ask.Query
 
 class BasicDriver extends DriverConfig{
 
@@ -42,6 +39,9 @@ class BasicDriver extends DriverConfig{
    */
   override lazy val logger = Logger.getLogger(getClass)
 
+  /**
+   * Association between a {@link IResultHandler} callback and the queryId.
+   */
   lazy val queries: java.util.Map[String, IResultHandler] = new java.util.HashMap[String, IResultHandler]
 
   lazy val system = ActorSystem("MetaDriverSystem",config)
@@ -74,11 +74,13 @@ class BasicDriver extends DriverConfig{
    * @param targetCatalog The target catalog.
    * @param query The query.
    * @param callback The callback object.
+   * @return The query identifier.
    */
-  def asyncExecuteQuery(user:String, targetCatalog: String, query: String, callback: IResultHandler){
+  def asyncExecuteQuery(user:String, targetCatalog: String, query: String, callback: IResultHandler) : String = {
     val queryId = UUID.randomUUID()
     queries.put(queryId.toString, callback)
     sendQuery(new Query(queryId.toString, targetCatalog, query, user))
+    queryId.toString
   }
 
   /**
@@ -94,13 +96,11 @@ class BasicDriver extends DriverConfig{
   @throws(classOf[UnsupportedException])
   def executeQuery(user:String, targetKs: String, query: String): Result = {
     val queryId = UUID.randomUUID()
-    //retryPolitics.askRetry(proxyActor,new Query(queryId.toString, targetKs,query,user))
     val callback = new SyncResultHandler
     queries.put(queryId.toString, callback)
     sendQuery(new Query(queryId.toString, targetKs,query,user))
-    var r = callback.waitForResult()
+    val r = callback.waitForResult()
     queries.remove(queryId.toString)
-    //println("Class: " + r)
     r
   }
 
@@ -120,7 +120,7 @@ class BasicDriver extends DriverConfig{
    *         containing the error message.
    */
   def listTables(catalogName: String): MetadataResult = {
-    var params : java.util.List[String] = new java.util.ArrayList[String]
+    val params : java.util.List[String] = new java.util.ArrayList[String]
     params.add(catalogName)
     val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_TABLES, params))
     result.asInstanceOf[MetadataResult]
@@ -131,14 +131,18 @@ class BasicDriver extends DriverConfig{
    * @return A MetadataResult with a map of columns.
    */
   def listFields(catalogName: String, tableName: String): MetadataResult = {
-    var params : java.util.List[String] = new java.util.ArrayList[String]
+    val params : java.util.List[String] = new java.util.ArrayList[String]
     params.add(catalogName)
     params.add(tableName)
     val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_COLUMNS, params))
     result.asInstanceOf[MetadataResult]
   }
 
-  def sendQuery(message: AnyRef){
+  /**
+   * Send a message to the proxy actor.
+   * @param message The message.
+   */
+  protected def sendQuery(message: AnyRef){
     proxyActor.ask(message)(5 second)
   }
 
@@ -149,6 +153,35 @@ class BasicDriver extends DriverConfig{
    */
   def getResultHandler(queryId: String): IResultHandler = {
     queries.get(queryId)
+  }
+
+  /**
+   * Remove a result handler from the internal map of callbacks.
+   * @param queryId The query identifier associated with the callback.
+   * @return Whether the callback has been removed.
+   */
+  def removeResultHandler(queryId: String) : Boolean = {
+    queries.remove(queryId) != null
+  }
+
+  /**
+   * Remove a result handler from the internal map of callbacks.
+   * @param resultHandler The target result handler.
+   * @return Whether the callback has been removed.
+   */
+  def removeResultHandler(resultHandler: IResultHandler) : Boolean = {
+    var targetKey : String = null
+    val queriesIt = queries.entrySet().iterator()
+    while(queriesIt.hasNext && targetKey != null){
+      val m = queriesIt.next()
+      if(m.getValue.equals(resultHandler)){
+        targetKey = m.getKey
+      }
+    }
+    if(targetKey != null){
+      queries.remove(targetKey)
+    }
+    return targetKey != null
   }
 
   /**

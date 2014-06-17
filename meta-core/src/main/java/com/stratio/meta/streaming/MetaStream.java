@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class MetaStream {
 
@@ -61,6 +62,7 @@ public class MetaStream {
         result = CommandResult.createCommandResult("Ephemeral table '" + streamName + "' created.");
     try {
       stratioStreamingAPI.createStream(streamName, columnList);
+      //Listen so it is created.
       stratioStreamingAPI.listenStream(streamName);
     } catch (Throwable t) {
       result = Result.createExecutionErrorResult(streamName + " couldn't be created"+System.lineSeparator()+t.getMessage());
@@ -93,7 +95,7 @@ public class MetaStream {
         }
       }
 
-      String outgoing = streamName+"_"+String.valueOf(System.currentTimeMillis());
+      String outgoing = streamName+"_"+ UUID.randomUUID().toString();
       // Create topic
       String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
       System.out.println("TRACE: Query = "+query);
@@ -126,6 +128,7 @@ public class MetaStream {
           final long totalCount = stringStringJavaPairRDD.count();
           LOG.info(queryId+": Count=" + totalCount);
           if(totalCount > 0){
+            //Create resultset
             sb = new StringBuilder();
             stringStringJavaPairRDD.values().foreach(new VoidFunction<String>() {
               @Override
@@ -138,6 +141,7 @@ public class MetaStream {
                 sb.append(cols).append(System.lineSeparator());
               }
             });
+            //Send resultset to client
           }
           return null;
         }

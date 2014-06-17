@@ -27,6 +27,8 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
+import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
@@ -77,9 +79,12 @@ public class Metash {
   /**
    * Current keyspace from the point of view of the user session.
    */
-  private String currentKeyspace = "";
-
   private String currentCatalog = "";
+
+  /**
+   * Asynchronous result handler.
+   */
+  private final IResultHandler resultHandler;
 
   /**
    * Driver that connects to the META servers.
@@ -92,12 +97,19 @@ public class Metash {
   private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
 
   /**
+   * Whether the asynchronous interface should be used.
+   */
+  private boolean useAsync = false;
+
+  /**
    * Class constructor.
    */
-  public Metash() {
+  public Metash(boolean useAsync) {
     HelpManager hm = new HelpManager();
     help = hm.loadHelpContent();
+    this.useAsync = useAsync;
     initialize();
+    resultHandler = new ShellResultHandler(this);
   }
 
   /**
@@ -128,12 +140,25 @@ public class Metash {
    * 
    * @param msg The message.
    */
-  private void println(String msg) {
+  public void println(String msg) {
     try {
       console.getOutput().write(msg + System.lineSeparator());
     } catch (IOException e) {
       LOG.error("Cannot print to console.", e);
     }
+  }
+
+  /**
+   * Flush the console output and show the current prompt.
+   */
+  protected void flush(){
+    try {
+      console.getOutput().write(console.getPrompt());
+      console.flush();
+    } catch (IOException e) {
+      LOG.error("Cannot flush console.", e);
+    }
+
   }
 
   /**
@@ -189,7 +214,21 @@ public class Metash {
    * 
    * @param cmd The query.
    */
-  private void executeQuery(String cmd) {
+  private void executeQuery(String cmd){
+    if(this.useAsync){
+      System.out.println("Async");
+      executeAsyncQuery(cmd);
+    }else{
+      System.out.println("Sync");
+      executeSyncQuery(cmd);
+    }
+  }
+
+  /**
+   * Execute a query using synchronous execution.
+   * @param cmd The query.
+   */
+  private void executeSyncQuery(String cmd) {
     LOG.debug("Command: " + cmd);
     long queryStart = System.currentTimeMillis();
     long queryEnd = queryStart;
@@ -201,9 +240,27 @@ public class Metash {
       println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
       println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
     } catch (Exception e) {
-      queryEnd = System.currentTimeMillis();
       println("\033[31mError:\033[0m " + e.getMessage());
     }
+  }
+
+  /**
+   * Remove the {@link com.stratio.meta.common.result.IResultHandler} associated with a query.
+   * @param queryId The query identifier.
+   */
+  protected void removeResultsHandler(String queryId){
+    metaDriver.removeResultHandler(queryId);
+  }
+
+  /**
+   * Execute a query asynchronously.
+   * @param cmd The query.
+   */
+  private void executeAsyncQuery(String cmd){
+    String queryId = metaDriver.asyncExecuteQuery(currentUser, currentCatalog, cmd, resultHandler);
+    LOG.debug("Async command: " + cmd + " id: " + queryId);
+    println("QID: " + queryId);
+    println("");
   }
 
   /**
@@ -212,7 +269,7 @@ public class Metash {
    * 
    * @param result The result returned by the driver.
    */
-  private void updatePrompt(Result result) {
+  protected void updatePrompt(Result result) {
     if (QueryResult.class.isInstance(result)) {
       QueryResult qr = QueryResult.class.cast(result);
       if (qr.isCatalogChanged()) {
@@ -232,11 +289,14 @@ public class Metash {
   public boolean connect() {
     boolean result = true;
     metaDriver = new BasicDriver();
-
-    Result connectionResult = metaDriver.connect(currentUser);
-    LOG.info("Driver connections established");
-    LOG.info(ConsoleUtils.stringResult(connectionResult));
-
+    try {
+      Result connectionResult = metaDriver.connect(currentUser);
+      LOG.info("Driver connections established");
+      LOG.info(ConsoleUtils.stringResult(connectionResult));
+    }catch (ConnectionException ce){
+      result = false;
+      LOG.error(ce.getMessage());
+    }
     return result;
   }
 
@@ -284,6 +344,8 @@ public class Metash {
             break;
           }
           sb = new StringBuilder();
+        }else if(sb.toString().toLowerCase().startsWith("help")){
+          showHelp(sb.toString());
         }
       }
     } catch (IOException ex) {
@@ -297,7 +359,12 @@ public class Metash {
    * @param args The list of arguments. Not supported at the moment.
    */
   public static void main(String[] args) {
-    Metash sh = new Metash();
+    boolean async = false;
+    if(args.length > 0){
+      async = "--async".equals(args[0]);
+      LOG.info("Using asynchronous behaviour");
+    }
+    Metash sh = new Metash(async);
     if (sh.connect()) {
       sh.loop();
     }
