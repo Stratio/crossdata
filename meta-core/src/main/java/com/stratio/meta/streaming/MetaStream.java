@@ -5,6 +5,7 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.commons.constants.StreamAction;
 import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
 import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
@@ -125,6 +126,23 @@ public class MetaStream {
       LOG.info("queryId = " + queryId);
       stratioStreamingAPI.listenStream(outgoing);
 
+      boolean outgoingStreamCreated = false;
+      while(!outgoingStreamCreated){
+        Thread.sleep(1000);
+        List<StratioStream> createdStreams = stratioStreamingAPI.listStreams();
+        for(StratioStream stratioStream: createdStreams){
+          for(StreamAction streamAction: stratioStream.getActiveActions()){
+            System.out.println(
+                "TRACE: streamAction(" + stratioStream.getStreamName() + ") = " + streamAction
+                    .toString());
+          }
+          if(stratioStream.getStreamName().equalsIgnoreCase(outgoing)){
+            System.out.println("TRACE: "+stratioStream.getStreamName()+" found.");
+            outgoingStreamCreated = true;
+          }
+        }
+      }
+
       // Create stream reading outgoing Kafka topic
       Map<String, Integer> topics = new HashMap<>();
       //Map of (topic_name -> numPartitions) to consume. Each partition is consumed in its own thread
@@ -149,6 +167,7 @@ public class MetaStream {
         public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
           final long totalCount = stringStringJavaPairRDD.count();
           LOG.info(queryId+": Count=" + totalCount);
+          // Create CassandraResult
           if(totalCount > 0){
             sb = new StringBuilder();
             stringStringJavaPairRDD.values().foreach(new VoidFunction<String>() {
@@ -163,6 +182,7 @@ public class MetaStream {
               }
             });
           }
+          // Send CassandraResult
           return null;
         }
       });
