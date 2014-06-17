@@ -16,17 +16,7 @@
 
 package com.stratio.meta.sh;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-
-import jline.console.ConsoleReader;
-
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
-
+import com.stratio.meta.common.exceptions.ConnectionException;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
@@ -38,6 +28,17 @@ import com.stratio.meta.sh.help.generated.MetaHelpParser;
 import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
+
+import jline.console.ConsoleReader;
+
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 
 /**
  * Interactive META console.
@@ -232,11 +233,14 @@ public class Metash {
   public boolean connect() {
     boolean result = true;
     metaDriver = new BasicDriver();
-
-    Result connectionResult = metaDriver.connect(currentUser);
-    LOG.info("Driver connections established");
-    LOG.info(ConsoleUtils.stringResult(connectionResult));
-
+    try {
+      Result connectionResult = metaDriver.connect(currentUser);
+      LOG.info("Driver connections established");
+      LOG.info(ConsoleUtils.stringResult(connectionResult));
+    } catch (ConnectionException ce){
+      result = false;
+      LOG.error(ce.getMessage());
+    }
     return result;
   }
 

@@ -817,7 +817,7 @@ public class SelectStatement extends MetaStatement {
     Result result = QueryResult.createSuccessQueryResult();
 
     if(streamMode && (selectionClause instanceof SelectionList) && (((SelectionList) selectionClause).getTypeSelection() == Selection.TYPE_SELECTOR)){
-      List<String> colNames = metadata.getStreamingColumnNames(getEffectiveKeyspace()+"."+tableName);
+      List<String> colNames = metadata.getStreamingColumnNames(getEffectiveKeyspace()+"_"+tableName);
       SelectionList selectionList = (SelectionList) selectionClause;
       SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
       selectionSelectors.getSelectors();
@@ -1086,7 +1086,7 @@ public class SelectStatement extends MetaStatement {
         ids.add(ctv.getColumn());
       }
     } else {
-      ids = getSelectionClause().getIds();
+      ids = getSelectionClause().getFields();
     }
 
     String idsStr = Arrays.toString(ids.toArray()).replace("[", "").replace("]", "");

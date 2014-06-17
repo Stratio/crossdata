@@ -16,9 +16,6 @@
 
 package com.stratio.meta.core.structures;
 
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.TableMetadata;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +43,7 @@ public abstract class SelectionClause {
   @Override
   public abstract String toString();
 
-  public List<String> getAllIds(TableMetadata tableMetadata) {
+  public List<String> getFields() {
     List<String> ids = new ArrayList<>();
     if(type == TYPE_COUNT){
       return ids;
@@ -54,9 +51,7 @@ public abstract class SelectionClause {
     SelectionList sList = (SelectionList) this;
     Selection selection = sList.getSelection();
     if(selection.getType() == Selection.TYPE_ASTERISK){
-      for(ColumnMetadata cm: tableMetadata.getColumns()){
-        ids.add(cm.getName());
-      }
+      ids.add("*");
       return ids;
     }
     SelectionSelectors sSelectors = (SelectionSelectors) selection;

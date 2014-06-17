@@ -52,7 +52,7 @@ public class StreamExecutor {
         ColumnNameType streamColumn = new ColumnNameType(column.getKey(), type);
         columnList.add(streamColumn);
       }
-      return MetaStream.createStream(stratioStreamingAPI, tableEphemeralName, columnList);
+      return MetaStream.createStream(stratioStreamingAPI, tableEphemeralName, columnList, config);
     } else if (stmt instanceof SelectStatement){
       SelectStatement ss = (SelectStatement) stmt;
       String resultStream = MetaStream.listenStream(stratioStreamingAPI, ss, config);

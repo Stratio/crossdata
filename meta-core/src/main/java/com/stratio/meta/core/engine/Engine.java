@@ -32,7 +32,6 @@ import com.stratio.streaming.api.StratioStreamingAPIFactory;
 
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -104,13 +103,6 @@ public class Engine {
       for(String jar : config.getJars()){
         deepContext.addJar(jar);
       }
-    }
-
-    System.out.println("Start Stratio Streaming now.");
-    try {
-      System.in.read();
-    } catch (IOException e) {
-      e.printStackTrace();
     }
 
     IStratioStreamingAPI stratioStreamingAPI = null;
