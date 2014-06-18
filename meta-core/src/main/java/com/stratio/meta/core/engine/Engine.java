@@ -95,13 +95,6 @@ public class Engine {
 
     this.session=initializeDB(config);
 
-    System.out.println("Start Stratio Streaming now.");
-    try {
-      System.in.read();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
     IStratioStreamingAPI stratioStreamingAPI = initializeStreaming(config);
 
     parser = new Parser();

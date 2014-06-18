@@ -20,7 +20,10 @@
 
 package com.stratio.meta.core.executor;
 
+import com.stratio.meta.common.actor.ActorResultListener;
+import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.CreateTableStatement;
@@ -39,6 +42,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import akka.actor.ActorRef;
+
 public class StreamExecutor {
 
   private static HashMap<String, JavaStreamingContext> streamContexts = new HashMap<>();
@@ -47,7 +52,10 @@ public class StreamExecutor {
 
   }
 
-  public static Result execute(MetaStatement stmt, IStratioStreamingAPI stratioStreamingAPI, EngineConfig config) {
+  public static Result execute(
+      String queryId,
+      MetaStatement stmt, IStratioStreamingAPI stratioStreamingAPI,
+      EngineConfig config, ActorResultListener callbackActor) {
     if (stmt instanceof CreateTableStatement) {
       CreateTableStatement cts= (CreateTableStatement) stmt;
       String tableEphemeralName= cts.getEffectiveKeyspace()+"_"+cts.getTableName() ;
@@ -57,12 +65,15 @@ public class StreamExecutor {
         ColumnNameType streamColumn = new ColumnNameType(column.getKey(), type);
         columnList.add(streamColumn);
       }
-      return MetaStream.createStream(stratioStreamingAPI, tableEphemeralName, columnList, config);
+      return MetaStream.createStream(queryId, stratioStreamingAPI, tableEphemeralName, columnList, config);
     } else if (stmt instanceof SelectStatement){
       SelectStatement ss = (SelectStatement) stmt;
       JavaStreamingContext newContext = MetaStream.createSparkStreamingContext(config);
-      String resultStream = MetaStream.listenStream(stratioStreamingAPI, ss, config, newContext);
-      return CommandResult.createCommandResult(resultStream);
+      MetaStream.listenStream(queryId, stratioStreamingAPI, ss, config, newContext, callbackActor);
+      QueryResult r = QueryResult.createQueryResult(new CassandraResultSet());
+      r.setLastResultSet();
+      return r;
+
     } else {
       return Result.createExecutionErrorResult("Not supported yet.");
     }

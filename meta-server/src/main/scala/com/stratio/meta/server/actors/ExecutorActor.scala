@@ -24,17 +24,20 @@ import com.stratio.meta.core.utils.{Tree, MetaPath, MetaQuery}
 import com.stratio.meta.core.executor.Executor
 import org.apache.log4j.Logger
 import com.stratio.meta.common.result.{Result, QueryResult}
+import java.util
+import scala.util
+import com.stratio.meta.common.actor.ActorResultListener
 
 object ExecutorActor{
   def props(executor:Executor): Props = Props(new ExecutorActor(executor))
 }
 
-class ExecutorActor(executor:Executor) extends Actor with TimeTracker{
+class ExecutorActor(executor:Executor) extends Actor with TimeTracker with ActorResultListener{
 
   /**
    * Map that associates a query identifier with the sender that sent that query.
    */
-  var senderMap : Map[String, ActorRef] = _
+  var senderMap : java.util.Map[String, ActorRef] = new java.util.HashMap[String, ActorRef]()
 
 
   val log =Logger.getLogger(classOf[ExecutorActor])
@@ -43,15 +46,14 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker{
   override def receive: Receive = {
 
     case query:MetaQuery if query.getPlan.involvesStreaming() =>
-      System.out.println(">>>>> Streaming query");
-      this.senderMap += (query.getQueryId -> sender)
-      val result = executor.executeQuery(query).getResult
-      senderMap -= (query.getQueryId)
-      System.out.println("<<<<<<<<<<<<<<<<<<<<< Finish streaming query");
+      senderMap.put(query.getQueryId, sender)
+      val result = executor.executeQuery(query, this).getResult
+      processResults(result)
+      senderMap.remove(query.getQueryId)
     case query:MetaQuery if !query.hasError=> {
       log.debug("Init Executor Task")
       val timer=initTimer()
-      val result = executor.executeQuery(query).getResult
+      val result = executor.executeQuery(query, this).getResult
       sender ! result
       finishTimer(timer)
       log.debug("Finish Executor Task")
@@ -64,14 +66,11 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker{
     }
   }
 
-  /**
-   * Send partial results to an actor.
-   * @param queryId The query identifier.
-   * @param result The partial results.
-   */
-  def sendResults(queryId: String, result: Result){
-    System.out.println("Sending partial results, QID: " + result.getQueryId
-                       + " results: " + result.asInstanceOf[QueryResult].getResultSet.size());
-    this.senderMap.get(queryId).get ! result
+  override def processResults(result: Result): Unit = {
+    val r = result.asInstanceOf[QueryResult]
+    //System.out.println("####################################################################################3############################################## "
+    //                   + "Sending partial results: " + !r.isLastResultSet + ", QID: " + result.getQueryId
+    //                   + " page: " + r.getResultPage + " results: " + r.getResultSet.size());
+    senderMap.get(result.getQueryId) ! result
   }
 }

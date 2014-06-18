@@ -39,16 +39,16 @@ import java.util.List;
 
 public class StopProcessStatement extends MetaStatement {
 
-  private String ident;
+  private String queryId;
   private static final Logger LOG = Logger.getLogger(StopProcessStatement.class);
 
-  public StopProcessStatement(String ident) {
+  public StopProcessStatement(String queryId) {
     this.command = true;
-    this.ident = ident;
+    this.queryId = queryId;
   }
 
-  public String getIdent() {
-    return ident;
+  public String getQueryId() {
+    return queryId;
   }
 
   public String getStream() {
@@ -59,7 +59,7 @@ public class StopProcessStatement extends MetaStatement {
       for (StratioStream stream : streamsList) {
         if (stream.getQueries().size() > 0) {
           for (StreamQuery query : stream.getQueries()) {
-            if (ident.contentEquals(query.getQueryId())){
+            if (queryId.contentEquals(query.getQueryId())){
               StreamName=stream.getStreamName();
             }
           }
@@ -71,14 +71,14 @@ public class StopProcessStatement extends MetaStatement {
     return StreamName;
   }
 
-  public void setIdent(String ident) {
-    this.ident = ident;
+  public void setQueryId(String queryId) {
+    this.queryId = queryId;
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("Stop process ");
-    sb.append(ident);
+    sb.append(queryId);
     return sb.toString();
   }
 
@@ -94,9 +94,10 @@ public class StopProcessStatement extends MetaStatement {
 
   @Override
   public Result validate(MetadataManager metadata) {
+    //TODO: Check user query identifier.
     Result result= Result.createValidationErrorResult("UDF and TRIGGER not supported yet");
 
-    StratioStream stream = metadata.checkQuery(ident);
+    StratioStream stream = metadata.checkQuery(queryId);
     if ( stream != null)   result = QueryResult.createSuccessQueryResult();
 
     return result;
@@ -104,11 +105,11 @@ public class StopProcessStatement extends MetaStatement {
 
   public Result execute(IStratioStreamingAPI stratioStreamingAPI) {
     try {
-      stratioStreamingAPI.removeQuery(getStream(), ident);
-      StreamExecutor.stopContext(ident);
+      stratioStreamingAPI.removeQuery(getStream(), queryId);
+      StreamExecutor.stopContext(queryId);
     } catch(StratioStreamingException ssEx) {
-      return Result.createExecutionErrorResult("Cannot remove process"+ident);
+      return Result.createExecutionErrorResult("Cannot remove process"+ queryId);
     }
-    return CommandResult.createCommandResult(ident + "removed.");
+    return CommandResult.createCommandResult(queryId + "removed.");
   }
 }

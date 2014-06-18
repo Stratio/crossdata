@@ -92,7 +92,7 @@ public class ConsoleUtils {
    */
   private static String stringQueryResult(QueryResult queryResult){
     if(queryResult.getResultSet().isEmpty()){
-      return "OK";
+      return System.lineSeparator() + "OK";
     }
 
     ResultSet resultSet = queryResult.getResultSet();
@@ -102,6 +102,9 @@ public class ConsoleUtils {
     String bar = StringUtils.repeat('-', getTotalWidth(colWidths) + (colWidths.values().size() * 3) + 1);
 
     StringBuilder sb = new StringBuilder(System.lineSeparator());
+    sb.append("Partial result: ");
+    sb.append(!queryResult.isLastResultSet());
+    sb.append(System.lineSeparator());
     sb.append(bar).append(System.lineSeparator());
     boolean firstRow = true;
     for(Row row: resultSet){

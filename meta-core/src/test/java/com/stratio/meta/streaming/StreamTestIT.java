@@ -58,6 +58,7 @@ public class StreamTestIT extends BasicCoreCassandraTest {
   }
 
   //TODO: (Streaming)
+  /*
   //@Test
   public void testEphemeralCreation() {
     String streamName = "demo.temporal_test";
@@ -84,5 +85,5 @@ public class StreamTestIT extends BasicCoreCassandraTest {
                  resultStr,
                  "testEphemeralCreation: Ephemeral table couldn't be created");
   }
-
+*/
 }

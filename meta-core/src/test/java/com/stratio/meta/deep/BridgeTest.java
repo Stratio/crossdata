@@ -119,7 +119,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
   }
 
   private Result validateOk(MetaQuery metaQuery, String methodName) {
-    MetaQuery result = executor.executeQuery(metaQuery);
+    MetaQuery result = executor.executeQuery(metaQuery, null);
     assertNotNull(result.getResult(), "Result null - " + methodName);
     assertFalse(result.hasError(), "Deep execution failed - " + methodName + ": "
         + getErrorMessage(result.getResult()));
@@ -159,7 +159,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
   private void validateFail(MetaQuery metaQuery) {
     try {
-      executor.executeQuery(metaQuery);
+      executor.executeQuery(metaQuery, null);
     } catch (Exception ex) {
       LOG.info("Correctly catched exception");
     }
@@ -167,7 +167,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
   private Result validateError(MetaQuery metaQuery, String methodName) {
 
-    return executor.executeQuery(metaQuery).getResult();
+    return executor.executeQuery(metaQuery, null).getResult();
   }
 
   // TESTS FOR CORRECT PLANS

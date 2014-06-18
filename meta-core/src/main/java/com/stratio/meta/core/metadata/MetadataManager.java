@@ -251,8 +251,8 @@ public class MetadataManager {
     List<StratioStream> streamsList = null;
     try {
       streamsList = stratioStreamingAPI.listStreams();
-    } catch (StratioEngineStatusException e) {
-      e.printStackTrace();
+    } catch (Throwable t) {
+      t.printStackTrace();
     }
     return streamsList;
   }

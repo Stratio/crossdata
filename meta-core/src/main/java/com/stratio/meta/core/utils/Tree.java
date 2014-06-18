@@ -21,6 +21,7 @@ package com.stratio.meta.core.utils;
 
 import com.datastax.driver.core.Session;
 import com.stratio.deep.context.DeepSparkContext;
+import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
@@ -35,6 +36,8 @@ import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import akka.actor.ActorRef;
 
 /**
  * Class that implements a Tree data structure.
@@ -161,11 +164,13 @@ public class Tree {
    * @param resultsFromChildren The results from the children.
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
-  public Result executeMyself(Session session,
+  public Result executeMyself(String queryId,
+        Session session,
                               IStratioStreamingAPI stratioStreamingAPI,
                               DeepSparkContext deepSparkContext,
                               EngineConfig engineConfig,
-                              List<Result> resultsFromChildren){
+                              List<Result> resultsFromChildren,
+                              ActorResultListener callbackActor){
     Result result = null;
     if(node == null){
       return QueryResult.createSuccessQueryResult();
@@ -179,7 +184,7 @@ public class Tree {
     } else if(myPath == MetaPath.DEEP){
       result = DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session, deepSparkContext, engineConfig);
     } else if(myPath == MetaPath.STREAMING){
-      result = StreamExecutor.execute(myStep.getStmt(), stratioStreamingAPI, engineConfig);
+      result = StreamExecutor.execute(queryId, myStep.getStmt(), stratioStreamingAPI, engineConfig, callbackActor);
     } else if(myPath == MetaPath.UNSUPPORTED){
       result = Result.createUnsupportedOperationErrorResult("Query not supported.");
     } else {
@@ -195,14 +200,18 @@ public class Tree {
    * @param engineConfig The engine configuration.
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
-  public Result executeTreeDownTop(Session session, IStratioStreamingAPI stratioStreamingAPI, DeepSparkContext deepSparkContext, EngineConfig engineConfig){
+  public Result executeTreeDownTop(
+      String queryId,
+      Session session, IStratioStreamingAPI stratioStreamingAPI,
+      DeepSparkContext deepSparkContext, EngineConfig engineConfig,
+      ActorResultListener callbackActor){
     // Get results from my children
     List<Result> resultsFromChildren = new ArrayList<>();
     for(Tree child: children){
-      resultsFromChildren.add(child.executeTreeDownTop(session, stratioStreamingAPI, deepSparkContext, engineConfig));
+      resultsFromChildren.add(child.executeTreeDownTop(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor));
     }
     // Execute myself and return final result
-    return executeMyself(session, stratioStreamingAPI, deepSparkContext, engineConfig, resultsFromChildren);
+    return executeMyself(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, resultsFromChildren, callbackActor);
   }
 
   /**

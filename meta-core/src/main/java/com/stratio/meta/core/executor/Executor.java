@@ -21,6 +21,7 @@ package com.stratio.meta.core.executor;
 
 import com.datastax.driver.core.Session;
 import com.stratio.deep.context.DeepSparkContext;
+import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.common.result.QueryStatus;
@@ -28,6 +29,8 @@ import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
+
+import akka.actor.ActorRef;
 
 public class Executor {
 
@@ -71,7 +74,7 @@ public class Executor {
    * @param metaQuery Query to execute embedded in a {@link com.stratio.meta.core.utils.MetaQuery}.
    * @return query executed.
    */
-  public MetaQuery executeQuery(MetaQuery metaQuery) {
+  public MetaQuery executeQuery(MetaQuery metaQuery, ActorResultListener callbackActor) {
 
     metaQuery.setStatus(QueryStatus.EXECUTED);
 
@@ -81,7 +84,8 @@ public class Executor {
     LOG.debug("Execution plan: " + System.lineSeparator() + plan.toStringDownTop());
     
     // Execute plan
-    metaQuery.setResult(plan.executeTreeDownTop(session, stratioStreamingAPI, deepSparkContext, engineConfig));
+    metaQuery.setResult(
+        plan.executeTreeDownTop(metaQuery.getQueryId(), session, stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor));
 
     return metaQuery;
   }

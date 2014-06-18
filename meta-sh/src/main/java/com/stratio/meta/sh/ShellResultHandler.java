@@ -57,14 +57,17 @@ public class ShellResultHandler implements IResultHandler{
   @Override
   public void processResult(Result result) {
     parent.updatePrompt(result);
-    parent.println("");
-    parent.println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(result));
-    parent.flush();
+    StringBuilder sb = new StringBuilder(System.lineSeparator());
+    sb.append("\033[32mResult:\033[0m QID:" + result.getQueryId() + ConsoleUtils.stringResult(result));
     if(QueryResult.class.isInstance(result)){
       QueryResult r = QueryResult.class.cast(result);
+      sb.append(System.lineSeparator()).append("Result page: " + r.getResultPage());
       if(r.isLastResultSet()){
+        sb.append(System.lineSeparator()).append("Removing results handler for: " + result.getQueryId());
         parent.removeResultsHandler(result.getQueryId());
       }
     }
+    parent.println(sb.toString());
+    parent.flush();
   }
 }

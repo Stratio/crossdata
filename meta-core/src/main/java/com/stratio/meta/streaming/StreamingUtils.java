@@ -37,6 +37,8 @@ public class StreamingUtils {
    */
   private static final Logger LOG = Logger.getLogger(StreamingUtils.class);
 
+  private static int numItem = 0;
+
   public static ColumnType metaToStreamingType(String value) {
     ColumnType type = null;
     if (value.equalsIgnoreCase("varchar") || value.equalsIgnoreCase("text") || value.equalsIgnoreCase("uuid")
@@ -63,7 +65,7 @@ public class StreamingUtils {
     return type;
   }
 
-  public static void insertRandomData(final IStratioStreamingAPI stratioStreamingAPI, final String streamName, final long duration, final int nRows) {
+  public static void insertRandomData(final IStratioStreamingAPI stratioStreamingAPI, final String streamName, final long duration, final int nRows, final int numRepetitions) {
     // Insert random data
     Thread randomThread = new Thread(){
       public void run(){
@@ -72,7 +74,7 @@ public class StreamingUtils {
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
-        for(int i=0; i<1; i++){
+        for(int i=0; i<numRepetitions; i++){
           LOG.debug("Inserting data");
           for(int j=0; j<nRows; j++){
             insertRandomData(stratioStreamingAPI, streamName);
@@ -89,12 +91,13 @@ public class StreamingUtils {
     randomThread.start();
   }
 
-  private static void insertRandomData(IStratioStreamingAPI stratioStreamingAPI, String streamName) {
+  public static void insertRandomData(IStratioStreamingAPI stratioStreamingAPI, String streamName) {
     double randomDouble = Math.random()*100;
     int randomInt = (int) (randomDouble*Math.random()*2);
     StringBuilder sb = new StringBuilder(String.valueOf(randomDouble));
     sb.append(randomInt);
-    String str = convertRandomNumberToString(sb.toString());
+    String str = convertRandomNumberToString(sb.toString()) + "___" + numItem;
+    numItem++;
     ColumnNameValue firstColumnValue = new ColumnNameValue("name", str);
     ColumnNameValue secondColumnValue = new ColumnNameValue("age", new Integer(randomInt));
     ColumnNameValue thirdColumnValue = new ColumnNameValue("rating", new Double(randomDouble));

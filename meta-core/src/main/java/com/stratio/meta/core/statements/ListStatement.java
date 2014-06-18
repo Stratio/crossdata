@@ -28,6 +28,7 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.commons.exceptions.StratioAPIGenericException;
 import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
@@ -86,8 +87,8 @@ public class ListStatement extends MetaStatement {
     List<StratioStream> streamsList = null;
     try {
       streamsList = stratioStreamingAPI.listStreams();
-    } catch (StratioEngineStatusException e) {
-      return Result.createExecutionErrorResult("Cannot retrieve streams");
+    } catch (Exception e) {
+      e.printStackTrace();
     }
     LOG.debug("Number of streams: " + streamsList.size());
     StringBuilder sb = new StringBuilder();

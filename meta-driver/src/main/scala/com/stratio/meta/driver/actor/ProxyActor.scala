@@ -73,7 +73,6 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
 
     /* The driver sends the connect message. */
     case c : Connect => {
-      //println("Send connect " + c)
       clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = true)
     }
 
@@ -85,7 +84,6 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
 
     /* ACK received */
     case ack : ACK => {
-      //println("ACK received! " + ack);
       val handler = driver.getResultHandler(ack.queryId)
       if(handler != null){
         handler.processAck(ack.queryId, ack.status)
@@ -96,31 +94,9 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
 
     /* Send a query to the remote meta-server infrastructure. */
     case message:Query => {
-      //println("Send query: " + message + " remoteActor: " + remoteActor)
-
-      //val future = clusterClientActor.ask(ClusterClient.Send(ProxyActor.remotePath(remoteActor),message,localAffinity = true), 10 seconds)
-      //val future = ask ClusterClient.Send(ProxyActor.remotePath(remoteActor),message,localAffinity = true)
       clusterClientActor ! ClusterClient.Send(ProxyActor.remotePath(remoteActor), message, localAffinity = true)
-      /*future onSuccess {
-          case r: Result => {
-            println("Result received:" + r)
-          }
-          case a: ACK => {
-            println("ACK: " + a)
-          }
-      }*/
-      //println("Query sent!")
-
-      //wait future
-      //onSuccess ACK on IRESULTHANDLER
-      //onError ...
-
-      //proxyActor waits for ack
-      //on ACK future result
-      //clusterClientActor forward  ClusterClient.Send(ProxyActor.remotePath(remoteActor),message,localAffinity = true)
     }
     case result:Result => {
-      //println("Result message received:" + result.getQueryId)
 
       val handler = driver.getResultHandler(result.getQueryId)
       if(handler != null){
@@ -131,8 +107,9 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
         }
       }else{
         logger.warn("Result not expected received: " + result.getQueryId)
+        System.out.println("Result not expected received: " + result.getQueryId)
       }
-      //clusterClientActor forward result
+
     }
     case unknown: Any => {
       logger.warn("Unknown message: " + unknown)
