@@ -70,6 +70,7 @@ public class StreamExecutor {
 
   public static void stopContext(String queryId){
     streamContexts.get(queryId).stop(false);
+    streamContexts.remove(queryId);
   }
 
   public static void addContext(String queryId, JavaStreamingContext jssc){

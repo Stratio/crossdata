@@ -1,11 +1,17 @@
 package com.stratio.meta.streaming;
 
+import com.stratio.meta.common.data.CassandraResultSet;
+import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.Row;
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.executor.StreamExecutor;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.commons.constants.StreamAction;
 import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
 import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
@@ -106,7 +112,9 @@ public class MetaStream {
     while(jssc == null){
       try {
         jssc = new JavaStreamingContext(
-            sparkContext.getConf().set("spark.driver.port", String.valueOf(StreamingUtils.findFreePort())),
+            sparkContext.getConf()
+                            .set("spark.driver.port", String.valueOf(StreamingUtils.findFreePort()))
+                            .set("spark.ui.port", String.valueOf(StreamingUtils.findFreePort())),
             new Duration(config.getStreamingDuration()));
       } catch (Throwable t){
         jssc = null;
@@ -116,17 +124,35 @@ public class MetaStream {
     return jssc;
   }
 
-  public static String listenStream(IStratioStreamingAPI stratioStreamingAPI, SelectStatement ss, EngineConfig config, JavaStreamingContext jssc){
-    final String streamName = ss.getEffectiveKeyspace()+"_"+ss.getTableName();
+  public static String listenStream(IStratioStreamingAPI stratioStreamingAPI,
+                                    SelectStatement ss,
+                                    EngineConfig config,
+                                    JavaStreamingContext jssc){
+    final String ks = ss.getEffectiveKeyspace();
+    final String streamName = ks+"_"+ss.getTableName();
     try {
-
-      String outgoing = streamName+"_"+ UUID.randomUUID().toString();
+      final String outgoing = streamName+"_"+ UUID.randomUUID().toString();
       // Create topic
       String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
       final String queryId = stratioStreamingAPI.addQuery(streamName, query);
       StreamExecutor.addContext(queryId, jssc);
       LOG.info("queryId = " + queryId);
       stratioStreamingAPI.listenStream(outgoing);
+
+      boolean outgoingStreamCreated = false;
+      while(!outgoingStreamCreated){
+        Thread.sleep(1000);
+        List<StratioStream> createdStreams = stratioStreamingAPI.listStreams();
+        for(StratioStream stratioStream: createdStreams){
+          for(StreamAction streamAction: stratioStream.getActiveActions()){
+            LOG.debug("streamAction(" + stratioStream.getStreamName() + ") = " + streamAction.toString());
+          }
+          if(stratioStream.getStreamName().equalsIgnoreCase(outgoing)){
+            LOG.debug(stratioStream.getStreamName()+" found.");
+            outgoingStreamCreated = true;
+          }
+        }
+      }
 
       // Create stream reading outgoing Kafka topic
       Map<String, Integer> topics = new HashMap<>();
@@ -142,7 +168,7 @@ public class MetaStream {
       StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, duration, 4);
 
       Time timeWindow = new Time(duration);
-      LOG.debug("Time = "+timeWindow.toString());
+      LOG.debug("Time Window = "+timeWindow.toString());
       JavaPairDStream<String, String>
           dstreamWindowed =
           dstream.window(new Duration(duration));
@@ -156,6 +182,8 @@ public class MetaStream {
             //Create resultset
             sb = new StringBuilder();
             stringStringJavaPairRDD.values().foreach(new VoidFunction<String>() {
+              public CassandraResultSet resultSet = new CassandraResultSet();
+
               @Override
               public void call(String s) throws Exception {
                 ObjectMapper objectMapper = new ObjectMapper();
@@ -164,6 +192,27 @@ public class MetaStream {
                 String cols = Arrays.toString(columns.toArray());
                 LOG.debug("Columns = " + cols);
                 sb.append(cols).append(System.lineSeparator());
+
+                List<ColumnMetadata> resultMetadata = new ArrayList<>();
+                Row metaRow = new Row();
+                for (Object column: columns) {
+                  Map columnMap = (Map) column;
+
+                  metaRow.addCell(String.valueOf(columnMap.get("column")),
+                                  new Cell(columnMap.get("value")));
+                  if((resultSet.getColumnMetadata() == null) || (resultSet.getColumnMetadata().size() < 1)){
+                    resultMetadata.add(
+                        new ColumnMetadata(outgoing,
+                                           String.valueOf(columnMap.get("column")),
+                                           StreamingUtils.streamingToMetaType((String) columnMap.get("type"))));
+                    resultSet.setColumnMetadata(resultMetadata);
+                  }
+                }
+                resultSet.add(metaRow);
+                if(resultSet.size() >= totalCount){
+                  LOG.info("resultSet.size="+resultSet.size());
+                  QueryResult queryResult = QueryResult.createSuccessQueryResult(resultSet, ks);
+                }
               }
             });
             //Send resultset to client
@@ -174,7 +223,7 @@ public class MetaStream {
 
       LOG.info("Starting the streaming context.");
       jssc.start();
-      jssc.awaitTermination((long) (duration*1.4));
+      jssc.awaitTermination((long) (duration*1.5));
 
       return sb.toString();
     } catch (Throwable t) {
