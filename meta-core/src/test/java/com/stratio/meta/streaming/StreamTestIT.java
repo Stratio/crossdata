@@ -19,23 +19,11 @@
 
 package com.stratio.meta.streaming;
 
-import com.stratio.deep.context.DeepSparkContext;
-import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.engine.EngineConfig;
-import com.stratio.meta.core.executor.StreamExecutor;
-import com.stratio.meta.core.statements.CreateTableStatement;
-import com.stratio.meta.core.structures.BooleanProperty;
-import com.stratio.meta.core.structures.Property;
-import com.stratio.meta.core.structures.PropertyNameValue;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 import com.stratio.streaming.commons.exceptions.StratioEngineConnectionException;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 
@@ -54,7 +42,7 @@ public class StreamTestIT extends BasicCoreCassandraTest {
       e.printStackTrace();
     }
     config.setSparkMaster("local");
-    MetaStream.dropStream(stratioStreamingAPI, "demo.temporal_test");
+    MetaStream.dropEphemeralTable("qid1", stratioStreamingAPI, "demo.temporal_test");
   }
 
   //TODO: (Streaming)

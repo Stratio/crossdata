@@ -23,6 +23,7 @@ import com.stratio.meta.core.statements.ExplainPlanStatement;
 import com.stratio.meta.core.statements.ListStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.StopProcessStatement;
+import com.stratio.meta.streaming.MetaStream;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
@@ -45,7 +46,7 @@ public class CommandExecutor {
    * @param session Cassandra datastax java driver {@link com.datastax.driver.core.Session}.
    * @return a {@link com.stratio.meta.common.result.Result}.
    */
-  public static Result execute(MetaStatement stmt, Session session, IStratioStreamingAPI stratioStreamingAPI) {
+  public static Result execute(String queryId, MetaStatement stmt, Session session, IStratioStreamingAPI stratioStreamingAPI) {
     try {
       if (stmt instanceof DescribeStatement) {
         DescribeStatement descStmt = (DescribeStatement) stmt;
@@ -55,7 +56,7 @@ public class CommandExecutor {
         return explainStmt.execute(session);
       } else if (stmt instanceof ListStatement){
         ListStatement listStmt = (ListStatement) stmt;
-        return listStmt.execute(stratioStreamingAPI);
+        return listStmt.execute(queryId, stratioStreamingAPI);
       } else if (stmt instanceof StopProcessStatement){
         StopProcessStatement stopStmt = (StopProcessStatement) stmt;
         return stopStmt.execute(stratioStreamingAPI);

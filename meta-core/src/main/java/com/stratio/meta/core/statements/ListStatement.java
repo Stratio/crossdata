@@ -27,6 +27,7 @@ import com.stratio.meta.core.structures.ListType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta.streaming.MetaStream;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.exceptions.StratioAPIGenericException;
 import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
@@ -83,8 +84,8 @@ public class ListStatement extends MetaStatement {
     return result;
   }
 
-  public Result execute(IStratioStreamingAPI stratioStreamingAPI) {
-    List<StratioStream> streamsList = null;
+  public Result execute(String queryId, IStratioStreamingAPI stratioStreamingAPI) {
+    /*List<StratioStream> streamsList = null;
     try {
       streamsList = stratioStreamingAPI.listStreams();
     } catch (Exception e) {
@@ -104,5 +105,7 @@ public class ListStatement extends MetaStatement {
       }
     }
     return CommandResult.createCommandResult(sb.toString());
+    */
+    return MetaStream.listStreamingQueries(queryId, stratioStreamingAPI);
   }
 }

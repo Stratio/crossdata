@@ -20,6 +20,7 @@
 
 package com.stratio.meta.core.executor;
 
+import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.result.CommandResult;
@@ -41,12 +42,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import akka.actor.ActorRef;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class StreamExecutor {
 
   private static HashMap<String, JavaStreamingContext> streamContexts = new HashMap<>();
+
+  /**
+   * Size of the streaming thread pool.
+   */
+  private final static int STREAMING_POOL_SIZE = 5;
+
+  /**
+   * Executor service for streaming queries.
+   */
+  private final static ExecutorService pool = Executors.newFixedThreadPool(STREAMING_POOL_SIZE);
+
+  private final static Map<String, StreamingExecutionThread> streamingThreads = new HashMap<>();
+
 
   public StreamExecutor() {
 
@@ -54,7 +68,7 @@ public class StreamExecutor {
 
   public static Result execute(
       String queryId,
-      MetaStatement stmt, IStratioStreamingAPI stratioStreamingAPI,
+      MetaStatement stmt, IStratioStreamingAPI stratioStreamingAPI, DeepSparkContext deepSparkContext,
       EngineConfig config, ActorResultListener callbackActor) {
     if (stmt instanceof CreateTableStatement) {
       CreateTableStatement cts= (CreateTableStatement) stmt;
@@ -65,13 +79,28 @@ public class StreamExecutor {
         ColumnNameType streamColumn = new ColumnNameType(column.getKey(), type);
         columnList.add(streamColumn);
       }
-      return MetaStream.createStream(queryId, stratioStreamingAPI, tableEphemeralName, columnList, config);
+      return MetaStream.createEphemeralTable(queryId, stratioStreamingAPI, tableEphemeralName,
+                                             columnList, config);
     } else if (stmt instanceof SelectStatement){
+      /*
       SelectStatement ss = (SelectStatement) stmt;
-      JavaStreamingContext newContext = MetaStream.createSparkStreamingContext(config);
+      JavaStreamingContext newContext = MetaStream.createSparkStreamingContext(config, 3);
       MetaStream.listenStream(queryId, stratioStreamingAPI, ss, config, newContext, callbackActor);
       QueryResult r = QueryResult.createQueryResult(new CassandraResultSet());
       r.setLastResultSet();
+      return r;
+      */
+      StreamingExecutionThread set = new StreamingExecutionThread(queryId,
+                                                                  SelectStatement.class.cast(stmt),
+                                                                  config,
+                                                                  stratioStreamingAPI,
+                                                                  deepSparkContext,
+                                                                  callbackActor);
+      streamingThreads.put(queryId, set);
+      pool.execute(set);
+      Result r = CommandResult.createCommandResult("Streaming query " + queryId + " running!");
+      r.setQueryId(queryId);
+      //callbackActor.processResults(r);
       return r;
 
     } else {
@@ -79,8 +108,13 @@ public class StreamExecutor {
     }
   }
 
+
+  /**
+   * Stop a streaming context removing it from the streamContexts map.
+   * @param queryId The query identifier.
+   */
   public static void stopContext(String queryId){
-    streamContexts.get(queryId).stop(false);
+    streamContexts.get(queryId).stop();
     streamContexts.remove(queryId);
   }
 

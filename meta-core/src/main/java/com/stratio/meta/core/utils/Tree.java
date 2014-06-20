@@ -178,13 +178,13 @@ public class Tree {
     MetaStep myStep = node;
     MetaPath myPath = myStep.getPath();
     if(myPath == MetaPath.COMMAND){
-      result = CommandExecutor.execute(myStep.getStmt(), session, stratioStreamingAPI);
+      result = CommandExecutor.execute(queryId, myStep.getStmt(), session, stratioStreamingAPI);
     } else if(myPath == MetaPath.CASSANDRA){
       result = CassandraExecutor.execute(myStep, session);
     } else if(myPath == MetaPath.DEEP){
       result = DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session, deepSparkContext, engineConfig);
     } else if(myPath == MetaPath.STREAMING){
-      result = StreamExecutor.execute(queryId, myStep.getStmt(), stratioStreamingAPI, engineConfig, callbackActor);
+      result = StreamExecutor.execute(queryId, myStep.getStmt(), stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor);
     } else if(myPath == MetaPath.UNSUPPORTED){
       result = Result.createUnsupportedOperationErrorResult("Query not supported.");
     } else {

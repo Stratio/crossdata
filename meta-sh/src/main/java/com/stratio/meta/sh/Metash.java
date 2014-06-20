@@ -229,10 +229,8 @@ public class Metash {
    */
   private void executeQuery(String cmd){
     if(this.useAsync){
-      System.out.println("Async");
       executeAsyncQuery(cmd);
     }else{
-      System.out.println("Sync");
       executeSyncQuery(cmd);
     }
   }

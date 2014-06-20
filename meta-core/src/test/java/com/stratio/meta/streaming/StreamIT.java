@@ -39,7 +39,7 @@ public class StreamIT {
 
   // TODO: To be included when streaming integration is fully accomplished
   /*
-   * @BeforeClass public void removeEphemeralTable(){ MetaStream.dropStream("demo.temporal_test"); }
+   * @BeforeClass public void removeEphemeralTable(){ MetaStream.dropEphemeralTable("demo.temporal_test"); }
    * 
    * @Test public void testEphemeralCreation() { String streamName = "demo.temporal_test";
    * Map<String, String> columns = new HashMap<>(); columns.put("name", "text"); columns.put("id",

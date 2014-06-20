@@ -123,6 +123,7 @@ public class StreamingUtils {
       socket.setReuseAddress(true);
       int port = socket.getLocalPort();
       socket.close();
+      System.out.println("Free port: " + port);
       return port;
     } catch (IOException e) {
       throw new IllegalStateException("Could not find a free port.");

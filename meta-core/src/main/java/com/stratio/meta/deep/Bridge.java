@@ -124,6 +124,7 @@ public class Bridge {
     String[] columnsSet = {};
     if (ss.getSelectionClause().getType() == SelectionClause.TYPE_SELECTION) {
       columnsSet = DeepUtils.retrieveSelectorFields(ss);
+      System.out.println("ColumnSet: " + Arrays.toString(columnsSet));
     }
     IDeepJobConfig<Cells> config =
         DeepJobConfigFactory.create().session(session).host(engineConfig.getRandomCassandraHost())

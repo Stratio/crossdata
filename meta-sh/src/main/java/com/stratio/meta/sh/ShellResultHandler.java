@@ -58,7 +58,7 @@ public class ShellResultHandler implements IResultHandler{
   public void processResult(Result result) {
     parent.updatePrompt(result);
     StringBuilder sb = new StringBuilder(System.lineSeparator());
-    sb.append("\033[32mResult:\033[0m QID:" + result.getQueryId() + ConsoleUtils.stringResult(result));
+    sb.append("\033[32mResult:\033[0m QID:" + result.getQueryId() + System.lineSeparator() + ConsoleUtils.stringResult(result));
     if(QueryResult.class.isInstance(result)){
       QueryResult r = QueryResult.class.cast(result);
       sb.append(System.lineSeparator()).append("Result page: " + r.getResultPage());

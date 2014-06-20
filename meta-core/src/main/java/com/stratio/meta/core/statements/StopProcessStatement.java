@@ -27,6 +27,7 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta.streaming.MetaStream;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 import com.stratio.streaming.commons.exceptions.StratioStreamingException;
@@ -95,21 +96,15 @@ public class StopProcessStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata) {
     //TODO: Check user query identifier.
-    Result result= Result.createValidationErrorResult("UDF and TRIGGER not supported yet");
+    //Result result= Result.createValidationErrorResult("UDF and TRIGGER not supported yet");
 
-    StratioStream stream = metadata.checkQuery(queryId);
-    if ( stream != null)   result = QueryResult.createSuccessQueryResult();
+    //StratioStream stream = metadata.checkQuery(queryId);
+    //if ( stream != null)   result = QueryResult.createSuccessQueryResult();
 
-    return result;
+    return QueryResult.createSuccessQueryResult();
   }
 
   public Result execute(IStratioStreamingAPI stratioStreamingAPI) {
-    try {
-      stratioStreamingAPI.removeQuery(getStream(), queryId);
-      StreamExecutor.stopContext(queryId);
-    } catch(StratioStreamingException ssEx) {
-      return Result.createExecutionErrorResult("Cannot remove process"+ queryId);
-    }
-    return CommandResult.createCommandResult(queryId + "removed.");
+    return MetaStream.removeStreamingQuery(this.getQueryId(), stratioStreamingAPI);
   }
 }
