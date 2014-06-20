@@ -33,6 +33,7 @@ import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
 import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.GroupByFunction;
 import com.stratio.meta.core.structures.Selection;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelectors;
@@ -185,10 +186,43 @@ public final class DeepUtils {
         if (selectorMeta instanceof SelectorIdentifier) {
           SelectorIdentifier selId = (SelectorIdentifier) selectorMeta;
           columnsSet.add(selId.getField());
+        } else if (selectorMeta instanceof SelectorGroupBy) {
+          SelectorGroupBy selectorGroupBy = (SelectorGroupBy) selectorMeta;
+          if (selectorGroupBy.getGbFunction() != GroupByFunction.COUNT) {
+            SelectorIdentifier selId = (SelectorIdentifier) selectorGroupBy.getParam();
+            columnsSet.add(selId.getField());
+          }
         }
       }
     }
     return columnsSet.toArray(new String[columnsSet.size()]);
+  }
+
+  /**
+   * Retrieve fields in selection clause.
+   * 
+   * @param ss SelectStatement of the query
+   * @return Array of fields in selection clause or null if all fields has been selected
+   */
+  public static List<String> retrieveSelectors(Selection selection) {
+
+    // Retrieve aggretation function column names
+    List<String> columnsSet = new ArrayList<>();
+    if (selection instanceof SelectionSelectors) {
+      SelectionSelectors sSelectors = (SelectionSelectors) selection;
+      for (int i = 0; i < sSelectors.getSelectors().size(); ++i) {
+        SelectorMeta selectorMeta = sSelectors.getSelectors().get(i).getSelector();
+        if (selectorMeta instanceof SelectorIdentifier) {
+          SelectorIdentifier selId = (SelectorIdentifier) selectorMeta;
+          columnsSet.add(selId.getField());
+        } else if (selectorMeta instanceof SelectorGroupBy) {
+          SelectorGroupBy selGroup = (SelectorGroupBy) selectorMeta;
+          columnsSet.add(selGroup.getGbFunction().name() + "("
+              + ((SelectorIdentifier) selGroup.getParam()).getField() + ")");
+        }
+      }
+    }
+    return columnsSet;
   }
 
   /**

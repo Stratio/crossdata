@@ -41,4 +41,11 @@ public abstract class SelectionClause {
   public abstract List<SelectorGroupBy> getSelectorsGroupBy();
 
   public abstract void addTablename(String tablename);
+
+  /**
+   * Checks whether the selection clause contains some function or not
+   * 
+   * @return true, if functions are used; false, otherwise.
+   */
+  public abstract boolean containsFunctions();
 }

@@ -844,8 +844,6 @@ public class SelectStatement extends MetaStatement {
                       .createValidationErrorResult("Nested functions on selected fields not supported.");
             }
           }
-        } else {
-          result = Result.createValidationErrorResult("Missing group by clause.");
         }
       } else {
         result =
@@ -1633,7 +1631,7 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-    if (groupInc || orderInc) {
+    if (groupInc || orderInc || selectionClause.containsFunctions()) {
       steps.setNode(new MetaStep(MetaPath.DEEP, this));
     } else if (joinInc) {
       steps = getJoinPlan();

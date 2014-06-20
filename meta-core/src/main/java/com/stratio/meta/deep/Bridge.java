@@ -17,7 +17,6 @@
 package com.stratio.meta.deep;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -144,18 +143,19 @@ public class Bridge {
       }
     }
 
+    List<String> cols =
+        DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
+
     // Group by clause
     if (ss.isGroupInc()) {
       rdd = doGroupBy(rdd, ss.getGroup(), (SelectionList) ss.getSelectionClause());
+    } else if (ss.getSelectionClause().containsFunctions()) {
+      rdd = doGroupBy(rdd, null, (SelectionList) ss.getSelectionClause());
     }
 
     if (ss.isOrderInc()) {
       rdd = doOrder(rdd, ss.getOrder());
     }
-
-    List<String> cols = new ArrayList<>(Arrays.asList(columnsSet));
-    cols.addAll(DeepUtils.retrieveSelectorAggegationFunctions(((SelectionList) ss
-        .getSelectionClause()).getSelection()));
 
     return returnResult(rdd, isRoot,
         ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, cols);
@@ -352,7 +352,7 @@ public class Bridge {
     JavaPairRDD<Cells, Cells> groupedRdd =
         rdd.map(new GroupByMapping(aggregationCols, groupByClause));
 
-    JavaPairRDD<Cells, Cells> aggregatedRdd = applyAggregations(groupedRdd, aggregationCols);
+    JavaPairRDD<Cells, Cells> aggregatedRdd = applyGroupByAggregations(groupedRdd, aggregationCols);
 
     JavaRDD<Cells> map = aggregatedRdd.map(new KeyRemover());
 
@@ -360,7 +360,7 @@ public class Bridge {
 
   }
 
-  private JavaPairRDD<Cells, Cells> applyAggregations(JavaPairRDD<Cells, Cells> groupedRdd,
+  private JavaPairRDD<Cells, Cells> applyGroupByAggregations(JavaPairRDD<Cells, Cells> groupedRdd,
       List<String> aggregationCols) {
 
     JavaPairRDD<Cells, Cells> aggregatedRdd =
