@@ -17,6 +17,7 @@
 package com.stratio.meta.deep.utils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -83,21 +84,36 @@ public final class DeepUtils {
       rs.setColumnMetadata(columnList);
     }
 
-    for (Cells deepRow : cells) {
-      Row metaRow = new Row();
-      for (com.stratio.deep.entity.Cell deepCell : deepRow.getCells()) {
-        if (deepCell.getCellName().toLowerCase().startsWith("stratio")) {
-          continue;
+    if (!cells.isEmpty()) {
+      if (selectedCols.isEmpty()) {
+        for (Cells deepRow : cells) {
+          Row metaRow = new Row();
+          for (com.stratio.deep.entity.Cell deepCell : deepRow.getCells()) {
+
+            if (deepCell.getCellName().toLowerCase().startsWith("stratio")) {
+              continue;
+            }
+
+            Cell metaCell = new Cell(deepCell.getCellValue());
+            metaRow.addCell(deepCell.getCellName(), metaCell);
+          }
+
+          rs.add(metaRow);
         }
-        if (selectedCols.isEmpty()) {
-          Cell metaCell = new Cell(deepCell.getCellValue());
-          metaRow.addCell(deepCell.getCellName(), metaCell);
-        } else if (selectedCols.contains(deepCell.getCellName())) {
-          Cell metaCell = new Cell(deepCell.getCellValue());
-          metaRow.addCell(deepCell.getCellName(), metaCell);
+      } else {
+        List<Integer> fieldPositions = retrieveFieldsPositionsList(cells.get(0), selectedCols);
+
+        for (Cells deepRow : cells) {
+          Row metaRow = new Row();
+          for (int fieldPosition : fieldPositions) {
+            com.stratio.deep.entity.Cell deepCell = deepRow.getCellByIdx(fieldPosition);
+
+            Cell metaCell = new Cell(deepCell.getCellValue());
+            metaRow.addCell(deepCell.getCellName(), metaCell);
+          }
+          rs.add(metaRow);
         }
       }
-      rs.add(metaRow);
     }
 
     StringBuilder logResult = new StringBuilder("Deep Result: ").append(rs.size());
@@ -113,13 +129,36 @@ public final class DeepUtils {
     return rs;
   }
 
+  private static List<Integer> retrieveFieldsPositionsList(Cells firstRow, List<String> selectedCols) {
+
+    List<Integer> fieldPositions = new ArrayList<>();
+    for (String selectCol : selectedCols) {
+      Integer position = 0;
+      boolean fieldFound = false;
+
+      Iterator<com.stratio.deep.entity.Cell> cellsIt = firstRow.getCells().iterator();
+      while (!fieldFound && cellsIt.hasNext()) {
+        com.stratio.deep.entity.Cell cell = cellsIt.next();
+
+        if (cell.getCellName().equalsIgnoreCase(selectCol)) {
+          fieldPositions.add(position);
+          fieldFound = true;
+        }
+
+        position++;
+      }
+    }
+
+    return fieldPositions;
+  }
+
   /**
    * Create a result with a count.
    * 
    * @param rdd rdd to be counted
    * @return ResultSet Result set with only a cell containing the a number of rows
    */
-  public static ResultSet buildCountResult(JavaRDD rdd) {
+  public static ResultSet buildCountResult(JavaRDD<?> rdd) {
     CassandraResultSet rs = new CassandraResultSet();
 
     int numberOfRows = (int) rdd.count();
