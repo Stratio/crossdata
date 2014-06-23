@@ -1768,6 +1768,14 @@ public class SelectStatement extends MetaStatement {
   public void replaceAliasesWithName(Map<String, String> fieldsAliasesMap,
       Map<String, String> tablesAliasesMap) {
 
+    Iterator<Entry<String, String>> entriesIt = tablesAliasesMap.entrySet().iterator();
+    while (entriesIt.hasNext()) {
+      Entry<String, String> entry = entriesIt.next();
+      if (entry.getValue().contains(".")) {
+        tablesAliasesMap.put(entry.getKey(), entry.getValue().split("\\.")[1]);
+      }
+    }
+
     // Replacing alias in SELECT clause
     replaceAliasesInSelect(tablesAliasesMap);
 
