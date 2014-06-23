@@ -19,12 +19,10 @@
 
 package com.stratio.meta.streaming;
 
-import com.datastax.driver.core.querybuilder.Select;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnType;
@@ -36,15 +34,13 @@ import com.stratio.meta.core.executor.StreamExecutor;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.streaming.commons.exceptions.StratioAPIGenericException;
-import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
 
 import org.apache.log4j.Logger;
+import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.streaming.Duration;
@@ -164,18 +160,26 @@ public class MetaStream {
   //TODO: Move number of retries to EngineConfig
   public static JavaStreamingContext createSparkStreamingContext(
       EngineConfig config, DeepSparkContext deepSparkContext, int retries){
-    JavaSparkContext sparkContext = new JavaSparkContext(config.getSparkMaster(), "MetaStreaming");
+    //JavaSparkContext sparkContext = new JavaSparkContext(config.getSparkMaster(), "MetaStreaming");
+    SparkConf sparkConf = new SparkConf().setMaster(config.getSparkMaster())
+                                         .setAppName("MetaStreaming")
+                                         .set("spark.driver.port", String.valueOf(StreamingUtils.findFreePort()))
+                                         .set("spark.ui.port", String.valueOf(StreamingUtils.findFreePort()));
+
     LOG.info("Creating new JavaStreamingContext on " + config.getSparkMaster());
     JavaStreamingContext jssc = null;
     int attempt = 0;
     while(jssc == null && attempt < retries){
       attempt++;
       try {
+        /*
         jssc = new JavaStreamingContext(//deepSparkContext.getConf().set("spark.cleaner.ttl", "1000"),//.getConf()
             sparkContext.getConf()
                             .set("spark.driver.port", String.valueOf(StreamingUtils.findFreePort()))
                             .set("spark.ui.port", String.valueOf(StreamingUtils.findFreePort())),
             new Duration(config.getStreamingDuration()));
+        */
+        jssc = new JavaStreamingContext(sparkConf, new Duration(config.getStreamingDuration()));
       } catch (Throwable t){
         jssc = null;
         LOG.error("Cannot create Streaming Context. Trying it again.", t);
