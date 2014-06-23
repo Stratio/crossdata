@@ -66,6 +66,18 @@ public class SelectStatementTest extends ParsingTest {
   }
 
   @Test
+  public void selectStatementJoinWithParenthesis() {
+
+    String inputText =
+        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON (field1=field2) WHERE c.x = y;";
+
+    String expectedText =
+        "SELECT c.a, c.b FROM c INNER JOIN tablename ON field1=field2 WHERE c.x = y;";
+
+    testRegularStatement(inputText, expectedText, "selectStatementJoins");
+  }
+
+  @Test
   public void selectStatementAliasedColumnsJoin() {
 
     String inputText =
@@ -107,10 +119,8 @@ public class SelectStatementTest extends ParsingTest {
 
     String inputText =
         "SELECT c.a, c.b FROM table_c c INNER JOIN tablename t ON c.field2=t.field1 WHERE c.x = y;";
-
     String expectedText =
         "SELECT table_c.a, table_c.b FROM table_c INNER JOIN tablename ON table_c.field2=tablename.field1 WHERE table_c.x = y;";
-
     testRegularStatement(inputText, expectedText, "selectStatementJoins");
 
   }
