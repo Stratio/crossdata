@@ -17,29 +17,18 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.validator.statements;
+package com.stratio.meta.common.actor;
 
-import com.stratio.meta.core.validator.BasicValidatorTest;
+import com.stratio.meta.common.result.Result;
 
-public class ListStatementTest extends BasicValidatorTest {
+/**
+ * Interface for actors listening for streaming results.
+ */
+public interface ActorResultListener {
 
-
-    //@Test
-    public void validateOk(){
-        String inputText = "LIST PROCESS;";
-      validateOk(inputText, "validateNotSupported");
-    }
-  //@Test
-  public void validateNotSopportedTriggerYet(){
-
-    String inputText = "LIST TRIGGER;";
-    validateFail(inputText, "NotSupportTriggerYet");
-  }
-  //@Test
-  public void validateNotSopportedUdfYet(){
-
-    String inputText = "LIST UDF;";
-    validateFail(inputText, "NotSupportUdfYet");
-
-}
+  /**
+   * Process an incoming result.
+   * @param result The results.
+   */
+  public void processResults(Result result);
 }

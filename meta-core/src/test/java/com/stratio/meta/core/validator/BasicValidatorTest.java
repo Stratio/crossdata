@@ -16,17 +16,17 @@
 
 package com.stratio.meta.core.validator;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-
-import org.testng.annotations.BeforeClass;
-
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.grammar.ParsingTest;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.MetaStatement;
+
+import org.testng.annotations.BeforeClass;
+
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class BasicValidatorTest extends BasicCoreCassandraTest {
 
@@ -38,7 +38,7 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
   public static void setUpBeforeClass() {
     BasicCoreCassandraTest.setUpBeforeClass();
     BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-    metadataManager = new MetadataManager(_session);
+    metadataManager = new MetadataManager(_session, null);
     metadataManager.loadMetadata();
   }
 

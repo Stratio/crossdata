@@ -17,6 +17,7 @@
 package com.stratio.meta.deep;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -123,6 +124,7 @@ public class Bridge {
     String[] columnsSet = {};
     if (ss.getSelectionClause().getType() == SelectionClause.TYPE_SELECTION) {
       columnsSet = DeepUtils.retrieveSelectorFields(ss);
+      System.out.println("ColumnSet: " + Arrays.toString(columnsSet));
     }
     IDeepJobConfig<Cells> config =
         DeepJobConfigFactory.create().session(session).host(engineConfig.getRandomCassandraHost())

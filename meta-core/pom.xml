@@ -170,10 +170,23 @@
             <version>2.0</version>
             <scope>test</scope>
         </dependency>
-        <!--dependency> <groupId>com.stratio.streaming</groupId> <artifactId>streaming-api</artifactId> 
-            <version>0.2.0-SNAPSHOT</version> </dependency -->
-    </dependencies>
 
+        <dependency>
+            <groupId>com.stratio.streaming</groupId>
+            <artifactId>streaming-api</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_2.10</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming-kafka_2.10</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+	</dependencies>
     <build>
         <plugins>
             <plugin>

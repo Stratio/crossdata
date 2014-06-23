@@ -21,14 +21,14 @@ package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.StopProcessStatement;
-import org.testng.annotations.Test;
 
 public class StopProcessStatementTest  extends BasicPlannerTest {
 
-    @Test
-    public void planificationNotSupported(){
-        String inputText = "STOP process process1;";
-        stmt = new StopProcessStatement("process1");
-        validateNotSupported();
-    }
+  //TODO: (Streaming)
+  //@Test
+  public void planificationOK(){
+    String inputText = "STOP process process1;";
+    stmt = new StopProcessStatement("process1");
+    validateStreamingPath("planificationOK");
+  }
 }

@@ -1,25 +1,36 @@
 /*
  * Stratio Meta
- *
+ * 
  * Copyright (c) 2014, Stratio, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation; either version
+ * 3.0 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
 package com.stratio.meta.sh;
 
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+
+import jline.console.ConsoleReader;
+
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
+
 import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.result.IResultHandler;
+
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
@@ -84,6 +95,11 @@ public class Metash {
   private String currentCatalog = "";
 
   /**
+   * Asynchronous result handler.
+   */
+  private final IResultHandler resultHandler;
+
+  /**
    * Driver that connects to the META servers.
    */
   private BasicDriver metaDriver = null;
@@ -94,20 +110,26 @@ public class Metash {
   private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
 
   /**
+   * Whether the asynchronous interface should be used.
+   */
+  private boolean useAsync = false;
+
+  /**
    * Class constructor.
    */
-  public Metash() {
+  public Metash(boolean useAsync) {
     HelpManager hm = new HelpManager();
     help = hm.loadHelpContent();
+    this.useAsync = useAsync;
     initialize();
+    resultHandler = new ShellResultHandler(this);
   }
 
   /**
    * Initialize the console settings.
    */
   private void initialize() {
-
-    //Take the username from the system.
+    // Take the username from the system.
     currentUser = System.getProperty("user.name");
     if (currentUser == null) {
       currentUser = DEFAULT_USER;
@@ -128,10 +150,10 @@ public class Metash {
 
   /**
    * Print a message on the console.
-   *
+   * 
    * @param msg The message.
    */
-  private void println(String msg) {
+  public void println(String msg) {
     try {
       console.getOutput().write(msg + System.lineSeparator());
     } catch (IOException e) {
@@ -140,9 +162,22 @@ public class Metash {
   }
 
   /**
+   * Flush the console output and show the current prompt.
+   */
+  protected void flush(){
+    try {
+      console.getOutput().write(console.getPrompt());
+      console.flush();
+    } catch (IOException e) {
+      LOG.error("Cannot flush console.", e);
+    }
+
+  }
+
+  /**
    * Set the console prompt.
-   *
-   * @param currentKeyspace The currentCatalog.
+   * 
+   * @param currentKeyspace The currentKeyspace.
    */
   private void setPrompt(String currentKeyspace) {
     StringBuilder sb = new StringBuilder("\033[36mmetash-sh:");
@@ -159,7 +194,7 @@ public class Metash {
 
   /**
    * Parse a input text and return the equivalent HelpStatement.
-   *
+   * 
    * @param inputText The input text.
    * @return A Statement or null if the process failed.
    */
@@ -179,7 +214,7 @@ public class Metash {
 
   /**
    * Show the help associated with a query.
-   *
+   * 
    * @param inputText The help query.
    */
   private void showHelp(String inputText) {
@@ -188,11 +223,64 @@ public class Metash {
   }
 
   /**
-   * Update the current prompt if a {@link com.stratio.meta.common.result.QueryResult} is
-   * returned, and the current catalog has changed.
+   * Execute a query on the remote META servers.
+   * 
+   * @param cmd The query.
+   */
+  private void executeQuery(String cmd){
+    if(this.useAsync){
+      executeAsyncQuery(cmd);
+    }else{
+      executeSyncQuery(cmd);
+    }
+  }
+
+  /**
+   * Execute a query using synchronous execution.
+   * @param cmd The query.
+   */
+  private void executeSyncQuery(String cmd) {
+    LOG.debug("Command: " + cmd);
+    long queryStart = System.currentTimeMillis();
+    long queryEnd = queryStart;
+    Result metaResult = null;
+    try {
+      metaResult = metaDriver.executeQuery(currentUser, currentCatalog, cmd);
+      queryEnd = System.currentTimeMillis();
+      updatePrompt(metaResult);
+      println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
+      println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
+    } catch (Exception e) {
+      println("\033[31mError:\033[0m " + e.getMessage());
+    }
+  }
+
+  /**
+   * Remove the {@link com.stratio.meta.common.result.IResultHandler} associated with a query.
+   * @param queryId The query identifier.
+   */
+  protected void removeResultsHandler(String queryId){
+    metaDriver.removeResultHandler(queryId);
+  }
+
+  /**
+   * Execute a query asynchronously.
+   * @param cmd The query.
+   */
+  private void executeAsyncQuery(String cmd){
+    String queryId = metaDriver.asyncExecuteQuery(currentUser, currentCatalog, cmd, resultHandler);
+    LOG.debug("Async command: " + cmd + " id: " + queryId);
+    println("QID: " + queryId);
+    println("");
+  }
+
+  /**
+   * Update the current prompt if a {@link com.stratio.meta.common.result.QueryResult} is returned,
+   * and the current catalog has changed.
+   * 
    * @param result The result returned by the driver.
    */
-  private void updatePrompt(Result result) {
+  protected void updatePrompt(Result result) {
     if (QueryResult.class.isInstance(result)) {
       QueryResult qr = QueryResult.class.cast(result);
       if (qr.isCatalogChanged()) {
@@ -205,30 +293,8 @@ public class Metash {
   }
 
   /**
-   * Execute a query on the remote META servers.
-   *
-   * @param cmd The query.
-   */
-  private void executeQuery(String cmd) {
-    LOG.debug("Command: " + cmd);
-    long queryStart = System.currentTimeMillis();
-    long queryEnd = queryStart;
-    Result metaResult = null;
-    try {
-      metaResult = metaDriver.executeQuery(currentUser, currentCatalog, cmd);
-      queryEnd = System.currentTimeMillis();
-      updatePrompt(metaResult);
-      println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
-      println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
-    } catch (Exception e) {
-      queryEnd = System.currentTimeMillis();
-      println("\033[31mError:\033[0m " + e.getMessage());
-    }
-  }
-
-  /**
    * Establish the connection with the META servers.
-   *
+   * 
    * @return Whether the connection has been successfully established.
    */
   public boolean connect() {
@@ -238,12 +304,13 @@ public class Metash {
       Result connectionResult = metaDriver.connect(currentUser);
       LOG.info("Driver connections established");
       LOG.info(ConsoleUtils.stringResult(connectionResult));
-    }catch (ConnectionException ce){
+    } catch (ConnectionException ce){
       result = false;
       LOG.error(ce.getMessage());
     }
     return result;
   }
+
 
   /**
    * Close the underlying driver and save the user history.
@@ -270,24 +337,26 @@ public class Metash {
       String cmd = "";
       StringBuilder sb = new StringBuilder(cmd);
 
-      while (!cmd.trim().toLowerCase().startsWith("exit") && !cmd.trim().toLowerCase()
-          .startsWith("quit")) {
+      while (!cmd.trim().toLowerCase().startsWith("exit")
+          && !cmd.trim().toLowerCase().startsWith("quit")) {
         cmd = console.readLine();
         sb.append(cmd).append(" ");
         if (sb.toString().trim().endsWith(";")) {
-          if (" ".equalsIgnoreCase(sb.toString()) || System.lineSeparator()
-              .equalsIgnoreCase(sb.toString())) {
+          if (" ".equalsIgnoreCase(sb.toString())
+              || System.lineSeparator().equalsIgnoreCase(sb.toString())) {
             println("");
           } else if (sb.toString().toLowerCase().startsWith("help")) {
             showHelp(sb.toString());
-          } else if (!sb.toString().trim().toLowerCase().startsWith("exit") && !sb.toString().trim()
-              .toLowerCase().startsWith("quit")) {
+          } else if (!sb.toString().trim().toLowerCase().startsWith("exit")
+              && !sb.toString().trim().toLowerCase().startsWith("quit")) {
             executeQuery(sb.toString());
           } else {
             println("");
             break;
           }
           sb = new StringBuilder();
+        }else if(sb.toString().toLowerCase().startsWith("help")){
+          showHelp(sb.toString());
         }
       }
     } catch (IOException ex) {
@@ -297,11 +366,16 @@ public class Metash {
 
   /**
    * Launch the META server shell.
-   *
+   * 
    * @param args The list of arguments. Not supported at the moment.
    */
   public static void main(String[] args) {
-    Metash sh = new Metash();
+    boolean async = false;
+    if(args.length > 0){
+      async = "--async".equals(args[0]);
+      LOG.info("Using asynchronous behaviour");
+    }
+    Metash sh = new Metash(async);
     if (sh.connect()) {
       sh.loop();
     }

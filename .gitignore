@@ -20,7 +20,12 @@ nb-configuration.xml
 *.orig
 */.cache
 meta-core/test-output/*
+<<<<<<< HEAD
+meta-driver/.cache
+meta-server/src/main/resources/server-reference.conf
+=======
 sonar-project.properties
 */.sonar
 */test-output
+>>>>>>> d719f0d906e64b7415a40cc0fe3ec2e6c34db63e
 .gitignore

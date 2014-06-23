@@ -16,12 +16,12 @@
 
 package com.stratio.meta.common.data;
 
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 
 public class CassandraResultSet extends ResultSet implements Serializable {
 
@@ -45,6 +45,7 @@ public class CassandraResultSet extends ResultSet implements Serializable {
    */
   public CassandraResultSet() {
     rows = new ArrayList<>();
+    columnMetadata = new ArrayList<>();
   }
 
   /**

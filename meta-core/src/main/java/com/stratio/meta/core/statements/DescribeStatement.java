@@ -16,8 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.util.List;
-
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
@@ -29,6 +27,8 @@ import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+
+import java.util.List;
 
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
@@ -165,7 +165,7 @@ public class DescribeStatement extends MetaStatement {
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
   public Result execute(Session session) {
-    MetadataManager mm = new MetadataManager(session);
+    MetadataManager mm = new MetadataManager(session, null);
     mm.loadMetadata();
     Result result = null;
     if (type == DescribeType.KEYSPACE) {

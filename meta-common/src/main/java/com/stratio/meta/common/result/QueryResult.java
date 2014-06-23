@@ -41,6 +41,11 @@ public class QueryResult extends Result {
   private boolean lastResultSet = false;
 
   /**
+   * Number of results sets that are part of the same query identifier sent to the client.
+   */
+  private int resultPage = 0;
+
+  /**
    * The current user session catalog if it has been changed.
    */
   private String currentCatalog = null;
@@ -99,6 +104,13 @@ public class QueryResult extends Result {
     return lastResultSet;
   }
 
+  public void setResultPage(int resultPage) {
+    this.resultPage = resultPage;
+  }
+
+  public int getResultPage() {
+    return resultPage;
+  }
 
   public static QueryResult createSuccessQueryResult(){
     return new QueryResult(null);

@@ -19,10 +19,12 @@ package com.stratio.meta.core.statements;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.streaming.api.IStratioStreamingAPI;
 
 /**
  * Class that models a generic Statement supported by the META language.
@@ -54,11 +56,13 @@ public abstract class MetaStatement {
   /**
    * Default class constructor.
    */
-  public MetaStatement() {}
+
+  public MetaStatement() {
+  }
 
   /**
    * Class constructor.
-   * 
+   *
    * @param command Whether the query is a command or a query returning a
    *        {@link com.stratio.meta.common.data.ResultSet}.
    */
@@ -68,7 +72,6 @@ public abstract class MetaStatement {
 
   /**
    * Whether the query is an internal command or not.
-   * 
    * @return The boolean value.
    */
   public boolean isCommand() {
@@ -77,7 +80,7 @@ public abstract class MetaStatement {
 
   /**
    * Set whether the query is a command or not.
-   * 
+   *
    * @param command The boolean value.
    */
   public void setAsCommand(boolean command) {
@@ -88,29 +91,28 @@ public abstract class MetaStatement {
   public abstract String toString();
 
   /**
-   * Validate the semantics of the current statement. This method checks the existing metadata to
-   * determine that all referenced entities exists in the {@code targetKeyspace} and the types are
-   * compatible with the assignations or comparisons.
-   * 
-   * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
-   *        required information.
+   * Validate the semantics of the current statement. This method checks the
+   * existing metadata to determine that all referenced entities exists in the
+   * {@code targetKeyspace} and the types are compatible with the assignations
+   * or comparisons.
+   * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+   *                 the required information.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   public Result validate(MetadataManager metadata) {
     return Result.createValidationErrorResult("Statement not supported");
   }
 
-
   /**
    * Validate that a valid keyspace and table is present.
-   * 
+   *
    * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
    *        required information.
    * @param targetKeyspace The target keyspace where the query will be executed.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   protected Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace,
-      boolean keyspaceInc, String stmtKeyspace, String tableName) {
+                                            boolean keyspaceInc, String stmtKeyspace, String tableName) {
     Result result = QueryResult.createSuccessQueryResult();
     // Get the effective keyspace based on the user specification during the create
     // sentence, or taking the keyspace in use in the user session.
@@ -121,7 +123,8 @@ public abstract class MetaStatement {
 
     // Check that the keyspace and table exists.
     if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
-      result = Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+      result = Result.createValidationErrorResult(
+          "Target keyspace missing or no keyspace has been selected.");
     } else {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if (ksMetadata == null) {
@@ -130,29 +133,34 @@ public abstract class MetaStatement {
       } else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata == null) {
-          result = Result.createValidationErrorResult("Table " + tableName + " does not exist.");
+          if(!metadata.checkStream(effectiveKeyspace + "_" + tableName)){
+            result= Result.createValidationErrorResult("Table " + tableName + " does not exist in "+effectiveKeyspace+".");
+          } else {
+            result = CommandResult.createCommandResult("streaming");
+          }
         }
       }
-
     }
     return result;
   }
 
   public String getEffectiveKeyspace() {
-
     return keyspaceInc ? keyspace : sessionKeyspace;
   }
 
   /**
    * Translate the statement into the CQL equivalent when possible.
-   * 
    * @return The CQL equivalent.
    */
   public abstract String translateToCQL();
 
+  public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName, String outgoing){
+    return null;
+  }
+
   /**
    * Get the {@link Statement} equivalent of the current query.
-   * 
+   *
    * @return The Statement or null if the driver translation cannot be done.
    */
   public Statement getDriverStatement() {
@@ -162,7 +170,7 @@ public abstract class MetaStatement {
   /**
    * Get a tree that contains the planning for executing the query. The plan will be executed
    * starting from the leaves and finishing at the tree root.
-   * 
+   *
    * @param metadataManager The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
    *        the required information.
    * @param targetKeyspace The target keyspace where the query will be executed.

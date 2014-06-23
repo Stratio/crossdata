@@ -16,18 +16,25 @@
 
 package com.stratio.meta.core.metadata;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.structures.IndexType;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.api.StratioStreamingAPIFactory;
+import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
+import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
+import com.stratio.streaming.commons.messages.StreamQuery;
+import com.stratio.streaming.commons.streams.StratioStream;
+
+import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Metadata Manager of the META server that maintains and up-to-date version of the metadata
@@ -51,33 +58,37 @@ public class MetadataManager {
   private final LuceneIndexHelper luceneHelper;
 
   /**
+   * Link with the Stratio streaming API.
+   */
+  private final IStratioStreamingAPI stratioStreamingAPI;
+
+  /**
    * Class logger.
    */
   private static final Logger LOG = Logger.getLogger(MetadataManager.class.getName());
 
   /**
    * Class constructor.
-   * 
    * @param cassandraSession The Cassandra session used to retrieve index metadata.
    */
-  public MetadataManager(Session cassandraSession) {
+  public MetadataManager(Session cassandraSession, IStratioStreamingAPI stratioStreamingAPI){
     session = cassandraSession;
     luceneHelper = new LuceneIndexHelper(session);
+    this.stratioStreamingAPI = stratioStreamingAPI;
   }
 
   /**
    * Load all Metadata from Cassandra.
-   * 
    * @return Whether the metadata has been loaded or not.
    */
-  public boolean loadMetadata() {
+  public boolean loadMetadata(){
     clusterMetadata = session.getCluster().getMetadata();
     return clusterMetadata != null;
   }
 
   /**
    * Get the Metadata associated with a keyspace.
-   * 
+   *
    * @param keyspace The target keyspace.
    * @return The KeyspaceMetadata or null if the keyspace is not found, or the client is not
    *         connected to Cassandra.
@@ -95,7 +106,7 @@ public class MetadataManager {
 
   /**
    * Get the Metadata associated with a {@code tablename} of a {@code keyspace}.
-   * 
+   *
    * @param keyspace The target keyspace.
    * @param tablename The target table.
    * @return The TableMetadata or null if the table does not exist in the keyspace, or the client is
@@ -125,7 +136,7 @@ public class MetadataManager {
 
   /**
    * Get the comment associated with a {@code tablename} of a {@code keyspace}.
-   * 
+   *
    * @param keyspace The target keyspace.
    * @param tablename The target table.
    * @return The comment or null if the table does not exist in the keyspace, or the client is not
@@ -141,7 +152,7 @@ public class MetadataManager {
 
   /**
    * Get the list of keyspaces in Cassandra.
-   * 
+   *
    * @return The list of keyspaces or empty if not connected.
    */
   public List<String> getKeyspacesNames() {
@@ -156,25 +167,24 @@ public class MetadataManager {
 
   /**
    * Get the list of tables in a Cassandra keyspaces.
-   * 
    * @param keyspace The name of the keyspace
-   * @return The list of tables or empty if the keyspace does not exist, or the not connected.
+   * @return The list of tables or empty if the keyspace does
+   * not exist, or the not connected.
    */
-  public List<String> getTablesNames(String keyspace) {
+  public List<String> getTablesNames(String keyspace){
     List<String> result = new ArrayList<>();
-    if (clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null) {
+    if(clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null){
       KeyspaceMetadata km = clusterMetadata.getKeyspace(keyspace);
-      for (TableMetadata tm : km.getTables()) {
+      for(TableMetadata tm : km.getTables()){
         result.add(tm.getName());
       }
     }
     return result;
   }
 
-
   /**
    * Get the Lucene index associated with a table.
-   * 
+   *
    * @param tableMetadata The metadata associated with the target table.
    * @return A {@link com.stratio.meta.core.metadata.CustomIndexMetadata} or null if not found.
    */
@@ -191,7 +201,7 @@ public class MetadataManager {
 
   /**
    * Get the list of indexes associated with a table.
-   * 
+   *
    * @param tableMetadata The metadata associated with the target table.
    * @return A list of {@link com.stratio.meta.core.metadata.CustomIndexMetadata} with the indexes.
    */
@@ -209,14 +219,14 @@ public class MetadataManager {
           // A Cassandra index is associated with the column.
           toAdd =
               new CustomIndexMetadata(column, column.getIndex().getName(), IndexType.DEFAULT,
-                  column.getName());
+                                      column.getName());
         } else if (column.getIndex().getIndexClassName()
-            .compareTo("org.apache.cassandra.db.index.stratio.RowIndex") == 0) {
+                       .compareTo("org.apache.cassandra.db.index.stratio.RowIndex") == 0) {
           // A Lucene custom index is found that may index several columns.
           toAdd = luceneHelper.getLuceneIndex(column, column.getIndex().getName());
         } else {
           LOG.error("Index " + column.getIndex().getName() + " on " + column.getName()
-              + " with class " + column.getIndex().getIndexClassName() + " not supported.");
+                    + " with class " + column.getIndex().getIndexClassName() + " not supported.");
         }
         result.add(toAdd);
       }
@@ -228,4 +238,56 @@ public class MetadataManager {
     return result;
   }
 
+  public boolean checkStream(String ephemeralTableName) {
+    for (StratioStream stream: listStreams()) {
+      if (stream.getStreamName().equalsIgnoreCase(ephemeralTableName)){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public List<StratioStream> listStreams ()  {
+    List<StratioStream> streamsList = null;
+    try {
+      streamsList = stratioStreamingAPI.listStreams();
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
+    return streamsList;
+  }
+
+  public List<String> getStreamingColumnNames(String ephemeralTableName) {
+    List<String> colNames = new ArrayList<>();
+    try {
+      List<ColumnNameTypeValue> cols = stratioStreamingAPI.columnsFromStream(ephemeralTableName);
+      for(ColumnNameTypeValue ctp: cols){
+        colNames.add(ctp.getColumn().toLowerCase());
+      }
+    } catch (Throwable t){
+      t.printStackTrace();
+    }
+    return colNames;
+  }
+
+  public StratioStream checkQuery (String s){
+
+    StratioStream result= null;
+    try{
+
+    List<StratioStream> streamsList = stratioStreamingAPI.listStreams();
+    for (StratioStream stream : streamsList) {
+      if (stream.getQueries().size() > 0) {
+        for (StreamQuery query : stream.getQueries()) {
+          if (s.contentEquals(query.getQueryId())){
+            result = stream;
+          }
+        }
+      }
+    }
+  } catch (Throwable t) {
+    t.printStackTrace();
+  }
+    return result;
+  }
 }

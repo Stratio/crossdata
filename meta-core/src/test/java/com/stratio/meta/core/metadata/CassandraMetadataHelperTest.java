@@ -16,17 +16,17 @@
 
 package com.stratio.meta.core.metadata;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.stratio.meta.common.metadata.structures.CatalogMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 public class CassandraMetadataHelperTest extends BasicCoreCassandraTest {
 
@@ -56,7 +56,7 @@ public class CassandraMetadataHelperTest extends BasicCoreCassandraTest {
   public static void setUpBeforeClass() {
     BasicCoreCassandraTest.setUpBeforeClass();
     BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-    metadataManager = new MetadataManager(_session);
+    metadataManager = new MetadataManager(_session, null);
     metadataManager.loadMetadata();
   }
 

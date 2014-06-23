@@ -95,6 +95,7 @@ fragment EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
 fragment POINT: '.';
 
 // Case-insensitive keywords
+T_DESCRIBE: D E S C R I B E;
 T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
 T_ALTER: A L T E R;
@@ -202,12 +203,17 @@ T_GTE: '>' '=';
 T_LTE: '<' '=';
 T_NOT_EQUAL: '<' '>'; 
 T_TOKEN: T O K E N;
-T_SECONDS: S E C O N D S;
-T_MINUTES: M I N U T E S;
-T_HOURS: H O U R S;
-T_DAYS: D A Y S;
 T_MATCH: M A T C H;
-T_DESCRIBE: D E S C R I B E;
+T_SEC: S E C;
+T_SECS: S E C S;
+T_SECONDS: S E C O N D S;
+T_MINS: M I N S;
+T_MINUTES: M I N U T E S;
+T_HOUR: H O U R;
+T_HOURS: H O U R S;
+T_DAY: D A Y;
+T_DAYS: D A Y S;
+
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -355,7 +361,7 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
     ;
 
 stopProcessStatement returns [StopProcessStatement stprst]:
-    T_STOP T_PROCESS ident=T_IDENT { $stprst = new StopProcessStatement($ident.text); }
+    T_STOP T_PROCESS ident=T_PATH { $stprst = new StopProcessStatement($ident.text); }
     ;
 
 dropTriggerStatement returns [DropTriggerStatement drtrst]:
@@ -731,19 +737,16 @@ getWindow returns [WindowSelect ws]:
                        )
     );
 
-/*'s' {$unit=TimeUnit.SECONDS;}*/
-
 getTimeUnit returns [TimeUnit unit]:
-    ( S {$unit=TimeUnit.SECONDS;}
-    | 'M' {$unit=TimeUnit.MINUTES;}
-    | 'H' {$unit=TimeUnit.HOURS;}
-    | 'D' {$unit=TimeUnit.DAYS;}
-    | 'm' {$unit=TimeUnit.MINUTES;}
-    | 'h' {$unit=TimeUnit.HOURS;}
-    | 'd' {$unit=TimeUnit.DAYS;}
+    ( T_SEC {$unit=TimeUnit.SECONDS;}
+    | T_SECS {$unit=TimeUnit.SECONDS;}
     | T_SECONDS {$unit=TimeUnit.SECONDS;}
+    | T_MIN {$unit=TimeUnit.MINUTES;}
+    | T_MINS {$unit=TimeUnit.MINUTES;}
     | T_MINUTES {$unit=TimeUnit.MINUTES;}
+    | T_HOUR {$unit=TimeUnit.HOURS;}
     | T_HOURS {$unit=TimeUnit.HOURS;}
+    | T_DAY {$unit=TimeUnit.DAYS;}
     | T_DAYS {$unit=TimeUnit.DAYS;}
     )
 ;

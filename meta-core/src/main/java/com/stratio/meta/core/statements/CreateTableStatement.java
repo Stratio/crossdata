@@ -16,14 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
@@ -37,6 +29,14 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class that models a {@code CREATE TABLE} statement of the META language.
@@ -107,7 +107,7 @@ public class CreateTableStatement extends MetaStatement {
 
   /**
    * Class constructor.
-   * 
+   *
    * @param tableName The name of the table.
    * @param columns A map with the name of the columns in the table and the associated data type.
    * @param primaryKey The list of columns that are part of the primary key.
@@ -117,7 +117,7 @@ public class CreateTableStatement extends MetaStatement {
    *        only used if the type of primary key is {@code 1}.
    */
   public CreateTableStatement(String tableName, Map<String, String> columns,
-      List<String> primaryKey, List<String> clusterKey, int primaryKeyType, int columnNumberPK) {
+                              List<String> primaryKey, List<String> clusterKey, int primaryKeyType, int columnNumberPK) {
     this.command = false;
     if (tableName.contains(".")) {
       String[] ksAndTablename = tableName.split("\\.");
@@ -144,7 +144,7 @@ public class CreateTableStatement extends MetaStatement {
 
   /**
    * Set the keyspace specified in the create table statement.
-   * 
+   *
    * @param keyspace The name of the keyspace.
    */
   public void setKeyspace(String keyspace) {
@@ -153,7 +153,7 @@ public class CreateTableStatement extends MetaStatement {
 
   /**
    * Set the list of {@link com.stratio.meta.core.structures.Property}.
-   * 
+   *
    * @param properties The list.
    */
   public void setProperties(List<Property> properties) {
@@ -253,11 +253,12 @@ public class CreateTableStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata) {
     Result result = validateKeyspaceAndTable(metadata);
-    // TODO: To be included when streaming integration is fully accomplished
-    /*
-     * if (!result.hasError()){ result=validateEphimeral(); }
-     */
-    if (!result.hasError()) {
+
+    if (!result.hasError()){
+      result=validateEphimeral(metadata);
+    }
+
+    if(!result.hasError()){
       result = validateColumns();
     }
     if (!result.hasError() && withProperties) {
@@ -266,13 +267,15 @@ public class CreateTableStatement extends MetaStatement {
     return result;
   }
 
-  // TODO: To be included when streaming integration is fully accomplished
-  /*
-   * private Result validateEphimeral() { Result result = QueryResult.createSuccessQueryResult();
-   * createTable = true; if (MetaStream.checkstream(getEffectiveKeyspace()+"."+tableName)){ result=
-   * QueryResult.createFailQueryResult(tableName+
-   * " already exists in keyspace "+getEffectiveKeyspace()); createTable = false; } return result; }
-   */
+  private Result validateEphimeral(MetadataManager metadata) {
+    Result result = QueryResult.createSuccessQueryResult();
+    createTable = true;
+    if (metadata.checkStream(getEffectiveKeyspace()+"."+tableName)){
+      result= Result.createValidationErrorResult(tableName+ " already exists in keyspace "+getEffectiveKeyspace());
+      createTable = false;
+    }
+    return result;
+  }
 
   /**
    * Validate that a valid keyspace is present, and that the table does not
@@ -344,7 +347,7 @@ public class CreateTableStatement extends MetaStatement {
 
   /**
    * Validate the semantics of the ephemeral properties.
-   * 
+   *
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateProperties() {
@@ -361,12 +364,12 @@ public class CreateTableStatement extends MetaStatement {
           result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
           exit = true;
         } else if ("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
-            && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
+                   && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
           // If property ephemeral_tuples is present, it must be a integer type
           result= Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
           exit = true;
         } else if ("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
-            && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
+                   && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
           // If property ephemeral_persist_on is present, it must be a string type
           result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
           exit = true;
@@ -418,7 +421,7 @@ public class CreateTableStatement extends MetaStatement {
 
   /**
    * Read splits, add single quotes (if neccesary) and group params in pair to CQL format.
-   * 
+   *
    * @param splits array of params.
    * @return params translated to Cql.
    */

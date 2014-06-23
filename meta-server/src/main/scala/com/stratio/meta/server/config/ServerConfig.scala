@@ -19,7 +19,6 @@
 
 package com.stratio.meta.server.config
 
-
 import com.stratio.meta.core.engine.EngineConfig
 import com.typesafe.config.{ConfigFactory, Config}
 import java.io.File
@@ -36,7 +35,7 @@ object ServerConfig{
   val SERVER_USER_CONFIG_RESOURCE = "external.config.resource"
 }
 
-trait ServerConfig extends CassandraConfig with SparkConfig{
+trait ServerConfig extends CassandraConfig with SparkConfig with StreamingConfig {
 
   lazy val logger:Logger = ???
 
@@ -82,6 +81,12 @@ trait ServerConfig extends CassandraConfig with SparkConfig{
     result.setCassandraPort(cassandraPort)
     result.setSparkMaster(sparkMaster)
     result.setClasspathJars(sparkClasspath)
+    result.setKafkaServer(kafkaServer)
+    result.setKafkaPort(kafkaPort)
+    result.setZookeeperServer(zookeeperServer)
+    result.setZookeeperPort(zookeeperPort)
+    result.setStreamingDuration(streamingDuration)
+    result.setStreamingGroupId(streamingGroupId)
     result
   }
 

@@ -16,16 +16,6 @@
 
 package com.stratio.meta.core.executor;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
-
-import org.apache.log4j.Logger;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -33,6 +23,16 @@ import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
+
+import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 public class BasicExecutorTest extends BasicCoreCassandraTest {
 
@@ -50,8 +50,8 @@ public class BasicExecutorTest extends BasicCoreCassandraTest {
     BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
     EngineConfig config = initConfig();
     deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
-    executor = new Executor(_session, deepContext, config);
-    metadataManager = new MetadataManager(_session);
+    executor = new Executor(_session, null, deepContext, config);
+    metadataManager = new MetadataManager(_session, null);
     metadataManager.loadMetadata();
   }
 
@@ -72,7 +72,7 @@ public class BasicExecutorTest extends BasicCoreCassandraTest {
 
 
   public Result validateOk(MetaQuery metaQuery, String methodName) {
-    MetaQuery result = executor.executeQuery(metaQuery);
+    MetaQuery result = executor.executeQuery(metaQuery, null);
     assertNotNull(result.getResult(), "Result null - " + methodName);
     assertFalse(result.hasError(),
                 metaQuery.getPlan().getNode().getPath() + " execution failed - " + methodName + ": "
@@ -99,7 +99,7 @@ public class BasicExecutorTest extends BasicCoreCassandraTest {
 
   public void validateFail(MetaQuery metaQuery, String methodName) {
     try {
-      executor.executeQuery(metaQuery);
+      executor.executeQuery(metaQuery, null);
     } catch (Exception ex) {
       LOG.info("Correctly caught exception");
     }
