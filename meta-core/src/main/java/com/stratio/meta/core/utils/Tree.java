@@ -33,11 +33,8 @@ import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
 
-
 import java.util.ArrayList;
 import java.util.List;
-
-import akka.actor.ActorRef;
 
 /**
  * Class that implements a Tree data structure.
@@ -165,7 +162,7 @@ public class Tree {
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
   public Result executeMyself(String queryId,
-        Session session,
+                              Session session,
                               IStratioStreamingAPI stratioStreamingAPI,
                               DeepSparkContext deepSparkContext,
                               EngineConfig engineConfig,

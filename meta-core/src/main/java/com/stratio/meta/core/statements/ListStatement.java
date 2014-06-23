@@ -19,7 +19,6 @@
 
 package com.stratio.meta.core.statements;
 
-import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -29,14 +28,8 @@ import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta.streaming.MetaStream;
 import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.streaming.commons.exceptions.StratioAPIGenericException;
-import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
-import com.stratio.streaming.commons.messages.StreamQuery;
-import com.stratio.streaming.commons.streams.StratioStream;
 
 import org.apache.log4j.Logger;
-
-import java.util.List;
 
 /**
  * Class that models a {@code LIST} statement from the META language.

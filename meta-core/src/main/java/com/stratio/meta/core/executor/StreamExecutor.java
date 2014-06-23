@@ -22,9 +22,7 @@ package com.stratio.meta.core.executor;
 
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
-import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.CreateTableStatement;

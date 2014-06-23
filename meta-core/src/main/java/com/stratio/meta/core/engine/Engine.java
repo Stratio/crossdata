@@ -28,12 +28,14 @@ import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
 import com.stratio.meta.core.validator.Validator;
+import com.stratio.meta.streaming.StreamingUtils;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 
 import org.apache.log4j.Logger;
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -162,13 +164,23 @@ public class Engine {
    * @return A new context.
    */
   private DeepSparkContext initializeDeep(EngineConfig config){
-    DeepSparkContext result = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+    //DeepSparkContext result = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+    SparkConf sparkConf = new SparkConf().set("spark.driver.port",
+                                              String.valueOf(StreamingUtils.findFreePort()))
+                                         .set("spark.ui.port",
+                                              String.valueOf(StreamingUtils.findFreePort()));
+    DeepSparkContext result = new DeepSparkContext(new SparkContext(config.getSparkMaster(), config.getJobName(), sparkConf));
+
     if(!config.getSparkMaster().toLowerCase().startsWith("local")){
       for(String jar : config.getJars()){
         result.addJar(jar);
       }
     }
     return  result;
+  }
+
+  public DeepSparkContext getDeepContext() {
+    return deepContext;
   }
 
   /**
