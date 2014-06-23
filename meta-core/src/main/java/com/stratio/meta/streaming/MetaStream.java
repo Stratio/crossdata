@@ -164,6 +164,7 @@ public class MetaStream {
   //TODO: Move number of retries to EngineConfig
   public static JavaStreamingContext createSparkStreamingContext(
       EngineConfig config, DeepSparkContext deepSparkContext, int retries){
+
     JavaSparkContext sparkContext = new JavaSparkContext(config.getSparkMaster(), "MetaStreaming");
     LOG.info("Creating new JavaStreamingContext on " + config.getSparkMaster());
     JavaStreamingContext jssc = null;
