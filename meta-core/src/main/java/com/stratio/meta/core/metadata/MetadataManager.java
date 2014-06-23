@@ -21,11 +21,9 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
-import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.streaming.api.StratioStreamingAPIFactory;
-import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
+import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
@@ -258,6 +256,7 @@ public class MetadataManager {
   }
 
   public List<String> getStreamingColumnNames(String ephemeralTableName) {
+    System.out.println("TRACE: Looking up columns from "+ephemeralTableName);
     List<String> colNames = new ArrayList<>();
     try {
       List<ColumnNameTypeValue> cols = stratioStreamingAPI.columnsFromStream(ephemeralTableName);
@@ -275,19 +274,33 @@ public class MetadataManager {
     StratioStream result= null;
     try{
 
-    List<StratioStream> streamsList = stratioStreamingAPI.listStreams();
-    for (StratioStream stream : streamsList) {
-      if (stream.getQueries().size() > 0) {
-        for (StreamQuery query : stream.getQueries()) {
-          if (s.contentEquals(query.getQueryId())){
-            result = stream;
+      List<StratioStream> streamsList = stratioStreamingAPI.listStreams();
+      for (StratioStream stream : streamsList) {
+        if (stream.getQueries().size() > 0) {
+          for (StreamQuery query : stream.getQueries()) {
+            if (s.contentEquals(query.getQueryId())){
+              result = stream;
+            }
           }
         }
       }
+    } catch (Throwable t) {
+      t.printStackTrace();
     }
-  } catch (Throwable t) {
-    t.printStackTrace();
-  }
     return result;
+  }
+
+  public ColumnNameTypeValue findStreamingColumn(String ephemeralTable, String column) {
+    try {
+      List<ColumnNameTypeValue> cols = stratioStreamingAPI.columnsFromStream(ephemeralTable);
+      for(ColumnNameTypeValue col: cols){
+        if(col.getColumn().equalsIgnoreCase(column)){
+          return col;
+        }
+      }
+    } catch (StratioEngineOperationException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 }
