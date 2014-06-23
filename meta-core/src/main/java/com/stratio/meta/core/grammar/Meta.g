@@ -720,7 +720,8 @@ getWhereClauses returns [ArrayList<Relation> clauses]
 ;
 
 getFields[MutablePair pair]:
-    ident1L=getTableID { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableID { pair.setRight(ident1R); } 
+    ident1L=getTableID { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableID { pair.setRight(ident1R); }
+    | T_START_PARENTHESIS ident1L=getTableID { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableID { pair.setRight(ident1R); } T_END_PARENTHESIS
 ;
 
 getWindow returns [WindowSelect ws]:
