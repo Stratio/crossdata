@@ -16,6 +16,24 @@
 
 package com.stratio.meta.core.statements;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
+
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -56,24 +74,6 @@ import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
-
-import org.apache.log4j.Logger;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Pattern;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -474,13 +474,15 @@ public class SelectStatement extends MetaStatement {
     Result result =
         validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
 
-    if((!result.hasError()) && (result instanceof CommandResult) &&
-       ("streaming".equalsIgnoreCase(((CommandResult) result).getResult().toString()))){
+    if ((!result.hasError()) && (result instanceof CommandResult)
+        && ("streaming".equalsIgnoreCase(((CommandResult) result).getResult().toString()))) {
       streamMode = true;
     }
 
-    if(!streamMode && windowInc){
-      result = Result.createValidationErrorResult("Window option can only be applied to ephemeral tables.");
+    if (!streamMode && windowInc) {
+      result =
+          Result
+              .createValidationErrorResult("Window option can only be applied to ephemeral tables.");
     }
 
     if (!result.hasError() && joinInc) {
@@ -794,7 +796,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Validate that the columns specified in the select are valid by checking that the selection
    * columns exists in the table.
-   *
+   * 
    * @param tableFrom The {@link com.datastax.driver.core.TableMetadata} associated with the FROM
    *        table.
    * @param tableJoin The {@link com.datastax.driver.core.TableMetadata} associated with the JOIN
@@ -804,25 +806,27 @@ public class SelectStatement extends MetaStatement {
   private Result validateSelectionColumns(TableMetadata tableFrom, TableMetadata tableJoin) {
     Result result = QueryResult.createSuccessQueryResult();
 
-    if(streamMode && (selectionClause instanceof SelectionList) && (((SelectionList) selectionClause).getTypeSelection() == Selection.TYPE_SELECTOR)){
-      List<String> colNames = metadata.getStreamingColumnNames(getEffectiveKeyspace()+"_"+tableName);
+    if (streamMode && (selectionClause instanceof SelectionList)
+        && (((SelectionList) selectionClause).getTypeSelection() == Selection.TYPE_SELECTOR)) {
+      List<String> colNames =
+          metadata.getStreamingColumnNames(getEffectiveKeyspace() + "_" + tableName);
       SelectionList selectionList = (SelectionList) selectionClause;
       SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
       selectionSelectors.getSelectors();
 
-      for(SelectionSelector selectionSelector: selectionSelectors.getSelectors()){
+      for (SelectionSelector selectionSelector : selectionSelectors.getSelectors()) {
         SelectorIdentifier selectorIdentifier =
             (SelectorIdentifier) selectionSelector.getSelector();
         String colName = selectorIdentifier.getField();
-        if(!colNames.contains(colName.toLowerCase())){
-          return Result.createValidationErrorResult(
-              "Column '" + colName + "' not found in ephemeral table '" + getEffectiveKeyspace()
-              + "." + tableName + "'.");
+        if (!colNames.contains(colName.toLowerCase())) {
+          return Result.createValidationErrorResult("Column '" + colName
+              + "' not found in ephemeral table '" + getEffectiveKeyspace() + "." + tableName
+              + "'.");
         }
       }
     }
 
-    if(streamMode){
+    if (streamMode) {
       return result;
     }
 
@@ -884,8 +888,6 @@ public class SelectStatement extends MetaStatement {
                       .createValidationErrorResult("Nested functions on selected fields not supported.");
             }
           }
-        } else {
-          result = Result.createValidationErrorResult("Missing group by clause.");
         }
       } else {
         result =
@@ -1046,31 +1048,33 @@ public class SelectStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName, String outgoing){
+  public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName,
+      String outgoing) {
     StringBuilder querySb = new StringBuilder("from ");
     querySb.append(streamName);
-    if(windowInc){
-      querySb.append("#window.timeBatch( ").append(getWindow().toString().toLowerCase()).append(" )");
+    if (windowInc) {
+      querySb.append("#window.timeBatch( ").append(getWindow().toString().toLowerCase())
+          .append(" )");
     }
 
     List<String> ids = new ArrayList<>();
     boolean asterisk = false;
     SelectionClause selectionClause = getSelectionClause();
-    if(selectionClause.getType() == SelectionClause.TYPE_SELECTION){
+    if (selectionClause.getType() == SelectionClause.TYPE_SELECTION) {
       SelectionList selectionList = (SelectionList) selectionClause;
       Selection selection = selectionList.getSelection();
-      if(selection.getType() == Selection.TYPE_ASTERISK){
+      if (selection.getType() == Selection.TYPE_ASTERISK) {
         asterisk = true;
       }
     }
-    if(asterisk){
+    if (asterisk) {
       List<ColumnNameTypeValue> cols = null;
       try {
         cols = stratioStreamingAPI.columnsFromStream(streamName);
       } catch (Throwable t) {
         t.printStackTrace();
       }
-      for(ColumnNameTypeValue ctv: cols){
+      for (ColumnNameTypeValue ctv : cols) {
         ids.add(ctv.getColumn());
       }
     } else {
@@ -1712,10 +1716,10 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-    if(metadataManager.checkStream(getEffectiveKeyspace()+"_"+tableName)) {
+    if (metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName)) {
       steps.setNode(new MetaStep(MetaPath.STREAMING, this));
       steps.setInvolvesStreaming(true);
-    } else if (groupInc || orderInc) {
+    } else if (groupInc || orderInc || selectionClause.containsFunctions()) {
       steps.setNode(new MetaStep(MetaPath.DEEP, this));
     } else if (joinInc) {
       steps = getJoinPlan();
@@ -1851,6 +1855,14 @@ public class SelectStatement extends MetaStatement {
 
   public void replaceAliasesWithName(Map<String, String> fieldsAliasesMap,
       Map<String, String> tablesAliasesMap) {
+
+    Iterator<Entry<String, String>> entriesIt = tablesAliasesMap.entrySet().iterator();
+    while (entriesIt.hasNext()) {
+      Entry<String, String> entry = entriesIt.next();
+      if (entry.getValue().contains(".")) {
+        tablesAliasesMap.put(entry.getKey(), entry.getValue().split("\\.")[1]);
+      }
+    }
 
     // Replacing alias in SELECT clause
     replaceAliasesInSelect(tablesAliasesMap);

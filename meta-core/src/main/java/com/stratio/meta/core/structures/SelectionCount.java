@@ -106,4 +106,15 @@ public class SelectionCount extends SelectionClause {
   public void addTablename(String tablename) {
 
   }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.stratio.meta.core.structures.SelectionClause#containsFunctions()
+   */
+  @Override
+  public boolean containsFunctions() {
+
+    return false;
+  }
 }

@@ -16,6 +16,15 @@
 
 package com.stratio.meta.deep;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+
 import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.IDeepJobConfig;
@@ -54,15 +63,6 @@ import com.stratio.meta.deep.transformation.GroupByAggregation;
 import com.stratio.meta.deep.transformation.GroupByMapping;
 import com.stratio.meta.deep.transformation.KeyRemover;
 import com.stratio.meta.deep.utils.DeepUtils;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Class that performs as a Bridge between Meta and Stratio Deep.
@@ -145,18 +145,19 @@ public class Bridge {
       }
     }
 
+    List<String> cols =
+        DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
+
     // Group by clause
     if (ss.isGroupInc()) {
       rdd = doGroupBy(rdd, ss.getGroup(), (SelectionList) ss.getSelectionClause());
+    } else if (ss.getSelectionClause().containsFunctions()) {
+      rdd = doGroupBy(rdd, null, (SelectionList) ss.getSelectionClause());
     }
 
     if (ss.isOrderInc()) {
       rdd = doOrder(rdd, ss.getOrder());
     }
-
-    List<String> cols = new ArrayList<>(Arrays.asList(columnsSet));
-    cols.addAll(DeepUtils.retrieveSelectorAggegationFunctions(((SelectionList) ss
-        .getSelectionClause()).getSelection()));
 
     return returnResult(rdd, isRoot,
         ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, cols);
@@ -353,7 +354,7 @@ public class Bridge {
     JavaPairRDD<Cells, Cells> groupedRdd =
         rdd.map(new GroupByMapping(aggregationCols, groupByClause));
 
-    JavaPairRDD<Cells, Cells> aggregatedRdd = applyAggregations(groupedRdd, aggregationCols);
+    JavaPairRDD<Cells, Cells> aggregatedRdd = applyGroupByAggregations(groupedRdd, aggregationCols);
 
     JavaRDD<Cells> map = aggregatedRdd.map(new KeyRemover());
 
@@ -361,7 +362,7 @@ public class Bridge {
 
   }
 
-  private JavaPairRDD<Cells, Cells> applyAggregations(JavaPairRDD<Cells, Cells> groupedRdd,
+  private JavaPairRDD<Cells, Cells> applyGroupByAggregations(JavaPairRDD<Cells, Cells> groupedRdd,
       List<String> aggregationCols) {
 
     JavaPairRDD<Cells, Cells> aggregatedRdd =
