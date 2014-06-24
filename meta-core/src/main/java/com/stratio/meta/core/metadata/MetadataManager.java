@@ -21,7 +21,9 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.core.structures.IndexType;
+import com.stratio.meta.streaming.StreamingUtils;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
@@ -31,8 +33,10 @@ import com.stratio.streaming.commons.streams.StratioStream;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Metadata Manager of the META server that maintains and up-to-date version of the metadata
@@ -303,4 +307,38 @@ public class MetadataManager {
     }
     return null;
   }
+
+  public List<ColumnNameTypeValue> getStreamingColumns(String ephemeralTable) {
+    try {
+      return stratioStreamingAPI.columnsFromStream(ephemeralTable);
+    } catch (StratioEngineOperationException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public com.stratio.meta.common.metadata.structures.TableMetadata convertStreamingToMeta(String catalog, String tablename){
+    Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new HashSet<>();
+    try {
+      for(ColumnNameTypeValue col: stratioStreamingAPI.columnsFromStream(catalog+"_"+tablename)){
+        ColumnType metaType = convertStreamingToMeta(col.getType());
+        com.stratio.meta.common.metadata.structures.ColumnMetadata metaCol =
+            new com.stratio.meta.common.metadata.structures.ColumnMetadata(tablename, col.getColumn(), metaType);
+        columns.add(metaCol);
+      }
+    } catch (StratioEngineOperationException e) {
+      LOG.error("Cannot convert Streaming metadata to meta", e);
+      return null;
+    }
+    com.stratio.meta.common.metadata.structures.TableMetadata
+        tableMetadata =
+        new com.stratio.meta.common.metadata.structures.TableMetadata(tablename, catalog, columns);
+    return tableMetadata;
+  }
+
+  private ColumnType convertStreamingToMeta(
+      com.stratio.streaming.commons.constants.ColumnType type) {
+    return StreamingUtils.streamingToMetaType(type.getValue());
+  }
+
 }

@@ -26,6 +26,7 @@ import com.datastax.driver.core.querybuilder.Select.Where;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.GroupBy;
@@ -50,6 +51,7 @@ import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.SelectorMeta;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.WindowSelect;
+import com.stratio.meta.core.structures.WindowTime;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
@@ -469,7 +471,7 @@ public class SelectStatement extends MetaStatement {
 
   /** {@inheritDoc} */
   @Override
-  public Result validate(MetadataManager metadata) {
+  public Result validate(MetadataManager metadata, EngineConfig config) {
     // Validate FROM keyspace
     Result result =
         validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
@@ -483,12 +485,15 @@ public class SelectStatement extends MetaStatement {
       result = Result.createValidationErrorResult("Window option can only be applied to ephemeral tables.");
     }
 
+    if(streamMode && !windowInc){
+      result = Result.createValidationErrorResult("Window is mandatory for ephemeral tables.");
+    }
+
     if (!result.hasError() && joinInc) {
       result =
           validateKeyspaceAndTable(metadata, sessionKeyspace, join.isKeyspaceInc(),
               join.getKeyspace(), join.getTablename());
     }
-
 
     String effectiveKs1 = getEffectiveKeyspace();
     String effectiveKs2 = null;
@@ -503,14 +508,24 @@ public class SelectStatement extends MetaStatement {
 
     TableMetadata tableMetadataJoin = null;
 
+    com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata = null;
     if (!result.hasError()) {
       // Cache Metadata manager and table metadata for the getDriverStatement.
       this.metadata = metadata;
-      tableMetadataFrom = metadata.getTableMetadata(effectiveKs1, tableName);
+      if(streamMode){
+        streamingMetadata = metadata.convertStreamingToMeta(getEffectiveKeyspace(), tableName);
+      } else {
+        tableMetadataFrom = metadata.getTableMetadata(effectiveKs1, tableName);
+      }
       if (joinInc) {
         tableMetadataJoin = metadata.getTableMetadata(effectiveKs2, join.getTablename());
       }
-      result = validateSelectionColumns(tableMetadataFrom, tableMetadataJoin);
+
+      if(streamMode){
+        result = validateSelectionColumns(streamingMetadata, tableMetadataJoin);
+      } else {
+        result = validateSelectionColumns(tableMetadataFrom, tableMetadataJoin);
+      }
 
       if (!result.hasError()) {
         result = validateOptions();
@@ -518,13 +533,41 @@ public class SelectStatement extends MetaStatement {
     }
 
     if (!result.hasError() && joinInc) {
-      result = validateJoinClause(tableMetadataFrom, tableMetadataJoin);
+      if(streamMode){
+        result = validateJoinClause(streamingMetadata, tableMetadataJoin);
+      } else {
+        result = validateJoinClause(tableMetadataFrom, tableMetadataJoin);
+      }
     }
 
     if (!result.hasError() && whereInc) {
-      result = validateWhereClause(tableMetadataFrom);
+      if(streamMode){
+        result = Result.createValidationErrorResult("Where clauses in ephemeral tables are not supported yet.");
+      } else {
+        result = validateWhereClause(tableMetadataFrom);
+      }
+
     }
 
+    if(!result.hasError() && windowInc){
+      result = validateWindow(config);
+    }
+
+    return result;
+  }
+
+  private Result validateWindow(EngineConfig config) {
+    Result result = QueryResult.createSuccessQueryResult();
+    if(window instanceof WindowTime){
+      WindowTime windowTime = (WindowTime) window;
+      long windowMillis = windowTime.getDurationInMilliseconds();
+      if(windowMillis % config.getStreamingDuration() != 0){
+        result = Result.createValidationErrorResult(
+            "Window time must be multiple of "+ config.getStreamingDuration() + " milliseconds.");
+      }
+    } else {
+      result = Result.createValidationErrorResult("This type of window is not supported yet.");
+    }
     return result;
   }
 
@@ -572,6 +615,49 @@ public class SelectStatement extends MetaStatement {
             Result.createValidationErrorResult("Join selector " + join.getRightField().toString()
                 + " table or column name not found");
       }
+    }
+
+    return result;
+  }
+
+  private Result validateJoinClause(
+      com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata, TableMetadata tableMetadataJoin) {
+    Result result = QueryResult.createSuccessQueryResult();
+    if (joinInc) {
+
+      SelectorIdentifier leftField = join.getLeftField();
+      SelectorIdentifier rightField = join.getRightField();
+
+      boolean streamingLeft = false;
+      boolean batchLeft = false;
+      if(leftField.getTable().equalsIgnoreCase(streamingMetadata.getTableName())){
+        if(streamingMetadata.getColumn(leftField.getField()) == null){
+          result = Result.createValidationErrorResult("Ephemeral table '"+streamingMetadata.getTableName()+"' doesn't contain the field '"+leftField.getField()+"'.");
+        } else {
+          streamingLeft = true;
+        }
+      } else if (leftField.getTable().equalsIgnoreCase(tableMetadataJoin.getName())){
+        if(tableMetadataJoin.getColumn(leftField.getField()) == null){
+          result = Result.createValidationErrorResult("Table '"+tableMetadataJoin.getName()+"' doesn't contain the field '"+leftField.getField()+"'.");
+        } else {
+          batchLeft = true;
+        }
+      } else {
+        result = Result.createValidationErrorResult("Table '"+leftField.getTable()+"' doesn't match any of the incoming tables.");
+      }
+
+      if(!result.hasError()){
+        if(streamingLeft){
+          if(tableMetadataJoin.getColumn(rightField.getField()) == null){
+            result = Result.createValidationErrorResult("Table '"+tableMetadataJoin.getName()+"' doesn't contain the field '"+rightField.getField()+"'.");
+          }
+        } else if(batchLeft){
+          if(streamingMetadata.getColumn(rightField.getField()) == null){
+            result = Result.createValidationErrorResult("Ephemeral table '"+streamingMetadata.getTableName()+"' doesn't contain the field '"+rightField.getField()+"'.");
+          }
+        }
+      }
+
     }
 
     return result;
@@ -896,6 +982,46 @@ public class SelectStatement extends MetaStatement {
     return result;
   }
 
+  private Result validateSelectionColumns(
+      com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata,
+                                          TableMetadata tableJoin) {
+    Result result = QueryResult.createSuccessQueryResult();
+
+    if((selectionClause instanceof SelectionList) && (((SelectionList) selectionClause).getTypeSelection() == Selection.TYPE_SELECTOR)){
+      SelectionList selectionList = (SelectionList) selectionClause;
+      SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
+      selectionSelectors.getSelectors();
+
+      for(SelectionSelector selectionSelector: selectionSelectors.getSelectors()){
+        SelectorIdentifier selectorIdentifier =
+            (SelectorIdentifier) selectionSelector.getSelector();
+        String tableName = selectorIdentifier.getTable();
+        String colName = selectorIdentifier.getField();
+
+        result = findColumn(streamingMetadata, tableJoin, colName);
+      }
+    }
+
+    return result;
+  }
+
+  private Result findColumn(
+      com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata,
+      TableMetadata tableJoin, String colName){
+    Result result = QueryResult.createSuccessQueryResult();
+    if(tableName.equalsIgnoreCase(streamingMetadata.getTableName())){
+      if(streamingMetadata.getColumn(colName) == null){
+        result = Result.createValidationErrorResult("Field '"+colName+"' not found in ephemeral table '"+tableName+"'.");
+      }
+    } else if (tableName.equalsIgnoreCase(tableJoin.getName())) {
+      if(tableJoin.getColumn(colName) == null){
+        result = Result.createValidationErrorResult("Field '"+colName+"' not found in table '"+tableName+"'.");
+      }
+    } else {
+      result = Result.createValidationErrorResult("Table '"+tableName+"' doesn't match to any incoming tables.");
+    }
+    return result;
+  }
 
   /**
    * Get the processed where clause to be sent to Cassandra related with lucene indexes.
@@ -1543,8 +1669,8 @@ public class SelectStatement extends MetaStatement {
       joinSelect.setJoin(new InnerJoin("", this.join.getRightField(), this.join.getLeftField()));
     }
 
-    firstSelect.validate(metadata);
-    secondSelect.validate(metadata);
+    firstSelect.validate(metadata, null);
+    secondSelect.validate(metadata, null);
 
     // ADD STEPS
     steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));

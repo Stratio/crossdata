@@ -20,25 +20,28 @@
 package com.stratio.meta.core.validator;
 
 import com.datastax.driver.core.Session;
+import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.meta.common.result.QueryStatus;
 
 
 public class Validator {
 
   private final MetadataManager metadata;
+  private final EngineConfig config;
 
-  public Validator(Session session, IStratioStreamingAPI stratioStreamingAPI){
+  public Validator(Session session, IStratioStreamingAPI stratioStreamingAPI, EngineConfig config){
     metadata = new MetadataManager(session, stratioStreamingAPI);
     metadata.loadMetadata();
+    this.config = config;
   }
 
   public MetaQuery validateQuery(MetaQuery metaQuery) {
     //TODO: Implement metadata invalidation messages between servers.
     metadata.loadMetadata();
-    metaQuery.setResult(metaQuery.getStatement().validate(metadata));
+    metaQuery.setResult(metaQuery.getStatement().validate(metadata, config));
     if(!metaQuery.hasError()) {
       metaQuery.setStatus(QueryStatus.VALIDATED);
     }

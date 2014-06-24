@@ -22,6 +22,7 @@ package com.stratio.meta.core.statements;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
@@ -73,8 +74,8 @@ public class ExplainPlanStatement extends MetaStatement {
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   @Override
-  public Result validate(MetadataManager metadata) {
-    return metaStatement.validate(metadata);
+  public Result validate(MetadataManager metadata, EngineConfig config) {
+    return metaStatement.validate(metadata, config);
   }
 
   @Override

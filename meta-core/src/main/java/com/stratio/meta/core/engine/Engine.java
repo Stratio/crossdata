@@ -100,7 +100,7 @@ public class Engine {
     IStratioStreamingAPI stratioStreamingAPI = initializeStreaming(config);
 
     parser = new Parser();
-    validator = new Validator(session, stratioStreamingAPI);
+    validator = new Validator(session, stratioStreamingAPI, config);
     manager = new APIManager(session, stratioStreamingAPI);
     planner = new Planner(session, stratioStreamingAPI);
     executor = new Executor(session, stratioStreamingAPI, deepContext, config);
