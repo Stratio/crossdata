@@ -253,8 +253,8 @@ public class MetadataManager {
     List<StratioStream> streamsList = null;
     try {
       streamsList = stratioStreamingAPI.listStreams();
-    } catch (Throwable t) {
-      t.printStackTrace();
+    } catch (Exception e) {
+      LOG.error(e);
     }
     return streamsList;
   }
@@ -267,8 +267,8 @@ public class MetadataManager {
       for(ColumnNameTypeValue ctp: cols){
         colNames.add(ctp.getColumn().toLowerCase());
       }
-    } catch (Throwable t){
-      t.printStackTrace();
+    } catch (Exception e){
+      LOG.error(e);
     }
     return colNames;
   }
@@ -288,8 +288,8 @@ public class MetadataManager {
           }
         }
       }
-    } catch (Throwable t) {
-      t.printStackTrace();
+    } catch (Exception e) {
+      LOG.error(e);
     }
     return result;
   }
@@ -303,7 +303,7 @@ public class MetadataManager {
         }
       }
     } catch (StratioEngineOperationException e) {
-      e.printStackTrace();
+      LOG.error(e);
     }
     return null;
   }
@@ -312,7 +312,7 @@ public class MetadataManager {
     try {
       return stratioStreamingAPI.columnsFromStream(ephemeralTable);
     } catch (StratioEngineOperationException e) {
-      e.printStackTrace();
+      LOG.error(e);
     }
     return null;
   }

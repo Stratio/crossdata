@@ -16,15 +16,15 @@
 
 package com.stratio.meta.core.validator.statements;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-
-import org.testng.annotations.Test;
-
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.validator.BasicValidatorTest;
+
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 
 public class ExplainPlanStatementTest extends BasicValidatorTest {
 
@@ -42,7 +42,7 @@ public class ExplainPlanStatementTest extends BasicValidatorTest {
     MetaStatement stmt = pt.testRegularStatement(inputText, methodName);
     stmt.setSessionKeyspace("demo");
     ((ExplainPlanStatement) stmt).getMetaStatement().setSessionKeyspace("demo");
-    Result result = stmt.validate(metadataManager);
+    Result result = stmt.validate(metadataManager, null);
     assertNotNull(result, "Sentence validation not supported - " + methodName);
     assertFalse(result.hasError(),
                 "Cannot validate sentence - " + methodName + ": " + getErrorMessage(result));

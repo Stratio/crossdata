@@ -64,8 +64,8 @@ public class StopProcessStatement extends MetaStatement {
           }
         }
       }
-    } catch (Throwable t) {
-      t.printStackTrace();
+    } catch (Exception e) {
+      LOG.error(e);
     }
     return StreamName;
   }

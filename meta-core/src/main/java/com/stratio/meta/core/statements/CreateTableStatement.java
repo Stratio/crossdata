@@ -20,6 +20,7 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.BooleanProperty;
 import com.stratio.meta.core.structures.Property;
@@ -251,7 +252,7 @@ public class CreateTableStatement extends MetaStatement {
 
   /** {@inheritDoc} */
   @Override
-  public Result validate(MetadataManager metadata) {
+  public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result = validateKeyspaceAndTable(metadata);
 
     if (!result.hasError()){

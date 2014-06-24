@@ -16,24 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -76,6 +58,24 @@ import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
+
+import org.apache.log4j.Logger;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -1197,8 +1197,8 @@ public class SelectStatement extends MetaStatement {
       List<ColumnNameTypeValue> cols = null;
       try {
         cols = stratioStreamingAPI.columnsFromStream(streamName);
-      } catch (Throwable t) {
-        t.printStackTrace();
+      } catch (Exception e) {
+        LOG.error(e);
       }
       for (ColumnNameTypeValue ctv : cols) {
         ids.add(ctv.getColumn());
@@ -1842,7 +1842,9 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-    if (metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName)) {
+    if(metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName) && joinInc){
+      steps = getStreamJoinPlan();
+    } else if (metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName)) {
       steps.setNode(new MetaStep(MetaPath.STREAMING, this));
       steps.setInvolvesStreaming(true);
     } else if (groupInc || orderInc || selectionClause.containsFunctions()) {
@@ -1854,6 +1856,86 @@ public class SelectStatement extends MetaStatement {
     } else {
       steps.setNode(new MetaStep(MetaPath.CASSANDRA, this));
     }
+    return steps;
+  }
+
+  private Tree getStreamJoinPlan() {
+    Tree steps = new Tree();
+    SelectStatement firstSelect = new SelectStatement(tableName);
+    firstSelect.setSessionKeyspace(this.sessionKeyspace);
+    firstSelect.setKeyspace(getEffectiveKeyspace());
+
+    SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
+    if (this.join.getKeyspace() != null) {
+      secondSelect.setKeyspace(join.getKeyspace());
+    }
+    secondSelect.setSessionKeyspace(this.sessionKeyspace);
+
+    SelectStatement joinSelect = new SelectStatement("");
+
+    // ADD FIELDS OF THE JOIN
+    if (this.join.getLeftField().getTable().trim().equalsIgnoreCase(tableName)) {
+      firstSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
+      secondSelect.addSelection(new SelectionSelector(this.join.getRightField()));
+    } else {
+      firstSelect.addSelection(new SelectionSelector(this.join.getRightField()));
+      secondSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
+    }
+
+    // ADD FIELDS OF THE SELECT
+    SelectionList selectionList = (SelectionList) this.selectionClause;
+    Selection selection = selectionList.getSelection();
+
+    if (selection instanceof SelectionSelectors) {
+      SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
+      for (SelectionSelector ss : selectionSelectors.getSelectors()) {
+        SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
+        if (tableMetadataFrom.getColumn(si.getField()) != null) {
+          firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
+        } else {
+          secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
+        }
+      }
+    } else {
+      // instanceof SelectionAsterisk
+      firstSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
+      secondSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
+    }
+
+    // ADD WHERE CLAUSES IF ANY
+    if (whereInc) {
+      Map<Integer, List<Relation>> whereRelations = getWhereJoinPlan(firstSelect, secondSelect);
+      if (!whereRelations.get(1).isEmpty()) {
+        firstSelect.setWhere(whereRelations.get(1));
+      }
+      if (!whereRelations.get(2).isEmpty()) {
+        secondSelect.setWhere(whereRelations.get(2));
+      }
+    }
+
+    // ADD WINDOW
+    if(windowInc){
+      firstSelect.setWindow(window);
+    }
+
+    // ADD SELECTED COLUMNS TO THE JOIN STATEMENT
+    joinSelect.setSelectionClause(selectionClause);
+
+    // ADD MAP OF THE JOIN
+    if (this.join.getLeftField().getTable().equalsIgnoreCase(tableName)) {
+      joinSelect.setJoin(new InnerJoin("", this.join.getLeftField(), this.join.getRightField()));
+    } else {
+      joinSelect.setJoin(new InnerJoin("", this.join.getRightField(), this.join.getLeftField()));
+    }
+
+    firstSelect.validate(metadata, null);
+    secondSelect.validate(metadata, null);
+
+    // ADD STEPS
+    steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
+    steps.addChild(new Tree(new MetaStep(MetaPath.STREAMING, firstSelect)));
+    steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
+
     return steps;
   }
 

@@ -181,7 +181,7 @@ public class Tree {
     } else if(myPath == MetaPath.DEEP){
       result = DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session, deepSparkContext, engineConfig);
     } else if(myPath == MetaPath.STREAMING){
-      result = StreamExecutor.execute(queryId, myStep.getStmt(), stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor);
+      result = StreamExecutor.execute(queryId, myStep.getStmt(), stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor, isRoot());
     } else if(myPath == MetaPath.UNSUPPORTED){
       result = Result.createUnsupportedOperationErrorResult("Query not supported.");
     } else {
