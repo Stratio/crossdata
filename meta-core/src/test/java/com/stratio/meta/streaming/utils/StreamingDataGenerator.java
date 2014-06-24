@@ -34,22 +34,26 @@ public class StreamingDataGenerator {
 
   private static boolean unlimited = false;
 
-  private static int nameCounter;
+  private static int rowsLimit;
 
   private static String sensorDataStream = "demo_temporal";
 
   public static void main(String[] args) throws InterruptedException {
 
-    if (args.length > 3) {
+    if (args.length > 2) {
       sensorDataStream = String.valueOf(args[2]);
-      nameCounter = Integer.valueOf(args[1]);
-    } else if (args.length > 2) {
-      nameCounter = Integer.valueOf(args[1]);
+      rowsLimit = Integer.valueOf(args[1]);
+    } else if (args.length > 1) {
+      rowsLimit = Integer.valueOf(args[1]);
     } else {
       unlimited = true;
     }
 
-    while (unlimited || nameCounter >= 0) {
+    int nameCounter = 0;
+
+    while (unlimited || nameCounter < rowsLimit) {
+      nameCounter++;
+
       Producer<String, String> producer = null;
       if (args != null && args.length > 0) {
         producer = new Producer<String, String>(createProducerConfig(args[0]));
@@ -57,15 +61,16 @@ public class StreamingDataGenerator {
         throw new RuntimeException("Parameters are incorrect!");
       }
 
-      List<Double> ageValues = new ValuesGenerator(0).withDerivation(5).addRange(70, 1).build();
+      int ageValue = (int) (Math.random() * 80);
 
       ExecutorService es = Executors.newFixedThreadPool(10);
-      es.execute(new DataSender(producer, ageValues));
+      es.execute(new DataSender(producer, "name_" + nameCounter, ageValue));
 
       es.shutdown();
 
-      if (nameCounter % 10 == 0) {
-        Thread.sleep(10000);
+      if (nameCounter % 10 == 0 && nameCounter != rowsLimit) {
+        System.out.println("Sleeping for 5 seconds...");
+        Thread.sleep(5000);
       }
     }
   }
@@ -80,19 +85,21 @@ public class StreamingDataGenerator {
   private static class DataSender implements Runnable {
 
     private final Producer<String, String> producer;
-    private final List<Double> values;
+    private final String name;
+    private final int age;
 
-    public DataSender(Producer<String, String> producer, List<Double> values) {
+    public DataSender(Producer<String, String> producer, String name, int value) {
       super();
       this.producer = producer;
-      this.values = values;
+      this.name = name;
+      this.age = value;
     }
 
     @Override
     public void run() {
       Gson gson = new Gson();
 
-      for (StratioStreamingMessage message : generateStratioStreamingMessages(values)) {
+      for (StratioStreamingMessage message : generateStratioStreamingMessages(name, age)) {
         KeyedMessage<String, String> busMessage =
             new KeyedMessage<String, String>(BUS.TOPICS, STREAM_OPERATIONS.MANIPULATION.INSERT,
                 gson.toJson(message));
@@ -101,29 +108,28 @@ public class StreamingDataGenerator {
 
     }
 
-    private List<StratioStreamingMessage> generateStratioStreamingMessages(List<Double> values) {
+    private List<StratioStreamingMessage> generateStratioStreamingMessages(String name, int value) {
       List<StratioStreamingMessage> result = new ArrayList<StratioStreamingMessage>();
 
-      for (Double value : values) {
-        StratioStreamingMessage message = new StratioStreamingMessage();
+      StratioStreamingMessage message = new StratioStreamingMessage();
 
-        message.setOperation(STREAM_OPERATIONS.MANIPULATION.INSERT);
-        message.setStreamName(sensorDataStream);
-        message.setTimestamp(System.currentTimeMillis());
-        message.setSession_id(String.valueOf(System.currentTimeMillis()));
-        message.setRequest_id(String.valueOf(System.currentTimeMillis()));
-        message.setRequest("dummy request");
+      message.setOperation(STREAM_OPERATIONS.MANIPULATION.INSERT);
+      message.setStreamName(sensorDataStream);
+      message.setTimestamp(System.currentTimeMillis());
+      message.setSession_id(String.valueOf(System.currentTimeMillis()));
+      message.setRequest_id(String.valueOf(System.currentTimeMillis()));
+      message.setRequest("dummy request");
 
-        List<ColumnNameTypeValue> sensorData = Lists.newArrayList();
-        sensorData.add(new ColumnNameTypeValue("name", null, "name_" + nameCounter));
-        sensorData.add(new ColumnNameTypeValue("age", null, value.intValue()));
-        // sensorData.add(new ColumnNameTypeValue("data", null, value));
+      List<ColumnNameTypeValue> sensorData = Lists.newArrayList();
+      sensorData.add(new ColumnNameTypeValue("name", null, name));
+      sensorData.add(new ColumnNameTypeValue("age", null, value));
+      // sensorData.add(new ColumnNameTypeValue("data", null, value));
 
-        message.setColumns(sensorData);
+      message.setColumns(sensorData);
 
-        result.add(message);
-        nameCounter--;
-      }
+      result.add(message);
+      System.out.println("Generated new row: name [" + name + "] age [" + value + "]");
+
       return result;
     }
   }
