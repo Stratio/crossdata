@@ -231,7 +231,7 @@ public class MetaStream {
   public static String startQuery(final String queryId, IStratioStreamingAPI stratioStreamingAPI,
                                     SelectStatement ss,
                                     EngineConfig config,
-                                    JavaStreamingContext jssc,
+                                    final JavaStreamingContext jssc,
                                     final ActorResultListener callbackActor,
                                     final boolean isRoot){
     callbackActors.put(queryId, callbackActor);
@@ -321,13 +321,19 @@ public class MetaStream {
                 }
               });
             } else { // LEAF NODE
+              List<Cells> deepCells = new ArrayList<>();
+              JavaRDD<Cells> rdd = jssc.sparkContext().parallelize(deepCells);
 
-              JavaSparkContext jsc = new JavaSparkContext(null, null);
-              List<Cells> tmpCells = null;
-              JavaRDD<Cells> tmp = jsc.parallelize(tmpCells);
-              RDD<Cells> cells = null;
-              ClassTag <Cells> tags = null;
-              JavaRDD<Cells> rdd = new JavaRDD<Cells>(cells, tags);
+                CassandraResultSet crs = new CassandraResultSet();
+                crs.add(new Row("RDD", new Cell(rdd)));
+
+                List<ColumnMetadata> columns = new ArrayList<>();
+                ColumnMetadata metadata = new ColumnMetadata("RDD", "RDD");
+                ColumnType type = ColumnType.VARCHAR;
+                type.setDBMapping("class", JavaRDD.class);
+                metadata.setType(type);
+                crs.setColumnMetadata(columns);
+                sendResultsToNextStep(crs);
             }
           }
           return null;
@@ -346,7 +352,11 @@ public class MetaStream {
     }
   }
 
-  /**
+    private static void sendResultsToNextStep(CassandraResultSet crs) {
+        //TODO:
+    }
+
+    /**
    * Send the results to the associated listener.
    * @param results The results.
    */
