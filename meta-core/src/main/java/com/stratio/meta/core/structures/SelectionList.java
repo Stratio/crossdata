@@ -144,4 +144,15 @@ public class SelectionList extends SelectionClause {
     selection.addTablename(tablename);
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.stratio.meta.core.structures.SelectionClause#containsFunctions()
+   */
+  @Override
+  public boolean containsFunctions() {
+
+    return this.selection.containsFunctions();
+  }
+
 }

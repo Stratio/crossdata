@@ -45,19 +45,19 @@ public abstract class SelectionClause {
 
   public List<String> getFields() {
     List<String> ids = new ArrayList<>();
-    if(type == TYPE_COUNT){
+    if (type == TYPE_COUNT) {
       return ids;
     }
     SelectionList sList = (SelectionList) this;
     Selection selection = sList.getSelection();
-    if(selection.getType() == Selection.TYPE_ASTERISK){
+    if (selection.getType() == Selection.TYPE_ASTERISK) {
       ids.add("*");
       return ids;
     }
     SelectionSelectors sSelectors = (SelectionSelectors) selection;
-    for(SelectionSelector sSelector: sSelectors.getSelectors()){
+    for (SelectionSelector sSelector : sSelectors.getSelectors()) {
       SelectorMeta selector = sSelector.getSelector();
-      if(selector.getType() == SelectorMeta.TYPE_IDENT){
+      if (selector.getType() == SelectorMeta.TYPE_IDENT) {
         SelectorIdentifier selectorId = (SelectorIdentifier) selector;
         ids.add(selectorId.getField());
       }
@@ -65,4 +65,10 @@ public abstract class SelectionClause {
     return ids;
   }
 
+  /**
+   * Checks whether the selection clause contains some function or not
+   * 
+   * @return true, if functions are used; false, otherwise.
+   */
+  public abstract boolean containsFunctions();
 }
