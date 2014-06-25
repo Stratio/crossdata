@@ -29,6 +29,7 @@ import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.deep.Bridge;
 import org.apache.log4j.Logger;
+import org.apache.spark.SparkEnv;
 
 import java.util.List;
 
@@ -62,6 +63,7 @@ public class DeepExecutor {
                                Session session,
                                DeepSparkContext deepSparkContext,
                                EngineConfig engineConfig) {
+
     if (stmt instanceof SelectStatement) {
       SelectStatement ss = (SelectStatement) stmt;
       Bridge bridge = new Bridge(session, deepSparkContext, engineConfig);

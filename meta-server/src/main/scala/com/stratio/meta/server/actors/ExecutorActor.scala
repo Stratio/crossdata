@@ -45,21 +45,18 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker with Actor
 
   override def receive: Receive = {
     case query:MetaQuery if query.getPlan.involvesStreaming() =>
-      println("»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»")
-      senderMap.put(query.getQueryId, sender)
+      //Sender is mutable
+      val querySender = sender
+      senderMap.put(query.getQueryId, querySender)
       val result = executor.executeQuery(query, this).getResult
       processResults(result)
-      //senderMap.remove(query.getQueryId)
-      println("««««««««««««««««««««««««««««««««««««««««««««««««««««««")
     case query:MetaQuery if !query.hasError=> {
-      println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
       log.debug("Init Executor Task")
       val timer=initTimer()
       val result = executor.executeQuery(query, this).getResult
       sender ! result
       finishTimer(timer)
       log.debug("Finish Executor Task")
-      println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
     }
     case query:MetaQuery if query.hasError=>{
       sender ! query.getResult

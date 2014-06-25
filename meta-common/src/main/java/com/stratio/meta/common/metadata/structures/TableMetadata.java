@@ -46,13 +46,20 @@ public class TableMetadata implements Serializable{
   private Set<ColumnMetadata> columns = new HashSet<>();
 
   /**
+   * Type of table.
+   */
+  private final TableType type;
+
+  /**
    * Class constructor.
    * @param tableName Name of the table.
    * @param parentCatalog Parent catalog.
+   * @param type Type of table.
    */
-  public TableMetadata(String tableName, String parentCatalog){
+  public TableMetadata(String tableName, String parentCatalog, TableType type){
     this.parentCatalog = parentCatalog;
     this.tableName = tableName;
+    this.type = type;
   }
 
   /**
@@ -63,8 +70,9 @@ public class TableMetadata implements Serializable{
    */
   public TableMetadata(String tableName,
                        String parentCatalog,
+                       TableType type,
                        Set<ColumnMetadata> columns){
-    this(tableName, parentCatalog);
+    this(tableName, parentCatalog, type);
     this.columns.addAll(columns);
   }
 
