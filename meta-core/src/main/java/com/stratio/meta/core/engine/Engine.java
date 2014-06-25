@@ -35,8 +35,15 @@ import com.stratio.streaming.api.StratioStreamingAPIFactory;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+import org.apache.spark.SparkEnv;
+import org.apache.spark.storage.BlockManagerMasterActor;
+import org.apache.spark.storage.StorageStatus;
 
 import java.util.Arrays;
+import java.util.Map;
+
+import scala.Tuple2;
+import scala.collection.Iterator;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
@@ -166,9 +173,9 @@ public class Engine {
   private DeepSparkContext initializeDeep(EngineConfig config){
     //DeepSparkContext result = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
     SparkConf sparkConf = new SparkConf().set("spark.driver.port",
-                                              String.valueOf(StreamingUtils.findFreePort()))
+                                              "0")//String.valueOf(StreamingUtils.findFreePort()))
                                          .set("spark.ui.port",
-                                              String.valueOf(StreamingUtils.findFreePort()));
+                                              "0");//String.valueOf(StreamingUtils.findFreePort()));
     DeepSparkContext result = new DeepSparkContext(new SparkContext(config.getSparkMaster(), config.getJobName(), sparkConf));
 
     if(!config.getSparkMaster().toLowerCase().startsWith("local")){
@@ -176,6 +183,7 @@ public class Engine {
         result.addJar(jar);
       }
     }
+
     return  result;
   }
 

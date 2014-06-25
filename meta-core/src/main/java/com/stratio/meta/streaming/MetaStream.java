@@ -29,10 +29,12 @@ import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.Engine;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.executor.StreamExecutor;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
@@ -40,6 +42,7 @@ import com.stratio.streaming.messaging.ColumnNameType;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkEnv;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
@@ -56,6 +59,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import scala.Tuple2;
 
 /**
  *
@@ -97,6 +102,28 @@ public class MetaStream {
    */
   //TODO: Migrate to Hazelcast
   private static Map<String, String> streamingQueryEphemeralTable = new HashMap<>();
+
+  public static void printMaps(){
+    LOG.info("");
+    LOG.info("=================== Status Maps =============================");
+    for(Map.Entry<String, ActorResultListener> e : callbackActors.entrySet()){
+      LOG.info("QID: " + e.getKey() + " actor: " + e.getValue());
+    }
+    for(Map.Entry<String, String> e : streamingQueries.entrySet()){
+      LOG.info("QID: " + e.getKey() + " SID: " + e.getValue());
+    }
+    for(Map.Entry<String, Integer> e : resultPages.entrySet()){
+      LOG.info("QID: " + e.getKey() + " resultPage: " + e.getValue());
+    }
+    for(Map.Entry<String, MetaStatement> e : queryStatements.entrySet()){
+      LOG.info("QID: " + e.getKey() + " Stmt: " + e.getValue().toString());
+    }
+    for(Map.Entry<String, String> e : streamingQueryEphemeralTable.entrySet()){
+      LOG.info("Ephemeral: " + e.getKey() + " QID: " + e.getValue());
+    }
+    LOG.info("=================== End Status Maps =============================");
+    LOG.info("");
+  }
 
   /**
    * Create a new ephemeral table.
@@ -161,12 +188,14 @@ public class MetaStream {
   public static JavaStreamingContext createSparkStreamingContext(
       EngineConfig config, DeepSparkContext deepSparkContext, int retries){
     //JavaSparkContext sparkContext = new JavaSparkContext(config.getSparkMaster(), "MetaStreaming");
+    LOG.info("Creating JavaStreamingContext with Spark Master: " + config.getSparkMaster());
     SparkConf sparkConf = new SparkConf().setMaster(config.getSparkMaster())
                                          .setAppName("MetaStreaming")
-                                         .set("spark.driver.port", String.valueOf(StreamingUtils.findFreePort()))
-                                         .set("spark.ui.port", String.valueOf(StreamingUtils.findFreePort()));
+                                         //.set("spark.driver.port", String.valueOf(StreamingUtils.findFreePort()))
+                                          .set("spark.driver.port", "0")
+                                         //.set("spark.ui.port", String.valueOf(StreamingUtils.findFreePort()));
+                                          .set("spark.ui.port", "0");
 
-    LOG.info("Creating new JavaStreamingContext on " + config.getSparkMaster());
     JavaStreamingContext jssc = null;
     int attempt = 0;
     while(jssc == null && attempt < retries){
@@ -180,6 +209,7 @@ public class MetaStream {
             new Duration(config.getStreamingDuration()));
         */
         jssc = new JavaStreamingContext(sparkConf, new Duration(config.getStreamingDuration()));
+
       } catch (Throwable t){
         jssc = null;
         LOG.error("Cannot create Streaming Context. Trying it again.", t);
@@ -234,12 +264,11 @@ public class MetaStream {
     final String ks = ss.getEffectiveKeyspace();
     final String streamName = ks+"_"+ss.getTableName();
     try {
-      final String outgoing = streamName+"_"+ UUID.randomUUID().toString().replace("-", "_");
+      final String outgoing = streamName+"_"+ queryId.replace("-", "_");
 
       // Create topic
       String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
       final String streamingQueryId = stratioStreamingAPI.addQuery(streamName, query);
-
       streamingQueries.put(queryId, streamingQueryId);
       resultPages.put(queryId, 0);
       streamingQueryEphemeralTable.put(queryId, streamName);
@@ -263,7 +292,7 @@ public class MetaStream {
 
       final long duration = ss.getWindow().getDurationInMilliseconds();
 
-      StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, duration, 10, 4);
+      StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, duration, 10, 2);
 
       Time timeWindow = new Time(duration);
       LOG.debug("Time Window = "+timeWindow.toString());
@@ -321,6 +350,18 @@ public class MetaStream {
 
       LOG.info("Starting the streaming context.");
       jssc.start();
+      //Thread.sleep(3000);
+      
+      //LOG.info("Starting the streaming context. : " + jssc.ssc());
+      //LOG.info("Starting the streaming context. : " + jssc.sparkContext());
+      LOG.info("Starting the streaming context. : " + jssc.ssc().env());
+      //LOG.info("Starting the streaming context. : " + jssc.sparkContext().env());
+      //if(SparkEnv.getThreadLocal() == null || !SparkEnv.getThreadLocal().equals(jssc.ssc().env())){
+      //  LOG.warn("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Reseting spark env");
+      //  SparkEnv.set(jssc.ssc().env());
+      //}
+
+      //SparkEnv.set(jssc.sc().env());
       jssc.awaitTermination();
       //jssc.awaitTermination((long) (duration*5));
       //jssc.stop();
@@ -360,6 +401,7 @@ public class MetaStream {
             SelectStatement ss = SelectStatement.class.cast(queryStatements.get(qid));
             r.addCell("QID", new Cell(qid));
             r.addCell("Table", new Cell(ss.getKeyspace() + "." + ss.getTableName()));
+            r.addCell("Type", new Cell(MetaPath.STREAMING));
             r.addCell("Query", new Cell(ss.toString()));
             rows.add(r);
           }
@@ -370,6 +412,7 @@ public class MetaStream {
       List<ColumnMetadata> columns = new ArrayList<>();
       columns.add(new ColumnMetadata("streaming", "QID", ColumnType.TEXT));
       columns.add(new ColumnMetadata("streaming", "Table", ColumnType.TEXT));
+      columns.add(new ColumnMetadata("streaming", "Type", ColumnType.TEXT));
       columns.add(new ColumnMetadata("streaming", "Query", ColumnType.TEXT));
       resultSet.setColumnMetadata(columns);
       result = QueryResult.createQueryResult(resultSet);

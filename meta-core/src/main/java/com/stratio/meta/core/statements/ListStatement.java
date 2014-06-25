@@ -78,27 +78,6 @@ public class ListStatement extends MetaStatement {
   }
 
   public Result execute(String queryId, IStratioStreamingAPI stratioStreamingAPI) {
-    /*List<StratioStream> streamsList = null;
-    try {
-      streamsList = stratioStreamingAPI.listStreams();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    LOG.debug("Number of streams: " + streamsList.size());
-    StringBuilder sb = new StringBuilder();
-    for (StratioStream stream : streamsList) {
-      LOG.debug("--> Stream Name: " + stream.getStreamName());
-      if (stream.getQueries().size() > 0) {
-        for (StreamQuery query : stream.getQueries()) {
-          sb.append(query.getQueryId());
-          sb.append(", ").append(stream.getStreamName());
-          sb.append(", ").append(query.getQuery()).append(System.lineSeparator());
-          LOG.debug("Query: " + query.getQuery());
-        }
-      }
-    }
-    return CommandResult.createCommandResult(sb.toString());
-    */
     return MetaStream.listStreamingQueries(queryId, stratioStreamingAPI);
   }
 }

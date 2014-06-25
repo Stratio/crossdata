@@ -32,6 +32,7 @@ import com.stratio.meta.core.executor.StreamExecutor;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
+import org.apache.spark.SparkEnv;
 
 import java.util.ArrayList;
 import java.util.List;

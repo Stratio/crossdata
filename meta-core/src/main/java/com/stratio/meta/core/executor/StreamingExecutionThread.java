@@ -28,6 +28,7 @@ import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.streaming.MetaStream;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
+import org.apache.spark.SparkEnv;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 
 /**
@@ -64,17 +65,15 @@ public class StreamingExecutionThread implements Runnable {
 
   @Override
   public void run() {
-    System.out.println("Running streaming Thread for " + statement.toString());
     JavaStreamingContext newContext = MetaStream.createSparkStreamingContext(config, deepSparkContext, 3);
     MetaStream.listenStream(queryId, stratioStreamingAPI, statement, config, newContext, callbackActor);
     QueryResult r = QueryResult.createQueryResult(new CassandraResultSet());
     r.setLastResultSet();
+    r.setQueryId(queryId);
     callbackActor.processResults(r);
-    System.out.println("Streaming query finished!!!!");
   }
 
   public void stopStreamingQuery(){
-    System.out.println("Stopping streaming Thread for " + statement.toString());
     StreamExecutor.stopContext(queryId);
   }
 }
