@@ -124,6 +124,11 @@ public final class DeepUtils {
       if (selectedCols.isEmpty()) {
         // Obtain the metadata associated with the columns.
         for (com.stratio.deep.entity.Cell def : cells.get(0).getCells()) {
+
+          // skip internal columns
+          if (def.getCellName().toLowerCase().startsWith("stratio")) {
+            continue;
+          }
           ColumnMetadata columnMetadata = new ColumnMetadata("deep", def.getCellName());
           ColumnType type = helper.toColumnType(def);
           columnMetadata.setType(type);
