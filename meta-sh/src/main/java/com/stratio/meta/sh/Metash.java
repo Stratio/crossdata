@@ -215,7 +215,7 @@ public class Metash {
     long queryEnd = queryStart;
     Result metaResult = null;
     try {
-      metaResult = metaDriver.executeQuery(currentUser, currentCatalog, cmd);
+      metaResult = metaDriver.executeQuery(currentCatalog, cmd);
       queryEnd = System.currentTimeMillis();
       updatePrompt(metaResult);
       println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));

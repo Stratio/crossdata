@@ -27,3 +27,5 @@ case class Connect(msg:String)
 
 case class Reply(msg:String)
 
+case class Disconnect(userId:String)
+

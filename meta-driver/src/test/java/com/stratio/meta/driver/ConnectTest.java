@@ -39,13 +39,13 @@ public class ConnectTest extends DriverParentTest {
   public void executeDropTestBefore() {
 
     try {
-      driver.executeQuery("TEST_USER", "ks_demo", "drop table demo ;");
+      driver.executeQuery("ks_demo", "drop table demo ;");
     } catch (Exception e) {
       logger.info("Not removing table demo as it does not exists.");
     }
 
     try {
-      driver.executeQuery("TEST_USER", "ks_demo", "drop keyspace ks_demo ;");
+      driver.executeQuery("ks_demo", "drop keyspace ks_demo ;");
     } catch (Exception e) {
       logger.info("Not removing ks_demo as it does not exists.");
     }
@@ -53,7 +53,7 @@ public class ConnectTest extends DriverParentTest {
     String msg =
         "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};";
     try {
-      driver.executeQuery("TEST_USER", "ks_demo", msg);
+      driver.executeQuery( "ks_demo", msg);
     } catch (Exception e) {
       System.err.println("Cannot create test keyspace.");
     }
@@ -88,8 +88,18 @@ public class ConnectTest extends DriverParentTest {
     }
     assertFalse(metaResult.hasError());
     ConnectResult r = ConnectResult.class.cast(metaResult);
-    assertTrue(r.getSessionId() != -1, "Invalid session identifier: " + r.getSessionId());
+    assertTrue(r.getSessionId() != null, "Invalid session identifier: " + r.getSessionId());
 
+  }
+
+  @Test
+  public void disconnect() {
+    try {
+      driver.disconnect();
+    } catch (ConnectionException e) {
+      e.printStackTrace();
+      fail("Exception not expected");
+    }
   }
 
   @Test(groups = "create Ks")
@@ -97,7 +107,7 @@ public class ConnectTest extends DriverParentTest {
     String msg = "create KEYSPAC ks_demo WITH replication = "
                  + "{class: SimpleStrategy, replication_factor: 1};";
     try {
-      Result metaResult = driver.executeQuery("TEST_USER", "ks_demo", msg);
+      Result metaResult = driver.executeQuery( "ks_demo", msg);
       fail("Expecting ParsingException");
     } catch (ParsingException e) {
       e.printStackTrace();
@@ -112,7 +122,7 @@ public class ConnectTest extends DriverParentTest {
     String msg = "use ks_demo ;";
     Result metaResult = null;
     try {
-      metaResult = driver.executeQuery("TEST_USER", "ks_demo", msg);
+      metaResult = driver.executeQuery("ks_demo", msg);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception not expected");
@@ -128,7 +138,7 @@ public class ConnectTest extends DriverParentTest {
     String msg = "create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);";
     Result metaResult = null;
     try {
-      metaResult = driver.executeQuery("TEST_USER", "ks_demo", msg);
+      metaResult = driver.executeQuery("ks_demo", msg);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception not expected");
@@ -142,7 +152,7 @@ public class ConnectTest extends DriverParentTest {
     String msg = "insert into demo (field1, field2) values ('test1','text2');";
     Result metaResult = null;
     try {
-      metaResult = driver.executeQuery("TEST_USER", "ks_demo", msg);
+      metaResult = driver.executeQuery("ks_demo", msg);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception not expected");

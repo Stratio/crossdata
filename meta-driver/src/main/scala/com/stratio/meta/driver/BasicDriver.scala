@@ -24,7 +24,7 @@ import com.stratio.meta.driver.config.DriverConfig
 import akka.contrib.pattern.ClusterClient
 import com.stratio.meta.driver.actor.ProxyActor
 import com.stratio.meta.common.result._
-import com.stratio.meta.common.ask.{APICommand, Command, Query, Connect}
+import com.stratio.meta.common.ask.APICommand
 import org.apache.log4j.Logger
 import  scala.concurrent.duration._
 import java.util.UUID
@@ -34,6 +34,7 @@ import com.stratio.meta.common.exceptions._
 import com.stratio.meta.common.ask.Connect
 import com.stratio.meta.common.ask.Command
 import com.stratio.meta.common.ask.Query
+import com.stratio.meta.communication.Disconnect
 
 class BasicDriver extends DriverConfig{
 
@@ -51,6 +52,7 @@ class BasicDriver extends DriverConfig{
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts),"remote-client")
   lazy val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor,actorName, this), "proxy-actor")
 
+  var userId: String = null
 
 
   /**
@@ -62,10 +64,32 @@ class BasicDriver extends DriverConfig{
   def connect(user:String): Result = {
     logger.info("Establishing connection with user: " + user + " to " + contactPoints)
     val result = retryPolitics.askRetry(proxyActor,new Connect(user),5 second)
-    if(result.isInstanceOf[ErrorResult]){
-      throw new ConnectionException(result.asInstanceOf[ErrorResult].getErrorMessage)
+    result match {
+      case errorResult: ErrorResult => {
+        throw new ConnectionException(errorResult.getErrorMessage)
+      }
+      case connectResult: ConnectResult => {
+        userId = connectResult.getSessionId
+        result
+      }
     }
-    result
+  }
+
+  /**
+   * Finnish connection to MetaServer.
+   */
+  @throws(classOf[ConnectionException])
+  def disconnect(): Unit = {
+    logger.info("Disconnecting user: " + userId + " to " + contactPoints)
+    val result = retryPolitics.askRetry(proxyActor, new Disconnect(userId), 5 second, retry = 1)
+    result match {
+      case errorResult: ErrorResult => {
+        throw new ConnectionException(errorResult.getErrorMessage)
+      }
+      case connectResult: DisconnectResult => {
+        userId = null
+      }
+    }
   }
 
   /**
@@ -74,16 +98,50 @@ class BasicDriver extends DriverConfig{
    * @param targetCatalog The target catalog.
    * @param query The query.
    * @param callback The callback object.
+   * @deprecated  As of release 0.0.5, replaced by asyncExecuteQuery(targetCatalog, query, callback)}
    */
-  def asyncExecuteQuery(user:String, targetCatalog: String, query: String, callback: IResultHandler){
-    val queryId = UUID.randomUUID()
-    queries.put(queryId.toString, callback)
-    sendQuery(new Query(queryId.toString, targetCatalog, query, user))
+  @deprecated(message = "You should use asyncExecuteQuery(targetCatalog, query, callback)", since = "0.0.5")
+  @throws(classOf[ConnectionException])
+  def asyncExecuteQuery(user:String, targetCatalog: String, query: String, callback: IResultHandler) {
+    logger.warn("You use a deprecated method. User parameter (" + user + ") will be ignored")
+    asyncExecuteQuery(targetCatalog, query, callback)
   }
 
   /**
+   * Execute a query in the Meta server asynchronously.
+   * @param targetCatalog The target catalog.
+   * @param query The query.
+   * @param callback The callback object.
+   */
+  @throws(classOf[ConnectionException])
+  def asyncExecuteQuery(targetCatalog: String, query: String, callback: IResultHandler){
+    if(userId==null){
+      throw new ConnectionException("You must connect to cluster")
+    }
+    val queryId = UUID.randomUUID()
+    queries.put(queryId.toString, callback)
+    sendQuery(new Query(queryId.toString, targetCatalog, query, userId))
+  }
+
+  /**
+   * Launch query in Meta Server
+   * @param user Login the user (Audit only)
+   * @param targetKs Target keyspace
+   * @param query Launched query
+   * @return QueryResult
+   * @deprecated  As of release 0.0.5, replaced by asyncExecuteQuery(targetCatalog, query, callback)}
+   */
+  @throws(classOf[ParsingException])
+  @throws(classOf[ValidationException])
+  @throws(classOf[ExecutionException])
+  @throws(classOf[UnsupportedException])
+  @deprecated(message = "You should use executeQuery(targetKs, query)", since = "0.0.5")
+  def executeQuery(user: String, targetKs: String, query: String): Result = {
+    logger.warn("You use a deprecated method. User parameter (" + user + ") will be ignored")
+    executeQuery(targetKs, query)
+  }
+  /**
     * Launch query in Meta Server
-    * @param user Login the user (Audit only)
     * @param targetKs Target keyspace
     * @param query Launched query
     * @return QueryResult
@@ -92,13 +150,13 @@ class BasicDriver extends DriverConfig{
   @throws(classOf[ValidationException])
   @throws(classOf[ExecutionException])
   @throws(classOf[UnsupportedException])
-  def executeQuery(user:String, targetKs: String, query: String): Result = {
+  def executeQuery(targetKs: String, query: String): Result = {
     val queryId = UUID.randomUUID()
     //retryPolitics.askRetry(proxyActor,new Query(queryId.toString, targetKs,query,user))
     val callback = new SyncResultHandler
     queries.put(queryId.toString, callback)
-    sendQuery(new Query(queryId.toString, targetKs,query,user))
-    var r = callback.waitForResult()
+    sendQuery(new Query(queryId.toString, targetKs, query, userId))
+    val r = callback.waitForResult()
     queries.remove(queryId.toString)
     //println("Class: " + r)
     r
@@ -120,7 +178,7 @@ class BasicDriver extends DriverConfig{
    *         containing the error message.
    */
   def listTables(catalogName: String): MetadataResult = {
-    var params : java.util.List[String] = new java.util.ArrayList[String]
+    val params: java.util.List[String] = new java.util.ArrayList[String]
     params.add(catalogName)
     val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_TABLES, params))
     result.asInstanceOf[MetadataResult]
@@ -131,7 +189,7 @@ class BasicDriver extends DriverConfig{
    * @return A MetadataResult with a map of columns.
    */
   def listFields(catalogName: String, tableName: String): MetadataResult = {
-    var params : java.util.List[String] = new java.util.ArrayList[String]
+    val params: java.util.List[String] = new java.util.ArrayList[String]
     params.add(catalogName)
     params.add(tableName)
     val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_COLUMNS, params))
@@ -152,7 +210,7 @@ class BasicDriver extends DriverConfig{
   }
 
   /**
-   * Finish connection and actor system
+   * Shutdown actor system
    */
   def close() {
     system.shutdown()
