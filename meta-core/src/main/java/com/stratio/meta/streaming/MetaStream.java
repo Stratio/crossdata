@@ -43,10 +43,8 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
-import org.apache.spark.rdd.RDD;
 import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.Time;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
@@ -59,9 +57,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.UUID;
-
-import scala.reflect.ClassTag;
 
 /**
  *
@@ -241,6 +238,14 @@ public class MetaStream {
     try {
       final String outgoing = streamName+"_"+ UUID.randomUUID().toString().replace("-", "_");
 
+      /////////////////////////////////////////
+      System.out.println("Outgoing topic: "+outgoing);
+
+      Scanner scanner = new Scanner(System.in);
+      scanner.nextLine();
+      /////////////////////////////////////////
+      LOG.debug("Outgoing topic: "+outgoing);
+
       // Create topic
       String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
       final String streamingQueryId = stratioStreamingAPI.addQuery(streamName, query);
@@ -324,16 +329,16 @@ public class MetaStream {
               List<Cells> deepCells = new ArrayList<>();
               JavaRDD<Cells> rdd = jssc.sparkContext().parallelize(deepCells);
 
-                CassandraResultSet crs = new CassandraResultSet();
-                crs.add(new Row("RDD", new Cell(rdd)));
+              CassandraResultSet crs = new CassandraResultSet();
+              crs.add(new Row("RDD", new Cell(rdd)));
 
-                List<ColumnMetadata> columns = new ArrayList<>();
-                ColumnMetadata metadata = new ColumnMetadata("RDD", "RDD");
-                ColumnType type = ColumnType.VARCHAR;
-                type.setDBMapping("class", JavaRDD.class);
-                metadata.setType(type);
-                crs.setColumnMetadata(columns);
-                sendResultsToNextStep(crs);
+              List<ColumnMetadata> columns = new ArrayList<>();
+              ColumnMetadata metadata = new ColumnMetadata("RDD", "RDD");
+              ColumnType type = ColumnType.VARCHAR;
+              type.setDBMapping("class", JavaRDD.class);
+              metadata.setType(type);
+              crs.setColumnMetadata(columns);
+              sendResultsToNextStep(crs);
             }
           }
           return null;
@@ -362,7 +367,6 @@ public class MetaStream {
    */
   public static void sendResults(Result results){
     callbackActors.get(results.getQueryId()).processResults(results);
-    
   }
 
   public static Result listStreamingQueries(String queryId, IStratioStreamingAPI stratioStreamingAPI){
