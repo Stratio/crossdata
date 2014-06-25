@@ -17,6 +17,7 @@
 package com.stratio.meta.deep.utils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +34,7 @@ import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
 import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.GroupByFunction;
 import com.stratio.meta.core.structures.Selection;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelectors;
@@ -82,21 +84,36 @@ public final class DeepUtils {
       rs.setColumnMetadata(columnList);
     }
 
-    for (Cells deepRow : cells) {
-      Row metaRow = new Row();
-      for (com.stratio.deep.entity.Cell deepCell : deepRow.getCells()) {
-        if (deepCell.getCellName().toLowerCase().startsWith("stratio")) {
-          continue;
+    if (!cells.isEmpty()) {
+      if (selectedCols.isEmpty()) {
+        for (Cells deepRow : cells) {
+          Row metaRow = new Row();
+          for (com.stratio.deep.entity.Cell deepCell : deepRow.getCells()) {
+
+            if (deepCell.getCellName().toLowerCase().startsWith("stratio")) {
+              continue;
+            }
+
+            Cell metaCell = new Cell(deepCell.getCellValue());
+            metaRow.addCell(deepCell.getCellName(), metaCell);
+          }
+
+          rs.add(metaRow);
         }
-        if (selectedCols.isEmpty()) {
-          Cell metaCell = new Cell(deepCell.getCellValue());
-          metaRow.addCell(deepCell.getCellName(), metaCell);
-        } else if (selectedCols.contains(deepCell.getCellName())) {
-          Cell metaCell = new Cell(deepCell.getCellValue());
-          metaRow.addCell(deepCell.getCellName(), metaCell);
+      } else {
+        List<Integer> fieldPositions = retrieveFieldsPositionsList(cells.get(0), selectedCols);
+
+        for (Cells deepRow : cells) {
+          Row metaRow = new Row();
+          for (int fieldPosition : fieldPositions) {
+            com.stratio.deep.entity.Cell deepCell = deepRow.getCellByIdx(fieldPosition);
+
+            Cell metaCell = new Cell(deepCell.getCellValue());
+            metaRow.addCell(deepCell.getCellName(), metaCell);
+          }
+          rs.add(metaRow);
         }
       }
-      rs.add(metaRow);
     }
 
     StringBuilder logResult = new StringBuilder("Deep Result: ").append(rs.size());
@@ -112,13 +129,36 @@ public final class DeepUtils {
     return rs;
   }
 
+  private static List<Integer> retrieveFieldsPositionsList(Cells firstRow, List<String> selectedCols) {
+
+    List<Integer> fieldPositions = new ArrayList<>();
+    for (String selectCol : selectedCols) {
+      Integer position = 0;
+      boolean fieldFound = false;
+
+      Iterator<com.stratio.deep.entity.Cell> cellsIt = firstRow.getCells().iterator();
+      while (!fieldFound && cellsIt.hasNext()) {
+        com.stratio.deep.entity.Cell cell = cellsIt.next();
+
+        if (cell.getCellName().equalsIgnoreCase(selectCol)) {
+          fieldPositions.add(position);
+          fieldFound = true;
+        }
+
+        position++;
+      }
+    }
+
+    return fieldPositions;
+  }
+
   /**
    * Create a result with a count.
    * 
    * @param rdd rdd to be counted
    * @return ResultSet Result set with only a cell containing the a number of rows
    */
-  public static ResultSet buildCountResult(JavaRDD rdd) {
+  public static ResultSet buildCountResult(JavaRDD<?> rdd) {
     CassandraResultSet rs = new CassandraResultSet();
 
     int numberOfRows = (int) rdd.count();
@@ -185,10 +225,43 @@ public final class DeepUtils {
         if (selectorMeta instanceof SelectorIdentifier) {
           SelectorIdentifier selId = (SelectorIdentifier) selectorMeta;
           columnsSet.add(selId.getField());
+        } else if (selectorMeta instanceof SelectorGroupBy) {
+          SelectorGroupBy selectorGroupBy = (SelectorGroupBy) selectorMeta;
+          if (selectorGroupBy.getGbFunction() != GroupByFunction.COUNT) {
+            SelectorIdentifier selId = (SelectorIdentifier) selectorGroupBy.getParam();
+            columnsSet.add(selId.getField());
+          }
         }
       }
     }
     return columnsSet.toArray(new String[columnsSet.size()]);
+  }
+
+  /**
+   * Retrieve fields in selection clause.
+   * 
+   * @param ss SelectStatement of the query
+   * @return Array of fields in selection clause or null if all fields has been selected
+   */
+  public static List<String> retrieveSelectors(Selection selection) {
+
+    // Retrieve aggretation function column names
+    List<String> columnsSet = new ArrayList<>();
+    if (selection instanceof SelectionSelectors) {
+      SelectionSelectors sSelectors = (SelectionSelectors) selection;
+      for (int i = 0; i < sSelectors.getSelectors().size(); ++i) {
+        SelectorMeta selectorMeta = sSelectors.getSelectors().get(i).getSelector();
+        if (selectorMeta instanceof SelectorIdentifier) {
+          SelectorIdentifier selId = (SelectorIdentifier) selectorMeta;
+          columnsSet.add(selId.getField());
+        } else if (selectorMeta instanceof SelectorGroupBy) {
+          SelectorGroupBy selGroup = (SelectorGroupBy) selectorMeta;
+          columnsSet.add(selGroup.getGbFunction().name() + "("
+              + ((SelectorIdentifier) selGroup.getParam()).getField() + ")");
+        }
+      }
+    }
+    return columnsSet;
   }
 
   /**

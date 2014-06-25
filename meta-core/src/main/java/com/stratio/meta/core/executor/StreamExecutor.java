@@ -65,9 +65,13 @@ public class StreamExecutor {
   }
 
   public static Result execute(
-      final String queryId,
-      MetaStatement stmt, IStratioStreamingAPI stratioStreamingAPI, DeepSparkContext deepSparkContext,
-      EngineConfig config, ActorResultListener callbackActor) {
+      String queryId,
+      MetaStatement stmt,
+      IStratioStreamingAPI stratioStreamingAPI,
+      DeepSparkContext deepSparkContext,
+      EngineConfig config,
+      ActorResultListener callbackActor,
+      boolean isRoot) {
     if (stmt instanceof CreateTableStatement) {
       CreateTableStatement cts= (CreateTableStatement) stmt;
       String tableEphemeralName= cts.getEffectiveKeyspace()+"_"+cts.getTableName() ;
@@ -85,7 +89,8 @@ public class StreamExecutor {
                                                                   config,
                                                                   stratioStreamingAPI,
                                                                   deepSparkContext,
-                                                                  callbackActor);
+                                                                  callbackActor,
+                                                                  isRoot);
       streamingThreads.put(queryId, set);
       pool.execute(set);
       Result r = CommandResult.createCommandResult("Streaming query " + queryId + " running!");

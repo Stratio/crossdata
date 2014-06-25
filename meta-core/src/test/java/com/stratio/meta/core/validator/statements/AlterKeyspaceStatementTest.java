@@ -16,19 +16,19 @@
 
 package com.stratio.meta.core.validator.statements;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.testng.annotations.Test;
-
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.AlterKeyspaceStatement;
 import com.stratio.meta.core.structures.IdentifierProperty;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.validator.BasicValidatorTest;
+
+import org.testng.annotations.Test;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 
 public class AlterKeyspaceStatementTest extends BasicValidatorTest {
 
@@ -42,7 +42,7 @@ public class AlterKeyspaceStatementTest extends BasicValidatorTest {
         "{'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '2'}"));
 
     AlterKeyspaceStatement aks = new AlterKeyspaceStatement("demo", properties);
-    Result result = aks.validate(metadataManager);
+    Result result = aks.validate(metadataManager, null);
 
     assertNotNull(result, "Sentence validation not supported");
     assertFalse(result.hasError(), "Cannot validate sentence");
@@ -60,7 +60,7 @@ public class AlterKeyspaceStatementTest extends BasicValidatorTest {
     properties.put("durable_writes", new IdentifierProperty("True"));
 
     AlterKeyspaceStatement aks = new AlterKeyspaceStatement("demo", properties);
-    Result result = aks.validate(metadataManager);
+    Result result = aks.validate(metadataManager, null);
 
     assertNotNull(result, "Sentence validation not supported");
     assertFalse(result.hasError(), "Cannot validate sentence");

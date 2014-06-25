@@ -44,7 +44,7 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
 
   public void validateOk(String inputText, String expectedText, String methodName) {
     MetaStatement stmt = pt.testRegularStatement(inputText, expectedText, methodName);
-    Result result = stmt.validate(metadataManager);
+    Result result = stmt.validate(metadataManager, null);
     assertNotNull(result, "Sentence validation not supported - " + methodName);
     assertFalse(result.hasError(),
                 "Cannot validate sentence - " + methodName + ": " + getErrorMessage(result));
@@ -52,7 +52,7 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
 
   public void validateOk(String inputText, String methodName) {
     MetaStatement stmt = pt.testRegularStatement(inputText, methodName);
-    Result result = stmt.validate(metadataManager);
+    Result result = stmt.validate(metadataManager, null);
     assertNotNull(result, "Sentence validation not supported - " + methodName);
     assertFalse(result.hasError(),
                 "Cannot validate sentence - " + methodName + ": " + getErrorMessage(result));
@@ -60,7 +60,7 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
 
   public void validateFail(String inputText, String expectedText, String methodName) {
     MetaStatement stmt = pt.testRegularStatement(inputText, expectedText, methodName);
-    Result result = stmt.validate(metadataManager);
+    Result result = stmt.validate(metadataManager, null);
     assertNotNull(result, "Sentence validation not supported - " + methodName);
     assertTrue(result.hasError(),
                "Cannot validate sentence - " + methodName + ": " + getErrorMessage(result));
@@ -68,7 +68,7 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
 
   public void validateFail(String inputText, String methodName) {
     MetaStatement stmt = pt.testRegularStatement(inputText, methodName);
-    Result result = stmt.validate(metadataManager);
+    Result result = stmt.validate(metadataManager, null);
     assertNotNull(result, "Sentence validation not supported - " + methodName);
     assertTrue(result.hasError(),
                "Cannot validate sentence - " + methodName + ": " + getErrorMessage(result));

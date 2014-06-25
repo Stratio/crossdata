@@ -16,15 +16,6 @@
 
 package com.stratio.meta.core.executor.cassandra;
 
-import static org.testng.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.testng.annotations.Test;
-
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.QueryStatus;
@@ -46,6 +37,15 @@ import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
+
 public class AlterKeyspaceStatementTest extends BasicExecutorTest {
 
   @Test
@@ -61,7 +61,7 @@ public class AlterKeyspaceStatementTest extends BasicExecutorTest {
 
     AlterKeyspaceStatement stmt = new AlterKeyspaceStatement("demo", properties);
 
-    stmt.validate(metadataManager);
+    stmt.validate(metadataManager, null);
 
     Tree tree = new Tree();
     tree.setNode(new MetaStep(MetaPath.CASSANDRA, stmt));
@@ -87,7 +87,7 @@ public class AlterKeyspaceStatementTest extends BasicExecutorTest {
     clause.add(relation);
     selectStmt.setWhere(clause);
 
-    selectStmt.validate(metadataManager);
+    selectStmt.validate(metadataManager, null);
 
     Tree treeSelect = new Tree();
     treeSelect.setNode(new MetaStep(MetaPath.CASSANDRA, selectStmt));
@@ -122,7 +122,7 @@ public class AlterKeyspaceStatementTest extends BasicExecutorTest {
 
     AlterKeyspaceStatement stmt = new AlterKeyspaceStatement("demo", properties);
 
-    stmt.validate(metadataManager);
+    stmt.validate(metadataManager, null);
 
     Tree tree = new Tree();
     tree.setNode(new MetaStep(MetaPath.CASSANDRA, stmt));
@@ -148,7 +148,7 @@ public class AlterKeyspaceStatementTest extends BasicExecutorTest {
     clause.add(relation);
     selectStmt.setWhere(clause);
 
-    selectStmt.validate(metadataManager);
+    selectStmt.validate(metadataManager, null);
 
     Tree treeSelect = new Tree();
     treeSelect.setNode(new MetaStep(MetaPath.CASSANDRA, selectStmt));

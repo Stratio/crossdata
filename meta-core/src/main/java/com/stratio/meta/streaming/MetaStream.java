@@ -20,6 +20,7 @@
 package com.stratio.meta.streaming;
 
 import com.stratio.deep.context.DeepSparkContext;
+import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
@@ -44,6 +45,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkEnv;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.streaming.Duration;
@@ -58,6 +60,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.UUID;
 
 import scala.Tuple2;
@@ -222,7 +225,6 @@ public class MetaStream {
     }else {
       LOG.info("MetaStreaming context created: " + jssc.toString());
     }
-
     return jssc;
   }
 
@@ -253,18 +255,26 @@ public class MetaStream {
     return result;
   }
 
-  public static String listenStream(final String queryId, IStratioStreamingAPI stratioStreamingAPI,
+  public static String startQuery(final String queryId, IStratioStreamingAPI stratioStreamingAPI,
                                     SelectStatement ss,
                                     EngineConfig config,
-                                    JavaStreamingContext jssc,
-                                    final ActorResultListener callbackActor){
+                                    final JavaStreamingContext jssc,
+                                    final ActorResultListener callbackActor,
+                                    final boolean isRoot){
     callbackActors.put(queryId, callbackActor);
-
 
     final String ks = ss.getEffectiveKeyspace();
     final String streamName = ks+"_"+ss.getTableName();
     try {
       final String outgoing = streamName+"_"+ queryId.replace("-", "_");
+
+      /////////////////////////////////////////
+      System.out.println("Outgoing topic: "+outgoing);
+
+      Scanner scanner = new Scanner(System.in);
+      scanner.nextLine();
+      /////////////////////////////////////////
+      LOG.debug("Outgoing topic: "+outgoing);
 
       // Create topic
       String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
@@ -298,56 +308,71 @@ public class MetaStream {
       LOG.debug("Time Window = "+timeWindow.toString());
 
       dstream.foreachRDD(new Function<JavaPairRDD<String, String>, Void>() {
-
         @Override
         public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
           final long totalCount = stringStringJavaPairRDD.count();
           LOG.info(streamingQueryId+": Count=" + totalCount);
           if(totalCount > 0){
-            //Create resultset
-            stringStringJavaPairRDD.values().foreach(new VoidFunction<String>() {
-              public CassandraResultSet resultSet = new CassandraResultSet();
 
-              @Override
-              public void call(String s) throws Exception {
-                ObjectMapper objectMapper = new ObjectMapper();
-                Map<String, Object> myMap = objectMapper.readValue(s, HashMap.class);
-                ArrayList columns = (ArrayList) myMap.get("columns");
-                String cols = Arrays.toString(columns.toArray());
-                LOG.debug("Columns = " + cols);
+            if(isRoot){ // ROOT NODE
+              //Create resultset
+              stringStringJavaPairRDD.values().foreach(new VoidFunction<String>() {
+                public CassandraResultSet resultSet = new CassandraResultSet();
 
-                List<ColumnMetadata> resultMetadata = new ArrayList<>();
-                Row metaRow = new Row();
-                for (Object column: columns) {
-                  Map columnMap = (Map) column;
+                @Override
+                public void call(String s) throws Exception {
+                  ObjectMapper objectMapper = new ObjectMapper();
+                  Map<String, Object> myMap = objectMapper.readValue(s, HashMap.class);
+                  ArrayList columns = (ArrayList) myMap.get("columns");
+                  String cols = Arrays.toString(columns.toArray());
+                  LOG.debug("Columns = " + cols);
 
-                  metaRow.addCell(String.valueOf(columnMap.get("column")),
-                                  new Cell(columnMap.get("value")));
-                  if((resultSet.getColumnMetadata() == null) || (resultSet.getColumnMetadata().size() < 1)){
-                    resultMetadata.add(
-                        new ColumnMetadata(outgoing,
-                                           String.valueOf(columnMap.get("column")),
-                                           StreamingUtils.streamingToMetaType((String) columnMap.get("type"))));
-                    resultSet.setColumnMetadata(resultMetadata);
+                  List<ColumnMetadata> resultMetadata = new ArrayList<>();
+                  Row metaRow = new Row();
+                  for (Object column: columns) {
+                    Map columnMap = (Map) column;
+
+                    metaRow.addCell(String.valueOf(columnMap.get("column")),
+                                    new Cell(columnMap.get("value")));
+                    if((resultSet.getColumnMetadata() == null) || (resultSet.getColumnMetadata().size() < 1)){
+                      resultMetadata.add(
+                          new ColumnMetadata(outgoing,
+                                             String.valueOf(columnMap.get("column")),
+                                             StreamingUtils.streamingToMetaType((String) columnMap.get("type"))));
+                      resultSet.setColumnMetadata(resultMetadata);
+                    }
+                  }
+                  resultSet.add(metaRow);
+                  if(resultSet.size() >= totalCount){
+                    LOG.info("resultSet.size="+resultSet.size());
+                    QueryResult queryResult = QueryResult.createSuccessQueryResult(resultSet, ks);
+                    queryResult.setQueryId(queryId);
+                    Integer page = resultPages.get(queryId);
+                    queryResult.setResultPage(page);
+                    resultPages.put(queryId, page + 1);
+                    sendResults(queryResult);
                   }
                 }
-                resultSet.add(metaRow);
-                if(resultSet.size() >= totalCount){
-                  LOG.info("resultSet.size="+resultSet.size());
-                  QueryResult queryResult = QueryResult.createSuccessQueryResult(resultSet, ks);
-                  queryResult.setQueryId(queryId);
-                  Integer page = resultPages.get(queryId);
-                  queryResult.setResultPage(page);
-                  resultPages.put(queryId, page + 1);
-                  sendResults(queryResult);
-                }
-              }
-            });
+              });
+            } else { // LEAF NODE
+              List<Cells> deepCells = new ArrayList<>();
+              JavaRDD<Cells> rdd = jssc.sparkContext().parallelize(deepCells);
+
+              CassandraResultSet crs = new CassandraResultSet();
+              crs.add(new Row("RDD", new Cell(rdd)));
+
+              List<ColumnMetadata> columns = new ArrayList<>();
+              ColumnMetadata metadata = new ColumnMetadata("RDD", "RDD");
+              ColumnType type = ColumnType.VARCHAR;
+              type.setDBMapping("class", JavaRDD.class);
+              metadata.setType(type);
+              crs.setColumnMetadata(columns);
+              sendResultsToNextStep(crs);
+            }
           }
           return null;
         }
       });
-
       LOG.info("Starting the streaming context.");
       jssc.start();
       //Thread.sleep(3000);
@@ -366,21 +391,23 @@ public class MetaStream {
       //jssc.awaitTermination((long) (duration*5));
       //jssc.stop();
       LOG.info("Streaming context stopped!");
-
       return "Streaming QID: " + queryId + " finished";
-    } catch (Throwable t) {
-      t.printStackTrace();
-      return "ERROR: "+t.getMessage();
+    } catch (Exception e) {
+      LOG.error(e);
+      return "ERROR: "+e.getMessage();
     }
   }
 
-  /**
+    private static void sendResultsToNextStep(CassandraResultSet crs) {
+        //TODO:
+    }
+
+    /**
    * Send the results to the associated listener.
    * @param results The results.
    */
   public static void sendResults(Result results){
     callbackActors.get(results.getQueryId()).processResults(results);
-    
   }
 
   public static Result listStreamingQueries(String queryId, IStratioStreamingAPI stratioStreamingAPI){
@@ -389,9 +416,7 @@ public class MetaStream {
     for(Map.Entry<String, String> q : streamingQueries.entrySet()){
       transformedQueriesId.put(q.getValue(), q.getKey());
     }
-
     try {
-
       List<Row> rows = new ArrayList<>();
       for (StratioStream stream : stratioStreamingAPI.listStreams()) {
         for (StreamQuery query : stream.getQueries()) {
@@ -416,7 +441,6 @@ public class MetaStream {
       columns.add(new ColumnMetadata("streaming", "Query", ColumnType.TEXT));
       resultSet.setColumnMetadata(columns);
       result = QueryResult.createQueryResult(resultSet);
-
     } catch (Exception e) {
       LOG.error("Cannot list streaming queries", e);
     }

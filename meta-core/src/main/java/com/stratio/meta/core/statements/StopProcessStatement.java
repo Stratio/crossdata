@@ -19,10 +19,9 @@
 
 package com.stratio.meta.core.statements;
 
-import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.executor.StreamExecutor;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
@@ -30,7 +29,6 @@ import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta.streaming.MetaStream;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
-import com.stratio.streaming.commons.exceptions.StratioStreamingException;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
 
@@ -66,8 +64,8 @@ public class StopProcessStatement extends MetaStatement {
           }
         }
       }
-    } catch (Throwable t) {
-      t.printStackTrace();
+    } catch (Exception e) {
+      LOG.error(e);
     }
     return StreamName;
   }
@@ -94,7 +92,7 @@ public class StopProcessStatement extends MetaStatement {
   }
 
   @Override
-  public Result validate(MetadataManager metadata) {
+  public Result validate(MetadataManager metadata, EngineConfig config) {
     //TODO: Check user query identifier.
     //Result result= Result.createValidationErrorResult("UDF and TRIGGER not supported yet");
 

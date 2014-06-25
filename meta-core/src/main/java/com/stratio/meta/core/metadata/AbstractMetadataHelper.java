@@ -25,6 +25,7 @@ import com.stratio.meta.common.metadata.structures.CatalogMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.metadata.structures.TableMetadata;
+import com.stratio.meta.common.metadata.structures.TableType;
 
 import java.util.*;
 
@@ -67,6 +68,7 @@ public abstract class AbstractMetadataHelper {
     TableMetadata result = new TableMetadata(
         tableMetadata.getName(),
         parentCatalog,
+        TableType.DATABASE,
         columns);
     return result;
   }

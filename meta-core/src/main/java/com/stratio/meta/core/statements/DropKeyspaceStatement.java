@@ -22,6 +22,7 @@ package com.stratio.meta.core.statements;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
@@ -59,7 +60,7 @@ public class DropKeyspaceStatement extends MetaStatement {
     }
 
     @Override
-    public Result validate(MetadataManager metadata) {
+    public Result validate(MetadataManager metadata, EngineConfig config) {
         Result result = QueryResult.createSuccessQueryResult();
         KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspace);
         if(ksMetadata == null && !ifExists){

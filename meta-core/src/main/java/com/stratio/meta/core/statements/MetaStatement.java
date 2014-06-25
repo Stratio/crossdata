@@ -22,6 +22,7 @@ import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
@@ -99,7 +100,7 @@ public abstract class MetaStatement {
    *                 the required information.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  public Result validate(MetadataManager metadata) {
+  public Result validate(MetadataManager metadata, EngineConfig config) {
     return Result.createValidationErrorResult("Statement not supported");
   }
 

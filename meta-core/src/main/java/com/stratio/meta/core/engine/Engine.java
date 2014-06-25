@@ -107,7 +107,7 @@ public class Engine {
     IStratioStreamingAPI stratioStreamingAPI = initializeStreaming(config);
 
     parser = new Parser();
-    validator = new Validator(session, stratioStreamingAPI);
+    validator = new Validator(session, stratioStreamingAPI, config);
     manager = new APIManager(session, stratioStreamingAPI);
     planner = new Planner(session, stratioStreamingAPI);
     executor = new Executor(session, stratioStreamingAPI, deepContext, config);
@@ -126,7 +126,7 @@ public class Engine {
           config.getKafkaPort(),
           config.getZookeeperServer(),
           config.getZookeeperPort());
-    } catch (Throwable t) {
+    } catch (Exception e) {
       StringBuilder sb = new StringBuilder("Cannot connect with Stratio Streaming");
       sb.append(System.lineSeparator());
       sb.append("Zookeeper: ");
@@ -137,7 +137,7 @@ public class Engine {
       sb.append(config.getKafkaServer());
       sb.append(":");
       sb.append(config.getKafkaPort());
-      LOG.error(sb.toString(), t);
+      LOG.error(sb.toString(), e);
     }
     return stratioStreamingAPI;
   }

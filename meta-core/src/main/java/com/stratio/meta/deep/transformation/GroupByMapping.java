@@ -24,6 +24,7 @@ import org.apache.spark.api.java.function.PairFunction;
 
 import scala.Tuple2;
 
+import com.stratio.deep.entity.Cell;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.core.structures.GroupBy;
 
@@ -67,10 +68,14 @@ public class GroupByMapping extends PairFunction<Cells, Cells, Cells> implements
       }
     }
 
-    for (GroupBy groupByCol : groupByClause) {
+    if (groupByClause != null) {
+      for (GroupBy groupByCol : groupByClause) {
 
-      String[] fieldParts = groupByCol.toString().split("\\.");
-      grouppingKeys.add(cells.getCellByName(fieldParts[fieldParts.length - 1]));
+        String[] fieldParts = groupByCol.toString().split("\\.");
+        grouppingKeys.add(cells.getCellByName(fieldParts[fieldParts.length - 1]));
+      }
+    } else {
+      grouppingKeys.add(Cell.create("_", "_"));
     }
 
     return new Tuple2<>(grouppingKeys, cellsExtended);

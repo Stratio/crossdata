@@ -41,7 +41,7 @@ public class ExplainPlanStatementTest extends BasicExecutorTest {
 
         ExplainPlanStatement stmt = new ExplainPlanStatement(dropStmt);
 
-        stmt.validate(metadataManager);
+        stmt.validate(metadataManager, null);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.COMMAND, stmt));

@@ -16,18 +16,19 @@
 
 package com.stratio.meta.core.statements;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
-
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Truncate;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
 
 public class TruncateStatement extends MetaStatement {
 
@@ -103,7 +104,7 @@ public class TruncateStatement extends MetaStatement {
   }
 
     @Override
-    public Result validate(MetadataManager metadata) {
+    public Result validate(MetadataManager metadata, EngineConfig config) {
       Result result = QueryResult.createSuccessQueryResult();
 
       String effectiveKeyspace = getEffectiveKeyspace();

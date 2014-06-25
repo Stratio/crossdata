@@ -23,6 +23,7 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.common.ask.APICommand;
 import com.stratio.meta.common.ask.Command;
+import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.Result;
@@ -34,6 +35,7 @@ import com.stratio.streaming.api.IStratioStreamingAPI;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class APIManager {
 
@@ -78,8 +80,12 @@ public class APIManager {
       KeyspaceMetadata keyspaceMetadata = metadata.getKeyspaceMetadata(cmd.params().get(0));
       if (keyspaceMetadata != null) {
         result = MetadataResult.createSuccessMetadataResult();
-        MetadataResult.class.cast(result).setTableList(
-            new ArrayList<>(helper.toCatalogMetadata(keyspaceMetadata).getTables()));
+        List<TableMetadata> tableList = new ArrayList<>();
+        //Add db tables.
+        tableList.addAll(helper.toCatalogMetadata(keyspaceMetadata).getTables());
+        //Add ephemeral tables.
+        tableList.addAll(metadata.getEphemeralTables(cmd.params().get(0)));
+        MetadataResult.class.cast(result).setTableList(tableList);
       } else {
         result =
             Result.createExecutionErrorResult("Keyspace " + cmd.params().get(0) + " not found");

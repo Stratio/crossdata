@@ -48,25 +48,29 @@ public class StreamingExecutionThread implements Runnable {
 
   private final DeepSparkContext deepSparkContext;
 
+  private final boolean isRoot;
+
   public StreamingExecutionThread(
       String queryId,
       SelectStatement ss,
       EngineConfig config,
       IStratioStreamingAPI stratioStreamingAPI,
       DeepSparkContext deepSparkContext,
-      ActorResultListener callbackActor){
+      ActorResultListener callbackActor,
+      boolean isRoot){
     statement = ss;
     this.config = config;
     this.queryId = queryId;
     this.stratioStreamingAPI = stratioStreamingAPI;
     this.deepSparkContext = deepSparkContext;
     this.callbackActor = callbackActor;
+    this.isRoot = isRoot;
   }
 
   @Override
   public void run() {
     JavaStreamingContext newContext = MetaStream.createSparkStreamingContext(config, deepSparkContext, 3);
-    MetaStream.listenStream(queryId, stratioStreamingAPI, statement, config, newContext, callbackActor);
+    MetaStream.startQuery(queryId, stratioStreamingAPI, statement, config, newContext, callbackActor, isRoot);
     QueryResult r = QueryResult.createQueryResult(new CassandraResultSet());
     r.setLastResultSet();
     r.setQueryId(queryId);

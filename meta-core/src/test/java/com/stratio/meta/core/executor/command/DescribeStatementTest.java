@@ -37,7 +37,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     DescribeStatement stmt = new DescribeStatement(DescribeType.KEYSPACE);
     stmt.setKeyspace("demo");
 
-    stmt.validate(metadataManager);
+    stmt.validate(metadataManager, null);
 
     Tree tree = new Tree();
     tree.setNode(new MetaStep(MetaPath.COMMAND, stmt));
@@ -55,7 +55,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     DescribeStatement stmt = new DescribeStatement(DescribeType.KEYSPACE);
     stmt.setSessionKeyspace("demo");
 
-    stmt.validate(metadataManager);
+    stmt.validate(metadataManager, null);
 
     Tree tree = new Tree();
     tree.setNode(new MetaStep(MetaPath.COMMAND, stmt));
@@ -72,7 +72,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
 
     DescribeStatement stmt = new DescribeStatement(DescribeType.KEYSPACES);
 
-    stmt.validate(metadataManager);
+    stmt.validate(metadataManager, null);
 
     Tree tree = new Tree();
     tree.setNode(new MetaStep(MetaPath.COMMAND, stmt));
@@ -91,7 +91,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     stmt.setSessionKeyspace("demo");
     stmt.setTableName("users");
 
-    stmt.validate(metadataManager);
+    stmt.validate(metadataManager, null);
 
     Tree tree = new Tree();
     tree.setNode(new MetaStep(MetaPath.COMMAND, stmt));
@@ -109,7 +109,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     DescribeStatement stmt = new DescribeStatement(DescribeType.TABLES);
     stmt.setSessionKeyspace("demo");
 
-    stmt.validate(metadataManager);
+    stmt.validate(metadataManager, null);
 
     Tree tree = new Tree();
     tree.setNode(new MetaStep(MetaPath.COMMAND, stmt));

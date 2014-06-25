@@ -22,6 +22,7 @@ package com.stratio.meta.core.statements;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Property;
 import com.stratio.meta.core.structures.PropertyNameValue;
@@ -138,7 +139,7 @@ public class AlterTableStatement extends MetaStatement{
      * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
      */
     @Override
-    public Result validate(MetadataManager metadata) {
+    public Result validate(MetadataManager metadata, EngineConfig config) {
         Result result = validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
         if(!result.hasError()) {
             String effectiveKeyspace = getEffectiveKeyspace();

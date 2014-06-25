@@ -300,7 +300,8 @@ public class SelectStatementTest extends BasicValidatorTest {
   public void testValidateGroupByClauseCountWithAliasOk() {
 
     String inputText = "SELECT users.gender AS g, COUNT(*) FROM demo.users GROUP BY g;";
-    String expectedText = "SELECT users.gender AS g, COUNT(*) FROM demo.users GROUP BY users.gender;";
+    String expectedText =
+        "SELECT users.gender AS g, COUNT(*) FROM demo.users GROUP BY users.gender;";
     validateOk(inputText, expectedText, "testValidateGroupByClauseCountWithAliasOk");
   }
 
@@ -328,10 +329,10 @@ public class SelectStatementTest extends BasicValidatorTest {
   }
 
   @Test
-  public void testNoGroupWithAggregationFunctionFail() {
+  public void testNoGroupWithAggregationFunctionNoGroupByOk() {
 
     String inputText = "SELECT users.gender, sum(users.age) FROM demo.users;";
-    validateFail(inputText, "testNoGroupWithAggregationFunctionFail");
+    validateOk(inputText, "testNoGroupWithAggregationFunctionNoGroupByOk");
   }
 
   @Test
@@ -379,11 +380,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
     String inputText =
         "SELECT users.age AS edad, users.gender AS genero, sum(users.age) AS suma, min(gender) AS minimo, count(*) AS contador FROM demo.users "
-        + "WHERE edad > 13 AND genero IN ('male', 'female') ORDER BY edad DESC GROUP BY genero;";
+            + "WHERE edad > 13 AND genero IN ('male', 'female') ORDER BY edad DESC GROUP BY genero;";
 
     String expectedText =
         "SELECT users.age AS edad, users.gender AS genero, sum(users.age) AS suma, min(users.gender) AS minimo, count(*) AS contador FROM demo.users "
-        + "WHERE users.age > 13 AND users.gender IN ('male', 'female') ORDER BY users.age DESC GROUP BY users.gender;";
+            + "WHERE users.age > 13 AND users.gender IN ('male', 'female') ORDER BY users.age DESC GROUP BY users.gender;";
 
     validateOk(inputText, expectedText, "testComplexQueryWithAliasesOk");
   }
