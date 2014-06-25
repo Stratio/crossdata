@@ -38,7 +38,7 @@ public class TableMetadata implements Serializable{
     /**
      * Name of the table.
      */
-    private final String tableName;
+    private String tableName;
 
     /**
      * Set of columns.
@@ -66,6 +66,13 @@ public class TableMetadata implements Serializable{
                          Set<ColumnMetadata> columns){
         this(tableName, parentCatalog);
         this.columns.addAll(columns);
+    }
+
+    /**
+     * Set the name of the table.
+     */
+    public void setTableName(String name){
+        tableName=name;
     }
 
     /**
