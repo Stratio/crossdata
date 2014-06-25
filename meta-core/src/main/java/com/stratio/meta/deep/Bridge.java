@@ -17,8 +17,10 @@
 package com.stratio.meta.deep;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -157,8 +159,11 @@ public class Bridge {
       rdd = doOrder(rdd, ss.getOrder());
     }
 
-    return returnResult(rdd, isRoot,
-        ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, cols);
+    CassandraResultSet resultSet =
+        (CassandraResultSet) returnResult(rdd, isRoot,
+            ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, cols);
+
+    return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
   }
 
   /**
@@ -215,8 +220,43 @@ public class Bridge {
       result = doOrder(result, ss.getOrder());
     }
 
-    // Return MetaResultSet
-    return returnResult(result, true, false, selectedCols);
+    // MetaResultSet
+    CassandraResultSet resultSet =
+        (CassandraResultSet) returnResult(result, true, false, selectedCols);
+
+    return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
+  }
+
+  private ResultSet replaceWithAliases(Map<String, String> fieldsAliasesMap,
+      CassandraResultSet resultSet) {
+
+    List<ColumnMetadata> metadata = resultSet.getColumnMetadata();
+
+    List<ColumnMetadata> resultMetadata = null;
+    if (!metadata.isEmpty() && fieldsAliasesMap != null && !fieldsAliasesMap.isEmpty()) {
+      resultMetadata = new ArrayList<>();
+      Iterator<ColumnMetadata> metadataIt = metadata.iterator();
+      while (metadataIt.hasNext()) {
+        ColumnMetadata columnMetadata = metadataIt.next();
+        String table = columnMetadata.getTableName();
+        String column = columnMetadata.getColumnName();
+
+        for (Entry<String, String> entry : fieldsAliasesMap.entrySet()) {
+
+          if (entry.getValue().equalsIgnoreCase(column)
+              || entry.getValue().equalsIgnoreCase(table + "." + column)) {
+            columnMetadata.setColumnAlias(entry.getKey());
+          }
+        }
+        resultMetadata.add(columnMetadata);
+      }
+    }
+
+    if (resultMetadata != null) {
+      resultSet.setColumnMetadata(resultMetadata);
+    }
+
+    return resultSet;
   }
 
   /**

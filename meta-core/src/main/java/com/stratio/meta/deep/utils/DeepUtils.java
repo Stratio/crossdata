@@ -65,24 +65,8 @@ public final class DeepUtils {
    */
   public static ResultSet buildResultSet(List<Cells> cells, List<String> selectedCols) {
     CassandraResultSet rs = new CassandraResultSet();
-    // CellValidator
-    AbstractMetadataHelper helper = new CassandraMetadataHelper();
 
-    if (cells.size() > 0) {
-      List<com.stratio.meta.common.metadata.structures.ColumnMetadata> columnList =
-          new ArrayList<>();
-      com.stratio.meta.common.metadata.structures.ColumnMetadata columnMetadata = null;
-      // Obtain the metadata associated with the columns.
-      for (com.stratio.deep.entity.Cell def : cells.get(0).getCells()) {
-        columnMetadata =
-            new com.stratio.meta.common.metadata.structures.ColumnMetadata("deep",
-                def.getCellName());
-        ColumnType type = helper.toColumnType(def);
-        columnMetadata.setType(type);
-        columnList.add(columnMetadata);
-      }
-      rs.setColumnMetadata(columnList);
-    }
+    rs.setColumnMetadata(retrieveColumnMetadata(cells, selectedCols));
 
     if (!cells.isEmpty()) {
       if (selectedCols.isEmpty()) {
@@ -127,6 +111,49 @@ public final class DeepUtils {
     }
 
     return rs;
+  }
+
+  private static List<ColumnMetadata> retrieveColumnMetadata(List<Cells> cells,
+      List<String> selectedCols) {
+
+    // CellValidator
+    AbstractMetadataHelper helper = new CassandraMetadataHelper();
+
+    List<ColumnMetadata> columnList = new ArrayList<>();
+    if (!cells.isEmpty()) {
+      if (selectedCols.isEmpty()) {
+        // Obtain the metadata associated with the columns.
+        for (com.stratio.deep.entity.Cell def : cells.get(0).getCells()) {
+          ColumnMetadata columnMetadata = new ColumnMetadata("deep", def.getCellName());
+          ColumnType type = helper.toColumnType(def);
+          columnMetadata.setType(type);
+          columnList.add(columnMetadata);
+        }
+
+      } else {
+        Cells firstRowCells = cells.get(0);
+        for (String selectedCol : selectedCols) {
+          ColumnMetadata columnMetadata = new ColumnMetadata("deep", selectedCol);
+          if (selectedCol.equalsIgnoreCase("COUNT(*)")) {
+            columnMetadata.setType(ColumnType.BIGINT);
+          } else {
+            com.stratio.deep.entity.Cell cell = firstRowCells.getCellByName(selectedCol);
+
+            ColumnType type = helper.toColumnType(cell);
+            columnMetadata.setType(type);
+          }
+          columnList.add(columnMetadata);
+        }
+      }
+    } else {
+      for (String selectedCol : selectedCols) {
+        ColumnMetadata columnMetadata = new ColumnMetadata("deep", selectedCol);
+        columnMetadata.setType(ColumnType.VARCHAR);
+        columnList.add(columnMetadata);
+      }
+    }
+
+    return columnList;
   }
 
   private static List<Integer> retrieveFieldsPositionsList(Cells firstRow, List<String> selectedCols) {
@@ -241,7 +268,7 @@ public final class DeepUtils {
    * Retrieve fields in selection clause.
    * 
    * @param ss SelectStatement of the query
-   * @return Array of fields in selection clause or null if all fields has been selected
+   * @return List of fields in selection clause or null if all fields has been selected
    */
   public static List<String> retrieveSelectors(Selection selection) {
 

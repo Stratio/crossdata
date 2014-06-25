@@ -182,6 +182,8 @@ public class SelectStatement extends MetaStatement {
    */
   private static final Logger LOG = Logger.getLogger(SelectStatement.class);
 
+  private Map<String, String> fieldsAliasesMap;
+
   /**
    * Class constructor.
    * 
@@ -409,6 +411,14 @@ public class SelectStatement extends MetaStatement {
     SelectionList selList = (SelectionList) selectionClause;
     SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection();
     selSelectors.addSelectionSelector(selSelector);
+  }
+
+  public Map<String, String> getFieldsAliasesMap() {
+    return fieldsAliasesMap;
+  }
+
+  public void setFieldsAliasesMap(Map<String, String> fieldsAliasesMap) {
+    this.fieldsAliasesMap = fieldsAliasesMap;
   }
 
   /**
@@ -675,9 +685,7 @@ public class SelectStatement extends MetaStatement {
     for (GroupBy groupByCol : this.group) {
       String col = groupByCol.toString();
       if (!selectionCols.contains(col)) {
-        result =
-            Result.createValidationErrorResult("The GROUP BY column [" + col
-                + "] must be included in the selection columns.");
+        this.getSelectionClause().getIds().add(col);
       }
     }
     return result;
@@ -1775,6 +1783,8 @@ public class SelectStatement extends MetaStatement {
         tablesAliasesMap.put(entry.getKey(), entry.getValue().split("\\.")[1]);
       }
     }
+
+    this.setFieldsAliasesMap(fieldsAliasesMap);
 
     // Replacing alias in SELECT clause
     replaceAliasesInSelect(tablesAliasesMap);
