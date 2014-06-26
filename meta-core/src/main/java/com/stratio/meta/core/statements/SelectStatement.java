@@ -1843,7 +1843,6 @@ public class SelectStatement extends MetaStatement {
 
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-    System.out.println(">>>>>>>>>>>>>>>>>> getPlan");
     Tree steps = new Tree();
     if(metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName) && joinInc){
       steps = getStreamJoinPlan();
@@ -1863,7 +1862,6 @@ public class SelectStatement extends MetaStatement {
   }
 
   private Tree getStreamJoinPlan() {
-    System.out.println(">>>>>>>>>>>>>>>>>> getStreamJoinPlan");
     Tree steps = new Tree();
     SelectStatement firstSelect = new SelectStatement(tableName);
     firstSelect.setSessionKeyspace(this.sessionKeyspace);
@@ -1876,8 +1874,6 @@ public class SelectStatement extends MetaStatement {
     secondSelect.setSessionKeyspace(this.sessionKeyspace);
 
     SelectStatement joinSelect = new SelectStatement("");
-
-    System.out.println(">>>>:::::::::: " + this.join.getLeftField() + "    -----     " + this.join.getRightField());
 
     // ADD FIELDS OF THE JOIN
     String streamingField = null;
@@ -1899,7 +1895,6 @@ public class SelectStatement extends MetaStatement {
       secondSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
     }
 
-    System.out.println(">>>>>>>>>>>>>>>>>> getStreamJoinPlan: Streaming table: " + tableName);
     com.stratio.meta.common.metadata.structures.TableMetadata streamingTable = metadata.convertStreamingToMeta(keyspace, tableName);
 
     // ADD FIELDS OF THE SELECT
@@ -1910,25 +1905,17 @@ public class SelectStatement extends MetaStatement {
       for (SelectionSelector ss : selectionSelectors.getSelectors()) {
         SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
         if (streamingTable.getColumn(si.getField()) != null) {
-          System.out.println(">>>>>>>>>>>>>>>>>> getStreamJoinPlan - add fields of the select 5");
-
-
-
-
           firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
         } else {
-          System.out.println(">>>>>>>>>>>>>>>>>> getStreamJoinPlan - add fields of the select 6");
           secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
         }
       }
     } else {
-      System.out.println(">>>>>>>>>>>>>>>>>> getStreamJoinPlan - add fields of the select 7");
       // instanceof SelectionAsterisk
       firstSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
       secondSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
     }
 
-    System.out.println(">>>>>>>>>>>>>>>>>> getStreamJoinPlan - Add where clauses");
     // ADD WHERE CLAUSES IF ANY
     if (whereInc) {
       Map<Integer, List<Relation>> whereRelations = getWhereJoinPlan(firstSelect, secondSelect);
@@ -1940,17 +1927,14 @@ public class SelectStatement extends MetaStatement {
       }
     }
 
-    System.out.println(">>>>>>>>>>>>>>>>>> getStreamJoinPlan - Add window");
     // ADD WINDOW
     if(windowInc){
       firstSelect.setWindow(window);
     }
 
-    System.out.println(">>>>>>>>>>>>>>>>>> getStreamJoinPlan - add selected columns to the join statement");
     // ADD SELECTED COLUMNS TO THE JOIN STATEMENT
     joinSelect.setSelectionClause(selectionClause);
 
-    System.out.println(">>>>>>>>>>>>>>>>>> getStreamJoinPlan - Add map of the join");
     // ADD MAP OF THE JOIN
     if (this.join.getLeftField().getTable().equalsIgnoreCase(tableName)) {
       joinSelect.setJoin(new InnerJoin("", this.join.getLeftField(), this.join.getRightField()));
@@ -1958,9 +1942,7 @@ public class SelectStatement extends MetaStatement {
       joinSelect.setJoin(new InnerJoin("", this.join.getRightField(), this.join.getLeftField()));
     }
 
-    System.out.println(">>>>>>>>>>>>>>>>>> getStreamJoinPlan - validate 1");
     firstSelect.validate(metadata, null);
-    System.out.println(">>>>>>>>>>>>>>>>>> getStreamJoinPlan - validate 2");
     secondSelect.validate(metadata, null);
 
     // ADD STEPS
@@ -1976,8 +1958,6 @@ public class SelectStatement extends MetaStatement {
     join.addChild(selectB);
 
     steps.setInvolvesStreaming(true);
-    
-    System.out.println(">>>>>>>>>>>>>>>>>> Streaming plan: " + steps.toStringDownTop());
 
     return steps;
   }

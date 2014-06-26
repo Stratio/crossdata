@@ -315,7 +315,6 @@ public class MetadataManager {
    */
   public List<StratioStream> getEphemeralTables(){
     List<StratioStream> streamsList = null;
-    System.out.println(">>>>> >>>> >>>> >>>> " + stratioStreamingAPI);
     try {
       streamsList = stratioStreamingAPI.listStreams();
     } catch (Exception e) {

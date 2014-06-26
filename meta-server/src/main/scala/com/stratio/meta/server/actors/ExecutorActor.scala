@@ -51,10 +51,13 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker with Actor
       val result = executor.executeQuery(query, this).getResult
       processResults(result)
     case query:MetaQuery if !query.hasError=> {
+      val querySender = sender
       log.debug("Init Executor Task")
       val timer=initTimer()
       val result = executor.executeQuery(query, this).getResult
-      sender ! result
+      println("»»»»»»»»»»»»»»»»»»»»»» QID: " + query.getQueryId+ " Sender: " + querySender.path);
+      querySender ! result
+      println("»»»»»»»»»»»»»»»»»»»»»»»x Sent!");
       finishTimer(timer)
       log.debug("Finish Executor Task")
     }
@@ -67,10 +70,12 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker with Actor
   }
 
   override def processResults(result: Result): Unit = {
-    val r = result.asInstanceOf[QueryResult]
-    System.out.println("####################################################################################3############################################## "
-                       + "Sending partial results: " + !r.isLastResultSet + ", QID: " + result.getQueryId
-                       + " page: " + r.getResultPage + " results: " + r.getResultSet.size());
+    //val r = result.asInstanceOf[QueryResult]
+    //System.out.println("####################################################################################3############################################## "
+    //                   + "Sending partial results: " + !r.isLastResultSet + ", QID: " + result.getQueryId
+    //                   + " page: " + r.getResultPage + " results: " + r.getResultSet.size());
+    //System.out.println("####################################################################################3############################################## "
+    //                   + "Sending partial results for QID: " + result.getQueryId);
     senderMap.get(result.getQueryId) ! result
   }
 }

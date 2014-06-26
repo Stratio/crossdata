@@ -49,9 +49,6 @@ public class StreamingConsumer extends Thread {
       ConsumerIterator<byte[], byte[]> iter = stream.iterator();
       long lastIncome = System.currentTimeMillis();
       while (iter.hasNext()){
-        if((System.currentTimeMillis() - lastIncome) > 1999){
-          System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< "+getDate()+" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        }
         String message = new String(iter.next().message());
 
         // Get columns fields from Json
@@ -66,10 +63,9 @@ public class StreamingConsumer extends Thread {
         synchronized (results){
           results.add(columns);
         }
-        System.out.println("Message(" + getDate() + "): " + message);
         lastIncome = System.currentTimeMillis();
       }
-      System.out.println("----------------------------------------------------------------------------------");
+
     }
   }
 

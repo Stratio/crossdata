@@ -128,7 +128,6 @@ public class StreamingDataGenerator {
       message.setColumns(sensorData);
 
       result.add(message);
-      System.out.println("Generated new row: name [" + name + "] age [" + value + "]");
 
       return result;
     }

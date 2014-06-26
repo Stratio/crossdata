@@ -134,9 +134,6 @@ public class Tree {
       sb.append(node.toString());
     }
 
-    System.out.println("#####################################################");
-    System.out.println("PLAN: " + sb.toString());
-
     return sb.toString();
   }
 

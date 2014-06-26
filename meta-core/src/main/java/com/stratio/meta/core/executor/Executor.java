@@ -93,12 +93,7 @@ public class Executor {
     LOG.debug("Execution plan: " + System.lineSeparator() + plan.toStringDownTop());
 
     if(plan.involvesStreaming() && plan.getChildren().size() > 0){
-      System.out.println();
-      System.out.println("============================================================");
-      System.out.println("           Streaming with intermediate callback");
-      System.out.println("============================================================");
-      System.out.println();
-      System.out.println();
+      LOG.info("Streaming with intermediate callback");
 
       // If the task involves streaming and it is a non-single statement (e.g., SELECT * FROM t WITH
       // WINDOW 2 s), create an execution trigger handler in such a way that the remainder of the
@@ -107,16 +102,6 @@ public class Executor {
       executorService.execute(st);
 
     }else {
-      System.out.println();
-      System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-      if(plan.involvesStreaming()) {
-        System.out.println("           Streaming WITHOUT intermediate callback");
-      }else{
-        System.out.println("           Batch WITHOUT intermediate callback");
-      }
-      System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-      System.out.println();
-      System.out.println();
 
       // Execute plan
       metaQuery.setResult(

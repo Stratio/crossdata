@@ -65,8 +65,6 @@ public class StreamListener extends Thread {
       }
       if((!resultsEmpty) &&(lastSize == currentSize)){
         synchronized (results){
-          System.out.println("»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»");
-          System.out.println("»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»");
           MetaStream.sendResultsToNextStep(results, dsc, callBackActor, queryId, ks, isRoot);
           results.clear();
         }

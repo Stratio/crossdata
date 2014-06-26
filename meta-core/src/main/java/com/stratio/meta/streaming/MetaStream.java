@@ -208,8 +208,8 @@ public class MetaStream {
       StreamListener listener = new StreamListener(results, dsc, callbackActor, queryId, ks, isRoot);
       listener.start();
 
-      Thread.sleep(2000);
-      StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, 6000, 4, 4);
+      //Thread.sleep(2000);
+      //StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, 6000, 4, 4);
 
       return "Streaming QID: " + queryId + " finished";
     } catch (Exception e) {
@@ -278,10 +278,8 @@ public class MetaStream {
     for(Object obj: data){
       Cells newRow = new Cells();
       List row = (List) obj;
-      //System.out.println("TRACE: data = " + Arrays.toString(row.toArray()));
       for(Object columnObj: row){
         Map column = (Map) columnObj;
-        //System.out.println("TRACE: column = " + column);
         String colName = (String) column.get("column");
         //String value = (String) column.get("value");
         Object value = column.get("value");
@@ -302,18 +300,6 @@ public class MetaStream {
     JavaRDD<Cells> rdd = jsc.parallelize(deepCells);
 
     LOG.debug("RDD.count = " + rdd.count());
-
-    /*
-    List<Cells> cellsRDD = rdd.collect();
-    for(Cells cells: cellsRDD){
-      for(com.stratio.deep.entity.Cell cell: cells.getCells()){
-        String name = cell.getCellName();
-        String clazz = cell.getValueType().getName();
-        String value = String.valueOf(cell.getCellValue());
-        System.out.println("TRACE: name="+name+" | class="+clazz+" | value="+value);
-      }
-    }
-    */
 
     return rdd;
   }

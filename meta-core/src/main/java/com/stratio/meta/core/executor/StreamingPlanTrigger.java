@@ -22,15 +22,11 @@ package com.stratio.meta.core.executor;
 import com.datastax.driver.core.Session;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
-import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Runnable class that triggers the computation of a Plan each time results in the root are
@@ -60,31 +56,18 @@ public class StreamingPlanTrigger implements Runnable, ActorResultListener{
 
   @Override
   public void run() {
-    System.out.println();
-    System.out.println("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
-    System.out.println();
-    System.out.println("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
-    System.out.println();
-    System.out.println();
     //Register this thread as the callback for the streaming results.
     Tree t = new Tree(metaQuery.getPlan().getNode());
     t.setParent(new Tree());
     t.executeTreeDownTop(metaQuery.getQueryId(), session, stratioStreamingAPI,
                                                       deepSparkContext, engineConfig, this);
-    //metaQuery.setResult(
-    //    metaQuery.getPlan().executeTreeDownTop(metaQuery.getQueryId(), session, stratioStreamingAPI,
-    //                            deepSparkContext, engineConfig, this));
-
   }
 
   @Override
   public void processResults(Result result) {
     //Each time new results are received, trigger the execution of the childs.
-    System.out.println("Results returned, triggering batch execution. " + QueryResult.class.cast(result).getResultSet().size());
     //Get the children -> Select from deep -> Join on Deep.
     Tree t = metaQuery.getPlan().getChildren().get(0);
-    //List<Result> resultsFromParents = new ArrayList<>();
-    //resultsFromParents.add(result);
     Result r = t.executeTreeDownTop(metaQuery.getQueryId(), session, stratioStreamingAPI,
                                     deepSparkContext, engineConfig, null, result);
     r.setQueryId(metaQuery.getQueryId());

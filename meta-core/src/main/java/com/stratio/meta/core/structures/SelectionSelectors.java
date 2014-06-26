@@ -46,7 +46,6 @@ public class SelectionSelectors extends Selection {
     SelectionSelector s = null;
     while(it.hasNext()){
       s = it.next();
-      System.out.println("----- " + s.getSelector().toString());
       if(s.getSelector().toString().equalsIgnoreCase(ss.getSelector().toString())){
         found = true;
       }
