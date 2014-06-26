@@ -29,12 +29,12 @@ public class ConsumerLauncher {
     System.out.print("Enter Kafka topic name: ");
     String topic = scanner.nextLine();
 
-    List<String> results = new ArrayList<>();
+    List<Object> results = new ArrayList<>();
 
     StreamingConsumer consumer = new StreamingConsumer(topic, "127.0.0.1", "MetaStreaming", results);
     consumer.start();
 
-    StreamListener listener = new StreamListener(results);
+    StreamListener listener = new StreamListener(results, null);
     listener.start();
   }
 }

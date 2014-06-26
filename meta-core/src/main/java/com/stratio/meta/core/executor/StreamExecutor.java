@@ -34,8 +34,6 @@ import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.constants.ColumnType;
 import com.stratio.streaming.messaging.ColumnNameType;
 
-import org.apache.spark.streaming.api.java.JavaStreamingContext;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,8 +42,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class StreamExecutor {
-
-  private static HashMap<String, JavaStreamingContext> streamContexts = new HashMap<>();
 
   /**
    * Size of the streaming thread pool.
@@ -58,7 +54,6 @@ public class StreamExecutor {
   private final static ExecutorService pool = Executors.newFixedThreadPool(STREAMING_POOL_SIZE);
 
   private final static Map<String, StreamingExecutionThread> streamingThreads = new HashMap<>();
-
 
   public StreamExecutor() {
 
@@ -109,20 +104,6 @@ public class StreamExecutor {
     } else {
       return Result.createExecutionErrorResult("Not supported yet.");
     }
-  }
-
-
-  /**
-   * Stop a streaming context removing it from the streamContexts map.
-   * @param queryId The query identifier.
-   */
-  public static void stopContext(String queryId){
-    streamContexts.get(queryId).stop();
-    streamContexts.remove(queryId);
-  }
-
-  public static void addContext(String queryId, JavaStreamingContext jssc){
-    streamContexts.put(queryId, jssc);
   }
 
 }

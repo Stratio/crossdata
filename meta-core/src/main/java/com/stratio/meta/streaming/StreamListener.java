@@ -19,14 +19,18 @@
 
 package com.stratio.meta.streaming;
 
+import com.stratio.deep.context.DeepSparkContext;
+
 import java.util.List;
 
 public class StreamListener extends Thread {
 
-  List<String> results;
+  private List<Object> results;
+  private DeepSparkContext dsc;
 
-  public StreamListener(List<String> results) {
+  public StreamListener(List<Object> results, DeepSparkContext dsc) {
     this.results = results;
+    this.dsc = dsc;
   }
 
   @Override
@@ -41,9 +45,8 @@ public class StreamListener extends Thread {
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      System.out.println("Checking end of window...");
       if((!resultsEmpty) &&(lastSize == currentSize)){
-        System.out.println("--- End of the window ---");
+        MetaStream.sendResultsToNextStep(results, dsc);
         synchronized (results){
           results.clear();
         }

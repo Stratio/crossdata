@@ -44,20 +44,15 @@ public class StreamingUtils {
     if (value.equalsIgnoreCase("varchar") || value.equalsIgnoreCase("text") || value.equalsIgnoreCase("uuid")
         || value.equalsIgnoreCase("timestamp") || value.equalsIgnoreCase("timeuuid")){
       type=ColumnType.STRING;
-    }
-    else if (value.equalsIgnoreCase("boolean")){
+    } else if (value.equalsIgnoreCase("boolean")){
       type=ColumnType.BOOLEAN;
-    }
-    else if (value.equalsIgnoreCase("double")){
+    } else if (value.equalsIgnoreCase("double")){
       type=ColumnType.DOUBLE;
-    }
-    else if (value.equalsIgnoreCase("float")){
+    } else if (value.equalsIgnoreCase("float")){
       type=ColumnType.FLOAT;
-    }
-    else if (value.equalsIgnoreCase("integer") || value.equalsIgnoreCase("int")){
+    } else if (value.equalsIgnoreCase("integer") || value.equalsIgnoreCase("int")){
       type=ColumnType.INTEGER;
-    }
-    else if (value.equalsIgnoreCase("long") || value.equalsIgnoreCase("counter")){
+    } else if (value.equalsIgnoreCase("long") || value.equalsIgnoreCase("counter")){
       type=ColumnType.LONG;
     } else {
       type = ColumnType.valueOf(value);
@@ -144,5 +139,21 @@ public class StreamingUtils {
       metaType = com.stratio.meta.common.metadata.structures.ColumnType.BIGINT;
     }
     return metaType;
+  }
+
+  public static Object convertStreamingToJava(String value, String streamingType){
+    Object result = value;
+    if(streamingType.equalsIgnoreCase(ColumnType.BOOLEAN.getValue())){
+      result = Boolean.valueOf(value);
+    } else if(streamingType.equalsIgnoreCase(ColumnType.DOUBLE.getValue())){
+      result = Double.valueOf(value);
+    } else if(streamingType.equalsIgnoreCase(ColumnType.FLOAT.getValue())){
+      result = Float.valueOf(value);
+    } else if(streamingType.equalsIgnoreCase(ColumnType.INTEGER.getValue())){
+      result = Integer.valueOf(value);
+    } else if(streamingType.equalsIgnoreCase(ColumnType.LONG.getValue())){
+      result = Long.valueOf(value);
+    }
+    return result;
   }
 }

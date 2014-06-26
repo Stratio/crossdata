@@ -260,7 +260,7 @@ public class MetadataManager {
   }
 
   public List<String> getStreamingColumnNames(String ephemeralTableName) {
-    System.out.println("TRACE: Looking up columns from "+ephemeralTableName);
+    LOG.debug("Looking up columns from ephemeral table "+ephemeralTableName);
     List<String> colNames = new ArrayList<>();
     try {
       List<ColumnNameTypeValue> cols = stratioStreamingAPI.columnsFromStream(ephemeralTableName);

@@ -28,12 +28,14 @@ import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.streaming.MetaStream;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
-import org.apache.spark.streaming.api.java.JavaStreamingContext;
+import org.apache.log4j.Logger;
 
-/**
- * Created by dhiguero on 20/06/14.
- */
 public class StreamingExecutionThread implements Runnable {
+
+  /**
+   * Class logger.
+   */
+  private static final Logger LOG = Logger.getLogger(StreamingExecutionThread.class);
 
   private final SelectStatement statement;
 
@@ -68,17 +70,11 @@ public class StreamingExecutionThread implements Runnable {
 
   @Override
   public void run() {
-    System.out.println("Running streaming Thread for " + statement.toString());
-    JavaStreamingContext newContext = MetaStream.createSparkStreamingContext(config, deepSparkContext, 3);
-    MetaStream.startQuery(queryId, stratioStreamingAPI, statement, config, newContext, callbackActor, isRoot);
+    LOG.debug("Running streaming Thread for " + statement.toString());
+    MetaStream.startQuery(queryId, stratioStreamingAPI, statement, config, callbackActor, deepSparkContext, isRoot);
     QueryResult r = QueryResult.createQueryResult(new CassandraResultSet());
     r.setLastResultSet();
     callbackActor.processResults(r);
-    System.out.println("Streaming query finished!!!!");
-  }
-
-  public void stopStreamingQuery(){
-    System.out.println("Stopping streaming Thread for " + statement.toString());
-    StreamExecutor.stopContext(queryId);
+    LOG.debug("Streaming query finished");
   }
 }

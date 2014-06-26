@@ -551,9 +551,11 @@ public class SelectStatement extends MetaStatement {
 
     }
 
+    /*
     if(!result.hasError() && windowInc){
       result = validateWindow(config);
     }
+    */
 
     return result;
   }

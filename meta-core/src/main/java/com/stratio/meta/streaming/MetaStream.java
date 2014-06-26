@@ -31,7 +31,6 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
-import com.stratio.meta.core.executor.StreamExecutor;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
@@ -40,24 +39,14 @@ import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
 
 import org.apache.log4j.Logger;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.VoidFunction;
-import org.apache.spark.streaming.Duration;
-import org.apache.spark.streaming.Time;
-import org.apache.spark.streaming.api.java.JavaPairDStream;
-import org.apache.spark.streaming.api.java.JavaStreamingContext;
-import org.apache.spark.streaming.kafka.KafkaUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.apache.spark.api.java.JavaSparkContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.UUID;
 
 /**
@@ -154,50 +143,6 @@ public class MetaStream {
     return result;
   }
 
-  /**
-   * Create an Spark Streaming context.
-   * @param config The engine config.
-   * @param retries Number of times the creation would be retried in case of failure.
-   * @return A {@link org.apache.spark.streaming.api.java.JavaStreamingContext}.
-   */
-  //TODO: Move number of retries to EngineConfig
-  public static JavaStreamingContext createSparkStreamingContext(
-      EngineConfig config, DeepSparkContext deepSparkContext, int retries){
-    //JavaSparkContext sparkContext = new JavaSparkContext(config.getSparkMaster(), "MetaStreaming");
-    SparkConf sparkConf = new SparkConf().setMaster(config.getSparkMaster())
-                                         .setAppName("MetaStreaming")
-                                         .set("spark.driver.port", String.valueOf(StreamingUtils.findFreePort()))
-                                         .set("spark.ui.port", String.valueOf(StreamingUtils.findFreePort()));
-
-    LOG.info("Creating new JavaStreamingContext on " + config.getSparkMaster());
-    JavaStreamingContext jssc = null;
-    int attempt = 0;
-    while(jssc == null && attempt < retries){
-      attempt++;
-      try {
-        /*
-        jssc = new JavaStreamingContext(//deepSparkContext.getConf().set("spark.cleaner.ttl", "1000"),//.getConf()
-            sparkContext.getConf()
-                            .set("spark.driver.port", String.valueOf(StreamingUtils.findFreePort()))
-                            .set("spark.ui.port", String.valueOf(StreamingUtils.findFreePort())),
-            new Duration(config.getStreamingDuration()));
-        */
-        jssc = new JavaStreamingContext(sparkConf, new Duration(config.getStreamingDuration()));
-      } catch (Throwable t){
-        jssc = null;
-        LOG.error("Cannot create Streaming Context. Trying it again.", t);
-      }
-    }
-
-    if(attempt >= retries){
-      LOG.error("Cannot create Streaming context after " + attempt + " retries.");
-      jssc = null;
-    }else {
-      LOG.info("MetaStreaming context created: " + jssc.toString());
-    }
-    return jssc;
-  }
-
   public static Result removeStreamingQuery(String queryId, IStratioStreamingAPI stratioStreamingAPI){
     String streamingQueryIdentifier = streamingQueries.get(queryId);
     Result result = CommandResult.createCommandResult("Query " + queryId + " removed");
@@ -205,8 +150,6 @@ public class MetaStream {
       //remove streaming query
       try {
         stratioStreamingAPI.removeQuery(streamingQueryEphemeralTable.get(queryId), streamingQueryIdentifier);
-        //Stop context
-        StreamExecutor.stopContext(queryId);
         //clean maps
         streamingQueries.remove(queryId);
         streamingQueryEphemeralTable.remove(queryId);
@@ -225,12 +168,13 @@ public class MetaStream {
     return result;
   }
 
-  public static String startQuery(final String queryId, IStratioStreamingAPI stratioStreamingAPI,
-                                    SelectStatement ss,
-                                    EngineConfig config,
-                                    final JavaStreamingContext jssc,
-                                    final ActorResultListener callbackActor,
-                                    final boolean isRoot){
+  public static String startQuery(final String queryId,
+                                  IStratioStreamingAPI stratioStreamingAPI,
+                                  SelectStatement ss,
+                                  EngineConfig config,
+                                  ActorResultListener callbackActor,
+                                  DeepSparkContext dsc,
+                                  boolean isRoot){
     callbackActors.put(queryId, callbackActor);
 
     final String ks = ss.getEffectiveKeyspace();
@@ -238,12 +182,6 @@ public class MetaStream {
     try {
       final String outgoing = streamName+"_"+ UUID.randomUUID().toString().replace("-", "_");
 
-      /////////////////////////////////////////
-      System.out.println("Outgoing topic: "+outgoing);
-
-      Scanner scanner = new Scanner(System.in);
-      scanner.nextLine();
-      /////////////////////////////////////////
       LOG.debug("Outgoing topic: "+outgoing);
 
       // Create topic
@@ -255,101 +193,25 @@ public class MetaStream {
       streamingQueryEphemeralTable.put(queryId, streamName);
       queryStatements.put(queryId, ss);
 
-      StreamExecutor.addContext(queryId, jssc);
       LOG.info("queryId = " + streamingQueryId);
       stratioStreamingAPI.listenStream(outgoing);
 
       //Insert dumb element in topic while the Kafka bug is addressed.
       StreamingUtils.insertRandomData(stratioStreamingAPI, outgoing);
 
-      // Create stream reading outgoing Kafka topic
-      Map<String, Integer> topics = new HashMap<>();
-      //Map of (topic_name -> numPartitions) to consume. Each partition is consumed in its own thread
-      topics.put(outgoing, 1);
-      // jssc: JavaStreamingContext, zkQuorum: String, groupId: String, topics: Map<String, integer>
-      final JavaPairDStream<String, String>
-          dstream =
-          KafkaUtils.createStream(jssc, config.getZookeeperServer(), config.getStreamingGroupId(), topics);
+      LOG.debug("Consuming outgoing Kafka topic: "+outgoing);
 
-      final long duration = ss.getWindow().getDurationInMilliseconds();
+      List<Object> results = new ArrayList<>();
 
-      StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, duration, 10, 4);
+      StreamingConsumer consumer = new StreamingConsumer(outgoing, config.getZookeeperServer(), config.getJobName(), results);
+      consumer.start();
 
-      Time timeWindow = new Time(duration);
-      LOG.debug("Time Window = "+timeWindow.toString());
+      StreamListener listener = new StreamListener(results, dsc);
+      listener.start();
 
-      dstream.foreachRDD(new Function<JavaPairRDD<String, String>, Void>() {
-        @Override
-        public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
-          final long totalCount = stringStringJavaPairRDD.count();
-          LOG.info(streamingQueryId+": Count=" + totalCount);
-          if(totalCount > 0){
+      Thread.sleep(2000);
+      StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, 10000, 5, 1);
 
-            if(isRoot){ // ROOT NODE
-              //Create resultset
-              stringStringJavaPairRDD.values().foreach(new VoidFunction<String>() {
-                public CassandraResultSet resultSet = new CassandraResultSet();
-
-                @Override
-                public void call(String s) throws Exception {
-                  ObjectMapper objectMapper = new ObjectMapper();
-                  Map<String, Object> myMap = objectMapper.readValue(s, HashMap.class);
-                  ArrayList columns = (ArrayList) myMap.get("columns");
-                  String cols = Arrays.toString(columns.toArray());
-                  LOG.debug("Columns = " + cols);
-
-                  List<ColumnMetadata> resultMetadata = new ArrayList<>();
-                  Row metaRow = new Row();
-                  for (Object column: columns) {
-                    Map columnMap = (Map) column;
-
-                    metaRow.addCell(String.valueOf(columnMap.get("column")),
-                                    new Cell(columnMap.get("value")));
-                    if((resultSet.getColumnMetadata() == null) || (resultSet.getColumnMetadata().size() < 1)){
-                      resultMetadata.add(
-                          new ColumnMetadata(outgoing,
-                                             String.valueOf(columnMap.get("column")),
-                                             StreamingUtils.streamingToMetaType((String) columnMap.get("type"))));
-                      resultSet.setColumnMetadata(resultMetadata);
-                    }
-                  }
-                  resultSet.add(metaRow);
-                  if(resultSet.size() >= totalCount){
-                    LOG.info("resultSet.size="+resultSet.size());
-                    QueryResult queryResult = QueryResult.createSuccessQueryResult(resultSet, ks);
-                    queryResult.setQueryId(queryId);
-                    Integer page = resultPages.get(queryId);
-                    queryResult.setResultPage(page);
-                    resultPages.put(queryId, page + 1);
-                    sendResults(queryResult);
-                  }
-                }
-              });
-            } else { // LEAF NODE
-              List<Cells> deepCells = new ArrayList<>();
-              JavaRDD<Cells> rdd = jssc.sparkContext().parallelize(deepCells);
-
-              CassandraResultSet crs = new CassandraResultSet();
-              crs.add(new Row("RDD", new Cell(rdd)));
-
-              List<ColumnMetadata> columns = new ArrayList<>();
-              ColumnMetadata metadata = new ColumnMetadata("RDD", "RDD");
-              ColumnType type = ColumnType.VARCHAR;
-              type.setDBMapping("class", JavaRDD.class);
-              metadata.setType(type);
-              crs.setColumnMetadata(columns);
-              sendResultsToNextStep(crs);
-            }
-          }
-          return null;
-        }
-      });
-      LOG.info("Starting the streaming context.");
-      jssc.start();
-      jssc.awaitTermination();
-      //jssc.awaitTermination((long) (duration*5));
-      //jssc.stop();
-      LOG.info("Streaming context stopped!");
       return "Streaming QID: " + queryId + " finished";
     } catch (Exception e) {
       LOG.error(e);
@@ -357,11 +219,69 @@ public class MetaStream {
     }
   }
 
-    private static void sendResultsToNextStep(CassandraResultSet crs) {
-        //TODO:
+    public static void sendResultsToNextStep(List<Object> data, DeepSparkContext dsc) {
+
+      LOG.debug("Data for the next step = "+Arrays.toString(data.toArray()));
+
+      JavaRDD<Cells> rdd = convertJsonToDeep(data, dsc);
+
+      CassandraResultSet crs = new CassandraResultSet();
+      crs.add(new Row("RDD", new Cell(rdd)));
+
+      List<ColumnMetadata> columns = new ArrayList<>();
+      ColumnMetadata metadata = new ColumnMetadata("RDD", "RDD");
+      ColumnType type = ColumnType.VARCHAR;
+      type.setDBMapping("class", JavaRDD.class);
+      metadata.setType(type);
+      crs.setColumnMetadata(columns);
     }
 
-    /**
+  private static JavaRDD<Cells> convertJsonToDeep(List<Object> data, DeepSparkContext dsc) {
+    List<Cells> deepCells = new ArrayList<>();
+    for(Object obj: data){
+      Cells newRow = new Cells();
+      List row = (List) obj;
+      //System.out.println("TRACE: data = " + Arrays.toString(row.toArray()));
+      for(Object columnObj: row){
+        Map column = (Map) columnObj;
+        //System.out.println("TRACE: column = " + column);
+        String colName = (String) column.get("column");
+        //String value = (String) column.get("value");
+        Object value = column.get("value");
+        String colType = (String) column.get("type");
+
+        com.stratio.deep.entity.Cell newCell =
+            com.stratio.deep.entity.Cell.create(colName, value);
+
+        newRow.add(newCell);
+      }
+      deepCells.add(newRow);
+    }
+
+    LOG.debug("Creating RDD from Deep Cells.");
+
+    JavaSparkContext jsc = new JavaSparkContext(dsc.sc());
+
+    JavaRDD<Cells> rdd = jsc.parallelize(deepCells);
+
+    LOG.debug("RDD.count = " + rdd.count());
+
+    /*
+    List<Cells> cellsRDD = rdd.collect();
+    for(Cells cells: cellsRDD){
+      for(com.stratio.deep.entity.Cell cell: cells.getCells()){
+        String name = cell.getCellName();
+        String clazz = cell.getValueType().getName();
+        String value = String.valueOf(cell.getCellValue());
+        System.out.println("TRACE: name="+name+" | class="+clazz+" | value="+value);
+      }
+    }
+    */
+
+    return rdd;
+  }
+
+  /**
    * Send the results to the associated listener.
    * @param results The results.
    */

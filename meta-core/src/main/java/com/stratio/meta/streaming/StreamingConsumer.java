@@ -1,6 +1,11 @@
 package com.stratio.meta.streaming;
 
+import org.codehaus.jackson.map.ObjectMapper;
+
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +22,9 @@ public class StreamingConsumer extends Thread {
   private ConsumerConnector consumer;
   private String topic;
   private List<KafkaStream<byte[], byte[]>> streams;
-  private List<String> results;
+  private List<Object> results;
 
-  public StreamingConsumer(String topic, String zookeeper, String groupId, List<String> results) {
+  public StreamingConsumer(String topic, String zookeeper, String groupId, List<Object> results) {
     this.results = results;
     Properties props = new Properties();
     props.put("zookeeper.connect", zookeeper);
@@ -38,6 +43,8 @@ public class StreamingConsumer extends Thread {
 
   public void run() {
 
+    ObjectMapper objectMapper = new ObjectMapper();
+
     for(KafkaStream stream: streams){
       ConsumerIterator<byte[], byte[]> iter = stream.iterator();
       long lastIncome = System.currentTimeMillis();
@@ -46,8 +53,18 @@ public class StreamingConsumer extends Thread {
           System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< "+getDate()+" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         }
         String message = new String(iter.next().message());
+
+        // Get columns fields from Json
+        Map<String, Object> myMap = null;
+        try {
+          myMap = objectMapper.readValue(message, HashMap.class);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+        ArrayList columns = (ArrayList) myMap.get("columns");
+
         synchronized (results){
-          results.add(message);
+          results.add(columns);
         }
         System.out.println("Message(" + getDate() + "): " + message);
         lastIncome = System.currentTimeMillis();
