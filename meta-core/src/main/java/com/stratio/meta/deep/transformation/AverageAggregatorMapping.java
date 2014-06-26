@@ -16,7 +16,6 @@
 
 package com.stratio.meta.deep.transformation;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -26,7 +25,7 @@ import com.stratio.deep.entity.Cell;
 import com.stratio.deep.entity.Cells;
 
 
-public class AverageAggregatorMapping extends Function<Cells, Cells> implements Serializable {
+public class AverageAggregatorMapping implements Function<Cells, Cells> {
 
   private static final long serialVersionUID = -1708746004449933719L;
 

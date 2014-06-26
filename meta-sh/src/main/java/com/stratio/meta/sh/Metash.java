@@ -176,8 +176,8 @@ public class Metash {
 
   /**
    * Set the console prompt.
-   * 
-   * @param currentKeyspace The currentKeyspace.
+   *
+   * @param currentKeyspace The currentCatalog.
    */
   private void setPrompt(String currentKeyspace) {
     StringBuilder sb = new StringBuilder("\033[36mmetash-sh:");
@@ -245,7 +245,7 @@ public class Metash {
     long queryEnd = queryStart;
     Result metaResult = null;
     try {
-      metaResult = metaDriver.executeQuery(currentUser, currentCatalog, cmd);
+      metaResult = metaDriver.executeQuery(currentCatalog, cmd);
       queryEnd = System.currentTimeMillis();
       updatePrompt(metaResult);
       println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
@@ -268,10 +268,17 @@ public class Metash {
    * @param cmd The query.
    */
   private void executeAsyncQuery(String cmd){
-    String queryId = metaDriver.asyncExecuteQuery(currentUser, currentCatalog, cmd, resultHandler);
-    LOG.debug("Async command: " + cmd + " id: " + queryId);
-    println("QID: " + queryId);
-    println("");
+    String queryId = null;
+    try {
+      queryId = metaDriver.asyncExecuteQuery(currentCatalog, cmd, resultHandler);
+      LOG.debug("Async command: " + cmd + " id: " + queryId);
+      println("QID: " + queryId);
+      println("");
+    } catch (ConnectionException e) {
+      LOG.error(e.getMessage(), e);
+      println("ERROR: " + e.getMessage());
+    }
+
   }
 
   /**
@@ -304,7 +311,7 @@ public class Metash {
       Result connectionResult = metaDriver.connect(currentUser);
       LOG.info("Driver connections established");
       LOG.info(ConsoleUtils.stringResult(connectionResult));
-    } catch (ConnectionException ce){
+    } catch (ConnectionException ce) {
       result = false;
       LOG.error(ce.getMessage());
     }
@@ -338,7 +345,7 @@ public class Metash {
       StringBuilder sb = new StringBuilder(cmd);
 
       while (!cmd.trim().toLowerCase().startsWith("exit")
-          && !cmd.trim().toLowerCase().startsWith("quit")) {
+             && !cmd.trim().toLowerCase().startsWith("quit")) {
         cmd = console.readLine();
         sb.append(cmd).append(" ");
         if (sb.toString().trim().endsWith(";")) {
@@ -347,16 +354,14 @@ public class Metash {
             println("");
           } else if (sb.toString().toLowerCase().startsWith("help")) {
             showHelp(sb.toString());
-          } else if (!sb.toString().trim().toLowerCase().startsWith("exit")
-              && !sb.toString().trim().toLowerCase().startsWith("quit")) {
-            executeQuery(sb.toString());
           } else {
+            executeQuery(sb.toString());
             println("");
-            break;
           }
           sb = new StringBuilder();
-        }else if(sb.toString().toLowerCase().startsWith("help")){
+        } else if (sb.toString().toLowerCase().startsWith("help")) {
           showHelp(sb.toString());
+          sb = new StringBuilder();
         }
       }
     } catch (IOException ex) {

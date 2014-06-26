@@ -29,3 +29,4 @@ sonar-project.properties
 */test-output
 >>>>>>> d719f0d906e64b7415a40cc0fe3ec2e6c34db63e
 .gitignore
+*.log

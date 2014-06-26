@@ -301,9 +301,12 @@ public class MetadataManager {
   }
 
   public boolean checkStream(String ephemeralTableName) {
-    for (StratioStream stream: getEphemeralTables()) {
-      if (stream.getStreamName().equalsIgnoreCase(ephemeralTableName)){
-        return true;
+    List<StratioStream> streams = getEphemeralTables();
+    if(streams != null && streams.size() > 0) {
+      for (StratioStream stream : getEphemeralTables()) {
+        if (stream.getStreamName().equalsIgnoreCase(ephemeralTableName)) {
+          return true;
+        }
       }
     }
     return false;

@@ -22,7 +22,7 @@ package com.stratio.meta.driver.actor
 import akka.actor.{Actor, Props, ActorRef}
 import com.stratio.meta.common.ask.{Command, Query, Connect}
 import com.stratio.meta.common.result.{ErrorResult, Result}
-import com.stratio.meta.communication.{ACK}
+import com.stratio.meta.communication.{Disconnect, ACK}
 import scala.concurrent.duration._
 import akka.util.Timeout
 import akka.contrib.pattern.ClusterClient
@@ -73,6 +73,11 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
 
     /* The driver sends the connect message. */
     case c : Connect => {
+      clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = true)
+    }
+
+    case c : Disconnect => {
+      //println("Send connect " + c)
       clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = true)
     }
 

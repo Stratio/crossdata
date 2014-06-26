@@ -16,8 +16,6 @@
 
 package com.stratio.meta.deep.transformation;
 
-import java.io.Serializable;
-
 import org.apache.spark.api.java.function.Function;
 
 import scala.Tuple2;
@@ -25,7 +23,7 @@ import scala.Tuple2;
 import com.stratio.deep.entity.Cells;
 
 
-public class KeyRemover extends Function<Tuple2<Cells, Cells>, Cells> implements Serializable {
+public class KeyRemover implements Function<Tuple2<Cells, Cells>, Cells> {
 
   /**
    * Serial version UID.
