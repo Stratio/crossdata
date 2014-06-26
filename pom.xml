@@ -84,7 +84,8 @@
         <akka.version>2.2.4</akka.version>
         <cassandra.driver>2.0.0</cassandra.driver>
         <meta.version>0.0.5-SNAPSHOT</meta.version>
-        <deep.version>0.2.9</deep.version>
+        <!-- <deep.version>0.3.1</deep.version> -->
+        <deep.version>0.3.2-SNAPSHOT</deep.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
     </properties>
 
