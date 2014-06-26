@@ -310,7 +310,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	@init{
 		$cis = new CreateIndexStatement();
 	}:
-	T_CREATE indexType=getIndexType {$cis.setIndexType(indexType);} T_INDEX
+	T_CREATE {$cis.setIndexType("default");} (indexType=getIndexType {$cis.setIndexType(indexType);})? T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
 	(name=T_IDENT {$cis.setName($name.text);})? 
 	T_ON tableName=getTableID {$cis.setTableName(tableName);}
