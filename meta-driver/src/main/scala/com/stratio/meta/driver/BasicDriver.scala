@@ -44,7 +44,7 @@ object BasicDriver extends DriverConfig {
   override lazy val logger = Logger.getLogger(getClass)
 
   def getBasicDriverConfigFromFile ={
-    new BasicDriverConfig(new DriverSectionConfig(retryTimes, retryDuration),
+    new BasicDriverConfig(new DriverSectionConfig(retryTimes, retryDuration.duration.toMillis),
       new ServerSectionConfig(clusterName, clusterActor, clusterHosts.map(_.toString).toArray))
   }
 }
@@ -62,7 +62,9 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts),"remote-client")
   lazy val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor,basicDriverConfig.serverSection.clusterActor, this), "proxy-actor")
 
-  lazy val retryPolitics: RetryPolitics = new RetryPolitics(basicDriverConfig.driverSection.retryTimes, basicDriverConfig.driverSection.retryDuration)
+  lazy val retryPolitics: RetryPolitics = {
+    new RetryPolitics(basicDriverConfig.driverSection.retryTimes, basicDriverConfig.driverSection.retryDuration.millis)
+  }
   lazy val contactPoints: List[String]= {
     basicDriverConfig.serverSection.clusterHosts.toList.map(host=>"akka.tcp://" + basicDriverConfig.serverSection.clusterName + "@" + host + "/user/receptionist")
   }

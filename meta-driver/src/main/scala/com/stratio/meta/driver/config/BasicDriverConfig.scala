@@ -23,7 +23,7 @@ import akka.util.Timeout
 
 
 class BasicDriverConfig(val driverSection:DriverSectionConfig,val serverSection:ServerSectionConfig)
-class DriverSectionConfig(val retryTimes:Int, val retryDuration:Timeout)
+class DriverSectionConfig(val retryTimes:Int, val retryDuration:Long)
 class ServerSectionConfig(val clusterName:String, val clusterActor:String, val clusterHosts:Array[String])
 
 
