@@ -47,24 +47,23 @@ class SyncResultHandler extends IResultHandler{
 
   override def processResult(result: Result): Unit = synchronized {
     //println("Results received: " + result.getClass.toString)
-    if(result.isInstanceOf[QueryResult]){
-      var r = result.asInstanceOf[QueryResult]
-      if(queryResult == null){
-        queryResult = r
-      }else{
-        queryResult.getResultSet.asInstanceOf[CassandraResultSet].getRows.addAll(
-          r.getResultSet.asInstanceOf[CassandraResultSet].getRows)
-      }
-    }else{
-      nonQueryResult = result
-      allResults = true;
+    result match {
+      case r: QueryResult =>
+        if (queryResult == null) {
+          queryResult = r
+        } else {
+          queryResult.getResultSet.asInstanceOf[CassandraResultSet].getRows.addAll(
+            r.getResultSet.asInstanceOf[CassandraResultSet].getRows)
+        }
+      case _ =>
+        nonQueryResult = result
+        allResults = true;
     }
     allResults = true;
     notify()
   }
 
   override def processError(errorResult: Result): Unit = synchronized {
-    //println("Error found! " + errorResult.asInstanceOf[ErrorResult].getErrorMessage)
     val e = errorResult.asInstanceOf[ErrorResult]
 
     if(ErrorType.PARSING.equals(e.getType)){
@@ -72,16 +71,15 @@ class SyncResultHandler extends IResultHandler{
     }else if(ErrorType.VALIDATION.equals(e.getType)){
       exception = new ValidationException(e.getErrorMessage)
     }else if(ErrorType.EXECUTION.equals(e.getType)){
-      exception = new ExecutionException(e.getErrorMessage);
+      exception = new ExecutionException(e.getErrorMessage)
     }else if(ErrorType.NOT_SUPPORTED.equals(e.getType)){
-      exception = new UnsupportedException(e.getErrorMessage);
+      exception = new UnsupportedException(e.getErrorMessage)
     }else{
-      exception = new UnsupportedException(e.getErrorMessage);
+      exception = new UnsupportedException(e.getErrorMessage)
     }
 
     errorFound = true;
     notify()
-    //println("processError: notifyAll")
   }
 
   @throws(classOf[ParsingException])

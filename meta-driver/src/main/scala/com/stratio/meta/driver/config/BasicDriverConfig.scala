@@ -19,22 +19,12 @@
 
 package com.stratio.meta.driver.config
 
-import com.typesafe.config.Config
-import scala.collection.JavaConversions._
+import akka.util.Timeout
 
-object MetaServerConfig{
-  val META_SERVER_HOSTS_KEY="config.cluster.hosts"
-  val META_SERVER_CLUSTER_NAME_KEY="config.cluster.name"
-  val META_SERVER_ACTOR_NAME_KEY="config.cluster.actor"
-}
 
-trait MetaServerConfig {
-  def config: Config = ???
-
-  lazy val clusterHosts: List[String] = config.getStringList(MetaServerConfig.META_SERVER_HOSTS_KEY).toList
-  lazy val clusterName: String = config.getString(MetaServerConfig.META_SERVER_CLUSTER_NAME_KEY)
-  lazy val clusterActor: String = config.getString(MetaServerConfig.META_SERVER_ACTOR_NAME_KEY)
+class BasicDriverConfig(val driverSection:DriverSectionConfig,val serverSection:ServerSectionConfig)
+class DriverSectionConfig(val retryTimes:Int, val retryDuration:Timeout)
+class ServerSectionConfig(val clusterName:String, val clusterActor:String, val clusterHosts:Array[String])
 
 
 
-}

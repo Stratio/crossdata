@@ -86,7 +86,7 @@ public class ConnectTest extends DriverParentTest {
     String msg = "create KEYSPAC ks_demo WITH replication = "
                  + "{class: SimpleStrategy, replication_factor: 1};";
     try {
-      driver.executeQuery( "ks_demo", msg);
+      driver.executeQuery("ks_demo", msg);
       fail("Expecting ParsingException");
     } catch (ParsingException e) {
       e.printStackTrace();
