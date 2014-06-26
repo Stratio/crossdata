@@ -16,9 +16,10 @@
 
 package com.stratio.meta.core.statements;
 
+import java.util.List;
+
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -28,8 +29,6 @@ import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-
-import java.util.List;
 
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
@@ -184,7 +183,8 @@ public class DescribeStatement extends MetaStatement {
         result = CommandResult.createCommandResult(keyspacesNames.toString());
       }
     } else if (type == DescribeType.TABLE) {
-      TableMetadata tableInfo = mm.getTableMetadata(this.getEffectiveKeyspace(), tableName);
+      com.stratio.meta.common.metadata.structures.TableMetadata tableInfo =
+          mm.getTableGenericMetadata(this.getEffectiveKeyspace(), tableName);
       if (tableInfo == null) {
         result = Result.createExecutionErrorResult("TABLE " + tableName + " was not found");
       } else {
