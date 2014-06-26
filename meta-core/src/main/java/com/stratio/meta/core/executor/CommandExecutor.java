@@ -53,7 +53,7 @@ public class CommandExecutor {
         return descStmt.execute(session);
       } else if (stmt instanceof ExplainPlanStatement) {
         ExplainPlanStatement explainStmt = (ExplainPlanStatement) stmt;
-        return explainStmt.execute(session);
+        return explainStmt.execute(session, stratioStreamingAPI);
       } else if (stmt instanceof ListStatement){
         ListStatement listStmt = (ListStatement) stmt;
         return listStmt.execute(queryId, stratioStreamingAPI);

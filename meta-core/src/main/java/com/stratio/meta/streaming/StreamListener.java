@@ -33,7 +33,12 @@ public class StreamListener extends Thread {
   private String ks;
   private boolean isRoot;
 
-  public StreamListener(List<Object> results, DeepSparkContext dsc, ActorResultListener callBackActor, String queryId, String ks, boolean isRoot) {
+  public StreamListener(List<Object> results,
+                        DeepSparkContext dsc,
+                        ActorResultListener callBackActor,
+                        String queryId,
+                        String ks,
+                        boolean isRoot) {
     this.results = results;
     this.dsc = dsc;
     this.callBackActor = callBackActor;
@@ -54,17 +59,20 @@ public class StreamListener extends Thread {
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      if((!resultsEmpty) &&(lastSize == currentSize)){
-        MetaStream.sendResultsToNextStep(results, dsc, callBackActor, queryId, ks, isRoot);
-        synchronized (results){
-          results.clear();
-        }
-      }
-      lastSize = results.size();
       synchronized (results){
         resultsEmpty = results.isEmpty();
         currentSize = results.size();
       }
+      if((!resultsEmpty) &&(lastSize == currentSize)){
+        synchronized (results){
+          System.out.println("»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»");
+          System.out.println("»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»");
+          MetaStream.sendResultsToNextStep(results, dsc, callBackActor, queryId, ks, isRoot);
+          results.clear();
+        }
+      }
+      lastSize = results.size();
+
     }
   }
 }

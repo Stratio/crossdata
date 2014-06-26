@@ -32,6 +32,9 @@ import com.stratio.streaming.api.IStratioStreamingAPI;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkEnv;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class Executor {
 
   /**
@@ -54,7 +57,12 @@ public class Executor {
    */
   private final EngineConfig engineConfig;
 
+  /**
+   * Stratio Streaming API.
+   */
   private final IStratioStreamingAPI stratioStreamingAPI;
+
+  private final ExecutorService executorService;
 
   /**
    * Executor constructor.
@@ -67,6 +75,7 @@ public class Executor {
     this.deepSparkContext = deepSparkContext;
     this.engineConfig = engineConfig;
     this.stratioStreamingAPI = stratioStreamingAPI;
+    this.executorService = Executors.newFixedThreadPool(3);
   }
 
   /**
@@ -83,9 +92,37 @@ public class Executor {
 
     LOG.debug("Execution plan: " + System.lineSeparator() + plan.toStringDownTop());
 
-    // Execute plan
-    metaQuery.setResult(
-        plan.executeTreeDownTop(metaQuery.getQueryId(), session, stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor));
+    if(plan.involvesStreaming() && plan.getChildren().size() > 0){
+      System.out.println();
+      System.out.println("============================================================");
+      System.out.println("           Streaming with intermediate callback");
+      System.out.println("============================================================");
+      System.out.println();
+      System.out.println();
+
+      // If the task involves streaming and it is a non-single statement (e.g., SELECT * FROM t WITH
+      // WINDOW 2 s), create an execution trigger handler in such a way that the remainder of the
+      // plan is executed each time new streaming data arrives.
+      StreamingPlanTrigger st = new StreamingPlanTrigger(metaQuery, session, stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor);
+      executorService.execute(st);
+
+    }else {
+      System.out.println();
+      System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+      if(plan.involvesStreaming()) {
+        System.out.println("           Streaming WITHOUT intermediate callback");
+      }else{
+        System.out.println("           Batch WITHOUT intermediate callback");
+      }
+      System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+      System.out.println();
+      System.out.println();
+
+      // Execute plan
+      metaQuery.setResult(
+          plan.executeTreeDownTop(metaQuery.getQueryId(), session, stratioStreamingAPI,
+                                  deepSparkContext, engineConfig, callbackActor));
+    }
 
     return metaQuery;
   }
