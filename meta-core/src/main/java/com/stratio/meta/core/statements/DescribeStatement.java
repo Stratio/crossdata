@@ -188,7 +188,8 @@ public class DescribeStatement extends MetaStatement {
       if (tableInfo == null) {
         result = Result.createExecutionErrorResult("TABLE " + tableName + " was not found");
       } else {
-        result = CommandResult.createCommandResult(tableInfo.exportAsString());
+        result = null;
+        // result = CommandResult.createCommandResult(tableInfo.exportAsString());
       }
     } else {
       List<String> tablesNames = mm.getTablesNames(this.getEffectiveKeyspace());
