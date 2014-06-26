@@ -20,7 +20,7 @@
 package com.stratio.meta.driver
 
 import akka.actor.{ ActorSelection, ActorSystem}
-import com.stratio.meta.driver.config.DriverConfig
+import com.stratio.meta.driver.config.{DriverSectionConfig, ServerSectionConfig, BasicDriverConfig, DriverConfig}
 import akka.contrib.pattern.ClusterClient
 import com.stratio.meta.driver.actor.ProxyActor
 import com.stratio.meta.common.result._
@@ -35,25 +35,43 @@ import com.stratio.meta.common.ask.Connect
 import com.stratio.meta.common.ask.Command
 import com.stratio.meta.common.ask.Query
 import com.stratio.meta.communication.Disconnect
+import com.stratio.meta.driver.utils.RetryPolitics
 
-class BasicDriver extends DriverConfig{
-
+object BasicDriver extends DriverConfig {
   /**
    * Class logger.
    */
   override lazy val logger = Logger.getLogger(getClass)
 
+  def getBasicDriverConfigFromFile ={
+    new BasicDriverConfig(new DriverSectionConfig(retryTimes, retryDuration),
+      new ServerSectionConfig(clusterName, clusterActor, clusterHosts.map(_.toString).toArray))
+  }
+}
+
+class BasicDriver(basicDriverConfig: BasicDriverConfig) {
+
+  lazy val logger= BasicDriver.logger
+
   lazy val queries: java.util.Map[String, IResultHandler] = new java.util.HashMap[String, IResultHandler]
 
-  lazy val system = ActorSystem("MetaDriverSystem",config)
+  lazy val system = ActorSystem("MetaDriverSystem",BasicDriver.config)
   //For Futures
   implicit val context = system.dispatcher
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact=> system.actorSelection(contact)).toSet
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts),"remote-client")
-  lazy val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor,actorName, this), "proxy-actor")
+  lazy val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor,basicDriverConfig.serverSection.clusterActor, this), "proxy-actor")
+
+  lazy val retryPolitics: RetryPolitics = new RetryPolitics(basicDriverConfig.driverSection.retryTimes, basicDriverConfig.driverSection.retryDuration)
+  lazy val contactPoints: List[String]= {
+    basicDriverConfig.serverSection.clusterHosts.toList.map(host=>"akka.tcp://" + basicDriverConfig.serverSection.clusterName + "@" + host + "/user/receptionist")
+  }
 
   var userId: String = null
 
+  def this() {
+    this(BasicDriver.getBasicDriverConfigFromFile)
+  }
 
   /**
    * Release connection to MetaServer.
