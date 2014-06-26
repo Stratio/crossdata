@@ -65,7 +65,7 @@ public class StreamingUtils {
     Thread randomThread = new Thread(){
       public void run(){
         try {
-          Thread.sleep((long) (duration/2));
+          Thread.sleep((long) (duration/4));
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
@@ -76,7 +76,7 @@ public class StreamingUtils {
           }
           LOG.debug("Data inserted");
           try {
-            Thread.sleep(duration);
+            Thread.sleep((long) (duration/4));
           } catch (InterruptedException e) {
             e.printStackTrace();
           }
@@ -118,7 +118,6 @@ public class StreamingUtils {
       socket.setReuseAddress(true);
       int port = socket.getLocalPort();
       socket.close();
-      System.out.println("Free port: " + port);
       return port;
     } catch (IOException e) {
       throw new IllegalStateException("Could not find a free port.");

@@ -174,7 +174,7 @@
         <dependency>
             <groupId>com.stratio.streaming</groupId>
             <artifactId>streaming-api</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.0</version>
         </dependency>
         <!--dependency>
             <groupId>org.apache.spark</groupId>
@@ -220,15 +220,6 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <id>stratio-snapshots</id>
-            <url>http://nexus.strat.io:8081/nexus/content/repositories/snapshots</url>
-            <snapshots>
-                <updatePolicy>daily</updatePolicy>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
+
 </project>
 

@@ -86,7 +86,7 @@ public class ExplainPlanStatement extends MetaStatement {
   }
 
   public Result execute(Session session){
-    return CommandResult.createCommandResult(getPlan(new MetadataManager(session, null),
+    return CommandResult.createCommandResult(getMetaStatement().getPlan(new MetadataManager(session, null),
                                                      getMetaStatement().getEffectiveKeyspace()).toStringDownTop());
   }
 

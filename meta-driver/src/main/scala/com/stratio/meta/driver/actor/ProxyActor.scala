@@ -107,7 +107,6 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
         }
       }else{
         logger.warn("Result not expected received: " + result.getQueryId)
-        System.out.println("Result not expected received: " + result.getQueryId)
       }
 
     }

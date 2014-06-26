@@ -79,14 +79,6 @@ public class StreamExecutor {
       return MetaStream.createEphemeralTable(queryId, stratioStreamingAPI, tableEphemeralName,
                                              columnList, config);
     } else if (stmt instanceof SelectStatement){
-      /*
-      SelectStatement ss = (SelectStatement) stmt;
-      JavaStreamingContext newContext = MetaStream.createSparkStreamingContext(config, 3);
-      MetaStream.listenStream(queryId, stratioStreamingAPI, ss, config, newContext, callbackActor);
-      QueryResult r = QueryResult.createQueryResult(new CassandraResultSet());
-      r.setLastResultSet();
-      return r;
-      */
       StreamingExecutionThread set = new StreamingExecutionThread(queryId,
                                                                   SelectStatement.class.cast(stmt),
                                                                   config,
@@ -98,7 +90,6 @@ public class StreamExecutor {
       pool.execute(set);
       Result r = CommandResult.createCommandResult("Streaming query " + queryId + " running!");
       r.setQueryId(queryId);
-      //callbackActor.processResults(r);
       return r;
 
     } else {

@@ -22,6 +22,7 @@ import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnType;
+import com.stratio.meta.common.metadata.structures.TableType;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.streaming.StreamingUtils;
 import com.stratio.streaming.api.IStratioStreamingAPI;
@@ -169,18 +170,77 @@ public class MetadataManager {
 
   /**
    * Get the list of tables in a Cassandra keyspaces.
-   * @param keyspace The name of the keyspace
+   * @param catalog The name of the keyspace
    * @return The list of tables or empty if the keyspace does
    * not exist, or the not connected.
    */
-  public List<String> getTablesNames(String keyspace){
+  public List<String> getTablesNames(String catalog){
     List<String> result = new ArrayList<>();
-    if(clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null){
-      KeyspaceMetadata km = clusterMetadata.getKeyspace(keyspace);
+    //Retrieve database tables.
+    if(clusterMetadata != null && clusterMetadata.getKeyspace(catalog) != null){
+      KeyspaceMetadata km = clusterMetadata.getKeyspace(catalog);
       for(TableMetadata tm : km.getTables()){
         result.add(tm.getName());
       }
     }
+
+    return result;
+  }
+
+  /**
+   * Get the ephemeral tables in a catalog.
+   * @param catalog The name of the catalog.
+   * @return A list of {@link com.stratio.meta.common.metadata.structures.TableMetadata}.
+   */
+  public List<com.stratio.meta.common.metadata.structures.TableMetadata> getEphemeralTables(String catalog){
+    List<com.stratio.meta.common.metadata.structures.TableMetadata> result = new ArrayList<>();
+    //Retreive ephemeral tables.
+    if(stratioStreamingAPI != null){
+      List<StratioStream> ephemeralTables = getEphemeralTables();
+      for(StratioStream stream : ephemeralTables){
+        if(stream.getStreamName().startsWith(catalog+"_")) {
+          result.add(toTableMetadata(stream));
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Transform a Stratio Streaming {@link com.stratio.streaming.commons.streams.StratioStream} into
+   * a META table metadata structure.
+   * @param stream The stream to be transformed.
+   * @return A {@link com.stratio.meta.common.metadata.structures.TableMetadata} or null in case
+   * of error.
+   */
+  public com.stratio.meta.common.metadata.structures.TableMetadata toTableMetadata(StratioStream stream){
+    boolean error = false;
+
+    com.stratio.meta.common.metadata.structures.TableMetadata result = null;
+    String [] streamName = stream.getStreamName().split("_");
+    String tableName = streamName[1];
+    String parentCatalog = streamName[0];
+    Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new HashSet<>();
+
+    try {
+      for(ColumnNameTypeValue col: stratioStreamingAPI.columnsFromStream(stream.getStreamName())){
+        ColumnType metaType = convertStreamingToMeta(col.getType());
+        com.stratio.meta.common.metadata.structures.ColumnMetadata metaCol =
+            new com.stratio.meta.common.metadata.structures.ColumnMetadata(tableName, col.getColumn(), metaType);
+        columns.add(metaCol);
+      }
+    } catch (StratioEngineOperationException e) {
+      LOG.error("Cannot retrieve streaming columns for " + stream.getStreamName(), e);
+      error = true;
+    }
+
+    if(!error) {
+      result =
+          new com.stratio.meta.common.metadata.structures.TableMetadata(tableName, parentCatalog,
+                                                                        TableType.EPHEMERAL,
+                                                                        columns);
+    }
+
     return result;
   }
 
@@ -241,7 +301,7 @@ public class MetadataManager {
   }
 
   public boolean checkStream(String ephemeralTableName) {
-    for (StratioStream stream: listStreams()) {
+    for (StratioStream stream: getEphemeralTables()) {
       if (stream.getStreamName().equalsIgnoreCase(ephemeralTableName)){
         return true;
       }
@@ -249,12 +309,16 @@ public class MetadataManager {
     return false;
   }
 
-  public List<StratioStream> listStreams ()  {
+  /**
+   * Get the list of ephemeral tables using the streaming API.
+   * @return The list of tables or null in case of error.
+   */
+  public List<StratioStream> getEphemeralTables(){
     List<StratioStream> streamsList = null;
     try {
       streamsList = stratioStreamingAPI.listStreams();
     } catch (Exception e) {
-      LOG.error(e);
+      LOG.error("Cannot retrieve stream list", e);
     }
     return streamsList;
   }
@@ -332,7 +396,7 @@ public class MetadataManager {
     }
     com.stratio.meta.common.metadata.structures.TableMetadata
         tableMetadata =
-        new com.stratio.meta.common.metadata.structures.TableMetadata(tablename, catalog, columns);
+        new com.stratio.meta.common.metadata.structures.TableMetadata(tablename, catalog, TableType.EPHEMERAL, columns);
     return tableMetadata;
   }
 

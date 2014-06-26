@@ -370,9 +370,9 @@ public class Metash {
    * @param args The list of arguments. Not supported at the moment.
    */
   public static void main(String[] args) {
-    boolean async = false;
+    boolean async = true;
     if(args.length > 0){
-      async = "--async".equals(args[0]);
+      async = !"--sync".equals(args[0]);
       LOG.info("Using asynchronous behaviour");
     }
     Metash sh = new Metash(async);
