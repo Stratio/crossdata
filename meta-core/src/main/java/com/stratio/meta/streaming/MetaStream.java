@@ -168,8 +168,6 @@ public class MetaStream {
     return result;
   }
 
-
-
   public static String startQuery(String queryId,
                                   IStratioStreamingAPI stratioStreamingAPI,
                                   SelectStatement ss,
@@ -211,7 +209,7 @@ public class MetaStream {
       listener.start();
 
       Thread.sleep(2000);
-      StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, 10000, 5, 1);
+      StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, 10000, 4, 2);
 
       return "Streaming QID: " + queryId + " finished";
     } catch (Exception e) {
@@ -234,6 +232,24 @@ public class MetaStream {
 
   private static void sendPartialResultsToClient(List<Object> data, ActorResultListener callBackActor, String queryId, String ks) {
     CassandraResultSet crs = new CassandraResultSet();
+    for(Object obj: data){
+      Row newRow = new Row();
+      List row = (List) obj;
+      for(Object columnObj: row){
+        Map column = (Map) columnObj;
+        String colName = (String) column.get("column");
+        Object value = column.get("value");
+        String colType = (String) column.get("type");
+        newRow.addCell(colName, new Cell(value));
+      }
+      crs.add(newRow);
+    }
+    QueryResult queryResult = QueryResult.createSuccessQueryResult(crs, ks);
+    queryResult.setQueryId(queryId);
+    Integer page = resultPages.get(queryId);
+    queryResult.setResultPage(page);
+    resultPages.put(queryId, page + 1);
+    callBackActor.processResults(queryResult);
   }
 
   private static void sendToNextTreeNode(List<Object> data, DeepSparkContext dsc, ActorResultListener callBackActor, String queryId, String ks) {
