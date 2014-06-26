@@ -16,14 +16,12 @@
 
 package com.stratio.meta.deep.functions;
 
-import java.io.Serializable;
-
 import org.apache.spark.api.java.function.Function;
 
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.core.structures.Term;
 
-public class DeepEquals extends Function<Cells, Boolean> implements Serializable {
+public class DeepEquals implements Function<Cells, Boolean> {
 
   /**
    * Serial version UID.

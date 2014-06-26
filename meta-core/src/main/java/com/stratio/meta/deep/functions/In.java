@@ -16,7 +16,6 @@
 
 package com.stratio.meta.deep.functions;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.apache.spark.api.java.function.Function;
@@ -24,7 +23,7 @@ import org.apache.spark.api.java.function.Function;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.core.structures.Term;
 
-public class In extends Function<Cells, Boolean> implements Serializable {
+public class In implements Function<Cells, Boolean> {
 
   /**
    * Serial version UID.
