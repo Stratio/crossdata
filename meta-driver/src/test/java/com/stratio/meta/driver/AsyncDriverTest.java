@@ -19,11 +19,13 @@
 
 package com.stratio.meta.driver;
 
+import com.stratio.meta.common.exceptions.ConnectionException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 /**
  * Asynchronous interface tests.
@@ -34,8 +36,13 @@ public class AsyncDriverTest extends DriverParentTest {
   public void basicSelect(){
     String query = "select * from system.schema_columns;";
     ResultHandlerWrapper rhw = new ResultHandlerWrapper();
-    driver.asyncExecuteQuery("test-user", "", query, rhw);
-    try {
+      try {
+          driver.asyncExecuteQuery("", query, rhw);
+      } catch (ConnectionException e) {
+          fail("Connect problem");
+          e.printStackTrace();
+      }
+      try {
       Thread.sleep(5000);
     } catch (InterruptedException e) {
       e.printStackTrace();
@@ -45,12 +52,4 @@ public class AsyncDriverTest extends DriverParentTest {
     assertFalse(rhw.isErrorReceived(), "No error expected.");
     assertTrue(rhw.isResultReceived(), "Result has not been received.");
   }
-/*
-  public void waitForAnswer(){
-    try {
-      Thread.sleep(15000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-  }*/
 }
