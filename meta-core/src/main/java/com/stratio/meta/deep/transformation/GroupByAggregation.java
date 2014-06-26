@@ -16,7 +16,6 @@
 
 package com.stratio.meta.deep.transformation;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.apache.spark.api.java.function.Function2;
@@ -26,7 +25,7 @@ import com.stratio.deep.entity.Cells;
 import com.stratio.meta.deep.utils.GroupByAggregators;
 
 
-public class GroupByAggregation extends Function2<Cells, Cells, Cells> implements Serializable {
+public class GroupByAggregation implements Function2<Cells, Cells, Cells> {
 
   /**
    * Serial version UID.

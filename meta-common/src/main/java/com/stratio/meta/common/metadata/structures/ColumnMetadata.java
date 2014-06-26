@@ -33,7 +33,7 @@ public class ColumnMetadata implements Serializable {
   /**
    * Name of the column.
    */
-  private String columnName;
+  private final String columnName;
 
   /**
    * Alias of the column.
@@ -66,10 +66,6 @@ public class ColumnMetadata implements Serializable {
 
   public String getColumnNameToShow() {
     return (this.columnAlias == null) ? this.columnName : this.columnAlias;
-  }
-
-  public void setColumnName(String columnName) {
-    this.columnName = columnName;
   }
 
   /**
