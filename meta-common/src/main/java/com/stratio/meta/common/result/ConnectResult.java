@@ -31,14 +31,14 @@ public class ConnectResult extends Result {
   /**
    * Session identifier.
    */
-  private long sessionId = -1;
+  private String sessionId;
 
   /**
    * Private class constructor of the factory.
    *
    * @param sessionId       The associated session identifier.
    */
-  private ConnectResult(long sessionId) {
+  private ConnectResult(String sessionId) {
     this.sessionId = sessionId;
   }
 
@@ -47,7 +47,7 @@ public class ConnectResult extends Result {
    *
    * @return The identifier or -1 if an error occurred.
    */
-  public long getSessionId() {
+  public String getSessionId() {
     return sessionId;
   }
 
@@ -57,7 +57,7 @@ public class ConnectResult extends Result {
    * @param sessionId The user session identifier.
    * @return A {@link com.stratio.meta.common.result.ConnectResult}.
    */
-  public static ConnectResult createConnectResult(long sessionId) {
+  public static ConnectResult createConnectResult(String sessionId) {
     return new ConnectResult(sessionId);
   }
 
