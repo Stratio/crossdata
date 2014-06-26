@@ -16,10 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.common.result.CommandResult;
@@ -32,6 +28,10 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+
+import org.apache.commons.lang.StringUtils;
+
+import java.util.List;
 
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
