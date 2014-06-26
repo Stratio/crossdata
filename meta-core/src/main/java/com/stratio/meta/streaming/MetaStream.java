@@ -40,8 +40,6 @@ import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
 
 import org.apache.log4j.Logger;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -91,28 +89,6 @@ public class MetaStream {
    */
   //TODO: Migrate to Hazelcast
   private static Map<String, String> streamingQueryEphemeralTable = new HashMap<>();
-
-  public static void printMaps(){
-    LOG.info("");
-    LOG.info("=================== Status Maps =============================");
-    for(Map.Entry<String, ActorResultListener> e : callbackActors.entrySet()){
-      LOG.info("QID: " + e.getKey() + " actor: " + e.getValue());
-    }
-    for(Map.Entry<String, String> e : streamingQueries.entrySet()){
-      LOG.info("QID: " + e.getKey() + " SID: " + e.getValue());
-    }
-    for(Map.Entry<String, Integer> e : resultPages.entrySet()){
-      LOG.info("QID: " + e.getKey() + " resultPage: " + e.getValue());
-    }
-    for(Map.Entry<String, MetaStatement> e : queryStatements.entrySet()){
-      LOG.info("QID: " + e.getKey() + " Stmt: " + e.getValue().toString());
-    }
-    for(Map.Entry<String, String> e : streamingQueryEphemeralTable.entrySet()){
-      LOG.info("Ephemeral: " + e.getKey() + " QID: " + e.getValue());
-    }
-    LOG.info("=================== End Status Maps =============================");
-    LOG.info("");
-  }
 
   /**
    * Create a new ephemeral table.
@@ -192,7 +168,9 @@ public class MetaStream {
     return result;
   }
 
-  public static String startQuery(final String queryId,
+
+
+  public static String startQuery(String queryId,
                                   IStratioStreamingAPI stratioStreamingAPI,
                                   SelectStatement ss,
                                   EngineConfig config,
@@ -201,22 +179,22 @@ public class MetaStream {
                                   boolean isRoot){
     callbackActors.put(queryId, callbackActor);
 
-    final String ks = ss.getEffectiveKeyspace();
-    final String streamName = ks+"_"+ss.getTableName();
+    String ks = ss.getEffectiveKeyspace();
+    String streamName = ks+"_"+ss.getTableName();
     try {
-      final String outgoing = streamName+"_"+ queryId.replace("-", "_");
+      String outgoing = streamName+"_"+ queryId.replace("-", "_");
 
       LOG.debug("Outgoing topic: "+outgoing);
 
       // Create topic
       String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
-      final String streamingQueryId = stratioStreamingAPI.addQuery(streamName, query);
+      String streamingQueryId = stratioStreamingAPI.addQuery(streamName, query);
       streamingQueries.put(queryId, streamingQueryId);
       resultPages.put(queryId, 0);
       streamingQueryEphemeralTable.put(queryId, streamName);
       queryStatements.put(queryId, ss);
 
-      LOG.info("queryId = " + streamingQueryId);
+      LOG.info("queryId = " + queryId);
       stratioStreamingAPI.listenStream(outgoing);
 
       //Insert dumb element in topic while the Kafka bug is addressed.
@@ -229,7 +207,7 @@ public class MetaStream {
       StreamingConsumer consumer = new StreamingConsumer(outgoing, config.getZookeeperServer(), config.getJobName(), results);
       consumer.start();
 
-      StreamListener listener = new StreamListener(results, dsc);
+      StreamListener listener = new StreamListener(results, dsc, callbackActor, queryId, ks, isRoot);
       listener.start();
 
       Thread.sleep(2000);
@@ -242,10 +220,23 @@ public class MetaStream {
     }
   }
 
-  public static void sendResultsToNextStep(List<Object> data, DeepSparkContext dsc) {
+  public static void sendResultsToNextStep(List<Object> data, DeepSparkContext dsc, ActorResultListener callBackActor, String queryId, String ks, boolean isRoot) {
 
     LOG.debug("Data for the next step = " + Arrays.toString(data.toArray()));
 
+    if(isRoot){
+      sendPartialResultsToClient(data, callBackActor, queryId, ks);
+    } else {
+      sendToNextTreeNode(data, dsc, callBackActor, queryId, ks);
+    }
+
+  }
+
+  private static void sendPartialResultsToClient(List<Object> data, ActorResultListener callBackActor, String queryId, String ks) {
+    CassandraResultSet crs = new CassandraResultSet();
+  }
+
+  private static void sendToNextTreeNode(List<Object> data, DeepSparkContext dsc, ActorResultListener callBackActor, String queryId, String ks) {
     JavaRDD<Cells> rdd = convertJsonToDeep(data, dsc);
 
     CassandraResultSet crs = new CassandraResultSet();
@@ -257,6 +248,13 @@ public class MetaStream {
     type.setDBMapping("class", JavaRDD.class);
     metadata.setType(type);
     crs.setColumnMetadata(columns);
+
+    QueryResult queryResult = QueryResult.createSuccessQueryResult(crs, ks);
+    queryResult.setQueryId(queryId);
+    Integer page = resultPages.get(queryId);
+    queryResult.setResultPage(page);
+    resultPages.put(queryId, page + 1);
+    callBackActor.processResults(queryResult);
   }
 
   private static JavaRDD<Cells> convertJsonToDeep(List<Object> data, DeepSparkContext dsc) {
