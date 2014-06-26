@@ -1,20 +1,17 @@
 /*
  * Stratio Meta
- *
+ * 
  * Copyright (c) 2014, Stratio, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation; either version
+ * 3.0 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
 package com.stratio.meta.sh;
@@ -107,7 +104,7 @@ public class Metash {
    */
   private void initialize() {
 
-    //Take the username from the system.
+    // Take the username from the system.
     currentUser = System.getProperty("user.name");
     if (currentUser == null) {
       currentUser = DEFAULT_USER;
@@ -128,7 +125,7 @@ public class Metash {
 
   /**
    * Print a message on the console.
-   *
+   * 
    * @param msg The message.
    */
   private void println(String msg) {
@@ -141,7 +138,7 @@ public class Metash {
 
   /**
    * Set the console prompt.
-   *
+   * 
    * @param currentKeyspace The currentCatalog.
    */
   private void setPrompt(String currentKeyspace) {
@@ -159,7 +156,7 @@ public class Metash {
 
   /**
    * Parse a input text and return the equivalent HelpStatement.
-   *
+   * 
    * @param inputText The input text.
    * @return A Statement or null if the process failed.
    */
@@ -179,7 +176,7 @@ public class Metash {
 
   /**
    * Show the help associated with a query.
-   *
+   * 
    * @param inputText The help query.
    */
   private void showHelp(String inputText) {
@@ -188,8 +185,9 @@ public class Metash {
   }
 
   /**
-   * Update the current prompt if a {@link com.stratio.meta.common.result.QueryResult} is
-   * returned, and the current catalog has changed.
+   * Update the current prompt if a {@link com.stratio.meta.common.result.QueryResult} is returned,
+   * and the current catalog has changed.
+   * 
    * @param result The result returned by the driver.
    */
   private void updatePrompt(Result result) {
@@ -206,7 +204,7 @@ public class Metash {
 
   /**
    * Execute a query on the remote META servers.
-   *
+   * 
    * @param cmd The query.
    */
   private void executeQuery(String cmd) {
@@ -228,7 +226,7 @@ public class Metash {
 
   /**
    * Establish the connection with the META servers.
-   *
+   * 
    * @return Whether the connection has been successfully established.
    */
   public boolean connect() {
@@ -238,7 +236,7 @@ public class Metash {
       Result connectionResult = metaDriver.connect(currentUser);
       LOG.info("Driver connections established");
       LOG.info(ConsoleUtils.stringResult(connectionResult));
-    }catch (ConnectionException ce){
+    } catch (ConnectionException ce) {
       result = false;
       LOG.error(ce.getMessage());
     }
@@ -270,23 +268,23 @@ public class Metash {
       String cmd = "";
       StringBuilder sb = new StringBuilder(cmd);
 
-      while (!cmd.trim().toLowerCase().startsWith("exit") && !cmd.trim().toLowerCase()
-          .startsWith("quit")) {
+      while (!cmd.trim().toLowerCase().startsWith("exit")
+          && !cmd.trim().toLowerCase().startsWith("quit")) {
         cmd = console.readLine();
         sb.append(cmd).append(" ");
         if (sb.toString().trim().endsWith(";")) {
-          if (" ".equalsIgnoreCase(sb.toString()) || System.lineSeparator()
-              .equalsIgnoreCase(sb.toString())) {
+          if (" ".equalsIgnoreCase(sb.toString())
+              || System.lineSeparator().equalsIgnoreCase(sb.toString())) {
             println("");
           } else if (sb.toString().toLowerCase().startsWith("help")) {
             showHelp(sb.toString());
-          } else if (!sb.toString().trim().toLowerCase().startsWith("exit") && !sb.toString().trim()
-              .toLowerCase().startsWith("quit")) {
-            executeQuery(sb.toString());
           } else {
+            executeQuery(sb.toString());
             println("");
-            break;
           }
+          sb = new StringBuilder();
+        } else if (sb.toString().toLowerCase().startsWith("help")) {
+          showHelp(sb.toString());
           sb = new StringBuilder();
         }
       }
@@ -297,7 +295,7 @@ public class Metash {
 
   /**
    * Launch the META server shell.
-   *
+   * 
    * @param args The list of arguments. Not supported at the moment.
    */
   public static void main(String[] args) {
