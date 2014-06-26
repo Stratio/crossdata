@@ -97,7 +97,11 @@ public class StreamingUtils {
     sb.append(randomInt);
     String str = convertRandomNumberToString(sb.toString()) + "___" + numItem;
     numItem++;
-    ColumnNameValue firstColumnValue = new ColumnNameValue("name", str);
+    if(numItem == 20){
+      numItem = 0;
+    }
+    //ColumnNameValue firstColumnValue = new ColumnNameValue("name", str);
+    ColumnNameValue firstColumnValue = new ColumnNameValue("name", "name_"+numItem);
     ColumnNameValue secondColumnValue = new ColumnNameValue("age", new Integer(randomInt));
     ColumnNameValue thirdColumnValue = new ColumnNameValue("rating", new Double(randomDouble));
     ColumnNameValue fourthColumnValue = new ColumnNameValue("member", new Boolean((randomInt % 2) == 0));

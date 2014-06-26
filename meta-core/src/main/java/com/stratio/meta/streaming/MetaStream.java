@@ -209,7 +209,7 @@ public class MetaStream {
       listener.start();
 
       Thread.sleep(2000);
-      StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, 10000, 4, 2);
+      StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, 6000, 4, 4);
 
       return "Streaming QID: " + queryId + " finished";
     } catch (Exception e) {

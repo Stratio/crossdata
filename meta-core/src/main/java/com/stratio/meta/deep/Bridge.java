@@ -179,7 +179,14 @@ public class Bridge {
     List<String> selectedCols = new ArrayList<>();
     for (Result child : resultsFromChildren) {
       QueryResult qResult = (QueryResult) child;
+      System.out.println("qResult size: " + qResult.getResultSet().size());
       CassandraResultSet crset = (CassandraResultSet) qResult.getResultSet();
+      for(Row r : crset.getRows()){
+        for(Cell c : r.getCellList()){
+          System.out.print(", " + c.getValue().toString());
+        }
+        System.out.println();
+      }
       Map<String, Cell> cells = crset.getRows().get(0).getCells();
       // RDD from child
       Cell cell = cells.get("RDD");
@@ -246,9 +253,11 @@ public class Bridge {
     }
 
     if (resultsFromChildren.isEmpty()) {
+      System.out.println("←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←" + stmt.toString());
       // LEAF
       return executeLeafNode(stmt, isRoot);
     } else {
+      System.out.println("→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→ " + stmt.toString());
       // (INNER NODE) NO LEAF
       return executeRootNode(stmt, resultsFromChildren);
     }

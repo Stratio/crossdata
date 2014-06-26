@@ -67,10 +67,10 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker with Actor
   }
 
   override def processResults(result: Result): Unit = {
-    //val r = result.asInstanceOf[QueryResult]
-    //System.out.println("####################################################################################3############################################## "
-    //                   + "Sending partial results: " + !r.isLastResultSet + ", QID: " + result.getQueryId
-    //                   + " page: " + r.getResultPage + " results: " + r.getResultSet.size());
+    val r = result.asInstanceOf[QueryResult]
+    System.out.println("####################################################################################3############################################## "
+                       + "Sending partial results: " + !r.isLastResultSet + ", QID: " + result.getQueryId
+                       + " page: " + r.getResultPage + " results: " + r.getResultSet.size());
     senderMap.get(result.getQueryId) ! result
   }
 }

@@ -133,6 +133,10 @@ public class Tree {
     if(node != null){
       sb.append(node.toString());
     }
+
+    System.out.println("#####################################################");
+    System.out.println("PLAN: " + sb.toString());
+
     return sb.toString();
   }
 
@@ -212,6 +216,21 @@ public class Tree {
     return executeMyself(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, resultsFromChildren, callbackActor);
   }
 
+  public Result executeTreeDownTop(
+      String queryId,
+      Session session, IStratioStreamingAPI stratioStreamingAPI,
+      DeepSparkContext deepSparkContext, EngineConfig engineConfig,
+      ActorResultListener callbackActor, Result result){
+    // Get results from my children
+    List<Result> resultsFromChildren = new ArrayList<>();
+    resultsFromChildren.add(result);
+    for(Tree child: children){
+      resultsFromChildren.add(child.executeTreeDownTop(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor));
+    }
+    // Execute myself and return final result
+    return executeMyself(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, resultsFromChildren, callbackActor);
+  }
+
   /**
    * Determine if the tree has not node.
    * @return Whether the tree does not contain a node.
@@ -251,4 +270,20 @@ public class Tree {
   public boolean involvesStreaming() {
     return involvesStreaming;
   }
+
+  public Result executeTreeTopDown(String queryId, List<Result> resultsFromParents, Session session,
+                                   DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
+
+    if(children.size() == 0){
+      //No more children, execute final node.
+      return executeMyself(queryId, session, null, deepSparkContext,
+                           engineConfig, resultsFromParents, null);
+    }else{
+      resultsFromParents.add(executeMyself(queryId, session, null, deepSparkContext,
+                                           engineConfig, resultsFromParents, null));
+      return children.get(0).executeTreeTopDown(queryId, resultsFromParents, session, deepSparkContext, engineConfig);
+    }
+
+  }
+
 }

@@ -87,7 +87,10 @@ public class ExplainPlanStatement extends MetaStatement {
   }
 
   public Result execute(Session session, IStratioStreamingAPI stratioStreamingAPI){
-    return CommandResult.createCommandResult(getMetaStatement().getPlan(new MetadataManager(session, stratioStreamingAPI),
+    System.out.println("ŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋŋ");
+    System.out.println("Explain Plan: " + getMetaStatement().toString());
+    return CommandResult.createCommandResult(
+        getMetaStatement().getPlan(new MetadataManager(session, stratioStreamingAPI),
                                                      getMetaStatement().getEffectiveKeyspace()).toStringDownTop());
   }
 
