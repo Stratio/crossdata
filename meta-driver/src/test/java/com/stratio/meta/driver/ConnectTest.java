@@ -16,20 +16,17 @@
 
 package com.stratio.meta.driver;
 
-import com.stratio.meta.common.exceptions.ConnectionException;
-import com.stratio.meta.common.exceptions.ParsingException;
-import com.stratio.meta.common.result.ConnectResult;
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
+import static org.testng.Assert.*;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
+import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.exceptions.ParsingException;
+import com.stratio.meta.common.result.ConnectResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
 
 public class ConnectTest extends DriverParentTest {
 
@@ -66,17 +63,7 @@ public class ConnectTest extends DriverParentTest {
 
   }
 
-  // @AfterClass
-  // public void ExecuteDropTestAfter(){
-  // try{
-  // driver.executeQuery("TEST_USER","ks_demo","drop table demo ;");
-  // driver.executeQuery("TEST_USER","ks_demo","drop keyspace ks_demo ;");
-  // } catch (Exception e) {
-  // logger.info("Cannot perform test cleanup.");
-  // }
-  // }
-
-  @Test
+  @Test(groups = "connect")
   public void connect() {
 
     Result metaResult = null;
@@ -92,22 +79,14 @@ public class ConnectTest extends DriverParentTest {
 
   }
 
-  @Test
-  public void disconnect() {
-    try {
-      driver.disconnect();
-    } catch (ConnectionException e) {
-      e.printStackTrace();
-      fail("Exception not expected");
-    }
-  }
 
-  @Test(groups = "create Ks")
+
+  @Test(groups = {"query", "create Ks"}, dependsOnGroups = {"connect"})
   public void ExecuteCreatewitherrorTest() {
     String msg = "create KEYSPAC ks_demo WITH replication = "
                  + "{class: SimpleStrategy, replication_factor: 1};";
     try {
-      Result metaResult = driver.executeQuery( "ks_demo", msg);
+      driver.executeQuery( "ks_demo", msg);
       fail("Expecting ParsingException");
     } catch (ParsingException e) {
       e.printStackTrace();
@@ -117,7 +96,7 @@ public class ConnectTest extends DriverParentTest {
     }
   }
 
-  @Test(groups = "use", dependsOnGroups = {"create Ks"})
+  @Test(groups = {"query", "use"}, dependsOnGroups = {"create Ks"})
   public void executeUseKsest() {
     String msg = "use ks_demo ;";
     Result metaResult = null;
@@ -133,7 +112,7 @@ public class ConnectTest extends DriverParentTest {
     assertEquals(r.getCurrentCatalog(), "ks_demo", "New keyspace should be used");
   }
 
-  @Test(groups = "create Tb", dependsOnGroups = {"use"})
+  @Test(groups = {"query", "create Tb"}, dependsOnGroups = {"use"})
   public void executeCreateTableTest() {
     String msg = "create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);";
     Result metaResult = null;
@@ -147,7 +126,7 @@ public class ConnectTest extends DriverParentTest {
                 "\n\nerror message is:\n" + getErrorMessage(metaResult) + "\n\n");
   }
 
-  @Test(groups = "insert", dependsOnGroups = {"create Tb"})
+  @Test(groups = {"query", "insert"}, dependsOnGroups = {"create Tb"})
   public void executeInsertTest() {
     String msg = "insert into demo (field1, field2) values ('test1','text2');";
     Result metaResult = null;
@@ -161,4 +140,13 @@ public class ConnectTest extends DriverParentTest {
                 "\n\nerror message is:\n" + getErrorMessage(metaResult) + "\n\n");
   }
 
+  @Test(groups = "disconnect", dependsOnGroups = {"query"})
+  public void disconnect() {
+    try {
+      driver.disconnect();
+    } catch (ConnectionException e) {
+      e.printStackTrace();
+      fail("Exception not expected");
+    }
+  }
 }

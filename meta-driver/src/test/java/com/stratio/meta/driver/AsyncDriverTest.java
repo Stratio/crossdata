@@ -52,12 +52,4 @@ public class AsyncDriverTest extends DriverParentTest {
     assertFalse(rhw.isErrorReceived(), "No error expected.");
     assertTrue(rhw.isResultReceived(), "Result has not been received.");
   }
-/*
-  public void waitForAnswer(){
-    try {
-      Thread.sleep(15000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-  }*/
 }

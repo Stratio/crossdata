@@ -131,6 +131,7 @@ class BasicDriver extends DriverConfig{
    * @return QueryResult
    * @deprecated  As of release 0.0.5, replaced by asyncExecuteQuery(targetCatalog, query, callback)}
    */
+  @throws(classOf[ConnectionException])
   @throws(classOf[ParsingException])
   @throws(classOf[ValidationException])
   @throws(classOf[ExecutionException])
@@ -146,19 +147,21 @@ class BasicDriver extends DriverConfig{
     * @param query Launched query
     * @return QueryResult
     */
+  @throws(classOf[ConnectionException])
   @throws(classOf[ParsingException])
   @throws(classOf[ValidationException])
   @throws(classOf[ExecutionException])
   @throws(classOf[UnsupportedException])
   def executeQuery(targetKs: String, query: String): Result = {
+    if(userId==null){
+      throw new ConnectionException("You must connect to cluster")
+    }
     val queryId = UUID.randomUUID()
-    //retryPolitics.askRetry(proxyActor,new Query(queryId.toString, targetKs,query,user))
     val callback = new SyncResultHandler
     queries.put(queryId.toString, callback)
     sendQuery(new Query(queryId.toString, targetKs, query, userId))
     val r = callback.waitForResult()
     queries.remove(queryId.toString)
-    //println("Class: " + r)
     r
   }
 
