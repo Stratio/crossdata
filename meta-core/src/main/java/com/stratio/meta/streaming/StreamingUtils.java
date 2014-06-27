@@ -60,12 +60,16 @@ public class StreamingUtils {
     return type;
   }
 
-  public static void insertRandomData(final IStratioStreamingAPI stratioStreamingAPI, final String streamName, final long duration, final int nRows, final int numRepetitions) {
+  public static void insertRandomData(final IStratioStreamingAPI stratioStreamingAPI,
+                                      final String streamName,
+                                      final long duration,
+                                      final int nRows,
+                                      final int numRepetitions) {
     // Insert random data
     Thread randomThread = new Thread(){
       public void run(){
         try {
-          Thread.sleep((long) (duration/4));
+          Thread.sleep((long) (duration/3));
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
@@ -76,7 +80,7 @@ public class StreamingUtils {
           }
           LOG.debug("Data inserted");
           try {
-            Thread.sleep((long) (duration/4));
+            Thread.sleep(duration);
           } catch (InterruptedException e) {
             e.printStackTrace();
           }
@@ -93,7 +97,11 @@ public class StreamingUtils {
     sb.append(randomInt);
     String str = convertRandomNumberToString(sb.toString()) + "___" + numItem;
     numItem++;
-    ColumnNameValue firstColumnValue = new ColumnNameValue("name", str);
+    if(numItem == 20){
+      numItem = 0;
+    }
+    //ColumnNameValue firstColumnValue = new ColumnNameValue("name", str);
+    ColumnNameValue firstColumnValue = new ColumnNameValue("name", "name_"+numItem);
     ColumnNameValue secondColumnValue = new ColumnNameValue("age", new Integer(randomInt));
     ColumnNameValue thirdColumnValue = new ColumnNameValue("rating", new Double(randomDouble));
     ColumnNameValue fourthColumnValue = new ColumnNameValue("member", new Boolean((randomInt % 2) == 0));

@@ -17,17 +17,21 @@
 package com.stratio.meta.deep;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 
+import scala.Tuple2;
+
 import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
-import com.stratio.deep.config.IDeepJobConfig;
+import com.stratio.deep.config.ICassandraDeepJobConfig;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.data.CassandraResultSet;
@@ -125,7 +129,7 @@ public class Bridge {
     if (ss.getSelectionClause().getType() == SelectionClause.TYPE_SELECTION) {
       columnsSet = DeepUtils.retrieveSelectorFields(ss);
     }
-    IDeepJobConfig<Cells> config =
+    ICassandraDeepJobConfig<Cells> config =
         DeepJobConfigFactory.create().session(session).host(engineConfig.getRandomCassandraHost())
             .rpcPort(engineConfig.getCassandraPort()).keyspace(ss.getEffectiveKeyspace())
             .table(ss.getTableName());
@@ -158,8 +162,11 @@ public class Bridge {
       rdd = doOrder(rdd, ss.getOrder());
     }
 
-    return returnResult(rdd, isRoot,
-        ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, cols);
+    CassandraResultSet resultSet =
+        (CassandraResultSet) returnResult(rdd, isRoot,
+            ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, cols);
+
+    return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
   }
 
   /**
@@ -180,6 +187,7 @@ public class Bridge {
     for (Result child : resultsFromChildren) {
       QueryResult qResult = (QueryResult) child;
       CassandraResultSet crset = (CassandraResultSet) qResult.getResultSet();
+
       Map<String, Cell> cells = crset.getRows().get(0).getCells();
       // RDD from child
       Cell cell = cells.get("RDD");
@@ -205,19 +213,54 @@ public class Bridge {
     JavaRDD<Cells> rddTableLeft = children.get(0);
     JavaRDD<Cells> rddTableRight = children.get(1);
 
-    JavaPairRDD rddLeft = rddTableLeft.map(new MapKeyForJoin(keyTableLeft));
-    JavaPairRDD rddRight = rddTableRight.map(new MapKeyForJoin(keyTableRight));
+    JavaPairRDD<Cells, Cells> rddLeft = rddTableLeft.mapToPair(new MapKeyForJoin(keyTableLeft));
+    JavaPairRDD<Cells, Cells> rddRight = rddTableRight.mapToPair(new MapKeyForJoin(keyTableRight));
 
-    JavaPairRDD joinRDD = rddLeft.join(rddRight);
+    JavaPairRDD<Cells, Tuple2<Cells, Cells>> joinRDD = rddLeft.join(rddRight);
 
-    JavaRDD result = joinRDD.map(new JoinCells(keyTableLeft));
+    JavaRDD<Cells> result = joinRDD.map(new JoinCells(keyTableLeft));
 
     if (ss.isOrderInc()) {
       result = doOrder(result, ss.getOrder());
     }
 
-    // Return MetaResultSet
-    return returnResult(result, true, false, selectedCols);
+    // MetaResultSet
+    CassandraResultSet resultSet =
+        (CassandraResultSet) returnResult(result, true, false, selectedCols);
+
+    return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
+  }
+
+  private ResultSet replaceWithAliases(Map<String, String> fieldsAliasesMap,
+      CassandraResultSet resultSet) {
+
+    List<ColumnMetadata> metadata = resultSet.getColumnMetadata();
+
+    List<ColumnMetadata> resultMetadata = null;
+    if (!metadata.isEmpty() && fieldsAliasesMap != null && !fieldsAliasesMap.isEmpty()) {
+      resultMetadata = new ArrayList<>();
+      Iterator<ColumnMetadata> metadataIt = metadata.iterator();
+      while (metadataIt.hasNext()) {
+        ColumnMetadata columnMetadata = metadataIt.next();
+        String table = columnMetadata.getTableName();
+        String column = columnMetadata.getColumnName();
+
+        for (Entry<String, String> entry : fieldsAliasesMap.entrySet()) {
+
+          if (entry.getValue().equalsIgnoreCase(column)
+              || entry.getValue().equalsIgnoreCase(table + "." + column)) {
+            columnMetadata.setColumnAlias(entry.getKey());
+          }
+        }
+        resultMetadata.add(columnMetadata);
+      }
+    }
+
+    if (resultMetadata != null) {
+      resultSet.setColumnMetadata(resultMetadata);
+    }
+
+    return resultSet;
   }
 
   /**
@@ -351,7 +394,7 @@ public class Bridge {
 
     // Mapping the rdd to execute the group by clause
     JavaPairRDD<Cells, Cells> groupedRdd =
-        rdd.map(new GroupByMapping(aggregationCols, groupByClause));
+        rdd.mapToPair(new GroupByMapping(aggregationCols, groupByClause));
 
     JavaPairRDD<Cells, Cells> aggregatedRdd = applyGroupByAggregations(groupedRdd, aggregationCols);
 

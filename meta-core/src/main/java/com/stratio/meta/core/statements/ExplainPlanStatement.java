@@ -27,6 +27,7 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.streaming.api.IStratioStreamingAPI;
 
 /**
  * Class that models an {@code EXPLAIN PLAN} statement from the META language.
@@ -85,8 +86,9 @@ public class ExplainPlanStatement extends MetaStatement {
     return tree;
   }
 
-  public Result execute(Session session){
-    return CommandResult.createCommandResult(getMetaStatement().getPlan(new MetadataManager(session, null),
+  public Result execute(Session session, IStratioStreamingAPI stratioStreamingAPI){
+    return CommandResult.createCommandResult(
+        getMetaStatement().getPlan(new MetadataManager(session, stratioStreamingAPI),
                                                      getMetaStatement().getEffectiveKeyspace()).toStringDownTop());
   }
 

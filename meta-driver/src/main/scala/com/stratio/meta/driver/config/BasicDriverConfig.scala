@@ -17,24 +17,12 @@
  * License along with this library.
  */
 
-package com.stratio.meta.streaming;
+package com.stratio.meta.driver.config
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 
-public class ConsumerLauncher {
-  public static void main(String[] args){
-    Scanner scanner = new Scanner(System.in);
-    System.out.print("Enter Kafka topic name: ");
-    String topic = scanner.nextLine();
+class BasicDriverConfig(val driverSection:DriverSectionConfig,val serverSection:ServerSectionConfig)
+class DriverSectionConfig(val retryTimes:Int, val retryDuration:Long)
+class ServerSectionConfig(val clusterName:String, val clusterActor:String, val clusterHosts:Array[String])
 
-    List<Object> results = new ArrayList<>();
 
-    StreamingConsumer consumer = new StreamingConsumer(topic, "127.0.0.1", "MetaStreaming", results);
-    consumer.start();
 
-    StreamListener listener = new StreamListener(results, null);
-    listener.start();
-  }
-}

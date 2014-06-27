@@ -120,24 +120,30 @@ public class Engine {
    */
   private IStratioStreamingAPI initializeStreaming(EngineConfig config){
     IStratioStreamingAPI stratioStreamingAPI = null;
-    try {
-      stratioStreamingAPI = StratioStreamingAPIFactory.create().initializeWithServerConfig(
-          config.getKafkaServer(),
-          config.getKafkaPort(),
-          config.getZookeeperServer(),
-          config.getZookeeperPort());
-    } catch (Exception e) {
-      StringBuilder sb = new StringBuilder("Cannot connect with Stratio Streaming");
-      sb.append(System.lineSeparator());
-      sb.append("Zookeeper: ");
-      sb.append(config.getZookeeperServer());
-      sb.append(":");
-      sb.append(config.getZookeeperPort());
-      sb.append(", Kafka: ");
-      sb.append(config.getKafkaServer());
-      sb.append(":");
-      sb.append(config.getKafkaPort());
-      LOG.error(sb.toString(), e);
+    if(config.getKafkaServer() != null && config.getZookeeperServer() != null
+       && !"null".equals(config.getKafkaServer()) && !"null".equals(config.getZookeeperServer())) {
+      try {
+        stratioStreamingAPI = StratioStreamingAPIFactory.create().initializeWithServerConfig(
+            config.getKafkaServer(),
+            config.getKafkaPort(),
+            config.getZookeeperServer(),
+            config.getZookeeperPort());
+      } catch (Exception e) {
+        StringBuilder sb = new StringBuilder("Cannot connect with Stratio Streaming");
+        sb.append(System.lineSeparator());
+        sb.append("Zookeeper: ");
+        sb.append(config.getZookeeperServer());
+        sb.append(":");
+        sb.append(config.getZookeeperPort());
+        sb.append(", Kafka: ");
+        sb.append(config.getKafkaServer());
+        sb.append(":");
+        sb.append(config.getKafkaPort());
+        LOG.error(sb.toString(), e);
+      }
+    }else{
+      LOG.warn("Skipping connection with Streaming Engine."
+               + " Please configure zookeeper and kafka servers");
     }
     return stratioStreamingAPI;
   }

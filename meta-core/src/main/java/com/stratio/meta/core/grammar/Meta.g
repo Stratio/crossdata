@@ -258,8 +258,8 @@ deleteStatement returns [DeleteStatement ds]
 	T_DELETE 
 	(
         T_START_PARENTHESIS
-        firstField=(T_IDENT | T_LUCENE) {$ds.addColumn($firstField.text);}
-		(T_COMMA field=(T_IDENT | T_LUCENE) {$ds.addColumn($field.text);})*	
+        firstField=getField {$ds.addColumn(firstField);}
+		(T_COMMA field=getField {$ds.addColumn(field);})*
         T_END_PARENTHESIS
         )?
 	T_FROM
@@ -310,14 +310,14 @@ createIndexStatement returns [CreateIndexStatement cis]
 	@init{
 		$cis = new CreateIndexStatement();
 	}:
-	T_CREATE indexType=getIndexType {$cis.setIndexType(indexType);} T_INDEX
+	T_CREATE {$cis.setIndexType("default");} (indexType=getIndexType {$cis.setIndexType(indexType);})? T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
 	(name=T_IDENT {$cis.setName($name.text);})? 
 	T_ON tableName=getTableID {$cis.setTableName(tableName);}
 	T_START_PARENTHESIS
-            firstField=(T_IDENT | T_LUCENE) {$cis.addColumn($firstField.text);}
+        firstField=getField {$cis.addColumn(firstField);}
 	(T_COMMA
-		field=(T_IDENT | T_LUCENE) {$cis.addColumn($field.text);}
+		field=getField {$cis.addColumn(field);}
 	)*
 	T_END_PARENTHESIS
 	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.toString());})?
@@ -330,6 +330,25 @@ createIndexStatement returns [CreateIndexStatement cis]
 (T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=T_IDENT T_COLON value=getValueProperty {$cis.addOption($key.text, value);}
 		(T_AND key=T_IDENT T_COLON value=getValueProperty {$cis.addOption($key.text, value);} )* T_END_SBRACKET
 */
+
+getField returns [String newField]:
+    (unitField=getUnits {$newField = unitField;}
+    |fieldToken=(T_IDENT | T_LUCENE | T_KEY) {$newField = $fieldToken.text;})
+;
+
+getUnits returns [String newUnit]:
+    unitToken=(T_SEC
+    | T_SECS
+    | T_SECONDS
+    | T_MIN
+    | T_MINS
+    | T_MINUTES
+    | T_HOUR
+    | T_HOURS
+    | T_DAY
+    | T_DAYS)
+    {$newUnit = $unitToken.text;}
+;
 
 updateTableStatement returns [UpdateTableStatement pdtbst]
     @init{
@@ -361,8 +380,12 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
     ;
 
 stopProcessStatement returns [StopProcessStatement stprst]:
-    T_STOP T_PROCESS ident=T_PATH { $stprst = new StopProcessStatement($ident.text); }
+    T_STOP T_PROCESS ident=getProcess { $stprst = new StopProcessStatement(ident); }
     ;
+
+getProcess returns [String procname]:
+    processname=(T_PATH | T_IDENT) {$procname = $processname.text;}
+;
 
 dropTriggerStatement returns [DropTriggerStatement drtrst]:
     T_DROP 
@@ -381,7 +404,6 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
     {$crtrst = new CreateTriggerStatement($trigger_name.text,$table_name.text,$class_name.text);}
     ;
 
-
 createTableStatement returns [CreateTableStatement crtast]
 @init{
     LinkedHashMap<String, String> columns = new LinkedHashMap<>();
@@ -398,28 +420,28 @@ createTableStatement returns [CreateTableStatement crtast]
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     tablename=getTableID
     T_START_PARENTHESIS (            
-                ident_column1=(T_IDENT | T_LUCENE | T_KEY) type1=getDataType (T_PRIMARY T_KEY)? {columns.put($ident_column1.text,type1); primaryKeyType=1;}
+                ident_column1=getField type1=getDataType (T_PRIMARY T_KEY)? {columns.put(ident_column1, type1); primaryKeyType=1;}
                 (   
-                    ( T_COMMA ident_columN=(T_IDENT | T_LUCENE | T_KEY) typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put($ident_columN.text,typeN);columnNumberPK_inter+=1;})
+                    ( T_COMMA ident_columN=getField typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put(ident_columN, typeN);columnNumberPK_inter+=1;})
                     |(  
                         T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS
                         (
-                            (   primaryK=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($primaryK.text);primaryKeyType=2;}
+                            (   primaryK=getField {primaryKey.add(primaryK);primaryKeyType=2;}
                            
-                                (T_COMMA partitionKN=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionKN.text);})*
+                                (T_COMMA partitionKN=getField {primaryKey.add(partitionKN);})*
                             )
                             |(
-                                T_START_PARENTHESIS partitionK=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionK.text);primaryKeyType=3;}
-                                    (T_COMMA partitionKN=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionKN.text);})*
+                                T_START_PARENTHESIS partitionK=getField {primaryKey.add(partitionK); primaryKeyType=3;}
+                                    (T_COMMA partitionKN=getField {primaryKey.add(partitionKN);})*
                                 T_END_PARENTHESIS 
-                                (T_COMMA clusterKN=(T_IDENT | T_LUCENE | T_KEY) {clusterKey.add($clusterKN.text);})*
+                                (T_COMMA clusterKN=getField {clusterKey.add(clusterKN);})*
 
                             )
                         )
-                       T_END_PARENTHESIS 
+                       T_END_PARENTHESIS
                    )
-                )* 
-         )             
+                )*
+         )
     T_END_PARENTHESIS (T_WITH {withProperties=true;} properties=getMetaProperties)?
     {
         $crtast = new CreateTableStatement(tablename, columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
@@ -427,8 +449,7 @@ createTableStatement returns [CreateTableStatement crtast]
         $crtast.setIfNotExists(ifNotExists);
         $crtast.setWithProperties(withProperties);
     }
-;        
-
+;
         
 alterTableStatement returns [AlterTableStatement altast]
 @init{
@@ -437,12 +458,12 @@ alterTableStatement returns [AlterTableStatement altast]
     T_ALTER
     T_TABLE
     tablename=getTableID
-    (T_ALTER column=(T_IDENT | T_LUCENE) T_TYPE type=T_IDENT {option=1;}
-        |T_ADD column=(T_IDENT | T_LUCENE) type=T_IDENT {option=2;}
-        |T_DROP column=(T_IDENT | T_LUCENE) {option=3;}
+    (T_ALTER column=getField T_TYPE type=T_IDENT {option=1;}
+        |T_ADD column=getField type=T_IDENT {option=2;}
+        |T_DROP column=getField {option=3;}
         |(T_WITH {option=4;} props=getMetaProperties)?
     )
-    {$altast = new AlterTableStatement(tablename, $column.text, $type.text, props, option);  }
+    {$altast = new AlterTableStatement(tablename, column, $type.text, props, option);  }
 ;
 
 selectStatement returns [SelectStatement slctst]
@@ -500,8 +521,8 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
     T_INTO 
     tableName=getTableID
     T_START_PARENTHESIS 
-    ident1=(T_IDENT | T_LUCENE) {ids.add($ident1.text);} 
-    (T_COMMA identN=(T_IDENT | T_LUCENE) {ids.add($identN.text);})* 
+    ident1=getField {ids.add(ident1);}
+    (T_COMMA identN=getField {ids.add(identN);})*
     T_END_PARENTHESIS
     ( 
         selectStmnt=selectStatement {typeValues = InsertIntoStatement.TYPE_SELECT_CLAUSE;}

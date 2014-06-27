@@ -24,7 +24,7 @@
     <parent>
         <artifactId>meta-parent</artifactId>
         <groupId>com.stratio.meta</groupId>
-        <version>0.0.5-SNAPSHOT</version>
+        <version>0.0.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -81,21 +81,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-    <!--repositories>
-        <repository>
-            <id>scala-tools.org</id>
-            <name>Scala-tools Maven2 Repository</name>
-            <url>http://scala-tools.org/repo-releases</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>scala-tools.org</id>
-            <name>Scala-tools Maven2 Repository</name>
-            <url>http://scala-tools.org/repo-releases</url>
-        </pluginRepository>
-    </pluginRepositories-->
 
     <dependencies>
         <dependency>
@@ -171,12 +156,12 @@
         <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-core</artifactId>
-            <version>${meta.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-common</artifactId>
-            <version>${meta.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
 
     </dependencies>

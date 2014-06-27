@@ -41,7 +41,18 @@ public class SelectionSelectors extends Selection {
   }
 
   public void addSelectionSelector(SelectionSelector ss) {
-    selectors.add(ss);
+    boolean found = false;
+    Iterator<SelectionSelector> it = selectors.iterator();
+    SelectionSelector s = null;
+    while(it.hasNext()){
+      s = it.next();
+      if(s.getSelector().toString().equalsIgnoreCase(ss.getSelector().toString())){
+        found = true;
+      }
+    }
+    if(!found) {
+      selectors.add(ss);
+    }
   }
 
   @Override

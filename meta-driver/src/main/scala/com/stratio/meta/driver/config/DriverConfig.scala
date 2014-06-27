@@ -88,7 +88,7 @@ trait DriverConfig extends MetaServerConfig{
   }
 
   lazy val retryTimes: Int= config.getInt(DriverConfig.DRIVER_RETRY_TIMES_KEY)
-  lazy val retrySeconds: Timeout= new Timeout(config.getMilliseconds(DriverConfig.DRIVER_RETRY_SECONDS_KEY))
-  lazy val retryPolitics: RetryPolitics = new RetryPolitics(retryTimes,retrySeconds)
+  lazy val retryDuration: Timeout= new Timeout(config.getMilliseconds(DriverConfig.DRIVER_RETRY_SECONDS_KEY))
+
 
 }

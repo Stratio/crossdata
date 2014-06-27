@@ -190,6 +190,8 @@ public class SelectStatement extends MetaStatement {
    */
   private static final Logger LOG = Logger.getLogger(SelectStatement.class);
 
+  private Map<String, String> fieldsAliasesMap;
+
   /**
    * Class constructor.
    * 
@@ -425,6 +427,14 @@ public class SelectStatement extends MetaStatement {
     SelectionList selList = (SelectionList) selectionClause;
     SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection();
     selSelectors.addSelectionSelector(selSelector);
+  }
+
+  public Map<String, String> getFieldsAliasesMap() {
+    return fieldsAliasesMap;
+  }
+
+  public void setFieldsAliasesMap(Map<String, String> fieldsAliasesMap) {
+    this.fieldsAliasesMap = fieldsAliasesMap;
   }
 
   /**
@@ -783,9 +793,7 @@ public class SelectStatement extends MetaStatement {
     for (GroupBy groupByCol : this.group) {
       String col = groupByCol.toString();
       if (!selectionCols.contains(col)) {
-        result =
-            Result.createValidationErrorResult("The GROUP BY column [" + col
-                + "] must be included in the selection columns.");
+        this.getSelectionClause().getIds().add(col);
       }
     }
     return result;
@@ -1876,23 +1884,35 @@ public class SelectStatement extends MetaStatement {
     SelectStatement joinSelect = new SelectStatement("");
 
     // ADD FIELDS OF THE JOIN
+    String streamingField = null;
     if (this.join.getLeftField().getTable().trim().equalsIgnoreCase(tableName)) {
+      //streamingField = this.join.getLeftField().getField();
+      //if(streamingField.contains(".")) {
+      //  this.join.getLeftField().setField(streamingField.split(".")[1]);
+      //}
+      this.join.getLeftField().setTable(null);
       firstSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
       secondSelect.addSelection(new SelectionSelector(this.join.getRightField()));
     } else {
+      //streamingField = this.join.getRightField().getField();
+      //if(streamingField.contains(".")) {
+      //  this.join.getRightField().setField(streamingField.split(".")[1]);
+      //}
+      this.join.getRightField().setTable(null);
       firstSelect.addSelection(new SelectionSelector(this.join.getRightField()));
       secondSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
     }
 
+    com.stratio.meta.common.metadata.structures.TableMetadata streamingTable = metadata.convertStreamingToMeta(keyspace, tableName);
+
     // ADD FIELDS OF THE SELECT
     SelectionList selectionList = (SelectionList) this.selectionClause;
     Selection selection = selectionList.getSelection();
-
     if (selection instanceof SelectionSelectors) {
       SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
       for (SelectionSelector ss : selectionSelectors.getSelectors()) {
         SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-        if (tableMetadataFrom.getColumn(si.getField()) != null) {
+        if (streamingTable.getColumn(si.getField()) != null) {
           firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
         } else {
           secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
@@ -1934,9 +1954,18 @@ public class SelectStatement extends MetaStatement {
     secondSelect.validate(metadata, null);
 
     // ADD STEPS
-    steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
-    steps.addChild(new Tree(new MetaStep(MetaPath.STREAMING, firstSelect)));
-    steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
+    //steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
+    //steps.addChild(new Tree(new MetaStep(MetaPath.STREAMING, firstSelect)));
+    //steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
+    steps.setNode(new MetaStep(MetaPath.STREAMING, firstSelect));
+
+
+    Tree join = new Tree(new MetaStep(MetaPath.DEEP, joinSelect));
+    steps.addChild(join);
+    Tree selectB = new Tree(new MetaStep(MetaPath.DEEP, secondSelect));
+    join.addChild(selectB);
+
+    steps.setInvolvesStreaming(true);
 
     return steps;
   }
@@ -2073,6 +2102,8 @@ public class SelectStatement extends MetaStatement {
         tablesAliasesMap.put(entry.getKey(), entry.getValue().split("\\.")[1]);
       }
     }
+
+    this.setFieldsAliasesMap(fieldsAliasesMap);
 
     // Replacing alias in SELECT clause
     replaceAliasesInSelect(tablesAliasesMap);

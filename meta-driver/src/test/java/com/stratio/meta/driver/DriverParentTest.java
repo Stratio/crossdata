@@ -67,11 +67,6 @@ public class DriverParentTest extends ParentCassandraTest {
     driver.close();
     metaServer.stop();
     metaServer.destroy();
-    // try {
-    // Thread.sleep(SLEEP_TIME*2);
-    // } catch (InterruptedException e) {
-    // e.printStackTrace();
-    // }
     logger.info("FINISH <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
   }
 

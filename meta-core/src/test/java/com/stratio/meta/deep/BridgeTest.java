@@ -441,7 +441,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
-    validateRows(metaQuery, "testInnerJoinAndWhere", 7);
+    validateRows(metaQuery, "testInnerJoinAndWhere", 5);
   }
 
   @Test

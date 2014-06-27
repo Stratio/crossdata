@@ -20,7 +20,7 @@ import com.stratio.meta.common.ask.Query
  */
 class BasicExecutorActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
-  lazy val engine:Engine =  createEngine.create()
+  val engine:Engine =  createEngine.create()
 
   lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
 

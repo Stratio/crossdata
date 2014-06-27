@@ -33,10 +33,8 @@ trait MetaServerConfig {
 
   lazy val clusterHosts: List[String] = config.getStringList(MetaServerConfig.META_SERVER_HOSTS_KEY).toList
   lazy val clusterName: String = config.getString(MetaServerConfig.META_SERVER_CLUSTER_NAME_KEY)
-  lazy val actorName: String = config.getString(MetaServerConfig.META_SERVER_ACTOR_NAME_KEY)
+  lazy val clusterActor: String = config.getString(MetaServerConfig.META_SERVER_ACTOR_NAME_KEY)
 
-  lazy val contactPoints: List[String]= {
-    clusterHosts.toList.map(host=>"akka.tcp://" + clusterName + "@" + host + "/user/receptionist")
-  }
+
 
 }

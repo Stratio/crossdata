@@ -21,12 +21,11 @@ package com.stratio.meta.core.executor;
 
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
-import com.stratio.meta.common.data.CassandraResultSet;
-import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.streaming.MetaStream;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+
 import org.apache.log4j.Logger;
 
 public class StreamingExecutionThread implements Runnable {
@@ -71,11 +70,13 @@ public class StreamingExecutionThread implements Runnable {
   public void run() {
     LOG.debug("Running streaming Thread for " + statement.toString());
     MetaStream.startQuery(queryId, stratioStreamingAPI, statement, config, callbackActor, deepSparkContext, isRoot);
+    /*
     QueryResult r = QueryResult.createQueryResult(new CassandraResultSet());
     r.setLastResultSet();
     r.setQueryId(queryId);
     callbackActor.processResults(r);
-    LOG.debug("Streaming query finished");
+    */
+    LOG.debug("Streaming query running");
   }
 
 }

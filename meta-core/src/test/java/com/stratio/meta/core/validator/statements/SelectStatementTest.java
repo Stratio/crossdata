@@ -314,18 +314,18 @@ public class SelectStatementTest extends BasicValidatorTest {
   }
 
   @Test
-  public void testValidateGroupMissingFieldFail() {
+  public void testValidateGroupMissingFieldOk() {
 
     String inputText = "SELECT SUM(users.age) FROM demo.users GROUP BY users.gender;";
 
-    validateFail(inputText, "testValidateGroupByWrongSumClauseFail");
+    validateOk(inputText, "testValidateGroupMissingFieldOk");
   }
 
   @Test
-  public void testGroupByWithMissingSelectorFieldFail() {
+  public void testGroupByWithMissingSelectorFieldOk() {
 
     String inputText = "SELECT sum(users.age) FROM demo.users GROUP BY users.gender;";
-    validateFail(inputText, "testGroupByWithMissingSelectorFieldFail");
+    validateOk(inputText, "testGroupByWithMissingSelectorFieldOk");
   }
 
   @Test

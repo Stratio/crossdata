@@ -16,7 +16,6 @@
 
 package com.stratio.meta.deep.transformation;
 
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -29,7 +28,7 @@ import com.stratio.deep.entity.Cells;
 import com.stratio.meta.core.structures.GroupBy;
 
 
-public class GroupByMapping extends PairFunction<Cells, Cells, Cells> implements Serializable {
+public class GroupByMapping implements PairFunction<Cells, Cells, Cells> {
 
   /**
    * Serial version UID.
