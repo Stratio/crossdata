@@ -258,8 +258,8 @@ deleteStatement returns [DeleteStatement ds]
 	T_DELETE 
 	(
         T_START_PARENTHESIS
-        firstField=(T_IDENT | T_LUCENE) {$ds.addColumn($firstField.text);}
-		(T_COMMA field=(T_IDENT | T_LUCENE) {$ds.addColumn($field.text);})*	
+        firstField=getField {$ds.addColumn(firstField);}
+		(T_COMMA field=getField {$ds.addColumn(field);})*
         T_END_PARENTHESIS
         )?
 	T_FROM
@@ -458,12 +458,12 @@ alterTableStatement returns [AlterTableStatement altast]
     T_ALTER
     T_TABLE
     tablename=getTableID
-    (T_ALTER column=(T_IDENT | T_LUCENE) T_TYPE type=T_IDENT {option=1;}
-        |T_ADD column=(T_IDENT | T_LUCENE) type=T_IDENT {option=2;}
-        |T_DROP column=(T_IDENT | T_LUCENE) {option=3;}
+    (T_ALTER column=getField T_TYPE type=T_IDENT {option=1;}
+        |T_ADD column=getField type=T_IDENT {option=2;}
+        |T_DROP column=getField {option=3;}
         |(T_WITH {option=4;} props=getMetaProperties)?
     )
-    {$altast = new AlterTableStatement(tablename, $column.text, $type.text, props, option);  }
+    {$altast = new AlterTableStatement(tablename, column, $type.text, props, option);  }
 ;
 
 selectStatement returns [SelectStatement slctst]
@@ -521,8 +521,8 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
     T_INTO 
     tableName=getTableID
     T_START_PARENTHESIS 
-    ident1=(T_IDENT | T_LUCENE) {ids.add($ident1.text);} 
-    (T_COMMA identN=(T_IDENT | T_LUCENE) {ids.add($identN.text);})* 
+    ident1=getField {ids.add(ident1);}
+    (T_COMMA identN=getField {ids.add(identN);})*
     T_END_PARENTHESIS
     ( 
         selectStmnt=selectStatement {typeValues = InsertIntoStatement.TYPE_SELECT_CLAUSE;}
