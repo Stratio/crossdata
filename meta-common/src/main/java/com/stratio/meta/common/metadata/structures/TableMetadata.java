@@ -110,4 +110,24 @@ public class TableMetadata implements Serializable {
     }
     return foundCM;
   }
+
+  public String exportAsString() {
+
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("CREATE TABLE ").append(this.parentCatalog).append(".").append(this.tableName)
+        .append(" (").append(System.lineSeparator());
+    for (ColumnMetadata columnMetadata : this.columns) {
+      sb.append("    ").append(columnMetadata.toString()).append(",")
+          .append(System.lineSeparator());
+    }
+    sb.deleteCharAt(sb.length() - 2);
+    if (type == TableType.EPHEMERAL) {
+      sb.append(") WITH EPHEMERAL = true;");
+    } else {
+      sb.append(");");
+    }
+
+    return sb.toString();
+  }
 }

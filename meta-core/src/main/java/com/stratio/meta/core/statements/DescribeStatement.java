@@ -29,6 +29,7 @@ import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.streaming.api.IStratioStreamingAPI;
 
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
@@ -164,8 +165,9 @@ public class DescribeStatement extends MetaStatement {
    * @param session The {@link com.datastax.driver.core.Session} used to retrieve the medatada.
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
-  public Result execute(Session session) {
-    MetadataManager mm = new MetadataManager(session, null);
+  public Result execute(Session session, IStratioStreamingAPI stratioStreamingAPI) {
+
+    MetadataManager mm = new MetadataManager(session, stratioStreamingAPI);
     mm.loadMetadata();
     Result result = null;
     if (type == DescribeType.KEYSPACE) {
@@ -188,8 +190,7 @@ public class DescribeStatement extends MetaStatement {
       if (tableInfo == null) {
         result = Result.createExecutionErrorResult("TABLE " + tableName + " was not found");
       } else {
-        result = null;
-        // result = CommandResult.createCommandResult(tableInfo.exportAsString());
+        result = CommandResult.createCommandResult(tableInfo.exportAsString());
       }
     } else {
       List<String> tablesNames = mm.getTablesNames(this.getEffectiveKeyspace());
