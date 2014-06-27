@@ -44,6 +44,11 @@ object BasicDriver extends DriverConfig {
   override lazy val logger = Logger.getLogger(getClass)
 
   def getBasicDriverConfigFromFile ={
+    logger.debug("RetryTimes    --> " + retryTimes)
+    logger.debug("RetryDuration --> " + retryDuration.duration.toMillis.toString)
+    logger.debug("ClusterName   --> " + clusterName)
+    logger.debug("ClusterName   --> " + clusterActor)
+    logger.debug("ClusterHosts  --> " + clusterHosts.map(_.toString).toArray.toString)
     new BasicDriverConfig(new DriverSectionConfig(retryTimes, retryDuration.duration.toMillis),
                           new ServerSectionConfig(clusterName, clusterActor, clusterHosts.map(_.toString).toArray))
   }

@@ -100,7 +100,7 @@
                     <configurationDirectory>conf</configurationDirectory>
                     <copyConfigurationDirectory>true</copyConfigurationDirectory>
                     <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
-                    <assembleDirectory>${project.build.directory}/meta-dist-${meta.version}</assembleDirectory>
+                    <assembleDirectory>${project.build.directory}/meta-dist-${project.parent.version}</assembleDirectory>
                     <extraJvmArguments>-Xms512m</extraJvmArguments>
                     <repositoryLayout>flat</repositoryLayout>
                     <generateRepository>true</generateRepository>
@@ -186,7 +186,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/meta-dist-${meta.version}</outputDirectory>
+                            <outputDirectory>${project.build.directory}/meta-dist-${project.parent.version}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.basedir}/src/main/include</directory>

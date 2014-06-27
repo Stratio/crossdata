@@ -36,7 +36,7 @@ import com.stratio.meta.common.ask.Query
  */
 class BasicServerActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
-  lazy val engine:Engine = createEngine.create()
+  val engine:Engine = createEngine.create()
 
   lazy val serverRef = system.actorOf(Props(classOf[ServerActor],engine),"test")
 

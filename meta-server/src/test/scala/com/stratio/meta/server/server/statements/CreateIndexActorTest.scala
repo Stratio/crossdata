@@ -33,7 +33,7 @@ import org.apache.log4j.Logger
 
 class CreateIndexActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra{
 
-  lazy val engine:Engine =  createEngine.create()
+  val engine:Engine =  createEngine.create()
 
   lazy val serverRef = system.actorOf(Props(classOf[ServerActor],engine),"create-keyspace-actor")
 

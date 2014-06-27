@@ -84,7 +84,7 @@ public class APIManager {
         //Add db tables.
         tableList.addAll(helper.toCatalogMetadata(keyspaceMetadata).getTables());
         //Add ephemeral tables.
-        tableList.addAll(metadata.getEphemeralTables(cmd.params().get(0)));
+        //tableList.addAll(metadata.getEphemeralTables(cmd.params().get(0)));
         MetadataResult.class.cast(result).setTableList(tableList);
       } else {
         result =

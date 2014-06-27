@@ -17,7 +17,7 @@ import com.stratio.meta.communication.ACK
 
 class BasicQueryActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
-  lazy val engine:Engine = createEngine.create()
+  val engine:Engine = createEngine.create()
 
   lazy val queryRef = system.actorOf(Props(classOf[QueryActor],engine))
 
