@@ -361,8 +361,12 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
     ;
 
 stopProcessStatement returns [StopProcessStatement stprst]:
-    T_STOP T_PROCESS ident=T_PATH { $stprst = new StopProcessStatement($ident.text); }
+    T_STOP T_PROCESS ident=getProcess { $stprst = new StopProcessStatement(ident); }
     ;
+
+getProcess returns [String procname]:
+    processname=(T_PATH | T_IDENT) {$procname = $processname.text;}
+;
 
 dropTriggerStatement returns [DropTriggerStatement drtrst]:
     T_DROP 
