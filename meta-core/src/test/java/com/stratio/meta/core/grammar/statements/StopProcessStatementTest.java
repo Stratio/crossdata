@@ -24,16 +24,16 @@ import org.testng.annotations.Test;
 
 public class StopProcessStatementTest extends ParsingTest {
 
-    @Test
-    public void stopProcess() {
-        String inputText = "STOP process process1;";
-        testRegularStatement(inputText, "stopProcess");
-    }
+  @Test
+  public void stopProcess() {
+    String inputText = "STOP process process1;";
+    testRegularStatement(inputText, "stopProcess");
+  }
 
-    @Test
-    public void stopWrongProcessIdentifier(){
-        String inputText = "STOP process kstest.process1;";
-        testParseFails(inputText, "stopWrongProcessIdentifier");
-    }
+  @Test
+  public void stopWrongProcessIdentifier(){
+    String inputText = "STOP process kstest]process1;";
+    testParseFails(inputText, "stopWrongProcessIdentifier");
+  }
 
 }
