@@ -16,23 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -40,11 +23,14 @@ import com.datastax.driver.core.querybuilder.Clause;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Where;
+import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.GroupBy;
+import com.stratio.meta.core.structures.GroupByFunction;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta.core.structures.OrderDirection;
@@ -60,14 +46,36 @@ import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelector;
 import com.stratio.meta.core.structures.SelectionSelectors;
 import com.stratio.meta.core.structures.SelectorFunction;
+import com.stratio.meta.core.structures.SelectorGroupBy;
 import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.SelectorMeta;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.WindowSelect;
+import com.stratio.meta.core.structures.WindowTime;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
+
+import org.apache.log4j.Logger;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -128,7 +136,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * The list of {@link com.stratio.meta.core.structures.Ordering} clauses.
    */
-  private List<com.stratio.meta.core.structures.Ordering> order = null;
+  private List<Ordering> order = null;
 
   /**
    * Whether a GROUP BY clause has been specified.
@@ -138,7 +146,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * The {@link com.stratio.meta.core.structures.GroupBy} clause.
    */
-  private GroupBy group = null;
+  private List<GroupBy> group = null;
 
   /**
    * Whether a LIMIT clause has been specified.
@@ -175,10 +183,14 @@ public class SelectStatement extends MetaStatement {
    */
   private Map<String, Collection<ColumnMetadata>> columns = new HashMap<>();
 
+  private boolean streamMode = false;
+
   /**
    * Class logger.
    */
   private static final Logger LOG = Logger.getLogger(SelectStatement.class);
+
+  private Map<String, String> fieldsAliasesMap;
 
   /**
    * Class constructor.
@@ -208,6 +220,7 @@ public class SelectStatement extends MetaStatement {
   public SelectStatement(SelectionClause selectionClause, String tableName) {
     this(tableName);
     this.selectionClause = selectionClause;
+    this.selectionClause.addTablename(this.tableName);
   }
 
   /**
@@ -309,7 +322,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @param order The order.
    */
-  public void setOrder(List<com.stratio.meta.core.structures.Ordering> order) {
+  public void setOrder(List<Ordering> order) {
     this.orderInc = true;
     this.order = order;
   }
@@ -337,9 +350,27 @@ public class SelectStatement extends MetaStatement {
    * 
    * @param group The group by.
    */
-  public void setGroup(GroupBy group) {
+  public void setGroup(List<GroupBy> group) {
     this.groupInc = true;
     this.group = group;
+  }
+
+  /**
+   * Return GROUP BY clause.
+   * 
+   * @return list of {@link com.stratio.meta.core.structures.GroupBy}.
+   */
+  public List<GroupBy> getGroup() {
+    return group;
+  }
+
+  /**
+   * Check if GROUP BY clause is included.
+   * 
+   * @return {@code true} if is included.
+   */
+  public boolean isGroupInc() {
+    return groupInc;
   }
 
   /**
@@ -365,6 +396,14 @@ public class SelectStatement extends MetaStatement {
     }
   }
 
+  public WindowSelect getWindow() {
+    return window;
+  }
+
+  public MetadataManager getMetadata() {
+    return metadata;
+  }
+
   /**
    * Disable the analytics mode.
    * 
@@ -388,6 +427,14 @@ public class SelectStatement extends MetaStatement {
     SelectionList selList = (SelectionList) selectionClause;
     SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection();
     selSelectors.addSelectionSelector(selSelector);
+  }
+
+  public Map<String, String> getFieldsAliasesMap() {
+    return fieldsAliasesMap;
+  }
+
+  public void setFieldsAliasesMap(Map<String, String> fieldsAliasesMap) {
+    this.fieldsAliasesMap = fieldsAliasesMap;
   }
 
   /**
@@ -420,7 +467,7 @@ public class SelectStatement extends MetaStatement {
       sb.append(" ORDER BY ").append(ParserUtils.stringList(order, ", "));
     }
     if (groupInc) {
-      sb.append(group);
+      sb.append(" GROUP BY ").append(ParserUtils.stringList(group, ", "));
     }
     if (limitInc) {
       sb.append(" LIMIT ").append(limit);
@@ -434,10 +481,25 @@ public class SelectStatement extends MetaStatement {
 
   /** {@inheritDoc} */
   @Override
-  public Result validate(MetadataManager metadata) {
+  public Result validate(MetadataManager metadata, EngineConfig config) {
     // Validate FROM keyspace
     Result result =
         validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+
+    if ((!result.hasError()) && (result instanceof CommandResult)
+        && ("streaming".equalsIgnoreCase(((CommandResult) result).getResult().toString()))) {
+      streamMode = true;
+    }
+
+    if (!streamMode && windowInc) {
+      result =
+          Result
+              .createValidationErrorResult("Window option can only be applied to ephemeral tables.");
+    }
+
+    if(streamMode && !windowInc){
+      result = Result.createValidationErrorResult("Window is mandatory for ephemeral tables.");
+    }
 
     if (!result.hasError() && joinInc) {
       result =
@@ -445,39 +507,81 @@ public class SelectStatement extends MetaStatement {
               join.getKeyspace(), join.getTablename());
     }
 
-    if (!result.hasError()) {
-      result = validateOptions();
-    }
-
     String effectiveKs1 = getEffectiveKeyspace();
     String effectiveKs2 = null;
     if (joinInc) {
       SelectStatement secondSelect = new SelectStatement("");
-      secondSelect.setKeyspace(join.getKeyspace());
+      if (join.getKeyspace() != null) {
+        secondSelect.setKeyspace(join.getKeyspace());
+      }
       secondSelect.setSessionKeyspace(this.sessionKeyspace);
       effectiveKs2 = secondSelect.getEffectiveKeyspace();
     }
 
     TableMetadata tableMetadataJoin = null;
 
+    com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata = null;
     if (!result.hasError()) {
       // Cache Metadata manager and table metadata for the getDriverStatement.
       this.metadata = metadata;
-      tableMetadataFrom = metadata.getTableMetadata(effectiveKs1, tableName);
+      if(streamMode){
+        streamingMetadata = metadata.convertStreamingToMeta(getEffectiveKeyspace(), tableName);
+      } else {
+        tableMetadataFrom = metadata.getTableMetadata(effectiveKs1, tableName);
+      }
       if (joinInc) {
         tableMetadataJoin = metadata.getTableMetadata(effectiveKs2, join.getTablename());
       }
-      result = validateSelectionColumns(tableMetadataFrom, tableMetadataJoin);
+
+      if(streamMode){
+        result = validateSelectionColumns(streamingMetadata, tableMetadataJoin);
+      } else {
+        result = validateSelectionColumns(tableMetadataFrom, tableMetadataJoin);
+      }
+
+      if (!result.hasError()) {
+        result = validateOptions();
+      }
     }
 
     if (!result.hasError() && joinInc) {
-      result = validateJoinClause(tableMetadataFrom, tableMetadataJoin);
+      if(streamMode){
+        result = validateJoinClause(streamingMetadata, tableMetadataJoin);
+      } else {
+        result = validateJoinClause(tableMetadataFrom, tableMetadataJoin);
+      }
     }
 
     if (!result.hasError() && whereInc) {
-      result = validateWhereClause(tableMetadataFrom);
+      if(streamMode){
+        result = Result.createValidationErrorResult("Where clauses in ephemeral tables are not supported yet.");
+      } else {
+        result = validateWhereClause(tableMetadataFrom);
+      }
+
     }
 
+    /*
+    if(!result.hasError() && windowInc){
+      result = validateWindow(config);
+    }
+    */
+
+    return result;
+  }
+
+  private Result validateWindow(EngineConfig config) {
+    Result result = QueryResult.createSuccessQueryResult();
+    if(window instanceof WindowTime){
+      WindowTime windowTime = (WindowTime) window;
+      long windowMillis = windowTime.getDurationInMilliseconds();
+      if(windowMillis % config.getStreamingDuration() != 0){
+        result = Result.createValidationErrorResult(
+            "Window time must be multiple of "+ config.getStreamingDuration() + " milliseconds.");
+      }
+    } else {
+      result = Result.createValidationErrorResult("This type of window is not supported yet.");
+    }
     return result;
   }
 
@@ -488,31 +592,20 @@ public class SelectStatement extends MetaStatement {
    */
   private Result validateOptions() {
     Result result = QueryResult.createSuccessQueryResult();
-    if (windowInc) {
-      result = QueryResult.createFailQueryResult("Select with streaming options not supported.");
-    }
 
     if (groupInc) {
-      result = QueryResult.createFailQueryResult("Select with GROUP BY clause not supported.");
+      result = validateGroupByClause();
     }
 
     if (orderInc) {
-      result = QueryResult.createFailQueryResult("Select with ORDER BY clause not supported.");
+      result = validateOrderByClause();
     }
+
     return result;
   }
 
-  private boolean checkSelectorExists(String selector) {
-    String tableName = "any";
-    String columnName = "";
-    if (selector.contains(".")) {
-      String[] tableNameAndColumn = selector.split("\\.");
-      tableName = tableNameAndColumn[0];
-      columnName = tableNameAndColumn[1];
-    } else {
-      columnName = tableName;
-    }
-    return !findColumn(tableName, columnName).hasError();
+  private boolean checkSelectorExists(SelectorIdentifier selector) {
+    return !findColumn(selector.getTable(), selector.getField()).hasError();
   }
 
   /**
@@ -526,21 +619,59 @@ public class SelectStatement extends MetaStatement {
   private Result validateJoinClause(TableMetadata tableFrom, TableMetadata tableJoin) {
     Result result = QueryResult.createSuccessQueryResult();
     if (joinInc) {
-      Map<String, String> onFields = join.getFields();
-      Iterator<Map.Entry<String, String>> onClauses = onFields.entrySet().iterator();
-      while (!result.hasError() && onClauses.hasNext()) {
-        Map.Entry<String, String> onClause = onClauses.next();
-        if (!checkSelectorExists(onClause.getKey())) {
-          result =
-              QueryResult.createFailQueryResult("Join selector " + onClause.getKey()
-                  + " table or column name not found");
+      if (!checkSelectorExists(join.getLeftField())) {
+        result =
+            Result.createValidationErrorResult("Join selector " + join.getLeftField().toString()
+                + " table or column name not found");
+      }
+      if (!checkSelectorExists(join.getRightField())) {
+        result =
+            Result.createValidationErrorResult("Join selector " + join.getRightField().toString()
+                + " table or column name not found");
+      }
+    }
+
+    return result;
+  }
+
+  private Result validateJoinClause(
+      com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata, TableMetadata tableMetadataJoin) {
+    Result result = QueryResult.createSuccessQueryResult();
+    if (joinInc) {
+
+      SelectorIdentifier leftField = join.getLeftField();
+      SelectorIdentifier rightField = join.getRightField();
+
+      boolean streamingLeft = false;
+      boolean batchLeft = false;
+      if(leftField.getTable().equalsIgnoreCase(streamingMetadata.getTableName())){
+        if(streamingMetadata.getColumn(leftField.getField()) == null){
+          result = Result.createValidationErrorResult("Ephemeral table '"+streamingMetadata.getTableName()+"' doesn't contain the field '"+leftField.getField()+"'.");
+        } else {
+          streamingLeft = true;
         }
-        if (!checkSelectorExists(onClause.getValue())) {
-          result =
-              QueryResult.createFailQueryResult("Join selector " + onClause.getValue()
-                  + " table or column name not found");
+      } else if (leftField.getTable().equalsIgnoreCase(tableMetadataJoin.getName())){
+        if(tableMetadataJoin.getColumn(leftField.getField()) == null){
+          result = Result.createValidationErrorResult("Table '"+tableMetadataJoin.getName()+"' doesn't contain the field '"+leftField.getField()+"'.");
+        } else {
+          batchLeft = true;
+        }
+      } else {
+        result = Result.createValidationErrorResult("Table '"+leftField.getTable()+"' doesn't match any of the incoming tables.");
+      }
+
+      if(!result.hasError()){
+        if(streamingLeft){
+          if(tableMetadataJoin.getColumn(rightField.getField()) == null){
+            result = Result.createValidationErrorResult("Table '"+tableMetadataJoin.getName()+"' doesn't contain the field '"+rightField.getField()+"'.");
+          }
+        } else if(batchLeft){
+          if(streamingMetadata.getColumn(rightField.getField()) == null){
+            result = Result.createValidationErrorResult("Ephemeral table '"+streamingMetadata.getTableName()+"' doesn't contain the field '"+rightField.getField()+"'.");
+          }
         }
       }
+
     }
 
     return result;
@@ -551,7 +682,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @param targetTable The target table.
    * @param column The name of the column.
-   * @param t The term.
+   * @param terms The terms.
    * @param rc Relation of Comparator type.
    * @return Whether the relation is valid.
    */
@@ -569,7 +700,7 @@ public class SelectStatement extends MetaStatement {
         Term<?> term = termsIt.next();
         if (!columnType.equals(term.getTermClass())) {
           result =
-              QueryResult.createFailQueryResult("Column [" + column + "] of type [" + columnType
+              Result.createValidationErrorResult("Column [" + column + "] of type [" + columnType
                   + "] does not accept " + term.getTermClass() + " values (" + term.toString()
                   + ")");
         }
@@ -591,13 +722,13 @@ public class SelectStatement extends MetaStatement {
         }
         if (!supported) {
           result =
-              QueryResult.createFailQueryResult("Operand " + operator + " not supported for"
+              Result.createValidationErrorResult("Operand " + operator + " not supported for"
                   + " column " + column + ".");
         }
       }
     } else {
       result =
-          QueryResult.createFailQueryResult("Column " + column + " not found in " + targetTable
+          Result.createValidationErrorResult("Column " + column + " not found in " + targetTable
               + " table.");
     }
 
@@ -621,7 +752,7 @@ public class SelectStatement extends MetaStatement {
           || Relation.TYPE_BETWEEN == relation.getType()) {
         // Check comparison, =, >, <, etc.
         // RelationCompare rc = RelationCompare.class.cast(relation);
-        String column = relation.getIdentifiers().get(0);
+        String column = relation.getIdentifiers().get(0).toString();
         // Determine the target table the column belongs to.
         String targetTable = "any";
         if (column.contains(".")) {
@@ -635,12 +766,63 @@ public class SelectStatement extends MetaStatement {
             validateWhereSingleColumnRelation(targetTable, column, relation.getTerms(), relation);
         if ("match".equalsIgnoreCase(relation.getOperator()) && joinInc) {
           result =
-              QueryResult
-                  .createFailQueryResult("Select statements with 'Inner Join' don't support MATCH operator.");
+              Result
+                  .createValidationErrorResult("Select statements with 'Inner Join' don't support MATCH operator.");
         }
       } else if (Relation.TYPE_TOKEN == relation.getType()) {
         // TODO: Check TOKEN relation
-        result = QueryResult.createFailQueryResult("TOKEN function not supported.");
+        result = Result.createValidationErrorResult("TOKEN function not supported.");
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Validate whether the group by clause is valid or not by checking columns exist on the target
+   * table and comparisons are semantically correct.
+   * 
+   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+   */
+  private Result validateGroupByClause() {
+
+    Result result = QueryResult.createSuccessQueryResult();
+
+    List<String> selectionCols = this.getSelectionClause().getIds();
+
+    for (GroupBy groupByCol : this.group) {
+      String col = groupByCol.toString();
+      if (!selectionCols.contains(col)) {
+        this.getSelectionClause().getIds().add(col);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Validate whether the group by clause is valid or not by checking columns exist on the target
+   * table and comparisons are semantically correct.
+   * 
+   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+   */
+  private Result validateOrderByClause() {
+
+    Result result = QueryResult.createSuccessQueryResult();
+
+    for (Ordering orderField : order) {
+
+      String field = orderField.getSelectorIdentifier().toString();
+
+      String targetTable = "any";
+      String columnName = field;
+      if (field.contains(".")) {
+        targetTable = field.substring(0, field.indexOf("."));
+        columnName = field.substring(field.indexOf(".") + 1);
+      }
+
+      Result columnResult = findColumn(targetTable, columnName);
+      if (columnResult.hasError()) {
+        result = columnResult;
       }
     }
 
@@ -670,13 +852,13 @@ public class SelectStatement extends MetaStatement {
       }
       if (!found) {
         result =
-            QueryResult.createFailQueryResult("Column " + column + " does not " + "exist in "
+            Result.createValidationErrorResult("Column " + column + " does not " + "exist in "
                 + table + " table.");
       }
 
     } else {
       result =
-          QueryResult.createFailQueryResult("Column " + column + " refers to table " + table
+          Result.createValidationErrorResult("Column " + column + " refers to table " + table
               + " that has not been specified on query.");
     }
     return result;
@@ -720,6 +902,30 @@ public class SelectStatement extends MetaStatement {
   private Result validateSelectionColumns(TableMetadata tableFrom, TableMetadata tableJoin) {
     Result result = QueryResult.createSuccessQueryResult();
 
+    if (streamMode && (selectionClause instanceof SelectionList)
+        && (((SelectionList) selectionClause).getTypeSelection() == Selection.TYPE_SELECTOR)) {
+      List<String> colNames =
+          metadata.getStreamingColumnNames(getEffectiveKeyspace() + "_" + tableName);
+      SelectionList selectionList = (SelectionList) selectionClause;
+      SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
+      selectionSelectors.getSelectors();
+
+      for (SelectionSelector selectionSelector : selectionSelectors.getSelectors()) {
+        SelectorIdentifier selectorIdentifier =
+            (SelectorIdentifier) selectionSelector.getSelector();
+        String colName = selectorIdentifier.getField();
+        if (!colNames.contains(colName.toLowerCase())) {
+          return Result.createValidationErrorResult("Column '" + colName
+              + "' not found in ephemeral table '" + getEffectiveKeyspace() + "." + tableName
+              + "'.");
+        }
+      }
+    }
+
+    if (streamMode) {
+      return result;
+    }
+
     // Create a HashMap with the columns
     Collection<ColumnMetadata> allColumns = new ArrayList<>();
     columns.put(tableFrom.getName(), tableFrom.getColumns());
@@ -749,27 +955,85 @@ public class SelectStatement extends MetaStatement {
 
     SelectionSelectors ss = SelectionSelectors.class.cast(sl.getSelection());
     for (SelectionSelector selector : ss.getSelectors()) {
-      if (selector.getSelector().getType() == SelectorMeta.TYPE_IDENT) {
+      if (selector.getSelector() instanceof SelectorIdentifier) {
         SelectorIdentifier si = SelectorIdentifier.class.cast(selector.getSelector());
 
-        String targetTable = "any";
-        if (si.getTablename() != null) {
-          targetTable = si.getTablename();
-        }
-
-        columnResult = findColumn(targetTable, si.getColumnName());
+        columnResult = findColumn(si.getTable(), si.getField());
         if (columnResult.hasError()) {
           result = columnResult;
         }
+      } else if (selector.getSelector() instanceof SelectorGroupBy) {
+
+        if (groupInc) {
+          SelectorGroupBy selectorMeta = (SelectorGroupBy) selector.getSelector();
+
+          if (!selectorMeta.getGbFunction().equals(GroupByFunction.COUNT)) {
+            // Checking column in the group by aggregation function
+            if (selectorMeta.getParam().getType() == SelectorMeta.TYPE_IDENT) {
+              SelectorIdentifier subselectorIdentifier =
+                  (SelectorIdentifier) selectorMeta.getParam();
+
+              columnResult =
+                  findColumn(subselectorIdentifier.getTable(), subselectorIdentifier.getField());
+              if (columnResult.hasError()) {
+                result = columnResult;
+              }
+            } else {
+              result =
+                  Result
+                      .createValidationErrorResult("Nested functions on selected fields not supported.");
+            }
+          }
+        }
       } else {
-        result = QueryResult.createFailQueryResult("Functions on selected fields not supported.");
+        result =
+            Result.createValidationErrorResult("Functions type on selected fields not supported.");
       }
     }
 
     return result;
   }
 
+  private Result validateSelectionColumns(
+      com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata,
+                                          TableMetadata tableJoin) {
+    Result result = QueryResult.createSuccessQueryResult();
 
+    if((selectionClause instanceof SelectionList) && (((SelectionList) selectionClause).getTypeSelection() == Selection.TYPE_SELECTOR)){
+      SelectionList selectionList = (SelectionList) selectionClause;
+      SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
+      selectionSelectors.getSelectors();
+
+      for(SelectionSelector selectionSelector: selectionSelectors.getSelectors()){
+        SelectorIdentifier selectorIdentifier =
+            (SelectorIdentifier) selectionSelector.getSelector();
+        String tableName = selectorIdentifier.getTable();
+        String colName = selectorIdentifier.getField();
+
+        result = findColumn(streamingMetadata, tableJoin, colName);
+      }
+    }
+
+    return result;
+  }
+
+  private Result findColumn(
+      com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata,
+      TableMetadata tableJoin, String colName){
+    Result result = QueryResult.createSuccessQueryResult();
+    if(tableName.equalsIgnoreCase(streamingMetadata.getTableName())){
+      if(streamingMetadata.getColumn(colName) == null){
+        result = Result.createValidationErrorResult("Field '"+colName+"' not found in ephemeral table '"+tableName+"'.");
+      }
+    } else if (tableName.equalsIgnoreCase(tableJoin.getName())) {
+      if(tableJoin.getColumn(colName) == null){
+        result = Result.createValidationErrorResult("Field '"+colName+"' not found in table '"+tableName+"'.");
+      }
+    } else {
+      result = Result.createValidationErrorResult("Table '"+tableName+"' doesn't match to any incoming tables.");
+    }
+    return result;
+  }
 
   /**
    * Get the processed where clause to be sent to Cassandra related with lucene indexes.
@@ -792,7 +1056,8 @@ public class SelectStatement extends MetaStatement {
         if (Relation.TYPE_COMPARE == relation.getType()
             && "MATCH".equalsIgnoreCase(relation.getOperator())) {
           RelationCompare rc = RelationCompare.class.cast(relation);
-          String column = rc.getIdentifiers().get(0);
+          // String column = rc.getIdentifiers().get(0).toString();
+          String column = rc.getIdentifiers().get(0).getField();
           String value = rc.getTerms().get(0).toString();
           // Generate query for column
           String[] processedQuery = processLuceneQueryType(value);
@@ -918,6 +1183,46 @@ public class SelectStatement extends MetaStatement {
     return sb.toString();
   }
 
+  @Override
+  public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName,
+      String outgoing) {
+    StringBuilder querySb = new StringBuilder("from ");
+    querySb.append(streamName);
+    if (windowInc) {
+      querySb.append("#window.timeBatch( ").append(getWindow().toString().toLowerCase())
+          .append(" )");
+    }
+
+    List<String> ids = new ArrayList<>();
+    boolean asterisk = false;
+    SelectionClause selectionClause = getSelectionClause();
+    if (selectionClause.getType() == SelectionClause.TYPE_SELECTION) {
+      SelectionList selectionList = (SelectionList) selectionClause;
+      Selection selection = selectionList.getSelection();
+      if (selection.getType() == Selection.TYPE_ASTERISK) {
+        asterisk = true;
+      }
+    }
+    if (asterisk) {
+      List<ColumnNameTypeValue> cols = null;
+      try {
+        cols = stratioStreamingAPI.columnsFromStream(streamName);
+      } catch (Exception e) {
+        LOG.error(e);
+      }
+      for (ColumnNameTypeValue ctv : cols) {
+        ids.add(ctv.getColumn());
+      }
+    } else {
+      ids = getSelectionClause().getFields();
+    }
+
+    String idsStr = Arrays.toString(ids.toArray()).replace("[", "").replace("]", "");
+    querySb.append(" select ").append(idsStr).append(" insert into ");
+    querySb.append(outgoing);
+    return querySb.toString();
+  }
+
   /**
    * Get the driver representation of the fields found in the selection clause.
    * 
@@ -933,9 +1238,9 @@ public class SelectStatement extends MetaStatement {
       if (selectorMeta.getType() == SelectorMeta.TYPE_IDENT) {
         SelectorIdentifier selIdent = (SelectorIdentifier) selectorMeta;
         if (selSelector.isAliasInc()) {
-          result = result.column(selIdent.getIdentifier()).as(selSelector.getAlias());
+          result = result.column(selIdent.getField()).as(selSelector.getAlias());
         } else {
-          result = result.column(selIdent.getIdentifier());
+          result = result.column(selIdent.getField());
         }
       } else if (selectorMeta.getType() == SelectorMeta.TYPE_FUNCTION) {
         SelectorFunction selFunction = (SelectorFunction) selectorMeta;
@@ -988,8 +1293,7 @@ public class SelectStatement extends MetaStatement {
    */
   private Object getWhereCastValue(String columnName, Object value) {
     Object result = null;
-    Class<?> clazz =
-        tableMetadataFrom.getColumn(splitAndGetFieldName(columnName)).getType().asJavaClass();
+    Class<?> clazz = tableMetadataFrom.getColumn(columnName).getType().asJavaClass();
 
     if (String.class.equals(clazz)) {
       result = String.class.cast(value);
@@ -1023,24 +1327,24 @@ public class SelectStatement extends MetaStatement {
   private Clause getRelationCompareClause(Relation metaRelation) {
     Clause clause = null;
     RelationCompare relCompare = (RelationCompare) metaRelation;
-    String name = relCompare.getIdentifiers().get(0);
+    String field = relCompare.getIdentifiers().get(0).getField();
     Object value = relCompare.getTerms().get(0).getTermValue();
-    value = getWhereCastValue(name, value);
+    value = getWhereCastValue(field, value);
     switch (relCompare.getOperator().toUpperCase()) {
       case "=":
-        clause = QueryBuilder.eq(name, value);
+        clause = QueryBuilder.eq(field, value);
         break;
       case ">":
-        clause = QueryBuilder.gt(name, value);
+        clause = QueryBuilder.gt(field, value);
         break;
       case ">=":
-        clause = QueryBuilder.gte(name, value);
+        clause = QueryBuilder.gte(field, value);
         break;
       case "<":
-        clause = QueryBuilder.lt(name, value);
+        clause = QueryBuilder.lt(field, value);
         break;
       case "<=":
-        clause = QueryBuilder.lte(name, value);
+        clause = QueryBuilder.lte(field, value);
         break;
       case "MATCH":
         // Processed as LuceneIndex
@@ -1062,14 +1366,14 @@ public class SelectStatement extends MetaStatement {
     Clause clause = null;
     RelationIn relIn = (RelationIn) metaRelation;
     List<Term<?>> terms = relIn.getTerms();
-    String name = relIn.getIdentifiers().get(0);
+    String field = relIn.getIdentifiers().get(0).getField();
     Object[] values = new Object[relIn.numberOfTerms()];
     int nTerm = 0;
     for (Term<?> term : terms) {
-      values[nTerm] = getWhereCastValue(name, term.getTermValue());
+      values[nTerm] = getWhereCastValue(field, term.getTermValue());
       nTerm++;
     }
-    clause = QueryBuilder.in(relIn.getIdentifiers().get(0), values);
+    clause = QueryBuilder.in(relIn.getIdentifiers().get(0).toString(), values);
     return clause;
   }
 
@@ -1082,7 +1386,12 @@ public class SelectStatement extends MetaStatement {
   private Clause getRelationTokenClause(Relation metaRelation) {
     Clause clause = null;
     RelationToken relToken = (RelationToken) metaRelation;
-    List<String> names = relToken.getIdentifiers();
+
+    List<String> names = new ArrayList<>();
+    for (SelectorIdentifier identifier : relToken.getIdentifiers()) {
+      names.add(identifier.toString());
+    }
+
     if (!relToken.isRightSideTokenType()) {
       Object value = relToken.getTerms().get(0).getTermValue();
       switch (relToken.getOperator()) {
@@ -1175,11 +1484,11 @@ public class SelectStatement extends MetaStatement {
       com.datastax.driver.core.querybuilder.Ordering[] orderings =
           new com.datastax.driver.core.querybuilder.Ordering[order.size()];
       int nOrdering = 0;
-      for (com.stratio.meta.core.structures.Ordering metaOrdering : this.order) {
+      for (Ordering metaOrdering : this.order) {
         if (metaOrdering.isDirInc() && (metaOrdering.getOrderDir() == OrderDirection.DESC)) {
-          orderings[nOrdering] = QueryBuilder.desc(metaOrdering.getIdentifier());
+          orderings[nOrdering] = QueryBuilder.desc(metaOrdering.getSelectorIdentifier().toString());
         } else {
-          orderings[nOrdering] = QueryBuilder.asc(metaOrdering.getIdentifier());
+          orderings[nOrdering] = QueryBuilder.asc(metaOrdering.getSelectorIdentifier().toString());
         }
         nOrdering++;
       }
@@ -1239,7 +1548,7 @@ public class SelectStatement extends MetaStatement {
 
       for (SelectionSelector ss : sSelectors.getSelectors()) {
         SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-        String colName = si.getColumnName();
+        String colName = si.getField();
         if (colName.equalsIgnoreCase(whereColumnName)) {
           addCol = false;
           break;
@@ -1271,7 +1580,7 @@ public class SelectStatement extends MetaStatement {
     List<Relation> targetWhere = null;
     SelectStatement targetSelect = null;
     for (Relation relation : where) {
-      String id = relation.getIdentifiers().iterator().next();
+      String id = relation.getIdentifiers().iterator().next().toString();
 
       String whereTableName = null;
       String whereColumnName = null;
@@ -1317,25 +1626,20 @@ public class SelectStatement extends MetaStatement {
     firstSelect.setKeyspace(getEffectiveKeyspace());
 
     SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
-    secondSelect.setKeyspace(join.getKeyspace());
+    if (this.join.getKeyspace() != null) {
+      secondSelect.setKeyspace(join.getKeyspace());
+    }
     secondSelect.setSessionKeyspace(this.sessionKeyspace);
 
     SelectStatement joinSelect = new SelectStatement("");
 
     // ADD FIELDS OF THE JOIN
-    Map<String, String> fields = this.join.getFields();
-    for (Map.Entry<String, String> entry : fields.entrySet()) {
-      if (entry.getKey().split("\\.")[0].trim().equalsIgnoreCase(tableName)) {
-        firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(entry.getKey().split(
-            "\\.")[1])));
-        secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(entry.getValue()
-            .split("\\.")[1])));
-      } else {
-        firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(entry.getValue()
-            .split("\\.")[1])));
-        secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(entry.getKey()
-            .split("\\.")[1])));
-      }
+    if (this.join.getLeftField().getTable().trim().equalsIgnoreCase(tableName)) {
+      firstSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
+      secondSelect.addSelection(new SelectionSelector(this.join.getRightField()));
+    } else {
+      firstSelect.addSelection(new SelectionSelector(this.join.getRightField()));
+      secondSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
     }
 
     // ADD FIELDS OF THE SELECT
@@ -1346,12 +1650,10 @@ public class SelectStatement extends MetaStatement {
       SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
       for (SelectionSelector ss : selectionSelectors.getSelectors()) {
         SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-        if (tableMetadataFrom.getColumn(si.getColumnName()) != null) {
-          firstSelect
-              .addSelection(new SelectionSelector(new SelectorIdentifier(si.getColumnName())));
+        if (tableMetadataFrom.getColumn(si.getField()) != null) {
+          firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
         } else {
-          secondSelect.addSelection(new SelectionSelector(
-              new SelectorIdentifier(si.getColumnName())));
+          secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
         }
       }
     } else {
@@ -1375,18 +1677,14 @@ public class SelectStatement extends MetaStatement {
     joinSelect.setSelectionClause(selectionClause);
 
     // ADD MAP OF THE JOIN
-    String keyOfInnerJoin = fields.keySet().iterator().next();
-    String firstTableOfInnerJoin = keyOfInnerJoin.split("\\.")[0];
-    if (firstTableOfInnerJoin.equalsIgnoreCase(tableName)) {
-      joinSelect.setJoin(new InnerJoin("", fields));
+    if (this.join.getLeftField().getTable().equalsIgnoreCase(tableName)) {
+      joinSelect.setJoin(new InnerJoin("", this.join.getLeftField(), this.join.getRightField()));
     } else {
-      Map<String, String> changedMap = new HashMap<>();
-      changedMap.put(fields.values().iterator().next(), keyOfInnerJoin);
-      joinSelect.setJoin(new InnerJoin("", changedMap));
+      joinSelect.setJoin(new InnerJoin("", this.join.getRightField(), this.join.getLeftField()));
     }
 
-    firstSelect.validate(metadata);
-    secondSelect.validate(metadata);
+    firstSelect.validate(metadata, null);
+    secondSelect.validate(metadata, null);
 
     // ADD STEPS
     steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
@@ -1399,8 +1697,8 @@ public class SelectStatement extends MetaStatement {
   private Map<String, String> getColumnsFromWhere() {
     Map<String, String> whereCols = new HashMap<>();
     for (Relation relation : where) {
-      for (String id : relation.getIdentifiers()) {
-        whereCols.put(splitAndGetFieldName(id), relation.getOperator());
+      for (SelectorIdentifier id : relation.getIdentifiers()) {
+        whereCols.put(id.getField(), relation.getOperator());
       }
     }
     return whereCols;
@@ -1515,9 +1813,10 @@ public class SelectStatement extends MetaStatement {
           cassandraPath = true;
         }
 
-        cassandraPath =
-            checkWhereColsWithLucene(luceneCols, whereCols, metadataManager, cassandraPath);
-
+        if (!whereCols.isEmpty()) {
+          cassandraPath =
+              checkWhereColsWithLucene(luceneCols, whereCols, metadataManager, cassandraPath);
+        }
       }
     }
 
@@ -1553,7 +1852,14 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-    if (joinInc) {
+    if(metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName) && joinInc){
+      steps = getStreamJoinPlan();
+    } else if (metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName)) {
+      steps.setNode(new MetaStep(MetaPath.STREAMING, this));
+      steps.setInvolvesStreaming(true);
+    } else if (groupInc || orderInc || selectionClause.containsFunctions()) {
+      steps.setNode(new MetaStep(MetaPath.DEEP, this));
+    } else if (joinInc) {
       steps = getJoinPlan();
     } else if (whereInc) {
       steps = getWherePlan(metadataManager);
@@ -1563,19 +1869,105 @@ public class SelectStatement extends MetaStatement {
     return steps;
   }
 
-  /**
-   * Given a name of table (with or without keyspace), check if contains keyspace and only return
-   * table name.
-   * 
-   * @param fullName Given table name in query.
-   * @return Only table name.
-   */
-  public String splitAndGetFieldName(String fullName) {
-    if (fullName.contains(".")) {
-      String[] ksAndTableName = fullName.split("\\.");
-      return ksAndTableName[1];
+  private Tree getStreamJoinPlan() {
+    Tree steps = new Tree();
+    SelectStatement firstSelect = new SelectStatement(tableName);
+    firstSelect.setSessionKeyspace(this.sessionKeyspace);
+    firstSelect.setKeyspace(getEffectiveKeyspace());
+
+    SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
+    if (this.join.getKeyspace() != null) {
+      secondSelect.setKeyspace(join.getKeyspace());
     }
-    return fullName;
+    secondSelect.setSessionKeyspace(this.sessionKeyspace);
+
+    SelectStatement joinSelect = new SelectStatement("");
+
+    // ADD FIELDS OF THE JOIN
+    String streamingField = null;
+    if (this.join.getLeftField().getTable().trim().equalsIgnoreCase(tableName)) {
+      //streamingField = this.join.getLeftField().getField();
+      //if(streamingField.contains(".")) {
+      //  this.join.getLeftField().setField(streamingField.split(".")[1]);
+      //}
+      this.join.getLeftField().setTable(null);
+      firstSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
+      secondSelect.addSelection(new SelectionSelector(this.join.getRightField()));
+    } else {
+      //streamingField = this.join.getRightField().getField();
+      //if(streamingField.contains(".")) {
+      //  this.join.getRightField().setField(streamingField.split(".")[1]);
+      //}
+      this.join.getRightField().setTable(null);
+      firstSelect.addSelection(new SelectionSelector(this.join.getRightField()));
+      secondSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
+    }
+
+    com.stratio.meta.common.metadata.structures.TableMetadata streamingTable = metadata.convertStreamingToMeta(keyspace, tableName);
+
+    // ADD FIELDS OF THE SELECT
+    SelectionList selectionList = (SelectionList) this.selectionClause;
+    Selection selection = selectionList.getSelection();
+    if (selection instanceof SelectionSelectors) {
+      SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
+      for (SelectionSelector ss : selectionSelectors.getSelectors()) {
+        SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
+        if (streamingTable.getColumn(si.getField()) != null) {
+          firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
+        } else {
+          secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
+        }
+      }
+    } else {
+      // instanceof SelectionAsterisk
+      firstSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
+      secondSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
+    }
+
+    // ADD WHERE CLAUSES IF ANY
+    if (whereInc) {
+      Map<Integer, List<Relation>> whereRelations = getWhereJoinPlan(firstSelect, secondSelect);
+      if (!whereRelations.get(1).isEmpty()) {
+        firstSelect.setWhere(whereRelations.get(1));
+      }
+      if (!whereRelations.get(2).isEmpty()) {
+        secondSelect.setWhere(whereRelations.get(2));
+      }
+    }
+
+    // ADD WINDOW
+    if(windowInc){
+      firstSelect.setWindow(window);
+    }
+
+    // ADD SELECTED COLUMNS TO THE JOIN STATEMENT
+    joinSelect.setSelectionClause(selectionClause);
+
+    // ADD MAP OF THE JOIN
+    if (this.join.getLeftField().getTable().equalsIgnoreCase(tableName)) {
+      joinSelect.setJoin(new InnerJoin("", this.join.getLeftField(), this.join.getRightField()));
+    } else {
+      joinSelect.setJoin(new InnerJoin("", this.join.getRightField(), this.join.getLeftField()));
+    }
+
+    firstSelect.validate(metadata, null);
+    secondSelect.validate(metadata, null);
+
+    // ADD STEPS
+    //steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
+    //steps.addChild(new Tree(new MetaStep(MetaPath.STREAMING, firstSelect)));
+    //steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
+    steps.setNode(new MetaStep(MetaPath.STREAMING, firstSelect));
+
+
+    Tree join = new Tree(new MetaStep(MetaPath.DEEP, joinSelect));
+    steps.addChild(join);
+    Tree selectB = new Tree(new MetaStep(MetaPath.DEEP, secondSelect));
+    join.addChild(selectB);
+
+    steps.setInvolvesStreaming(true);
+
+    return steps;
   }
 
   /**
@@ -1591,6 +1983,169 @@ public class SelectStatement extends MetaStatement {
       result = true;
     }
     return result;
+  }
+
+  public void addTablenameToIds() {
+    selectionClause.addTablename(tableName);
+  }
+
+  private void replaceAliasesInSelect(Map<String, String> tablesAliasesMap) {
+
+    if (this.selectionClause instanceof SelectionList
+        && ((SelectionList) this.selectionClause).getSelection() instanceof SelectionSelectors) {
+      List<SelectionSelector> selectors =
+          ((SelectionSelectors) ((SelectionList) this.selectionClause).getSelection())
+              .getSelectors();
+
+      for (SelectionSelector selector : selectors) {
+        SelectorIdentifier identifier = null;
+        if (selector.getSelector() instanceof SelectorIdentifier) {
+          identifier = (SelectorIdentifier) selector.getSelector();
+        } else if (selector.getSelector() instanceof SelectorGroupBy) {
+          identifier = (SelectorIdentifier) ((SelectorGroupBy) selector.getSelector()).getParam();
+        }
+
+        if (identifier != null) {
+          String table = tablesAliasesMap.get(identifier.getTable());
+          if (table != null) {
+            identifier.setTable(table);
+          }
+        }
+      }
+    }
+  }
+
+  private void replaceAliasesInWhere(Map<String, String> fieldsAliasesMap,
+      Map<String, String> tablesAliasesMap) {
+
+    if (this.where != null) {
+      for (Relation whereCol : this.where) {
+        for (SelectorIdentifier id : whereCol.getIdentifiers()) {
+          String table = tablesAliasesMap.get(id.getTable());
+          if (table != null) {
+            id.setTable(table);
+          }
+
+          String identifier = fieldsAliasesMap.get(id.toString());
+          if (identifier != null) {
+            id.setIdentifier(identifier);
+          }
+        }
+      }
+    }
+  }
+
+  private void replaceAliasesInGroupBy(Map<String, String> fieldsAliasesMap,
+      Map<String, String> tablesAliasesMap) {
+
+    if (this.group != null) {
+      for (GroupBy groupByCol : this.group) {
+        SelectorIdentifier selectorIdentifier = groupByCol.getSelectorIdentifier();
+
+        String table = tablesAliasesMap.get(selectorIdentifier.getTable());
+        if (table != null) {
+          selectorIdentifier.setTable(table);
+        }
+
+        String identifier = fieldsAliasesMap.get(selectorIdentifier.toString());
+        if (identifier != null) {
+          selectorIdentifier.setIdentifier(identifier);
+        }
+      }
+    }
+  }
+
+  private void replaceAliasesInOrderBy(Map<String, String> fieldsAliasesMap,
+      Map<String, String> tablesAliasesMap) {
+
+    if (this.order != null) {
+      for (Ordering orderBycol : this.order) {
+        SelectorIdentifier selectorIdentifier = orderBycol.getSelectorIdentifier();
+
+        String table = tablesAliasesMap.get(selectorIdentifier.getTable());
+        if (table != null) {
+          selectorIdentifier.setTable(table);
+        }
+
+        String identifier = fieldsAliasesMap.get(selectorIdentifier.toString());
+        if (identifier != null) {
+          selectorIdentifier.setIdentifier(identifier);
+        }
+      }
+    }
+  }
+
+  private void replaceAliasesInJoin(Map<String, String> tablesAliasesMap) {
+
+    if (this.join != null) {
+      String leftTable = this.join.getLeftField().getTable();
+      String tableName = tablesAliasesMap.get(leftTable);
+      if (tableName != null) {
+        this.join.getLeftField().setTable(tableName);
+      }
+
+      String rightTable = this.join.getRightField().getTable();
+      tableName = tablesAliasesMap.get(rightTable);
+      if (tableName != null) {
+        this.join.getRightField().setTable(tableName);
+      }
+    }
+  }
+
+  public void replaceAliasesWithName(Map<String, String> fieldsAliasesMap,
+      Map<String, String> tablesAliasesMap) {
+
+    Iterator<Entry<String, String>> entriesIt = tablesAliasesMap.entrySet().iterator();
+    while (entriesIt.hasNext()) {
+      Entry<String, String> entry = entriesIt.next();
+      if (entry.getValue().contains(".")) {
+        tablesAliasesMap.put(entry.getKey(), entry.getValue().split("\\.")[1]);
+      }
+    }
+
+    this.setFieldsAliasesMap(fieldsAliasesMap);
+
+    // Replacing alias in SELECT clause
+    replaceAliasesInSelect(tablesAliasesMap);
+
+    // Replacing alias in WHERE clause
+    replaceAliasesInWhere(fieldsAliasesMap, tablesAliasesMap);
+
+    // Replacing alias in GROUP BY clause
+    replaceAliasesInGroupBy(fieldsAliasesMap, tablesAliasesMap);
+
+    // Replacing alias in ORDER BY clause
+    replaceAliasesInOrderBy(fieldsAliasesMap, tablesAliasesMap);
+
+    // Replacing alias in JOIN clause
+    replaceAliasesInJoin(tablesAliasesMap);
+
+  }
+
+  public void updateTableNames() {
+
+    // Adding table name to the identifiers in WHERE clause
+    if (this.where != null) {
+      for (Relation whereCol : this.where) {
+        for (SelectorIdentifier identifier : whereCol.getIdentifiers()) {
+          identifier.addTablename(this.tableName);
+        }
+      }
+    }
+
+    // Adding table name to the identifiers in GROUP BY clause
+    if (this.group != null) {
+      for (GroupBy groupByCol : this.group) {
+        groupByCol.getSelectorIdentifier().addTablename(this.tableName);
+      }
+    }
+
+    // Adding table name to the identifiers in ORDER BY clause
+    if (this.order != null) {
+      for (Ordering orderByCol : this.order) {
+        orderByCol.getSelectorIdentifier().addTablename(this.tableName);
+      }
+    }
   }
 
 }

@@ -1,92 +1,91 @@
 /*
  * Stratio Meta
- *
+ * 
  * Copyright (c) 2014, Stratio, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation; either version
+ * 3.0 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.core.utils.ParserUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class InnerJoin {
 
-    private String keyspace = null;
+  private String keyspace = null;
 
-    private boolean keyspaceInc = false;
+  private boolean keyspaceInc = false;
 
-    private String tableName;
+  private String tableName;
 
-    private Map<String, String> fields;
+  private SelectorIdentifier leftField;
 
-    public InnerJoin(String tableName, Map<String, String> fields) {
-        this.tableName = tableName;
+  private SelectorIdentifier rightField;
 
-        if(this.tableName.contains(".")){
-            String[] ksAndTablename = this.tableName.split("\\.");
-            keyspace = ksAndTablename[0];
-            this.tableName = ksAndTablename[1];
-            keyspaceInc = true;
-        }
+  private InnerJoin(String tableName) {
 
-        this.fields = fields;
-    }   
-    
-    public String getTablename() {
-        return tableName;
+    this.tableName = tableName;
+
+    if (this.tableName.contains(".")) {
+      String[] ksAndTablename = this.tableName.split("\\.");
+      keyspace = ksAndTablename[0];
+      this.tableName = ksAndTablename[1];
+      keyspaceInc = true;
     }
+  }
 
-    public String getKeyspace(){
-        return keyspace;
-    }
+  public InnerJoin(String tableName, String leftField, String rightField) {
 
-    public Map<String, String> getFields() {
-        return fields;
-    }
+    this(tableName);
 
-    public Map<String, String> getColNames(){
-        Map<String, String> colNames = new HashMap<>();
-        for(String key: fields.keySet()){
-            String field = fields.get(key);
-            String[] ksAndTablenameValue= field.split("\\.");
-            String[] ksAndTablenameKey = key.split("\\.");
-            colNames.put(ksAndTablenameKey[1], ksAndTablenameValue[1]);
-        }
-        return colNames;
-    }
+    this.leftField = new SelectorIdentifier(leftField);
+    this.rightField = new SelectorIdentifier(rightField);
+  }
 
-    public void setFields(Map<String, String> fields) {
-        this.fields = fields;
-    }        
-    
-    @Override
-    public String toString(){
-        StringBuilder sb = new StringBuilder();
-        if(keyspaceInc){
-            sb.append(keyspace);
-            sb.append(".");
-        }
-        sb.append(tableName);
-        sb.append(" ON ").append(ParserUtils.stringMap(fields, "=", " AND "));
-        return sb.toString();
-    }
+  public InnerJoin(String tableName, SelectorIdentifier leftField, SelectorIdentifier rightField) {
 
-    public boolean isKeyspaceInc() {
-        return keyspaceInc;
+    this(tableName);
+
+    this.leftField = leftField;
+    this.rightField = rightField;
+  }
+
+  public String getTablename() {
+    return tableName;
+  }
+
+  public String getKeyspace() {
+    return keyspace;
+  }
+
+  public SelectorIdentifier getLeftField() {
+    return leftField;
+  }
+
+  public SelectorIdentifier getRightField() {
+    return rightField;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    if (keyspaceInc) {
+      sb.append(keyspace);
+      sb.append(".");
     }
+    sb.append(tableName);
+    sb.append(" ON ").append(leftField).append("=").append(rightField);
+    return sb.toString();
+  }
+
+  public boolean isKeyspaceInc() {
+    return keyspaceInc;
+  }
 }

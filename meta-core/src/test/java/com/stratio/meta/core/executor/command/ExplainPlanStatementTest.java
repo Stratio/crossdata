@@ -20,6 +20,7 @@
 package com.stratio.meta.core.executor.command;
 
 import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.executor.BasicExecutorTest;
 import com.stratio.meta.core.statements.DropKeyspaceStatement;
@@ -40,7 +41,7 @@ public class ExplainPlanStatementTest extends BasicExecutorTest {
 
         ExplainPlanStatement stmt = new ExplainPlanStatement(dropStmt);
 
-        stmt.validate(metadataManager);
+        stmt.validate(metadataManager, null);
 
         Tree tree = new Tree();
         tree.setNode(new MetaStep(MetaPath.COMMAND, stmt));

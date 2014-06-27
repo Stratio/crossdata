@@ -25,6 +25,7 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.RelationCompare;
@@ -121,12 +122,11 @@ public class DeleteStatement extends MetaStatement {
 
   /** {@inheritDoc} */
   @Override
-  public Result validate(MetadataManager metadata) {
+  public Result validate(MetadataManager metadata, EngineConfig config) {
+
     Result result = validateKeyspaceAndTable(metadata, sessionKeyspace);
     String effectiveKeyspace = getEffectiveKeyspace();
-    if (keyspaceInc) {
-      effectiveKeyspace = keyspace;
-    }
+
     TableMetadata tableMetadata = null;
     if (!result.hasError()) {
       tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
@@ -157,13 +157,13 @@ public class DeleteStatement extends MetaStatement {
         result = validateCompareRelation(relation, tableMetadata);
       } else if (Relation.TYPE_IN == relation.getType()) {
         // TODO: Check IN relation
-        result = QueryResult.createFailQueryResult("IN clause not supported.");
+        result = Result.createValidationErrorResult("IN clause not supported.");
       } else if (Relation.TYPE_TOKEN == relation.getType()) {
         // TODO: Check IN relation
-        result = QueryResult.createFailQueryResult("TOKEN function not supported.");
+        result = Result.createValidationErrorResult("TOKEN function not supported.");
       } else if (Relation.TYPE_BETWEEN == relation.getType()) {
         // TODO: Check IN relation
-        result = QueryResult.createFailQueryResult("BETWEEN clause not supported.");
+        result = Result.createValidationErrorResult("BETWEEN clause not supported.");
       }
 
     }
@@ -174,10 +174,10 @@ public class DeleteStatement extends MetaStatement {
     Result result = QueryResult.createSuccessQueryResult();
     // Check comparison, =, >, <, etc.
     RelationCompare rc = RelationCompare.class.cast(relation);
-    String column = rc.getIdentifiers().get(0);
+    String column = rc.getIdentifiers().get(0).toString();
     if (tableMetadata.getColumn(column) == null) {
       result =
-          QueryResult.createFailQueryResult("Column " + column + " does not exists in table "
+          Result.createValidationErrorResult("Column " + column + " does not exist in table "
               + tableMetadata.getName());
     }
 
@@ -187,8 +187,8 @@ public class DeleteStatement extends MetaStatement {
       Term t = Term.class.cast(rc.getTerms().get(0));
       if (!tableMetadata.getColumn(column).getType().asJavaClass().equals(t.getTermClass())) {
         result =
-            QueryResult.createFailQueryResult("Column " + column + " of type "
-                + tableMetadata.getColumn(rc.getIdentifiers().get(0)).getType().asJavaClass()
+            Result.createValidationErrorResult("Column " + column + " of type "
+                + tableMetadata.getColumn(rc.getIdentifiers().get(0).toString()).getType().asJavaClass()
                 + " does not accept " + t.getTermClass() + " values (" + t.toString() + ")");
       }
 
@@ -212,13 +212,13 @@ public class DeleteStatement extends MetaStatement {
         }
         if (!supported) {
           result =
-              QueryResult.createFailQueryResult("Operand " + rc.getOperator() + " not supported"
+              Result.createValidationErrorResult("Operand " + rc.getOperator() + " not supported"
                   + " for column " + column + ".");
         }
       }
     } else {
       result =
-          QueryResult.createFailQueryResult("Column " + column + " not found in " + tableName
+          Result.createValidationErrorResult("Column " + column + " not found in " + tableName
               + " table.");
     }
     return result;
@@ -237,11 +237,11 @@ public class DeleteStatement extends MetaStatement {
     for (String c : targetColumns) {
       if (c.toLowerCase().startsWith("stratio")) {
         result =
-            QueryResult.createFailQueryResult("Internal column " + c
+            Result.createValidationErrorResult("Internal column " + c
                 + " cannot be part of the WHERE " + "clause.");
       } else if (tableMetadata.getColumn(c) == null) {
         result =
-            QueryResult.createFailQueryResult("Column " + c + " does not exists in table "
+            Result.createValidationErrorResult("Column " + c + " does not exists in table "
                 + tableMetadata.getName());
       }
     }
@@ -267,18 +267,16 @@ public class DeleteStatement extends MetaStatement {
     // Check that the keyspace and table exists.
     if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
       result =
-          QueryResult
-              .createFailQueryResult("Target keyspace missing or no keyspace has been selected.");
+          Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
     } else {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if (ksMetadata == null) {
         result =
-            QueryResult
-                .createFailQueryResult("Keyspace " + effectiveKeyspace + " does not exists.");
+            Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
       } else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata == null) {
-          result = QueryResult.createFailQueryResult("Table " + tableName + " does not exists.");
+          result = Result.createValidationErrorResult("Table " + tableName + " does not exist.");
         }
       }
 

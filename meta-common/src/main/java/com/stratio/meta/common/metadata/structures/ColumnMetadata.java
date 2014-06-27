@@ -1,77 +1,108 @@
 /*
  * Stratio Meta
- *
+ * 
  * Copyright (c) 2014, Stratio, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation; either version
+ * 3.0 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
 package com.stratio.meta.common.metadata.structures;
 
-public class ColumnMetadata {
+import java.io.Serializable;
 
-    /**
-     * Parent table.
-     */
-    private final String tableName;
 
-    /**
-     * Name of the column.
-     */
-    private final String columnName;
+public class ColumnMetadata implements Serializable {
 
-    /**
-     * Column type.
-     */
-    private ColumnType type;
+  /**
+   * Serial version UID in order to be Serializable.
+   */
+  private static final long serialVersionUID = -2151960196552242173L;
 
-    /**
-     * Class constructor.
-     * @param tableName Parent table name.
-     * @param columnName Column name.
-     */
-    public ColumnMetadata(String tableName, String columnName){
-        this.tableName = tableName;
-        this.columnName = columnName;
-    }
+  /**
+   * Parent table.
+   */
+  private final String tableName;
 
-    public String getTableName() {
-        return tableName;
-    }
+  /**
+   * Name of the column.
+   */
+  private final String columnName;
 
-    public String getColumnName(){
-        return columnName;
-    }
+  /**
+   * Alias of the column.
+   */
+  private String columnAlias;
 
-    /**
-     * Set the column type.
-     * @param type The column type.
-     */
-    public void setType(ColumnType type){
-        this.type = type;
-    }
+  /**
+   * Column type.
+   */
+  private ColumnType type;
 
-    /**
-     * Get the column type.
-     * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
-     */
-    public ColumnType getType(){
-        return type;
-    }
+  /**
+   * Class constructor.
+   * @param tableName Parent table name.
+   * @param columnName Column name.
+   */
+  public ColumnMetadata(String tableName, String columnName){
+    this.tableName = tableName;
+    this.columnName = columnName;
+  }
 
-    @Override
-    public String toString() {
-        return this.columnName + ' ' + this.getType();
-    }
+  public ColumnMetadata(String tableName, String columnName,
+                        ColumnType type) {
+    this.tableName = tableName;
+    this.columnName = columnName;
+    this.type = type;
+  }
+
+  public String getTableName() {
+    return tableName;
+  }
+
+  public String getColumnName() {
+    return columnName;
+  }
+
+  public String getColumnNameToShow() {
+    return (this.columnAlias == null) ? this.columnName : this.columnAlias;
+  }
+
+  /**
+   * Set the column type.
+   * 
+   * @param type The column type.
+   */
+  public void setType(ColumnType type) {
+    this.type = type;
+  }
+
+  /**
+   * Get the column type.
+   * 
+   * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
+   */
+  public ColumnType getType() {
+    return type;
+  }
+
+  public String getColumnAlias() {
+    return columnAlias;
+  }
+
+  public void setColumnAlias(String columnAlias) {
+    this.columnAlias = columnAlias;
+  }
+
+  @Override
+  public String toString() {
+    return this.columnName + ' ' + this.getType();
+  }
 }

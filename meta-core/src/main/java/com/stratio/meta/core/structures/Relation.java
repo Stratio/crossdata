@@ -51,7 +51,7 @@ public abstract class Relation {
   /**
    * List of identifiers in the left part of the relationship.
    */
-  protected List<String> identifiers;
+  protected List<SelectorIdentifier> identifiers;
 
   /**
    * Operator to be applied to solve the relationship.
@@ -68,7 +68,7 @@ public abstract class Relation {
    */
   protected int type;
 
-  public List<String> getIdentifiers() {
+  public List<SelectorIdentifier> getIdentifiers() {
     return identifiers;
   }
 
@@ -103,7 +103,7 @@ public abstract class Relation {
   public void updateTermClass(TableMetadata tableMetadata) {
     for (int i = 0; i < terms.size(); i++) {
 
-      String columnFullName = identifiers.get(0);
+      String columnFullName = identifiers.get(0).toString();
       String columnName = columnFullName.substring(columnFullName.indexOf(".") + 1);
 
       ColumnMetadata column = tableMetadata.getColumn(columnName);

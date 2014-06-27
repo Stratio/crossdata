@@ -19,7 +19,7 @@
 
 package com.stratio.meta.server.actors
 
-import akka.actor.{Props, ActorLogging, Actor}
+import akka.actor.{ActorRef, Props, ActorLogging, Actor}
 import com.stratio.meta.common.result.{QueryResult, Result}
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.common.ask.Query
@@ -36,14 +36,22 @@ class QueryActor(engine: Engine) extends Actor{
   val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef,engine.getValidator),"ValidatorActor")
   val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef,engine.getParser),"ParserActor")
 
+  //var querySender : ActorRef = null;
+
   override def receive: Receive = {
-    case Query(keyspace,statement,user) => {
-      log.debug("User "+ user + " ks: "+ keyspace + " stmt: " + statement )
-      parserActorRef forward Query(keyspace,statement,user)
+    case Query(queryId, keyspace, statement, user) => {
+      log.debug("User "+ user + " ks: "+ keyspace + " stmt: " + statement + " id: " + queryId)
+      //querySender = sender
+      parserActorRef forward Query(queryId, keyspace, statement, user)
+      //parserActorRef ! Query(queryId, keyspace, statement, user)
       log.debug("Finish Query")
     }
+    //case r: Result => {
+    //  querySender ! r
+    //}
     case _ => {
-      sender ! QueryResult.createFailQueryResult("Message not recognized")
-    }
+      println("Unknown message!")
+      sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
+  }
   }
 }

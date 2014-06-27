@@ -1,82 +1,71 @@
 package com.stratio.meta.deep.comparators;
 
 
-import com.stratio.deep.entity.Cells;
-import com.stratio.meta.core.structures.OrderDirection;
-import com.stratio.meta.core.structures.Ordering;
-
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-public class DeepComparator implements Comparator<Cells>, Serializable{
+import com.stratio.deep.entity.Cells;
+import com.stratio.meta.core.structures.OrderDirection;
+import com.stratio.meta.core.structures.Ordering;
 
-    /**
-     * Serial version UID.
-     */
-    private static final long serialVersionUID = 3173462422717736001L;
+public class DeepComparator implements Comparator<Cells>, Serializable {
 
-    /**
-     * ORDER BY Clause.
-     */
-    private List<Ordering> orderings;
+  /**
+   * Serial version UID.
+   */
+  private static final long serialVersionUID = 3173462422717736001L;
 
-    /**
-     * DeepComparator constructor.
-     * @param orderings List of {@link com.stratio.meta.core.structures.Ordering} which represents ORDER BY clause.
-     */
-    public DeepComparator(List<Ordering> orderings){
-        this.orderings = orderings;
+  /**
+   * ORDER BY Clause.
+   */
+  private List<Ordering> orderings;
+
+  /**
+   * DeepComparator constructor.
+   * 
+   * @param orderings List of {@link com.stratio.meta.core.structures.Ordering} which represents
+   *        ORDER BY clause.
+   */
+  public DeepComparator(List<Ordering> orderings) {
+    this.orderings = orderings;
+  }
+
+  @Override
+  public int compare(Cells o1, Cells o2) {
+    boolean resolution = false;
+    int result = 0;
+    Iterator<Ordering> it = orderings.iterator();
+    while (!resolution && it.hasNext()) {
+      Ordering ordering = it.next();
+      String currentField = ordering.getSelectorIdentifier().getField();
+      result =
+          ((Comparable) o1.getCellByName(currentField).getCellValue()).compareTo(o2.getCellByName(
+              currentField).getCellValue());
+      if (result != 0) {
+        resolution = true;
+        result = checkOrderDirection(result, ordering);
+      }
     }
 
-    @Override
-    public int compare(Cells o1, Cells o2) {
-        boolean resolution=false;
-        int result=0;
-        Iterator<Ordering> it =  orderings.iterator();
-        while(!resolution && it.hasNext()){
-            Ordering ordering = it.next();
-            String currentField = splitAndGetFieldName(ordering.getIdentifier());
-            result = ((Comparable)o1.getCellByName(currentField).getCellValue()).compareTo(o2.getCellByName(currentField).getCellValue());
-            if(result != 0){
-                resolution = true;
-                result = checkOrderDirection(result, ordering);
-            }
-        }
+    return result;
+  }
 
-        return result;
+  /**
+   * Change result depending on ORDER BY direction.
+   * 
+   * @param result Result of comparison.
+   * @param ordering current {@link com.stratio.meta.core.structures.Ordering}.
+   * @return same result or contrary depending on direction.
+   */
+  private int checkOrderDirection(int input, Ordering ordering) {
+
+    int result = input;
+    if (ordering.isDirInc() && ordering.getOrderDir() == OrderDirection.DESC) {
+      result = input * -1;
     }
 
-    /**
-     * Change result depending on ORDER BY direction.
-     *
-     * @param result Result of comparison.
-     * @param ordering current {@link com.stratio.meta.core.structures.Ordering}.
-     * @return same result or contrary depending on direction.
-     */
-    private int checkOrderDirection(int result, Ordering ordering){
-        if(ordering.isDirInc() && ordering.getOrderDir() == OrderDirection.DESC){
-            if(result == 1){
-                result = -1;
-            } else {
-                result = 1;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Given a name of table (with or without keyspace), check if contains keyspace and only return table name.
-     *
-     * @param fullName Given table name in query.
-     * @return Only table name.
-     */
-    private String splitAndGetFieldName(String fullName){
-        if(fullName.contains(".")){
-            String[] ksAndTableName = fullName.split("\\.");
-            return ksAndTableName[1];
-        }
-        return fullName;
-    }
+    return result;
+  }
 }

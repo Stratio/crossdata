@@ -24,7 +24,7 @@
     <parent>
         <artifactId>meta-parent</artifactId>
         <groupId>com.stratio.meta</groupId>
-        <version>0.0.5-SNAPSHOT</version>
+        <version>0.0.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -82,12 +82,12 @@
         <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-server</artifactId>
-            <version>${meta.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-sh</artifactId>
-            <version>${meta.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
     <build>
@@ -100,7 +100,7 @@
                     <configurationDirectory>conf</configurationDirectory>
                     <copyConfigurationDirectory>true</copyConfigurationDirectory>
                     <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
-                    <assembleDirectory>${project.build.directory}/meta-dist-${meta.version}</assembleDirectory>
+                    <assembleDirectory>${project.build.directory}/meta-dist-${project.parent.version}</assembleDirectory>
                     <extraJvmArguments>-Xms512m</extraJvmArguments>
                     <repositoryLayout>flat</repositoryLayout>
                     <generateRepository>true</generateRepository>
@@ -186,7 +186,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/meta-dist-${meta.version}</outputDirectory>
+                            <outputDirectory>${project.build.directory}/meta-dist-${project.parent.version}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.basedir}/src/main/include</directory>

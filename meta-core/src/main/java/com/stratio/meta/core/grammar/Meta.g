@@ -33,6 +33,7 @@ options {
     import java.util.Map;
     import java.util.Set;
     import java.util.HashSet;
+    import org.apache.commons.lang3.tuple.MutablePair;
 }
 
 @members {
@@ -94,14 +95,17 @@ fragment EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
 fragment POINT: '.';
 
 // Case-insensitive keywords
+T_DESCRIBE: D E S C R I B E;
 T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
 T_ALTER: A L T E R;
 T_KEYSPACE: K E Y S P A C E;
+T_KEYSPACES: K E Y S P A C E S;
 T_NOT: N O T;
 T_WITH: W I T H;
 T_DROP: D R O P;
 T_TABLE: T A B L E;
+T_TABLES: T A B L E S;
 T_IF: I F;
 T_EXISTS: E X I S T S;
 T_AND: A N D;
@@ -189,6 +193,7 @@ T_INTERROGATION: '?';
 T_ASTERISK: '*';
 T_GROUP: G R O U P;
 T_AGGREGATION: A G G R E G A T I O N;
+T_SUM: S U M;
 T_MAX: M A X;
 T_MIN: M I N;
 T_AVG: A V G;
@@ -198,12 +203,17 @@ T_GTE: '>' '=';
 T_LTE: '<' '=';
 T_NOT_EQUAL: '<' '>'; 
 T_TOKEN: T O K E N;
-T_SECONDS: S E C O N D S;
-T_MINUTES: M I N U T E S;
-T_HOURS: H O U R S;
-T_DAYS: D A Y S;
 T_MATCH: M A T C H;
-T_DESCRIBE: D E S C R I B E;
+T_SEC: S E C;
+T_SECS: S E C S;
+T_SECONDS: S E C O N D S;
+T_MINS: M I N S;
+T_MINUTES: M I N U T E S;
+T_HOUR: H O U R;
+T_HOURS: H O U R S;
+T_DAY: D A Y;
+T_DAYS: D A Y S;
+
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -233,7 +243,10 @@ T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 
 describeStatement returns [DescribeStatement descs]:
     T_DESCRIBE (T_KEYSPACE keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.KEYSPACE); $descs.setKeyspace($keyspace.text);}
+    	| T_KEYSPACE {$descs = new DescribeStatement(DescribeType.KEYSPACE);}
+    	| T_KEYSPACES {$descs = new DescribeStatement(DescribeType.KEYSPACES);}
         | T_TABLE tablename=getTableID { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
+        | T_TABLES {$descs = new DescribeStatement(DescribeType.TABLES);}
     )
 ;
 
@@ -245,8 +258,8 @@ deleteStatement returns [DeleteStatement ds]
 	T_DELETE 
 	(
         T_START_PARENTHESIS
-        firstField=(T_IDENT | T_LUCENE) {$ds.addColumn($firstField.text);}
-		(T_COMMA field=(T_IDENT | T_LUCENE) {$ds.addColumn($field.text);})*	
+        firstField=getField {$ds.addColumn(firstField);}
+		(T_COMMA field=getField {$ds.addColumn(field);})*
         T_END_PARENTHESIS
         )?
 	T_FROM
@@ -297,14 +310,14 @@ createIndexStatement returns [CreateIndexStatement cis]
 	@init{
 		$cis = new CreateIndexStatement();
 	}:
-	T_CREATE indexType=getIndexType {$cis.setIndexType(indexType);} T_INDEX
+	T_CREATE {$cis.setIndexType("default");} (indexType=getIndexType {$cis.setIndexType(indexType);})? T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
 	(name=T_IDENT {$cis.setName($name.text);})? 
 	T_ON tableName=getTableID {$cis.setTableName(tableName);}
 	T_START_PARENTHESIS
-            firstField=(T_IDENT | T_LUCENE) {$cis.addColumn($firstField.text);}
+        firstField=getField {$cis.addColumn(firstField);}
 	(T_COMMA
-		field=(T_IDENT | T_LUCENE) {$cis.addColumn($field.text);}
+		field=getField {$cis.addColumn(field);}
 	)*
 	T_END_PARENTHESIS
 	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.toString());})?
@@ -317,6 +330,25 @@ createIndexStatement returns [CreateIndexStatement cis]
 (T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=T_IDENT T_COLON value=getValueProperty {$cis.addOption($key.text, value);}
 		(T_AND key=T_IDENT T_COLON value=getValueProperty {$cis.addOption($key.text, value);} )* T_END_SBRACKET
 */
+
+getField returns [String newField]:
+    (unitField=getUnits {$newField = unitField;}
+    |fieldToken=(T_IDENT | T_LUCENE | T_KEY) {$newField = $fieldToken.text;})
+;
+
+getUnits returns [String newUnit]:
+    unitToken=(T_SEC
+    | T_SECS
+    | T_SECONDS
+    | T_MIN
+    | T_MINS
+    | T_MINUTES
+    | T_HOUR
+    | T_HOURS
+    | T_DAY
+    | T_DAYS)
+    {$newUnit = $unitToken.text;}
+;
 
 updateTableStatement returns [UpdateTableStatement pdtbst]
     @init{
@@ -348,8 +380,12 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
     ;
 
 stopProcessStatement returns [StopProcessStatement stprst]:
-    T_STOP T_PROCESS ident=T_IDENT { $stprst = new StopProcessStatement($ident.text); }
+    T_STOP T_PROCESS ident=getProcess { $stprst = new StopProcessStatement(ident); }
     ;
+
+getProcess returns [String procname]:
+    processname=(T_PATH | T_IDENT) {$procname = $processname.text;}
+;
 
 dropTriggerStatement returns [DropTriggerStatement drtrst]:
     T_DROP 
@@ -368,7 +404,6 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
     {$crtrst = new CreateTriggerStatement($trigger_name.text,$table_name.text,$class_name.text);}
     ;
 
-
 createTableStatement returns [CreateTableStatement crtast]
 @init{
     LinkedHashMap<String, String> columns = new LinkedHashMap<>();
@@ -385,28 +420,28 @@ createTableStatement returns [CreateTableStatement crtast]
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     tablename=getTableID
     T_START_PARENTHESIS (            
-                ident_column1=(T_IDENT | T_LUCENE | T_KEY) type1=getDataType (T_PRIMARY T_KEY)? {columns.put($ident_column1.text,type1); primaryKeyType=1;}
+                ident_column1=getField type1=getDataType (T_PRIMARY T_KEY)? {columns.put(ident_column1, type1); primaryKeyType=1;}
                 (   
-                    ( T_COMMA ident_columN=(T_IDENT | T_LUCENE | T_KEY) typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put($ident_columN.text,typeN);columnNumberPK_inter+=1;})
+                    ( T_COMMA ident_columN=getField typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put(ident_columN, typeN);columnNumberPK_inter+=1;})
                     |(  
                         T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS
                         (
-                            (   primaryK=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($primaryK.text);primaryKeyType=2;}
+                            (   primaryK=getField {primaryKey.add(primaryK);primaryKeyType=2;}
                            
-                                (T_COMMA partitionKN=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionKN.text);})*
+                                (T_COMMA partitionKN=getField {primaryKey.add(partitionKN);})*
                             )
                             |(
-                                T_START_PARENTHESIS partitionK=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionK.text);primaryKeyType=3;}
-                                    (T_COMMA partitionKN=(T_IDENT | T_LUCENE | T_KEY) {primaryKey.add($partitionKN.text);})*
+                                T_START_PARENTHESIS partitionK=getField {primaryKey.add(partitionK); primaryKeyType=3;}
+                                    (T_COMMA partitionKN=getField {primaryKey.add(partitionKN);})*
                                 T_END_PARENTHESIS 
-                                (T_COMMA clusterKN=(T_IDENT | T_LUCENE | T_KEY) {clusterKey.add($clusterKN.text);})*
+                                (T_COMMA clusterKN=getField {clusterKey.add(clusterKN);})*
 
                             )
                         )
-                       T_END_PARENTHESIS 
+                       T_END_PARENTHESIS
                    )
-                )* 
-         )             
+                )*
+         )
     T_END_PARENTHESIS (T_WITH {withProperties=true;} properties=getMetaProperties)?
     {
         $crtast = new CreateTableStatement(tablename, columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
@@ -414,8 +449,7 @@ createTableStatement returns [CreateTableStatement crtast]
         $crtast.setIfNotExists(ifNotExists);
         $crtast.setWithProperties(withProperties);
     }
-;        
-
+;
         
 alterTableStatement returns [AlterTableStatement altast]
 @init{
@@ -424,12 +458,12 @@ alterTableStatement returns [AlterTableStatement altast]
     T_ALTER
     T_TABLE
     tablename=getTableID
-    (T_ALTER column=(T_IDENT | T_LUCENE) T_TYPE type=T_IDENT {option=1;}
-        |T_ADD column=(T_IDENT | T_LUCENE) type=T_IDENT {option=2;}
-        |T_DROP column=(T_IDENT | T_LUCENE) {option=3;}
+    (T_ALTER column=getField T_TYPE type=T_IDENT {option=1;}
+        |T_ADD column=getField type=T_IDENT {option=2;}
+        |T_DROP column=getField {option=3;}
         |(T_WITH {option=4;} props=getMetaProperties)?
     )
-    {$altast = new AlterTableStatement(tablename, $column.text, $type.text, props, option);  }
+    {$altast = new AlterTableStatement(tablename, column, $type.text, props, option);  }
 ;
 
 selectStatement returns [SelectStatement slctst]
@@ -441,31 +475,37 @@ selectStatement returns [SelectStatement slctst]
         boolean groupInc = false;
         boolean limitInc = false;
         boolean disable = false;
+        Map fieldsAliasesMap = new HashMap<String, String>();
+        Map tablesAliasesMap = new HashMap<String, String>();
+        MutablePair<String, String> pair = new MutablePair<>();
     }:
-    T_SELECT selClause=getSelectClause T_FROM tablename=getTableID 
+    T_SELECT selClause=getSelectClause[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?    
-    (T_INNER T_JOIN { joinInc = true;} identJoin=getTableID T_ON fields=getFields)?
+    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON getFields[pair])?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses)?
     (T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
-    (T_GROUP T_BY {groupInc = true;} groupby=getList)?
+    (T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
     (T_LIMIT {limitInc = true;} constant=getConstant)?
     (T_DISABLE T_ANALYTICS {disable = true;})?
     {
-        $slctst = new SelectStatement(selClause, tablename);        
+        $slctst = new SelectStatement(selClause, tablename);
         if(windowInc)
             $slctst.setWindow(window);
         if(joinInc)
-            $slctst.setJoin(new InnerJoin(identJoin, fields)); 
+            $slctst.setJoin(new InnerJoin(identJoin, pair.getLeft(), pair.getRight())); 
         if(whereInc)
              $slctst.setWhere(whereClauses); 
         if(orderInc)
              $slctst.setOrder(ordering);
         if(groupInc)
-            $slctst.setGroup(new GroupBy(groupby)); 
+             $slctst.setGroup(groupby);
         if(limitInc)
-            $slctst.setLimit(Integer.parseInt(constant));
+             $slctst.setLimit(Integer.parseInt(constant));
         if(disable)
             $slctst.setDisableAnalytics(true);
+            
+        $slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
+        $slctst.updateTableNames();
     };
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
@@ -481,8 +521,8 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
     T_INTO 
     tableName=getTableID
     T_START_PARENTHESIS 
-    ident1=(T_IDENT | T_LUCENE) {ids.add($ident1.text);} 
-    (T_COMMA identN=(T_IDENT | T_LUCENE) {ids.add($identN.text);})* 
+    ident1=getField {ids.add(ident1);}
+    (T_COMMA identN=getField {ids.add(identN);})*
     T_END_PARENTHESIS
     ( 
         selectStmnt=selectStatement {typeValues = InsertIntoStatement.TYPE_SELECT_CLAUSE;}
@@ -686,8 +726,17 @@ getOrdering returns [ArrayList<Ordering> order]
         order = new ArrayList<>();
         Ordering ordering;
     }:
-    ident1=T_IDENT {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
-    (T_COMMA identN=T_IDENT {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+    ident1=(T_KS_AND_TN | T_IDENT) {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
+    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+;
+
+getGroupBy returns [ArrayList<GroupBy> groups]
+    @init{
+        groups = new ArrayList<>();
+        GroupBy groupBy;
+    }:
+    ident1=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($ident1.text); groups.add(groupBy);}
+    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($identN.text); groups.add(groupBy);})*
 ;
 
 getWhereClauses returns [ArrayList<Relation> clauses]
@@ -697,12 +746,9 @@ getWhereClauses returns [ArrayList<Relation> clauses]
     rel1=getRelation {clauses.add(rel1);} (T_AND relN=getRelation {clauses.add(relN);})*
 ;
 
-getFields returns [Map<String, String> fields]
-    @init{
-        fields = new HashMap<>();
-    }:
-    ident1L=getTableID T_EQUAL ident1R=getTableID { fields.put(ident1L, ident1R);}
-    (T_AND identNL=getTableID T_EQUAL identNR=getTableID { fields.put(identNL, identNR);})* 
+getFields[MutablePair pair]:
+    ident1L=getTableID { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableID { pair.setRight(ident1R); }
+    | T_START_PARENTHESIS ident1L=getTableID { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableID { pair.setRight(ident1R); } T_END_PARENTHESIS
 ;
 
 getWindow returns [WindowSelect ws]:
@@ -713,24 +759,22 @@ getWindow returns [WindowSelect ws]:
     );
 
 getTimeUnit returns [TimeUnit unit]:
-    ( 'S' {$unit=TimeUnit.SECONDS;}
-    | 'M' {$unit=TimeUnit.MINUTES;}
-    | 'H' {$unit=TimeUnit.HOURS;}
-    | 'D' {$unit=TimeUnit.DAYS;}
-    | 's' {$unit=TimeUnit.SECONDS;}
-    | 'm' {$unit=TimeUnit.MINUTES;}
-    | 'h' {$unit=TimeUnit.HOURS;}
-    | 'd' {$unit=TimeUnit.DAYS;}
+    ( T_SEC {$unit=TimeUnit.SECONDS;}
+    | T_SECS {$unit=TimeUnit.SECONDS;}
     | T_SECONDS {$unit=TimeUnit.SECONDS;}
+    | T_MIN {$unit=TimeUnit.MINUTES;}
+    | T_MINS {$unit=TimeUnit.MINUTES;}
     | T_MINUTES {$unit=TimeUnit.MINUTES;}
+    | T_HOUR {$unit=TimeUnit.HOURS;}
     | T_HOURS {$unit=TimeUnit.HOURS;}
+    | T_DAY {$unit=TimeUnit.DAYS;}
     | T_DAYS {$unit=TimeUnit.DAYS;}
     )
 ;
 
-getSelectClause returns [SelectionClause sc]:
+getSelectClause[Map fieldsAliasesMap] returns [SelectionClause sc]:
     scc=getSelectionCount {$sc = scc;}
-    | scl=getSelectionList {$sc = scl;}
+    | scl=getSelectionList[fieldsAliasesMap] {$sc = scl;}
 ;
 
 getSelectionCount returns [SelectionCount scc]
@@ -738,7 +782,7 @@ getSelectionCount returns [SelectionCount scc]
         boolean identInc = false;
         char symbol = '*';
     }:
-    T_COUNT T_START_PARENTHESIS ( symbolStr=getCountSymbol { symbol=symbolStr.charAt(0); } ) T_END_PARENTHESIS
+    T_COUNT T_START_PARENTHESIS symbolStr=getCountSymbol { symbol=symbolStr.charAt(0); } T_END_PARENTHESIS
     (T_AS {identInc = true;} ident=T_IDENT )? 
     {
         if(identInc)
@@ -749,45 +793,52 @@ getSelectionCount returns [SelectionCount scc]
 ;
 
 getCountSymbol returns [String str]:
-    T_ASTERISK {$str = new String("*");}
+    '*' {$str = new String("*");}
     | '1' {$str = new String("1");}
     ;
 
-getSelectionList returns [SelectionList scl]
+getSelectionList[Map fieldsAliasesMap] returns [SelectionList scl]
     @init{
         boolean distinct = false;
     }:
-    (T_DISTINCT {distinct = true;})? selections=getSelection
+    (T_DISTINCT {distinct = true;})? selections=getSelection[fieldsAliasesMap]
     { $scl = new SelectionList(distinct, selections);}
 ;
 
-getSelection returns [Selection slct]
+getSelection[Map fieldsAliasesMap] returns [Selection slct]
     @init{
         SelectionSelector slsl;
         ArrayList<SelectionSelector> selections = new ArrayList<>();
     }:
     (
         T_ASTERISK { $slct = new SelectionAsterisk();}       
-        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS ident1=T_IDENT {slsl.setAlias($ident1.text);})? {selections.add(slsl);}
-            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS identN=T_IDENT {slsl.setAlias($identN.text);})? {selections.add(slsl);})*
+        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS alias1=getAlias {slsl.setAlias($alias1.text); fieldsAliasesMap.put($alias1.text, selector1.toString());})? {selections.add(slsl);}
+            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS aliasN=getAlias {slsl.setAlias($aliasN.text); fieldsAliasesMap.put($aliasN.text, selectorN.toString());})? {selections.add(slsl);})*
             { $slct = new SelectionSelectors(selections);}
     )
 ;
+
+getAlias returns [String alias]:
+	ident=T_IDENT {$alias=$ident.text;}
+;
+	
 
 getSelector returns [SelectorMeta slmt]
     @init{
         ArrayList<SelectorMeta> params = new ArrayList<>();
         GroupByFunction gbFunc = null;
     }:
-    ( (T_AGGREGATION {gbFunc = GroupByFunction.AGGREGATION;}
+    ( (T_SUM {gbFunc = GroupByFunction.SUM;}
        | T_MAX {gbFunc = GroupByFunction.MAX;}
        | T_MIN {gbFunc = GroupByFunction.MIN;}
        | T_AVG {gbFunc = GroupByFunction.AVG;}
        | T_COUNT {gbFunc = GroupByFunction.COUNT;}
       ) 
             T_START_PARENTHESIS 
-                (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 
-            T_END_PARENTHESIS {$slmt = new SelectorGroupBy(gbFunc, params);}
+                (select1=getSelector {params.add(select1);}
+                | T_ASTERISK {params.add(new SelectorIdentifier("*"));}
+                )?
+            T_END_PARENTHESIS {$slmt = new SelectorGroupBy(gbFunc, params.get(0));}
         | (identID=getTableID | luceneID=T_LUCENE) (
             {if (identID != null) $slmt = new SelectorIdentifier(identID); else $slmt = new SelectorIdentifier($luceneID.text);}
             | T_START_PARENTHESIS (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)? 
@@ -918,10 +969,12 @@ getTermOrLiteral returns [ValueCell vc]
     T_END_SBRACKET {$vc=cl;}
 ;
 
-getTableID returns [String tableID]
-    @init{
-        $tableID="";
-    }: 
+getAliasedTableID[Map tablesAliasesMap] returns [String tableID]:
+	(ident1=T_IDENT {$tableID = new String($ident1.text);}    
+    | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);}) (alias=T_IDENT {tablesAliasesMap.put($alias.text, $tableID);})?
+    ;
+    
+getTableID returns [String tableID]:
     (ident1=T_IDENT {$tableID = new String($ident1.text);}    
     | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);})
     ;

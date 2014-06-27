@@ -6,7 +6,7 @@ import com.stratio.meta.server.actors.{PlannerActor,  ExecutorActor}
 import akka.testkit._
 import com.typesafe.config.ConfigFactory
 import org.scalatest.FunSuiteLike
-import com.stratio.meta.common.result.Result
+import com.stratio.meta.common.result._
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import akka.pattern.ask
@@ -14,23 +14,22 @@ import org.testng.Assert._
 import scala.util.Success
 import com.stratio.meta.server.utilities._
 import scala.collection.mutable
-import com.stratio.meta.server.config.BeforeAndAfterCassandra
-
+import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
+import com.stratio.meta.communication.ACK
+import com.stratio.meta.communication.ACK
+import scala.util.Success
+import com.stratio.meta.common.ask.Query
 
 /**
- * To generate unit test of proxy actor
+ * Planner actor tests.
  */
-class BasicPlannerActorTest extends TestKit(ActorSystem("TestKitUsageExecutorActorSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
-{
+class BasicPlannerActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
-  lazy val engine:Engine =  createEngine.create()
-
+  val engine:Engine =  createEngine.create()
 
   lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
   lazy val plannerRef = system.actorOf(PlannerActor.props(executorRef,engine.getPlanner),"TestPlanerActor")
   lazy val plannerRefTest= system.actorOf(PlannerActor.props(testActor,engine.getPlanner),"TestPlanerActorTest")
-
 
   override def beforeCassandraFinish() {
     shutdown(system)
@@ -41,40 +40,57 @@ with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
     engine.shutdown()
   }
 
+  def executeStatement(query: String, keyspace: String, shouldExecute: Boolean) : Result = {
+    val parsedStmt = engine.getParser.parseStatement(query)
+    parsedStmt.setSessionKeyspace(keyspace)
+    val stmt=engine.getValidator.validateQuery(parsedStmt)
+    plannerRef ! stmt
+
+    val result = receiveActorMessages(shouldExecute, false, !shouldExecute)
+
+    if(shouldExecute) {
+      assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
+                                   + "\n error: " + getErrorMessage(result))
+    }else{
+      assertTrue(result.hasError, "Statement should report an error")
+    }
+
+    result
+  }
 
   test("executor resend to executor message 1"){
     within(5000 millis){
-
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
-      stmt.setSessionKeyspace("ks_demo1")
+      stmt.setSessionKeyspace("")
       val stmt1=engine.getValidator.validateQuery(stmt)
       plannerRefTest ! stmt1
+      expectMsgClass(classOf[ACK])
       expectMsg(engine.getPlanner.planQuery(stmt1))
 
     }
   }
+
   test("executor resend to executor message 2"){
     within(5000 millis){
-
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
-      stmt.setSessionKeyspace("ks_demo1")
+      stmt.setSessionKeyspace("")
       val stmt1=engine.getValidator.validateQuery(stmt)
-      stmt1.setError("Error creating KEYSPACE ks_demo1 - resent 2")
+      stmt1.setErrorMessage(ErrorType.PARSING, "Error creating KEYSPACE ks_demo1 - resent 2")
       plannerRefTest ! stmt1
-      expectNoMsg()
+      val result = expectMsgClass(classOf[Result])
+      assertTrue(result.hasError, "Error expected");
     }
   }
+
   test("executor resend to executor message 3"){
     within(5000 millis){
-
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       val stmt = engine.getParser.parseStatement(query)
       stmt.setSessionKeyspace("ks_demo1")
       val stmt1=engine.getValidator.validateQuery(stmt)
-      stmt1.setError("Error creating KEYSPACE ks_demo1- resent 3")
-      stmt1.setErrorMessage("it is a test of error")
+      stmt1.setErrorMessage(ErrorType.PARSING, "it is a test of error")
       var complete:Boolean=true
       val futureExecutorResponse=plannerRefTest.ask(stmt1)(2 second)
       try{
@@ -91,141 +107,128 @@ with DefaultTimeout with FunSuiteLike  with  BeforeAndAfterCassandra
         value_response match{
         case Success(value:Result)=>
           if (value.hasError){
-            assertEquals(value.getErrorMessage,"it is a test of error")
+            assertEquals(getErrorMessage(value),"it is a test of error")
           }
         case _ =>
             fail("Invalid response");
         }
-
       }
     }
   }
 
-  val querying= new queryString
-
-
-  test ("executor Test"){
-
+  test ("Unknown message"){
     within(5000 millis){
-
       plannerRef ! 1
-      expectNoMsg
-
+      val result = expectMsgClass(classOf[ErrorResult])
+      assertTrue(result.hasError, "Expecting error message")
     }
   }
-  test ("PlannerActor create KS"){
 
+  test ("Create catalog"){
     within(5000 millis){
-
       val msg= "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      executeStatement(msg, "", true)
     }
   }
-  test ("PlannerActor create KS yet"){
 
-    within(5000 millis){
-
+  test ("Create existing catalog"){
+    within(7000 millis){
       val msg="create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Keyspace ks_demo already exists." )
+      executeStatement(msg, "", false)
     }
   }
 
-  test ("PlannerActor use KS"){
-
+  test ("Use keyspace"){
     within(5000 millis){
-
-      val msg="use ks_demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      val msg = "use ks_demo ;"
+      val result = executeStatement(msg, "", true)
+      assertTrue(result.isInstanceOf[QueryResult], "Invalid result type")
+      val r = result.asInstanceOf[QueryResult]
+      assertTrue(r.isCatalogChanged, "New keyspace should be used");
+      assertEquals(r.getCurrentCatalog, "ks_demo", "New keyspace should be used");
     }
   }
 
-  test ("PlannerActor use KS yet"){
-
+  test ("validatorActor use KS from current catalog"){
     within(5000 millis){
-
-      val msg="use ks_demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      val msg = "use ks_demo ;"
+      val result = executeStatement(msg, "ks_demo", true)
+      assertTrue(result.isInstanceOf[QueryResult], "Invalid result type")
+      val r = result.asInstanceOf[QueryResult]
+      assertTrue(r.isCatalogChanged, "New keyspace should be used");
+      assertEquals(r.getCurrentCatalog, "ks_demo", "New keyspace should be used");
     }
   }
 
-
- 
-  test ("PlannerActor insert into table not create yet without error"){
-
-    within(5000 millis){
-
+  test ("Insert into non-existing table"){
+    within(7000 millis){
       val msg="insert into demo (field1, field2) values ('test1','text2');"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Table demo does not exist." )
-    }
-  }
-  test ("PlannerActor select without table"){
-
-    within(5000 millis){
-
-      val msg="select * from demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Table demo does not exist.")
+      executeStatement(msg, "ks_demo", false)
     }
   }
 
+  test ("Select from non-existing table"){
+  within(7000 millis){
+      val msg="select * from unknown ;"
+      executeStatement(msg, "ks_demo", false)
+    }
+  }
 
-  test ("PlannerActor create table not create yet"){
-
+  test ("Create table"){
     within(5000 millis){
-
       val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      executeStatement(msg, "ks_demo", true)
     }
   }
 
-  test ("PlannerActor create table  create yet"){
-
-    within(5000 millis){
-
+  test ("Create existing table"){
+    within(7000 millis){
       val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Table demo already exists." )
+      executeStatement(msg, "ks_demo", false)
     }
   }
 
-  test ("PlannerActor insert into table  create yet without error"){
-
+  test ("Insert into table"){
     within(5000 millis){
-
-      val msg="insert into demo (field1, field2) values ('test1','text2');"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      val msg="insert into demo (field1, field2) values ('text1','text2');"
+      executeStatement(msg, "ks_demo", true)
     }
   }
-  test ("PlannerActor select"){
 
+  test ("Select"){
     within(5000 millis){
-
       val msg="select * from demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),mutable.MutableList("test1", "text2").toString() )
+      var result = executeStatement(msg, "ks_demo", true)
+      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
+      val queryResult = result.asInstanceOf[QueryResult]
+      assertEquals(queryResult.getResultSet.size(), 1, "Cannot retrieve data")
+      val r = queryResult.getResultSet.iterator().next()
+      assertEquals(r.getCells.get("field1").getValue, "text1", "Invalid row content")
+      assertEquals(r.getCells.get("field2").getValue, "text2", "Invalid row content")
     }
   }
-  test ("PlannerActor drop table "){
 
+  test ("Drop table"){
     within(5000 millis){
-
       val msg="drop table demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      executeStatement(msg, "ks_demo", true)
     }
   }
-  test ("PlannerActor drop KS "){
 
+  test ("Drop keyspace"){
     within(5000 millis){
-
       val msg="drop keyspace ks_demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"sucess" )
+      executeStatement(msg, "ks_demo", true)
     }
   }
-  test ("PlannerActor drop KS  not exit"){
 
-    within(5000 millis){
-
+  test ("Drop non-existing keyspace"){
+    within(7000 millis){
       val msg="drop keyspace ks_demo ;"
-      assertEquals(querying.proccess(msg,plannerRef,engine,2),"Keyspace ks_demo does not exist." )
+      executeStatement(msg, "ks_demo", false)
     }
   }
+
 }
 
 

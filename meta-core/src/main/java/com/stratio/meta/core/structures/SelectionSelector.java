@@ -68,5 +68,8 @@ public class SelectionSelector {
         }
         return sb.toString();
     }
-    
+
+  public void addTablename(String tablename) {
+    selector.addTablename(tablename);
+  }
 }

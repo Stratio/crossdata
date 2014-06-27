@@ -30,35 +30,40 @@ import static org.testng.Assert.assertTrue;
 
 public class BasicPlannerTest extends BasicCoreCassandraTest{
 
-    protected static MetadataManager _metadataManager = null;
+  protected static MetadataManager _metadataManager = null;
 
-    protected MetaStatement stmt;
+  protected MetaStatement stmt;
 
-    @BeforeClass
-    public static void setUpBeforeClass(){
-        BasicCoreCassandraTest.setUpBeforeClass();
-        BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-        _metadataManager = new MetadataManager(_session);
-        _metadataManager.loadMetadata();
-    }
+  @BeforeClass
+  public static void setUpBeforeClass(){
+    BasicCoreCassandraTest.setUpBeforeClass();
+    BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
+    _metadataManager = new MetadataManager(_session, null);
+    _metadataManager.loadMetadata();
+  }
 
-    public void validateCassandraPath(String method){
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA), method+": Plan path should be CASSANDRA");
-    }
+  public void validateCassandraPath(String method){
+    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA), method+": Plan path should be CASSANDRA");
+  }
 
-    public void validateDeepPath(String method){
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.DEEP), method+": Plan path should be DEEP");
-    }
+  public void validateDeepPath(String method){
+    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    assertTrue(tree.getNode().getPath().equals(MetaPath.DEEP), method+": Plan path should be DEEP");
+  }
 
-    public void validateCommandPath(String method){
-        Tree tree = stmt.getPlan(_metadataManager, "demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.COMMAND), method+": Plan path should be COMMAND");
-    }
+  public void validateCommandPath(String method){
+    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    assertTrue(tree.getNode().getPath().equals(MetaPath.COMMAND), method+": Plan path should be COMMAND");
+  }
 
-    public void validateNotSupported(){
-        Tree tree = stmt.getPlan(_metadataManager,"demo");
-        assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
-    }
+  public void validateStreamingPath(String method){
+    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    assertTrue(tree.getNode().getPath().equals(MetaPath.STREAMING), method+": Plan path should be STREAMING");
+  }
+
+  public void validateNotSupported(){
+    Tree tree = stmt.getPlan(_metadataManager,"demo");
+    assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
+  }
 }

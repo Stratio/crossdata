@@ -26,75 +26,119 @@ import com.stratio.meta.common.data.ResultSet;
  */
 public class QueryResult extends Result {
 
-    /**
-     * Serial version UID in order to be {@link java.io.Serializable}.
-     */
-    private static final long serialVersionUID = -5367895767326893839L;
+  /**
+   * Serial version UID in order to be {@link java.io.Serializable}.
+   */
 
-    /**
-     * Set of tuples returned by the server after successfully executing the query.
-     */
-    private final ResultSet resultSet;
+  /**
+   * Set of tuples returned by the server after successfully executing the query.
+   */
+  private final ResultSet resultSet;
 
-    /**
-     * Private class constructor of the factory.
-     * @param resultSet The set of tuples returned.
-     * @param error Whether an error occurred during the query execution.
-     * @param errorMessage The error message in case of {@code error}.
-     * @param ksChanged Whether the current keyspace in the user session is modified by the query execution.
-     * @param currentKeyspace The current keyspace in case of {@code ksChanged}.
-     */
-    private QueryResult(ResultSet resultSet,
-                        boolean error,
-                        String errorMessage,
-                        boolean ksChanged,
-                        String currentKeyspace){
-        super(error,errorMessage,ksChanged,currentKeyspace);
-        this.resultSet=resultSet;
-    }
+  /**
+   * Determine whether this query result contains the last resultset of the query.
+   */
+  private boolean lastResultSet = false;
 
-    /**
-     * Get the set of results returned by the query.
-     * @return The set or null if an error occurred.
-     */
-    public ResultSet getResultSet() {
-        return resultSet;
-    }
+  /**
+   * Number of results sets that are part of the same query identifier sent to the client.
+   */
+  private int resultPage = 0;
 
-    /**
-     * Create a successful query result.
-     * @return A {@link com.stratio.meta.common.result.QueryResult} without a {@link com.stratio.meta.common.data.ResultSet}.
-     */
-    public static QueryResult createSuccessQueryResult(){
-        return  createSuccessQueryResult(null);
-    }
+  /**
+   * The current user session catalog if it has been changed.
+   */
+  private String currentCatalog = null;
 
-    /**
-     * Create a successful query result.
-     * @param resultSet The associated {@link com.stratio.meta.common.data.ResultSet}
-     * @return A {@link com.stratio.meta.common.result.QueryResult}.
-     */
-    public static QueryResult createSuccessQueryResult(ResultSet resultSet){
-        return new QueryResult(resultSet,false,null,false,null);
-    }
+  /**
+   * Whether the session catalog has changed.
+   */
+  private boolean catalogChanged = false;
 
-    /**
-     * Create a successful query result.
-     * @param resultSet The associated {@link com.stratio.meta.common.data.ResultSet}.
-     * @param keySpace The new session keyspace.
-     * @return A {@link com.stratio.meta.common.result.QueryResult}.
-     */
-    public static QueryResult createSuccessQueryResult(ResultSet resultSet, String keySpace){
-        return new QueryResult(resultSet,false,null,true,keySpace);
-    }
+  /**
+   * Private class constructor of the factory.
+   *
+   * @param resultSet The set of tuples returned.
+   */
+  private QueryResult(ResultSet resultSet) {
+    this.resultSet = resultSet;
+  }
 
-    /**
-     * Create a failed query result.
-     * @param errorMessage The associated error message.
-     * @return A {@link com.stratio.meta.common.result.QueryResult}.
-     */
-    public static QueryResult createFailQueryResult(String errorMessage){
-        return new QueryResult(null,true,errorMessage,false,null);
-    }
+  /**
+   * Get the set of results returned by the query.
+   *
+   * @return The set or null if an error occurred.
+   */
+  public ResultSet getResultSet() {
+    return resultSet;
+  }
+
+  /**
+   * Set the new user session catalog.
+   *
+   * @param currentCatalog The new catalog.
+   */
+  public void setCurrentCatalog(String currentCatalog) {
+    this.currentCatalog = currentCatalog;
+    this.catalogChanged = true;
+  }
+
+  /**
+   * Whether the session catalog has changed as an effect of executing the requested query.
+   *
+   * @return Whether it has changed or not.
+   */
+  public boolean isCatalogChanged() {
+    return catalogChanged;
+  }
+
+  public String getCurrentCatalog() {
+    return currentCatalog;
+  }
+
+  public void setLastResultSet() {
+    this.lastResultSet = true;
+  }
+
+  public boolean isLastResultSet() {
+    return lastResultSet;
+  }
+
+  public void setResultPage(int resultPage) {
+    this.resultPage = resultPage;
+  }
+
+  public int getResultPage() {
+    return resultPage;
+  }
+
+  public static QueryResult createSuccessQueryResult(){
+    return new QueryResult(null);
+  }
+
+  /**
+   * Create a successful query result.
+   *
+   * @param resultSet The associated {@link com.stratio.meta.common.data.ResultSet}
+   * @return A {@link com.stratio.meta.common.result.QueryResult}.
+   */
+  public static QueryResult createQueryResult(ResultSet resultSet) {
+    return new QueryResult(resultSet);
+  }
+
+
+  /**
+   * Create a successful query result.
+   *
+   * @param resultSet The associated {@link com.stratio.meta.common.data.ResultSet}.
+   * @param catalog   The new session catalog.
+   * @return A {@link com.stratio.meta.common.result.QueryResult}.
+   */
+  public static QueryResult createSuccessQueryResult(ResultSet resultSet, String catalog) {
+    QueryResult result = new QueryResult(resultSet);
+    result.setCurrentCatalog(catalog);
+    return result;
+  }
+
 
 }

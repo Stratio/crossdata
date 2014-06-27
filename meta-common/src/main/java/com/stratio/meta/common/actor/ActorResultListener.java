@@ -17,12 +17,18 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.utils;
+package com.stratio.meta.common.actor;
 
-public enum QueryStatus {
-    NONE,
-    PARSED,
-    VALIDATED,
-    PLANNED,
-    EXECUTED
+import com.stratio.meta.common.result.Result;
+
+/**
+ * Interface for actors listening for streaming results.
+ */
+public interface ActorResultListener {
+
+  /**
+   * Process an incoming result.
+   * @param result The results.
+   */
+  public void processResults(Result result);
 }

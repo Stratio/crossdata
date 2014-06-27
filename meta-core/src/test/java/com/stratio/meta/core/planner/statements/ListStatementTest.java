@@ -22,15 +22,15 @@ package com.stratio.meta.core.planner.statements;
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.ListStatement;
 import com.stratio.meta.core.structures.ListType;
-import org.testng.annotations.Test;
 
 public class ListStatementTest  extends BasicPlannerTest {
 
-    @Test
-    public void planificationNotSupported(){
-        String inputText = "LIST PROCESS;";
-        stmt = new ListStatement(ListType.PROCESS.name());
-        validateNotSupported();
+  //TODO: (Streaming)
+  //@Test
+  public void planificationOK(){
+    String inputText = "LIST PROCESS;";
+    stmt = new ListStatement(ListType.PROCESS.name());
+    validateStreamingPath("planificationOK");
 
-    }
+  }
 }

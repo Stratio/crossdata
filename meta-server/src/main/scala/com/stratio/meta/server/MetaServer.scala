@@ -41,6 +41,7 @@ class MetaServer extends Daemon with ServerConfig{
   override def stop(): Unit = {
     system.shutdown()
     engine.shutdown()
+    logger.info("Meta Server stop")
   }
 
   override def start(): Unit = {
@@ -48,7 +49,7 @@ class MetaServer extends Daemon with ServerConfig{
   }
 
   override def init(p1: DaemonContext): Unit = {
-    logger.info("Init Meta Server --- v0.0.4")
+    logger.info("Init Meta Server --- v0.0.5")
     val serverActor = system.actorOf(ServerActor.props(engine), actorName)
     ClusterReceptionistExtension(system).registerService(serverActor)
   }

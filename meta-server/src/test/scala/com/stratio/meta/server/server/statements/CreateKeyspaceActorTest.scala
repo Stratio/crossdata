@@ -19,12 +19,12 @@
 
 package com.stratio.meta.server.server.statements
 
-import akka.testkit.{DefaultTimeout, TestKit}
+import akka.testkit.{ImplicitSender, DefaultTimeout, TestKit}
 import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
 import com.stratio.meta.server.utilities.{createEngine, TestKitUsageSpec}
 import org.scalatest.FunSuiteLike
-import com.stratio.meta.server.config.BeforeAndAfterCassandra
+import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.server.actors.ServerActor
 import org.testng.Assert._
@@ -33,32 +33,21 @@ import com.stratio.meta.common.ask.Query
 import scala.concurrent.{Await, Future}
 import akka.pattern.ask
 import scala.concurrent.duration._
+import com.stratio.meta.communication.ACK
 
+class CreateKeyspaceActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
-class CreateKeyspaceActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-  with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
-
-  lazy val engine:Engine =  createEngine.create()
+  val engine:Engine =  createEngine.create()
 
   lazy val serverRef = system.actorOf(Props(classOf[ServerActor],engine),"create-keyspace-actor")
 
   def executeStatement(query: String, keyspace: String) : Result = {
-    val stmt = Query(keyspace, query, "test_actor")
-    val futureExecutorResponse:Future[Any]= {
-      serverRef.ask(stmt)(3 second)
-    }
-
-    var result : Result = null
-    try{
-      val r = Await.result(futureExecutorResponse, 3 seconds)
-      result = r.asInstanceOf[Result]
-    }catch{
-      case ex:Exception =>
-      fail("Cannot execute statement: " + stmt.toString + " Exception: " + ex.getMessage)
-    }
+    val stmt = Query("create-keyspace", keyspace, query, "test_actor")
+    serverRef ! stmt
+    val result = receiveActorMessages(true, false, false)
 
     assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
-      + "\n error: " + result.getErrorMessage)
+      + "\n error: " + getErrorMessage(result))
 
     result
   }

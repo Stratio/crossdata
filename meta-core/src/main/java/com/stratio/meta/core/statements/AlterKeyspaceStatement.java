@@ -22,6 +22,7 @@ package com.stratio.meta.core.statements;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.MetaPath;
@@ -71,22 +72,22 @@ public class AlterKeyspaceStatement extends MetaStatement {
     }
 
     @Override
-    public Result validate(MetadataManager metadata) {
+    public Result validate(MetadataManager metadata, EngineConfig config) {
 
         Result result = QueryResult.createSuccessQueryResult();
 
         if(keyspace!= null && keyspace.length() > 0) {
             KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspace);
             if(ksMetadata == null){
-                result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " not found.");
+                result= Result.createValidationErrorResult("Keyspace " + keyspace + " not found.");
             }
         } else {
-            result= QueryResult.createFailQueryResult("Empty keyspace name found.");
+            result= Result.createValidationErrorResult("Empty keyspace name found.");
         }
 
         if(properties.isEmpty() || (!properties.containsKey("replication")
                                     & !properties.containsKey("durable_writes"))){
-            result= QueryResult.createFailQueryResult("At least one property must be included: 'replication' or 'durable_writes'.");
+            result= Result.createValidationErrorResult("At least one property must be included: 'replication' or 'durable_writes'.");
         }
 
         return result;
