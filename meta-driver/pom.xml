@@ -122,12 +122,12 @@
         <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-common</artifactId>
-            <version>${meta.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-server</artifactId>
-            <version>${meta.version}</version>
+            <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

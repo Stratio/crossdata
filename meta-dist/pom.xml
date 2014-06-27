@@ -82,12 +82,12 @@
         <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-server</artifactId>
-            <version>${meta.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-sh</artifactId>
-            <version>${meta.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
     <build>
