@@ -19,8 +19,6 @@
 
 package com.stratio.meta.driver.config
 
-import akka.util.Timeout
-
 
 class BasicDriverConfig(val driverSection:DriverSectionConfig,val serverSection:ServerSectionConfig)
 class DriverSectionConfig(val retryTimes:Int, val retryDuration:Long)
