@@ -31,7 +31,7 @@ import java.util.List;
 public class UpdateTableStatementTest  extends BasicPlannerTest {
 
     @Test
-    public void planificationNotSupported(){
+    public void planUpdateTableStatement(){
         String inputText = "UPDATE table1 SET field1 = value1 WHERE field3 = value3;";
         IdentifierAssignment idAsig = new IdentifierAssignment("field1",new StringTerm("value1"),1);
         ValueAssignment vaAsig = new ValueAssignment(new StringTerm("value1"));
@@ -40,6 +40,6 @@ public class UpdateTableStatementTest  extends BasicPlannerTest {
         List<Relation> whereClauses = Arrays.asList(relation);
         stmt = new UpdateTableStatement("table1", listAsig, whereClauses);
         Tree tree = stmt.getPlan(_metadataManager, "demo");
-        validateNotSupported();
+        validateCassandraPath("planUpdateTableStatement");
     }
 }

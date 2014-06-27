@@ -22,6 +22,7 @@ package com.stratio.meta.core.statements;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.MetaPath;
@@ -37,100 +38,100 @@ import java.util.Map;
  */
 public class CreateKeyspaceStatement extends MetaStatement {
 
-    /**
-     * The name of the keyspace.
-     */
-    private String name;
+  /**
+   * The name of the keyspace.
+   */
+  private String name;
 
-    /**
-     * Whether the keyspace should be created only if it not exists.
-     */
-    private boolean ifNotExists;
+  /**
+   * Whether the keyspace should be created only if it not exists.
+   */
+  private boolean ifNotExists;
 
-    /**
-     * The map of properties of the keyspace. The different options accepted by a keyspace
-     * are determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
-     */
-    private Map<String, ValueProperty> properties;
+  /**
+   * The map of properties of the keyspace. The different options accepted by a keyspace
+   * are determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
+   */
+  private Map<String, ValueProperty> properties;
 
-    /**
-     * Class constructor.
-     * @param name The name of the keyspace.
-     * @param ifNotExists Whether it should be created only if it not exists.
-     * @param properties The map of properties.
-     */
-    public CreateKeyspaceStatement(String name, boolean ifNotExists, Map<String, ValueProperty> properties) {
-        this.name = name;
-        this.command = false;
-        this.ifNotExists = ifNotExists;
-        this.properties = new HashMap<>();
-        for(Map.Entry<String, ValueProperty> entry : properties.entrySet()){
-            this.properties.put(entry.getKey().toLowerCase(), entry.getValue());
-        }
+  /**
+   * Class constructor.
+   * @param name The name of the keyspace.
+   * @param ifNotExists Whether it should be created only if it not exists.
+   * @param properties The map of properties.
+   */
+  public CreateKeyspaceStatement(String name, boolean ifNotExists, Map<String, ValueProperty> properties) {
+    this.name = name;
+    this.command = false;
+    this.ifNotExists = ifNotExists;
+    this.properties = new HashMap<>();
+    for(Map.Entry<String, ValueProperty> entry : properties.entrySet()){
+      this.properties.put(entry.getKey().toLowerCase(), entry.getValue());
+    }
+  }
+
+  /**
+   * Get the name of the keyspace.
+   * @return The name.
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * Set the name of the keyspace.
+   * @param name The name of the keyspace.
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("CREATE KEYSPACE ");
+    if(ifNotExists){
+      sb.append("IF NOT EXISTS ");
+    }
+    sb.append(name);
+    sb.append(" WITH ");
+    sb.append(ParserUtils.stringMap(properties, " = ", " AND "));
+    return sb.toString();
+  }
+
+  @Override
+  public Result validate(MetadataManager metadata, EngineConfig config) {
+    Result result = QueryResult.createSuccessQueryResult();
+    if(name!= null && name.length() > 0) {
+      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(name);
+      if(ksMetadata != null && !ifNotExists){
+        result = Result.createValidationErrorResult("Keyspace " + name + " already exists.");
+      }
+    }else{
+      result = Result.createValidationErrorResult("Empty keyspace name found.");
     }
 
-    /**
-     * Get the name of the keyspace.
-     * @return The name.
-     */
-    public String getName() {
-        return name;
+    if(properties.isEmpty() || !properties.containsKey("replication")){
+      result = Result.createValidationErrorResult("Missing mandatory replication property.");
     }
 
-    /**
-     * Set the name of the keyspace.
-     * @param name The name of the keyspace.
-     */
-    public void setName(String name) {
-        this.name = name;
+    return result;
+  }
+
+  @Override
+  public String translateToCQL() {
+    String metaStr = this.toString();
+    if(metaStr.contains("{")){
+      return ParserUtils.translateLiteralsToCQL(metaStr);
+    } else {
+      return metaStr;
     }
+  }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("CREATE KEYSPACE ");
-        if(ifNotExists){
-            sb.append("IF NOT EXISTS ");
-        }
-        sb.append(name);
-        sb.append(" WITH ");
-        sb.append(ParserUtils.stringMap(properties, " = ", " AND "));
-        return sb.toString();
-    }
+  @Override
+  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+    Tree tree = new Tree();
+    tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+    return tree;
+  }
 
-    @Override
-    public Result validate(MetadataManager metadata) {
-        Result result = QueryResult.createSuccessQueryResult();
-        if(name!= null && name.length() > 0) {
-            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(name);
-            if(ksMetadata != null && !ifNotExists){
-                result= QueryResult.createFailQueryResult("Keyspace " + name + " already exists.");
-            }
-        }else{
-            result= QueryResult.createFailQueryResult("Empty keyspace name found.");
-        }
-
-        if(properties.isEmpty() || !properties.containsKey("replication")){
-            result= QueryResult.createFailQueryResult("Missing mandatory replication property.");
-        }
-
-        return result;
-    }
-
-    @Override
-    public String translateToCQL() {
-        String metaStr = this.toString();
-        if(metaStr.contains("{")){
-            return ParserUtils.translateLiteralsToCQL(metaStr);
-        } else {
-            return metaStr;
-        }        
-    }
-
-    @Override
-    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        Tree tree = new Tree();
-        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-        return tree;
-    }
-    
 }

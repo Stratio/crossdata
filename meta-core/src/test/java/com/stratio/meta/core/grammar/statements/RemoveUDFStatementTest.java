@@ -44,6 +44,12 @@ public class RemoveUDFStatementTest extends ParsingTest {
     }
 
     @Test
+    public void fatalErrorInParser(){
+        String inputText = "REMOVE UDF \";\";";
+        testParseFails(inputText, "fatalErrorInParser");
+    }
+
+    @Test
     public void startingQuoteMissing2Fail(){
         String inputText = "REMOVE UDF \"/dir/jar_name-v1.0.jar;";
         testRecoverableError(inputText, "startingQuoteMissing2Fail");

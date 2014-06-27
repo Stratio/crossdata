@@ -20,13 +20,13 @@
 package com.stratio.meta.core.validator.statements;
 
 import com.stratio.meta.core.validator.BasicValidatorTest;
-import org.testng.annotations.Test;
 
 public class StopProcessStatementTest extends BasicValidatorTest {
 
-    @Test
-    public void validateNotSupported(){
-        String inputText = "STOP process process1;";
-        validateFail(inputText, "validateNotSupported");
-    }
+  //TODO: (Streaming)
+  //@Test
+  public void validateFail(){
+    String inputText = "STOP process process1;";
+    validateFail(inputText, "validateFail");
+  }
 }

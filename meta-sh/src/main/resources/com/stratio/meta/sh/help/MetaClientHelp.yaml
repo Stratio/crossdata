@@ -475,7 +475,21 @@ content:
       more information check one of the following:
       
         > help describe keyspace
+        > help describe keyspaces
         > help describe table
+        > help describe tables
+
+  - entry: DESCRIBE_KEYSPACES
+    help: |
+      Describe all keyspaces.
+      
+      Syntax:
+      
+        DESCRIBE KEYSPACES ;
+
+      Example:
+      
+        DESCRIBE KEYSPACES;     
 
   - entry: DESCRIBE_KEYSPACE
     help: |
@@ -483,11 +497,23 @@ content:
       
       Syntax:
       
-        DESCRIBE KEYSPACE <keyspacename> ;
+        DESCRIBE KEYSPACE (<keyspacename>)? ;
 
       Example:
       
         DESCRIBE KEYSPACE demo;     
+
+  - entry: DESCRIBE_TABLES
+    help: |
+      Describe the keyspace tables.
+      
+      Syntax:
+      
+        DESCRIBE TABLES ;
+
+      Example:
+      
+        DESCRIBE TABLES;     
 
   - entry: DESCRIBE_TABLE
     help: |

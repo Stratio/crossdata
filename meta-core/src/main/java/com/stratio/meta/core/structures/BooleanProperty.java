@@ -28,7 +28,7 @@ public class BooleanProperty extends ValueProperty {
         this.bool = bool;
     }   
     
-    public boolean isBool() {
+    public boolean getBool() {
         return bool;
     }
 

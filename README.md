@@ -56,6 +56,11 @@ The shell features:
    > mvn exec:java -pl meta-sh -Dexec.mainClass="com.stratio.meta.sh.Metash"
 ```
 
+The shell also supports asynchronous query execution by means of the --async parameter. This execution mode is required for streaming queries.
+
+```
+   > mvn exec:java -pl meta-sh -Dexec.mainClass="com.stratio.meta.sh.Metash" -Dexec.args="--async"
+```
 ## Packaging ##
 
 ```

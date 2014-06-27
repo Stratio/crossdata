@@ -161,8 +161,11 @@ public class ParserUtils {
             }
 
             // Antlr didn't recognize a token enclosed between single quotes
-            errorWord = errorMessage.substring(errorMessage.indexOf("'")+1, errorMessage.lastIndexOf("'"));
-            errorWord = errorWord.toUpperCase();
+            if(errorWord.contains("'")){
+                errorWord = errorMessage.substring(errorMessage.indexOf("'")+1, errorMessage.lastIndexOf("'"));
+                errorWord = errorWord.toUpperCase();
+            }
+
 
             // Antlr was expecting a determined token
             int positionToken = errorMessage.indexOf("T_");
@@ -297,7 +300,11 @@ public class ParserUtils {
             if(elto.matches("[0123456789.]+")){
                 sb.append(elto).append(", ");
             } else {
-                sb.append("'").append(elto).append("'").append(", ");
+                if(elto.contains("'")){
+                    sb.append(elto).append(", ");
+                } else {
+                    sb.append("'").append(elto).append("'").append(", ");
+                }
             }
         }
         if(sb.charAt(sb.length()-2)==','){

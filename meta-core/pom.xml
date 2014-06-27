@@ -1,30 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Stratio Meta
-  ~
-  ~ Copyright (c) 2014, Stratio, All rights reserved.
-  ~
-  ~ This library is free software; you can redistribute it and/or
-  ~ modify it under the terms of the GNU Lesser General Public
-  ~ License as published by the Free Software Foundation; either
-  ~ version 3.0 of the License, or (at your option) any later version.
-  ~
-  ~ This library is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this library.
-  -->
+<!-- ~ Stratio Meta ~ ~ Copyright (c) 2014, Stratio, All rights reserved. 
+    ~ ~ This library is free software; you can redistribute it and/or ~ modify 
+    it under the terms of the GNU Lesser General Public ~ License as published 
+    by the Free Software Foundation; either ~ version 3.0 of the License, or 
+    (at your option) any later version. ~ ~ This library is distributed in the 
+    hope that it will be useful, ~ but WITHOUT ANY WARRANTY; without even the 
+    implied warranty of ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+    See the GNU ~ Lesser General Public License for more details. ~ ~ You should 
+    have received a copy of the GNU Lesser General Public ~ License along with 
+    this library. -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>meta-parent</artifactId>
         <groupId>com.stratio.meta</groupId>
-        <version>0.0.4</version>
+        <version>0.0.5</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -78,12 +69,12 @@
         </developer>
     </developers>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<antlr.version>3.5.1</antlr.version>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <antlr.version>3.5.1</antlr.version>
+    </properties>
 
-	<dependencies>
+    <dependencies>
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
@@ -166,7 +157,7 @@
         <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-common</artifactId>
-            <version>${meta.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.deep</groupId>
@@ -179,35 +170,56 @@
             <version>2.0</version>
             <scope>test</scope>
         </dependency>
-	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.antlr</groupId>
-				<artifactId>antlr3-maven-plugin</artifactId>
-				<version>${antlr.version}</version>
-				<executions>
-					<execution>
-						<id>run antlr3</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>antlr</goal>
-						</goals>
-						<configuration>
-							<sourceDirectory>src/main/java/com/stratio/meta/core/grammar</sourceDirectory>
-							<listener>true</listener>
-							<visitor>true</visitor>
-							<outputDirectory>src/main/java/com/stratio/meta/core/grammar/generated</outputDirectory>
-							<arguments>
-								<argument>-package</argument>
-								<argument>com.stratio.meta.core.grammar.generated</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+        <dependency>
+            <groupId>com.stratio.streaming</groupId>
+            <artifactId>streaming-api</artifactId>
+            <version>0.3.3</version>
+        </dependency>
+        <!--dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_2.10</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming-kafka_2.10</artifactId>
+            <version>0.9.1</version>
+        </dependency-->
+	</dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr3-maven-plugin</artifactId>
+                <version>${antlr.version}</version>
+                <executions>
+                    <execution>
+                        <id>run antlr3</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>antlr</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>src/main/java/com/stratio/meta/core/grammar</sourceDirectory>
+                            <listener>true</listener>
+                            <visitor>true</visitor>
+                            <outputDirectory>src/main/java/com/stratio/meta/core/grammar/generated</outputDirectory>
+                            <arguments>
+                                <argument>-package</argument>
+                                <argument>com.stratio.meta.core.grammar.generated</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.17</version>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
 

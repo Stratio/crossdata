@@ -78,10 +78,10 @@ public class CassandraExecutor {
     protected static Result execute(String query, Session session) {
         try {
             ResultSet resultSet = session.execute(query);
-            return QueryResult.createSuccessQueryResult(utils.transformToMetaResultSet(resultSet));
+            return QueryResult.createQueryResult(utils.transformToMetaResultSet(resultSet));
         } catch (UnsupportedOperationException unSupportException){
             LOG.debug("Cassandra executor failed", unSupportException);
-            return QueryResult.createFailQueryResult("Unsupported operation by C*: " + unSupportException.getMessage());
+            return Result.createExecutionErrorResult("Unsupported operation by C*: " + unSupportException.getMessage());
         } catch (Exception ex) {
             return processException(ex, query);
         }
@@ -108,11 +108,11 @@ public class CassandraExecutor {
                 UseStatement useStatement = (UseStatement) stmt;
                 return QueryResult.createSuccessQueryResult(utils.transformToMetaResultSet(resultSet), useStatement.getKeyspaceName());
             } else {
-                return QueryResult.createSuccessQueryResult(utils.transformToMetaResultSet(resultSet));
+                return QueryResult.createQueryResult(utils.transformToMetaResultSet(resultSet));
             }
         } catch (UnsupportedOperationException unSupportException){
             LOG.debug("Cassandra executor failed", unSupportException);
-            return QueryResult.createFailQueryResult("Unsupported operation by C*: " + unSupportException.getMessage());
+            return Result.createExecutionErrorResult("Unsupported operation by C*: " + unSupportException.getMessage());
         } catch (Exception ex) {
             LOG.debug("Cassandra executor failed", ex);
             String queryStr;
@@ -134,7 +134,9 @@ public class CassandraExecutor {
      * @return a {@link com.stratio.meta.common.result.Result} with errors.
      */
     public static Result processException(Exception ex, String queryStr){
-        if(ex.getMessage().contains("line") && ex.getMessage().contains(":")){
+        if(ex.getMessage() == null){
+            return Result.createExecutionErrorResult("Unknown exception");
+        } else if(ex.getMessage().contains("line") && ex.getMessage().contains(":")){
             String[] cMessageEx =  ex.getMessage().split(" ");
             StringBuilder sb = new StringBuilder();
             sb.append(cMessageEx[2]);
@@ -143,9 +145,9 @@ public class CassandraExecutor {
             }
             AntlrError ae = new AntlrError(cMessageEx[0]+" "+cMessageEx[1], sb.toString());
             String query = ParserUtils.getQueryWithSign(queryStr, ae);
-            return QueryResult.createFailQueryResult(ex.getMessage() + System.lineSeparator() + "\t" + query);
+            return Result.createExecutionErrorResult(ex.getMessage() + System.lineSeparator() + "\t" + query);
         } else{
-            return QueryResult.createFailQueryResult(ex.getMessage());
+            return Result.createExecutionErrorResult(ex.getMessage());
         }
     }
 

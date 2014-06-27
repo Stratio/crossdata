@@ -64,12 +64,29 @@ public class UpdateTableStatementTest extends ParsingTest {
         testParseFails(inputText, "updateWrongSpelling");
     }
 
-
     @Test
     public void updateWhereUsingAnd() {
         String inputText = "UPDATE table1 USING TTL = 400 AND TTL2 = 400 SET field1 = value1,"
                 + " field2 = value2 WHERE field3 = value3 AND field4 = value4;";
         testRegularStatement(inputText, "updateWhereUsingAnd");
+    }
+
+    @Test
+    public void updateWhereWithCollectionMap() {
+        String inputText = "UPDATE table1 SET emails[admin] = myemail@mycompany.org WHERE field3 = value3;";
+        testRegularStatement(inputText, "updateWhereWithCollectionMap");
+    }
+
+    @Test
+    public void updateWhereWithCollectionSet() {
+        String inputText = "UPDATE table1 SET emails = emails + { myemail@mycompany.org } WHERE field3 = value3;";
+        testRegularStatement(inputText, "updateWhereWithCollectionSet");
+    }
+
+    @Test
+    public void updateWhereWithCollectionList() {
+        String inputText = "UPDATE table1 SET emails = emails + [ myemail@mycompany.org ] WHERE field3 = value3;";
+        testRegularStatement(inputText, "updateWhereWithCollectionList");
     }
 
     @Test

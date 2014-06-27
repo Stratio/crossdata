@@ -64,7 +64,7 @@ public class ParentCassandraTest {
 
     @AfterClass
     public static void tearDownAfterClass(){
-        dropKeyspaceIfExists("testKs");
+        //dropKeyspaceIfExists("testKs");
         closeCassandraConnection();
     }
 

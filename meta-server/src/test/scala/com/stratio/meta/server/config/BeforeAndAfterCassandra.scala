@@ -29,6 +29,7 @@ import java.net.URL
 import java.util
 import java.io.IOException
 import scala.collection.mutable.MutableList
+import com.stratio.meta.common.result.{Result, ErrorResult}
 
 trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
   this:Suite =>
@@ -145,6 +146,14 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
       }
     }
     return exists
+  }
+
+  def getErrorMessage(metaResult: Result): String = {
+    var result: String = "Invalid class: " + metaResult.getClass
+    if (classOf[ErrorResult].isInstance(metaResult)) {
+      result = classOf[ErrorResult].cast(metaResult).getErrorMessage
+    }
+    return result
   }
 
   def beforeCassandraStart(): Unit = {

@@ -19,15 +19,18 @@
 
 package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.Property;
+import com.stratio.meta.core.structures.PropertyNameValue;
 import com.stratio.meta.core.structures.ValueProperty;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta.core.utils.*;
 
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Class that models an {@code ALTER TABLE} statement from the META language.
@@ -48,7 +51,7 @@ public class AlterTableStatement extends MetaStatement{
      *     <li>4: Establish a set of options using {@code WITH}.</li>
      * </ul>
      */
-    private int prop;
+    private int option;
 
     /**
      * Target column name.
@@ -61,19 +64,19 @@ public class AlterTableStatement extends MetaStatement{
     private String type;
 
     /**
-     * The map of properties.
+     * The list of {@link com.stratio.meta.core.structures.Property} of the table.
      */
-    private Map<String, ValueProperty> option;
+    private List<Property> properties = null;
 
     /**
      * Class constructor.
      * @param tableName The name of the table.
      * @param column The name of the column.
      * @param type The data type of the column.
+     * @param properties The type of modification.
      * @param option The map of options.
-     * @param prop The type of modification.
      */
-    public AlterTableStatement(String tableName, String column, String type, Map<String, ValueProperty> option, int prop) {
+    public AlterTableStatement(String tableName, String column, String type, List<Property> properties, int option) {
         this.command = false;
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
@@ -85,23 +88,8 @@ public class AlterTableStatement extends MetaStatement{
         }
         this.column = column;
         this.type = type;
+        this.properties = properties;
         this.option = option;
-        this.prop = prop;          
-    }
-
-    private String getOptionString(){
-        StringBuilder sb = new StringBuilder();
-        Set<String> keySet = option.keySet();
-        sb.append(" with");
-        for (Iterator<String> it = keySet.iterator(); it.hasNext();) {
-            String key = it.next();
-            ValueProperty vp = option.get(key);
-            sb.append(" ").append(key).append("=").append(String.valueOf(vp));
-            if(it.hasNext()) {
-                sb.append(" AND");
-            }
-        }
-        return sb.toString();
     }
 
     @Override
@@ -111,7 +99,7 @@ public class AlterTableStatement extends MetaStatement{
             sb.append(keyspace).append(".");
         }
         sb.append(tableName);
-        switch(prop){
+        switch(option){
             case 1:
                 sb.append(" alter ").append(column);
                 sb.append(" type ").append(type);
@@ -126,7 +114,7 @@ public class AlterTableStatement extends MetaStatement{
                 sb.append(column);
                 break;
             case 4:
-                sb.append(getOptionString());
+                sb.append(" WITH ").append(ParserUtils.stringList(properties, " AND "));
                 break;
             default:
                 sb.append("bad option");
@@ -138,6 +126,112 @@ public class AlterTableStatement extends MetaStatement{
     @Override
     public String translateToCQL() {
         return this.toString();
+    }
+
+    /**
+     * Validate the semantics of the current statement. This method checks the
+     * existing metadata to determine that all referenced entities exists in the
+     * {@code targetKeyspace} and the types are compatible with the assignations
+     * or comparisons.
+     *
+     * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
+     *                 the required information.
+     * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+     */
+    @Override
+    public Result validate(MetadataManager metadata, EngineConfig config) {
+        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+        if(!result.hasError()) {
+            String effectiveKeyspace = getEffectiveKeyspace();
+
+            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+
+            switch(option){
+                case 1:
+                    result = validateAlter(tableMetadata);
+                    break;
+                case 2:
+                    result = validateAdd(tableMetadata);
+                    break;
+                case 3:
+                    result = validateDrop(tableMetadata);
+                    break;
+                case 4:
+                    result = validateProperties(tableMetadata);
+                    break;
+                default:
+            }
+        }
+        return result;
+    }
+
+    private boolean existsColumn(TableMetadata tableMetadata){
+        return tableMetadata.getColumn(column) != null;
+    }
+
+    private boolean existsType(TableMetadata tableMetadata){
+        return CoreUtils.supportedTypes.contains(type.toLowerCase());
+    }
+
+    private Result validateAlter(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        //Validate target column name
+        if(!existsColumn(tableMetadata)){
+            result = Result.createValidationErrorResult("Column '"+this.column+"' not found.");
+        } else if(!existsType(tableMetadata)){ //Validate type
+            result = Result.createValidationErrorResult("Type '"+this.type+"' not found.");
+        }
+        // TODO: validate that conversion is compatible as for current type and target type
+        return result;
+    }
+
+    private Result validateAdd(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        //Validate target column name
+        if(existsColumn(tableMetadata)){
+            result = Result.createValidationErrorResult("Column '"+this.column+"' already exists.");
+        } else if(!existsType(tableMetadata)){ //Validate type
+            result = Result.createValidationErrorResult("Type '"+this.type+"' not found.");
+        }
+        return result;
+    }
+
+    private Result validateDrop(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        //Validate target column name
+        if(!existsColumn(tableMetadata)){
+            result = Result.createValidationErrorResult("Column '"+this.column+"' not found.");
+        }
+        return result;
+    }
+
+    private Result validateProperties(TableMetadata tableMetadata) {
+        Result result = QueryResult.createSuccessQueryResult();
+        Iterator<Property> props = properties.iterator();
+        boolean exit = false;
+        while(!exit && props.hasNext()){
+            Property property = props.next();
+            if(property.getType() == Property.TYPE_NAME_VALUE){
+                PropertyNameValue propertyNameValue = (PropertyNameValue) property;
+                if("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
+                        && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+                    // If property ephemeral is present, it must be a boolean type
+                    result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
+                    exit = true;
+                } else if("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
+                        && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+                    // If property ephemeral_tuples is present, it must be a integer type
+                    result= Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
+                    exit = true;
+                } else if("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
+                        && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+                    // If property ephemeral_persist_on is present, it must be a string type
+                    result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
+                    exit = true;
+                }
+            }
+        }
+        return result;
     }
 
     @Override

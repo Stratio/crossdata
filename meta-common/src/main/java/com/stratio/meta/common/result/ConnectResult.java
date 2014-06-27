@@ -24,58 +24,41 @@ package com.stratio.meta.common.result;
  */
 public class ConnectResult extends Result {
 
-    /**
-     * Serial version UID in order to be {@link java.io.Serializable}.
-     */
-    private static final long serialVersionUID = -2632581413648530295L;
+  /**
+   * Serial version UID in order to be {@link java.io.Serializable}.
+   */
 
-    /**
-     * Session identifier.
-     */
-    private long sessionId = -1;
+  /**
+   * Session identifier.
+   */
+  private String sessionId;
 
-    /**
-     * Private class constructor of the factory.
-     * @param sessionId The associated session identifier.
-     * @param error Whether an error occurred during the connection process.
-     * @param errorMessage The error message in case of {@code error}.
-     * @param ksChanged Whether the current keyspace in the user session is modified by the connection.
-     * @param currentKeyspace The current keyspace after the connection.
-     */
-    private ConnectResult(long sessionId,
-                          boolean error,
-                          String errorMessage,
-                          boolean ksChanged,
-                          String currentKeyspace){
-        super(error,errorMessage,ksChanged,currentKeyspace);
-        this.sessionId=sessionId;
-    }
+  /**
+   * Private class constructor of the factory.
+   *
+   * @param sessionId       The associated session identifier.
+   */
+  private ConnectResult(String sessionId) {
+    this.sessionId = sessionId;
+  }
 
-    /**
-     * Get the user session identifier.
-     * @return The identifier or -1 if an error occurred.
-     */
-    public long getSessionId() {
-        return sessionId;
-    }
+  /**
+   * Get the user session identifier.
+   *
+   * @return The identifier or -1 if an error occurred.
+   */
+  public String getSessionId() {
+    return sessionId;
+  }
 
-    /**
-     * Create a successful connection result.
-     * @param sessionId The user session identifier.
-     * @return A {@link com.stratio.meta.common.result.ConnectResult}.
-     */
-    public static ConnectResult createSuccessConnectResult(long sessionId){
-        return new ConnectResult(sessionId, false, null, false, null);
-    }
+  /**
+   * Create a successful connection result.
+   *
+   * @param sessionId The user session identifier.
+   * @return A {@link com.stratio.meta.common.result.ConnectResult}.
+   */
+  public static ConnectResult createConnectResult(String sessionId) {
+    return new ConnectResult(sessionId);
+  }
 
-    /**
-     * Create a failed connection result.
-     * @param errorMessage The associated error message.
-     * @return A {@link com.stratio.meta.common.result.ConnectResult}.
-     */
-    public static ConnectResult createFailConnectResult(String errorMessage){
-        return new ConnectResult(-1, true, errorMessage, false, null);
-    }
-
-    
 }

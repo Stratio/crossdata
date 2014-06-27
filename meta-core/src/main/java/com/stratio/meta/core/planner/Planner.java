@@ -22,7 +22,8 @@ package com.stratio.meta.core.planner;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.core.utils.QueryStatus;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.meta.common.result.QueryStatus;
 
 public class Planner {
 
@@ -36,8 +37,8 @@ public class Planner {
      *
      * @param session Cassandra datastax java driver session.
      */
-    public Planner(Session session){
-        metadata = new MetadataManager(session);
+    public Planner(Session session, IStratioStreamingAPI stratioStreamingAPI){
+        metadata = new MetadataManager(session, stratioStreamingAPI);
         metadata.loadMetadata();
     }
 

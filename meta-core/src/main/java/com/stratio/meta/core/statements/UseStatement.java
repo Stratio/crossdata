@@ -21,6 +21,7 @@ package com.stratio.meta.core.statements;
 
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
@@ -59,14 +60,14 @@ public class UseStatement extends MetaStatement {
     }
 
     @Override
-    public Result validate(MetadataManager metadata) {
+    public Result validate(MetadataManager metadata, EngineConfig config) {
         Result result = QueryResult.createSuccessQueryResult();
         if(keyspace != null && keyspace.length() > 0){
             if(!metadata.getKeyspacesNames().contains(keyspace.toLowerCase())){
-                result= QueryResult.createFailQueryResult("Keyspace " + keyspace + " does not exist.");
+                result= Result.createValidationErrorResult("Keyspace " + keyspace + " does not exist.");
             }
         }else{
-            result= QueryResult.createFailQueryResult("Missing keyspace name.");
+            result= Result.createValidationErrorResult("Missing keyspace name.");
         }
         return result;
     }

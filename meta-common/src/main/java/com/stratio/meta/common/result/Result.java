@@ -26,78 +26,69 @@ import java.io.Serializable;
  */
 public abstract class Result implements Serializable {
 
-    /**
-     * Serial version UID in order to be {@link java.io.Serializable}.
-     */
-    private static final long serialVersionUID = 8596330240278204430L;
+  /**
+   * Serial version UID in order to be {@link java.io.Serializable}.
+   */
+  private static final long serialVersionUID = 8596330240278204430L;
 
-    /**
-     * Whether an error ocurred during the execution of an action.
-     */
-    private final boolean error;
+  /**
+   * Query identifier associated with the result.
+   */
+  private String queryId;
 
-    /**
-     * The associated error message in case of {@code error}.
-     */
-    private final String errorMessage;
+  /**
+   * Whether an error occurred during the execution of an action.
+   */
+  protected boolean error = false;
 
-    /**
-     * Whether the user session keyspace is changed by the execution of the action.
-     */
-    private final boolean ksChanged;
+  /**
+   * Set the query identifier.
+   *
+   * @param queryId The query identifier.
+   */
+  public void setQueryId(String queryId) {
+    this.queryId = queryId;
+  }
 
-    /**
-     * The current user session keyspace in case of {@code ksChanged}.
-     */
-    private final String currentKeyspace;
+  /**
+   * Get the query identifier.
+   *
+   * @return The query identifier.
+   */
+  public String getQueryId() {
+    return queryId;
+  }
 
-    /**
-     * Build a generic result of execution an action in a META server.
-     * @param error Whether an error occurred during the execution.
-     * @param errorMessage The error message in case of {@code error}.
-     * @param ksChanged Whether the current keyspace in the user session is modified by the execution.
-     * @param currentKeyspace The current keyspace after the execution.
-     */
-    Result(boolean error,
-           String errorMessage,
-           boolean ksChanged,
-           String currentKeyspace) {
-        this.error = error;
-        this.errorMessage = errorMessage;
-        this.ksChanged = ksChanged;
-        this.currentKeyspace = currentKeyspace;
-    }
+  /**
+   * Whether the result contains an error.
+   *
+   * @return True if the result contains errors.
+   */
+  public boolean hasError() {
+    return error;
+  }
 
-    /**
-     * Whether the result contains an error.
-     * @return True if the result contains errors.
-     */
-    public boolean hasError() {
-        return error;
-    }
+  public static ErrorResult createErrorResult(ErrorType type, String errorMessage){
+    return new ErrorResult(type, errorMessage);
+  }
 
-    /**
-     * Get the error message.
-     * @return The message or null if no error occurred.
-     */
-    public String getErrorMessage() {
-        return errorMessage;
-    }
+  public static ErrorResult createConnectionErrorResult(String errorMessage){
+    return new ErrorResult(ErrorType.CONNECTION, errorMessage);
+  }
 
-    /**
-     * Whether the keyspace is changed by the execution.
-     * @return True if the user session keyspace is changed.
-     */
-    public boolean isKsChanged() {
-        return ksChanged;
-    }
+  public static ErrorResult createParsingErrorResult(String errorMessage){
+    return new ErrorResult(ErrorType.PARSING, errorMessage);
+  }
 
-    /**
-     * Get the current user session keyspace.
-     * @return The keyspace or null if the keyspace is not changed.
-     */
-    public String getCurrentKeyspace() {
-        return currentKeyspace;
-    }
+  public static ErrorResult createValidationErrorResult(String errorMessage){
+    return new ErrorResult(ErrorType.VALIDATION, errorMessage);
+  }
 
+  public static ErrorResult createExecutionErrorResult(String errorMessage){
+    return new ErrorResult(ErrorType.EXECUTION, errorMessage);
+  }
+
+  public static ErrorResult createUnsupportedOperationErrorResult(String errorMessage){
+    return new ErrorResult(ErrorType.NOT_SUPPORTED, errorMessage);
+  }
 }

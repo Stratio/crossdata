@@ -22,37 +22,37 @@ package com.stratio.meta.core.structures;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CollectionLiteral extends ValueCell {
-    
-    private List<Term> literals;
+public class CollectionLiteral<T extends Comparable<T>> extends ValueCell<T> {
 
-    public CollectionLiteral(){
+    private List<Term<T>> literals;
+
+    public CollectionLiteral() {
         literals = new ArrayList<>();
         this.type = TYPE_COLLECTION_LITERAL;
     }
-    
-    public CollectionLiteral(List<Term> literals) {
+
+    public CollectionLiteral(List<Term<T>> literals) {
         this();
         this.literals = literals;
     }
-    
-    public List<Term> getLiterals() {
+
+    public List<Term<T>> getLiterals() {
         return literals;
     }
 
-    public void setLiterals(List<Term> literals) {
+    public void setLiterals(List<Term<T>> literals) {
         this.literals = literals;
-    }        
-    
-    public void addLiteral(Term term){
+    }
+
+    public void addLiteral(Term<T> term) {
         literals.add(term);
     }
-    
-    public Term getLiteral(int index){
+
+    public Term<T> getLiteral(int index) {
         return literals.get(index);
     }
-    
-    public void deleteLiteral(Term term){
+
+    public void deleteLiteral(Term<T> term) {
         literals.remove(term);
     }
 
@@ -64,10 +64,10 @@ public class CollectionLiteral extends ValueCell {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("{");
-        for(Term term: literals){
+        for (Term<T> term : literals) {
             sb.append(term.toString()).append(", ");
-        }        
-        return sb.substring(0, sb.length()-2)+"}";
+        }
+        return sb.substring(0, sb.length() - 2) + "}";
     }
-    
+
 }

@@ -36,6 +36,10 @@ public class ErrorsHelper {
         return antlrErrors.isEmpty();
     }
 
+    public List<AntlrError> getAntlrErrors(){
+        return antlrErrors;
+    }
+
     public String toString(String query, MetaStatement stmt){        
         StringBuilder sb = new StringBuilder("\033[31mParser exception: \033[0m");
         if(!antlrErrors.isEmpty()){
@@ -49,11 +53,6 @@ public class ErrorsHelper {
             }
         }
         return sb.toString(); 
-    }
-
-    @Override
-    public String toString(){
-        return toString(null, null);
     }
 
 }
