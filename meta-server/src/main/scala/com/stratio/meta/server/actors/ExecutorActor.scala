@@ -55,9 +55,7 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker with Actor
       log.debug("Init Executor Task")
       val timer=initTimer()
       val result = executor.executeQuery(query, this).getResult
-      println("»»»»»»»»»»»»»»»»»»»»»» QID: " + query.getQueryId+ " Sender: " + querySender.path);
       querySender ! result
-      println("»»»»»»»»»»»»»»»»»»»»»»»x Sent!");
       finishTimer(timer)
       log.debug("Finish Executor Task")
     }

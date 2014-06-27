@@ -41,7 +41,7 @@ import scala.collection.mutable.ListBuffer
 class APIServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
                                  with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra{
 
-  lazy val engine:Engine =  createEngine.create()
+  val engine:Engine =  createEngine.create()
 
   lazy val serverRef = system.actorOf(Props(classOf[ServerActor],engine),"api-commands-actor")
 
