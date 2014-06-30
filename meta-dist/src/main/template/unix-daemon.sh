@@ -106,7 +106,14 @@ fi
   exit 1
 fi
 
-CLASSPATH="${CLASSPATH}:${META_CONF}/:${META_LIB}/*:"
+#CLASSPATH="${CLASSPATH}:${META_CONF}/:${META_LIB}/*:"
+LIB_CLASSPATH=""
+while read line
+do
+        LIB_CLASSPATH="${LIB_CLASSPATH}:${META_LIB}/$line"
+done < "${META_CONF}/libs-order"
+
+CLASSPATH="${CLASSPATH}:${META_CONF}/:${LIB_CLASSPATH}:${META_LIB}/*:"
 
 jsvc_exec()
 {
