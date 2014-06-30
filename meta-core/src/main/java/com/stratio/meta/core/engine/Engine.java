@@ -28,22 +28,14 @@ import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
 import com.stratio.meta.core.validator.Validator;
-import com.stratio.meta.streaming.StreamingUtils;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.SparkEnv;
-import org.apache.spark.storage.BlockManagerMasterActor;
-import org.apache.spark.storage.StorageStatus;
 
 import java.util.Arrays;
-import java.util.Map;
-
-import scala.Tuple2;
-import scala.collection.Iterator;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
@@ -110,7 +102,7 @@ public class Engine {
     validator = new Validator(session, stratioStreamingAPI, config);
     manager = new APIManager(session, stratioStreamingAPI);
     planner = new Planner(session, stratioStreamingAPI);
-    executor = new Executor(session, stratioStreamingAPI, deepContext, config);
+    executor = new Executor(session, stratioStreamingAPI, deepContext, validator.getMetadata(), config);
   }
 
   /**

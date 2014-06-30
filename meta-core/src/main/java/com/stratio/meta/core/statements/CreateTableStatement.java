@@ -383,7 +383,7 @@ public class CreateTableStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
     String cqlString = this.toString();
     if (!cqlString.contains(" WITH ")) {
       return cqlString;

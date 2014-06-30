@@ -20,7 +20,7 @@
 package com.stratio.meta.driver;
 
 import com.stratio.meta.common.exceptions.ConnectionException;
-import org.testng.annotations.AfterClass;
+
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertFalse;
@@ -43,7 +43,7 @@ public class AsyncDriverTest extends DriverParentTest {
           e.printStackTrace();
       }
       try {
-      Thread.sleep(5000);
+      Thread.sleep(9000);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }

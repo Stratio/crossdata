@@ -48,4 +48,7 @@ public class Validator {
     return metaQuery;
   }
 
+  public MetadataManager getMetadata() {
+    return metadata;
+  }
 }

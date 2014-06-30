@@ -58,7 +58,7 @@ public class DropTriggerStatement extends MetaStatement{
     }
 
     @Override
-    public String translateToCQL() {
+    public String translateToCQL(MetadataManager metadataManager) {
         return this.toString();
     }
 

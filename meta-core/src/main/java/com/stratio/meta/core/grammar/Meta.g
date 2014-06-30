@@ -230,12 +230,12 @@ T_IDENT: LETTER (LETTER | DIGIT | '_')*;
 
 T_KS_AND_TN: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)?; 
 
-T_TERM: (LETTER | DIGIT | '_' | POINT)+;
-
 T_FLOAT:   ('0'..'9')+ POINT ('0'..'9')* EXPONENT?
      |   POINT ('0'..'9')+ EXPONENT?
      |   ('0'..'9')+ EXPONENT
      ;
+
+T_TERM: (LETTER | DIGIT | '_' | POINT)+;
 
 T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 
@@ -985,14 +985,14 @@ getTerm returns [Term term]:
 ;
 
 getPartialTerm returns [Term term]:
-    ident=T_IDENT {$term = new StringTerm($ident.text);}
-    | constant=getConstant {$term = new LongTerm(constant);}
-    | T_FALSE {$term = new BooleanTerm("false");}
+    T_FALSE {$term = new BooleanTerm("false");}
     | T_TRUE {$term = new BooleanTerm("true");}
     | floatingNumber=T_FLOAT {$term = new DoubleTerm($floatingNumber.text);}
+    | constant=getConstant {$term = new LongTerm(constant);}
     | ksAndTn=T_KS_AND_TN {$term = new StringTerm($ksAndTn.text);}
-    | noIdent=T_TERM {$term = new StringTerm($noIdent.text);}
     | path=T_PATH {$term = new StringTerm($path.text);}
+    | ident=T_IDENT {$term = new StringTerm($ident.text);}
+    | noIdent=T_TERM {$term = new StringTerm($noIdent.text);}
     | qLiteral=QUOTED_LITERAL {$term = new StringTerm($qLiteral.text, true);}
 ;
 

@@ -118,7 +118,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
     String metaStr = this.toString();
     if(metaStr.contains("{")){
       return ParserUtils.translateLiteralsToCQL(metaStr);
