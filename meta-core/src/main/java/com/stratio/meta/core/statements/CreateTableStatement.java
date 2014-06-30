@@ -338,8 +338,10 @@ public class CreateTableStatement extends MetaStatement {
     String [] supported = {"BIGINT", "BOOLEAN", "COUNTER", "DOUBLE", "FLOAT", "INT", "VARCHAR"};
     Set<String> supportedColumns = new HashSet<>(Arrays.asList(supported));
     for(String c : columns.keySet()){
-      if(!supportedColumns.contains(columns.get(c).toUpperCase()) || c.toLowerCase().startsWith("stratio")){
+      if(!supportedColumns.contains(columns.get(c).toUpperCase())){
         result= Result.createValidationErrorResult("Column " + c + " with datatype " + columns.get(c) + " not supported.");
+      }else if( c.toLowerCase().startsWith("stratio")){
+        result= Result.createValidationErrorResult("Cannot use reserved word 'stratio' on column's name." );
       }
     }
 
