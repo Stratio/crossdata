@@ -18,7 +18,6 @@ package com.stratio.meta.deep;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -158,13 +157,10 @@ public class Bridge {
       rdd = doGroupBy(rdd, null, (SelectionList) ss.getSelectionClause());
     }
 
-    if (ss.isOrderInc()) {
-      rdd = doOrder(rdd, ss.getOrder());
-    }
-
     CassandraResultSet resultSet =
         (CassandraResultSet) returnResult(rdd, isRoot,
-            ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, cols);
+            ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, cols, ss.getLimit(),
+            ss.getOrder());
 
     return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
   }
@@ -220,13 +216,10 @@ public class Bridge {
 
     JavaRDD<Cells> result = joinRDD.map(new JoinCells(keyTableLeft));
 
-    if (ss.isOrderInc()) {
-      result = doOrder(result, ss.getOrder());
-    }
-
     // MetaResultSet
     CassandraResultSet resultSet =
-        (CassandraResultSet) returnResult(result, true, false, selectedCols);
+        (CassandraResultSet) returnResult(result, true, false, selectedCols, ss.getLimit(),
+            ss.getOrder());
 
     return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
   }
@@ -304,15 +297,33 @@ public class Bridge {
    * @param isRoot Indicates if this node is root in this plan.
    * @param isCount Indicates if this query have a COUNT clause.
    * @param selectedCols List of columns selected in current SelectStatement.
+   * @param limit Maximum number of rows to be retrieved.
+   * @param orderings Sorting criteria.
    * @return ResultSet containing the result of built.
    */
   private ResultSet returnResult(JavaRDD<Cells> rdd, boolean isRoot, boolean isCount,
-      List<String> selectedCols) {
+      List<String> selectedCols, int limit, List<Ordering> orderings) {
     if (isRoot) {
       if (isCount) {
         return DeepUtils.buildCountResult(rdd);
       }
-      return DeepUtils.buildResultSet(rdd.take(DEFAULT_RESULT_SIZE), selectedCols);
+
+      List<Cells> cells = null;
+      if (orderings == null) {
+        if (limit <= 0 || limit > DEFAULT_RESULT_SIZE) {
+          cells = rdd.take(DEFAULT_RESULT_SIZE);
+        } else {
+          cells = rdd.take(limit);
+        }
+      } else {
+        if (limit <= 0 || limit > DEFAULT_RESULT_SIZE) {
+          cells = rdd.takeOrdered(DEFAULT_RESULT_SIZE, new DeepComparator(orderings));
+        } else {
+          cells = rdd.takeOrdered(limit, new DeepComparator(orderings));
+        }
+      }
+
+      return DeepUtils.buildResultSet(cells, selectedCols);
     } else {
       CassandraResultSet crs = new CassandraResultSet();
       crs.add(new Row("RDD", new Cell(rdd)));
@@ -418,17 +429,5 @@ public class Bridge {
       }
     }
     return aggregatedRdd;
-  }
-
-  /**
-   * Take {@link com.stratio.meta.deep.Bridge#DEFAULT_RESULT_SIZE} from RDD ordered.
-   * 
-   * @param rdd RDD to take and order.
-   * @param orderings Order By clause.
-   * @return RDD result.
-   */
-  public JavaRDD<Cells> doOrder(JavaRDD<Cells> rdd, List<Ordering> orderings) {
-    List<Cells> list = rdd.takeOrdered(DEFAULT_RESULT_SIZE, new DeepComparator(orderings));
-    return deepContext.parallelize(list);
   }
 }
