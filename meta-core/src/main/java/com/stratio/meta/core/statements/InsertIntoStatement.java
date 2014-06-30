@@ -271,21 +271,33 @@ public class InsertIntoStatement extends MetaStatement {
     if (!result.hasError()) {
       ColumnMetadata cm = null;
       if (cellValues.size() == ids.size()) {
-        updateTermClass(tableMetadata);
-        for (int index = 0; index < cellValues.size(); index++) {
-          cm = tableMetadata.getColumn(ids.get(index));
-          if (cm != null) {
-            Term<?> t = Term.class.cast(cellValues.get(index));
-            if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
-              result =
-                  Result.createValidationErrorResult("Column " + ids.get(index) + " of type "
-                      + cm.getType().asJavaClass() + " does not accept " + t.getTermClass()
-                      + " values (" + cellValues.get(index) + ")");
-            }
-          } else {
+        // Checking insertion fields
+        for (int i = 0; i < ids.size(); i++) {
+          ColumnMetadata column = tableMetadata.getColumn(ids.get(i));
+          if (column == null) {
             result =
-                Result.createValidationErrorResult("Column " + ids.get(index) + " not found in "
-                    + tableMetadata.getName());
+                Result.createValidationErrorResult("Column [" + ids.get(i)
+                    + "] not found in table [" + tableMetadata.getName() + "]");
+          }
+        }
+
+        if (!result.hasError()) {
+          updateTermClass(tableMetadata);
+          for (int index = 0; index < cellValues.size(); index++) {
+            cm = tableMetadata.getColumn(ids.get(index));
+            if (cm != null) {
+              Term<?> t = Term.class.cast(cellValues.get(index));
+              if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
+                result =
+                    Result.createValidationErrorResult("Column " + ids.get(index) + " of type "
+                        + cm.getType().asJavaClass() + " does not accept " + t.getTermClass()
+                        + " values (" + cellValues.get(index) + ")");
+              }
+            } else {
+              result =
+                  Result.createValidationErrorResult("Column " + ids.get(index) + " not found in "
+                      + tableMetadata.getName());
+            }
           }
         }
       } else {
