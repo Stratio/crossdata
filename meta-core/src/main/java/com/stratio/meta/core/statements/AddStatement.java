@@ -47,7 +47,7 @@ public class AddStatement extends MetaStatement {
     }
 
     @Override
-    public String translateToCQL() {
+    public String translateToCQL(MetadataManager metadataManager) {
         return this.toString();
     }
 

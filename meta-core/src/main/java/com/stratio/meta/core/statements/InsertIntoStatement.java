@@ -16,12 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -30,16 +24,27 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta.core.metadata.CassandraMetadataHelper;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.BooleanTerm;
+import com.stratio.meta.core.structures.DoubleTerm;
 import com.stratio.meta.core.structures.FloatTerm;
 import com.stratio.meta.core.structures.IntegerTerm;
+import com.stratio.meta.core.structures.LongTerm;
 import com.stratio.meta.core.structures.Option;
+import com.stratio.meta.core.structures.StringTerm;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.ValueCell;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+
+import org.apache.log4j.Logger;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Class that models an {@code INSERT INTO} statement from the META language.
@@ -241,10 +246,31 @@ public class InsertIntoStatement extends MetaStatement {
               .asJavaClass();
       if (cellValues.get(i) instanceof Term) {
         Term<?> term = (Term<?>) cellValues.get(i);
-        if (dataType == Integer.class && term.getTermClass() == Long.class) {
-          cellValues.set(i, new IntegerTerm((Term<Long>) term));
-        } else if (dataType == Float.class && term.getTermClass() == Double.class) {
-          cellValues.set(i, new FloatTerm((Term<Double>) term));
+
+        Class<? extends Comparable<?>> parserClass = term.getTermClass();
+
+        LOG.debug("Column = "+ids.get(i) +", type = "+parserClass);
+
+        if(dataType != parserClass){
+          LOG.debug("Converting from "+parserClass+" to "+dataType);
+          if(dataType == Boolean.class){
+            cellValues.set(i, new BooleanTerm((Term<Boolean>) term));
+          } else if (dataType == Double.class){
+            cellValues.set(i, new DoubleTerm((Term<Double>) term));
+          } else if (dataType == Float.class){
+            cellValues.set(i, new FloatTerm((Term<Double>) term));
+          } else if (dataType == Integer.class){
+            cellValues.set(i, new IntegerTerm((Term<Long>) term));
+          } else if (dataType == Long.class){
+            cellValues.set(i, new LongTerm((Term<Long>) term));
+          } else {
+            cellValues.set(i, new StringTerm((Term<String>) term));
+          }
+          Class<? extends Comparable<?>>
+              newDataType =
+              (Class<? extends Comparable<?>>) tableMetadata.getColumn(ids.get(i)).getType()
+                  .asJavaClass();
+          LOG.debug("New DataType = " + newDataType);
         }
       }
     }
@@ -308,7 +334,12 @@ public class InsertIntoStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
+    TableMetadata metadata = metadataManager.getTableMetadata(getEffectiveKeyspace(), tableName);
+    CassandraMetadataHelper cmh = new CassandraMetadataHelper();
+    com.stratio.meta.common.metadata.structures.TableMetadata
+        metadataCommons =
+        cmh.toTableMetadata(getEffectiveKeyspace(), metadata);
     StringBuilder sb = new StringBuilder("INSERT INTO ");
     if (keyspaceInc) {
       sb.append(keyspace).append(".");
@@ -321,7 +352,7 @@ public class InsertIntoStatement extends MetaStatement {
     }
     if (typeValues == TYPE_VALUES_CLAUSE) {
       sb.append("VALUES (");
-      sb.append(ParserUtils.addSingleQuotesToString(ParserUtils.stringList(cellValues, ", "), ","));
+      sb.append(ParserUtils.addSingleQuotesToString(ParserUtils.stringList(cellValues, ", "), ",", metadataCommons, ids));
       sb.append(")");
     }
     if (ifNotExists) {
@@ -341,7 +372,7 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     Insert insertStmt =
-        this.keyspaceInc ? QueryBuilder.insertInto(this.keyspace, this.tableName) : QueryBuilder
+        this.keyspaceInc? QueryBuilder.insertInto(this.keyspace, this.tableName): QueryBuilder
             .insertInto(this.tableName);
 
     try {
@@ -356,7 +387,7 @@ public class InsertIntoStatement extends MetaStatement {
 
     Insert.Options optionsStmt = checkOptions(insertStmt);
 
-    return optionsStmt == null ? insertStmt : optionsStmt;
+    return optionsStmt == null? insertStmt: optionsStmt;
   }
 
   @Override

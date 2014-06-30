@@ -16,8 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.util.Iterator;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
@@ -28,6 +26,8 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+
+import java.util.Iterator;
 
 /**
  * Class that models a {@code DROP INDEX} statement from the META language.
@@ -156,7 +156,7 @@ public class DropIndexStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
     return this.toString();
   }
 
