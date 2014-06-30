@@ -232,7 +232,7 @@ public class Bridge {
         (CassandraResultSet) returnResult(result, true, false, selectedCols, ss.getLimit(),
             ss.getOrder());
 
-    return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet, new ArrayList<String>());
+    return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
   }
 
   private ResultSet replaceWithAliases(Map<String, String> fieldsAliasesMap,
