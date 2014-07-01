@@ -16,11 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
@@ -44,6 +39,11 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class that models an {@code UPDATE} statement from the META language.
@@ -201,7 +201,7 @@ public class UpdateTableStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
     return this.toString();
   }
 

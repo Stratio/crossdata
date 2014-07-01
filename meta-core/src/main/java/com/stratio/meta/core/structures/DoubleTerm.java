@@ -26,4 +26,8 @@ public class DoubleTerm extends Term<Double> {
 	public DoubleTerm(String term) {
 		super(Double.class, Double.valueOf(term));
 	}
+
+  public DoubleTerm(Term<Double> term) {
+    super(Double.class, term.getTermValue().doubleValue());
+  }
 }

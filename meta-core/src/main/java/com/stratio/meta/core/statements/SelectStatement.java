@@ -1,16 +1,16 @@
 /*
  * Stratio Meta
- * 
+ *
  * Copyright (c) 2014, Stratio, All rights reserved.
- * 
+ *
  * This library is free software; you can redistribute it and/or modify it under the terms of the
  * GNU Lesser General Public License as published by the Free Software Foundation; either version
  * 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
@@ -194,7 +194,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Class constructor.
-   * 
+   *
    * @param tableName The name of the target table.
    */
   public SelectStatement(String tableName) {
@@ -212,7 +212,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Class constructor.
-   * 
+   *
    * @param selectionClause The {@link com.stratio.meta.core.structures.SelectionClause} of the
    *        Select statement.
    * @param tableName The name of the target table.
@@ -225,7 +225,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the keyspace specified in the select statement.
-   * 
+   *
    * @return The keyspace or null if not specified.
    */
   public String getKeyspace() {
@@ -234,7 +234,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Set the keyspace specified in the select statement.
-   * 
+   *
    * @param keyspace The name of the keyspace.
    */
   public void setKeyspace(String keyspace) {
@@ -244,7 +244,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the name of the target table.
-   * 
+   *
    * @return The table name.
    */
   public String getTableName() {
@@ -253,7 +253,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the {@link com.stratio.meta.core.structures.SelectionClause}.
-   * 
+   *
    * @return The selection clause.
    */
   public SelectionClause getSelectionClause() {
@@ -262,7 +262,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Set the {@link com.stratio.meta.core.structures.SelectionClause} for selecting columns.
-   * 
+   *
    * @param selectionClause selection clause.
    */
   public void setSelectionClause(SelectionClause selectionClause) {
@@ -271,7 +271,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Set the {@link com.stratio.meta.core.structures.WindowSelect} for streaming queries.
-   * 
+   *
    * @param window The window.
    */
   public void setWindow(WindowSelect window) {
@@ -281,7 +281,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the Join clause.
-   * 
+   *
    * @return The Join or null if not set.
    */
   public InnerJoin getJoin() {
@@ -290,7 +290,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Set the {@link com.stratio.meta.core.structures.InnerJoin} clause.
-   * 
+   *
    * @param join The join clause.
    */
   public void setJoin(InnerJoin join) {
@@ -300,7 +300,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the list of {@link Relation} in the where clause.
-   * 
+   *
    * @return The list of relations.
    */
   public List<Relation> getWhere() {
@@ -309,7 +309,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Set the list of {@link Relation} in the where clause.
-   * 
+   *
    * @param where The list of relations.
    */
   public void setWhere(List<Relation> where) {
@@ -319,7 +319,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Set the {@link Ordering} in the ORDER BY clause.
-   * 
+   *
    * @param order The order.
    */
   public void setOrder(List<Ordering> order) {
@@ -329,7 +329,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Return ORDER BY clause.
-   * 
+   *
    * @return list of {@link com.stratio.meta.core.structures.Ordering}.
    */
   public List<Ordering> getOrder() {
@@ -338,7 +338,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Check if ORDER BY clause is included.
-   * 
+   *
    * @return {@code true} if is included.
    */
   public boolean isOrderInc() {
@@ -347,7 +347,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Set the {@link com.stratio.meta.core.structures.GroupBy} clause.
-   * 
+   *
    * @param group The group by.
    */
   public void setGroup(List<GroupBy> group) {
@@ -357,7 +357,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Return GROUP BY clause.
-   * 
+   *
    * @return list of {@link com.stratio.meta.core.structures.GroupBy}.
    */
   public List<GroupBy> getGroup() {
@@ -366,7 +366,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Check if GROUP BY clause is included.
-   * 
+   *
    * @return {@code true} if is included.
    */
   public boolean isGroupInc() {
@@ -375,7 +375,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Check if a WHERE clause is included.
-   * 
+   *
    * @return Whether it is included.
    */
   public boolean isWhereInc() {
@@ -384,7 +384,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Set the LIMIT of the query.
-   * 
+   *
    * @param limit The maximum number of rows to be returned.
    */
   public void setLimit(int limit) {
@@ -410,7 +410,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Disable the analytics mode.
-   * 
+   *
    * @param disableAnalytics Whether analytics are enable (default) or not.
    */
   public void setDisableAnalytics(boolean disableAnalytics) {
@@ -420,7 +420,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Add a {@link com.stratio.meta.core.structures.SelectionSelector} to the
    * {@link com.stratio.meta.core.structures.SelectionClause}.
-   * 
+   *
    * @param selSelector The new selector.
    */
   public void addSelection(SelectionSelector selSelector) {
@@ -443,7 +443,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Creates a String representing the Statement with META syntax.
-   * 
+   *
    * @return String
    */
   @Override
@@ -486,6 +486,7 @@ public class SelectStatement extends MetaStatement {
   /** {@inheritDoc} */
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
+    System.out.println("TRACE: Validating = "+this.toString());
     // Validate FROM keyspace
     Result result =
         validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
@@ -508,7 +509,7 @@ public class SelectStatement extends MetaStatement {
     if (!result.hasError() && joinInc) {
       result =
           validateKeyspaceAndTable(metadata, sessionKeyspace, join.isKeyspaceInc(),
-              join.getKeyspace(), join.getTablename());
+                                   join.getKeyspace(), join.getTablename());
     }
 
     String effectiveKs1 = getEffectiveKeyspace();
@@ -562,7 +563,7 @@ public class SelectStatement extends MetaStatement {
             Result
                 .createValidationErrorResult("Where clauses in ephemeral tables are not supported yet.");
       } else {
-        result = validateWhereClause(tableMetadataFrom);
+        result = validateWhereClauses(tableMetadataFrom, tableMetadataJoin);
       }
 
     }
@@ -592,7 +593,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Validate the supported select options.
-   * 
+   *
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateOptions() {
@@ -615,24 +616,23 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Validate the JOIN clause.
-   * 
+   *
    * @param tableFrom The table in the FROM clause.
    * @param tableJoin The table in the JOIN clause.
    * @return Whether the specified table names and fields are valid.
    */
-  // TODO validateJoinClause
   private Result validateJoinClause(TableMetadata tableFrom, TableMetadata tableJoin) {
     Result result = QueryResult.createSuccessQueryResult();
     if (joinInc) {
       if (!checkSelectorExists(join.getLeftField())) {
         result =
             Result.createValidationErrorResult("Join selector " + join.getLeftField().toString()
-                + " table or column name not found");
+                                               + " table or column name not found");
       }
       if (!checkSelectorExists(join.getRightField())) {
         result =
             Result.createValidationErrorResult("Join selector " + join.getRightField().toString()
-                + " table or column name not found");
+                                               + " table or column name not found");
       }
     }
 
@@ -697,7 +697,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Validate a relation found in a where clause.
-   * 
+   *
    * @param targetTable The target table.
    * @param column The name of the column.
    * @param terms The terms.
@@ -705,7 +705,7 @@ public class SelectStatement extends MetaStatement {
    * @return Whether the relation is valid.
    */
   private Result validateWhereSingleColumnRelation(String targetTable, String column,
-      List<Term<?>> terms, Relation rc) {
+                                                   List<Term<?>> terms, Relation rc) {
     Result result = QueryResult.createSuccessQueryResult();
 
     String operator = rc.getOperator();
@@ -719,8 +719,8 @@ public class SelectStatement extends MetaStatement {
         if (!columnType.equals(term.getTermClass())) {
           result =
               Result.createValidationErrorResult("Column [" + column + "] of type [" + columnType
-                  + "] does not accept " + term.getTermClass() + " values (" + term.toString()
-                  + ")");
+                                                 + "] does not accept " + term.getTermClass() + " values (" + term.toString()
+                                                 + ")");
         }
       }
 
@@ -741,13 +741,13 @@ public class SelectStatement extends MetaStatement {
         if (!supported) {
           result =
               Result.createValidationErrorResult("Operand " + operator + " not supported for"
-                  + " column " + column + ".");
+                                                 + " column " + column + ".");
         }
       }
     } else {
       result =
           Result.createValidationErrorResult("Column " + column + " not found in " + targetTable
-              + " table.");
+                                             + " table.");
     }
 
     return result;
@@ -756,16 +756,27 @@ public class SelectStatement extends MetaStatement {
   /**
    * Validate that the where clause is valid by checking that columns exists on the target table and
    * that the comparisons are semantically valid.
-   * 
+   *
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateWhereClause(TableMetadata tableMetadata) {
+  private Result validateWhereClauses(TableMetadata tableMetadata, TableMetadata tableMetadataJoin) {
     // TODO: Check that the MATCH operator is only used in Lucene mapped columns.
     Result result = QueryResult.createSuccessQueryResult();
     Iterator<Relation> relations = where.iterator();
     while (!result.hasError() && relations.hasNext()) {
       Relation relation = relations.next();
-      relation.updateTermClass(tableMetadata);
+
+      System.out.println("TRACE: Relation = " +relation.toString());
+      System.out.println(
+          "TRACE: relation.getIdentifiers().get(0).getTable = " + relation.getIdentifiers().get(0)
+              .getTable());
+
+      if(tableMetadata.getName().equalsIgnoreCase(relation.getIdentifiers().get(0).getTable()) || (relation.getIdentifiers().get(0).getTable() == null)){
+        relation.updateTermClass(tableMetadata);
+      } else {
+        relation.updateTermClass(tableMetadataJoin);
+      }
+
       if (Relation.TYPE_COMPARE == relation.getType() || Relation.TYPE_IN == relation.getType()
           || Relation.TYPE_BETWEEN == relation.getType()) {
         // Check comparison, =, >, <, etc.
@@ -799,7 +810,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Validate whether the group by clause is valid or not by checking columns exist on the target
    * table and comparisons are semantically correct.
-   * 
+   *
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateGroupByClause() {
@@ -820,7 +831,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Validate whether the group by clause is valid or not by checking columns exist on the target
    * table and comparisons are semantically correct.
-   * 
+   *
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateOrderByClause() {
@@ -849,7 +860,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Find a column in the selected tables.
-   * 
+   *
    * @param table The target table of the column.
    * @param column The name of the column.
    * @return A {@link com.stratio.meta.common.result.Result}.
@@ -871,20 +882,20 @@ public class SelectStatement extends MetaStatement {
       if (!found) {
         result =
             Result.createValidationErrorResult("Column " + column + " does not " + "exist in "
-                + table + " table.");
+                                               + table + " table.");
       }
 
     } else {
       result =
           Result.createValidationErrorResult("Column " + column + " refers to table " + table
-              + " that has not been specified on query.");
+                                             + " that has not been specified on query.");
     }
     return result;
   }
 
   /**
    * Find a column in the selected tables.
-   * 
+   *
    * @param table The target table of the column.
    * @param column The name of the column.
    * @return A {@link com.datastax.driver.core.ColumnMetadata} or null if not found.
@@ -910,7 +921,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Validate that the columns specified in the select are valid by checking that the selection
    * columns exists in the table.
-   * 
+   *
    * @param tableFrom The {@link com.datastax.driver.core.TableMetadata} associated with the FROM
    *        table.
    * @param tableJoin The {@link com.datastax.driver.core.TableMetadata} associated with the JOIN
@@ -934,8 +945,8 @@ public class SelectStatement extends MetaStatement {
         String colName = selectorIdentifier.getField();
         if (!colNames.contains(colName.toLowerCase())) {
           return Result.createValidationErrorResult("Column '" + colName
-              + "' not found in ephemeral table '" + getEffectiveKeyspace() + "." + tableName
-              + "'.");
+                                                    + "' not found in ephemeral table '" + getEffectiveKeyspace() + "." + tableName
+                                                    + "'.");
         }
       }
     }
@@ -1062,7 +1073,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the processed where clause to be sent to Cassandra related with lucene indexes.
-   * 
+   *
    * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
    *        required information.
    * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
@@ -1121,7 +1132,7 @@ public class SelectStatement extends MetaStatement {
    * Match: Default query, supporting escaped symbols: *, ?, [, ], etc.
    * </ul>
    * </li>
-   * 
+   *
    * @param query The user query.
    * @return An array with the type of query and the processed query.
    */
@@ -1155,11 +1166,11 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Creates a String representing the Statement with CQL syntax.
-   * 
+   *
    * @return
    */
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
     StringBuilder sb = new StringBuilder(this.toString());
 
     if (sb.toString().contains("TOKEN(")) {
@@ -1168,39 +1179,39 @@ public class SelectStatement extends MetaStatement {
       while (newLength != currentLength) {
         currentLength = newLength;
         sb = new StringBuilder(sb.toString().replaceAll("(.*)" // $1
-            + "(=|<|>|<=|>=|<>|LIKE)" // $2
-            + "(\\s?)" // $3
-            + "(TOKEN\\()" // $4
-            + "([^'][^\\)]+)" // $5
-            + "(\\).*)", // $6
-            "$1$2$3$4'$5'$6"));
+                                                        + "(=|<|>|<=|>=|<>|LIKE)" // $2
+                                                        + "(\\s?)" // $3
+                                                        + "(TOKEN\\()" // $4
+                                                        + "([^'][^\\)]+)" // $5
+                                                        + "(\\).*)", // $6
+                                                        "$1$2$3$4'$5'$6"));
         sb = new StringBuilder(sb.toString().replaceAll("(.*TOKEN\\(')" // $1
-            + "([^,]+)" // $2
-            + "(,)" // $3
-            + "(\\s*)" // $4
-            + "([^']+)" // $5
-            + "(')" // $6
-            + "(\\).*)", // $7
-            "$1$2'$3$4'$5$6$7"));
+                                                        + "([^,]+)" // $2
+                                                        + "(,)" // $3
+                                                        + "(\\s*)" // $4
+                                                        + "([^']+)" // $5
+                                                        + "(')" // $6
+                                                        + "(\\).*)", // $7
+                                                        "$1$2'$3$4'$5$6$7"));
         sb = new StringBuilder(sb.toString().replaceAll("(.*TOKEN\\(')" // $1
-            + "(.+)" // $2
-            + "([^'])" // $3
-            + "(,)" // $4
-            + "(\\s*)" // $5
-            + "([^']+)" // $6
-            + "(')" // $7
-            + "(\\).*)", // $8
-            "$1$2$3'$4$5'$6$7$8"));
+                                                        + "(.+)" // $2
+                                                        + "([^'])" // $3
+                                                        + "(,)" // $4
+                                                        + "(\\s*)" // $5
+                                                        + "([^']+)" // $6
+                                                        + "(')" // $7
+                                                        + "(\\).*)", // $8
+                                                        "$1$2$3'$4$5'$6$7$8"));
         sb = new StringBuilder(sb.toString().replaceAll("(.*TOKEN\\(')" // $1
-            + "(.+)" // $2
-            + "([^'])" // $3
-            + "(,)" // $4
-            + "(\\s*)" // $5
-            + "([^']+)" // $6
-            + "(')" // $7
-            + "([^TOKEN]+)" // $8
-            + "('\\).*)", // $9
-            "$1$2$3'$4$5'$6$7$8$9"));
+                                                        + "(.+)" // $2
+                                                        + "([^'])" // $3
+                                                        + "(,)" // $4
+                                                        + "(\\s*)" // $5
+                                                        + "([^']+)" // $6
+                                                        + "(')" // $7
+                                                        + "([^TOKEN]+)" // $8
+                                                        + "('\\).*)", // $9
+                                                        "$1$2$3'$4$5'$6$7$8$9"));
         newLength = sb.toString().length();
       }
     }
@@ -1210,7 +1221,7 @@ public class SelectStatement extends MetaStatement {
 
   @Override
   public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName,
-      String outgoing) {
+                                  String outgoing) {
     StringBuilder querySb = new StringBuilder("from ");
     querySb.append(streamName);
     if (windowInc) {
@@ -1250,13 +1261,13 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the driver representation of the fields found in the selection clause.
-   * 
+   *
    * @param selSelectors The selectors.
    * @param selection The current Select.Selection.
    * @return A {@link com.datastax.driver.core.querybuilder.Select.Selection}.
    */
   private Select.Selection getDriverBuilderSelection(SelectionSelectors selSelectors,
-      Select.Selection selection) {
+                                                     Select.Selection selection) {
     Select.Selection result = selection;
     for (SelectionSelector selSelector : selSelectors.getSelectors()) {
       SelectorMeta selectorMeta = selSelector.getSelector();
@@ -1284,7 +1295,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the driver builder object with the selection clause.
-   * 
+   *
    * @return A {@link com.datastax.driver.core.querybuilder.Select.Builder}.
    */
   private Select.Builder getDriverBuilder() {
@@ -1311,7 +1322,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Cast an input value to the class associated with the comparison column.
-   * 
+   *
    * @param columnName The name of the column.
    * @param value The initial value.
    * @return A casted object.
@@ -1345,7 +1356,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the driver clause associated with a compare relation.
-   * 
+   *
    * @param metaRelation The {@link com.stratio.meta.core.structures.RelationCompare} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
@@ -1383,7 +1394,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the driver clause associated with an in relation.
-   * 
+   *
    * @param metaRelation The {@link com.stratio.meta.core.structures.RelationIn} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
@@ -1404,7 +1415,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the driver clause associated with an token relation.
-   * 
+   *
    * @param metaRelation The {@link com.stratio.meta.core.structures.RelationToken} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
@@ -1452,7 +1463,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the driver where clause.
-   * 
+   *
    * @param sel The current Select.
    * @return A {@link com.datastax.driver.core.querybuilder.Select.Where}.
    */
@@ -1494,12 +1505,7 @@ public class SelectStatement extends MetaStatement {
   public Statement getDriverStatement() {
     Select.Builder builder = getDriverBuilder();
 
-    Select sel;
-    if (this.keyspaceInc) {
-      sel = builder.from(this.keyspace, this.tableName);
-    } else {
-      sel = builder.from(this.tableName);
-    }
+    Select sel = builder.from(this.getEffectiveKeyspace(), this.tableName);
 
     if (this.limitInc) {
       sel.limit(this.limit);
@@ -1533,7 +1539,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Find the table that contains the selected column.
-   * 
+   *
    * @param columnName The name of the column.
    * @return The name of the table.
    */
@@ -1557,7 +1563,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Check whether a selection clause should be added to the new Select statement that will be
    * generated as part of the planning process of a JOIN.
-   * 
+   *
    * @param select The {@link com.stratio.meta.core.statements.SelectStatement}.
    * @param whereColumnName The name of the column.
    * @return Whether it should be added or not.
@@ -1588,13 +1594,13 @@ public class SelectStatement extends MetaStatement {
   /**
    * Get a map of relations to be added to where clauses of the sub-select queries that will be
    * executed for a JOIN select.
-   * 
+   *
    * @param firstSelect The first select statement.
    * @param secondSelect The second select statement.
    * @return A map with keys {@code 1} or {@code 2} for each select.
    */
   private Map<Integer, List<Relation>> getWhereJoinPlan(SelectStatement firstSelect,
-      SelectStatement secondSelect) {
+                                                        SelectStatement secondSelect) {
     Map<Integer, List<Relation>> result = new HashMap<>();
 
     List<Relation> firstWhere = new ArrayList<>();
@@ -1641,7 +1647,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the execution plan of a Join.
-   * 
+   *
    * @return The execution plan.
    */
   private Tree getJoinPlan() {
@@ -1730,7 +1736,7 @@ public class SelectStatement extends MetaStatement {
   }
 
   private boolean matchWhereColsWithPartitionKeys(TableMetadata tableMetadata,
-      Map<String, String> whereCols) {
+                                                  Map<String, String> whereCols) {
     boolean partialMatched = false;
     for (ColumnMetadata colMD : tableMetadata.getPartitionKey()) {
       String operator = "";
@@ -1751,7 +1757,7 @@ public class SelectStatement extends MetaStatement {
   }
 
   private void matchWhereColsWithClusteringKeys(TableMetadata tableMetadata,
-      Map<String, String> whereCols) {
+                                                Map<String, String> whereCols) {
     for (ColumnMetadata colMD : tableMetadata.getClusteringColumns()) {
       String operator = "";
       for (Relation relation : where) {
@@ -1766,7 +1772,7 @@ public class SelectStatement extends MetaStatement {
   }
 
   private boolean checkWhereColsWithLucene(Set<String> luceneCols, Map<String, String> whereCols,
-      MetadataManager metadataManager, boolean cassandraPath) {
+                                           MetadataManager metadataManager, boolean cassandraPath) {
     if (luceneCols.containsAll(whereCols.keySet())) {
       boolean onlyMatchOperators = true;
       for (String operator : whereCols.values()) {
@@ -1795,7 +1801,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Get the execution plan of a non JOIN select with a where clause.
-   * 
+   *
    * @param metadataManager The medata manager.
    * @return The execution plan.
    */
@@ -1998,7 +2004,7 @@ public class SelectStatement extends MetaStatement {
 
   /**
    * Check if operators collection contains any relational operator.
-   * 
+   *
    * @param collection {@link java.util.Collection} of relational operators.
    * @return {@code true} if contains any relational operator.
    */
@@ -2042,7 +2048,7 @@ public class SelectStatement extends MetaStatement {
   }
 
   private void replaceAliasesInWhere(Map<String, String> fieldsAliasesMap,
-      Map<String, String> tablesAliasesMap) {
+                                     Map<String, String> tablesAliasesMap) {
 
     if (this.where != null) {
       for (Relation whereCol : this.where) {
@@ -2062,7 +2068,7 @@ public class SelectStatement extends MetaStatement {
   }
 
   private void replaceAliasesInGroupBy(Map<String, String> fieldsAliasesMap,
-      Map<String, String> tablesAliasesMap) {
+                                       Map<String, String> tablesAliasesMap) {
 
     if (this.group != null) {
       for (GroupBy groupByCol : this.group) {
@@ -2082,7 +2088,7 @@ public class SelectStatement extends MetaStatement {
   }
 
   private void replaceAliasesInOrderBy(Map<String, String> fieldsAliasesMap,
-      Map<String, String> tablesAliasesMap) {
+                                       Map<String, String> tablesAliasesMap) {
 
     if (this.order != null) {
       for (Ordering orderBycol : this.order) {
@@ -2119,7 +2125,7 @@ public class SelectStatement extends MetaStatement {
   }
 
   public void replaceAliasesWithName(Map<String, String> fieldsAliasesMap,
-      Map<String, String> tablesAliasesMap) {
+                                     Map<String, String> tablesAliasesMap) {
 
     Iterator<Entry<String, String>> entriesIt = tablesAliasesMap.entrySet().iterator();
     while (entriesIt.hasNext()) {

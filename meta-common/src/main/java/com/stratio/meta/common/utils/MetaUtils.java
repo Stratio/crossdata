@@ -48,9 +48,11 @@ public class MetaUtils {
     
     public static final Set<String> NON_INITIALS = Sets.newHashSet(
             "KEYSPACE",
+            "KEYSPACES",
             "NOT",
             "WITH",
             "TABLE",
+            "TABLES",
             "IF",
             "EXISTS",
             "AND",
@@ -116,11 +118,18 @@ public class MetaUtils {
             "TOKEN",
             "LUCENE",
             "DEFAULT",
+            "SEC",
+            "SECS",
             "SECONDS",
+            "MINS",
             "MINUTES",
+            "HOUR",
             "HOURS",
+            "DAY",
             "DAYS",
-            "MATCH");
+            "MATCH",
+            "EPHEMERAL",
+            "SUM");
 
     /**
      * Private class constructor as all methods are static.

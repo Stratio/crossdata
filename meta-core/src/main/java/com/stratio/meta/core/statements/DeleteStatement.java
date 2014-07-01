@@ -16,10 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
@@ -34,6 +30,10 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Class that models a {@code SELECT} statement from the META language. This class recognizes the
@@ -70,7 +70,7 @@ public class DeleteStatement extends MetaStatement {
 
   /**
    * Add a new column to be deleted.
-   * 
+   *
    * @param column The column name.
    */
   public void addColumn(String column) {
@@ -79,7 +79,7 @@ public class DeleteStatement extends MetaStatement {
 
   /**
    * Set the name of the table.
-   * 
+   *
    * @param tableName The name of the table.
    */
   public void setTableName(String tableName) {
@@ -95,7 +95,7 @@ public class DeleteStatement extends MetaStatement {
 
   /**
    * Add a new {@link com.stratio.meta.core.structures.Relation} found in a WHERE clause.
-   * 
+   *
    * @param relation The relation.
    */
   public void addRelation(Relation relation) {
@@ -143,7 +143,7 @@ public class DeleteStatement extends MetaStatement {
   /**
    * Validate that the columns specified in the select are valid by checking that the selection
    * columns exists in the table.
-   * 
+   *
    * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
@@ -178,7 +178,7 @@ public class DeleteStatement extends MetaStatement {
     if (tableMetadata.getColumn(column) == null) {
       result =
           Result.createValidationErrorResult("Column " + column + " does not exist in table "
-              + tableMetadata.getName());
+                                             + tableMetadata.getName());
     }
 
     ColumnMetadata cm = tableMetadata.getColumn(column);
@@ -188,8 +188,8 @@ public class DeleteStatement extends MetaStatement {
       if (!tableMetadata.getColumn(column).getType().asJavaClass().equals(t.getTermClass())) {
         result =
             Result.createValidationErrorResult("Column " + column + " of type "
-                + tableMetadata.getColumn(rc.getIdentifiers().get(0).toString()).getType().asJavaClass()
-                + " does not accept " + t.getTermClass() + " values (" + t.toString() + ")");
+                                               + tableMetadata.getColumn(rc.getIdentifiers().get(0).toString()).getType().asJavaClass()
+                                               + " does not accept " + t.getTermClass() + " values (" + t.toString() + ")");
       }
 
       if (Boolean.class.equals(tableMetadata.getColumn(column).getType().asJavaClass())) {
@@ -213,13 +213,13 @@ public class DeleteStatement extends MetaStatement {
         if (!supported) {
           result =
               Result.createValidationErrorResult("Operand " + rc.getOperator() + " not supported"
-                  + " for column " + column + ".");
+                                                 + " for column " + column + ".");
         }
       }
     } else {
       result =
           Result.createValidationErrorResult("Column " + column + " not found in " + tableName
-              + " table.");
+                                             + " table.");
     }
     return result;
   }
@@ -227,7 +227,7 @@ public class DeleteStatement extends MetaStatement {
   /**
    * Validate that the columns specified in the select are valid by checking that the selection
    * columns exists in the table.
-   * 
+   *
    * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
@@ -238,11 +238,11 @@ public class DeleteStatement extends MetaStatement {
       if (c.toLowerCase().startsWith("stratio")) {
         result =
             Result.createValidationErrorResult("Internal column " + c
-                + " cannot be part of the WHERE " + "clause.");
+                                               + " cannot be part of the WHERE " + "clause.");
       } else if (tableMetadata.getColumn(c) == null) {
         result =
             Result.createValidationErrorResult("Column " + c + " does not exists in table "
-                + tableMetadata.getName());
+                                               + tableMetadata.getName());
       }
     }
 
@@ -252,7 +252,7 @@ public class DeleteStatement extends MetaStatement {
   /**
    * Validate that a valid keyspace is present, and that the table does not exits unless
    * {@code ifNotExists} has been specified.
-   * 
+   *
    * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
    *        required information.
    * @param targetKeyspace The target keyspace where the query will be executed.
@@ -284,9 +284,8 @@ public class DeleteStatement extends MetaStatement {
     return result;
   }
 
-
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
     return this.toString();
   }
 

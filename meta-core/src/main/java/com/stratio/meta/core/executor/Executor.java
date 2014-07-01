@@ -23,14 +23,13 @@ import com.datastax.driver.core.Session;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.core.engine.Engine;
 import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
-import org.apache.spark.SparkEnv;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -63,19 +62,24 @@ public class Executor {
   private final IStratioStreamingAPI stratioStreamingAPI;
 
   private final ExecutorService executorService;
+  private final MetadataManager metadataManager;
 
   /**
    * Executor constructor.
    * @param session Cassandra datastax java driver session.
    * @param deepSparkContext Spark context.
+   * @param metadataManager
    * @param engineConfig a {@link com.stratio.meta.core.engine.EngineConfig}
    */
-  public Executor(Session session, IStratioStreamingAPI stratioStreamingAPI, DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
+  public Executor(Session session, IStratioStreamingAPI stratioStreamingAPI,
+                  DeepSparkContext deepSparkContext, MetadataManager metadataManager,
+                  EngineConfig engineConfig) {
     this.session = session;
     this.deepSparkContext = deepSparkContext;
     this.engineConfig = engineConfig;
     this.stratioStreamingAPI = stratioStreamingAPI;
     this.executorService = Executors.newFixedThreadPool(3);
+    this.metadataManager = metadataManager;
   }
 
   /**
@@ -96,9 +100,9 @@ public class Executor {
       LOG.info("Streaming with intermediate callback");
 
       // If the task involves streaming and it is a non-single statement (e.g., SELECT * FROM t WITH
-      // WINDOW 2 s), create an execution trigger handler in such a way that the remainder of the
+      // WINDOW 6 secs), create an execution trigger handler in such a way that the remainder of the
       // plan is executed each time new streaming data arrives.
-      StreamingPlanTrigger st = new StreamingPlanTrigger(metaQuery, session, stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor);
+      StreamingPlanTrigger st = new StreamingPlanTrigger(metaQuery, session, stratioStreamingAPI, deepSparkContext, metadataManager, engineConfig, callbackActor);
       executorService.execute(st);
 
     }else {
@@ -106,7 +110,7 @@ public class Executor {
       // Execute plan
       metaQuery.setResult(
           plan.executeTreeDownTop(metaQuery.getQueryId(), session, stratioStreamingAPI,
-                                  deepSparkContext, engineConfig, callbackActor));
+                                  deepSparkContext, metadataManager, engineConfig, callbackActor));
     }
 
     return metaQuery;

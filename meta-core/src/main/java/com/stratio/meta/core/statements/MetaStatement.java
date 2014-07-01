@@ -125,7 +125,8 @@ public abstract class MetaStatement {
     if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
       result =
           Result
-              .createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+              .createValidationErrorResult(
+                  "Target keyspace missing or no keyspace has been selected.");
     } else {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if (ksMetadata == null) {
@@ -150,7 +151,7 @@ public abstract class MetaStatement {
   }
 
   public String getEffectiveKeyspace() {
-    return keyspaceInc ? keyspace : sessionKeyspace;
+    return keyspaceInc? keyspace: sessionKeyspace;
   }
 
   /**
@@ -158,7 +159,7 @@ public abstract class MetaStatement {
    * 
    * @return The CQL equivalent.
    */
-  public abstract String translateToCQL();
+  public abstract String translateToCQL(MetadataManager metadataManager);
 
   public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName,
       String outgoing) {

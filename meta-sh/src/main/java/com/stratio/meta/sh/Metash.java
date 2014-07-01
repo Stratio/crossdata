@@ -17,20 +17,8 @@
 package com.stratio.meta.sh;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-
-import jline.console.ConsoleReader;
-
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
-
 import com.stratio.meta.common.exceptions.ConnectionException;
 import com.stratio.meta.common.result.IResultHandler;
-
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
@@ -378,7 +366,6 @@ public class Metash {
     boolean async = true;
     if(args.length > 0){
       async = !"--sync".equals(args[0]);
-      LOG.info("Using asynchronous behaviour");
     }
     Metash sh = new Metash(async);
     if (sh.connect()) {

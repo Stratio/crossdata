@@ -457,7 +457,7 @@ public class CreateIndexStatement extends MetaStatement {
     }
 
     @Override
-    public String translateToCQL() {
+    public String translateToCQL(MetadataManager metadataManager) {
 
         if(IndexType.LUCENE.equals(type)){
             targetColumns.clear();
@@ -488,7 +488,7 @@ public class CreateIndexStatement extends MetaStatement {
 
         if(createIndex) {
             //Add CREATE INDEX as the root.
-            result.setNode(new MetaStep(MetaPath.CASSANDRA, translateToCQL()));
+            result.setNode(new MetaStep(MetaPath.CASSANDRA, translateToCQL(metadataManager)));
             //Add alter table as leaf if LUCENE index is selected.
             if (IndexType.LUCENE.equals(type)) {
                 StringBuilder alterStatement = new StringBuilder("ALTER TABLE ");

@@ -32,6 +32,10 @@ public class StringTerm extends Term<String> {
     this(term, false);
   }
 
+  public StringTerm(Term<String> term) {
+    super(String.class, term.getTermValue().toString());
+  }
+
   public boolean isQuotedLiteral() {
     return quotedLiteral;
   }
