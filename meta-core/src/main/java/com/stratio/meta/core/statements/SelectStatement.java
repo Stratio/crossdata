@@ -1494,12 +1494,7 @@ public class SelectStatement extends MetaStatement {
   public Statement getDriverStatement() {
     Select.Builder builder = getDriverBuilder();
 
-    Select sel;
-    if (this.keyspaceInc) {
-      sel = builder.from(this.keyspace, this.tableName);
-    } else {
-      sel = builder.from(this.tableName);
-    }
+    Select sel = builder.from(this.getEffectiveKeyspace(), this.tableName);
 
     if (this.limitInc) {
       sel.limit(this.limit);
