@@ -34,7 +34,9 @@ import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
 import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.GroupByFunction;
+import com.stratio.meta.core.structures.Ordering;
 import com.stratio.meta.core.structures.Selection;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelectors;
@@ -240,12 +242,14 @@ public final class DeepUtils {
   }
 
   /**
-   * Retrieve fields in selection clause.
+   * Retrieve fields in selection, group by and order by clauses.
    * 
    * @param ss SelectStatement of the query
-   * @return Array of fields in selection clause or null if all fields has been selected
+   * @return Array of fields in selection, group by and order by clauses, or null if all fields has
+   *         been selected.
    */
   public static String[] retrieveSelectorFields(SelectStatement ss) {
+
     // Retrieve selected column names
     SelectionList sList = (SelectionList) ss.getSelectionClause();
     Selection selection = sList.getSelection();
@@ -266,6 +270,23 @@ public final class DeepUtils {
         }
       }
     }
+
+    // Retrieve group by column names
+    if (ss.isGroupInc()) {
+      List<GroupBy> groups = ss.getGroup();
+      for (GroupBy group : groups) {
+        columnsSet.add(group.getSelectorIdentifier().getField());
+      }
+    }
+
+    // Retrieve order by column names
+    if (ss.isOrderInc()) {
+      List<Ordering> orders = ss.getOrder();
+      for (Ordering order : orders) {
+        columnsSet.add(order.getSelectorIdentifier().getField());
+      }
+    }
+
     return columnsSet.toArray(new String[columnsSet.size()]);
   }
 
