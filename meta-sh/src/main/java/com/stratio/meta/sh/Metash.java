@@ -240,7 +240,7 @@ public class Metash {
    * @param cmd The query.
    */
   private void executeSyncQuery(String cmd) {
-    LOG.debug("Command: " + cmd);
+    LOG.debug("Command: " + cmd+"|");
     long queryStart = System.currentTimeMillis();
     long queryEnd = queryStart;
     Result metaResult = null;
@@ -355,7 +355,7 @@ public class Metash {
           } else if (sb.toString().toLowerCase().startsWith("help")) {
             showHelp(sb.toString());
           } else {
-            executeQuery(sb.toString());
+            executeQuery(sb.toString().trim());
             println("");
           }
           sb = new StringBuilder();
