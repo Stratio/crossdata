@@ -16,6 +16,24 @@
 
 package com.stratio.meta.core.statements;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
+
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -58,24 +76,6 @@ import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
-
-import org.apache.log4j.Logger;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Pattern;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -497,7 +497,7 @@ public class SelectStatement extends MetaStatement {
               .createValidationErrorResult("Window option can only be applied to ephemeral tables.");
     }
 
-    if(streamMode && !windowInc){
+    if (streamMode && !windowInc) {
       result = Result.createValidationErrorResult("Window is mandatory for ephemeral tables.");
     }
 
@@ -524,7 +524,7 @@ public class SelectStatement extends MetaStatement {
     if (!result.hasError()) {
       // Cache Metadata manager and table metadata for the getDriverStatement.
       this.metadata = metadata;
-      if(streamMode){
+      if (streamMode) {
         streamingMetadata = metadata.convertStreamingToMeta(getEffectiveKeyspace(), tableName);
       } else {
         tableMetadataFrom = metadata.getTableMetadata(effectiveKs1, tableName);
@@ -533,7 +533,7 @@ public class SelectStatement extends MetaStatement {
         tableMetadataJoin = metadata.getTableMetadata(effectiveKs2, join.getTablename());
       }
 
-      if(streamMode){
+      if (streamMode) {
         result = validateSelectionColumns(streamingMetadata, tableMetadataJoin);
       } else {
         result = validateSelectionColumns(tableMetadataFrom, tableMetadataJoin);
@@ -545,7 +545,7 @@ public class SelectStatement extends MetaStatement {
     }
 
     if (!result.hasError() && joinInc) {
-      if(streamMode){
+      if (streamMode) {
         result = validateJoinClause(streamingMetadata, tableMetadataJoin);
       } else {
         result = validateJoinClause(tableMetadataFrom, tableMetadataJoin);
@@ -553,8 +553,10 @@ public class SelectStatement extends MetaStatement {
     }
 
     if (!result.hasError() && whereInc) {
-      if(streamMode){
-        result = Result.createValidationErrorResult("Where clauses in ephemeral tables are not supported yet.");
+      if (streamMode) {
+        result =
+            Result
+                .createValidationErrorResult("Where clauses in ephemeral tables are not supported yet.");
       } else {
         result = validateWhereClause(tableMetadataFrom);
       }
@@ -562,22 +564,21 @@ public class SelectStatement extends MetaStatement {
     }
 
     /*
-    if(!result.hasError() && windowInc){
-      result = validateWindow(config);
-    }
-    */
+     * if(!result.hasError() && windowInc){ result = validateWindow(config); }
+     */
 
     return result;
   }
 
   private Result validateWindow(EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();
-    if(window instanceof WindowTime){
+    if (window instanceof WindowTime) {
       WindowTime windowTime = (WindowTime) window;
       long windowMillis = windowTime.getDurationInMilliseconds();
-      if(windowMillis % config.getStreamingDuration() != 0){
-        result = Result.createValidationErrorResult(
-            "Window time must be multiple of "+ config.getStreamingDuration() + " milliseconds.");
+      if (windowMillis % config.getStreamingDuration() != 0) {
+        result =
+            Result.createValidationErrorResult("Window time must be multiple of "
+                + config.getStreamingDuration() + " milliseconds.");
       }
     } else {
       result = Result.createValidationErrorResult("This type of window is not supported yet.");
@@ -635,7 +636,8 @@ public class SelectStatement extends MetaStatement {
   }
 
   private Result validateJoinClause(
-      com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata, TableMetadata tableMetadataJoin) {
+      com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata,
+      TableMetadata tableMetadataJoin) {
     Result result = QueryResult.createSuccessQueryResult();
     if (joinInc) {
 
@@ -644,30 +646,42 @@ public class SelectStatement extends MetaStatement {
 
       boolean streamingLeft = false;
       boolean batchLeft = false;
-      if(leftField.getTable().equalsIgnoreCase(streamingMetadata.getTableName())){
-        if(streamingMetadata.getColumn(leftField.getField()) == null){
-          result = Result.createValidationErrorResult("Ephemeral table '"+streamingMetadata.getTableName()+"' doesn't contain the field '"+leftField.getField()+"'.");
+      if (leftField.getTable().equalsIgnoreCase(streamingMetadata.getTableName())) {
+        if (streamingMetadata.getColumn(leftField.getField()) == null) {
+          result =
+              Result.createValidationErrorResult("Ephemeral table '"
+                  + streamingMetadata.getTableName() + "' doesn't contain the field '"
+                  + leftField.getField() + "'.");
         } else {
           streamingLeft = true;
         }
-      } else if (leftField.getTable().equalsIgnoreCase(tableMetadataJoin.getName())){
-        if(tableMetadataJoin.getColumn(leftField.getField()) == null){
-          result = Result.createValidationErrorResult("Table '"+tableMetadataJoin.getName()+"' doesn't contain the field '"+leftField.getField()+"'.");
+      } else if (leftField.getTable().equalsIgnoreCase(tableMetadataJoin.getName())) {
+        if (tableMetadataJoin.getColumn(leftField.getField()) == null) {
+          result =
+              Result.createValidationErrorResult("Table '" + tableMetadataJoin.getName()
+                  + "' doesn't contain the field '" + leftField.getField() + "'.");
         } else {
           batchLeft = true;
         }
       } else {
-        result = Result.createValidationErrorResult("Table '"+leftField.getTable()+"' doesn't match any of the incoming tables.");
+        result =
+            Result.createValidationErrorResult("Table '" + leftField.getTable()
+                + "' doesn't match any of the incoming tables.");
       }
 
-      if(!result.hasError()){
-        if(streamingLeft){
-          if(tableMetadataJoin.getColumn(rightField.getField()) == null){
-            result = Result.createValidationErrorResult("Table '"+tableMetadataJoin.getName()+"' doesn't contain the field '"+rightField.getField()+"'.");
+      if (!result.hasError()) {
+        if (streamingLeft) {
+          if (tableMetadataJoin.getColumn(rightField.getField()) == null) {
+            result =
+                Result.createValidationErrorResult("Table '" + tableMetadataJoin.getName()
+                    + "' doesn't contain the field '" + rightField.getField() + "'.");
           }
-        } else if(batchLeft){
-          if(streamingMetadata.getColumn(rightField.getField()) == null){
-            result = Result.createValidationErrorResult("Ephemeral table '"+streamingMetadata.getTableName()+"' doesn't contain the field '"+rightField.getField()+"'.");
+        } else if (batchLeft) {
+          if (streamingMetadata.getColumn(rightField.getField()) == null) {
+            result =
+                Result.createValidationErrorResult("Ephemeral table '"
+                    + streamingMetadata.getTableName() + "' doesn't contain the field '"
+                    + rightField.getField() + "'.");
           }
         }
       }
@@ -996,15 +1010,16 @@ public class SelectStatement extends MetaStatement {
 
   private Result validateSelectionColumns(
       com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata,
-                                          TableMetadata tableJoin) {
+      TableMetadata tableJoin) {
     Result result = QueryResult.createSuccessQueryResult();
 
-    if((selectionClause instanceof SelectionList) && (((SelectionList) selectionClause).getTypeSelection() == Selection.TYPE_SELECTOR)){
+    if ((selectionClause instanceof SelectionList)
+        && (((SelectionList) selectionClause).getTypeSelection() == Selection.TYPE_SELECTOR)) {
       SelectionList selectionList = (SelectionList) selectionClause;
       SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
       selectionSelectors.getSelectors();
 
-      for(SelectionSelector selectionSelector: selectionSelectors.getSelectors()){
+      for (SelectionSelector selectionSelector : selectionSelectors.getSelectors()) {
         SelectorIdentifier selectorIdentifier =
             (SelectorIdentifier) selectionSelector.getSelector();
         String tableName = selectorIdentifier.getTable();
@@ -1019,18 +1034,24 @@ public class SelectStatement extends MetaStatement {
 
   private Result findColumn(
       com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata,
-      TableMetadata tableJoin, String colName){
+      TableMetadata tableJoin, String colName) {
     Result result = QueryResult.createSuccessQueryResult();
-    if(tableName.equalsIgnoreCase(streamingMetadata.getTableName())){
-      if(streamingMetadata.getColumn(colName) == null){
-        result = Result.createValidationErrorResult("Field '"+colName+"' not found in ephemeral table '"+tableName+"'.");
+    if (tableName.equalsIgnoreCase(streamingMetadata.getTableName())) {
+      if (streamingMetadata.getColumn(colName) == null) {
+        result =
+            Result.createValidationErrorResult("Field '" + colName
+                + "' not found in ephemeral table '" + tableName + "'.");
       }
     } else if (tableName.equalsIgnoreCase(tableJoin.getName())) {
-      if(tableJoin.getColumn(colName) == null){
-        result = Result.createValidationErrorResult("Field '"+colName+"' not found in table '"+tableName+"'.");
+      if (tableJoin.getColumn(colName) == null) {
+        result =
+            Result.createValidationErrorResult("Field '" + colName + "' not found in table '"
+                + tableName + "'.");
       }
     } else {
-      result = Result.createValidationErrorResult("Table '"+tableName+"' doesn't match to any incoming tables.");
+      result =
+          Result.createValidationErrorResult("Table '" + tableName
+              + "' doesn't match to any incoming tables.");
     }
     return result;
   }
@@ -1469,12 +1490,7 @@ public class SelectStatement extends MetaStatement {
   public Statement getDriverStatement() {
     Select.Builder builder = getDriverBuilder();
 
-    Select sel;
-    if (this.keyspaceInc) {
-      sel = builder.from(this.keyspace, this.tableName);
-    } else {
-      sel = builder.from(this.tableName);
-    }
+    Select sel = builder.from(this.getEffectiveKeyspace(), this.tableName);
 
     if (this.limitInc) {
       sel.limit(this.limit);
@@ -1852,7 +1868,7 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-    if(metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName) && joinInc){
+    if (metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName) && joinInc) {
       steps = getStreamJoinPlan();
     } else if (metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName)) {
       steps.setNode(new MetaStep(MetaPath.STREAMING, this));
@@ -1886,24 +1902,25 @@ public class SelectStatement extends MetaStatement {
     // ADD FIELDS OF THE JOIN
     String streamingField = null;
     if (this.join.getLeftField().getTable().trim().equalsIgnoreCase(tableName)) {
-      //streamingField = this.join.getLeftField().getField();
-      //if(streamingField.contains(".")) {
-      //  this.join.getLeftField().setField(streamingField.split(".")[1]);
-      //}
+      // streamingField = this.join.getLeftField().getField();
+      // if(streamingField.contains(".")) {
+      // this.join.getLeftField().setField(streamingField.split(".")[1]);
+      // }
       this.join.getLeftField().setTable(null);
       firstSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
       secondSelect.addSelection(new SelectionSelector(this.join.getRightField()));
     } else {
-      //streamingField = this.join.getRightField().getField();
-      //if(streamingField.contains(".")) {
-      //  this.join.getRightField().setField(streamingField.split(".")[1]);
-      //}
+      // streamingField = this.join.getRightField().getField();
+      // if(streamingField.contains(".")) {
+      // this.join.getRightField().setField(streamingField.split(".")[1]);
+      // }
       this.join.getRightField().setTable(null);
       firstSelect.addSelection(new SelectionSelector(this.join.getRightField()));
       secondSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
     }
 
-    com.stratio.meta.common.metadata.structures.TableMetadata streamingTable = metadata.convertStreamingToMeta(keyspace, tableName);
+    com.stratio.meta.common.metadata.structures.TableMetadata streamingTable =
+        metadata.convertStreamingToMeta(keyspace, tableName);
 
     // ADD FIELDS OF THE SELECT
     SelectionList selectionList = (SelectionList) this.selectionClause;
@@ -1936,7 +1953,7 @@ public class SelectStatement extends MetaStatement {
     }
 
     // ADD WINDOW
-    if(windowInc){
+    if (windowInc) {
       firstSelect.setWindow(window);
     }
 
@@ -1954,9 +1971,9 @@ public class SelectStatement extends MetaStatement {
     secondSelect.validate(metadata, null);
 
     // ADD STEPS
-    //steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
-    //steps.addChild(new Tree(new MetaStep(MetaPath.STREAMING, firstSelect)));
-    //steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
+    // steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
+    // steps.addChild(new Tree(new MetaStep(MetaPath.STREAMING, firstSelect)));
+    // steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
     steps.setNode(new MetaStep(MetaPath.STREAMING, firstSelect));
 
 
