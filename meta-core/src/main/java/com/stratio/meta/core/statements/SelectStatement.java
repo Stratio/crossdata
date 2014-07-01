@@ -486,6 +486,7 @@ public class SelectStatement extends MetaStatement {
   /** {@inheritDoc} */
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
+    System.out.println("TRACE: Validating = "+this.toString());
     // Validate FROM keyspace
     Result result =
         validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
@@ -560,7 +561,7 @@ public class SelectStatement extends MetaStatement {
       if(streamMode){
         result = Result.createValidationErrorResult("Where clauses in ephemeral tables are not supported yet.");
       } else {
-        result = validateWhereClause(tableMetadataFrom);
+        result = validateWhereClauses(tableMetadataFrom, tableMetadataJoin);
       }
 
     }
@@ -619,7 +620,6 @@ public class SelectStatement extends MetaStatement {
    * @param tableJoin The table in the JOIN clause.
    * @return Whether the specified table names and fields are valid.
    */
-  // TODO validateJoinClause
   private Result validateJoinClause(TableMetadata tableFrom, TableMetadata tableJoin) {
     Result result = QueryResult.createSuccessQueryResult();
     if (joinInc) {
@@ -745,13 +745,24 @@ public class SelectStatement extends MetaStatement {
    *
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateWhereClause(TableMetadata tableMetadata) {
+  private Result validateWhereClauses(TableMetadata tableMetadata, TableMetadata tableMetadataJoin) {
     // TODO: Check that the MATCH operator is only used in Lucene mapped columns.
     Result result = QueryResult.createSuccessQueryResult();
     Iterator<Relation> relations = where.iterator();
     while (!result.hasError() && relations.hasNext()) {
       Relation relation = relations.next();
-      relation.updateTermClass(tableMetadata);
+
+      System.out.println("TRACE: Relation = " +relation.toString());
+      System.out.println(
+          "TRACE: relation.getIdentifiers().get(0).getTable = " + relation.getIdentifiers().get(0)
+              .getTable());
+
+      if(tableMetadata.getName().equalsIgnoreCase(relation.getIdentifiers().get(0).getTable()) || (relation.getIdentifiers().get(0).getTable() == null)){
+        relation.updateTermClass(tableMetadata);
+      } else {
+        relation.updateTermClass(tableMetadataJoin);
+      }
+
       if (Relation.TYPE_COMPARE == relation.getType() || Relation.TYPE_IN == relation.getType()
           || Relation.TYPE_BETWEEN == relation.getType()) {
         // Check comparison, =, >, <, etc.
