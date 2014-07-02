@@ -50,8 +50,8 @@ public class StreamListener extends Thread {
   @Override
   public void run() {
     int lastSize = 0;
-    boolean resultsEmpty = true;
-    int currentSize = 0;
+    boolean resultsEmpty;
+    int currentSize;
 
     while(true){
       try {
