@@ -232,6 +232,11 @@ public class MetaStream {
 
   private static void sendPartialResultsToClient(List<Object> data, ActorResultListener callBackActor, String queryId, String ks) {
     CassandraResultSet crs = new CassandraResultSet();
+
+    List<com.stratio.meta.common.metadata.structures.ColumnMetadata> columnList = new ArrayList<>();
+
+    boolean generateMetadata = true;
+
     for(Object obj: data){
       Row newRow = new Row();
       List row = (List) obj;
@@ -241,9 +246,15 @@ public class MetaStream {
         Object value = column.get("value");
         String colType = (String) column.get("type");
         newRow.addCell(colName, new Cell(value));
+        if(generateMetadata){
+          columnList.add(new ColumnMetadata("", colName, StreamingUtils.streamingToMetaType(colType)));
+        }
       }
+      generateMetadata = false;
       crs.add(newRow);
     }
+    crs.setColumnMetadata(columnList);
+
     QueryResult queryResult = QueryResult.createSuccessQueryResult(crs, ks);
     queryResult.setQueryId(queryId);
     Integer page = resultPages.get(queryId);
@@ -281,7 +292,6 @@ public class MetaStream {
       for(Object columnObj: row){
         Map column = (Map) columnObj;
         String colName = (String) column.get("column");
-        //String value = (String) column.get("value");
         Object value = column.get("value");
         String colType = (String) column.get("type");
 

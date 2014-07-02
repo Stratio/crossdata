@@ -68,12 +68,17 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker with Actor
   }
 
   override def processResults(result: Result): Unit = {
-    //val r = result.asInstanceOf[QueryResult]
-    //System.out.println("####################################################################################3############################################## "
-    //                   + "Sending partial results: " + !r.isLastResultSet + ", QID: " + result.getQueryId
-    //                   + " page: " + r.getResultPage + " results: " + r.getResultSet.size());
-    //System.out.println("####################################################################################3############################################## "
-    //                   + "Sending partial results for QID: " + result.getQueryId);
+    /*
+    if (result.isInstanceOf[QueryResult]){
+      val r = result.asInstanceOf[QueryResult]
+      System.out.println("TRACE: "+System.lineSeparator()
+                         + "####################################################################################<>############################################## "
+                         + "Sending partial results: " + !r.isLastResultSet + ", QID: " + result.getQueryId
+                         + " page: " + r.getResultPage + " results: " + r.getResultSet.size());
+      val destination = senderMap.get(result.getQueryId)
+      System.out.println("TRACE: destination = " + destination.toString());
+    }
+    */
     senderMap.get(result.getQueryId) ! result
   }
 }

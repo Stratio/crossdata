@@ -3,10 +3,7 @@ package com.stratio.meta.streaming;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +44,6 @@ public class StreamingConsumer extends Thread {
 
     for(KafkaStream stream: streams){
       ConsumerIterator<byte[], byte[]> iter = stream.iterator();
-      long lastIncome = System.currentTimeMillis();
       while (iter.hasNext()){
         String message = new String(iter.next().message());
 
@@ -63,14 +59,8 @@ public class StreamingConsumer extends Thread {
         synchronized (results){
           results.add(columns);
         }
-        lastIncome = System.currentTimeMillis();
       }
 
     }
-  }
-
-  private String getDate() {
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy HH:mm:ss.SSS");
-    return sdf.format(new Date());
   }
 }
