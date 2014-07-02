@@ -269,21 +269,21 @@ public final class DeepUtils {
           }
         }
       }
-    }
 
-    // Retrieve group by column names
-    if (ss.isGroupInc()) {
-      List<GroupBy> groups = ss.getGroup();
-      for (GroupBy group : groups) {
-        columnsSet.add(group.getSelectorIdentifier().getField());
+      // Retrieve group by column names
+      if (ss.isGroupInc()) {
+        List<GroupBy> groups = ss.getGroup();
+        for (GroupBy group : groups) {
+          columnsSet.add(group.getSelectorIdentifier().getField());
+        }
       }
-    }
 
-    // Retrieve order by column names
-    if (ss.isOrderInc()) {
-      List<Ordering> orders = ss.getOrder();
-      for (Ordering order : orders) {
-        columnsSet.add(order.getSelectorIdentifier().getField());
+      // Retrieve order by column names
+      if (ss.isOrderInc()) {
+        List<Ordering> orders = ss.getOrder();
+        for (Ordering order : orders) {
+          columnsSet.add(order.getSelectorIdentifier().getField());
+        }
       }
     }
 
