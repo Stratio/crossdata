@@ -520,10 +520,12 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
     T_INSERT 
     T_INTO 
     tableName=getTableID
-    T_START_PARENTHESIS 
-    ident1=getField {ids.add(ident1);}
-    (T_COMMA identN=getField {ids.add(identN);})*
-    T_END_PARENTHESIS
+    (
+        T_START_PARENTHESIS 
+        ident1=getField {ids.add(ident1);}
+        (T_COMMA identN=getField {ids.add(identN);})*
+        T_END_PARENTHESIS
+    )?
     ( 
         selectStmnt=selectStatement {typeValues = InsertIntoStatement.TYPE_SELECT_CLAUSE;}
         | 

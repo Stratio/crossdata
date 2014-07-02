@@ -202,8 +202,11 @@ public class InsertIntoStatement extends MetaStatement {
     if (keyspaceInc) {
       sb.append(keyspace).append(".");
     }
-    sb.append(tableName).append(" (");
-    sb.append(ParserUtils.stringList(ids, ", ")).append(") ");
+    sb.append(tableName).append(" ");
+    if (!ids.isEmpty()) {
+      sb.append("(");
+      sb.append(ParserUtils.stringList(ids, ", ")).append(") ");
+    }
     if (typeValues == TYPE_SELECT_CLAUSE) {
       sb.append(selectStatement.toString());
     } else {
@@ -249,25 +252,24 @@ public class InsertIntoStatement extends MetaStatement {
 
         Class<? extends Comparable<?>> parserClass = term.getTermClass();
 
-        LOG.debug("Column = "+ids.get(i) +", type = "+parserClass);
+        LOG.debug("Column = " + ids.get(i) + ", type = " + parserClass);
 
-        if(dataType != parserClass){
-          LOG.debug("Converting from "+parserClass+" to "+dataType);
-          if(dataType == Boolean.class){
+        if (dataType != parserClass) {
+          LOG.debug("Converting from " + parserClass + " to " + dataType);
+          if (dataType == Boolean.class) {
             cellValues.set(i, new BooleanTerm((Term<Boolean>) term));
-          } else if (dataType == Double.class){
+          } else if (dataType == Double.class) {
             cellValues.set(i, new DoubleTerm((Term<Double>) term));
-          } else if (dataType == Float.class){
+          } else if (dataType == Float.class) {
             cellValues.set(i, new FloatTerm((Term<Double>) term));
-          } else if (dataType == Integer.class){
+          } else if (dataType == Integer.class) {
             cellValues.set(i, new IntegerTerm((Term<Long>) term));
-          } else if (dataType == Long.class){
+          } else if (dataType == Long.class) {
             cellValues.set(i, new LongTerm((Term<Long>) term));
           } else {
             cellValues.set(i, new StringTerm((Term<String>) term));
           }
-          Class<? extends Comparable<?>>
-              newDataType =
+          Class<? extends Comparable<?>> newDataType =
               (Class<? extends Comparable<?>>) tableMetadata.getColumn(ids.get(i)).getType()
                   .asJavaClass();
           LOG.debug("New DataType = " + newDataType);
@@ -285,6 +287,14 @@ public class InsertIntoStatement extends MetaStatement {
    */
   private Result validateColumns(TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
+
+    // INSERT INTO table VALUES (...) -> columns ids array is empty;
+    if (ids.isEmpty()) {
+      for (ColumnMetadata c : tableMetadata.getColumns()) {
+        if (!c.getName().toLowerCase().startsWith("stratio"))
+          ids.add(c.getName());
+      }
+    }
 
     // Validate target column names
     for (String c : ids) {
@@ -337,8 +347,7 @@ public class InsertIntoStatement extends MetaStatement {
   public String translateToCQL(MetadataManager metadataManager) {
     TableMetadata metadata = metadataManager.getTableMetadata(getEffectiveKeyspace(), tableName);
     CassandraMetadataHelper cmh = new CassandraMetadataHelper();
-    com.stratio.meta.common.metadata.structures.TableMetadata
-        metadataCommons =
+    com.stratio.meta.common.metadata.structures.TableMetadata metadataCommons =
         cmh.toTableMetadata(getEffectiveKeyspace(), metadata);
     StringBuilder sb = new StringBuilder("INSERT INTO ");
     if (keyspaceInc) {
@@ -352,7 +361,8 @@ public class InsertIntoStatement extends MetaStatement {
     }
     if (typeValues == TYPE_VALUES_CLAUSE) {
       sb.append("VALUES (");
-      sb.append(ParserUtils.addSingleQuotesToString(ParserUtils.stringList(cellValues, ", "), ",", metadataCommons, ids));
+      sb.append(ParserUtils.addSingleQuotesToString(ParserUtils.stringList(cellValues, ", "), ",",
+          metadataCommons, ids));
       sb.append(")");
     }
     if (ifNotExists) {
@@ -372,7 +382,7 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     Insert insertStmt =
-        this.keyspaceInc? QueryBuilder.insertInto(this.keyspace, this.tableName): QueryBuilder
+        this.keyspaceInc ? QueryBuilder.insertInto(this.keyspace, this.tableName) : QueryBuilder
             .insertInto(this.tableName);
 
     try {
@@ -387,7 +397,7 @@ public class InsertIntoStatement extends MetaStatement {
 
     Insert.Options optionsStmt = checkOptions(insertStmt);
 
-    return optionsStmt == null? insertStmt: optionsStmt;
+    return optionsStmt == null ? insertStmt : optionsStmt;
   }
 
   @Override
