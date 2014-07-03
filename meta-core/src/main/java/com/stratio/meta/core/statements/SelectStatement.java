@@ -16,24 +16,6 @@
 
 package com.stratio.meta.core.statements;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -76,6 +58,24 @@ import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
+
+import org.apache.log4j.Logger;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -335,6 +335,12 @@ public class SelectStatement extends MetaStatement {
     this.group = group;
   }
 
+  public void setGroup(GroupBy groupBy) {
+    this.groupInc = true;
+    group = new ArrayList<>();
+    group.add(groupBy);
+  }
+
   /**
    * Return GROUP BY clause.
    * 
@@ -539,7 +545,8 @@ public class SelectStatement extends MetaStatement {
       if (streamMode) {
         result =
             Result
-                .createValidationErrorResult("Where clauses in ephemeral tables are not supported yet.");
+                .createValidationErrorResult(
+                    "Where clauses in ephemeral tables are not supported yet.");
       } else {
         result = validateWhereClauses(tableMetadataFrom, tableMetadataJoin);
       }
@@ -1638,11 +1645,6 @@ public class SelectStatement extends MetaStatement {
 
     SelectStatement joinSelect = new SelectStatement("");
 
-    System.out.println("TRACE 1: firstSelect = "+firstSelect.toString());
-    System.out.println("TRACE 1: secondSelect = "+secondSelect.toString());
-    System.out.println("TRACE 1: joinSelect = "+joinSelect.toString());
-    System.out.println("TRACE 1: ---------------------------------------");
-
     // ADD FIELDS OF THE JOIN
     if (this.join.getLeftField().getTable().trim().equalsIgnoreCase(tableName)) {
       firstSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
@@ -1652,19 +1654,9 @@ public class SelectStatement extends MetaStatement {
       secondSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
     }
 
-    System.out.println("TRACE 2: firstSelect = "+firstSelect.toString());
-    System.out.println("TRACE 2: secondSelect = "+secondSelect.toString());
-    System.out.println("TRACE 2: joinSelect = "+joinSelect.toString());
-    System.out.println("TRACE 2: ---------------------------------------");
-
     // ADD FIELDS OF THE SELECT
     SelectionList selectionList = (SelectionList) this.selectionClause;
     Selection selection = selectionList.getSelection();
-
-    System.out.println("TRACE 3: firstSelect = "+firstSelect.toString());
-    System.out.println("TRACE 3: secondSelect = "+secondSelect.toString());
-    System.out.println("TRACE 3: joinSelect = "+joinSelect.toString());
-    System.out.println("TRACE 3: ---------------------------------------");
 
     if (selection instanceof SelectionSelectors) {
       SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
@@ -1696,6 +1688,7 @@ public class SelectStatement extends MetaStatement {
             secondSelect.addSelection(new SelectionSelector(new SelectorFunction(sf.getName(), paramsSecond)));
           }
         } else if (ss.getSelector() instanceof SelectorGroupBy) { // Example: sum(users.age) ... GroupBy users.gender
+          /*
           SelectorGroupBy sg = (SelectorGroupBy) ss.getSelector();
           SelectorIdentifier si = (SelectorIdentifier) sg.getParam();
           SelectorIdentifier newSi = new SelectorIdentifier(si.getField());
@@ -1704,6 +1697,15 @@ public class SelectStatement extends MetaStatement {
           } else {
             secondSelect.addSelection(new SelectionSelector(new SelectorGroupBy(sg.getGbFunction(), newSi)));
           }
+          */
+          SelectorGroupBy sg = (SelectorGroupBy) ss.getSelector();
+          SelectorIdentifier si = (SelectorIdentifier) sg.getParam();
+          SelectorIdentifier newSi = new SelectorIdentifier(si.getTable(), si.getField());
+          if (tableMetadataFrom.getColumn(si.getField()) != null) {
+            firstSelect.addSelection(new SelectionSelector(newSi));
+          } else {
+            secondSelect.addSelection(new SelectionSelector(newSi));
+          }
         }
       }
     } else {
@@ -1711,11 +1713,6 @@ public class SelectStatement extends MetaStatement {
       firstSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
       secondSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
     }
-
-    System.out.println("TRACE 4: firstSelect = "+firstSelect.toString());
-    System.out.println("TRACE 4: secondSelect = "+secondSelect.toString());
-    System.out.println("TRACE 4: joinSelect = "+joinSelect.toString());
-    System.out.println("TRACE 4: ---------------------------------------");
 
     // ADD WHERE CLAUSES IF ANY
     if (whereInc) {
@@ -1728,35 +1725,23 @@ public class SelectStatement extends MetaStatement {
       }
     }
 
-    System.out.println("TRACE 5: firstSelect = "+firstSelect.toString());
-    System.out.println("TRACE 5: secondSelect = "+secondSelect.toString());
-    System.out.println("TRACE 5: joinSelect = "+joinSelect.toString());
-    System.out.println("TRACE 5: ---------------------------------------");
-
     // ADD GROUP BY CLAUSE IF ANY
     if(groupInc){
-      System.out.println("TRACE: groupBy = "+ParserUtils.stringList(group, ", "));
-
-      List newGroup = new ArrayList<GroupBy>();
-
       GroupBy param = group.get(0);
-      GroupBy newGroupBy = new GroupBy(param.getSelectorIdentifier().getField());
       String groupTable = param.getSelectorIdentifier().getTable();
-
+      GroupBy newGroupBy = new GroupBy(groupTable+"."+param.getSelectorIdentifier().getField());
+      /*
+      if(groupTable.equalsIgnoreCase(firstSelect.getTableName())){
+        firstSelect.setGroup(newGroupBy);
+      } else {
+        secondSelect.setGroup(newGroupBy);
+      }
+      */
+      joinSelect.setGroup(newGroupBy);
     }
-
-    System.out.println("TRACE 6: firstSelect = "+firstSelect.toString());
-    System.out.println("TRACE 6: secondSelect = "+secondSelect.toString());
-    System.out.println("TRACE 6: joinSelect = "+joinSelect.toString());
-    System.out.println("TRACE 6: ---------------------------------------");
 
     // ADD SELECTED COLUMNS TO THE JOIN STATEMENT
     joinSelect.setSelectionClause(selectionClause);
-
-    System.out.println("TRACE 7: firstSelect = "+firstSelect.toString());
-    System.out.println("TRACE 7: secondSelect = "+secondSelect.toString());
-    System.out.println("TRACE 7: joinSelect = "+joinSelect.toString());
-    System.out.println("TRACE 7: ---------------------------------------");
 
     // ADD MAP OF THE JOIN
     if (this.join.getLeftField().getTable().equalsIgnoreCase(tableName)) {
@@ -1768,17 +1753,10 @@ public class SelectStatement extends MetaStatement {
     firstSelect.validate(metadata, null);
     secondSelect.validate(metadata, null);
 
-    System.out.println("TRACE 8: firstSelect = "+firstSelect.toString());
-    System.out.println("TRACE 8: secondSelect = "+secondSelect.toString());
-    System.out.println("TRACE 8: joinSelect = "+joinSelect.toString());
-    System.out.println("TRACE 8: ---------------------------------------");
-
     // ADD STEPS
     steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
     steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, firstSelect)));
     steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
-
-    System.out.println("TRACE: steps = "+steps.toStringDownTop());
 
     return steps;
   }

@@ -33,10 +33,6 @@ public class GroupBy implements Serializable {
     return selectorIdentifier;
   }
 
-  public void setSelectorIdentifier(SelectorIdentifier selectorIdentifier) {
-    this.selectorIdentifier = selectorIdentifier;
-  }
-
   @Override
   public String toString() {
 

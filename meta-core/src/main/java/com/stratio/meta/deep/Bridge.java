@@ -16,18 +16,6 @@
 
 package com.stratio.meta.deep;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-
-import scala.Tuple2;
-
 import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.ICassandraDeepJobConfig;
@@ -66,6 +54,19 @@ import com.stratio.meta.deep.transformation.GroupByAggregation;
 import com.stratio.meta.deep.transformation.GroupByMapping;
 import com.stratio.meta.deep.transformation.KeyRemover;
 import com.stratio.meta.deep.utils.DeepUtils;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import scala.Tuple2;
 
 /**
  * Class that performs as a Bridge between Meta and Stratio Deep.
@@ -214,7 +215,14 @@ public class Bridge {
 
     JavaPairRDD<Cells, Tuple2<Cells, Cells>> joinRDD = rddLeft.join(rddRight);
 
-    JavaRDD<Cells> result = joinRDD.map(new JoinCells(keyTableLeft));
+    JavaRDD<Cells> joinedResult = joinRDD.map(new JoinCells(keyTableLeft));
+
+    JavaRDD<Cells> result = joinedResult;
+
+    if(ss.isGroupInc()){
+      JavaRDD<Cells> groupedResult = doGroupBy(result, ss.getGroup(), (SelectionList) ss.getSelectionClause());
+      result = groupedResult;
+    }
 
     // MetaResultSet
     CassandraResultSet resultSet =
@@ -400,8 +408,14 @@ public class Bridge {
   private JavaRDD<Cells> doGroupBy(JavaRDD<Cells> rdd, List<GroupBy> groupByClause,
       SelectionList selectionClause) {
 
+
+    System.out.println("TRACE: groupByClause = "+groupByClause);
+    System.out.println("TRACE: selectionClause = "+selectionClause);
+
     final List<String> aggregationCols =
         DeepUtils.retrieveSelectorAggegationFunctions(selectionClause.getSelection());
+
+    System.out.println("TRACE: aggregationCols = "+Arrays.toString(aggregationCols.toArray()));
 
     // Mapping the rdd to execute the group by clause
     JavaPairRDD<Cells, Cells> groupedRdd =
@@ -411,8 +425,17 @@ public class Bridge {
 
     JavaRDD<Cells> map = aggregatedRdd.map(new KeyRemover());
 
-    return map;
+    ////////////////////////////////////////////////////////////////////////
+    List<Cells> listResult = map.collect();
+    for(Cells cells: listResult){
+      for(com.stratio.deep.entity.Cell cell: cells.getCells()){
+        System.out.println("TRACE: "+cell.getCellName()+" = "+cell.getCellValue());
+      }
+      System.out.println("TRACE: ");
+    }
+    ////////////////////////////////////////////////////////////////////////
 
+    return map;
   }
 
   private JavaPairRDD<Cells, Cells> applyGroupByAggregations(JavaPairRDD<Cells, Cells> groupedRdd,
