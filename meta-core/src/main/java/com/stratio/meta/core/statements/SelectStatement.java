@@ -1651,11 +1651,6 @@ public class SelectStatement extends MetaStatement {
 
     SelectStatement joinSelect = new SelectStatement("");
 
-    System.out.println("TRACE 1: firstSelect = "+firstSelect.toString());
-    System.out.println("TRACE 1: secondSelect = "+secondSelect.toString());
-    System.out.println("TRACE 1: joinSelect = "+joinSelect.toString());
-    System.out.println("TRACE 1: ---------------------------------------");
-
     // ADD FIELDS OF THE JOIN
     if (this.join.getLeftField().getTable().trim().equalsIgnoreCase(tableName)) {
       firstSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
@@ -1665,19 +1660,9 @@ public class SelectStatement extends MetaStatement {
       secondSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
     }
 
-    System.out.println("TRACE 2: firstSelect = "+firstSelect.toString());
-    System.out.println("TRACE 2: secondSelect = "+secondSelect.toString());
-    System.out.println("TRACE 2: joinSelect = "+joinSelect.toString());
-    System.out.println("TRACE 2: ---------------------------------------");
-
     // ADD FIELDS OF THE SELECT
     SelectionList selectionList = (SelectionList) this.selectionClause;
     Selection selection = selectionList.getSelection();
-
-    System.out.println("TRACE 3: firstSelect = "+firstSelect.toString());
-    System.out.println("TRACE 3: secondSelect = "+secondSelect.toString());
-    System.out.println("TRACE 3: joinSelect = "+joinSelect.toString());
-    System.out.println("TRACE 3: ---------------------------------------");
 
     if (selection instanceof SelectionSelectors) {
       SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
@@ -1709,6 +1694,16 @@ public class SelectStatement extends MetaStatement {
             secondSelect.addSelection(new SelectionSelector(new SelectorFunction(sf.getName(), paramsSecond)));
           }
         } else if (ss.getSelector() instanceof SelectorGroupBy) { // Example: sum(users.age) ... GroupBy users.gender
+          /*
+          SelectorGroupBy sg = (SelectorGroupBy) ss.getSelector();
+          SelectorIdentifier si = (SelectorIdentifier) sg.getParam();
+          SelectorIdentifier newSi = new SelectorIdentifier(si.getTable(), si.getField());
+          if (tableMetadataFrom.getColumn(si.getField()) != null) {
+            firstSelect.addSelection(new SelectionSelector(newSi));
+          } else {
+            secondSelect.addSelection(new SelectionSelector(newSi));
+          }
+          */
           SelectorGroupBy sg = (SelectorGroupBy) ss.getSelector();
           SelectorIdentifier si = (SelectorIdentifier) sg.getParam();
           SelectorIdentifier newSi = new SelectorIdentifier(si.getTable(), si.getField());
@@ -1724,11 +1719,6 @@ public class SelectStatement extends MetaStatement {
       firstSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
       secondSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
     }
-
-    System.out.println("TRACE 4: firstSelect = "+firstSelect.toString());
-    System.out.println("TRACE 4: secondSelect = "+secondSelect.toString());
-    System.out.println("TRACE 4: joinSelect = "+joinSelect.toString());
-    System.out.println("TRACE 4: ---------------------------------------");
 
     // ADD WHERE CLAUSES IF ANY
     if (whereInc) {
@@ -1747,17 +1737,6 @@ public class SelectStatement extends MetaStatement {
       String groupTable = param.getSelectorIdentifier().getTable();
       GroupBy newGroupBy = new GroupBy(groupTable+"."+param.getSelectorIdentifier().getField());
       joinSelect.setGroup(newGroupBy);
-    }
-
-    // ADD GROUP BY CLAUSE IF ANY
-    if(groupInc){
-
-      List newGroup = new ArrayList<GroupBy>();
-
-      GroupBy param = group.get(0);
-      GroupBy newGroupBy = new GroupBy(param.getSelectorIdentifier().getField());
-      String groupTable = param.getSelectorIdentifier().getTable();
-
     }
 
     // ADD SELECTED COLUMNS TO THE JOIN STATEMENT
