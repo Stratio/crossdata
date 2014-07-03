@@ -113,7 +113,7 @@ public class DescribeStatement extends MetaStatement {
 
     Result result = QueryResult.createSuccessQueryResult();
 
-    if (!StringUtils.isEmpty(this.getEffectiveKeyspace())) {
+    if (this.getEffectiveKeyspace() != null) {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(this.getEffectiveKeyspace());
       if (ksMetadata == null) {
         result =
