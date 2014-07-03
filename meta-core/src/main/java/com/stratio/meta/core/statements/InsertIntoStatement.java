@@ -16,6 +16,12 @@
 
 package com.stratio.meta.core.statements;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+
+import org.apache.log4j.Logger;
+
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -39,12 +45,6 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-
-import org.apache.log4j.Logger;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Class that models an {@code INSERT INTO} statement from the META language.
@@ -129,9 +129,8 @@ public class InsertIntoStatement extends MetaStatement {
     this.tableName = tableName;
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      this.setKeyspace(ksAndTableName[0]);
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
     }
     this.ids = ids;
     this.selectStatement = selectStatement;
@@ -199,8 +198,8 @@ public class InsertIntoStatement extends MetaStatement {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("INSERT INTO ");
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (this.isKeyspaceIncluded()) {
+      sb.append(this.getEffectiveKeyspace()).append(".");
     }
     sb.append(tableName).append(" ");
     if (!ids.isEmpty()) {
@@ -226,8 +225,7 @@ public class InsertIntoStatement extends MetaStatement {
 
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
-    Result result =
-        validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+    Result result = validateKeyspaceAndTable(metadata, this.getEffectiveKeyspace(), tableName);
     if (!result.hasError()) {
       String effectiveKeyspace = getEffectiveKeyspace();
 
@@ -350,8 +348,8 @@ public class InsertIntoStatement extends MetaStatement {
     com.stratio.meta.common.metadata.structures.TableMetadata metadataCommons =
         cmh.toTableMetadata(getEffectiveKeyspace(), metadata);
     StringBuilder sb = new StringBuilder("INSERT INTO ");
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (this.isKeyspaceIncluded()) {
+      sb.append(this.getEffectiveKeyspace()).append(".");
     }
     sb.append(tableName).append(" (");
     sb.append(ParserUtils.stringList(ids, ", "));
@@ -381,9 +379,7 @@ public class InsertIntoStatement extends MetaStatement {
       return null;
     }
 
-    Insert insertStmt =
-        this.keyspaceInc ? QueryBuilder.insertInto(this.keyspace, this.tableName) : QueryBuilder
-            .insertInto(this.tableName);
+    Insert insertStmt = QueryBuilder.insertInto(this.getEffectiveKeyspace(), this.tableName);
 
     try {
       iterateValuesAndInsertThem(insertStmt);

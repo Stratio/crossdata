@@ -91,7 +91,7 @@ public class ExplainPlanStatement extends MetaStatement {
 
   @Override
   public void setSessionKeyspace(String targetKeyspace) {
-    this.sessionKeyspace = targetKeyspace;
+    super.setSessionKeyspace(targetKeyspace);
     this.metaStatement.setSessionKeyspace(targetKeyspace);
   }
 }
