@@ -420,6 +420,12 @@ public class SelectStatement extends MetaStatement {
   }
 
   public Map<String, String> getFieldsAliasesMap() {
+    /*
+    if(selectionClause instanceof SelectionCount){
+      fieldsAliasesMap.clear();
+      fieldsAliasesMap.put("COUNT", "COUNT");
+    }
+    */
     return fieldsAliasesMap;
   }
 

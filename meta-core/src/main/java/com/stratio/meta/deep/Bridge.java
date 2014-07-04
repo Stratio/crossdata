@@ -147,8 +147,12 @@ public class Bridge {
       }
     }
 
-    List<String> cols =
-        DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
+    List<String> cols = new ArrayList<>();
+    if(ss.getSelectionClause() instanceof SelectionList){
+      cols = DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
+    } else { // SelectionCount
+      cols.add("COUNT");
+    }
 
     // Group by clause
     if (ss.isGroupInc()) {
@@ -228,7 +232,7 @@ public class Bridge {
         (CassandraResultSet) returnResult(result, true, false, selectedCols, ss.getLimit(),
             ss.getOrder());
 
-    return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
+    return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet, new ArrayList<String>());
   }
 
   private ResultSet replaceWithAliases(Map<String, String> fieldsAliasesMap,
@@ -246,7 +250,6 @@ public class Bridge {
         String column = columnMetadata.getColumnName();
 
         for (Entry<String, String> entry : fieldsAliasesMap.entrySet()) {
-
           if (entry.getValue().equalsIgnoreCase(column)
               || entry.getValue().equalsIgnoreCase(table + "." + column)) {
             columnMetadata.setColumnAlias(entry.getKey());
