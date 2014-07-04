@@ -16,14 +16,6 @@
 
 package com.stratio.meta.core.metadata;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
@@ -38,6 +30,14 @@ import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
+
+import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Metadata Manager of the META server that maintains and up-to-date version of the metadata
@@ -152,10 +152,11 @@ public class MetadataManager {
 
     com.stratio.meta.common.metadata.structures.TableMetadata result = null;
 
+    boolean found = false;
+
+    // Looking up the table in the DB
     if (clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null
         && tablename != null) {
-      boolean found = false;
-
       // TODO Make it generic
       AbstractMetadataHelper helper = new CassandraMetadataHelper();
       KeyspaceMetadata keyspaceMetadata = getKeyspaceMetadata(keyspace);
@@ -175,6 +176,11 @@ public class MetadataManager {
           found = true;
         }
       }
+    }
+
+    // Looking up the table among the Streams
+    if(!found){
+      return convertStreamingToMeta(keyspace, tablename);
     }
 
     return result;
@@ -438,7 +444,7 @@ public class MetadataManager {
       String catalog, String tablename) {
     Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new HashSet<>();
     try {
-      for (ColumnNameTypeValue col : stratioStreamingAPI.columnsFromStream(catalog + "_"
+      for (ColumnNameTypeValue col: stratioStreamingAPI.columnsFromStream(catalog + "_"
           + tablename)) {
         ColumnType metaType = convertStreamingToMeta(col.getType());
         com.stratio.meta.common.metadata.structures.ColumnMetadata metaCol =
