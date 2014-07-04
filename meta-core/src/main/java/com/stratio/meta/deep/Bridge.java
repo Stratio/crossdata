@@ -60,7 +60,6 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -193,7 +192,7 @@ public class Bridge {
     }
 
     // Retrieve selected columns without tablename
-    for (String id : ss.getSelectionClause().getIds()) {
+    for (String id: ss.getSelectionClause().getIds(true)) {
       if (id.contains(".")) {
         selectedCols.add(id.split("\\.")[1]);
       } else {
@@ -408,14 +407,8 @@ public class Bridge {
   private JavaRDD<Cells> doGroupBy(JavaRDD<Cells> rdd, List<GroupBy> groupByClause,
       SelectionList selectionClause) {
 
-
-    System.out.println("TRACE: groupByClause = "+groupByClause);
-    System.out.println("TRACE: selectionClause = "+selectionClause);
-
     final List<String> aggregationCols =
         DeepUtils.retrieveSelectorAggegationFunctions(selectionClause.getSelection());
-
-    System.out.println("TRACE: aggregationCols = "+Arrays.toString(aggregationCols.toArray()));
 
     // Mapping the rdd to execute the group by clause
     JavaPairRDD<Cells, Cells> groupedRdd =
@@ -424,16 +417,6 @@ public class Bridge {
     JavaPairRDD<Cells, Cells> aggregatedRdd = applyGroupByAggregations(groupedRdd, aggregationCols);
 
     JavaRDD<Cells> map = aggregatedRdd.map(new KeyRemover());
-
-    ////////////////////////////////////////////////////////////////////////
-    List<Cells> listResult = map.collect();
-    for(Cells cells: listResult){
-      for(com.stratio.deep.entity.Cell cell: cells.getCells()){
-        System.out.println("TRACE: "+cell.getCellName()+" = "+cell.getCellValue());
-      }
-      System.out.println("TRACE: ");
-    }
-    ////////////////////////////////////////////////////////////////////////
 
     return map;
   }

@@ -88,7 +88,7 @@ public final class DeepUtils {
         }
       } else {
         List<Integer> fieldPositions = retrieveFieldsPositionsList(cells.get(0), selectedCols);
-
+        
         for (Cells deepRow : cells) {
           Row metaRow = new Row();
           for (int fieldPosition : fieldPositions) {

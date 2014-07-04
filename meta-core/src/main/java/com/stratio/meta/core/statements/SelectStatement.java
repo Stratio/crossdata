@@ -798,12 +798,12 @@ public class SelectStatement extends MetaStatement {
 
     Result result = QueryResult.createSuccessQueryResult();
 
-    List<String> selectionCols = this.getSelectionClause().getIds();
+    List<String> selectionCols = this.getSelectionClause().getIds(false);
 
     for (GroupBy groupByCol : this.group) {
       String col = groupByCol.toString();
       if (!selectionCols.contains(col)) {
-        this.getSelectionClause().getIds().add(col);
+        this.getSelectionClause().getIds(false).add(col);
       }
     }
     return result;

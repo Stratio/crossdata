@@ -86,7 +86,7 @@ public class SelectionCount extends SelectionClause {
    * @see com.stratio.meta.core.structures.SelectionClause#getIds()
    */
   @Override
-  public List<String> getIds() {
+  public List<String> getIds(boolean includeFunctions) {
 
     return new ArrayList<>();
   }
