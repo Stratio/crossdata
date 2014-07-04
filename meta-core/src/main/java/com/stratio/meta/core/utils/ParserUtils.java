@@ -222,7 +222,7 @@ public class ParserUtils {
     BufferedReader bufferedReaderF = null;
     try {
 
-      String metaTokens = "/tokens.txt";
+      String metaTokens = "tokens.txt";
       InputStream is = ParserUtils.class.getClassLoader().getResourceAsStream(metaTokens);
       bufferedReaderF = new BufferedReader(
           new InputStreamReader(
