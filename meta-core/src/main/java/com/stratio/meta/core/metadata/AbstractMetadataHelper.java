@@ -16,8 +16,11 @@
 
 package com.stratio.meta.core.metadata;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,9 +66,26 @@ public abstract class AbstractMetadataHelper {
     for (com.datastax.driver.core.ColumnMetadata column : tableMetadata.getColumns()) {
       columns.add(toColumnMetadata(tableMetadata.getName(), column));
     }
+    List<String> partitionKey = fromColumnsMetadataToColumnsString(tableMetadata.getPartitionKey());
+    List<String> clusteringKey =
+        fromColumnsMetadataToColumnsString(tableMetadata.getClusteringColumns());
     TableMetadata result =
-        new TableMetadata(tableMetadata.getName(), parentCatalog, TableType.DATABASE, columns);
+        new TableMetadata(tableMetadata.getName(), parentCatalog, TableType.DATABASE, columns,
+            partitionKey, clusteringKey);
     return result;
+  }
+
+  private List<String> fromColumnsMetadataToColumnsString(
+      List<com.datastax.driver.core.ColumnMetadata> columnsMetadata) {
+
+    List<String> columnsString = new ArrayList<>();
+    Iterator<com.datastax.driver.core.ColumnMetadata> columnsIt = columnsMetadata.iterator();
+    while (columnsIt.hasNext()) {
+      com.datastax.driver.core.ColumnMetadata column = columnsIt.next();
+      columnsString.add(column.getName());
+    }
+
+    return columnsString;
   }
 
   public ColumnMetadata toColumnMetadata(String parentTable,

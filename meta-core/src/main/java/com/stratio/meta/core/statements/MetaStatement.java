@@ -41,17 +41,17 @@ public abstract class MetaStatement {
    * Whether the keyspace has been specified in the statement or it should be taken from the
    * environment.
    */
-  protected boolean keyspaceInc = false;
+  private boolean keyspaceInc = false;
 
   /**
    * Keyspace specified from the statement.
    */
-  protected String keyspace = null;
+  private String keyspace = null;
 
   /**
    * The current keyspace in the user session.
    */
-  protected String sessionKeyspace = null;
+  private String sessionKeyspace = null;
 
   /**
    * Default class constructor.
@@ -111,22 +111,17 @@ public abstract class MetaStatement {
    * @param targetKeyspace The target keyspace where the query will be executed.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  protected Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace,
-      boolean keyspaceInc, String stmtKeyspace, String tableName) {
+  protected Result validateKeyspaceAndTable(MetadataManager metadata, String effectiveKeyspace,
+      String tableName) {
     Result result = QueryResult.createSuccessQueryResult();
     // Get the effective keyspace based on the user specification during the create
     // sentence, or taking the keyspace in use in the user session.
-    String effectiveKeyspace = targetKeyspace;
-    if (keyspaceInc) {
-      effectiveKeyspace = stmtKeyspace;
-    }
 
     // Check that the keyspace and table exists.
     if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
       result =
           Result
-              .createValidationErrorResult(
-                  "Target keyspace missing or no keyspace has been selected.");
+              .createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
     } else {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if (ksMetadata == null) {
@@ -151,7 +146,16 @@ public abstract class MetaStatement {
   }
 
   public String getEffectiveKeyspace() {
-    return keyspaceInc? keyspace: sessionKeyspace;
+    return keyspaceInc ? keyspace : sessionKeyspace;
+  }
+
+  public void setKeyspace(String keyspace) {
+    this.keyspace = keyspace;
+    this.keyspaceInc = true;
+  }
+
+  public boolean isKeyspaceIncluded() {
+    return this.keyspaceInc;
   }
 
   /**

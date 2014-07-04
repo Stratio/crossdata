@@ -50,9 +50,8 @@ public class DropTableStatement extends MetaStatement {
   public DropTableStatement(String tableName, boolean ifExists) {
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      this.setKeyspace(ksAndTableName[0]);
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
     } else {
       this.tableName = tableName;
     }
@@ -76,9 +75,8 @@ public class DropTableStatement extends MetaStatement {
   public void setTableName(String tableName) {
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      this.setKeyspace(ksAndTableName[0]);
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
     } else {
       this.tableName = tableName;
     }
@@ -90,8 +88,8 @@ public class DropTableStatement extends MetaStatement {
     if (ifExists) {
       sb.append("IF EXISTS ");
     }
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (this.isKeyspaceIncluded()) {
+      sb.append(this.getEffectiveKeyspace()).append(".");
     }
     sb.append(tableName);
     return sb.toString();
@@ -101,22 +99,23 @@ public class DropTableStatement extends MetaStatement {
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();
 
-    String effectiveKeyspace = getEffectiveKeyspace();
-    if(keyspaceInc){
-      effectiveKeyspace = keyspace;
-    }
+    String effectiveKeyspace = this.getEffectiveKeyspace();
 
-    //Check that the keyspace and table exists.
-    if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-      result= Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
-    }else{
+    // Check that the keyspace and table exists.
+    if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
+      result =
+          Result
+              .createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+    } else {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
-      if(ksMetadata == null){
-        result= Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
-      }else {
+      if (ksMetadata == null) {
+        result =
+            Result
+                .createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
+      } else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata == null) {
-          result= Result.createValidationErrorResult("Table " + tableName + " does not exist.");
+          result = Result.createValidationErrorResult("Table " + tableName + " does not exist.");
         }
       }
     }

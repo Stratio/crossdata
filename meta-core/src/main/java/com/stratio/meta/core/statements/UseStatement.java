@@ -1,20 +1,17 @@
 /*
  * Stratio Meta
- *
+ * 
  * Copyright (c) 2014, Stratio, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation; either version
+ * 3.0 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
 package com.stratio.meta.core.statements;
@@ -32,56 +29,54 @@ import com.stratio.meta.core.utils.Tree;
  */
 public class UseStatement extends MetaStatement {
 
-    /**
-     * Class constructor.
-     * @param keyspace The name of the target keyspace.
-     */
-    public UseStatement(String keyspace) {
-        super.keyspace = keyspace;
-        if(!keyspace.contains("'")){
-            super.keyspace = keyspace.toLowerCase();
-        }
-        this.command = false;
+  /**
+   * Class constructor.
+   * 
+   * @param keyspace The name of the target keyspace.
+   */
+  public UseStatement(String keyspace) {
+
+    if (!keyspace.contains("'")) {
+      this.setKeyspace(keyspace.toLowerCase());
+    } else {
+      this.setKeyspace(keyspace);
     }
 
-    /**
-     * Get the name of the keyspace to be used.
-     * @return The name.
-     */
-    public String getKeyspaceName() {
-        return keyspace;
-    }
+    this.command = false;
+  }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("USE ");
-        sb.append(keyspace);
-        return sb.toString();
-    }
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("USE ");
+    sb.append(this.getEffectiveKeyspace());
+    return sb.toString();
+  }
 
-    @Override
-    public Result validate(MetadataManager metadata, EngineConfig config) {
-        Result result = QueryResult.createSuccessQueryResult();
-        if(keyspace != null && keyspace.length() > 0){
-            if(!metadata.getKeyspacesNames().contains(keyspace.toLowerCase())){
-                result= Result.createValidationErrorResult("Keyspace " + keyspace + " does not exist.");
-            }
-        }else{
-            result= Result.createValidationErrorResult("Missing keyspace name.");
-        }
-        return result;
+  @Override
+  public Result validate(MetadataManager metadata, EngineConfig config) {
+    Result result = QueryResult.createSuccessQueryResult();
+    if (this.getEffectiveKeyspace() != null && this.getEffectiveKeyspace().length() > 0) {
+      if (!metadata.getKeyspacesNames().contains(this.getEffectiveKeyspace().toLowerCase())) {
+        result =
+            Result.createValidationErrorResult("Keyspace " + this.getEffectiveKeyspace()
+                + " does not exist.");
+      }
+    } else {
+      result = Result.createValidationErrorResult("Missing keyspace name.");
     }
+    return result;
+  }
 
-    @Override
-    public String translateToCQL(MetadataManager metadataManager) {
-        return this.toString();
-    }
+  @Override
+  public String translateToCQL(MetadataManager metadataManager) {
+    return this.toString();
+  }
 
-    @Override
-    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        Tree tree = new Tree();
-        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-        return tree;
-    }
-    
+  @Override
+  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+    Tree tree = new Tree();
+    tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+    return tree;
+  }
+
 }
