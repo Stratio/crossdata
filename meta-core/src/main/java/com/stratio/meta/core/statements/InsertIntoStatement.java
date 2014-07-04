@@ -16,17 +16,11 @@
 
 package com.stratio.meta.core.statements;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-
-import org.apache.log4j.Logger;
-
-import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
@@ -45,6 +39,12 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+
+import org.apache.log4j.Logger;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Class that models an {@code INSERT INTO} statement from the META language.
@@ -104,6 +104,8 @@ public class InsertIntoStatement extends MetaStatement {
    * {@link InsertIntoStatement#TYPE_VALUES_CLAUSE}.
    */
   private int typeValues;
+
+  private boolean streamMode = false;
 
   /**
    * Class logger.
@@ -226,10 +228,16 @@ public class InsertIntoStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result = validateKeyspaceAndTable(metadata, this.getEffectiveKeyspace(), tableName);
-    if (!result.hasError()) {
-      String effectiveKeyspace = getEffectiveKeyspace();
 
-      TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+    if ((!result.hasError()) && (result instanceof CommandResult)
+        && ("streaming".equalsIgnoreCase(((CommandResult) result).getResult().toString()))) {
+      streamMode = true;
+    }
+
+    if (!result.hasError()) {
+      com.stratio.meta.common.metadata.structures.TableMetadata
+          tableMetadata = metadata.getTableGenericMetadata(getEffectiveKeyspace(), tableName);
+      //TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
 
       if (typeValues == TYPE_SELECT_CLAUSE) {
         result = Result.createValidationErrorResult("INSERT INTO with subqueries not supported.");
@@ -240,11 +248,11 @@ public class InsertIntoStatement extends MetaStatement {
     return result;
   }
 
-  public void updateTermClass(TableMetadata tableMetadata) {
+  public void updateTermClass(com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata) {
     for (int i = 0; i < ids.size(); i++) {
       Class<? extends Comparable<?>> dataType =
           (Class<? extends Comparable<?>>) tableMetadata.getColumn(ids.get(i)).getType()
-              .asJavaClass();
+              .getDbClass();
       if (cellValues.get(i) instanceof Term) {
         Term<?> term = (Term<?>) cellValues.get(i);
 
@@ -269,7 +277,7 @@ public class InsertIntoStatement extends MetaStatement {
           }
           Class<? extends Comparable<?>> newDataType =
               (Class<? extends Comparable<?>>) tableMetadata.getColumn(ids.get(i)).getType()
-                  .asJavaClass();
+                  .getDbClass();
           LOG.debug("New DataType = " + newDataType);
         }
       }
@@ -283,14 +291,14 @@ public class InsertIntoStatement extends MetaStatement {
    * @param tableMetadata Table metadata associated with the target table.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateColumns(TableMetadata tableMetadata) {
+  private Result validateColumns(com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
 
     // INSERT INTO table VALUES (...) -> columns ids array is empty;
     if (ids.isEmpty()) {
-      for (ColumnMetadata c : tableMetadata.getColumns()) {
-        if (!c.getName().toLowerCase().startsWith("stratio"))
-          ids.add(c.getName());
+      for (com.stratio.meta.common.metadata.structures.ColumnMetadata c: tableMetadata.getColumns()) {
+        if (!c.getColumnName().toLowerCase().startsWith("stratio"))
+          ids.add(c.getColumnName());
       }
     }
 
@@ -303,15 +311,15 @@ public class InsertIntoStatement extends MetaStatement {
       }
     }
     if (!result.hasError()) {
-      ColumnMetadata cm = null;
+      com.stratio.meta.common.metadata.structures.ColumnMetadata cm = null;
       if (cellValues.size() == ids.size()) {
         // Checking insertion fields
         for (int i = 0; i < ids.size(); i++) {
-          ColumnMetadata column = tableMetadata.getColumn(ids.get(i));
+          com.stratio.meta.common.metadata.structures.ColumnMetadata column = tableMetadata.getColumn(ids.get(i));
           if (column == null) {
             result =
                 Result.createValidationErrorResult("Column [" + ids.get(i)
-                    + "] not found in table [" + tableMetadata.getName() + "]");
+                    + "] not found in table [" + tableMetadata.getTableName() + "]");
           }
         }
 
@@ -321,16 +329,16 @@ public class InsertIntoStatement extends MetaStatement {
             cm = tableMetadata.getColumn(ids.get(index));
             if (cm != null) {
               Term<?> t = Term.class.cast(cellValues.get(index));
-              if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
+              if (!cm.getType().getDbClass().equals(t.getTermClass())) {
                 result =
                     Result.createValidationErrorResult("Column " + ids.get(index) + " of type "
-                        + cm.getType().asJavaClass() + " does not accept " + t.getTermClass()
+                        + cm.getType().getDbClass() + " does not accept " + t.getTermClass()
                         + " values (" + cellValues.get(index) + ")");
               }
             } else {
               result =
                   Result.createValidationErrorResult("Column " + ids.get(index) + " not found in "
-                      + tableMetadata.getName());
+                      + tableMetadata.getTableName());
             }
           }
         }
