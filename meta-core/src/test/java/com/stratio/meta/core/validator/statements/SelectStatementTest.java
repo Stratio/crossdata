@@ -118,9 +118,9 @@ public class SelectStatementTest extends BasicValidatorTest {
     validateFail(inputText, "testValidateNotEqualFail");
   }
 
-  //
-  // Tests with table referred columns.
-  //
+  /**
+   * Tests with table referred columns.
+   **/
   @Test
   public void validateReferredOk() {
     String inputText =
@@ -135,9 +135,9 @@ public class SelectStatementTest extends BasicValidatorTest {
     validateFail(inputText, "validateReferredFail");
   }
 
-  //
-  // Tests with inner joins
-  //
+  /**
+   * Tests with inner joins
+   **/
   @Test
   public void validateInnerJoinBasicOk() {
     String inputText =

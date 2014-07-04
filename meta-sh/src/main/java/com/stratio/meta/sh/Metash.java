@@ -17,7 +17,22 @@
 package com.stratio.meta.sh;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+
+import jline.console.ConsoleReader;
+
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
+
 import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.exceptions.ExecutionException;
+import com.stratio.meta.common.exceptions.ParsingException;
+import com.stratio.meta.common.exceptions.UnsupportedException;
+import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -30,17 +45,6 @@ import com.stratio.meta.sh.help.generated.MetaHelpParser;
 import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
-
-import jline.console.ConsoleReader;
-
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 
 /**
  * Interactive META console.
@@ -152,7 +156,7 @@ public class Metash {
   /**
    * Flush the console output and show the current prompt.
    */
-  protected void flush(){
+  protected void flush() {
     try {
       console.getOutput().write(console.getPrompt());
       console.flush();
@@ -164,7 +168,7 @@ public class Metash {
 
   /**
    * Set the console prompt.
-   *
+   * 
    * @param currentKeyspace The currentCatalog.
    */
   private void setPrompt(String currentKeyspace) {
@@ -215,20 +219,21 @@ public class Metash {
    * 
    * @param cmd The query.
    */
-  private void executeQuery(String cmd){
-    if(this.useAsync){
+  private void executeQuery(String cmd) {
+    if (this.useAsync) {
       executeAsyncQuery(cmd);
-    }else{
+    } else {
       executeSyncQuery(cmd);
     }
   }
 
   /**
    * Execute a query using synchronous execution.
+   * 
    * @param cmd The query.
    */
   private void executeSyncQuery(String cmd) {
-    LOG.debug("Command: " + cmd+"|");
+    LOG.debug("Command: " + cmd + "|");
     long queryStart = System.currentTimeMillis();
     long queryEnd = queryStart;
     Result metaResult = null;
@@ -238,24 +243,27 @@ public class Metash {
       updatePrompt(metaResult);
       println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
       println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
-    } catch (Exception e) {
+    } catch (ConnectionException | ParsingException | ValidationException | ExecutionException
+        | UnsupportedException e) {
       println("\033[31mError:\033[0m " + e.getMessage());
     }
   }
 
   /**
    * Remove the {@link com.stratio.meta.common.result.IResultHandler} associated with a query.
+   * 
    * @param queryId The query identifier.
    */
-  protected void removeResultsHandler(String queryId){
+  protected void removeResultsHandler(String queryId) {
     metaDriver.removeResultHandler(queryId);
   }
 
   /**
    * Execute a query asynchronously.
+   * 
    * @param cmd The query.
    */
-  private void executeAsyncQuery(String cmd){
+  private void executeAsyncQuery(String cmd) {
     String queryId = null;
     try {
       queryId = metaDriver.asyncExecuteQuery(currentCatalog, cmd, resultHandler);
@@ -263,7 +271,7 @@ public class Metash {
       println("QID: " + queryId);
       println("");
     } catch (ConnectionException e) {
-      LOG.error(e.getMessage(), e);
+      LOG.error("Error connecting", e);
       println("ERROR: " + e.getMessage());
     }
 
@@ -333,7 +341,7 @@ public class Metash {
       StringBuilder sb = new StringBuilder(cmd);
 
       while (!cmd.trim().toLowerCase().startsWith("exit")
-             && !cmd.trim().toLowerCase().startsWith("quit")) {
+          && !cmd.trim().toLowerCase().startsWith("quit")) {
         cmd = console.readLine();
         sb.append(cmd).append(" ");
         if (sb.toString().trim().endsWith(";")) {
@@ -364,7 +372,7 @@ public class Metash {
    */
   public static void main(String[] args) {
     boolean async = true;
-    if(args.length > 0){
+    if (args.length > 0) {
       async = !"--sync".equals(args[0]);
     }
     Metash sh = new Metash(async);

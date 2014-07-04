@@ -23,6 +23,8 @@ import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
+import org.apache.log4j.Logger;
+
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.stratio.streaming.commons.constants.BUS;
@@ -31,6 +33,8 @@ import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
 import com.stratio.streaming.commons.messages.StratioStreamingMessage;
 
 public class StreamingDataGenerator {
+
+  private static final Logger logger = Logger.getLogger(StreamingDataGenerator.class);
 
   private static boolean unlimited = false;
 
@@ -69,7 +73,7 @@ public class StreamingDataGenerator {
       es.shutdown();
 
       if (nameCounter % 10 == 0 && nameCounter != rowsLimit) {
-        System.out.println("Sleeping for 5 seconds...");
+        logger.debug("Sleeping for 5 seconds...");
         Thread.sleep(5000);
       }
     }

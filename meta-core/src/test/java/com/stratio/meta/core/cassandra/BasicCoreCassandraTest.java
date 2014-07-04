@@ -119,6 +119,7 @@ public class BasicCoreCassandraTest {
     try {
       _session.execute(query);
     } catch (InvalidQueryException iqe) {
+      logger.info("Invalid query exception; keyspace doesn't exist: " + iqe.getMessage());
       ksExists = false;
     }
 
@@ -173,14 +174,14 @@ public class BasicCoreCassandraTest {
         }
       }
     } catch (IOException e) {
-      logger.error(e.getStackTrace());
+      logger.error("IOException", e);
     }
     return result;
   }
 
-  public static String getErrorMessage(Result metaResult){
+  public static String getErrorMessage(Result metaResult) {
     String result = "Invalid class: " + metaResult.getClass();
-    if(ErrorResult.class.isInstance(metaResult)){
+    if (ErrorResult.class.isInstance(metaResult)) {
       result = ErrorResult.class.cast(metaResult).getErrorMessage();
     }
     return result;
