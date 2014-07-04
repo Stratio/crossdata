@@ -200,10 +200,11 @@ public final class DeepUtils {
     Cell metaCell = new Cell(numberOfRows);
 
     List<ColumnMetadata> columns = new ArrayList<>();
-    ColumnMetadata metadata = new ColumnMetadata("count", "COUNT");
+    ColumnMetadata metadata = new ColumnMetadata("COUNT", "COUNT");
     ColumnType type = ColumnType.INT;
     type.setDBMapping("int", Integer.class);
     metadata.setType(type);
+    columns.add(metadata);
     rs.setColumnMetadata(columns);
 
     metaRow.addCell("COUNT", metaCell);

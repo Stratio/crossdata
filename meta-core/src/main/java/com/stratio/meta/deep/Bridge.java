@@ -16,19 +16,6 @@
 
 package com.stratio.meta.deep;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-
-import scala.Tuple2;
-
 import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.ICassandraDeepJobConfig;
@@ -67,6 +54,18 @@ import com.stratio.meta.deep.transformation.GroupByAggregation;
 import com.stratio.meta.deep.transformation.GroupByMapping;
 import com.stratio.meta.deep.transformation.KeyRemover;
 import com.stratio.meta.deep.utils.DeepUtils;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import scala.Tuple2;
 
 /**
  * Class that performs as a Bridge between Meta and Stratio Deep.
@@ -148,8 +147,12 @@ public class Bridge {
       }
     }
 
-    List<String> cols =
-        DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
+    List<String> cols = new ArrayList<>();
+    if(ss.getSelectionClause() instanceof SelectionList){
+      cols = DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
+    } else { // SelectionCount
+      cols.add("COUNT");
+    }
 
     // Group by clause
     if (ss.isGroupInc()) {
@@ -228,7 +231,7 @@ public class Bridge {
     CassandraResultSet resultSet =
         (CassandraResultSet) returnResult(result, true, false, selectedCols);
 
-    return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
+    return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet, new ArrayList<String>());
   }
 
   private ResultSet replaceWithAliases(Map<String, String> fieldsAliasesMap,
@@ -246,7 +249,6 @@ public class Bridge {
         String column = columnMetadata.getColumnName();
 
         for (Entry<String, String> entry : fieldsAliasesMap.entrySet()) {
-
           if (entry.getValue().equalsIgnoreCase(column)
               || entry.getValue().equalsIgnoreCase(table + "." + column)) {
             columnMetadata.setColumnAlias(entry.getKey());
