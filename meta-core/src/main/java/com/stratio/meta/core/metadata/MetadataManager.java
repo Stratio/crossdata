@@ -100,7 +100,7 @@ public class MetadataManager {
    */
   public KeyspaceMetadata getKeyspaceMetadata(String keyspace) {
     KeyspaceMetadata result = null;
-    if (clusterMetadata != null) {
+    if (clusterMetadata != null && keyspace != null) {
       result = clusterMetadata.getKeyspace(keyspace);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Cluster metadata: " + result);
@@ -348,14 +348,14 @@ public class MetadataManager {
   }
 
   public boolean checkStream(String ephemeralTableName) {
-    if(stratioStreamingAPI != null) {
+    if (stratioStreamingAPI != null) {
       List<StratioStream> streams = getEphemeralTables();
       if (streams != null && streams.size() > 0) {
         for (StratioStream stream : streams) {
-      if (stream.getStreamName().equalsIgnoreCase(ephemeralTableName)) {
-        return true;
-      }
-    }
+          if (stream.getStreamName().equalsIgnoreCase(ephemeralTableName)) {
+            return true;
+          }
+        }
       }
     }
     return false;

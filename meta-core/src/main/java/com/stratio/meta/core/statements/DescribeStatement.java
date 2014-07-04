@@ -18,6 +18,8 @@ package com.stratio.meta.core.statements;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.common.result.CommandResult;
@@ -111,7 +113,7 @@ public class DescribeStatement extends MetaStatement {
 
     Result result = QueryResult.createSuccessQueryResult();
 
-    if (this.getEffectiveKeyspace() != null) {
+    if (!StringUtils.isEmpty(this.getEffectiveKeyspace())) {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(this.getEffectiveKeyspace());
       if (ksMetadata == null) {
         result =
@@ -152,10 +154,12 @@ public class DescribeStatement extends MetaStatement {
     Result result = null;
     if (type == DescribeType.KEYSPACE) {
       KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(this.getEffectiveKeyspace());
-      if (ksInfo == null) {
+      if (ksInfo == null && this.getEffectiveKeyspace() != null) {
         result =
             Result.createExecutionErrorResult("KEYSPACE " + this.getEffectiveKeyspace()
                 + " was not found");
+      } else if (this.getEffectiveKeyspace() == null) {
+        result = Result.createExecutionErrorResult("KEYSPACE not defined");
       } else {
         result = CommandResult.createCommandResult(ksInfo.exportAsString());
       }
