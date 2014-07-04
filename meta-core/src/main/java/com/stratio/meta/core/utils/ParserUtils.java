@@ -19,16 +19,9 @@
 
 package com.stratio.meta.core.utils;
 
-import com.stratio.meta.common.metadata.structures.ColumnType;
-import com.stratio.meta.common.metadata.structures.TableMetadata;
-import com.stratio.meta.common.utils.MetaUtils;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -37,6 +30,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+
+import com.stratio.meta.common.metadata.structures.ColumnType;
+import com.stratio.meta.common.metadata.structures.TableMetadata;
+import com.stratio.meta.common.utils.MetaUtils;
 
 public class ParserUtils {
 
@@ -221,21 +221,12 @@ public class ParserUtils {
     String replacement = "";
     BufferedReader bufferedReaderF = null;
     try {
-      String workingDir = System.getProperty("user.dir");
-      if(workingDir.endsWith("stratio-meta")){
-        workingDir = workingDir.concat("/meta-core/");
-      } else if(!workingDir.endsWith("meta-core")){
-        workingDir = workingDir.substring(0, workingDir.lastIndexOf("/"));
-        workingDir = workingDir.concat("/meta-core/");
-      } else {
-        workingDir = workingDir.concat("/");
-      }
 
-      String metaTokens = workingDir+"src/main/resources/com/stratio/meta/parser/tokens.txt";
-
+      String metaTokens = "/tokens.txt";
+      InputStream is = ParserUtils.class.getClassLoader().getResourceAsStream(metaTokens);
       bufferedReaderF = new BufferedReader(
           new InputStreamReader(
-              new FileInputStream(metaTokens), Charset.forName("UTF-8")));
+              is, Charset.forName("UTF-8")));
 
 
       String line = bufferedReaderF.readLine();
