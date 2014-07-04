@@ -16,18 +16,6 @@
 
 package com.stratio.meta.deep;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-
-import scala.Tuple2;
-
 import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.ICassandraDeepJobConfig;
@@ -66,6 +54,19 @@ import com.stratio.meta.deep.transformation.GroupByAggregation;
 import com.stratio.meta.deep.transformation.GroupByMapping;
 import com.stratio.meta.deep.transformation.KeyRemover;
 import com.stratio.meta.deep.utils.DeepUtils;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import scala.Tuple2;
 
 /**
  * Class that performs as a Bridge between Meta and Stratio Deep.
@@ -147,8 +148,12 @@ public class Bridge {
       }
     }
 
-    List<String> cols =
-        DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
+    List<String> cols = new ArrayList<>();
+    if(ss.getSelectionClause() instanceof SelectionList){
+      cols = DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
+    } else { // SelectionCount
+      cols.add("COUNT");
+    }
 
     // Group by clause
     if (ss.isGroupInc()) {
@@ -192,7 +197,7 @@ public class Bridge {
     }
 
     // Retrieve selected columns without tablename
-    for (String id : ss.getSelectionClause().getIds()) {
+    for (String id: ss.getSelectionClause().getIds(true)) {
       if (id.contains(".")) {
         selectedCols.add(id.split("\\.")[1]);
       } else {
@@ -214,7 +219,14 @@ public class Bridge {
 
     JavaPairRDD<Cells, Tuple2<Cells, Cells>> joinRDD = rddLeft.join(rddRight);
 
-    JavaRDD<Cells> result = joinRDD.map(new JoinCells(keyTableLeft));
+    JavaRDD<Cells> joinedResult = joinRDD.map(new JoinCells(keyTableLeft));
+
+    JavaRDD<Cells> result = joinedResult;
+
+    if(ss.isGroupInc()){
+      JavaRDD<Cells> groupedResult = doGroupBy(result, ss.getGroup(), (SelectionList) ss.getSelectionClause());
+      result = groupedResult;
+    }
 
     // MetaResultSet
     CassandraResultSet resultSet =
@@ -239,7 +251,6 @@ public class Bridge {
         String column = columnMetadata.getColumnName();
 
         for (Entry<String, String> entry : fieldsAliasesMap.entrySet()) {
-
           if (entry.getValue().equalsIgnoreCase(column)
               || entry.getValue().equalsIgnoreCase(table + "." + column)) {
             columnMetadata.setColumnAlias(entry.getKey());
@@ -400,8 +411,14 @@ public class Bridge {
   private JavaRDD<Cells> doGroupBy(JavaRDD<Cells> rdd, List<GroupBy> groupByClause,
       SelectionList selectionClause) {
 
+
+    System.out.println("TRACE: groupByClause = "+groupByClause);
+    System.out.println("TRACE: selectionClause = "+selectionClause);
+
     final List<String> aggregationCols =
         DeepUtils.retrieveSelectorAggegationFunctions(selectionClause.getSelection());
+
+    System.out.println("TRACE: aggregationCols = "+Arrays.toString(aggregationCols.toArray()));
 
     // Mapping the rdd to execute the group by clause
     JavaPairRDD<Cells, Cells> groupedRdd =
@@ -412,7 +429,6 @@ public class Bridge {
     JavaRDD<Cells> map = aggregatedRdd.map(new KeyRemover());
 
     return map;
-
   }
 
   private JavaPairRDD<Cells, Cells> applyGroupByAggregations(JavaPairRDD<Cells, Cells> groupedRdd,

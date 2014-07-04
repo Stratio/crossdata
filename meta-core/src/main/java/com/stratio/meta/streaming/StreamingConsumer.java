@@ -1,9 +1,7 @@
 package com.stratio.meta.streaming;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,10 +65,5 @@ public class StreamingConsumer extends Thread {
       }
 
     }
-  }
-
-  private String getDate() {
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy HH:mm:ss.SSS");
-    return sdf.format(new Date());
   }
 }

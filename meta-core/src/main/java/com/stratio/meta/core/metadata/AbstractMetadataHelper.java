@@ -16,13 +16,6 @@
 
 package com.stratio.meta.core.metadata;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.stratio.deep.entity.Cell;
@@ -31,6 +24,14 @@ import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta.common.metadata.structures.TableType;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractMetadataHelper {
 

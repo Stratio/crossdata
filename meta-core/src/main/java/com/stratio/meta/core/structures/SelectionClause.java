@@ -38,7 +38,7 @@ public abstract class SelectionClause {
 
   public abstract void addTablename(String tablename);
 
-  public abstract List<String> getIds();
+  public abstract List<String> getIds(boolean includeFunctions);
 
   @Override
   public abstract String toString();

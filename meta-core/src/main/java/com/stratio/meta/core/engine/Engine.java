@@ -113,7 +113,8 @@ public class Engine {
   private IStratioStreamingAPI initializeStreaming(EngineConfig config){
     IStratioStreamingAPI stratioStreamingAPI = null;
     if(config.getKafkaServer() != null && config.getZookeeperServer() != null
-       && !"null".equals(config.getKafkaServer()) && !"null".equals(config.getZookeeperServer())) {
+       && !"null".equals(config.getKafkaServer()) && !"null".equals(config.getZookeeperServer())
+       && config.getKafkaServer().length()>0  && config.getZookeeperServer().length()>0) {
       try {
         stratioStreamingAPI = StratioStreamingAPIFactory.create().initializeWithServerConfig(
             config.getKafkaServer(),
