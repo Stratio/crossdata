@@ -35,13 +35,15 @@ public class UseStatement extends MetaStatement {
    * @param keyspace The name of the target keyspace.
    */
   public UseStatement(String keyspace) {
-
-    if (!keyspace.contains("'")) {
-      this.setKeyspace(keyspace.toLowerCase());
+    if (keyspace.equals("-")) {
+      this.setKeyspace("");
     } else {
-      this.setKeyspace(keyspace);
+      if (!keyspace.contains("'")) {
+        this.setKeyspace(keyspace.toLowerCase());
+      } else {
+        this.setKeyspace(keyspace);
+      }
     }
-
     this.command = false;
   }
 
@@ -61,6 +63,8 @@ public class UseStatement extends MetaStatement {
             Result.createValidationErrorResult("Keyspace " + this.getEffectiveKeyspace()
                 + " does not exist.");
       }
+    } else if (this.getEffectiveKeyspace().equals("")) {
+
     } else {
       result = Result.createValidationErrorResult("Missing keyspace name.");
     }
@@ -75,7 +79,10 @@ public class UseStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree tree = new Tree();
-    tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+    if (getKeyspace().isEmpty())
+      tree.setNode(new MetaStep(MetaPath.COMMAND, this));
+    else
+      tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
     return tree;
   }
 

@@ -31,4 +31,10 @@ public class UseStatementTest  extends BasicPlannerTest {
         stmt = new UseStatement("demo");
         validateCassandraPath("testPlanForUse");
     }
+    @Test
+    public void testPlanForUseMinus(){
+        String inputText = "USE -;";
+        stmt = new UseStatement("-");
+        validateCommandPath("testPlanForUse");
+    }
 }

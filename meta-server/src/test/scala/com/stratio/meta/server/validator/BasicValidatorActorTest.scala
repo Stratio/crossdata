@@ -159,6 +159,17 @@ class BasicValidatorActorTest extends ActorReceiveUtils with FunSuiteLike with B
     }
   }
 
+    test("Use -") {
+    within(5000 millis) {
+      val msg = "use - ;"
+      val result = executeStatement(msg, "", true, "Keyspace should be used.")
+      assertTrue(result.isInstanceOf[QueryResult], "Invalid result type")
+      val r = result.asInstanceOf[QueryResult]
+      assertTrue(r.isCatalogChanged, "New keyspace should be used");
+      assertEquals(r.getCurrentCatalog, "", "New keyspace should be used");
+    }
+  }
+  
   test("Insert into non-existing table") {
     within(7000 millis) {
       val msg = "insert into demo (field1, field2) values ('test1','text2');"

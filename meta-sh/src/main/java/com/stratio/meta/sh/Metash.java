@@ -152,7 +152,7 @@ public class Metash {
   /**
    * Flush the console output and show the current prompt.
    */
-  protected void flush(){
+  protected void flush() {
     try {
       console.getOutput().write(console.getPrompt());
       console.flush();
@@ -164,7 +164,7 @@ public class Metash {
 
   /**
    * Set the console prompt.
-   *
+   * 
    * @param currentKeyspace The currentCatalog.
    */
   private void setPrompt(String currentKeyspace) {
@@ -173,8 +173,10 @@ public class Metash {
       sb.append(currentUser);
     } else {
       sb.append(currentUser);
-      sb.append(":");
-      sb.append(currentKeyspace);
+      if (!currentKeyspace.isEmpty()) {
+        sb.append(":");
+        sb.append(currentKeyspace);
+      }
     }
     sb.append(">\033[0m ");
     console.setPrompt(sb.toString());
@@ -215,20 +217,21 @@ public class Metash {
    * 
    * @param cmd The query.
    */
-  private void executeQuery(String cmd){
-    if(this.useAsync){
+  private void executeQuery(String cmd) {
+    if (this.useAsync) {
       executeAsyncQuery(cmd);
-    }else{
+    } else {
       executeSyncQuery(cmd);
     }
   }
 
   /**
    * Execute a query using synchronous execution.
+   * 
    * @param cmd The query.
    */
   private void executeSyncQuery(String cmd) {
-    LOG.debug("Command: " + cmd+"|");
+    LOG.debug("Command: " + cmd + "|");
     long queryStart = System.currentTimeMillis();
     long queryEnd = queryStart;
     Result metaResult = null;
@@ -245,17 +248,19 @@ public class Metash {
 
   /**
    * Remove the {@link com.stratio.meta.common.result.IResultHandler} associated with a query.
+   * 
    * @param queryId The query identifier.
    */
-  protected void removeResultsHandler(String queryId){
+  protected void removeResultsHandler(String queryId) {
     metaDriver.removeResultHandler(queryId);
   }
 
   /**
    * Execute a query asynchronously.
+   * 
    * @param cmd The query.
    */
-  private void executeAsyncQuery(String cmd){
+  private void executeAsyncQuery(String cmd) {
     String queryId = null;
     try {
       queryId = metaDriver.asyncExecuteQuery(currentCatalog, cmd, resultHandler);
@@ -280,9 +285,7 @@ public class Metash {
       QueryResult qr = QueryResult.class.cast(result);
       if (qr.isCatalogChanged()) {
         currentCatalog = qr.getCurrentCatalog();
-        if (!currentCatalog.isEmpty()) {
-          setPrompt(currentCatalog);
-        }
+        setPrompt(currentCatalog);
       }
     }
   }
@@ -333,7 +336,7 @@ public class Metash {
       StringBuilder sb = new StringBuilder(cmd);
 
       while (!cmd.trim().toLowerCase().startsWith("exit")
-             && !cmd.trim().toLowerCase().startsWith("quit")) {
+          && !cmd.trim().toLowerCase().startsWith("quit")) {
         cmd = console.readLine();
         sb.append(cmd).append(" ");
         if (sb.toString().trim().endsWith(";")) {
@@ -364,7 +367,7 @@ public class Metash {
    */
   public static void main(String[] args) {
     boolean async = true;
-    if(args.length > 0){
+    if (args.length > 0) {
       async = !"--sync".equals(args[0]);
     }
     Metash sh = new Metash(async);

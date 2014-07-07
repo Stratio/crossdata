@@ -604,8 +604,10 @@ setOptionsStatement returns [SetOptionsStatement stptst]
 
 useStatement returns [UseStatement usst]:
     T_USE
-    iden=T_IDENT {$usst = new UseStatement($iden.text);};
-
+    (
+    iden=T_IDENT {$usst = new UseStatement($iden.text);}
+    |T_SUBTRACT {$usst = new UseStatement("-");}
+    );
 dropKeyspaceStatement returns [DropKeyspaceStatement drksst]
     @init{
         boolean ifExists = false;

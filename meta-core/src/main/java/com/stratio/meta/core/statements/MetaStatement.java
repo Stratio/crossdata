@@ -153,6 +153,9 @@ public abstract class MetaStatement {
     this.keyspace = keyspace;
     this.keyspaceInc = true;
   }
+  public String getKeyspace(){
+    return keyspace;
+  }
 
   public boolean isKeyspaceIncluded() {
     return this.keyspaceInc;

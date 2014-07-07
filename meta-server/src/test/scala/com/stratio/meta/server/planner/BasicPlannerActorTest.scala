@@ -148,6 +148,7 @@ class BasicPlannerActorTest extends ActorReceiveUtils with FunSuiteLike with Bef
       assertEquals(r.getCurrentCatalog, "ks_demo", "New keyspace should be used");
     }
   }
+  
 
   test("validatorActor use KS from current catalog") {
     within(5000 millis) {
@@ -157,6 +158,17 @@ class BasicPlannerActorTest extends ActorReceiveUtils with FunSuiteLike with Bef
       val r = result.asInstanceOf[QueryResult]
       assertTrue(r.isCatalogChanged, "New keyspace should be used");
       assertEquals(r.getCurrentCatalog, "ks_demo", "New keyspace should be used");
+    }
+  }
+
+  test("Use -") {
+    within(5000 millis) {
+      val msg = "use - ;"
+          val result = executeStatement(msg, "", true)
+          assertTrue(result.isInstanceOf[QueryResult], "Invalid result type")
+          val r = result.asInstanceOf[QueryResult]
+              assertTrue(r.isCatalogChanged, "New keyspace should be used");
+      assertEquals(r.getCurrentCatalog, "", "New keyspace should be used");
     }
   }
 
