@@ -21,8 +21,8 @@ import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.ICassandraDeepJobConfig;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.deep.entity.Cells;
-import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.MetaResultSet;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
@@ -162,8 +162,8 @@ public class Bridge {
       rdd = doGroupBy(rdd, null, (SelectionList) ss.getSelectionClause());
     }
 
-    CassandraResultSet resultSet =
-        (CassandraResultSet) returnResult(rdd, isRoot,
+    MetaResultSet resultSet =
+        (MetaResultSet) returnResult(rdd, isRoot,
             ss.getSelectionClause().getType() == SelectionClause.TYPE_COUNT, cols, ss.getLimit(),
             ss.getOrder());
 
@@ -187,7 +187,7 @@ public class Bridge {
     List<String> selectedCols = new ArrayList<>();
     for (Result child : resultsFromChildren) {
       QueryResult qResult = (QueryResult) child;
-      CassandraResultSet crset = (CassandraResultSet) qResult.getResultSet();
+      MetaResultSet crset = (MetaResultSet) qResult.getResultSet();
 
       Map<String, Cell> cells = crset.getRows().get(0).getCells();
       // RDD from child
@@ -229,15 +229,15 @@ public class Bridge {
     }
 
     // MetaResultSet
-    CassandraResultSet resultSet =
-        (CassandraResultSet) returnResult(result, true, false, selectedCols, ss.getLimit(),
+    MetaResultSet resultSet =
+        (MetaResultSet) returnResult(result, true, false, selectedCols, ss.getLimit(),
             ss.getOrder());
 
     return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
   }
 
   private ResultSet replaceWithAliases(Map<String, String> fieldsAliasesMap,
-      CassandraResultSet resultSet) {
+                                       MetaResultSet resultSet) {
 
     List<ColumnMetadata> metadata = resultSet.getColumnMetadata();
 
@@ -280,7 +280,7 @@ public class Bridge {
     LOG.info("Executing deep for: " + stmt.toString());
 
     if (!(stmt instanceof SelectStatement)) {
-      CassandraResultSet crs = new CassandraResultSet();
+      MetaResultSet crs = new MetaResultSet();
       crs.add(new Row("RESULT", new Cell("NOT supported yet")));
 
       List<ColumnMetadata> columns = new ArrayList<>();
@@ -336,7 +336,7 @@ public class Bridge {
 
       return DeepUtils.buildResultSet(cells, selectedCols);
     } else {
-      CassandraResultSet crs = new CassandraResultSet();
+      MetaResultSet crs = new MetaResultSet();
       crs.add(new Row("RDD", new Cell(rdd)));
 
       List<ColumnMetadata> columns = new ArrayList<>();

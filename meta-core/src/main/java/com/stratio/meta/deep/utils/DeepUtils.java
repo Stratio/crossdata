@@ -16,17 +16,9 @@
 
 package com.stratio.meta.deep.utils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaRDD;
-
 import com.stratio.deep.entity.Cells;
-import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.MetaResultSet;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
@@ -43,6 +35,14 @@ import com.stratio.meta.core.structures.SelectionSelectors;
 import com.stratio.meta.core.structures.SelectorGroupBy;
 import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.SelectorMeta;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaRDD;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public final class DeepUtils {
 
@@ -66,7 +66,7 @@ public final class DeepUtils {
    * @return ResultSet
    */
   public static ResultSet buildResultSet(List<Cells> cells, List<String> selectedCols) {
-    CassandraResultSet rs = new CassandraResultSet();
+    MetaResultSet rs = new MetaResultSet();
 
     rs.setColumnMetadata(retrieveColumnMetadata(cells, selectedCols));
 
@@ -193,7 +193,7 @@ public final class DeepUtils {
    * @return ResultSet Result set with only a cell containing the a number of rows
    */
   public static ResultSet buildCountResult(JavaRDD<?> rdd) {
-    CassandraResultSet rs = new CassandraResultSet();
+    MetaResultSet rs = new MetaResultSet();
 
     int numberOfRows = (int) rdd.count();
 
@@ -294,7 +294,7 @@ public final class DeepUtils {
   /**
    * Retrieve fields in selection clause.
    * 
-   * @param ss SelectStatement of the query
+   * @param selection Selection
    * @return List of fields in selection clause or null if all fields has been selected
    */
   public static List<String> retrieveSelectors(Selection selection) {
@@ -321,7 +321,7 @@ public final class DeepUtils {
   /**
    * Retrieve fields in selection clause.
    * 
-   * @param ss SelectStatement of the query
+   * @param selection Selection
    * @return Array of fields in selection clause or null if all fields has been selected
    */
   public static List<String> retrieveSelectorAggegationFunctions(Selection selection) {

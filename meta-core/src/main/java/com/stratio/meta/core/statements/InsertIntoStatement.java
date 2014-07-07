@@ -20,6 +20,7 @@ import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.stratio.meta.common.metadata.structures.MetadataUtils;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -197,6 +198,18 @@ public class InsertIntoStatement extends MetaStatement {
     this(tableName, ids, null, cellValues, ifNotExists, false, null, 2);
   }
 
+  public String getTableName() {
+    return tableName;
+  }
+
+  public List<String> getIds() {
+    return ids;
+  }
+
+  public List<ValueCell<?>> getCellValues() {
+    return cellValues;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("INSERT INTO ");
@@ -329,6 +342,7 @@ public class InsertIntoStatement extends MetaStatement {
             cm = tableMetadata.getColumn(ids.get(index));
             if (cm != null) {
               Term<?> t = Term.class.cast(cellValues.get(index));
+              MetadataUtils.updateType(cm);
               if (!cm.getType().getDbClass().equals(t.getTermClass())) {
                 result =
                     Result.createValidationErrorResult("Column " + ids.get(index) + " of type "
@@ -407,7 +421,11 @@ public class InsertIntoStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree tree = new Tree();
-    tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+    if(streamMode){
+      tree.setNode(new MetaStep(MetaPath.STREAMING, this));
+    } else {
+      tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+    }
     return tree;
   }
 

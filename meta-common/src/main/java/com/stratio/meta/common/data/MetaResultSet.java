@@ -17,13 +17,14 @@
 package com.stratio.meta.common.data;
 
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta.common.metadata.structures.ColumnType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class CassandraResultSet extends ResultSet implements Serializable {
+public class MetaResultSet extends ResultSet implements Serializable {
 
   /**
    * Serial version UID in order to be Serializable.
@@ -41,11 +42,18 @@ public class CassandraResultSet extends ResultSet implements Serializable {
   private List<ColumnMetadata> columnMetadata;
 
   /**
-   * CassandraResultSet default constructor.
+   * MetaResultSet default constructor.
    */
-  public CassandraResultSet() {
+  public MetaResultSet() {
     rows = new ArrayList<>();
     columnMetadata = new ArrayList<>();
+  }
+
+  public MetaResultSet(String uniqueCell) {
+    rows = new ArrayList<>();
+    rows.add(new Row("Result", new Cell(uniqueCell)));
+    columnMetadata = new ArrayList<>();
+    columnMetadata.add(new ColumnMetadata("Result", "Result", ColumnType.VARCHAR));
   }
 
   /**

@@ -87,7 +87,6 @@ public class TableMetadata implements Serializable {
     this.columns.addAll(columns);
   }
 
-
   /**
    * Class constructor.
    * 
@@ -137,6 +136,10 @@ public class TableMetadata implements Serializable {
       }
     }
     return foundCM;
+  }
+
+  public TableType getType() {
+    return type;
   }
 
   public String exportAsString() {
