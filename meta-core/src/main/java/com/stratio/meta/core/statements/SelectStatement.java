@@ -69,7 +69,6 @@ import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.SelectorMeta;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.WindowSelect;
-import com.stratio.meta.core.structures.WindowTime;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
@@ -188,7 +187,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Class logger.
    */
-  private static final Logger LOG = Logger.getLogger(SelectStatement.class);
+  private static final Logger logger = Logger.getLogger(SelectStatement.class);
 
   private Map<String, String> fieldsAliasesMap;
 
@@ -335,6 +334,12 @@ public class SelectStatement extends MetaStatement {
     this.group = group;
   }
 
+  public void setGroup(GroupBy groupBy) {
+    this.groupInc = true;
+    group = new ArrayList<>();
+    group.add(groupBy);
+  }
+
   /**
    * Return GROUP BY clause.
    * 
@@ -414,6 +419,10 @@ public class SelectStatement extends MetaStatement {
   }
 
   public Map<String, String> getFieldsAliasesMap() {
+    /*
+     * if(selectionClause instanceof SelectionCount){ fieldsAliasesMap.clear();
+     * fieldsAliasesMap.put("COUNT", "COUNT"); }
+     */
     return fieldsAliasesMap;
   }
 
@@ -466,7 +475,8 @@ public class SelectStatement extends MetaStatement {
   /** {@inheritDoc} */
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
-    System.out.println("TRACE: Validating = " + this.toString());
+
+    logger.debug("TRACE: Validating = " + this.toString());
     // Validate FROM keyspace
     Result result = validateKeyspaceAndTable(metadata, this.getEffectiveKeyspace(), tableName);
 
@@ -547,26 +557,6 @@ public class SelectStatement extends MetaStatement {
 
     }
 
-    /*
-     * if(!result.hasError() && windowInc){ result = validateWindow(config); }
-     */
-
-    return result;
-  }
-
-  private Result validateWindow(EngineConfig config) {
-    Result result = QueryResult.createSuccessQueryResult();
-    if (window instanceof WindowTime) {
-      WindowTime windowTime = (WindowTime) window;
-      long windowMillis = windowTime.getDurationInMilliseconds();
-      if (windowMillis % config.getStreamingDuration() != 0) {
-        result =
-            Result.createValidationErrorResult("Window time must be multiple of "
-                + config.getStreamingDuration() + " milliseconds.");
-      }
-    } else {
-      result = Result.createValidationErrorResult("This type of window is not supported yet.");
-    }
     return result;
   }
 
@@ -745,8 +735,8 @@ public class SelectStatement extends MetaStatement {
     while (!result.hasError() && relations.hasNext()) {
       Relation relation = relations.next();
 
-      System.out.println("TRACE: Relation = " + relation.toString());
-      System.out.println("TRACE: relation.getIdentifiers().get(0).getTable = "
+      logger.debug("TRACE: Relation = " + relation.toString());
+      logger.debug("TRACE: relation.getIdentifiers().get(0).getTable = "
           + relation.getIdentifiers().get(0).getTable());
 
       if (tableMetadata.getName().equalsIgnoreCase(relation.getIdentifiers().get(0).getTable())
@@ -759,7 +749,6 @@ public class SelectStatement extends MetaStatement {
       if (Relation.TYPE_COMPARE == relation.getType() || Relation.TYPE_IN == relation.getType()
           || Relation.TYPE_BETWEEN == relation.getType()) {
         // Check comparison, =, >, <, etc.
-        // RelationCompare rc = RelationCompare.class.cast(relation);
         String column = relation.getIdentifiers().get(0).toString();
         // Determine the target table the column belongs to.
         String targetTable = "any";
@@ -796,12 +785,12 @@ public class SelectStatement extends MetaStatement {
 
     Result result = QueryResult.createSuccessQueryResult();
 
-    List<String> selectionCols = this.getSelectionClause().getIds();
+    List<String> selectionCols = this.getSelectionClause().getIds(false);
 
     for (GroupBy groupByCol : this.group) {
       String col = groupByCol.toString();
       if (!selectionCols.contains(col)) {
-        this.getSelectionClause().getIds().add(col);
+        this.getSelectionClause().getIds(false).add(col);
       }
     }
     return result;
@@ -1071,7 +1060,6 @@ public class SelectStatement extends MetaStatement {
         if (Relation.TYPE_COMPARE == relation.getType()
             && "MATCH".equalsIgnoreCase(relation.getOperator())) {
           RelationCompare rc = RelationCompare.class.cast(relation);
-          // String column = rc.getIdentifiers().get(0).toString();
           String column = rc.getIdentifiers().get(0).getField();
           String value = rc.getTerms().get(0).toString();
           // Generate query for column
@@ -1223,7 +1211,7 @@ public class SelectStatement extends MetaStatement {
       try {
         cols = stratioStreamingAPI.columnsFromStream(streamName);
       } catch (Exception e) {
-        LOG.error(e);
+        logger.error(e);
       }
       for (ColumnNameTypeValue ctv : cols) {
         ids.add(ctv.getColumn());
@@ -1327,7 +1315,7 @@ public class SelectStatement extends MetaStatement {
         }
       } catch (InstantiationException | IllegalAccessException | InvocationTargetException
           | NoSuchMethodException e) {
-        LOG.error("Cannot parse input value", e);
+        logger.error("Cannot parse input value", e);
       }
     }
     return result;
@@ -1365,7 +1353,7 @@ public class SelectStatement extends MetaStatement {
         // Processed as LuceneIndex
         break;
       default:
-        LOG.error("Unsupported operator: " + relCompare.getOperator());
+        logger.error("Unsupported operator: " + relCompare.getOperator());
         break;
     }
     return clause;
@@ -1431,7 +1419,7 @@ public class SelectStatement extends MetaStatement {
               QueryBuilder.lte(QueryBuilder.token(names.toArray(new String[names.size()])), value);
           break;
         default:
-          LOG.error("Unsupported operator " + relToken.getOperator());
+          logger.error("Unsupported operator " + relToken.getOperator());
           break;
       }
     } else {
@@ -1466,7 +1454,7 @@ public class SelectStatement extends MetaStatement {
           clause = getRelationTokenClause(metaRelation);
           break;
         default:
-          LOG.error("Unsupported relation type: " + metaRelation.getType());
+          logger.error("Unsupported relation type: " + metaRelation.getType());
           break;
       }
       if (clause != null) {
@@ -1511,7 +1499,7 @@ public class SelectStatement extends MetaStatement {
     } else {
       whereStmt = sel.where();
     }
-    LOG.trace("Executing: " + whereStmt.toString());
+    logger.trace("Executing: " + whereStmt.toString());
 
     return whereStmt;
   }
@@ -1659,11 +1647,55 @@ public class SelectStatement extends MetaStatement {
     if (selection instanceof SelectionSelectors) {
       SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
       for (SelectionSelector ss : selectionSelectors.getSelectors()) {
-        SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-        if (tableMetadataFrom.getColumn(si.getField()) != null) {
-          firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
-        } else {
-          secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getField())));
+
+        if (ss.getSelector() instanceof SelectorIdentifier) { // Example: users.name
+          SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
+          if (tableMetadataFrom.getColumn(si.getField()) != null) {
+            firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getTable(), si
+                .getField())));
+          } else {
+            secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getTable(),
+                si.getField())));
+          }
+        } else if (ss.getSelector() instanceof SelectorFunction) { // Example: myfunction(users.age,
+                                                                   // users_info.dateOfRegistration)
+          SelectorFunction sf = (SelectorFunction) ss.getSelector();
+          List<SelectorMeta> paramsFirst = new ArrayList<>();
+          List<SelectorMeta> paramsSecond = new ArrayList<>();
+          for (SelectorMeta sm : sf.getParams()) {
+            SelectorIdentifier si = (SelectorIdentifier) sm;
+            if (tableMetadataFrom.getColumn(si.getField()) != null) {
+              paramsFirst.add(new SelectorIdentifier(si.getTable(), si.getField()));
+            } else {
+              paramsSecond.add(new SelectorIdentifier(si.getTable(), si.getField()));
+            }
+          }
+          if (!paramsFirst.isEmpty()) {
+            firstSelect.addSelection(new SelectionSelector(new SelectorFunction(sf.getName(),
+                paramsFirst)));
+          }
+          if (!paramsFirst.isEmpty()) {
+            secondSelect.addSelection(new SelectionSelector(new SelectorFunction(sf.getName(),
+                paramsSecond)));
+          }
+        } else if (ss.getSelector() instanceof SelectorGroupBy) { // Example: sum(users.age) ...
+                                                                  // GroupBy users.gender
+          /*
+           * SelectorGroupBy sg = (SelectorGroupBy) ss.getSelector(); SelectorIdentifier si =
+           * (SelectorIdentifier) sg.getParam(); SelectorIdentifier newSi = new
+           * SelectorIdentifier(si.getTable(), si.getField()); if
+           * (tableMetadataFrom.getColumn(si.getField()) != null) { firstSelect.addSelection(new
+           * SelectionSelector(newSi)); } else { secondSelect.addSelection(new
+           * SelectionSelector(newSi)); }
+           */
+          SelectorGroupBy sg = (SelectorGroupBy) ss.getSelector();
+          SelectorIdentifier si = (SelectorIdentifier) sg.getParam();
+          SelectorIdentifier newSi = new SelectorIdentifier(si.getTable(), si.getField());
+          if (tableMetadataFrom.getColumn(si.getField()) != null) {
+            firstSelect.addSelection(new SelectionSelector(newSi));
+          } else {
+            secondSelect.addSelection(new SelectionSelector(newSi));
+          }
         }
       }
     } else {
@@ -1681,6 +1713,14 @@ public class SelectStatement extends MetaStatement {
       if (!whereRelations.get(2).isEmpty()) {
         secondSelect.setWhere(whereRelations.get(2));
       }
+    }
+
+    // ADD GROUP BY CLAUSE IF ANY
+    if (groupInc) {
+      GroupBy param = group.get(0);
+      String groupTable = param.getSelectorIdentifier().getTable();
+      GroupBy newGroupBy = new GroupBy(groupTable + "." + param.getSelectorIdentifier().getField());
+      joinSelect.setGroup(newGroupBy);
     }
 
     // ADD SELECTED COLUMNS TO THE JOIN STATEMENT
@@ -1762,18 +1802,6 @@ public class SelectStatement extends MetaStatement {
       }
 
       cassandraPath = (onlyMatchOperators) ? onlyMatchOperators : cassandraPath;
-      /*
-       * //TODO Retreive original table create metadata and check for text columns. if(cassandraPath
-       * && !whereCols.isEmpty()){ // When querying a text type column with a Lucene index, content
-       * must be lowercased TableMetadata metaData =
-       * metadataManager.getTableMetadata(getEffectiveKeyspace(), tableName);
-       * metadataManager.loadMetadata(); String lucenCol = whereCols.keySet().iterator().next();
-       * if(metaData.getColumn(lucenCol).getType() == DataType.text() &&
-       * where.get(0).getTerms().get(0) instanceof StringTerm){ StringTerm stringTerm = (StringTerm)
-       * where.get(0).getTerms().get(0); ((StringTerm)
-       * where.get(0).getTerms().get(0)).setTerm(stringTerm.getStringValue().toLowerCase(),
-       * stringTerm.isQuotedLiteral()); } }
-       */
     }
     return cassandraPath;
   }
@@ -1867,15 +1895,16 @@ public class SelectStatement extends MetaStatement {
     } else if (metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName)) {
       steps.setNode(new MetaStep(MetaPath.STREAMING, this));
       steps.setInvolvesStreaming(true);
-    } else if (groupInc || orderInc || selectionClause.containsFunctions()) {
-      steps.setNode(new MetaStep(MetaPath.DEEP, this));
     } else if (joinInc) {
       steps = getJoinPlan();
+    } else if (groupInc || orderInc || selectionClause.containsFunctions()) {
+      steps.setNode(new MetaStep(MetaPath.DEEP, this));
     } else if (whereInc) {
       steps = getWherePlan(metadataManager);
     } else {
       steps.setNode(new MetaStep(MetaPath.CASSANDRA, this));
     }
+    logger.info("PLAN: " + System.lineSeparator() + steps.toStringDownTop());
     return steps;
   }
 
@@ -1894,20 +1923,11 @@ public class SelectStatement extends MetaStatement {
     SelectStatement joinSelect = new SelectStatement("");
 
     // ADD FIELDS OF THE JOIN
-    String streamingField = null;
     if (this.join.getLeftField().getTable().trim().equalsIgnoreCase(tableName)) {
-      // streamingField = this.join.getLeftField().getField();
-      // if(streamingField.contains(".")) {
-      // this.join.getLeftField().setField(streamingField.split(".")[1]);
-      // }
       this.join.getLeftField().setTable(null);
       firstSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
       secondSelect.addSelection(new SelectionSelector(this.join.getRightField()));
     } else {
-      // streamingField = this.join.getRightField().getField();
-      // if(streamingField.contains(".")) {
-      // this.join.getRightField().setField(streamingField.split(".")[1]);
-      // }
       this.join.getRightField().setTable(null);
       firstSelect.addSelection(new SelectionSelector(this.join.getRightField()));
       secondSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
@@ -1965,9 +1985,6 @@ public class SelectStatement extends MetaStatement {
     secondSelect.validate(metadata, null);
 
     // ADD STEPS
-    // steps.setNode(new MetaStep(MetaPath.DEEP, joinSelect));
-    // steps.addChild(new Tree(new MetaStep(MetaPath.STREAMING, firstSelect)));
-    // steps.addChild(new Tree(new MetaStep(MetaPath.DEEP, secondSelect)));
     steps.setNode(new MetaStep(MetaPath.STREAMING, firstSelect));
 
 

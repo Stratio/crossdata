@@ -71,7 +71,7 @@ public class SelectionList extends SelectionClause {
    * @see com.stratio.meta.core.structures.SelectionClause#getIds()
    */
   @Override
-  public List<String> getIds() {
+  public List<String> getIds(boolean includeFunctions) {
 
     List<String> ids = new ArrayList<>();
 
@@ -83,8 +83,8 @@ public class SelectionList extends SelectionClause {
         if (selector.getType() == SelectorMeta.TYPE_IDENT) {
           SelectorIdentifier selectorId = (SelectorIdentifier) selector;
           ids.add(selectorId.toString());
-        } else {
-          ids.addAll(retrieveIdsFromFunctionSelector(selector));
+        } else { // SelectorGroupBy or SelectorFunction
+          ids.addAll(retrieveIdsFromFunctionSelector(selector, includeFunctions));
         }
       }
     }
@@ -119,18 +119,62 @@ public class SelectionList extends SelectionClause {
     return selectorsList;
   }
 
-  private List<String> retrieveIdsFromFunctionSelector(SelectorMeta selector) {
+  private List<String> retrieveIdsFromFunctionSelector(SelectorMeta selector, boolean includeFunctions) {
 
     List<String> ids = new ArrayList<>();
     if (selector instanceof SelectorGroupBy) {
       SelectorGroupBy selectorGroupBy = (SelectorGroupBy) selector;
-      if (!selectorGroupBy.getGbFunction().equals(GroupByFunction.COUNT))
-        ids.addAll(retrieveIdsFromFunctionSelector(selectorGroupBy.getParam()));
+      if (!selectorGroupBy.getGbFunction().equals(GroupByFunction.COUNT)){
+        List<String>
+            retrievedIds =
+            retrieveIdsFromFunctionSelector(selectorGroupBy.getParam(), includeFunctions);
+
+        if(includeFunctions){
+          List<String> retrievedIdsWithFunctions = new ArrayList<>();
+          for(String id: retrievedIds){
+
+            List<String>
+                innerIds =
+                retrieveIdsFromFunctionSelector(selectorGroupBy.getParam(), includeFunctions);
+            String innerIdsStr = String.valueOf(innerIds);
+            innerIdsStr = innerIdsStr.replace("[", "");
+            innerIdsStr = innerIdsStr.replace("]", "");
+
+            retrievedIdsWithFunctions.add(
+                selectorGroupBy.getGbFunction().name()
+                +"("+innerIdsStr+")");
+          }
+          retrievedIds = new ArrayList<>();
+          retrievedIds.addAll(retrievedIdsWithFunctions);
+        }
+
+        ids.addAll(retrievedIds);
+      }
     } else if (selector instanceof SelectorFunction) {
       SelectorFunction selectorFunction = (SelectorFunction) selector;
       List<SelectorMeta> params = selectorFunction.getParams();
-      for (SelectorMeta subselector : params) {
-        ids.addAll(retrieveIdsFromFunctionSelector(subselector));
+      for (SelectorMeta subselector: params) {
+        List<String> retrievedIds = retrieveIdsFromFunctionSelector(subselector, includeFunctions);
+
+        if(includeFunctions){
+          List<String> retrievedIdsWithFunctions = new ArrayList<>();
+          for(String id: retrievedIds){
+            StringBuilder sb = new StringBuilder(selectorFunction.getName());
+            sb.append("(");
+
+            List<SelectorMeta> innerParams = selectorFunction.getParams();
+            for(SelectorMeta innerSelector: innerParams){
+              sb.append(retrieveIdsFromFunctionSelector(innerSelector, includeFunctions)).append(", ");
+            }
+
+            retrievedIdsWithFunctions.add(sb.delete(sb.length() - 2, sb.length()).toString());
+            sb.append(")");
+          }
+          retrievedIds.clear();
+          retrievedIds.addAll(retrievedIdsWithFunctions);
+        }
+
+        ids.addAll(retrievedIds);
       }
     } else {
       return Arrays.asList(((SelectorIdentifier) selector).getField());

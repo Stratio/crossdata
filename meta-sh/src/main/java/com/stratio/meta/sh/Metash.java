@@ -17,7 +17,22 @@
 package com.stratio.meta.sh;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+
+import jline.console.ConsoleReader;
+
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
+
 import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.exceptions.ExecutionException;
+import com.stratio.meta.common.exceptions.ParsingException;
+import com.stratio.meta.common.exceptions.UnsupportedException;
+import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -30,17 +45,6 @@ import com.stratio.meta.sh.help.generated.MetaHelpParser;
 import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
-
-import jline.console.ConsoleReader;
-
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 
 /**
  * Interactive META console.
@@ -241,7 +245,8 @@ public class Metash {
       updatePrompt(metaResult);
       println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
       println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
-    } catch (Exception e) {
+    } catch (ConnectionException | ParsingException | ValidationException | ExecutionException
+        | UnsupportedException e) {
       println("\033[31mError:\033[0m " + e.getMessage());
     }
   }
@@ -268,7 +273,7 @@ public class Metash {
       println("QID: " + queryId);
       println("");
     } catch (ConnectionException e) {
-      LOG.error(e.getMessage(), e);
+      LOG.error("Error connecting", e);
       println("ERROR: " + e.getMessage());
     }
 

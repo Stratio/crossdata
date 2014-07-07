@@ -16,14 +16,20 @@
 
 package com.stratio.meta.driver;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.exceptions.ExecutionException;
 import com.stratio.meta.common.exceptions.ParsingException;
+import com.stratio.meta.common.exceptions.UnsupportedException;
+import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.result.ConnectResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -37,28 +43,31 @@ public class ConnectTest extends DriverParentTest {
 
     try {
       driver.executeQuery("ks_demo", "drop table demo ;");
-    } catch (Exception e) {
+    } catch (ConnectionException | ParsingException | ValidationException | ExecutionException
+        | UnsupportedException e) {
       logger.info("Not removing table demo as it does not exists.");
     }
 
     try {
       driver.executeQuery("ks_demo", "drop keyspace ks_demo ;");
-    } catch (Exception e) {
+    } catch (ConnectionException | ParsingException | ValidationException | ExecutionException
+        | UnsupportedException e) {
       logger.info("Not removing ks_demo as it does not exists.");
     }
 
     String msg =
         "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};";
     try {
-      driver.executeQuery( "ks_demo", msg);
-    } catch (Exception e) {
+      driver.executeQuery("ks_demo", msg);
+    } catch (ConnectionException | ParsingException | ValidationException | ExecutionException
+        | UnsupportedException e) {
       System.err.println("Cannot create test keyspace.");
     }
 
     try {
       Thread.sleep(1000);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      logger.error("Exception", e);
     }
 
   }
@@ -70,7 +79,7 @@ public class ConnectTest extends DriverParentTest {
     try {
       metaResult = driver.connect("TEST_USER");
     } catch (ConnectionException e) {
-      e.printStackTrace();
+      logger.error("Exception", e);
       fail("Exception not expected");
     }
     assertFalse(metaResult.hasError());
@@ -83,15 +92,16 @@ public class ConnectTest extends DriverParentTest {
 
   @Test(groups = {"query", "create Ks"}, dependsOnGroups = {"connect"})
   public void ExecuteCreatewitherrorTest() {
-    String msg = "create KEYSPAC ks_demo WITH replication = "
-                 + "{class: SimpleStrategy, replication_factor: 1};";
+    String msg =
+        "create KEYSPAC ks_demo WITH replication = "
+            + "{class: SimpleStrategy, replication_factor: 1};";
     try {
       driver.executeQuery("ks_demo", msg);
       fail("Expecting ParsingException");
     } catch (ParsingException e) {
-      e.printStackTrace();
-    } catch (Exception e){
-      e.printStackTrace();
+      logger.info(e);
+    } catch (ConnectionException | ValidationException | ExecutionException | UnsupportedException e) {
+      logger.error("Exception", e);
       fail("Expecting ParsingException");
     }
   }
@@ -102,8 +112,9 @@ public class ConnectTest extends DriverParentTest {
     Result metaResult = null;
     try {
       metaResult = driver.executeQuery("ks_demo", msg);
-    } catch (Exception e) {
-      e.printStackTrace();
+    } catch (ConnectionException | ParsingException | ValidationException | ExecutionException
+        | UnsupportedException e) {
+      logger.error("Exception", e);
       fail("Exception not expected");
     }
     assertTrue(QueryResult.class.isInstance(metaResult), "Invalid result type");
@@ -118,12 +129,13 @@ public class ConnectTest extends DriverParentTest {
     Result metaResult = null;
     try {
       metaResult = driver.executeQuery("ks_demo", msg);
-    } catch (Exception e) {
-      e.printStackTrace();
+    } catch (ConnectionException | ParsingException | ValidationException | ExecutionException
+        | UnsupportedException e) {
+      logger.error("Exception", e);
       fail("Exception not expected");
     }
-    assertFalse(metaResult.hasError(),
-                "\n\nerror message is:\n" + getErrorMessage(metaResult) + "\n\n");
+    assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + getErrorMessage(metaResult)
+        + "\n\n");
   }
 
   @Test(groups = {"query", "insert"}, dependsOnGroups = {"create Tb"})
@@ -132,12 +144,13 @@ public class ConnectTest extends DriverParentTest {
     Result metaResult = null;
     try {
       metaResult = driver.executeQuery("ks_demo", msg);
-    } catch (Exception e) {
-      e.printStackTrace();
+    } catch (ConnectionException | ParsingException | ValidationException | ExecutionException
+        | UnsupportedException e) {
+      logger.error("Exception", e);
       fail("Exception not expected");
     }
-    assertFalse(metaResult.hasError(),
-                "\n\nerror message is:\n" + getErrorMessage(metaResult) + "\n\n");
+    assertFalse(metaResult.hasError(), "\n\nerror message is:\n" + getErrorMessage(metaResult)
+        + "\n\n");
   }
 
   @Test(groups = "disconnect", dependsOnGroups = {"query"})
@@ -145,7 +158,7 @@ public class ConnectTest extends DriverParentTest {
     try {
       driver.disconnect();
     } catch (ConnectionException e) {
-      e.printStackTrace();
+      logger.error("Exception", e);
       fail("Exception not expected");
     }
   }

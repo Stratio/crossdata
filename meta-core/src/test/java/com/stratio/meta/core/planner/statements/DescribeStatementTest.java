@@ -26,7 +26,7 @@ public class DescribeStatementTest extends BasicPlannerTest {
 
   @Test
   public void testPlanForDescribeKeyspace() {
-    String input = "DESCRIBE KEYSPACE demo;";
+    // DESCRIBE KEYSPACE demo;
     stmt = new DescribeStatement(DescribeType.KEYSPACE);
     ((DescribeStatement) stmt).setKeyspace("demo");
     validateCommandPath("testPlanForDescribeKeyspace");
@@ -34,7 +34,8 @@ public class DescribeStatementTest extends BasicPlannerTest {
 
   @Test
   public void testPlanForDescribeCurrentKeyspace() {
-    String input = "DESCRIBE KEYSPACE;";
+
+    // DESCRIBE KEYSPACE;
     stmt = new DescribeStatement(DescribeType.KEYSPACE);
     ((DescribeStatement) stmt).setKeyspace("demo");
     validateCommandPath("testPlanForDescribeKeyspace");
@@ -42,7 +43,8 @@ public class DescribeStatementTest extends BasicPlannerTest {
 
   @Test
   public void testPlanForDescribeTable() {
-    String input = "DESCRIBE TABLE demo.users;";
+
+    // DESCRIBE TABLE demo.users;
     stmt = new DescribeStatement(DescribeType.TABLE);
     ((DescribeStatement) stmt).setTableName("demo.users");
     validateCommandPath("testPlanForDescribeTable");
@@ -50,7 +52,8 @@ public class DescribeStatementTest extends BasicPlannerTest {
 
   @Test
   public void testPlanForDescribeTables() {
-    String input = "DESCRIBE TABLES;";
+
+    // DESCRIBE TABLES;
     stmt = new DescribeStatement(DescribeType.TABLES);
     ((DescribeStatement) stmt).setTableName("demo.users");
     validateCommandPath("testPlanForDescribeTables");
@@ -58,7 +61,8 @@ public class DescribeStatementTest extends BasicPlannerTest {
 
   @Test
   public void testPlanForDescribeKeyspaces() {
-    String input = "DESCRIBE KEYSPACES;";
+
+    // DESCRIBE KEYSPACES;
     stmt = new DescribeStatement(DescribeType.KEYSPACES);
     ((DescribeStatement) stmt).setTableName("demo.users");
     validateCommandPath("testPlanForDescribeKeyspaces");
