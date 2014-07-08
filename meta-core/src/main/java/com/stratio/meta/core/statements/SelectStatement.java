@@ -49,6 +49,7 @@ import com.stratio.meta.core.structures.SelectorFunction;
 import com.stratio.meta.core.structures.SelectorGroupBy;
 import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.SelectorMeta;
+import com.stratio.meta.core.structures.StringTerm;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.WindowSelect;
 import com.stratio.meta.core.utils.MetaPath;
@@ -547,14 +548,11 @@ public class SelectStatement extends MetaStatement {
     }
 
     if (!result.hasError() && whereInc) {
-      if (streamMode) {
-        result =
-            Result
-                .createValidationErrorResult("Where clauses in ephemeral tables are not supported yet.");
+      if(streamMode){
+        result = validateWhereClauses(streamingMetadata, tableMetadataJoin);
       } else {
         result = validateWhereClauses(tableMetadataFrom, tableMetadataJoin);
       }
-
     }
 
     return result;
@@ -679,10 +677,15 @@ public class SelectStatement extends MetaStatement {
 
     String operator = rc.getOperator();
 
-    ColumnMetadata cm = findColumnMetadata(targetTable, column);
+    com.stratio.meta.common.metadata.structures.TableMetadata
+        genericMetadata =
+        metadata.getTableGenericMetadata(getEffectiveKeyspace(), targetTable);
+
+    com.stratio.meta.common.metadata.structures.ColumnMetadata cm = genericMetadata.getColumn(column);
+
     if (cm != null) {
       Iterator<Term<?>> termsIt = terms.iterator();
-      Class<?> columnType = cm.getType().asJavaClass();
+      Class<?> columnType = cm.getType().getDbClass();
       while (!result.hasError() && termsIt.hasNext()) {
         Term<?> term = termsIt.next();
         if (!columnType.equals(term.getTermClass())) {
@@ -713,6 +716,20 @@ public class SelectStatement extends MetaStatement {
                   + " column " + column + ".");
         }
       }
+
+      if(streamMode){
+        switch (operator){
+          case "like":
+          case "match":
+          case "in":
+          case "between":
+            result = Result.createValidationErrorResult("Operator '"+operator+"' is not supported in Where clauses for Ephemeral tables.");
+            break;
+          default:
+            break;
+        }
+      }
+
     } else {
       result =
           Result.createValidationErrorResult("Column " + column + " not found in " + targetTable
@@ -768,10 +785,60 @@ public class SelectStatement extends MetaStatement {
         }
       } else if (Relation.TYPE_TOKEN == relation.getType()) {
         // TODO: Check TOKEN relation
-        result = Result.createValidationErrorResult("TOKEN function not supported.");
+        result = Result.createValidationErrorResult("TOKEN function not supported yet.");
       }
     }
 
+    return result;
+  }
+
+  private Result validateWhereClauses(
+      com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata,
+      TableMetadata tableMetadataJoin) {
+
+
+    // TODO: Check that the MATCH operator is only used in Lucene mapped columns.
+    Result result = QueryResult.createSuccessQueryResult();
+    Iterator<Relation> relations = where.iterator();
+    while (!result.hasError() && relations.hasNext()) {
+      Relation relation = relations.next();
+
+      logger.debug("TRACE: Relation = " + relation.toString());
+      logger.debug("TRACE: relation.getIdentifiers().get(0).getTable = "
+                   + relation.getIdentifiers().get(0).getTable());
+
+      if (streamingMetadata.getTableName().equalsIgnoreCase(relation.getIdentifiers().get(0).getTable())
+          || (relation.getIdentifiers().get(0).getTable() == null)) {
+        relation.updateTermClass(streamingMetadata);
+      } else {
+        relation.updateTermClass(tableMetadataJoin);
+      }
+
+      if (Relation.TYPE_COMPARE == relation.getType() || Relation.TYPE_IN == relation.getType()
+          || Relation.TYPE_BETWEEN == relation.getType()) {
+        // Check comparison, =, >, <, etc.
+        String column = relation.getIdentifiers().get(0).toString();
+        // Determine the target table the column belongs to.
+        String targetTable = "any";
+        if (column.contains(".")) {
+          String[] tableAndColumn = column.split("\\.");
+          targetTable = tableAndColumn[0];
+          column = tableAndColumn[1];
+        }
+
+        // Check terms types
+        result =
+            validateWhereSingleColumnRelation(targetTable, column, relation.getTerms(), relation);
+        if ("match".equalsIgnoreCase(relation.getOperator()) && joinInc) {
+          result =
+              Result
+                  .createValidationErrorResult("Select statements with 'Inner Join' don't support MATCH operator.");
+        }
+      } else if (Relation.TYPE_TOKEN == relation.getType()) {
+        // TODO: Check TOKEN relation
+        result = Result.createValidationErrorResult("TOKEN function not supported yet.");
+      }
+    }
     return result;
   }
 
@@ -1191,6 +1258,38 @@ public class SelectStatement extends MetaStatement {
       String outgoing) {
     StringBuilder querySb = new StringBuilder("from ");
     querySb.append(streamName);
+
+    if(whereInc){
+      Iterator<Relation> whereIter = where.iterator();
+      querySb.append("[");
+      while(whereIter.hasNext()){
+        Relation rel = whereIter.next();
+
+        System.out.println("TRACE: rel = " + rel.toString());
+        System.out.println("TRACE: rel.Id = " + rel.getIdentifiers().get(0).getField());
+        System.out.println("TRACE: rel.operator = " + rel.getOperator());
+        System.out.println("TRACE: rel.term = " + rel.getTerms().get(0).toString());
+
+        querySb.append(rel.getIdentifiers().get(0).getField())
+               .append(" ")
+               .append(rel.getSiddhiOperator())
+               .append(" ");
+
+        if(rel.getTerms().get(0) instanceof StringTerm){
+          querySb.append("'").append(rel.getTerms().get(0).toString()).append("'");
+        } else {
+          querySb.append(rel.getTerms().get(0).toString());
+        }
+
+        if(whereIter.hasNext()){
+          querySb.append(" and ");
+        }
+      }
+      querySb.append("]");
+    }
+
+    System.out.println("TRACE: querySb = " +querySb.toString());
+
     if (windowInc) {
       querySb.append("#window.timeBatch( ").append(getWindow().toString().toLowerCase())
           .append(" )");
@@ -1223,6 +1322,9 @@ public class SelectStatement extends MetaStatement {
     String idsStr = Arrays.toString(ids.toArray()).replace("[", "").replace("]", "");
     querySb.append(" select ").append(idsStr).append(" insert into ");
     querySb.append(outgoing);
+
+    System.out.println("TRACE: querySb = " +querySb.toString());
+
     return querySb.toString();
   }
 
@@ -1890,9 +1992,9 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-    if (metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName) && joinInc) {
+    if (streamMode && joinInc) {
       steps = getStreamJoinPlan();
-    } else if (metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName)) {
+    } else if (streamMode) {
       steps.setNode(new MetaStep(MetaPath.STREAMING, this));
       steps.setInvolvesStreaming(true);
     } else if (joinInc) {
