@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,8 +64,8 @@ public abstract class AbstractMetadataHelper {
 
   public TableMetadata toTableMetadata(String parentCatalog,
       com.datastax.driver.core.TableMetadata tableMetadata) {
-    Set<ColumnMetadata> columns = new HashSet<>(tableMetadata.getColumns().size());
-    for (com.datastax.driver.core.ColumnMetadata column : tableMetadata.getColumns()) {
+    Set<ColumnMetadata> columns = new LinkedHashSet<>(tableMetadata.getColumns().size());
+    for (com.datastax.driver.core.ColumnMetadata column: tableMetadata.getColumns()) {
       columns.add(toColumnMetadata(tableMetadata.getName(), column));
     }
     List<String> partitionKey = fromColumnsMetadataToColumnsString(tableMetadata.getPartitionKey());

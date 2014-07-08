@@ -276,15 +276,35 @@ public class InsertIntoStatement extends MetaStatement {
         if (dataType != parserClass) {
           LOG.debug("Converting from " + parserClass + " to " + dataType);
           if (dataType == Boolean.class) {
-            cellValues.set(i, new BooleanTerm((Term<Boolean>) term));
+            if(term instanceof StringTerm){
+              cellValues.set(i, new BooleanTerm(((StringTerm) term).getTermValue()));
+            } else {
+              cellValues.set(i, new BooleanTerm((Term<Boolean>) term));
+            }
           } else if (dataType == Double.class) {
-            cellValues.set(i, new DoubleTerm((Term<Double>) term));
+            if(term instanceof StringTerm){
+              cellValues.set(i, new DoubleTerm(((StringTerm) term).getTermValue()));
+            } else {
+              cellValues.set(i, new DoubleTerm((Term<Double>) term));
+            }
           } else if (dataType == Float.class) {
-            cellValues.set(i, new FloatTerm((Term<Double>) term));
+            if(term instanceof StringTerm){
+              cellValues.set(i, new FloatTerm(((StringTerm) term).getTermValue()));
+            } else {
+              cellValues.set(i, new FloatTerm((Term<Double>) term));
+            }
           } else if (dataType == Integer.class) {
-            cellValues.set(i, new IntegerTerm((Term<Long>) term));
+            if(term instanceof StringTerm){
+              cellValues.set(i, new IntegerTerm(((StringTerm) term).getTermValue()));
+            } else {
+              cellValues.set(i, new IntegerTerm((Term<Long>) term));
+            }
           } else if (dataType == Long.class) {
-            cellValues.set(i, new LongTerm((Term<Long>) term));
+            if(term instanceof StringTerm){
+              cellValues.set(i, new LongTerm(((StringTerm) term).getTermValue()));
+            } else {
+              cellValues.set(i, new LongTerm((Term<Long>) term));
+            }
           } else {
             cellValues.set(i, new StringTerm((Term<String>) term));
           }
@@ -310,8 +330,9 @@ public class InsertIntoStatement extends MetaStatement {
     // INSERT INTO table VALUES (...) -> columns ids array is empty;
     if (ids.isEmpty()) {
       for (com.stratio.meta.common.metadata.structures.ColumnMetadata c: tableMetadata.getColumns()) {
-        if (!c.getColumnName().toLowerCase().startsWith("stratio"))
+        if (!c.getColumnName().toLowerCase().startsWith("stratio")){
           ids.add(c.getColumnName());
+        }
       }
     }
 

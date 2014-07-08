@@ -60,7 +60,6 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -411,14 +410,8 @@ public class Bridge {
   private JavaRDD<Cells> doGroupBy(JavaRDD<Cells> rdd, List<GroupBy> groupByClause,
       SelectionList selectionClause) {
 
-
-    System.out.println("TRACE: groupByClause = "+groupByClause);
-    System.out.println("TRACE: selectionClause = "+selectionClause);
-
     final List<String> aggregationCols =
         DeepUtils.retrieveSelectorAggegationFunctions(selectionClause.getSelection());
-
-    System.out.println("TRACE: aggregationCols = "+Arrays.toString(aggregationCols.toArray()));
 
     // Mapping the rdd to execute the group by clause
     JavaPairRDD<Cells, Cells> groupedRdd =
