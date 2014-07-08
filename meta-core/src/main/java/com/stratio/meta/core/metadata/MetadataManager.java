@@ -36,8 +36,8 @@ import com.stratio.streaming.commons.streams.StratioStream;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -182,7 +182,7 @@ public class MetadataManager {
 
     // Looking up the table among the Streams
     if(!found){
-      return convertStreamingToMeta(keyspace, tablename);
+      return getStreamingMetadata(keyspace, tablename);
     }
 
     return result;
@@ -275,7 +275,7 @@ public class MetadataManager {
     String[] streamName = stream.getStreamName().split("_");
     String tableName = streamName[1];
     String parentCatalog = streamName[0];
-    Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new HashSet<>();
+    Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new LinkedHashSet<>();
 
     try {
       for (ColumnNameTypeValue col : stratioStreamingAPI.columnsFromStream(stream.getStreamName())) {
@@ -380,7 +380,7 @@ public class MetadataManager {
     List<StratioStream> streamsList = null;
     try {
       streamsList = stratioStreamingAPI.listStreams();
-    } catch (StratioEngineStatusException | StratioAPIGenericException e) {
+    } catch (Exception e) {
       logger.error("Cannot retrieve stream list", e);
     }
 
@@ -421,7 +421,7 @@ public class MetadataManager {
           }
         }
       }
-    } catch (StratioEngineStatusException | StratioAPIGenericException e) {
+    } catch (Exception e) {
       logger.error("Error retrieving data from stream", e);
     }
 
@@ -451,12 +451,17 @@ public class MetadataManager {
     return null;
   }
 
-  public com.stratio.meta.common.metadata.structures.TableMetadata convertStreamingToMeta(
+  public com.stratio.meta.common.metadata.structures.TableMetadata getStreamingMetadata(
       String catalog, String tablename) {
-    Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new HashSet<>();
+    Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new LinkedHashSet<>();
     try {
-      for (ColumnNameTypeValue col: stratioStreamingAPI.columnsFromStream(catalog + "_"
-          + tablename)) {
+      List<ColumnNameTypeValue>
+          colsFromStream =
+          stratioStreamingAPI.columnsFromStream(catalog + "_" + tablename);
+      if(colsFromStream == null){
+        return null;
+      }
+      for (ColumnNameTypeValue col: colsFromStream) {
         ColumnType metaType = convertStreamingToMeta(col.getType());
         com.stratio.meta.common.metadata.structures.ColumnMetadata metaCol =
             new com.stratio.meta.common.metadata.structures.ColumnMetadata(tablename,

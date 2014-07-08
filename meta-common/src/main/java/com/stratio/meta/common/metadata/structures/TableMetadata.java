@@ -17,7 +17,7 @@
 package com.stratio.meta.common.metadata.structures;
 
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,7 +41,7 @@ public class TableMetadata implements Serializable {
   /**
    * Set of columns.
    */
-  private Set<ColumnMetadata> columns = new HashSet<>();
+  private Set<ColumnMetadata> columns = new LinkedHashSet<>();
 
   /**
    * Table partition key
@@ -87,7 +87,6 @@ public class TableMetadata implements Serializable {
     this.columns.addAll(columns);
   }
 
-
   /**
    * Class constructor.
    * 
@@ -130,13 +129,17 @@ public class TableMetadata implements Serializable {
 
   public ColumnMetadata getColumn(String colName) {
     ColumnMetadata foundCM = null;
-    for (ColumnMetadata cm : columns) {
+    for (ColumnMetadata cm: columns) {
       if (cm.getColumnName().equalsIgnoreCase(colName)) {
         foundCM = cm;
         break;
       }
     }
     return foundCM;
+  }
+
+  public TableType getType() {
+    return type;
   }
 
   public String exportAsString() {

@@ -18,6 +18,7 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.metadata.structures.TableType;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -108,7 +109,7 @@ public abstract class MetaStatement {
    * 
    * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
    *        required information.
-   * @param targetKeyspace The target keyspace where the query will be executed.
+   * @param effectiveKeyspace The target keyspace where the query will be executed.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   protected Result validateKeyspaceAndTable(MetadataManager metadata, String effectiveKeyspace,
@@ -132,11 +133,11 @@ public abstract class MetaStatement {
         com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata =
             metadata.getTableGenericMetadata(effectiveKeyspace, tableName);
         if (tableMetadata == null) {
-          if (!metadata.checkStream(effectiveKeyspace + "_" + tableName)) {
-            result =
-                Result.createValidationErrorResult("Table " + tableName + " does not exist in "
-                    + effectiveKeyspace + ".");
-          } else {
+          result =
+              Result.createValidationErrorResult("Table " + tableName + " does not exist in "
+                                                 + effectiveKeyspace + ".");
+        } else {
+          if(tableMetadata.getType() == TableType.EPHEMERAL){
             result = CommandResult.createCommandResult("streaming");
           }
         }

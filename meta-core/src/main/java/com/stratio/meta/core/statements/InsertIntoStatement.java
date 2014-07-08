@@ -20,6 +20,7 @@ import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.stratio.meta.common.metadata.structures.MetadataUtils;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -197,6 +198,18 @@ public class InsertIntoStatement extends MetaStatement {
     this(tableName, ids, null, cellValues, ifNotExists, false, null, 2);
   }
 
+  public String getTableName() {
+    return tableName;
+  }
+
+  public List<String> getIds() {
+    return ids;
+  }
+
+  public List<ValueCell<?>> getCellValues() {
+    return cellValues;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("INSERT INTO ");
@@ -263,15 +276,35 @@ public class InsertIntoStatement extends MetaStatement {
         if (dataType != parserClass) {
           LOG.debug("Converting from " + parserClass + " to " + dataType);
           if (dataType == Boolean.class) {
-            cellValues.set(i, new BooleanTerm((Term<Boolean>) term));
+            if(term instanceof StringTerm){
+              cellValues.set(i, new BooleanTerm(((StringTerm) term).getTermValue()));
+            } else {
+              cellValues.set(i, new BooleanTerm((Term<Boolean>) term));
+            }
           } else if (dataType == Double.class) {
-            cellValues.set(i, new DoubleTerm((Term<Double>) term));
+            if(term instanceof StringTerm){
+              cellValues.set(i, new DoubleTerm(((StringTerm) term).getTermValue()));
+            } else {
+              cellValues.set(i, new DoubleTerm((Term<Double>) term));
+            }
           } else if (dataType == Float.class) {
-            cellValues.set(i, new FloatTerm((Term<Double>) term));
+            if(term instanceof StringTerm){
+              cellValues.set(i, new FloatTerm(((StringTerm) term).getTermValue()));
+            } else {
+              cellValues.set(i, new FloatTerm((Term<Double>) term));
+            }
           } else if (dataType == Integer.class) {
-            cellValues.set(i, new IntegerTerm((Term<Long>) term));
+            if(term instanceof StringTerm){
+              cellValues.set(i, new IntegerTerm(((StringTerm) term).getTermValue()));
+            } else {
+              cellValues.set(i, new IntegerTerm((Term<Long>) term));
+            }
           } else if (dataType == Long.class) {
-            cellValues.set(i, new LongTerm((Term<Long>) term));
+            if(term instanceof StringTerm){
+              cellValues.set(i, new LongTerm(((StringTerm) term).getTermValue()));
+            } else {
+              cellValues.set(i, new LongTerm((Term<Long>) term));
+            }
           } else {
             cellValues.set(i, new StringTerm((Term<String>) term));
           }
@@ -297,8 +330,9 @@ public class InsertIntoStatement extends MetaStatement {
     // INSERT INTO table VALUES (...) -> columns ids array is empty;
     if (ids.isEmpty()) {
       for (com.stratio.meta.common.metadata.structures.ColumnMetadata c: tableMetadata.getColumns()) {
-        if (!c.getColumnName().toLowerCase().startsWith("stratio"))
+        if (!c.getColumnName().toLowerCase().startsWith("stratio")){
           ids.add(c.getColumnName());
+        }
       }
     }
 
@@ -329,6 +363,7 @@ public class InsertIntoStatement extends MetaStatement {
             cm = tableMetadata.getColumn(ids.get(index));
             if (cm != null) {
               Term<?> t = Term.class.cast(cellValues.get(index));
+              MetadataUtils.updateType(cm);
               if (!cm.getType().getDbClass().equals(t.getTermClass())) {
                 result =
                     Result.createValidationErrorResult("Column " + ids.get(index) + " of type "
@@ -407,7 +442,11 @@ public class InsertIntoStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree tree = new Tree();
-    tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+    if(streamMode){
+      tree.setNode(new MetaStep(MetaPath.STREAMING, this));
+    } else {
+      tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+    }
     return tree;
   }
 

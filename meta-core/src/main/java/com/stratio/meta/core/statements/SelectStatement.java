@@ -519,7 +519,7 @@ public class SelectStatement extends MetaStatement {
       // Cache Metadata manager and table metadata for the getDriverStatement.
       this.metadata = metadata;
       if (streamMode) {
-        streamingMetadata = metadata.convertStreamingToMeta(getEffectiveKeyspace(), tableName);
+        streamingMetadata = metadata.getStreamingMetadata(getEffectiveKeyspace(), tableName);
       } else {
         tableMetadataFrom = metadata.getTableMetadata(effectiveKs1, tableName);
       }
@@ -1934,7 +1934,7 @@ public class SelectStatement extends MetaStatement {
     }
 
     com.stratio.meta.common.metadata.structures.TableMetadata streamingTable =
-        metadata.convertStreamingToMeta(this.getEffectiveKeyspace(), tableName);
+        metadata.getStreamingMetadata(this.getEffectiveKeyspace(), tableName);
 
     // ADD FIELDS OF THE SELECT
     SelectionList selectionList = (SelectionList) this.selectionClause;

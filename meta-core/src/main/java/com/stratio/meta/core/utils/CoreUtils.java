@@ -16,6 +16,20 @@
 
 package com.stratio.meta.core.utils;
 
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.MetaResultSet;
+import com.stratio.meta.common.metadata.structures.ColumnType;
+import com.stratio.meta.core.metadata.AbstractMetadataHelper;
+import com.stratio.meta.core.metadata.CassandraMetadataHelper;
+import com.stratio.meta.core.structures.Term;
+
+import org.apache.log4j.Logger;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -23,20 +37,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.log4j.Logger;
-
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.stratio.meta.common.data.CassandraResultSet;
-import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.metadata.structures.ColumnType;
-import com.stratio.meta.core.metadata.AbstractMetadataHelper;
-import com.stratio.meta.core.metadata.CassandraMetadataHelper;
-import com.stratio.meta.core.structures.Term;
 
 public class CoreUtils {
 
@@ -116,7 +116,7 @@ public class CoreUtils {
    * @return An equivalent Meta ResultSet
    */
   public com.stratio.meta.common.data.ResultSet transformToMetaResultSet(ResultSet resultSet) {
-    CassandraResultSet crs = new CassandraResultSet();
+    MetaResultSet crs = new MetaResultSet();
 
     AbstractMetadataHelper helper = new CassandraMetadataHelper();
 
@@ -154,7 +154,7 @@ public class CoreUtils {
       }
     } catch (InvocationTargetException | IllegalAccessException e) {
       LOG.error("Cannot transform result set", e);
-      crs = new CassandraResultSet();
+      crs = new MetaResultSet();
     }
     return crs;
   }

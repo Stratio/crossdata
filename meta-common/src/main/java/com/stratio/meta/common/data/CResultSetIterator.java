@@ -27,7 +27,7 @@ public class CResultSetIterator implements Iterator<com.stratio.meta.common.data
     /**
      * Set representing a result from Cassandra.
      */
-    private final CassandraResultSet cResultSet;
+    private final MetaResultSet cResultSet;
 
     /**
      * Pointer to the current element.
@@ -35,10 +35,10 @@ public class CResultSetIterator implements Iterator<com.stratio.meta.common.data
     private int current;
 
     /**
-     * Build a {@link com.stratio.meta.common.data.CResultSetIterator} from a {@link com.stratio.meta.common.data.CassandraResultSet}.
+     * Build a {@link com.stratio.meta.common.data.CResultSetIterator} from a {@link com.stratio.meta.common.data.MetaResultSet}.
      * @param cResultSet Cassandra Result Set.
      */
-    public CResultSetIterator(CassandraResultSet cResultSet) {
+    public CResultSetIterator(MetaResultSet cResultSet) {
         this.cResultSet = cResultSet;
         this.current = 0;
     }

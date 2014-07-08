@@ -16,21 +16,12 @@
 
 package com.stratio.meta.streaming;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.actor.ActorResultListener;
-import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.MetaResultSet;
+import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnType;
@@ -38,8 +29,11 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta.core.statements.InsertIntoStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.Term;
+import com.stratio.meta.core.structures.ValueCell;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.exceptions.StratioAPIGenericException;
@@ -49,6 +43,18 @@ import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
+import com.stratio.streaming.messaging.ColumnNameValue;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -236,7 +242,7 @@ public class MetaStream {
 
   private static void sendPartialResultsToClient(List<Object> data,
       ActorResultListener callBackActor, String queryId, String ks) {
-    CassandraResultSet crs = new CassandraResultSet();
+    MetaResultSet crs = new MetaResultSet();
 
     List<com.stratio.meta.common.metadata.structures.ColumnMetadata> columnList = new ArrayList<>();
 
@@ -272,7 +278,7 @@ public class MetaStream {
       ActorResultListener callBackActor, String queryId, String ks) {
     JavaRDD<Cells> rdd = convertJsonToDeep(data, dsc);
 
-    CassandraResultSet crs = new CassandraResultSet();
+    MetaResultSet crs = new MetaResultSet();
     crs.add(new Row("RDD", new Cell(rdd)));
 
     List<ColumnMetadata> columns = new ArrayList<>();
@@ -349,7 +355,7 @@ public class MetaStream {
           }
         }
       }
-      CassandraResultSet resultSet = new CassandraResultSet();
+      MetaResultSet resultSet = new MetaResultSet();
       resultSet.setRows(rows);
       List<ColumnMetadata> columns = new ArrayList<>();
       columns.add(new ColumnMetadata("streaming", "QID", ColumnType.TEXT));
@@ -364,4 +370,24 @@ public class MetaStream {
     return result;
   }
 
+  public static Result insertData(InsertIntoStatement stmt, IStratioStreamingAPI stratioStreamingAPI) {
+    try {
+      ResultSet resultSet = new MetaResultSet("Data inserted");
+      ArrayList<ColumnNameValue> data = new ArrayList<>();
+      Iterator<ValueCell<?>> valuesIter = stmt.getCellValues().iterator();
+
+      for(String col: stmt.getIds()){
+        Term term = (Term) valuesIter.next();
+        ColumnNameValue colNameValue = new ColumnNameValue(col, term.getTermValue());
+        data.add(colNameValue);
+      }
+
+      stratioStreamingAPI.insertData(stmt.getEffectiveKeyspace()+"_"+stmt.getTableName(), data);
+
+      return QueryResult.createSuccessQueryResult(resultSet, stmt.getEffectiveKeyspace());
+    } catch (Exception e) {
+      LOG.error(e);
+      return Result.createExecutionErrorResult(e.getMessage());
+    }
+  }
 }
