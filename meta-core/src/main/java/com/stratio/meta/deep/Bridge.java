@@ -231,7 +231,7 @@ public class Bridge {
     CassandraResultSet resultSet =
         (CassandraResultSet) returnResult(result, true, false, selectedCols);
 
-    return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet, new ArrayList<String>());
+    return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
   }
 
   private ResultSet replaceWithAliases(Map<String, String> fieldsAliasesMap,
