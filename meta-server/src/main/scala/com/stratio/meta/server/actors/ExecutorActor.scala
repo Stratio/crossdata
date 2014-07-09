@@ -41,7 +41,7 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker with Actor
   var senderMap : java.util.Map[String, ActorRef] = new java.util.HashMap[String, ActorRef]()
 
   val log =Logger.getLogger(classOf[ExecutorActor])
-  override val timerName: String = this.getClass.getName
+  override lazy val timerName: String = this.getClass.getName
 
   override def receive: Receive = {
     case query:MetaQuery if query.getPlan.involvesStreaming() =>
