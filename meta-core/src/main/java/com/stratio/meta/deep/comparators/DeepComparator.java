@@ -1,14 +1,14 @@
 package com.stratio.meta.deep.comparators;
 
 
+import com.stratio.deep.entity.Cells;
+import com.stratio.meta.core.structures.OrderDirection;
+import com.stratio.meta.core.structures.Ordering;
+
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-
-import com.stratio.deep.entity.Cells;
-import com.stratio.meta.core.structures.OrderDirection;
-import com.stratio.meta.core.structures.Ordering;
 
 public class DeepComparator implements Comparator<Cells>, Serializable {
 
@@ -55,7 +55,7 @@ public class DeepComparator implements Comparator<Cells>, Serializable {
   /**
    * Change result depending on ORDER BY direction.
    * 
-   * @param result Result of comparison.
+   * @param input Result of comparison.
    * @param ordering current {@link com.stratio.meta.core.structures.Ordering}.
    * @return same result or contrary depending on direction.
    */

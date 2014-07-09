@@ -477,7 +477,7 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
 
-    logger.debug("TRACE: Validating = " + this.toString());
+    logger.debug("Validating = " + this.toString());
     // Validate FROM keyspace
     Result result = validateKeyspaceAndTable(metadata, this.getEffectiveKeyspace(), tableName);
 
@@ -1824,7 +1824,14 @@ public class SelectStatement extends MetaStatement {
     if(orderInc){
       List<Ordering> newOrderings = new ArrayList<>();
       for(Ordering ordering: order){
-        newOrderings.add(new Ordering(ordering.getSelectorIdentifier().getField(), ordering.isDirInc(), ordering.getOrderDir()));
+        String field = ordering.getSelectorIdentifier().getField();
+        String tableOrigin = ordering.getSelectorIdentifier().getTable();
+        newOrderings.add(new Ordering(tableOrigin, field, ordering.isDirInc(), ordering.getOrderDir()));
+        if(tableOrigin.equalsIgnoreCase(firstSelect.getTableName())){
+          firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(tableOrigin, field)));
+        } else {
+          secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(tableOrigin, field)));
+        }
       }
       joinSelect.setOrder(newOrderings);
     }

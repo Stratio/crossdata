@@ -245,10 +245,10 @@ public class MetadataManager {
   public List<com.stratio.meta.common.metadata.structures.TableMetadata> getEphemeralTables(
       String catalog) {
     List<com.stratio.meta.common.metadata.structures.TableMetadata> result = new ArrayList<>();
-    // Retreive ephemeral tables.
+    // Retrieve ephemeral tables.
     if (stratioStreamingAPI != null) {
       List<StratioStream> ephemeralTables = getEphemeralTables();
-      for (StratioStream stream : ephemeralTables) {
+      for (StratioStream stream: ephemeralTables) {
         if (stream.getStreamName().startsWith(catalog + "_")) {
           result.add(toTableMetadata(stream));
         }
@@ -276,14 +276,14 @@ public class MetadataManager {
     Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new LinkedHashSet<>();
 
     try {
-      for (ColumnNameTypeValue col: stratioStreamingAPI.columnsFromStream(stream.getStreamName())) {
+      for (ColumnNameTypeValue col: stream.getColumns()) {
         ColumnType metaType = convertStreamingToMeta(col.getType());
         com.stratio.meta.common.metadata.structures.ColumnMetadata metaCol =
             new com.stratio.meta.common.metadata.structures.ColumnMetadata(tableName,
                 col.getColumn(), metaType);
         columns.add(metaCol);
       }
-    } catch (StratioEngineOperationException e) {
+    } catch (Exception e) {
       logger.error("Cannot retrieve streaming columns for " + stream.getStreamName(), e);
       error = true;
     }
