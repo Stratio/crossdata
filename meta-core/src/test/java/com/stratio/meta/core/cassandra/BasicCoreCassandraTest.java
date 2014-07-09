@@ -16,19 +16,6 @@
 
 package com.stratio.meta.core.cassandra;
 
-import static org.testng.Assert.assertTrue;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.ResultSet;
@@ -38,6 +25,22 @@ import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.test.CCMHandler;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.api.StratioStreamingAPIFactory;
+import com.stratio.streaming.commons.exceptions.StratioEngineConnectionException;
+
+import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.testng.Assert.assertTrue;
 
 
 public class BasicCoreCassandraTest {
@@ -57,6 +60,8 @@ public class BasicCoreCassandraTest {
    */
   protected static Session _session = null;
 
+  protected static IStratioStreamingAPI stratioStreamingAPI = null;
+
   /**
    * Class logger.
    */
@@ -67,6 +72,13 @@ public class BasicCoreCassandraTest {
     CCMHandler.startCCM();
     initCassandraConnection();
     dropKeyspaceIfExists("testKS");
+    try {
+      stratioStreamingAPI =
+          StratioStreamingAPIFactory.create()
+              .initializeWithServerConfig("127.0.0.1", 9092, "127.0.0.1", 2181);
+    } catch (StratioEngineConnectionException e) {
+      e.printStackTrace();
+    }
   }
 
   @AfterClass

@@ -147,7 +147,7 @@ public abstract class MetaStatement {
   }
 
   public String getEffectiveKeyspace() {
-    return keyspaceInc ? keyspace : sessionKeyspace;
+    return keyspaceInc? keyspace: sessionKeyspace;
   }
 
   public void setKeyspace(String keyspace) {

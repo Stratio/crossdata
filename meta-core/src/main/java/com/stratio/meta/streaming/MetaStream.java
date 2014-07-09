@@ -36,10 +36,6 @@ import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.ValueCell;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.streaming.commons.exceptions.StratioAPIGenericException;
-import com.stratio.streaming.commons.exceptions.StratioAPISecurityException;
-import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
-import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
@@ -116,8 +112,7 @@ public class MetaStream {
       stratioStreamingAPI.createStream(tableName, columnList);
       // Listen so it is created.
       stratioStreamingAPI.listenStream(tableName);
-    } catch (StratioEngineStatusException | StratioAPISecurityException
-        | StratioEngineOperationException e) {
+    } catch (Exception e) {
       result =
           Result.createExecutionErrorResult(tableName + " couldn't be created"
               + System.lineSeparator() + e.getMessage());
@@ -140,8 +135,7 @@ public class MetaStream {
         CommandResult.createCommandResult("Ephemeral table " + tableName + " has been deleted.");
     try {
       stratioStreamingAPI.dropStream(tableName);
-    } catch (StratioEngineStatusException | StratioAPISecurityException
-        | StratioEngineOperationException e) {
+    } catch (Exception e) {
       result =
           Result.createExecutionErrorResult(tableName + " cannot be deleted"
               + System.lineSeparator() + e.getMessage());
@@ -164,7 +158,7 @@ public class MetaStream {
         callbackActors.remove(queryId);
         resultPages.remove(queryId);
         queryStatements.remove(queryId);
-      } catch (StratioEngineStatusException | StratioEngineOperationException e) {
+      } catch (Exception e) {
         result =
             Result.createExecutionErrorResult("Cannot remove streaming query " + queryId
                 + System.lineSeparator() + e.getMessage());
@@ -192,6 +186,9 @@ public class MetaStream {
 
       // Create topic
       String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
+
+      LOG.debug("Siddhi Query = " + query);
+
       String streamingQueryId = stratioStreamingAPI.addQuery(streamName, query);
       streamingQueries.put(queryId, streamingQueryId);
       resultPages.put(queryId, 0);
@@ -220,8 +217,7 @@ public class MetaStream {
       // StreamingUtils.insertRandomData(stratioStreamingAPI, streamName, 6000, 4, 4);
 
       return "Streaming QID: " + queryId + " finished";
-    } catch (StratioEngineStatusException | StratioAPISecurityException
-        | StratioEngineOperationException e) {
+    } catch (Exception e) {
       LOG.error(e);
       return "ERROR: " + e.getMessage();
     }
@@ -253,9 +249,9 @@ public class MetaStream {
       List<Map<String, String>> row = (List<Map<String, String>>) obj;
       for (Object columnObj : row) {
         Map<String, String> column = (Map<String, String>) columnObj;
-        String colName = (String) column.get("column");
+        String colName = column.get("column");
         Object value = column.get("value");
-        String colType = (String) column.get("type");
+        String colType = column.get("type");
         newRow.addCell(colName, new Cell(value));
         if(generateMetadata){
           columnList.add(new ColumnMetadata("", colName, StreamingUtils.streamingToMetaType(colType)));
@@ -303,7 +299,7 @@ public class MetaStream {
       List<Map<String, String>> row = (List<Map<String, String>>) obj;
       for (Object columnObj : row) {
         Map<String, String> column = (Map<String, String>) columnObj;
-        String colName = (String) column.get("column");
+        String colName = column.get("column");
         Object value = column.get("value");
 
         com.stratio.deep.entity.Cell newCell = com.stratio.deep.entity.Cell.create(colName, value);
@@ -364,7 +360,7 @@ public class MetaStream {
       columns.add(new ColumnMetadata("streaming", "Query", ColumnType.TEXT));
       resultSet.setColumnMetadata(columns);
       result = QueryResult.createQueryResult(resultSet);
-    } catch (StratioEngineStatusException | StratioAPIGenericException e) {
+    } catch (Exception e) {
       LOG.error("Cannot list streaming queries", e);
     }
     return result;

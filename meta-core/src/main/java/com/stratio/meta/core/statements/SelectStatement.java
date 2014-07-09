@@ -681,7 +681,11 @@ public class SelectStatement extends MetaStatement {
         genericMetadata =
         metadata.getTableGenericMetadata(getEffectiveKeyspace(), targetTable);
 
-    com.stratio.meta.common.metadata.structures.ColumnMetadata cm = genericMetadata.getColumn(column);
+    com.stratio.meta.common.metadata.structures.ColumnMetadata cm = null;
+
+    if(genericMetadata != null){
+      cm = genericMetadata.getColumn(column);
+    }
 
     if (cm != null) {
       Iterator<Term<?>> termsIt = terms.iterator();
@@ -752,8 +756,8 @@ public class SelectStatement extends MetaStatement {
     while (!result.hasError() && relations.hasNext()) {
       Relation relation = relations.next();
 
-      logger.debug("TRACE: Relation = " + relation.toString());
-      logger.debug("TRACE: relation.getIdentifiers().get(0).getTable = "
+      logger.debug("Relation = " + relation.toString());
+      logger.debug("relation.getIdentifiers().get(0).getTable = "
           + relation.getIdentifiers().get(0).getTable());
 
       if (tableMetadata.getName().equalsIgnoreCase(relation.getIdentifiers().get(0).getTable())
@@ -803,8 +807,8 @@ public class SelectStatement extends MetaStatement {
     while (!result.hasError() && relations.hasNext()) {
       Relation relation = relations.next();
 
-      logger.debug("TRACE: Relation = " + relation.toString());
-      logger.debug("TRACE: relation.getIdentifiers().get(0).getTable = "
+      logger.debug("Relation = " + relation.toString());
+      logger.debug("relation.getIdentifiers().get(0).getTable = "
                    + relation.getIdentifiers().get(0).getTable());
 
       if (streamingMetadata.getTableName().equalsIgnoreCase(relation.getIdentifiers().get(0).getTable())
@@ -1265,11 +1269,6 @@ public class SelectStatement extends MetaStatement {
       while(whereIter.hasNext()){
         Relation rel = whereIter.next();
 
-        System.out.println("TRACE: rel = " + rel.toString());
-        System.out.println("TRACE: rel.Id = " + rel.getIdentifiers().get(0).getField());
-        System.out.println("TRACE: rel.operator = " + rel.getOperator());
-        System.out.println("TRACE: rel.term = " + rel.getTerms().get(0).toString());
-
         querySb.append(rel.getIdentifiers().get(0).getField())
                .append(" ")
                .append(rel.getSiddhiOperator())
@@ -1287,8 +1286,6 @@ public class SelectStatement extends MetaStatement {
       }
       querySb.append("]");
     }
-
-    System.out.println("TRACE: querySb = " +querySb.toString());
 
     if (windowInc) {
       querySb.append("#window.timeBatch( ").append(getWindow().toString().toLowerCase())
@@ -1322,8 +1319,6 @@ public class SelectStatement extends MetaStatement {
     String idsStr = Arrays.toString(ids.toArray()).replace("[", "").replace("]", "");
     querySb.append(" select ").append(idsStr).append(" insert into ");
     querySb.append(outgoing);
-
-    System.out.println("TRACE: querySb = " +querySb.toString());
 
     return querySb.toString();
   }

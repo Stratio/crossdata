@@ -99,7 +99,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
     EngineConfig config = initConfig();
     deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
-    metadataManager = new MetadataManager(_session, null);
+    metadataManager = new MetadataManager(_session, stratioStreamingAPI);
     metadataManager.loadMetadata();
     executor = new Executor(_session, null, deepContext, metadataManager, config);
   }

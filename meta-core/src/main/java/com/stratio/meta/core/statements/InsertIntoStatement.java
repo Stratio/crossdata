@@ -337,7 +337,7 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     // Validate target column names
-    for (String c : ids) {
+    for (String c: ids) {
       if (c.toLowerCase().startsWith("stratio")) {
         result =
             Result.createValidationErrorResult("Cannot insert data into column " + c

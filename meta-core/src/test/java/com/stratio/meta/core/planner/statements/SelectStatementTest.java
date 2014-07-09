@@ -16,12 +16,6 @@
 
 package com.stratio.meta.core.planner.statements;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.testng.annotations.Test;
-
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.GroupBy;
@@ -42,6 +36,12 @@ import com.stratio.meta.core.structures.SelectorGroupBy;
 import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.StringTerm;
 import com.stratio.meta.core.structures.Term;
+
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class SelectStatementTest extends BasicPlannerTest {
 
@@ -142,8 +142,8 @@ public class SelectStatementTest extends BasicPlannerTest {
     stmt = new SelectStatement(selClause, "demo.users");
     InnerJoin join = new InnerJoin("demo.users_info", "users.name", "users_info.link_name");
     ((SelectStatement) stmt).setJoin(join);
-    ((SelectStatement) stmt).setSessionKeyspace("demo");
-    ((SelectStatement) stmt).validate(_metadataManager, null);
+    stmt.setSessionKeyspace("demo");
+    stmt.validate(_metadataManager, null);
 
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare("users.name", "=", new StringTerm("name_3"));

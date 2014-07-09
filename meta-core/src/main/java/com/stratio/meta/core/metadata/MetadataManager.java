@@ -26,9 +26,7 @@ import com.stratio.meta.common.metadata.structures.TableType;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.streaming.StreamingUtils;
 import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.streaming.commons.exceptions.StratioAPIGenericException;
 import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
-import com.stratio.streaming.commons.exceptions.StratioEngineStatusException;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
@@ -182,7 +180,7 @@ public class MetadataManager {
 
     // Looking up the table among the Streams
     if(!found){
-      return getStreamingMetadata(keyspace, tablename);
+      result = getStreamingMetadata(keyspace, tablename);
     }
 
     return result;
@@ -278,7 +276,7 @@ public class MetadataManager {
     Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new LinkedHashSet<>();
 
     try {
-      for (ColumnNameTypeValue col : stratioStreamingAPI.columnsFromStream(stream.getStreamName())) {
+      for (ColumnNameTypeValue col: stratioStreamingAPI.columnsFromStream(stream.getStreamName())) {
         ColumnType metaType = convertStreamingToMeta(col.getType());
         com.stratio.meta.common.metadata.structures.ColumnMetadata metaCol =
             new com.stratio.meta.common.metadata.structures.ColumnMetadata(tableName,
@@ -360,7 +358,7 @@ public class MetadataManager {
     if (stratioStreamingAPI != null) {
       List<StratioStream> streams = getEphemeralTables();
       if (streams != null && streams.size() > 0) {
-        for (StratioStream stream : streams) {
+        for (StratioStream stream: streams) {
           if (stream.getStreamName().equalsIgnoreCase(ephemeralTableName)) {
             return true;
           }
@@ -395,7 +393,7 @@ public class MetadataManager {
     List<ColumnNameTypeValue> cols;
     try {
       cols = stratioStreamingAPI.columnsFromStream(ephemeralTableName);
-      for (ColumnNameTypeValue ctp : cols) {
+      for (ColumnNameTypeValue ctp: cols) {
         colNames.add(ctp.getColumn().toLowerCase());
       }
     } catch (StratioEngineOperationException e) {
@@ -412,7 +410,7 @@ public class MetadataManager {
     List<StratioStream> streamsList;
     try {
       streamsList = stratioStreamingAPI.listStreams();
-      for (StratioStream stream : streamsList) {
+      for (StratioStream stream: streamsList) {
         if (stream.getQueries().size() > 0) {
           for (StreamQuery query : stream.getQueries()) {
             if (s.contentEquals(query.getQueryId())) {
@@ -442,15 +440,6 @@ public class MetadataManager {
     return null;
   }
 
-  public List<ColumnNameTypeValue> getStreamingColumns(String ephemeralTable) {
-    try {
-      return stratioStreamingAPI.columnsFromStream(ephemeralTable);
-    } catch (StratioEngineOperationException e) {
-      logger.error("Error retrieving data from stream", e);
-    }
-    return null;
-  }
-
   public com.stratio.meta.common.metadata.structures.TableMetadata getStreamingMetadata(
       String catalog, String tablename) {
     Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new LinkedHashSet<>();
@@ -468,7 +457,7 @@ public class MetadataManager {
                 col.getColumn(), metaType);
         columns.add(metaCol);
       }
-    } catch (StratioEngineOperationException e) {
+    } catch (Exception e) {
       logger.error("Cannot convert Streaming metadata to meta", e);
       return null;
     }

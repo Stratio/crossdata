@@ -122,7 +122,6 @@ public abstract class Relation {
     }
   }
 
-
   public void updateTermClass(
       com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata) {
     for (int i = 0; i < terms.size(); i++) {
