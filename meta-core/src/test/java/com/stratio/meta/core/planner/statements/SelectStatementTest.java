@@ -123,8 +123,8 @@ public class SelectStatementTest extends BasicPlannerTest {
     stmt = new SelectStatement(selClause, "demo.users");
     InnerJoin join = new InnerJoin("demo.users_info", "users.name", "users_info.link_name");
     ((SelectStatement) stmt).setJoin(join);
-    ((SelectStatement) stmt).setSessionKeyspace("demo");
-    ((SelectStatement) stmt).validate(_metadataManager, null);
+    stmt.setSessionKeyspace("demo");
+    stmt.validate(_metadataManager, null);
     validateDeepPath("testSimpleJoin");
 
   }

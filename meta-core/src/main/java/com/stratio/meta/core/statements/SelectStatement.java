@@ -877,7 +877,7 @@ public class SelectStatement extends MetaStatement {
 
     Result result = QueryResult.createSuccessQueryResult();
 
-    for (Ordering orderField : order) {
+    for (Ordering orderField: order) {
 
       String field = orderField.getSelectorIdentifier().toString();
 
@@ -1812,12 +1812,21 @@ public class SelectStatement extends MetaStatement {
       }
     }
 
-    // ADD GROUP BY CLAUSE IF ANY
+    // ADD GROUP BY CLAUSES IF ANY
     if (groupInc) {
       GroupBy param = group.get(0);
       String groupTable = param.getSelectorIdentifier().getTable();
       GroupBy newGroupBy = new GroupBy(groupTable + "." + param.getSelectorIdentifier().getField());
       joinSelect.setGroup(newGroupBy);
+    }
+
+    // ADD ORDER BY CLAUSES IF ANY
+    if(orderInc){
+      List<Ordering> newOrderings = new ArrayList<>();
+      for(Ordering ordering: order){
+        newOrderings.add(new Ordering(ordering.getSelectorIdentifier().getField(), ordering.isDirInc(), ordering.getOrderDir()));
+      }
+      joinSelect.setOrder(newOrderings);
     }
 
     // ADD SELECTED COLUMNS TO THE JOIN STATEMENT

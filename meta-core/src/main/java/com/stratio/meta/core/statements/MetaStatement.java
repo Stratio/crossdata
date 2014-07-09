@@ -114,6 +114,9 @@ public abstract class MetaStatement {
    */
   protected Result validateKeyspaceAndTable(MetadataManager metadata, String effectiveKeyspace,
       String tableName) {
+
+    long start = System.currentTimeMillis();
+
     Result result = QueryResult.createSuccessQueryResult();
     // Get the effective keyspace based on the user specification during the create
     // sentence, or taking the keyspace in use in the user session.
@@ -124,7 +127,13 @@ public abstract class MetaStatement {
           Result
               .createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
     } else {
+
+      System.out.println("TRACE: 1");
+
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+
+      System.out.println("TRACE: 2");
+
       if (ksMetadata == null) {
         result =
             Result
@@ -132,6 +141,9 @@ public abstract class MetaStatement {
       } else {
         com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata =
             metadata.getTableGenericMetadata(effectiveKeyspace, tableName);
+
+        System.out.println("TRACE: 3");
+
         if (tableMetadata == null) {
           result =
               Result.createValidationErrorResult("Table " + tableName + " does not exist in "
@@ -143,6 +155,9 @@ public abstract class MetaStatement {
         }
       }
     }
+
+    System.out.println("TRACE: validateKeyspaceAndTable time = "+ ( (float) (System.currentTimeMillis() - start)/1000) +" secs");
+
     return result;
   }
 
