@@ -65,13 +65,13 @@ public class Parser {
             } else if(foundErrors.getAntlrErrors().iterator().next().getMessage().contains("missing")){
                 metaQuery.setErrorMessage(ErrorType.PARSING, e.getMessage());
             } else {
-                metaQuery.setErrorMessage(ErrorType.PARSING, foundErrors.toString(inputText, null));
+                metaQuery.setErrorMessage(ErrorType.PARSING, foundErrors.toString(inputText));
             }
             return metaQuery;
         }
         metaQuery.setStatement(resultStatement);
         if((foundErrors!=null) && (!foundErrors.isEmpty())){
-            String foundErrorsStr = foundErrors.toString(inputText, resultStatement);
+            String foundErrorsStr = foundErrors.toString(inputText);
             metaQuery.setErrorMessage(ErrorType.PARSING, foundErrorsStr);
         }
         return metaQuery;                 
