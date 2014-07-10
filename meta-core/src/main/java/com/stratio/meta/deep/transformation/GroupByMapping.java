@@ -23,10 +23,9 @@ import org.apache.spark.api.java.function.PairFunction;
 
 import scala.Tuple2;
 
-import com.stratio.deep.entity.Cell;
+import com.stratio.deep.entity.CassandraCell;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.core.structures.GroupBy;
-
 
 public class GroupByMapping implements PairFunction<Cells, Cells, Cells> {
 
@@ -52,18 +51,16 @@ public class GroupByMapping implements PairFunction<Cells, Cells, Cells> {
     // Copying aggregation columns to not apply the function over the original data
     for (String aggCol : aggregationCols) {
       if ("count(*)".equalsIgnoreCase(aggCol)) {
-        cellsExtended.add(com.stratio.deep.entity.Cell.create(aggCol, new BigInteger("1")));
+        cellsExtended.add(CassandraCell.create(aggCol, new BigInteger("1")));
       } else if (aggCol.toLowerCase().startsWith("avg(")) {
         String fieldName = aggCol.substring(aggCol.indexOf("(") + 1, aggCol.indexOf(")"));
         com.stratio.deep.entity.Cell cellToCopy = cells.getCellByName(fieldName);
-        cellsExtended.add(com.stratio.deep.entity.Cell.create(aggCol + "_count",
-            new BigInteger("1")));
-        cellsExtended.add(com.stratio.deep.entity.Cell.create(aggCol + "_sum",
-            cellToCopy.getCellValue()));
+        cellsExtended.add(CassandraCell.create(aggCol + "_count", new BigInteger("1")));
+        cellsExtended.add(CassandraCell.create(aggCol + "_sum", cellToCopy.getCellValue()));
       } else {
         String fieldName = aggCol.substring(aggCol.indexOf("(") + 1, aggCol.indexOf(")"));
         com.stratio.deep.entity.Cell cellToCopy = cells.getCellByName(fieldName);
-        cellsExtended.add(com.stratio.deep.entity.Cell.create(aggCol, cellToCopy.getCellValue()));
+        cellsExtended.add(CassandraCell.create(aggCol, cellToCopy.getCellValue()));
       }
     }
 
@@ -74,7 +71,7 @@ public class GroupByMapping implements PairFunction<Cells, Cells, Cells> {
         grouppingKeys.add(cells.getCellByName(fieldParts[fieldParts.length - 1]));
       }
     } else {
-      grouppingKeys.add(Cell.create("_", "_"));
+      grouppingKeys.add(CassandraCell.create("_", "_"));
     }
 
     return new Tuple2<>(grouppingKeys, cellsExtended);

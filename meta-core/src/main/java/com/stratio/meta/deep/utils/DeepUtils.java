@@ -16,6 +16,13 @@
 
 package com.stratio.meta.deep.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaRDD;
+
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.MetaResultSet;
@@ -35,14 +42,7 @@ import com.stratio.meta.core.structures.SelectionSelectors;
 import com.stratio.meta.core.structures.SelectorGroupBy;
 import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.SelectorMeta;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaRDD;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import com.stratio.meta.deep.transfer.ColumnInfo;
 
 public final class DeepUtils {
 
@@ -65,7 +65,7 @@ public final class DeepUtils {
    * @param selectedCols List of fields selected in the SelectStatement.
    * @return ResultSet
    */
-  public static ResultSet buildResultSet(List<Cells> cells, List<String> selectedCols) {
+  public static ResultSet buildResultSet(List<Cells> cells, List<ColumnInfo> selectedCols) {
     MetaResultSet rs = new MetaResultSet();
 
     rs.setColumnMetadata(retrieveColumnMetadata(cells, selectedCols));
@@ -87,16 +87,16 @@ public final class DeepUtils {
           rs.add(metaRow);
         }
       } else {
-        List<Integer> fieldPositions = retrieveFieldsPositionsList(cells.get(0), selectedCols);
-        
         for (Cells deepRow : cells) {
           Row metaRow = new Row();
-          for (int fieldPosition : fieldPositions) {
-            com.stratio.deep.entity.Cell deepCell = deepRow.getCellByIdx(fieldPosition);
+          for (ColumnInfo selectedCol : selectedCols) {
+            com.stratio.deep.entity.Cell deepCell =
+                deepRow.getCellByName(selectedCol.getTable(), selectedCol.getColumnName());
 
             Cell metaCell = new Cell(deepCell.getCellValue());
             metaRow.addCell(deepCell.getCellName(), metaCell);
           }
+
           rs.add(metaRow);
         }
       }
@@ -116,7 +116,7 @@ public final class DeepUtils {
   }
 
   private static List<ColumnMetadata> retrieveColumnMetadata(List<Cells> cells,
-      List<String> selectedCols) {
+      List<ColumnInfo> selectedCols) {
 
     // CellValidator
     AbstractMetadataHelper helper = new CassandraMetadataHelper();
@@ -139,51 +139,28 @@ public final class DeepUtils {
 
       } else {
         Cells firstRowCells = cells.get(0);
-        for (String selectedCol : selectedCols) {
-          ColumnMetadata columnMetadata = new ColumnMetadata("deep", selectedCol);
-          if (selectedCol.equalsIgnoreCase("COUNT(*)")) {
-            columnMetadata.setType(ColumnType.BIGINT);
-          } else {
-            com.stratio.deep.entity.Cell cell = firstRowCells.getCellByName(selectedCol);
+        for (ColumnInfo selectedCol : selectedCols) {
+          ColumnMetadata columnMetadata =
+              new ColumnMetadata(selectedCol.getTable(), selectedCol.getColumnName());
+          com.stratio.deep.entity.Cell cell =
+              firstRowCells.getCellByName(selectedCol.getTable(), selectedCol.getColumnName());
 
-            ColumnType type = helper.toColumnType(cell);
-            columnMetadata.setType(type);
-          }
+          ColumnType type = helper.toColumnType(cell);
+          columnMetadata.setType(type);
+
           columnList.add(columnMetadata);
         }
       }
     } else {
-      for (String selectedCol : selectedCols) {
-        ColumnMetadata columnMetadata = new ColumnMetadata("deep", selectedCol);
+      for (ColumnInfo selectedCol : selectedCols) {
+        ColumnMetadata columnMetadata =
+            new ColumnMetadata(selectedCol.getTable(), selectedCol.getColumnName());
         columnMetadata.setType(ColumnType.VARCHAR);
         columnList.add(columnMetadata);
       }
     }
 
     return columnList;
-  }
-
-  private static List<Integer> retrieveFieldsPositionsList(Cells firstRow, List<String> selectedCols) {
-
-    List<Integer> fieldPositions = new ArrayList<>();
-    for (String selectCol : selectedCols) {
-      Integer position = 0;
-      boolean fieldFound = false;
-
-      Iterator<com.stratio.deep.entity.Cell> cellsIt = firstRow.getCells().iterator();
-      while (!fieldFound && cellsIt.hasNext()) {
-        com.stratio.deep.entity.Cell cell = cellsIt.next();
-
-        if (cell.getCellName().equalsIgnoreCase(selectCol)) {
-          fieldPositions.add(position);
-          fieldFound = true;
-        }
-
-        position++;
-      }
-    }
-
-    return fieldPositions;
   }
 
   /**
@@ -297,21 +274,22 @@ public final class DeepUtils {
    * @param selection Selection
    * @return List of fields in selection clause or null if all fields has been selected
    */
-  public static List<String> retrieveSelectors(Selection selection) {
+  public static List<ColumnInfo> retrieveSelectors(Selection selection) {
 
     // Retrieve aggretation function column names
-    List<String> columnsSet = new ArrayList<>();
+    List<ColumnInfo> columnsSet = new ArrayList<>();
     if (selection instanceof SelectionSelectors) {
       SelectionSelectors sSelectors = (SelectionSelectors) selection;
       for (int i = 0; i < sSelectors.getSelectors().size(); ++i) {
         SelectorMeta selectorMeta = sSelectors.getSelectors().get(i).getSelector();
         if (selectorMeta instanceof SelectorIdentifier) {
           SelectorIdentifier selId = (SelectorIdentifier) selectorMeta;
-          columnsSet.add(selId.getField());
+          columnsSet.add(new ColumnInfo(selId.getTable(), selId.getField()));
         } else if (selectorMeta instanceof SelectorGroupBy) {
           SelectorGroupBy selGroup = (SelectorGroupBy) selectorMeta;
-          columnsSet.add(selGroup.getGbFunction().name() + "("
-              + ((SelectorIdentifier) selGroup.getParam()).getField() + ")");
+          SelectorIdentifier selId = (SelectorIdentifier) selGroup.getParam();
+          columnsSet.add(new ColumnInfo(selId.getTable(), selId.getField(), selGroup
+              .getGbFunction()));
         }
       }
     }

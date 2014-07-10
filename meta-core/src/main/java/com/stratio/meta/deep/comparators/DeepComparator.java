@@ -40,9 +40,10 @@ public class DeepComparator implements Comparator<Cells>, Serializable {
     while (!resolution && it.hasNext()) {
       Ordering ordering = it.next();
       String currentField = ordering.getSelectorIdentifier().getField();
+      String currentTable = ordering.getSelectorIdentifier().getTable();
       result =
-          ((Comparable) o1.getCellByName(currentField).getCellValue()).compareTo(o2.getCellByName(
-              currentField).getCellValue());
+          ((Comparable) o1.getCellByName(currentTable, currentField).getCellValue()).compareTo(o2
+              .getCellByName(currentTable, currentField).getCellValue());
       if (result != 0) {
         resolution = true;
         result = checkOrderDirection(result, ordering);

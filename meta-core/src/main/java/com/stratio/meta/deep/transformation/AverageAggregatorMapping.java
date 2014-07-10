@@ -21,6 +21,7 @@ import java.math.BigInteger;
 
 import org.apache.spark.api.java.function.Function;
 
+import com.stratio.deep.entity.CassandraCell;
 import com.stratio.deep.entity.Cell;
 import com.stratio.deep.entity.Cells;
 
@@ -63,7 +64,7 @@ public class AverageAggregatorMapping implements Function<Cells, Cells> {
               / ((BigDecimal) countCell.getCellValue()).doubleValue();
     }
 
-    resultCell = Cell.create(averageField, average);
+    resultCell = CassandraCell.create(averageField, average);
 
     // Removing temporary data
     row.remove(averageSumField);

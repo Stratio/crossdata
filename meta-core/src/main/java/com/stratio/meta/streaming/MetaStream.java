@@ -16,7 +16,19 @@
 
 package com.stratio.meta.streaming;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+
 import com.stratio.deep.context.DeepSparkContext;
+import com.stratio.deep.entity.CassandraCell;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.data.Cell;
@@ -40,17 +52,6 @@ import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
 import com.stratio.streaming.messaging.ColumnNameType;
 import com.stratio.streaming.messaging.ColumnNameValue;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -244,7 +245,7 @@ public class MetaStream {
 
     boolean generateMetadata = true;
 
-    for(Object obj: data){
+    for (Object obj : data) {
       Row newRow = new Row();
       List<Map<String, String>> row = (List<Map<String, String>>) obj;
       for (Object columnObj : row) {
@@ -253,8 +254,9 @@ public class MetaStream {
         Object value = column.get("value");
         String colType = column.get("type");
         newRow.addCell(colName, new Cell(value));
-        if(generateMetadata){
-          columnList.add(new ColumnMetadata("", colName, StreamingUtils.streamingToMetaType(colType)));
+        if (generateMetadata) {
+          columnList.add(new ColumnMetadata("", colName, StreamingUtils
+              .streamingToMetaType(colType)));
         }
       }
       generateMetadata = false;
@@ -302,7 +304,7 @@ public class MetaStream {
         String colName = column.get("column");
         Object value = column.get("value");
 
-        com.stratio.deep.entity.Cell newCell = com.stratio.deep.entity.Cell.create(colName, value);
+        com.stratio.deep.entity.Cell newCell = CassandraCell.create(colName, value);
 
         newRow.add(newCell);
       }
@@ -372,13 +374,13 @@ public class MetaStream {
       ArrayList<ColumnNameValue> data = new ArrayList<>();
       Iterator<ValueCell<?>> valuesIter = stmt.getCellValues().iterator();
 
-      for(String col: stmt.getIds()){
+      for (String col : stmt.getIds()) {
         Term term = (Term) valuesIter.next();
         ColumnNameValue colNameValue = new ColumnNameValue(col, term.getTermValue());
         data.add(colNameValue);
       }
 
-      stratioStreamingAPI.insertData(stmt.getEffectiveKeyspace()+"_"+stmt.getTableName(), data);
+      stratioStreamingAPI.insertData(stmt.getEffectiveKeyspace() + "_" + stmt.getTableName(), data);
 
       return QueryResult.createSuccessQueryResult(resultSet, stmt.getEffectiveKeyspace());
     } catch (Exception e) {

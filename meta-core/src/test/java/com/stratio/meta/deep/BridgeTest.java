@@ -16,6 +16,20 @@
 
 package com.stratio.meta.deep;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
@@ -50,20 +64,6 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-
-import org.apache.log4j.Logger;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
 
 public class BridgeTest extends BasicCoreCassandraTest {
 
@@ -334,6 +334,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
     validateOk(metaQuery, "testLessThan");
+    validateRowsAndCols(metaQuery, "testLessEqualThan", 10, 1);
   }
 
   @Test
@@ -356,7 +357,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     Tree tree = new Tree();
     tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
     metaQuery.setPlan(tree);
-    validateOk(metaQuery, "testLessEqualThan");
+    validateRowsAndCols(metaQuery, "testLessEqualThan", 11, 1);
   }
 
   @Test
@@ -649,7 +650,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // ORDERING
     List<Ordering> orderings = new ArrayList<>();
-    Ordering order1 = new Ordering(CONSTANT_AGE, true, OrderDirection.DESC);
+    Ordering order1 = new Ordering("users", CONSTANT_AGE, true, OrderDirection.DESC);
     orderings.add(order1);
     joinSelect.setOrder(orderings);
 

@@ -16,6 +16,18 @@
 
 package com.stratio.meta.deep;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+
+import scala.Tuple2;
+
 import com.datastax.driver.core.Session;
 import com.stratio.deep.config.DeepJobConfigFactory;
 import com.stratio.deep.config.ICassandraDeepJobConfig;
@@ -33,6 +45,7 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.GroupBy;
+import com.stratio.meta.core.structures.GroupByFunction;
 import com.stratio.meta.core.structures.Ordering;
 import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.SelectionClause;
@@ -49,23 +62,12 @@ import com.stratio.meta.deep.functions.LessEqualThan;
 import com.stratio.meta.deep.functions.LessThan;
 import com.stratio.meta.deep.functions.MapKeyForJoin;
 import com.stratio.meta.deep.functions.NotEquals;
+import com.stratio.meta.deep.transfer.ColumnInfo;
 import com.stratio.meta.deep.transformation.AverageAggregatorMapping;
 import com.stratio.meta.deep.transformation.GroupByAggregation;
 import com.stratio.meta.deep.transformation.GroupByMapping;
 import com.stratio.meta.deep.transformation.KeyRemover;
 import com.stratio.meta.deep.utils.DeepUtils;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import scala.Tuple2;
 
 /**
  * Class that performs as a Bridge between Meta and Stratio Deep.
@@ -147,11 +149,11 @@ public class Bridge {
       }
     }
 
-    List<String> cols = new ArrayList<>();
-    if(ss.getSelectionClause() instanceof SelectionList){
+    List<ColumnInfo> cols = new ArrayList<>();
+    if (ss.getSelectionClause() instanceof SelectionList) {
       cols = DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
     } else { // SelectionCount
-      cols.add("COUNT");
+      cols.add(new ColumnInfo(ss.getTableName(), "*", GroupByFunction.COUNT));
     }
 
     // Group by clause
@@ -183,7 +185,7 @@ public class Bridge {
 
     // Retrieve RDDs and selected columns from children
     List<JavaRDD<Cells>> children = new ArrayList<>();
-    List<String> selectedCols = new ArrayList<>();
+    List<ColumnInfo> selectedCols = new ArrayList<>();
     for (Result child : resultsFromChildren) {
       QueryResult qResult = (QueryResult) child;
       MetaResultSet crset = (MetaResultSet) qResult.getResultSet();
@@ -195,14 +197,8 @@ public class Bridge {
       children.add(rdd);
     }
 
-    // Retrieve selected columns without tablename
-    for (String id: ss.getSelectionClause().getIds(true)) {
-      if (id.contains(".")) {
-        selectedCols.add(id.split("\\.")[1]);
-      } else {
-        selectedCols.add(id);
-      }
-    }
+    selectedCols =
+        DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
 
     // JOIN
     String keyTableLeft = ss.getJoin().getLeftField().getField();
@@ -213,17 +209,20 @@ public class Bridge {
     JavaRDD<Cells> rddTableLeft = children.get(0);
     JavaRDD<Cells> rddTableRight = children.get(1);
 
-    JavaPairRDD<Cells, Cells> rddLeft = rddTableLeft.mapToPair(new MapKeyForJoin(keyTableLeft));
-    JavaPairRDD<Cells, Cells> rddRight = rddTableRight.mapToPair(new MapKeyForJoin(keyTableRight));
+    JavaPairRDD<Cells, Cells> rddLeft =
+        rddTableLeft.mapToPair(new MapKeyForJoin<Cells>(keyTableLeft));
+    JavaPairRDD<Cells, Cells> rddRight =
+        rddTableRight.mapToPair(new MapKeyForJoin<Cells>(keyTableRight));
 
     JavaPairRDD<Cells, Tuple2<Cells, Cells>> joinRDD = rddLeft.join(rddRight);
 
-    JavaRDD<Cells> joinedResult = joinRDD.map(new JoinCells(keyTableLeft));
+    JavaRDD<Cells> joinedResult = joinRDD.map(new JoinCells<Cells>());
 
     JavaRDD<Cells> result = joinedResult;
 
-    if(ss.isGroupInc()){
-      JavaRDD<Cells> groupedResult = doGroupBy(result, ss.getGroup(), (SelectionList) ss.getSelectionClause());
+    if (ss.isGroupInc()) {
+      JavaRDD<Cells> groupedResult =
+          doGroupBy(result, ss.getGroup(), (SelectionList) ss.getSelectionClause());
       result = groupedResult;
     }
 
@@ -235,8 +234,7 @@ public class Bridge {
     return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
   }
 
-  private ResultSet replaceWithAliases(Map<String, String> fieldsAliasesMap,
-                                       MetaResultSet resultSet) {
+  private ResultSet replaceWithAliases(Map<String, String> fieldsAliasesMap, MetaResultSet resultSet) {
 
     List<ColumnMetadata> metadata = resultSet.getColumnMetadata();
 
@@ -312,7 +310,7 @@ public class Bridge {
    * @return ResultSet containing the result of built.
    */
   private ResultSet returnResult(JavaRDD<Cells> rdd, boolean isRoot, boolean isCount,
-      List<String> selectedCols, int limit, List<Ordering> orderings) {
+      List<ColumnInfo> selectedCols, int limit, List<Ordering> orderings) {
     if (isRoot) {
       if (isCount) {
         return DeepUtils.buildCountResult(rdd);
