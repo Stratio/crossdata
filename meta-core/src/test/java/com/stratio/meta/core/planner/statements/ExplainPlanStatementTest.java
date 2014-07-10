@@ -19,6 +19,10 @@
 
 package com.stratio.meta.core.planner.statements;
 
+import com.stratio.meta.common.statements.structures.terms.IntegerTerm;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.DropTableStatement;
 import com.stratio.meta.core.statements.ExplainPlanStatement;

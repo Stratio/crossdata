@@ -20,7 +20,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.utils.StringUtils;
 
 public class SelectionSelectors extends Selection {
 
@@ -57,7 +58,7 @@ public class SelectionSelectors extends Selection {
 
   @Override
   public String toString() {
-    return ParserUtils.stringList(selectors, ", ");
+    return StringUtils.stringList(selectors, ", ");
   }
 
   @Override

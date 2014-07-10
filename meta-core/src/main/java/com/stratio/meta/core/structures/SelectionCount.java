@@ -16,6 +16,8 @@
 
 package com.stratio.meta.core.structures;
 
+import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
+
 import java.util.ArrayList;
 import java.util.List;
 

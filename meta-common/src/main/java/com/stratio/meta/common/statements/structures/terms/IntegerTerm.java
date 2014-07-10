@@ -17,31 +17,17 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.terms;
 
-public abstract class ValueCell<T extends Comparable<T>> {
+public class IntegerTerm extends Term<Integer> {
 
-    public static final int TYPE_TERM = 1;
-    public static final int TYPE_COLLECTION_LITERAL = 2;
+	private static final long serialVersionUID = 7097178218828822792L;
 
-    protected int type;
+	public IntegerTerm(String term) {
+		super(Integer.class, Integer.valueOf(term));
+	}
 
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
-    /**
-     * Get the String value representation.
-     * 
-     * @return The String value.
-     */
-    public abstract String getStringValue();
-
-    @Override
-    public abstract String toString();
-
+	public IntegerTerm(Term<Long> term) {
+		super(Integer.class, term.getTermValue().intValue());
+	}
 }

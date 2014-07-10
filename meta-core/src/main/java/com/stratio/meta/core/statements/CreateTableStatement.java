@@ -20,6 +20,7 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.BooleanProperty;
@@ -245,7 +246,7 @@ public class CreateTableStatement extends MetaStatement {
     }
 
     if (withProperties) {
-      sb.append(" WITH ").append(ParserUtils.stringList(properties, " AND "));
+      sb.append(" WITH ").append(StringUtils.stringList(properties, " AND "));
     }
     return sb.toString();
   }

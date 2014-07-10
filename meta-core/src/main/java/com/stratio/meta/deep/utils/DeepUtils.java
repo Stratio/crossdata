@@ -34,13 +34,13 @@ import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
 import com.stratio.meta.core.statements.SelectStatement;
-import com.stratio.meta.core.structures.GroupByFunction;
+import com.stratio.meta.common.statements.structures.selectors.GroupByFunction;
 import com.stratio.meta.core.structures.Selection;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelectors;
-import com.stratio.meta.core.structures.SelectorGroupBy;
-import com.stratio.meta.core.structures.SelectorIdentifier;
-import com.stratio.meta.core.structures.SelectorMeta;
+import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
 
 public final class DeepUtils {
 

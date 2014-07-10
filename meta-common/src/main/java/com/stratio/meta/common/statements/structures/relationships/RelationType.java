@@ -17,17 +17,30 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.relationships;
 
-public class FloatTerm extends Term<Float> {
+/**
+ * Type of relationship in a WHERE/FILTER operation.
+ */
+public enum RelationType {
 
-	private static final long serialVersionUID = -578510540271635667L;
+  /**
+   * Compare relationships (e.g., >, <, =, etc.).
+   */
+  COMPARE,
 
-	public FloatTerm(String term) {
-		super(Float.class, Float.valueOf(term));
-	}
+  /**
+   * Inclusion relationships.
+   */
+  IN,
 
-	public FloatTerm(Term<Double> term) {
-		super(Float.class, term.getTermValue().floatValue());
-	}
+  /**
+   * Range comparisons.
+   */
+  BETWEEN,
+
+  /**
+   * Comparison with datastore token functions.
+   */
+  TOKEN
 }

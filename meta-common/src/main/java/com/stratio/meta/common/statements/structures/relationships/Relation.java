@@ -14,14 +14,18 @@
  * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.relationships;
+
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta.common.metadata.structures.TableMetadata;
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.statements.structures.terms.FloatTerm;
+import com.stratio.meta.common.statements.structures.terms.IntegerTerm;
+import com.stratio.meta.common.statements.structures.terms.Term;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.TableMetadata;
 
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
@@ -109,7 +113,7 @@ public abstract class Relation {
       ColumnMetadata column = tableMetadata.getColumn(columnName);
       if (column != null) {
         Class<? extends Comparable<?>> dataType =
-            (Class<? extends Comparable<?>>) column.getType().asJavaClass();
+            (Class<? extends Comparable<?>>) column.getType().getDbClass();
         if (terms.get(i) instanceof Term) {
           Term<?> term = terms.get(i);
           if (dataType == Integer.class && term.getTermClass() == Long.class) {

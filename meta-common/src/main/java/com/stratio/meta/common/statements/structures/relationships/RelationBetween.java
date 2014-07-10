@@ -14,11 +14,13 @@
  * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.relationships;
 
 import java.util.ArrayList;
 
-import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.statements.structures.terms.Term;
+import com.stratio.meta.common.utils.StringUtils;
 
 public class RelationBetween extends Relation {
 
@@ -51,7 +53,7 @@ public class RelationBetween extends Relation {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(identifiers.get(0).toString());
-    sb.append(" ").append(operator).append(" ").append(ParserUtils.stringList(terms, " AND "));
+    sb.append(" ").append(operator).append(" ").append(StringUtils.stringList(terms, " AND "));
     return sb.toString();
   }
 

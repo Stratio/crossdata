@@ -23,13 +23,10 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.core.ColumnMetadata;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.data.ColumnDefinition;
 import com.stratio.meta.common.metadata.structures.*;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
-import com.stratio.meta.core.structures.FloatTerm;
-import com.stratio.meta.core.structures.IntegerTerm;
-import com.stratio.meta.core.structures.Term;
+import com.stratio.meta.common.statements.structures.terms.Term;
 
 import org.apache.log4j.Logger;
 

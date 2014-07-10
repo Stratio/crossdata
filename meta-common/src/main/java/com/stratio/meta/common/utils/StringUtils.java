@@ -17,37 +17,37 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
-
-import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta.core.utils.ParserUtils;
+package com.stratio.meta.common.utils;
 
 import java.util.List;
 
-public class PropertyClusteringOrder extends Property {
+/**
+ * Utility class for String transformation operations.
+ */
+public class StringUtils {
 
-    private List<Ordering> order;
-    
-    public PropertyClusteringOrder() {
-        super(TYPE_CLUSTERING_ORDER);
+  /**
+   * Private constructor as all methods are static.
+   */
+  private StringUtils(){
+  };
+
+  /**
+   * Create a string from a list of objects using a separator between objects.
+   * @param ids The list of objects.
+   * @param separator The separator.
+   * @return A String.
+   */
+  public static String stringList(List<?> ids, String separator) {
+    StringBuilder sb = new StringBuilder();
+    for(Object value: ids){
+      sb.append(value.toString()).append(separator);
     }
-
-    public PropertyClusteringOrder(List<Ordering> order) {
-        super(TYPE_CLUSTERING_ORDER);
-        this.order = order;
-    }   
-    
-    public List<Ordering> getOrder() {
-        return order;
+    if(sb.length() > separator.length()){
+      return sb.substring(0, sb.length()-separator.length());
+    } else {
+      return "";
     }
+  }
 
-    public void setOrder(List<Ordering> order) {
-        this.order = order;
-    }        
-
-    @Override
-    public String toString() {
-        return "CLUSTERING ORDER BY ("+ StringUtils.stringList(order, ", ")+")";
-    }
-    
 }

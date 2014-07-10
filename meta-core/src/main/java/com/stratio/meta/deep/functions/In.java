@@ -21,7 +21,7 @@ import java.util.List;
 import org.apache.spark.api.java.function.Function;
 
 import com.stratio.deep.entity.Cells;
-import com.stratio.meta.core.structures.Term;
+import com.stratio.meta.common.statements.structures.terms.Term;
 
 public class In implements Function<Cells, Boolean> {
 

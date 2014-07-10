@@ -25,11 +25,12 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.Relation;
-import com.stratio.meta.core.structures.RelationCompare;
-import com.stratio.meta.core.structures.Term;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
+import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
@@ -55,7 +56,7 @@ public class DeleteStatement extends MetaStatement {
   private String tableName = null;
 
   /**
-   * The list of {@link com.stratio.meta.core.structures.Relation} found in the WHERE clause.
+   * The list of {@link com.stratio.meta.common.statements.structures.relationships.Relation} found in the WHERE clause.
    */
   private List<Relation> whereClauses;
 
@@ -94,7 +95,7 @@ public class DeleteStatement extends MetaStatement {
   }
 
   /**
-   * Add a new {@link com.stratio.meta.core.structures.Relation} found in a WHERE clause.
+   * Add a new {@link com.stratio.meta.common.statements.structures.relationships.Relation} found in a WHERE clause.
    * 
    * @param relation The relation.
    */
@@ -106,7 +107,7 @@ public class DeleteStatement extends MetaStatement {
   public String toString() {
     StringBuilder sb = new StringBuilder("DELETE ");
     if (!targetColumns.isEmpty()) {
-      sb.append("(").append(ParserUtils.stringList(targetColumns, ", ")).append(") ");
+      sb.append("(").append(StringUtils.stringList(targetColumns, ", ")).append(") ");
     }
     sb.append("FROM ");
     if (keyspaceInc) {
@@ -115,7 +116,7 @@ public class DeleteStatement extends MetaStatement {
     sb.append(tableName);
     if (!whereClauses.isEmpty()) {
       sb.append(" WHERE ");
-      sb.append(ParserUtils.stringList(whereClauses, " AND "));
+      sb.append(StringUtils.stringList(whereClauses, " AND "));
     }
     return sb.toString();
   }
@@ -152,7 +153,8 @@ public class DeleteStatement extends MetaStatement {
     Iterator<Relation> relations = whereClauses.iterator();
     while (!result.hasError() && relations.hasNext()) {
       Relation relation = relations.next();
-      relation.updateTermClass(tableMetadata);
+      //TODO Uncomment
+      //relation.updateTermClass(tableMetadata);
       if (Relation.TYPE_COMPARE == relation.getType()) {
         result = validateCompareRelation(relation, tableMetadata);
       } else if (Relation.TYPE_IN == relation.getType()) {

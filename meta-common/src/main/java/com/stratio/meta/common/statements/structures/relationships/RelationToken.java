@@ -14,12 +14,13 @@
  * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.relationships;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta.common.statements.structures.terms.Term;
+import com.stratio.meta.common.utils.StringUtils;
 
 /**
  * Class that models a relationship in a {@code WHERE} clause that includes a reference to the
@@ -62,12 +63,12 @@ public class RelationToken extends Relation {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("TOKEN(");
-    sb.append(ParserUtils.stringList(identifiers, ", ")).append(")");
+    sb.append(StringUtils.stringList(identifiers, ", ")).append(")");
     sb.append(" ").append(operator).append(" ");
     if (rightSideTokenType) {
-      sb.append("TOKEN(").append(ParserUtils.stringList(terms, ", ")).append(")");
+      sb.append("TOKEN(").append(StringUtils.stringList(terms, ", ")).append(")");
     } else {
-      sb.append(ParserUtils.stringList(terms, ", "));
+      sb.append(StringUtils.stringList(terms, ", "));
     }
     return sb.toString();
   }

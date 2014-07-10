@@ -29,13 +29,14 @@ import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.FloatTerm;
-import com.stratio.meta.core.structures.IntegerTerm;
+import com.stratio.meta.common.statements.structures.terms.FloatTerm;
+import com.stratio.meta.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta.core.structures.Option;
-import com.stratio.meta.core.structures.Term;
-import com.stratio.meta.core.structures.ValueCell;
+import com.stratio.meta.common.statements.structures.terms.Term;
+import com.stratio.meta.common.statements.structures.terms.ValueCell;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
@@ -74,7 +75,7 @@ public class InsertIntoStatement extends MetaStatement {
   private SelectStatement selectStatement;
 
   /**
-   * A list of {@link com.stratio.meta.core.structures.ValueCell} with the literal values to be
+   * A list of {@link com.stratio.meta.common.statements.structures.terms.ValueCell} with the literal values to be
    * assigned if the insert type matches {@code TYPE_VALUES_CLAUSE}.
    */
   private List<ValueCell<?>> cellValues;
@@ -111,7 +112,7 @@ public class InsertIntoStatement extends MetaStatement {
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
    * @param selectStatement a {@link com.stratio.meta.core.statements.InsertIntoStatement}
-   * @param cellValues List of {@link com.stratio.meta.core.structures.ValueCell} to insert.
+   * @param cellValues List of {@link com.stratio.meta.common.statements.structures.terms.ValueCell} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param optsInc Boolean that indicates if there is options in the query.
    * @param options Query options.
@@ -156,7 +157,7 @@ public class InsertIntoStatement extends MetaStatement {
    * 
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
-   * @param cellValues List of {@link com.stratio.meta.core.structures.ValueCell} to insert.
+   * @param cellValues List of {@link com.stratio.meta.common.statements.structures.terms.ValueCell} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param options Query options.
    */
@@ -183,7 +184,7 @@ public class InsertIntoStatement extends MetaStatement {
    * 
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
-   * @param cellValues List of {@link com.stratio.meta.core.structures.ValueCell} to insert.
+   * @param cellValues List of {@link com.stratio.meta.common.statements.structures.terms.ValueCell} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    */
   public InsertIntoStatement(String tableName, List<String> ids, List<ValueCell<?>> cellValues,
@@ -198,12 +199,12 @@ public class InsertIntoStatement extends MetaStatement {
       sb.append(keyspace).append(".");
     }
     sb.append(tableName).append(" (");
-    sb.append(ParserUtils.stringList(ids, ", ")).append(") ");
+    sb.append(StringUtils.stringList(ids, ", ")).append(") ");
     if (typeValues == TYPE_SELECT_CLAUSE) {
       sb.append(selectStatement.toString());
     } else {
       sb.append("VALUES (");
-      sb.append(ParserUtils.stringList(cellValues, ", "));
+      sb.append(StringUtils.stringList(cellValues, ", "));
       sb.append(")");
     }
     if (ifNotExists) {
@@ -211,7 +212,7 @@ public class InsertIntoStatement extends MetaStatement {
     }
     if (optsInc) {
       sb.append(" USING ");
-      sb.append(ParserUtils.stringList(options, " AND "));
+      sb.append(StringUtils.stringList(options, " AND "));
     }
     return sb.toString();
   }
@@ -302,14 +303,14 @@ public class InsertIntoStatement extends MetaStatement {
       sb.append(keyspace).append(".");
     }
     sb.append(tableName).append(" (");
-    sb.append(ParserUtils.stringList(ids, ", "));
+    sb.append(StringUtils.stringList(ids, ", "));
     sb.append(") ");
     if (typeValues == TYPE_SELECT_CLAUSE) {
       sb.append(selectStatement.toString());
     }
     if (typeValues == TYPE_VALUES_CLAUSE) {
       sb.append("VALUES (");
-      sb.append(ParserUtils.addSingleQuotesToString(ParserUtils.stringList(cellValues, ", "), ","));
+      sb.append(ParserUtils.addSingleQuotesToString(StringUtils.stringList(cellValues, ", "), ","));
       sb.append(")");
     }
     if (ifNotExists) {
@@ -317,7 +318,7 @@ public class InsertIntoStatement extends MetaStatement {
     }
     if (optsInc) {
       sb.append(" USING ");
-      sb.append(ParserUtils.stringList(options, " AND "));
+      sb.append(StringUtils.stringList(options, " AND "));
     }
     return sb.append(";").toString();
   }
