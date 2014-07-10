@@ -17,7 +17,7 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.terms;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -17,39 +17,30 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.relationships;
 
-public class WindowTime extends WindowSelect {
+/**
+ * Type of relationship in a WHERE/FILTER operation.
+ */
+public enum RelationType {
 
-    private int num;
-    private TimeUnit unit;
+  /**
+   * Compare relationships (e.g., >, <, =, etc.).
+   */
+  COMPARE,
 
-    public WindowTime(int num, TimeUnit unit) {
-        this.type = TYPE_TIME;
-        this.num = num;
-        this.unit = unit;
-    }   
-    
-    public int getNum() {
-        return num;
-    }
+  /**
+   * Inclusion relationships.
+   */
+  IN,
 
-    public void setNum(int num) {
-        this.num = num;
-    }
+  /**
+   * Range comparisons.
+   */
+  BETWEEN,
 
-    public TimeUnit getUnit() {
-        return unit;
-    }
-
-    public void setTime(TimeUnit unit) {
-        this.unit = unit;
-    }
-            
-    @Override
-    public String toString() {
-        //return num+" "+(""+unit).charAt(0);
-        return num+" "+unit;
-    }
-    
+  /**
+   * Comparison with datastore token functions.
+   */
+  TOKEN
 }

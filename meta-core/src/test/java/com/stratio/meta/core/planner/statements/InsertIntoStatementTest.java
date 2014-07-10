@@ -31,7 +31,7 @@ import com.stratio.meta.core.structures.BooleanTerm;
 import com.stratio.meta.core.structures.LongTerm;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.structures.StringTerm;
-import com.stratio.meta.core.structures.ValueCell;
+import com.stratio.meta.common.statements.structures.terms.ValueCell;
 
 public class InsertIntoStatementTest extends BasicPlannerTest {
 

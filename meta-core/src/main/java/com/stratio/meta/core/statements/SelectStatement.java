@@ -44,32 +44,33 @@ import com.datastax.driver.core.querybuilder.Select.Where;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.statements.structures.window.WindowType;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.GroupBy;
-import com.stratio.meta.core.structures.GroupByFunction;
+import com.stratio.meta.common.statements.structures.selectors.GroupByFunction;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta.core.structures.OrderDirection;
 import com.stratio.meta.core.structures.Ordering;
-import com.stratio.meta.core.structures.Relation;
-import com.stratio.meta.core.structures.RelationCompare;
-import com.stratio.meta.core.structures.RelationIn;
-import com.stratio.meta.core.structures.RelationToken;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
+import com.stratio.meta.common.statements.structures.relationships.RelationIn;
+import com.stratio.meta.common.statements.structures.relationships.RelationToken;
 import com.stratio.meta.core.structures.Selection;
 import com.stratio.meta.core.structures.SelectionAsterisk;
 import com.stratio.meta.core.structures.SelectionClause;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelector;
 import com.stratio.meta.core.structures.SelectionSelectors;
-import com.stratio.meta.core.structures.SelectorFunction;
-import com.stratio.meta.core.structures.SelectorGroupBy;
-import com.stratio.meta.core.structures.SelectorIdentifier;
-import com.stratio.meta.core.structures.SelectorMeta;
-import com.stratio.meta.core.structures.Term;
-import com.stratio.meta.core.structures.WindowSelect;
-import com.stratio.meta.core.structures.WindowTime;
+import com.stratio.meta.common.statements.structures.selectors.SelectorFunction;
+import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
+import com.stratio.meta.common.statements.structures.terms.Term;
+import com.stratio.meta.common.statements.structures.window.Window;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
@@ -103,10 +104,10 @@ public class SelectStatement extends MetaStatement {
   private boolean windowInc = false;
 
   /**
-   * The {@link com.stratio.meta.core.structures.WindowSelect} specified in the Select statement for
+   * The {@link com.stratio.meta.common.statements.structures.window.Window} specified in the Select statement for
    * streaming queries.
    */
-  private WindowSelect window = null;
+  private Window window = null;
 
   /**
    * Whether a JOIN clause has been specified.
@@ -124,7 +125,7 @@ public class SelectStatement extends MetaStatement {
   private boolean whereInc = false;
 
   /**
-   * The list of {@link com.stratio.meta.core.structures.Relation} found in the WHERE clause.
+   * The list of {@link com.stratio.meta.common.statements.structures.relationships.Relation} found in the WHERE clause.
    */
   private List<Relation> where = null;
 
@@ -270,11 +271,11 @@ public class SelectStatement extends MetaStatement {
   }
 
   /**
-   * Set the {@link com.stratio.meta.core.structures.WindowSelect} for streaming queries.
+   * Set the {@link com.stratio.meta.common.statements.structures.window.Window} for streaming queries.
    * 
    * @param window The window.
    */
-  public void setWindow(WindowSelect window) {
+  public void setWindow(Window window) {
     this.windowInc = true;
     this.window = window;
   }
@@ -400,7 +401,7 @@ public class SelectStatement extends MetaStatement {
     return limit;
   }
 
-  public WindowSelect getWindow() {
+  public Window getWindow() {
     return window;
   }
 
@@ -465,13 +466,13 @@ public class SelectStatement extends MetaStatement {
     }
     if (whereInc) {
       sb.append(" WHERE ");
-      sb.append(ParserUtils.stringList(where, " AND "));
+      sb.append(StringUtils.stringList(where, " AND "));
     }
     if (orderInc) {
-      sb.append(" ORDER BY ").append(ParserUtils.stringList(order, ", "));
+      sb.append(" ORDER BY ").append(StringUtils.stringList(order, ", "));
     }
     if (groupInc) {
-      sb.append(" GROUP BY ").append(ParserUtils.stringList(group, ", "));
+      sb.append(" GROUP BY ").append(StringUtils.stringList(group, ", "));
     }
     if (limitInc) {
       sb.append(" LIMIT ").append(limit);
@@ -576,9 +577,8 @@ public class SelectStatement extends MetaStatement {
 
   private Result validateWindow(EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();
-    if (window instanceof WindowTime) {
-      WindowTime windowTime = (WindowTime) window;
-      long windowMillis = windowTime.getDurationInMilliseconds();
+    if (WindowType.TEMPORAL.equals(window.getType())) {
+      long windowMillis = window.getDurationInMilliseconds();
       if (windowMillis % config.getStreamingDuration() != 0) {
         result =
             Result.createValidationErrorResult("Window time must be multiple of "
@@ -765,7 +765,8 @@ public class SelectStatement extends MetaStatement {
     Iterator<Relation> relations = where.iterator();
     while (!result.hasError() && relations.hasNext()) {
       Relation relation = relations.next();
-      relation.updateTermClass(tableMetadata);
+      //TODO Uncomment
+      //relation.updateTermClass(tableMetadata);
       if (Relation.TYPE_COMPARE == relation.getType() || Relation.TYPE_IN == relation.getType()
           || Relation.TYPE_BETWEEN == relation.getType()) {
         // Check comparison, =, >, <, etc.
@@ -1346,7 +1347,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Get the driver clause associated with a compare relation.
    * 
-   * @param metaRelation The {@link com.stratio.meta.core.structures.RelationCompare} clause.
+   * @param metaRelation The {@link com.stratio.meta.common.statements.structures.relationships.RelationCompare} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
   private Clause getRelationCompareClause(Relation metaRelation) {
@@ -1384,7 +1385,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Get the driver clause associated with an in relation.
    * 
-   * @param metaRelation The {@link com.stratio.meta.core.structures.RelationIn} clause.
+   * @param metaRelation The {@link com.stratio.meta.common.statements.structures.relationships.RelationIn} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
   private Clause getRelationInClause(Relation metaRelation) {
@@ -1405,7 +1406,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Get the driver clause associated with an token relation.
    * 
-   * @param metaRelation The {@link com.stratio.meta.core.structures.RelationToken} clause.
+   * @param metaRelation The {@link com.stratio.meta.common.statements.structures.relationships.RelationToken} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
   private Clause getRelationTokenClause(Relation metaRelation) {

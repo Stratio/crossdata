@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.selectors;
 
 public abstract class SelectorMeta {
 

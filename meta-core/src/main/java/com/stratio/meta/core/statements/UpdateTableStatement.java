@@ -25,18 +25,19 @@ import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Assignment;
-import com.stratio.meta.core.structures.FloatTerm;
+import com.stratio.meta.common.statements.structures.terms.FloatTerm;
 import com.stratio.meta.core.structures.IdentIntOrLiteral;
 import com.stratio.meta.core.structures.IdentifierAssignment;
 import com.stratio.meta.core.structures.IntTerm;
-import com.stratio.meta.core.structures.IntegerTerm;
+import com.stratio.meta.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta.core.structures.Option;
-import com.stratio.meta.core.structures.Relation;
-import com.stratio.meta.core.structures.SelectorIdentifier;
-import com.stratio.meta.core.structures.Term;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.core.structures.ValueAssignment;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.CoreUtils;
@@ -187,12 +188,12 @@ public class UpdateTableStatement extends MetaStatement {
     sb.append(tableName);
     if (optsInc) {
       sb.append(" ").append("USING ");
-      sb.append(ParserUtils.stringList(options, " AND "));
+      sb.append(StringUtils.stringList(options, " AND "));
     }
     sb.append(" ").append("SET ");
-    sb.append(ParserUtils.stringList(assignments, ", "));
+    sb.append(StringUtils.stringList(assignments, ", "));
     sb.append(" ").append("WHERE ");
-    sb.append(ParserUtils.stringList(whereClauses, " AND "));
+    sb.append(StringUtils.stringList(whereClauses, " AND "));
     if (condsInc) {
       sb.append(" ").append("IF ");
       sb.append(ParserUtils.stringMap(conditions, " = ", " AND "));

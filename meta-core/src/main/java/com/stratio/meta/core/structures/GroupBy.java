@@ -16,6 +16,8 @@
 
 package com.stratio.meta.core.structures;
 
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+
 import java.io.Serializable;
 
 

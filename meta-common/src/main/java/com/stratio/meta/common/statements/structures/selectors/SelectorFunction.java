@@ -17,9 +17,9 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.selectors;
 
-import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta.common.utils.StringUtils;
 
 import java.util.List;
 
@@ -49,7 +49,7 @@ public class SelectorFunction extends SelectorMeta {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(name);
-    sb.append("(").append(ParserUtils.stringList(params, ", ")).append(")");
+    sb.append("(").append(StringUtils.stringList(params, ", ")).append(")");
     return sb.toString();
   }
 

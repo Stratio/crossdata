@@ -17,12 +17,17 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.terms;
 
-public enum GroupByFunction {
-    SUM,
-    MAX,
-    MIN,
-    AVG,
-    COUNT
+public class IntegerTerm extends Term<Integer> {
+
+	private static final long serialVersionUID = 7097178218828822792L;
+
+	public IntegerTerm(String term) {
+		super(Integer.class, Integer.valueOf(term));
+	}
+
+	public IntegerTerm(Term<Long> term) {
+		super(Integer.class, term.getTermValue().intValue());
+	}
 }

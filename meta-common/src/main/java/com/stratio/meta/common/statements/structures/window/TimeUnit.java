@@ -17,31 +17,33 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.window;
 
-public abstract class ValueCell<T extends Comparable<T>> {
+/**
+ * Time units accepted in streaming queries.
+ * <li>
+ *   <ul>SECONDS</ul> <ul>HOURS</ul> <ul>MINUTES</ul> <ul>DAYS</ul>
+ * </li>
+ */
+public enum TimeUnit {
 
-    public static final int TYPE_TERM = 1;
-    public static final int TYPE_COLLECTION_LITERAL = 2;
+  /**
+   * Seconds.
+   */
+  SECONDS,
 
-    protected int type;
+  /**
+   * Minutes.
+   */
+  MINUTES,
 
-    public int getType() {
-        return type;
-    }
+  /**
+   * Hours.
+   */
+  HOURS,
 
-    public void setType(int type) {
-        this.type = type;
-    }
-
-    /**
-     * Get the String value representation.
-     * 
-     * @return The String value.
-     */
-    public abstract String getStringValue();
-
-    @Override
-    public abstract String toString();
-
+  /**
+   * Days.
+   */
+  DAYS
 }

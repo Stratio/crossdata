@@ -16,6 +16,10 @@
 
 package com.stratio.meta.core.structures;
 
+import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
+
 import java.util.ArrayList;
 import java.util.List;
 

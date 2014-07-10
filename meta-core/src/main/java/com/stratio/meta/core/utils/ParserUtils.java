@@ -46,17 +46,7 @@ public class ParserUtils {
     private ParserUtils(){
     }
 
-    public static String stringList(List<?> ids, String separator) {
-        StringBuilder sb = new StringBuilder();
-        for(Object value: ids){
-            sb.append(value.toString()).append(separator);
-        }
-        if(sb.length() > separator.length()){
-            return sb.substring(0, sb.length()-separator.length());
-        } else {
-            return "";
-        }
-    }
+
 
     public static String stringMap(Map<?, ?> ids, String conjunction, String separator) {
         StringBuilder sb = new StringBuilder();

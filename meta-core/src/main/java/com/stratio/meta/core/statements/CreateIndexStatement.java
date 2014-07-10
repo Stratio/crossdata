@@ -24,6 +24,7 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -280,7 +281,7 @@ public class CreateIndexStatement extends MetaStatement {
             sb.append(keyspace).append(".");
         }
         sb.append(tableName);
-        sb.append(" (").append(ParserUtils.stringList(targetColumns, ", ")).append(")");
+        sb.append(" (").append(StringUtils.stringList(targetColumns, ", ")).append(")");
         if(usingClass != null){
                 sb.append(" USING ");
                 sb.append(usingClass);

@@ -17,20 +17,25 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.window;
 
-public class WindowLast extends WindowSelect {
+/**
+ * Types of windows supported in SELECT statements.
+ */
+public enum WindowType {
 
-    /**
-     * Class constructor.
-     */
-    public WindowLast() {
-        this.type = TYPE_LAST;
-    }        
+  /**
+   * Window based on a number of tuples to be received.
+   */
+  NUM_ROWS,
 
-    @Override
-    public String toString() {
-        return "LAST";
-    }
-    
+  /**
+   * Window to process results as soon as the become available.
+   */
+  LAST,
+
+  /**
+   * Gather results in a time window.
+   */
+  TEMPORAL
 }

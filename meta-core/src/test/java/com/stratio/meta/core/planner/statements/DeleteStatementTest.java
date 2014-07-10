@@ -22,8 +22,8 @@ package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.DeleteStatement;
-import com.stratio.meta.core.structures.Relation;
-import com.stratio.meta.core.structures.RelationCompare;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
 import com.stratio.meta.core.structures.StringTerm;
 import org.testng.annotations.Test;
 
