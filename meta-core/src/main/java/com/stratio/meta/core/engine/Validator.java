@@ -17,33 +17,22 @@
  * License along with this library.
  */
 
-package com.stratio.meta.common.exceptions;
+package com.stratio.meta.core.engine;
 
-import java.util.List;
+import com.stratio.meta.common.exceptions.ValidationException;
+import com.stratio.meta.core.query.ParsedQuery;
+import com.stratio.meta.core.query.ValidatedQuery;
+import org.apache.log4j.Logger;
 
-/**
- * Parsing exception thrown by the Driver if the statement could not be parsed.
- */
-public class ParsingException extends Exception{
-
+public class Validator {
   /**
-   * Serial version UID in order to be {@link java.io.Serializable}.
+   * Class logger.
    */
-  private static final long serialVersionUID = -1125608075378630223L;
+  private static final Logger LOG = Logger.getLogger(Validator.class);
 
-  private final List<String> errors;
-
-  public ParsingException(String message){
-    super(message);
-    this.errors=null;
-  }
-  public ParsingException(String message, List<String> errors){
-    super(message);
-    this.errors=errors;
-  }
-
-  public List<String> getErrors(){
-    return this.errors;
+  public ValidatedQuery validate(ParsedQuery parsedQuery) throws ValidationException {
+    //TODO: Use the new generic metadata provider, remove the auto-validation system
+    return new ValidatedQuery(parsedQuery);
   }
 
 }
