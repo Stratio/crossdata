@@ -44,6 +44,7 @@ import com.datastax.driver.core.querybuilder.Select.Where;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.statements.structures.window.WindowType;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -68,8 +69,7 @@ import com.stratio.meta.core.structures.SelectorGroupBy;
 import com.stratio.meta.core.structures.SelectorIdentifier;
 import com.stratio.meta.core.structures.SelectorMeta;
 import com.stratio.meta.core.structures.Term;
-import com.stratio.meta.core.structures.WindowSelect;
-import com.stratio.meta.core.structures.WindowTime;
+import com.stratio.meta.common.statements.structures.window.Window;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
@@ -103,10 +103,10 @@ public class SelectStatement extends MetaStatement {
   private boolean windowInc = false;
 
   /**
-   * The {@link com.stratio.meta.core.structures.WindowSelect} specified in the Select statement for
+   * The {@link com.stratio.meta.common.statements.structures.window.Window} specified in the Select statement for
    * streaming queries.
    */
-  private WindowSelect window = null;
+  private Window window = null;
 
   /**
    * Whether a JOIN clause has been specified.
@@ -270,11 +270,11 @@ public class SelectStatement extends MetaStatement {
   }
 
   /**
-   * Set the {@link com.stratio.meta.core.structures.WindowSelect} for streaming queries.
+   * Set the {@link com.stratio.meta.common.statements.structures.window.Window} for streaming queries.
    * 
    * @param window The window.
    */
-  public void setWindow(WindowSelect window) {
+  public void setWindow(Window window) {
     this.windowInc = true;
     this.window = window;
   }
@@ -400,7 +400,7 @@ public class SelectStatement extends MetaStatement {
     return limit;
   }
 
-  public WindowSelect getWindow() {
+  public Window getWindow() {
     return window;
   }
 
@@ -576,9 +576,8 @@ public class SelectStatement extends MetaStatement {
 
   private Result validateWindow(EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();
-    if (window instanceof WindowTime) {
-      WindowTime windowTime = (WindowTime) window;
-      long windowMillis = windowTime.getDurationInMilliseconds();
+    if (WindowType.TEMPORAL.equals(window.getType())) {
+      long windowMillis = window.getDurationInMilliseconds();
       if (windowMillis % config.getStreamingDuration() != 0) {
         result =
             Result.createValidationErrorResult("Window time must be multiple of "

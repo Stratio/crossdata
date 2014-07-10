@@ -24,7 +24,8 @@ options {
 }
  
 @header {
-    package com.stratio.meta.core.grammar.generated;    
+    package com.stratio.meta.core.grammar.generated;
+    import com.stratio.meta.common.statements.structures.window.*;
     import com.stratio.meta.core.statements.*;
     import com.stratio.meta.core.structures.*;
     import com.stratio.meta.core.utils.*;
@@ -751,10 +752,10 @@ getFields[MutablePair pair]:
     | T_START_PARENTHESIS ident1L=getTableID { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableID { pair.setRight(ident1R); } T_END_PARENTHESIS
 ;
 
-getWindow returns [WindowSelect ws]:
-    (T_LAST {$ws = new WindowLast();} 
-    | cnstnt=getConstant (T_ROWS {$ws = new WindowRows(Integer.parseInt(cnstnt));}
-                       | unit=getTimeUnit {$ws = new WindowTime(Integer.parseInt(cnstnt), unit);}
+getWindow returns [Window ws]:
+    (T_LAST {$ws = new Window(WindowType.LAST);}
+    | cnstnt=getConstant (T_ROWS {$ws = new Window(WindowType.NUM_ROWS); $ws.setNumRows(Integer.parseInt(cnstnt));}
+                       | unit=getTimeUnit {$ws = new Window(WindowType.TEMPORAL); $ws.setTimeWindow(Integer.parseInt(cnstnt), unit);}
                        )
     );
 

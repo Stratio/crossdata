@@ -17,20 +17,33 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.window;
 
-public class WindowLast extends WindowSelect {
+/**
+ * Time units accepted in streaming queries.
+ * <li>
+ *   <ul>SECONDS</ul> <ul>HOURS</ul> <ul>MINUTES</ul> <ul>DAYS</ul>
+ * </li>
+ */
+public enum TimeUnit {
 
-    /**
-     * Class constructor.
-     */
-    public WindowLast() {
-        this.type = TYPE_LAST;
-    }        
+  /**
+   * Seconds.
+   */
+  SECONDS,
 
-    @Override
-    public String toString() {
-        return "LAST";
-    }
-    
+  /**
+   * Minutes.
+   */
+  MINUTES,
+
+  /**
+   * Hours.
+   */
+  HOURS,
+
+  /**
+   * Days.
+   */
+  DAYS
 }

@@ -17,17 +17,25 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.window;
 
 /**
- * Time units accepted in streaming queries.
- * <li>
- * <ul>SECONDS</ul>
- * <ul>HOURS</ul>
- * <ul>MINUTES</ul>
- * <ul>DAYS</ul>
- * </li>
+ * Types of windows supported in SELECT statements.
  */
-public enum TimeUnit {
-    SECONDS,MINUTES,HOURS, DAYS
+public enum WindowType {
+
+  /**
+   * Window based on a number of tuples to be received.
+   */
+  NUM_ROWS,
+
+  /**
+   * Window to process results as soon as the become available.
+   */
+  LAST,
+
+  /**
+   * Gather results in a time window.
+   */
+  TEMPORAL
 }
