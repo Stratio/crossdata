@@ -22,6 +22,8 @@ import org.apache.spark.api.java.function.Function2;
 
 import com.stratio.deep.entity.Cell;
 import com.stratio.deep.entity.Cells;
+import com.stratio.meta.core.structures.GroupByFunction;
+import com.stratio.meta.deep.transfer.ColumnInfo;
 import com.stratio.meta.deep.utils.GroupByAggregators;
 
 
@@ -32,38 +34,35 @@ public class GroupByAggregation implements Function2<Cells, Cells, Cells> {
    */
   private static final long serialVersionUID = -4041834957068048461L;
 
-  private List<String> aggregationCols;
+  private List<ColumnInfo> aggregationCols;
 
-  public GroupByAggregation(List<String> aggregationCols) {
+  public GroupByAggregation(List<ColumnInfo> aggregationCols) {
     this.aggregationCols = aggregationCols;
   }
 
   @Override
   public Cells call(Cells left, Cells right) throws Exception {
 
-    for (String aggregation : aggregationCols) {
+    for (ColumnInfo aggregation : aggregationCols) {
 
-      String[] pieces = aggregation.split("\\(");
-      String function = pieces[0].toLowerCase();
-
-      if (!"avg".equalsIgnoreCase(function)) {
+      if (GroupByFunction.AVG != aggregation.getAggregationFunction()) {
 
         Cell resultCell = null;
 
-        Cell cellLeft = left.getCellByName(aggregation);
-        Cell cellRight = right.getCellByName(aggregation);
+        Cell cellLeft = left.getCellByName(aggregation.getTable(), aggregation.getColumnName());
+        Cell cellRight = right.getCellByName(aggregation.getTable(), aggregation.getColumnName());
 
-        switch (function) {
-          case "sum":
+        switch (aggregation.getAggregationFunction()) {
+          case SUM:
             resultCell = GroupByAggregators.sum(cellLeft, cellRight);
             break;
-          case "count":
+          case COUNT:
             resultCell = GroupByAggregators.count(cellLeft, cellRight);
             break;
-          case "max":
+          case MAX:
             resultCell = GroupByAggregators.max(cellLeft, cellRight);
             break;
-          case "min":
+          case MIN:
             resultCell = GroupByAggregators.min(cellLeft, cellRight);
             break;
           default:
@@ -76,8 +75,8 @@ public class GroupByAggregation implements Function2<Cells, Cells, Cells> {
         // Sum column
         Cell resultSumCell = null;
 
-        Cell cellSumLeft = left.getCellByName(aggregation + "_sum");
-        Cell cellSumRight = right.getCellByName(aggregation + "_sum");
+        Cell cellSumLeft = left.getCellByName(aggregation.getField() + "_sum");
+        Cell cellSumRight = right.getCellByName(aggregation.getField() + "_sum");
 
         resultSumCell = GroupByAggregators.sum(cellSumLeft, cellSumRight);
 
@@ -86,8 +85,8 @@ public class GroupByAggregation implements Function2<Cells, Cells, Cells> {
         // Count number of repetitions
         Cell resultCountCell = null;
 
-        Cell cellCountLeft = left.getCellByName(aggregation + "_count");
-        Cell cellCountRight = right.getCellByName(aggregation + "_count");
+        Cell cellCountLeft = left.getCellByName(aggregation.getField() + "_count");
+        Cell cellCountRight = right.getCellByName(aggregation.getField() + "_count");
 
         resultCountCell = GroupByAggregators.count(cellCountLeft, cellCountRight);
 

@@ -16,6 +16,8 @@
 
 package com.stratio.meta.deep.transfer;
 
+import java.io.Serializable;
+
 import com.stratio.meta.core.structures.GroupByFunction;
 
 /**
@@ -24,7 +26,9 @@ import com.stratio.meta.core.structures.GroupByFunction;
  * @author Óscar Puertas
  * 
  */
-public class ColumnInfo {
+public class ColumnInfo implements Serializable {
+
+  private static final long serialVersionUID = -7511331222469777299L;
 
   private final String table;
 

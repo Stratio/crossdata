@@ -408,7 +408,7 @@ public class Bridge {
   private JavaRDD<Cells> doGroupBy(JavaRDD<Cells> rdd, List<GroupBy> groupByClause,
       SelectionList selectionClause) {
 
-    final List<String> aggregationCols =
+    final List<ColumnInfo> aggregationCols =
         DeepUtils.retrieveSelectorAggegationFunctions(selectionClause.getSelection());
 
     // Mapping the rdd to execute the group by clause
@@ -423,15 +423,15 @@ public class Bridge {
   }
 
   private JavaPairRDD<Cells, Cells> applyGroupByAggregations(JavaPairRDD<Cells, Cells> groupedRdd,
-      List<String> aggregationCols) {
+      List<ColumnInfo> aggregationCols) {
 
     JavaPairRDD<Cells, Cells> aggregatedRdd =
         groupedRdd.reduceByKey(new GroupByAggregation(aggregationCols));
 
     // Looking for the average aggregator to complete it
-    for (String aggregation : aggregationCols) {
+    for (ColumnInfo aggregation : aggregationCols) {
 
-      if (aggregation.toLowerCase().startsWith("avg(")) {
+      if (GroupByFunction.AVG == aggregation.getAggregationFunction()) {
         aggregatedRdd = aggregatedRdd.mapValues(new AverageAggregatorMapping(aggregation));
       }
     }

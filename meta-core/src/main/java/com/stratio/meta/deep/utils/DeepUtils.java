@@ -302,21 +302,24 @@ public final class DeepUtils {
    * @param selection Selection
    * @return Array of fields in selection clause or null if all fields has been selected
    */
-  public static List<String> retrieveSelectorAggegationFunctions(Selection selection) {
+  public static List<ColumnInfo> retrieveSelectorAggegationFunctions(Selection selection) {
 
     // Retrieve aggretation function column names
-    List<String> columnsSet = new ArrayList<>();
+    List<ColumnInfo> columnsSet = new ArrayList<>();
     if (selection instanceof SelectionSelectors) {
       SelectionSelectors sSelectors = (SelectionSelectors) selection;
       for (int i = 0; i < sSelectors.getSelectors().size(); ++i) {
+
         SelectorMeta selectorMeta = sSelectors.getSelectors().get(i).getSelector();
         if (selectorMeta instanceof SelectorGroupBy) {
           SelectorGroupBy selGroup = (SelectorGroupBy) selectorMeta;
-          columnsSet.add(selGroup.getGbFunction().name() + "("
-              + ((SelectorIdentifier) selGroup.getParam()).getField() + ")");
+          SelectorIdentifier selId = (SelectorIdentifier) selGroup.getParam();
+          columnsSet.add(new ColumnInfo(selId.getTable(), selId.getField(), selGroup
+              .getGbFunction()));
         }
       }
     }
+
     return columnsSet;
   }
 }
