@@ -16,6 +16,24 @@
 
 package com.stratio.meta.core.statements;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
+
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -58,24 +76,6 @@ import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
-
-import org.apache.log4j.Logger;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Pattern;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -548,7 +548,7 @@ public class SelectStatement extends MetaStatement {
     }
 
     if (!result.hasError() && whereInc) {
-      if(streamMode){
+      if (streamMode) {
         result = validateWhereClauses(streamingMetadata, tableMetadataJoin);
       } else {
         result = validateWhereClauses(tableMetadataFrom, tableMetadataJoin);
@@ -677,13 +677,12 @@ public class SelectStatement extends MetaStatement {
 
     String operator = rc.getOperator();
 
-    com.stratio.meta.common.metadata.structures.TableMetadata
-        genericMetadata =
+    com.stratio.meta.common.metadata.structures.TableMetadata genericMetadata =
         metadata.getTableGenericMetadata(getEffectiveKeyspace(), targetTable);
 
     com.stratio.meta.common.metadata.structures.ColumnMetadata cm = null;
 
-    if(genericMetadata != null){
+    if (genericMetadata != null) {
       cm = genericMetadata.getColumn(column);
     }
 
@@ -721,13 +720,15 @@ public class SelectStatement extends MetaStatement {
         }
       }
 
-      if(streamMode){
-        switch (operator){
+      if (streamMode) {
+        switch (operator) {
           case "like":
           case "match":
           case "in":
           case "between":
-            result = Result.createValidationErrorResult("Operator '"+operator+"' is not supported in Where clauses for Ephemeral tables.");
+            result =
+                Result.createValidationErrorResult("Operator '" + operator
+                    + "' is not supported in Where clauses for Ephemeral tables.");
             break;
           default:
             break;
@@ -809,9 +810,10 @@ public class SelectStatement extends MetaStatement {
 
       logger.debug("Relation = " + relation.toString());
       logger.debug("relation.getIdentifiers().get(0).getTable = "
-                   + relation.getIdentifiers().get(0).getTable());
+          + relation.getIdentifiers().get(0).getTable());
 
-      if (streamingMetadata.getTableName().equalsIgnoreCase(relation.getIdentifiers().get(0).getTable())
+      if (streamingMetadata.getTableName().equalsIgnoreCase(
+          relation.getIdentifiers().get(0).getTable())
           || (relation.getIdentifiers().get(0).getTable() == null)) {
         relation.updateTermClass(streamingMetadata);
       } else {
@@ -877,7 +879,7 @@ public class SelectStatement extends MetaStatement {
 
     Result result = QueryResult.createSuccessQueryResult();
 
-    for (Ordering orderField: order) {
+    for (Ordering orderField : order) {
 
       String field = orderField.getSelectorIdentifier().toString();
 
@@ -1263,24 +1265,22 @@ public class SelectStatement extends MetaStatement {
     StringBuilder querySb = new StringBuilder("from ");
     querySb.append(streamName);
 
-    if(whereInc){
+    if (whereInc) {
       Iterator<Relation> whereIter = where.iterator();
       querySb.append("[");
-      while(whereIter.hasNext()){
+      while (whereIter.hasNext()) {
         Relation rel = whereIter.next();
 
-        querySb.append(rel.getIdentifiers().get(0).getField())
-               .append(" ")
-               .append(rel.getSiddhiOperator())
-               .append(" ");
+        querySb.append(rel.getIdentifiers().get(0).getField()).append(" ")
+            .append(rel.getSiddhiOperator()).append(" ");
 
-        if(rel.getTerms().get(0) instanceof StringTerm){
+        if (rel.getTerms().get(0) instanceof StringTerm) {
           querySb.append("'").append(rel.getTerms().get(0).toString()).append("'");
         } else {
           querySb.append(rel.getTerms().get(0).toString());
         }
 
-        if(whereIter.hasNext()){
+        if (whereIter.hasNext()) {
           querySb.append(" and ");
         }
       }
@@ -1821,16 +1821,19 @@ public class SelectStatement extends MetaStatement {
     }
 
     // ADD ORDER BY CLAUSES IF ANY
-    if(orderInc){
+    if (orderInc) {
       List<Ordering> newOrderings = new ArrayList<>();
-      for(Ordering ordering: order){
+      for (Ordering ordering : order) {
         String field = ordering.getSelectorIdentifier().getField();
         String tableOrigin = ordering.getSelectorIdentifier().getTable();
-        newOrderings.add(new Ordering(tableOrigin, field, ordering.isDirInc(), ordering.getOrderDir()));
-        if(tableOrigin.equalsIgnoreCase(firstSelect.getTableName())){
-          firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(tableOrigin, field)));
+        newOrderings.add(new Ordering(tableOrigin, field, ordering.isDirInc(), ordering
+            .getOrderDir()));
+        if (tableOrigin.equalsIgnoreCase(firstSelect.getTableName())) {
+          firstSelect
+              .addSelection(new SelectionSelector(new SelectorIdentifier(tableOrigin, field)));
         } else {
-          secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(tableOrigin, field)));
+          secondSelect.addSelection(new SelectionSelector(
+              new SelectorIdentifier(tableOrigin, field)));
         }
       }
       joinSelect.setOrder(newOrderings);
@@ -2216,19 +2219,33 @@ public class SelectStatement extends MetaStatement {
     }
   }
 
-  private void replaceAliasesInJoin(Map<String, String> tablesAliasesMap) {
+  private void replaceAliasesInJoin(Map<String, String> fieldsAliasesMap,
+      Map<String, String> tablesAliasesMap) {
 
     if (this.join != null) {
+
       String leftTable = this.join.getLeftField().getTable();
       String tableName = tablesAliasesMap.get(leftTable);
       if (tableName != null) {
         this.join.getLeftField().setTable(tableName);
       }
 
+      String leftField = this.join.getLeftField().getField();
+      String fieldName = fieldsAliasesMap.get(leftField);
+      if (fieldName != null) {
+        this.join.getLeftField().setField(fieldName);
+      }
+
       String rightTable = this.join.getRightField().getTable();
       tableName = tablesAliasesMap.get(rightTable);
       if (tableName != null) {
         this.join.getRightField().setTable(tableName);
+      }
+
+      String rightField = this.join.getLeftField().getField();
+      fieldName = fieldsAliasesMap.get(rightField);
+      if (fieldName != null) {
+        this.join.getLeftField().setField(fieldName);
       }
     }
   }
@@ -2259,7 +2276,7 @@ public class SelectStatement extends MetaStatement {
     replaceAliasesInOrderBy(fieldsAliasesMap, tablesAliasesMap);
 
     // Replacing alias in JOIN clause
-    replaceAliasesInJoin(tablesAliasesMap);
+    replaceAliasesInJoin(fieldsAliasesMap, tablesAliasesMap);
 
   }
 

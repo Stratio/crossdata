@@ -45,8 +45,8 @@ public class AverageAggregatorMapping implements Function<Cells, Cells> {
   @Override
   public Cells call(Cells row) throws Exception {
 
-    Cell sumCell = row.getCellByName(averageSumField);
-    Cell countCell = row.getCellByName(averageCountField);
+    CassandraCell sumCell = (CassandraCell) row.getCellByName(averageSumField);
+    CassandraCell countCell = (CassandraCell) row.getCellByName(averageCountField);
 
     Cell resultCell = null;
     double average;

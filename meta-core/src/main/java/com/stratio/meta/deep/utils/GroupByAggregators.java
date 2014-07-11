@@ -31,7 +31,7 @@ public final class GroupByAggregators {
   public static Cell sum(Cell cell1, Cell cell2) {
 
     Cell resultCell = null;
-    Class<?> valueType = cell1.getValueType();
+    Class<?> valueType = ((CassandraCell) cell1).getValueType();
 
     if (valueType.equals(Integer.class) || valueType.equals(Long.class)
         || valueType.equals(BigInteger.class)) {
@@ -68,7 +68,7 @@ public final class GroupByAggregators {
 
     Cell resultCell = null;
 
-    Class<?> valueType = cell1.getValueType();
+    Class<?> valueType = ((CassandraCell) cell1).getValueType();
     if (valueType.equals(Integer.class) || valueType.equals(Long.class)
         || valueType.equals(BigInteger.class)) {
       BigInteger bigValue1 = new BigInteger(cell1.getCellValue().toString());
@@ -88,7 +88,7 @@ public final class GroupByAggregators {
 
     Cell resultCell = null;
 
-    Class<?> valueType = cell1.getValueType();
+    Class<?> valueType = ((CassandraCell) cell1).getValueType();
     if (valueType.equals(Integer.class) || valueType.equals(Long.class)
         || valueType.equals(BigInteger.class)) {
       BigInteger bigValue1 = new BigInteger(cell1.getCellValue().toString());
