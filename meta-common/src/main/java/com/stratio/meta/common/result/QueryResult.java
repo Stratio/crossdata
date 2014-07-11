@@ -56,6 +56,13 @@ public class QueryResult extends Result {
   private boolean catalogChanged = false;
 
   /**
+   * Whether the execution of the query has been ignored due to some constraints not being
+   * satisfied (e.g., IF NOT EXISTS).
+   */
+  //TODO Return this type of query for IF NOT EXISTS
+  private boolean ignoredQuery = false;
+
+  /**
    * Private class constructor of the factory.
    *
    * @param resultSet The set of tuples returned.

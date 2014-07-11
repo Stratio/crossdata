@@ -21,10 +21,13 @@ import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+
+import java.util.List;
 
 /**
  * Class that models a generic Statement supported by the META language.
@@ -52,6 +55,11 @@ public abstract class MetaStatement {
    * The current keyspace in the user session.
    */
   protected String sessionKeyspace = null;
+
+  /**
+   * The type of statement to be executed.
+   */
+  protected StatementType type = null;
 
   /**
    * Default class constructor.
@@ -189,4 +197,27 @@ public abstract class MetaStatement {
     sessionKeyspace = targetKeyspace;
   }
 
+  public List<String> getCatalogs(){
+    return null;
+  }
+
+  public List<String> getTables(){
+    return null;
+  }
+
+  public List<String> getColumns(){
+    return null;
+  }
+
+  public List<Assignation> getAssignations(){
+    return null;
+  }
+
+  public boolean getIfExists(){
+    return false;
+  }
+
+  public boolean getIfNotExists(){
+    return false;
+  }
 }

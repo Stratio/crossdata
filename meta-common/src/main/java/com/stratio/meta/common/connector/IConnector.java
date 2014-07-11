@@ -54,6 +54,12 @@ public interface IConnector {
   public void close() throws ConnectionException;
 
   /**
+   * Retrieve the connectivity status with the datastore.
+   * @return Whether it is connected or not.
+   */
+  public boolean isConnected();
+
+  /**
    * Get the storage engine.
    * @return An implementation of {@link com.stratio.meta.common.connector.IStorageEngine}.
    * @throws UnsupportedException If the connector does not provide this functionality.
