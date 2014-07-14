@@ -1787,10 +1787,12 @@ public class SelectStatement extends MetaStatement {
           SelectorGroupBy sg = (SelectorGroupBy) ss.getSelector();
           SelectorIdentifier si = (SelectorIdentifier) sg.getParam();
           SelectorIdentifier newSi = new SelectorIdentifier(si.getTable(), si.getField());
-          if (tableMetadataFrom.getColumn(si.getField()) != null) {
-            firstSelect.addSelection(new SelectionSelector(newSi));
-          } else {
-            secondSelect.addSelection(new SelectionSelector(newSi));
+          if (GroupByFunction.COUNT != sg.getGbFunction()) {
+            if (tableMetadataFrom.getColumn(si.getField()) != null) {
+              firstSelect.addSelection(new SelectionSelector(newSi));
+            } else {
+              secondSelect.addSelection(new SelectionSelector(newSi));
+            }
           }
         }
       }
