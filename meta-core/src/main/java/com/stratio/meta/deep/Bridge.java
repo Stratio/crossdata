@@ -220,10 +220,11 @@ public class Bridge {
 
     JavaRDD<Cells> result = joinedResult;
 
+    // Group by clause
     if (ss.isGroupInc()) {
-      JavaRDD<Cells> groupedResult =
-          doGroupBy(result, ss.getGroup(), (SelectionList) ss.getSelectionClause());
-      result = groupedResult;
+      result = doGroupBy(result, ss.getGroup(), (SelectionList) ss.getSelectionClause());
+    } else if (ss.getSelectionClause().containsFunctions()) {
+      result = doGroupBy(result, null, (SelectionList) ss.getSelectionClause());
     }
 
     // MetaResultSet

@@ -1697,8 +1697,7 @@ public class SelectStatement extends MetaStatement {
         targetSelect = secondSelect;
       }
 
-      targetWhere.add(new RelationCompare(whereColumnName, relation.getOperator(), relation
-          .getTerms().get(0)));
+      targetWhere.add(relation);
 
       if (checkAddSelectionJoinWhere(targetSelect, whereColumnName)) {
         targetSelect.addSelection(new SelectionSelector(new SelectorIdentifier(whereColumnName)));

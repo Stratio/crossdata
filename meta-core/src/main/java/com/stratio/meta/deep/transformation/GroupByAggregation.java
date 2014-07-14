@@ -69,7 +69,7 @@ public class GroupByAggregation implements Function2<Cells, Cells, Cells> {
             break;
         }
 
-        left.replaceByName(resultCell);
+        left.replaceByName(aggregation.getTable(), resultCell);
       } else {
 
         // Sum column
@@ -80,7 +80,7 @@ public class GroupByAggregation implements Function2<Cells, Cells, Cells> {
 
         resultSumCell = GroupByAggregators.sum(cellSumLeft, cellSumRight);
 
-        left.replaceByName(resultSumCell);
+        left.replaceByName(aggregation.getTable(), resultSumCell);
 
         // Count number of repetitions
         Cell resultCountCell = null;
@@ -90,7 +90,7 @@ public class GroupByAggregation implements Function2<Cells, Cells, Cells> {
 
         resultCountCell = GroupByAggregators.count(cellCountLeft, cellCountRight);
 
-        left.replaceByName(resultCountCell);
+        left.replaceByName(aggregation.getTable(), resultCountCell);
       }
     }
 
