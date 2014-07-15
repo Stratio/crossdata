@@ -39,11 +39,15 @@ import org.apache.spark.SparkEnv;
 import org.apache.spark.storage.BlockManagerMasterActor;
 import org.apache.spark.storage.StorageStatus;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
 import scala.Tuple2;
 import scala.collection.Iterator;
+
+import com.hazelcast.core.*;
+import com.hazelcast.config.*;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
@@ -84,6 +88,13 @@ public class Engine {
   private final Session session;
 
   /**
+   * Hazelcast instance.
+   */
+  private final HazelcastInstance hazelcast;
+
+  private final Map<String, byte[]> hazelcastMap;
+
+  /**
    * Deep Spark context.
    */
   private final DeepSparkContext deepContext;
@@ -103,6 +114,9 @@ public class Engine {
     this.deepContext = initializeDeep(config);
 
     this.session=initializeDB(config);
+
+    hazelcast = initializeHazelcast(config);
+    hazelcastMap = hazelcast.getMap(config.getHazelcastMapName());
 
     IStratioStreamingAPI stratioStreamingAPI = initializeStreaming(config);
 
@@ -193,6 +207,32 @@ public class Engine {
     return  result;
   }
 
+  /**
+   * Initializes the {@link com.hazelcast.core.HazelcastInstance} to be used using {@code config} .
+   * @param config An {@link com.stratio.meta.core.engine.EngineConfig}.
+   * @return a new {@link com.hazelcast.core.HazelcastInstance}.
+   */
+  private HazelcastInstance initializeHazelcast(EngineConfig config) {
+
+    MapConfig mapCfg = new MapConfig();
+    mapCfg.setName(config.getHazelcastMapName());
+    mapCfg.setBackupCount(config.getHazelcastMapBackups());
+    mapCfg.getMaxSizeConfig().setSize(config.getHazelcastMapSize());
+    mapCfg.getMaxSizeConfig().setMaxSizePolicy(MaxSizeConfig.MaxSizePolicy.PER_NODE);
+    mapCfg.setInMemoryFormat(InMemoryFormat.OBJECT);
+
+    Config cfg = new Config();
+    cfg.getNetworkConfig().setPort(config.getHazelcastPort());
+    cfg.getNetworkConfig().setPortAutoIncrement(false);
+    cfg.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+    cfg.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
+    cfg.getNetworkConfig().getJoin().getTcpIpConfig()
+        .setMembers(new ArrayList<String>(Arrays.asList(config.getHazelcastHosts())));
+    cfg.addMapConfig(mapCfg);
+
+    return Hazelcast.newHazelcastInstance(cfg);
+  }
+
   public DeepSparkContext getDeepContext() {
     return deepContext;
   }
@@ -241,12 +281,17 @@ public class Engine {
     return manager;
   }
 
+  public Map<String, byte[]> getHazelcastMap() {
+    return hazelcastMap;
+  }
+
   /**
    * Close open connections.
    */
   public void shutdown(){
     deepContext.stop();
     session.close();
+    hazelcast.shutdown();
   }
 
 }
