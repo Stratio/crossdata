@@ -49,6 +49,7 @@ import com.stratio.meta.core.structures.GroupByFunction;
 import com.stratio.meta.core.structures.Ordering;
 import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.SelectionClause;
+import com.stratio.meta.core.structures.SelectionCount;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.deep.comparators.DeepComparator;
@@ -157,10 +158,12 @@ public class Bridge {
     }
 
     // Group by clause
-    if (ss.isGroupInc()) {
+    if (ss.isGroupInc() && ss.getSelectionClause() instanceof SelectionList) {
       rdd = doGroupBy(rdd, ss.getGroup(), (SelectionList) ss.getSelectionClause());
     } else if (ss.getSelectionClause().containsFunctions()) {
       rdd = doGroupBy(rdd, null, (SelectionList) ss.getSelectionClause());
+    } else if (ss.getSelectionClause() instanceof SelectionCount) {
+      rdd = doGroupBy(rdd, ss.getGroup(), null);
     }
 
     MetaResultSet resultSet =
@@ -185,7 +188,6 @@ public class Bridge {
 
     // Retrieve RDDs and selected columns from children
     List<JavaRDD<Cells>> children = new ArrayList<>();
-    List<ColumnInfo> selectedCols = new ArrayList<>();
     for (Result child : resultsFromChildren) {
       QueryResult qResult = (QueryResult) child;
       MetaResultSet crset = (MetaResultSet) qResult.getResultSet();
@@ -197,8 +199,12 @@ public class Bridge {
       children.add(rdd);
     }
 
-    selectedCols =
-        DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
+    List<ColumnInfo> cols = new ArrayList<>();
+    if (ss.getSelectionClause() instanceof SelectionList) {
+      cols = DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
+    } else { // SelectionCount
+      cols.add(new ColumnInfo(ss.getTableName(), "*", GroupByFunction.COUNT));
+    }
 
     // JOIN
     String keyTableLeft = ss.getJoin().getLeftField().getField();
@@ -229,8 +235,7 @@ public class Bridge {
 
     // MetaResultSet
     MetaResultSet resultSet =
-        (MetaResultSet) returnResult(result, true, false, selectedCols, ss.getLimit(),
-            ss.getOrder());
+        (MetaResultSet) returnResult(result, true, false, cols, ss.getLimit(), ss.getOrder());
 
     return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
   }
@@ -409,16 +414,23 @@ public class Bridge {
   private JavaRDD<Cells> doGroupBy(JavaRDD<Cells> rdd, List<GroupBy> groupByClause,
       SelectionList selectionClause) {
 
-    final List<ColumnInfo> aggregationCols =
-        DeepUtils.retrieveSelectorAggegationFunctions(selectionClause.getSelection());
+    final List<ColumnInfo> aggregationCols;
+    if (selectionClause != null) {
+      aggregationCols =
+          DeepUtils.retrieveSelectorAggegationFunctions(selectionClause.getSelection());
+    } else {
+      aggregationCols = null;
+    }
 
     // Mapping the rdd to execute the group by clause
     JavaPairRDD<Cells, Cells> groupedRdd =
         rdd.mapToPair(new GroupByMapping(aggregationCols, groupByClause));
 
-    JavaPairRDD<Cells, Cells> aggregatedRdd = applyGroupByAggregations(groupedRdd, aggregationCols);
+    if (selectionClause != null) {
+      groupedRdd = applyGroupByAggregations(groupedRdd, aggregationCols);
+    }
 
-    JavaRDD<Cells> map = aggregatedRdd.map(new KeyRemover());
+    JavaRDD<Cells> map = groupedRdd.map(new KeyRemover());
 
     return map;
   }

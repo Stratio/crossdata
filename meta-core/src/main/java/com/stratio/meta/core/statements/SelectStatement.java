@@ -60,6 +60,7 @@ import com.stratio.meta.core.structures.RelationToken;
 import com.stratio.meta.core.structures.Selection;
 import com.stratio.meta.core.structures.SelectionAsterisk;
 import com.stratio.meta.core.structures.SelectionClause;
+import com.stratio.meta.core.structures.SelectionCount;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelector;
 import com.stratio.meta.core.structures.SelectionSelectors;
@@ -1736,70 +1737,84 @@ public class SelectStatement extends MetaStatement {
       secondSelect.addSelection(new SelectionSelector(this.join.getLeftField()));
     }
 
-    // ADD FIELDS OF THE SELECT
-    SelectionList selectionList = (SelectionList) this.selectionClause;
-    Selection selection = selectionList.getSelection();
+    if (this.selectionClause instanceof SelectionList) {
+      // ADD FIELDS OF THE SELECT
+      SelectionList selectionList = (SelectionList) this.selectionClause;
+      Selection selection = selectionList.getSelection();
 
-    if (selection instanceof SelectionSelectors) {
-      SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
-      for (SelectionSelector ss : selectionSelectors.getSelectors()) {
+      if (selection instanceof SelectionSelectors) {
+        SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
+        for (SelectionSelector ss : selectionSelectors.getSelectors()) {
 
-        if (ss.getSelector() instanceof SelectorIdentifier) { // Example: users.name
-          SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
-          if (tableMetadataFrom.getColumn(si.getField()) != null) {
-            firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getTable(), si
-                .getField())));
-          } else {
-            secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getTable(),
-                si.getField())));
-          }
-        } else if (ss.getSelector() instanceof SelectorFunction) { // Example: myfunction(users.age,
-                                                                   // users_info.dateOfRegistration)
-          SelectorFunction sf = (SelectorFunction) ss.getSelector();
-          List<SelectorMeta> paramsFirst = new ArrayList<>();
-          List<SelectorMeta> paramsSecond = new ArrayList<>();
-          for (SelectorMeta sm : sf.getParams()) {
-            SelectorIdentifier si = (SelectorIdentifier) sm;
+          if (ss.getSelector() instanceof SelectorIdentifier) { // Example: users.name
+            SelectorIdentifier si = (SelectorIdentifier) ss.getSelector();
             if (tableMetadataFrom.getColumn(si.getField()) != null) {
-              paramsFirst.add(new SelectorIdentifier(si.getTable(), si.getField()));
+              firstSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getTable(),
+                  si.getField())));
             } else {
-              paramsSecond.add(new SelectorIdentifier(si.getTable(), si.getField()));
+              secondSelect.addSelection(new SelectionSelector(new SelectorIdentifier(si.getTable(),
+                  si.getField())));
             }
-          }
-          if (!paramsFirst.isEmpty()) {
-            firstSelect.addSelection(new SelectionSelector(new SelectorFunction(sf.getName(),
-                paramsFirst)));
-          }
-          if (!paramsFirst.isEmpty()) {
-            secondSelect.addSelection(new SelectionSelector(new SelectorFunction(sf.getName(),
-                paramsSecond)));
-          }
-        } else if (ss.getSelector() instanceof SelectorGroupBy) { // Example: sum(users.age) ...
-                                                                  // GroupBy users.gender
-          /*
-           * SelectorGroupBy sg = (SelectorGroupBy) ss.getSelector(); SelectorIdentifier si =
-           * (SelectorIdentifier) sg.getParam(); SelectorIdentifier newSi = new
-           * SelectorIdentifier(si.getTable(), si.getField()); if
-           * (tableMetadataFrom.getColumn(si.getField()) != null) { firstSelect.addSelection(new
-           * SelectionSelector(newSi)); } else { secondSelect.addSelection(new
-           * SelectionSelector(newSi)); }
-           */
-          SelectorGroupBy sg = (SelectorGroupBy) ss.getSelector();
-          SelectorIdentifier si = (SelectorIdentifier) sg.getParam();
-          SelectorIdentifier newSi = new SelectorIdentifier(si.getTable(), si.getField());
-          if (GroupByFunction.COUNT != sg.getGbFunction()) {
-            if (tableMetadataFrom.getColumn(si.getField()) != null) {
-              firstSelect.addSelection(new SelectionSelector(newSi));
-            } else {
-              secondSelect.addSelection(new SelectionSelector(newSi));
+          } else if (ss.getSelector() instanceof SelectorFunction) { // Example:
+                                                                     // myfunction(users.age,
+                                                                     // users_info.dateOfRegistration)
+            SelectorFunction sf = (SelectorFunction) ss.getSelector();
+            List<SelectorMeta> paramsFirst = new ArrayList<>();
+            List<SelectorMeta> paramsSecond = new ArrayList<>();
+            for (SelectorMeta sm : sf.getParams()) {
+              SelectorIdentifier si = (SelectorIdentifier) sm;
+              if (tableMetadataFrom.getColumn(si.getField()) != null) {
+                paramsFirst.add(new SelectorIdentifier(si.getTable(), si.getField()));
+              } else {
+                paramsSecond.add(new SelectorIdentifier(si.getTable(), si.getField()));
+              }
+            }
+            if (!paramsFirst.isEmpty()) {
+              firstSelect.addSelection(new SelectionSelector(new SelectorFunction(sf.getName(),
+                  paramsFirst)));
+            }
+            if (!paramsFirst.isEmpty()) {
+              secondSelect.addSelection(new SelectionSelector(new SelectorFunction(sf.getName(),
+                  paramsSecond)));
+            }
+          } else if (ss.getSelector() instanceof SelectorGroupBy) { // Example: sum(users.age) ...
+                                                                    // GroupBy users.gender
+            /*
+             * SelectorGroupBy sg = (SelectorGroupBy) ss.getSelector(); SelectorIdentifier si =
+             * (SelectorIdentifier) sg.getParam(); SelectorIdentifier newSi = new
+             * SelectorIdentifier(si.getTable(), si.getField()); if
+             * (tableMetadataFrom.getColumn(si.getField()) != null) { firstSelect.addSelection(new
+             * SelectionSelector(newSi)); } else { secondSelect.addSelection(new
+             * SelectionSelector(newSi)); }
+             */
+            SelectorGroupBy sg = (SelectorGroupBy) ss.getSelector();
+            SelectorIdentifier si = (SelectorIdentifier) sg.getParam();
+            SelectorIdentifier newSi = new SelectorIdentifier(si.getTable(), si.getField());
+            if (GroupByFunction.COUNT != sg.getGbFunction()) {
+              if (tableMetadataFrom.getColumn(si.getField()) != null) {
+                firstSelect.addSelection(new SelectionSelector(newSi));
+              } else {
+                secondSelect.addSelection(new SelectionSelector(newSi));
+              }
             }
           }
         }
+      } else {
+        // instanceof SelectionAsterisk
+        firstSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
+        secondSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
       }
     } else {
-      // instanceof SelectionAsterisk
-      firstSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
-      secondSelect.setSelectionClause(new SelectionList(new SelectionAsterisk()));
+      SelectionList selListLeft =
+          new SelectionList(new SelectionSelectors(Arrays.asList(new SelectionSelector(this.join
+              .getLeftField()))));
+      SelectionList selListRight =
+          new SelectionList(new SelectionSelectors(Arrays.asList(new SelectionSelector(this.join
+              .getRightField()))));
+
+      firstSelect.setSelectionClause(selListLeft);
+      secondSelect.setSelectionClause(selListRight);
+      joinSelect.setSelectionClause(new SelectionCount('*'));
     }
 
     // ADD WHERE CLAUSES IF ANY
