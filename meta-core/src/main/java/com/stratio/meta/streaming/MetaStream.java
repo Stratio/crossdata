@@ -177,7 +177,7 @@ public class MetaStream {
                                   boolean isRoot){
     callbackActors.put(queryId, callbackActor);
 
-    String ks = ss.getEffectiveKeyspace();
+    String ks = ss.getEffectiveCatalog();
     String streamName = ks+"_"+ss.getTableName();
     try {
       String outgoing = streamName+"_"+ queryId.replace("-", "_");

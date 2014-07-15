@@ -81,9 +81,9 @@ public class AlterTableStatement extends MetaStatement{
         this.command = false;
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
-            keyspace = ksAndTableName[0];
+            catalog = ksAndTableName[0];
             this.tableName = ksAndTableName[1];
-            keyspaceInc = true;
+            catalogInc = true;
         }else {
             this.tableName = tableName;
         }
@@ -96,8 +96,8 @@ public class AlterTableStatement extends MetaStatement{
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Alter table ");
-        if(keyspaceInc){
-            sb.append(keyspace).append(".");
+        if(catalogInc){
+            sb.append(catalog).append(".");
         }
         sb.append(tableName);
         switch(option){
@@ -141,9 +141,9 @@ public class AlterTableStatement extends MetaStatement{
      */
     @Override
     public Result validate(MetadataManager metadata, EngineConfig config) {
-        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+        Result result = validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
         if(!result.hasError()) {
-            String effectiveKeyspace = getEffectiveKeyspace();
+            String effectiveKeyspace = getEffectiveCatalog();
 
             TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
 

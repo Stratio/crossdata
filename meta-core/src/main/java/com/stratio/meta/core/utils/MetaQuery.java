@@ -235,6 +235,6 @@ public class MetaQuery {
    */
   public void setSessionKeyspace(String sessionKeyspace) {
     this.sessionKeyspace = sessionKeyspace;
-    statement.setSessionKeyspace(sessionKeyspace);
+    statement.setSessionCatalog(sessionKeyspace);
   }
 }

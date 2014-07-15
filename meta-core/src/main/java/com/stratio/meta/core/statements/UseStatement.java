@@ -37,9 +37,9 @@ public class UseStatement extends MetaStatement {
      * @param keyspace The name of the target keyspace.
      */
     public UseStatement(String keyspace) {
-        super.keyspace = keyspace;
+        super.catalog = keyspace;
         if(!keyspace.contains("'")){
-            super.keyspace = keyspace.toLowerCase();
+            super.catalog = keyspace.toLowerCase();
         }
         this.command = false;
     }
@@ -49,25 +49,25 @@ public class UseStatement extends MetaStatement {
      * @return The name.
      */
     public String getKeyspaceName() {
-        return keyspace;
+        return catalog;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("USE ");
-        sb.append(keyspace);
+        sb.append(catalog);
         return sb.toString();
     }
 
     @Override
     public Result validate(MetadataManager metadata, EngineConfig config) {
         Result result = QueryResult.createSuccessQueryResult();
-        if(keyspace != null && keyspace.length() > 0){
-            if(!metadata.getKeyspacesNames().contains(keyspace.toLowerCase())){
-                result= Result.createValidationErrorResult("Keyspace " + keyspace + " does not exist.");
+        if(catalog != null && catalog.length() > 0){
+            if(!metadata.getKeyspacesNames().contains(catalog.toLowerCase())){
+                result= Result.createValidationErrorResult("Keyspace " + catalog + " does not exist.");
             }
         }else{
-            result= Result.createValidationErrorResult("Missing keyspace name.");
+            result= Result.createValidationErrorResult("Missing catalog name.");
         }
         return result;
     }

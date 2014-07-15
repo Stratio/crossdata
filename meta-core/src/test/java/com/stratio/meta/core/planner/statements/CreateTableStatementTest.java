@@ -50,7 +50,7 @@ public class CreateTableStatementTest extends BasicPlannerTest {
     stmt =
         new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"),
             Arrays.asList("name"), 1, 1);
-    stmt.setSessionKeyspace("demo");
+    stmt.setSessionCatalog("demo");
 
     try {
       Class<? extends MetaStatement> clazz = stmt.getClass();
@@ -75,7 +75,7 @@ public class CreateTableStatementTest extends BasicPlannerTest {
     stmt =
         new CreateTableStatement("demo.new_table", columns, Arrays.asList("id"),
             Arrays.asList("name"), 1, 1);
-    stmt.setSessionKeyspace("demo");
+    stmt.setSessionCatalog("demo");
 
     Property prop = new PropertyNameValue("ephemeral", new BooleanProperty(true));
 

@@ -127,7 +127,7 @@ public class BasicCoreCassandraTest {
       try {
         _session.execute(q);
       } catch (Exception e) {
-        logger.error("Cannot drop keyspace: " + targetKeyspace, e);
+        logger.error("Cannot drop catalog: " + targetKeyspace, e);
       }
     }
   }
@@ -142,7 +142,7 @@ public class BasicCoreCassandraTest {
   protected static void loadTestData(String keyspace, String path) {
     KeyspaceMetadata metadata = _session.getCluster().getMetadata().getKeyspace(keyspace);
     if (metadata == null) {
-      logger.info("Creating keyspace " + keyspace + " using " + path);
+      logger.info("Creating catalog " + keyspace + " using " + path);
       List<String> scriptLines = loadScript(path);
       logger.info("Executing " + scriptLines.size() + " lines");
       for (String cql : scriptLines) {
@@ -152,7 +152,7 @@ public class BasicCoreCassandraTest {
         }
       }
     }
-    logger.info("Using existing keyspace " + keyspace);
+    logger.info("Using existing catalog " + keyspace);
   }
 
   /**

@@ -107,7 +107,7 @@ public class CreateKeyspaceStatement extends MetaStatement {
         result = Result.createValidationErrorResult("Keyspace " + name + " already exists.");
       }
     }else{
-      result = Result.createValidationErrorResult("Empty keyspace name found.");
+      result = Result.createValidationErrorResult("Empty catalog name found.");
     }
 
     if(properties.isEmpty() || !properties.containsKey("replication")){

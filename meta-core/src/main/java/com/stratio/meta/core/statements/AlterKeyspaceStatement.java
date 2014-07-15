@@ -51,7 +51,7 @@ public class AlterKeyspaceStatement extends MetaStatement {
      */
     public AlterKeyspaceStatement(String keyspace, Map<String, ValueProperty> properties) {
         this.command = false;
-        this.keyspace = keyspace;
+        this.catalog = keyspace;
         this.properties = new HashMap<>();
         for(Map.Entry<String, ValueProperty> entry : properties.entrySet()){
             this.properties.put(entry.getKey().toLowerCase(), entry.getValue());
@@ -61,7 +61,7 @@ public class AlterKeyspaceStatement extends MetaStatement {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("ALTER KEYSPACE ");
-        sb.append(keyspace).append(" WITH ");
+        sb.append(catalog).append(" WITH ");
         sb.append(ParserUtils.stringMap(properties, " = ", " AND "));
         return sb.toString();
     }
@@ -76,13 +76,13 @@ public class AlterKeyspaceStatement extends MetaStatement {
 
         Result result = QueryResult.createSuccessQueryResult();
 
-        if(keyspace!= null && keyspace.length() > 0) {
-            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspace);
+        if(catalog != null && catalog.length() > 0) {
+            KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(catalog);
             if(ksMetadata == null){
-                result= Result.createValidationErrorResult("Keyspace " + keyspace + " not found.");
+                result= Result.createValidationErrorResult("Keyspace " + catalog + " not found.");
             }
         } else {
-            result= Result.createValidationErrorResult("Empty keyspace name found.");
+            result= Result.createValidationErrorResult("Empty catalog name found.");
         }
 
         if(properties.isEmpty() || (!properties.containsKey("replication")

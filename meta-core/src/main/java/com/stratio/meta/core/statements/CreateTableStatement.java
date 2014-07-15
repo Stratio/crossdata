@@ -29,7 +29,6 @@ import com.stratio.meta.core.structures.PropertyNameValue;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 
 import java.util.ArrayList;
@@ -54,7 +53,7 @@ public class CreateTableStatement extends MetaStatement {
   /**
    * A map with the name of the columns in the table and the associated data type.
    */
-  private Map<String, String> columns;
+  private Map<String, String> columnsWithType;
 
   /**
    * The list of columns that are part of the primary key.
@@ -123,21 +122,21 @@ public class CreateTableStatement extends MetaStatement {
     this.command = false;
     if (tableName.contains(".")) {
       String[] ksAndTablename = tableName.split("\\.");
-      keyspace = ksAndTablename[0];
+      catalog = ksAndTablename[0];
       this.tableName = ksAndTablename[1];
-      keyspaceInc = true;
+      catalogInc = true;
     } else {
       this.tableName = tableName;
     }
-    this.columns = columns;
+    this.columnsWithType = columns;
     this.primaryKey = primaryKey;
     this.clusterKey = clusterKey;
     this.primaryKeyType = primaryKeyType;
     this.columnNumberPK = columnNumberPK;
   }
 
-  public Map<String, String> getColumns() {
-    return columns;
+  public Map<String, String> getColumnsWithTypes() {
+    return columnsWithType;
   }
 
   public String getTableName() {
@@ -150,7 +149,7 @@ public class CreateTableStatement extends MetaStatement {
    * @param keyspace The name of the keyspace.
    */
   public void setKeyspace(String keyspace) {
-    this.keyspace = keyspace;
+    this.catalog = keyspace;
   }
 
   /**
@@ -177,11 +176,11 @@ public class CreateTableStatement extends MetaStatement {
 
   public String getSinglePKString() {
     StringBuilder sb = new StringBuilder(" (");
-    Set<String> keySet = columns.keySet();
+    Set<String> keySet = columnsWithType.keySet();
     int i = 0;
     for (Iterator<String> it = keySet.iterator(); it.hasNext();) {
       String key = it.next();
-      String vp = columns.get(key);
+      String vp = columnsWithType.get(key);
       sb.append(key).append(" ").append(vp);
       if (i == columnNumberPK) {
         sb.append(" PRIMARY KEY");
@@ -228,18 +227,18 @@ public class CreateTableStatement extends MetaStatement {
       sb.append("IF NOT EXISTS ");
     }
 
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (catalogInc) {
+      sb.append(catalog).append(".");
     }
     sb.append(tableName);
 
     if (primaryKeyType == PRIMARY_SINGLE) {
       sb.append(getSinglePKString());
     } else {
-      Set<String> keySet = columns.keySet();
+      Set<String> keySet = columnsWithType.keySet();
       sb.append(" (");
       for (String key : keySet) {
-        String vp = columns.get(key);
+        String vp = columnsWithType.get(key);
         sb.append(key).append(" ").append(vp).append(", ");
       }
       sb.append(getCompositePKString());
@@ -272,8 +271,8 @@ public class CreateTableStatement extends MetaStatement {
   private Result validateEphimeral(MetadataManager metadata) {
     Result result = QueryResult.createSuccessQueryResult();
     createTable = true;
-    if (metadata.checkStream(getEffectiveKeyspace()+"."+tableName)){
-      result= Result.createValidationErrorResult(tableName+ " already exists in keyspace "+getEffectiveKeyspace());
+    if (metadata.checkStream(getEffectiveCatalog()+"."+tableName)){
+      result= Result.createValidationErrorResult(tableName+ " already exists in catalog "+ getEffectiveCatalog());
       createTable = false;
     }
     return result;
@@ -290,11 +289,11 @@ public class CreateTableStatement extends MetaStatement {
     Result result = QueryResult.createSuccessQueryResult();
     //Get the effective keyspace based on the user specification during the create
     //sentence, or taking the keyspace in use in the user session.
-    String effectiveKeyspace = getEffectiveKeyspace();
+    String effectiveKeyspace = getEffectiveCatalog();
 
     //Check that the keyspace exists, and that the table does not exits.
     if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-      result = Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+      result = Result.createValidationErrorResult("Target catalog missing or no catalog has been selected.");
     }else{
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if(ksMetadata == null){
@@ -321,14 +320,14 @@ public class CreateTableStatement extends MetaStatement {
     Result result = QueryResult.createSuccessQueryResult();
     //The columns in the primary key must be declared.
     for (String pk : primaryKey) {
-      if(!columns.containsKey(pk)){
+      if(!columnsWithType.containsKey(pk)){
         result= Result.createValidationErrorResult("Missing declaration for Primary Key column " + pk);
       }
     }
 
     //The columns in the clustering key must be declared and not part of the primary key.
     for(String ck : clusterKey){
-      if(!columns.containsKey(ck)){
+      if(!columnsWithType.containsKey(ck)){
         result= Result.createValidationErrorResult("Missing declaration for Clustering Key column " + ck);
       }
       if(primaryKey.contains(ck)){
@@ -338,9 +337,9 @@ public class CreateTableStatement extends MetaStatement {
 
     String [] supported = {"BIGINT", "BOOLEAN", "COUNTER", "DOUBLE", "FLOAT", "INT", "VARCHAR"};
     Set<String> supportedColumns = new HashSet<>(Arrays.asList(supported));
-    for(String c : columns.keySet()){
-      if(!supportedColumns.contains(columns.get(c).toUpperCase()) || c.toLowerCase().startsWith("stratio")){
-        result= Result.createValidationErrorResult("Column " + c + " with datatype " + columns.get(c) + " not supported.");
+    for(String c : columnsWithType.keySet()){
+      if(!supportedColumns.contains(columnsWithType.get(c).toUpperCase()) || c.toLowerCase().startsWith("stratio")){
+        result= Result.createValidationErrorResult("Column " + c + " with datatype " + columnsWithType.get(c) + " not supported.");
       }
     }
 

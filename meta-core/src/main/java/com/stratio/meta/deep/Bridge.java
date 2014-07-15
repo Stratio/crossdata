@@ -130,7 +130,7 @@ public class Bridge {
     }
     ICassandraDeepJobConfig<Cells> config =
         DeepJobConfigFactory.create().session(session).host(engineConfig.getRandomCassandraHost())
-            .rpcPort(engineConfig.getCassandraPort()).keyspace(ss.getEffectiveKeyspace())
+            .rpcPort(engineConfig.getCassandraPort()).keyspace(ss.getEffectiveCatalog())
             .table(ss.getTableName());
 
     config =

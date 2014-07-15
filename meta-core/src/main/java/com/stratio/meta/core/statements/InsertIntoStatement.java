@@ -125,9 +125,9 @@ public class InsertIntoStatement extends MetaStatement {
     this.tableName = tableName;
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      catalog = ksAndTableName[0];
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
+      catalogInc = true;
     }
     this.ids = ids;
     this.selectStatement = selectStatement;
@@ -195,8 +195,8 @@ public class InsertIntoStatement extends MetaStatement {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("INSERT INTO ");
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (catalogInc) {
+      sb.append(catalog).append(".");
     }
     sb.append(tableName).append(" (");
     sb.append(StringUtils.stringList(ids, ", ")).append(") ");
@@ -220,9 +220,9 @@ public class InsertIntoStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result =
-        validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+        validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
     if (!result.hasError()) {
-      String effectiveKeyspace = getEffectiveKeyspace();
+      String effectiveKeyspace = getEffectiveCatalog();
 
       TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
 
@@ -299,8 +299,8 @@ public class InsertIntoStatement extends MetaStatement {
   @Override
   public String translateToCQL() {
     StringBuilder sb = new StringBuilder("INSERT INTO ");
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (catalogInc) {
+      sb.append(catalog).append(".");
     }
     sb.append(tableName).append(" (");
     sb.append(StringUtils.stringList(ids, ", "));
@@ -330,7 +330,7 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     Insert insertStmt =
-        this.keyspaceInc ? QueryBuilder.insertInto(this.keyspace, this.tableName) : QueryBuilder
+        this.catalogInc ? QueryBuilder.insertInto(this.catalog, this.tableName) : QueryBuilder
             .insertInto(this.tableName);
 
     try {

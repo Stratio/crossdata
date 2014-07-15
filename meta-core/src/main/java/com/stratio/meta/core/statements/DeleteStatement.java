@@ -33,7 +33,6 @@ import com.stratio.meta.common.statements.structures.relationships.RelationCompa
 import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 
 /**
@@ -86,9 +85,9 @@ public class DeleteStatement extends MetaStatement {
   public void setTableName(String tableName) {
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      catalog = ksAndTableName[0];
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
+      catalogInc = true;
     } else {
       this.tableName = tableName;
     }
@@ -110,8 +109,8 @@ public class DeleteStatement extends MetaStatement {
       sb.append("(").append(StringUtils.stringList(targetColumns, ", ")).append(") ");
     }
     sb.append("FROM ");
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (catalogInc) {
+      sb.append(catalog).append(".");
     }
     sb.append(tableName);
     if (!whereClauses.isEmpty()) {
@@ -125,8 +124,8 @@ public class DeleteStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
 
-    Result result = validateKeyspaceAndTable(metadata, sessionKeyspace);
-    String effectiveKeyspace = getEffectiveKeyspace();
+    Result result = validateKeyspaceAndTable(metadata, sessionCatalog);
+    String effectiveKeyspace = getEffectiveCatalog();
 
     TableMetadata tableMetadata = null;
     if (!result.hasError()) {
@@ -264,12 +263,12 @@ public class DeleteStatement extends MetaStatement {
     Result result = QueryResult.createSuccessQueryResult();
     // Get the effective keyspace based on the user specification during the create
     // sentence, or taking the keyspace in use in the user session.
-    String effectiveKeyspace = getEffectiveKeyspace();
+    String effectiveKeyspace = getEffectiveCatalog();
 
     // Check that the keyspace and table exists.
     if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
       result =
-          Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+          Result.createValidationErrorResult("Target catalog missing or no catalog has been selected.");
     } else {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if (ksMetadata == null) {

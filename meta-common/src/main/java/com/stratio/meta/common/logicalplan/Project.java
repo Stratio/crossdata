@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Project operation to retrieve a list of columns from the datastore.
  */
-public class Project {
+public class Project extends LogicalStep{
 
   /**
    * Catalog name.

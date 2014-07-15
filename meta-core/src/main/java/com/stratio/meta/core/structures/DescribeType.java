@@ -22,14 +22,14 @@ package com.stratio.meta.core.structures;
 public enum DescribeType {
 
   /**
-   * Describe a keyspace.
+   * Describe a catalog.
    */
-  KEYSPACE,
+  CATALOG,
 
   /**
-   * Describe all keyspaces.
+   * Describe all catalogs.
    */
-  KEYSPACES,
+  CATALOGS,
 
   /**
    * Describe a table.

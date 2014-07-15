@@ -25,19 +25,19 @@ import com.stratio.meta.core.structures.DescribeType;
 public class DescribeStatementTest extends BasicPlannerTest {
 
   @Test
-  public void testPlanForDescribeKeyspace() {
-    String input = "DESCRIBE KEYSPACE demo;";
-    stmt = new DescribeStatement(DescribeType.KEYSPACE);
-    ((DescribeStatement) stmt).setKeyspace("demo");
-    validateCommandPath("testPlanForDescribeKeyspace");
+  public void testPlanForDescribeCatalog() {
+    String input = "DESCRIBE CATALOG demo;";
+    stmt = new DescribeStatement(DescribeType.CATALOG);
+    ((DescribeStatement) stmt).setCatalog("demo");
+    validateCommandPath("testPlanForDescribeCatalog");
   }
 
   @Test
-  public void testPlanForDescribeCurrentKeyspace() {
-    String input = "DESCRIBE KEYSPACE;";
-    stmt = new DescribeStatement(DescribeType.KEYSPACE);
-    ((DescribeStatement) stmt).setKeyspace("demo");
-    validateCommandPath("testPlanForDescribeKeyspace");
+  public void testPlanForDescribeCurrentCatalog() {
+    String input = "DESCRIBE CATALOG;";
+    stmt = new DescribeStatement(DescribeType.CATALOG);
+    ((DescribeStatement) stmt).setCatalog("demo");
+    validateCommandPath("testPlanForDescribeCatalog");
   }
 
   @Test
@@ -57,10 +57,10 @@ public class DescribeStatementTest extends BasicPlannerTest {
   }
 
   @Test
-  public void testPlanForDescribeKeyspaces() {
-    String input = "DESCRIBE KEYSPACES;";
-    stmt = new DescribeStatement(DescribeType.KEYSPACES);
+  public void testPlanForDescribeCatalogs() {
+    String input = "DESCRIBE CATALOGS;";
+    stmt = new DescribeStatement(DescribeType.CATALOGS);
     ((DescribeStatement) stmt).setTableName("demo.users");
-    validateCommandPath("testPlanForDescribeKeyspaces");
+    validateCommandPath("testPlanForDescribeCatalogs");
   }
 }

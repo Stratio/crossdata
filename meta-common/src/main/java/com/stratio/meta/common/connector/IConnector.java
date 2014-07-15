@@ -20,6 +20,7 @@
 package com.stratio.meta.common.connector;
 
 import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.exceptions.InitializationException;
 import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta.common.security.ICredentials;
 
@@ -38,14 +39,14 @@ public interface IConnector {
   public String getDatastoreName();
 
   /**
-   * Connect to the underlying datastore. Notice that this method maybe called several times by META
+   * Initialize the underlying datastore. Notice that this method maybe called several times by META
    * and it is responsability of the connector to manage the number of existing connections.
    * @param credentials The user credentials.
    * @param configuration The configuration.
-   * @throws ConnectionException If the connection cannot be established.
+   * @throws InitializationException If the connector initialization fails.
    */
-  public void connect(ICredentials credentials, IConfiguration configuration) throws
-                                                                                ConnectionException;
+  public void init(ICredentials credentials, IConfiguration configuration) throws
+                                                                           InitializationException;
 
   /**
    * Close the connection with the underlying datastore.

@@ -69,9 +69,9 @@ public class StreamExecutor {
       boolean isRoot) {
     if (stmt instanceof CreateTableStatement) {
       CreateTableStatement cts= (CreateTableStatement) stmt;
-      String tableEphemeralName= cts.getEffectiveKeyspace()+"_"+cts.getTableName() ;
+      String tableEphemeralName= cts.getEffectiveCatalog()+"_"+cts.getTableName() ;
       List<ColumnNameType> columnList = new ArrayList<>();
-      for (Map.Entry<String, String> column : cts.getColumns().entrySet()) {
+      for (Map.Entry<String, String> column : cts.getColumnsWithTypes().entrySet()) {
         ColumnType type = StreamingUtils.metaToStreamingType(column.getValue());
         ColumnNameType streamColumn = new ColumnNameType(column.getKey(), type);
         columnList.add(streamColumn);

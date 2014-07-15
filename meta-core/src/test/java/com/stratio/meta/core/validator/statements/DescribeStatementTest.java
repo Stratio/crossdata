@@ -24,21 +24,21 @@ import com.stratio.meta.core.validator.BasicValidatorTest;
 public class DescribeStatementTest extends BasicValidatorTest {
 
   @Test
-  public void testDescribeKeyspaceOk() {
-    String input = "DESCRIBE KEYSPACE demo;";
-    validateOk(input, "testDescribeKeyspaceOk");
+  public void testDescribeCatalogOk() {
+    String input = "DESCRIBE CATALOG demo;";
+    validateOk(input, "testDescribeCatalogOk");
   }
 
   @Test
-  public void testDescribeUnknownKeyspaceFail() {
-    String input = "DESCRIBE KEYSPACE unknown;";
-    validateFail(input, "testDescribeUnknownKeyspaceFail");
+  public void testDescribeUnknownCatalogFail() {
+    String input = "DESCRIBE CATALOG unknown;";
+    validateFail(input, "testDescribeUnknownCatalogFail");
   }
 
   @Test
-  public void testDescribeCurrentKeyspaceOk() {
-    String input = "DESCRIBE KEYSPACE;";
-    validateOk(input, "testDescribeCurrentKeyspaceOk");
+  public void testDescribeCurrentCatalogOk() {
+    String input = "DESCRIBE CATALOG;";
+    validateOk(input, "testDescribeCurrentCatalogOk");
   }
 
   @Test
@@ -54,9 +54,9 @@ public class DescribeStatementTest extends BasicValidatorTest {
   }
 
   @Test
-  public void testDescribeTableUnknownKeyspaceFail() {
+  public void testDescribeTableUnknownCatalogFail() {
     String input = "DESCRIBE TABLE demo.unknown;";
-    validateFail(input, "testDescribeTableUnknownKeyspaceFail");
+    validateFail(input, "testDescribeTableUnknownCatalogFail");
   }
 
   @Test
@@ -66,8 +66,8 @@ public class DescribeStatementTest extends BasicValidatorTest {
   }
 
   @Test
-  public void testDescribeKeyspacesOk() {
-    String input = "DESCRIBE KEYSPACES;";
-    validateOk(input, "testDescribeKeyspacesOk");
+  public void testDescribeCatalogsOk() {
+    String input = "DESCRIBE CATALOGS;";
+    validateOk(input, "testDescribeCatalogsOk");
   }
 }

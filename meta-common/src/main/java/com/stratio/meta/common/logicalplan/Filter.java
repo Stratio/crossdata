@@ -25,7 +25,7 @@ import com.stratio.meta.common.statements.structures.relationships.RelationType;
 /**
  * Filter the results retrieved through a Project operation.
  */
-public class Filter {
+public class Filter extends LogicalStep{
 
   /**
    * Type of relation.

@@ -39,26 +39,26 @@ public class TruncateStatement extends MetaStatement {
     this.ident = ident;
     if (ident.contains(".")) {
       String[] ksAndTableName = ident.split("\\.");
-      keyspace = ksAndTableName[0];
+      catalog = ksAndTableName[0];
       this.ident = ksAndTableName[1];
-      keyspaceInc = true;
+      catalogInc = true;
     }
   }
 
   public boolean isKeyspaceInc() {
-    return keyspaceInc;
+    return catalogInc;
   }
 
   public void setKeyspaceInc(boolean keyspaceInc) {
-    this.keyspaceInc = keyspaceInc;
+    this.catalogInc = keyspaceInc;
   }
 
   public String getKeyspace() {
-    return keyspace;
+    return catalog;
   }
 
   public void setKeyspace(String keyspace) {
-    this.keyspace = keyspace;
+    this.catalog = keyspace;
   }
 
   public String getIdent() {
@@ -68,9 +68,9 @@ public class TruncateStatement extends MetaStatement {
   public void setIdent(String ident) {
     if (ident.contains(".")) {
       String[] ksAndTablename = ident.split("\\.");
-      keyspace = ksAndTablename[0];
+      catalog = ksAndTablename[0];
       this.ident = ksAndTablename[1];
-      keyspaceInc = true;
+      catalogInc = true;
     } else {
       this.ident = ident;
     }
@@ -79,8 +79,8 @@ public class TruncateStatement extends MetaStatement {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("TRUNCATE ");
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (catalogInc) {
+      sb.append(catalog).append(".");
     }
     sb.append(ident);
     return sb.toString();
@@ -95,8 +95,8 @@ public class TruncateStatement extends MetaStatement {
   @Override
   public Statement getDriverStatement() {
     Truncate truncateQuery;
-    if (keyspaceInc) {
-      truncateQuery = truncate(keyspace, ident);
+    if (catalogInc) {
+      truncateQuery = truncate(catalog, ident);
     } else {
       truncateQuery = truncate(ident);
     }
@@ -107,14 +107,14 @@ public class TruncateStatement extends MetaStatement {
     public Result validate(MetadataManager metadata, EngineConfig config) {
       Result result = QueryResult.createSuccessQueryResult();
 
-      String effectiveKeyspace = getEffectiveKeyspace();
-      if(keyspaceInc){
-        effectiveKeyspace = keyspace;
+      String effectiveKeyspace = getEffectiveCatalog();
+      if(catalogInc){
+        effectiveKeyspace = catalog;
       }
 
       //Check that the keyspace and table exists.
       if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-        result= Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+        result= Result.createValidationErrorResult("Target catalog missing or no catalog has been selected.");
       }else{
         KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
         if(ksMetadata == null){

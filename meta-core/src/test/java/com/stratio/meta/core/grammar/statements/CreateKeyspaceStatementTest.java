@@ -54,15 +54,15 @@ public class CreateKeyspaceStatementTest extends ParsingTest {
         for (String str1 : str) {
             propertiesResult.add(str1.trim());
         }
-        assertNotNull(st, "Cannot parse create keyspace - nestedOptions");
+        assertNotNull(st, "Cannot parse create catalog - nestedOptions");
         assertEquals("CREATE KEYSPACE IF NOT EXISTS key_space1 WITH replication = {",
                 st.toString().substring(0, st.toString().indexOf("{")+1),
-                "Cannot parse create keyspace - nestedOptions");
+                "Cannot parse create catalog - nestedOptions");
         assertEquals("} AND durable_writes = false;",
                 st.toString().substring(st.toString().indexOf("}"))+";",
-                "Cannot parse create keyspace - nestedOptions");
-        assertTrue(propertiesResult.containsAll(properties), "Cannot parse create keyspace - nestedOptions");
-        assertTrue(properties.containsAll(propertiesResult), "Cannot parse create keyspace - nestedOptions");
+                "Cannot parse create catalog - nestedOptions");
+        assertTrue(propertiesResult.containsAll(properties), "Cannot parse create catalog - nestedOptions");
+        assertTrue(properties.containsAll(propertiesResult), "Cannot parse create catalog - nestedOptions");
     }
 
     @Test

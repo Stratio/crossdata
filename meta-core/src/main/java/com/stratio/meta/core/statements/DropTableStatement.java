@@ -50,9 +50,9 @@ public class DropTableStatement extends MetaStatement {
   public DropTableStatement(String tableName, boolean ifExists) {
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      catalog = ksAndTableName[0];
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
+      catalogInc = true;
     } else {
       this.tableName = tableName;
     }
@@ -76,9 +76,9 @@ public class DropTableStatement extends MetaStatement {
   public void setTableName(String tableName) {
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      catalog = ksAndTableName[0];
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
+      catalogInc = true;
     } else {
       this.tableName = tableName;
     }
@@ -90,8 +90,8 @@ public class DropTableStatement extends MetaStatement {
     if (ifExists) {
       sb.append("IF EXISTS ");
     }
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (catalogInc) {
+      sb.append(catalog).append(".");
     }
     sb.append(tableName);
     return sb.toString();
@@ -101,14 +101,14 @@ public class DropTableStatement extends MetaStatement {
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();
 
-    String effectiveKeyspace = getEffectiveKeyspace();
-    if(keyspaceInc){
-      effectiveKeyspace = keyspace;
+    String effectiveKeyspace = getEffectiveCatalog();
+    if(catalogInc){
+      effectiveKeyspace = catalog;
     }
 
     //Check that the keyspace and table exists.
     if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-      result= Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+      result= Result.createValidationErrorResult("Target catalog missing or no catalog has been selected.");
     }else{
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if(ksMetadata == null){
