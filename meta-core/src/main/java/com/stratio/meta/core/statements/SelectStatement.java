@@ -481,6 +481,10 @@ public class SelectStatement extends MetaStatement {
     // Validate FROM keyspace
     Result result = validateKeyspaceAndTable(metadata, this.getEffectiveKeyspace(), tableName);
 
+    if (!result.hasError()) {
+      result = checkAliasesNotDuplicated(this.selectionClause);
+    }
+
     if ((!result.hasError()) && (result instanceof CommandResult)
         && ("streaming".equalsIgnoreCase(((CommandResult) result).getResult().toString()))) {
       streamMode = true;
@@ -552,6 +556,38 @@ public class SelectStatement extends MetaStatement {
         result = validateWhereClauses(streamingMetadata, tableMetadataJoin);
       } else {
         result = validateWhereClauses(tableMetadataFrom, tableMetadataJoin);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Checks the list of selectors in order to detect duplicated field aliases
+   * 
+   * @param selectionClause selection clause from the select statement
+   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
+   */
+  private Result checkAliasesNotDuplicated(SelectionClause selectionClause) {
+
+    Result result = QueryResult.createSuccessQueryResult();
+
+    List<SelectionSelector> selectors =
+        ((SelectionSelectors) ((SelectionList) selectionClause).getSelection()).getSelectors();
+
+    for (int i = 0; i < selectors.size(); i++) {
+
+      SelectionSelector selector = selectors.get(i);
+      if (selector.getAlias() != null) {
+
+        for (int j = i + 1; j < selectors.size(); j++) {
+
+          if (selector.getAlias().equalsIgnoreCase(selectors.get(j).getAlias())) {
+            result =
+                Result
+                    .createValidationErrorResult("Duplicated alias '" + selector.getAlias() + "'");
+          }
+        }
       }
     }
 
