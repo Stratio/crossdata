@@ -482,7 +482,7 @@ public class SelectStatement extends MetaStatement {
     Result result = validateKeyspaceAndTable(metadata, this.getEffectiveKeyspace(), tableName);
 
     if (!result.hasError()) {
-      result = checkAliasesNotDuplicated(this.selectionClause);
+      result = checkAliasesNotDuplicated((SelectionList) this.selectionClause);
     }
 
     if ((!result.hasError()) && (result instanceof CommandResult)
@@ -568,24 +568,26 @@ public class SelectStatement extends MetaStatement {
    * @param selectionClause selection clause from the select statement
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result checkAliasesNotDuplicated(SelectionClause selectionClause) {
+  private Result checkAliasesNotDuplicated(SelectionList selectionClause) {
 
     Result result = QueryResult.createSuccessQueryResult();
 
-    List<SelectionSelector> selectors =
-        ((SelectionSelectors) ((SelectionList) selectionClause).getSelection()).getSelectors();
+    if (selectionClause.getSelection() instanceof SelectionSelectors) {
+      List<SelectionSelector> selectors =
+          ((SelectionSelectors) selectionClause.getSelection()).getSelectors();
 
-    for (int i = 0; i < selectors.size(); i++) {
+      for (int i = 0; i < selectors.size(); i++) {
 
-      SelectionSelector selector = selectors.get(i);
-      if (selector.getAlias() != null) {
+        SelectionSelector selector = selectors.get(i);
+        if (selector.getAlias() != null) {
 
-        for (int j = i + 1; j < selectors.size(); j++) {
+          for (int j = i + 1; j < selectors.size(); j++) {
 
-          if (selector.getAlias().equalsIgnoreCase(selectors.get(j).getAlias())) {
-            result =
-                Result
-                    .createValidationErrorResult("Duplicated alias '" + selector.getAlias() + "'");
+            if (selector.getAlias().equalsIgnoreCase(selectors.get(j).getAlias())) {
+              result =
+                  Result.createValidationErrorResult("Duplicated alias '" + selector.getAlias()
+                      + "'");
+            }
           }
         }
       }
