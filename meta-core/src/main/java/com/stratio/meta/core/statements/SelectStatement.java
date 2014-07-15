@@ -2167,7 +2167,7 @@ public class SelectStatement extends MetaStatement {
       for (Relation whereCol : this.where) {
         for (SelectorIdentifier id : whereCol.getIdentifiers()) {
           String table = tablesAliasesMap.get(id.getTable());
-          String identifier = fieldsAliasesMap.get(id.toString());
+          String identifier = fieldsAliasesMap.get(id.getField());
           if (identifier != null) {
             id.setIdentifier(identifier);
           }
@@ -2187,14 +2187,14 @@ public class SelectStatement extends MetaStatement {
       for (GroupBy groupByCol : this.group) {
         SelectorIdentifier selectorIdentifier = groupByCol.getSelectorIdentifier();
 
-        String identifier = fieldsAliasesMap.get(selectorIdentifier.toString());
+        String identifier = fieldsAliasesMap.get(selectorIdentifier.getField());
         if (identifier != null) {
           selectorIdentifier.setIdentifier(identifier);
+        }
 
-          String table = tablesAliasesMap.get(selectorIdentifier.getTable());
-          if (table != null) {
-            selectorIdentifier.setTable(table);
-          }
+        String table = tablesAliasesMap.get(selectorIdentifier.getTable());
+        if (table != null) {
+          selectorIdentifier.setTable(table);
         }
       }
     }
@@ -2207,7 +2207,7 @@ public class SelectStatement extends MetaStatement {
       for (Ordering orderBycol : this.order) {
         SelectorIdentifier selectorIdentifier = orderBycol.getSelectorIdentifier();
 
-        String identifier = fieldsAliasesMap.get(selectorIdentifier.toString());
+        String identifier = fieldsAliasesMap.get(selectorIdentifier.getField());
         if (identifier != null) {
           selectorIdentifier.setIdentifier(identifier);
         }
