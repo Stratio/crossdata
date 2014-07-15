@@ -40,8 +40,8 @@ public class ExplainPlanStatementTest extends BasicValidatorTest {
     String methodName = "validateExplainPlanForDropIndex";
     String inputText = "EXPLAIN PLAN FOR DROP INDEX users_gender_idx;";
     MetaStatement stmt = pt.testRegularStatement(inputText, methodName);
-    stmt.setSessionKeyspace("demo");
-    ((ExplainPlanStatement) stmt).getMetaStatement().setSessionKeyspace("demo");
+    stmt.setSessionCatalog("demo");
+    ((ExplainPlanStatement) stmt).getMetaStatement().setSessionCatalog("demo");
     Result result = stmt.validate(metadataManager, null);
     assertNotNull(result, "Sentence validation not supported - " + methodName);
     assertFalse(result.hasError(),

@@ -19,6 +19,8 @@
 
 package com.stratio.meta.core.structures;
 
+import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
+
 public class SelectionSelector {
     
     SelectorMeta selector;

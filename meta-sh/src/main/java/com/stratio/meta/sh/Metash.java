@@ -17,8 +17,13 @@
 package com.stratio.meta.sh;
 
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 
 import jline.console.ConsoleReader;
@@ -343,24 +348,33 @@ public class Metash {
     try {
       String cmd = "";
       StringBuilder sb = new StringBuilder(cmd);
-
+      String toExecute = null;
       while (!cmd.trim().toLowerCase().startsWith("exit")
              && !cmd.trim().toLowerCase().startsWith("quit")) {
         cmd = console.readLine();
         sb.append(cmd).append(" ");
-        if (sb.toString().trim().endsWith(";")) {
+        toExecute = sb.toString().trim();
+        if (toExecute.endsWith(";")) {
           if (" ".equalsIgnoreCase(sb.toString())
               || System.lineSeparator().equalsIgnoreCase(sb.toString())) {
             println("");
-          } else if (sb.toString().toLowerCase().startsWith("help")) {
+          } else if (toExecute.toLowerCase().startsWith("help")) {
             showHelp(sb.toString());
           } else {
-            executeQuery(sb.toString());
+            executeQuery(toExecute);
             println("");
           }
           sb = new StringBuilder();
-        } else if (sb.toString().toLowerCase().startsWith("help")) {
+        } else if (toExecute.toLowerCase().startsWith("help")) {
           showHelp(sb.toString());
+          sb = new StringBuilder();
+        } else if (toExecute.toLowerCase().startsWith("script")) {
+          String [] params = toExecute.split(" ");
+          if(params.length == 2){
+            executeScript(params[1]);
+          }else {
+            showHelp(sb.toString());
+          }
           sb = new StringBuilder();
         }
       }
@@ -370,18 +384,74 @@ public class Metash {
   }
 
   /**
+   * Execute the sentences found in a script. The file may contain empty lines and comment lines
+   * using the prefix #.
+   * @param scriptPath The script path.
+   */
+  public void executeScript(String scriptPath){
+    BufferedReader input = null;
+    String query = null;
+    int numberOps = 0;
+    try {
+      input =
+          new BufferedReader(new InputStreamReader(new FileInputStream(new File(scriptPath)), "UTF-8"));
+
+      while((query = input.readLine()) != null){
+        query = query.trim();
+        if(query.length() > 0 && !query.startsWith("#")){
+          executeQuery(query);
+          numberOps++;
+        }
+      }
+    } catch (UnsupportedEncodingException e) {
+      LOG.error("Invalid encoding on script: " + scriptPath, e);
+    } catch (FileNotFoundException e) {
+      LOG.error("Invalid path: " + scriptPath, e);
+    } catch (IOException e) {
+      LOG.error("Cannot read script: " + scriptPath, e);
+    } finally {
+      if (input != null) {
+        try {
+          input.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    println("Script " + scriptPath + " executed (" + numberOps + " sentences)");
+  }
+
+  /**
    * Launch the META server shell.
    * 
    * @param args The list of arguments. Not supported at the moment.
    */
   public static void main(String[] args) {
     boolean async = true;
-    if(args.length > 0){
-      async = !"--sync".equals(args[0]);
-      LOG.info("Using asynchronous behaviour");
+    String initScript = null;
+
+    int index = 0;
+    while(index < args.length){
+      if("--sync".equals(args[index])){
+        async = false;
+        LOG.info("Using synchronous behaviour");
+      }else if("--script".equals(args[index])){
+        if(index + 1 < args.length) {
+          LOG.info("Load script: " + args[index+1]);
+          initScript = args[index+1];
+          index++;
+        }else{
+          LOG.error("Invalid --script syntax, file path missing");
+        }
+      }
+      index++;
     }
+
     Metash sh = new Metash(async);
     if (sh.connect()) {
+      if(initScript != null){
+        sh.executeScript(initScript);
+      }
       sh.loop();
     }
     sh.closeConsole();

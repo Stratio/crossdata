@@ -24,6 +24,7 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -32,7 +33,6 @@ import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 
 import java.util.*;
@@ -167,9 +167,9 @@ public class CreateIndexStatement extends MetaStatement {
     public void setName(String name){
         if(name.contains(".")){
             String[] ksAndTablename = name.split("\\.");
-            keyspace = ksAndTablename[0];
+            catalog = ksAndTablename[0];
             this.name = ksAndTablename[1];
-            keyspaceInc = true;
+            catalogInc = true;
         }else {
             this.name = name;
         }
@@ -190,9 +190,9 @@ public class CreateIndexStatement extends MetaStatement {
     public void setTableName(String tableName){
         if(tableName.contains(".")){
             String[] ksAndTablename = tableName.split("\\.");
-            keyspace = ksAndTablename[0];
+            catalog = ksAndTablename[0];
             this.tableName = ksAndTablename[1];
-            keyspaceInc = true;
+            catalogInc = true;
         }else {
             this.tableName = tableName;
         }
@@ -276,11 +276,11 @@ public class CreateIndexStatement extends MetaStatement {
             sb.append(getIndexName()).append(" ");
         }
         sb.append("ON ");
-        if(keyspaceInc){
-            sb.append(keyspace).append(".");
+        if(catalogInc){
+            sb.append(catalog).append(".");
         }
         sb.append(tableName);
-        sb.append(" (").append(ParserUtils.stringList(targetColumns, ", ")).append(")");
+        sb.append(" (").append(StringUtils.stringList(targetColumns, ", ")).append(")");
         if(usingClass != null){
                 sb.append(" USING ");
                 sb.append(usingClass);
@@ -307,8 +307,8 @@ public class CreateIndexStatement extends MetaStatement {
     public Result validate(MetadataManager metadata, EngineConfig config) {
 
         //Validate target table
-        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
-        String effectiveKeyspace = getEffectiveKeyspace();
+        Result result = validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
+        String effectiveKeyspace = getEffectiveCatalog();
 
         TableMetadata tableMetadata = null;
         if(!result.hasError()) {
@@ -492,8 +492,8 @@ public class CreateIndexStatement extends MetaStatement {
             //Add alter table as leaf if LUCENE index is selected.
             if (IndexType.LUCENE.equals(type)) {
                 StringBuilder alterStatement = new StringBuilder("ALTER TABLE ");
-                if (keyspaceInc) {
-                    alterStatement.append(keyspace);
+                if (catalogInc) {
+                    alterStatement.append(catalog);
                     alterStatement.append(".");
                 }
                 alterStatement.append(tableName);

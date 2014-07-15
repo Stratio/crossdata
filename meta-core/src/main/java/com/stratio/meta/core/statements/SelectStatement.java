@@ -44,35 +44,35 @@ import com.datastax.driver.core.querybuilder.Select.Where;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.statements.structures.window.WindowType;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.GroupBy;
-import com.stratio.meta.core.structures.GroupByFunction;
+import com.stratio.meta.common.statements.structures.selectors.GroupByFunction;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta.core.structures.OrderDirection;
 import com.stratio.meta.core.structures.Ordering;
-import com.stratio.meta.core.structures.Relation;
-import com.stratio.meta.core.structures.RelationCompare;
-import com.stratio.meta.core.structures.RelationIn;
-import com.stratio.meta.core.structures.RelationToken;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
+import com.stratio.meta.common.statements.structures.relationships.RelationIn;
+import com.stratio.meta.common.statements.structures.relationships.RelationToken;
 import com.stratio.meta.core.structures.Selection;
 import com.stratio.meta.core.structures.SelectionAsterisk;
 import com.stratio.meta.core.structures.SelectionClause;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelector;
 import com.stratio.meta.core.structures.SelectionSelectors;
-import com.stratio.meta.core.structures.SelectorFunction;
-import com.stratio.meta.core.structures.SelectorGroupBy;
-import com.stratio.meta.core.structures.SelectorIdentifier;
-import com.stratio.meta.core.structures.SelectorMeta;
-import com.stratio.meta.core.structures.Term;
-import com.stratio.meta.core.structures.WindowSelect;
-import com.stratio.meta.core.structures.WindowTime;
+import com.stratio.meta.common.statements.structures.selectors.SelectorFunction;
+import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
+import com.stratio.meta.common.statements.structures.terms.Term;
+import com.stratio.meta.common.statements.structures.window.Window;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
@@ -103,10 +103,10 @@ public class SelectStatement extends MetaStatement {
   private boolean windowInc = false;
 
   /**
-   * The {@link com.stratio.meta.core.structures.WindowSelect} specified in the Select statement for
+   * The {@link com.stratio.meta.common.statements.structures.window.Window} specified in the Select statement for
    * streaming queries.
    */
-  private WindowSelect window = null;
+  private Window window = null;
 
   /**
    * Whether a JOIN clause has been specified.
@@ -124,7 +124,7 @@ public class SelectStatement extends MetaStatement {
   private boolean whereInc = false;
 
   /**
-   * The list of {@link com.stratio.meta.core.structures.Relation} found in the WHERE clause.
+   * The list of {@link com.stratio.meta.common.statements.structures.relationships.Relation} found in the WHERE clause.
    */
   private List<Relation> where = null;
 
@@ -201,9 +201,9 @@ public class SelectStatement extends MetaStatement {
     this.command = false;
     if (tableName.contains(".")) {
       String[] ksAndTablename = tableName.split("\\.");
-      keyspace = ksAndTablename[0];
+      catalog = ksAndTablename[0];
       this.tableName = ksAndTablename[1];
-      keyspaceInc = true;
+      catalogInc = true;
     } else {
       this.tableName = tableName;
     }
@@ -229,7 +229,7 @@ public class SelectStatement extends MetaStatement {
    * @return The keyspace or null if not specified.
    */
   public String getKeyspace() {
-    return keyspace;
+    return catalog;
   }
 
   /**
@@ -238,8 +238,8 @@ public class SelectStatement extends MetaStatement {
    * @param keyspace The name of the keyspace.
    */
   public void setKeyspace(String keyspace) {
-    this.keyspaceInc = true;
-    this.keyspace = keyspace;
+    this.catalogInc = true;
+    this.catalog = keyspace;
   }
 
   /**
@@ -270,11 +270,11 @@ public class SelectStatement extends MetaStatement {
   }
 
   /**
-   * Set the {@link com.stratio.meta.core.structures.WindowSelect} for streaming queries.
+   * Set the {@link com.stratio.meta.common.statements.structures.window.Window} for streaming queries.
    * 
    * @param window The window.
    */
-  public void setWindow(WindowSelect window) {
+  public void setWindow(Window window) {
     this.windowInc = true;
     this.window = window;
   }
@@ -400,7 +400,7 @@ public class SelectStatement extends MetaStatement {
     return limit;
   }
 
-  public WindowSelect getWindow() {
+  public Window getWindow() {
     return window;
   }
 
@@ -453,8 +453,8 @@ public class SelectStatement extends MetaStatement {
       sb.append(selectionClause.toString());
     }
     sb.append(" FROM ");
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (catalogInc) {
+      sb.append(catalog).append(".");
     }
     sb.append(tableName);
     if (windowInc) {
@@ -465,13 +465,13 @@ public class SelectStatement extends MetaStatement {
     }
     if (whereInc) {
       sb.append(" WHERE ");
-      sb.append(ParserUtils.stringList(where, " AND "));
+      sb.append(StringUtils.stringList(where, " AND "));
     }
     if (orderInc) {
-      sb.append(" ORDER BY ").append(ParserUtils.stringList(order, ", "));
+      sb.append(" ORDER BY ").append(StringUtils.stringList(order, ", "));
     }
     if (groupInc) {
-      sb.append(" GROUP BY ").append(ParserUtils.stringList(group, ", "));
+      sb.append(" GROUP BY ").append(StringUtils.stringList(group, ", "));
     }
     if (limitInc) {
       sb.append(" LIMIT ").append(limit);
@@ -488,7 +488,7 @@ public class SelectStatement extends MetaStatement {
   public Result validate(MetadataManager metadata, EngineConfig config) {
     // Validate FROM keyspace
     Result result =
-        validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+        validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
 
     if ((!result.hasError()) && (result instanceof CommandResult)
         && ("streaming".equalsIgnoreCase(((CommandResult) result).getResult().toString()))) {
@@ -507,19 +507,19 @@ public class SelectStatement extends MetaStatement {
 
     if (!result.hasError() && joinInc) {
       result =
-          validateKeyspaceAndTable(metadata, sessionKeyspace, join.isKeyspaceInc(),
+          validateKeyspaceAndTable(metadata, sessionCatalog, join.isKeyspaceInc(),
               join.getKeyspace(), join.getTablename());
     }
 
-    String effectiveKs1 = getEffectiveKeyspace();
+    String effectiveKs1 = getEffectiveCatalog();
     String effectiveKs2 = null;
     if (joinInc) {
       SelectStatement secondSelect = new SelectStatement("");
       if (join.getKeyspace() != null) {
         secondSelect.setKeyspace(join.getKeyspace());
       }
-      secondSelect.setSessionKeyspace(this.sessionKeyspace);
-      effectiveKs2 = secondSelect.getEffectiveKeyspace();
+      secondSelect.setSessionCatalog(this.sessionCatalog);
+      effectiveKs2 = secondSelect.getEffectiveCatalog();
     }
 
     TableMetadata tableMetadataJoin = null;
@@ -529,7 +529,7 @@ public class SelectStatement extends MetaStatement {
       // Cache Metadata manager and table metadata for the getDriverStatement.
       this.metadata = metadata;
       if (streamMode) {
-        streamingMetadata = metadata.convertStreamingToMeta(getEffectiveKeyspace(), tableName);
+        streamingMetadata = metadata.convertStreamingToMeta(getEffectiveCatalog(), tableName);
       } else {
         tableMetadataFrom = metadata.getTableMetadata(effectiveKs1, tableName);
       }
@@ -576,9 +576,8 @@ public class SelectStatement extends MetaStatement {
 
   private Result validateWindow(EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();
-    if (window instanceof WindowTime) {
-      WindowTime windowTime = (WindowTime) window;
-      long windowMillis = windowTime.getDurationInMilliseconds();
+    if (WindowType.TEMPORAL.equals(window.getType())) {
+      long windowMillis = window.getDurationInMilliseconds();
       if (windowMillis % config.getStreamingDuration() != 0) {
         result =
             Result.createValidationErrorResult("Window time must be multiple of "
@@ -765,7 +764,8 @@ public class SelectStatement extends MetaStatement {
     Iterator<Relation> relations = where.iterator();
     while (!result.hasError() && relations.hasNext()) {
       Relation relation = relations.next();
-      relation.updateTermClass(tableMetadata);
+      //TODO Uncomment
+      //relation.updateTermClass(tableMetadata);
       if (Relation.TYPE_COMPARE == relation.getType() || Relation.TYPE_IN == relation.getType()
           || Relation.TYPE_BETWEEN == relation.getType()) {
         // Check comparison, =, >, <, etc.
@@ -923,7 +923,7 @@ public class SelectStatement extends MetaStatement {
     if (streamMode && (selectionClause instanceof SelectionList)
         && (((SelectionList) selectionClause).getTypeSelection() == Selection.TYPE_SELECTOR)) {
       List<String> colNames =
-          metadata.getStreamingColumnNames(getEffectiveKeyspace() + "_" + tableName);
+          metadata.getStreamingColumnNames(getEffectiveCatalog() + "_" + tableName);
       SelectionList selectionList = (SelectionList) selectionClause;
       SelectionSelectors selectionSelectors = (SelectionSelectors) selectionList.getSelection();
       selectionSelectors.getSelectors();
@@ -934,7 +934,7 @@ public class SelectStatement extends MetaStatement {
         String colName = selectorIdentifier.getField();
         if (!colNames.contains(colName.toLowerCase())) {
           return Result.createValidationErrorResult("Column '" + colName
-              + "' not found in ephemeral table '" + getEffectiveKeyspace() + "." + tableName
+              + "' not found in ephemeral table '" + getEffectiveCatalog() + "." + tableName
               + "'.");
         }
       }
@@ -1346,7 +1346,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Get the driver clause associated with a compare relation.
    * 
-   * @param metaRelation The {@link com.stratio.meta.core.structures.RelationCompare} clause.
+   * @param metaRelation The {@link com.stratio.meta.common.statements.structures.relationships.RelationCompare} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
   private Clause getRelationCompareClause(Relation metaRelation) {
@@ -1384,7 +1384,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Get the driver clause associated with an in relation.
    * 
-   * @param metaRelation The {@link com.stratio.meta.core.structures.RelationIn} clause.
+   * @param metaRelation The {@link com.stratio.meta.common.statements.structures.relationships.RelationIn} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
   private Clause getRelationInClause(Relation metaRelation) {
@@ -1405,7 +1405,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Get the driver clause associated with an token relation.
    * 
-   * @param metaRelation The {@link com.stratio.meta.core.structures.RelationToken} clause.
+   * @param metaRelation The {@link com.stratio.meta.common.statements.structures.relationships.RelationToken} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
   private Clause getRelationTokenClause(Relation metaRelation) {
@@ -1495,8 +1495,8 @@ public class SelectStatement extends MetaStatement {
     Select.Builder builder = getDriverBuilder();
 
     Select sel;
-    if (this.keyspaceInc) {
-      sel = builder.from(this.keyspace, this.tableName);
+    if (this.catalogInc) {
+      sel = builder.from(this.catalog, this.tableName);
     } else {
       sel = builder.from(this.tableName);
     }
@@ -1647,14 +1647,14 @@ public class SelectStatement extends MetaStatement {
   private Tree getJoinPlan() {
     Tree steps = new Tree();
     SelectStatement firstSelect = new SelectStatement(tableName);
-    firstSelect.setSessionKeyspace(this.sessionKeyspace);
-    firstSelect.setKeyspace(getEffectiveKeyspace());
+    firstSelect.setSessionCatalog(this.sessionCatalog);
+    firstSelect.setKeyspace(getEffectiveCatalog());
 
     SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
     if (this.join.getKeyspace() != null) {
       secondSelect.setKeyspace(join.getKeyspace());
     }
-    secondSelect.setSessionKeyspace(this.sessionKeyspace);
+    secondSelect.setSessionCatalog(this.sessionCatalog);
 
     SelectStatement joinSelect = new SelectStatement("");
 
@@ -1781,7 +1781,7 @@ public class SelectStatement extends MetaStatement {
        * //TODO Retreive original table create metadata and check for text columns. if(cassandraPath
        * && !whereCols.isEmpty()){ // When querying a text type column with a Lucene index, content
        * must be lowercased TableMetadata metaData =
-       * metadataManager.getTableMetadata(getEffectiveKeyspace(), tableName);
+       * metadataManager.getTableMetadata(getEffectiveCatalog(), tableName);
        * metadataManager.loadMetadata(); String lucenCol = whereCols.keySet().iterator().next();
        * if(metaData.getColumn(lucenCol).getType() == DataType.text() &&
        * where.get(0).getTerms().get(0) instanceof StringTerm){ StringTerm stringTerm = (StringTerm)
@@ -1811,7 +1811,7 @@ public class SelectStatement extends MetaStatement {
       // All where clauses are included in the primary key with equals comparator.
       cassandraPath = true;
     } else if (areOperatorsCassandraCompatible(whereCols)) {
-      String effectiveKeyspace = getEffectiveKeyspace();
+      String effectiveKeyspace = getEffectiveCatalog();
       TableMetadata tableMetadata = metadataManager.getTableMetadata(effectiveKeyspace, tableName);
 
       // Check if all partition columns have an equals operator
@@ -1877,9 +1877,9 @@ public class SelectStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree steps = new Tree();
-    if (metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName) && joinInc) {
+    if (metadataManager.checkStream(getEffectiveCatalog() + "_" + tableName) && joinInc) {
       steps = getStreamJoinPlan();
-    } else if (metadataManager.checkStream(getEffectiveKeyspace() + "_" + tableName)) {
+    } else if (metadataManager.checkStream(getEffectiveCatalog() + "_" + tableName)) {
       steps.setNode(new MetaStep(MetaPath.STREAMING, this));
       steps.setInvolvesStreaming(true);
     } else if (groupInc || orderInc || selectionClause.containsFunctions()) {
@@ -1897,14 +1897,14 @@ public class SelectStatement extends MetaStatement {
   private Tree getStreamJoinPlan() {
     Tree steps = new Tree();
     SelectStatement firstSelect = new SelectStatement(tableName);
-    firstSelect.setSessionKeyspace(this.sessionKeyspace);
-    firstSelect.setKeyspace(getEffectiveKeyspace());
+    firstSelect.setSessionCatalog(this.sessionCatalog);
+    firstSelect.setKeyspace(getEffectiveCatalog());
 
     SelectStatement secondSelect = new SelectStatement(this.join.getTablename());
     if (this.join.getKeyspace() != null) {
       secondSelect.setKeyspace(join.getKeyspace());
     }
-    secondSelect.setSessionKeyspace(this.sessionKeyspace);
+    secondSelect.setSessionCatalog(this.sessionCatalog);
 
     SelectStatement joinSelect = new SelectStatement("");
 
@@ -1929,7 +1929,7 @@ public class SelectStatement extends MetaStatement {
     }
 
     com.stratio.meta.common.metadata.structures.TableMetadata streamingTable =
-        metadata.convertStreamingToMeta(keyspace, tableName);
+        metadata.convertStreamingToMeta(catalog, tableName);
 
     // ADD FIELDS OF THE SELECT
     SelectionList selectionList = (SelectionList) this.selectionClause;

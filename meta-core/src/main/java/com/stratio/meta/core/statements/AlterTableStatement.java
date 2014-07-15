@@ -22,6 +22,7 @@ package com.stratio.meta.core.statements;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Property;
@@ -80,9 +81,9 @@ public class AlterTableStatement extends MetaStatement{
         this.command = false;
         if(tableName.contains(".")){
             String[] ksAndTableName = tableName.split("\\.");
-            keyspace = ksAndTableName[0];
+            catalog = ksAndTableName[0];
             this.tableName = ksAndTableName[1];
-            keyspaceInc = true;
+            catalogInc = true;
         }else {
             this.tableName = tableName;
         }
@@ -95,8 +96,8 @@ public class AlterTableStatement extends MetaStatement{
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Alter table ");
-        if(keyspaceInc){
-            sb.append(keyspace).append(".");
+        if(catalogInc){
+            sb.append(catalog).append(".");
         }
         sb.append(tableName);
         switch(option){
@@ -114,7 +115,7 @@ public class AlterTableStatement extends MetaStatement{
                 sb.append(column);
                 break;
             case 4:
-                sb.append(" WITH ").append(ParserUtils.stringList(properties, " AND "));
+                sb.append(" WITH ").append(StringUtils.stringList(properties, " AND "));
                 break;
             default:
                 sb.append("bad option");
@@ -140,9 +141,9 @@ public class AlterTableStatement extends MetaStatement{
      */
     @Override
     public Result validate(MetadataManager metadata, EngineConfig config) {
-        Result result = validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+        Result result = validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
         if(!result.hasError()) {
-            String effectiveKeyspace = getEffectiveKeyspace();
+            String effectiveKeyspace = getEffectiveCatalog();
 
             TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
 

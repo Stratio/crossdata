@@ -48,8 +48,8 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
     String keyspace = "system";
     int numTables = 16; //Number of system tables in Cassandra 2.0.5
     KeyspaceMetadata metadata = _metadataManager.getKeyspaceMetadata(keyspace);
-    assertNotNull(metadata, "Cannot retrieve keyspace metadata");
-    assertEquals(keyspace, metadata.getName(), "Retrieved keyspace name does not match");
+    assertNotNull(metadata, "Cannot retrieve catalog metadata");
+    assertEquals(keyspace, metadata.getName(), "Retrieved catalog name does not match");
     assertEquals(numTables, metadata.getTables().size(), "Invalid number of columns");
   }
 
@@ -105,8 +105,8 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
     List<String> keyspaces = _metadataManager.getKeyspacesNames();
     assertNotNull(keyspaces, "Cannot retrieve the list of keyspaces");
     assertTrue(keyspaces.size() >= 2, "At least two keyspaces should be returned: " + keyspaces.toString());
-    assertTrue(keyspaces.contains("system"), "system keyspace not found");
-    assertTrue(keyspaces.contains("system_traces"), "system_traces keyspace not found");
+    assertTrue(keyspaces.contains("system"), "system catalog not found");
+    assertTrue(keyspaces.contains("system_traces"), "system_traces catalog not found");
   }
 
   @Test

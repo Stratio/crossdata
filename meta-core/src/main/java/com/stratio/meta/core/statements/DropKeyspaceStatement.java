@@ -45,26 +45,26 @@ public class DropKeyspaceStatement extends MetaStatement {
      */
     public DropKeyspaceStatement(String keyspace, boolean ifExists) {
         this.command = false;
-        this.keyspace = keyspace;
+        this.catalog = keyspace;
         this.ifExists = ifExists;
     }    
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Drop keyspace ");        
+        StringBuilder sb = new StringBuilder("Drop catalog ");
         if(ifExists){
            sb.append("if exists ");
         } 
-        sb.append(keyspace);
+        sb.append(catalog);
         return sb.toString();
     }
 
     @Override
     public Result validate(MetadataManager metadata, EngineConfig config) {
         Result result = QueryResult.createSuccessQueryResult();
-        KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(keyspace);
+        KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(catalog);
         if(ksMetadata == null && !ifExists){
-            result = Result.createValidationErrorResult("Keyspace " + keyspace + " does not exist.");
+            result = Result.createValidationErrorResult("Keyspace " + catalog + " does not exist.");
         }
         return result;
     }

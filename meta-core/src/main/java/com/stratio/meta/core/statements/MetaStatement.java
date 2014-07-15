@@ -21,10 +21,13 @@ import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+
+import java.util.List;
 
 /**
  * Class that models a generic Statement supported by the META language.
@@ -38,20 +41,25 @@ public abstract class MetaStatement {
   protected boolean command;
 
   /**
-   * Whether the keyspace has been specified in the statement or it should be taken from the
+   * Whether the catalog has been specified in the statement or it should be taken from the
    * environment.
    */
-  protected boolean keyspaceInc = false;
+  protected boolean catalogInc = false;
 
   /**
-   * Keyspace specified from the statement.
+   * Catalog specified in the user provided statement.
    */
-  protected String keyspace = null;
+  protected String catalog = null;
 
   /**
-   * The current keyspace in the user session.
+   * The current catalog in the user session.
    */
-  protected String sessionKeyspace = null;
+  protected String sessionCatalog = null;
+
+  /**
+   * The type of statement to be executed.
+   */
+  protected StatementType type = null;
 
   /**
    * Default class constructor.
@@ -125,7 +133,7 @@ public abstract class MetaStatement {
     if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
       result =
           Result
-              .createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+              .createValidationErrorResult("Target catalog missing or no catalog has been selected.");
     } else {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if (ksMetadata == null) {
@@ -149,8 +157,12 @@ public abstract class MetaStatement {
     return result;
   }
 
-  public String getEffectiveKeyspace() {
-    return keyspaceInc ? keyspace : sessionKeyspace;
+  /**
+   * Get the effective catalog to execute the statement.
+   * @return The catalog specified in the statement or the session catalog otherwise.
+   */
+  public String getEffectiveCatalog() {
+    return catalogInc ? catalog : sessionCatalog;
   }
 
   /**
@@ -185,8 +197,72 @@ public abstract class MetaStatement {
    */
   public abstract Tree getPlan(MetadataManager metadataManager, String targetKeyspace);
 
-  public void setSessionKeyspace(String targetKeyspace) {
-    sessionKeyspace = targetKeyspace;
+  /**
+   * Set the catalog to be described.
+   *
+   * @param catalog The name.
+   */
+  public void setCatalog(String catalog) {
+    this.catalog = catalog;
+    catalogInc = true;
   }
 
+  /**
+   * Set the session catalog.
+   * @param targetCatalog The target catalog for executing the statement.
+   */
+  public void setSessionCatalog(String targetCatalog) {
+    sessionCatalog = targetCatalog;
+  }
+
+  /**
+   * Get the name of the catalogs involved the statement to be executed.
+   * @return A list of catalog names.
+   */
+  public List<String> getCatalogs(){
+    return null;
+  }
+
+  /**
+   * Get the name of the tables involved in the statement to be executed. The names may be
+   * fully qualified or not.
+   * @return A list of table names.
+   */
+  public List<String> getTables(){
+    return null;
+  }
+
+  /**
+   * Get the name of the columns involved in the statement to be executed. The names may contain
+   * the table name.
+   * @return A list of column names.
+   */
+  public List<String> getColumns(){
+    return null;
+  }
+
+  /**
+   * Get the list of Assignations involved in the statement to be executed. An assignation may
+   * represent inserting a value in a column, comparing a column with a value, etc.
+   * @return A list of Assignation.
+   */
+  public List<Assignation> getAssignations(){
+    return null;
+  }
+
+  /**
+   * Check whether the IF EXISTS clause has been used.
+   * @return True if used.
+   */
+  public boolean getIfExists(){
+    return false;
+  }
+
+  /**
+   * Check whether the IT NOT EXISTS has been used.
+   * @return True if used.
+   */
+  public boolean getIfNotExists(){
+    return false;
+  }
 }

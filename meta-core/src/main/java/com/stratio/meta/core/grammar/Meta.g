@@ -24,7 +24,11 @@ options {
 }
  
 @header {
-    package com.stratio.meta.core.grammar.generated;    
+    package com.stratio.meta.core.grammar.generated;
+    import com.stratio.meta.common.statements.structures.relationships.*;
+    import com.stratio.meta.common.statements.structures.selectors.*;
+    import com.stratio.meta.common.statements.structures.terms.*;
+    import com.stratio.meta.common.statements.structures.window.*;
     import com.stratio.meta.core.statements.*;
     import com.stratio.meta.core.structures.*;
     import com.stratio.meta.core.utils.*;
@@ -171,6 +175,8 @@ T_DESC: D E S C;
 T_LIKE: L I K E;
 T_EPHEMERAL: E P H E M E R A L;
 T_AT: '@';
+T_CATALOG: C A T A L O G;
+T_CATALOGS: C A T A L O G S;
 
 T_SEMICOLON: ';';
 T_EQUAL: '=';
@@ -242,9 +248,9 @@ T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 //STATEMENTS
 
 describeStatement returns [DescribeStatement descs]:
-    T_DESCRIBE (T_KEYSPACE keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.KEYSPACE); $descs.setKeyspace($keyspace.text);}
-    	| T_KEYSPACE {$descs = new DescribeStatement(DescribeType.KEYSPACE);}
-    	| T_KEYSPACES {$descs = new DescribeStatement(DescribeType.KEYSPACES);}
+    T_DESCRIBE ((T_KEYSPACE|T_CATALOG) keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.CATALOG); $descs.setCatalog($keyspace.text);}
+    	| (T_KEYSPACE|T_CATALOG) {$descs = new DescribeStatement(DescribeType.CATALOG);}
+    	| (T_KEYSPACES|T_CATALOGS) {$descs = new DescribeStatement(DescribeType.CATALOGS);}
         | T_TABLE tablename=getTableID { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
         | T_TABLES {$descs = new DescribeStatement(DescribeType.TABLES);}
     )
@@ -751,10 +757,10 @@ getFields[MutablePair pair]:
     | T_START_PARENTHESIS ident1L=getTableID { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableID { pair.setRight(ident1R); } T_END_PARENTHESIS
 ;
 
-getWindow returns [WindowSelect ws]:
-    (T_LAST {$ws = new WindowLast();} 
-    | cnstnt=getConstant (T_ROWS {$ws = new WindowRows(Integer.parseInt(cnstnt));}
-                       | unit=getTimeUnit {$ws = new WindowTime(Integer.parseInt(cnstnt), unit);}
+getWindow returns [Window ws]:
+    (T_LAST {$ws = new Window(WindowType.LAST);}
+    | cnstnt=getConstant (T_ROWS {$ws = new Window(WindowType.NUM_ROWS); $ws.setNumRows(Integer.parseInt(cnstnt));}
+                       | unit=getTimeUnit {$ws = new Window(WindowType.TEMPORAL); $ws.setTimeWindow(Integer.parseInt(cnstnt), unit);}
                        )
     );
 

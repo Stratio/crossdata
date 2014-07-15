@@ -19,6 +19,8 @@
 
 package com.stratio.meta.core.structures;
 
+import com.stratio.meta.common.statements.structures.terms.Term;
+
 public class IdentifierAssignment {
     
     public static final int TYPE_SIMPLE = 1;

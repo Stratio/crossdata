@@ -30,12 +30,12 @@ import org.testng.annotations.Test;
 public class DescribeStatementTest extends BasicExecutorTest {
 
   @Test
-  public void testDescribeDemoKeyspaceOk() {
+  public void testDescribeDemoCatalogOk() {
 
     MetaQuery metaQuery = new MetaQuery("DESCRIBE KEYSPACE demo;");
 
-    DescribeStatement stmt = new DescribeStatement(DescribeType.KEYSPACE);
-    stmt.setKeyspace("demo");
+    DescribeStatement stmt = new DescribeStatement(DescribeType.CATALOG);
+    stmt.setCatalog("demo");
 
     stmt.validate(metadataManager, null);
 
@@ -44,16 +44,16 @@ public class DescribeStatementTest extends BasicExecutorTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
 
-    validateOk(metaQuery, "testDescribeDemoKeyspaceOk");
+    validateOk(metaQuery, "testDescribeDemoCatalogOk");
   }
 
   @Test
-  public void testDescribeCurrentKeyspaceOk() {
+  public void testDescribeCurrentCatalogOk() {
 
-    MetaQuery metaQuery = new MetaQuery("DESCRIBE KEYSPACE;");
+    MetaQuery metaQuery = new MetaQuery("DESCRIBE CATALOG;");
 
-    DescribeStatement stmt = new DescribeStatement(DescribeType.KEYSPACE);
-    stmt.setSessionKeyspace("demo");
+    DescribeStatement stmt = new DescribeStatement(DescribeType.CATALOG);
+    stmt.setSessionCatalog("demo");
 
     stmt.validate(metadataManager, null);
 
@@ -62,15 +62,15 @@ public class DescribeStatementTest extends BasicExecutorTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
 
-    validateOk(metaQuery, "testDescribeCurrentKeyspaceOk");
+    validateOk(metaQuery, "testDescribeCurrentCatalogOk");
   }
 
   @Test
-  public void testDescribeKeyspacesOk() {
+  public void testDescribeCatalogsOk() {
 
-    MetaQuery metaQuery = new MetaQuery("DESCRIBE KEYSPACES;");
+    MetaQuery metaQuery = new MetaQuery("DESCRIBE CATALOGS;");
 
-    DescribeStatement stmt = new DescribeStatement(DescribeType.KEYSPACES);
+    DescribeStatement stmt = new DescribeStatement(DescribeType.CATALOGS);
 
     stmt.validate(metadataManager, null);
 
@@ -79,7 +79,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
 
-    validateOk(metaQuery, "testDescribeKeyspacesOk");
+    validateOk(metaQuery, "testDescribeCatalogsOk");
   }
 
   @Test
@@ -88,7 +88,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     MetaQuery metaQuery = new MetaQuery("DESCRIBE TABLE users;");
 
     DescribeStatement stmt = new DescribeStatement(DescribeType.TABLE);
-    stmt.setSessionKeyspace("demo");
+    stmt.setSessionCatalog("demo");
     stmt.setTableName("users");
 
     stmt.validate(metadataManager, null);
@@ -107,7 +107,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     MetaQuery metaQuery = new MetaQuery("DESCRIBE TABLES;");
 
     DescribeStatement stmt = new DescribeStatement(DescribeType.TABLES);
-    stmt.setSessionKeyspace("demo");
+    stmt.setSessionCatalog("demo");
 
     stmt.validate(metadataManager, null);
 

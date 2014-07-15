@@ -19,6 +19,8 @@
 
 package com.stratio.meta.core.planner.statements;
 
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.UpdateTableStatement;
 import com.stratio.meta.core.structures.*;

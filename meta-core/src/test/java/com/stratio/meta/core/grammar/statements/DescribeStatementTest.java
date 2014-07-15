@@ -23,38 +23,38 @@ import com.stratio.meta.core.grammar.ParsingTest;
 public class DescribeStatementTest extends ParsingTest {
 
   @Test
-  public void describeKeyspaceBasic() {
-    String inputText = "DESCRIBE KEYSPACE keyspace1;";
-    testRegularStatement(inputText, "describeKeyspaceBasic");
+  public void describeCatalogBasic() {
+    String inputText = "DESCRIBE CATALOG catalog1;";
+    testRegularStatement(inputText, "describeCatalogBasic");
   }
 
   @Test
-  public void describeCurrentKeyspaceBasic() {
-    String inputText = "DESCRIBE KEYSPACE;";
-    testRegularStatement(inputText, "describeCurrentKeyspaceBasic");
+  public void describeCurrentCatalogBasic() {
+    String inputText = "DESCRIBE CATALOG;";
+    testRegularStatement(inputText, "describeCurrentCatalogBasic");
   }
 
   @Test
   public void describeTableBasic() {
-    String inputText = "DESCRIBE TABLE keyspace1.table1;";
+    String inputText = "DESCRIBE TABLE catalog1.table1;";
     testRegularStatement(inputText, "describeTableBasic");
   }
 
   @Test
   public void describeTableFail() {
-    String inputText = "DESCRIBE UNKNOWN keyspace1.table1;";
+    String inputText = "DESCRIBE UNKNOWN catalog1.table1;";
     testParseFails(inputText, "describeTableFail");
   }
 
   @Test
-  public void describeKeyspacesBasic() {
-    String inputText = "DESCRIBE KEYSPACES;";
-    testRegularStatement(inputText, "describeKeyspaceBasic");
+  public void describeCatalogsBasic() {
+    String inputText = "DESCRIBE CATALOGS;";
+    testRegularStatement(inputText, "describeCatalogsBasic");
   }
 
   @Test
   public void describeTablesBasic() {
     String inputText = "DESCRIBE TABLES;";
-    testRegularStatement(inputText, "describeTableBasic");
+    testRegularStatement(inputText, "describeTablesBasic");
   }
 }

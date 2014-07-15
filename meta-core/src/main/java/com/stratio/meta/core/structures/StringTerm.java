@@ -16,6 +16,8 @@
 
 package com.stratio.meta.core.structures;
 
+import com.stratio.meta.common.statements.structures.terms.Term;
+
 public class StringTerm extends Term<String> {
 
   private static final long serialVersionUID = 4470491967411363431L;

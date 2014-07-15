@@ -25,18 +25,19 @@ import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Assignment;
-import com.stratio.meta.core.structures.FloatTerm;
+import com.stratio.meta.common.statements.structures.terms.FloatTerm;
 import com.stratio.meta.core.structures.IdentIntOrLiteral;
 import com.stratio.meta.core.structures.IdentifierAssignment;
 import com.stratio.meta.core.structures.IntTerm;
-import com.stratio.meta.core.structures.IntegerTerm;
+import com.stratio.meta.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta.core.structures.Option;
-import com.stratio.meta.core.structures.Relation;
-import com.stratio.meta.core.structures.SelectorIdentifier;
-import com.stratio.meta.core.structures.Term;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.core.structures.ValueAssignment;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.CoreUtils;
@@ -102,9 +103,9 @@ public class UpdateTableStatement extends MetaStatement {
     this.command = false;
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      catalog = ksAndTableName[0];
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
+      catalogInc = true;
     } else {
       this.tableName = tableName;
     }
@@ -181,18 +182,18 @@ public class UpdateTableStatement extends MetaStatement {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("UPDATE ");
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (catalogInc) {
+      sb.append(catalog).append(".");
     }
     sb.append(tableName);
     if (optsInc) {
       sb.append(" ").append("USING ");
-      sb.append(ParserUtils.stringList(options, " AND "));
+      sb.append(StringUtils.stringList(options, " AND "));
     }
     sb.append(" ").append("SET ");
-    sb.append(ParserUtils.stringList(assignments, ", "));
+    sb.append(StringUtils.stringList(assignments, ", "));
     sb.append(" ").append("WHERE ");
-    sb.append(ParserUtils.stringList(whereClauses, " AND "));
+    sb.append(StringUtils.stringList(whereClauses, " AND "));
     if (condsInc) {
       sb.append(" ").append("IF ");
       sb.append(ParserUtils.stringMap(conditions, " = ", " AND "));
@@ -217,9 +218,9 @@ public class UpdateTableStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result =
-        validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+        validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
     if (!result.hasError()) {
-      TableMetadata tableMetadata = metadata.getTableMetadata(getEffectiveKeyspace(), tableName);
+      TableMetadata tableMetadata = metadata.getTableMetadata(getEffectiveCatalog(), tableName);
 
       if (optsInc) {
         result = validateOptions();

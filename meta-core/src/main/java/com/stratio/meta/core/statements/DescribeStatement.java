@@ -16,6 +16,7 @@
 
 package com.stratio.meta.core.statements;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.datastax.driver.core.KeyspaceMetadata;
@@ -34,17 +35,12 @@ import com.stratio.streaming.api.IStratioStreamingAPI;
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
  */
-public class DescribeStatement extends MetaStatement {
+public class DescribeStatement extends TableStatement {
 
   /**
-   * Type of description required: {@code KEYSPACE} or {@code TABLE}.
+   * Type of description required: {@code CATALOG} or {@code TABLE}.
    */
   private DescribeType type;
-
-  /**
-   * The target table.
-   */
-  private String tableName;
 
   /**
    * Class constructor.
@@ -65,60 +61,16 @@ public class DescribeStatement extends MetaStatement {
     return type;
   }
 
-  /**
-   * Get the keyspace to be described.
-   * 
-   * @return The name or null if not set.
-   */
-  public String getKeyspace() {
-    return keyspace;
-  }
-
-  /**
-   * Set the keyspace to be described.
-   * 
-   * @param keyspace The name.
-   */
-  public void setKeyspace(String keyspace) {
-    this.keyspace = keyspace;
-    keyspaceInc = true;
-  }
-
-  /**
-   * Get the table to be described.
-   * 
-   * @return The name or null if not set.
-   */
-  public String getTableName() {
-    return tableName;
-  }
-
-  /**
-   * Set the name of the table to be described.
-   * 
-   * @param tableName The name.
-   */
-  public void setTableName(String tableName) {
-    if (tableName.contains(".")) {
-      String[] ksAndTableName = tableName.split("\\.");
-      keyspaceInc = true;
-      keyspace = ksAndTableName[0];
-      this.tableName = ksAndTableName[1];
-    } else {
-      this.tableName = tableName;
-    }
-  }
-
   @Override
   public String toString() {
 
     StringBuilder sb = new StringBuilder("DESCRIBE ");
     sb.append(type.name());
 
-    if (type == DescribeType.KEYSPACE && keyspace != null) {
-      sb.append(" ").append(keyspace);
+    if (type == DescribeType.CATALOG && catalog != null) {
+      sb.append(" ").append(catalog);
     } else if (type == DescribeType.TABLE) {
-      sb.append(" ").append(getEffectiveKeyspace()).append(".");
+      sb.append(" ").append(getEffectiveCatalog()).append(".");
       sb.append(tableName);
     }
 
@@ -131,17 +83,17 @@ public class DescribeStatement extends MetaStatement {
 
     Result result = QueryResult.createSuccessQueryResult();
 
-    if (this.keyspace != null) {
-      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(this.keyspace);
+    if (this.catalog != null) {
+      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(this.catalog);
       if (ksMetadata == null) {
         result =
-            Result.createValidationErrorResult("Keyspace " + this.keyspace + " does not exist.");
+            Result.createValidationErrorResult("Keyspace " + this.catalog + " does not exist.");
       }
     }
 
     if (this.tableName != null) {
       result =
-          validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+          validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
     }
 
     return result;
@@ -170,14 +122,14 @@ public class DescribeStatement extends MetaStatement {
     MetadataManager mm = new MetadataManager(session, stratioStreamingAPI);
     mm.loadMetadata();
     Result result = null;
-    if (type == DescribeType.KEYSPACE) {
-      KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(this.getEffectiveKeyspace());
+    if (type == DescribeType.CATALOG) {
+      KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(this.getEffectiveCatalog());
       if (ksInfo == null) {
-        result = Result.createExecutionErrorResult("KEYSPACE " + keyspace + " was not found");
+        result = Result.createExecutionErrorResult("KEYSPACE " + catalog + " was not found");
       } else {
         result = CommandResult.createCommandResult(ksInfo.exportAsString());
       }
-    } else if (type == DescribeType.KEYSPACES) {
+    } else if (type == DescribeType.CATALOGS) {
       List<String> keyspacesNames = mm.getKeyspacesNames();
       if (keyspacesNames == null) {
         result = Result.createExecutionErrorResult("No keyspaces found");
@@ -186,19 +138,37 @@ public class DescribeStatement extends MetaStatement {
       }
     } else if (type == DescribeType.TABLE) {
       com.stratio.meta.common.metadata.structures.TableMetadata tableInfo =
-          mm.getTableGenericMetadata(this.getEffectiveKeyspace(), tableName);
+          mm.getTableGenericMetadata(this.getEffectiveCatalog(), tableName);
       if (tableInfo == null) {
         result = Result.createExecutionErrorResult("TABLE " + tableName + " was not found");
       } else {
         result = CommandResult.createCommandResult(tableInfo.exportAsString());
       }
     } else {
-      List<String> tablesNames = mm.getTablesNames(this.getEffectiveKeyspace());
+      List<String> tablesNames = mm.getTablesNames(this.getEffectiveCatalog());
       if (tablesNames == null) {
         result = Result.createExecutionErrorResult("No tables found");
       } else {
         result = CommandResult.createCommandResult(tablesNames.toString());
       }
+    }
+    return result;
+  }
+
+  @Override
+  public List<String> getCatalogs() {
+    List<String> result = new ArrayList<>();
+    if(DescribeType.CATALOG.equals(type)){
+      result.add(getEffectiveCatalog());
+    }
+    return result;
+  }
+
+  @Override
+  public List<String> getTables() {
+    List<String> result = new ArrayList<>();
+    if(DescribeType.TABLE.equals(type)){
+      result.add(getTableName());
     }
     return result;
   }

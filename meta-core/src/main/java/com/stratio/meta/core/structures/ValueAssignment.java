@@ -16,6 +16,8 @@
 
 package com.stratio.meta.core.structures;
 
+import com.stratio.meta.common.statements.structures.terms.Term;
+
 /**
  * Class that contains the value assignment of the
  * {@link com.stratio.meta.core.statements.UpdateTableStatement}.

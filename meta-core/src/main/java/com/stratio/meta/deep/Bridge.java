@@ -46,10 +46,10 @@ import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.Ordering;
-import com.stratio.meta.core.structures.Relation;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.SelectionClause;
 import com.stratio.meta.core.structures.SelectionList;
-import com.stratio.meta.core.structures.Term;
+import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.deep.comparators.DeepComparator;
 import com.stratio.meta.deep.functions.Between;
 import com.stratio.meta.deep.functions.DeepEquals;
@@ -130,7 +130,7 @@ public class Bridge {
     }
     ICassandraDeepJobConfig<Cells> config =
         DeepJobConfigFactory.create().session(session).host(engineConfig.getRandomCassandraHost())
-            .rpcPort(engineConfig.getCassandraPort()).keyspace(ss.getEffectiveKeyspace())
+            .rpcPort(engineConfig.getCassandraPort()).keyspace(ss.getEffectiveCatalog())
             .table(ss.getTableName());
 
     config =
@@ -344,7 +344,7 @@ public class Bridge {
    * Take a RDD and a Relation and apply suitable filter to the RDD. Execute where clause on Deep.
    * 
    * @param rdd RDD which filter must be applied.
-   * @param rel {@link com.stratio.meta.core.structures.Relation} to apply
+   * @param rel {@link com.stratio.meta.common.statements.structures.relationships.Relation} to apply
    * @return A new RDD with the result.
    */
   private JavaRDD<Cells> doWhere(JavaRDD<Cells> rdd, Relation rel) {
