@@ -2167,13 +2167,13 @@ public class SelectStatement extends MetaStatement {
       for (Relation whereCol : this.where) {
         for (SelectorIdentifier id : whereCol.getIdentifiers()) {
           String table = tablesAliasesMap.get(id.getTable());
-          if (table != null) {
-            id.setTable(table);
-          }
-
           String identifier = fieldsAliasesMap.get(id.toString());
           if (identifier != null) {
             id.setIdentifier(identifier);
+          }
+
+          if (table != null) {
+            id.setTable(table);
           }
         }
       }
@@ -2187,14 +2187,14 @@ public class SelectStatement extends MetaStatement {
       for (GroupBy groupByCol : this.group) {
         SelectorIdentifier selectorIdentifier = groupByCol.getSelectorIdentifier();
 
-        String table = tablesAliasesMap.get(selectorIdentifier.getTable());
-        if (table != null) {
-          selectorIdentifier.setTable(table);
-        }
-
         String identifier = fieldsAliasesMap.get(selectorIdentifier.toString());
         if (identifier != null) {
           selectorIdentifier.setIdentifier(identifier);
+
+          String table = tablesAliasesMap.get(selectorIdentifier.getTable());
+          if (table != null) {
+            selectorIdentifier.setTable(table);
+          }
         }
       }
     }
@@ -2207,14 +2207,14 @@ public class SelectStatement extends MetaStatement {
       for (Ordering orderBycol : this.order) {
         SelectorIdentifier selectorIdentifier = orderBycol.getSelectorIdentifier();
 
-        String table = tablesAliasesMap.get(selectorIdentifier.getTable());
-        if (table != null) {
-          selectorIdentifier.setTable(table);
-        }
-
         String identifier = fieldsAliasesMap.get(selectorIdentifier.toString());
         if (identifier != null) {
           selectorIdentifier.setIdentifier(identifier);
+        }
+
+        String table = tablesAliasesMap.get(selectorIdentifier.getTable());
+        if (table != null) {
+          selectorIdentifier.setTable(table);
         }
       }
     }
@@ -2225,28 +2225,28 @@ public class SelectStatement extends MetaStatement {
 
     if (this.join != null) {
 
+      String leftField = this.join.getLeftField().getField();
+      String fieldName = fieldsAliasesMap.get(leftField);
+      if (fieldName != null) {
+        this.join.getLeftField().setIdentifier(fieldName);
+      }
+
       String leftTable = this.join.getLeftField().getTable();
       String tableName = tablesAliasesMap.get(leftTable);
       if (tableName != null) {
         this.join.getLeftField().setTable(tableName);
       }
 
-      String leftField = this.join.getLeftField().getField();
-      String fieldName = fieldsAliasesMap.get(leftField);
+      String rightField = this.join.getRightField().getField();
+      fieldName = fieldsAliasesMap.get(rightField);
       if (fieldName != null) {
-        this.join.getLeftField().setField(fieldName);
+        this.join.getRightField().setIdentifier(fieldName);
       }
 
       String rightTable = this.join.getRightField().getTable();
       tableName = tablesAliasesMap.get(rightTable);
       if (tableName != null) {
         this.join.getRightField().setTable(tableName);
-      }
-
-      String rightField = this.join.getLeftField().getField();
-      fieldName = fieldsAliasesMap.get(rightField);
-      if (fieldName != null) {
-        this.join.getLeftField().setField(fieldName);
       }
     }
   }
