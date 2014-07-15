@@ -2254,11 +2254,11 @@ public class SelectStatement extends MetaStatement {
   public void replaceAliasesWithName(Map<String, String> fieldsAliasesMap,
       Map<String, String> tablesAliasesMap) {
 
-    Iterator<Entry<String, String>> entriesIt = tablesAliasesMap.entrySet().iterator();
+    Iterator<Entry<String, String>> entriesIt = fieldsAliasesMap.entrySet().iterator();
     while (entriesIt.hasNext()) {
       Entry<String, String> entry = entriesIt.next();
       if (entry.getValue().contains(".")) {
-        tablesAliasesMap.put(entry.getKey(), entry.getValue().split("\\.")[1]);
+        fieldsAliasesMap.put(entry.getKey(), entry.getValue().split("\\.")[1]);
       }
     }
 
