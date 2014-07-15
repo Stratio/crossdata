@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class EngineConfig {
@@ -53,6 +54,31 @@ public class EngineConfig {
    * Cassandra port.
    */
   private int cassandraPort;
+
+  /**
+   * Hazelcast hosts addresses.
+   */
+  private String[] hazelcastHosts;
+
+  /**
+   * Hazelcast port.
+   */
+  private int hazelcastPort;
+
+  /**
+   * Hazelcast map name.
+   */
+  private String hazelcastMapName;
+
+  /**
+   * Hazelcast map number of backups.
+   */
+  private int hazelcastMapBackups;
+
+  /**
+   * Hazelcast map max number of entities per node.
+   */
+  private int hazelcastMapSize;
 
   /**
    * Spark Master spark://HOST:PORT/.
@@ -107,6 +133,46 @@ public class EngineConfig {
    */
   public void setCassandraPort(int cassandraPort) {
     this.cassandraPort = cassandraPort;
+  }
+
+  public String[] getHazelcastHosts() {
+    return hazelcastHosts.clone();
+  }
+
+  public void setHazelcastHosts(String[] hazelcastHosts) {
+    this.hazelcastHosts = Arrays.copyOf(hazelcastHosts, hazelcastHosts.length);;
+  }
+
+  public int getHazelcastPort() {
+    return hazelcastPort;
+  }
+
+  public void setHazelcastPort(int hazelcastPort) {
+    this.hazelcastPort = hazelcastPort;
+  }
+
+  public String getHazelcastMapName() {
+    return hazelcastMapName;
+  }
+
+  public void setHazelcastMapName(String hazelcastMapName) {
+    this.hazelcastMapName = hazelcastMapName;
+  }
+
+  public int getHazelcastMapBackups() {
+    return hazelcastMapBackups;
+  }
+
+  public void setHazelcastMapBackups(int hazelcastMapBackups) {
+    this.hazelcastMapBackups = hazelcastMapBackups;
+  }
+
+  public int getHazelcastMapSize() {
+    return hazelcastMapSize;
+  }
+
+  public void setHazelcastMapSize(int hazelcastMapSize) {
+    this.hazelcastMapSize = hazelcastMapSize;
   }
 
   /**

@@ -35,7 +35,7 @@ object ServerConfig{
   val SERVER_USER_CONFIG_RESOURCE = "external.config.resource"
 }
 
-trait ServerConfig extends CassandraConfig with SparkConfig with StreamingConfig {
+trait ServerConfig extends CassandraConfig with SparkConfig with StreamingConfig with HazelcastConfig {
 
   lazy val logger:Logger = ???
 
@@ -87,6 +87,11 @@ trait ServerConfig extends CassandraConfig with SparkConfig with StreamingConfig
     result.setZookeeperPort(zookeeperPort)
     result.setStreamingDuration(streamingDuration)
     result.setStreamingGroupId(streamingGroupId)
+    result.setHazelcastHosts(hazelcastHosts)
+    result.setHazelcastPort(hazelcastPort)
+    result.setHazelcastMapName(hazelcastMapName)
+    result.setHazelcastMapSize(hazelcastMapSize)
+    result.setHazelcastMapBackups(hazelcastMapBackup)
     result
   }
 
