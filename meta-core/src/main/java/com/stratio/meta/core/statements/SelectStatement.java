@@ -2254,9 +2254,19 @@ public class SelectStatement extends MetaStatement {
   public void replaceAliasesWithName(Map<String, String> fieldsAliasesMap,
       Map<String, String> tablesAliasesMap) {
 
-    Iterator<Entry<String, String>> entriesIt = fieldsAliasesMap.entrySet().iterator();
-    while (entriesIt.hasNext()) {
-      Entry<String, String> entry = entriesIt.next();
+    // Remove keyspace from table name
+    Iterator<Entry<String, String>> tableEntriesIt = tablesAliasesMap.entrySet().iterator();
+    while (tableEntriesIt.hasNext()) {
+      Entry<String, String> entry = tableEntriesIt.next();
+      if (entry.getValue().contains(".")) {
+        tablesAliasesMap.put(entry.getKey(), entry.getValue().split("\\.")[1]);
+      }
+    }
+
+    // Remove table from field name
+    Iterator<Entry<String, String>> fieldEntriesIt = fieldsAliasesMap.entrySet().iterator();
+    while (fieldEntriesIt.hasNext()) {
+      Entry<String, String> entry = fieldEntriesIt.next();
       if (entry.getValue().contains(".")) {
         fieldsAliasesMap.put(entry.getKey(), entry.getValue().split("\\.")[1]);
       }
