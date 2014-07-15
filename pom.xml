@@ -84,6 +84,7 @@
         <akka.version>2.2.4</akka.version>
         <cassandra.driver>2.0.0</cassandra.driver>
         <deep.version>0.3.2</deep.version>
+        <hazelcast.version>3.2.3</hazelcast.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
     </properties>
 
