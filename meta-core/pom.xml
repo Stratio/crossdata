@@ -74,6 +74,13 @@
 		<antlr.version>3.5.1</antlr.version>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>sonatype</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.testng</groupId>
