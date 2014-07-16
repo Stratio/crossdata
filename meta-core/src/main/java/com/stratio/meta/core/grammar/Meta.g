@@ -779,8 +779,9 @@ getTimeUnit returns [TimeUnit unit]:
 ;
 
 getSelectClause[Map fieldsAliasesMap] returns [SelectionClause sc]:
-    scc=getSelectionCount {$sc = scc;}
-    | scl=getSelectionList[fieldsAliasesMap] {$sc = scl;}
+    //scc=getSelectionCount {$sc = scc;}
+    //| 
+    scl=getSelectionList[fieldsAliasesMap] {$sc = scl;}
 ;
 
 getSelectionCount returns [SelectionCount scc]
