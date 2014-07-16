@@ -176,7 +176,7 @@ public class DeleteStatement extends MetaStatement {
     String column = rc.getIdentifiers().get(0).toString();
     if (tableMetadata.getColumn(column) == null) {
       result =
-          Result.createValidationErrorResult("Column " + column + " does not exist in table "
+          Result.createValidationErrorResult("Column '" + column + "' does not exist in table "
               + tableMetadata.getName());
     }
 
