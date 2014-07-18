@@ -48,10 +48,12 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.DoubleTerm;
+import com.stratio.meta.core.structures.FloatTerm;
 import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.GroupByFunction;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.InnerJoin;
+import com.stratio.meta.core.structures.IntegerTerm;
 import com.stratio.meta.core.structures.LongTerm;
 import com.stratio.meta.core.structures.OrderDirection;
 import com.stratio.meta.core.structures.Ordering;
@@ -796,8 +798,12 @@ public class SelectStatement extends MetaStatement {
     for (Term<?> term : terms) {
       if (columnType.equals(Double.class) && term.getTermClass().equals(Long.class)) {
         normalizedTerms.add(new DoubleTerm(((Long) term.getTermValue()).doubleValue()));
+      } else if (columnType.equals(Float.class) && term.getTermClass().equals(Long.class)) {
+        normalizedTerms.add(new FloatTerm(((Long) term.getTermValue()).floatValue()));
       } else if (columnType.equals(Long.class) && term.getTermClass().equals(Double.class)) {
         normalizedTerms.add(new LongTerm(((Double) term.getTermValue()).longValue()));
+      } else if (columnType.equals(Integer.class) && term.getTermClass().equals(Double.class)) {
+        normalizedTerms.add(new IntegerTerm(((Double) term.getTermValue()).intValue()));
       } else {
         normalizedTerms.add(term);
       }
