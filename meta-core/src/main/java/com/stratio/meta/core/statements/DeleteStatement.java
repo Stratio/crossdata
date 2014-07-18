@@ -27,6 +27,10 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.DoubleTerm;
+import com.stratio.meta.core.structures.FloatTerm;
+import com.stratio.meta.core.structures.IntegerTerm;
+import com.stratio.meta.core.structures.LongTerm;
 import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.RelationCompare;
 import com.stratio.meta.core.structures.Term;
@@ -182,6 +186,9 @@ public class DeleteStatement extends MetaStatement {
 
     ColumnMetadata cm = tableMetadata.getColumn(column);
     if (cm != null) {
+
+      rc.setTerms(termTypeNormalization(rc.getTerms(), cm.getType().asJavaClass()));
+
       // relation.updateTermClass(tableMetadata);
       Term t = Term.class.cast(rc.getTerms().get(0));
       if (!tableMetadata.getColumn(column).getType().asJavaClass().equals(t.getTermClass())) {
@@ -224,6 +231,26 @@ public class DeleteStatement extends MetaStatement {
               + " table.");
     }
     return result;
+  }
+
+  private List<Term<?>> termTypeNormalization(List<Term<?>> terms, Class<?> columnType) {
+
+    List<Term<?>> normalizedTerms = new ArrayList<>();
+    for (Term<?> term : terms) {
+      if (columnType.equals(Double.class) && term.getTermClass().equals(Long.class)) {
+        normalizedTerms.add(new DoubleTerm(((Long) term.getTermValue()).doubleValue()));
+      } else if (columnType.equals(Float.class) && term.getTermClass().equals(Long.class)) {
+        normalizedTerms.add(new FloatTerm(((Long) term.getTermValue()).floatValue()));
+      } else if (columnType.equals(Long.class) && term.getTermClass().equals(Double.class)) {
+        normalizedTerms.add(new LongTerm(((Double) term.getTermValue()).longValue()));
+      } else if (columnType.equals(Integer.class) && term.getTermClass().equals(Double.class)) {
+        normalizedTerms.add(new IntegerTerm(((Double) term.getTermValue()).intValue()));
+      } else {
+        normalizedTerms.add(term);
+      }
+    }
+
+    return normalizedTerms;
   }
 
   /**
