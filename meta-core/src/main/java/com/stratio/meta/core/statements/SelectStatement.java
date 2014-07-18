@@ -47,10 +47,12 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.DoubleTerm;
 import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.GroupByFunction;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.structures.InnerJoin;
+import com.stratio.meta.core.structures.LongTerm;
 import com.stratio.meta.core.structures.OrderDirection;
 import com.stratio.meta.core.structures.Ordering;
 import com.stratio.meta.core.structures.Relation;
@@ -726,10 +728,15 @@ public class SelectStatement extends MetaStatement {
     }
 
     if (cm != null) {
-      Iterator<Term<?>> termsIt = terms.iterator();
+
       Class<?> columnType = cm.getType().getDbClass();
+      terms = termTypeNormalization(terms, columnType);
+      rc.setTerms(terms);
+
+      Iterator<Term<?>> termsIt = terms.iterator();
       while (!result.hasError() && termsIt.hasNext()) {
         Term<?> term = termsIt.next();
+
         if (!columnType.equals(term.getTermClass())) {
           result =
               Result.createValidationErrorResult("Column [" + column + "] of type [" + columnType
@@ -781,6 +788,22 @@ public class SelectStatement extends MetaStatement {
     }
 
     return result;
+  }
+
+  private List<Term<?>> termTypeNormalization(List<Term<?>> terms, Class<?> columnType) {
+
+    List<Term<?>> normalizedTerms = new ArrayList<>();
+    for (Term<?> term : terms) {
+      if (columnType.equals(Double.class) && term.getTermClass().equals(Long.class)) {
+        normalizedTerms.add(new DoubleTerm(((Long) term.getTermValue()).doubleValue()));
+      } else if (columnType.equals(Long.class) && term.getTermClass().equals(Double.class)) {
+        normalizedTerms.add(new LongTerm(((Double) term.getTermValue()).longValue()));
+      } else {
+        normalizedTerms.add(term);
+      }
+    }
+
+    return normalizedTerms;
   }
 
   /**
