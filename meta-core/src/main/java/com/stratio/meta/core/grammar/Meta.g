@@ -234,7 +234,10 @@ T_CONSTANT: (DIGIT)+;
 
 T_IDENT: LETTER (LETTER | DIGIT | '_')*;
 
-T_KS_AND_TN: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)?; 
+//T_KS_AND_TN: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)?;
+T_KS_AND_TN: T_IDENT (POINT T_IDENT)?;
+
+//T_CTLG_TBL_COL: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)? (POINT LETTER (LETTER | DIGIT | '_')*)?;
 
 T_TERM: (LETTER | DIGIT | '_' | POINT)+;
 
@@ -251,7 +254,7 @@ describeStatement returns [DescribeStatement descs]:
     T_DESCRIBE ((T_KEYSPACE|T_CATALOG) keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.CATALOG); $descs.setCatalog($keyspace.text);}
     	| (T_KEYSPACE|T_CATALOG) {$descs = new DescribeStatement(DescribeType.CATALOG);}
     	| (T_KEYSPACES|T_CATALOGS) {$descs = new DescribeStatement(DescribeType.CATALOGS);}
-        | T_TABLE tablename=getTableID { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
+        | T_TABLE tableName=getTable { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tableName);}
         | T_TABLES {$descs = new DescribeStatement(DescribeType.TABLES);}
     )
 ;
@@ -463,13 +466,14 @@ alterTableStatement returns [AlterTableStatement altast]
     }:
     T_ALTER
     T_TABLE
-    tablename=getTableID
+    //tablename=getTableID
+    tableName = getTable
     (T_ALTER column=getField T_TYPE type=T_IDENT {option=1;}
         |T_ADD column=getField type=T_IDENT {option=2;}
         |T_DROP column=getField {option=3;}
         |(T_WITH {option=4;} props=getMetaProperties)?
     )
-    {$altast = new AlterTableStatement(tablename, column, $type.text, props, option);  }
+    {$altast = new AlterTableStatement(tableName, column, $type.text, props, option);  }
 ;
 
 selectStatement returns [SelectStatement slctst]
@@ -1032,6 +1036,81 @@ getConstant returns [String constStr]:
 getFloat returns [String floating]:
     termToken=T_TERM {$floating=$termToken.text;}
     | floatToken = T_FLOAT {$floating=$floatToken.text;}
+    ;
+
+//getColumn returns [ColumnName column]:
+//    @init{
+//        String tableName = null;
+//        String catalogName = null;
+//    }:
+//    ((catalog = T_IDENT {catalogName = $catalog.text;} T_POINT )? table = T_IDENT {tableName=$table.text;} T_POINT)?
+//    col=T_IDENT {
+//        $column = new ColumnName($col.text);
+//        $column.setCatalog(catalogName);
+//        $column.setTable(tableName);}
+//    ;
+
+getTableOld returns [TableName table]
+    @init{
+        String catalogName = null;
+    }:
+    (catalog=T_IDENT {catalogName=$catalog.text;} POINT )?
+    tableName=T_IDENT {
+        table=new TableName($tableName.text);
+        table.setCatalog(catalogName);}
+    ;
+
+getTableOld2 returns [TableName table]
+    @init{
+        String t1 = null;
+        String t2 = null;
+    }:
+    t1v=T_IDENT {t1=$t1v.text;}
+    (POINT t2v=T_IDENT {t2=$t2v.text;})?
+    {
+        if(t2==null){
+            table = new TableName(t1);
+        }else{
+            table = new TableName(t2);
+            table.setCatalog(t1);
+        }
+    }
+    ;
+
+//getTable returns [TableName table]:
+//    name=T_KS_AND_TN
+//    {
+//        String [] tableName = $name.text.split("\\.");
+////        if(tableName.length == 2){
+//            table = new TableName(tableName[1]);
+//            table.setCatalog(tableName[0]);
+//        }else{
+//            table = new TableName($name.text);
+//        }
+//    };
+
+getTable returns [TableName table]
+    @init{
+       String t1 = null;
+       String t2 = null;
+    }
+    @after{
+        String tableName = t1;
+        if(t2 != null){
+            tableName = t2;
+        }
+
+        String [] tableTokens = tableName.split("\\.");
+        if(tableTokens.length == 2){
+         table = new TableName(tableTokens[1]);
+         table.setCatalog(tableTokens[0]);
+        }else{
+         table = new TableName(tableName);
+        }
+
+    }:
+    (ident1=T_IDENT {t1 = $ident1.text;}
+    | ident2=T_KS_AND_TN {t2 = $ident2.text;})
     ;
 
 WS: (' ' | '\t' | '\n' | '\r')+ { 

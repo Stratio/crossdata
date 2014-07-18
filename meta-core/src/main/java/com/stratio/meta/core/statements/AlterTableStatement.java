@@ -27,6 +27,7 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Property;
 import com.stratio.meta.core.structures.PropertyNameValue;
+import com.stratio.meta.core.structures.TableName;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.*;
 
@@ -36,12 +37,7 @@ import java.util.List;
 /**
  * Class that models an {@code ALTER TABLE} statement from the META language.
  */
-public class AlterTableStatement extends MetaStatement{
-
-    /**
-     * The name of the target table.
-     */
-    private String tableName;
+public class AlterTableStatement extends TableStatement{
 
     /**
      * Type of alter. Accepted values are:
@@ -77,16 +73,9 @@ public class AlterTableStatement extends MetaStatement{
      * @param properties The type of modification.
      * @param option The map of options.
      */
-    public AlterTableStatement(String tableName, String column, String type, List<Property> properties, int option) {
+    public AlterTableStatement(TableName tableName, String column, String type, List<Property> properties, int option) {
         this.command = false;
-        if(tableName.contains(".")){
-            String[] ksAndTableName = tableName.split("\\.");
-            catalog = ksAndTableName[0];
-            this.tableName = ksAndTableName[1];
-            catalogInc = true;
-        }else {
-            this.tableName = tableName;
-        }
+      this.tableName = tableName;
         this.column = column;
         this.type = type;
         this.properties = properties;
@@ -120,7 +109,8 @@ public class AlterTableStatement extends MetaStatement{
             default:
                 sb.append("bad option");
                 break;
-        }        
+        }
+      System.out.println("To execute: " + sb.toString());
         return sb.toString();
     }
 
@@ -141,11 +131,14 @@ public class AlterTableStatement extends MetaStatement{
      */
     @Override
     public Result validate(MetadataManager metadata, EngineConfig config) {
-        Result result = validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
+        Result result = validateKeyspaceAndTable(
+            metadata,
+            sessionCatalog,
+            tableName.containsCatalog(), tableName.getCatalog(), tableName.getTableName());
         if(!result.hasError()) {
             String effectiveKeyspace = getEffectiveCatalog();
-
-            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+            System.out.println("validating: " + effectiveKeyspace + " table: " + tableName.getTableName());
+            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName.getTableName());
 
             switch(option){
                 case 1:

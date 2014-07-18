@@ -62,6 +62,14 @@ public class ColumnName {
     this.table = table;
   }
 
+  public String getCatalog() {
+    return catalog;
+  }
+
+  public String getTable() {
+    return table;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
