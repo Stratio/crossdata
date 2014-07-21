@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
-package com.stratio.meta.core.statements;
+package com.stratio.meta2.core.statements;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +27,7 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.DescribeType;
+import com.stratio.meta.core.structures.TableName;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
@@ -70,7 +71,6 @@ public class DescribeStatement extends TableStatement {
     if (type == DescribeType.CATALOG && catalog != null) {
       sb.append(" ").append(catalog);
     } else if (type == DescribeType.TABLE) {
-      //sb.append(" ").append(getEffectiveCatalog()).append(".");
       sb.append(" ").append(tableName);
     }
 
@@ -165,10 +165,10 @@ public class DescribeStatement extends TableStatement {
   }
 
   @Override
-  public List<String> getTables() {
-    List<String> result = new ArrayList<>();
+  public List<TableName> getTables() {
+    List<TableName> result = new ArrayList<>();
     if(DescribeType.TABLE.equals(type)){
-      result.add(tableName.getTableName());
+      result.add(tableName);
     }
     return result;
   }

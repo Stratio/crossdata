@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.CreateTableStatement;
-import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta.core.structures.BooleanProperty;
 import com.stratio.meta.core.structures.Property;
 import com.stratio.meta.core.structures.PropertyNameValue;

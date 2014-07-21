@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
-package com.stratio.meta.core.statements;
+package com.stratio.meta2.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
@@ -24,6 +24,9 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.statements.StatementType;
+import com.stratio.meta.core.structures.ColumnName;
+import com.stratio.meta.core.structures.TableName;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
@@ -228,7 +231,7 @@ public abstract class MetaStatement {
    * fully qualified or not.
    * @return A list of table names.
    */
-  public List<String> getTables(){
+  public List<TableName> getTables(){
     return null;
   }
 
@@ -237,7 +240,7 @@ public abstract class MetaStatement {
    * the table name.
    * @return A list of column names.
    */
-  public List<String> getColumns(){
+  public List<ColumnName> getColumns(){
     return null;
   }
 

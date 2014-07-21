@@ -27,6 +27,7 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.core.statements.MetaStatement;
 
 /**
  * Class that models a {@code DROP KEYSPACE} statement from the META language.

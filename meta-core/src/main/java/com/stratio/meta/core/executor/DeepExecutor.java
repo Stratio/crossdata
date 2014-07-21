@@ -25,11 +25,10 @@ import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
-import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.deep.Bridge;
 import org.apache.log4j.Logger;
-import org.apache.spark.SparkEnv;
 
 import java.util.List;
 
@@ -49,7 +48,7 @@ public class DeepExecutor {
 
   /**
    * Executes a statement in Spark using Deep.
-   * @param stmt {@link com.stratio.meta.core.statements.MetaStatement}
+   * @param stmt {@link com.stratio.meta2.core.statements.MetaStatement}
    * @param resultsFromChildren List of {@link com.stratio.meta.common.result.Result} of children.
    * @param isRoot Indicates if these node is root.
    * @param session Cassandra datastax java driver {@link com.datastax.driver.core.Session}.

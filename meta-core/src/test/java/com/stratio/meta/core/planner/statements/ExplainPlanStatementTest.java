@@ -26,7 +26,7 @@ import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifie
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.DropTableStatement;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
-import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.*;
 import org.testng.annotations.Test;

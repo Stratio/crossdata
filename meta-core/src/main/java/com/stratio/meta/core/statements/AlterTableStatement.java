@@ -30,6 +30,7 @@ import com.stratio.meta.core.structures.PropertyNameValue;
 import com.stratio.meta.core.structures.TableName;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.*;
+import com.stratio.meta2.core.statements.TableStatement;
 
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +38,7 @@ import java.util.List;
 /**
  * Class that models an {@code ALTER TABLE} statement from the META language.
  */
-public class AlterTableStatement extends TableStatement{
+public class AlterTableStatement extends TableStatement {
 
     /**
      * Type of alter. Accepted values are:

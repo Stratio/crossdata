@@ -19,7 +19,7 @@ package com.stratio.meta.core.planner.statements;
 import org.testng.annotations.Test;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.DescribeStatement;
+import com.stratio.meta2.core.statements.DescribeStatement;
 import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta.core.structures.TableName;
 

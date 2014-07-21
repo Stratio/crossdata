@@ -18,7 +18,7 @@ package com.stratio.meta.core.executor.command;
 
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.core.executor.BasicExecutorTest;
-import com.stratio.meta.core.statements.DescribeStatement;
+import com.stratio.meta2.core.statements.DescribeStatement;
 import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta.core.structures.TableName;
 import com.stratio.meta.core.utils.MetaPath;

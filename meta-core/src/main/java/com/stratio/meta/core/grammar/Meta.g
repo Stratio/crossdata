@@ -30,6 +30,7 @@ options {
     import com.stratio.meta.common.statements.structures.terms.*;
     import com.stratio.meta.common.statements.structures.window.*;
     import com.stratio.meta.core.statements.*;
+    import com.stratio.meta2.core.statements.*;
     import com.stratio.meta.core.structures.*;
     import com.stratio.meta.core.utils.*;
     import java.util.LinkedHashMap;
@@ -220,7 +221,6 @@ T_HOURS: H O U R S;
 T_DAY: D A Y;
 T_DAYS: D A Y S;
 
-
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
 
@@ -228,6 +228,17 @@ QUOTED_LITERAL
     @init{ StringBuilder sb = new StringBuilder(); }
     @after{ setText(sb.toString()); }: 
         '\'' (c=~('\'') { sb.appendCodePoint(c);} | '\'' '\'' { sb.appendCodePoint('\''); })* '\''
+    ;
+
+JSON
+    @init{
+        StringBuilder sb = new StringBuilder();
+    }
+    @after{
+        setText("{" + sb.toString() + "}");
+    }:
+        //T_START_SBRACKET (c=(.) {sb.appendCodePoint(c);})* T_END_SBRACKET
+        T_START_SBRACKET (c=~(';') {sb.appendCodePoint(c);})* T_END_SBRACKET
     ;
 
 T_CONSTANT: (DIGIT)+;
@@ -238,6 +249,7 @@ T_IDENT: LETTER (LETTER | DIGIT | '_')*;
 T_KS_AND_TN: T_IDENT (POINT T_IDENT)?;
 
 //T_CTLG_TBL_COL: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)? (POINT LETTER (LETTER | DIGIT | '_')*)?;
+T_CTLG_TBL_COL: T_IDENT (POINT T_IDENT (POINT T_IDENT)?)?;
 
 T_TERM: (LETTER | DIGIT | '_' | POINT)+;
 
@@ -248,12 +260,39 @@ T_FLOAT:   ('0'..'9')+ POINT ('0'..'9')* EXPONENT?
 
 T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 
+// ========================================================
+// STORAGE
+// ========================================================
+
+createStorageStatement returns [CreateStorageStatement css]
+    @init{
+        boolean ifNotExists = false;
+    }
+    @after{
+        css = new CreateStorageStatement($storageName.text, ifNotExists, $j.text);
+    }
+    :
+    T_CREATE T_STORAGE
+    (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
+    storageName=T_IDENT
+    T_WITH j=JSON
+    ;
+
+// ========================================================
+// CATALOG
+// ========================================================
+
+// ========================================================
+// TABLE
+// ========================================================
+
+
 //STATEMENTS
 
 describeStatement returns [DescribeStatement descs]:
-    T_DESCRIBE ((T_KEYSPACE|T_CATALOG) keyspace=T_IDENT { $descs = new DescribeStatement(DescribeType.CATALOG); $descs.setCatalog($keyspace.text);}
-    	| (T_KEYSPACE|T_CATALOG) {$descs = new DescribeStatement(DescribeType.CATALOG);}
-    	| (T_KEYSPACES|T_CATALOGS) {$descs = new DescribeStatement(DescribeType.CATALOGS);}
+    T_DESCRIBE (
+        T_CATALOG {$descs = new DescribeStatement(DescribeType.CATALOG);} (catalog=T_IDENT { $descs.setCatalog($catalog.text);})?
+    	| T_CATALOGS {$descs = new DescribeStatement(DescribeType.CATALOGS);}
         | T_TABLE tableName=getTable { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tableName);}
         | T_TABLES {$descs = new DescribeStatement(DescribeType.TABLES);}
     )
@@ -690,6 +729,7 @@ metaStatement returns [MetaStatement st]:
     | rs = removeUDFStatement { $st = rs; } 
     | ds = deleteStatement { $st = ds; } 
     | descs = describeStatement { $st = descs;}
+    | css = createStorageStatement { $st = css;}
     ;
 
 query returns [MetaStatement st]: 
@@ -1038,56 +1078,36 @@ getFloat returns [String floating]:
     | floatToken = T_FLOAT {$floating=$floatToken.text;}
     ;
 
-//getColumn returns [ColumnName column]:
-//    @init{
-//        String tableName = null;
-//        String catalogName = null;
-//    }:
-//    ((catalog = T_IDENT {catalogName = $catalog.text;} T_POINT )? table = T_IDENT {tableName=$table.text;} T_POINT)?
-//    col=T_IDENT {
-//        $column = new ColumnName($col.text);
-//        $column.setCatalog(catalogName);
-//        $column.setTable(tableName);}
-//    ;
-
-getTableOld returns [TableName table]
+getColumn returns [ColumnName column]
     @init{
-        String catalogName = null;
-    }:
-    (catalog=T_IDENT {catalogName=$catalog.text;} POINT )?
-    tableName=T_IDENT {
-        table=new TableName($tableName.text);
-        table.setCatalog(catalogName);}
-    ;
-
-getTableOld2 returns [TableName table]
-    @init{
-        String t1 = null;
-        String t2 = null;
-    }:
-    t1v=T_IDENT {t1=$t1v.text;}
-    (POINT t2v=T_IDENT {t2=$t2v.text;})?
-    {
-        if(t2==null){
-            table = new TableName(t1);
-        }else{
-            table = new TableName(t2);
-            table.setCatalog(t1);
-        }
+       String t1 = null;
+       String t2 = null;
+       String t3 = null;
     }
-    ;
+    @after{
+        String columnName = t1;
+        if(t2 != null){
+            columnName = t2;
+        }else if(t3 != null){
+            columnName = t3;
+        }
 
-//getTable returns [TableName table]:
-//    name=T_KS_AND_TN
-//    {
-//        String [] tableName = $name.text.split("\\.");
-////        if(tableName.length == 2){
-//            table = new TableName(tableName[1]);
-//            table.setCatalog(tableName[0]);
-//        }else{
-//            table = new TableName($name.text);
-//        }
-//    };
+        String [] columnTokens = columnName.split("\\.");
+        if(columnTokens.length == 1){
+            column = new ColumnName(columnTokens[0]);
+        }else if(columnTokens.length == 2){
+            column = new ColumnName(columnTokens[1]);
+            column.setTable(columnTokens[0]);
+        }else{
+            column = new ColumnName(columnTokens[2]);
+            column.setTable(columnTokens[1]);
+            column.setCatalog(columnTokens[0]);
+        }
+    }:
+    (ident1=T_IDENT {t1 = $ident1.text;}
+    | ident2=T_KS_AND_TN {t2 = $ident2.text;}
+    | ident3=T_CTLG_TBL_COL {t3 = $ident3.text;})
+    ;
 
 getTable returns [TableName table]
     @init{

@@ -21,11 +21,12 @@ package com.stratio.meta.core.statements;
 
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.core.statements.MetaStatement;
 
 /**
  * Class that models a {@code DROP TRIGGER} statement from the META language.
  */
-public class DropTriggerStatement extends MetaStatement{
+public class DropTriggerStatement extends MetaStatement {
 
     /**
      * The name of the trigger.

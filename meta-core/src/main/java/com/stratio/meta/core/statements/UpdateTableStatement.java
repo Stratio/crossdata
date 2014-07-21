@@ -45,6 +45,7 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.core.statements.MetaStatement;
 
 /**
  * Class that models an {@code UPDATE} statement from the META language.

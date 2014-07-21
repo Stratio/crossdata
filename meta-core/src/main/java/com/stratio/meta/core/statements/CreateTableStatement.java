@@ -30,6 +30,7 @@ import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.core.statements.MetaStatement;
 
 import java.util.ArrayList;
 import java.util.Arrays;

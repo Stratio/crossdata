@@ -20,10 +20,10 @@ import org.apache.log4j.Logger;
 
 import com.datastax.driver.core.Session;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.statements.DescribeStatement;
+import com.stratio.meta2.core.statements.DescribeStatement;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
 import com.stratio.meta.core.statements.ListStatement;
-import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.StopProcessStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
@@ -39,7 +39,7 @@ public class CommandExecutor {
   }
 
   /**
-   * Execute a {@link com.stratio.meta.core.statements.MetaStatement} command.
+   * Execute a {@link com.stratio.meta2.core.statements.MetaStatement} command.
    * 
    * @param stmt Statement to execute.
    * @param session Cassandra datastax java driver {@link com.datastax.driver.core.Session}.

@@ -17,16 +17,14 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.statements;
+package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.core.structures.TableName;
-
-import scala.tools.cmd.Meta;
 
 /**
  * Meta statement that are executed over a table.
  */
-public abstract class TableStatement extends MetaStatement{
+public abstract class TableStatement extends MetaStatement {
 
   /**
    * The target table.
