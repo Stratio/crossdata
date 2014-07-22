@@ -20,16 +20,24 @@ import com.stratio.meta.common.exceptions.ExecutionException;
 import com.stratio.meta.common.exceptions.ParsingException;
 import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta.common.exceptions.ValidationException;
-
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.rest.utils.DriverHelper;
+import com.stratio.meta.rest.utils.RestResultHandler;
 
 /**
  * Root resource (exposed at "/api" path)
  */
-@Path("api")
+@Path("")
 public class RestServer {
   private DriverHelper driver = DriverHelper.getInstance();
   private RestResultHandler callback = new RestResultHandler();
+
+
+  @GET
+  @Produces(MediaType.TEXT_HTML)
+  public String getIt() {
+    return "META REST Server up!";
+  }
 
   /**
    * Method handling HTTP POST requests. The returned object will be sent to the client as
@@ -41,10 +49,11 @@ public class RestServer {
    * @throws JsonGenerationException
    */
   @POST
+  @Path("api")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @Produces(MediaType.TEXT_PLAIN)
   public String postQuery(@FormParam("query") String query, @FormParam("catalog") String catalog)
-      throws JsonGenerationException, JsonMappingException, IOException {
+      throws IOException {
     String queryId = "";
     // ObjectMapper mapper = new ObjectMapper();
     // try {
@@ -56,6 +65,7 @@ public class RestServer {
     // return mapper.writeValueAsString(driver.getResult());
 
     try {
+      System.out.println("[MetaRestServer] query: "+query+" catalog "+ catalog);
       driver.executeAsyncQuery(query, catalog, callback);
     } catch (UnsupportedException | ParsingException | ValidationException | ExecutionException
         | ConnectionException e) {
@@ -66,7 +76,7 @@ public class RestServer {
   }
 
   @GET
-  @Path("query/{queryId}")
+  @Path("api/query/{queryId}")
   @Produces(MediaType.APPLICATION_JSON)
   public String getQuery(@PathParam("queryId") String queryId) throws JsonGenerationException,
       JsonMappingException, IOException {
@@ -76,7 +86,11 @@ public class RestServer {
     if (callbackResult != null) {
       return mapper.writeValueAsString(callbackResult);
     } else {
-      return mapper.writeValueAsString(callback.getStatus());
+      if (callback.getErrorResult() != null) {
+        return mapper.writeValueAsString(callback.getErrorResult());
+      } else {
+        return mapper.writeValueAsString(callback.getStatus());
+      }
     }
   }
 }

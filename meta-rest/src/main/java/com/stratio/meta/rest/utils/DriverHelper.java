@@ -1,4 +1,4 @@
-package com.stratio.meta.rest;
+package com.stratio.meta.rest.utils;
 
 import java.util.HashMap;
 import java.util.Map;

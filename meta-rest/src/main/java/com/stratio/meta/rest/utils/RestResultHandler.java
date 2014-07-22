@@ -1,7 +1,8 @@
-package com.stratio.meta.rest;
+package com.stratio.meta.rest.utils;
 
 import java.util.HashMap;
 
+import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.QueryStatus;
@@ -13,7 +14,7 @@ public class RestResultHandler implements IResultHandler {
   private QueryStatus status;
   private String queryId;
   private Result errorResult;
-  private HashMap<String, QueryResult> lastResults = new HashMap<String, QueryResult>();
+  private HashMap<String, Result> lastResults = new HashMap<String, Result>();
 
   public RestResultHandler() {
     status = QueryStatus.NONE;
@@ -36,7 +37,7 @@ public class RestResultHandler implements IResultHandler {
     this.queryId = result.getQueryId();
     if (QueryResult.class.isInstance(result)) {
       QueryResult r = QueryResult.class.cast(result);
-      QueryResult last = lastResults.get(queryId);
+      QueryResult last = (QueryResult)lastResults.get(queryId);
       if (last == null) { // no hay resultado anterior
         lastResults.put(queryId, r);
       } else {
@@ -47,6 +48,12 @@ public class RestResultHandler implements IResultHandler {
           // queryResult.getResultSet.asInstanceOf[MetaResultSet].getRows.addAll(
           // r.getResultSet.asInstanceOf[MetaResultSet].getRows)
         }
+      }
+    }else if(CommandResult.class.isInstance(result)){
+      CommandResult r = CommandResult.class.cast(result);
+      CommandResult last = (CommandResult)lastResults.get(queryId);
+      if(last == null){
+        lastResults.put(queryId, r);
       }
     }
   }

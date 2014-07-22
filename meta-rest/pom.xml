@@ -9,54 +9,54 @@
 		<version>0.0.6-SNAPSHOT</version>
 	</parent>
 	<artifactId>meta-rest</artifactId>
-	<name>Stratio META driver</name>
-    <description>Stratio META</description>
-    <url>https://github.com/Stratio/stratio-meta/</url>
+	<name>Stratio META rest server</name>
+	<description>Stratio META</description>
+	<url>https://github.com/Stratio/stratio-meta/</url>
 
-    <licenses>
-        <license>
-            <name>GNU General Lesser Public License (LGPL) version 3.0</name>
-            <url>http://www.gnu.org/licenses/lgpl-3.0.html</url>
-        </license>
-    </licenses>
+	<licenses>
+		<license>
+			<name>GNU General Lesser Public License (LGPL) version 3.0</name>
+			<url>http://www.gnu.org/licenses/lgpl-3.0.html</url>
+		</license>
+	</licenses>
 
-    <scm>
-        <url>scm:git:git@github.com:Stratio/stratio-meta.git</url>
-        <connection>https://github.com/Stratio/stratio-meta/</connection>
-    </scm>
+	<scm>
+		<url>scm:git:git@github.com:Stratio/stratio-meta.git</url>
+		<connection>https://github.com/Stratio/stratio-meta/</connection>
+	</scm>
 
-    <developers>
-        <developer>
-            <id>aagea</id>
-            <name>Álvaro Agea</name>
-            <email>aagea at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>antonioalcocer</id>
-            <name>Antonio Alcocer</name>
-            <email>aalcocer at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>miguel0afd</id>
-            <name>Miguel Angel Fernandez</name>
-            <email>mafernandez at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>dhiguero</id>
-            <name>Daniel Higuero</name>
-            <email>dhiguero at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>opuertas</id>
-            <name>Oscar Puertas</name>
-            <email>opuertas at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>idiaz</id>
-            <name>Ivan Diaz</name>
-            <email>idiaz at stratio dot com</email>
-        </developer>
-    </developers>
+	<developers>
+		<developer>
+			<id>aagea</id>
+			<name>Álvaro Agea</name>
+			<email>aagea at stratio dot com</email>
+		</developer>
+		<developer>
+			<id>antonioalcocer</id>
+			<name>Antonio Alcocer</name>
+			<email>aalcocer at stratio dot com</email>
+		</developer>
+		<developer>
+			<id>miguel0afd</id>
+			<name>Miguel Angel Fernandez</name>
+			<email>mafernandez at stratio dot com</email>
+		</developer>
+		<developer>
+			<id>dhiguero</id>
+			<name>Daniel Higuero</name>
+			<email>dhiguero at stratio dot com</email>
+		</developer>
+		<developer>
+			<id>opuertas</id>
+			<name>Oscar Puertas</name>
+			<email>opuertas at stratio dot com</email>
+		</developer>
+		<developer>
+			<id>idiaz</id>
+			<name>Ivan Diaz</name>
+			<email>idiaz at stratio dot com</email>
+		</developer>
+	</developers>
 
 	<properties>
 		<jersey.version>2.10.1</jersey.version>
@@ -104,6 +104,18 @@
 			<artifactId>jackson-mapper-asl</artifactId>
 			<version>1.8.5</version>
 		</dependency>
+		<dependency>
+			<groupId>com.stratio.meta</groupId>
+			<artifactId>meta-core</artifactId>
+			<version>0.0.6-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.test-framework</groupId>
+			<artifactId>jersey-test-framework-core</artifactId>
+			<version>2.1</version>
+		</dependency>
+
+
 	</dependencies>
 	<build>
 		<plugins>

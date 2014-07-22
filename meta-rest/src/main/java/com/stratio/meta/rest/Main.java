@@ -1,19 +1,14 @@
 package com.stratio.meta.rest;
 
+import java.io.IOException;
+import java.net.URI;
+
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import com.stratio.meta.common.exceptions.ConnectionException;
-import com.stratio.meta.common.exceptions.ExecutionException;
-import com.stratio.meta.common.exceptions.ParsingException;
-import com.stratio.meta.common.exceptions.UnsupportedException;
-import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta.common.result.Result;
-import com.stratio.meta.driver.BasicDriver;
-
-import java.io.IOException;
-import java.net.URI;
+import com.stratio.meta.rest.utils.DriverHelper;
 
 /**
  * Main class.
