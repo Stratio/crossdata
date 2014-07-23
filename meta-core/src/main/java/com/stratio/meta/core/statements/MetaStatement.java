@@ -138,10 +138,10 @@ public abstract class MetaStatement {
 
         if (tableMetadata == null) {
           result =
-              Result.createValidationErrorResult("Table " + tableName + " does not exist in "
-                                                 + effectiveKeyspace + ".");
+              Result.createValidationErrorResult("Table '" + tableName + "' does not exist in "
+                  + effectiveKeyspace + ".");
         } else {
-          if(tableMetadata.getType() == TableType.EPHEMERAL){
+          if (tableMetadata.getType() == TableType.EPHEMERAL) {
             result = CommandResult.createCommandResult("streaming");
           }
         }
@@ -152,14 +152,15 @@ public abstract class MetaStatement {
   }
 
   public String getEffectiveKeyspace() {
-    return keyspaceInc? keyspace: sessionKeyspace;
+    return keyspaceInc ? keyspace : sessionKeyspace;
   }
 
   public void setKeyspace(String keyspace) {
     this.keyspace = keyspace;
     this.keyspaceInc = true;
   }
-  public String getKeyspace(){
+
+  public String getKeyspace() {
     return keyspace;
   }
 

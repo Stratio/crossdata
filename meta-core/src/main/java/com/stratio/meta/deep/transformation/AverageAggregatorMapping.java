@@ -16,7 +16,6 @@
 
 package com.stratio.meta.deep.transformation;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.apache.spark.api.java.function.Function;
@@ -55,17 +54,9 @@ public class AverageAggregatorMapping implements Function<Cells, Cells> {
     double average;
 
     // Calculating the row average for the requested field
-    Class<?> valueType = sumCell.getValueType();
-    if (valueType.equals(Integer.class) || valueType.equals(Long.class)
-        || valueType.equals(BigInteger.class)) {
-      average =
-          ((BigInteger) sumCell.getCellValue()).doubleValue()
-              / ((BigInteger) countCell.getCellValue()).doubleValue();
-    } else {
-      average =
-          ((BigDecimal) sumCell.getCellValue()).doubleValue()
-              / ((BigDecimal) countCell.getCellValue()).doubleValue();
-    }
+    Double sumValue = new Double(sumCell.getCellValue().toString());
+    Double countValue = ((BigInteger) countCell.getCellValue()).doubleValue();
+    average = sumValue / countValue;
 
     resultCell = CassandraCell.create(averageColumnInfo.getColumnName(), average);
 

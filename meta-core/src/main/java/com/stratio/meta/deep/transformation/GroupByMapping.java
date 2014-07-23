@@ -52,21 +52,24 @@ public class GroupByMapping implements PairFunction<Cells, Cells, Cells> {
     Cells grouppingKeys = new Cells();
     Cells cellsExtended = cells;
     // Copying aggregation columns to not apply the function over the original data
-    for (ColumnInfo aggCol : aggregationCols) {
-      if (GroupByFunction.COUNT == aggCol.getAggregationFunction()) {
-        cellsExtended.add(CassandraCell.create(aggCol.getColumnName(), new BigInteger("1")));
-      } else if (GroupByFunction.AVG == aggCol.getAggregationFunction()) {
-        com.stratio.deep.entity.Cell cellToCopy =
-            cells.getCellByName(aggCol.getTable(), aggCol.getField());
-        cellsExtended.add(aggCol.getTable(),
-            CassandraCell.create(aggCol.getField() + "_count", new BigInteger("1")));
-        cellsExtended.add(aggCol.getTable(),
-            CassandraCell.create(aggCol.getField() + "_sum", cellToCopy.getCellValue()));
-      } else {
-        com.stratio.deep.entity.Cell cellToCopy =
-            cells.getCellByName(aggCol.getTable(), aggCol.getField());
-        cellsExtended.add(aggCol.getTable(),
-            CassandraCell.create(aggCol.getColumnName(), cellToCopy.getCellValue()));
+    if (aggregationCols != null) {
+      for (ColumnInfo aggCol : aggregationCols) {
+        if (GroupByFunction.COUNT == aggCol.getAggregationFunction()) {
+          cellsExtended.add(aggCol.getTable(),
+              CassandraCell.create(aggCol.getColumnName(), new BigInteger("1")));
+        } else if (GroupByFunction.AVG == aggCol.getAggregationFunction()) {
+          com.stratio.deep.entity.Cell cellToCopy =
+              cells.getCellByName(aggCol.getTable(), aggCol.getField());
+          cellsExtended.add(aggCol.getTable(),
+              CassandraCell.create(aggCol.getField() + "_count", new BigInteger("1")));
+          cellsExtended.add(aggCol.getTable(),
+              CassandraCell.create(aggCol.getField() + "_sum", cellToCopy.getCellValue()));
+        } else {
+          com.stratio.deep.entity.Cell cellToCopy =
+              cells.getCellByName(aggCol.getTable(), aggCol.getField());
+          cellsExtended.add(aggCol.getTable(),
+              CassandraCell.create(aggCol.getColumnName(), cellToCopy.getCellValue()));
+        }
       }
     }
 

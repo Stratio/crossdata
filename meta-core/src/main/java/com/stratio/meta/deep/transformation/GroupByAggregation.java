@@ -75,8 +75,10 @@ public class GroupByAggregation implements Function2<Cells, Cells, Cells> {
         // Sum column
         Cell resultSumCell = null;
 
-        Cell cellSumLeft = left.getCellByName(aggregation.getField() + "_sum");
-        Cell cellSumRight = right.getCellByName(aggregation.getField() + "_sum");
+        Cell cellSumLeft =
+            left.getCellByName(aggregation.getTable(), aggregation.getField() + "_sum");
+        Cell cellSumRight =
+            right.getCellByName(aggregation.getTable(), aggregation.getField() + "_sum");
 
         resultSumCell = GroupByAggregators.sum(cellSumLeft, cellSumRight);
 
@@ -85,8 +87,10 @@ public class GroupByAggregation implements Function2<Cells, Cells, Cells> {
         // Count number of repetitions
         Cell resultCountCell = null;
 
-        Cell cellCountLeft = left.getCellByName(aggregation.getField() + "_count");
-        Cell cellCountRight = right.getCellByName(aggregation.getField() + "_count");
+        Cell cellCountLeft =
+            left.getCellByName(aggregation.getTable(), aggregation.getField() + "_count");
+        Cell cellCountRight =
+            right.getCellByName(aggregation.getTable(), aggregation.getField() + "_count");
 
         resultCountCell = GroupByAggregators.count(cellCountLeft, cellCountRight);
 

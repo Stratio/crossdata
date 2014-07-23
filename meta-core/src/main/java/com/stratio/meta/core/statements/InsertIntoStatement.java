@@ -16,6 +16,13 @@
 
 package com.stratio.meta.core.statements;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+
+import org.apache.log4j.Logger;
+
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -40,12 +47,6 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
-
-import org.apache.log4j.Logger;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Class that models an {@code INSERT INTO} statement from the META language.
@@ -248,9 +249,9 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     if (!result.hasError()) {
-      com.stratio.meta.common.metadata.structures.TableMetadata
-          tableMetadata = metadata.getTableGenericMetadata(getEffectiveKeyspace(), tableName);
-      //TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+      com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata =
+          metadata.getTableGenericMetadata(getEffectiveKeyspace(), tableName);
+      // TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
 
       if (typeValues == TYPE_SELECT_CLAUSE) {
         result = Result.createValidationErrorResult("INSERT INTO with subqueries not supported.");
@@ -261,7 +262,8 @@ public class InsertIntoStatement extends MetaStatement {
     return result;
   }
 
-  public void updateTermClass(com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata) {
+  public void updateTermClass(
+      com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata) {
     for (int i = 0; i < ids.size(); i++) {
       Class<? extends Comparable<?>> dataType =
           (Class<? extends Comparable<?>>) tableMetadata.getColumn(ids.get(i)).getType()
@@ -276,32 +278,40 @@ public class InsertIntoStatement extends MetaStatement {
         if (dataType != parserClass) {
           LOG.debug("Converting from " + parserClass + " to " + dataType);
           if (dataType == Boolean.class) {
-            if(term instanceof StringTerm){
+            if (term instanceof StringTerm) {
               cellValues.set(i, new BooleanTerm(((StringTerm) term).getTermValue()));
             } else {
               cellValues.set(i, new BooleanTerm((Term<Boolean>) term));
             }
           } else if (dataType == Double.class) {
-            if(term instanceof StringTerm){
+            if (term instanceof StringTerm) {
               cellValues.set(i, new DoubleTerm(((StringTerm) term).getTermValue()));
+            } else if (term instanceof LongTerm) {
+              cellValues.set(i, new DoubleTerm(((Long) term.getTermValue()).doubleValue()));
             } else {
               cellValues.set(i, new DoubleTerm((Term<Double>) term));
             }
           } else if (dataType == Float.class) {
-            if(term instanceof StringTerm){
+            if (term instanceof StringTerm) {
               cellValues.set(i, new FloatTerm(((StringTerm) term).getTermValue()));
+            } else if (term instanceof LongTerm) {
+              cellValues.set(i, new FloatTerm((((Long) term.getTermValue()).floatValue())));
             } else {
               cellValues.set(i, new FloatTerm((Term<Double>) term));
             }
           } else if (dataType == Integer.class) {
-            if(term instanceof StringTerm){
+            if (term instanceof StringTerm) {
               cellValues.set(i, new IntegerTerm(((StringTerm) term).getTermValue()));
+            } else if (term instanceof DoubleTerm) {
+              cellValues.set(i, new IntegerTerm((((Double) term.getTermValue()).intValue())));
             } else {
               cellValues.set(i, new IntegerTerm((Term<Long>) term));
             }
           } else if (dataType == Long.class) {
-            if(term instanceof StringTerm){
+            if (term instanceof StringTerm) {
               cellValues.set(i, new LongTerm(((StringTerm) term).getTermValue()));
+            } else if (term instanceof DoubleTerm) {
+              cellValues.set(i, new LongTerm(((Double) term.getTermValue()).longValue()));
             } else {
               cellValues.set(i, new LongTerm((Term<Long>) term));
             }
@@ -324,20 +334,22 @@ public class InsertIntoStatement extends MetaStatement {
    * @param tableMetadata Table metadata associated with the target table.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateColumns(com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata) {
+  private Result validateColumns(
+      com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
 
     // INSERT INTO table VALUES (...) -> columns ids array is empty;
     if (ids.isEmpty()) {
-      for (com.stratio.meta.common.metadata.structures.ColumnMetadata c: tableMetadata.getColumns()) {
-        if (!c.getColumnName().toLowerCase().startsWith("stratio")){
+      for (com.stratio.meta.common.metadata.structures.ColumnMetadata c : tableMetadata
+          .getColumns()) {
+        if (!c.getColumnName().toLowerCase().startsWith("stratio")) {
           ids.add(c.getColumnName());
         }
       }
     }
 
     // Validate target column names
-    for (String c: ids) {
+    for (String c : ids) {
       if (c.toLowerCase().startsWith("stratio")) {
         result =
             Result.createValidationErrorResult("Cannot insert data into column " + c
@@ -349,7 +361,8 @@ public class InsertIntoStatement extends MetaStatement {
       if (cellValues.size() == ids.size()) {
         // Checking insertion fields
         for (int i = 0; i < ids.size(); i++) {
-          com.stratio.meta.common.metadata.structures.ColumnMetadata column = tableMetadata.getColumn(ids.get(i));
+          com.stratio.meta.common.metadata.structures.ColumnMetadata column =
+              tableMetadata.getColumn(ids.get(i));
           if (column == null) {
             result =
                 Result.createValidationErrorResult("Column [" + ids.get(i)
@@ -442,7 +455,7 @@ public class InsertIntoStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree tree = new Tree();
-    if(streamMode){
+    if (streamMode) {
       tree.setNode(new MetaStep(MetaPath.STREAMING, this));
     } else {
       tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
@@ -502,5 +515,21 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     return optionsStmt;
+  }
+
+  private List<Term<?>> termTypeNormalization(List<Term<?>> terms, Class<?> columnType) {
+
+    List<Term<?>> normalizedTerms = new ArrayList<>();
+    for (Term<?> term : terms) {
+      if (columnType.equals(Double.class) && term.getTermClass().equals(Long.class)) {
+        normalizedTerms.add(new DoubleTerm(((Long) term.getTermValue()).doubleValue()));
+      } else if (columnType.equals(Long.class) && term.getTermClass().equals(Double.class)) {
+        normalizedTerms.add(new LongTerm(((Double) term.getTermValue()).longValue()));
+      } else {
+        normalizedTerms.add(term);
+      }
+    }
+
+    return normalizedTerms;
   }
 }

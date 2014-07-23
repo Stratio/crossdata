@@ -375,7 +375,7 @@ public class CreateIndexStatement extends MetaStatement {
                 + " cannot be part of the WHERE clause.");
       } else if (tableMetadata.getColumn(c) == null) {
         result =
-            Result.createValidationErrorResult("Column " + c + " does not exist in table "
+            Result.createValidationErrorResult("Column '" + c + "' does not exist in table "
                 + tableMetadata.getName());
       }
     }
