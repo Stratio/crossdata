@@ -37,21 +37,6 @@ public class RestServerTestUtils {
 
   }
 
-  // public static ResultSet toResultSet(ArrayList<Row> rows, Map<String, ColumnDefinition> map) {
-  // MetaResultSet crs = new MetaResultSet();
-  // ArrayList<ColumnMetadata> columns = new ArrayList<ColumnMetadata>();
-  // crs.setRows((List) rows);
-  // for (Entry<String, ColumnDefinition> data : map.entrySet()) {
-  // String col_name = data.getValue().getDatatype().getName();
-  // String key = data.getKey();
-  // ColumnMetadata aux = new ColumnMetadata("Deep", key, ColumnType.VARCHAR);
-  // columns.add(aux);
-  // }
-  // crs.setColumnMetadata(columns);
-  //
-  // return crs;
-  // }
-
   public static ResultSet toResultSet(ArrayList<Row> rows, Map<String, ColumnDefinition> map) {
     ResultSet rs = new ResultSet();
     rs.setRows(rows);

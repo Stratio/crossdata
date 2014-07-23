@@ -25,7 +25,7 @@ import com.stratio.meta.rest.utils.DriverHelper;
 import com.stratio.meta.rest.utils.RestResultHandler;
 
 /**
- * Root resource (exposed at "/api" path)
+ * Root resource (exposed at "" path)
  */
 @Path("")
 public class RestServer {
@@ -55,6 +55,8 @@ public class RestServer {
   public String postQuery(@FormParam("query") String query, @FormParam("catalog") String catalog)
       throws IOException {
     String queryId = "";
+
+    // SYNCHRONOUS WAY
     // ObjectMapper mapper = new ObjectMapper();
     // try {
     // driver.executeSyncQuery(query, catalog);
@@ -65,7 +67,7 @@ public class RestServer {
     // return mapper.writeValueAsString(driver.getResult());
 
     try {
-      System.out.println("[MetaRestServer] query: "+query+" catalog "+ catalog);
+      System.out.println("[MetaRestServer] query: " + query + " catalog " + catalog);
       driver.executeAsyncQuery(query, catalog, callback);
     } catch (UnsupportedException | ParsingException | ValidationException | ExecutionException
         | ConnectionException e) {
