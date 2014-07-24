@@ -17,19 +17,43 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.query;
+package com.stratio.meta2.metadata;
 
-import com.stratio.meta.common.result.QueryStatus;
+import java.util.Map;
 
-public class ExecutedQuery extends InProgressQuery {
-  public ExecutedQuery(InProgressQuery inProgressQuery){
-    super(inProgressQuery);
+public class CatalogMetadata {
+  private String name;
+
+  private Map<String, Object> options;
+
+  private Map<String, TableMetadata> tables;
+
+  public CatalogMetadata() {
   }
 
-  ExecutedQuery(ExecutedQuery executedQuery){
-    this((InProgressQuery)executedQuery);
+
+
+  public String getName() {
+    return name;
   }
-  public QueryStatus getStatus() {
-    return QueryStatus.EXECUTED;
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public Map<String, Object> getOptions() {
+    return options;
+  }
+
+  public void setOptions(Map<String, Object> options) {
+    this.options = options;
+  }
+
+  public Map<String, TableMetadata> getTables() {
+    return tables;
+  }
+
+  public void setTables(Map<String, TableMetadata> tables) {
+    this.tables = tables;
   }
 }

@@ -17,7 +17,7 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.engine;
+package com.stratio.meta2.core.engine;
 
 import com.stratio.meta.common.exceptions.ParsingException;
 import com.stratio.meta.core.grammar.generated.MetaLexer;

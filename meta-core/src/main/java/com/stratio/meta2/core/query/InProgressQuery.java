@@ -17,22 +17,19 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.engine;
+package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta.core.query.ParsedQuery;
-import com.stratio.meta.core.query.ValidatedQuery;
-import org.apache.log4j.Logger;
+import com.stratio.meta.common.result.QueryStatus;
 
-public class Validator {
-  /**
-   * Class logger.
-   */
-  private static final Logger LOG = Logger.getLogger(Validator.class);
-
-  public ValidatedQuery validate(ParsedQuery parsedQuery) throws ValidationException {
-    //TODO: Use the new generic metadata provider, remove the auto-validation system
-    return new ValidatedQuery(parsedQuery);
+public class InProgressQuery extends PlannedQuery {
+  public InProgressQuery(PlannedQuery plannedQuery){
+    super(plannedQuery);
   }
 
+  InProgressQuery(InProgressQuery inProgressQuery){
+    this((PlannedQuery)inProgressQuery);
+  }
+  public QueryStatus getStatus() {
+    return QueryStatus.IN_PROGRESS;
+  }
 }
