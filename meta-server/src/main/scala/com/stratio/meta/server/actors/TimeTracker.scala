@@ -22,12 +22,31 @@ package com.stratio.meta.server.actors
 import com.codahale.metrics.Timer
 import com.stratio.meta.common.utils.Metrics
 
+/**
+ * Trait to be able to time the operations inside an actor.
+ */
 trait TimeTracker {
-  def timerName:String
+
+  /**
+   * Name of the timer.
+   */
+  lazy val timerName:String = ???
+
+  /**
+   * Timer gauge.
+   */
   lazy val timerMetrics:Timer = Metrics.getRegistry.timer(timerName)
 
+  /**
+   * Initialize the timer.
+   */
   def initTimer():Timer.Context= timerMetrics.time()
 
+  /**
+   * Stop the timer.
+   * @param context The timing context.
+   * @return Whether it has stop.
+   */
   def finishTimer(context:Timer.Context)={
     context.stop()
   }
