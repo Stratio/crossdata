@@ -30,6 +30,12 @@ public class AlterTableStatementTest extends ParsingTest{
         testRegularStatement(inputText, "alterTableBasic");
     }
 
+  @Test
+  public void alterTableCatalog() {
+    String inputText = "alter table catalog.table1 alter column1 type int;";
+    testRegularStatement(inputText, "alterTableCatalog");
+  }
+
     @Test
     public void alterTableBasic1() {
         String inputText = "alter table table1 add column1 int;";

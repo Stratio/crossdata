@@ -40,6 +40,18 @@ public class TableName {
     this.catalog = catalog;
   }
 
+  public String getCatalog() {
+    return catalog;
+  }
+
+  public String getTableName() {
+    return tableName;
+  }
+
+  public boolean containsCatalog(){
+    return catalog != null;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

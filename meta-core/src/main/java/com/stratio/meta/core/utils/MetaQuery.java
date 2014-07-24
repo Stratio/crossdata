@@ -23,7 +23,7 @@ import com.stratio.meta.common.result.ErrorType;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
 
 /**
  * Class that contains all the information required to execute a statement. The different {@link
@@ -52,7 +52,7 @@ public class MetaQuery {
   private boolean hasError = false;
 
   /**
-   * The {@link com.stratio.meta.core.statements.MetaStatement} build by the {@link
+   * The {@link com.stratio.meta2.core.statements.MetaStatement} build by the {@link
    * com.stratio.meta.core.parser.Parser}.
    */
   private MetaStatement statement;
@@ -164,7 +164,7 @@ public class MetaQuery {
   }
 
   /**
-   * Set the parsed {@link com.stratio.meta.core.statements.MetaStatement}.
+   * Set the parsed {@link com.stratio.meta2.core.statements.MetaStatement}.
    *
    * @param statement The statement.
    */
@@ -175,7 +175,7 @@ public class MetaQuery {
   /**
    * Get the parsed statement.
    *
-   * @return The {@link com.stratio.meta.core.statements.MetaStatement}.
+   * @return The {@link com.stratio.meta2.core.statements.MetaStatement}.
    */
   public MetaStatement getStatement() {
     return statement;

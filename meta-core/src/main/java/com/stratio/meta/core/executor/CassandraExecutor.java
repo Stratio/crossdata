@@ -24,7 +24,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.UseStatement;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.CoreUtils;
@@ -88,7 +88,7 @@ public class CassandraExecutor {
     }
 
     /**
-     * Executes a query from {@link com.stratio.meta.core.statements.MetaStatement}.
+     * Executes a query from {@link com.stratio.meta2.core.statements.MetaStatement}.
      *
      * @param stmt Statement to execute.
      * @param session Cassandra datastax java driver session.

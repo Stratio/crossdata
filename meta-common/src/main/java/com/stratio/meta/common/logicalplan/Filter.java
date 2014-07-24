@@ -28,6 +28,9 @@ import com.stratio.meta.common.statements.structures.relationships.RelationType;
  */
 public class Filter extends LogicalStep{
 
+  /**
+   * Type of operation to be executed.
+   */
   private final Operations operation;
 
   /**

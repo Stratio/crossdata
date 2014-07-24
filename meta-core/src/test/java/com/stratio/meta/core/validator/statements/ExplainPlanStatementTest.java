@@ -18,7 +18,7 @@ package com.stratio.meta.core.validator.statements;
 
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
-import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta.core.validator.BasicValidatorTest;
 
 import org.testng.annotations.Test;

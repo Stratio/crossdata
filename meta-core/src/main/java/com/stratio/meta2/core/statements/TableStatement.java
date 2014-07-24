@@ -17,43 +17,44 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.statements;
+package com.stratio.meta2.core.statements;
 
-import scala.tools.cmd.Meta;
+import com.stratio.meta.core.structures.TableName;
 
 /**
  * Meta statement that are executed over a table.
  */
-public abstract class TableStatement extends MetaStatement{
+public abstract class TableStatement extends MetaStatement {
 
   /**
    * The target table.
    */
-  protected String tableName;
+  protected TableName tableName;
 
   /**
    * Get the table to be described.
    *
    * @return The name or null if not set.
    */
-  public String getTableName() {
+  public TableName getTableName() {
     return tableName;
   }
 
-  /**
-   * Set the name of the table to be described. If the table is fully qualified,
-   * the target catalog is updated accordingly.
-   *
-   * @param tableName The table name.
-   */
-  public void setTableName(String tableName) {
-    if (tableName.contains(".")) {
-      String[] ksAndTableName = tableName.split("\\.");
-      catalogInc = true;
-      catalog = ksAndTableName[0];
-      this.tableName = ksAndTableName[1];
-    } else {
-      this.tableName = tableName;
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
+  }
+
+  @Override
+  public String getEffectiveCatalog() {
+    String effective = null;
+    if(tableName != null){
+      effective = tableName.getCatalog();
+    }else{
+      effective = catalog;
     }
+    if(sessionCatalog != null){
+      effective = sessionCatalog;
+    }
+    return effective;
   }
 }

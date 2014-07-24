@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
-package com.stratio.meta.core.statements;
+package com.stratio.meta2.core.statements;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +27,7 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.DescribeType;
+import com.stratio.meta.core.structures.TableName;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
@@ -70,8 +71,7 @@ public class DescribeStatement extends TableStatement {
     if (type == DescribeType.CATALOG && catalog != null) {
       sb.append(" ").append(catalog);
     } else if (type == DescribeType.TABLE) {
-      sb.append(" ").append(getEffectiveCatalog()).append(".");
-      sb.append(tableName);
+      sb.append(" ").append(tableName);
     }
 
     return sb.toString();
@@ -93,7 +93,7 @@ public class DescribeStatement extends TableStatement {
 
     if (this.tableName != null) {
       result =
-          validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
+          validateKeyspaceAndTable(metadata, sessionCatalog, tableName.containsCatalog(), tableName.getCatalog(), tableName.getTableName());
     }
 
     return result;
@@ -101,7 +101,7 @@ public class DescribeStatement extends TableStatement {
 
   @Override
   public String translateToCQL() {
-    return this.toString();
+    return this.toString().replace("CATALOG", "KEYSPACE");
   }
 
   @Override
@@ -118,12 +118,12 @@ public class DescribeStatement extends TableStatement {
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
   public Result execute(Session session, IStratioStreamingAPI stratioStreamingAPI) {
-
     MetadataManager mm = new MetadataManager(session, stratioStreamingAPI);
     mm.loadMetadata();
     Result result = null;
     if (type == DescribeType.CATALOG) {
-      KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(this.getEffectiveCatalog());
+
+      KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(super.getEffectiveCatalog());
       if (ksInfo == null) {
         result = Result.createExecutionErrorResult("KEYSPACE " + catalog + " was not found");
       } else {
@@ -138,7 +138,7 @@ public class DescribeStatement extends TableStatement {
       }
     } else if (type == DescribeType.TABLE) {
       com.stratio.meta.common.metadata.structures.TableMetadata tableInfo =
-          mm.getTableGenericMetadata(this.getEffectiveCatalog(), tableName);
+          mm.getTableGenericMetadata(getEffectiveCatalog(), tableName.getTableName());
       if (tableInfo == null) {
         result = Result.createExecutionErrorResult("TABLE " + tableName + " was not found");
       } else {
@@ -165,10 +165,10 @@ public class DescribeStatement extends TableStatement {
   }
 
   @Override
-  public List<String> getTables() {
-    List<String> result = new ArrayList<>();
+  public List<TableName> getTables() {
+    List<TableName> result = new ArrayList<>();
     if(DescribeType.TABLE.equals(type)){
-      result.add(getTableName());
+      result.add(tableName);
     }
     return result;
   }

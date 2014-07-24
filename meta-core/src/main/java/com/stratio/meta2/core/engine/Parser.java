@@ -23,7 +23,7 @@ import com.stratio.meta.common.exceptions.ParsingException;
 import com.stratio.meta.core.grammar.generated.MetaLexer;
 import com.stratio.meta.core.query.BaseQuery;
 import com.stratio.meta.core.query.ParsedQuery;
-import com.stratio.meta.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.ErrorsHelper;
 import org.antlr.runtime.ANTLRStringStream;
