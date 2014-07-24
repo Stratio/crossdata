@@ -22,6 +22,7 @@ package com.stratio.meta.core.engine;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.stratio.deep.context.CassandraDeepSparkContext;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.core.api.APIManager;
 import com.stratio.meta.core.executor.Executor;
@@ -175,7 +176,7 @@ public class Engine {
                                               "0")//String.valueOf(StreamingUtils.findFreePort()))
                                          .set("spark.ui.port",
                                               "0");//String.valueOf(StreamingUtils.findFreePort()));
-    DeepSparkContext result = new DeepSparkContext(new SparkContext(config.getSparkMaster(), config.getJobName(), sparkConf));
+    DeepSparkContext result = new CassandraDeepSparkContext(new SparkContext(config.getSparkMaster(), config.getJobName(), sparkConf));
 
     if(!config.getSparkMaster().toLowerCase().startsWith("local")){
       for(String jar : config.getJars()){

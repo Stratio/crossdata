@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.stratio.deep.context.CassandraDeepSparkContext;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -29,7 +30,7 @@ import org.apache.spark.api.java.JavaRDD;
 import scala.Tuple2;
 
 import com.datastax.driver.core.Session;
-import com.stratio.deep.config.DeepJobConfigFactory;
+import com.stratio.deep.config.CassandraConfigFactory;
 import com.stratio.deep.config.ICassandraDeepJobConfig;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.deep.entity.Cells;
@@ -88,7 +89,7 @@ public class Bridge {
   /**
    * Deep Spark context.
    */
-  private DeepSparkContext deepContext;
+  private CassandraDeepSparkContext deepContext;
 
   /**
    * Datastax Java Driver session.
@@ -109,7 +110,7 @@ public class Bridge {
    *        configuration
    */
   public Bridge(Session session, DeepSparkContext deepSparkContext, EngineConfig config) {
-    this.deepContext = deepSparkContext;
+    this.deepContext = (CassandraDeepSparkContext) deepSparkContext;
     this.session = session;
     this.engineConfig = config;
   }
@@ -132,7 +133,7 @@ public class Bridge {
       columnsSet = DeepUtils.retrieveSelectorFields(ss);
     }
     ICassandraDeepJobConfig<Cells> config =
-        DeepJobConfigFactory.create().session(session).host(engineConfig.getRandomCassandraHost())
+            CassandraConfigFactory.create().session(session).host(engineConfig.getRandomCassandraHost())
             .rpcPort(engineConfig.getCassandraPort()).keyspace(ss.getEffectiveKeyspace())
             .table(ss.getTableName());
 

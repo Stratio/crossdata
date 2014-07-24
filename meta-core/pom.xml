@@ -166,11 +166,16 @@
 			<artifactId>meta-common</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.stratio.deep</groupId>
-			<artifactId>deep-core</artifactId>
-			<version>${deep.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>com.stratio.deep</groupId>
+            <artifactId>deep-cassandra</artifactId>
+            <version>${deep.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.deep</groupId>
+            <artifactId>deep-commons</artifactId>
+            <version>${deep.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
