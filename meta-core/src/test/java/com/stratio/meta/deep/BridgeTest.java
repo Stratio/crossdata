@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.stratio.deep.context.CassandraDeepSparkContext;
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -98,7 +99,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     BasicCoreCassandraTest.setUpBeforeClass();
     BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
     EngineConfig config = initConfig();
-    deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+    deepContext = new CassandraDeepSparkContext(config.getSparkMaster(), config.getJobName());
     metadataManager = new MetadataManager(_session, stratioStreamingAPI);
     metadataManager.loadMetadata();
     executor = new Executor(_session, null, deepContext, metadataManager, config);

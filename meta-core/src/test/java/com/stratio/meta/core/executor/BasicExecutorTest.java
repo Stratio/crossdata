@@ -16,6 +16,7 @@
 
 package com.stratio.meta.core.executor;
 
+import com.stratio.deep.context.CassandraDeepSparkContext;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -49,7 +50,7 @@ public class BasicExecutorTest extends BasicCoreCassandraTest {
     BasicCoreCassandraTest.setUpBeforeClass();
     BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
     EngineConfig config = initConfig();
-    deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
+    deepContext = new CassandraDeepSparkContext(config.getSparkMaster(), config.getJobName());
     metadataManager = new MetadataManager(_session, stratioStreamingAPI);
     metadataManager.loadMetadata();
     executor = new Executor(_session, null, deepContext, metadataManager, config);
