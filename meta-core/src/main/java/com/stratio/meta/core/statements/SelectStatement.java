@@ -486,10 +486,6 @@ public class SelectStatement extends MetaStatement {
     // Validate FROM keyspace
     Result result = validateKeyspaceAndTable(metadata, this.getEffectiveKeyspace(), tableName);
 
-    if (!result.hasError()) {
-      result = checkAliasesNotDuplicated((SelectionList) this.selectionClause);
-    }
-
     if ((!result.hasError()) && (result instanceof CommandResult)
         && ("streaming".equalsIgnoreCase(((CommandResult) result).getResult().toString()))) {
       streamMode = true;
@@ -509,6 +505,10 @@ public class SelectStatement extends MetaStatement {
       result =
           validateKeyspaceAndTable(metadata,
               join.findEffectiveKeyspace(this.getEffectiveKeyspace()), join.getTablename());
+    }
+
+    if (!result.hasError()) {
+      result = checkAliasesNotDuplicated((SelectionList) this.selectionClause);
     }
 
     String effectiveKs1 = getEffectiveKeyspace();
