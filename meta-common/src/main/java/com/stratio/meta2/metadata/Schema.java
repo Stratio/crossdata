@@ -17,27 +17,9 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.query;
+package com.stratio.meta2.metadata;
 
-import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta2.core.statements.MetaStatement;
 
-public class ParsedQuery extends BaseQuery {
-  private final MetaStatement statement;
-  public ParsedQuery(BaseQuery baseQuery, MetaStatement statement){
-    super(baseQuery);
-    this.statement=statement;
-  }
+public class Schema {
 
-  ParsedQuery(ParsedQuery parsedQuery){
-    this(parsedQuery,parsedQuery.getStatement());
-  }
-
-  public MetaStatement getStatement(){
-    return this.statement;
-  }
-
-  public QueryStatus getStatus() {
-    return QueryStatus.PARSED;
-  }
 }

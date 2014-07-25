@@ -17,19 +17,8 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.query;
+package com.stratio.meta2.core.metadata;
 
-import com.stratio.meta.common.result.QueryStatus;
+public class MetadataManager {
 
-public class InProgressQuery extends PlannedQuery {
-  public InProgressQuery(PlannedQuery plannedQuery){
-    super(plannedQuery);
-  }
-
-  InProgressQuery(InProgressQuery inProgressQuery){
-    this((PlannedQuery)inProgressQuery);
-  }
-  public QueryStatus getStatus() {
-    return QueryStatus.IN_PROGRESS;
-  }
 }

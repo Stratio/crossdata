@@ -17,19 +17,19 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.query;
+package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
 
-public class ValidatedQuery extends ParsedQuery {
-  public ValidatedQuery(ParsedQuery parsedQuery){
-    super(parsedQuery);
+public class ExecutedQuery extends InProgressQuery {
+  public ExecutedQuery(InProgressQuery inProgressQuery){
+    super(inProgressQuery);
   }
 
-  ValidatedQuery(ValidatedQuery validatedQuery){
-    this((ParsedQuery)validatedQuery);
+  ExecutedQuery(ExecutedQuery executedQuery){
+    this((InProgressQuery)executedQuery);
   }
   public QueryStatus getStatus() {
-    return QueryStatus.VALIDATED;
+    return QueryStatus.EXECUTED;
   }
 }
