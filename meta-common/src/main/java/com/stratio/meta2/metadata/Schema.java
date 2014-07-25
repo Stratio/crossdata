@@ -19,8 +19,7 @@
 
 package com.stratio.meta2.metadata;
 
-import com.sun.org.apache.xml.internal.resolver.Catalog;
 
 public class Schema {
-  Map<String,Catalog>
+
 }
