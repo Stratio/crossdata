@@ -145,7 +145,7 @@
             <version>1.7.7</version>
         </dependency>
         <dependency>
-            <groupId>com.datastax.cassandra</groupId>
+            <groupId>com.stratio.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
             <version>${cassandra.driver}</version>
             <scope>test</scope>

@@ -127,7 +127,7 @@
 			<version>16.0.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.datastax.cassandra</groupId>
+			<groupId>com.stratio.cassandra</groupId>
 			<artifactId>cassandra-driver-core</artifactId>
 			<version>${cassandra.driver}</version>
 		</dependency>
@@ -186,6 +186,12 @@
 			<groupId>com.stratio.streaming</groupId>
 			<artifactId>streaming-api</artifactId>
 			<version>0.3.3</version>
+			<exclusions>
+			    <exclusion>
+			        <artifactId>cassandra-driver-core</artifactId>
+			        <groupId>com.datastax.cassandra</groupId>
+			    </exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 	<build>
