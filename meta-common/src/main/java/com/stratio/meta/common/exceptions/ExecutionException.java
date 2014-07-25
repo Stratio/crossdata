@@ -33,4 +33,8 @@ public class ExecutionException extends Exception{
     super(message);
   }
 
+  public ExecutionException(String msg, Throwable cause){
+    super(msg, cause);
+  }
+
 }

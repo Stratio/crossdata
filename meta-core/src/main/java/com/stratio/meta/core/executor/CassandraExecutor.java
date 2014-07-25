@@ -25,7 +25,6 @@ import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta2.core.statements.MetaStatement;
-import com.stratio.meta.core.statements.UseStatement;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta.core.utils.MetaStep;
@@ -104,12 +103,12 @@ public class CassandraExecutor {
             } else {
                 resultSet = session.execute(stmt.translateToCQL());
             }
-            if (stmt instanceof UseStatement) {
-                UseStatement useStatement = (UseStatement) stmt;
-                return QueryResult.createSuccessQueryResult(utils.transformToMetaResultSet(resultSet), useStatement.getKeyspaceName());
-            } else {
+            //if (stmt instanceof UseStatement) {
+            //    UseStatement useStatement = (UseStatement) stmt;
+            //    return QueryResult.createSuccessQueryResult(utils.transformToMetaResultSet(resultSet), useStatement.getKeyspaceName());
+            //} else {
                 return QueryResult.createQueryResult(utils.transformToMetaResultSet(resultSet));
-            }
+            //}
         } catch (UnsupportedOperationException unSupportException){
             LOG.debug("Cassandra executor failed", unSupportException);
             return Result.createExecutionErrorResult("Unsupported operation by C*: " + unSupportException.getMessage());

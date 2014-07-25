@@ -17,10 +17,30 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.grammar.statements;
+package com.stratio.meta2.core.grammar.statements;
 
 import com.stratio.meta.core.grammar.ParsingTest;
 
-public class UseStatementTest extends ParsingTest {
+import org.testng.annotations.Test;
+
+/**
+ * Alter storage parsing tests.
+ */
+public class AlterStorageStatementTest extends ParsingTest {
+
+  @Test
+  public void alterStorageEmptyJSON() {
+    String inputText = "ALTER STORAGE dev_environment1 WITH {};";
+    testRegularStatement(inputText, "alterStorageEmptyJSON");
+  }
+
+  @Test
+  public void alterStorageBasic() {
+    String inputText = "ALTER STORAGE dev_environment1 WITH {"
+                       + "\"hosts\":[\"127.0.0.1\",\"127.0.0.2\"],"
+                       + "\"port\":1234,"
+                       + "\"connectors\":[\"com.stratio.connector.cassandra.CassandraConnector\"]};";
+    testRegularStatement(inputText, "alterStorageBasic");
+  }
 
 }

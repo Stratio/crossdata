@@ -33,4 +33,8 @@ public class PlanningException extends Exception{
     super(message);
   }
 
+  public PlanningException(String msg, Throwable cause){
+    super(msg, cause);
+  }
+
 }

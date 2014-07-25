@@ -23,6 +23,9 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Class that models a {@code CREATE STORAGE} statement from the META language. A storage represents
  * a logical cluster of storage machines that target the same datastore technology. To create a
@@ -43,20 +46,45 @@ public class CreateStorageStatement extends MetaStatement{
   private final boolean ifNotExists;
 
   /**
-   * A JSON with the options specified by the user.
+   * Name of the datastore associated with the storage and the connectors.
    */
-  private final String options;
+  private final String datastoreName;
+
+  /**
+   * List of connectors classes.
+   */
+  private final List<String> connectorList = new ArrayList<>();
+
+  /**
+   * A list JSON with the options specified by the user for each connector.
+   */
+  private final List<String> optionList = new ArrayList<>();
 
   /**
    * Create a new storage on the system.
    * @param storageName The name of the storage.
    * @param ifNotExists Whether it should be created only if not exists.
-   * @param JSON A JSON with the storage options.
+   * @param datastoreName The name of the datastore.
+   * @param connectorList List of connector classes.
+   * @param optionList List of connector options in JSON.
    */
-  public CreateStorageStatement(String storageName, boolean ifNotExists, String JSON){
+  public CreateStorageStatement(
+      String storageName, boolean ifNotExists, String datastoreName,
+      List<String> connectorList, List<String> optionList){
     this.storageName = storageName;
     this.ifNotExists = ifNotExists;
-    this.options = JSON;
+    this.datastoreName = datastoreName;
+    this.connectorList.addAll(connectorList);
+    this.optionList.addAll(optionList);
+
+    System.out.println("storageName: " + storageName);
+    System.out.println("datastoreName: " + datastoreName);
+    for(String s : connectorList){
+      System.out.println("connector: " + s);
+    }
+    for(String s: optionList){
+      System.out.println("option: " + s);
+    }
   }
 
   @Override
@@ -66,7 +94,15 @@ public class CreateStorageStatement extends MetaStatement{
       sb.append("IF NOT EXISTS ");
     }
     sb.append(storageName);
-    sb.append(" WITH ").append(options);
+    sb.append(" ON DATASTORE ").append(datastoreName);
+    sb.append(" USING CONNECTOR ");
+    if(connectorList.size() == optionList.size() && connectorList.size() > 0) {
+      System.out.println(connectorList.get(0) + " WITH OPTIONS " + optionList.get(0));
+      sb.append(connectorList.get(0)).append(" WITH OPTIONS ").append(optionList.get(0));
+      for (int index = 1; index < connectorList.size(); index++) {
+        sb.append(" AND CONNECTOR ").append(connectorList.get(index)).append(" WITH OPTIONS ").append(optionList.get(index));
+      }
+    }
     return sb.toString();
   }
 

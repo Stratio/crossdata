@@ -178,6 +178,8 @@ T_EPHEMERAL: E P H E M E R A L;
 T_AT: '@';
 T_CATALOG: C A T A L O G;
 T_CATALOGS: C A T A L O G S;
+T_DATASTORE: D A T A S T O R E;
+T_CONNECTOR: C O N N E C T O R;
 
 T_SEMICOLON: ';';
 T_EQUAL: '=';
@@ -213,8 +215,10 @@ T_TOKEN: T O K E N;
 T_MATCH: M A T C H;
 T_SEC: S E C;
 T_SECS: S E C S;
+T_SECOND: S E C O N D;
 T_SECONDS: S E C O N D S;
 T_MINS: M I N S;
+T_MINUTE: M I N U T E;
 T_MINUTES: M I N U T E S;
 T_HOUR: H O U R;
 T_HOURS: H O U R S;
@@ -224,22 +228,34 @@ T_DAYS: D A Y S;
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
 
-QUOTED_LITERAL
-    @init{ StringBuilder sb = new StringBuilder(); }
-    @after{ setText(sb.toString()); }: 
-        '\'' (c=~('\'') { sb.appendCodePoint(c);} | '\'' '\'' { sb.appendCodePoint('\''); })* '\''
-    ;
+//QUOTED_LITERAL
+//    @init{ StringBuilder sb = new StringBuilder(); }
+//    @after{ setText(sb.toString()); }:
+//        '\'' (c=~('\'') { sb.appendCodePoint(c);} | '\'' '\'' { sb.appendCodePoint('\''); })* '\''
+//    ;
 
-JSON
+QUOTED_LITERAL
     @init{
         StringBuilder sb = new StringBuilder();
     }
-    @after{
-        setText("{" + sb.toString() + "}");
-    }:
-        //T_START_SBRACKET (c=(.) {sb.appendCodePoint(c);})* T_END_SBRACKET
-        T_START_SBRACKET (c=~(';') {sb.appendCodePoint(c);})* T_END_SBRACKET
+    @after{ setText(sb.toString());
+    System.out.println("Quoted_literal: " + sb.toString());}:
+        ('"'|'\'') (c=~('"'|'\'') { sb.appendCodePoint(c);} | '\'' '\'' { sb.appendCodePoint('\''); })* ('"'|'\'')
     ;
+
+//JSON
+//    @init{
+//        StringBuilder sb = new StringBuilder();
+//    }
+//    @after{
+//        setText("{" + sb.toString() + "}");
+//    }:
+//        //T_START_SBRACKET (c=(.) {sb.appendCodePoint(c);})* T_END_SBRACKET
+//        //T_START_SBRACKET (c=~(';') {sb.appendCodePoint(c);})* T_END_SBRACKET
+//        //T_QUOTE T_START_SBRACKET (c=~(';') {sb.appendCodePoint(c);})* T_END_SBRACKET T_QUOTE
+//        T_START_SBRACKET (c=(.) {sb.appendCodePoint(c);})* T_END_SBRACKET
+//    ;
+
 
 T_CONSTANT: (DIGIT)+;
 
@@ -260,27 +276,158 @@ T_FLOAT:   ('0'..'9')+ POINT ('0'..'9')* EXPONENT?
 
 T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 
+//READ_ANY
+//    @init{
+//        StringBuilder sb = new StringBuilder();
+//    }
+//    @after{
+//        setText(sb.toString());
+//    }:
+//        (c=(.) {sb.appendCodePoint(c);})+
+//    ;
+
 // ========================================================
 // STORAGE
 // ========================================================
 
+
+//
+// CREATE STORAGE produccion_madrid ON DATASTORE "cassandra"
+// USING
+//	 CONNECTOR "com.stratio.cassandra.CassandraConnector" WITH OPTIONS {host:127.0.0.1}
+//	 AND CONNECTOR "com.stratio.cassandra.DeepCassandra" WITH OPTIONS {host:127.0.0.3}
+//
 createStorageStatement returns [CreateStorageStatement css]
     @init{
         boolean ifNotExists = false;
+        ArrayList<String> connectorList = new ArrayList<String>();
+        ArrayList<String> optionList = new ArrayList<String>();
+        StringBuilder sb = new StringBuilder("{");
     }
     @after{
-        css = new CreateStorageStatement($storageName.text, ifNotExists, $j.text);
+        css = new CreateStorageStatement(
+            $storageName.text,
+            ifNotExists,
+            $datastoreName.text,
+            connectorList, optionList);
     }
     :
     T_CREATE T_STORAGE
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     storageName=T_IDENT
-    T_WITH j=JSON
+    T_ON T_DATASTORE datastoreName=QUOTED_LITERAL
+    T_USING T_CONNECTOR connectorName=QUOTED_LITERAL
+    T_WITH T_OPTIONS
+    T_START_SBRACKET
+        key=getValueProperty T_COLON value=getValueProperty
+            {
+                System.out.println("key: " + key + " - value: " + value);
+                sb.append(key).append(":").append(value);
+            }
+		(T_COMMA keyN=getValueProperty T_COLON valueN=getValueProperty
+		    {
+		    System.out.println("keyN: " + keyN + " - valueN: " + valueN);
+		    sb.append(",").append(keyN).append(":").append(valueN);
+		    } )*
+
+	T_END_SBRACKET
+	{
+	    connectorList.add($connectorName.text);
+	    optionList.add(sb.append("}").toString());
+	    sb = new StringBuilder("{");
+	}
+
+	(T_AND T_CONNECTOR connectorName=QUOTED_LITERAL T_WITH T_OPTIONS
+	    T_START_SBRACKET
+                key=getValueProperty T_COLON value=getValueProperty
+                    {
+                        System.out.println("key: " + key + " - value: " + value);
+                        sb.append(key).append(":").append(value);
+                    }
+        		(T_COMMA keyN=getValueProperty T_COLON valueN=getValueProperty
+        		    {
+        		    System.out.println("keyN: " + keyN + " - valueN: " + valueN);
+        		    sb.append(",").append(keyN).append(":").append(valueN);
+        		    } )*
+
+        	T_END_SBRACKET
+        	{
+        	    connectorList.add($connectorName.text);
+        	    optionList.add(sb.append("}").toString());
+        	    sb = new StringBuilder("{");
+        	}
+	)*
+
+    ;
+
+dropStorageStatement returns [DropStorageStatement dss]
+    @after{
+        dss = new DropStorageStatement($storageName.text);
+    }
+    :
+    T_DROP T_STORAGE
+    storageName=T_IDENT
+    ;
+
+alterStorageStatement returns [AlterStorageStatement ass]
+    @init{
+        StringBuilder sb = new StringBuilder("{");
+    }
+    @after{
+        ass = new AlterStorageStatement($storageName.text, sb.append("}").toString());
+    }
+    :
+    T_ALTER T_STORAGE
+    storageName=T_IDENT
+    T_WITH
+    T_START_SBRACKET
+            key=getValueProperty T_COLON value=getValueProperty
+                {
+                    System.out.println("key: " + key + " - value: " + value);
+                    sb.append(key).append(":").append(value);
+                }
+    		(T_COMMA keyN=getValueProperty T_COLON valueN=getValueProperty
+    		    {
+    		    System.out.println("keyN: " + keyN + " - valueN: " + valueN);
+    		    sb.append(",").append(keyN).append(":").append(valueN);
+    		    } )*
+
+    	T_END_SBRACKET
     ;
 
 // ========================================================
 // CATALOG
 // ========================================================
+
+createCatalogStatement returns [CreateCatalogStatement crksst]
+    @init{
+        boolean ifNotExists = false;
+    }
+    :
+    T_CREATE T_CATALOG
+    (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
+    catalogName=T_IDENT
+    (T_WITH j=JSON)?
+    { $crksst = new CreateCatalogStatement($catalogName.text, ifNotExists, $j.text); }
+    ;
+
+dropCatalogStatement returns [DropCatalogStatement drksst]
+    @init{
+        boolean ifExists = false;
+    }
+    :
+    T_DROP T_CATALOG
+    (T_IF T_EXISTS {ifExists = true;})?
+    catalogName=T_IDENT
+    { $drksst = new DropCatalogStatement($catalogName.text, ifExists);}
+    ;
+
+alterCatalogStatement returns [AlterCatalogStatement alksst]
+    :
+    T_ALTER T_CATALOG
+    catalogName=T_IDENT
+    T_WITH j=JSON
+    { $alksst = new AlterCatalogStatement($catalogName.text, $j.text); };
 
 // ========================================================
 // TABLE
@@ -610,83 +757,6 @@ explainPlanStatement returns [ExplainPlanStatement xpplst]:
     {$xpplst = new ExplainPlanStatement(parsedStmnt);}
     ;
 
-setOptionsStatement returns [SetOptionsStatement stptst]
-    @init{
-        ArrayList<Boolean> checks = new ArrayList<>();
-        checks.add(false);
-        checks.add(false);
-        boolean analytics = false;
-        Consistency cnstc=Consistency.ALL;
-    }:
-    T_SET T_OPTIONS (
-        T_ANALYTICS T_EQUAL (T_TRUE{analytics=true;}|T_FALSE{analytics=false;}) {checks.set(0, true);}
-        (T_AND T_CONSISTENCY T_EQUAL
-            (T_ALL {cnstc=Consistency.ALL;} 
-            | T_ANY {cnstc=Consistency.ANY;}
-            | T_QUORUM {cnstc=Consistency.QUORUM;}
-            | T_ONE {cnstc=Consistency.ONE;}
-            | T_TWO {cnstc=Consistency.TWO;}
-            | T_THREE {cnstc=Consistency.THREE;}
-            | T_EACH_QUORUM {cnstc=Consistency.EACH_QUORUM;}
-            | T_LOCAL_ONE {cnstc=Consistency.LOCAL_ONE;}
-            | T_LOCAL_QUORUM {cnstc=Consistency.LOCAL_QUORUM;})
-            {checks.set(1, true);}
-        )?
-        { $stptst = new SetOptionsStatement(analytics, cnstc, checks);}
-        | T_CONSISTENCY T_EQUAL 
-            (T_ALL {cnstc=Consistency.ALL;} 
-            | T_ANY {cnstc=Consistency.ANY;}
-            | T_QUORUM {cnstc=Consistency.QUORUM;}
-            | T_ONE {cnstc=Consistency.ONE;}
-            | T_TWO {cnstc=Consistency.TWO;}
-            | T_THREE {cnstc=Consistency.THREE;}
-            | T_EACH_QUORUM {cnstc=Consistency.EACH_QUORUM;}
-            | T_LOCAL_ONE {cnstc=Consistency.LOCAL_ONE;}
-            | T_LOCAL_QUORUM {cnstc=Consistency.LOCAL_QUORUM;})
-            {checks.set(1, true);}
-        (T_AND T_ANALYTICS T_EQUAL (T_TRUE{analytics=true;}|T_FALSE{analytics=false;}) 
-            {checks.set(0, true);})?
-        { $stptst = new SetOptionsStatement(analytics, cnstc, checks);}
-    );
-
-useStatement returns [UseStatement usst]:
-    T_USE
-    iden=T_IDENT {$usst = new UseStatement($iden.text);};
-
-dropKeyspaceStatement returns [DropKeyspaceStatement drksst]
-    @init{
-        boolean ifExists = false;
-    }:
-    T_DROP
-    T_KEYSPACE
-    (T_IF T_EXISTS {ifExists = true;})?
-    iden=T_IDENT
-    { $drksst = new DropKeyspaceStatement($iden.text, ifExists);};
-
-alterKeyspaceStatement returns [AlterKeyspaceStatement alksst]
-    @init{
-        HashMap<String, ValueProperty> properties = new HashMap<>();
-    }:
-    T_ALTER
-    T_KEYSPACE
-    ident=T_IDENT
-    T_WITH
-    identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {properties.put($identProp1.text, valueProp1);}
-    (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {properties.put($identPropN.text, valuePropN);} )*
-    { $alksst = new AlterKeyspaceStatement($ident.text, properties); };
-
-createKeyspaceStatement returns [CreateKeyspaceStatement crksst]
-    @init{
-        boolean ifNotExists = false;
-        HashMap<String, ValueProperty> properties = new HashMap<>();
-    }:
-    T_CREATE T_KEYSPACE
-    (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
-    identKS=T_IDENT
-    T_WITH    
-    identProp1=T_IDENT T_EQUAL valueProp1=getValueProperty {properties.put($identProp1.text, valueProp1);}
-    (T_AND identPropN=T_IDENT T_EQUAL valuePropN=getValueProperty {properties.put($identPropN.text, valuePropN);})*
-    { $crksst = new CreateKeyspaceStatement($identKS.text, ifNotExists, properties); };
 
 dropTableStatement returns [DropTableStatement drtbst]
     @init{
@@ -706,30 +776,30 @@ truncateStatement returns [TruncateStatement trst]:
 	};
 
 metaStatement returns [MetaStatement st]:
-    st_crta= createTableStatement { $st = st_crta;}
-    | st_alta= alterTableStatement { $st = st_alta;}
-    | st_crtr= createTriggerStatement { $st = st_crtr; }
-    | st_drtr= dropTriggerStatement { $st = st_drtr; }
-    | st_stpr = stopProcessStatement { $st = st_stpr; }
-    | st_pdtb = updateTableStatement { $st = st_pdtb; }
+    st_nsnt   = insertIntoStatement { $st = st_nsnt;}
     | st_slct = selectStatement { $st = st_slct;}
-    | st_nsnt = insertIntoStatement { $st = st_nsnt;}
-    | st_xppl = explainPlanStatement { $st = st_xppl;}
-    | st_stpt = setOptionsStatement { $st = st_stpt; }
-    | st_usks = useStatement { $st = st_usks; }
-    | st_drks = dropKeyspaceStatement { $st = st_drks ;}
-    | st_crks = createKeyspaceStatement { $st = st_crks; }
-    | st_alks = alterKeyspaceStatement { $st = st_alks; }
+    | st_crta = createTableStatement { $st = st_crta;}
+    | st_alta = alterTableStatement { $st = st_alta;}
+    | st_pdtb = updateTableStatement { $st = st_pdtb; }
     | st_tbdr = dropTableStatement { $st = st_tbdr; }
     | st_trst = truncateStatement { $st = st_trst; }
-    | cis = createIndexStatement { $st = cis; } 
-    | dis = dropIndexStatement { $st = dis; } 
-    | ls = listStatement { $st = ls; } 
+    | ls = listStatement { $st = ls; }
+    | st_stpr = stopProcessStatement { $st = st_stpr; }
+    | st_xppl = explainPlanStatement { $st = st_xppl;}
     | add = addStatement { $st = add; } 
     | rs = removeUDFStatement { $st = rs; } 
     | ds = deleteStatement { $st = ds; } 
     | descs = describeStatement { $st = descs;}
+    | st_crks = createCatalogStatement { $st = st_crks; }
+    | st_alks = alterCatalogStatement { $st = st_alks; }
+    | st_drks = dropCatalogStatement { $st = st_drks ;}
     | css = createStorageStatement { $st = css;}
+    | dss = dropStorageStatement {$st = dss;}
+    | ass = alterStorageStatement {$st = ass;}
+    | cis = createIndexStatement { $st = cis; }
+    | dis = dropIndexStatement { $st = dis; }
+    | st_crtr = createTriggerStatement { $st = st_crtr; }
+    | st_drtr = dropTriggerStatement { $st = st_drtr; }
     ;
 
 query returns [MetaStatement st]: 

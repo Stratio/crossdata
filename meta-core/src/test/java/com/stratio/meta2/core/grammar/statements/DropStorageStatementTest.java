@@ -17,18 +17,21 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.planner.statements;
+package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.UseStatement;
+import com.stratio.meta.core.grammar.ParsingTest;
+
 import org.testng.annotations.Test;
 
-public class UseStatementTest  extends BasicPlannerTest {
+/**
+ * Drop storage parsing tests.
+ */
+public class DropStorageStatementTest extends ParsingTest {
 
-    @Test
-    public void testPlanForUse(){
-        String inputText = "USE demo;";
-        stmt = new UseStatement("demo");
-        validateCassandraPath("testPlanForUse");
-    }
+  @Test
+  public void dropStorageBasic() {
+    String inputText = "DROP STORAGE dev_environment1;";
+    testRegularStatement(inputText, "dropStorageBasic");
+  }
+
 }

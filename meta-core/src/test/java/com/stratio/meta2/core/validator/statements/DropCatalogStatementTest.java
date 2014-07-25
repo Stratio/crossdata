@@ -17,18 +17,28 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.planner.statements;
+package com.stratio.meta2.core.validator.statements;
 
-import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.DropKeyspaceStatement;
+import com.stratio.meta.core.validator.BasicValidatorTest;
 import org.testng.annotations.Test;
 
-public class DropKeyspaceStatementTest  extends BasicPlannerTest {
+public class DropCatalogStatementTest extends BasicValidatorTest {
 
     @Test
-    public void testPlanForDropKeyspace(){
+    public void validateOk(){
         String inputText = "DROP KEYSPACE demo;";
-        stmt = new DropKeyspaceStatement("demo", false);
-        validateCassandraPath("testPlanForDropKeyspace");
+        validateOk(inputText, "validateOk");
+    }
+
+    @Test
+    public void validateIfNotExists(){
+        String inputText = "DROP KEYSPACE IF EXISTS unknown;";
+        validateOk(inputText, "validateIfNotExists");
+    }
+
+    @Test
+    public void validateNotExists(){
+        String inputText = "DROP KEYSPACE unknown;";
+        validateFail(inputText, "validateNotExists");
     }
 }

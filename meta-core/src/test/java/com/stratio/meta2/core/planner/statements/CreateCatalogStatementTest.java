@@ -17,10 +17,10 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.planner.statements;
+package com.stratio.meta2.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.AlterKeyspaceStatement;
+import com.stratio.meta2.core.statements.CreateCatalogStatement;
 import com.stratio.meta.core.structures.IdentifierProperty;
 import com.stratio.meta.core.structures.ValueProperty;
 import org.testng.annotations.Test;
@@ -28,17 +28,19 @@ import org.testng.annotations.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AlterKeyspaceStatementTest extends BasicPlannerTest {
+import static org.testng.Assert.fail;
+
+public class CreateCatalogStatementTest extends BasicPlannerTest{
+
+    //TODO Validate create catalog path
 
     @Test
-    public void planForAlterKeyspace(){
-        String inputText = "ALTER KEYSPACE demo WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1};";
-
-        Map<String, ValueProperty> properties = new HashMap();
-        properties.put("REPLICATION", new IdentifierProperty("{'class': 'SimpleStrategy', 'replication_factor': 1}"));
-
-        stmt = new AlterKeyspaceStatement("demo", properties);
-
-        validateCassandraPath("planForAlterKeyspace");
+    public void testPlanForCreateKeyspace(){
+      fail("Not implemented yet");
+        //String inputText = "CREATE KEYSPACE demo WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1};\n";
+        //Map<String, ValueProperty> properties = new HashMap();
+        //properties.put("class", new IdentifierProperty("{class: SimpleStrategy, replication_factor: 1}"));
+        //stmt = new CreateCatalogStatement("demo", false, properties);
+        //validateCassandraPath("testPlanForCreateKeyspace");
     }
 }

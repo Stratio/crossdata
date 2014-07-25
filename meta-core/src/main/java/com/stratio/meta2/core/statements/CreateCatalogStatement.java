@@ -17,7 +17,7 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.statements;
+package com.stratio.meta2.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.stratio.meta.common.result.QueryResult;
@@ -35,85 +35,65 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class that models a {@code CREATE KEYSPACE} statement from the META language.
+ * Class that models a {@code CREATE CATALOG} statement from the META language. Catalog
+ * information will be stored internally as part of the existing metadata. Catalog creation
+ * in the underlying datastore is done when a table is created in a catalog.
  */
-public class CreateKeyspaceStatement extends MetaStatement {
-
-  /**
-   * The name of the keyspace.
-   */
-  private String name;
+public class CreateCatalogStatement extends MetaStatement {
 
   /**
    * Whether the keyspace should be created only if it not exists.
    */
-  private boolean ifNotExists;
+  private final boolean ifNotExists;
 
   /**
-   * The map of properties of the keyspace. The different options accepted by a keyspace
-   * are determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
+   * A JSON with the options specified by the user.
    */
-  private Map<String, ValueProperty> properties;
+  private final String options;
 
   /**
    * Class constructor.
-   * @param name The name of the keyspace.
+   * @param catalogName The name of the catalog.
    * @param ifNotExists Whether it should be created only if it not exists.
-   * @param properties The map of properties.
+   * @param JSON A JSON with the storage options.
    */
-  public CreateKeyspaceStatement(String name, boolean ifNotExists, Map<String, ValueProperty> properties) {
-    this.name = name;
+  public CreateCatalogStatement(String catalogName, boolean ifNotExists,
+                                String JSON) {
+    this.catalog = catalogName;
+    this.catalogInc = true;
     this.command = false;
     this.ifNotExists = ifNotExists;
-    this.properties = new HashMap<>();
-    for(Map.Entry<String, ValueProperty> entry : properties.entrySet()){
-      this.properties.put(entry.getKey().toLowerCase(), entry.getValue());
-    }
-  }
-
-  /**
-   * Get the name of the keyspace.
-   * @return The name.
-   */
-  public String getName() {
-    return name;
-  }
-
-  /**
-   * Set the name of the keyspace.
-   * @param name The name of the keyspace.
-   */
-  public void setName(String name) {
-    this.name = name;
+    this.options = JSON;
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("CREATE KEYSPACE ");
+    StringBuilder sb = new StringBuilder("CREATE CATALOG ");
     if(ifNotExists){
       sb.append("IF NOT EXISTS ");
     }
-    sb.append(name);
-    sb.append(" WITH ");
-    sb.append(ParserUtils.stringMap(properties, " = ", " AND "));
+    sb.append(catalog);
+    if(options != null) {
+      sb.append(" WITH ").append(options);
+    }
     return sb.toString();
   }
 
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();
-    if(name!= null && name.length() > 0) {
-      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(name);
+    if(catalog!= null && catalog.length() > 0) {
+      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(catalog);
       if(ksMetadata != null && !ifNotExists){
-        result = Result.createValidationErrorResult("Keyspace " + name + " already exists.");
+        result = Result.createValidationErrorResult("Keyspace " + catalog + " already exists.");
       }
     }else{
       result = Result.createValidationErrorResult("Empty catalog name found.");
     }
 
-    if(properties.isEmpty() || !properties.containsKey("replication")){
-      result = Result.createValidationErrorResult("Missing mandatory replication property.");
-    }
+    //if(properties.isEmpty() || !properties.containsKey("replication")){
+    //  result = Result.createValidationErrorResult("Missing mandatory replication property.");
+    //}
 
     return result;
   }

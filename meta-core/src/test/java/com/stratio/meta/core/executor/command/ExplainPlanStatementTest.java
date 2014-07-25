@@ -23,7 +23,7 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.executor.BasicExecutorTest;
-import com.stratio.meta.core.statements.DropKeyspaceStatement;
+import com.stratio.meta2.core.statements.DropCatalogStatement;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
 import com.stratio.meta.core.utils.*;
 import org.testng.annotations.Test;
@@ -37,7 +37,7 @@ public class ExplainPlanStatementTest extends BasicExecutorTest {
 
         MetaQuery metaQuery = new MetaQuery("EXPLAIN PLAN FOR DROP KEYSPACE demo;");
 
-        DropKeyspaceStatement dropStmt = new DropKeyspaceStatement("demo", false);
+        DropCatalogStatement dropStmt = new DropCatalogStatement("demo", false);
 
         ExplainPlanStatement stmt = new ExplainPlanStatement(dropStmt);
 

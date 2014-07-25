@@ -17,8 +17,9 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.statements;
+package com.stratio.meta2.core.statements;
 
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
@@ -29,33 +30,33 @@ import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 /**
- * Class that models a {@code USE} statement from the META language.
+ * Class that models a {@code DROP KEYSPACE} statement from the META language.
  */
-public class UseStatement extends MetaStatement {
+public class DropCatalogStatement extends MetaStatement {
+
+    /**
+     * Whether the keyspace should be removed only if exists.
+     */
+    private boolean ifExists;
 
     /**
      * Class constructor.
-     * @param keyspace The name of the target keyspace.
+     * @param catalog The name of the catalog.
+     * @param ifExists Whether it should be removed only if exists.
      */
-    public UseStatement(String keyspace) {
-        super.catalog = keyspace;
-        if(!keyspace.contains("'")){
-            super.catalog = keyspace.toLowerCase();
-        }
+    public DropCatalogStatement(String catalog, boolean ifExists) {
         this.command = false;
-    }
-
-    /**
-     * Get the name of the keyspace to be used.
-     * @return The name.
-     */
-    public String getKeyspaceName() {
-        return catalog;
-    }
+        this.catalog = catalog;
+      this.catalogInc = true;
+        this.ifExists = ifExists;
+    }    
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("USE ");
+        StringBuilder sb = new StringBuilder("DROP CATALOG ");
+        if(ifExists){
+           sb.append("IF EXISTS ");
+        } 
         sb.append(catalog);
         return sb.toString();
     }
@@ -63,12 +64,9 @@ public class UseStatement extends MetaStatement {
     @Override
     public Result validate(MetadataManager metadata, EngineConfig config) {
         Result result = QueryResult.createSuccessQueryResult();
-        if(catalog != null && catalog.length() > 0){
-            if(!metadata.getKeyspacesNames().contains(catalog.toLowerCase())){
-                result= Result.createValidationErrorResult("Keyspace " + catalog + " does not exist.");
-            }
-        }else{
-            result= Result.createValidationErrorResult("Missing catalog name.");
+        KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(catalog);
+        if(ksMetadata == null && !ifExists){
+            result = Result.createValidationErrorResult("Keyspace " + catalog + " does not exist.");
         }
         return result;
     }

@@ -17,28 +17,23 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.validator.statements;
+package com.stratio.meta.core.grammar.statements;
 
-import com.stratio.meta.core.validator.BasicValidatorTest;
+import com.stratio.meta.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
 
-public class DropKeyspaceStatementTest extends BasicValidatorTest {
+public class DropCatalogStatementTest extends ParsingTest {
 
     @Test
-    public void validateOk(){
-        String inputText = "DROP KEYSPACE demo;";
-        validateOk(inputText, "validateOk");
+    public void dropKeyspace() {
+        String inputText = "drop keyspace IF EXISTS mykeyspace;";
+        testRegularStatement(inputText, "dropKeyspace");
     }
 
     @Test
-    public void validateIfNotExists(){
-        String inputText = "DROP KEYSPACE IF EXISTS unknown;";
-        validateOk(inputText, "validateIfNotExists");
+    public void dropWrongPlaceForIfExists(){
+        String inputText = "DROP KEYSPACE mykeyspace IF EXISTS;";
+        testRecoverableError(inputText, "dropWrongPlaceForIfExists");
     }
 
-    @Test
-    public void validateNotExists(){
-        String inputText = "DROP KEYSPACE unknown;";
-        validateFail(inputText, "validateNotExists");
-    }
 }

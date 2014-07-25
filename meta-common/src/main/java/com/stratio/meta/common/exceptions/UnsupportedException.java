@@ -33,4 +33,8 @@ public class UnsupportedException extends Exception{
   public UnsupportedException(String message){
     super(message);
   }
+
+  public UnsupportedException(String msg, Throwable cause){
+    super(msg, cause);
+  }
 }
