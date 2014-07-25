@@ -1,7 +1,5 @@
 package com.stratio.meta.streaming;
 
-import org.codehaus.jackson.map.ObjectMapper;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +12,12 @@ import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+
 public class StreamingConsumer extends Thread {
+
+  private final static Logger logger = Logger.getLogger(StreamingConsumer.class);
 
   private ConsumerConnector consumer;
   private String topic;
@@ -29,12 +32,12 @@ public class StreamingConsumer extends Thread {
     props.put("zookeeper.session.timeout.ms", "400");
     props.put("zookeeper.sync.time.ms", "200");
     props.put("auto.commit.interval.ms", "1000");
-    consumer = kafka.consumer.Consumer.createJavaConsumerConnector(
-        new ConsumerConfig(props));
+    consumer = kafka.consumer.Consumer.createJavaConsumerConnector(new ConsumerConfig(props));
     this.topic = topic;
     Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
     topicCountMap.put(topic, new Integer(1));
-    Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumer.createMessageStreams(topicCountMap);
+    Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap =
+        consumer.createMessageStreams(topicCountMap);
     streams = consumerMap.get(topic);
   }
 
@@ -42,9 +45,9 @@ public class StreamingConsumer extends Thread {
 
     ObjectMapper objectMapper = new ObjectMapper();
 
-    for(KafkaStream stream: streams){
+    for (KafkaStream<byte[], byte[]> stream : streams) {
       ConsumerIterator<byte[], byte[]> iter = stream.iterator();
-      while (iter.hasNext()){
+      while (iter.hasNext()) {
         String message = new String(iter.next().message());
 
         // Get columns fields from Json
@@ -52,11 +55,11 @@ public class StreamingConsumer extends Thread {
         try {
           myMap = objectMapper.readValue(message, HashMap.class);
         } catch (IOException e) {
-          e.printStackTrace();
+          logger.error(e);
         }
         ArrayList columns = (ArrayList) myMap.get("columns");
 
-        synchronized (results){
+        synchronized (results) {
           results.add(columns);
         }
       }

@@ -18,7 +18,6 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -28,6 +27,9 @@ import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+
+import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 
@@ -66,25 +68,6 @@ public class DescribeStatement extends MetaStatement {
   }
 
   /**
-   * Get the keyspace to be described.
-   * 
-   * @return The name or null if not set.
-   */
-  public String getKeyspace() {
-    return keyspace;
-  }
-
-  /**
-   * Set the keyspace to be described.
-   * 
-   * @param keyspace The name.
-   */
-  public void setKeyspace(String keyspace) {
-    this.keyspace = keyspace;
-    keyspaceInc = true;
-  }
-
-  /**
    * Get the table to be described.
    * 
    * @return The name or null if not set.
@@ -101,8 +84,7 @@ public class DescribeStatement extends MetaStatement {
   public void setTableName(String tableName) {
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspaceInc = true;
-      keyspace = ksAndTableName[0];
+      this.setKeyspace(ksAndTableName[0]);
       this.tableName = ksAndTableName[1];
     } else {
       this.tableName = tableName;
@@ -115,8 +97,8 @@ public class DescribeStatement extends MetaStatement {
     StringBuilder sb = new StringBuilder("DESCRIBE ");
     sb.append(type.name());
 
-    if (type == DescribeType.KEYSPACE && keyspace != null) {
-      sb.append(" ").append(keyspace);
+    if (type == DescribeType.KEYSPACE && this.getEffectiveKeyspace() != null) {
+      sb.append(" ").append(this.getEffectiveKeyspace());
     } else if (type == DescribeType.TABLE) {
       sb.append(" ").append(getEffectiveKeyspace()).append(".");
       sb.append(tableName);
@@ -131,24 +113,24 @@ public class DescribeStatement extends MetaStatement {
 
     Result result = QueryResult.createSuccessQueryResult();
 
-    if (this.keyspace != null) {
-      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(this.keyspace);
+    if (!StringUtils.isEmpty(this.getEffectiveKeyspace())) {
+      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(this.getEffectiveKeyspace());
       if (ksMetadata == null) {
         result =
-            Result.createValidationErrorResult("Keyspace " + this.keyspace + " does not exist.");
+            Result.createValidationErrorResult("Keyspace " + this.getEffectiveKeyspace()
+                + " does not exist.");
       }
     }
 
     if (this.tableName != null) {
-      result =
-          validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+      result = validateKeyspaceAndTable(metadata, this.getEffectiveKeyspace(), tableName);
     }
 
     return result;
   }
 
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
     return this.toString();
   }
 
@@ -165,14 +147,19 @@ public class DescribeStatement extends MetaStatement {
    * @param session The {@link com.datastax.driver.core.Session} used to retrieve the medatada.
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
-  public Result execute(Session session) {
-    MetadataManager mm = new MetadataManager(session, null);
+  public Result execute(Session session, IStratioStreamingAPI stratioStreamingAPI) {
+
+    MetadataManager mm = new MetadataManager(session, stratioStreamingAPI);
     mm.loadMetadata();
     Result result = null;
     if (type == DescribeType.KEYSPACE) {
       KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(this.getEffectiveKeyspace());
-      if (ksInfo == null) {
-        result = Result.createExecutionErrorResult("KEYSPACE " + keyspace + " was not found");
+      if (ksInfo == null && this.getEffectiveKeyspace() != null) {
+        result =
+            Result.createExecutionErrorResult("KEYSPACE " + this.getEffectiveKeyspace()
+                + " was not found");
+      } else if (this.getEffectiveKeyspace() == null) {
+        result = Result.createExecutionErrorResult("KEYSPACE not defined");
       } else {
         result = CommandResult.createCommandResult(ksInfo.exportAsString());
       }
@@ -184,7 +171,8 @@ public class DescribeStatement extends MetaStatement {
         result = CommandResult.createCommandResult(keyspacesNames.toString());
       }
     } else if (type == DescribeType.TABLE) {
-      TableMetadata tableInfo = mm.getTableMetadata(this.getEffectiveKeyspace(), tableName);
+      com.stratio.meta.common.metadata.structures.TableMetadata tableInfo =
+          mm.getTableGenericMetadata(this.getEffectiveKeyspace(), tableName);
       if (tableInfo == null) {
         result = Result.createExecutionErrorResult("TABLE " + tableName + " was not found");
       } else {

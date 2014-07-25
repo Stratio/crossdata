@@ -23,10 +23,12 @@ import org.apache.spark.api.java.function.PairFunction;
 
 import scala.Tuple2;
 
+import com.stratio.deep.entity.CassandraCell;
 import com.stratio.deep.entity.Cell;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.core.structures.GroupBy;
-
+import com.stratio.meta.core.structures.GroupByFunction;
+import com.stratio.meta.deep.transfer.ColumnInfo;
 
 public class GroupByMapping implements PairFunction<Cells, Cells, Cells> {
 
@@ -35,11 +37,11 @@ public class GroupByMapping implements PairFunction<Cells, Cells, Cells> {
    */
   private static final long serialVersionUID = -2763959543919248527L;
 
-  private List<String> aggregationCols;
+  private List<ColumnInfo> aggregationCols;
 
   private List<GroupBy> groupByClause;
 
-  public GroupByMapping(List<String> aggregationCols, List<GroupBy> groupByClause) {
+  public GroupByMapping(List<ColumnInfo> aggregationCols, List<GroupBy> groupByClause) {
     this.aggregationCols = aggregationCols;
     this.groupByClause = groupByClause;
   }
@@ -50,31 +52,37 @@ public class GroupByMapping implements PairFunction<Cells, Cells, Cells> {
     Cells grouppingKeys = new Cells();
     Cells cellsExtended = cells;
     // Copying aggregation columns to not apply the function over the original data
-    for (String aggCol : aggregationCols) {
-      if ("count(*)".equalsIgnoreCase(aggCol)) {
-        cellsExtended.add(com.stratio.deep.entity.Cell.create(aggCol, new BigInteger("1")));
-      } else if (aggCol.toLowerCase().startsWith("avg(")) {
-        String fieldName = aggCol.substring(aggCol.indexOf("(") + 1, aggCol.indexOf(")"));
-        com.stratio.deep.entity.Cell cellToCopy = cells.getCellByName(fieldName);
-        cellsExtended.add(com.stratio.deep.entity.Cell.create(aggCol + "_count",
-            new BigInteger("1")));
-        cellsExtended.add(com.stratio.deep.entity.Cell.create(aggCol + "_sum",
-            cellToCopy.getCellValue()));
-      } else {
-        String fieldName = aggCol.substring(aggCol.indexOf("(") + 1, aggCol.indexOf(")"));
-        com.stratio.deep.entity.Cell cellToCopy = cells.getCellByName(fieldName);
-        cellsExtended.add(com.stratio.deep.entity.Cell.create(aggCol, cellToCopy.getCellValue()));
+    if (aggregationCols != null) {
+      for (ColumnInfo aggCol : aggregationCols) {
+        if (GroupByFunction.COUNT == aggCol.getAggregationFunction()) {
+          cellsExtended.add(aggCol.getTable(),
+              CassandraCell.create(aggCol.getColumnName(), new BigInteger("1")));
+        } else if (GroupByFunction.AVG == aggCol.getAggregationFunction()) {
+          com.stratio.deep.entity.Cell cellToCopy =
+              cells.getCellByName(aggCol.getTable(), aggCol.getField());
+          cellsExtended.add(aggCol.getTable(),
+              CassandraCell.create(aggCol.getField() + "_count", new BigInteger("1")));
+          cellsExtended.add(aggCol.getTable(),
+              CassandraCell.create(aggCol.getField() + "_sum", cellToCopy.getCellValue()));
+        } else {
+          com.stratio.deep.entity.Cell cellToCopy =
+              cells.getCellByName(aggCol.getTable(), aggCol.getField());
+          cellsExtended.add(aggCol.getTable(),
+              CassandraCell.create(aggCol.getColumnName(), cellToCopy.getCellValue()));
+        }
       }
     }
 
     if (groupByClause != null) {
       for (GroupBy groupByCol : groupByClause) {
 
-        String[] fieldParts = groupByCol.toString().split("\\.");
-        grouppingKeys.add(cells.getCellByName(fieldParts[fieldParts.length - 1]));
+        Cell cell =
+            cells.getCellByName(groupByCol.getSelectorIdentifier().getTable(), groupByCol
+                .getSelectorIdentifier().getField());
+        grouppingKeys.add(cell);
       }
     } else {
-      grouppingKeys.add(Cell.create("_", "_"));
+      grouppingKeys.add(CassandraCell.create("_", "_"));
     }
 
     return new Tuple2<>(grouppingKeys, cellsExtended);

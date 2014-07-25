@@ -30,7 +30,7 @@ import java.util.*;
 public class CResultSetIteratorTest {
 
     private Random rand;
-    CassandraResultSet rSet;
+  MetaResultSet rSet;
 
     @BeforeClass
     public void setUp(){
@@ -59,8 +59,8 @@ public class CResultSetIteratorTest {
     }
 
 
-    private CassandraResultSet buildRandomResultSet(){
-        CassandraResultSet rSet = new CassandraResultSet();
+    private MetaResultSet buildRandomResultSet(){
+      MetaResultSet rSet = new MetaResultSet();
 
         Cell cellStr = new Cell(new String("comment" + rand.nextInt(100)));
         Cell cellInt = new Cell(new Integer(rand.nextInt(50)));

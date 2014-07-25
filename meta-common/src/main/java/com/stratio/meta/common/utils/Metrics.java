@@ -19,6 +19,7 @@
 
 package com.stratio.meta.common.utils;
 
+import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
 
 /**
@@ -26,22 +27,32 @@ import com.codahale.metrics.MetricRegistry;
  */
 public class Metrics {
 
-    /**
-     * Metrics registry.
-     */
-    private static final MetricRegistry REGISTRY = new MetricRegistry();
+  /**
+   * Metrics registry.
+   */
+  private static final MetricRegistry REGISTRY = new MetricRegistry();
 
-    /**
-     * Private class constructor as all methods are static.
-     */
-    private Metrics(){
-    }
+  /**
+   * Report the measurements using JMX.
+   */
+  private static JmxReporter reporter = null;
 
-    /**
-     * Get the metrics registry.
-     * @return A {@link com.codahale.metrics.MetricRegistry}.
-     */
-    public static MetricRegistry getRegistry(){
-        return REGISTRY;
+  /**
+   * Private class constructor as all methods are static.
+   */
+  private Metrics() {
+  }
+
+  /**
+   * Get the metrics registry.
+   *
+   * @return A {@link com.codahale.metrics.MetricRegistry}.
+   */
+  public static MetricRegistry getRegistry() {
+    if (reporter == null) {
+      reporter = JmxReporter.forRegistry(REGISTRY).build();
+      reporter.start();
     }
+    return REGISTRY;
+  }
 }

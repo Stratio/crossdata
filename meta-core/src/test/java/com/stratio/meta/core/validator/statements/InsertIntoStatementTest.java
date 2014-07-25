@@ -31,7 +31,13 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         String inputText = "INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
         validateOk(inputText, "validateBasicOk");
     }
-
+    
+    @Test
+    public void validateBasicNoColumns(){
+        String inputText = "INSERT INTO demo.users VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
+        validateOk(inputText, "validateBasicNoColumns");
+    }
+    
     @Test
     public void validateBasicNoKs(){
         String inputText = "INSERT INTO users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";

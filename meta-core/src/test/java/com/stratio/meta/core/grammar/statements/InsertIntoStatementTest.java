@@ -31,6 +31,14 @@ public class InsertIntoStatementTest extends ParsingTest {
   }
 
   @Test
+  public void insertIntoNoColumns() {
+    String inputText =
+        "INSERT INTO mykeyspace.tablename VALUES (term1, term2) "
+            + "IF NOT EXISTS;";
+    testRegularStatement(inputText, "insertInto");
+  }
+  
+  @Test
   public void insertIntoUsing() {
     String inputText =
         "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (term1, term2) "

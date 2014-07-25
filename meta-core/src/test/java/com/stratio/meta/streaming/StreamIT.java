@@ -16,6 +16,7 @@
 
 package com.stratio.meta.streaming;
 
+import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
 // TODO: To be included when streaming integration is fully accomplished
@@ -37,9 +38,12 @@ import org.testng.annotations.Test;
 // TODO: To be included when streaming integration is fully accomplished
 public class StreamIT {
 
+  private static final Logger logger = Logger.getLogger(StreamIT.class);
+
   // TODO: To be included when streaming integration is fully accomplished
   /*
-   * @BeforeClass public void removeEphemeralTable(){ MetaStream.dropEphemeralTable("demo.temporal_test"); }
+   * @BeforeClass public void removeEphemeralTable(){
+   * MetaStream.dropEphemeralTable("demo.temporal_test"); }
    * 
    * @Test public void testEphemeralCreation() { String streamName = "demo.temporal_test";
    * Map<String, String> columns = new HashMap<>(); columns.put("name", "text"); columns.put("id",
@@ -55,8 +59,8 @@ public class StreamIT {
 
   @Test
   public void testTestAreNotAutomaticallyLaunched() {
-    System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    System.out.println("!!!!!!!!!!!!!!Test must just be manually executed!!!!!!!!!!!!!!!!!!!!!");
-    System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    logger.info("!!!!!!!!!!!!!!Test must just be manually executed!!!!!!!!!!!!!!!!!!!!!");
+    logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   }
 }

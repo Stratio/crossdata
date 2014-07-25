@@ -16,12 +16,12 @@
 
 package com.stratio.meta.core.structures;
 
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.TableMetadata;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.TableMetadata;
 
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
@@ -122,6 +122,31 @@ public abstract class Relation {
     }
   }
 
+  public void updateTermClass(
+      com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata) {
+    for (int i = 0; i < terms.size(); i++) {
+
+      String columnFullName = identifiers.get(0).toString();
+      String columnName = columnFullName.substring(columnFullName.indexOf(".") + 1);
+
+      com.stratio.meta.common.metadata.structures.ColumnMetadata
+          column =
+          streamingMetadata.getColumn(columnName);
+      if (column != null) {
+        Class<? extends Comparable<?>> dataType =
+            (Class<? extends Comparable<?>>) column.getType().getDbClass();
+        if (terms.get(i) instanceof Term) {
+          Term<?> term = terms.get(i);
+          if (dataType == Integer.class && term.getTermClass() == Long.class) {
+            terms.set(i, new IntegerTerm((Term<Long>) term));
+          } else if (dataType == Float.class && term.getTermClass() == Double.class) {
+            terms.set(i, new FloatTerm((Term<Double>) term));
+          }
+        }
+      }
+    }
+  }
+
   @Override
   public abstract String toString();
 
@@ -141,5 +166,15 @@ public abstract class Relation {
     }
 
     return termsValuesList;
+  }
+
+  public String getSiddhiOperator() {
+    String siddhiOperator = getOperator();
+    if(siddhiOperator.equalsIgnoreCase("=")){
+      siddhiOperator = "==";
+    } else if(siddhiOperator.equalsIgnoreCase("<>")){
+      siddhiOperator = "!=";
+    }
+    return siddhiOperator;
   }
 }

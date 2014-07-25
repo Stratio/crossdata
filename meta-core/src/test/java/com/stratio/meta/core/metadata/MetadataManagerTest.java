@@ -39,7 +39,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
   public static void setUpBeforeClass(){
     BasicCoreCassandraTest.setUpBeforeClass();
     BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-    _metadataManager = new MetadataManager(_session, null);
+    _metadataManager = new MetadataManager(_session, stratioStreamingAPI);
     _metadataManager.loadMetadata();
   }
 

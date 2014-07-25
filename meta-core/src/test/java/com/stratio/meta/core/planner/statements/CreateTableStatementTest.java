@@ -41,9 +41,9 @@ public class CreateTableStatementTest extends BasicPlannerTest {
 
   @Test
   public void testPlanForCreateTable() {
-    String inputText =
-        "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
-    Map<String, String> columns = new HashMap();
+
+    // "CREATE TABLE demo.new_table (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
+    Map<String, String> columns = new HashMap<>();
     columns.put("id", "INT");
     columns.put("name", "VARCHAR");
     columns.put("check", "BOOLEAN");
@@ -58,7 +58,7 @@ public class CreateTableStatementTest extends BasicPlannerTest {
       field.setAccessible(true);
       field.setBoolean(stmt, true);
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      logger.error(e.getStackTrace());
+      logger.error("Error accessing createTable field", e);
     }
 
     validateCassandraPath("testPlanForCreateTable");
@@ -66,9 +66,9 @@ public class CreateTableStatementTest extends BasicPlannerTest {
 
   @Test
   public void testPlanForEphemeralCreateTable() {
-    String inputText =
-        "CREATE TABLE demo.table_temporal (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id)) WITH ephemeral = true;";
-    Map<String, String> columns = new HashMap();
+
+    // "CREATE TABLE demo.table_temporal (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id)) WITH ephemeral = true;";
+    Map<String, String> columns = new HashMap<>();
     columns.put("id", "INT");
     columns.put("name", "VARCHAR");
     columns.put("check", "BOOLEAN");
@@ -87,7 +87,7 @@ public class CreateTableStatementTest extends BasicPlannerTest {
       field.setAccessible(true);
       field.setBoolean(stmt, true);
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      logger.error(e.getStackTrace());
+      logger.error("Error accessing createTable field", e);
     }
 
     validateStreamingPath("testPlanForEphemeralCreateTable");

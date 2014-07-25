@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.testng.annotations.Test;
 
+import com.stratio.deep.entity.CassandraCell;
 import com.stratio.deep.entity.Cell;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.core.structures.OrderDirection;
@@ -37,10 +38,14 @@ public class DeepComparatorTest {
 
   private Cells createNameAndAgeCells(String valueName, String valueAge) {
 
-    Cell cellName = Cell.create(CONSTANT_NAME, valueName);
-    Cell cellAge = Cell.create(CONSTANT_AGE, valueAge);
+    Cell cellName = CassandraCell.create(CONSTANT_NAME, valueName);
+    Cell cellAge = CassandraCell.create(CONSTANT_AGE, valueAge);
 
-    return new Cells(cellName, cellAge);
+    Cells cells = new Cells();
+    cells.add(cellName);
+    cells.add(cellAge);
+
+    return cells;
   }
 
   @Test

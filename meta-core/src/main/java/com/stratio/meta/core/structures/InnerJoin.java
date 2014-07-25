@@ -61,16 +61,29 @@ public class InnerJoin {
     return tableName;
   }
 
-  public String getKeyspace() {
-    return keyspace;
-  }
-
   public SelectorIdentifier getLeftField() {
     return leftField;
   }
 
   public SelectorIdentifier getRightField() {
     return rightField;
+  }
+
+  public String getKeyspace() {
+
+    return keyspace;
+  }
+
+  /**
+   * Returns the statement effective keyspace: if the join has a specific keyspace, that's the
+   * effective keyspace; otherwise, the given parent statement keyspace.
+   * 
+   * @param sessionKeyspace
+   * @return
+   */
+  public String findEffectiveKeyspace(String parentStatementKeyspace) {
+
+    return keyspaceInc ? keyspace : parentStatementKeyspace;
   }
 
   @Override

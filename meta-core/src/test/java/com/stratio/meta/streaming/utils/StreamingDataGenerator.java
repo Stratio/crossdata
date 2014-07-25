@@ -13,15 +13,6 @@
  */
 package com.stratio.meta.streaming.utils;
 
-import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-
-import com.stratio.streaming.commons.constants.BUS;
-import com.stratio.streaming.commons.constants.ColumnType;
-import com.stratio.streaming.commons.constants.STREAM_OPERATIONS;
-import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
-import com.stratio.streaming.commons.messages.StratioStreamingMessage;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -32,7 +23,19 @@ import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
+import org.apache.log4j.Logger;
+
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import com.stratio.streaming.commons.constants.BUS;
+import com.stratio.streaming.commons.constants.ColumnType;
+import com.stratio.streaming.commons.constants.STREAM_OPERATIONS;
+import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
+import com.stratio.streaming.commons.messages.StratioStreamingMessage;
+
 public class StreamingDataGenerator {
+
+  private static final Logger logger = Logger.getLogger(StreamingDataGenerator.class);
 
   private static boolean unlimited = false;
 
@@ -75,7 +78,7 @@ public class StreamingDataGenerator {
       es.shutdown();
 
       if (nameCounter % 10 == 0 && nameCounter != rowsLimit) {
-        System.out.println("Sleeping for 5 seconds...");
+        logger.debug("Sleeping for 5 seconds...");
         Thread.sleep(5000);
       }
     }
@@ -96,7 +99,8 @@ public class StreamingDataGenerator {
     private final double rating;
     private final boolean member;
 
-    public DataSender(Producer<String, String> producer, String name, int value, double rating, boolean member) {
+    public DataSender(Producer<String, String> producer, String name, int value, double rating,
+        boolean member) {
       super();
       this.producer = producer;
       this.name = name;
@@ -109,7 +113,8 @@ public class StreamingDataGenerator {
     public void run() {
       Gson gson = new Gson();
 
-      for (StratioStreamingMessage message: generateStratioStreamingMessages(name, age, rating, member)) {
+      for (StratioStreamingMessage message : generateStratioStreamingMessages(name, age, rating,
+          member)) {
         KeyedMessage<String, String> busMessage =
             new KeyedMessage<String, String>(BUS.TOPICS, STREAM_OPERATIONS.MANIPULATION.INSERT,
                 gson.toJson(message));
@@ -118,7 +123,8 @@ public class StreamingDataGenerator {
 
     }
 
-    private List<StratioStreamingMessage> generateStratioStreamingMessages(String name, int value, double rating, boolean member) {
+    private List<StratioStreamingMessage> generateStratioStreamingMessages(String name, int value,
+        double rating, boolean member) {
       List<StratioStreamingMessage> result = new ArrayList<>();
 
       StratioStreamingMessage message = new StratioStreamingMessage();

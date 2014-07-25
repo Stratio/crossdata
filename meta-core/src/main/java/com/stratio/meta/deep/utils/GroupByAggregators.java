@@ -19,6 +19,7 @@ package com.stratio.meta.deep.utils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import com.stratio.deep.entity.CassandraCell;
 import com.stratio.deep.entity.Cell;
 
 /**
@@ -30,7 +31,7 @@ public final class GroupByAggregators {
   public static Cell sum(Cell cell1, Cell cell2) {
 
     Cell resultCell = null;
-    Class<?> valueType = cell1.getValueType();
+    Class<?> valueType = ((CassandraCell) cell1).getValueType();
 
     if (valueType.equals(Integer.class) || valueType.equals(Long.class)
         || valueType.equals(BigInteger.class)) {
@@ -39,14 +40,14 @@ public final class GroupByAggregators {
       BigInteger bigValue2 = new BigInteger(cell2.getCellValue().toString());
       BigInteger resultValue = bigValue1.add(bigValue2);
 
-      resultCell = Cell.create(cell1.getCellName(), resultValue);
+      resultCell = CassandraCell.create(cell1.getCellName(), resultValue);
     } else {
 
       BigDecimal bigValue1 = new BigDecimal(cell1.getCellValue().toString());
       BigDecimal bigValue2 = new BigDecimal(cell2.getCellValue().toString());
       BigDecimal resultValue = bigValue1.add(bigValue2);
 
-      resultCell = Cell.create(cell1.getCellName(), resultValue);
+      resultCell = CassandraCell.create(cell1.getCellName(), resultValue);
     }
 
     return resultCell;
@@ -58,7 +59,7 @@ public final class GroupByAggregators {
 
     BigInteger resultValue =
         ((BigInteger) cell1.getCellValue()).add((BigInteger) cell2.getCellValue());
-    resultCell = Cell.create(cell1.getCellName(), resultValue);
+    resultCell = CassandraCell.create(cell1.getCellName(), resultValue);
 
     return resultCell;
   }
@@ -67,7 +68,7 @@ public final class GroupByAggregators {
 
     Cell resultCell = null;
 
-    Class<?> valueType = cell1.getValueType();
+    Class<?> valueType = ((CassandraCell) cell1).getValueType();
     if (valueType.equals(Integer.class) || valueType.equals(Long.class)
         || valueType.equals(BigInteger.class)) {
       BigInteger bigValue1 = new BigInteger(cell1.getCellValue().toString());
@@ -87,7 +88,7 @@ public final class GroupByAggregators {
 
     Cell resultCell = null;
 
-    Class<?> valueType = cell1.getValueType();
+    Class<?> valueType = ((CassandraCell) cell1).getValueType();
     if (valueType.equals(Integer.class) || valueType.equals(Long.class)
         || valueType.equals(BigInteger.class)) {
       BigInteger bigValue1 = new BigInteger(cell1.getCellValue().toString());

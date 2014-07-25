@@ -24,7 +24,7 @@
     <parent>
         <artifactId>meta-parent</artifactId>
         <groupId>com.stratio.meta</groupId>
-        <version>0.0.5</version>
+        <version>0.0.6</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -132,7 +132,7 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>com.datastax.cassandra</groupId>
+            <groupId>com.stratio.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
             <version>${cassandra.driver}</version>
             <type>jar</type>

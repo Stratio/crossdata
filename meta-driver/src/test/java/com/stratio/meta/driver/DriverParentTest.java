@@ -46,14 +46,14 @@ public class DriverParentTest extends ParentCassandraTest {
       try {
         Thread.sleep(SLEEP_TIME);
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        logger.error(e);
       }
 
       driver = new BasicDriver();
       try {
         driver.connect("TEST_USER");
-      }catch (Exception e){
-        e.printStackTrace();
+      } catch (Exception e) {
+        logger.error(e);
         driver = null;
         finish();
       }
@@ -70,9 +70,9 @@ public class DriverParentTest extends ParentCassandraTest {
     logger.info("FINISH <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
   }
 
-  public static String getErrorMessage(Result metaResult){
+  public static String getErrorMessage(Result metaResult) {
     String result = "Invalid class: " + metaResult.getClass();
-    if(ErrorResult.class.isInstance(metaResult)){
+    if (ErrorResult.class.isInstance(metaResult)) {
       result = ErrorResult.class.cast(metaResult).getErrorMessage();
     }
     return result;

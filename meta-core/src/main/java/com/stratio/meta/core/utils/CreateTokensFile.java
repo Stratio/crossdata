@@ -39,27 +39,27 @@ public class CreateTokensFile {
 
     public static void main(String[] args) {                
         try {
-            String workingDir = System.getProperty("user.dir");
-            if(workingDir.endsWith("stratio-meta")){
-                workingDir = workingDir.concat("/meta-core/");
-            } else if(!workingDir.endsWith("meta-core")){
-                workingDir = workingDir.substring(0, workingDir.lastIndexOf("/"));
-                workingDir = workingDir.concat("/meta-core/");
-            } else {
-                workingDir = workingDir.concat("/");
-            }
-            
-            String metaGrammarPath = workingDir+"src/main/java/com/stratio/meta/core/grammar/Meta.g";
-            String metaTokens = workingDir+"src/main/resources/com/stratio/meta/parser/tokens.txt";
-            File fileGrammar = new File(metaGrammarPath);  
-            File outFile = new File(metaTokens);
+          String workingDir = System.getProperty("user.dir");
+          if(workingDir.endsWith("stratio-meta")){
+              workingDir = workingDir.concat("/meta-core/");
+          } else if(!workingDir.endsWith("meta-core")){
+              workingDir = workingDir.substring(0, workingDir.lastIndexOf("/"));
+              workingDir = workingDir.concat("/meta-core/");
+          } else {
+              workingDir = workingDir.concat("/");
+          }
+          
+          String metaGrammarPath = workingDir+"src/main/java/com/stratio/meta/core/grammar/Meta.g";
+          String metaTokens = workingDir+"src/main/resources/tokens.txt";
+          File fileGrammar = new File(metaGrammarPath);  
+          File outFile = new File(metaTokens);
 
-            LOG.info("Reading grammar from " + fileGrammar.getAbsolutePath());
-            BufferedWriter bw;
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(
-                            new FileInputStream(fileGrammar), Charset.forName("UTF-8")))) {
-                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile, true), "UTF-8"));
+          LOG.info("Reading grammar from " + fileGrammar.getAbsolutePath());
+          BufferedWriter bw;
+          try (BufferedReader br = new BufferedReader(
+                  new InputStreamReader(
+                          new FileInputStream(fileGrammar), Charset.forName("UTF-8")))) {
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile, false), "UTF-8"));
                 String line = br.readLine();
                 while (line != null){
                     if(line.startsWith("T_")){

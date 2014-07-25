@@ -16,7 +16,7 @@
 
 package com.stratio.meta.sh.utils;
 
-import com.stratio.meta.common.data.CassandraResultSet;
+import com.stratio.meta.common.data.MetaResultSet;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
@@ -106,7 +106,7 @@ public class ConsoleUtils {
       return System.lineSeparator() + "OK";
     }
 
-    CassandraResultSet resultSet = (CassandraResultSet) queryResult.getResultSet();
+    MetaResultSet resultSet = (MetaResultSet) queryResult.getResultSet();
 
     Map<String, Integer> colWidths = calculateColWidths(resultSet);
 
@@ -153,8 +153,8 @@ public class ConsoleUtils {
     Map<String, Integer> colWidths = new HashMap<>();
 
     // Get column names or aliases width
-    CassandraResultSet cassandraResultSet = (CassandraResultSet) resultSet;
-    for (ColumnMetadata columnMetadata : cassandraResultSet.getColumnMetadata()) {
+    MetaResultSet metaResultSet = (MetaResultSet) resultSet;
+    for (ColumnMetadata columnMetadata: metaResultSet.getColumnMetadata()) {
       colWidths.put(columnMetadata.getColumnName(), columnMetadata.getColumnNameToShow().length());
     }
 

@@ -32,7 +32,7 @@ object PlannerActor{
 
 class PlannerActor(executor:ActorRef, planner:Planner) extends Actor with TimeTracker {
   val log =Logger.getLogger(classOf[PlannerActor])
-  override val timerName= this.getClass.getName
+  override lazy val timerName= this.getClass.getName
   def receive = {
     case query:MetaQuery if !query.hasError=> {
       log.debug("Init Planner Task")
