@@ -31,6 +31,7 @@ public class Main {
     // create a resource config that scans for JAX-RS resources and providers
     // in com.stratio.meta.rest package
     final ResourceConfig rc = new ResourceConfig().packages("com.stratio.meta.rest");
+    rc.register(CrossDomainFilter.class);
 
     // create and start a new instance of grizzly http server
     // exposing the Jersey application at BASE_URI
