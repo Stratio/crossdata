@@ -90,6 +90,7 @@ public class ColumnMetadata implements Serializable {
    * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
    */
   public ColumnType getType() {
+    MetadataUtils.updateType(type);
     return type;
   }
 

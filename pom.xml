@@ -8,16 +8,13 @@
     implied warranty of ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
     See the GNU ~ Lesser General Public License for more details. ~ ~ You should 
     have received a copy of the GNU Lesser General Public ~ License along with 
-    this library. -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    this library. --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.stratio.meta</groupId>
     <artifactId>meta-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.6-SNAPSHOT</version>
+    <version>0.0.6</version>
     <name>Stratio META parent</name>
     <description>Stratio META</description>
     <url>https://github.com/Stratio/stratio-meta/</url>
@@ -79,11 +76,12 @@
         <module>meta-server</module>
         <module>meta-sh</module>
         <module>meta-dist</module>
-    </modules>
+    <module>meta-rest</module>
+  </modules>
     <properties>
         <akka.version>2.2.4</akka.version>
-        <cassandra.driver>2.0.0</cassandra.driver>
-        <deep.version>0.3.2</deep.version>
+        <cassandra.driver>2.0.3</cassandra.driver>
+        <deep.version>0.4.0</deep.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
     </properties>
 

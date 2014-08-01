@@ -16,6 +16,26 @@
 
 package com.stratio.meta.sh.utils;
 
+import com.stratio.meta.common.data.MetaResultSet;
+import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.ResultSet;
+import com.stratio.meta.common.data.Row;
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.ConnectResult;
+import com.stratio.meta.common.result.ErrorResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+
+import jline.console.ConsoleReader;
+import jline.console.history.History;
+import jline.console.history.MemoryHistory;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -30,26 +50,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Map;
-
-import jline.console.ConsoleReader;
-import jline.console.history.History;
-import jline.console.history.MemoryHistory;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.Days;
-
-import com.stratio.meta.common.data.CassandraResultSet;
-import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.data.ResultSet;
-import com.stratio.meta.common.data.Row;
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.ConnectResult;
-import com.stratio.meta.common.result.ErrorResult;
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
 
 public class ConsoleUtils {
 
@@ -106,7 +106,7 @@ public class ConsoleUtils {
       return System.lineSeparator() + "OK";
     }
 
-    CassandraResultSet resultSet = (CassandraResultSet) queryResult.getResultSet();
+    MetaResultSet resultSet = (MetaResultSet) queryResult.getResultSet();
 
     Map<String, Integer> colWidths = calculateColWidths(resultSet);
 
@@ -153,8 +153,8 @@ public class ConsoleUtils {
     Map<String, Integer> colWidths = new HashMap<>();
 
     // Get column names or aliases width
-    CassandraResultSet cassandraResultSet = (CassandraResultSet) resultSet;
-    for (ColumnMetadata columnMetadata : cassandraResultSet.getColumnMetadata()) {
+    MetaResultSet metaResultSet = (MetaResultSet) resultSet;
+    for (ColumnMetadata columnMetadata: metaResultSet.getColumnMetadata()) {
       colWidths.put(columnMetadata.getColumnName(), columnMetadata.getColumnNameToShow().length());
     }
 
@@ -163,7 +163,7 @@ public class ConsoleUtils {
       for (String key : row.getCells().keySet()) {
         String cellContent = String.valueOf(row.getCell(key).getValue());
         int currentWidth = colWidths.get(key);
-        if (cellContent.length() > currentWidth) {
+        if ((cellContent != null) && (cellContent.length() > currentWidth)) {
           colWidths.put(key, cellContent.length());
         }
       }

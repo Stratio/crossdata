@@ -31,7 +31,7 @@ object ParserActor{
 
 class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTracker {
   val log =Logger.getLogger(classOf[ParserActor])
-  override val timerName= this.getClass.getName
+  override lazy val timerName= this.getClass.getName
 
   def receive = {
     case Query(queryId, keyspace, statement, user) => {

@@ -71,7 +71,7 @@ public class StreamingExecutionThread implements Runnable {
     LOG.debug("Running streaming Thread for " + statement.toString());
     MetaStream.startQuery(queryId, stratioStreamingAPI, statement, config, callbackActor, deepSparkContext, isRoot);
     /*
-    QueryResult r = QueryResult.createQueryResult(new CassandraResultSet());
+    QueryResult r = QueryResult.createQueryResult(new MetaResultSet());
     r.setLastResultSet();
     r.setQueryId(queryId);
     callbackActor.processResults(r);

@@ -16,14 +16,6 @@
 
 package com.stratio.meta.core.metadata;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
@@ -38,6 +30,14 @@ import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
+
+import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Metadata Manager of the META server that maintains and up-to-date version of the metadata
@@ -68,7 +68,7 @@ public class MetadataManager {
   /**
    * Class logger.
    */
-  private static final Logger LOG = Logger.getLogger(MetadataManager.class.getName());
+  private static final Logger logger = Logger.getLogger(MetadataManager.class.getName());
 
   /**
    * Class constructor.
@@ -100,10 +100,10 @@ public class MetadataManager {
    */
   public KeyspaceMetadata getKeyspaceMetadata(String keyspace) {
     KeyspaceMetadata result = null;
-    if (clusterMetadata != null) {
+    if (clusterMetadata != null && keyspace != null) {
       result = clusterMetadata.getKeyspace(keyspace);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Cluster metadata: " + result);
+      if (logger.isDebugEnabled()) {
+        logger.debug("Cluster metadata: " + result);
       }
     }
     return result;
@@ -152,10 +152,11 @@ public class MetadataManager {
 
     com.stratio.meta.common.metadata.structures.TableMetadata result = null;
 
+    boolean found = false;
+
+    // Looking up the table in the DB
     if (clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null
         && tablename != null) {
-      boolean found = false;
-
       // TODO Make it generic
       AbstractMetadataHelper helper = new CassandraMetadataHelper();
       KeyspaceMetadata keyspaceMetadata = getKeyspaceMetadata(keyspace);
@@ -175,6 +176,11 @@ public class MetadataManager {
           found = true;
         }
       }
+    }
+
+    // Looking up the table among the Streams
+    if(!found){
+      result = getStreamingMetadata(keyspace, tablename);
     }
 
     return result;
@@ -239,10 +245,10 @@ public class MetadataManager {
   public List<com.stratio.meta.common.metadata.structures.TableMetadata> getEphemeralTables(
       String catalog) {
     List<com.stratio.meta.common.metadata.structures.TableMetadata> result = new ArrayList<>();
-    // Retreive ephemeral tables.
+    // Retrieve ephemeral tables.
     if (stratioStreamingAPI != null) {
       List<StratioStream> ephemeralTables = getEphemeralTables();
-      for (StratioStream stream : ephemeralTables) {
+      for (StratioStream stream: ephemeralTables) {
         if (stream.getStreamName().startsWith(catalog + "_")) {
           result.add(toTableMetadata(stream));
         }
@@ -267,18 +273,18 @@ public class MetadataManager {
     String[] streamName = stream.getStreamName().split("_");
     String tableName = streamName[1];
     String parentCatalog = streamName[0];
-    Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new HashSet<>();
+    Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new LinkedHashSet<>();
 
     try {
-      for (ColumnNameTypeValue col : stratioStreamingAPI.columnsFromStream(stream.getStreamName())) {
+      for (ColumnNameTypeValue col: stream.getColumns()) {
         ColumnType metaType = convertStreamingToMeta(col.getType());
         com.stratio.meta.common.metadata.structures.ColumnMetadata metaCol =
             new com.stratio.meta.common.metadata.structures.ColumnMetadata(tableName,
                 col.getColumn(), metaType);
         columns.add(metaCol);
       }
-    } catch (StratioEngineOperationException e) {
-      LOG.error("Cannot retrieve streaming columns for " + stream.getStreamName(), e);
+    } catch (Exception e) {
+      logger.error("Cannot retrieve streaming columns for " + stream.getStreamName(), e);
       error = true;
     }
 
@@ -320,8 +326,8 @@ public class MetadataManager {
     // Iterate through the table columns.
     for (ColumnMetadata column : tableMetadata.getColumns()) {
       if (column.getIndex() != null) {
-        if (LOG.isTraceEnabled()) {
-          LOG.trace("Index found in column " + column.getName());
+        if (logger.isTraceEnabled()) {
+          logger.trace("Index found in column " + column.getName());
         }
         CustomIndexMetadata toAdd = null;
         if (!column.getIndex().isCustomIndex()) {
@@ -334,28 +340,29 @@ public class MetadataManager {
           // A Lucene custom index is found that may index several columns.
           toAdd = luceneHelper.getLuceneIndex(column, column.getIndex().getName());
         } else {
-          LOG.error("Index " + column.getIndex().getName() + " on " + column.getName()
+          logger.error("Index " + column.getIndex().getName() + " on " + column.getName()
               + " with class " + column.getIndex().getIndexClassName() + " not supported.");
         }
         result.add(toAdd);
       }
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Table " + tableMetadata.getName() + " has " + result.size() + " indexed columns.");
+    if (logger.isDebugEnabled()) {
+      logger.debug("Table " + tableMetadata.getName() + " has " + result.size()
+          + " indexed columns.");
     }
     return result;
   }
 
   public boolean checkStream(String ephemeralTableName) {
-    if(stratioStreamingAPI != null) {
+    if (stratioStreamingAPI != null) {
       List<StratioStream> streams = getEphemeralTables();
       if (streams != null && streams.size() > 0) {
-        for (StratioStream stream : streams) {
-      if (stream.getStreamName().equalsIgnoreCase(ephemeralTableName)) {
-        return true;
-      }
-    }
+        for (StratioStream stream: streams) {
+          if (stream.getStreamName().equalsIgnoreCase(ephemeralTableName)) {
+            return true;
+          }
+        }
       }
     }
     return false;
@@ -367,36 +374,43 @@ public class MetadataManager {
    * @return The list of tables or null in case of error.
    */
   public List<StratioStream> getEphemeralTables() {
+
     List<StratioStream> streamsList = null;
     try {
       streamsList = stratioStreamingAPI.listStreams();
     } catch (Exception e) {
-      LOG.error("Cannot retrieve stream list", e);
+      logger.error("Cannot retrieve stream list", e);
     }
+
     return streamsList;
   }
 
   public List<String> getStreamingColumnNames(String ephemeralTableName) {
-    LOG.debug("Looking up columns from ephemeral table " + ephemeralTableName);
+
+    logger.debug("Looking up columns from ephemeral table " + ephemeralTableName);
     List<String> colNames = new ArrayList<>();
+
+    List<ColumnNameTypeValue> cols;
     try {
-      List<ColumnNameTypeValue> cols = stratioStreamingAPI.columnsFromStream(ephemeralTableName);
-      for (ColumnNameTypeValue ctp : cols) {
+      cols = stratioStreamingAPI.columnsFromStream(ephemeralTableName);
+      for (ColumnNameTypeValue ctp: cols) {
         colNames.add(ctp.getColumn().toLowerCase());
       }
-    } catch (Exception e) {
-      LOG.error(e);
+    } catch (StratioEngineOperationException e) {
+      logger.error("Error retrieving data from stream", e);
     }
+
     return colNames;
   }
 
   public StratioStream checkQuery(String s) {
 
     StratioStream result = null;
-    try {
 
-      List<StratioStream> streamsList = stratioStreamingAPI.listStreams();
-      for (StratioStream stream : streamsList) {
+    List<StratioStream> streamsList;
+    try {
+      streamsList = stratioStreamingAPI.listStreams();
+      for (StratioStream stream: streamsList) {
         if (stream.getQueries().size() > 0) {
           for (StreamQuery query : stream.getQueries()) {
             if (s.contentEquals(query.getQueryId())) {
@@ -406,8 +420,9 @@ public class MetadataManager {
         }
       }
     } catch (Exception e) {
-      LOG.error(e);
+      logger.error("Error retrieving data from stream", e);
     }
+
     return result;
   }
 
@@ -420,34 +435,30 @@ public class MetadataManager {
         }
       }
     } catch (StratioEngineOperationException e) {
-      LOG.error(e);
+      logger.error("Error retrieving data from stream", e);
     }
     return null;
   }
 
-  public List<ColumnNameTypeValue> getStreamingColumns(String ephemeralTable) {
-    try {
-      return stratioStreamingAPI.columnsFromStream(ephemeralTable);
-    } catch (StratioEngineOperationException e) {
-      LOG.error(e);
-    }
-    return null;
-  }
-
-  public com.stratio.meta.common.metadata.structures.TableMetadata convertStreamingToMeta(
+  public com.stratio.meta.common.metadata.structures.TableMetadata getStreamingMetadata(
       String catalog, String tablename) {
-    Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new HashSet<>();
+    Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new LinkedHashSet<>();
     try {
-      for (ColumnNameTypeValue col : stratioStreamingAPI.columnsFromStream(catalog + "_"
-          + tablename)) {
+      List<ColumnNameTypeValue>
+          colsFromStream =
+          stratioStreamingAPI.columnsFromStream(catalog + "_" + tablename);
+      if(colsFromStream == null){
+        return null;
+      }
+      for (ColumnNameTypeValue col: colsFromStream) {
         ColumnType metaType = convertStreamingToMeta(col.getType());
         com.stratio.meta.common.metadata.structures.ColumnMetadata metaCol =
             new com.stratio.meta.common.metadata.structures.ColumnMetadata(tablename,
                 col.getColumn(), metaType);
         columns.add(metaCol);
       }
-    } catch (StratioEngineOperationException e) {
-      LOG.error("Cannot convert Streaming metadata to meta", e);
+    } catch (Exception e) {
+      logger.error("Cannot convert Streaming metadata to meta", e);
       return null;
     }
     com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata =

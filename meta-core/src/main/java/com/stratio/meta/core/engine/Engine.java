@@ -22,28 +22,21 @@ package com.stratio.meta.core.engine;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.stratio.deep.context.CassandraDeepSparkContext;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.core.api.APIManager;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
 import com.stratio.meta.core.validator.Validator;
-import com.stratio.meta.streaming.StreamingUtils;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.SparkEnv;
-import org.apache.spark.storage.BlockManagerMasterActor;
-import org.apache.spark.storage.StorageStatus;
 
 import java.util.Arrays;
-import java.util.Map;
-
-import scala.Tuple2;
-import scala.collection.Iterator;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
@@ -110,7 +103,7 @@ public class Engine {
     validator = new Validator(session, stratioStreamingAPI, config);
     manager = new APIManager(session, stratioStreamingAPI);
     planner = new Planner(session, stratioStreamingAPI);
-    executor = new Executor(session, stratioStreamingAPI, deepContext, config);
+    executor = new Executor(session, stratioStreamingAPI, deepContext, validator.getMetadata(), config);
   }
 
   /**
@@ -121,7 +114,8 @@ public class Engine {
   private IStratioStreamingAPI initializeStreaming(EngineConfig config){
     IStratioStreamingAPI stratioStreamingAPI = null;
     if(config.getKafkaServer() != null && config.getZookeeperServer() != null
-       && !"null".equals(config.getKafkaServer()) && !"null".equals(config.getZookeeperServer())) {
+       && !"null".equals(config.getKafkaServer()) && !"null".equals(config.getZookeeperServer())
+       && config.getKafkaServer().length()>0  && config.getZookeeperServer().length()>0) {
       try {
         stratioStreamingAPI = StratioStreamingAPIFactory.create().initializeWithServerConfig(
             config.getKafkaServer(),
@@ -182,7 +176,7 @@ public class Engine {
                                               "0")//String.valueOf(StreamingUtils.findFreePort()))
                                          .set("spark.ui.port",
                                               "0");//String.valueOf(StreamingUtils.findFreePort()));
-    DeepSparkContext result = new DeepSparkContext(new SparkContext(config.getSparkMaster(), config.getJobName(), sparkConf));
+    DeepSparkContext result = new CassandraDeepSparkContext(new SparkContext(config.getSparkMaster(), config.getJobName(), sparkConf));
 
     if(!config.getSparkMaster().toLowerCase().startsWith("local")){
       for(String jar : config.getJars()){

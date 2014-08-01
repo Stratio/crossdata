@@ -24,6 +24,7 @@ import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
@@ -40,10 +41,11 @@ public class StreamingPlanTrigger implements Runnable, ActorResultListener{
   private final DeepSparkContext deepSparkContext;
   private final EngineConfig engineConfig;
   private final ActorResultListener callback;
+  private final MetadataManager metadataManager;
 
   public StreamingPlanTrigger(MetaQuery metaQuery, Session session,
                               IStratioStreamingAPI stratioStreamingAPI,
-                              DeepSparkContext deepSparkContext, EngineConfig engineConfig,
+                              DeepSparkContext deepSparkContext, MetadataManager metadataManager, EngineConfig engineConfig,
                               ActorResultListener callbackActor) {
 
     this.metaQuery = metaQuery;
@@ -52,6 +54,7 @@ public class StreamingPlanTrigger implements Runnable, ActorResultListener{
     this.deepSparkContext = deepSparkContext;
     this.engineConfig = engineConfig;
     this.callback = callbackActor;
+    this.metadataManager = metadataManager;
   }
 
   @Override
@@ -60,7 +63,7 @@ public class StreamingPlanTrigger implements Runnable, ActorResultListener{
     Tree t = new Tree(metaQuery.getPlan().getNode());
     t.setParent(new Tree());
     t.executeTreeDownTop(metaQuery.getQueryId(), session, stratioStreamingAPI,
-                                                      deepSparkContext, engineConfig, this);
+                                                      deepSparkContext, metadataManager, engineConfig, this);
   }
 
   @Override
@@ -69,7 +72,7 @@ public class StreamingPlanTrigger implements Runnable, ActorResultListener{
     //Get the children -> Select from deep -> Join on Deep.
     Tree t = metaQuery.getPlan().getChildren().get(0);
     Result r = t.executeTreeDownTop(metaQuery.getQueryId(), session, stratioStreamingAPI,
-                                    deepSparkContext, engineConfig, null, result);
+                                    deepSparkContext, metadataManager, engineConfig, null, result);
     r.setQueryId(metaQuery.getQueryId());
     callback.processResults(r);
   }

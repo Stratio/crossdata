@@ -102,9 +102,8 @@ public class UpdateTableStatement extends MetaStatement {
     this.command = false;
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      this.setKeyspace(ksAndTableName[0]);
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
     } else {
       this.tableName = tableName;
     }
@@ -181,8 +180,8 @@ public class UpdateTableStatement extends MetaStatement {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("UPDATE ");
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (this.isKeyspaceIncluded()) {
+      sb.append(this.getEffectiveKeyspace()).append(".");
     }
     sb.append(tableName);
     if (optsInc) {
@@ -201,7 +200,7 @@ public class UpdateTableStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
     return this.toString();
   }
 
@@ -216,8 +215,7 @@ public class UpdateTableStatement extends MetaStatement {
    */
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
-    Result result =
-        validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
+    Result result = validateKeyspaceAndTable(metadata, this.getEffectiveKeyspace(), tableName);
     if (!result.hasError()) {
       TableMetadata tableMetadata = metadata.getTableMetadata(getEffectiveKeyspace(), tableName);
 
@@ -287,7 +285,8 @@ public class UpdateTableStatement extends MetaStatement {
     }
     for (Option opt : options) {
       if (opt.getProperties().getType() != ValueProperty.TYPE_CONST) {
-        result = Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
+        result =
+            Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
       }
     }
     return result;
@@ -344,8 +343,8 @@ public class UpdateTableStatement extends MetaStatement {
           String valueClass = valueClazz.getSimpleName();
           if (!idClazz.getSimpleName().equalsIgnoreCase(valueClass)) {
             result =
-                Result.createValidationErrorResult(cm.getName() + " and " + valueTerm.getTermValue()
-                    + " are not compatible type.");
+                Result.createValidationErrorResult(cm.getName() + " and "
+                    + valueTerm.getTermValue() + " are not compatible type.");
           }
         } else if (valueAssignment.getType() == ValueAssignment.TYPE_IDENT_MAP) {
           result = Result.createValidationErrorResult("Collections are not supported yet.");

@@ -19,23 +19,37 @@
 
 package com.stratio.meta.server.actors
 
-import akka.actor.{Props, ActorRef, ActorLogging, Actor}
+import akka.actor.{Props, ActorRef, Actor}
 import com.stratio.meta.core.utils.MetaQuery
 import com.stratio.meta.core.validator.Validator
 import org.apache.log4j.Logger
-import com.stratio.meta.common.result.{Result, CommandResult}
+import com.stratio.meta.common.result.Result
 
 object ValidatorActor{
   def props(planner:ActorRef, validator:Validator): Props= Props(new ValidatorActor(planner,validator))
 }
 
+/**
+ * Actor in charge of the validation of sentences.
+ * @param planner The associated planner actor.
+ * @param validator The associated {@link com.stratio.meta.core.validator.Validator}.
+ */
 class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with TimeTracker{
+
+  /**
+   * Class logger.
+   */
   val log= Logger.getLogger(classOf[ValidatorActor])
-  override val timerName= this.getClass.getName
+
+  /**
+   * Name of the timer published through JMX.
+   */
+  override lazy val timerName= this.getClass.getName
 
   override def receive: Receive = {
     case query:MetaQuery if !query.hasError=> {
       log.debug("Init Validator Task")
+
       val timer=initTimer()
 
       planner forward validator.validateQuery(query)

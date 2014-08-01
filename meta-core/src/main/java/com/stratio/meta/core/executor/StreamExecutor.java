@@ -26,6 +26,7 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.CreateTableStatement;
+import com.stratio.meta.core.statements.InsertIntoStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.streaming.MetaStream;
@@ -76,8 +77,7 @@ public class StreamExecutor {
         ColumnNameType streamColumn = new ColumnNameType(column.getKey(), type);
         columnList.add(streamColumn);
       }
-      return MetaStream.createEphemeralTable(queryId, stratioStreamingAPI, tableEphemeralName,
-                                             columnList, config);
+      return MetaStream.createEphemeralTable(queryId, stratioStreamingAPI, tableEphemeralName, columnList, config);
     } else if (stmt instanceof SelectStatement){
       StreamingExecutionThread set = new StreamingExecutionThread(queryId,
                                                                   SelectStatement.class.cast(stmt),
@@ -92,6 +92,8 @@ public class StreamExecutor {
       r.setQueryId(queryId);
       return r;
 
+    } else if (stmt instanceof InsertIntoStatement){
+      return MetaStream.insertData(InsertIntoStatement.class.cast(stmt), stratioStreamingAPI);
     } else {
       return Result.createExecutionErrorResult("Not supported yet.");
     }

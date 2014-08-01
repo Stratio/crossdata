@@ -26,6 +26,12 @@ public class Ordering implements Serializable {
   private boolean dirInc;
   private OrderDirection orderDir;
 
+  public Ordering(String table, String field, boolean dirInc, OrderDirection orderDir) {
+    this.selectorIdentifier = new SelectorIdentifier(table, field);
+    this.dirInc = dirInc;
+    this.orderDir = orderDir;
+  }
+
   public Ordering(String identifier, boolean dirInc, OrderDirection orderDir) {
     this.selectorIdentifier = new SelectorIdentifier(identifier);
     this.dirInc = dirInc;

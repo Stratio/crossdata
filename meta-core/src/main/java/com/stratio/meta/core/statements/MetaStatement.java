@@ -18,6 +18,7 @@ package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
+import com.stratio.meta.common.metadata.structures.TableType;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -41,17 +42,17 @@ public abstract class MetaStatement {
    * Whether the keyspace has been specified in the statement or it should be taken from the
    * environment.
    */
-  protected boolean keyspaceInc = false;
+  private boolean keyspaceInc = false;
 
   /**
    * Keyspace specified from the statement.
    */
-  protected String keyspace = null;
+  private String keyspace = null;
 
   /**
    * The current keyspace in the user session.
    */
-  protected String sessionKeyspace = null;
+  private String sessionKeyspace = null;
 
   /**
    * Default class constructor.
@@ -108,18 +109,15 @@ public abstract class MetaStatement {
    * 
    * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
    *        required information.
-   * @param targetKeyspace The target keyspace where the query will be executed.
+   * @param effectiveKeyspace The target keyspace where the query will be executed.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  protected Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace,
-      boolean keyspaceInc, String stmtKeyspace, String tableName) {
+  protected Result validateKeyspaceAndTable(MetadataManager metadata, String effectiveKeyspace,
+      String tableName) {
+
     Result result = QueryResult.createSuccessQueryResult();
     // Get the effective keyspace based on the user specification during the create
     // sentence, or taking the keyspace in use in the user session.
-    String effectiveKeyspace = targetKeyspace;
-    if (keyspaceInc) {
-      effectiveKeyspace = stmtKeyspace;
-    }
 
     // Check that the keyspace and table exists.
     if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
@@ -127,7 +125,9 @@ public abstract class MetaStatement {
           Result
               .createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
     } else {
+
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+
       if (ksMetadata == null) {
         result =
             Result
@@ -135,17 +135,19 @@ public abstract class MetaStatement {
       } else {
         com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata =
             metadata.getTableGenericMetadata(effectiveKeyspace, tableName);
+
         if (tableMetadata == null) {
-          if (!metadata.checkStream(effectiveKeyspace + "_" + tableName)) {
-            result =
-                Result.createValidationErrorResult("Table " + tableName + " does not exist in "
-                    + effectiveKeyspace + ".");
-          } else {
+          result =
+              Result.createValidationErrorResult("Table '" + tableName + "' does not exist in "
+                  + effectiveKeyspace + ".");
+        } else {
+          if (tableMetadata.getType() == TableType.EPHEMERAL) {
             result = CommandResult.createCommandResult("streaming");
           }
         }
       }
     }
+
     return result;
   }
 
@@ -153,12 +155,25 @@ public abstract class MetaStatement {
     return keyspaceInc ? keyspace : sessionKeyspace;
   }
 
+  public void setKeyspace(String keyspace) {
+    this.keyspace = keyspace;
+    this.keyspaceInc = true;
+  }
+
+  public String getKeyspace() {
+    return keyspace;
+  }
+
+  public boolean isKeyspaceIncluded() {
+    return this.keyspaceInc;
+  }
+
   /**
    * Translate the statement into the CQL equivalent when possible.
    * 
    * @return The CQL equivalent.
    */
-  public abstract String translateToCQL();
+  public abstract String translateToCQL(MetadataManager metadataManager);
 
   public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName,
       String outgoing) {

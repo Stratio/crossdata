@@ -16,16 +16,20 @@
 
 package com.stratio.meta.core.executor;
 
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.Session;
+import com.stratio.meta.common.data.MetaResultSet;
+import com.stratio.meta.common.data.ResultSet;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.DescribeStatement;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
 import com.stratio.meta.core.statements.ListStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.StopProcessStatement;
+import com.stratio.meta.core.statements.UseStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+
+import org.apache.log4j.Logger;
 
 public class CommandExecutor {
 
@@ -60,6 +64,12 @@ public class CommandExecutor {
       } else if (stmt instanceof StopProcessStatement) {
         StopProcessStatement stopStmt = (StopProcessStatement) stmt;
         return stopStmt.execute(stratioStreamingAPI);
+      } else if (stmt instanceof UseStatement){
+        ResultSet resultSet = new MetaResultSet();
+        QueryResult qr = QueryResult.createQueryResult(resultSet);
+        qr.setQueryId(queryId);
+        qr.setCurrentCatalog("");
+        return qr;
       } else {
         return Result.createExecutionErrorResult("Command not supported yet.");
       }

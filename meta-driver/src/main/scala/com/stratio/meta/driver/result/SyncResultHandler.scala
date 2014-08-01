@@ -21,7 +21,7 @@ package com.stratio.meta.driver.result
 
 import com.stratio.meta.common.result._
 import com.stratio.meta.common.exceptions.{ExecutionException, ValidationException, UnsupportedException, ParsingException}
-import com.stratio.meta.common.data.{ResultSet, CassandraResultSet}
+import com.stratio.meta.common.data.{ResultSet, MetaResultSet}
 
 /**
  * Synchronous result handler.
@@ -52,8 +52,8 @@ class SyncResultHandler extends IResultHandler{
         if (queryResult == null) {
           queryResult = r
         } else {
-          queryResult.getResultSet.asInstanceOf[CassandraResultSet].getRows.addAll(
-            r.getResultSet.asInstanceOf[CassandraResultSet].getRows)
+          queryResult.getResultSet.asInstanceOf[MetaResultSet].getRows.addAll(
+            r.getResultSet.asInstanceOf[MetaResultSet].getRows)
         }
       case _ =>
         nonQueryResult = result
