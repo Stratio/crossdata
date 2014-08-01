@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.stratio.meta</groupId>
 		<artifactId>meta-parent</artifactId>
-		<version>0.0.6</version>
+		<version>0.0.7-SNAPSHOT</version>
 	</parent>
 	<artifactId>meta-rest</artifactId>
 	<name>Stratio META rest server</name>
