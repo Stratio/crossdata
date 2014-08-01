@@ -5,27 +5,27 @@ title: Meta Reference
 Table of Contents
 =================
 
--   [The META Console](#console)
+-   [The META Console](#the-meta-console)
 -   [Statements](#statements):
     -   [CREATE](#CREATE):
-        -   [CREATE KEYSPACE](#CREATE_KEYSPACE)
-        -   [CREATE TABLE](#CREATE_TABLE)
-        -   [CREATE DEFAULT INDEX](#CREATE_DEFAULT_INDEX)
-        -   [CREATE LUCENE INDEX](#CREATE_LUCENE_INDEX)
+        -   [CREATE KEYSPACE](#CREATE-KEYSPACE)
+        -   [CREATE TABLE](#CREATE-TABLE)
+        -   [CREATE DEFAULT INDEX](#CREATE-DEFAULT-INDEX)
+        -   [CREATE LUCENE INDEX](#CREATE-LUCENE-INDEX)
     -   [DELETE](#DELETE)
     -   [DESCRIBE](#DESCRIBE)
     -   [DROP](#DROP):
-        -   [DROP KEYSPACE](#DROP_KEYSPACE)
-        -   [DROP TABLE](#DROP_TABLE)
-        -   [DROP INDEX](#DROP_INDEX)
-    -   [INSERT INTO](#INSERT_INTO)
-    -   [LIST PROCESS](#LIST_PROCESS)
+        -   [DROP KEYSPACE](#DROP-KEYSPACE)
+        -   [DROP TABLE](#DROP-TABLE)
+        -   [DROP INDEX](#DROP-INDEX)
+    -   [INSERT INTO](#INSERT-INTO)
+    -   [LIST PROCESS](#LIST-PROCESS)
     -   [SELECT](#SELECT)
-        -   [Persistent tables](#SELECT_PERSISTENT):
-            -   [INNER JOIN](#INNER_JOIN)
-            -   [WHERE CLAUSE](#WITHOUT_INDEX)
-        -   [Ephemeral tables](#SELECT_EPHEMERAL)
-    -   [STOP PROCESS](#STOP_PROCESS)
+        -   [Persistent tables](#persistent-tables):
+            -   [INNER JOIN](#INNER-JOIN)
+            -   [WHERE CLAUSE](#where-clause)
+        -   [Ephemeral tables](#ephemeral-tables)
+    -   [STOP PROCESS](#STOP-PROCESS)
     -   [TRUNCATE](#TRUNCATE)
     -   [USE](#USE)
 -   [Datatypes](#datatypes)
@@ -52,10 +52,10 @@ CREATE
 
 The CREATE command can be used with different targets. For more information check one of the following:
 
--   [CREATE KEYSPACE](#CREATE_KEYSPACE)
--   [CREATE TABLE](#CREATE_TABLE)
--   [CREATE DEFAULT INDEX](#CREATE_DEFAULT_INDEX)
--   [CREATE LUCENE INDEX](#CREATE_LUCENE_INDEX)
+-   [CREATE KEYSPACE](#CREATE-KEYSPACE)
+-   [CREATE TABLE](#CREATE-TABLE)
+-   [CREATE DEFAULT INDEX](#CREATE-DEFAULT-INDEX)
+-   [CREATE LUCENE INDEX](#CREATE-LUCENE-INDEX)
 
 ### CREATE KEYSPACE
 
@@ -69,7 +69,7 @@ WITH replication = <options_map>
 (AND durable_writes = <boolean>)?;
 ~~~~
 
-where durable\_writes defaults to true.
+where durable_writes defaults to true.
 
 As of Cassandra 2.0.x, the replication class can be SimpleStrategy for single datacenter deployments, or NetworkTopologyStrategy for a multi-datacenter setup.
 
@@ -114,10 +114,10 @@ where:
 
 See [Apache Cassandra CQL3 documentation](http://cassandra.apache.org/doc/cql3/CQL.html#createTableStmt "Apache Cassandra CQL3 documentation") for a full list of available table properties.
 
-The \<primary\_key\> can take two forms:
+The \<primary_key\> can take two forms:
 
-1.  A list of columns in the form of (column\_name\_0, …, column\_name\_m), where column\_name\_0 is the partition key, and columns 1 to n are part of the clustering key.
-2.  A separated list of columns for the partition and clustering keys in the form of ((column\_name\_0, column\_name\_1), column\_name\_2, …, column\_name\_n), where columns 0 and 1 are part of the partition key, and columns 2 to n are part of the clustering key.
+1.  A list of columns in the form of (column_name_0, …, column_name_m), where column_name_0 is the partition key, and columns 1 to n are part of the clustering key.
+2.  A separated list of columns for the partition and clustering keys in the form of ((column_name_0, column_name_1), column_name_2, …, column_name_n), where columns 0 and 1 are part of the partition key, and columns 2 to n are part of the clustering key.
 
 Example:
 
@@ -172,7 +172,9 @@ CREATE DEFAULT INDEX users_index ON users (email);
 
 ### CREATE LUCENE INDEX
 
-Creates Lucene-based index on a set of columns. For each column, the Lucene index is created using the data type specified in the table schema. Additionally, the user can modify the mapping with the use of the WITH OPTIONS statement.
+Creates Lucene-based index on a set of columns. For each column, the Lucene index is created using 
+the data type specified in the table schema. Additionally, the user can modify the mapping with the 
+use of the WITH OPTIONS statement.
 
 Syntax:
 
@@ -242,9 +244,9 @@ DROP
 
 The DROP command can be used with different targets. For more information check one of the following:
 
--   [DROP KEYSPACE](#DROP_KEYSPACE)
--   [DROP TABLE](#DROP_TABLE)
--   [DROP INDEX](#DROP_INDEX)
+-   [DROP KEYSPACE](#DROP-KEYSPACE)
+-   [DROP TABLE](#DROP-TABLE)
+-   [DROP INDEX](#DROP-INDEX)
 
 ### DROP KEYSPACE
 
@@ -385,9 +387,11 @@ where
 <operator>       ::= '=' | '>' | '>=' | '<' | '<=' | '<>' | 'MATCH'
 ~~~~
 
-INNER JOIN permits to combine two tables A and B by comparing each row in A with each one in B selecting all rows that match the join-predicate.
+INNER JOIN permits to combine two tables A and B by comparing each row in A with each one in B selecting
+ all rows that match the join-predicate.
 
-WHERE \<where-clause\> specifies the conditions that a row in \<tablename\> needs to fulfil in order to be selected. It can contain a condition on a non-indexed column.
+WHERE \<where-clause\> specifies the conditions that a row in \<tablename\> needs to fulfil in order to
+ be selected. It can contain a condition on a non-indexed column.
 
 ORDER BY will sort the results in ascending order by default.
 

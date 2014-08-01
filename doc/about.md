@@ -50,16 +50,16 @@ SELECT name, id FROM users WHERE city = "Madrid";
 Step 1: Parsing
 ---------------
 
-![Captura de pantalla 2014-04-10 a la(s) 12.55.11](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.11.png)
+![Parsing](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.11.png)
 
 The parser will validate the syntax and build the following tree:
 
-![Captura de pantalla 2014-04-10 a la(s) 11.15.10](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-11.15.10.png)
+![Tree](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-11.15.10.png)
 
 Step 2: Validation
 ------------------
 
-![Captura de pantalla 2014-04-10 a la(s) 12.55.19](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.19.png)
+![Validation](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.19.png)
 
 During this step, the server checks that the query is semantically valid. For example:
 
@@ -72,16 +72,16 @@ Step 3: Planning
 
 The server builds the execution plan.
 
-![Captura de pantalla 2014-04-10 a la(s) 12.55.29](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.29.png)
+![Planning](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.29.png)
 
 Step 4: Execution
 -----------------
 
 The server executes the query by launching the required Cassandra and Spark operations. The results of the execution are then forwarded back to the client.
 
-![Captura de pantalla 2014-04-10 a la(s) 12.55.46](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.46.png)
+![Execution](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.46.png)
 
 Where to go from here
 =====================
 
-To explore and play with Stratio Meta, we recommend taking the [First steps with Stratio Meta](http://www.openstratio.org/tutorials/first-steps-with-stratio-meta/ "First steps with Stratio Meta") tutorial, and visiting the [Meta Reference](http://www.openstratio.org/manuals/meta-reference/ "Meta Reference") manual.
+To explore and play with Stratio Meta, we recommend taking the [First steps with Stratio Meta](first-steps-with-stratio-meta.html "First steps with Stratio Meta") tutorial, and visiting the [Meta Reference](meta-reference.html "Meta Reference") manual.
