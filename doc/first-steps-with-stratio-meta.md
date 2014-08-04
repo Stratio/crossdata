@@ -26,7 +26,7 @@ Table of Contents
     -   [Step 7: Inner Join between tables](#step-7-inner-join-between-tables)
     -   [Step 8: Where clause on a non indexed column](#step-8-where-clause-on-a-non-indexed-column)
 -   [Delete Data and Remove Schemas](#delete-data-and-remove-schemas)
-    -   [Step 9: Delete](#step-9-delete)
+    -   [Step 9: Delete](#step-9-delete-data)
     -   [Step 10: Drop Index](#step-10-drop-index)
     -   [Step 11: Drop Table](#step-11-drop-table)
     -   [Step 12: Drop Keyspace](#step-12-drop-keyspace)
