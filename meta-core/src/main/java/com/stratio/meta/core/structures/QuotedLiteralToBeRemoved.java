@@ -19,26 +19,31 @@
 
 package com.stratio.meta.core.structures;
 
-public abstract class Property {
+public class QuotedLiteralToBeRemoved extends ValuePropertyToBeRemoved {
     
-    public static final int TYPE_NAME_VALUE = 1;
-    public static final int TYPE_COMPACT_STORAGE = 2;
-    public static final int TYPE_CLUSTERING_ORDER = 3;
-    
-    protected int type;
+    private String literal;
 
-    public Property(int type) {
-        this.type = type;
-    }       
-
-    public int getType() {
-        return type;
+    public QuotedLiteralToBeRemoved(String literal) {
+        this.literal = literal;
+        this.type = TYPE_LITERAL;
+    }
+        
+    public String getLiteral() {
+        return literal;
     }
 
-    public void setType(int type) {
-        this.type = type;
-    }
-    
+    public void setLiteral(String literal) {
+        this.literal = literal;
+    }        
+
     @Override
-    public abstract String toString();
+    public String toString() {
+        return "'"+literal+"'";
+    }
+
+    @Override
+    public String getStringValue() {
+        return literal;
+    }
+
 }

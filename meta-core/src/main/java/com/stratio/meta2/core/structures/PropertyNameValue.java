@@ -17,33 +17,44 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta2.core.structures;
 
-public class FloatProperty extends ValueProperty {
+import com.stratio.meta.common.statements.structures.terms.Term;
 
-    private float number;
+public class PropertyNameValue extends Property {
 
-    public FloatProperty(float number) {
-        this.number = number;
-        this.type = TYPE_FLOAT;
-    }
+  private String name;
+  private Term vp;
 
-    public float getNumber() {
-        return number;
-    }
+  public PropertyNameValue() {
+    super(TYPE_NAME_VALUE);
+  }
 
-    public void setNumber(float number) {
-        this.number = number;
-    }
+  public PropertyNameValue(String name, Term vp) {
+    super(TYPE_NAME_VALUE);
+    this.name = name;
+    this.vp = vp;
+  }
 
-    @Override
-    public String toString() {
-            return Float.toString(number);
-    }
+  public String getName() {
+    return name;
+  }
 
-    @Override
-    public String getStringValue() {
-        return toString();
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public Term getVp() {
+    return vp;
+  }
+
+  public void setVp(Term vp) {
+    this.vp = vp;
+  }
+
+  @Override
+  public String toString() {
+    return name+"="+vp.toString();
+  }
 
 }

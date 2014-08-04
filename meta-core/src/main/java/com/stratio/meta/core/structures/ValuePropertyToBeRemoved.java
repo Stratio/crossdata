@@ -19,31 +19,28 @@
 
 package com.stratio.meta.core.structures;
 
-public class IdentifierProperty extends ValueProperty {
-    
-    private String identifier;
+public abstract class ValuePropertyToBeRemoved {
 
-    public IdentifierProperty(String identifier) {
-        this.identifier = identifier;
-        this.type = TYPE_IDENT;
-    }
-        
-    public String getIdentifier() {
-        return identifier;
-    }
+  public static final int TYPE_IDENT = 1;
+  public static final int TYPE_CONST = 2;
+  public static final int TYPE_MAPLT = 3;
+  public static final int TYPE_FLOAT = 4;
+  public static final int TYPE_BOOLEAN = 5;
+  public static final int TYPE_LITERAL = 6;
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
-    }        
+  protected int type;
 
-    @Override
-    public String toString() {
-        return identifier;
-    }
+  public int getType() {
+    return type;
+  }
 
-    @Override
-    public String getStringValue() {
-        return toString();
-    }
+  public void setType(int type) {
+    this.type = type;
+  }
+
+  @Override
+  public abstract String toString();
+
+  public abstract String getStringValue();
 
 }

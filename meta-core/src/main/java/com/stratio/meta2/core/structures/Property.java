@@ -17,33 +17,28 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta2.core.structures;
 
-public class ConstantProperty extends ValueProperty {
-    
-    private int constant;
+public abstract class Property {
 
-    public ConstantProperty(int constant) {
-        this.constant = constant;
-        this.type = TYPE_CONST;
-    }
-    
-    public int getConstant() {
-        return constant;
-    }
+  public static final int TYPE_NAME_VALUE = 1;
+  public static final int TYPE_COMPACT_STORAGE = 2;
+  public static final int TYPE_CLUSTERING_ORDER = 3;
 
-    public void setConstant(int constant) {
-        this.constant = constant;
-    }
+  protected int type;
 
-    @Override
-    public String toString() {
-        return Integer.toString(constant);
-    }
+  public Property(int type) {
+    this.type = type;
+  }
 
-    @Override
-    public String getStringValue() {
-        return toString();
-    }
+  public int getType() {
+    return type;
+  }
 
+  public void setType(int type) {
+    this.type = type;
+  }
+
+  @Override
+  public abstract String toString();
 }

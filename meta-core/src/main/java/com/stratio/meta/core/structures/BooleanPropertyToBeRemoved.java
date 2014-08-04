@@ -19,40 +19,31 @@
 
 package com.stratio.meta.core.structures;
 
-public class PropertyNameValue extends Property {
+public class BooleanPropertyToBeRemoved extends ValuePropertyToBeRemoved {
 
-    private String name;
-    private ValueProperty vp;
+    private boolean bool;
+
+    public BooleanPropertyToBeRemoved(boolean bool) {
+        this.type = TYPE_BOOLEAN;
+        this.bool = bool;
+    }   
     
-    public PropertyNameValue() {
-        super(TYPE_NAME_VALUE);
+    public boolean getBool() {
+        return bool;
     }
 
-    public PropertyNameValue(String name, ValueProperty vp) {
-        super(TYPE_NAME_VALUE);
-        this.name = name;
-        this.vp = vp;
+    public void setBool(boolean bool) {
+        this.bool = bool;
     }        
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public ValueProperty getVp() {
-        return vp;
-    }
-
-    public void setVp(ValueProperty vp) {
-        this.vp = vp;
-    }        
-
+    
     @Override
     public String toString() {
-        return name+"="+vp.toString();
+        return Boolean.toString(bool);
     }
-    
+
+    @Override
+    public String getStringValue() {
+        return toString();
+    }
+
 }

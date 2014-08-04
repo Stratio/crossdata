@@ -19,31 +19,31 @@
 
 package com.stratio.meta.core.structures;
 
-public class QuotedLiteral extends ValueProperty {
-    
-    private String literal;
+public class FloatPropertyToBeRemoved extends ValuePropertyToBeRemoved {
 
-    public QuotedLiteral(String literal) {
-        this.literal = literal;
-        this.type = TYPE_LITERAL;
-    }
-        
-    public String getLiteral() {
-        return literal;
+    private float number;
+
+    public FloatPropertyToBeRemoved(float number) {
+        this.number = number;
+        this.type = TYPE_FLOAT;
     }
 
-    public void setLiteral(String literal) {
-        this.literal = literal;
-    }        
+    public float getNumber() {
+        return number;
+    }
+
+    public void setNumber(float number) {
+        this.number = number;
+    }
 
     @Override
     public String toString() {
-        return "'"+literal+"'";
+            return Float.toString(number);
     }
 
     @Override
     public String getStringValue() {
-        return literal;
+        return toString();
     }
 
 }

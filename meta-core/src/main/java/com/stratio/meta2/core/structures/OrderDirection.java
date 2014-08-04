@@ -17,33 +17,15 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta2.core.structures;
 
-public class BooleanProperty extends ValueProperty {
-
-    private boolean bool;
-
-    public BooleanProperty(boolean bool) {
-        this.type = TYPE_BOOLEAN;
-        this.bool = bool;
-    }   
-    
-    public boolean getBool() {
-        return bool;
-    }
-
-    public void setBool(boolean bool) {
-        this.bool = bool;
-    }        
-    
-    @Override
-    public String toString() {
-        return Boolean.toString(bool);
-    }
-
-    @Override
-    public String getStringValue() {
-        return toString();
-    }
-
+public enum OrderDirection {
+  /**
+   * Ascending order.
+   */
+  ASC,
+  /**
+   * Descending order.
+   */
+  DESC
 }

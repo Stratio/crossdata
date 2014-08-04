@@ -17,30 +17,36 @@
  * License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta2.core.structures;
 
-public abstract class ValueProperty {
-    
-    public static final int TYPE_IDENT = 1;
-    public static final int TYPE_CONST = 2;
-    public static final int TYPE_MAPLT = 3;
-    public static final int TYPE_FLOAT = 4;
-    public static final int TYPE_BOOLEAN = 5;
-    public static final int TYPE_LITERAL = 6;
-    
-    protected int type;
+import com.stratio.meta.common.utils.StringUtils;
 
-    public int getType() {
-        return type;
-    }
+import java.util.List;
 
-    public void setType(int type) {
-        this.type = type;
-    }    
-        
-    @Override
-    public abstract String toString();
+public class PropertyClusteringOrder extends Property {
 
-    public abstract String getStringValue();
-    
+  private List<Ordering> order;
+
+  public PropertyClusteringOrder() {
+    super(TYPE_CLUSTERING_ORDER);
+  }
+
+  public PropertyClusteringOrder(List<Ordering> order) {
+    super(TYPE_CLUSTERING_ORDER);
+    this.order = order;
+  }
+
+  public List<Ordering> getOrder() {
+    return order;
+  }
+
+  public void setOrder(List<Ordering> order) {
+    this.order = order;
+  }
+
+  @Override
+  public String toString() {
+    return "CLUSTERING ORDER BY ("+ StringUtils.stringList(order, ", ")+")";
+  }
+
 }

@@ -24,21 +24,21 @@ import com.stratio.meta.core.utils.ParserUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapLiteralProperty extends ValueProperty {
+public class MapLiteralPropertyToBeRemoved extends ValuePropertyToBeRemoved {
     
     private Map<String, String> literals;
 
-    public MapLiteralProperty() {
+    public MapLiteralPropertyToBeRemoved() {
         literals = new HashMap<>();
         this.type = TYPE_MAPLT;
     }   
     
-    public MapLiteralProperty(String key, String value){
+    public MapLiteralPropertyToBeRemoved(String key, String value){
         this();
         addLiteral(key, value);
     }
     
-    public MapLiteralProperty(Map<String, String> literals){
+    public MapLiteralPropertyToBeRemoved(Map<String, String> literals){
         this();
         setLiterals(literals);
     }

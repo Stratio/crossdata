@@ -19,35 +19,31 @@
 
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta.core.utils.ParserUtils;
-
-import java.util.List;
-
-public class PropertyClusteringOrder extends Property {
-
-    private List<Ordering> order;
+public class ConstantPropertyToBeRemoved extends ValuePropertyToBeRemoved {
     
-    public PropertyClusteringOrder() {
-        super(TYPE_CLUSTERING_ORDER);
+    private int constant;
+
+    public ConstantPropertyToBeRemoved(int constant) {
+        this.constant = constant;
+        this.type = TYPE_CONST;
+    }
+    
+    public int getConstant() {
+        return constant;
     }
 
-    public PropertyClusteringOrder(List<Ordering> order) {
-        super(TYPE_CLUSTERING_ORDER);
-        this.order = order;
-    }   
-    
-    public List<Ordering> getOrder() {
-        return order;
+    public void setConstant(int constant) {
+        this.constant = constant;
     }
-
-    public void setOrder(List<Ordering> order) {
-        this.order = order;
-    }        
 
     @Override
     public String toString() {
-        return "CLUSTERING ORDER BY ("+ StringUtils.stringList(order, ", ")+")";
+        return Integer.toString(constant);
     }
-    
+
+    @Override
+    public String getStringValue() {
+        return toString();
+    }
+
 }

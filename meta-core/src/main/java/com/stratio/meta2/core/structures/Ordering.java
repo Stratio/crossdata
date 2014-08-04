@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta2.core.structures;
 
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 

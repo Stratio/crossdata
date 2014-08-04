@@ -31,8 +31,6 @@ public class CatalogMetadata {
   public CatalogMetadata() {
   }
 
-
-
   public String getName() {
     return name;
   }

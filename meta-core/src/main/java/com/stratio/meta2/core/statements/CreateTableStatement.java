@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License along with this library.
  */
 
-package com.stratio.meta.core.statements;
+package com.stratio.meta2.core.statements;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
@@ -23,14 +23,13 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.BooleanProperty;
-import com.stratio.meta.core.structures.Property;
-import com.stratio.meta.core.structures.PropertyNameValue;
+import com.stratio.meta.core.structures.BooleanTerm;
 import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.structures.Property;
+import com.stratio.meta2.core.structures.PropertyNameValue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +66,7 @@ public class CreateTableStatement extends MetaStatement {
   private List<String> clusterKey;
 
   /**
-   * The list of {@link com.stratio.meta.core.structures.Property} of the table.
+   * The list of {@link com.stratio.meta2.core.structures.Property} of the table.
    */
   private List<Property> properties = new ArrayList<>();
 
@@ -154,7 +153,7 @@ public class CreateTableStatement extends MetaStatement {
   }
 
   /**
-   * Set the list of {@link com.stratio.meta.core.structures.Property}.
+   * Set the list of {@link com.stratio.meta2.core.structures.Property}.
    *
    * @param properties The list.
    */
@@ -457,8 +456,8 @@ public class CreateTableStatement extends MetaStatement {
             PropertyNameValue pnv = (PropertyNameValue) property;
             String propName = pnv.getName();
             if ("ephemeral".equalsIgnoreCase(propName)
-                && (pnv.getVp().getType() == ValueProperty.TYPE_BOOLEAN)
-                && ((BooleanProperty) pnv.getVp()).getBool()) {
+                && (pnv.getVp().getTermClass() == Boolean.TYPE)
+                && ((BooleanTerm) pnv.getVp()).getTermValue()) {
               streamingMode = true;
               break;
             }
