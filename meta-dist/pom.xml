@@ -23,7 +23,7 @@
     <parent>
         <artifactId>meta-parent</artifactId>
         <groupId>com.stratio.meta</groupId>
-        <version>0.0.7-SNAPSHOT</version>
+        <version>0.0.7</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -34,8 +34,8 @@
 
     <licenses>
         <license>
-            <name>GNU General Lesser Public License (LGPL) version 3.0</name>
-            <url>http://www.gnu.org/licenses/lgpl-3.0.html</url>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0t</url>
         </license>
     </licenses>
 
