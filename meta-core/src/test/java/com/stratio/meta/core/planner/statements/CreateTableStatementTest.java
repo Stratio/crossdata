@@ -18,21 +18,21 @@
 
 package com.stratio.meta.core.planner.statements;
 
+import com.stratio.meta.core.planner.BasicPlannerTest;
+import com.stratio.meta.core.structures.BooleanTerm;
+import com.stratio.meta2.core.statements.CreateTableStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.structures.Property;
+import com.stratio.meta2.core.structures.PropertyNameValue;
+
+import org.apache.log4j.Logger;
+import org.testng.annotations.Test;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.testng.annotations.Test;
-
-import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.CreateTableStatement;
-import com.stratio.meta2.core.statements.MetaStatement;
-import com.stratio.meta.core.structures.BooleanProperty;
-import com.stratio.meta.core.structures.Property;
-import com.stratio.meta.core.structures.PropertyNameValue;
 
 public class CreateTableStatementTest extends BasicPlannerTest {
 
@@ -79,7 +79,7 @@ public class CreateTableStatementTest extends BasicPlannerTest {
             Arrays.asList("name"), 1, 1);
     stmt.setSessionCatalog("demo");
 
-    Property prop = new PropertyNameValue("ephemeral", new BooleanProperty(true));
+    Property prop = new PropertyNameValue("ephemeral", new BooleanTerm("true"));
 
     ((CreateTableStatement) stmt).setProperties(Collections.singletonList(prop));
 

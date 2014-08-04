@@ -24,12 +24,14 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.Property;
-import com.stratio.meta.core.structures.PropertyNameValue;
 import com.stratio.meta.core.structures.TableName;
-import com.stratio.meta.core.structures.ValueProperty;
-import com.stratio.meta.core.utils.*;
+import com.stratio.meta.core.utils.CoreUtils;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.core.statements.TableStatement;
+import com.stratio.meta2.core.structures.Property;
+import com.stratio.meta2.core.structures.PropertyNameValue;
 
 import java.util.Iterator;
 import java.util.List;
@@ -61,7 +63,7 @@ public class AlterTableStatement extends TableStatement {
     private String type;
 
     /**
-     * The list of {@link com.stratio.meta.core.structures.Property} of the table.
+     * The list of {@link com.stratio.meta2.core.structures.Property} of the table.
      */
     private List<Property> properties = null;
 
@@ -208,17 +210,17 @@ public class AlterTableStatement extends TableStatement {
             if(property.getType() == Property.TYPE_NAME_VALUE){
                 PropertyNameValue propertyNameValue = (PropertyNameValue) property;
                 if("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
-                        && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+                        && propertyNameValue.getVp().getTermClass() != Boolean.TYPE){
                     // If property ephemeral is present, it must be a boolean type
                     result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
                     exit = true;
                 } else if("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
-                        && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+                        && propertyNameValue.getVp().getTermClass() != Boolean.TYPE){
                     // If property ephemeral_tuples is present, it must be a integer type
                     result= Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
                     exit = true;
                 } else if("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
-                        && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN){
+                        && propertyNameValue.getVp().getTermClass() != Boolean.TYPE){
                     // If property ephemeral_persist_on is present, it must be a string type
                     result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
                     exit = true;

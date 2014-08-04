@@ -18,17 +18,17 @@
 
 package com.stratio.meta.deep.comparators;
 
-import static org.testng.AssertJUnit.assertTrue;
+import com.stratio.deep.entity.Cell;
+import com.stratio.deep.entity.Cells;
+import com.stratio.meta2.core.structures.OrderDirection;
+import com.stratio.meta2.core.structures.Ordering;
+
+import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.testng.annotations.Test;
-
-import com.stratio.deep.entity.Cell;
-import com.stratio.deep.entity.Cells;
-import com.stratio.meta.core.structures.OrderDirection;
-import com.stratio.meta.core.structures.Ordering;
+import static org.testng.AssertJUnit.assertTrue;
 
 public class DeepComparatorTest {
 

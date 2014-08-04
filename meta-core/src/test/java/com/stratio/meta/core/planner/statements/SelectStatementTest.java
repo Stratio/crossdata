@@ -24,7 +24,7 @@ import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.common.statements.structures.selectors.GroupByFunction;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta.core.structures.LongTerm;
-import com.stratio.meta.core.structures.Ordering;
+import com.stratio.meta2.core.structures.Ordering;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.relationships.RelationBetween;
 import com.stratio.meta.common.statements.structures.relationships.RelationCompare;

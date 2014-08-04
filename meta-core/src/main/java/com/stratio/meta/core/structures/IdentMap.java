@@ -21,14 +21,14 @@ package com.stratio.meta.core.structures;
 public class IdentMap {
     
     private String identifier;
-    private MapLiteralProperty mlp;
+    private MapLiteralPropertyToBeRemoved mlp;
 
     public IdentMap(String identifier) {
         this.identifier = identifier;
-        this.mlp = new MapLiteralProperty();
+        this.mlp = new MapLiteralPropertyToBeRemoved();
     }
     
-    public IdentMap(String identifier, MapLiteralProperty mlp) {
+    public IdentMap(String identifier, MapLiteralPropertyToBeRemoved mlp) {
         this(identifier);
         this.mlp = mlp;
     }   
@@ -41,11 +41,11 @@ public class IdentMap {
         this.identifier = identifier;
     }
 
-    public MapLiteralProperty getMlp() {
+    public MapLiteralPropertyToBeRemoved getMlp() {
         return mlp;
     }
 
-    public void setMlp(MapLiteralProperty mlp) {
+    public void setMlp(MapLiteralPropertyToBeRemoved mlp) {
         this.mlp = mlp;
     }   
     

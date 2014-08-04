@@ -27,15 +27,20 @@ import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.IdentifierProperty;
+import com.stratio.meta.core.structures.IdentifierPropertyToBeRemoved;
 import com.stratio.meta.core.structures.IndexType;
-import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.core.structures.ValuePropertyToBeRemoved;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.core.statements.MetaStatement;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -85,7 +90,7 @@ public class CreateIndexStatement extends MetaStatement {
     /**
      * The map of options passed to the index during its creation.
      */
-    private Map<ValueProperty, ValueProperty> options = null;
+    private Map<ValuePropertyToBeRemoved, ValuePropertyToBeRemoved> options = null;
 
     /**
      * Map of lucene types associated with Cassandra data types.
@@ -220,7 +225,7 @@ public class CreateIndexStatement extends MetaStatement {
      * @param key The option key.
      * @param value The option value.
      */
-    public void addOption(ValueProperty key, ValueProperty value){
+    public void addOption(ValuePropertyToBeRemoved key, ValuePropertyToBeRemoved value){
         options.put(key, value);
     }
 
@@ -228,7 +233,7 @@ public class CreateIndexStatement extends MetaStatement {
      * Get the map of options.
      * @return The map of options.
      */
-    public Map<ValueProperty, ValueProperty> getOptions(){
+    public Map<ValuePropertyToBeRemoved, ValuePropertyToBeRemoved> getOptions(){
         return options;
     }
 
@@ -287,8 +292,8 @@ public class CreateIndexStatement extends MetaStatement {
         }
         if(!options.isEmpty()){
             sb.append(" WITH OPTIONS = {");
-            Iterator<Entry<ValueProperty, ValueProperty>> entryIt = options.entrySet().iterator();
-            Entry<ValueProperty, ValueProperty> e;
+            Iterator<Entry<ValuePropertyToBeRemoved, ValuePropertyToBeRemoved>> entryIt = options.entrySet().iterator();
+            Entry<ValuePropertyToBeRemoved, ValuePropertyToBeRemoved> e;
             while(entryIt.hasNext()){
                     e = entryIt.next();
                     sb.append(e.getKey()).append(": ").append(e.getValue());
@@ -426,16 +431,16 @@ public class CreateIndexStatement extends MetaStatement {
      * Generate the set of Lucene options required to create an index.
      * @return The set of options.
      */
-    protected Map<ValueProperty, ValueProperty> generateLuceneOptions(){
-        Map<ValueProperty, ValueProperty> result = new HashMap<>();
+    protected Map<ValuePropertyToBeRemoved, ValuePropertyToBeRemoved> generateLuceneOptions(){
+        Map<ValuePropertyToBeRemoved, ValuePropertyToBeRemoved> result = new HashMap<>();
 
         //TODO: Read parameters from default configuration and merge with the user specification.
-        result.put(new IdentifierProperty("'refresh_seconds'"), new IdentifierProperty("'1'"));
-        result.put(new IdentifierProperty("'num_cached_filters'"), new IdentifierProperty("'1'"));
-        result.put(new IdentifierProperty("'ram_buffer_mb'"), new IdentifierProperty("'32'"));
-        result.put(new IdentifierProperty("'max_merge_mb'"), new IdentifierProperty("'5'"));
-        result.put(new IdentifierProperty("'max_cached_mb'"), new IdentifierProperty("'30'"));
-        result.put(new IdentifierProperty("'schema'"), new IdentifierProperty("'" + generateLuceneSchema() + "'"));
+        result.put(new IdentifierPropertyToBeRemoved("'refresh_seconds'"), new IdentifierPropertyToBeRemoved("'1'"));
+        result.put(new IdentifierPropertyToBeRemoved("'num_cached_filters'"), new IdentifierPropertyToBeRemoved("'1'"));
+        result.put(new IdentifierPropertyToBeRemoved("'ram_buffer_mb'"), new IdentifierPropertyToBeRemoved("'32'"));
+        result.put(new IdentifierPropertyToBeRemoved("'max_merge_mb'"), new IdentifierPropertyToBeRemoved("'5'"));
+        result.put(new IdentifierPropertyToBeRemoved("'max_cached_mb'"), new IdentifierPropertyToBeRemoved("'30'"));
+        result.put(new IdentifierPropertyToBeRemoved("'schema'"), new IdentifierPropertyToBeRemoved("'" + generateLuceneSchema() + "'"));
 
         return result;
     }

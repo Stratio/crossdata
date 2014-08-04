@@ -16,6 +16,52 @@
  * under the License.
  */package com.stratio.meta.core.statements;
 
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.querybuilder.Clause;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Select.Where;
+import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
+import com.stratio.meta.common.statements.structures.relationships.RelationIn;
+import com.stratio.meta.common.statements.structures.relationships.RelationToken;
+import com.stratio.meta.common.statements.structures.selectors.GroupByFunction;
+import com.stratio.meta.common.statements.structures.selectors.SelectorFunction;
+import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
+import com.stratio.meta.common.statements.structures.terms.Term;
+import com.stratio.meta.common.statements.structures.window.Window;
+import com.stratio.meta.common.statements.structures.window.WindowType;
+import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta.core.metadata.CustomIndexMetadata;
+import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.GroupBy;
+import com.stratio.meta.core.structures.IndexType;
+import com.stratio.meta.core.structures.InnerJoin;
+import com.stratio.meta.core.structures.Selection;
+import com.stratio.meta.core.structures.SelectionAsterisk;
+import com.stratio.meta.core.structures.SelectionClause;
+import com.stratio.meta.core.structures.SelectionList;
+import com.stratio.meta.core.structures.SelectionSelector;
+import com.stratio.meta.core.structures.SelectionSelectors;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.structures.OrderDirection;
+import com.stratio.meta2.core.structures.Ordering;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
+
+import org.apache.log4j.Logger;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -31,52 +77,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
-
-import org.apache.log4j.Logger;
-
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.querybuilder.Clause;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Select.Where;
-import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.statements.structures.window.WindowType;
-import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta.core.engine.EngineConfig;
-import com.stratio.meta.core.metadata.CustomIndexMetadata;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.GroupBy;
-import com.stratio.meta.common.statements.structures.selectors.GroupByFunction;
-import com.stratio.meta.core.structures.IndexType;
-import com.stratio.meta.core.structures.InnerJoin;
-import com.stratio.meta.core.structures.OrderDirection;
-import com.stratio.meta.core.structures.Ordering;
-import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
-import com.stratio.meta.common.statements.structures.relationships.RelationIn;
-import com.stratio.meta.common.statements.structures.relationships.RelationToken;
-import com.stratio.meta.core.structures.Selection;
-import com.stratio.meta.core.structures.SelectionAsterisk;
-import com.stratio.meta.core.structures.SelectionClause;
-import com.stratio.meta.core.structures.SelectionList;
-import com.stratio.meta.core.structures.SelectionSelector;
-import com.stratio.meta.core.structures.SelectionSelectors;
-import com.stratio.meta.common.statements.structures.selectors.SelectorFunction;
-import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
-import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
-import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
-import com.stratio.meta.common.statements.structures.terms.Term;
-import com.stratio.meta.common.statements.structures.window.Window;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta2.core.statements.MetaStatement;
-import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -135,7 +135,7 @@ public class SelectStatement extends MetaStatement {
   private boolean orderInc = false;
 
   /**
-   * The list of {@link com.stratio.meta.core.structures.Ordering} clauses.
+   * The list of {@link com.stratio.meta2.core.structures.Ordering} clauses.
    */
   private List<Ordering> order = null;
 
@@ -331,7 +331,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Return ORDER BY clause.
    * 
-   * @return list of {@link com.stratio.meta.core.structures.Ordering}.
+   * @return list of {@link com.stratio.meta2.core.structures.Ordering}.
    */
   public List<Ordering> getOrder() {
     return order;

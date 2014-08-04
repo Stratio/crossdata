@@ -14,7 +14,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */ckage com.stratio.meta.server.config
+ */
+
+package com.stratio.meta.server.config
 
 import com.stratio.meta.core.engine.EngineConfig
 import com.typesafe.config.{ConfigFactory, Config}

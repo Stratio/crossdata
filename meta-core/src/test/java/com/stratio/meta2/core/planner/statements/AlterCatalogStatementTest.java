@@ -19,13 +19,8 @@
 package com.stratio.meta2.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta2.core.statements.AlterCatalogStatement;
-import com.stratio.meta.core.structures.IdentifierProperty;
-import com.stratio.meta.core.structures.ValueProperty;
-import org.testng.annotations.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.testng.annotations.Test;
 
 import static org.testng.Assert.fail;
 

@@ -18,7 +18,7 @@
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.AlterTableStatement;
-import com.stratio.meta.core.structures.Property;
+import com.stratio.meta2.core.structures.Property;
 import com.stratio.meta.core.structures.TableName;
 
 import org.testng.annotations.Test;

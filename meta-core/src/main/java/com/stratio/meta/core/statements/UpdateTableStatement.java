@@ -18,36 +18,36 @@
 
 package com.stratio.meta.core.statements;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.statements.structures.terms.FloatTerm;
+import com.stratio.meta.common.statements.structures.terms.IntegerTerm;
+import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Assignment;
-import com.stratio.meta.common.statements.structures.terms.FloatTerm;
 import com.stratio.meta.core.structures.IdentIntOrLiteral;
 import com.stratio.meta.core.structures.IdentifierAssignment;
 import com.stratio.meta.core.structures.IntTerm;
-import com.stratio.meta.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta.core.structures.Option;
-import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
-import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.core.structures.ValueAssignment;
-import com.stratio.meta.core.structures.ValueProperty;
+import com.stratio.meta.core.structures.ValuePropertyToBeRemoved;
 import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.core.statements.MetaStatement;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class that models an {@code UPDATE} statement from the META language.
@@ -290,7 +290,7 @@ public class UpdateTableStatement extends MetaStatement {
       }
     }
     for (Option opt : options) {
-      if (opt.getProperties().getType() != ValueProperty.TYPE_CONST) {
+      if (opt.getProperties().getType() != ValuePropertyToBeRemoved.TYPE_CONST) {
         result = Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
       }
     }

@@ -14,16 +14,18 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */ckage com.stratio.meta.driver;
+ */
 
+package com.stratio.meta.driver;
 
-import org.apache.log4j.Logger;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeClass;
 
 import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.server.MetaServer;
+
+import org.apache.log4j.Logger;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeClass;
 
 public class DriverParentTest extends ParentCassandraTest {
 
