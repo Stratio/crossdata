@@ -1,3 +1,21 @@
+/*
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package com.stratio.meta.rest;
 
 import java.io.IOException;
@@ -20,9 +38,13 @@ import com.stratio.meta.common.exceptions.ExecutionException;
 import com.stratio.meta.common.exceptions.ParsingException;
 import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta.common.exceptions.ValidationException;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.rest.models.JsonMetaResultSet;
+import com.stratio.meta.rest.models.JsonQueryResult;
 import com.stratio.meta.rest.utils.DriverHelper;
 import com.stratio.meta.rest.utils.RestResultHandler;
+import com.stratio.meta.rest.utils.RestServerUtils;
 
 /**
  * Root resource (exposed at "" path)
@@ -52,8 +74,7 @@ public class RestServer {
   @Path("api")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @Produces(MediaType.TEXT_PLAIN)
-  public String postQuery(@FormParam("query") String query, @FormParam("catalog") String catalog)
-      throws IOException {
+  public String postQuery(@FormParam("catalog") String catalog, @FormParam("query") String query) {
     String queryId = "";
 
     // SYNCHRONOUS WAY
@@ -86,12 +107,22 @@ public class RestServer {
     callback = (RestResultHandler) driver.getCallback(queryId);
     Result callbackResult = callback.getResult(queryId);
     if (callbackResult != null) {
+//      if (callbackResult instanceof QueryResult) {
+//        QueryResult qr = (QueryResult) callbackResult;
+//        System.out.println("instanceof queryResult");
+//        JsonQueryResult jqr = RestServerUtils.toJsonQueryResult(qr);
+//        JsonMetaResultSet jmrs = (JsonMetaResultSet) jqr.getResultSet();
+//        System.out.println(jmrs.getRowstoString());
+//        return mapper.writeValueAsString(jmrs.getRowstoString());
+//      } else {
+//        return mapper.writeValueAsString(callbackResult);
+//      }
       return mapper.writeValueAsString(callbackResult);
     } else {
       if (callback.getErrorResult() != null) {
         return mapper.writeValueAsString(callback.getErrorResult());
       } else {
-        return mapper.writeValueAsString(callback.getStatus());
+        return "no more results";
       }
     }
   }
