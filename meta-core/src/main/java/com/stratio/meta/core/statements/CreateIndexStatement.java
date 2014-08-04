@@ -1,20 +1,19 @@
 /*
- * Stratio Meta
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Copyright (c) 2014, Stratio, All rights reserved.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.statements;
@@ -321,7 +320,8 @@ public class CreateIndexStatement extends MetaStatement {
         //Validate index name if not exists
         if(!result.hasError()){
             if(name != null && name.toLowerCase().startsWith("stratio")){
-                result = Result.createValidationErrorResult("Internal namespace stratio cannot be use on index name " + name);
+                result = Result.createValidationErrorResult(
+                    "Internal namespace stratio cannot be use on index name " + name);
             }else {
                 result = validateIndexName(metadata, tableMetadata);
             }
@@ -398,7 +398,8 @@ public class CreateIndexStatement extends MetaStatement {
     private Result validateOptions(String effectiveKeyspace, TableMetadata metadata) {
         Result result = QueryResult.createSuccessQueryResult();
         if(!options.isEmpty()){
-            result = Result.createValidationErrorResult("WITH OPTIONS clause not supported in index creation.");
+            result = Result.createValidationErrorResult(
+                "WITH OPTIONS clause not supported in index creation.");
         }
         if(!createIfNotExists && IndexType.LUCENE.equals(type)) {
             Iterator<ColumnMetadata> columns = metadata.getColumns().iterator();
@@ -411,8 +412,11 @@ public class CreateIndexStatement extends MetaStatement {
                 }
             }
             if (found) {
-                result = Result.createValidationErrorResult("Cannot create index: A Lucene index already exists on table " + effectiveKeyspace + "."
-                        + metadata.getName() + ". Use DROP INDEX " + column.getName().replace("stratio_lucene_", "") + "; to remove the index.");
+                result = Result.createValidationErrorResult(
+                    "Cannot create index: A Lucene index already exists on table "
+                        + effectiveKeyspace + "."
+                        + metadata.getName() + ". Use DROP INDEX " + column.getName()
+                        .replace("stratio_lucene_", "") + "; to remove the index.");
             }
         }
         return result;

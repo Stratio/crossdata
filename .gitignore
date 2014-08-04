@@ -9,7 +9,6 @@ nbactions.xml
 *.iml
 meta-core/src/main/java/com/stratio/meta/core/grammar/generated
 src/main/resources/history.txt
-LICENSE
 meta-core/nb-configuration.xml
 meta-deep/nb-configuration.xml
 meta-common/nb-configuration.xml
