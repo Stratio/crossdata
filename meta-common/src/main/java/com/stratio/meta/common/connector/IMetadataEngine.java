@@ -14,29 +14,11 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package com.stratio.meta2.core.metadata;
+ */
 
-import com.stratio.meta.common.connector.IMetadataEngine;
-import com.stratio.meta.common.metadata.structures.CatalogMetadata;
-import com.stratio.meta2.metadata.StorageMetadata;
+package com.stratio.meta.common.connector;
 
-import java.util.Map;
-
-
-
-public enum  MetadataManager {
-  MANAGER;
-  private Map<String, CatalogMetadata> catalogMetadataMap;
-  private Map<String, StorageMetadata> storageMetadataMap;
-  private IMetadataEngine iMetadataEngine;
-
-  public CatalogMetadata getCatalog(String name){
-    return this.catalogMetadataMap.get(name);
-  }
-
-  public StorageMetadata getStorage(String name){
-    return this.storageMetadataMap.get(name);
-  }
-
-
+public interface IMetadataEngine {
+  public void put(String key, String metadata);
+  public String get(String key);
 }
