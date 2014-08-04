@@ -21,7 +21,7 @@
     <groupId>com.stratio.meta</groupId>
     <artifactId>meta-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.7</version>
+    <version>0.0.8-SNAPSHOT</version>
     <name>Stratio META parent</name>
     <description>Stratio META</description>
     <url>https://github.com/Stratio/stratio-meta/</url>
