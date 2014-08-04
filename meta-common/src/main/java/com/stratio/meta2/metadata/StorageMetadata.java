@@ -20,14 +20,18 @@ package com.stratio.meta2.metadata;
 
 import java.util.Map;
 
-public class StorageMetadata {
-  private String name;
+public class StorageMetadata implements IMetadata {
+  private final String name;
 
-  private Map<String, Object> options;
+  private final Map<String, Object> options;
 
-  private Map<String, TableMetadata> tables;
+  private final Map<String, TableMetadata> tables;
 
-  public StorageMetadata() {
+  public StorageMetadata(String name, Map<String, Object> options,
+      Map<String, TableMetadata> tables) {
+    this.name = name;
+    this.options = options;
+    this.tables = tables;
   }
 
 
@@ -36,23 +40,17 @@ public class StorageMetadata {
     return name;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
 
   public Map<String, Object> getOptions() {
     return options;
   }
 
-  public void setOptions(Map<String, Object> options) {
-    this.options = options;
-  }
 
   public Map<String, TableMetadata> getTables() {
     return tables;
   }
 
-  public void setTables(Map<String, TableMetadata> tables) {
-    this.tables = tables;
+  @Override public String getQualifiedName() {
+    return QualifiedNames.getStorageQualifiedName(name);
   }
 }

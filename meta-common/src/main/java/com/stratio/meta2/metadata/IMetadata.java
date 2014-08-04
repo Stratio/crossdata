@@ -18,7 +18,8 @@
 
 package com.stratio.meta2.metadata;
 
+import java.io.Serializable;
 
-public class Schema {
-
+public interface IMetadata extends Serializable {
+  public String getQualifiedName();
 }

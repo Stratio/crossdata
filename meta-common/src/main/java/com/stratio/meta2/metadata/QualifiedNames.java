@@ -18,43 +18,21 @@
 
 package com.stratio.meta2.metadata;
 
-public class ColumnMetadata implements IMetadata {
-  private final String catalog;
-  private final String table;
-  private final String name;
-  private final Object[] parameters;
-  private final ColumnType columnType;
-
-  public ColumnMetadata(String catalog, String table, String name, Object[] parameters,
-      ColumnType columnType) {
-    this.catalog = catalog;
-    this.table = table;
-    this.name = name;
-    this.parameters = parameters;
-    this.columnType = columnType;
+public class QualifiedNames {
+  public static String getCatalogQualifiedName(String name){
+    return normalize(name);
+  }
+  public static String getTableQualifiedName(String catalog, String name){
+    return normalize(catalog + "." + name);
+  }
+  public static String getColumnQualifiedName(String catalog, String table, String name){
+    return normalize(catalog + "." + table + "." + name);
+  }
+  public static String getStorageQualifiedName(String name){
+    return normalize("storage." + name);
   }
 
-
-
-  public String getName() {
-    return name;
-  }
-
-  public Object[] getParameters() {
-    return parameters;
-  }
-
-  public ColumnType getColumnType() {
-    return columnType;
-  }
-
-  public String getTable() {
-    return table;
-  }
-
-
-
-  @Override public String getQualifiedName() {
-    return QualifiedNames.getColumnQualifiedName(catalog,table,name);
+  private static String normalize(String qName){
+    return qName.toLowerCase();
   }
 }

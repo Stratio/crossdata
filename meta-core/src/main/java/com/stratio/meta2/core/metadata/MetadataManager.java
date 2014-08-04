@@ -18,6 +18,7 @@
 
 import com.stratio.meta.common.connector.IMetadataEngine;
 import com.stratio.meta.common.metadata.structures.CatalogMetadata;
+import com.stratio.meta2.metadata.IMetadata;
 import com.stratio.meta2.metadata.StorageMetadata;
 
 import java.util.Map;
@@ -26,17 +27,13 @@ import java.util.Map;
 
 public enum  MetadataManager {
   MANAGER;
-  private Map<String, CatalogMetadata> catalogMetadataMap;
+  private Map<String, IMetadata> metadata;
   private Map<String, StorageMetadata> storageMetadataMap;
   private IMetadataEngine iMetadataEngine;
 
-  public CatalogMetadata getCatalog(String name){
-    return this.catalogMetadataMap.get(name);
-  }
 
-  public StorageMetadata getStorage(String name){
-    return this.storageMetadataMap.get(name);
-  }
+
+
 
 
 }

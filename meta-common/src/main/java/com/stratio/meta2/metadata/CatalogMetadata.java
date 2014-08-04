@@ -20,37 +20,33 @@ package com.stratio.meta2.metadata;
 
 import java.util.Map;
 
-public class CatalogMetadata {
-  private String name;
+public class CatalogMetadata implements IMetadata {
+  private final String name;
 
-  private Map<String, Object> options;
+  private final Map<String, Object> options;
 
-  private Map<String, TableMetadata> tables;
+  private final Map<String, TableMetadata> tables;
 
-  public CatalogMetadata() {
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
+  public CatalogMetadata(String name, Map<String, Object> options,
+      Map<String, TableMetadata> tables) {
     this.name = name;
+    this.options = options;
+    this.tables = tables;
+  }
+
+  public final String getName() {
+    return name;
   }
 
   public Map<String, Object> getOptions() {
     return options;
   }
 
-  public void setOptions(Map<String, Object> options) {
-    this.options = options;
-  }
-
   public Map<String, TableMetadata> getTables() {
     return tables;
   }
 
-  public void setTables(Map<String, TableMetadata> tables) {
-    this.tables = tables;
+  @Override public String getQualifiedName() {
+    return QualifiedNames.getCatalogQualifiedName(name);
   }
 }
