@@ -26,7 +26,6 @@ import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.BooleanTerm;
-import com.stratio.meta.core.structures.ValueProperty;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
@@ -45,7 +44,6 @@ import java.util.Set;
  * Class that models a {@code CREATE TABLE} statement of the META language.
  */
 public class CreateTableStatement extends MetaStatement {
-
 
   /**
    * The name of the target table.
@@ -362,17 +360,17 @@ public class CreateTableStatement extends MetaStatement {
       if (property.getType() == Property.TYPE_NAME_VALUE) {
         PropertyNameValue propertyNameValue = (PropertyNameValue) property;
         if ("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
-            && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
+            && propertyNameValue.getVp().getTermClass() != Boolean.TYPE) {
           // If property ephemeral is present, it must be a boolean type
           result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
           exit = true;
         } else if ("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
-                   && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
+                   && propertyNameValue.getVp().getTermClass() != Boolean.TYPE) {
           // If property ephemeral_tuples is present, it must be a integer type
           result= Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
           exit = true;
         } else if ("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
-                   && propertyNameValue.getVp().getType() != ValueProperty.TYPE_BOOLEAN) {
+                   && propertyNameValue.getVp().getTermClass() != Boolean.TYPE) {
           // If property ephemeral_persist_on is present, it must be a string type
           result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
           exit = true;

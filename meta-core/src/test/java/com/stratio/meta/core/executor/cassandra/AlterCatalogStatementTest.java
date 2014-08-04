@@ -18,35 +18,7 @@
 
 package com.stratio.meta.core.executor.cassandra;
 
-import com.stratio.meta.common.data.Row;
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.core.executor.BasicExecutorTest;
-import com.stratio.meta2.core.statements.AlterCatalogStatement;
-import com.stratio.meta.core.statements.SelectStatement;
-import com.stratio.meta.core.structures.IdentifierProperty;
-import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
-import com.stratio.meta.core.structures.SelectionClause;
-import com.stratio.meta.core.structures.SelectionList;
-import com.stratio.meta.core.structures.SelectionSelector;
-import com.stratio.meta.core.structures.SelectionSelectors;
-import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
-import com.stratio.meta.core.structures.StringTerm;
-import com.stratio.meta.core.structures.ValueProperty;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.Tree;
-
-import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.testng.Assert.assertEquals;
 
 public class AlterCatalogStatementTest extends BasicExecutorTest {
 

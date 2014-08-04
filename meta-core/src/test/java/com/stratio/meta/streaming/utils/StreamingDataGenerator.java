@@ -14,7 +14,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */kage com.stratio.meta.streaming.utils;
+ */
+
+package com.stratio.meta.streaming.utils;
 
 import java.util.ArrayList;
 import java.util.List;

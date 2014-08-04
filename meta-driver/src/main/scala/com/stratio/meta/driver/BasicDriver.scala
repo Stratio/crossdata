@@ -14,7 +14,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */ckage com.stratio.meta.driver
+ */
+
+package com.stratio.meta.driver
 
 import akka.actor.{ ActorSelection, ActorSystem}
 import com.stratio.meta.driver.config.{DriverSectionConfig, ServerSectionConfig, BasicDriverConfig, DriverConfig}

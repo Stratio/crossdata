@@ -14,7 +14,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */ckage com.stratio.meta.server.actors
+ */
+
+package com.stratio.meta.server.actors
 
 import akka.actor.{Props, ActorLogging, Actor}
 import com.stratio.meta.common.result._
