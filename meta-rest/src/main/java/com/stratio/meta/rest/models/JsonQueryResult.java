@@ -31,7 +31,7 @@ public class JsonQueryResult extends JsonResult {
   /**
    * Set of tuples returned by the server after successfully executing the query.
    */
-  private final JsonResultSet resultSet;
+  private final JsonMetaResultSet resultSet;
 
   /**
    * Determine whether this query result contains the last resultset of the query.
@@ -67,7 +67,7 @@ public class JsonQueryResult extends JsonResult {
    * 
    * @return The set or null if an error occurred.
    */
-  public JsonResultSet getResultSet() {
+  public JsonMetaResultSet getResultSet() {
     return resultSet;
   }
 

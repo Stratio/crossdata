@@ -20,7 +20,6 @@ package com.stratio.meta.rest.models;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import com.stratio.meta.common.data.Cell;
 

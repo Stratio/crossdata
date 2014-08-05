@@ -22,7 +22,6 @@ import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.rest.models.JsonMetaResultSet;
 import com.stratio.meta.rest.models.JsonQueryResult;
 import com.stratio.meta.rest.utils.DriverHelper;
 import com.stratio.meta.rest.utils.RestResultHandler;
@@ -89,17 +88,13 @@ public class RestServer {
     callback = (RestResultHandler) driver.getCallback(queryId);
     Result callbackResult = callback.getResult(queryId);
     if (callbackResult != null) {
-//      if (callbackResult instanceof QueryResult) {
-//        QueryResult qr = (QueryResult) callbackResult;
-//        System.out.println("instanceof queryResult");
-//        JsonQueryResult jqr = RestServerUtils.toJsonQueryResult(qr);
-//        JsonMetaResultSet jmrs = (JsonMetaResultSet) jqr.getResultSet();
-//        System.out.println(jmrs.getRowstoString());
-//        return mapper.writeValueAsString(jmrs.getRowstoString());
-//      } else {
-//        return mapper.writeValueAsString(callbackResult);
-//      }
-      return mapper.writeValueAsString(callbackResult);
+      if (callbackResult instanceof QueryResult) {
+        QueryResult qr = (QueryResult) callbackResult;
+        JsonQueryResult jqr = RestServerUtils.toJsonQueryResult(qr);
+        return mapper.writeValueAsString(jqr);
+      } else {
+        return mapper.writeValueAsString(callbackResult);
+      }
     } else {
       if (callback.getErrorResult() != null) {
         return mapper.writeValueAsString(callback.getErrorResult());

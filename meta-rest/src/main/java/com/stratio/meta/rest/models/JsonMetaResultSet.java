@@ -19,18 +19,14 @@ package com.stratio.meta.rest.models;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnType;
-import com.stratio.meta.common.metadata.structures.MetadataUtils;
-import com.stratio.meta.rest.utils.CResultSetIteratorJson;
-import com.stratio.meta.rest.utils.RestServerUtils;
 
-public class JsonMetaResultSet extends JsonResultSet implements Serializable {
+public class JsonMetaResultSet implements Serializable {
 
   /**
    * Serial version UID in order to be Serializable.
@@ -71,28 +67,14 @@ public class JsonMetaResultSet extends JsonResultSet implements Serializable {
     this.rows = rows;
   }
 
-  /**
-   * Get the rows of the Result Set.
-   * 
-   * @return A List of {@link com.stratio.meta.common.data.Row}
-   */
-  public List<JsonRow> getRows() {
-    return rows;
-  }
-
-  public String getRowstoString() {
+  public String getRows() {
     String result = "[";
     for (JsonRow r : rows) {
-      int index = 0;
       String rowResult = "{";
       for (Entry<String, Cell> c : r.getCells().entrySet()) {
-        ColumnType ct = columnMetadata.get(index).getType();
-        Class<?> g = MetadataUtils.getJavaClass("", ct);
         String value = "";
         value += c.getValue().getValue().toString();
-//        value += "\"";
-        rowResult += c.getKey() + ": " + value + ", ";
-        index++;
+        rowResult += c.getKey() + ": '" + value + "', ";
       }
       rowResult = rowResult.substring(0, rowResult.length() - 2); // removes last comma
       rowResult += "}";
@@ -101,7 +83,7 @@ public class JsonMetaResultSet extends JsonResultSet implements Serializable {
     }
     result = result.substring(0, result.length() - 2); // removes last comma
     result += "]";
-    return result;
+    return result.trim();
   }
 
 
@@ -151,9 +133,6 @@ public class JsonMetaResultSet extends JsonResultSet implements Serializable {
     return rows.size();
   }
 
-  @Override
-  public Iterator<JsonRow> iterator() {
-    return new CResultSetIteratorJson(this);
-  }
+
 
 }
