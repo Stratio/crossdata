@@ -5,29 +5,29 @@ title: Meta Reference
 Table of Contents
 =================
 
--   [The META Console](#console)
+-   [The META Console](#the-meta-console)
 -   [Statements](#statements):
-    -   [CREATE](#CREATE):
-        -   [CREATE KEYSPACE](#CREATE_KEYSPACE)
-        -   [CREATE TABLE](#CREATE_TABLE)
-        -   [CREATE DEFAULT INDEX](#CREATE_DEFAULT_INDEX)
-        -   [CREATE LUCENE INDEX](#CREATE_LUCENE_INDEX)
-    -   [DELETE](#DELETE)
-    -   [DESCRIBE](#DESCRIBE)
-    -   [DROP](#DROP):
-        -   [DROP KEYSPACE](#DROP_KEYSPACE)
-        -   [DROP TABLE](#DROP_TABLE)
-        -   [DROP INDEX](#DROP_INDEX)
-    -   [INSERT INTO](#INSERT_INTO)
-    -   [LIST PROCESS](#LIST_PROCESS)
-    -   [SELECT](#SELECT)
-        -   [Persistent tables](#SELECT_PERSISTENT):
-            -   [INNER JOIN](#INNER_JOIN)
-            -   [WHERE CLAUSE](#WITHOUT_INDEX)
-        -   [Ephemeral tables](#SELECT_EPHEMERAL)
-    -   [STOP PROCESS](#STOP_PROCESS)
-    -   [TRUNCATE](#TRUNCATE)
-    -   [USE](#USE)
+    -   [CREATE](#create):
+        -   [CREATE KEYSPACE](#create-keyspace)
+        -   [CREATE TABLE](#create-table)
+        -   [CREATE DEFAULT INDEX](#create-default-index)
+        -   [CREATE LUCENE INDEX](#create-lucene-index)
+    -   [DELETE](#delete)
+    -   [DESCRIBE](#describe)
+    -   [DROP](#drop):
+        -   [DROP KEYSPACE](#drop-keyspace)
+        -   [DROP TABLE](#drop-table)
+        -   [DROP INDEX](#drop-index)
+    -   [INSERT INTO](#insert-into)
+    -   [LIST PROCESS](#list-process)
+    -   [SELECT](#select)
+        -   [Persistent tables](#persistent-tables):
+            -   [INNER JOIN](#inner-join)
+            -   [WHERE CLAUSE](#where-clause)
+        -   [Ephemeral tables](#ephemeral-tables)
+    -   [STOP PROCESS](#stop-process)
+    -   [TRUNCATE](#truncate)
+    -   [USE](#use)
 -   [Datatypes](#datatypes)
 
 The META Console
@@ -41,7 +41,7 @@ $ metash
 
 Available commands are:
 
--   help \<statement\>: see below for a comprehensive list of META statements.
+-   help &lt;statement>: see below for a comprehensive list of META statements.
 -   exit: to leave the console.
 
 Statements
@@ -52,10 +52,10 @@ CREATE
 
 The CREATE command can be used with different targets. For more information check one of the following:
 
--   [CREATE KEYSPACE](#CREATE_KEYSPACE)
--   [CREATE TABLE](#CREATE_TABLE)
--   [CREATE DEFAULT INDEX](#CREATE_DEFAULT_INDEX)
--   [CREATE LUCENE INDEX](#CREATE_LUCENE_INDEX)
+-   [CREATE KEYSPACE](#CREATE-KEYSPACE)
+-   [CREATE TABLE](#CREATE-TABLE)
+-   [CREATE DEFAULT INDEX](#CREATE-DEFAULT-INDEX)
+-   [CREATE LUCENE INDEX](#CREATE-LUCENE-INDEX)
 
 ### CREATE KEYSPACE
 
@@ -64,12 +64,12 @@ Creates a new keyspace on the system specifying its replication properties.
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-CREATE KEYSPACE (IF NOT EXISTS)? <keyspace_name>
-WITH replication = <options_map>
-(AND durable_writes = <boolean>)?;
+CREATE KEYSPACE (IF NOT EXISTS)? &lt;keyspace_name>
+WITH replication = &lt;options_map>
+(AND durable_writes = &lt;boolean>)?;
 ~~~~
 
-where durable\_writes defaults to true.
+where durable_writes defaults to true.
 
 As of Cassandra 2.0.x, the replication class can be SimpleStrategy for single datacenter deployments, or NetworkTopologyStrategy for a multi-datacenter setup.
 
@@ -88,36 +88,36 @@ Creates a new table on the selected keyspace.
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-CREATE TABLE (IF NOT EXISTS)? <tablename>
-            '('<definition> (',' <definition>)*')'
-             (WITH <option> (AND <option>)*)?;
+CREATE TABLE (IF NOT EXISTS)? &lt;tablename>
+            '('&lt;definition> (',' &lt;definition>)*')'
+             (WITH &lt;option> (AND &lt;option>)*)?;
 ~~~~
 
 where:
 
 ~~~~ {.prettyprint .lang-meta}
-<column-definition> ::= <identifier> <type> (PRIMARY KEY)?
-                      | PRIMARY KEY '('<partition-key>(',' <identifier>)*')'
+&lt;column-definition> ::= &lt;identifier> &lt;type> (PRIMARY KEY)?
+                      | PRIMARY KEY '('&lt;partition-key>(',' &lt;identifier>)*')'
 
-<partition-key> ::= <partition-key>
-                      | '('<partition-key>(',' <identifier>)*')'
+&lt;partition-key> ::= &lt;partition-key>
+                      | '('&lt;partition-key>(',' &lt;identifier>)*')'
 
-<partition-key> ::= <identifier>
-                      | '('<identifier>(',' <identifier>)*')'
+&lt;partition-key> ::= &lt;identifier>
+                      | '('&lt;identifier>(',' &lt;identifier>)*')'
 
-<option> ::= <property>
+&lt;option> ::= &lt;property>
                | COMPACT STORAGE
                | CLUSTERING ORDER
 
-<property> ::= 'EPHEMERAL = true'
+&lt;property> ::= 'EPHEMERAL = true'
 ~~~~
 
 See [Apache Cassandra CQL3 documentation](http://cassandra.apache.org/doc/cql3/CQL.html#createTableStmt "Apache Cassandra CQL3 documentation") for a full list of available table properties.
 
-The \<primary\_key\> can take two forms:
+The &lt;primary_key> can take two forms:
 
-1.  A list of columns in the form of (column\_name\_0, …, column\_name\_m), where column\_name\_0 is the partition key, and columns 1 to n are part of the clustering key.
-2.  A separated list of columns for the partition and clustering keys in the form of ((column\_name\_0, column\_name\_1), column\_name\_2, …, column\_name\_n), where columns 0 and 1 are part of the partition key, and columns 2 to n are part of the clustering key.
+1.  A list of columns in the form of (column_name_0, …, column_name_m), where column_name_0 is the partition key, and columns 1 to n are part of the clustering key.
+2.  A separated list of columns for the partition and clustering keys in the form of ((column_name_0, column_name_1), column_name_2, …, column_name_n), where columns 0 and 1 are part of the partition key, and columns 2 to n are part of the clustering key.
 
 Example:
 
@@ -161,7 +161,7 @@ Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
 CREATE DEFAULT INDEX (IF NOT EXISTS)?
-<index_name>? ON <tablename> '(' <columname> (',' <columnname>)* ')' ;
+&lt;index_name>? ON &lt;tablename> '(' &lt;columname> (',' &lt;columnname>)* ')' ;
 ~~~~
 
 Example:
@@ -172,13 +172,15 @@ CREATE DEFAULT INDEX users_index ON users (email);
 
 ### CREATE LUCENE INDEX
 
-Creates Lucene-based index on a set of columns. For each column, the Lucene index is created using the data type specified in the table schema. Additionally, the user can modify the mapping with the use of the WITH OPTIONS statement.
+Creates Lucene-based index on a set of columns. For each column, the Lucene index is created using 
+the data type specified in the table schema. Additionally, the user can modify the mapping with the 
+use of the WITH OPTIONS statement.
 
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
 CREATE LUCENE INDEX (IF NOT EXISTS)?
-<index_name>? ON <tablename> '(' <columname> (',' <columnname>)* ')' ;
+&lt;index_name>? ON &lt;tablename> '(' &lt;columname> (',' &lt;columnname>)* ')' ;
 ~~~~
 
 Example:
@@ -195,22 +197,22 @@ Deletes row(s) of a table.
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-DELETE ( <selection> (',' <selection> )* )?
-FROM <tablename> WHERE <where-clause>;
+DELETE ( &lt;selection> (',' &lt;selection> )* )?
+FROM &lt;tablename> WHERE &lt;where-clause>;
 ~~~~
 
 where
 
 ~~~~ {.prettyprint .lang-meta}
-<selection>    ::= <identifier> ( '[' <term> ']' )?
+&lt;selection>    ::= &lt;identifier> ( '[' &lt;term> ']' )?
 
-<where-clause> ::= <relation> ( AND | OR <relation> )*
+&lt;where-clause> ::= &lt;relation> ( AND | OR &lt;relation> )*
 
-<relation>     ::= <identifier> <operator> <term>
-                     | <identifier> (ALL | ANY) '(' ( <term> (',' <term>)* )? ')'
-                     | <identifier> (ALL | ANY) '?'
+&lt;relation>     ::= &lt;identifier> &lt;operator> &lt;term>
+                     | &lt;identifier> (ALL | ANY) '(' ( &lt;term> (',' &lt;term>)* )? ')'
+                     | &lt;identifier> (ALL | ANY) '?'
 
-<operator>     ::= ( '=' | '>' | '>=' | '<' | '<=' )
+&lt;operator>     ::= ( '=' | '>' | '>=' | '&lt;' | '&lt;=' )
 ~~~~
 
 Example:
@@ -227,7 +229,7 @@ Provides information about the table or keyspace.
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-DESCRIBE ( KEYSPACE ( <keyspace> )? | TABLE <tablename> );
+DESCRIBE ( KEYSPACE ( &lt;keyspace> )? | TABLE &lt;tablename> );
 DESCRIBE ( KEYSPACES | TABLES );
 ~~~~
 
@@ -242,9 +244,9 @@ DROP
 
 The DROP command can be used with different targets. For more information check one of the following:
 
--   [DROP KEYSPACE](#DROP_KEYSPACE)
--   [DROP TABLE](#DROP_TABLE)
--   [DROP INDEX](#DROP_INDEX)
+-   [DROP KEYSPACE](#DROP-KEYSPACE)
+-   [DROP TABLE](#DROP-TABLE)
+-   [DROP INDEX](#DROP-INDEX)
 
 ### DROP KEYSPACE
 
@@ -253,7 +255,7 @@ Removes an existing keyspace.
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-DROP KEYSPACE (IF EXISTS)? <keyspace>;
+DROP KEYSPACE (IF EXISTS)? &lt;keyspace>;
 ~~~~
 
 Example:
@@ -269,7 +271,7 @@ Removes an existing table.
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-DROP TABLE (IF EXISTS)? <tablename>;
+DROP TABLE (IF EXISTS)? &lt;tablename>;
 ~~~~
 
 Example:
@@ -285,7 +287,7 @@ Removes an existing index.
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-DROP INDEX (IF EXISTS)? ( <keyspace>. )? <index_name>;
+DROP INDEX (IF EXISTS)? ( &lt;keyspace>. )? &lt;index_name>;
 ~~~~
 
 Example:
@@ -302,8 +304,8 @@ Inserts new values in a table of the keyspace
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-INSERT INTO <tablename> '(' <identifier> ( ',' <identifier> )* ')'
-VALUES '(' <term-or-literal> ( ',' <term-or-literal> )* ')';
+INSERT INTO &lt;tablename> '(' &lt;identifier> ( ',' &lt;identifier> )* ')'
+VALUES '(' &lt;term-or-literal> ( ',' &lt;term-or-literal> )* ')';
 ~~~~
 
 Example:
@@ -353,41 +355,43 @@ Retrieves a subset of data from an existing table.
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-SELECT <select-clause>
-FROM <tablename> ( <alias> )?
-( INNER JOIN <tablename> ON '('? <field1> = <field2> ')'? )?
-( WHERE <where-clause> )?
-( ORDER BY <identifier> ('ASC'|'DESC')? (, <identifier> ('ASC'|'DESC')? )* )?
-( GROUP BY <identifier> (, <identifier>)* )?
+SELECT &lt;select-clause>
+FROM &lt;tablename> ( &lt;alias> )?
+( INNER JOIN &lt;tablename> ON '('? &lt;field1> = &lt;field2> ')'? )?
+( WHERE &lt;where-clause> )?
+( ORDER BY &lt;identifier> ('ASC'|'DESC')? (, &lt;identifier> ('ASC'|'DESC')? )* )?
+( GROUP BY &lt;identifier> (, &lt;identifier>)* )?
 ~~~~
 
 where
 
 ~~~~ {.prettyprint .lang-meta}
-<select-clause>  ::= DISTINCT? <selection-list>
-                      | COUNT '(' ( '*' | '1' ) ')' (AS <identifier>)?
+&lt;select-clause>  ::= DISTINCT? &lt;selection-list>
+                      | COUNT '(' ( '*' | '1' ) ')' (AS &lt;identifier>)?
 
-<selection-list> ::= <selector> (AS <identifier>)?
-                       ( ',' <selector> (AS <identifier>)? )*
+&lt;selection-list> ::= &lt;selector> (AS &lt;identifier>)?
+                       ( ',' &lt;selector> (AS &lt;identifier>)? )*
                        | '*'
 
-<selector>       ::= <identifier>
-                       | <agg_function> '(' (<selector> (',' <selector>)*)? ')'
+&lt;selector>       ::= &lt;identifier>
+                       | &lt;agg_function> '(' (&lt;selector> (',' &lt;selector>)*)? ')'
 
-<agg_function>   ::= 'COUNT' | 'AVG' | 'SUM' | 'MIN' | 'MAX'
+&lt;agg_function>   ::= 'COUNT' | 'AVG' | 'SUM' | 'MIN' | 'MAX'
 
-<where-clause>   ::= <condition> ( AND <condition> )*
+&lt;where-clause>   ::= &lt;condition> ( AND &lt;condition> )*
 
-<condition>      ::= <identifier> <operator> <term> |
-                     <identifier> BETWEEN <term1> AND <term2> |
-                     <identifier> IN '(' <term1> (, <term2>)* ')'
+&lt;condition>      ::= &lt;identifier> &lt;operator> &lt;term> |
+                     &lt;identifier> BETWEEN &lt;term1> AND &lt;term2> |
+                     &lt;identifier> IN '(' &lt;term1> (, &lt;term2>)* ')'
 
-<operator>       ::= '=' | '>' | '>=' | '<' | '<=' | '<>' | 'MATCH'
+&lt;operator>       ::= '=' | '>' | '>=' | '&lt;' | '&lt;=' | '&lt;>' | 'MATCH'
 ~~~~
 
-INNER JOIN permits to combine two tables A and B by comparing each row in A with each one in B selecting all rows that match the join-predicate.
+INNER JOIN permits to combine two tables A and B by comparing each row in A with each one in B selecting
+ all rows that match the join-predicate.
 
-WHERE \<where-clause\> specifies the conditions that a row in \<tablename\> needs to fulfil in order to be selected. It can contain a condition on a non-indexed column.
+WHERE &lt;where-clause> specifies the conditions that a row in &lt;tablename> needs to fulfil in order to
+ be selected. It can contain a condition on a non-indexed column.
 
 ORDER BY will sort the results in ascending order by default.
 
@@ -441,19 +445,19 @@ WHERE wallet.city = 'Madrid';
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-SELECT <select-clause>
-FROM <tablename>
-WITH WINDOW <window_length> ;
+SELECT &lt;select-clause>
+FROM &lt;tablename>
+WITH WINDOW &lt;window_length> ;
 ~~~~
 
 where
 
 ~~~~ {.prettyprint .lang-meta}
-<select-clause>  ::= '*' | <selection-list>
+&lt;select-clause>  ::= '*' | &lt;selection-list>
 
-<window_length>  ::= <size> <unit>
+&lt;window_length>  ::= &lt;size> &lt;unit>
 
-<unit>           ::= ('year' | 'years') |
+&lt;unit>           ::= ('year' | 'years') |
                      ('month' | 'months') |
                      ( 'week' | 'weeks' ) |
                      ( 'day' | 'days' ) |
@@ -487,7 +491,7 @@ Terminate an active process.
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-STOP PROCESS <process_id>
+STOP PROCESS &lt;process_id>
 ~~~~
 
 Example:
@@ -504,7 +508,7 @@ Deletes all data in a table.
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-TRUNCATE <tablename>;
+TRUNCATE &lt;tablename>;
 ~~~~
 
 Example:
@@ -521,7 +525,7 @@ Sets the working keyspace.
 Syntax:
 
 ~~~~ {.prettyprint .lang-meta}
-USE <keyspace>;
+USE &lt;keyspace>;
 ~~~~
 
 Example:
@@ -555,9 +559,9 @@ Coming Soon
 |:--------|:----------|
 |blob|Arbitrary bytes expressed as hexadecimal|
 |inet|IP address string in IPv4 or IPv6 format|
-|list\<T\>|A collection of one or more ordered elements|
-|map\<K,V\>|A JSON-style array of literals|
-|set\<T\>|A collection of one or more elements|
+|list&lt;T>|A collection of one or more ordered elements|
+|map&lt;K,V>|A JSON-style array of literals|
+|set&lt;T>|A collection of one or more elements|
 |timestamp|Date plus time, encoded as 8 bytes since epoch|
 |uuid|Type 1 or type 4 UUID|
 |text|UTF-8 encoded string|
