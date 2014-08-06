@@ -143,7 +143,7 @@ public abstract class Relation {
     Iterator<Term<?>> terms = this.getTerms().iterator();
     while (terms.hasNext()) {
       Term<?> term = terms.next();
-      termsValuesList.add(term.getStringValue());
+      termsValuesList.add(term.toString());
     }
 
     return termsValuesList;

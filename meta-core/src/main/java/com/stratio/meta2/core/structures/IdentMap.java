@@ -19,41 +19,48 @@
 package com.stratio.meta2.core.structures;
 
 import com.stratio.meta.common.statements.structures.terms.Term;
+import com.stratio.meta.core.utils.ParserUtils;
 
-public class PropertyNameValue extends Property {
+import java.util.HashMap;
+import java.util.Map;
 
-  private String name;
-  private Term vp;
+public class IdentMap {
 
-  public PropertyNameValue() {
-    super(TYPE_NAME_VALUE);
+  private String identifier;
+  private Map<String, Term> mapTerms;
+
+  public IdentMap(String identifier) {
+    this.identifier = identifier;
+    this.mapTerms = new HashMap<>();
   }
 
-  public PropertyNameValue(String name, Term vp) {
-    super(TYPE_NAME_VALUE);
-    this.name = name;
-    this.vp = vp;
+  public IdentMap(String identifier, Map mapTerms) {
+    this(identifier);
+    this.mapTerms = mapTerms;
   }
 
-  public String getName() {
-    return name;
+  public String getIdentifier() {
+    return identifier;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setIdentifier(String identifier) {
+    this.identifier = identifier;
   }
 
-  public Term getVp() {
-    return vp;
+  public Map<String, Term> getMapTerms() {
+    return mapTerms;
   }
 
-  public void setVp(Term vp) {
-    this.vp = vp;
+  public void setMapTerms(Map mapTerms) {
+    this.mapTerms = mapTerms;
   }
 
   @Override
-  public String toString() {
-    return name+"="+vp.toString();
+  public String toString(){
+    StringBuilder sb = new StringBuilder(identifier);
+    sb.append(" + ");
+    sb.append(ParserUtils.stringMap(mapTerms, ": ", ", "));
+    return sb.toString();
   }
 
 }

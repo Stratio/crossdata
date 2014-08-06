@@ -14,18 +14,20 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package com.stratio.meta.deep.transformation;
+ */
 
-import java.math.BigInteger;
-import java.util.List;
-
-import org.apache.spark.api.java.function.PairFunction;
-
-import scala.Tuple2;
+package com.stratio.meta.deep.transformation;
 
 import com.stratio.deep.entity.Cell;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.core.structures.GroupBy;
+
+import org.apache.spark.api.java.function.PairFunction;
+
+import java.math.BigInteger;
+import java.util.List;
+
+import scala.Tuple2;
 
 
 public class GroupByMapping implements PairFunction<Cells, Cells, Cells> {

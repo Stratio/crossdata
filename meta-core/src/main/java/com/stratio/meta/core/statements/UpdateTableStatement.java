@@ -25,6 +25,7 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.common.statements.structures.terms.FloatTerm;
+import com.stratio.meta.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.common.utils.StringUtils;
@@ -36,7 +37,6 @@ import com.stratio.meta.core.structures.IdentifierAssignment;
 import com.stratio.meta.core.structures.IntTerm;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.structures.ValueAssignment;
-import com.stratio.meta.core.structures.ValuePropertyToBeRemoved;
 import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
@@ -289,9 +289,14 @@ public class UpdateTableStatement extends MetaStatement {
             Result.createValidationErrorResult("TIMESTAMP and TTL are the only accepted options.");
       }
     }
-    for (Option opt : options) {
-      if (opt.getProperties().getType() != ValuePropertyToBeRemoved.TYPE_CONST) {
+    for (Option opt: options) {
+      if (opt.getProperties().getType() != GenericTerm.SIMPLE_TERM) {
         result = Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
+      } else {
+        Term simpleTerm = (Term) opt.getProperties();
+        if(!simpleTerm.isConstant()){
+          result = Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
+        }
       }
     }
     return result;

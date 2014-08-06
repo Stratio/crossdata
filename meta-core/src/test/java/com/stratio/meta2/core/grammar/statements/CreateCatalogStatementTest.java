@@ -43,6 +43,14 @@ public class CreateCatalogStatementTest extends ParsingTest {
   }
 
   @Test
+  public void testJsonToBeRemoved() {
+    String inputText = "CREATE CATALOG fake_catalog WITH "
+                       + "{\"comment\": \"This is a comment\", \"replication\": 2, host: 127.0.0.3} "
+                       + "AND {'advice': 'Be careful', 'replication': false};";
+    testRegularStatement(inputText, "testJsonToBeRemoved");
+  }
+
+  @Test
   public void createCatalogWrongName() {
     String inputText = "CREATE CATALOG remove.name;";
     testParseFails(inputText, "createCatalogWrongName");

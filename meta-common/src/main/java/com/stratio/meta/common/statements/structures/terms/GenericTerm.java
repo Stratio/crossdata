@@ -16,33 +16,29 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures.terms;
 
-public class BooleanPropertyToBeRemoved extends ValuePropertyToBeRemoved {
+public abstract class GenericTerm<T extends Comparable<T>> {
 
-    private boolean bool;
+  public static final int SIMPLE_TERM = 1;
+  public static final int COLLECTION_TERMS = 2;
 
-    public BooleanPropertyToBeRemoved(boolean bool) {
-        this.type = TYPE_BOOLEAN;
-        this.bool = bool;
-    }   
-    
-    public boolean getBool() {
-        return bool;
-    }
+  protected int type;
 
-    public void setBool(boolean bool) {
-        this.bool = bool;
-    }        
-    
-    @Override
-    public String toString() {
-        return Boolean.toString(bool);
-    }
+  public int getType() {
+    return type;
+  }
 
-    @Override
-    public String getStringValue() {
-        return toString();
-    }
+  public void setType(int type) {
+    this.type = type;
+  }
+
+  /**
+   * Get the String value representation.
+   *
+   * @return The String value.
+   */
+  @Override
+  public abstract String toString();
 
 }

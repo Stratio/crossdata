@@ -20,8 +20,8 @@ package com.stratio.meta.common.statements.structures.terms;
 
 import java.io.Serializable;
 
-public abstract class Term<T extends Comparable<T>> extends ValueCell<T> implements Comparable<T>,
-    Serializable {
+public abstract class Term<T extends Comparable<T>> extends GenericTerm<T> implements Comparable<T>,
+                                                                                    Serializable {
 
   private static final long serialVersionUID = -4258938152892510227L;
 
@@ -29,13 +29,14 @@ public abstract class Term<T extends Comparable<T>> extends ValueCell<T> impleme
   protected T value;
 
   public Term(Class<? extends Comparable<?>> clazz, T value) {
+    type = GenericTerm.SIMPLE_TERM;
     this.clazz = clazz;
     this.value = value;
   }
 
   /**
    * Get the Term Java Class.
-   * 
+   *
    * @return A {@link java.lang.Class}.
    */
   public Class<? extends Comparable<?>> getTermClass() {
@@ -44,16 +45,11 @@ public abstract class Term<T extends Comparable<T>> extends ValueCell<T> impleme
 
   /**
    * Get the term value.
-   * 
+   *
    * @return A {@link java.lang.Object} with the value.
    */
   public T getTermValue() {
     return value;
-  }
-
-  @Override
-  public String getStringValue() {
-    return value.toString();
   }
 
   @Override
@@ -68,14 +64,13 @@ public abstract class Term<T extends Comparable<T>> extends ValueCell<T> impleme
    */
   @Override
   public int compareTo(T o) {
-
     return this.value.compareTo(o);
   }
 
   /**
    * Returns a hash code value for the object. This method is supported for the benefit of hash
    * tables such as those provided by {@link java.util.HashMap}.
-   * 
+   *
    * @return a hash code value for this object.
    * @see Object#equals(Object)
    * @see System#identityHashCode
@@ -89,7 +84,7 @@ public abstract class Term<T extends Comparable<T>> extends ValueCell<T> impleme
    * Indicates whether some other object is "equal to" this one.
    * <p/>
    * The {@code equals} method implements an equivalence relation on non-null object references:
-   * 
+   *
    * @param obj the reference object with which to compare.
    * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
    * @see #hashCode()
@@ -108,4 +103,13 @@ public abstract class Term<T extends Comparable<T>> extends ValueCell<T> impleme
 
     return this.value.equals((T) obj);
   }
+
+  public boolean isConstant(){
+    return ((clazz == Integer.class) || (clazz == Long.class));
+  }
+
+  public boolean isDecimal(){
+    return ((clazz == Double.class) || (clazz == Float.class));
+  }
+
 }

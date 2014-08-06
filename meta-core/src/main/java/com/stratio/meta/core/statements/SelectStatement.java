@@ -14,7 +14,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package com.stratio.meta.core.statements;
+ */
+
+package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;

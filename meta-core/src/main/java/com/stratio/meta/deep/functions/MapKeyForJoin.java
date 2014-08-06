@@ -14,13 +14,15 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package com.stratio.meta.deep.functions;
+ */
+
+package com.stratio.meta.deep.functions;
+
+import com.stratio.deep.entity.Cells;
 
 import org.apache.spark.api.java.function.PairFunction;
 
 import scala.Tuple2;
-
-import com.stratio.deep.entity.Cells;
 
 
 public class MapKeyForJoin<T> implements PairFunction<Cells, T, Cells> {

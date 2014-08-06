@@ -26,14 +26,23 @@ public class StringTerm extends Term<String> {
 
   private boolean quotedLiteral = false;
 
-  public StringTerm(String term, boolean quotedLiteral) {
-    super(String.class, term);
-    this.type = TYPE_TERM;
-    this.quotedLiteral = quotedLiteral;
-  }
+  private char quotationMark = '\0';
 
   public StringTerm(String term) {
-    this(term, false);
+    super(String.class, term);
+    if(term.startsWith("'") && term.endsWith("'")){
+      this.quotedLiteral = true;
+      this.quotationMark = '\'';
+      System.out.println(">>>>>>>>>>>>>>> TRACE (Before): Value = " +this.value);
+      this.value = term.substring(1, term.length()-1);
+      System.out.println(">>>>>>>>>>>>>>> TRACE (After): Value = " +this.value);
+    } else if(term.startsWith("\"") && term.endsWith("\"")){
+      this.quotedLiteral = true;
+      this.quotationMark = '"';
+      System.out.println(">>>>>>>>>>>>>>> TRACE (Before): Value = " +this.value);
+      this.value = term.substring(1, term.length()-1);
+      System.out.println(">>>>>>>>>>>>>>> TRACE (After): Value = " +this.value);
+    }
   }
 
   public boolean isQuotedLiteral() {
@@ -44,7 +53,7 @@ public class StringTerm extends Term<String> {
   @Override
   public String toString() {
     if (this.isQuotedLiteral()) {
-      return "'" + value + "'";
+      return quotationMark + value + quotationMark;
     } else {
       return value;
     }
