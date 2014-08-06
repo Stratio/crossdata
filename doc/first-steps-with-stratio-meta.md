@@ -2,7 +2,8 @@
 title: First Steps with Stratio Meta
 ---
 
-Meta is a simple and elegant framework designed to unify batch and stream processing using a common language. The Meta language maintains the friendliness of SQL and CQL while providing streaming processing capabilities.
+Meta is a simple and elegant framework designed to unify batch and stream processing using a common language. 
+The Meta language maintains the friendliness of SQL and CQL while providing streaming processing capabilities.
 
 More information about Stratio META can be found at [Stratio Meta Overview](about.html "Stratio Meta").
 
@@ -65,14 +66,14 @@ Step 1: Create the keyspace
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE KEYSPACE IF NOT EXISTS test
 WITH replication = {class: SimpleStrategy, replication_factor: 3}
 AND durable_writes = false;
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER> CREATE KEYSPACE IF NOT EXISTS test
 metash-sh:USER> WITH replication = {class: SimpleStrategy, replication_factor: 3}
 metash-sh:USER> AND durable_writes = false;
@@ -85,12 +86,12 @@ Result page: 0
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 USE test;
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER> USE test;
 QID: 23465c55-4e8e-4a6a-8a54-73f0597966e2
 ~~~~
@@ -102,7 +103,7 @@ Step 2: Create the table schemas
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE TABLE IF NOT EXISTS users (
       user_id      int,
       location_id  int,
@@ -114,7 +115,7 @@ CREATE TABLE IF NOT EXISTS users (
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> CREATE TABLE IF NOT EXISTS users (
 metash-sh:USER:test>       user_id      int,
 metash-sh:USER:test>       location_id  int,
@@ -133,7 +134,7 @@ Result page: 0
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE TABLE IF NOT EXISTS wallet (
       wallet_id int,
       user_id int,
@@ -144,7 +145,7 @@ CREATE TABLE IF NOT EXISTS wallet (
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> CREATE TABLE IF NOT EXISTS wallet (
 metash-sh:USER:test>       wallet_id int,
 metash-sh:USER:test>       user_id int,
@@ -168,12 +169,12 @@ Step 3: Create Indexes
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE DEFAULT INDEX IF NOT EXISTS users_index ON users (email);
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> CREATE DEFAULT INDEX IF NOT EXISTS users_index ON users (email);
 QID: 47da4048-7ed7-47c3-91f2-285985f5d872
 
@@ -188,13 +189,13 @@ Result page: 0
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE LUCENE INDEX IF NOT EXISTS lucene_index
 ON users (user_id, email, message);
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> CREATE LUCENE INDEX IF NOT EXISTS lucene_index ON users (user_id, email, message);
 QID: 9c2fdcd7-0ed7-4aae-b6e3-598a6aa0c62c
 
@@ -213,13 +214,13 @@ Step 4: Insert into Table users
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 INSERT INTO users (user_id, location_id, email)
 VALUES (100, 28010, 'jdoe@example.com');
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> INSERT INTO users (user_id, location_id, email)
 metash-sh:USER:test> VALUES (100, 28010, 'jdoe@example.com');
 QID: 1803ac45-2d1f-433b-b778-bd3acb44a3dd
@@ -236,7 +237,7 @@ Step 5: Insert into Table wallet
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 INSERT INTO wallet (wallet_id, user_id, amount, city)
 VALUES (200, 100, 5000, 'Barcelona');
 INSERT INTO wallet (wallet_id, user_id, amount, city)
@@ -246,7 +247,7 @@ VALUES (100, 200, 4000, 'London');
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> INSERT INTO wallet (wallet_id, user_id, amount, city)
 metash-sh:USER:test> VALUES (200, 100, 5000, 'Barcelona');
 QID: 881f66ca-6a02-45f2-bc6b-cd7790b1f115
@@ -268,14 +269,14 @@ Step 6: Select From
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 SELECT email
 FROM users
 WHERE user_id = 100;
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> SELECT email
 metash-sh:USER:test> FROM users
 metash-sh:USER:test> WHERE user_id = 100;
@@ -297,14 +298,14 @@ Step 7: Inner Join between tables
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 SELECT u.user_id, u.location_id, u.email, w.wallet_id, w.amount, w.city
 FROM test.users u
 INNER JOIN test.wallet w ON u.user_id = w.user_id;
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> SELECT u.user_id, u.location_id, u.email, w.wallet_id, w.amount, w.city
 metash-sh:USER:test> FROM test.users u
 metash-sh:USER:test> INNER JOIN test.wallet w ON u.user_id = w.user_id;
@@ -328,7 +329,7 @@ Step 8: Where Clause on a non indexed Column
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 SELECT u.user_id, u.email, w.wallet_id, w.amount, w.city
 FROM test.users u
 INNER JOIN test.wallet w ON u.user_id = w.user_id
@@ -336,7 +337,7 @@ WHERE w.city = 'Madrid';
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> SELECT u.user_id, u.email, w.wallet_id, w.amount, w.city
 metash-sh:USER:test> FROM test.users u
 metash-sh:USER:test> INNER JOIN test.wallet w ON u.user_id = w.user_id
@@ -363,12 +364,12 @@ Step 9: Delete Data
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 TRUNCATE users;
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> TRUNCATE users;
 QID: eec4d679-3e3a-44d9-a718-30cd525c416a
 ~~~~
@@ -380,13 +381,13 @@ Step 10: Drop Index
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 DROP INDEX IF EXISTS users_index;
 DROP INDEX IF EXISTS lucene_index;
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> DROP INDEX IF EXISTS users_index;
 QID: 4ce44df2-0ce0-4de3-9834-d903fff8d9f6
 metash-sh:USER:test> DROP INDEX IF EXISTS lucene_index;
@@ -400,13 +401,13 @@ Step 11: Drop Table
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS wallet;
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> DROP TABLE IF EXISTS users;
 QID: 2a97726d-ffb8-4618-a411-bc517f400db9
 metash-sh:USER:test> DROP TABLE IF EXISTS wallet;
@@ -420,12 +421,12 @@ Step 12: Drop Keyspace
 
 {% tabgroup %}
 {% tab Statement %}
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 DROP KEYSPACE IF EXISTS test;
 ~~~~
 {% endtab %}
 {% tab Result %}
-~~~~ {.code}
+~~~~ {code}
 metash-sh:USER:test> DROP KEYSPACE IF EXISTS test;
 QID: a63df932-296e-41ef-8e4d-d46c6c801911
 ~~~~

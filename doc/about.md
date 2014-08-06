@@ -2,7 +2,8 @@
 title: About Meta
 ---
 
-Stratio Meta is one of the core modules on which the Stratio platform is based. It is a abstraction to distributed programming that combines streaming and batch process.
+Stratio Meta is one of the core modules on which the Stratio platform is based. It is a abstraction to distributed 
+programming that combines streaming and batch process.
 
 Table of Contents
 =================
@@ -14,7 +15,8 @@ Table of Contents
 **Introduction**
 ================
 
-Meta is a simple and elegant framework designed to unify batch and stream processing using a common language. The Meta language maintains the friendliness of SQL and CQL while providing streaming processing capabilities.
+Meta is a simple and elegant framework designed to unify batch and stream processing using a common language. 
+The Meta language maintains the friendliness of SQL and CQL while providing streaming processing capabilities.
 
 **Features**
 ============
@@ -35,7 +37,8 @@ The META architecture is composed of two main elements: client and server.
 
 ![Meta\_Architecture](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.45.49.png)
 
-The client is in charge of receiving user requests either from the MetaSh or from the API. Once a request is received, the client performs an initial validation and sends the command to the server in order to execute the query itself.
+The client is in charge of receiving user requests either from the MetaSh or from the API. Once a request is 
+received, the client performs an initial validation and sends the command to the server in order to execute the query itself.
 
 ![Captura de pantalla 2014-04-10 a la(s) 12.54.51](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.54.51.png)
 
@@ -77,7 +80,8 @@ The server builds the execution plan.
 Step 4: Execution
 -----------------
 
-The server executes the query by launching the required Cassandra and Spark operations. The results of the execution are then forwarded back to the client.
+The server executes the query by launching the required Cassandra and Spark operations. The results of the 
+execution are then forwarded back to the client.
 
 ![Execution](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.46.png)
 

@@ -35,7 +35,7 @@ The META Console
 
 To start the META console:
 
-~~~~ {.code}
+~~~~ {code}
 $ metash
 ~~~~
 
@@ -63,19 +63,20 @@ Creates a new keyspace on the system specifying its replication properties.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-CREATE KEYSPACE (IF NOT EXISTS)? &lt;keyspace_name>
-WITH replication = &lt;options_map>
-(AND durable_writes = &lt;boolean>)?;
+~~~~ {prettyprint lang-meta}
+CREATE KEYSPACE (IF NOT EXISTS)? <keyspace_name>
+WITH replication = <options_map>
+(AND durable_writes = <boolean>)?;
 ~~~~
 
 where durable_writes defaults to true.
 
-As of Cassandra 2.0.x, the replication class can be SimpleStrategy for single datacenter deployments, or NetworkTopologyStrategy for a multi-datacenter setup.
+As of Cassandra 2.0.x, the replication class can be SimpleStrategy for single datacenter deployments, or 
+NetworkTopologyStrategy for a multi-datacenter setup.
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE KEYSPACE test
 WITH replication = {class: SimpleStrategy, replication_factor: 3}
 AND durable_writes = false;
@@ -87,29 +88,29 @@ Creates a new table on the selected keyspace.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-CREATE TABLE (IF NOT EXISTS)? &lt;tablename>
-            '('&lt;definition> (',' &lt;definition>)*')'
-             (WITH &lt;option> (AND &lt;option>)*)?;
+~~~~ {prettyprint lang-meta}
+CREATE TABLE (IF NOT EXISTS)? <tablename>
+            '('<definition> (',' <definition>)*')'
+             (WITH <option> (AND <option>)*)?;
 ~~~~
 
 where:
 
-~~~~ {.prettyprint .lang-meta}
-&lt;column-definition> ::= &lt;identifier> &lt;type> (PRIMARY KEY)?
-                      | PRIMARY KEY '('&lt;partition-key>(',' &lt;identifier>)*')'
+~~~~ {prettyprint lang-meta}
+<column-definition> ::= <identifier> <type> (PRIMARY KEY)?
+                      | PRIMARY KEY '('<partition-key>(',' <identifier>)*')'
 
-&lt;partition-key> ::= &lt;partition-key>
-                      | '('&lt;partition-key>(',' &lt;identifier>)*')'
+<partition-key> ::= <partition-key>
+                      | '('<partition-key>(',' <identifier>)*')'
 
-&lt;partition-key> ::= &lt;identifier>
-                      | '('&lt;identifier>(',' &lt;identifier>)*')'
+<partition-key> ::= <identifier>
+                      | '('<identifier>(',' <identifier>)*')'
 
-&lt;option> ::= &lt;property>
+<option> ::= <property>
                | COMPACT STORAGE
                | CLUSTERING ORDER
 
-&lt;property> ::= 'EPHEMERAL = true'
+<property> ::= 'EPHEMERAL = true'
 ~~~~
 
 See [Apache Cassandra CQL3 documentation](http://cassandra.apache.org/doc/cql3/CQL.html#createTableStmt "Apache Cassandra CQL3 documentation") for a full list of available table properties.
@@ -121,7 +122,7 @@ The &lt;primary_key> can take two forms:
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE TABLE users (
       user_id      int,
       location_id  int,
@@ -132,7 +133,7 @@ CREATE TABLE users (
 );
 ~~~~
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE TABLE wallet (
       wallet_id int,
       user_id int,
@@ -142,7 +143,7 @@ CREATE TABLE wallet (
 );
 ~~~~
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE TABLE ratings (
       user_id int,
       rating double,
@@ -159,14 +160,14 @@ Creates an index on a set of columns of a table.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE DEFAULT INDEX (IF NOT EXISTS)?
-&lt;index_name>? ON &lt;tablename> '(' &lt;columname> (',' &lt;columnname>)* ')' ;
+<index_name>? ON <tablename> '(' <columname> (',' <columnname>)* ')' ;
 ~~~~
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE DEFAULT INDEX users_index ON users (email);
 ~~~~
 
@@ -178,14 +179,14 @@ use of the WITH OPTIONS statement.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE LUCENE INDEX (IF NOT EXISTS)?
-&lt;index_name>? ON &lt;tablename> '(' &lt;columname> (',' &lt;columnname>)* ')' ;
+<index_name>? ON <tablename> '(' <columname> (',' <columnname>)* ')' ;
 ~~~~
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 CREATE LUCENE INDEX users_index ON users (user_id, email, message);
 ~~~~
 
@@ -196,28 +197,28 @@ Deletes row(s) of a table.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-DELETE ( &lt;selection> (',' &lt;selection> )* )?
-FROM &lt;tablename> WHERE &lt;where-clause>;
+~~~~ {prettyprint lang-meta}
+DELETE ( <selection> (',' <selection> )* )?
+FROM <tablename> WHERE <where-clause>;
 ~~~~
 
 where
 
-~~~~ {.prettyprint .lang-meta}
-&lt;selection>    ::= &lt;identifier> ( '[' &lt;term> ']' )?
+~~~~ {prettyprint lang-meta}
+<selection>    ::= <identifier> ( '[' <term> ']' )?
 
-&lt;where-clause> ::= &lt;relation> ( AND | OR &lt;relation> )*
+<where-clause> ::= <relation> ( AND | OR <relation> )*
 
-&lt;relation>     ::= &lt;identifier> &lt;operator> &lt;term>
-                     | &lt;identifier> (ALL | ANY) '(' ( &lt;term> (',' &lt;term>)* )? ')'
-                     | &lt;identifier> (ALL | ANY) '?'
+<relation>     ::= <identifier> <operator> <term>
+                     | <identifier> (ALL | ANY) '(' ( <term> (',' <term>)* )? ')'
+                     | <identifier> (ALL | ANY) '?'
 
-&lt;operator>     ::= ( '=' | '>' | '>=' | '&lt;' | '&lt;=' )
+<operator>     ::= ( '=' | '>' | '>=' | '<' | '<=' )
 ~~~~
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 DELETE FROM users WHERE user_id = 100;
 ~~~~
 
@@ -228,14 +229,14 @@ Provides information about the table or keyspace.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-DESCRIBE ( KEYSPACE ( &lt;keyspace> )? | TABLE &lt;tablename> );
+~~~~ {prettyprint lang-meta}
+DESCRIBE ( KEYSPACE ( <keyspace> )? | TABLE <tablename> );
 DESCRIBE ( KEYSPACES | TABLES );
 ~~~~
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 DESCRIBE TABLE users;
 ~~~~
 
@@ -254,13 +255,13 @@ Removes an existing keyspace.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-DROP KEYSPACE (IF EXISTS)? &lt;keyspace>;
+~~~~ {prettyprint lang-meta}
+DROP KEYSPACE (IF EXISTS)? <keyspace>;
 ~~~~
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 DROP KEYSPACE IF EXISTS test;
 ~~~~
 
@@ -270,13 +271,13 @@ Removes an existing table.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-DROP TABLE (IF EXISTS)? &lt;tablename>;
+~~~~ {prettyprint lang-meta}
+DROP TABLE (IF EXISTS)? <tablename>;
 ~~~~
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 DROP TABLE IF EXISTS users;
 ~~~~
 
@@ -286,13 +287,13 @@ Removes an existing index.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-DROP INDEX (IF EXISTS)? ( &lt;keyspace>. )? &lt;index_name>;
+~~~~ {prettyprint lang-meta}
+DROP INDEX (IF EXISTS)? ( <keyspace>. )? <index_name>;
 ~~~~
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 DROP INDEX users_index;
 ~~~~
 
@@ -303,19 +304,19 @@ Inserts new values in a table of the keyspace
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-INSERT INTO &lt;tablename> '(' &lt;identifier> ( ',' &lt;identifier> )* ')'
-VALUES '(' &lt;term-or-literal> ( ',' &lt;term-or-literal> )* ')';
+~~~~ {prettyprint lang-meta}
+INSERT INTO <tablename> '(' <identifier> ( ',' <identifier> )* ')'
+VALUES '(' <term-or-literal> ( ',' <term-or-literal> )* ')';
 ~~~~
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 INSERT INTO users (user_id, location_id, email)
 VALUES (100, 28010, 'jdoe@example.com');
 ~~~~
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 INSERT INTO wallet (wallet_id, user_id, amount, city)
 VALUES (200, 100, 5000, 'Barcelona');
 INSERT INTO wallet (wallet_id, user_id, amount, city)
@@ -331,13 +332,13 @@ List active processes.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 LIST PROCESS
 ~~~~
 
 Example of output:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 -------------------------------------------------------------------------------------------------
 | QID                                  | Table   | Query                                        |
 -------------------------------------------------------------------------------------------------
@@ -354,50 +355,50 @@ Retrieves a subset of data from an existing table.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-SELECT &lt;select-clause>
-FROM &lt;tablename> ( &lt;alias> )?
-( INNER JOIN &lt;tablename> ON '('? &lt;field1> = &lt;field2> ')'? )?
-( WHERE &lt;where-clause> )?
-( ORDER BY &lt;identifier> ('ASC'|'DESC')? (, &lt;identifier> ('ASC'|'DESC')? )* )?
-( GROUP BY &lt;identifier> (, &lt;identifier>)* )?
+~~~~ {prettyprint lang-meta}
+SELECT <select-clause>
+FROM <tablename> ( <alias> )?
+( INNER JOIN <tablename> ON '('? <field1> = <field2> ')'? )?
+( WHERE <where-clause> )?
+( ORDER BY <identifier> ('ASC'|'DESC')? (, <identifier> ('ASC'|'DESC')? )* )?
+( GROUP BY <identifier> (, <identifier>)* )?
 ~~~~
 
 where
 
-~~~~ {.prettyprint .lang-meta}
-&lt;select-clause>  ::= DISTINCT? &lt;selection-list>
-                      | COUNT '(' ( '*' | '1' ) ')' (AS &lt;identifier>)?
+~~~~ {prettyprint lang-meta}
+<select-clause>  ::= DISTINCT? <selection-list>
+                      | COUNT '(' ( '*' | '1' ) ')' (AS <identifier>)?
 
-&lt;selection-list> ::= &lt;selector> (AS &lt;identifier>)?
-                       ( ',' &lt;selector> (AS &lt;identifier>)? )*
+<selection-list> ::= <selector> (AS <identifier>)?
+                       ( ',' <selector> (AS <identifier>)? )*
                        | '*'
 
-&lt;selector>       ::= &lt;identifier>
-                       | &lt;agg_function> '(' (&lt;selector> (',' &lt;selector>)*)? ')'
+<selector>       ::= <identifier>
+                       | <agg_function> '(' (<selector> (',' <selector>)*)? ')'
 
-&lt;agg_function>   ::= 'COUNT' | 'AVG' | 'SUM' | 'MIN' | 'MAX'
+<agg_function>   ::= 'COUNT' | 'AVG' | 'SUM' | 'MIN' | 'MAX'
 
-&lt;where-clause>   ::= &lt;condition> ( AND &lt;condition> )*
+<where-clause>   ::= <condition> ( AND <condition> )*
 
-&lt;condition>      ::= &lt;identifier> &lt;operator> &lt;term> |
-                     &lt;identifier> BETWEEN &lt;term1> AND &lt;term2> |
-                     &lt;identifier> IN '(' &lt;term1> (, &lt;term2>)* ')'
+<condition>      ::= <identifier> <operator> <term> |
+                     <identifier> BETWEEN <term1> AND <term2> |
+                     <identifier> IN '(' <term1> (, <term2>)* ')'
 
-&lt;operator>       ::= '=' | '>' | '>=' | '&lt;' | '&lt;=' | '&lt;>' | 'MATCH'
+<operator>       ::= '=' | '>' | '>=' | '<' | '<=' | '<>' | 'MATCH'
 ~~~~
 
 INNER JOIN permits to combine two tables A and B by comparing each row in A with each one in B selecting
  all rows that match the join-predicate.
 
-WHERE &lt;where-clause> specifies the conditions that a row in &lt;tablename> needs to fulfil in order to
+WHERE <where-clause> specifies the conditions that a row in <tablename> needs to fulfil in order to
  be selected. It can contain a condition on a non-indexed column.
 
 ORDER BY will sort the results in ascending order by default.
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 SELECT email FROM users
 WHERE user_id > 100
 ORDER BY email DESC;
@@ -407,7 +408,7 @@ ORDER BY email DESC;
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 SELECT user_id, email, wallet_id, amount, city
 FROM test.users
 INNER JOIN test.wallet ON users.user_id = wallet.user_id;
@@ -427,7 +428,7 @@ The WHERE clause can contain a non-indexed column.
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 SELECT user_id, email, wallet_id, amount, city
 FROM test.users
 INNER JOIN test.wallet ON users.user_id = wallet.user_id
@@ -444,20 +445,20 @@ WHERE wallet.city = 'Madrid';
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-SELECT &lt;select-clause>
-FROM &lt;tablename>
-WITH WINDOW &lt;window_length> ;
+~~~~ {prettyprint lang-meta}
+SELECT <select-clause>
+FROM <tablename>
+WITH WINDOW <window_length> ;
 ~~~~
 
 where
 
-~~~~ {.prettyprint .lang-meta}
-&lt;select-clause>  ::= '*' | &lt;selection-list>
+~~~~ {prettyprint lang-meta}
+<select-clause>  ::= '*' | <selection-list>
 
-&lt;window_length>  ::= &lt;size> &lt;unit>
+<window_length>  ::= <size> <unit>
 
-&lt;unit>           ::= ('year' | 'years') |
+<unit>           ::= ('year' | 'years') |
                      ('month' | 'months') |
                      ( 'week' | 'weeks' ) |
                      ( 'day' | 'days' ) |
@@ -469,7 +470,7 @@ where
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 SELECT * FROM ratings WITH WINDOW 6 sec;
 
 ---------------------------------
@@ -490,13 +491,13 @@ Terminate an active process.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-STOP PROCESS &lt;process_id>
+~~~~ {prettyprint lang-meta}
+STOP PROCESS <process_id>
 ~~~~
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 STOP PROCESS b4d2c152-5a11-4f6b-9efe-caa5f6aa90d9;
 ~~~~
 
@@ -507,13 +508,13 @@ Deletes all data in a table.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-TRUNCATE &lt;tablename>;
+~~~~ {prettyprint lang-meta}
+TRUNCATE <tablename>;
 ~~~~
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 TRUNCATE users;
 ~~~~
 
@@ -524,13 +525,13 @@ Sets the working keyspace.
 
 Syntax:
 
-~~~~ {.prettyprint .lang-meta}
-USE &lt;keyspace>;
+~~~~ {prettyprint lang-meta}
+USE <keyspace>;
 ~~~~
 
 Example:
 
-~~~~ {.prettyprint .lang-meta}
+~~~~ {prettyprint lang-meta}
 USE test;
 ~~~~
 
