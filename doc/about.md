@@ -35,12 +35,12 @@ The Meta language maintains the friendliness of SQL and CQL while providing stre
 
 The META architecture is composed of two main elements: client and server.
 
-![Meta\_Architecture](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.45.49.png)
+![Meta Architecture](images/about-architecture.png)
 
 The client is in charge of receiving user requests either from the MetaSh or from the API. Once a request is 
 received, the client performs an initial validation and sends the command to the server in order to execute the query itself.
 
-![Captura de pantalla 2014-04-10 a la(s) 12.54.51](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.54.51.png)
+![Meta Overview](images/about-function-overview.png)
 
 The META server receives user requests and processes them in several steps: Parsing, Validation, Planning and Execution.
 
@@ -53,16 +53,16 @@ SELECT name, id FROM users WHERE city = "Madrid";
 Step 1: Parsing
 ---------------
 
-![Parsing](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.11.png)
+![Parsing](images/about-step1-parsing.png)
 
 The parser will validate the syntax and build the following tree:
 
-![Tree](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-11.15.10.png)
+![Tree](images/about-step1-tree.png)
 
 Step 2: Validation
 ------------------
 
-![Validation](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.19.png)
+![Validation](images/about-step2-validation.png)
 
 During this step, the server checks that the query is semantically valid. For example:
 
@@ -75,7 +75,7 @@ Step 3: Planning
 
 The server builds the execution plan.
 
-![Planning](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.29.png)
+![Planning](images/about-step3-planning.png)
 
 Step 4: Execution
 -----------------
@@ -83,9 +83,11 @@ Step 4: Execution
 The server executes the query by launching the required Cassandra and Spark operations. The results of the 
 execution are then forwarded back to the client.
 
-![Execution](http://www.openstratio.org/wp-content/uploads/2014/04/Captura-de-pantalla-2014-04-10-a-las-12.55.46.png)
+![Execution](images/about-step4-execution.png)
 
 Where to go from here
 =====================
 
-To explore and play with Stratio Meta, we recommend taking the [First steps with Stratio Meta](first-steps-with-stratio-meta.html "First steps with Stratio Meta") tutorial, and visiting the [Meta Reference](meta-reference.html "Meta Reference") manual.
+To explore and play with Stratio Meta, we recommend taking the 
+[First steps with Stratio Meta](first-steps-with-stratio-meta.html "First steps with Stratio Meta") 
+tutorial, and visiting the [Meta Reference](meta-reference.html "Meta Reference") manual.
