@@ -76,15 +76,7 @@ public class RestServer {
   public String postQuery(@FormParam("catalog") String catalog, @FormParam("query") String query) {
     String queryId = "";
 
-    // SYNCHRONOUS WAY
-    // ObjectMapper mapper = new ObjectMapper();
-    // try {
-    // driver.executeSyncQuery(query, catalog);
-    // } catch (UnsupportedException | ParsingException | ValidationException | ExecutionException
-    // | ConnectionException e) {
-    // return mapper.writeValueAsString(e.getMessage());
-    // }
-    // return mapper.writeValueAsString(driver.getResult());
+
 
     try {
       System.out.println("[MetaRestServer] query: " + query + " catalog " + catalog);
@@ -117,7 +109,7 @@ public class RestServer {
       if (callback.getErrorResult() != null) {
         return mapper.writeValueAsString(callback.getErrorResult());
       } else {
-        return "no more results";
+        return "OK";
       }
     }
   }
