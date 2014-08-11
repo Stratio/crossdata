@@ -16,21 +16,64 @@
  * under the License.
  */package com.stratio.meta2.core.metadata;
 
-import com.stratio.meta.common.connector.IMetadataEngine;
-import com.stratio.meta.common.metadata.structures.CatalogMetadata;
-import com.stratio.meta2.metadata.IMetadata;
-import com.stratio.meta2.metadata.StorageMetadata;
 
 import java.util.Map;
+import com.stratio.meta2.metadata.CatalogMetadata;
+import com.stratio.meta2.metadata.IMetadata;
+import com.stratio.meta2.metadata.StorageMetadata;
+import com.stratio.meta2.transaction.ITransactionContext;
+import com.stratio.meta2.transaction.ITransactionContextFactory;
 
 
 
 public enum  MetadataManager {
   MANAGER;
-  private Map<String, IMetadata> metadata;
-  private Map<String, StorageMetadata> storageMetadataMap;
-  private IMetadataEngine iMetadataEngine;
+  private boolean isInit = false;
 
+  private Map<String, IMetadata> metadata;
+  private ITransactionContextFactory factory;
+
+  private void shouldBeInit(){
+    if (!isInit) {
+      throw new MetadataManagerException("Metadata is not initialized yet.");
+    }
+  }
+
+  private void shouldBeUnique(IMetadata iMetadata){
+    if (metadata.containsKey(iMetadata.getQualifiedName())) {
+      throw new MetadataManagerException("Entity["+ iMetadata.getQualifiedName()+"] already exists");
+    }
+  }
+
+  public synchronized void init(Map<String,IMetadata> metadata, ITransactionContextFactory factory){
+    if (metadata != null && factory != null) {
+      this.metadata = metadata;
+      this.factory = factory;
+      this.isInit = true;
+    } else {
+      throw new MetadataManagerException("[metadata] and [lock] must be NOT NULL");
+    }
+  }
+
+  public void CreateCatalog(CatalogMetadata catalogMetadata) {
+    shouldBeInit();
+    shouldBeUnique(catalogMetadata);
+    ITransactionContext context= factory.newTransactionContext();
+    context.beginTransaction();
+    try {
+      metadata.put(catalogMetadata.getQualifiedName(), catalogMetadata);
+      context.commitTransaction();
+    }catch (Exception ex){
+      context.rollbackTransaction();
+      throw ex;
+    }
+  }
+
+  public void CreateStorage(StorageMetadata storageMetadata){
+    shouldBeInit();
+    shouldBeUnique(storageMetadata);
+
+  }
 
 
 
