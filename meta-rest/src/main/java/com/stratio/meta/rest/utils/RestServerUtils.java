@@ -37,23 +37,23 @@ public class RestServerUtils {
   private static Base64 base64 = new Base64();
 
   public static JsonQueryResult toJsonQueryResult(QueryResult qr) {
-
+    JsonMetaResultSet jrs = new JsonMetaResultSet();
     List<JsonRow> jrows = new ArrayList<JsonRow>();
+    if(((MetaResultSet) qr.getResultSet()).getRows().size()>0){
     List<Row> rows = ((MetaResultSet) qr.getResultSet()).getRows();
     for (Row r : rows) {
       JsonRow jr = new JsonRow();
       jr.setCells(r.getCells());
       jrows.add(jr);
     }
-
-    JsonMetaResultSet jrs = new JsonMetaResultSet();
     jrs.setColumnMetadata(((MetaResultSet) qr.getResultSet()).getColumnMetadata());
     jrs.setRows(jrows);
+    }
     JsonQueryResult jqr =
         new JsonQueryResult(jrs, qr.getResultPage(), qr.isCatalogChanged(), qr.getCurrentCatalog(),
             qr.isLastResultSet());
-
-
+    jqr.setQueryId(qr.getQueryId());
+    jqr.setError(qr.hasError());
     return jqr;
   }
 

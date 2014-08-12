@@ -68,4 +68,8 @@ public abstract class JsonResult implements Serializable {
   public boolean hasError() {
     return error;
   }
+  
+  public void setError(boolean error) {
+    this.error = error;
+  }
 }
