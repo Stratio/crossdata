@@ -14,8 +14,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package com.stratio.meta.sh;
+ */
 
+package com.stratio.meta.sh;
 
 import java.io.BufferedReader;
 import java.io.File;

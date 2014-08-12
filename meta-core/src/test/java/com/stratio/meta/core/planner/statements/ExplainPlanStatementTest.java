@@ -18,16 +18,20 @@
 
 package com.stratio.meta.core.planner.statements;
 
-import com.stratio.meta.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.DropTableStatement;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
-import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.SelectStatement;
-import com.stratio.meta.core.structures.*;
+import com.stratio.meta.core.structures.SelectionClause;
+import com.stratio.meta.core.structures.SelectionList;
+import com.stratio.meta.core.structures.SelectionSelector;
+import com.stratio.meta.core.structures.SelectionSelectors;
+import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
+import com.stratio.meta2.core.statements.MetaStatement;
+
 import org.testng.annotations.Test;
 
 import java.util.Arrays;

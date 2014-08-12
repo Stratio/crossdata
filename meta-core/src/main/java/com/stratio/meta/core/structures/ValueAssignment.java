@@ -18,7 +18,8 @@
 
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.core.structures.IdentMap;
 
 /**
  * Class that contains the value assignment of the

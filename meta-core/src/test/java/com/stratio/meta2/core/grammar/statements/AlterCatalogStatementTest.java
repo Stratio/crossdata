@@ -14,8 +14,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package com.stratio.meta2.core.grammar.statements;
+ */
 
+package com.stratio.meta2.core.grammar.statements;
 
 import com.stratio.meta.core.grammar.ParsingTest;
 import org.testng.annotations.Test;

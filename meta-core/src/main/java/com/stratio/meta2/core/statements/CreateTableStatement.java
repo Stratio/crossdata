@@ -25,10 +25,10 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.BooleanTerm;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.statements.structures.terms.BooleanTerm;
 import com.stratio.meta2.core.structures.Property;
 import com.stratio.meta2.core.structures.PropertyNameValue;
 
@@ -360,17 +360,17 @@ public class CreateTableStatement extends MetaStatement {
       if (property.getType() == Property.TYPE_NAME_VALUE) {
         PropertyNameValue propertyNameValue = (PropertyNameValue) property;
         if ("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
-            && propertyNameValue.getVp().getTermClass() != Boolean.TYPE) {
+            && propertyNameValue.getVp().getTermClass() != Boolean.class) {
           // If property ephemeral is present, it must be a boolean type
           result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
           exit = true;
         } else if ("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
-                   && propertyNameValue.getVp().getTermClass() != Boolean.TYPE) {
+                   && propertyNameValue.getVp().getTermClass() != Boolean.class) {
           // If property ephemeral_tuples is present, it must be a integer type
           result= Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
           exit = true;
         } else if ("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
-                   && propertyNameValue.getVp().getTermClass() != Boolean.TYPE) {
+                   && propertyNameValue.getVp().getTermClass() != Boolean.class) {
           // If property ephemeral_persist_on is present, it must be a string type
           result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
           exit = true;
@@ -456,7 +456,7 @@ public class CreateTableStatement extends MetaStatement {
             PropertyNameValue pnv = (PropertyNameValue) property;
             String propName = pnv.getName();
             if ("ephemeral".equalsIgnoreCase(propName)
-                && (pnv.getVp().getTermClass() == Boolean.TYPE)
+                && (pnv.getVp().getTermClass() == Boolean.class)
                 && ((BooleanTerm) pnv.getVp()).getTermValue()) {
               streamingMode = true;
               break;

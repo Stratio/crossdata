@@ -16,33 +16,17 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta2.common.statements.structures.terms;
 
-public class ConstantPropertyToBeRemoved extends ValuePropertyToBeRemoved {
-    
-    private int constant;
+public class FloatTerm extends Term<Float> {
 
-    public ConstantPropertyToBeRemoved(int constant) {
-        this.constant = constant;
-        this.type = TYPE_CONST;
-    }
-    
-    public int getConstant() {
-        return constant;
-    }
+	private static final long serialVersionUID = -578510540271635667L;
 
-    public void setConstant(int constant) {
-        this.constant = constant;
-    }
+	public FloatTerm(String term) {
+		super(Float.class, Float.valueOf(term));
+	}
 
-    @Override
-    public String toString() {
-        return Integer.toString(constant);
-    }
-
-    @Override
-    public String getStringValue() {
-        return toString();
-    }
-
+	public FloatTerm(Term<Double> term) {
+		super(Float.class, term.getTermValue().floatValue());
+	}
 }

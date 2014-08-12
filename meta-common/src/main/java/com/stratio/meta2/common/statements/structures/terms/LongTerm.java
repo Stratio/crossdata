@@ -16,33 +16,13 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta2.common.statements.structures.terms;
 
-public class BooleanPropertyToBeRemoved extends ValuePropertyToBeRemoved {
+public class LongTerm extends Term<Long> {
 
-    private boolean bool;
+	private static final long serialVersionUID = 7097178218828822792L;
 
-    public BooleanPropertyToBeRemoved(boolean bool) {
-        this.type = TYPE_BOOLEAN;
-        this.bool = bool;
-    }   
-    
-    public boolean getBool() {
-        return bool;
-    }
-
-    public void setBool(boolean bool) {
-        this.bool = bool;
-    }        
-    
-    @Override
-    public String toString() {
-        return Boolean.toString(bool);
-    }
-
-    @Override
-    public String getStringValue() {
-        return toString();
-    }
-
+	public LongTerm(String term) {
+		super(Long.class, Long.valueOf(term));
+	}
 }

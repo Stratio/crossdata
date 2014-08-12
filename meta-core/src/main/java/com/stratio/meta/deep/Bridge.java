@@ -32,7 +32,6 @@ import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.GroupBy;
@@ -54,6 +53,7 @@ import com.stratio.meta.deep.transformation.GroupByAggregation;
 import com.stratio.meta.deep.transformation.GroupByMapping;
 import com.stratio.meta.deep.transformation.KeyRemover;
 import com.stratio.meta.deep.utils.DeepUtils;
+import com.stratio.meta2.common.statements.structures.terms.Term;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.structures.Ordering;
 

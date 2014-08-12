@@ -27,7 +27,7 @@ options {
     package com.stratio.meta.core.grammar.generated;
     import com.stratio.meta.common.statements.structures.relationships.*;
     import com.stratio.meta.common.statements.structures.selectors.*;
-    import com.stratio.meta.common.statements.structures.terms.*;
+    import com.stratio.meta2.common.statements.structures.terms.*;
     import com.stratio.meta.common.statements.structures.window.*;
     import com.stratio.meta.core.statements.*;
     import com.stratio.meta2.core.statements.*;
@@ -226,6 +226,7 @@ T_HOUR: H O U R;
 T_HOURS: H O U R S;
 T_DAY: D A Y;
 T_DAYS: D A Y S;
+T_NULL: N U L L;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -240,8 +241,9 @@ QUOTED_LITERAL
     @init{
         StringBuilder sb = new StringBuilder();
     }
-    @after{ setText(sb.toString());
-    System.out.println("Quoted_literal: " + sb.toString());}:
+    @after{
+        setText(sb.toString());
+    }:
         ('"'|'\'') (c=~('"'|'\'') { sb.appendCodePoint(c);} | '\'' '\'' { sb.appendCodePoint('\''); })* ('"'|'\'')
     ;
 
@@ -343,14 +345,14 @@ createStorageStatement returns [CreateStorageStatement css]
     T_USING T_CONNECTOR connectorName=QUOTED_LITERAL
     T_WITH T_OPTIONS
     T_START_SBRACKET
-        key=getValuePropertyToBeRemoved T_COLON value=getValuePropertyToBeRemoved
+        key=getTerm T_COLON value=getTerm
             {
-                System.out.println("key: " + key + " - value: " + value);
+                System.out.println("key: " + key.toString() + " - value: " + value.toString());
                 sb.append(key).append(":").append(value);
             }
-		(T_COMMA keyN=getValuePropertyToBeRemoved T_COLON valueN=getValuePropertyToBeRemoved
+		(T_COMMA keyN=getTerm T_COLON valueN=getTerm
 		    {
-		    System.out.println("keyN: " + keyN + " - valueN: " + valueN);
+		    System.out.println("keyN: " + keyN.toString() + " - valueN: " + valueN.toString());
 		    sb.append(",").append(keyN).append(":").append(valueN);
 		    } )*
 
@@ -363,14 +365,14 @@ createStorageStatement returns [CreateStorageStatement css]
 
 	(T_AND T_CONNECTOR connectorName=QUOTED_LITERAL T_WITH T_OPTIONS
 	    T_START_SBRACKET
-                key=getValuePropertyToBeRemoved T_COLON value=getValuePropertyToBeRemoved
+                key=getTerm T_COLON value=getTerm
                     {
-                        System.out.println("key: " + key + " - value: " + value);
+                        System.out.println("key: " + key.toString() + " - value: " + value.toString());
                         sb.append(key).append(":").append(value);
                     }
-        		(T_COMMA keyN=getValuePropertyToBeRemoved T_COLON valueN=getValuePropertyToBeRemoved
+        		(T_COMMA keyN=getTerm T_COLON valueN=getTerm
         		    {
-        		    System.out.println("keyN: " + keyN + " - valueN: " + valueN);
+        		    System.out.println("keyN: " + keyN.toString() + " - valueN: " + valueN.toString());
         		    sb.append(",").append(keyN).append(":").append(valueN);
         		    } )*
 
@@ -405,14 +407,14 @@ alterStorageStatement returns [AlterStorageStatement ass]
     storageName=T_IDENT
     T_WITH
     T_START_SBRACKET
-            key=getValuePropertyToBeRemoved T_COLON value=getValuePropertyToBeRemoved
+            key=getTerm T_COLON value=getTerm
                 {
-                    System.out.println("key: " + key + " - value: " + value);
+                    System.out.println("key: " + key.toString() + " - value: " + value.toString());
                     sb.append(key).append(":").append(value);
                 }
-    		(T_COMMA keyN=getValuePropertyToBeRemoved T_COLON valueN=getValuePropertyToBeRemoved
+    		(T_COMMA keyN=getTerm T_COLON valueN=getTerm
     		    {
-    		    System.out.println("keyN: " + keyN + " - valueN: " + valueN);
+    		    System.out.println("keyN: " + keyN.toString() + " - valueN: " + valueN.toString());
     		    sb.append(",").append(keyN).append(":").append(valueN);
     		    } )*
 
@@ -431,7 +433,7 @@ createCatalogStatement returns [CreateCatalogStatement crksst]
     T_CREATE T_CATALOG
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     catalogName=T_IDENT
-    (T_WITH j=JSON)?
+    (T_WITH j=getJSON (T_AND jN=getJSON)*)?
     { $crksst = new CreateCatalogStatement($catalogName.text, ifNotExists, $j.text); }
     ;
 
@@ -450,7 +452,7 @@ alterCatalogStatement returns [AlterCatalogStatement alksst]
     :
     T_ALTER T_CATALOG
     catalogName=T_IDENT
-    T_WITH j=JSON
+    T_WITH j=getJSON
     { $alksst = new AlterCatalogStatement($catalogName.text, $j.text); };
 
 // ========================================================
@@ -540,14 +542,14 @@ createIndexStatement returns [CreateIndexStatement cis]
 	)*
 	T_END_PARENTHESIS
 	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.toString());})?
-	(T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=getValuePropertyToBeRemoved T_COLON value=getValuePropertyToBeRemoved {$cis.addOption(key, value);}
-		(T_COMMA keyN=getValuePropertyToBeRemoved T_COLON valueN=getValuePropertyToBeRemoved {$cis.addOption(keyN, valueN);} )* T_END_SBRACKET
+	(T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=getTerm T_COLON value=getTerm {$cis.addOption(key, value);}
+		(T_COMMA keyN=getTerm T_COLON valueN=getTerm {$cis.addOption(keyN, valueN);} )* T_END_SBRACKET
 	)?
 	;
-    //identProp1=T_IDENT T_EQUAL valueProp1=getValuePropertyToBeRemoved {properties.put($identProp1.text, valueProp1);}
+    //identProp1=T_IDENT T_EQUAL valueProp1=getTerm {properties.put($identProp1.text, valueProp1.toString());}
 /*
-(T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=T_IDENT T_COLON value=getValuePropertyToBeRemoved {$cis.addOption($key.text, value);}
-		(T_AND key=T_IDENT T_COLON value=getValuePropertyToBeRemoved {$cis.addOption($key.text, value);} )* T_END_SBRACKET
+(T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=T_IDENT T_COLON value=getTerm {$cis.addOption($key.text, value.toString());}
+		(T_AND key=T_IDENT T_COLON value=getTerm {$cis.addOption($key.text, value.toString());} )* T_END_SBRACKET
 */
 
 getField returns [String newField]:
@@ -733,7 +735,7 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
         ArrayList<String> ids = new ArrayList<>();
         boolean ifNotExists = false;
         int typeValues = InsertIntoStatement.TYPE_VALUES_CLAUSE;
-        ArrayList<ValueCell<?>> cellValues = new ArrayList<>();
+        ArrayList<GenericTerm> cellValues = new ArrayList<>();
         boolean optsInc = false;
         ArrayList<Option> options = new ArrayList<>();
     }:
@@ -850,12 +852,12 @@ getMetaProperties returns [ArrayList<Property> props]
 
 getMetaProperty returns [Property mp]
     @init{
-        BooleanPropertyToBeRemoved boolProp = new BooleanPropertyToBeRemoved(true);
+        BooleanTerm boolProp = new BooleanTerm("true");
     }:
-    (identProp=T_IDENT T_EQUAL valueProp=getValuePropertyToBeRemoved {$mp = new PropertyNameValue($identProp.text, new StringTerm(valueProp.toString()));}
+    (identProp=T_IDENT T_EQUAL valueProp=getTerm {$mp = new PropertyNameValue($identProp.text, new StringTerm(valueProp.toString()));}
     | T_COMPACT T_STORAGE {$mp = new PropertyCompactStorage();}
     | T_CLUSTERING T_ORDER T_BY T_START_PARENTHESIS ordering=getOrdering {$mp = new PropertyClusteringOrder(ordering);} T_END_PARENTHESIS)
-    | T_EPHEMERAL ( | T_EQUAL (T_FALSE {new BooleanPropertyToBeRemoved(false);} | T_TRUE )) {$mp = new PropertyNameValue("ephemeral", new StringTerm(boolProp.toString()));}
+    | T_EPHEMERAL ( | T_EQUAL (T_FALSE { boolProp = new BooleanTerm("false");} | T_TRUE )) {$mp = new PropertyNameValue("ephemeral", boolProp);}
 ;
 
 getDataType returns [String dataType]:
@@ -1009,7 +1011,7 @@ getAssignment returns [Assignment assign]:
 
 getValueAssign returns [ValueAssignment valueAssign]:
     term1=getTerm { $valueAssign = new ValueAssignment(term1);}
-    | ident=T_IDENT (T_PLUS (T_START_SBRACKET mapLiteral=getMapLiteral T_END_SBRACKET { $valueAssign = new ValueAssignment(new IdentMap($ident.text, new MapLiteralPropertyToBeRemoved(mapLiteral)));}
+    | ident=T_IDENT (T_PLUS (T_START_SBRACKET mapLiteral=getMapLiteral T_END_SBRACKET { $valueAssign = new ValueAssignment(new IdentMap($ident.text, mapLiteral));}
                                 | value1=getIntSetOrList {
                                                             if(value1 instanceof IntTerm)
                                                                 $valueAssign = new ValueAssignment(new IntTerm($ident.text, '+', ((IntTerm) value1).getTerm()));
@@ -1072,7 +1074,7 @@ getOptions returns [ArrayList<Option> opts]@init{
 getOption returns [Option opt]:
     T_COMPACT T_STORAGE {$opt=new Option(Option.OPTION_COMPACT);}
     | T_CLUSTERING T_ORDER {$opt=new Option(Option.OPTION_CLUSTERING);}
-    | identProp=T_IDENT T_EQUAL valueProp=getValuePropertyToBeRemoved {$opt=new Option($identProp.text, valueProp);}
+    | identProp=T_IDENT T_EQUAL valueProp=getTerm {$opt=new Option($identProp.text, valueProp);}
 ;
 
 getList returns [ArrayList list]
@@ -1099,16 +1101,16 @@ getSet returns [Set set]
     (T_COMMA termN=getTerm {set.add(termN.toString());})*
     ;
 
-getTermOrLiteral returns [ValueCell vc]
+getTermOrLiteral returns [GenericTerm vc]
     @init{
-        CollectionLiteral cl = new CollectionLiteral();
+        ListTerms cl = new ListTerms();
     }:
     term=getTerm {$vc=term;}
     |
     T_START_SBRACKET
     (
-        term1=getTerm {cl.addLiteral(term1);}
-        (T_COMMA termN=getTerm {cl.addLiteral(termN);})*
+        term1=getTerm {cl.addTerm(term1);}
+        (T_COMMA termN=getTerm {cl.addTerm(termN);})*
     )?
     T_END_SBRACKET {$vc=cl;}
 ;
@@ -1137,29 +1139,17 @@ getPartialTerm returns [Term term]:
     | ksAndTn=T_KS_AND_TN {$term = new StringTerm($ksAndTn.text);}
     | noIdent=T_TERM {$term = new StringTerm($noIdent.text);}
     | path=T_PATH {$term = new StringTerm($path.text);}
-    | qLiteral=QUOTED_LITERAL {$term = new StringTerm($qLiteral.text, true);}
+    | qLiteral=QUOTED_LITERAL {$term = new StringTerm($qLiteral.text);}
 ;
 
-getMapLiteral returns [Map<String, String> mapTerms]
+getMapLiteral returns [Map<String, Term> mapTerms]
     @init{
         $mapTerms = new HashMap<>();
     }:
     T_START_SBRACKET
-    (leftTerm1=getTerm T_COLON rightTerm1=getTerm {$mapTerms.put(leftTerm1.toString(), rightTerm1.toString());}
-    (T_COMMA leftTermN=getTerm T_COLON rightTermN=getTerm {$mapTerms.put(leftTermN.toString(), rightTermN.toString());})*)?
+    (leftTerm1=getTerm T_COLON rightTerm1=getTerm {$mapTerms.put(leftTerm1.toString(), rightTerm1);}
+    (T_COMMA leftTermN=getTerm T_COLON rightTermN=getTerm {$mapTerms.put(leftTermN.toString(), rightTermN);})*)?
     T_END_SBRACKET
-    ;
-
-getValuePropertyToBeRemoved returns [ValuePropertyToBeRemoved value]:
-    ident=T_IDENT {$value = new IdentifierPropertyToBeRemoved($ident.text);}
-    | constant=getConstant {$value = new ConstantPropertyToBeRemoved(Integer.parseInt(constant));}
-    | mapliteral=getMapLiteral {$value = new MapLiteralPropertyToBeRemoved(mapliteral);}
-    | number=getFloat {$value = new FloatPropertyToBeRemoved(Float.parseFloat(number));}
-    | T_FALSE {$value = new BooleanPropertyToBeRemoved(false);}
-    | T_TRUE {$value = new BooleanPropertyToBeRemoved(true);}
-    | T_COMPACT T_STORAGE {$value = new IdentifierPropertyToBeRemoved("COMPACT STORAGE");}
-    | T_CLUSTERING T_ORDER {$value = new IdentifierPropertyToBeRemoved("CLUSTERING ORDER");}
-    | quotedLiteral=QUOTED_LITERAL {$value = new QuotedLiteralToBeRemoved($quotedLiteral.text);}
     ;
 
 getConstant returns [String constStr]:
@@ -1226,6 +1216,38 @@ getTable returns [TableName table]
     (ident1=T_IDENT {t1 = $ident1.text;}
     | ident2=T_KS_AND_TN {t2 = $ident2.text;})
     ;
+
+// ===================================================
+// JSON
+// ===================================================
+
+getJSON: T_START_SBRACKET getPairJSON (T_COMMA getPairJSON)* T_END_SBRACKET
+       | T_START_SBRACKET T_END_SBRACKET
+;
+
+getPairJSON: (str=QUOTED_LITERAL | str=T_IDENT) {new StringTerm($str.text);} T_COLON getValueJSON ;
+
+getArrayJSON: T_START_BRACKET getValueJSON (T_COMMA getValueJSON)* T_END_BRACKET
+            | T_START_BRACKET T_END_BRACKET
+;
+
+getValueJSON: getTermJSON
+            | getJSON
+            | getArrayJSON
+;
+
+getTermJSON: QUOTED_LITERAL
+           | getNumberJSON
+           | T_FALSE
+           | T_TRUE
+           | T_NULL
+;
+
+getNumberJSON: constant=getConstant
+             | floatingNumber=T_FLOAT
+;
+
+// ===================================================
 
 WS: (' ' | '\t' | '\n' | '\r')+ { 
         $channel = HIDDEN; 

@@ -14,7 +14,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package com.stratio.meta.core.statements;
+ */
+
+package com.stratio.meta.core.statements;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
@@ -35,7 +37,6 @@ import com.stratio.meta.common.statements.structures.selectors.SelectorFunction;
 import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
-import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.common.statements.structures.window.Window;
 import com.stratio.meta.common.statements.structures.window.WindowType;
 import com.stratio.meta.common.utils.StringUtils;
@@ -54,6 +55,7 @@ import com.stratio.meta.core.structures.SelectionSelectors;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.statements.structures.terms.Term;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.structures.OrderDirection;
 import com.stratio.meta2.core.structures.Ordering;

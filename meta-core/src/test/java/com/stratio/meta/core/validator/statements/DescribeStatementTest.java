@@ -14,12 +14,13 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package com.stratio.meta.core.validator.statements;
+ */
 
-
-import org.testng.annotations.Test;
+package com.stratio.meta.core.validator.statements;
 
 import com.stratio.meta.core.validator.BasicValidatorTest;
+
+import org.testng.annotations.Test;
 
 public class DescribeStatementTest extends BasicValidatorTest {
 

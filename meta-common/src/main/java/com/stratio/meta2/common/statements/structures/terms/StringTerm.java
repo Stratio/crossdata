@@ -16,9 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
-
-import com.stratio.meta.common.statements.structures.terms.Term;
+package com.stratio.meta2.common.statements.structures.terms;
 
 public class StringTerm extends Term<String> {
 
@@ -26,14 +24,19 @@ public class StringTerm extends Term<String> {
 
   private boolean quotedLiteral = false;
 
-  public StringTerm(String term, boolean quotedLiteral) {
-    super(String.class, term);
-    this.type = TYPE_TERM;
-    this.quotedLiteral = quotedLiteral;
-  }
+  private char quotationMark = '\0';
 
   public StringTerm(String term) {
-    this(term, false);
+    super(String.class, term);
+    if(term.startsWith("'") && term.endsWith("'")){
+      this.quotedLiteral = true;
+      this.quotationMark = '\'';
+      this.value = term.substring(1, term.length()-1);
+    } else if(term.startsWith("\"") && term.endsWith("\"")){
+      this.quotedLiteral = true;
+      this.quotationMark = '"';
+      this.value = term.substring(1, term.length()-1);
+    }
   }
 
   public boolean isQuotedLiteral() {
@@ -44,7 +47,7 @@ public class StringTerm extends Term<String> {
   @Override
   public String toString() {
     if (this.isQuotedLiteral()) {
-      return "'" + value + "'";
+      return String.valueOf(quotationMark) + value + String.valueOf(quotationMark);
     } else {
       return value;
     }

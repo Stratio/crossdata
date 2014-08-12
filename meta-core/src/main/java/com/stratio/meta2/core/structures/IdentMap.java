@@ -16,35 +16,50 @@
  * under the License.
  */
 
-package com.stratio.meta.common.statements.structures.relationships;
+package com.stratio.meta2.core.structures;
 
-import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
-import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta2.common.statements.structures.terms.Term;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-public class RelationIn extends Relation {
+public class IdentMap {
 
-  public RelationIn(String identifier) {
-    this.terms = new ArrayList<>();
-    this.type = TYPE_IN;
-    this.operator = "IN";
-    this.identifiers = new ArrayList<>();
-    this.identifiers.add(new SelectorIdentifier(identifier));
+  private String identifier;
+  private Map<String, Term> mapTerms;
+
+  public IdentMap(String identifier) {
+    this.identifier = identifier;
+    this.mapTerms = new HashMap<>();
   }
 
-  public RelationIn(String identifier, List<Term<?>> terms) {
+  public IdentMap(String identifier, Map mapTerms) {
     this(identifier);
-    this.terms = terms;
+    this.mapTerms = mapTerms;
+  }
+
+  public String getIdentifier() {
+    return identifier;
+  }
+
+  public void setIdentifier(String identifier) {
+    this.identifier = identifier;
+  }
+
+  public Map<String, Term> getMapTerms() {
+    return mapTerms;
+  }
+
+  public void setMapTerms(Map mapTerms) {
+    this.mapTerms = mapTerms;
   }
 
   @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder(identifiers.get(0).toString());
-    sb.append(" ").append(operator).append(" ").append("(")
-        .append(StringUtils.stringList(terms, ", ")).append(")");
+  public String toString(){
+    StringBuilder sb = new StringBuilder(identifier);
+    sb.append(" + ");
+    sb.append(ParserUtils.stringMap(mapTerms, ": ", ", "));
     return sb.toString();
   }
 

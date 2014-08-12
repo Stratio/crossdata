@@ -210,17 +210,17 @@ public class AlterTableStatement extends TableStatement {
             if(property.getType() == Property.TYPE_NAME_VALUE){
                 PropertyNameValue propertyNameValue = (PropertyNameValue) property;
                 if("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
-                        && propertyNameValue.getVp().getTermClass() != Boolean.TYPE){
+                        && propertyNameValue.getVp().getTermClass() != Boolean.class){
                     // If property ephemeral is present, it must be a boolean type
                     result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
                     exit = true;
                 } else if("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
-                        && propertyNameValue.getVp().getTermClass() != Boolean.TYPE){
+                        && propertyNameValue.getVp().getTermClass() != Boolean.class){
                     // If property ephemeral_tuples is present, it must be a integer type
                     result= Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
                     exit = true;
                 } else if("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
-                        && propertyNameValue.getVp().getTermClass() != Boolean.TYPE){
+                        && propertyNameValue.getVp().getTermClass() != Boolean.class){
                     // If property ephemeral_persist_on is present, it must be a string type
                     result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
                     exit = true;

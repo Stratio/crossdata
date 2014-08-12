@@ -14,37 +14,35 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package com.stratio.meta.core.engine;
+ */
+
+package com.stratio.meta.core.engine;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.hazelcast.config.Config;
+import com.hazelcast.config.InMemoryFormat;
+import com.hazelcast.config.MapConfig;
+import com.hazelcast.config.MaxSizeConfig;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.core.api.APIManager;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
 import com.stratio.meta.core.validator.Validator;
-import com.stratio.meta.streaming.StreamingUtils;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.SparkEnv;
-import org.apache.spark.storage.BlockManagerMasterActor;
-import org.apache.spark.storage.StorageStatus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
-
-import scala.Tuple2;
-import scala.collection.Iterator;
-
-import com.hazelcast.core.*;
-import com.hazelcast.config.*;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:

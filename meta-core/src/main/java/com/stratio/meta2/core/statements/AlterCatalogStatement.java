@@ -23,10 +23,10 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.ValuePropertyToBeRemoved;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 
 import java.util.Map;
 
@@ -44,7 +44,7 @@ public class AlterCatalogStatement extends MetaStatement {
    * The map of properties of the keyspace. The different options accepted by a keyspace are
    * determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
    */
-  private Map<String, ValuePropertyToBeRemoved> properties;
+  private Map<String, GenericTerm> properties;
 
   /**
    * Class constructor.

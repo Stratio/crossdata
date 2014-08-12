@@ -14,9 +14,11 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package com.stratio.meta2.core.structures;
+ */
 
-import com.stratio.meta.common.statements.structures.terms.Term;
+package com.stratio.meta2.core.structures;
+
+import com.stratio.meta2.common.statements.structures.terms.Term;
 
 public class PropertyNameValue extends Property {
 

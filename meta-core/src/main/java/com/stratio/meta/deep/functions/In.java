@@ -18,12 +18,12 @@
 
 package com.stratio.meta.deep.functions;
 
-import java.util.List;
+import com.stratio.deep.entity.Cells;
+import com.stratio.meta2.common.statements.structures.terms.Term;
 
 import org.apache.spark.api.java.function.Function;
 
-import com.stratio.deep.entity.Cells;
-import com.stratio.meta.common.statements.structures.terms.Term;
+import java.util.List;
 
 public class In implements Function<Cells, Boolean> {
 

@@ -16,33 +16,19 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta2.common.statements.structures.terms;
 
-public class IdentifierPropertyToBeRemoved extends ValuePropertyToBeRemoved {
-    
-    private String identifier;
+public class BooleanTerm extends Term<Boolean> {
 
-    public IdentifierPropertyToBeRemoved(String identifier) {
-        this.identifier = identifier;
-        this.type = TYPE_IDENT;
-    }
-        
-    public String getIdentifier() {
-        return identifier;
-    }
+  private static final long serialVersionUID = 2872212148572680680L;
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
-    }        
-
-    @Override
-    public String toString() {
-        return identifier;
-    }
-
-    @Override
-    public String getStringValue() {
-        return toString();
-    }
-
+  /**
+   * Class constructor.
+   *
+   * @param term
+   *            The string representation of a Boolean value.
+   */
+  public BooleanTerm(String term) {
+    super(Boolean.class, Boolean.valueOf(term));
+  }
 }

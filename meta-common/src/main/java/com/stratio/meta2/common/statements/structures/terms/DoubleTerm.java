@@ -16,33 +16,13 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta2.common.statements.structures.terms;
 
-public class FloatPropertyToBeRemoved extends ValuePropertyToBeRemoved {
+public class DoubleTerm extends Term<Double> {
 
-    private float number;
+	private static final long serialVersionUID = -578510540271635667L;
 
-    public FloatPropertyToBeRemoved(float number) {
-        this.number = number;
-        this.type = TYPE_FLOAT;
-    }
-
-    public float getNumber() {
-        return number;
-    }
-
-    public void setNumber(float number) {
-        this.number = number;
-    }
-
-    @Override
-    public String toString() {
-            return Float.toString(number);
-    }
-
-    @Override
-    public String getStringValue() {
-        return toString();
-    }
-
+	public DoubleTerm(String term) {
+		super(Double.class, Double.valueOf(term));
+	}
 }

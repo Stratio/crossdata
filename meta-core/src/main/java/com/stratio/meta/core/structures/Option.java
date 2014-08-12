@@ -18,6 +18,8 @@
 
 package com.stratio.meta.core.structures;
 
+import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
+
 public class Option {
 
   public static final int OPTION_PROPERTY = 1;
@@ -26,9 +28,9 @@ public class Option {
 
   private int fixedOption;
   private String nameProperty;
-  private ValuePropertyToBeRemoved valueProperty;
+  private GenericTerm valueProperty;
 
-  public Option(int fixedOption, String nameProperty, ValuePropertyToBeRemoved properties) {
+  public Option(int fixedOption, String nameProperty, GenericTerm properties) {
     this.fixedOption = fixedOption;
     this.nameProperty = nameProperty;
     this.valueProperty = properties;
@@ -38,7 +40,7 @@ public class Option {
     this(fixedOption, null, null);
   }
 
-  public Option(String nameProperty, ValuePropertyToBeRemoved properties) {
+  public Option(String nameProperty, GenericTerm properties) {
     this.fixedOption = OPTION_PROPERTY;
     this.nameProperty = nameProperty;
     this.valueProperty = properties;
@@ -60,11 +62,11 @@ public class Option {
     this.nameProperty = nameProperty;
   }
 
-  public ValuePropertyToBeRemoved getProperties() {
+  public GenericTerm getProperties() {
     return valueProperty;
   }
 
-  public void setProperties(ValuePropertyToBeRemoved properties) {
+  public void setProperties(GenericTerm properties) {
     this.valueProperty = properties;
   }
 

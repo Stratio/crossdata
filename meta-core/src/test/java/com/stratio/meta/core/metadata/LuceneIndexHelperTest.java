@@ -14,7 +14,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package com.stratio.meta.core.metadata;
+ */
+
+package com.stratio.meta.core.metadata;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
