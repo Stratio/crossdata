@@ -1130,19 +1130,6 @@ getMapLiteral returns [Map<String, Term> mapTerms]
     T_END_SBRACKET
     ;
 
-
-//getValuePropertyToBeRemoved returns [ValuePropertyToBeRemoved value]:
-//    ident=T_IDENT {$value = new IdentifierPropertyToBeRemoved($ident.text);}
-//    | constant=getConstant {$value = new ConstantPropertyToBeRemoved(Integer.parseInt(constant));}
-//    | mapliteral=getMapLiteral {$value = new MapLiteralPropertyToBeRemoved(null);}
-//    | number=getFloat {$value = new FloatPropertyToBeRemoved(Float.parseFloat(number));}
-//    | T_FALSE {$value = new BooleanPropertyToBeRemoved(false);}
-//    | T_TRUE {$value = new BooleanPropertyToBeRemoved(true);}
-//    | T_COMPACT T_STORAGE {$value = new IdentifierPropertyToBeRemoved("COMPACT STORAGE");}
-//    | T_CLUSTERING T_ORDER {$value = new IdentifierPropertyToBeRemoved("CLUSTERING ORDER");}
-//    | quotedLiteral=QUOTED_LITERAL {$value = new QuotedLiteralToBeRemoved($quotedLiteral.text);}
-//    ;
-
 getConstant returns [String constStr]:
     constToken=T_CONSTANT {$constStr = new String($constToken.text);}
     | '1' {$constStr = new String("1");}
