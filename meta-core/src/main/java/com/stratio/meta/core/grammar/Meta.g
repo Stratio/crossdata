@@ -151,6 +151,7 @@ T_INSERT: I N S E R T;
 T_INTO: I N T O;
 T_COMPACT: C O M P A C T;
 T_STORAGE: S T O R A G E;
+T_CLUSTER: C L U S T E R;
 T_CLUSTERING: C L U S T E R I N G;
 T_ORDER: O R D E R;
 T_SELECT: S E L E C T;
@@ -244,18 +245,15 @@ QUOTED_LITERAL
         ('"'|'\'') (c=~('"'|'\'') { sb.appendCodePoint(c);} | '\'' '\'' { sb.appendCodePoint('\''); })* ('"'|'\'')
     ;
 
-//JSON
-//    @init{
-//        StringBuilder sb = new StringBuilder();
-//    }
-//    @after{
-//        setText("{" + sb.toString() + "}");
-//    }:
-//        //T_START_SBRACKET (c=(.) {sb.appendCodePoint(c);})* T_END_SBRACKET
-//        //T_START_SBRACKET (c=~(';') {sb.appendCodePoint(c);})* T_END_SBRACKET
-//        //T_QUOTE T_START_SBRACKET (c=~(';') {sb.appendCodePoint(c);})* T_END_SBRACKET T_QUOTE
-//        T_START_SBRACKET (c=(.) {sb.appendCodePoint(c);})* T_END_SBRACKET
-//    ;
+JSON
+    @init{
+        StringBuilder sb = new StringBuilder();
+    }
+    @after{
+        setText("{" + sb.toString() + "}");
+    }:
+    T_START_SBRACKET (c=~(';') {sb.appendCodePoint(c);})* T_END_SBRACKET
+    ;
 
 
 T_CONSTANT: (DIGIT)+;
@@ -286,6 +284,31 @@ T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 //    }:
 //        (c=(.) {sb.appendCodePoint(c);})+
 //    ;
+
+// ========================================================
+// CLUSTER
+// ========================================================
+
+createClusterStatement returns [CreateClusterStatement ccs]
+    @init{
+        boolean ifNotExists = false;
+    }
+    @after{
+        ccs = new CreateClusterStatement(
+            $clusterName.text,
+            ifNotExists,
+            $datastoreName.text,
+            $j.text);
+    }
+    :
+    T_CREATE T_CLUSTER
+    (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
+    clusterName=T_IDENT
+    T_ON T_DATASTORE datastoreName=QUOTED_LITERAL
+    T_WITH T_OPTIONS
+    j=JSON
+    ;
+
 
 // ========================================================
 // STORAGE
@@ -794,7 +817,7 @@ metaStatement returns [MetaStatement st]:
     | st_crks = createCatalogStatement { $st = st_crks; }
     | st_alks = alterCatalogStatement { $st = st_alks; }
     | st_drks = dropCatalogStatement { $st = st_drks ;}
-    | css = createStorageStatement { $st = css;}
+    | ccs = createClusterStatement { $st = ccs;}
     | dss = dropStorageStatement {$st = dss;}
     | ass = alterStorageStatement {$st = ass;}
     | cis = createIndexStatement { $st = cis; }
