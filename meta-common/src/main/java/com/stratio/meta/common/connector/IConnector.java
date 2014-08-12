@@ -72,4 +72,11 @@ public interface IConnector {
    * @throws UnsupportedException If the connector does not provide this functionality.
    */
   public IQueryEngine getQueryEngine() throws UnsupportedException;
+
+  /**
+   * Get the metadata engine.
+   * @return An implementation of {@link com.stratio.meta.common.connector.IMetadataEngine}.
+   * @throws UnsupportedException If the connector does not provide this functionality.
+   */
+  public IMetadataEngine getMetadataEngine() throws UnsupportedException;
 }

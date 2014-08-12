@@ -16,9 +16,8 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.transaction;
 
-
-public class Schema {
-
+public interface ITransactionContextFactory {
+  public ITransactionContext newTransactionContext();
 }

@@ -20,59 +20,50 @@ package com.stratio.meta2.metadata;
 
 import java.util.Map;
 
-public class TableMetadata {
-  private String name;
+public class TableMetadata implements IMetadata {
+  private final String name;
 
-  private Map<String, Object> options;
+  private final Map<String, Object> options;
 
-  private Map<String, ColumnMetadata> columns;
+  private final Map<String, ColumnMetadata> columns;
 
-  private CatalogMetadata catalog;
+  private final String catalog;
 
-  private StorageMetadata storage;
+  private final String storage;
 
-  public TableMetadata() {
+  public TableMetadata(String name, Map<String, Object> options,
+      Map<String, ColumnMetadata> columns, String catalog, String storage) {
+    this.name = name;
+    this.options = options;
+    this.columns = columns;
+    this.catalog = catalog;
+    this.storage = storage;
   }
-
 
 
   public String getName() {
     return name;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
 
   public Map<String, Object> getOptions() {
     return options;
-  }
-
-  public void setOptions(Map<String, Object> options) {
-    this.options = options;
   }
 
   public Map<String, ColumnMetadata> getColumns() {
     return columns;
   }
 
-  public void setColumns(Map<String, ColumnMetadata> columns) {
-    this.columns = columns;
-  }
-
-  public CatalogMetadata getCatalog() {
+  public String getCatalog() {
     return catalog;
   }
 
-  public void setCatalog(CatalogMetadata catalog) {
-    this.catalog = catalog;
-  }
 
-  public StorageMetadata getStorage() {
+  public String getStorage() {
     return storage;
   }
 
-  public void setStorage(StorageMetadata storage) {
-    this.storage = storage;
+  @Override public String getQualifiedName() {
+    return QualifiedNames.getTableQualifiedName(catalog,name);
   }
 }

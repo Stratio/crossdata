@@ -16,37 +16,14 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.core.metadata;
 
-import java.util.Map;
 
-public class CatalogMetadata implements IMetadata {
-  private final String name;
-
-  private final Map<String, Object> options;
-
-  private final Map<String, TableMetadata> tables;
-
-  public CatalogMetadata(String name, Map<String, Object> options,
-      Map<String, TableMetadata> tables) {
-    this.name = name;
-    this.options = options;
-    this.tables = tables;
+public class MetadataManagerException extends RuntimeException {
+  public MetadataManagerException(String message){
+    super(message);
   }
-
-  public final String getName() {
-    return name;
-  }
-
-  public Map<String, Object> getOptions() {
-    return options;
-  }
-
-  public Map<String, TableMetadata> getTables() {
-    return tables;
-  }
-
-  @Override public String getQualifiedName() {
-    return QualifiedNames.getCatalogQualifiedName(name);
+  public MetadataManagerException(String message,Throwable cause){
+    super(message,cause);
   }
 }

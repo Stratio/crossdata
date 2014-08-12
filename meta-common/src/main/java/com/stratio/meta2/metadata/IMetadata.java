@@ -18,35 +18,8 @@
 
 package com.stratio.meta2.metadata;
 
-import java.util.Map;
+import java.io.Serializable;
 
-public class CatalogMetadata implements IMetadata {
-  private final String name;
-
-  private final Map<String, Object> options;
-
-  private final Map<String, TableMetadata> tables;
-
-  public CatalogMetadata(String name, Map<String, Object> options,
-      Map<String, TableMetadata> tables) {
-    this.name = name;
-    this.options = options;
-    this.tables = tables;
-  }
-
-  public final String getName() {
-    return name;
-  }
-
-  public Map<String, Object> getOptions() {
-    return options;
-  }
-
-  public Map<String, TableMetadata> getTables() {
-    return tables;
-  }
-
-  @Override public String getQualifiedName() {
-    return QualifiedNames.getCatalogQualifiedName(name);
-  }
+public interface IMetadata extends Serializable {
+  public String getQualifiedName();
 }
