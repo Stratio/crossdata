@@ -19,7 +19,7 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.structures.BooleanTerm;
+import com.stratio.meta2.common.statements.structures.terms.BooleanTerm;
 import com.stratio.meta2.core.statements.CreateTableStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.structures.Property;

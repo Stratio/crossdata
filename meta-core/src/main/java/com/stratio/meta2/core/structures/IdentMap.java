@@ -18,8 +18,8 @@
 
 package com.stratio.meta2.core.structures;
 
-import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta2.common.statements.structures.terms.Term;
 
 import java.util.HashMap;
 import java.util.Map;

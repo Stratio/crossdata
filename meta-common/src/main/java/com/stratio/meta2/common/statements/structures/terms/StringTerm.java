@@ -16,9 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
-
-import com.stratio.meta.common.statements.structures.terms.Term;
+package com.stratio.meta2.common.statements.structures.terms;
 
 public class StringTerm extends Term<String> {
 
@@ -49,7 +47,7 @@ public class StringTerm extends Term<String> {
   @Override
   public String toString() {
     if (this.isQuotedLiteral()) {
-      return quotationMark + value + quotationMark;
+      return String.valueOf(quotationMark) + value + String.valueOf(quotationMark);
     } else {
       return value;
     }

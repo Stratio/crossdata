@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.core.structures;
 
-import com.stratio.meta.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.terms.Term;
 
 public class PropertyNameValue extends Property {
 

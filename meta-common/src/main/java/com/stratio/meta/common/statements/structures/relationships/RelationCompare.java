@@ -18,11 +18,11 @@
 
 package com.stratio.meta.common.statements.structures.relationships;
 
-import java.util.ArrayList;
-
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
-import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.statements.structures.terms.Term;
+
+import java.util.ArrayList;
 
 public class RelationCompare extends Relation {
 

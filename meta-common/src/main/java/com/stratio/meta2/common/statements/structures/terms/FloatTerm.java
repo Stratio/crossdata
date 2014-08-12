@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.common.statements.structures.terms;
+package com.stratio.meta2.common.statements.structures.terms;
 
 public class FloatTerm extends Term<Float> {
 

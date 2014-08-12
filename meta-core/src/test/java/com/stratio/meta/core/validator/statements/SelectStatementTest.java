@@ -18,9 +18,9 @@
 
 package com.stratio.meta.core.validator.statements;
 
-import org.testng.annotations.Test;
-
 import com.stratio.meta.core.validator.BasicValidatorTest;
+
+import org.testng.annotations.Test;
 
 public class SelectStatementTest extends BasicValidatorTest {
 
@@ -385,7 +385,7 @@ public class SelectStatementTest extends BasicValidatorTest {
             + "WHERE edad > 13 AND genero IN ('male', 'female') ORDER BY edad DESC GROUP BY genero;";
 
     String expectedText =
-        "SELECT users.age AS edad, users.gender AS genero, sum(users.age) AS suma, min(users.gender) AS minimo, count(*) AS contador FROM demo.users "
+        "SELECT users.age AS edad, users.gender AS genero, SUM(users.age) AS suma, MIN(users.gender) AS minimo, COUNT(*) AS contador FROM demo.users "
             + "WHERE users.age > 13 AND users.gender IN ('male', 'female') ORDER BY users.age DESC GROUP BY users.gender;";
 
     validateOk(inputText, expectedText, "testComplexQueryWithAliasesOk");

@@ -18,20 +18,27 @@
 
 package com.stratio.meta.core.utils;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.metadata.structures.*;
+import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
-import com.stratio.meta.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.terms.Term;
 
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CoreUtils {
 

@@ -18,10 +18,10 @@
 
 package com.stratio.meta.deep.functions;
 
-import org.apache.spark.api.java.function.Function;
-
 import com.stratio.deep.entity.Cells;
-import com.stratio.meta.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.terms.Term;
+
+import org.apache.spark.api.java.function.Function;
 
 public class Between implements Function<Cells, Boolean> {
 
@@ -49,7 +49,8 @@ public class Between implements Function<Cells, Boolean> {
    * In apply in filter to a field in a Deep Cell.
    * 
    * @param field Name of the field to check.
-   * @param inIDs List of values of the IN clause.
+   * @param lowerBound List of values of the IN clause.
+   * @param upperBound List of values of the IN clause.
    */
   public Between(String field, Term<?> lowerBound, Term<?> upperBound) {
     this.field = field;

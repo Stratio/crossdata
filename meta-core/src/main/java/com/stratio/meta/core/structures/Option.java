@@ -18,7 +18,7 @@
 
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.common.statements.structures.terms.GenericTerm;
+import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 
 public class Option {
 

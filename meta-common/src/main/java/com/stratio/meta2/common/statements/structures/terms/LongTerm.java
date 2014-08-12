@@ -16,9 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
-
-import com.stratio.meta.common.statements.structures.terms.Term;
+package com.stratio.meta2.common.statements.structures.terms;
 
 public class LongTerm extends Term<Long> {
 

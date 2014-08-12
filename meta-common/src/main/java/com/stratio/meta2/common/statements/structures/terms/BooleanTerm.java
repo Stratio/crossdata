@@ -16,17 +16,19 @@
  * under the License.
  */
 
-package com.stratio.meta.core.validator.statements;
+package com.stratio.meta2.common.statements.structures.terms;
 
+public class BooleanTerm extends Term<Boolean> {
 
-import com.stratio.meta.core.validator.BasicValidatorTest;
-import org.testng.annotations.Test;
+  private static final long serialVersionUID = 2872212148572680680L;
 
-public class SetOptionsStatementTest extends BasicValidatorTest {
-
-    @Test
-    public void validateNotSupported(){
-        String inputText = "SET OPTIONS ANALYTICS=true AND CONSISTENCY=LOCAL_ONE;";
-        validateFail(inputText, "validateNotSupported");
-    }
+  /**
+   * Class constructor.
+   *
+   * @param term
+   *            The string representation of a Boolean value.
+   */
+  public BooleanTerm(String term) {
+    super(Boolean.class, Boolean.valueOf(term));
+  }
 }

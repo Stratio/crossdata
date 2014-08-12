@@ -16,21 +16,39 @@
  * under the License.
  */
 
-package com.stratio.meta.core.planner.statements;
+package com.stratio.meta2.common.statements.structures.terms;
 
-import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.SetOptionsStatement;
-import com.stratio.meta.core.structures.Consistency;
-import org.testng.annotations.Test;
+public abstract class GenericTerm {
 
-import java.util.Arrays;
+  public static final int SIMPLE_TERM = 1;
+  public static final int COLLECTION_TERMS = 2;
 
-public class SetOptionsStatementTest  extends BasicPlannerTest {
+  protected int type;
 
-    @Test
-    public void planificationNotSupported(){
-        String inputText = "SET OPTIONS ANALYTICS=true AND CONSISTENCY=LOCAL_ONE;";
-        stmt = new SetOptionsStatement(true, Consistency.LOCAL_ONE, Arrays.asList(Boolean.TRUE));
-        validateNotSupported();
+  public int getType() {
+    return type;
+  }
+
+  public void setType(int type) {
+    this.type = type;
+  }
+
+  public Class getUnderlyingClass() {
+    Class clazz;
+    if(this instanceof Term){
+      clazz = ((Term) this).getTermClass();
+    } else {
+      clazz = ((CollectionTerms) this).getCollectionClass();
     }
+    return clazz;
+  }
+
+  /**
+   * Get the String value representation.
+   *
+   * @return The String value.
+   */
+  @Override
+  public abstract String toString();
+
 }

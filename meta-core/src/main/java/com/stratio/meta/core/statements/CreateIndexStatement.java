@@ -23,16 +23,16 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.IndexType;
-import com.stratio.meta.core.structures.StringTerm;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
+import com.stratio.meta2.common.statements.structures.terms.StringTerm;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 import java.util.ArrayList;

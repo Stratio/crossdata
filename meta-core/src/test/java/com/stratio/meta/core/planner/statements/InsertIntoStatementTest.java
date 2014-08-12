@@ -18,19 +18,19 @@
 
 package com.stratio.meta.core.planner.statements;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.stratio.meta.core.planner.BasicPlannerTest;
+import com.stratio.meta.core.statements.InsertIntoStatement;
+import com.stratio.meta.core.structures.Option;
+import com.stratio.meta2.common.statements.structures.terms.BooleanTerm;
+import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
+import com.stratio.meta2.common.statements.structures.terms.LongTerm;
+import com.stratio.meta2.common.statements.structures.terms.StringTerm;
 
 import org.testng.annotations.Test;
 
-import com.stratio.meta.common.statements.structures.terms.GenericTerm;
-import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.InsertIntoStatement;
-import com.stratio.meta.core.structures.BooleanTerm;
-import com.stratio.meta.core.structures.LongTerm;
-import com.stratio.meta.core.structures.Option;
-import com.stratio.meta.core.structures.StringTerm;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class InsertIntoStatementTest extends BasicPlannerTest {
 
@@ -39,7 +39,7 @@ public class InsertIntoStatementTest extends BasicPlannerTest {
 		String inputText = "INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
 		List<String> ids = Arrays.asList("name", "gender", "email", "age",
 				"bool", "phrase");
-		List<GenericTerm<?>> list = new ArrayList<>();
+		List<GenericTerm> list = new ArrayList<>();
 		list.add(new StringTerm("name_0"));
 		list.add(new StringTerm("male"));
 		list.add(new LongTerm("10"));

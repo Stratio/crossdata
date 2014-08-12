@@ -18,11 +18,11 @@
 
 package com.stratio.meta.common.statements.structures.relationships;
 
+import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.statements.structures.terms.Term;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.stratio.meta.common.statements.structures.terms.Term;
-import com.stratio.meta.common.utils.StringUtils;
 
 /**
  * Class that models a relationship in a {@code WHERE} clause that includes a reference to the
