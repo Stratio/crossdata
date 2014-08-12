@@ -18,8 +18,6 @@
 
 package com.stratio.meta2.common.statements.structures.terms;
 
-import com.stratio.meta.common.statements.structures.terms.Term;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,7 +27,7 @@ public class MapTerms extends CollectionTerms {
   public MapTerms() {
     super();
     terms = new HashMap<Term, Term>();
-    clazz = HashMap.class;
+    collectionClass = HashMap.class;
   }
 
   @Override
@@ -47,6 +45,21 @@ public class MapTerms extends CollectionTerms {
   @Override
   public void clearTerms() {
     ((HashMap<Term, Term>) terms).clear();
+  }
+
+  @Override
+  public int size() {
+    return ((HashMap<StringTerm, GenericTerm>) terms).size();
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return ((HashMap<StringTerm, GenericTerm>) terms).isEmpty();
+  }
+
+  @Override
+  public boolean containsKey(StringTerm key) {
+    return ((HashMap<StringTerm, GenericTerm>) terms).containsKey(key);
   }
 
   /**

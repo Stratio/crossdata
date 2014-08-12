@@ -27,7 +27,6 @@ options {
     package com.stratio.meta.core.grammar.generated;
     import com.stratio.meta.common.statements.structures.relationships.*;
     import com.stratio.meta.common.statements.structures.selectors.*;
-    import com.stratio.meta.common.statements.structures.terms.*;
     import com.stratio.meta2.common.statements.structures.terms.*;
     import com.stratio.meta.common.statements.structures.window.*;
     import com.stratio.meta.core.statements.*;
@@ -713,7 +712,7 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
         ArrayList<String> ids = new ArrayList<>();
         boolean ifNotExists = false;
         int typeValues = InsertIntoStatement.TYPE_VALUES_CLAUSE;
-        ArrayList<GenericTerm<?>> cellValues = new ArrayList<>();
+        ArrayList<GenericTerm> cellValues = new ArrayList<>();
         boolean optsInc = false;
         ArrayList<Option> options = new ArrayList<>();
     }:

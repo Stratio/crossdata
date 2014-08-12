@@ -16,21 +16,21 @@
  * under the License.
  */
 
-package com.stratio.meta.common.statements.structures.terms;
+package com.stratio.meta2.common.statements.structures.terms;
 
 import java.io.Serializable;
 
-public abstract class Term<T extends Comparable<T>> extends GenericTerm<T> implements Comparable<T>,
+public abstract class Term<T extends Comparable<T>> extends GenericTerm implements Comparable<T>,
                                                                                     Serializable {
 
   private static final long serialVersionUID = -4258938152892510227L;
 
-  protected Class<? extends Comparable<?>> clazz;
+  protected Class<? extends Comparable<?>> comparableClass;
   protected T value;
 
-  public Term(Class<? extends Comparable<?>> clazz, T value) {
+  public Term(Class<? extends Comparable<?>> comparableClass, T value) {
     type = GenericTerm.SIMPLE_TERM;
-    this.clazz = clazz;
+    this.comparableClass = comparableClass;
     this.value = value;
   }
 
@@ -40,7 +40,7 @@ public abstract class Term<T extends Comparable<T>> extends GenericTerm<T> imple
    * @return A {@link java.lang.Class}.
    */
   public Class<? extends Comparable<?>> getTermClass() {
-    return clazz;
+    return comparableClass;
   }
 
   /**
@@ -77,7 +77,7 @@ public abstract class Term<T extends Comparable<T>> extends GenericTerm<T> imple
    */
   @Override
   public int hashCode() {
-    return clazz.hashCode() * this.getTermValue().hashCode();
+    return comparableClass.hashCode() * this.getTermValue().hashCode();
   }
 
   /**
@@ -92,24 +92,25 @@ public abstract class Term<T extends Comparable<T>> extends GenericTerm<T> imple
    */
   @Override
   public boolean equals(Object obj) {
-
     if (obj == null) {
       return false;
     }
-
-    if (!(this.clazz.isInstance(obj))) {
+    if (!(this.comparableClass.isInstance(obj))) {
       return super.equals(obj);
     }
-
     return this.value.equals((T) obj);
   }
 
   public boolean isConstant(){
-    return ((clazz == Integer.class) || (clazz == Long.class));
+    return ((comparableClass == Integer.class) || (comparableClass == Long.class));
   }
 
   public boolean isDecimal(){
-    return ((clazz == Double.class) || (clazz == Float.class));
+    return ((comparableClass == Double.class) || (comparableClass == Float.class));
+  }
+
+  public boolean isNumber(){
+    return (isConstant() || isDecimal());
   }
 
 }

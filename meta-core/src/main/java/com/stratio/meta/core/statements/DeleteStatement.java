@@ -18,25 +18,25 @@
 
 package com.stratio.meta.core.statements;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
-import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.statements.structures.terms.Term;
 import com.stratio.meta2.core.statements.MetaStatement;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Class that models a {@code SELECT} statement from the META language. This class recognizes the

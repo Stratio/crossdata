@@ -16,21 +16,17 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta2.common.statements.structures.terms;
 
-import com.stratio.meta.common.statements.structures.terms.Term;
+public class IntegerTerm extends Term<Integer> {
 
-public class BooleanTerm extends Term<Boolean> {
+  private static final long serialVersionUID = 7097178218828822792L;
 
-  private static final long serialVersionUID = 2872212148572680680L;
+  public IntegerTerm(String term) {
+    super(Integer.class, Integer.valueOf(term));
+  }
 
-  /**
-   * Class constructor.
-   *
-   * @param term
-   *            The string representation of a Boolean value.
-   */
-  public BooleanTerm(String term) {
-    super(Boolean.class, Boolean.valueOf(term));
+  public IntegerTerm(Term<Long> term) {
+    super(Integer.class, term.getTermValue().intValue());
   }
 }

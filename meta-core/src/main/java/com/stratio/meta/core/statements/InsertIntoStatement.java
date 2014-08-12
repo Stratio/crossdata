@@ -25,10 +25,6 @@ import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.statements.structures.terms.FloatTerm;
-import com.stratio.meta.common.statements.structures.terms.GenericTerm;
-import com.stratio.meta.common.statements.structures.terms.IntegerTerm;
-import com.stratio.meta.common.statements.structures.terms.Term;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
@@ -37,6 +33,10 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.statements.structures.terms.FloatTerm;
+import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
+import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 import org.apache.log4j.Logger;
@@ -78,10 +78,10 @@ public class InsertIntoStatement extends MetaStatement {
   private SelectStatement selectStatement;
 
   /**
-   * A list of {@link com.stratio.meta.common.statements.structures.terms.GenericTerm} with the literal values to be
+   * A list of {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} with the literal values to be
    * assigned if the insert type matches {@code TYPE_VALUES_CLAUSE}.
    */
-  private List<GenericTerm<?>> cellValues;
+  private List<GenericTerm> cellValues;
 
   /**
    * Indicates if exists "IF NOT EXISTS" clause.
@@ -115,14 +115,14 @@ public class InsertIntoStatement extends MetaStatement {
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
    * @param selectStatement a {@link com.stratio.meta.core.statements.InsertIntoStatement}
-   * @param cellValues List of {@link com.stratio.meta.common.statements.structures.terms.GenericTerm} to insert.
+   * @param cellValues List of {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param optsInc Boolean that indicates if there is options in the query.
    * @param options Query options.
    * @param typeValues Integer that indicates if values come from insert or select.
    */
   public InsertIntoStatement(String tableName, List<String> ids, SelectStatement selectStatement,
-      List<GenericTerm<?>> cellValues, boolean ifNotExists, boolean optsInc, List<Option> options,
+      List<GenericTerm> cellValues, boolean ifNotExists, boolean optsInc, List<Option> options,
       int typeValues) {
     this.command = false;
     this.tableName = tableName;
@@ -160,11 +160,11 @@ public class InsertIntoStatement extends MetaStatement {
    * 
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
-   * @param cellValues List of {@link com.stratio.meta.common.statements.structures.terms.GenericTerm} to insert.
+   * @param cellValues List of {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param options Query options.
    */
-  public InsertIntoStatement(String tableName, List<String> ids, List<GenericTerm<?>> cellValues,
+  public InsertIntoStatement(String tableName, List<String> ids, List<GenericTerm> cellValues,
       boolean ifNotExists, List<Option> options) {
     this(tableName, ids, null, cellValues, ifNotExists, true, options, 2);
   }
@@ -187,10 +187,10 @@ public class InsertIntoStatement extends MetaStatement {
    * 
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
-   * @param cellValues List of {@link com.stratio.meta.common.statements.structures.terms.GenericTerm} to insert.
+   * @param cellValues List of {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    */
-  public InsertIntoStatement(String tableName, List<String> ids, List<GenericTerm<?>> cellValues,
+  public InsertIntoStatement(String tableName, List<String> ids, List<GenericTerm> cellValues,
       boolean ifNotExists) {
     this(tableName, ids, null, cellValues, ifNotExists, false, null, 2);
   }
@@ -365,9 +365,9 @@ public class InsertIntoStatement extends MetaStatement {
    * @param insertStmt
    */
   private void iterateValuesAndInsertThem(Insert insertStmt) {
-    Iterator<GenericTerm<?>> it = this.cellValues.iterator();
+    Iterator<GenericTerm> it = this.cellValues.iterator();
     for (String id : this.ids) {
-      GenericTerm<?> genericTerm = it.next();
+      GenericTerm genericTerm = it.next();
       if (genericTerm.toString().matches("[0123456789.]+")) {
         insertStmt = insertStmt.value(id, Integer.parseInt(genericTerm.toString()));
       } else if (genericTerm.toString().contains("-")) {

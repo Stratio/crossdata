@@ -16,15 +16,39 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta2.common.statements.structures.terms;
 
-import com.stratio.meta.common.statements.structures.terms.Term;
+public abstract class GenericTerm {
 
-public class DoubleTerm extends Term<Double> {
+  public static final int SIMPLE_TERM = 1;
+  public static final int COLLECTION_TERMS = 2;
 
-	private static final long serialVersionUID = -578510540271635667L;
+  protected int type;
 
-	public DoubleTerm(String term) {
-		super(Double.class, Double.valueOf(term));
-	}
+  public int getType() {
+    return type;
+  }
+
+  public void setType(int type) {
+    this.type = type;
+  }
+
+  public Class getUnderlyingClass() {
+    Class clazz;
+    if(this instanceof Term){
+      clazz = ((Term) this).getTermClass();
+    } else {
+      clazz = ((CollectionTerms) this).getCollectionClass();
+    }
+    return clazz;
+  }
+
+  /**
+   * Get the String value representation.
+   *
+   * @return The String value.
+   */
+  @Override
+  public abstract String toString();
+
 }

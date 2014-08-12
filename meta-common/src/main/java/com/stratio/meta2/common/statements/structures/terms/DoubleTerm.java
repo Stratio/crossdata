@@ -16,17 +16,13 @@
  * under the License.
  */
 
-package com.stratio.meta.common.statements.structures.terms;
+package com.stratio.meta2.common.statements.structures.terms;
 
-public class FloatTerm extends Term<Float> {
+public class DoubleTerm extends Term<Double> {
 
 	private static final long serialVersionUID = -578510540271635667L;
 
-	public FloatTerm(String term) {
-		super(Float.class, Float.valueOf(term));
-	}
-
-	public FloatTerm(Term<Double> term) {
-		super(Float.class, term.getTermValue().floatValue());
+	public DoubleTerm(String term) {
+		super(Double.class, Double.valueOf(term));
 	}
 }

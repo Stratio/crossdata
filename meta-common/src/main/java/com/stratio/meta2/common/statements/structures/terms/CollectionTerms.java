@@ -18,14 +18,11 @@
 
 package com.stratio.meta2.common.statements.structures.terms;
 
-import com.stratio.meta.common.statements.structures.terms.GenericTerm;
-import com.stratio.meta.common.statements.structures.terms.Term;
-
 import java.io.Serializable;
 
 public abstract class CollectionTerms extends GenericTerm implements Serializable {
 
-  protected Class clazz;
+  protected Class collectionClass;
   protected Object terms;
 
   protected CollectionTerms() {
@@ -37,12 +34,8 @@ public abstract class CollectionTerms extends GenericTerm implements Serializabl
    *
    * @return A {@link java.lang.Class}.
    */
-  public Class getClazz() {
-    return clazz;
-  }
-
-  public void setClazz(Class clazz) {
-    this.clazz = clazz;
+  public Class getCollectionClass() {
+    return collectionClass;
   }
 
   /**
@@ -63,5 +56,11 @@ public abstract class CollectionTerms extends GenericTerm implements Serializabl
   public abstract void deleteTerm(Term term);
 
   public abstract void clearTerms();
+
+  public abstract int size();
+
+  public abstract boolean isEmpty();
+
+  public abstract boolean containsKey(StringTerm key);
 
 }

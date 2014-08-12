@@ -18,8 +18,6 @@
 
 package com.stratio.meta2.common.statements.structures.terms;
 
-import com.stratio.meta.common.statements.structures.terms.Term;
-
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -28,7 +26,7 @@ public class SetTerms extends CollectionTerms {
   public SetTerms() {
     super();
     terms = new HashSet<Term>();
-    clazz = HashSet.class;
+    collectionClass = HashSet.class;
   }
 
   @Override
@@ -46,6 +44,21 @@ public class SetTerms extends CollectionTerms {
   @Override
   public void clearTerms() {
     ((HashSet<Term>) terms).clear();
+  }
+
+  @Override
+  public int size() {
+    return ((HashSet<GenericTerm>) terms).size();
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return ((HashSet<GenericTerm>) terms).isEmpty();
+  }
+
+  @Override
+  public boolean containsKey(StringTerm key) {
+    return ((HashSet<GenericTerm>) terms).contains(key);
   }
 
   /**

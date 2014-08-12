@@ -16,29 +16,19 @@
  * under the License.
  */
 
-package com.stratio.meta.common.statements.structures.terms;
+package com.stratio.meta2.common.statements.structures.terms;
 
-public abstract class GenericTerm<T extends Comparable<T>> {
+public class BooleanTerm extends Term<Boolean> {
 
-  public static final int SIMPLE_TERM = 1;
-  public static final int COLLECTION_TERMS = 2;
-
-  protected int type;
-
-  public int getType() {
-    return type;
-  }
-
-  public void setType(int type) {
-    this.type = type;
-  }
+  private static final long serialVersionUID = 2872212148572680680L;
 
   /**
-   * Get the String value representation.
+   * Class constructor.
    *
-   * @return The String value.
+   * @param term
+   *            The string representation of a Boolean value.
    */
-  @Override
-  public abstract String toString();
-
+  public BooleanTerm(String term) {
+    super(Boolean.class, Boolean.valueOf(term));
+  }
 }

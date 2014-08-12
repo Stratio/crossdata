@@ -18,8 +18,6 @@
 
 package com.stratio.meta2.common.statements.structures.terms;
 
-import com.stratio.meta.common.statements.structures.terms.Term;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -28,7 +26,7 @@ public class ListTerms extends CollectionTerms {
   public ListTerms() {
     super();
     terms = new ArrayList<Term>();
-    clazz = ArrayList.class;
+    collectionClass = ArrayList.class;
   }
 
   @Override
@@ -46,6 +44,21 @@ public class ListTerms extends CollectionTerms {
   @Override
   public void clearTerms() {
     ((ArrayList<Term>) terms).clear();
+  }
+
+  @Override
+  public int size() {
+    return ((ArrayList<GenericTerm>) terms).size();
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return ((ArrayList<GenericTerm>) terms).isEmpty();
+  }
+
+  @Override
+  public boolean containsKey(StringTerm key) {
+    return ((ArrayList<GenericTerm>) terms).contains(key);
   }
 
   /**
