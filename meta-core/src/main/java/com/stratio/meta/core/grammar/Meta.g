@@ -25,10 +25,13 @@ options {
  
 @header {
     package com.stratio.meta.core.grammar.generated;
+    import com.stratio.meta.common.statements.structures.*;
+    import com.stratio.meta.common.statements.structures.assignations.*;
     import com.stratio.meta.common.statements.structures.relationships.*;
-    import com.stratio.meta.common.statements.structures.selectors.*;
-    import com.stratio.meta2.common.statements.structures.terms.*;
     import com.stratio.meta.common.statements.structures.window.*;
+    import com.stratio.meta2.common.statements.structures.*;
+    import com.stratio.meta2.common.statements.structures.terms.*;
+    import com.stratio.meta.common.statements.structures.selectors.*;
     import com.stratio.meta.core.statements.*;
     import com.stratio.meta2.core.statements.*;
     import com.stratio.meta.core.structures.*;
@@ -488,27 +491,27 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
         boolean optsInc = false;
         boolean condsInc = false;
         ArrayList<Option> options = new ArrayList<>();
-        ArrayList<Assignment> assignments = new ArrayList<>();
+        ArrayList<Assignation> assignations = new ArrayList<>();
         ArrayList<Relation> whereclauses = new ArrayList<>();
         Map<String, Term<?>> conditions = new HashMap<>();
     }:
     T_UPDATE tablename=getTableID
     (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (T_AND optN=getOption {options.add(optN);})*)?
-    T_SET assig1=getAssignment {assignments.add(assig1);} (T_COMMA assigN=getAssignment {assignments.add(assigN);})*
+    T_SET assig1=getAssignment {assignations.add(assig1);} (T_COMMA assigN=getAssignment {assignations.add(assigN);})*
     T_WHERE rel1=getRelation {whereclauses.add(rel1);} (T_AND relN=getRelation {whereclauses.add(relN);})*
     (T_IF id1=T_IDENT T_EQUAL term1=getTerm {condsInc = true; conditions.put($id1.text, term1);}
                     (T_AND idN=T_IDENT T_EQUAL termN=getTerm {conditions.put($idN.text, termN);})*)?
     {
         if(optsInc)
             if(condsInc)
-                $pdtbst = new UpdateTableStatement(tablename, options, assignments, whereclauses, conditions);
+                $pdtbst = new UpdateTableStatement(tablename, options, assignations, whereclauses, conditions);
             else
-                $pdtbst = new UpdateTableStatement(tablename, options, assignments, whereclauses);
+                $pdtbst = new UpdateTableStatement(tablename, options, assignations, whereclauses);
         else
             if(condsInc)
-                $pdtbst = new UpdateTableStatement(tablename, assignments, whereclauses, conditions);
+                $pdtbst = new UpdateTableStatement(tablename, assignations, whereclauses, conditions);
             else
-                $pdtbst = new UpdateTableStatement(tablename, assignments, whereclauses);
+                $pdtbst = new UpdateTableStatement(tablename, assignations, whereclauses);
     }
     ;
 
@@ -912,16 +915,16 @@ getListTypes returns [String listType]:
 	ident=(T_PROCESS | T_UDF | T_TRIGGER) {$listType = new String($ident.text);}
 	;
 
-getAssignment returns [Assignment assign]:
-    ident=T_IDENT (
-        T_EQUAL value=getValueAssign {$assign = new Assignment(new IdentifierAssignment($ident.text), value);}
-        | T_START_BRACKET termL=getTerm T_END_BRACKET T_EQUAL termR=getTerm {
-            $assign = new Assignment (new IdentifierAssignment($ident.text, termL), new ValueAssignment(termR));
+getAssignment returns [Assignation assign]:
+    ident=T_KS_AND_TN (
+        T_EQUAL value=getValueAssign {$assign = new Assignment(new ColumnName($ident.text), Operator.ASSIGN, value);}
+        | T_START_BRACKET indexTerm=getTerm T_END_BRACKET T_EQUAL termValue=getTerm {
+            $assign = new Assignation (new ColumnName($ident.text, indexTerm), Operator.ASSIGN, termValue);
         }
     )
 ;
 
-getValueAssign returns [ValueAssignment valueAssign]:
+getValueAssign returns [GenericTerm valueAssign]:
     term1=getTerm { $valueAssign = new ValueAssignment(term1);}
     | ident=T_IDENT (T_PLUS (T_START_SBRACKET mapLiteral=getMapLiteral T_END_SBRACKET { $valueAssign = new ValueAssignment(new IdentMap($ident.text, mapLiteral));}
                              | value1=getIntSetOrList {

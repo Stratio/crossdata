@@ -22,9 +22,6 @@ import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.UpdateTableStatement;
-import com.stratio.meta.core.structures.assignments.Assignment;
-import com.stratio.meta.core.structures.assignments.IdentifierAssignment;
-import com.stratio.meta.core.structures.assignments.ValueAssignment;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.statements.structures.terms.StringTerm;
 

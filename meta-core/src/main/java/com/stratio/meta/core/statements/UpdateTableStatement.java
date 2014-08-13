@@ -22,15 +22,14 @@ import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.statements.structures.ColumnName;
+import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.assignments.Assignment;
-import com.stratio.meta.core.structures.assignments.IdentifierAssignment;
 import com.stratio.meta.core.structures.Option;
-import com.stratio.meta.core.structures.assignments.ValueAssignment;
 import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
@@ -43,7 +42,6 @@ import com.stratio.meta2.common.statements.structures.terms.Term;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -68,9 +66,9 @@ public class UpdateTableStatement extends MetaStatement {
   private List<Option> options;
 
   /**
-   * The list of assignments.
+   * The list of assignations.
    */
-  private List<Assignment> assignments;
+  private List<Assignation> assignations;
 
   /**
    * The list of relations.
@@ -93,13 +91,13 @@ public class UpdateTableStatement extends MetaStatement {
    * @param tableName The name of the table.
    * @param optsInc Whether options are included.
    * @param options The list of options.
-   * @param assignments The list of assignments.
+   * @param assignations The list of assignations.
    * @param whereClauses The list of relations.
    * @param condsInc Whether conditions are included.
    * @param conditions The map of conditions.
    */
   public UpdateTableStatement(String tableName, boolean optsInc, List<Option> options,
-      List<Assignment> assignments, List<Relation> whereClauses, boolean condsInc,
+      List<Assignation> assignations, List<Relation> whereClauses, boolean condsInc,
       Map<String, Term<?>> conditions) {
     this.command = false;
     if (tableName.contains(".")) {
@@ -122,7 +120,7 @@ public class UpdateTableStatement extends MetaStatement {
       }
     }
 
-    this.assignments = assignments;
+    this.assignations = assignations;
     this.whereClauses = whereClauses;
     this.condsInc = condsInc;
     this.conditions = conditions;
@@ -133,26 +131,26 @@ public class UpdateTableStatement extends MetaStatement {
    * 
    * @param tableName The name of the table.
    * @param options The list of options.
-   * @param assignments The list of assignments.
+   * @param assignations The list of assignations.
    * @param whereClauses The list of relations.
    * @param conditions The map of conditions.
    */
-  public UpdateTableStatement(String tableName, List<Option> options, List<Assignment> assignments,
+  public UpdateTableStatement(String tableName, List<Option> options, List<Assignation> assignations,
       List<Relation> whereClauses, Map<String, Term<?>> conditions) {
-    this(tableName, true, options, assignments, whereClauses, true, conditions);
+    this(tableName, true, options, assignations, whereClauses, true, conditions);
   }
 
   /**
    * Class constructor.
    * 
    * @param tableName The name of the table.
-   * @param assignments The list of assignments.
+   * @param assignations The list of assignations.
    * @param whereClauses The list of relations.
    * @param conditions The map of conditions.
    */
-  public UpdateTableStatement(String tableName, List<Assignment> assignments,
+  public UpdateTableStatement(String tableName, List<Assignation> assignations,
       List<Relation> whereClauses, Map<String, Term<?>> conditions) {
-    this(tableName, false, null, assignments, whereClauses, true, conditions);
+    this(tableName, false, null, assignations, whereClauses, true, conditions);
   }
 
   /**
@@ -160,24 +158,24 @@ public class UpdateTableStatement extends MetaStatement {
    * 
    * @param tableName The name of the table.
    * @param options The list of options.
-   * @param assignments The list of assignments.
+   * @param assignations The list of assignations.
    * @param whereClauses The list of relations.
    */
-  public UpdateTableStatement(String tableName, List<Option> options, List<Assignment> assignments,
+  public UpdateTableStatement(String tableName, List<Option> options, List<Assignation> assignations,
       List<Relation> whereClauses) {
-    this(tableName, true, options, assignments, whereClauses, false, null);
+    this(tableName, true, options, assignations, whereClauses, false, null);
   }
 
   /**
    * Class constructor.
    * 
    * @param tableName The name of the table.
-   * @param assignments The list of assignments.
+   * @param assignations The list of assignations.
    * @param whereClauses The list of relations.
    */
-  public UpdateTableStatement(String tableName, List<Assignment> assignments,
+  public UpdateTableStatement(String tableName, List<Assignation> assignations,
       List<Relation> whereClauses) {
-    this(tableName, false, null, assignments, whereClauses, false, null);
+    this(tableName, false, null, assignations, whereClauses, false, null);
   }
 
   @Override
@@ -192,7 +190,7 @@ public class UpdateTableStatement extends MetaStatement {
       sb.append(StringUtils.stringList(options, " AND "));
     }
     sb.append(" ").append("SET ");
-    sb.append(StringUtils.stringList(assignments, ", "));
+    sb.append(StringUtils.stringList(assignations, ", "));
     sb.append(" ").append("WHERE ");
     sb.append(StringUtils.stringList(whereClauses, " AND "));
     if (condsInc) {
@@ -228,7 +226,7 @@ public class UpdateTableStatement extends MetaStatement {
       }
 
       if (!result.hasError()) {
-        result = validateAssignments(tableMetadata);
+        result = validateAssignations(tableMetadata);
       }
 
       if (!result.hasError()) {
@@ -306,19 +304,20 @@ public class UpdateTableStatement extends MetaStatement {
    * @param tableMetadata Table metadata associated with the target table.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateAssignments(TableMetadata tableMetadata) {
-    updateTermClassesInAssignments(tableMetadata);
+  private Result validateAssignations(TableMetadata tableMetadata) {
+    updateTermClassesInAssignations(tableMetadata);
     Result result = QueryResult.createSuccessQueryResult();
-    for (int index = 0; index < assignments.size(); index++) {
-      Assignment assignment = assignments.get(index);
+    for (int index = 0; index < assignations.size(); index++) {
+      Assignation assignment = assignations.get(index);
 
-      IdentifierAssignment assignmentId = assignment.getIdent();
+      ColumnName targetCol = assignment.getTargetColumn();
 
       // Check if identifier exists
-      ColumnMetadata cm = tableMetadata.getColumn(assignmentId.getIdentifier());
+      String colId = targetCol.getColumnName();
+      ColumnMetadata cm = tableMetadata.getColumn(colId);
       if (cm == null) {
         result =
-            Result.createValidationErrorResult("Column " + assignmentId.getIdentifier()
+            Result.createValidationErrorResult("Column " + colId
                 + " not found in " + tableMetadata.getName() + ".");
         break;
       }
@@ -328,7 +327,7 @@ public class UpdateTableStatement extends MetaStatement {
       if (!result.hasError()) {
         if (!CoreUtils.supportedTypes.contains(idClazz.getSimpleName().toLowerCase())) {
           result =
-              Result.createValidationErrorResult("Column " + assignmentId.getIdentifier()
+              Result.createValidationErrorResult("Column " + colId
                   + " is of type " + cm.getType().asJavaClass().getSimpleName()
                   + ", which is not supported yet.");
         }
@@ -337,15 +336,15 @@ public class UpdateTableStatement extends MetaStatement {
       // Check if identifier is simple, otherwise it refers to a collection, which are not supported
       // yet
       if (!result.hasError()) {
-        if (assignmentId.getType() == IdentifierAssignment.TYPE_COMPOUND) {
+        if (cm.getType().isCollection()) {
           result = Result.createValidationErrorResult("Collections are not supported yet.");
         }
       }
 
       if (!result.hasError()) {
-        ValueAssignment valueAssignment = assignment.getValue();
-        if (valueAssignment.getType() == ValueAssignment.TYPE_TERM) {
-          Term<?> valueTerm = valueAssignment.getTerm();
+        GenericTerm valueAssign = assignment.getValue();
+        if (valueAssign.getType() == GenericTerm.SIMPLE_TERM) {
+          Term<?> valueTerm = (Term<?>) valueAssign;
           // Check data type between column of the identifier and term type of the statement
           Class<?> valueClazz = valueTerm.getTermClass();
           String valueClass = valueClazz.getSimpleName();
@@ -354,55 +353,25 @@ public class UpdateTableStatement extends MetaStatement {
                 Result.createValidationErrorResult(cm.getName() + " and " + valueTerm.getTermValue()
                     + " are not compatible type.");
           }
-        } else if (valueAssignment.getType() == ValueAssignment.TYPE_IDENT_MAP) {
-          result = Result.createValidationErrorResult("Collections are not supported yet.");
         } else {
-          IdentIntOrLiteral iiol = valueAssignment.getIiol();
-          if (iiol instanceof IntTerm) {
-            // Check if identifier is of int type
-            if (!Arrays.asList("integer", "int").contains(idClazz.getSimpleName().toLowerCase())) {
-              result =
-                  Result.createValidationErrorResult("Column " + cm.getName()
-                      + " should be integer type.");
-            }
-            if (!result.hasError()) {
-              // Check if value identifier exists
-              String valueId = iiol.getIdentifier();
-              ColumnMetadata colValue = tableMetadata.getColumn(valueId);
-              if (colValue == null) {
-                result = Result.createValidationErrorResult("Column " + valueId + " not found.");
-              }
-              if (!result.hasError()) {
-                // Check if value identifier is int type
-                if (!Arrays.asList("integer", "int").contains(
-                    colValue.getType().asJavaClass().getSimpleName().toLowerCase())) {
-                  result =
-                      Result.createValidationErrorResult("Column " + colValue.getName()
-                          + " should be integer type.");
-                }
-              }
-            }
-
-          } else { // Set or List
-            result = Result.createValidationErrorResult("Collections are not supported yet.");
-          }
+          result = Result.createValidationErrorResult("Collections are not supported yet.");
         }
       }
     }
     return result;
   }
 
-  private void updateTermClassesInAssignments(TableMetadata tableMetadata) {
-    for (Assignment assignment : assignments) {
-      String ident = assignment.getIdent().getIdentifier();
+  private void updateTermClassesInAssignations(TableMetadata tableMetadata) {
+    for (Assignation assignment: assignations) {
+      String ident = assignment.getTargetColumn().getColumnName();
       ColumnMetadata cm = tableMetadata.getColumn(ident);
-      Term<?> term = assignment.getValue().getTerm();
-      if ((cm != null) && (term != null)) {
-        if (term instanceof Term) {
-          if (CoreUtils.castForLongType(cm, term)) {
-            assignment.getValue().setTerm(new IntegerTerm((Term<Long>) term));
-          } else if (CoreUtils.castForDoubleType(cm, term)) {
-            assignment.getValue().setTerm(new FloatTerm((Term<Double>) term));
+      Term<?> valueTerm = (Term<?>) assignment.getValue();
+      if ((cm != null) && (valueTerm != null)) {
+        if (valueTerm instanceof Term) {
+          if (CoreUtils.castForLongType(cm, valueTerm)) {
+            assignment.setValue(new IntegerTerm((Term<Long>) valueTerm));
+          } else if (CoreUtils.castForDoubleType(cm, valueTerm)) {
+            assignment.setValue(new FloatTerm((Term<Double>) valueTerm));
           }
         }
       }

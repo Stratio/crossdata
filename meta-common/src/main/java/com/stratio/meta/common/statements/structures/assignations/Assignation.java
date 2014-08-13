@@ -40,7 +40,7 @@ public class Assignation {
   /**
    * Value to be assigned (right side).
    */
-  private final GenericTerm value;
+  private GenericTerm value;
 
   /**
    * Define an assignation.
@@ -51,6 +51,22 @@ public class Assignation {
   public Assignation(ColumnName targetColumn, Operator operation, GenericTerm value) {
     this.targetColumn = targetColumn;
     this.operation = operation;
+    this.value = value;
+  }
+
+  public ColumnName getTargetColumn() {
+    return targetColumn;
+  }
+
+  public Operator getOperation() {
+    return operation;
+  }
+
+  public GenericTerm getValue() {
+    return value;
+  }
+
+  public void setValue(GenericTerm value){
     this.value = value;
   }
 

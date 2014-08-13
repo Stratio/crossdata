@@ -19,6 +19,7 @@
 package com.stratio.meta.common.statements.structures;
 
 
+import com.stratio.meta2.common.statements.structures.terms.Term;
 
 /**
  * Column name recognized by the parser. The name may contain:
@@ -42,12 +43,12 @@ public class ColumnName {
    */
   private String table = null;
 
+  private Term indexTerm = null;
+
   /**
    * Name of the column.
    */
   private final String columnName;
-
-  //TODO: Add indexTerm field, isIndexed(), setIndex(Term t)
 
   /**
    * Default constructor.
@@ -55,6 +56,11 @@ public class ColumnName {
    */
   public ColumnName(String columnName){
     this.columnName = columnName;
+  }
+
+  public ColumnName(String columnName, Term indexTerm) {
+    this.columnName = columnName;
+    this.indexTerm = indexTerm;
   }
 
   public void setCatalog(String catalog){
@@ -73,6 +79,18 @@ public class ColumnName {
     return table;
   }
 
+  public String getColumnName() {
+    return columnName;
+  }
+
+  public Term getIndexTerm() {
+    return indexTerm;
+  }
+
+  public boolean isIndexed(){
+    return indexTerm == null;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -83,6 +101,9 @@ public class ColumnName {
       sb.append(table).append(".");
     }
     sb.append(columnName);
+    if(isIndexed()){
+      sb.append("[").append(indexTerm).append("]");
+    }
     return sb.toString();
   }
 }

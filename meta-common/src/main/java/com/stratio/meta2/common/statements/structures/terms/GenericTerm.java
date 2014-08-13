@@ -18,7 +18,9 @@
 
 package com.stratio.meta2.common.statements.structures.terms;
 
-public abstract class GenericTerm {
+import com.stratio.meta.common.statements.structures.assignations.CompoundValueAssign;
+
+public abstract class GenericTerm extends CompoundValueAssign {
 
   public static final int SIMPLE_TERM = 1;
   public static final int COLLECTION_TERMS = 2;
