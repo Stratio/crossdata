@@ -1159,7 +1159,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * Creates a String representing the Statement with CQL syntax.
    * 
-   * @return
+   * @return CQL string
    */
   @Override
   public String translateToCQL() {

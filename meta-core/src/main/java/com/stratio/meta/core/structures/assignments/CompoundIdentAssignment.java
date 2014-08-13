@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,41 +16,28 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.structures;
+package com.stratio.meta.core.structures.assignments;
 
-import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta2.common.statements.structures.terms.StringTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
 
-import java.util.HashMap;
-import java.util.Map;
+public class CompoundIdentAssignment extends IdentifierAssignment {
 
-public class IdentMap extends ValueAssignation {
+  private Term term;
 
-  private Map<String, Term> mapTerms;
-
-  public IdentMap(String identifier) {
-    this.identifier = identifier;
-    this.mapTerms = new HashMap<>();
+  public CompoundIdentAssignment(StringTerm identifier, Term term) {
+    super(identifier, TYPE_COMPOUND);
+    this.term = term;
   }
 
-  public IdentMap(String identifier, Map mapTerms) {
-    this(identifier);
-    this.mapTerms = mapTerms;
-  }
-
-  public Map<String, Term> getMapTerms() {
-    return mapTerms;
-  }
-
-  public void setMapTerms(Map mapTerms) {
-    this.mapTerms = mapTerms;
+  public Term getTerm() {
+    return term;
   }
 
   @Override
   public String toString(){
-    StringBuilder sb = new StringBuilder(identifier);
-    sb.append(" + ");
-    sb.append(ParserUtils.stringMap(mapTerms, ": ", ", "));
+    StringBuilder sb = new StringBuilder(identifier.toString());
+    sb.append("[").append(term.toString()).append("]");
     return sb.toString();
   }
 

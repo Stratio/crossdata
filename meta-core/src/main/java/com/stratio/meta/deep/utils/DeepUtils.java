@@ -18,14 +18,6 @@
 
 package com.stratio.meta.deep.utils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaRDD;
-
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
@@ -33,16 +25,24 @@ import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnType;
-import com.stratio.meta.core.metadata.AbstractMetadataHelper;
-import com.stratio.meta.core.metadata.CassandraMetadataHelper;
-import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.common.statements.structures.selectors.GroupByFunction;
-import com.stratio.meta.core.structures.Selection;
-import com.stratio.meta.core.structures.SelectionList;
-import com.stratio.meta.core.structures.SelectionSelectors;
 import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
+import com.stratio.meta.core.metadata.AbstractMetadataHelper;
+import com.stratio.meta.core.metadata.CassandraMetadataHelper;
+import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta.core.structures.Selection;
+import com.stratio.meta.core.structures.SelectionList;
+import com.stratio.meta.core.structures.SelectionSelectors;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaRDD;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public final class DeepUtils {
 
@@ -274,7 +274,7 @@ public final class DeepUtils {
   /**
    * Retrieve fields in selection clause.
    * 
-   * @param ss SelectStatement of the query
+   * @param selection SelectStatement of the query
    * @return List of fields in selection clause or null if all fields has been selected
    */
   public static List<String> retrieveSelectors(Selection selection) {
@@ -301,7 +301,7 @@ public final class DeepUtils {
   /**
    * Retrieve fields in selection clause.
    * 
-   * @param ss SelectStatement of the query
+   * @param selection SelectStatement of the query
    * @return Array of fields in selection clause or null if all fields has been selected
    */
   public static List<String> retrieveSelectorAggegationFunctions(Selection selection) {

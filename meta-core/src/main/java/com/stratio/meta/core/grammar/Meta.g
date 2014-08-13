@@ -1013,8 +1013,8 @@ getAssignment returns [Assignment assign]:
 
 getValueAssign returns [ValueAssignment valueAssign]:
     term1=getTerm { $valueAssign = new ValueAssignment(term1);}
-    | ident=T_IDENT (T_PLUS (mapLiteral=getMapLiteral { $valueAssign = new ValueAssignment(new IdentMap($ident.text, mapLiteral));}
-                             | value1=getIntOrCollection {
+    | ident=T_IDENT (T_PLUS (T_START_SBRACKET mapLiteral=getMapLiteral T_END_SBRACKET { $valueAssign = new ValueAssignment(new IdentMap($ident.text, mapLiteral));}
+                             | value1=getIntSetOrList {
                                                         if(value1 instanceof IntTerm)
                                                             $valueAssign = new ValueAssignment(new IntTerm($ident.text, '+', ((IntTerm) value1).getTerm()));
                                                         else if(value1 instanceof ListLiteral)
@@ -1023,7 +1023,7 @@ getValueAssign returns [ValueAssignment valueAssign]:
                                                             $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '+', ((SetLiteral) value1).getLiterals()));
                                                        }
                            )
-                    | T_SUBTRACT value2=getIntOrCollection {
+                    | T_SUBTRACT value2=getIntSetOrList {
                                                 if(value2 instanceof IntTerm)
                                                     $valueAssign = new ValueAssignment(new IntTerm($ident.text, '-', ((IntTerm) value2).getTerm()));
                                                 else if(value2 instanceof ListLiteral)
@@ -1034,11 +1034,11 @@ getValueAssign returns [ValueAssignment valueAssign]:
                 )
 ;
 
-getIntOrCollection returns [IdentIntOrLiteral iiol]
+getIntSetOrList returns [IdentIntOrLiteral iiol]
     @init{
     }:
     constant=getConstant { $iiol = new IntTerm(Integer.parseInt(constant));}
-    | T_START_BRACKET (list=getList | map=getMapLiteral) T_END_BRACKET { $iiol = new ListLiteral(list);}
+    | T_START_BRACKET list=getList T_END_BRACKET { $iiol = new ListLiteral(list);}
     | T_START_SBRACKET set=getSet T_END_SBRACKET { $iiol = new SetLiteral(set);}
 ;
 

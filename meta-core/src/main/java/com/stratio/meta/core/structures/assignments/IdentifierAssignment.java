@@ -16,42 +16,47 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.structures;
+package com.stratio.meta.core.structures.assignments;
 
-import com.stratio.meta.core.utils.ParserUtils;
-import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.terms.StringTerm;
 
-import java.util.HashMap;
-import java.util.Map;
+public class IdentifierAssignment {
 
-public class IdentMap extends ValueAssignation {
+  public static final int TYPE_SIMPLE = 1;
+  public static final int TYPE_COMPOUND = 2;
 
-  private Map<String, Term> mapTerms;
+  protected StringTerm identifier;
+  protected int type;
 
-  public IdentMap(String identifier) {
+  public IdentifierAssignment(StringTerm identifier) {
     this.identifier = identifier;
-    this.mapTerms = new HashMap<>();
+    this.type = TYPE_SIMPLE;
   }
 
-  public IdentMap(String identifier, Map mapTerms) {
-    this(identifier);
-    this.mapTerms = mapTerms;
+  public IdentifierAssignment(StringTerm identifier, int type) {
+    this.identifier = identifier;
+    this.type = type;
   }
 
-  public Map<String, Term> getMapTerms() {
-    return mapTerms;
+  public StringTerm getIdentifier() {
+    return identifier;
   }
 
-  public void setMapTerms(Map mapTerms) {
-    this.mapTerms = mapTerms;
+  public void setIdentifier(StringTerm identifier) {
+    this.identifier = identifier;
+  }
+
+  public int getType() {
+    return type;
+  }
+
+  public void setType(int type) {
+    this.type = type;
   }
 
   @Override
   public String toString(){
-    StringBuilder sb = new StringBuilder(identifier);
-    sb.append(" + ");
-    sb.append(ParserUtils.stringMap(mapTerms, ": ", ", "));
-    return sb.toString();
+    return identifier.toString();
   }
 
 }

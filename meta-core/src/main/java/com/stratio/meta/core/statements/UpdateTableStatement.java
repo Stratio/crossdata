@@ -27,12 +27,10 @@ import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifie
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.Assignment;
-import com.stratio.meta.core.structures.IdentIntOrLiteral;
-import com.stratio.meta.core.structures.IdentifierAssignment;
-import com.stratio.meta.core.structures.IntTerm;
+import com.stratio.meta.core.structures.assignments.Assignment;
+import com.stratio.meta.core.structures.assignments.IdentifierAssignment;
 import com.stratio.meta.core.structures.Option;
-import com.stratio.meta.core.structures.ValueAssignment;
+import com.stratio.meta.core.structures.assignments.ValueAssignment;
 import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;

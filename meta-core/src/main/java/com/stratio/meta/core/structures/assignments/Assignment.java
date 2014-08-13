@@ -16,34 +16,40 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.core.structures.assignments;
 
-public class IntTerm extends IdentIntOrLiteral {
-    
-    private int term;
+public class Assignment {
 
-    public IntTerm(String identifier, char operator, int term) {
-        this.identifier = identifier;
-        this.operator = operator;
-        this.term = term;
-    }        
+    private IdentifierAssignment ident;
+    private ValueAssignment value;
+
+    public Assignment(IdentifierAssignment ident, ValueAssignment value) {
+        this.ident = ident;
+        this.value = value;
+    }   
     
-    public IntTerm(int term){
-        this.term = term;
+    public IdentifierAssignment getIdent() {
+        return ident;
     }
 
-    public int getTerm() {
-        return term;
+    public void setIdent(IdentifierAssignment ident) {
+        this.ident = ident;
     }
 
-    public void setTerm(int term) {
-        this.term = term;
-    }    
+    public ValueAssignment getValue() {
+        return value;
+    }
+
+    public void setValue(ValueAssignment value) {
+        this.value = value;
+    }   
     
     @Override
     public String toString(){
-        StringBuilder sb = new StringBuilder(string());
-        sb.append(Integer.toString(term));
+        StringBuilder sb = new StringBuilder(ident.toString());
+        sb.append(" = ");
+        sb.append(value.toString());
         return sb.toString();
     }
+    
 }
