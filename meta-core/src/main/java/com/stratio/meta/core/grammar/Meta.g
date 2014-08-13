@@ -924,60 +924,71 @@ getAssignment returns [Assignation assign]:
     )
 ;
 
-getValueAssign returns [GenericTerm valueAssign]:
-    term1=getTerm { $valueAssign = new ValueAssignment(term1);}
-    | ident=T_IDENT (T_PLUS (T_START_SBRACKET mapLiteral=getMapLiteral T_END_SBRACKET { $valueAssign = new ValueAssignment(new IdentMap($ident.text, mapLiteral));}
-                             | value1=getIntSetOrList {
-                                                        if(value1 instanceof IntTerm)
-                                                            $valueAssign = new ValueAssignment(new IntTerm($ident.text, '+', ((IntTerm) value1).getTerm()));
-                                                        else if(value1 instanceof ListLiteral)
-                                                            $valueAssign = new ValueAssignment(new ListLiteral($ident.text, '+', ((ListLiteral) value1).getLiterals()));
-                                                        else
-                                                            $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '+', ((SetLiteral) value1).getLiterals()));
-                                                       }
-                           )
-                    | T_SUBTRACT value2=getIntSetOrList {
-                                                if(value2 instanceof IntTerm)
-                                                    $valueAssign = new ValueAssignment(new IntTerm($ident.text, '-', ((IntTerm) value2).getTerm()));
-                                                else if(value2 instanceof ListLiteral)
-                                                    $valueAssign = new ValueAssignment(new ListLiteral($ident.text, '-', ((ListLiteral) value2).getLiterals()));
-                                                else
-                                                    $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '-', ((SetLiteral) value2).getLiterals()));
-                                                }
-                )
+getValueAssign returns [GenericTerm valueAssign]
+    @init{
+        Operator op;
+    }:
+    valueAssign=getTerm
+    (
+        operator=(T_ADD | T_SUBSTRACT) {op=new Operator($operator.text);}
+        termN=getGenericTerm {valueAssign.addCompoundTerm(op, termN);}
+    )*
 ;
 
-getIntSetOrList returns [IdentIntOrLiteral iiol]
-    @init{
-    }:
-    constant=getConstant { $iiol = new IntTerm(Integer.parseInt(constant));}
-    | T_START_BRACKET list=getList T_END_BRACKET { $iiol = new ListLiteral(list);}
-    | T_START_SBRACKET set=getSet T_END_SBRACKET { $iiol = new SetLiteral(set);}
-;
+//getValueAssign returns [GenericTerm valueAssign]:
+//    term1=getTerm { $valueAssign = new ValueAssignment(term1);}
+//    | ident=T_IDENT (T_PLUS (T_START_SBRACKET mapLiteral=getMapLiteral T_END_SBRACKET { $valueAssign = new ValueAssignment(new IdentMap($ident.text, mapLiteral));}
+//                             | value1=getIntSetOrList {
+//                                                        if(value1 instanceof IntTerm)
+//                                                            $valueAssign = new ValueAssignment(new IntTerm($ident.text, '+', ((IntTerm) value1).getTerm()));
+//                                                        else if(value1 instanceof ListLiteral)
+//                                                            $valueAssign = new ValueAssignment(new ListLiteral($ident.text, '+', ((ListLiteral) value1).getLiterals()));
+//                                                        else
+//                                                            $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '+', ((SetLiteral) value1).getLiterals()));
+//                                                       }
+//                           )
+//                    | T_SUBTRACT value2=getIntSetOrList {
+//                                                if(value2 instanceof IntTerm)
+//                                                    $valueAssign = new ValueAssignment(new IntTerm($ident.text, '-', ((IntTerm) value2).getTerm()));
+//                                                else if(value2 instanceof ListLiteral)
+//                                                    $valueAssign = new ValueAssignment(new ListLiteral($ident.text, '-', ((ListLiteral) value2).getLiterals()));
+//                                                else
+//                                                    $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '-', ((SetLiteral) value2).getLiterals()));
+//                                                }
+//                )
+//;
 
-getList returns [ArrayList list]
-    @init{
-        list = new ArrayList<String>();
-    }:
-    term1=getTerm {list.add(term1.toString());}
-    (T_COMMA termN=getTerm {list.add(termN.toString());})*
-    ;
+//getIntSetOrList returns [IdentIntOrLiteral iiol]
+//    @init{
+//    }:
+//    constant=getConstant { $iiol = new IntTerm(Integer.parseInt(constant));}
+//    | T_START_BRACKET list=getList T_END_BRACKET { $iiol = new ListLiteral(list);}
+//    | T_START_SBRACKET set=getSet T_END_SBRACKET { $iiol = new SetLiteral(set);}
+//;
 
-getMapLiteral returns [Map<String, Term> mapTerms]
-    @init{
-        $mapTerms = new HashMap<>();
-    }:
-    (leftTerm1=getTerm T_COLON rightTerm1=getTerm {$mapTerms.put(leftTerm1.toString(), rightTerm1);}
-    (T_COMMA leftTermN=getTerm T_COLON rightTermN=getTerm {$mapTerms.put(leftTermN.toString(), rightTermN);})*)?
-    ;
+//getList returns [ArrayList list]
+//    @init{
+//        list = new ArrayList<String>();
+//    }:
+//    term1=getTerm {list.add(term1.toString());}
+//    (T_COMMA termN=getTerm {list.add(termN.toString());})*
+//    ;
 
-getSet returns [Set set]
-    @init{
-        set = new HashSet<String>();
-    }:
-    term1=getTerm {set.add(term1.toString());}
-    (T_COMMA termN=getTerm {set.add(termN.toString());})*
-    ;
+//getMapLiteral returns [Map<String, Term> mapTerms]
+//    @init{
+//        $mapTerms = new HashMap<>();
+//    }:
+//    (leftTerm1=getTerm T_COLON rightTerm1=getTerm {$mapTerms.put(leftTerm1.toString(), rightTerm1);}
+//    (T_COMMA leftTermN=getTerm T_COLON rightTermN=getTerm {$mapTerms.put(leftTermN.toString(), rightTermN);})*)?
+//    ;
+
+//getSet returns [Set set]
+//    @init{
+//        set = new HashSet<String>();
+//    }:
+//    term1=getTerm {set.add(term1.toString());}
+//    (T_COMMA termN=getTerm {set.add(termN.toString());})*
+//    ;
 
 getRelation returns [Relation mrel]:
     T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}

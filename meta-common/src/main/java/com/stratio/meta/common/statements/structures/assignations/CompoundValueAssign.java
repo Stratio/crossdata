@@ -18,6 +18,7 @@
 
 package com.stratio.meta.common.statements.structures.assignations;
 
+import com.intellij.codeInsight.template.JavaCodeContextType;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 
 import java.util.ArrayList;
@@ -59,4 +60,10 @@ public class CompoundValueAssign {
   public void setCompoundTerms(List<GenericTerm> compoundTerms) {
     this.compoundTerms = compoundTerms;
   }
+
+  public void addCompoundTerm(Operator valueOperator, GenericTerm genericTerm){
+    valueOperators.add(valueOperator);
+    compoundTerms.add(genericTerm);
+  }
+
 }
