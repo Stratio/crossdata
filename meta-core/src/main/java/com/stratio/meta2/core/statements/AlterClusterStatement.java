@@ -22,14 +22,14 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 
 /**
- * Class that models a {@code ALTER STORAGE} statement from the META language.
+ * Class that models a {@code ALTER CLUSTER} statement from the META language.
  */
-public class AlterStorageStatement extends MetaStatement{
+public class AlterClusterStatement extends MetaStatement{
 
   /**
-   * Storage name given by the user.
+   * Cluster name given by the user.
    */
-  private final String storageName;
+  private final String clusterName;
 
   /**
    * A JSON with the options specified by the user.
@@ -37,20 +37,20 @@ public class AlterStorageStatement extends MetaStatement{
   private final String options;
 
   /**
-   * Alter an existing storage configuration.
-   * @param storageName The name of the storage.
-   * @param JSON A JSON with the storage options.
+   * Alter an existing cluster configuration.
+   * @param clusterName The name of the cluster.
+   * @param JSON A JSON with the cluster options.
    */
-  public AlterStorageStatement(String storageName, String JSON){
-    this.storageName = storageName;
+  public AlterClusterStatement(String clusterName, String JSON){
+    this.clusterName = clusterName;
     this.options = JSON;
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("ALTER STORAGE ");
-    sb.append(storageName);
-    sb.append(" WITH ").append(options);
+    StringBuilder sb = new StringBuilder("ALTER CLUSTER ");
+    sb.append(clusterName);
+    sb.append(" WITH OPTIONS ").append(options);
     return sb.toString();
   }
 

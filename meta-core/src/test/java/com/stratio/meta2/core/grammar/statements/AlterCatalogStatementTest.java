@@ -25,13 +25,13 @@ public class AlterCatalogStatementTest extends ParsingTest{
 
   @Test
   public void alterCatalogIfNotExistsWithEmptyOptions() {
-    String inputText = "ALTER CATALOG key_space1 WITH {};";
+    String inputText = "ALTER CATALOG catalog1 WITH {};";
     testRegularStatement(inputText, "createCatalogIfNotExistsWithEmptyOptions");
   }
 
   @Test
   public void alterCatalogWithOptions() {
-    String inputText = "ALTER CATALOG key_space1 WITH {\"comment\":\"This is a comment\"};";
+    String inputText = "ALTER CATALOG catalog1 WITH {\"comment\":\"This is a comment\"};";
     testRegularStatement(inputText, "createCatalogWithOptions");
   }
 

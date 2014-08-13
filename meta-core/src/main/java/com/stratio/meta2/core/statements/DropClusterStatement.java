@@ -22,28 +22,28 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 
 /**
- * Class that models a {@code DROP STORAGE} statement from the META language. In order to remove
- * an active storage from the system, the user is required to delete first the existing tables.
+ * Class that models a {@code DROP CLUSTER} statement from the META language. In order to remove
+ * an active cluster from the system, the user is required to delete first the existing tables.
  */
-public class DropStorageStatement extends MetaStatement{
+public class DropClusterStatement extends MetaStatement{
 
   /**
-   * Storage name given by the user.
+   * Cluster name given by the user.
    */
-  private final String storageName;
+  private final String clusterName;
 
   /**
    * Default constructor.
-   * @param storageName The name of the storage to be removed.
+   * @param clusterName The name of the cluster to be removed.
    */
-  public DropStorageStatement(String storageName){
-    this.storageName = storageName;
+  public DropClusterStatement(String clusterName){
+    this.clusterName = clusterName;
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("DROP STORAGE ");
-    sb.append(storageName);
+    StringBuilder sb = new StringBuilder("DROP CLUSTER ");
+    sb.append(clusterName);
     return sb.toString();
   }
 

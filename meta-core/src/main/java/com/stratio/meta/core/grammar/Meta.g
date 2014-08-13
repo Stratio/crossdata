@@ -311,114 +311,24 @@ createClusterStatement returns [CreateClusterStatement ccs]
     j=JSON
     ;
 
-
-// ========================================================
-// STORAGE
-// ========================================================
-
-
-//
-// CREATE STORAGE produccion_madrid ON DATASTORE "cassandra"
-// USING
-//	 CONNECTOR "com.stratio.cassandra.CassandraConnector" WITH OPTIONS {host:127.0.0.1}
-//	 AND CONNECTOR "com.stratio.cassandra.DeepCassandra" WITH OPTIONS {host:127.0.0.3}
-//
-createStorageStatement returns [CreateStorageStatement css]
-    @init{
-        boolean ifNotExists = false;
-        ArrayList<String> connectorList = new ArrayList<String>();
-        ArrayList<String> optionList = new ArrayList<String>();
-        StringBuilder sb = new StringBuilder("{");
-    }
+dropClusterStatement returns [DropClusterStatement dcs]
     @after{
-        css = new CreateStorageStatement(
-            $storageName.text,
-            ifNotExists,
-            $datastoreName.text,
-            connectorList, optionList);
+        dcs = new DropClusterStatement($clusterName.text);
     }
     :
-    T_CREATE T_STORAGE
-    (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
-    storageName=T_IDENT
-    T_ON T_DATASTORE datastoreName=QUOTED_LITERAL
-    T_USING T_CONNECTOR connectorName=QUOTED_LITERAL
+    T_DROP T_CLUSTER
+    clusterName=T_IDENT
+    ;
+
+alterClusterStatement returns [AlterClusterStatement acs]
+    @after{
+        acs = new AlterClusterStatement($clusterName.text, $j.text);
+    }
+    :
+    T_ALTER T_CLUSTER
+    clusterName=T_IDENT
     T_WITH T_OPTIONS
-    T_START_SBRACKET
-        key=getTerm T_COLON value=getTerm
-            {
-                System.out.println("key: " + key.toString() + " - value: " + value.toString());
-                sb.append(key).append(":").append(value);
-            }
-		(T_COMMA keyN=getTerm T_COLON valueN=getTerm
-		    {
-		    System.out.println("keyN: " + keyN.toString() + " - valueN: " + valueN.toString());
-		    sb.append(",").append(keyN).append(":").append(valueN);
-		    } )*
-
-	T_END_SBRACKET
-	{
-	    connectorList.add($connectorName.text);
-	    optionList.add(sb.append("}").toString());
-	    sb = new StringBuilder("{");
-	}
-
-	(T_AND T_CONNECTOR connectorName=QUOTED_LITERAL T_WITH T_OPTIONS
-	    T_START_SBRACKET
-                key=getTerm T_COLON value=getTerm
-                    {
-                        System.out.println("key: " + key.toString() + " - value: " + value.toString());
-                        sb.append(key).append(":").append(value);
-                    }
-        		(T_COMMA keyN=getTerm T_COLON valueN=getTerm
-        		    {
-        		    System.out.println("keyN: " + keyN.toString() + " - valueN: " + valueN.toString());
-        		    sb.append(",").append(keyN).append(":").append(valueN);
-        		    } )*
-
-        	T_END_SBRACKET
-        	{
-        	    connectorList.add($connectorName.text);
-        	    optionList.add(sb.append("}").toString());
-        	    sb = new StringBuilder("{");
-        	}
-	)*
-
-    ;
-
-dropStorageStatement returns [DropStorageStatement dss]
-    @after{
-        dss = new DropStorageStatement($storageName.text);
-    }
-    :
-    T_DROP T_STORAGE
-    storageName=T_IDENT
-    ;
-
-alterStorageStatement returns [AlterStorageStatement ass]
-    @init{
-        StringBuilder sb = new StringBuilder("{");
-    }
-    @after{
-        ass = new AlterStorageStatement($storageName.text, sb.append("}").toString());
-    }
-    :
-    T_ALTER T_STORAGE
-    storageName=T_IDENT
-    T_WITH
-    T_START_SBRACKET
-            key=getTerm T_COLON value=getTerm
-                {
-                    System.out.println("key: " + key.toString() + " - value: " + value.toString());
-                    sb.append(key).append(":").append(value);
-                }
-    		(T_COMMA keyN=getTerm T_COLON valueN=getTerm
-    		    {
-    		    System.out.println("keyN: " + keyN.toString() + " - valueN: " + valueN.toString());
-    		    sb.append(",").append(keyN).append(":").append(valueN);
-    		    } )*
-
-    	T_END_SBRACKET
+    j=JSON
     ;
 
 // ========================================================
@@ -433,7 +343,7 @@ createCatalogStatement returns [CreateCatalogStatement crksst]
     T_CREATE T_CATALOG
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     catalogName=T_IDENT
-    (T_WITH j=getJSON (T_AND jN=getJSON)*)?
+    (T_WITH j=JSON)?
     { $crksst = new CreateCatalogStatement($catalogName.text, ifNotExists, $j.text); }
     ;
 
@@ -452,7 +362,7 @@ alterCatalogStatement returns [AlterCatalogStatement alksst]
     :
     T_ALTER T_CATALOG
     catalogName=T_IDENT
-    T_WITH j=getJSON
+    T_WITH j=JSON
     { $alksst = new AlterCatalogStatement($catalogName.text, $j.text); };
 
 // ========================================================
@@ -820,8 +730,8 @@ metaStatement returns [MetaStatement st]:
     | st_alks = alterCatalogStatement { $st = st_alks; }
     | st_drks = dropCatalogStatement { $st = st_drks ;}
     | ccs = createClusterStatement { $st = ccs;}
-    | dss = dropStorageStatement {$st = dss;}
-    | ass = alterStorageStatement {$st = ass;}
+    | dcs = dropClusterStatement {$st = dcs;}
+    | acs = alterClusterStatement {$st = acs;}
     | cis = createIndexStatement { $st = cis; }
     | dis = dropIndexStatement { $st = dis; }
     | st_crtr = createTriggerStatement { $st = st_crtr; }

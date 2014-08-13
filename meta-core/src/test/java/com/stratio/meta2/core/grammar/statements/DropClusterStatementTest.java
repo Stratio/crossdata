@@ -23,14 +23,14 @@ import com.stratio.meta.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
 
 /**
- * Drop storage parsing tests.
+ * Drop cluster parsing tests.
  */
-public class DropStorageStatementTest extends ParsingTest {
+public class DropClusterStatementTest extends ParsingTest {
 
   @Test
-  public void dropStorageBasic() {
-    String inputText = "DROP STORAGE dev_environment1;";
-    testRegularStatement(inputText, "dropStorageBasic");
+  public void dropClusterBasic() {
+    String inputText = "DROP CLUSTER dev_environment1;";
+    testRegularStatement(inputText, "dropClusterBasic");
   }
 
 }
