@@ -18,10 +18,47 @@
 
 package com.stratio.meta.common.statements.structures.assignations;
 
+import com.stratio.meta.common.statements.structures.ColumnName;
+import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
+
 /**
  * Representation of the semantic operation of assigning a value to a column. That operation
  * may be assigning a value, comparing a column with a value, comparing two columns, etc.
  */
 public class Assignation {
 
+  /**
+   * Target column of the assignation (left side).
+   */
+  private final ColumnName targetColumn;
+
+  /**
+   * Operator to be applied.
+   */
+  private final Operator operation;
+
+  /**
+   * Value to be assigned (right side).
+   */
+  private final GenericTerm value;
+
+  /**
+   * Define an assignation.
+   * @param targetColumn Target column.
+   * @param operation Operation to be applied.
+   * @param value Value.
+   */
+  public Assignation(ColumnName targetColumn, Operator operation, GenericTerm value) {
+    this.targetColumn = targetColumn;
+    this.operation = operation;
+    this.value = value;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(targetColumn.toString());
+    sb.append(" ").append(operation).append(" ");
+    sb.append(value);
+    return sb.toString();
+  }
 }

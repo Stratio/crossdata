@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures;
 
 /**
  * Table name recognized by the parser. The name may contain:

@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta2.core.statements.DescribeStatement;
 import com.stratio.meta.core.structures.DescribeType;
-import com.stratio.meta.core.structures.TableName;
+import com.stratio.meta.common.statements.structures.TableName;
 
 public class DescribeStatementTest extends BasicPlannerTest {
 

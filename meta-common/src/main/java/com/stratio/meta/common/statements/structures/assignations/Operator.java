@@ -16,22 +16,32 @@
  * under the License.
  */
 
-package com.stratio.meta.core.planner.statements;
+package com.stratio.meta.common.statements.structures.assignations;
 
-import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.AlterTableStatement;
-import com.stratio.meta2.core.structures.Property;
-import com.stratio.meta.common.statements.structures.TableName;
-
-import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-
-public class AlterTableStatementTest extends BasicPlannerTest {
-    @Test
-    public void testPlanForAlter(){
-        String inputText = "ALTER TABLE table1 ADD column1 INT;";
-        stmt = new AlterTableStatement(new TableName("table1"), "column1", "int", new ArrayList<Property>(), 1);
-        validateCassandraPath("testPlanForAlter");
+/**
+ * Operators supported in an {@link com.stratio.meta.common.statements.structures.assignations.Assignation}.
+ */
+public enum Operator {
+  ADD{
+    @Override
+    public String toString() {
+      return "+";
     }
+  },
+  SUBSTRACT{
+    @Override
+    public String toString() {
+      return "-";
+    }
+  },
+  IN,
+  BETWEEN,
+  COMPARE{
+    @Override
+    public String toString() {
+      return "=";
+    }
+  },
+  ASSIGN
+
 }

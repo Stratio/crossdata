@@ -27,8 +27,8 @@ import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.statements.StatementType;
-import com.stratio.meta.core.structures.ColumnName;
-import com.stratio.meta.core.structures.TableName;
+import com.stratio.meta.common.statements.structures.ColumnName;
+import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
