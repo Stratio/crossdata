@@ -40,7 +40,7 @@ public class RemoveUDFStatement extends MetaStatement {
 
     @Override
     public String toString() {
-            return "REMOVE UDF \"" + jarName + "\"";
+            return "REMOVE UDF " + jarName;
     }
 
     @Override

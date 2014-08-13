@@ -43,7 +43,7 @@ public class AddStatement extends MetaStatement {
 
     @Override
     public String toString() {
-            return "ADD \"" + jarPath + "\"";
+            return "ADD " + jarPath;
     }
 
     @Override
