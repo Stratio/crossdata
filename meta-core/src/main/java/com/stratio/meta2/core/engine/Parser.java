@@ -19,7 +19,6 @@
 package com.stratio.meta2.core.engine;
 
 import com.stratio.meta.common.exceptions.ParsingException;
-import com.stratio.meta.core.grammar.generated.MetaLexer;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.MetaStatement;

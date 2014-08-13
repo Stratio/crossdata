@@ -1050,6 +1050,38 @@ getTableID returns [String tableID]:
     | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);})
     ;
 
+getGenericTerm [GenericTerm genericTerm]:
+    genericTerm=getCollectionTerms
+    | genericTerm=getTerm
+;
+
+getCollectionTerms [CollectionTerms collectionTerms]:
+    collectionTerms=getListTerms
+    | collectionTerms=getSetTerms
+    | collectionTerms=getMapTerms
+;
+
+getListTerms [ListTerms listTerms]
+    @init{
+        listTerms = new LisTerms();
+    }:
+    T_START_SBRACKET (value=getTerm {lisTerms.addTerm(value);})* T_END_SBRACKET
+;
+
+getSetTerms [SetTerms setTerms]
+    @init{
+        setTerms = new SetTerms();
+    }:
+    T_START_BRACKET (value=getTerm {setTerms.addTerm(value);})* T_END_BRACKET
+;
+
+getMapTerms [MapTerms mapTerms]
+    @init{
+        mapTerms = new MapTerms();
+    }:
+    T_START_SBRACKET (key=getTerm T_COLON value=getTerm {mapTerms.addTerm(key, value);})* T_END_SBRACKET
+;
+
 getTerm returns [Term term]:
     term1=getPartialTerm ( {$term = term1;} |
     T_AT term2=getPartialTerm {$term = new StringTerm(term1.getTermValue()+"@"+term2.getTermValue());} )
