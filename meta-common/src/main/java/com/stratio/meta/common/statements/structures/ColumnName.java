@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
+package com.stratio.meta.common.statements.structures;
 
 
 
@@ -26,6 +26,8 @@ package com.stratio.meta.core.structures;
  *   <li>catalog.table.column</li>
  *   <li>table.column</li>
  *   <li>column</li>
+ *   <li>catalog.table.column[1]</li>
+ *   <li>catalog.table.column['name']</li>
  * </ul>
  */
 public class ColumnName {
@@ -44,6 +46,8 @@ public class ColumnName {
    * Name of the column.
    */
   private final String columnName;
+
+  //TODO: Add indexTerm field, isIndexed(), setIndex(Term t)
 
   /**
    * Default constructor.

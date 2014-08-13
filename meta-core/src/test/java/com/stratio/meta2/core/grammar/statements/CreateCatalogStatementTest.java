@@ -26,19 +26,19 @@ public class CreateCatalogStatementTest extends ParsingTest {
 
   @Test
   public void createCatalogIfNotExists() {
-    String inputText = "CREATE CATALOG IF NOT EXISTS key_space1;";
+    String inputText = "CREATE CATALOG IF NOT EXISTS catalog1;";
     testRegularStatement(inputText, "createCatalogIfNotExists");
   }
 
   @Test
   public void createCatalogIfNotExistsWithEmptyOptions() {
-    String inputText = "CREATE CATALOG IF NOT EXISTS key_space1 WITH {};";
+    String inputText = "CREATE CATALOG IF NOT EXISTS catalog1 WITH {};";
     testRegularStatement(inputText, "createCatalogIfNotExistsWithEmptyOptions");
   }
 
   @Test
   public void createCatalogWithOptions() {
-    String inputText = "CREATE CATALOG key_space1 WITH {\"comment\":\"This is a comment\"};";
+    String inputText = "CREATE CATALOG catalog1 WITH {\"comment\":\"This is a comment\"};";
     testRegularStatement(inputText, "createCatalogWithOptions");
   }
 
