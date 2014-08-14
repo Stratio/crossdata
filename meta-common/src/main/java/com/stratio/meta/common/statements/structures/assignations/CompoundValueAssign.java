@@ -18,7 +18,6 @@
 
 package com.stratio.meta.common.statements.structures.assignations;
 
-import com.intellij.codeInsight.template.JavaCodeContextType;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 
 import java.util.ArrayList;
