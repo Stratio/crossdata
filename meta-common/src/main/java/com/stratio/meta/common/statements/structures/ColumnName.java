@@ -18,7 +18,6 @@
 
 package com.stratio.meta.common.statements.structures;
 
-
 import com.stratio.meta2.common.statements.structures.terms.Term;
 
 /**

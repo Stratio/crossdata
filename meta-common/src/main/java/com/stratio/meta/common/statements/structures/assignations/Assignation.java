@@ -54,6 +54,10 @@ public class Assignation {
     this.value = value;
   }
 
+  public Assignation(ColumnName targetColumn, GenericTerm value) {
+    this(targetColumn, Operator.ASSIGN, value);
+  }
+
   public ColumnName getTargetColumn() {
     return targetColumn;
   }

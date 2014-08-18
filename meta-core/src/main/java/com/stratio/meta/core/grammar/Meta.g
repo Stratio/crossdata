@@ -29,7 +29,6 @@ options {
     import com.stratio.meta.common.statements.structures.assignations.*;
     import com.stratio.meta.common.statements.structures.relationships.*;
     import com.stratio.meta.common.statements.structures.window.*;
-    import com.stratio.meta2.common.statements.structures.*;
     import com.stratio.meta2.common.statements.structures.terms.*;
     import com.stratio.meta.common.statements.structures.selectors.*;
     import com.stratio.meta.core.statements.*;

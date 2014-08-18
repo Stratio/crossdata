@@ -32,48 +32,48 @@ import org.apache.log4j.Logger;
 
 public class Parser {
 
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = Logger.getLogger(Parser.class);
-    
-    /**
-     * Parse a input text and return the equivalent Statement.
-     * @param inputText The input text.
-     * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
-     */ 
-    public MetaQuery parseStatement(String inputText){
-        MetaQuery metaQuery = new MetaQuery(inputText);
-        metaQuery.setStatus(QueryStatus.PARSED);
-        MetaStatement resultStatement;
-        ANTLRStringStream input = new ANTLRStringStream(inputText);
-        MetaLexer lexer = new MetaLexer(input);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        com.stratio.meta.core.grammar.generated.MetaParser parser = new com.stratio.meta.core.grammar.generated.MetaParser(tokens);        
-        ErrorsHelper foundErrors = null;                
-        try {
-            resultStatement = parser.query();
-            foundErrors = parser.getFoundErrors();
-        } catch (Exception e) {
-            LOG.error("Cannot parse statement", e);
-            metaQuery.setErrorMessage(ErrorType.PARSING, e.getMessage());
-            if(foundErrors == null){                                    
-                foundErrors = new ErrorsHelper();
-            }
-            if(foundErrors.isEmpty()){
-                foundErrors.addError(new AntlrError("Unknown parser error", e.getMessage()));
-            } else if(foundErrors.getAntlrErrors().iterator().next().getMessage().contains("missing")){
-                metaQuery.setErrorMessage(ErrorType.PARSING, e.getMessage());
-            } else {
-                metaQuery.setErrorMessage(ErrorType.PARSING, foundErrors.toString(inputText));
-            }
-            return metaQuery;
-        }
-        metaQuery.setStatement(resultStatement);
-        if((foundErrors!=null) && (!foundErrors.isEmpty())){
-            String foundErrorsStr = foundErrors.toString(inputText);
-            metaQuery.setErrorMessage(ErrorType.PARSING, foundErrorsStr);
-        }
-        return metaQuery;                 
+  /**
+   * Class logger.
+   */
+  private static final Logger LOG = Logger.getLogger(Parser.class);
+
+  /**
+   * Parse a input text and return the equivalent Statement.
+   * @param inputText The input text.
+   * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
+   */
+  public MetaQuery parseStatement(String inputText){
+    MetaQuery metaQuery = new MetaQuery(inputText);
+    metaQuery.setStatus(QueryStatus.PARSED);
+    MetaStatement resultStatement;
+    ANTLRStringStream input = new ANTLRStringStream(inputText);
+    MetaLexer lexer = new MetaLexer(input);
+    CommonTokenStream tokens = new CommonTokenStream(lexer);
+    com.stratio.meta.core.grammar.generated.MetaParser parser = new com.stratio.meta.core.grammar.generated.MetaParser(tokens);
+    ErrorsHelper foundErrors = null;
+    try {
+      resultStatement = parser.query();
+      foundErrors = parser.getFoundErrors();
+    } catch (Exception e) {
+      LOG.error("Cannot parse statement", e);
+      metaQuery.setErrorMessage(ErrorType.PARSING, e.getMessage());
+      if(foundErrors == null){
+        foundErrors = new ErrorsHelper();
+      }
+      if(foundErrors.isEmpty()){
+        foundErrors.addError(new AntlrError("Unknown parser error", e.getMessage()));
+      } else if(foundErrors.getAntlrErrors().iterator().next().getMessage().contains("missing")){
+        metaQuery.setErrorMessage(ErrorType.PARSING, e.getMessage());
+      } else {
+        metaQuery.setErrorMessage(ErrorType.PARSING, foundErrors.toString(inputText));
+      }
+      return metaQuery;
     }
+    metaQuery.setStatement(resultStatement);
+    if((foundErrors!=null) && (!foundErrors.isEmpty())){
+      String foundErrorsStr = foundErrors.toString(inputText);
+      metaQuery.setErrorMessage(ErrorType.PARSING, foundErrorsStr);
+    }
+    return metaQuery;
+  }
 }
