@@ -28,7 +28,7 @@ public enum Operator {
       return "+";
     }
   },
-  SUBSTRACT{
+  SUBTRACT{
     @Override
     public String toString() {
       return "-";
@@ -42,6 +42,6 @@ public enum Operator {
       return "=";
     }
   },
-  ASSIGN
+  ASSIGN;
 
 }

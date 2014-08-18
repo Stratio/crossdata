@@ -917,7 +917,7 @@ getListTypes returns [String listType]:
 
 getAssignment returns [Assignation assign]:
     ident=T_KS_AND_TN (
-        T_EQUAL value=getValueAssign {$assign = new Assignment(new ColumnName($ident.text), Operator.ASSIGN, value);}
+        T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName($ident.text), Operator.ASSIGN, value);}
         | T_START_BRACKET indexTerm=getTerm T_END_BRACKET T_EQUAL termValue=getTerm {
             $assign = new Assignation (new ColumnName($ident.text, indexTerm), Operator.ASSIGN, termValue);
         }
@@ -926,11 +926,14 @@ getAssignment returns [Assignation assign]:
 
 getValueAssign returns [GenericTerm valueAssign]
     @init{
-        Operator op;
+        Operator op = Operator.ADD;
+    }
+    @after{
+        valueAssign = vAssign;
     }:
-    valueAssign=getTerm
+    vAssign=getGenericTerm
     (
-        operator=(T_ADD | T_SUBSTRACT) {op=new Operator($operator.text);}
+        operator=(T_ADD | T_SUBTRACT {op = Operator.SUBTRACT;} )
         termN=getGenericTerm {valueAssign.addCompoundTerm(op, termN);}
     )*
 ;
@@ -1061,32 +1064,32 @@ getTableID returns [String tableID]:
     | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);})
     ;
 
-getGenericTerm [GenericTerm genericTerm]:
-    genericTerm=getCollectionTerms
-    | genericTerm=getTerm
+getGenericTerm returns [GenericTerm genericTerm]:
+    (colTerms=getCollectionTerms {genericTerm = colTerms;}
+    | simpleTerm=getTerm {genericTerm = simpleTerm;})
 ;
 
-getCollectionTerms [CollectionTerms collectionTerms]:
-    collectionTerms=getListTerms
-    | collectionTerms=getSetTerms
-    | collectionTerms=getMapTerms
+getCollectionTerms returns [CollectionTerms colTerms]:
+    (listCol=getListTerms {colTerms = listCol;}
+    | setCol=getSetTerms {colTerms = setCol;}
+    | mapCol=getMapTerms {colTerms = mapCol;})
 ;
 
-getListTerms [ListTerms listTerms]
+getListTerms returns [ListTerms listTerms]
     @init{
-        listTerms = new LisTerms();
+        listTerms = new ListTerms();
     }:
-    T_START_SBRACKET (value=getTerm {lisTerms.addTerm(value);})* T_END_SBRACKET
+    T_START_SBRACKET (value=getTerm {listTerms.addTerm(value);})* T_END_SBRACKET
 ;
 
-getSetTerms [SetTerms setTerms]
+getSetTerms returns [SetTerms setTerms]
     @init{
         setTerms = new SetTerms();
     }:
     T_START_BRACKET (value=getTerm {setTerms.addTerm(value);})* T_END_BRACKET
 ;
 
-getMapTerms [MapTerms mapTerms]
+getMapTerms returns [MapTerms mapTerms]
     @init{
         mapTerms = new MapTerms();
     }:

@@ -19,11 +19,13 @@
 package com.stratio.meta.core.parser;
 
 import com.stratio.meta.common.result.ErrorType;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta.core.grammar.generated.MetaLexer;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.ErrorsHelper;
 import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.core.statements.MetaStatement;
+
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
