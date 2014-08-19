@@ -27,8 +27,12 @@ public class QualifiedNames {
     return normalize(getTableQualifiedName(catalog, table) + "." + name);
   }
 
-  public static String getStorageQualifiedName(String datastore, String name) {
-    return normalize("cluster." + name + "." + datastore);
+  public static String getClusterQualifiedName(String name) {
+    return normalize("cluster." + name);
+  }
+
+  public static String getConnectorQualifiedName(String name) {
+    return normalize("connector." + name);
   }
 
   private static String normalize(String qName) {

@@ -19,22 +19,24 @@
 package com.stratio.meta2.metadata;
 
 import java.util.Map;
+import java.util.Set;
 
 public class ClusterMetadata implements IMetadata {
   private final String name;
 
-  private final String datastore;
+  private final String dataStoreRef;
 
   private final Map<String, Object> options;
 
-  private final Map<String, TableMetadata> tables;
+  private final Set<String> connectorRefs;
 
-  public ClusterMetadata(String name, String datastore, Map<String, Object> options,
-      Map<String, TableMetadata> tables) {
+
+  public ClusterMetadata(String name, String dataStoreRef, Map<String, Object> options,
+      Map<String, TableMetadata> tables, Set<String> connectorRefs) {
     this.name = name;
     this.options = options;
-    this.tables = tables;
-    this.datastore=datastore;
+    this.dataStoreRef = dataStoreRef;
+    this.connectorRefs = connectorRefs;
   }
 
 
@@ -48,12 +50,11 @@ public class ClusterMetadata implements IMetadata {
     return options;
   }
 
-
-  public Map<String, TableMetadata> getTables() {
-    return tables;
+  public Set<String> getConnectorRefs() {
+    return connectorRefs;
   }
 
-  @Override public String getQualifiedName() {
-    return QualifiedNames.getStorageQualifiedName(datastore, name);
+  public String getDataStoreRef() {
+    return dataStoreRef;
   }
 }

@@ -27,17 +27,14 @@ public class TableMetadata implements IMetadata {
 
   private final Map<String, ColumnMetadata> columns;
 
-  private final String catalog;
-
-  private final String storage;
+  private final String clusterRef;
 
   public TableMetadata(String name, Map<String, Object> options,
-      Map<String, ColumnMetadata> columns, String catalog, String storage) {
+      Map<String, ColumnMetadata> columns, String clusterRef) {
     this.name = name;
     this.options = options;
     this.columns = columns;
-    this.catalog = catalog;
-    this.storage = storage;
+    this.clusterRef = clusterRef;
   }
 
 
@@ -54,16 +51,8 @@ public class TableMetadata implements IMetadata {
     return columns;
   }
 
-  public String getCatalog() {
-    return catalog;
+  public String getClusterRef() {
+    return clusterRef;
   }
 
-
-  public String getStorage() {
-    return storage;
-  }
-
-  @Override public String getQualifiedName() {
-    return QualifiedNames.getTableQualifiedName(catalog,name);
-  }
 }

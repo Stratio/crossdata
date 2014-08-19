@@ -16,8 +16,32 @@
  * under the License.
  */
 
-package com.stratio.meta2.transaction;
+package com.stratio.meta2.metadata;
 
-public interface ITransactionContextFactory {
-  public ITransactionContext newTransactionContext();
+import java.util.Map;
+
+public class ConnectorMetadata implements IMetadata {
+  private final String[] dataStoreRefs;
+
+  private final String name;
+
+  private final Map<String, Object> options;
+
+  public ConnectorMetadata(String[] dataStoreRefs, String name, Map<String, Object> options) {
+    this.dataStoreRefs = dataStoreRefs;
+    this.name = name;
+    this.options = options;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public Map<String, Object> getOptions() {
+    return options;
+  }
+
+  public String[] getDataStoreRefs() {
+    return dataStoreRefs;
+  }
 }
