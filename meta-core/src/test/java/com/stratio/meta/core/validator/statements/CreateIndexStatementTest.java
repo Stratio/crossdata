@@ -106,7 +106,7 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
     @Test
     public void validateLuceneWithOptionsFail() {
         String inputText = "CREATE LUCENE INDEX new_index ON demo.users (email, bool, age)"
-                + " WITH OPTIONS = {'refresh_seconds': '1'};";
+                + " WITH OPTIONS = {sdfsfsf};";
         String expectedText = inputText.replace("INDEX new_index ON", "INDEX stratio_lucene_new_index ON");
         validateFail(inputText, expectedText, "validateLuceneWithOptionsFail");
     }

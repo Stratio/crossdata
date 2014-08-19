@@ -456,8 +456,13 @@ createIndexStatement returns [CreateIndexStatement cis]
 	)*
 	T_END_PARENTHESIS
 	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.toString());})?
-	(T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=getTerm T_COLON value=getTerm {$cis.addOption(key, value);}
-		(T_COMMA keyN=getTerm T_COLON valueN=getTerm {$cis.addOption(keyN, valueN);} )* T_END_SBRACKET
+	(T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET
+	    /*
+	    (key=getTerm T_COLON value=getGenericTerm {$cis.addOption(key, value);}
+		    (T_COMMA keyN=getTerm T_COLON valueN=getGenericTerm {$cis.addOption(keyN, valueN);})*
+		)?
+		*/
+    T_END_SBRACKET
 	)?
 	;
     //identProp1=T_IDENT T_EQUAL valueProp1=getTerm {properties.put($identProp1.text, valueProp1.toString());}
@@ -1069,30 +1074,60 @@ getGenericTerm returns [GenericTerm genericTerm]:
 ;
 
 getCollectionTerms returns [CollectionTerms colTerms]:
-    (listCol=getListTerms {colTerms = listCol;}
-    | setCol=getSetTerms {colTerms = setCol;}
-    | mapCol=getMapTerms {colTerms = mapCol;})
+    (mapOrListCol=getMapOrListTerms {colTerms = mapOrListCol;}
+    | setCol=getSetTerms {colTerms = setCol;})
 ;
 
-getListTerms returns [ListTerms listTerms]
-    @init{
-        listTerms = new ListTerms();
-    }:
-    T_START_SBRACKET (value=getTerm {listTerms.addTerm(value);})* T_END_SBRACKET
-;
+//getMapOrListTerms returns [CollectionTerms colTerms]
+//    @init{
+//        colTerms = new ListTerms();
+//    }:
+//    T_START_SBRACKET
+//        (key=getTerm {colTerms.addTerm(key);}
+//            ((T_COMMA keyN=getTerm {colTerms.addTerm(keyN);})*
+//            | T_COLON {colTerms = new MapTerms();} value=getTerm {colTerms.addTerm(key, value);}
+//                                                   (T_COMMA keyN=getTerm T_COLON valueN=getTerm {colTerms.addTerm(keyN, valueN);})*
+//            )?
+//        )
+//    T_END_SBRACKET
+//;
 
-getSetTerms returns [SetTerms setTerms]
+getMapOrListTerms returns [CollectionTerms colTerms]
     @init{
-        setTerms = new SetTerms();
+        colTerms = new ListTerms();
     }:
-    T_START_BRACKET (value=getTerm {setTerms.addTerm(value);})* T_END_BRACKET
+    T_START_SBRACKET
+         (ident=T_IDENT)
+    T_END_SBRACKET
 ;
 
 getMapTerms returns [MapTerms mapTerms]
     @init{
         mapTerms = new MapTerms();
     }:
-    T_START_SBRACKET (key=getTerm T_COLON value=getTerm {mapTerms.addTerm(key, value);})* T_END_SBRACKET
+        (key=getTerm T_COLON value=getTerm {mapTerms.addTerm(key, value);}
+            (T_COMMA keyN=getTerm T_COLON valueN=getTerm {mapTerms.addTerm(keyN, valueN);})*
+        )?
+;
+
+getListTerms returns [ListTerms listTerms]
+    @init{
+        listTerms = new ListTerms();
+    }:
+        (value=getTerm {listTerms.addTerm(value);}
+            (T_COMMA valueN=getTerm {listTerms.addTerm(valueN);})*
+        )?
+;
+
+getSetTerms returns [SetTerms setTerms]
+    @init{
+        setTerms = new SetTerms();
+    }:
+    T_START_BRACKET
+        (value=getTerm {setTerms.addTerm(value);}
+            (T_COMMA valueN=getTerm {setTerms.addTerm(valueN);})*
+        )?
+    T_END_BRACKET
 ;
 
 getTerm returns [Term term]:
