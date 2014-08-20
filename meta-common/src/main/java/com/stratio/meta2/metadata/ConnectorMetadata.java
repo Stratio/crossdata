@@ -18,30 +18,42 @@
 
 package com.stratio.meta2.metadata;
 
-import java.util.Map;
+import java.util.Set;
 
 public class ConnectorMetadata implements IMetadata {
-  private final String[] dataStoreRefs;
+  private final Set<String> dataStoreRefs;
 
   private final String name;
+  private final String version;
+  private final Set<String> requiredProperties;
+  private final Set<String> othersProperties;
 
-  private final Map<String, Object> options;
-
-  public ConnectorMetadata(String[] dataStoreRefs, String name, Map<String, Object> options) {
+  public ConnectorMetadata(Set<String> dataStoreRefs, String name, String version,
+      Set<String> requiredProperties, Set<String> othersProperties) {
     this.dataStoreRefs = dataStoreRefs;
     this.name = name;
-    this.options = options;
-  }
+    this.version = version;
+    this.requiredProperties = requiredProperties;
+    this.othersProperties = othersProperties;
+ }
 
   public String getName() {
     return name;
   }
 
-  public Map<String, Object> getOptions() {
-    return options;
+  public Set<String> getDataStoreRefs() {
+  return dataStoreRefs;
   }
 
-  public String[] getDataStoreRefs() {
-    return dataStoreRefs;
+  public String getVersion() {
+    return version;
+  }
+
+  public Set<String> getRequiredProperties() {
+    return requiredProperties;
+  }
+
+  public Set<String> getOthersProperties() {
+    return othersProperties;
   }
 }

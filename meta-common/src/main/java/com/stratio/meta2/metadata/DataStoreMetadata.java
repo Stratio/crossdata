@@ -18,42 +18,35 @@
 
 package com.stratio.meta2.metadata;
 
-import java.util.Map;
+import java.util.Set;
 
-public class ClusterMetadata implements IMetadata {
+public class DataStoreMetadata implements IMetadata {
   private final String name;
+  private final String version;
+  private final Set<String> requiredProperties;
+  private final Set<String> othersProperties;
 
-  private final String dataStoreRef;
-
-  private final Map<String, Object> options;
-
-  private final Map<String, ConnectorAttachedMetadata> connectorAttachedRefs;
-
-
-  public ClusterMetadata(String name, String dataStoreRef, Map<String, Object> options,
-      Map<String, ConnectorAttachedMetadata> connectorAttachedRefs) {
+  public DataStoreMetadata(String name, String version, Set<String> requiredProperties,
+      Set<String> othersProperties) {
     this.name = name;
-    this.options = options;
-    this.dataStoreRef = dataStoreRef;
-    this.connectorAttachedRefs = connectorAttachedRefs;
+    this.version = version;
+    this.requiredProperties = requiredProperties;
+    this.othersProperties = othersProperties;
   }
-
-
 
   public String getName() {
     return name;
   }
 
-
-  public Map<String, Object> getOptions() {
-    return options;
+  public String getVersion() {
+    return version;
   }
 
-  public String getDataStoreRef() {
-    return dataStoreRef;
+  public Set<String> getRequiredProperties() {
+    return requiredProperties;
   }
 
-  public Map<String, ConnectorAttachedMetadata> getConnectorAttachedRefs() {
-    return connectorAttachedRefs;
+  public Set<String> getOthersProperties() {
+    return othersProperties;
   }
 }
