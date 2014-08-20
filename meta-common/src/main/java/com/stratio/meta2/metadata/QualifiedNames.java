@@ -39,6 +39,10 @@ public class QualifiedNames {
     return normalize("connector." + name);
   }
 
+  public static String getDataStoreQualifiedName(String name){
+    return normalize("datastore." + name);
+  }
+
   private static String normalize(String qName) {
     return qName.toLowerCase();
   }

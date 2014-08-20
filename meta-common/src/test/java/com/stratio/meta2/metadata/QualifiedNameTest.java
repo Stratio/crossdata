@@ -58,4 +58,10 @@ public class QualifiedNameTest {
     Assert.assertEquals(name,"connector.test");
   }
 
+  @Test
+  public void testDataStoreQualifiedName(){
+    String name= QualifiedNames.getDataStoreQualifiedName("test");
+    Assert.assertEquals(name,"datastore.test");
+  }
+
 }

@@ -103,6 +103,22 @@ public enum MetadataManager {
     }
   }
 
+  private void shouldBeUniqueDataStore(String name) {
+    if (existsDataStore(name)) {
+      throw new MetadataManagerException("DataStore [" + name + "] already exists");
+    }
+  }
+
+  private void shouldExistDataStore(String name) {
+    if (!existsDataStore(name)) {
+      throw new MetadataManagerException("DataStore [" + name + "] doesn't exist yet");
+    }
+  }
+
+  public boolean existsDataStore(String name) {
+    return existsMetadata(name);
+  }
+
 
   public boolean existsTable(String name) {
     boolean result = false;
@@ -184,9 +200,11 @@ public enum MetadataManager {
     shouldBeInit();
     try {
       writeLock.lock();
+      shouldExistDataStore(clusterMetadata.getDataStoreRef());
       shouldBeUniqueCluster(clusterMetadata.getName());
-      for (String connectorRef : clusterMetadata.getConnectorRefs()) {
-        shouldExistConnector(connectorRef);
+      for (ConnectorAttachedMetadata connectorRef : clusterMetadata.getConnectorAttachedRefs()
+          .values()) {
+        shouldExistConnector(connectorRef.getConnectorRef());
       }
       metadata.put(clusterMetadata.getName(),clusterMetadata);
     } catch (MetadataManagerException mex) {
@@ -201,8 +219,51 @@ public enum MetadataManager {
   public ClusterMetadata getCluster(String name) {
     shouldBeInit();
     shouldExistCluster(name);
-    return (ClusterMetadata)metadata.get(name);
+    return (ClusterMetadata) metadata.get(name);
   }
 
+  public void createDataStore(DataStoreMetadata dataStoreMetadata) {
+    shouldBeInit();
+    try {
+      writeLock.lock();
+      shouldBeUniqueDataStore(dataStoreMetadata.getName());
+      metadata.put(dataStoreMetadata.getName(), dataStoreMetadata);
+    } catch (MetadataManagerException mex) {
+      throw mex;
+    } catch (Exception ex) {
+      throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  public DataStoreMetadata getDataStore(String name) {
+    shouldBeInit();
+    shouldExistDataStore(name);
+    return (DataStoreMetadata) metadata.get(name);
+  }
+
+  public void createConnector(ConnectorMetadata connectorMetadata) {
+    shouldBeInit();
+    try {
+      writeLock.lock();
+      shouldBeUniqueConnector(connectorMetadata.getName());
+      metadata.put(connectorMetadata.getName(), connectorMetadata);
+    } catch (MetadataManagerException mex) {
+      throw mex;
+    } catch (Exception ex) {
+      throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  public ConnectorMetadata getConnector(String name) {
+    shouldBeInit();
+    shouldExistDataStore(name);
+    return (ConnectorMetadata) metadata.get(name);
+  }
+  
+  
 
 }
