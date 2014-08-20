@@ -23,6 +23,10 @@ public class QualifiedNames {
     return normalize(getCatalogQualifiedName(catalog) + "." + name);
   }
 
+  public static String getCatalogFromTableQualifiedName(String tableName){
+    return tableName.substring(0,tableName.lastIndexOf('.'));
+  }
+
   public static String getColumnQualifiedName(String catalog, String table, String name) {
     return normalize(getTableQualifiedName(catalog, table) + "." + name);
   }

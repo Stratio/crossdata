@@ -29,12 +29,15 @@ public class TableMetadata implements IMetadata {
 
   private final String clusterRef;
 
+  private final String catalogRef;
+
   public TableMetadata(String name, Map<String, Object> options,
-      Map<String, ColumnMetadata> columns, String clusterRef) {
+      Map<String, ColumnMetadata> columns, String clusterRef, String catalogRef) {
     this.name = name;
     this.options = options;
     this.columns = columns;
     this.clusterRef = clusterRef;
+    this.catalogRef = catalogRef;
   }
 
 
@@ -55,4 +58,7 @@ public class TableMetadata implements IMetadata {
     return clusterRef;
   }
 
+  public String getCatalogRef() {
+    return catalogRef;
+  }
 }
