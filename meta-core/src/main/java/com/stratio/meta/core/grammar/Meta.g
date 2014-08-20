@@ -503,7 +503,7 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
     }:
     T_UPDATE tablename=getTableID
     (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (T_AND optN=getOption {options.add(optN);})*)?
-    T_SET {System.out.println(">>>>>>>> TRACE: T_SET");} assig1=getAssignment {assignations.add(assig1);} (T_COMMA assigN=getAssignment {assignations.add(assigN);})*
+    T_SET assig1=getAssignment {assignations.add(assig1);} (T_COMMA assigN=getAssignment {assignations.add(assigN);})*
     T_WHERE rel1=getRelation {whereclauses.add(rel1);} (T_AND relN=getRelation {whereclauses.add(relN);})*
     (T_IF id1=T_IDENT T_EQUAL term1=getTerm {condsInc = true; conditions.put($id1.text, term1);}
                     (T_AND idN=T_IDENT T_EQUAL termN=getTerm {conditions.put($idN.text, termN);})*)?
@@ -519,11 +519,11 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
             else
                 $pdtbst = new UpdateTableStatement(tablename, assignations, whereclauses);
     }
-    ;
+;
 
 stopProcessStatement returns [StopProcessStatement stprst]:
     T_STOP T_PROCESS ident=getProcess { $stprst = new StopProcessStatement(ident); }
-    ;
+;
 
 getProcess returns [String procname]:
     processname=(T_PATH | T_IDENT) {$procname = $processname.text;}
@@ -544,7 +544,7 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
     table_name=T_IDENT
     T_USING class_name=T_IDENT
     {$crtrst = new CreateTriggerStatement($trigger_name.text,$table_name.text,$class_name.text);}
-    ;
+;
 
 createTableStatement returns [CreateTableStatement crtast]
 @init{
@@ -921,9 +921,10 @@ getListTypes returns [String listType]:
 	;
 
 getAssignment returns [Assignation assign]:
-    firstTerm=getTerm {System.out.println(">>>>>>>>> TRACE: firstTerm = " + firstTerm.toString());}
-        (T_EQUAL {System.out.println(">>>>>>>>>> TRACE: T_EQUAL");} value=getValueAssign {$assign = new Assignation(new ColumnName(firstTerm.toString()), Operator.ASSIGN, value);}
-        | T_START_BRACKET indexTerm=getTerm T_END_BRACKET T_EQUAL termValue=getTerm {
+    firstTerm=getTerm
+        //T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName(firstTerm.toString()), Operator.ASSIGN, value);}
+        (T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName(firstTerm.toString()), Operator.ASSIGN, value);}
+        | T_START_BRACKET indexTerm=getTerm T_END_BRACKET T_EQUAL termValue=getValueAssign {
             $assign = new Assignation (new ColumnName(firstTerm.toString(), indexTerm), Operator.ASSIGN, termValue);
             })
 ;
@@ -932,9 +933,10 @@ getValueAssign returns [GenericTerm valueAssign]
     @init{
         Operator op = Operator.ADD;
     }:
+    //firstTerm=getGenericTerm T_PLUS secondTerm=getGenericTerm
     vAssign=getGenericTerm {valueAssign = vAssign;}
     (
-        operator=(T_ADD | T_SUBTRACT {op = Operator.SUBTRACT;} )
+        operator=(T_PLUS | T_SUBTRACT {op = Operator.SUBTRACT;} )
         termN=getGenericTerm {valueAssign.addCompoundTerm(op, termN);}
     )*
 ;
@@ -1132,10 +1134,7 @@ getTerm returns [Term term]:
     T_AT term2=getPartialTerm {$term = new StringTerm(term1.getTermValue()+"@"+term2.getTermValue());} )
 ;
 
-getPartialTerm returns [Term term]
-    @after{
-        System.out.println(">>>>>>> TRACE: term.toString() = "+term.toString());
-    }:
+getPartialTerm returns [Term term]:
     ident=T_IDENT {$term = new StringTerm($ident.text);}
     | constant=getConstant {$term = new LongTerm(constant);}
     | T_FALSE {$term = new BooleanTerm("false");}

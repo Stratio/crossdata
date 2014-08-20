@@ -18,6 +18,10 @@
 
 package com.stratio.meta2.common.statements.structures.terms;
 
+import com.stratio.meta.common.statements.structures.assignations.Operator;
+
+import java.util.Iterator;
+
 public class StringTerm extends Term<String> {
 
   private static final long serialVersionUID = 4470491967411363431L;
@@ -46,10 +50,22 @@ public class StringTerm extends Term<String> {
   /** {@inheritDoc} */
   @Override
   public String toString() {
+    StringBuilder sb = new StringBuilder();
     if (this.isQuotedLiteral()) {
-      return String.valueOf(quotationMark) + value + String.valueOf(quotationMark);
+      sb.append(String.valueOf(quotationMark) + value + String.valueOf(quotationMark));
     } else {
-      return value;
+      sb.append(value);
     }
+    if(hasCompoundTerms()){
+      Iterator<GenericTerm> termsIter = getCompoundTerms().iterator();
+      for(Operator operator: getValueOperators()){
+        GenericTerm gTerm = termsIter.next();
+        sb.append(" ").append(operator).append(" ").append(gTerm.toString());
+        if(termsIter.hasNext()){
+          sb.append(", ");
+        }
+      }
+    }
+    return sb.toString();
   }
 }

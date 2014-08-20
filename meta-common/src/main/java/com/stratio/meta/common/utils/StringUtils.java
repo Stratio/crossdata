@@ -39,10 +39,7 @@ public class StringUtils {
    */
   public static String stringList(List<?> ids, String separator) {
     StringBuilder sb = new StringBuilder();
-    System.out.println(">>>>>>>>>>> TRACE: ids.size = "+ids.size());
     for(Object value: ids){
-      System.out.println(">>>>>>>>>>>>> TRACE: value==null?"+(value==null));
-      System.out.println(">>>>>>>>>>> TRACE: value.class = "+value.getClass());
       sb.append(value.toString()).append(separator);
     }
     if(sb.length() > separator.length()){

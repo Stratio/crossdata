@@ -18,7 +18,10 @@
 
 package com.stratio.meta2.common.statements.structures.terms;
 
+import com.stratio.meta.common.statements.structures.assignations.Operator;
+
 import java.io.Serializable;
+import java.util.Iterator;
 
 public abstract class Term<T extends Comparable<T>> extends GenericTerm implements Comparable<T>,
                                                                                     Serializable {
@@ -54,7 +57,18 @@ public abstract class Term<T extends Comparable<T>> extends GenericTerm implemen
 
   @Override
   public String toString() {
-    return value.toString();
+    StringBuilder sb = new StringBuilder(value.toString());
+    if(hasCompoundTerms()){
+      Iterator<GenericTerm> termsIter = getCompoundTerms().iterator();
+      for(Operator operator: getValueOperators()){
+        GenericTerm gTerm = termsIter.next();
+        sb.append(" ").append(operator).append(" ").append(gTerm.toString());
+        if(termsIter.hasNext()){
+          sb.append(", ");
+        }
+      }
+    }
+    return sb.toString();
   }
 
   /*
