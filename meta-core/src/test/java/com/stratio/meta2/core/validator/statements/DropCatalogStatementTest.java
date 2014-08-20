@@ -25,19 +25,19 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
 
     @Test
     public void validateOk(){
-        String inputText = "DROP KEYSPACE demo;";
+        String inputText = "DROP CATALOG demo;";
         validateOk(inputText, "validateOk");
     }
 
     @Test
     public void validateIfNotExists(){
-        String inputText = "DROP KEYSPACE IF EXISTS unknown;";
+        String inputText = "DROP CATALOG IF EXISTS unknown;";
         validateOk(inputText, "validateIfNotExists");
     }
 
     @Test
     public void validateNotExists(){
-        String inputText = "DROP KEYSPACE unknown;";
+        String inputText = "DROP CATALOG unknown;";
         validateFail(inputText, "validateNotExists");
     }
 }

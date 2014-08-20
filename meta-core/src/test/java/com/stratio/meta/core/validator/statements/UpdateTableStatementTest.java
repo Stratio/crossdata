@@ -81,6 +81,12 @@ public class UpdateTableStatementTest extends BasicValidatorTest {
         validateFail(inputText, "validateUpdateWrongWhere");
     }
 
+  @Test
+  public void validateUpdateWrongAdhoc(){
+    String inputText = "UPDATE demo.users SET age WHERE surname = name_5;";
+    validateFail(inputText, "validateUpdateWrongAdhoc");
+  }
+
     @Test
     public void validateUpdateWrongTypeWhere(){
         String inputText = "UPDATE demo.users SET age = 50 WHERE name = 25;";

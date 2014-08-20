@@ -76,6 +76,7 @@ public class Assignation {
 
   @Override
   public String toString() {
+    System.out.println(">>>>>>>>>> TRACE: Assignation.toString()");
     StringBuilder sb = new StringBuilder(targetColumn.toString());
     sb.append(" ").append(operation).append(" ");
     sb.append(value);

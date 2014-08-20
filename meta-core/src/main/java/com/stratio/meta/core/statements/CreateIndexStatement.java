@@ -36,6 +36,12 @@ import com.stratio.meta2.common.statements.structures.terms.StringTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
 import com.stratio.meta2.core.statements.MetaStatement;
 
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -98,6 +104,8 @@ public class CreateIndexStatement extends MetaStatement {
    */
   private static Map<String, String> luceneTypes = new HashMap<>();
 
+  private String optionsJson = "";
+
   /**
    * Table metadata cached on the validate function.
    */
@@ -116,7 +124,6 @@ public class CreateIndexStatement extends MetaStatement {
     luceneTypes.put(DataType.cint().toString(), "{type:\"integer\"}");
     luceneTypes.put(DataType.uuid().toString(), "{type:\"uuid\"}");
   }
-
 
   /**
    * Class constructor.
@@ -228,6 +235,27 @@ public class CreateIndexStatement extends MetaStatement {
    */
   public void addOption(Term key, GenericTerm value){
     options.put(key, value);
+  }
+
+  public void setOptionsJson(String optionsJson){
+    //Map<Term, GenericTerm> options;
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+    JsonFactory factory = mapper.getJsonFactory();
+    JsonParser jp;
+    try {
+      jp = factory.createJsonParser(optionsJson);
+      JsonNode root = mapper.readTree(jp);
+
+      Iterator<Entry<String, JsonNode>> iter = root.getFields();
+      while(iter.hasNext()){
+        Entry<String, JsonNode> entry = iter.next();
+        addOption(new StringTerm(entry.getKey()), GenericTerm.CreateGenericTerm(entry.getValue()));
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   /**

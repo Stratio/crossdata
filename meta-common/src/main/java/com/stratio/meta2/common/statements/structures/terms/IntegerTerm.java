@@ -29,4 +29,8 @@ public class IntegerTerm extends Term<Integer> {
   public IntegerTerm(Term<Long> term) {
     super(Integer.class, term.getTermValue().intValue());
   }
+
+  public IntegerTerm(int intValue) {
+    super(Integer.class, intValue);
+  }
 }
