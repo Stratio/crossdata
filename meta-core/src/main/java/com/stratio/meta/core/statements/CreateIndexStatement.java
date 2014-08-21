@@ -238,7 +238,6 @@ public class CreateIndexStatement extends MetaStatement {
   }
 
   public void setOptionsJson(String optionsJson){
-    //Map<Term, GenericTerm> options;
     ObjectMapper mapper = new ObjectMapper();
     mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
     mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);

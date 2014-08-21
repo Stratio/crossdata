@@ -107,7 +107,7 @@ public class UpdateTableStatementTest extends BasicValidatorTest {
 
   @Test
   public void validateUpdateSetLiteral(){
-    String inputText = "UPDATE demo.users SET email = email + { whatever@bestcompany.com } WHERE name = name_5 AND gender = male;";
+    String inputText = "UPDATE demo.users SET email = email + {whatever@bestcompany.com} WHERE name = name_5 AND gender = male;";
     validateFail(inputText, "validateUpdateSetLiteral");
   }
 
@@ -119,7 +119,7 @@ public class UpdateTableStatementTest extends BasicValidatorTest {
 
   @Test
   public void validateUpdateListLiteral(){
-    String inputText = "UPDATE demo.users SET email = email - [ whatever@bestcompany.com ] WHERE name = name_5 AND gender = male;";
+    String inputText = "UPDATE demo.users SET email = email - [whatever@bestcompany.com] WHERE name = name_5 AND gender = male;";
     validateFail(inputText, "validateUpdateListLiteral");
   }
 
