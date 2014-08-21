@@ -16,8 +16,31 @@
  * under the License.
  */
 
-package com.stratio.meta2.transaction;
+package com.stratio.meta2.metadata;
 
-public interface ITransactionContextFactory {
-  public ITransactionContext newTransactionContext();
+import java.util.Map;
+
+public class ConnectorAttachedMetadata {
+  private final String connectorRef;
+  private final String clusterRef;
+  private final Map<String,String> properties;
+
+  public ConnectorAttachedMetadata(String connectorRef, String clusterRef,
+      Map<String, String> properties) {
+    this.connectorRef = connectorRef;
+    this.clusterRef = clusterRef;
+    this.properties = properties;
+  }
+
+  public String getConnectorRef() {
+    return connectorRef;
+  }
+
+  public String getClusterRef() {
+    return clusterRef;
+  }
+
+  public Map<String, String> getProperties() {
+    return properties;
+  }
 }

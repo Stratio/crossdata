@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Class that models a generic Statement supported by the META language.
  */
-public abstract class MetaStatement {
+public abstract class MetaStatement implements IStatement {
 
   /**
    * Whether the query is an internal command or it returns a

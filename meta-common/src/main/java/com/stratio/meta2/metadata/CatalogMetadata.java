@@ -46,7 +46,4 @@ public class CatalogMetadata implements IMetadata {
     return tables;
   }
 
-  @Override public String getQualifiedName() {
-    return QualifiedNames.getCatalogQualifiedName(name);
-  }
 }
