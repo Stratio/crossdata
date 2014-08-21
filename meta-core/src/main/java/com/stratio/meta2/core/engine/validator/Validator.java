@@ -18,11 +18,17 @@
 
 package com.stratio.meta2.core.engine.validator;
 
-import com.stratio.meta.common.exceptions.ValidationException;
+import java.util.List;
+
+import com.stratio.meta2.common.exception.validation.NotMustExistCatalogException;
+import com.stratio.meta2.common.exception.validation.ValidationException;
+import com.stratio.meta2.core.metadata.MetadataManager;
+import org.apache.log4j.Logger;
+
+
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
 import com.stratio.meta2.core.statements.IStatement;
-import org.apache.log4j.Logger;
 
 public class Validator {
   /**
@@ -37,6 +43,29 @@ public class Validator {
 
   private void validate(IStatement statement){
 
+  }
+
+  private void validate(Validation requirement, IStatement statement) throws ValidationException  {
+    switch (requirement) {
+      case MUST_NOT_EXIST_CATALOG:
+        validateNotExistCatalog(statement.getCatalogs(), statement.getIfNotExists());
+        break;
+    }
+  }
+
+  private void validateNotExistCatalog(List<String> catalogs, boolean hasIfNotExist) throws NotMustExistCatalogException {
+    for(String catalog:catalogs){
+      this.validateNotExistCatalog(catalog,hasIfNotExist);
+    }
+  }
+
+
+  private void validateNotExistCatalog(String catalog, boolean onlyIfNotExis) throws NotMustExistCatalogException{
+    if(MetadataManager.MANAGER.existsCatalog(catalog)){
+      if(!onlyIfNotExis){
+        throw new NotMustExistCatalogException(catalog);
+      }
+    }
   }
 
 }

@@ -27,6 +27,8 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Class that models a {@code CREATE CATALOG} statement from the META language. Catalog
@@ -109,4 +111,8 @@ public class CreateCatalogStatement extends MetaStatement {
     return tree;
   }
 
+  public ValidationRequirements getValidationRequirements(){
+    return new ValidationRequirements().mustNotExistCatalog();
+  }
 }
+

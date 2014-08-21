@@ -16,24 +16,10 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.engine.validator;
+package com.stratio.meta2.common.exception.validation;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class ValidationRequirements {
-  private final List<Validation> validations;
-
-  List<Validation> getValidations(){
-    return validations;
-  }
-
-  public ValidationRequirements() {
-    this.validations = new ArrayList<>();
-  }
-
-  public ValidationRequirements mustNotExistCatalog(){
-    this.validations.add(Validation.MUST_NOT_EXIST_CATALOG);
-    return this;
+public class ValidationException extends Exception {
+  public ValidationException(String message){
+    super(message);
   }
 }
