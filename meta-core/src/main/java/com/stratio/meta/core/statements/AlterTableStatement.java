@@ -29,7 +29,7 @@ import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta2.core.statements.TableStatement;
+import com.stratio.meta.core.statements.TableStatement;
 import com.stratio.meta2.core.structures.Property;
 import com.stratio.meta2.core.structures.PropertyNameValue;
 

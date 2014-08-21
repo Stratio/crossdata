@@ -20,7 +20,7 @@ package com.stratio.meta.core.planner;
 
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.Tree;
 import org.testng.annotations.BeforeClass;

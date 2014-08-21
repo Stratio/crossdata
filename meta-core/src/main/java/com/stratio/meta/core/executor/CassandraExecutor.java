@@ -23,7 +23,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta.core.utils.MetaStep;

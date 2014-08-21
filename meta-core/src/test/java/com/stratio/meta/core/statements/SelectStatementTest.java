@@ -22,7 +22,7 @@ import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.grammar.ParsingTest;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta.core.statements.MetaStatement;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;

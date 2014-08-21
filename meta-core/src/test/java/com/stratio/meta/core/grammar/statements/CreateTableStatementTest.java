@@ -19,7 +19,7 @@
 package com.stratio.meta.core.grammar.statements;
 
 import com.stratio.meta.core.grammar.ParsingTest;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.MetaQuery;
 import org.testng.annotations.Test;
 

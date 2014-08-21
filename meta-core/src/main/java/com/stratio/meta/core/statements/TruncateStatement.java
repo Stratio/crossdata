@@ -29,7 +29,6 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta2.core.statements.MetaStatement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
 

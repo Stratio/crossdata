@@ -18,8 +18,8 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.core.statements.MetaStatement;
+
 
 /**
  * Class that models a {@code DROP CLUSTER} statement from the META language. In order to remove
@@ -49,11 +49,6 @@ public class DropClusterStatement extends MetaStatement{
 
   @Override
   public String translateToCQL() {
-    return null;
-  }
-
-  @Override
-  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     return null;
   }
 }

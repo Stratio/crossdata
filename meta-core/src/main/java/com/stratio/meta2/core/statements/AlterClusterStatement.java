@@ -18,8 +18,8 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.core.statements.MetaStatement;
+
 
 /**
  * Class that models a {@code ALTER CLUSTER} statement from the META language.
@@ -59,8 +59,4 @@ public class AlterClusterStatement extends MetaStatement{
     return null;
   }
 
-  @Override
-  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-    return null;
-  }
 }

@@ -18,7 +18,7 @@
 
 package com.stratio.meta.core.utils;
 
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta.core.statements.MetaStatement;
 
 public class MetaStep {
     private MetaPath path;

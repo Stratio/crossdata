@@ -26,10 +26,8 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.statements.StatementType;
 import com.stratio.meta.common.statements.structures.ColumnName;
 import com.stratio.meta.common.statements.structures.TableName;
-import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import java.util.List;
@@ -190,17 +188,6 @@ public abstract class MetaStatement {
   public Statement getDriverStatement() {
     return null;
   }
-
-  /**
-   * Get a tree that contains the planning for executing the query. The plan will be executed
-   * starting from the leaves and finishing at the tree root.
-   * 
-   * @param metadataManager The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
-   *        the required information.
-   * @param targetKeyspace The target keyspace where the query will be executed.
-   * @return A {@link com.stratio.meta.core.utils.Tree} with the execution plan.
-   */
-  public abstract Tree getPlan(MetadataManager metadataManager, String targetKeyspace);
 
   /**
    * Set the catalog to be described.

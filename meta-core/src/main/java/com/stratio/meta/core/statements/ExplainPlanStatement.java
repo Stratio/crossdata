@@ -26,7 +26,6 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 /**
@@ -35,13 +34,13 @@ import com.stratio.streaming.api.IStratioStreamingAPI;
 public class ExplainPlanStatement extends MetaStatement {
 
   /**
-   * The {@link com.stratio.meta2.core.statements.MetaStatement} to be analyzed.
+   * The {@link com.stratio.meta.core.statements.MetaStatement} to be analyzed.
    */
   private MetaStatement metaStatement;
 
   /**
    * Class constructor.
-   * @param metaStatement The {@link com.stratio.meta2.core.statements.MetaStatement} to be analyzed.
+   * @param metaStatement The {@link com.stratio.meta.core.statements.MetaStatement} to be analyzed.
    */
   public ExplainPlanStatement(MetaStatement metaStatement) {
     this.command = true;

@@ -19,7 +19,7 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta.core.statements.MetaStatement;
 
 public class ParsedQuery extends BaseQuery {
   private final MetaStatement statement;

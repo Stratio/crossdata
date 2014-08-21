@@ -22,7 +22,7 @@ import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.ErrorType;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.parser.Parser;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.MetaQuery;
 
 import org.testng.annotations.Test;

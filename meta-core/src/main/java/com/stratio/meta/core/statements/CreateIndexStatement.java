@@ -33,7 +33,6 @@ import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.StringTerm;
-import com.stratio.meta2.core.statements.MetaStatement;
 
 import java.util.ArrayList;
 import java.util.HashMap;

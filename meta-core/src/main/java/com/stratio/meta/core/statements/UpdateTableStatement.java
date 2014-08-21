@@ -39,7 +39,6 @@ import com.stratio.meta2.common.statements.structures.terms.FloatTerm;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
-import com.stratio.meta2.core.statements.MetaStatement;
 
 import java.util.ArrayList;
 import java.util.List;
