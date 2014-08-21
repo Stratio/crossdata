@@ -34,14 +34,28 @@ public enum Operator {
       return "-";
     }
   },
-  IN,
-  BETWEEN,
+  IN{
+    @Override
+    public String toString() {
+      return "IN";
+    }
+  },
+  BETWEEN{
+    @Override
+    public String toString() {
+      return "BETWEEN";
+    }
+  },
   COMPARE{
     @Override
     public String toString() {
       return "=";
     }
   },
-  ASSIGN;
+  ASSIGN{
+    public String toString() {
+      return "=";
+    }
+  };
 
 }

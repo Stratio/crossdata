@@ -77,8 +77,8 @@ public class ParsingTest {
 
     assertTrue(expectedQuery.equalsIgnoreCase(st.toString() + ";"),
                "Cannot parse " + methodName
-               + ": expecting '" + System.lineSeparator() + expectedQuery
-               + "' from '" + System.lineSeparator() + st.toString() + ";"
+               + ": expecting " + System.lineSeparator() + "'" + expectedQuery
+               + "' from " + System.lineSeparator() + "'" + st.toString() + ";"
     );
     return st;
   }

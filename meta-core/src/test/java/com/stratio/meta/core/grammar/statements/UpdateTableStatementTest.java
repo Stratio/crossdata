@@ -78,13 +78,13 @@ public class UpdateTableStatementTest extends ParsingTest {
 
     @Test
     public void updateWhereWithCollectionSet() {
-        String inputText = "UPDATE table1 SET emails = emails + { myemail@mycompany.org } WHERE field3 = value3;";
+        String inputText = "UPDATE table1 SET emails = emails + {myemail@mycompany.org} WHERE field3 = value3;";
         testRegularStatement(inputText, "updateWhereWithCollectionSet");
     }
 
     @Test
     public void updateWhereWithCollectionList() {
-        String inputText = "UPDATE table1 SET emails = emails + [ myemail@mycompany.org ] WHERE field3 = value3;";
+        String inputText = "UPDATE table1 SET emails = emails + [myemail@mycompany.org] WHERE field3 = value3;";
         testRegularStatement(inputText, "updateWhereWithCollectionList");
     }
 

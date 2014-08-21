@@ -20,9 +20,13 @@ package com.stratio.meta2.common.statements.structures.terms;
 
 public class DoubleTerm extends Term<Double> {
 
-	private static final long serialVersionUID = -578510540271635667L;
+  private static final long serialVersionUID = -578510540271635667L;
 
-	public DoubleTerm(String term) {
-		super(Double.class, Double.valueOf(term));
-	}
+  public DoubleTerm(String term) {
+    super(Double.class, Double.valueOf(term));
+  }
+
+  public DoubleTerm(double doubleValue) {
+    super(Double.class, doubleValue);
+  }
 }

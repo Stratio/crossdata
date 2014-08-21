@@ -33,8 +33,15 @@ import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.StringTerm;
+import com.stratio.meta2.common.statements.structures.terms.Term;
 import com.stratio.meta2.core.statements.MetaStatement;
 
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -90,12 +97,14 @@ public class CreateIndexStatement extends MetaStatement {
   /**
    * The map of options passed to the index during its creation.
    */
-  private Map<GenericTerm, GenericTerm> options = null;
+  private Map<Term, GenericTerm> options = null;
 
   /**
    * Map of lucene types associated with Cassandra data types.
    */
   private static Map<String, String> luceneTypes = new HashMap<>();
+
+  private String optionsJson = "";
 
   /**
    * Table metadata cached on the validate function.
@@ -115,7 +124,6 @@ public class CreateIndexStatement extends MetaStatement {
     luceneTypes.put(DataType.cint().toString(), "{type:\"integer\"}");
     luceneTypes.put(DataType.uuid().toString(), "{type:\"uuid\"}");
   }
-
 
   /**
    * Class constructor.
@@ -225,15 +233,35 @@ public class CreateIndexStatement extends MetaStatement {
    * @param key The option key.
    * @param value The option value.
    */
-  public void addOption(GenericTerm key, GenericTerm value){
+  public void addOption(Term key, GenericTerm value){
     options.put(key, value);
+  }
+
+  public void setOptionsJson(String optionsJson){
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+    JsonFactory factory = mapper.getJsonFactory();
+    JsonParser jp;
+    try {
+      jp = factory.createJsonParser(optionsJson);
+      JsonNode root = mapper.readTree(jp);
+
+      Iterator<Entry<String, JsonNode>> iter = root.getFields();
+      while(iter.hasNext()){
+        Entry<String, JsonNode> entry = iter.next();
+        addOption(new StringTerm(entry.getKey()), GenericTerm.CreateGenericTerm(entry.getValue()));
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   /**
    * Get the map of options.
    * @return The map of options.
    */
-  public Map<GenericTerm, GenericTerm> getOptions(){
+  public Map<Term, GenericTerm> getOptions(){
     return options;
   }
 
@@ -292,8 +320,8 @@ public class CreateIndexStatement extends MetaStatement {
     }
     if(!options.isEmpty()){
       sb.append(" WITH OPTIONS = {");
-      Iterator<Entry<GenericTerm, GenericTerm>> entryIt = options.entrySet().iterator();
-      Entry<GenericTerm, GenericTerm> e;
+      Iterator<Entry<Term, GenericTerm>> entryIt = options.entrySet().iterator();
+      Entry<Term, GenericTerm> e;
       while(entryIt.hasNext()){
         e = entryIt.next();
         sb.append(e.getKey()).append(": ").append(e.getValue());
@@ -431,8 +459,8 @@ public class CreateIndexStatement extends MetaStatement {
    * Generate the set of Lucene options required to create an index.
    * @return The set of options.
    */
-  protected Map<GenericTerm, GenericTerm> generateLuceneOptions(){
-    Map<GenericTerm, GenericTerm> result = new HashMap<>();
+  protected Map<Term, GenericTerm> generateLuceneOptions(){
+    Map<Term, GenericTerm> result = new HashMap<>();
 
     //TODO: Read parameters from default configuration and merge with the user specification.
     result.put(new StringTerm("'refresh_seconds'"), new StringTerm("'1'"));

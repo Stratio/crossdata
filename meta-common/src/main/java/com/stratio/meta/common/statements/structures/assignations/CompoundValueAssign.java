@@ -52,12 +52,24 @@ public class CompoundValueAssign {
     this.valueOperators = valueOperators;
   }
 
+  public int getOperatorsSize(){
+    return valueOperators.size();
+  }
+
   public List<GenericTerm> getCompoundTerms() {
     return compoundTerms;
   }
 
   public void setCompoundTerms(List<GenericTerm> compoundTerms) {
     this.compoundTerms = compoundTerms;
+  }
+
+  public int getCompoundTermsSize(){
+    return compoundTerms.size();
+  }
+
+  public boolean hasCompoundTerms(){
+    return getCompoundTermsSize() > 0;
   }
 
   public void addCompoundTerm(Operator valueOperator, GenericTerm genericTerm){
