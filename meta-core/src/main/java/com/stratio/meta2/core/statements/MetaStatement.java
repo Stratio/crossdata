@@ -30,7 +30,9 @@ import com.stratio.meta.core.statements.StatementType;
 import com.stratio.meta.common.statements.structures.ColumnName;
 import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
 
@@ -220,54 +222,38 @@ public abstract class MetaStatement implements IStatement {
     sessionCatalog = targetCatalog;
   }
 
-  /**
-   * Get the name of the catalogs involved the statement to be executed.
-   * @return A list of catalog names.
-   */
+
+  //IStatement Methods
   public List<String> getCatalogs(){
-    return null;
+    throw new NotImplementedException();
   }
 
-  /**
-   * Get the name of the tables involved in the statement to be executed. The names may be
-   * fully qualified or not.
-   * @return A list of table names.
-   */
+
   public List<TableName> getTables(){
-    return null;
+    throw new NotImplementedException();
   }
 
-  /**
-   * Get the name of the columns involved in the statement to be executed. The names may contain
-   * the table name.
-   * @return A list of column names.
-   */
+
   public List<ColumnName> getColumns(){
-    return null;
+    throw new NotImplementedException();
   }
 
-  /**
-   * Get the list of Assignations involved in the statement to be executed. An assignation may
-   * represent inserting a value in a column, comparing a column with a value, etc.
-   * @return A list of Assignation.
-   */
+
   public List<Assignation> getAssignations(){
-    return null;
+    throw new NotImplementedException();
   }
 
-  /**
-   * Check whether the IF EXISTS clause has been used.
-   * @return True if used.
-   */
+
   public boolean getIfExists(){
-    return false;
+    throw new NotImplementedException();
   }
 
-  /**
-   * Check whether the IT NOT EXISTS has been used.
-   * @return True if used.
-   */
   public boolean getIfNotExists(){
-    return false;
+    throw new NotImplementedException();
+  }
+
+  public ValidationRequirements getValidationRequirements(){
+    throw new NotImplementedException();
   }
 }
+
