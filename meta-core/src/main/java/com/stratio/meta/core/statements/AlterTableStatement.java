@@ -18,23 +18,22 @@
 
 package com.stratio.meta.core.statements;
 
+import java.util.Iterator;
+import java.util.List;
+
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta.core.statements.TableStatement;
+import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta2.core.structures.Property;
 import com.stratio.meta2.core.structures.PropertyNameValue;
-
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Class that models an {@code ALTER TABLE} statement from the META language.

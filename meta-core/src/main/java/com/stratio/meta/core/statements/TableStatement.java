@@ -19,7 +19,6 @@
 package com.stratio.meta.core.statements;
 
 import com.stratio.meta.common.statements.structures.TableName;
-import com.stratio.meta.core.statements.MetaStatement;
 
 /**
  * Meta statement that are executed over a table.
