@@ -315,7 +315,7 @@ createClusterStatement returns [CreateClusterStatement ccs]
     T_ON T_DATASTORE datastoreName=QUOTED_LITERAL
     T_WITH T_OPTIONS
     j=getJson
-    ;
+;
 
 dropClusterStatement returns [DropClusterStatement dcs]
     @after{
@@ -324,52 +324,47 @@ dropClusterStatement returns [DropClusterStatement dcs]
     :
     T_DROP T_CLUSTER
     clusterName=T_IDENT
-    ;
+;
 
 alterClusterStatement returns [AlterClusterStatement acs]
     @after{
         acs = new AlterClusterStatement($clusterName.text, j);
     }
     :
-    T_ALTER T_CLUSTER
-    clusterName=T_IDENT
-    T_WITH T_OPTIONS
-    j=getJson
-    ;
+    T_ALTER T_CLUSTER clusterName=T_IDENT T_WITH T_OPTIONS j=getJson
+;
 
 // ========================================================
 // CATALOG
 // ========================================================
 
-createCatalogStatement returns [CreateCatalogStatement crksst]
+createCatalogStatement returns [CreateCatalogStatement crctst]
     @init{
         boolean ifNotExists = false;
-    }
-    :
+    }:
     T_CREATE T_CATALOG
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     catalogName=T_IDENT
     (T_WITH j=getJson)?
-    { $crksst = new CreateCatalogStatement($catalogName.text, ifNotExists, j); }
-    ;
+    { $crctst = new CreateCatalogStatement($catalogName.text, ifNotExists, j); }
+;
 
-dropCatalogStatement returns [DropCatalogStatement drksst]
+dropCatalogStatement returns [DropCatalogStatement drcrst]
     @init{
         boolean ifExists = false;
-    }
-    :
+    }:
     T_DROP T_CATALOG
     (T_IF T_EXISTS {ifExists = true;})?
     catalogName=T_IDENT
-    { $drksst = new DropCatalogStatement($catalogName.text, ifExists);}
-    ;
+    { $drcrst = new DropCatalogStatement($catalogName.text, ifExists);}
+;
 
-alterCatalogStatement returns [AlterCatalogStatement alksst]
-    :
+alterCatalogStatement returns [AlterCatalogStatement alctst]:
     T_ALTER T_CATALOG
     catalogName=T_IDENT
     T_WITH j=getJson
-    { $alksst = new AlterCatalogStatement($catalogName.text, j); };
+    { $alctst = new AlterCatalogStatement($catalogName.text, j); }
+;
 
 // ========================================================
 // TABLE
@@ -1160,7 +1155,7 @@ getFloat returns [String floating]:
 
 getJson returns [String strJson]:
     (objectJson=getObjectJson {strJson=objectJson;}
-    | arrayJson=getArrayJson) {strJson=arrayJson;}
+    | arrayJson=getArrayJson {strJson=arrayJson;})
 ;
 
 getObjectJson returns [String strJson]
@@ -1193,9 +1188,9 @@ getArrayJson returns [String strJson]
     @after{
         strJson = sb.toString();
     }:
-    (T_START_BRACKET {sb.append("{");} valueJson=getValueJson {sb.append(valueJson);}
-        (T_COMMA {sb.append(", ");} valueJsonN=getValueJson {sb.append(valueJsonN);})* T_END_BRACKET {sb.append("}");}
-    | T_START_BRACKET {sb.append("{");} T_END_BRACKET {sb.append("}");})
+    (T_START_BRACKET {sb.append("[");} valueJson=getValueJson {sb.append(valueJson);}
+        (T_COMMA {sb.append(", ");} valueJsonN=getValueJson {sb.append(valueJsonN);})* T_END_BRACKET {sb.append("]");}
+    | T_START_BRACKET {sb.append("[");} T_END_BRACKET {sb.append("]");})
 ;
 
 getValueJson returns [String strJson]

@@ -28,7 +28,6 @@ import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Class that models a {@code CREATE CATALOG} statement from the META language. Catalog
@@ -51,15 +50,15 @@ public class CreateCatalogStatement extends MetaStatement {
    * Class constructor.
    * @param catalogName The name of the catalog.
    * @param ifNotExists Whether it should be created only if it not exists.
-   * @param JSON A JSON with the storage options.
+   * @param options A JSON with the storage options.
    */
   public CreateCatalogStatement(String catalogName, boolean ifNotExists,
-                                String JSON) {
+                                String options) {
     this.catalog = catalogName;
     this.catalogInc = true;
     this.command = false;
     this.ifNotExists = ifNotExists;
-    this.options = JSON;
+    this.options = options;
   }
 
   @Override
@@ -69,7 +68,9 @@ public class CreateCatalogStatement extends MetaStatement {
       sb.append("IF NOT EXISTS ");
     }
     sb.append(catalog);
-    if(options != null) {
+    System.out.println(options.toString());
+    System.out.println(options.length());
+    if((options != null) && (options.length() > 0)) {
       sb.append(" WITH ").append(options);
     }
     return sb.toString();

@@ -36,8 +36,8 @@ public class AlterClusterStatementTest extends ParsingTest {
   @Test
   public void alterClusterBasic() {
     String inputText = "ALTER CLUSTER dev_environment1 WITH OPTIONS {"
-                       + "\"hosts\":[\"127.0.0.1\",\"127.0.0.2\"],"
-                       + "\"port\":1234};";
+                       + "\"hosts\": [\"127.0.0.1\", \"127.0.0.2\"], "
+                       + "\"port\": 1234};";
     testRegularStatement(inputText, "alterClusterBasic");
   }
 
