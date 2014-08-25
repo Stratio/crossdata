@@ -16,8 +16,10 @@
  * under the License.
  */
 
-package com.stratio.meta2.transaction;
+package com.stratio.meta2.common.exception.validation;
 
-public interface ITransactionContextFactory {
-  public ITransactionContext newTransactionContext();
+public class NotMustExistCatalogException extends ValidationException {
+  public NotMustExistCatalogException(String catalog) {
+    super("Catalog [" + catalog + "] exists already");
+  }
 }

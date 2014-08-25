@@ -39,11 +39,11 @@ public class AlterClusterStatement extends MetaStatement{
   /**
    * Alter an existing cluster configuration.
    * @param clusterName The name of the cluster.
-   * @param JSON A JSON with the cluster options.
+   * @param options A JSON with the cluster options.
    */
-  public AlterClusterStatement(String clusterName, String JSON){
+  public AlterClusterStatement(String clusterName, String options){
     this.clusterName = clusterName;
-    this.options = JSON;
+    this.options = options;
   }
 
   @Override

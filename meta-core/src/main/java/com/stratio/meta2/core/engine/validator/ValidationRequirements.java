@@ -16,10 +16,24 @@
  * under the License.
  */
 
-package com.stratio.meta2.transaction;
+package com.stratio.meta2.core.engine.validator;
 
-public interface ITransactionContext {
-  public void beginTransaction();
-  public void commitTransaction();
-  public void rollbackTransaction();
+import java.util.ArrayList;
+import java.util.List;
+
+public class ValidationRequirements {
+  private final List<Validation> validations;
+
+  List<Validation> getValidations(){
+    return validations;
+  }
+
+  public ValidationRequirements() {
+    this.validations = new ArrayList<>();
+  }
+
+  public ValidationRequirements mustNotExistCatalog(){
+    this.validations.add(Validation.MUST_NOT_EXIST_CATALOG);
+    return this;
+  }
 }

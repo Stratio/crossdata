@@ -31,7 +31,7 @@ public class AlterCatalogStatementTest extends ParsingTest{
 
   @Test
   public void alterCatalogWithOptions() {
-    String inputText = "ALTER CATALOG catalog1 WITH {\"comment\":\"This is a comment\"};";
+    String inputText = "ALTER CATALOG catalog1 WITH {\"comment\": \"This is a comment\"};";
     testRegularStatement(inputText, "createCatalogWithOptions");
   }
 

@@ -52,9 +52,4 @@ public class ColumnMetadata implements IMetadata {
     return table;
   }
 
-
-
-  @Override public String getQualifiedName() {
-    return QualifiedNames.getColumnQualifiedName(catalog,table,name);
-  }
 }
