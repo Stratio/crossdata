@@ -31,7 +31,6 @@ options {
     import com.stratio.meta.common.statements.structures.window.*;
     import com.stratio.meta2.common.statements.structures.terms.*;
     import com.stratio.meta.common.statements.structures.selectors.*;
-    import com.stratio.meta.core.statements.*;
     import com.stratio.meta2.core.statements.*;
     import com.stratio.meta.core.structures.*;
     import com.stratio.meta2.core.structures.*;
@@ -251,15 +250,18 @@ QUOTED_LITERAL
         ('"' { initialQuotation = "\""; } |'\'') (c=~('"'|'\'') { sb.appendCodePoint(c);} | '\'' '\'' { sb.appendCodePoint('\''); })* ('"' { finalQuotation = "\""; } |'\'')
     ;
 
-JSON
-    @init{
-        StringBuilder sb = new StringBuilder();
-    }
-    @after{
-        setText("{" + sb.toString() + "}");
-    }:
-    T_START_SBRACKET (c=~(';') {sb.appendCodePoint(c);})* T_END_SBRACKET
-    ;
+//JSON
+//    @init{
+//        StringBuilder sb = new StringBuilder();
+//    }
+//    @after{
+//        setText("{" + sb.toString() + "}");
+//    }:
+//    T_START_SBRACKET
+//        ((c1=~(';' | ':') {sb.appendCodePoint(c1);})* T_COLON {sb.append(":");} (c2=~(';' | ',') {sb.appendCodePoint(c2);})*)?
+//        (T_COMMA {sb.append(",");} (c3=~(';' | ':') {sb.appendCodePoint(c3);})* T_COLON {sb.append(":");} (c4=~(';' | ',') {sb.appendCodePoint(c4);})*)*
+//    T_END_SBRACKET
+//    ;
 
 T_CONSTANT: (DIGIT)+;
 
@@ -303,7 +305,7 @@ createClusterStatement returns [CreateClusterStatement ccs]
             $clusterName.text,
             ifNotExists,
             $datastoreName.text,
-            $j.text);
+            j);
     }
     :
     T_CREATE T_CLUSTER
@@ -311,8 +313,8 @@ createClusterStatement returns [CreateClusterStatement ccs]
     clusterName=T_IDENT
     T_ON T_DATASTORE datastoreName=QUOTED_LITERAL
     T_WITH T_OPTIONS
-    j=JSON
-    ;
+    j=getJson
+;
 
 dropClusterStatement returns [DropClusterStatement dcs]
     @after{
@@ -321,52 +323,47 @@ dropClusterStatement returns [DropClusterStatement dcs]
     :
     T_DROP T_CLUSTER
     clusterName=T_IDENT
-    ;
+;
 
 alterClusterStatement returns [AlterClusterStatement acs]
     @after{
-        acs = new AlterClusterStatement($clusterName.text, $j.text);
+        acs = new AlterClusterStatement($clusterName.text, j);
     }
     :
-    T_ALTER T_CLUSTER
-    clusterName=T_IDENT
-    T_WITH T_OPTIONS
-    j=JSON
-    ;
+    T_ALTER T_CLUSTER clusterName=T_IDENT T_WITH T_OPTIONS j=getJson
+;
 
 // ========================================================
 // CATALOG
 // ========================================================
 
-createCatalogStatement returns [CreateCatalogStatement crksst]
+createCatalogStatement returns [CreateCatalogStatement crctst]
     @init{
         boolean ifNotExists = false;
-    }
-    :
+    }:
     T_CREATE T_CATALOG
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     catalogName=T_IDENT
-    (T_WITH j=JSON)?
-    { $crksst = new CreateCatalogStatement($catalogName.text, ifNotExists, $j.text); }
-    ;
+    (T_WITH j=getJson)?
+    { $crctst = new CreateCatalogStatement($catalogName.text, ifNotExists, j); }
+;
 
-dropCatalogStatement returns [DropCatalogStatement drksst]
+dropCatalogStatement returns [DropCatalogStatement drcrst]
     @init{
         boolean ifExists = false;
-    }
-    :
+    }:
     T_DROP T_CATALOG
     (T_IF T_EXISTS {ifExists = true;})?
     catalogName=T_IDENT
-    { $drksst = new DropCatalogStatement($catalogName.text, ifExists);}
-    ;
+    { $drcrst = new DropCatalogStatement($catalogName.text, ifExists);}
+;
 
-alterCatalogStatement returns [AlterCatalogStatement alksst]
-    :
+alterCatalogStatement returns [AlterCatalogStatement alctst]:
     T_ALTER T_CATALOG
     catalogName=T_IDENT
-    T_WITH j=JSON
-    { $alksst = new AlterCatalogStatement($catalogName.text, $j.text); };
+    T_WITH j=getJson
+    { $alctst = new AlterCatalogStatement($catalogName.text, j); }
+;
 
 // ========================================================
 // TABLE
@@ -456,15 +453,22 @@ createIndexStatement returns [CreateIndexStatement cis]
 	)*
 	T_END_PARENTHESIS
 	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.toString());})?
-	(T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=getTerm T_COLON value=getTerm {$cis.addOption(key, value);}
-		(T_COMMA keyN=getTerm T_COLON valueN=getTerm {$cis.addOption(keyN, valueN);} )* T_END_SBRACKET
+	(T_WITH T_OPTIONS T_EQUAL optionsJson=getJson {$cis.setOptionsJson(optionsJson);}
+	    /*
+	    T_START_SBRACKET
+	    (key=getTerm T_COLON value=getGenericTerm {$cis.addOption(key, value);}
+		    (T_COMMA keyN=getTerm T_COLON valueN=getGenericTerm {$cis.addOption(keyN, valueN);})*
+		)?
+		T_END_SBRACKET
+		*/
 	)?
-	;
+;
+
     //identProp1=T_IDENT T_EQUAL valueProp1=getTerm {properties.put($identProp1.text, valueProp1.toString());}
-/*
-(T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=T_IDENT T_COLON value=getTerm {$cis.addOption($key.text, value.toString());}
-		(T_AND key=T_IDENT T_COLON value=getTerm {$cis.addOption($key.text, value.toString());} )* T_END_SBRACKET
-*/
+    /*
+    (T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=T_IDENT T_COLON value=getTerm {$cis.addOption($key.text, value.toString());}
+            (T_AND key=T_IDENT T_COLON value=getTerm {$cis.addOption($key.text, value.toString());} )* T_END_SBRACKET
+    */
 
 getField returns [String newField]:
     (unitField=getUnits {$newField = unitField;}
@@ -512,11 +516,11 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
             else
                 $pdtbst = new UpdateTableStatement(tablename, assignations, whereclauses);
     }
-    ;
+;
 
 stopProcessStatement returns [StopProcessStatement stprst]:
     T_STOP T_PROCESS ident=getProcess { $stprst = new StopProcessStatement(ident); }
-    ;
+;
 
 getProcess returns [String procname]:
     processname=(T_PATH | T_IDENT) {$procname = $processname.text;}
@@ -537,7 +541,7 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
     table_name=T_IDENT
     T_USING class_name=T_IDENT
     {$crtrst = new CreateTriggerStatement($trigger_name.text,$table_name.text,$class_name.text);}
-    ;
+;
 
 createTableStatement returns [CreateTableStatement crtast]
 @init{
@@ -853,9 +857,8 @@ getSelectionCount returns [SelectionCount scc]
 ;
 
 getCountSymbol returns [String str]:
-    '*' {$str = new String("*");}
-    | '1' {$str = new String("1");}
-    ;
+    '1' {$str = new String("1");}
+;
 
 getSelectionList[Map fieldsAliasesMap] returns [SelectionList scl]
     @init{
@@ -915,24 +918,22 @@ getListTypes returns [String listType]:
 	;
 
 getAssignment returns [Assignation assign]:
-    ident=T_KS_AND_TN (
-        T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName($ident.text), Operator.ASSIGN, value);}
-        | T_START_BRACKET indexTerm=getTerm T_END_BRACKET T_EQUAL termValue=getTerm {
-            $assign = new Assignation (new ColumnName($ident.text, indexTerm), Operator.ASSIGN, termValue);
-        }
-    )
+    firstTerm=getTerm
+        //T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName(firstTerm.toString()), Operator.ASSIGN, value);}
+        (T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName(firstTerm.toString()), Operator.ASSIGN, value);}
+        | T_START_BRACKET indexTerm=getTerm T_END_BRACKET T_EQUAL termValue=getValueAssign {
+            $assign = new Assignation (new ColumnName(firstTerm.toString(), indexTerm), Operator.ASSIGN, termValue);
+        })
 ;
 
 getValueAssign returns [GenericTerm valueAssign]
     @init{
         Operator op = Operator.ADD;
-    }
-    @after{
-        valueAssign = vAssign;
     }:
-    vAssign=getGenericTerm
+    //firstTerm=getGenericTerm T_PLUS secondTerm=getGenericTerm
+    vAssign=getGenericTerm {valueAssign = vAssign;}
     (
-        operator=(T_ADD | T_SUBTRACT {op = Operator.SUBTRACT;} )
+        operator=(T_PLUS | T_SUBTRACT {op = Operator.SUBTRACT;} )
         termN=getGenericTerm {valueAssign.addCompoundTerm(op, termN);}
     )*
 ;
@@ -1069,30 +1070,59 @@ getGenericTerm returns [GenericTerm genericTerm]:
 ;
 
 getCollectionTerms returns [CollectionTerms colTerms]:
-    (listCol=getListTerms {colTerms = listCol;}
-    | setCol=getSetTerms {colTerms = setCol;}
-    | mapCol=getMapTerms {colTerms = mapCol;})
+    (mapOrSetCol=getMapOrSetTerms {colTerms = mapOrSetCol;}
+    | listCol=getListTerms {colTerms = listCol;})
 ;
 
-getListTerms returns [ListTerms listTerms]
-    @init{
-        listTerms = new ListTerms();
-    }:
-    T_START_SBRACKET (value=getTerm {listTerms.addTerm(value);})* T_END_SBRACKET
-;
+//getMapOrListTerms returns [CollectionTerms colTerms]
+//    @init{
+//        colTerms = new ListTerms();
+//    }:
+//    T_START_SBRACKET
+//        (key=getTerm {colTerms.addTerm(key);}
+//            ((T_COMMA keyN=getTerm {colTerms.addTerm(keyN);})*
+//            | T_COLON {colTerms = new MapTerms();} value=getTerm {colTerms.addTerm(key, value);}
+//                                                   (T_COMMA keyN=getTerm T_COLON valueN=getTerm {colTerms.addTerm(keyN, valueN);})*
+//            )?
+//        )
+//    T_END_SBRACKET
+//;
 
-getSetTerms returns [SetTerms setTerms]
+getMapOrSetTerms returns [CollectionTerms colTerms]
     @init{
-        setTerms = new SetTerms();
+        colTerms = new ListTerms();
     }:
-    T_START_BRACKET (value=getTerm {setTerms.addTerm(value);})* T_END_BRACKET
+    T_START_SBRACKET
+         (mapTerms=getMapTerms {colTerms=mapTerms;}
+         | setTerms=getSetTerms {colTerms=setTerms;})
+    T_END_SBRACKET
 ;
 
 getMapTerms returns [MapTerms mapTerms]
     @init{
         mapTerms = new MapTerms();
     }:
-    T_START_SBRACKET (key=getTerm T_COLON value=getTerm {mapTerms.addTerm(key, value);})* T_END_SBRACKET
+        (key=getTerm T_COLON value=getTerm {mapTerms.addTerm(key, value);}
+            (T_COMMA keyN=getTerm T_COLON valueN=getTerm {mapTerms.addTerm(keyN, valueN);})*
+        )?
+;
+
+getSetTerms returns [SetTerms setTerms]
+    @init{
+        setTerms = new SetTerms();
+    }:
+    (value=getTerm {setTerms.addTerm(value);} (T_COMMA valueN=getTerm {setTerms.addTerm(valueN);})*)?
+;
+
+getListTerms returns [ListTerms listTerms]
+    @init{
+        listTerms = new ListTerms();
+    }:
+    T_START_BRACKET
+        (value=getTerm {listTerms.addTerm(value);}
+            (T_COMMA valueN=getTerm {listTerms.addTerm(valueN);})*
+        )?
+    T_END_BRACKET
 ;
 
 getTerm returns [Term term]:
@@ -1121,6 +1151,91 @@ getFloat returns [String floating]:
     termToken=T_TERM {$floating=$termToken.text;}
     | floatToken = T_FLOAT {$floating=$floatToken.text;}
     ;
+
+getJson returns [String strJson]:
+    (objectJson=getObjectJson {strJson=objectJson;}
+    | arrayJson=getArrayJson {strJson=arrayJson;})
+;
+
+getObjectJson returns [String strJson]
+    @init{
+        StringBuilder sb = new StringBuilder();
+    }
+    @after{
+        strJson = sb.toString();
+    }:
+    (T_START_SBRACKET {sb.append("{");} pairJson=getPairJson {sb.append(pairJson);} (T_COMMA {sb.append(", ");} pairJsonN=getPairJson {sb.append(pairJsonN);})* T_END_SBRACKET {sb.append("}");}
+    | T_START_SBRACKET {sb.append("{");} T_END_SBRACKET {sb.append("}");})
+;
+
+getPairJson returns [String strJson]
+    @init{
+        StringBuilder sb = new StringBuilder();
+    }
+    @after{
+        strJson = sb.toString();
+    }:
+    keyTerm=getTerm {sb.append(keyTerm.toString());}
+    T_COLON {sb.append(": ");}
+    valueJson=getValueJson {sb.append(valueJson);}
+;
+
+getArrayJson returns [String strJson]
+    @init{
+        StringBuilder sb = new StringBuilder();
+    }
+    @after{
+        strJson = sb.toString();
+    }:
+    (T_START_BRACKET {sb.append("[");} valueJson=getValueJson {sb.append(valueJson);}
+        (T_COMMA {sb.append(", ");} valueJsonN=getValueJson {sb.append(valueJsonN);})* T_END_BRACKET {sb.append("]");}
+    | T_START_BRACKET {sb.append("[");} T_END_BRACKET {sb.append("]");})
+;
+
+getValueJson returns [String strJson]
+    @init{
+        StringBuilder sb = new StringBuilder();
+    }
+    @after{
+        strJson = sb.toString();
+    }:
+    (tokenTerm=getTerm {sb.append(tokenTerm.toString());}
+    | objectJson=getObjectJson {sb.append(objectJson);}
+    | arrayJson=getArrayJson {sb.append(arrayJson);})
+;
+
+/*
+getValueJson returns [String strJson]
+    @init{
+        StringBuilder sb = new StringBuilder();
+    }
+    @after{
+        strJson = sb.toString();
+    }:
+    (tokenString=T_STRING {sb.append($tokenString.text);}
+    | tokenNumber=T_NUMBER {sb.append($tokenNumber.text);}
+    | objectJson=getObjectJson {sb.append(objectJson);}
+    | arrayJson=getArrayJson {sb.append(arrayJson);}
+    | tokenTrue=T_TRUE {sb.append($tokenTrue.text);}
+    | tokenFalse=T_FALSE {sb.append($tokenFalse.text);}
+    | tokenNull=T_NULL {sb.append($tokenNull.text);})
+;
+
+T_STRING: '"' (ESC | ~["\\])* '"';
+
+fragment ESC: '\\' (["\\/bfnrt] | UNICODE);
+fragment UNICODE: 'u' HEX HEX HEX HEX;
+fragment HEX: [0-9a-fA-F];
+
+T_NUMBER:
+    ('-'? INT '.' INT EXP?
+    |   '-'? INT EXP
+    |   '-'? INT)
+;
+
+fragment INT: '0' | [1-9] [0-9]*;
+fragment EXP: [Ee] [+\-]? INT;
+*/
 
 getColumn returns [ColumnName column]
     @init{

@@ -21,6 +21,7 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta.common.statements.structures.ColumnName;
 import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.common.statements.structures.assignations.Assignation;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 
 import java.util.List;
 
@@ -63,4 +64,10 @@ public interface IStatement {
    * @return True if used.
    */
   public boolean getIfNotExists();
+
+  /**
+   * Get the validations requirements for the statement
+   * @return ValidationRequirements is a validation option list
+   */
+  public ValidationRequirements getValidationRequirements();
 }

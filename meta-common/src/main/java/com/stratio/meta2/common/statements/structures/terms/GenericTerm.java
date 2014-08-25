@@ -19,6 +19,7 @@
 package com.stratio.meta2.common.statements.structures.terms;
 
 import com.stratio.meta.common.statements.structures.assignations.CompoundValueAssign;
+import org.codehaus.jackson.JsonNode;
 
 public abstract class GenericTerm extends CompoundValueAssign {
 
@@ -43,6 +44,24 @@ public abstract class GenericTerm extends CompoundValueAssign {
       clazz = ((CollectionTerms) this).getCollectionClass();
     }
     return clazz;
+  }
+
+  public static GenericTerm CreateGenericTerm(JsonNode jsonNode){
+    GenericTerm gTerm;
+    if(jsonNode.isArray()){
+      gTerm = new ListTerms(jsonNode.getTextValue());
+    } else if (jsonNode.isBigDecimal() || jsonNode.isDouble()){
+      gTerm = new DoubleTerm(jsonNode.getDoubleValue());
+    } else if (jsonNode.isBigInteger() || jsonNode.isLong()){
+      gTerm = new LongTerm(jsonNode.getLongValue());
+    } else if (jsonNode.isBoolean()){
+      gTerm = new BooleanTerm(jsonNode.getBooleanValue());
+    } else if (jsonNode.isInt()){
+      gTerm = new IntegerTerm(jsonNode.getIntValue());
+    } else {
+      gTerm = new StringTerm(jsonNode.getTextValue());
+    }
+    return gTerm;
   }
 
   /**

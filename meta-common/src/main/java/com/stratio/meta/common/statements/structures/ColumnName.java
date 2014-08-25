@@ -87,7 +87,7 @@ public class ColumnName {
   }
 
   public boolean isIndexed(){
-    return indexTerm == null;
+    return indexTerm != null;
   }
 
   @Override

@@ -29,6 +29,14 @@ public class ListTerms extends CollectionTerms {
     collectionClass = ArrayList.class;
   }
 
+  public ListTerms(String textValue) {
+    this();
+    String[] values = textValue.split(",");
+    for(String str: values){
+      addTerm(new StringTerm(str));
+    }
+  }
+
   @Override
   public void addTerm(Term... term) {
     if(term.length > 0){

@@ -44,8 +44,8 @@ public class Planner {
    * @return A {@link com.stratio.meta2.core.query.PlannedQuery}.
    */
   public PlannedQuery planQuery(ValidatedQuery validatedQuery) {
-    LogicalWorkflow workflow = new LogicalWorkflow();
-
+    //LogicalWorkflow workflow = new LogicalWorkflow();
+/*
     // crear la proyección necesaria
     MetaStatement statement = validatedQuery.getStatement();
     if (statement.getTables().size() == 1) { // en caso de que haya una tabla como target
@@ -61,7 +61,7 @@ public class Planner {
     
     
     // crear la ventana para streaming
-
+*/
     return null;
   }
 

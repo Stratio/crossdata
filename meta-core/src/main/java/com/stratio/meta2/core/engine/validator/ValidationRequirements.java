@@ -16,30 +16,24 @@
  * under the License.
  */
 
-package com.stratio.meta.core.statements;
+package com.stratio.meta2.core.engine.validator;
 
-/**
- * Types of statements.
- */
-public enum StatementType {
+import java.util.ArrayList;
+import java.util.List;
 
-  /**
-   * Statements that are executed by IQueryEngines.
-   */
-  QUERY,
+public class ValidationRequirements {
+  private final List<Validation> validations;
 
-  /**
-   * Statements that are executed as internal META commands.
-   */
-  COMMAND,
+  List<Validation> getValidations(){
+    return validations;
+  }
 
-  /**
-   * Statements that are executed by IStorageEngines.
-   */
-  STORAGE,
+  public ValidationRequirements() {
+    this.validations = new ArrayList<>();
+  }
 
-  /**
-   * Statements that are executed by IMetadataProviders.
-   */
-  METADATA
+  public ValidationRequirements mustNotExistCatalog(){
+    this.validations.add(Validation.MUST_NOT_EXIST_CATALOG);
+    return this;
+  }
 }

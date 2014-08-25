@@ -16,29 +16,10 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.grammar.statements;
+package com.stratio.meta2.common.exception.validation;
 
-import com.stratio.meta.core.grammar.ParsingTest;
-
-import org.testng.annotations.Test;
-
-/**
- * Alter storage parsing tests.
- */
-public class AlterClusterStatementTest extends ParsingTest {
-
-  @Test
-  public void alterClusterEmptyJSON() {
-    String inputText = "ALTER CLUSTER dev_environment1 WITH OPTIONS {};";
-    testRegularStatement(inputText, "alterClusterEmptyJSON");
+public class ValidationException extends Exception {
+  public ValidationException(String message){
+    super(message);
   }
-
-  @Test
-  public void alterClusterBasic() {
-    String inputText = "ALTER CLUSTER dev_environment1 WITH OPTIONS {"
-                       + "\"hosts\": [\"127.0.0.1\", \"127.0.0.2\"], "
-                       + "\"port\": 1234};";
-    testRegularStatement(inputText, "alterClusterBasic");
-  }
-
 }

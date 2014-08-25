@@ -34,7 +34,7 @@ import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta.core.structures.SelectionAsterisk;

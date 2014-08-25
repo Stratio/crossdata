@@ -21,12 +21,13 @@ package com.stratio.meta.core.executor;
 import org.apache.log4j.Logger;
 
 import com.datastax.driver.core.Session;
+import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.statements.DescribeStatement;
-import com.stratio.meta.core.statements.ExplainPlanStatement;
-import com.stratio.meta.core.statements.ListStatement;
-import com.stratio.meta.core.statements.MetaStatement;
-import com.stratio.meta.core.statements.StopProcessStatement;
+import com.stratio.meta2.core.statements.DescribeStatement;
+import com.stratio.meta2.core.statements.ExplainPlanStatement;
+import com.stratio.meta2.core.statements.ListStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.StopProcessStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 public class CommandExecutor {
@@ -55,7 +56,8 @@ public class CommandExecutor {
         return descStmt.execute(session, stratioStreamingAPI);
       } else if (stmt instanceof ExplainPlanStatement) {
         ExplainPlanStatement explainStmt = (ExplainPlanStatement) stmt;
-        return explainStmt.execute(session, stratioStreamingAPI);
+        //return explainStmt.execute(session, stratioStreamingAPI);
+        throw new UnsupportedOperationException();
       } else if (stmt instanceof ListStatement) {
         ListStatement listStmt = (ListStatement) stmt;
         return listStmt.execute(queryId, stratioStreamingAPI);

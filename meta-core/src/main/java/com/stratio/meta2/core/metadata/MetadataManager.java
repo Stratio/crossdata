@@ -24,6 +24,7 @@ import com.stratio.meta2.metadata.*;
 
 public enum MetadataManager {
   MANAGER;
+
   private boolean isInit = false;
 
   private Map<String, IMetadata> metadata;

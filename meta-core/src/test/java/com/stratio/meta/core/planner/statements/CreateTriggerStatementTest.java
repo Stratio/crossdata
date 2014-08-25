@@ -19,7 +19,7 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.CreateTriggerStatement;
+import com.stratio.meta2.core.statements.CreateTriggerStatement;
 import org.testng.annotations.Test;
 
 public class CreateTriggerStatementTest  extends BasicPlannerTest {

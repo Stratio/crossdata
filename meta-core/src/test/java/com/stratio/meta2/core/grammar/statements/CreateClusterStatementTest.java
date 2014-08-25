@@ -36,24 +36,24 @@ public class CreateClusterStatementTest extends ParsingTest{
   @Test
   public void createClusterBasicDoubleQuote() {
     String inputText = "CREATE CLUSTER dev ON DATASTORE \"db\""
-                       + " WITH OPTIONS {\"host\":\"127.0.0.1\",port:1234};";
-    String expectedText = inputText.replace("\"db\"", "db");
+                       + " WITH OPTIONS {\"host\": \"127.0.0.1\", port: 1234};";
+    String expectedText = inputText;
     testRegularStatement(inputText, expectedText, "createClusterBasicDoubleQuote");
   }
 
   @Test
   public void createClusterBasicSingleQuote() {
     String inputText = "CREATE CLUSTER dev ON DATASTORE 'db'"
-                       + " WITH OPTIONS {\"host1\":\"127.0.0.1\"};";
-    String expectedText = inputText.replace("'db'", "db");
+                       + " WITH OPTIONS {\"host1\": \"127.0.0.1\"};";
+    String expectedText = inputText;
     testRegularStatement(inputText, expectedText, "createClusterBasicSingleQuote");
   }
 
   @Test
   public void createClusterBasicIfNotExists() {
     String inputText = "CREATE CLUSTER IF NOT EXISTS dev ON DATASTORE 'db'"
-                       + " WITH OPTIONS {\"host1\":\"127.0.0.1\"};";
-    String expectedText = inputText.replace("'db'", "db");
+                       + " WITH OPTIONS {\"host1\": \"127.0.0.1\"};";
+    String expectedText = inputText;
     testRegularStatement(inputText, expectedText, "createClusterBasicIfNotExists");
   }
 
