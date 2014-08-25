@@ -21,22 +21,22 @@ package com.stratio.meta2.metadata;
 import java.util.Map;
 
 public class ConnectorAttachedMetadata {
-  private final String connectorRef;
-  private final String clusterRef;
+  private final ConnectorName connectorRef;
+  private final ClusterName clusterRef;
   private final Map<String,String> properties;
 
-  public ConnectorAttachedMetadata(String connectorRef, String clusterRef,
+  public ConnectorAttachedMetadata(ConnectorName connectorRef, ClusterName clusterRef,
       Map<String, String> properties) {
     this.connectorRef = connectorRef;
     this.clusterRef = clusterRef;
     this.properties = properties;
   }
 
-  public String getConnectorRef() {
+  public ConnectorName getConnectorRef() {
     return connectorRef;
   }
 
-  public String getClusterRef() {
+  public ClusterName getClusterRef() {
     return clusterRef;
   }
 

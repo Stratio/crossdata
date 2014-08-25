@@ -15,32 +15,84 @@
 package com.stratio.meta2.metadata;
 
 public class QualifiedNames {
-  public static String getCatalogQualifiedName(String name) {
+  static String getCatalogQualifiedName(String name) {
     return normalize("catalog." + name);
   }
 
-  public static String getTableQualifiedName(String catalog, String name) {
+  public static CatalogName getCatalogNameFromQualifiedName(String qualifiedName){
+    CatalogName catalogName =null;
+    String [] arrNames= qualifiedName.split("\\.");
+    if(arrNames.length == 2){
+      catalogName=new CatalogName(arrNames[1]);
+    }
+    return catalogName;
+  }
+
+
+  static String getTableQualifiedName(String catalog, String name) {
     return normalize(getCatalogQualifiedName(catalog) + "." + name);
   }
 
-  public static String getCatalogFromTableQualifiedName(String tableName){
-    return tableName.substring(0,tableName.lastIndexOf('.'));
+  public static TableName getTableNameFromQualifiedName(String qualifiedName){
+    TableName tableName =null;
+    String [] arrNames= qualifiedName.split("\\.");
+    if(arrNames.length == 3){
+      tableName=new TableName(arrNames[1],arrNames[2]);
+    }
+    return tableName;
   }
 
-  public static String getColumnQualifiedName(String catalog, String table, String name) {
+
+  static String getColumnQualifiedName(String catalog, String table, String name) {
     return normalize(getTableQualifiedName(catalog, table) + "." + name);
   }
 
-  public static String getClusterQualifiedName(String name) {
+  public static ColumnName getColumnNameFromQualifiedName(String qualifiedName){
+    ColumnName columnName =null;
+    String [] arrNames= qualifiedName.split("\\.");
+    if(arrNames.length == 4){
+      columnName=new ColumnName(arrNames[1],arrNames[2],arrNames[3]);
+    }
+    return columnName;
+  }
+
+  static String getClusterQualifiedName(String name) {
     return normalize("cluster." + name);
   }
 
-  public static String getConnectorQualifiedName(String name) {
+  public static ClusterName getClusterNameFromQualifiedName(String qualifiedName){
+    ClusterName clusterName =null;
+    String [] arrNames= qualifiedName.split("\\.");
+    if(arrNames.length == 2){
+      clusterName=new ClusterName(arrNames[1]);
+    }
+    return clusterName;
+  }
+
+  static String getConnectorQualifiedName(String name) {
     return normalize("connector." + name);
+  }
+
+  public static ConnectorName getConnectorNameFromQualifiedName(String qualifiedName){
+    ConnectorName connectorName =null;
+    String [] arrNames= qualifiedName.split("\\.");
+    if(arrNames.length == 2){
+      connectorName=new ConnectorName(arrNames[1]);
+    }
+    return connectorName;
   }
 
   public static String getDataStoreQualifiedName(String name){
     return normalize("datastore." + name);
+  }
+
+  public static DataStoreName getDataStoreNameFromQualifiedName(String qualifiedName){
+    DataStoreName dataStoreName =null;
+    String [] arrNames= qualifiedName.split("\\.");
+    if(arrNames.length == 2){
+      dataStoreName=new DataStoreName(arrNames[1]);
+    }
+    return dataStoreName;
   }
 
   private static String normalize(String qName) {

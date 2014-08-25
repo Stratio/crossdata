@@ -42,94 +42,95 @@ public enum MetadataManager {
     return metadata.containsKey(name);
   }
 
-  private void shouldBeUniqueCatalog(String name) {
+  private void shouldBeUniqueCatalog(CatalogName name) {
     if (existsCatalog(name)) {
-      throw new MetadataManagerException("Catalog [" + name + "] already exists");
+      throw new MetadataManagerException("Catalog [" + name.getCatalogQualifiedName() + "] already exists");
     }
   }
 
-  private void shouldExistCatalog(String name) {
+  private void shouldExistCatalog(CatalogName name) {
     if (!existsCatalog(name)) {
-      throw new MetadataManagerException("Catalog [" + name + "] doesn't exist yet");
+      throw new MetadataManagerException("Catalog [" + name.getCatalogQualifiedName() + "] doesn't exist yet");
     }
   }
 
-  public boolean existsCatalog(String name) {
-    return existsMetadata(name);
+  public boolean existsCatalog(CatalogName name) {
+    return existsMetadata(name.getCatalogQualifiedName());
   }
 
-  private void shouldBeUniqueCluster(String name) {
+  private void shouldBeUniqueCluster(ClusterName name) {
     if (existsCluster(name)) {
       throw new MetadataManagerException("Cluster [" + name + "] already exists");
     }
   }
 
-  private void shouldExistCluster(String name) {
+  private void shouldExistCluster(ClusterName name) {
     if (!existsCluster(name)) {
       throw new MetadataManagerException("Cluster [" + name + "] doesn't exist yet");
     }
   }
 
-  public boolean existsCluster(String name) {
-    return existsMetadata(name);
+  public boolean existsCluster(ClusterName name) {
+    return existsMetadata(name.getClusterQualifiedName());
   }
 
-  private void shouldBeUniqueConnector(String name) {
+  private void shouldBeUniqueConnector(ConnectorName name) {
     if (existsConnector(name)) {
       throw new MetadataManagerException("Connector [" + name + "] already exists");
     }
   }
 
-  private void shouldExistConnector(String name) {
+  private void shouldExistConnector(ConnectorName name) {
     if (!existsConnector(name)) {
       throw new MetadataManagerException("Connector [" + name + "] doesn't exist yet");
     }
   }
 
-  public boolean existsConnector(String name) {
-    return existsMetadata(name);
+  public boolean existsConnector(ConnectorName name) {
+    return existsMetadata(name.getConnectorQualifiedName());
   }
 
 
 
-  private void shouldExistTable(String name) {
+  private void shouldExistTable(TableName name) {
     if (!existsTable(name)) {
       throw new MetadataManagerException("Table [" + name + "] doesn't exist yet");
     }
   }
 
-  private void shouldBeUniqueTable(String name) {
+  private void shouldBeUniqueTable(TableName name) {
     if (existsTable(name)) {
       throw new MetadataManagerException("Table [" + name + "] exists already");
     }
   }
 
-  private void shouldBeUniqueDataStore(String name) {
+  public boolean existsTable(TableName name) {
+    boolean result = false;
+    if (existsCatalog(name.getCatalogName())) {
+      CatalogMetadata catalogMetadata = this.getCatalog(name.getCatalogName());
+      result = catalogMetadata.getTables().containsKey(name.getTableQualifiedName());
+    }
+    return result;
+  }
+
+  private void shouldBeUniqueDataStore(DataStoreName name) {
     if (existsDataStore(name)) {
       throw new MetadataManagerException("DataStore [" + name + "] already exists");
     }
   }
 
-  private void shouldExistDataStore(String name) {
+  private void shouldExistDataStore(DataStoreName name) {
     if (!existsDataStore(name)) {
       throw new MetadataManagerException("DataStore [" + name + "] doesn't exist yet");
     }
   }
 
-  public boolean existsDataStore(String name) {
-    return existsMetadata(name);
+  public boolean existsDataStore(DataStoreName name) {
+    return existsMetadata(name.getDataStoreQualifiedName());
   }
 
 
-  public boolean existsTable(String name) {
-    boolean result = false;
-    String catalog = QualifiedNames.getCatalogFromTableQualifiedName(name);
-    if (existsCatalog(catalog)) {
-      CatalogMetadata catalogMetadata = this.getCatalog(catalog);
-      result = catalogMetadata.getTables().containsKey(name);
-    }
-    return result;
-  }
+
 
 
 
@@ -148,7 +149,7 @@ public enum MetadataManager {
     try {
       writeLock.lock();
       shouldBeUniqueCatalog(catalogMetadata.getName());
-      metadata.put(catalogMetadata.getName(), catalogMetadata);
+      metadata.put(catalogMetadata.getName().getCatalogQualifiedName(), catalogMetadata);
     } catch (MetadataManagerException mex) {
       throw mex;
     } catch (Exception ex) {
@@ -158,10 +159,10 @@ public enum MetadataManager {
     }
   }
 
-  public CatalogMetadata getCatalog(String name) {
+  public CatalogMetadata getCatalog(CatalogName name) {
     shouldBeInit();
     shouldExistCatalog(name);
-    return (CatalogMetadata) metadata.get(name);
+    return (CatalogMetadata) metadata.get(name.getCatalogQualifiedName());
   }
 
 
@@ -169,19 +170,19 @@ public enum MetadataManager {
     shouldBeInit();
     try {
       writeLock.lock();
-      shouldExistCatalog(tableMetadata.getCatalogRef());
+      shouldExistCatalog(tableMetadata.getName().getCatalogName());
       shouldExistCluster(tableMetadata.getClusterRef());
       shouldBeUniqueTable(tableMetadata.getName());
       CatalogMetadata catalogMetadata =
-          ((CatalogMetadata) metadata.get(tableMetadata.getCatalogRef()));
+          ((CatalogMetadata) metadata.get(tableMetadata.getName().getCatalogName().getCatalogQualifiedName()));
 
-      if (catalogMetadata.getTables().containsKey(tableMetadata.getName())) {
+      if (catalogMetadata.getTables().containsKey(tableMetadata.getName().getTableQualifiedName())) {
         throw new MetadataManagerException("Table [" + tableMetadata.getName()
             + "] already exists");
       }
 
-      catalogMetadata.getTables().put(tableMetadata.getName(), tableMetadata);
-      metadata.put(tableMetadata.getCatalogRef(), catalogMetadata);
+      catalogMetadata.getTables().put(tableMetadata.getName().getTableQualifiedName(), tableMetadata);
+      metadata.put(tableMetadata.getName().getCatalogName().getCatalogQualifiedName(), catalogMetadata);
     } catch (Exception ex) {
       throw new MetadataManagerException(ex.getMessage(), ex.getCause());
     } finally {
@@ -189,12 +190,11 @@ public enum MetadataManager {
     }
   }
 
-  public TableMetadata getTable(String name) {
+  public TableMetadata getTable(TableName name) {
     shouldBeInit();
     shouldExistTable(name);
-    String catalog = QualifiedNames.getCatalogFromTableQualifiedName(name);
-    CatalogMetadata catalogMetadata = this.getCatalog(catalog);
-    return catalogMetadata.getTables().get(name);
+    CatalogMetadata catalogMetadata = this.getCatalog(name.getCatalogName());
+    return catalogMetadata.getTables().get(name.getTableQualifiedName());
   }
 
   public void createCluster(ClusterMetadata clusterMetadata) {
@@ -207,7 +207,7 @@ public enum MetadataManager {
           .values()) {
         shouldExistConnector(connectorRef.getConnectorRef());
       }
-      metadata.put(clusterMetadata.getName(),clusterMetadata);
+      metadata.put(clusterMetadata.getName().getClusterQualifiedName(),clusterMetadata);
     } catch (MetadataManagerException mex) {
       throw mex;
     } catch (Exception ex) {
@@ -217,10 +217,10 @@ public enum MetadataManager {
     }
   }
 
-  public ClusterMetadata getCluster(String name) {
+  public ClusterMetadata getCluster(ClusterName name) {
     shouldBeInit();
     shouldExistCluster(name);
-    return (ClusterMetadata) metadata.get(name);
+    return (ClusterMetadata) metadata.get(name.getClusterQualifiedName());
   }
 
   public void createDataStore(DataStoreMetadata dataStoreMetadata) {
@@ -228,7 +228,7 @@ public enum MetadataManager {
     try {
       writeLock.lock();
       shouldBeUniqueDataStore(dataStoreMetadata.getName());
-      metadata.put(dataStoreMetadata.getName(), dataStoreMetadata);
+      metadata.put(dataStoreMetadata.getName().getDataStoreQualifiedName(), dataStoreMetadata);
     } catch (MetadataManagerException mex) {
       throw mex;
     } catch (Exception ex) {
@@ -238,10 +238,10 @@ public enum MetadataManager {
     }
   }
 
-  public DataStoreMetadata getDataStore(String name) {
+  public DataStoreMetadata getDataStore(DataStoreName name) {
     shouldBeInit();
     shouldExistDataStore(name);
-    return (DataStoreMetadata) metadata.get(name);
+    return (DataStoreMetadata) metadata.get(name.getDataStoreQualifiedName());
   }
 
   public void createConnector(ConnectorMetadata connectorMetadata) {
@@ -249,7 +249,7 @@ public enum MetadataManager {
     try {
       writeLock.lock();
       shouldBeUniqueConnector(connectorMetadata.getName());
-      metadata.put(connectorMetadata.getName(), connectorMetadata);
+      metadata.put(connectorMetadata.getName().getConnectorQualifiedName(), connectorMetadata);
     } catch (MetadataManagerException mex) {
       throw mex;
     } catch (Exception ex) {
@@ -259,10 +259,10 @@ public enum MetadataManager {
     }
   }
 
-  public ConnectorMetadata getConnector(String name) {
+  public ConnectorMetadata getConnector(ConnectorName name) {
     shouldBeInit();
-    shouldExistDataStore(name);
-    return (ConnectorMetadata) metadata.get(name);
+    shouldExistConnector(name);
+    return (ConnectorMetadata) metadata.get(name.getConnectorQualifiedName());
   }
   
   

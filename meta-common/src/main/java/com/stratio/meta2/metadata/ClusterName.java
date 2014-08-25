@@ -1,5 +1,5 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.  
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership.  The STRATIO (C) licenses this file
  * to you under the Apache License, Version 2.0 (the
@@ -18,32 +18,26 @@
 
 package com.stratio.meta2.metadata;
 
-import java.util.Map;
+public class ClusterName {
+  private final String name;
 
-public class CatalogMetadata implements IMetadata {
-  private final CatalogName name;
 
-  private final Map<String, Object> options;
 
-  private final Map<String, TableMetadata> tables;
-
-  public CatalogMetadata(CatalogName name, Map<String, Object> options,
-      Map<String, TableMetadata> tables) {
-    this.name = name;
-    this.options = options;
-    this.tables = tables;
+  public ClusterName(String clusterName){
+    this.name = clusterName;
   }
 
-  public final CatalogName getName() {
+  public String getName() {
     return name;
   }
 
-  public Map<String, Object> getOptions() {
-    return options;
+  public String getClusterQualifiedName(){
+    return QualifiedNames.getClusterQualifiedName(getName());
   }
 
-  public Map<String, TableMetadata> getTables() {
-    return tables;
+  @Override
+  public String toString() {
+    return this.getClusterQualifiedName();
   }
 
 }

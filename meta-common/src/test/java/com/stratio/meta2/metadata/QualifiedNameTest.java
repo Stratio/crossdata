@@ -35,13 +35,6 @@ public class QualifiedNameTest {
   }
 
   @Test
-  public void testCatalogFromTableQualifiedName(){
-    String name= QualifiedNames.getTableQualifiedName("test","taBle");
-    String extractCatalog= QualifiedNames.getCatalogFromTableQualifiedName(name);
-    Assert.assertEquals(extractCatalog,"catalog.test");
-  }
-
-  @Test
   public void testColumnQualifiedName(){
     String name= QualifiedNames.getColumnQualifiedName("test","taBle","column");
     Assert.assertEquals(name,"catalog.test.table.column");

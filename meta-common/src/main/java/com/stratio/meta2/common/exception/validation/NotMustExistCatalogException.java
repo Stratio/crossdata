@@ -18,8 +18,10 @@
 
 package com.stratio.meta2.common.exception.validation;
 
+import com.stratio.meta2.metadata.CatalogName;
+
 public class NotMustExistCatalogException extends ValidationException {
-  public NotMustExistCatalogException(String catalog) {
+  public NotMustExistCatalogException(CatalogName catalog) {
     super("Catalog [" + catalog + "] exists already");
   }
 }

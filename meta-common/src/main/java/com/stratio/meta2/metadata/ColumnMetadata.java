@@ -19,16 +19,12 @@
 package com.stratio.meta2.metadata;
 
 public class ColumnMetadata implements IMetadata {
-  private final String catalog;
-  private final String table;
-  private final String name;
+  private final ColumnName name;
   private final Object[] parameters;
   private final ColumnType columnType;
 
-  public ColumnMetadata(String catalog, String table, String name, Object[] parameters,
+  public ColumnMetadata(ColumnName name, Object[] parameters,
       ColumnType columnType) {
-    this.catalog = catalog;
-    this.table = table;
     this.name = name;
     this.parameters = parameters;
     this.columnType = columnType;
@@ -36,7 +32,7 @@ public class ColumnMetadata implements IMetadata {
 
 
 
-  public String getName() {
+  public ColumnName getName() {
     return name;
   }
 
@@ -48,8 +44,5 @@ public class ColumnMetadata implements IMetadata {
     return columnType;
   }
 
-  public String getTable() {
-    return table;
-  }
 
 }

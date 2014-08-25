@@ -21,14 +21,14 @@ package com.stratio.meta2.metadata;
 import java.util.Set;
 
 public class ConnectorMetadata implements IMetadata {
-  private final Set<String> dataStoreRefs;
+  private final Set<DataStoreName> dataStoreRefs;
 
-  private final String name;
+  private final ConnectorName name;
   private final String version;
   private final Set<String> requiredProperties;
   private final Set<String> othersProperties;
 
-  public ConnectorMetadata(Set<String> dataStoreRefs, String name, String version,
+  public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
       Set<String> requiredProperties, Set<String> othersProperties) {
     this.dataStoreRefs = dataStoreRefs;
     this.name = name;
@@ -37,11 +37,11 @@ public class ConnectorMetadata implements IMetadata {
     this.othersProperties = othersProperties;
  }
 
-  public String getName() {
+  public ConnectorName getName() {
     return name;
   }
 
-  public Set<String> getDataStoreRefs() {
+  public Set<DataStoreName> getDataStoreRefs() {
   return dataStoreRefs;
   }
 

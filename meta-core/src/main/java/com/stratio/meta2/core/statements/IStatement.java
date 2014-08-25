@@ -22,6 +22,7 @@ import com.stratio.meta.common.statements.structures.ColumnName;
 import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+import com.stratio.meta2.metadata.CatalogName;
 
 import java.util.List;
 
@@ -30,7 +31,7 @@ public interface IStatement {
    * Get the name of the catalogs involved the statement to be executed.
    * @return A list of catalog names.
    */
-  public List<String> getCatalogs();
+  public List<CatalogName> getCatalogs();
 
   /**
    * Get the name of the tables involved in the statement to be executed. The names may be

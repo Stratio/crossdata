@@ -1,5 +1,5 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.  
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership.  The STRATIO (C) licenses this file
  * to you under the Apache License, Version 2.0 (the
@@ -18,32 +18,41 @@
 
 package com.stratio.meta2.metadata;
 
-import java.util.Map;
+/**
+ * Table name recognized by the parser. The name may contain:
+ * <ul>
+ *   <li>catalog.table</li>
+ *   <li>table</li>
+ * </ul>
+ */
+public class TableName{
 
-public class CatalogMetadata implements IMetadata {
-  private final CatalogName name;
 
-  private final Map<String, Object> options;
+  private final String name;
 
-  private final Map<String, TableMetadata> tables;
+  private final CatalogName catalogName;
 
-  public CatalogMetadata(CatalogName name, Map<String, Object> options,
-      Map<String, TableMetadata> tables) {
-    this.name = name;
-    this.options = options;
-    this.tables = tables;
+  public TableName(String catalogName, String tableName){
+    this.catalogName=new CatalogName(catalogName);
+    this.name = tableName;
   }
 
-  public final CatalogName getName() {
+  public CatalogName getCatalogName() {
+    return catalogName;
+  }
+
+  public String getName() {
     return name;
   }
 
-  public Map<String, Object> getOptions() {
-    return options;
+  public String getTableQualifiedName() {
+    return QualifiedNames.getTableQualifiedName(this.getCatalogName().getName(), getName());
   }
 
-  public Map<String, TableMetadata> getTables() {
-    return tables;
-  }
 
+
+  @Override
+  public String toString() {
+    return getTableQualifiedName();
+  }
 }

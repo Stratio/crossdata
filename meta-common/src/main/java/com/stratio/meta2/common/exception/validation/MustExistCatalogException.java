@@ -16,34 +16,13 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.exception.validation;
 
-import java.util.Map;
 
-public class CatalogMetadata implements IMetadata {
-  private final CatalogName name;
+import com.stratio.meta2.metadata.CatalogName;
 
-  private final Map<String, Object> options;
-
-  private final Map<String, TableMetadata> tables;
-
-  public CatalogMetadata(CatalogName name, Map<String, Object> options,
-      Map<String, TableMetadata> tables) {
-    this.name = name;
-    this.options = options;
-    this.tables = tables;
+public class MustExistCatalogException extends ValidationException {
+  public MustExistCatalogException(CatalogName catalog) {
+    super("Catalog [" + catalog + "]  doesn't exist yet");
   }
-
-  public final CatalogName getName() {
-    return name;
-  }
-
-  public Map<String, Object> getOptions() {
-    return options;
-  }
-
-  public Map<String, TableMetadata> getTables() {
-    return tables;
-  }
-
 }

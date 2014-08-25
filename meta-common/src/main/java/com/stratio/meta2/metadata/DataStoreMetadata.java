@@ -21,12 +21,12 @@ package com.stratio.meta2.metadata;
 import java.util.Set;
 
 public class DataStoreMetadata implements IMetadata {
-  private final String name;
+  private final DataStoreName name;
   private final String version;
   private final Set<String> requiredProperties;
   private final Set<String> othersProperties;
 
-  public DataStoreMetadata(String name, String version, Set<String> requiredProperties,
+  public DataStoreMetadata(DataStoreName name, String version, Set<String> requiredProperties,
       Set<String> othersProperties) {
     this.name = name;
     this.version = version;
@@ -34,7 +34,7 @@ public class DataStoreMetadata implements IMetadata {
     this.othersProperties = othersProperties;
   }
 
-  public String getName() {
+  public DataStoreName getName() {
     return name;
   }
 

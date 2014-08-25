@@ -21,27 +21,25 @@ package com.stratio.meta2.metadata;
 import java.util.Map;
 
 public class TableMetadata implements IMetadata {
-  private final String name;
+  private final TableName name;
 
   private final Map<String, Object> options;
 
   private final Map<String, ColumnMetadata> columns;
 
-  private final String clusterRef;
+  private final ClusterName clusterRef;
 
-  private final String catalogRef;
-
-  public TableMetadata(String name, Map<String, Object> options,
-      Map<String, ColumnMetadata> columns, String clusterRef, String catalogRef) {
+  public TableMetadata(TableName name, Map<String, Object> options,
+      Map<String, ColumnMetadata> columns, ClusterName clusterRef) {
     this.name = name;
     this.options = options;
     this.columns = columns;
     this.clusterRef = clusterRef;
-    this.catalogRef = catalogRef;
+
   }
 
 
-  public String getName() {
+  public TableName getName() {
     return name;
   }
 
@@ -54,11 +52,9 @@ public class TableMetadata implements IMetadata {
     return columns;
   }
 
-  public String getClusterRef() {
+  public ClusterName getClusterRef() {
     return clusterRef;
   }
 
-  public String getCatalogRef() {
-    return catalogRef;
-  }
+
 }

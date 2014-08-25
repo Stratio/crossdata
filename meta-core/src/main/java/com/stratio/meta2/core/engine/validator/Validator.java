@@ -20,9 +20,11 @@ package com.stratio.meta2.core.engine.validator;
 
 import java.util.List;
 
+import com.stratio.meta2.common.exception.validation.MustExistCatalogException;
 import com.stratio.meta2.common.exception.validation.NotMustExistCatalogException;
 import com.stratio.meta2.common.exception.validation.ValidationException;
 import com.stratio.meta2.core.metadata.MetadataManager;
+import com.stratio.meta2.metadata.CatalogName;
 import org.apache.log4j.Logger;
 
 
@@ -50,17 +52,38 @@ public class Validator {
       case MUST_NOT_EXIST_CATALOG:
         validateNotExistCatalog(statement.getCatalogs(), statement.getIfNotExists());
         break;
+      case MUST_EXIST_CATALOG:
+        validateExistCatalog(statement.getCatalogs(), statement.getIfExists());
+        break;
+
     }
   }
 
-  private void validateNotExistCatalog(List<String> catalogs, boolean hasIfNotExist) throws NotMustExistCatalogException {
-    for(String catalog:catalogs){
+  private void validateExistCatalog(List<CatalogName> catalogs, boolean hasIfExists)
+      throws MustExistCatalogException {
+    for(CatalogName catalog:catalogs){
+      this.validateExistCatalog(catalog, hasIfExists);
+    }
+
+  }
+
+  private void validateExistCatalog(CatalogName catalog, boolean hasIfExists)
+      throws MustExistCatalogException {
+    if(!MetadataManager.MANAGER.existsCatalog(catalog)){
+      if(!hasIfExists){
+        throw new MustExistCatalogException(catalog);
+      }
+    }
+  }
+
+  private void validateNotExistCatalog(List<CatalogName> catalogs, boolean hasIfNotExist) throws NotMustExistCatalogException {
+    for(CatalogName catalog:catalogs){
       this.validateNotExistCatalog(catalog,hasIfNotExist);
     }
   }
 
 
-  private void validateNotExistCatalog(String catalog, boolean onlyIfNotExis) throws NotMustExistCatalogException{
+  private void validateNotExistCatalog(CatalogName catalog, boolean onlyIfNotExis) throws NotMustExistCatalogException{
     if(MetadataManager.MANAGER.existsCatalog(catalog)){
       if(!onlyIfNotExis){
         throw new NotMustExistCatalogException(catalog);
