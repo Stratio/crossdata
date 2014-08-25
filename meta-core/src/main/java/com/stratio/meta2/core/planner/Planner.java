@@ -17,6 +17,7 @@ package com.stratio.meta2.core.planner;
 import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.logicalplan.Filter;
 import com.stratio.meta.common.logicalplan.LogicalPlan;
+import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
@@ -25,13 +26,25 @@ import com.stratio.meta2.core.query.PlannedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
 import com.stratio.meta2.core.statements.MetaStatement;
 
+/**
+ * Class in charge of defining the set of {@link com.stratio.meta.common.logicalplan.LogicalStep}
+ * required to execute a statement. This set of steps are ordered as a workflow on a
+ * {@link com.stratio.meta.common.logicalplan.LogicalWorkflow} structure. Notice that the
+ * LogicalWorkflow may contain several initial steps, but it will always finish in a single
+ * operation.
+ */
 public class Planner {
-
 
   public Planner() {}
 
+  /**
+   * Create a PlannedQuery with the {@link com.stratio.meta.common.logicalplan.LogicalWorkflow}
+   * required to execute the user statement.
+   * @param validatedQuery The validated query.
+   * @return A {@link com.stratio.meta2.core.query.PlannedQuery}.
+   */
   public PlannedQuery planQuery(ValidatedQuery validatedQuery) {
-     LogicalPlan plan = null;
+    LogicalWorkflow workflow = new LogicalWorkflow();
 
     // crear la proyección necesaria
     MetaStatement statement = validatedQuery.getStatement();
@@ -48,7 +61,6 @@ public class Planner {
     
     
     // crear la ventana para streaming
-
 
     return null;
   }
