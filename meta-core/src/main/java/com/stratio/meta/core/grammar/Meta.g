@@ -297,19 +297,18 @@ T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 // CLUSTER
 // ========================================================
 
-createClusterStatement returns [CreateClusterStatement ccs]
+attachClusterStatement returns [AttachClusterStatement ccs]
     @init{
         boolean ifNotExists = false;
     }
     @after{
-        ccs = new CreateClusterStatement(
+        ccs = new AttachClusterStatement(
             $clusterName.text,
             ifNotExists,
             $datastoreName.text,
             j);
-    }
-    :
-    T_CREATE T_CLUSTER
+    }:
+    T_ATTACH T_CLUSTER
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     clusterName=T_IDENT
     T_ON T_DATASTORE datastoreName=QUOTED_LITERAL
@@ -320,17 +319,14 @@ createClusterStatement returns [CreateClusterStatement ccs]
 dropClusterStatement returns [DropClusterStatement dcs]
     @after{
         dcs = new DropClusterStatement($clusterName.text);
-    }
-    :
-    T_DROP T_CLUSTER
-    clusterName=T_IDENT
+    }:
+    T_DROP T_CLUSTER clusterName=T_IDENT
 ;
 
 alterClusterStatement returns [AlterClusterStatement acs]
     @after{
         acs = new AlterClusterStatement($clusterName.text, j);
-    }
-    :
+    }:
     T_ALTER T_CLUSTER clusterName=T_IDENT T_WITH T_OPTIONS j=getJson
 ;
 
@@ -398,14 +394,40 @@ deleteStatement returns [DeleteStatement ds]
 	tableName=getTableID {$ds.setTableName(tableName);}
 	T_WHERE
 	rel1=getRelation {$ds.addRelation(rel1);} (T_AND relN=getRelation {$ds.addRelation(relN);})*
-	;
+;
 
 //ADD \"index_path\";
 addStatement returns [AddStatement as]:
 	//T_ADD (T_QUOTE | T_SINGLE_QUOTE) name=T_PATH (T_QUOTE | T_SINGLE_QUOTE) {$as = new AddStatement($name.text);}
 	//T_ADD T_QUOTE name=T_PATH T_QUOTE {$as = new AddStatement($name.text);}
 	T_ADD name=QUOTED_LITERAL {$as = new AddStatement($name.text);}
-	;
+;
+
+//ADD (DATASTORE | CONNECTOR) \"path\";
+addManifestStatement returns [MetaStatement ams]
+    @init{
+        boolean datastore = true;
+    }:
+    T_ADD (T_DATASTORE | T_CONNECTOR { datastore = false; } ) path=QUOTED_LITERAL
+    { if(datastore)
+        $ams = new AddDatastoreStatement($path.text);
+      else
+        $ams = new AddConnectorStatement($path.text);
+    }
+;
+
+//DROP (DATASTORE | CONNECTOR) \"name\";
+dropManifestStatement returns [MetaStatement dms]
+    @init{
+        boolean datastore = true;
+    }:
+    T_DROP (T_DATASTORE | T_CONNECTOR { datastore = false; } ) name=QUOTED_LITERAL
+    { if(datastore)
+        $dms = new DropDatastoreStatement($name.text);
+      else
+        $dms = new DropConnectorStatement($name.text);
+    }
+;
 
 //LIST ( PROCESS | UDF | TRIGGER) ;
 listStatement returns [ListStatement ls]:
@@ -417,13 +439,13 @@ listStatement returns [ListStatement ls]:
 			throw new RecognitionException();
 		}
 	}
-	;
+;
 
 //REMOVE UDF \"jar.name\";"
 removeUDFStatement returns [RemoveUDFStatement rus]:
 	//T_REMOVE 'UDF' (T_QUOTE | T_SINGLE_QUOTE) jar=getTerm {$rus = new RemoveUDFStatement(jar);} (T_QUOTE | T_SINGLE_QUOTE)
 	T_REMOVE T_UDF jar=QUOTED_LITERAL {$rus = new RemoveUDFStatement($jar.text);}
-	;
+;
 
 //DROP INDEX IF EXISTS index_name;
 dropIndexStatement returns [DropIndexStatement dis]
@@ -433,7 +455,7 @@ dropIndexStatement returns [DropIndexStatement dis]
 	T_DROP T_INDEX
 	(T_IF T_EXISTS {$dis.setDropIfExists();})?
 	name=(T_KS_AND_TN | T_IDENT | T_LUCENE) {$dis.setName($name.text);}
-	;
+;
 
 
 //CREATE HASH INDEX ON table1 (field1, field2);
@@ -728,21 +750,23 @@ metaStatement returns [MetaStatement st]:
     | st_pdtb = updateTableStatement { $st = st_pdtb; }
     | st_tbdr = dropTableStatement { $st = st_tbdr; }
     | st_trst = truncateStatement { $st = st_trst; }
-    | ls = listStatement { $st = ls; }
+    | st_ls = listStatement { $st = st_ls; }
     | st_stpr = stopProcessStatement { $st = st_stpr; }
     | st_xppl = explainPlanStatement { $st = st_xppl;}
-    | add = addStatement { $st = add; }
-    | rs = removeUDFStatement { $st = rs; }
-    | ds = deleteStatement { $st = ds; }
-    | descs = describeStatement { $st = descs;}
+    | st_add = addStatement { $st = st_add; }
+    | st_add_m = addManifestStatement { $st = st_add_m; }
+    | st_drop_m = dropManifestStatement { $st = st_drop_m;}
+    | st_rs = removeUDFStatement { $st = st_rs; }
+    | st_ds = deleteStatement { $st = st_ds; }
+    | st_desc = describeStatement { $st = st_desc;}
     | st_crks = createCatalogStatement { $st = st_crks; }
     | st_alks = alterCatalogStatement { $st = st_alks; }
     | st_drks = dropCatalogStatement { $st = st_drks ;}
-    | ccs = createClusterStatement { $st = ccs;}
-    | dcs = dropClusterStatement {$st = dcs;}
-    | acs = alterClusterStatement {$st = acs;}
-    | cis = createIndexStatement { $st = cis; }
-    | dis = dropIndexStatement { $st = dis; }
+    | st_ccs = attachClusterStatement { $st = st_ccs;}
+    | st_dcs = dropClusterStatement {$st = st_dcs;}
+    | st_acs = alterClusterStatement {$st = st_acs;}
+    | st_cis = createIndexStatement { $st = st_cis; }
+    | st_dis = dropIndexStatement { $st = st_dis; }
     | st_crtr = createTriggerStatement { $st = st_crtr; }
     | st_drtr = dropTriggerStatement { $st = st_drtr; }
     ;
