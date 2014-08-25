@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 /**
  * Create cluster parsing tests.
  */
-public class CreateClusterStatementTest extends ParsingTest{
+public class AttachClusterStatementTest extends ParsingTest{
 
   @Test
   public void createClusterWithoutOptions() {

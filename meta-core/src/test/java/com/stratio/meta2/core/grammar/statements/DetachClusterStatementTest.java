@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 /**
  * Drop cluster parsing tests.
  */
-public class DropClusterStatementTest extends ParsingTest {
+public class DetachClusterStatementTest extends ParsingTest {
 
   @Test
   public void dropClusterBasic() {

@@ -22,12 +22,12 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 
 /**
- * Class that models a {@code CREATE CLUSTER} statement from the META language. A cluster represents
+ * Class that models a {@code ATTACH CLUSTER} statement from the META language. A cluster represents
  * a logical cluster of storage machines that target the same datastore technology. To create a
  * storage, the user must specify the hosts and ports where the datastore is available in the JSON
  * options.
  */
-public class CreateClusterStatement extends MetaStatement{
+public class AttachClusterStatement extends MetaStatement{
 
   /**
    * Cluster name given by the user. This name will be used to refer to the cluster when creating
@@ -57,7 +57,7 @@ public class CreateClusterStatement extends MetaStatement{
    * @param datastoreName The name of the datastore.
    * @param options A JSON with the options.
    */
-  public CreateClusterStatement(String clusterName, boolean ifNotExists, String datastoreName,
+  public AttachClusterStatement(String clusterName, boolean ifNotExists, String datastoreName,
                                 String options) {
     this.clusterName = clusterName;
     this.ifNotExists = ifNotExists;

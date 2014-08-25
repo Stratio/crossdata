@@ -25,7 +25,7 @@ import com.stratio.meta.core.utils.Tree;
  * Class that models a {@code DROP CLUSTER} statement from the META language. In order to remove
  * an active cluster from the system, the user is required to delete first the existing tables.
  */
-public class DropClusterStatement extends MetaStatement{
+public class DetachClusterStatement extends MetaStatement{
 
   /**
    * Cluster name given by the user.
@@ -36,7 +36,7 @@ public class DropClusterStatement extends MetaStatement{
    * Default constructor.
    * @param clusterName The name of the cluster to be removed.
    */
-  public DropClusterStatement(String clusterName){
+  public DetachClusterStatement(String clusterName){
     this.clusterName = clusterName;
   }
 
