@@ -26,7 +26,7 @@ import com.stratio.meta.common.statements.structures.TableName;
 /**
  * Project operation to retrieve a list of columns from the datastore.
  */
-public class Project extends LogicalStep{
+public class Project extends TransformationStep{
 
   /**
    * Catalog name.
