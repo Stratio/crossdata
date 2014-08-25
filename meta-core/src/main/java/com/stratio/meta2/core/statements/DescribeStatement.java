@@ -33,7 +33,10 @@ import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.metadata.CatalogName;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+
+import org.apache.commons.lang.NotImplementedException;
 
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
@@ -158,12 +161,15 @@ public class DescribeStatement extends TableStatement {
   }
 
   @Override
-  public List<String> getCatalogs() {
-    List<String> result = new ArrayList<>();
+  public List<CatalogName> getCatalogs() {
+    throw new NotImplementedException();
+    /*
+    List<CatalogName> result = new ArrayList<>();
     if(DescribeType.CATALOG.equals(type)){
       result.add(getEffectiveCatalog());
     }
     return result;
+    */
   }
 
   @Override
