@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
 import com.stratio.meta2.common.data.*;
-import com.stratio.meta2.metadata.*;
+import com.stratio.meta2.common.metadata.*;
 
 
 

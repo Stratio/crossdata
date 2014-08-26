@@ -16,35 +16,24 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.metadata;
 
-import com.stratio.meta2.common.data.ColumnName;
+/**
+ * Types of columns supported by META with their equivalence in ODBC data types. Notice that a
+ * NATIVE type has been added to map those types that are not generic and database dependant.
+ */
+public enum ColumnType {
+  BIGINT("SQL_BIGINT"), BOOLEAN("BOOLEAN"), DOUBLE("SQL_DOUBLE"), FLOAT("SQL_FLOAT"), INT(
+      "SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"), NATIVE(null);
 
-public class ColumnMetadata implements IMetadata {
-  private final ColumnName name;
-  private final Object[] parameters;
-  private final ColumnType columnType;
+  private final String standardType;
 
-  public ColumnMetadata(ColumnName name, Object[] parameters,
-      ColumnType columnType) {
-    this.name = name;
-    this.parameters = parameters;
-    this.columnType = columnType;
+
+  ColumnType(String standardType) {
+    this.standardType = standardType;
   }
 
-
-
-  public ColumnName getName() {
-    return name;
+  public String getStandardType() {
+    return standardType;
   }
-
-  public Object[] getParameters() {
-    return parameters;
-  }
-
-  public ColumnType getColumnType() {
-    return columnType;
-  }
-
-
 }

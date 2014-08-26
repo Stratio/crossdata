@@ -16,36 +16,48 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.metadata;
 
-import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.DataStoreName;
 
 import java.util.Map;
 
-public class CatalogMetadata implements IMetadata {
-  private final CatalogName name;
+public class ClusterMetadata implements IMetadata {
+  private final ClusterName name;
+
+  private final DataStoreName dataStoreRef;
 
   private final Map<String, Object> options;
 
-  private final Map<String, TableMetadata> tables;
+  private final Map<String, ConnectorAttachedMetadata> connectorAttachedRefs;
 
-  public CatalogMetadata(CatalogName name, Map<String, Object> options,
-      Map<String, TableMetadata> tables) {
+
+
+  public ClusterMetadata(ClusterName name, DataStoreName dataStoreRef, Map<String, Object> options,
+      Map<String, ConnectorAttachedMetadata> connectorAttachedRefs) {
     this.name = name;
     this.options = options;
-    this.tables = tables;
+    this.dataStoreRef = dataStoreRef;
+    this.connectorAttachedRefs = connectorAttachedRefs;
   }
 
-  public final CatalogName getName() {
+
+
+  public ClusterName getName() {
     return name;
   }
+
 
   public Map<String, Object> getOptions() {
     return options;
   }
 
-  public Map<String, TableMetadata> getTables() {
-    return tables;
+  public DataStoreName getDataStoreRef() {
+    return dataStoreRef;
   }
 
+  public Map<String, ConnectorAttachedMetadata> getConnectorAttachedRefs() {
+    return connectorAttachedRefs;
+  }
 }
