@@ -21,7 +21,7 @@ package com.stratio.meta.common.connector;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.exceptions.ExecutionException;
 import com.stratio.meta.common.exceptions.UnsupportedException;
-import com.stratio.meta2.metadata.TableName;
+import com.stratio.meta2.common.data.TableName;
 
 import java.util.Collection;
 
