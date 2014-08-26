@@ -22,6 +22,7 @@ import com.stratio.meta.common.exceptions.ConnectionException;
 import com.stratio.meta.common.exceptions.InitializationException;
 import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta.common.security.ICredentials;
+import com.stratio.meta2.common.data.ClusterName;
 
 /**
  * Common interface for META connectors.
@@ -56,13 +57,13 @@ public interface IConnector {
    * Close the connection with the underlying datastore.
    * @throws ConnectionException If the close operation cannot be performed.
    */
-  public void close() throws ConnectionException;
+  public void close(ClusterName name) throws ConnectionException;
 
   /**
    * Retrieve the connectivity status with the datastore.
    * @return Whether it is connected or not.
    */
-  public boolean isConnected();
+  public boolean isConnected(ClusterName name);
 
   /**
    * Get the storage engine.
