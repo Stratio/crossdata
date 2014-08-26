@@ -30,8 +30,6 @@ import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
-import org.apache.commons.lang.NotImplementedException;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,7 +93,8 @@ public class DescribeStatement extends TableStatement {
 
     if (this.tableName != null) {
       result =
-          validateKeyspaceAndTable(metadata, sessionCatalog, tableName.containsCatalog(), tableName.getCatalogName().getName(), tableName.getName());
+          validateKeyspaceAndTable(metadata, sessionCatalog, tableName.containsCatalog(),
+                                   tableName.getCatalogName().getName(), tableName.getName());
     }
 
     return result;
@@ -150,19 +149,14 @@ public class DescribeStatement extends TableStatement {
     return result;
   }
 
-  @Override
   public List<CatalogName> getCatalogs() {
-    throw new NotImplementedException();
-    /*
     List<CatalogName> result = new ArrayList<>();
     if(DescribeType.CATALOG.equals(type)){
-      result.add(getEffectiveCatalog());
+      result.add(new CatalogName(getEffectiveCatalog()));
     }
     return result;
-    */
   }
 
-  @Override
   public List<TableName> getTables() {
     List<TableName> result = new ArrayList<>();
     if(DescribeType.TABLE.equals(type)){
