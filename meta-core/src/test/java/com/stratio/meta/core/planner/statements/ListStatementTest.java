@@ -19,7 +19,7 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.ListStatement;
+import com.stratio.meta2.core.statements.ListStatement;
 import com.stratio.meta.core.structures.ListType;
 
 public class ListStatementTest  extends BasicPlannerTest {

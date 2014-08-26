@@ -26,6 +26,7 @@ import com.datastax.driver.core.Session;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.DescribeType;
@@ -107,13 +108,6 @@ public class DescribeStatement extends TableStatement {
   @Override
   public String translateToCQL() {
     return this.toString().replace("CATALOG", "KEYSPACE");
-  }
-
-  @Override
-  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-    Tree steps = new Tree();
-    steps.setNode(new MetaStep(MetaPath.COMMAND, this));
-    return steps;
   }
 
   /**

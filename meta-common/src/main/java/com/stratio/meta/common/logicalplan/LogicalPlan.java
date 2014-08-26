@@ -29,7 +29,10 @@ import java.util.List;
  *   <li>Filter: Apply a clause to filter data.</li>
  *   <li>Window: The window to be applied on streaming sources.</li>
  * </ul>
+ * @deprecated Use {@link com.stratio.meta.common.logicalplan.LogicalWorkflow} as the entry
+ * point for the logical plan to increase use flexibility.
  */
+@Deprecated
 public class LogicalPlan {
 
   /**

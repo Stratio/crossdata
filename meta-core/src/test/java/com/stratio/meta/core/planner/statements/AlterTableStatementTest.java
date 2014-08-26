@@ -19,7 +19,7 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.AlterTableStatement;
+import com.stratio.meta2.core.statements.AlterTableStatement;
 import com.stratio.meta2.core.structures.Property;
 import com.stratio.meta.common.statements.structures.TableName;
 
