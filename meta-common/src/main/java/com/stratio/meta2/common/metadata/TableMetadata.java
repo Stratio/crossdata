@@ -16,34 +16,48 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.metadata;
 
 import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.ConnectorName;
+import com.stratio.meta2.common.data.TableName;
 
 import java.util.Map;
 
-public class ConnectorAttachedMetadata {
-  private final ConnectorName connectorRef;
-  private final ClusterName clusterRef;
-  private final Map<String,String> properties;
+public class TableMetadata implements IMetadata {
+  private final TableName name;
 
-  public ConnectorAttachedMetadata(ConnectorName connectorRef, ClusterName clusterRef,
-      Map<String, String> properties) {
-    this.connectorRef = connectorRef;
+  private final Map<String, Object> options;
+
+  private final Map<String, ColumnMetadata> columns;
+
+  private final ClusterName clusterRef;
+
+  public TableMetadata(TableName name, Map<String, Object> options,
+      Map<String, ColumnMetadata> columns, ClusterName clusterRef) {
+    this.name = name;
+    this.options = options;
+    this.columns = columns;
     this.clusterRef = clusterRef;
-    this.properties = properties;
+
   }
 
-  public ConnectorName getConnectorRef() {
-    return connectorRef;
+
+  public TableName getName() {
+    return name;
+  }
+
+
+  public Map<String, Object> getOptions() {
+    return options;
+  }
+
+  public Map<String, ColumnMetadata> getColumns() {
+    return columns;
   }
 
   public ClusterName getClusterRef() {
     return clusterRef;
   }
 
-  public Map<String, String> getProperties() {
-    return properties;
-  }
+
 }

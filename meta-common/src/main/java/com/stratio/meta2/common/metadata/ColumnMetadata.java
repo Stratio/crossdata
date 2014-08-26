@@ -16,39 +16,35 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.metadata;
 
-import com.stratio.meta2.common.data.DataStoreName;
+import com.stratio.meta2.common.data.ColumnName;
 
-import java.util.Set;
+public class ColumnMetadata implements IMetadata {
+  private final ColumnName name;
+  private final Object[] parameters;
+  private final ColumnType columnType;
 
-public class DataStoreMetadata implements IMetadata {
-  private final DataStoreName name;
-  private final String version;
-  private final Set<String> requiredProperties;
-  private final Set<String> othersProperties;
-
-  public DataStoreMetadata(DataStoreName name, String version, Set<String> requiredProperties,
-      Set<String> othersProperties) {
+  public ColumnMetadata(ColumnName name, Object[] parameters,
+      ColumnType columnType) {
     this.name = name;
-    this.version = version;
-    this.requiredProperties = requiredProperties;
-    this.othersProperties = othersProperties;
+    this.parameters = parameters;
+    this.columnType = columnType;
   }
 
-  public DataStoreName getName() {
+
+
+  public ColumnName getName() {
     return name;
   }
 
-  public String getVersion() {
-    return version;
+  public Object[] getParameters() {
+    return parameters;
   }
 
-  public Set<String> getRequiredProperties() {
-    return requiredProperties;
+  public ColumnType getColumnType() {
+    return columnType;
   }
 
-  public Set<String> getOthersProperties() {
-    return othersProperties;
-  }
+
 }

@@ -16,36 +16,28 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.metadata;
 
-import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 
 import java.util.Set;
 
-public class ConnectorMetadata implements IMetadata {
-  private final Set<DataStoreName> dataStoreRefs;
-
-  private final ConnectorName name;
+public class DataStoreMetadata implements IMetadata {
+  private final DataStoreName name;
   private final String version;
   private final Set<String> requiredProperties;
   private final Set<String> othersProperties;
 
-  public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
-      Set<String> requiredProperties, Set<String> othersProperties) {
-    this.dataStoreRefs = dataStoreRefs;
+  public DataStoreMetadata(DataStoreName name, String version, Set<String> requiredProperties,
+      Set<String> othersProperties) {
     this.name = name;
     this.version = version;
     this.requiredProperties = requiredProperties;
     this.othersProperties = othersProperties;
- }
-
-  public ConnectorName getName() {
-    return name;
   }
 
-  public Set<DataStoreName> getDataStoreRefs() {
-  return dataStoreRefs;
+  public DataStoreName getName() {
+    return name;
   }
 
   public String getVersion() {

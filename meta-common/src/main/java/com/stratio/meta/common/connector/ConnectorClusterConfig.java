@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,35 +16,34 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta.common.connector;
 
-import com.stratio.meta2.common.data.ColumnName;
+import java.util.Map;
 
-public class ColumnMetadata implements IMetadata {
-  private final ColumnName name;
-  private final Object[] parameters;
-  private final ColumnType columnType;
+/**
+ * Configuration used by a connector to establish a connection to a specific cluster.
+ */
+public class ConnectorClusterConfig {
 
-  public ColumnMetadata(ColumnName name, Object[] parameters,
-      ColumnType columnType) {
-    this.name = name;
-    this.parameters = parameters;
-    this.columnType = columnType;
+  /**
+   * Map of options required by a connector in order to be able to establish a connection
+   * to an existing datastore cluster.
+   */
+  private final Map<String, Object> options;
+
+  /**
+   * Class constructor.
+   * @param options Map of options.
+   */
+  public ConnectorClusterConfig(Map<String, Object> options) {
+    this.options = options;
   }
 
-
-
-  public ColumnName getName() {
-    return name;
+  /**
+   * Get the cluster options.
+   * @return A map of options.
+   */
+  public Map<String, Object> getOptions() {
+    return options;
   }
-
-  public Object[] getParameters() {
-    return parameters;
-  }
-
-  public ColumnType getColumnType() {
-    return columnType;
-  }
-
-
 }
