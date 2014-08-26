@@ -18,9 +18,32 @@
 
 package com.stratio.meta.common.connector;
 
+import java.util.Map;
+
 /**
- * Created by dhiguero on 26/08/14.
+ * Configuration used by a connector to establish a connection to a specific cluster.
  */
 public class ConnectorClusterConfig {
 
+  /**
+   * Map of options required by a connector in order to be able to establish a connection
+   * to an existing datastore cluster.
+   */
+  private final Map<String, Object> options;
+
+  /**
+   * Class constructor.
+   * @param options Map of options.
+   */
+  public ConnectorClusterConfig(Map<String, Object> options) {
+    this.options = options;
+  }
+
+  /**
+   * Get the cluster options.
+   * @return A map of options.
+   */
+  public Map<String, Object> getOptions() {
+    return options;
+  }
 }
