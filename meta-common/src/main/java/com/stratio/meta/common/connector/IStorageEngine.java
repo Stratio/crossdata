@@ -18,10 +18,37 @@
 
 package com.stratio.meta.common.connector;
 
+import com.stratio.meta.common.data.Row;
+import com.stratio.meta.common.exceptions.ExecutionException;
+import com.stratio.meta.common.exceptions.UnsupportedException;
+import com.stratio.meta2.metadata.TableName;
+
+import java.util.Collection;
+
 /**
  * Interface provided by a connector to access storage related operations such as inserting
  * new data.
  */
 public interface IStorageEngine {
+
+  /**
+   * Insert a single row in a table.
+   * @param targetTable Target table fully qualified including catalog.
+   * @param row The row to be inserted.
+   * @throws UnsupportedException If the operation is not supported.
+   * @throws ExecutionException If the execution fails.
+   */
+  public void insert(TableName targetTable, Row row) throws UnsupportedException,
+                                                                   ExecutionException;
+
+  /**
+   * Insert a collection of rows in a table.
+   * @param targetTable Target table fully qualified including catalog.
+   * @param rows Collection of rows to be inserted.
+   * @throws UnsupportedException If the operation is not supported.
+   * @throws ExecutionException If the execution fails.
+   */
+  public void insert(TableName targetTable, Collection<Row> rows) throws UnsupportedException,
+                                                            ExecutionException;
 
 }
