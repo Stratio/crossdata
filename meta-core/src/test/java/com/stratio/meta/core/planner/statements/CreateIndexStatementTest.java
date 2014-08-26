@@ -19,7 +19,7 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.CreateIndexStatement;
+import com.stratio.meta2.core.statements.CreateIndexStatement;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.Tree;

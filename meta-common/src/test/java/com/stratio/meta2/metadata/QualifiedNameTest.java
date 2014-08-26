@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.metadata;
 
+import com.stratio.meta2.common.data.QualifiedNames;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

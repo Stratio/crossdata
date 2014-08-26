@@ -23,11 +23,11 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+
 
 /**
  * Class that models a {@code CREATE CATALOG} statement from the META language. Catalog
@@ -105,15 +105,13 @@ public class CreateCatalogStatement extends MetaStatement {
     }
   }
 
-  @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-    Tree tree = new Tree();
-    tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-    return tree;
+    return null;
   }
 
   public ValidationRequirements getValidationRequirements(){
     return new ValidationRequirements().mustNotExistCatalog();
   }
+
 }
 

@@ -19,7 +19,7 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.DropTableStatement;
+import com.stratio.meta2.core.statements.DropTableStatement;
 import org.testng.annotations.Test;
 
 public class DropTableStatementTest  extends BasicPlannerTest {

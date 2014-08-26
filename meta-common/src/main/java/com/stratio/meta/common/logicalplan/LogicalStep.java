@@ -18,9 +18,44 @@
 
 package com.stratio.meta.common.logicalplan;
 
+import java.util.List;
+
 /**
  * A step of a Logical plan.
  */
-public class LogicalStep {
+public abstract class LogicalStep {
+
+  /**
+   * Next step to be executed.
+   */
+  private LogicalStep nextStep;
+
+  /**
+   * Get the next {@link com.stratio.meta.common.logicalplan.LogicalStep} to be executed.
+   * @return The next step or null if not set.
+   */
+  public LogicalStep getNextStep() {
+    return nextStep;
+  }
+
+  /**
+   * Set the next step to be executed.
+   * @param nextStep A {@link com.stratio.meta.common.logicalplan.LogicalStep}.
+   */
+  public void setNextStep(LogicalStep nextStep) {
+    this.nextStep = nextStep;
+  }
+
+  /**
+   * Get the list of previous steps.
+   * @return A list of {@link com.stratio.meta.common.logicalplan.LogicalStep}.
+   */
+  public abstract List<LogicalStep> getPreviousSteps();
+
+  /**
+   * Get the first previous step.
+   * @return A {@link com.stratio.meta.common.logicalplan.LogicalStep}.
+   */
+  public abstract LogicalStep getFirstPrevious();
 
 }

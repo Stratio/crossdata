@@ -18,7 +18,7 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.RemoveUDFStatement;
+import com.stratio.meta2.core.statements.RemoveUDFStatement;
 import org.testng.annotations.Test;
 
 public class RemoveUDFStatementTest  extends BasicPlannerTest {

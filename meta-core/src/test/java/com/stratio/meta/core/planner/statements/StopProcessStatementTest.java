@@ -19,7 +19,7 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.StopProcessStatement;
+import com.stratio.meta2.core.statements.StopProcessStatement;
 
 public class StopProcessStatementTest  extends BasicPlannerTest {
 

@@ -19,7 +19,7 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.AddStatement;
+import com.stratio.meta2.core.statements.AddStatement;
 import org.testng.annotations.Test;
 
 public class AddStatementTests extends BasicPlannerTest {

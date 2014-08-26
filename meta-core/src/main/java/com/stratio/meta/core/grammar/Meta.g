@@ -31,7 +31,6 @@ options {
     import com.stratio.meta.common.statements.structures.window.*;
     import com.stratio.meta2.common.statements.structures.terms.*;
     import com.stratio.meta.common.statements.structures.selectors.*;
-    import com.stratio.meta.core.statements.*;
     import com.stratio.meta2.core.statements.*;
     import com.stratio.meta.core.structures.*;
     import com.stratio.meta2.core.structures.*;

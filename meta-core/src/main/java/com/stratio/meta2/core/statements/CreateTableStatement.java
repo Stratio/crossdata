@@ -18,20 +18,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta.core.engine.EngineConfig;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta2.common.statements.structures.terms.BooleanTerm;
-import com.stratio.meta2.core.structures.Property;
-import com.stratio.meta2.core.structures.PropertyNameValue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -39,6 +25,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.TableMetadata;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.structures.Property;
+import com.stratio.meta2.core.structures.PropertyNameValue;
 
 /**
  * Class that models a {@code CREATE TABLE} statement of the META language.
@@ -443,32 +440,4 @@ public class CreateTableStatement extends MetaStatement {
     }
     return sb.toString();
   }
-
-  @Override
-  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-    Tree tree = new Tree();
-    if (createTable) {
-      tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-      boolean streamingMode = false;
-      if (withProperties) {
-        for (Property property : properties) {
-          if (property.getType() == Property.TYPE_NAME_VALUE) {
-            PropertyNameValue pnv = (PropertyNameValue) property;
-            String propName = pnv.getName();
-            if ("ephemeral".equalsIgnoreCase(propName)
-                && (pnv.getVp().getTermClass() == Boolean.class)
-                && ((BooleanTerm) pnv.getVp()).getTermValue()) {
-              streamingMode = true;
-              break;
-            }
-          }
-        }
-      }
-      if (streamingMode) {
-        tree.setNode(new MetaStep(MetaPath.STREAMING, this));
-      }
-    }
-    return tree;
-  }
-
 }

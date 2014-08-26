@@ -18,6 +18,9 @@
 
 package com.stratio.meta2.metadata;
 
+import com.stratio.meta2.common.data.ConnectorName;
+import com.stratio.meta2.common.data.DataStoreName;
+
 import java.util.Set;
 
 public class ConnectorMetadata implements IMetadata {
