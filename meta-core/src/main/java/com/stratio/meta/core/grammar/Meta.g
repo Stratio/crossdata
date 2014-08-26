@@ -25,7 +25,7 @@ options {
  
 @header {
     package com.stratio.meta.core.grammar.generated;
-    import com.stratio.meta.common.statements.structures.*;
+    import com.stratio.meta2.common.data.*;
     import com.stratio.meta.common.statements.structures.assignations.*;
     import com.stratio.meta.common.statements.structures.relationships.*;
     import com.stratio.meta.common.statements.structures.window.*;
@@ -741,7 +741,8 @@ truncateStatement returns [TruncateStatement trst]:
 	T_TRUNCATE
         ident=getTableID {
             $trst = new TruncateStatement(ident);
-	};
+	}
+F;
 
 metaStatement returns [MetaStatement st]:
     st_nsnt   = insertIntoStatement { $st = st_nsnt;}
@@ -756,7 +757,7 @@ metaStatement returns [MetaStatement st]:
     | st_xppl = explainPlanStatement { $st = st_xppl;}
     | st_adds = addStatement { $st = st_adds; }
     | st_addm = addManifestStatement { $st = st_addm; }
-    | st_drop_m = dropManifestStatement { $st = st_drop_m;}
+    | st_drmn = dropManifestStatement { $st = st_drmn;}
     | st_rust = removeUDFStatement { $st = st_rust; }
     | st_dlst = deleteStatement { $st = st_dlst; }
     | st_desc = describeStatement { $st = st_desc;}
@@ -770,12 +771,13 @@ metaStatement returns [MetaStatement st]:
     | st_dixs = dropIndexStatement { $st = st_dixs; }
     | st_crtr = createTriggerStatement { $st = st_crtr; }
     | st_drtr = dropTriggerStatement { $st = st_drtr; }
-    ;
+;
 
 query returns [MetaStatement st]:
 	mtst=metaStatement (T_SEMICOLON)+ EOF {
 		$st = mtst;
-	};
+	}
+;
 
 
 //FUNCTIONS
@@ -945,10 +947,10 @@ getListTypes returns [String listType]:
 
 getAssignment returns [Assignation assign]:
     firstTerm=getTerm
-        //T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName(firstTerm.toString()), Operator.ASSIGN, value);}
-        (T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName(firstTerm.toString()), Operator.ASSIGN, value);}
+        //T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName(null, null, firstTerm.toString()), Operator.ASSIGN, value);}
+        (T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName(null, null, firstTerm.toString()), Operator.ASSIGN, value);}
         | T_START_BRACKET indexTerm=getTerm T_END_BRACKET T_EQUAL termValue=getValueAssign {
-            $assign = new Assignation (new ColumnName(firstTerm.toString(), indexTerm), Operator.ASSIGN, termValue);
+            $assign = new Assignation (new ColumnName(null, null, firstTerm.toString()+"["+indexTerm.toString()+"]"), Operator.ASSIGN, termValue);
         })
 ;
 
@@ -1279,14 +1281,11 @@ getColumn returns [ColumnName column]
 
         String [] columnTokens = columnName.split("\\.");
         if(columnTokens.length == 1){
-            column = new ColumnName(columnTokens[0]);
+            column = new ColumnName(null, null, columnTokens[0]);
         }else if(columnTokens.length == 2){
-            column = new ColumnName(columnTokens[1]);
-            column.setTable(columnTokens[0]);
+            column = new ColumnName(null, columnTokens[0], columnTokens[1]);
         }else{
-            column = new ColumnName(columnTokens[2]);
-            column.setTable(columnTokens[1]);
-            column.setCatalog(columnTokens[0]);
+            column = new ColumnName(columnTokens[0], columnTokens[1], columnTokens[2]);
         }
     }:
     (ident1=T_IDENT {t1 = $ident1.text;}
@@ -1307,10 +1306,9 @@ getTable returns [TableName table]
 
         String [] tableTokens = tableName.split("\\.");
         if(tableTokens.length == 2){
-         table = new TableName(tableTokens[1]);
-         table.setCatalog(tableTokens[0]);
+         table = new TableName(tableTokens[0], tableTokens[1]);
         }else{
-         table = new TableName(tableName);
+         table = new TableName(null, tableName);
         }
 
     }:

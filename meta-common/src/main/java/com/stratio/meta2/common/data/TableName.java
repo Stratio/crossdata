@@ -49,7 +49,9 @@ public class TableName{
     return QualifiedNames.getTableQualifiedName(this.getCatalogName().getName(), getName());
   }
 
-
+  public boolean containsCatalog(){
+    return catalogName != null;
+  }
 
   @Override
   public String toString() {

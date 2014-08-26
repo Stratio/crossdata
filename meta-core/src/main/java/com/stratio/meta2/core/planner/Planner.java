@@ -15,11 +15,6 @@
 package com.stratio.meta2.core.planner;
 
 import com.stratio.meta.common.connector.Operations;
-import com.stratio.meta.common.logicalplan.Filter;
-import com.stratio.meta.common.logicalplan.LogicalPlan;
-import com.stratio.meta.common.logicalplan.LogicalWorkflow;
-import com.stratio.meta.common.logicalplan.Project;
-import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.relationships.RelationType;
 import com.stratio.meta2.core.query.PlannedQuery;

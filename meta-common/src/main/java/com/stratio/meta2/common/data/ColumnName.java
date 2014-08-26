@@ -33,7 +33,6 @@ public class ColumnName {
     this.name = columnName;
   }
 
-
   public TableName getTableName() {
     return tableName;
   }
@@ -47,11 +46,9 @@ public class ColumnName {
         getTableName().getName(), getName());
   }
 
-
   @Override
   public String toString() {
     return this.getColumnQualifiedName();
   }
-
 
 }

@@ -18,26 +18,22 @@
 
 package com.stratio.meta2.core.statements;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.DescribeType;
-import com.stratio.meta.common.statements.structures.TableName;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta2.metadata.CatalogName;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.commons.lang.NotImplementedException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
@@ -99,7 +95,7 @@ public class DescribeStatement extends TableStatement {
 
     if (this.tableName != null) {
       result =
-          validateKeyspaceAndTable(metadata, sessionCatalog, tableName.containsCatalog(), tableName.getCatalog(), tableName.getTableName());
+          validateKeyspaceAndTable(metadata, sessionCatalog, tableName.containsCatalog(), tableName.getCatalogName().getName(), tableName.getName());
     }
 
     return result;
@@ -137,7 +133,7 @@ public class DescribeStatement extends TableStatement {
       }
     } else if (type == DescribeType.TABLE) {
       com.stratio.meta.common.metadata.structures.TableMetadata tableInfo =
-          mm.getTableGenericMetadata(getEffectiveCatalog(), tableName.getTableName());
+          mm.getTableGenericMetadata(getEffectiveCatalog(), tableName.getName());
       if (tableInfo == null) {
         result = Result.createExecutionErrorResult("TABLE " + tableName + " was not found");
       } else {

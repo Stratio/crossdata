@@ -15,7 +15,7 @@
 package com.stratio.meta2.common.data;
 
 public class QualifiedNames {
-  static String getCatalogQualifiedName(String name) {
+  public static String getCatalogQualifiedName(String name) {
     return normalize("catalog." + name);
   }
 
@@ -29,7 +29,7 @@ public class QualifiedNames {
   }
 
 
-  static String getTableQualifiedName(String catalog, String name) {
+  public static String getTableQualifiedName(String catalog, String name) {
     return normalize(getCatalogQualifiedName(catalog) + "." + name);
   }
 
@@ -43,7 +43,7 @@ public class QualifiedNames {
   }
 
 
-  static String getColumnQualifiedName(String catalog, String table, String name) {
+  public static String getColumnQualifiedName(String catalog, String table, String name) {
     return normalize(getTableQualifiedName(catalog, table) + "." + name);
   }
 
@@ -56,7 +56,7 @@ public class QualifiedNames {
     return columnName;
   }
 
-  static String getClusterQualifiedName(String name) {
+  public static String getClusterQualifiedName(String name) {
     return normalize("cluster." + name);
   }
 
@@ -69,7 +69,7 @@ public class QualifiedNames {
     return clusterName;
   }
 
-  static String getConnectorQualifiedName(String name) {
+  public static String getConnectorQualifiedName(String name) {
     return normalize("connector." + name);
   }
 

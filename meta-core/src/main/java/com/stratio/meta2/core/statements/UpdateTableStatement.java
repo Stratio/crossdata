@@ -18,15 +18,10 @@
 
 package com.stratio.meta2.core.statements;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.statements.structures.ColumnName;
 import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
@@ -36,10 +31,15 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.statements.structures.terms.FloatTerm;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class that models an {@code UPDATE} statement from the META language.
@@ -309,7 +309,7 @@ public class UpdateTableStatement extends MetaStatement {
       ColumnName targetCol = assignment.getTargetColumn();
 
       // Check if identifier exists
-      String colId = targetCol.getColumnName();
+      String colId = targetCol.getName();
       ColumnMetadata cm = tableMetadata.getColumn(colId);
       if (cm == null) {
         result =
@@ -359,7 +359,7 @@ public class UpdateTableStatement extends MetaStatement {
 
   private void updateTermClassesInAssignations(TableMetadata tableMetadata) {
     for (Assignation assignment: assignations) {
-      String ident = assignment.getTargetColumn().getColumnName();
+      String ident = assignment.getTargetColumn().getName();
       ColumnMetadata cm = tableMetadata.getColumn(ident);
       Term<?> valueTerm = (Term<?>) assignment.getValue();
       if ((cm != null) && (valueTerm != null)) {

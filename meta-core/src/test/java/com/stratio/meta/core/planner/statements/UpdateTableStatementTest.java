@@ -18,16 +18,16 @@
 
 package com.stratio.meta.core.planner.statements;
 
+import com.stratio.meta.common.statements.structures.assignations.Assignation;
+import com.stratio.meta.common.statements.structures.assignations.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta2.core.statements.UpdateTableStatement;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta.common.statements.structures.ColumnName;
+import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
-import com.stratio.meta.common.statements.structures.assignations.Assignation;
-import com.stratio.meta.common.statements.structures.assignations.Operator;
 import com.stratio.meta2.common.statements.structures.terms.StringTerm;
+import com.stratio.meta2.core.statements.UpdateTableStatement;
 
 import org.testng.annotations.Test;
 
@@ -39,7 +39,7 @@ public class UpdateTableStatementTest  extends BasicPlannerTest {
   @Test
   public void planUpdateTableStatement(){
     String inputText = "UPDATE table1 SET field1 = value1 WHERE field3 = value3;";
-    ColumnName idAsig = new ColumnName("field1");
+    ColumnName idAsig = new ColumnName(null, null, "field1");
     GenericTerm vaAsig = new StringTerm("value1");
     Relation relation = new RelationCompare("field3", "=", new StringTerm("value3"));
     //ColumnName targetColumn, Operator operation, GenericTerm value

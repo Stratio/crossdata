@@ -18,10 +18,10 @@
 
 package com.stratio.meta.common.logicalplan;
 
-import java.util.List;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
 
-import com.stratio.meta.common.statements.structures.ColumnName;
-import com.stratio.meta.common.statements.structures.TableName;
+import java.util.List;
 
 /**
  * Project operation to retrieve a list of columns from the datastore.
@@ -73,7 +73,7 @@ public class Project extends TransformationStep{
 
   /**
    * Get the list of columns to be retrieved.
-   * @return A list of {@link com.stratio.meta.common.statements.structures.ColumnName}.
+   * @return A list of {@link com.stratio.meta2.common.data.ColumnName}.
    */
   public List<ColumnName> getColumnList() {
     return columnList;
