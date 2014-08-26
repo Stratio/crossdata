@@ -7,7 +7,7 @@ public class DetachConnectorStatement extends MetaStatement {
 
   private String name;
 
-  private DetachConnectorStatement(String name){
+  public DetachConnectorStatement(String name){
     this.name = name;
   }
 

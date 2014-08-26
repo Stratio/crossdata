@@ -22,11 +22,11 @@ import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.grammar.ParsingTest;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta2.core.statements.MetaStatement;
-import com.stratio.meta2.core.statements.SelectStatement;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import java.util.UUID;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -69,7 +69,7 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
   public MetaStatement testGetLuceneWhereClause(String inputText, String expected, String keyspace,
       String tablename, String methodName) {
     // Parse the statement
-    MetaQuery mq = parser.parseStatement(inputText);
+    MetaQuery mq = parser.parseStatement(UUID.randomUUID().toString(), keyspace, inputText);
     MetaStatement st = mq.getStatement();
     assertNotNull(st, "Cannot parse " + methodName + " parser error: " + mq.hasError() + " -> "
         + getErrorMessage(mq.getResult()));
@@ -126,7 +126,7 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
     public void processLuceneQueryType(){
         String inputText = "SELECT * FROM demo.users WHERE name MATCH 'name_1*' AND age > 20;";
         String methodName = "processLuceneQueryType";
-        MetaQuery mq = parser.parseStatement(inputText);
+        MetaQuery mq = parser.parseStatement(UUID.randomUUID().toString(), "demo", inputText);
         MetaStatement st = mq.getStatement();
         assertNotNull(st, "Cannot parse "+methodName
                 + " parser error: " + mq.hasError()

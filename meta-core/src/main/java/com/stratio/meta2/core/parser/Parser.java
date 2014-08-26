@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.parser;
+package com.stratio.meta2.core.parser;
 
 import com.stratio.meta.common.result.ErrorType;
 import com.stratio.meta.common.result.QueryStatus;
@@ -25,6 +25,7 @@ import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.ErrorsHelper;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta2.core.statements.MetaStatement;
+
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
@@ -41,15 +42,15 @@ public class Parser {
    * @param inputText The input text.
    * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
    */
-  public MetaQuery parseStatement(String inputText){
+  public MetaQuery parseStatement(String queryId, String catalog, String inputText){
     MetaQuery metaQuery = new MetaQuery(inputText);
-    metaQuery.setStatus(QueryStatus.PARSED);
     MetaStatement resultStatement;
-    ANTLRStringStream input = new ANTLRStringStream(inputText);
+    ANTLRStringStream input = new ANTLRStringStream("["+catalog+"], "+inputText);
     MetaLexer lexer = new MetaLexer(input);
     CommonTokenStream tokens = new CommonTokenStream(lexer);
     com.stratio.meta.core.grammar.generated.MetaParser parser = new com.stratio.meta.core.grammar.generated.MetaParser(tokens);
     ErrorsHelper foundErrors = null;
+    metaQuery.setStatus(QueryStatus.PARSED);
     try {
       resultStatement = parser.query();
       foundErrors = parser.getFoundErrors();

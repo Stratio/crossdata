@@ -21,11 +21,13 @@ package com.stratio.meta.core.grammar;
 import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.ErrorType;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.parser.Parser;
+import com.stratio.meta2.core.parser.Parser;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta.core.utils.MetaQuery;
 
 import org.testng.annotations.Test;
+
+import java.util.UUID;
 
 import static org.testng.Assert.*;
 
@@ -38,7 +40,7 @@ public class ParsingTest {
   protected final Parser parser = new Parser();
 
   public MetaStatement testRegularStatement(String inputText, String methodName) {
-    MetaQuery mq = parser.parseStatement(inputText);
+    MetaQuery mq = parser.parseStatement(UUID.randomUUID().toString(), "", inputText);
     MetaStatement st = mq.getStatement();
     ErrorResult er = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "null");
     if (ErrorResult.class.isInstance(mq.getResult())) {
@@ -62,7 +64,7 @@ public class ParsingTest {
 
   public MetaStatement testRegularStatement(String inputText, String expectedQuery,
                                             String methodName) {
-    MetaQuery mq = parser.parseStatement(inputText);
+    MetaQuery mq = parser.parseStatement(UUID.randomUUID().toString(), "", inputText);
     MetaStatement st = mq.getStatement();
     ErrorResult er = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "null");
     if (ErrorResult.class.isInstance(mq.getResult())) {
@@ -84,14 +86,14 @@ public class ParsingTest {
   }
 
   public void testParseFails(String inputText, String methodName) {
-    MetaQuery mq = parser.parseStatement(inputText);
+    MetaQuery mq = parser.parseStatement(UUID.randomUUID().toString(), "", inputText);
     assertNotNull(mq, "Parser should return a query");
     assertTrue(mq.hasError(), "Parser should return and error for " + methodName);
     assertNull(mq.getStatement(), "Null statement expected. Returned: " + mq.getStatement());
   }
 
   public void testRecoverableError(String inputText, String methodName) {
-    MetaQuery metaQuery = parser.parseStatement(inputText);
+    MetaQuery metaQuery = parser.parseStatement(UUID.randomUUID().toString(), "", inputText);
     assertTrue(metaQuery.hasError(), "No errors reported in " + methodName);
   }
 

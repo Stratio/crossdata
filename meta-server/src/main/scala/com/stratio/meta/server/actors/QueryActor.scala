@@ -38,11 +38,11 @@ class QueryActor(engine: Engine) extends Actor{
   //var querySender : ActorRef = null;
 
   override def receive: Receive = {
-    case Query(queryId, keyspace, statement, user) => {
-      log.debug("User "+ user + " ks: "+ keyspace + " stmt: " + statement + " id: " + queryId)
+    case Query(queryId, catalog, statement, user) => {
+      log.debug("User "+ user + " catalog: "+ catalog + " stmt: " + statement + " id: " + queryId)
       //querySender = sender
-      parserActorRef forward Query(queryId, keyspace, statement, user)
-      //parserActorRef ! Query(queryId, keyspace, statement, user)
+      parserActorRef forward Query(queryId, catalog, statement, user)
+      //parserActorRef ! Query(queryId, catalog, statement, user)
       log.debug("Finish Query")
     }
     //case r: Result => {

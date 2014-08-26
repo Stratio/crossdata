@@ -49,7 +49,7 @@ public class Planner {
      */
     public MetaQuery planQuery(MetaQuery metaQuery) {
         metaQuery.setStatus(QueryStatus.PLANNED);
-        //metaQuery.setPlan(metaQuery.getStatement().getPlan(metadata, metaQuery.getSessionKeyspace()));
+        //metaQuery.setPlan(metaQuery.getStatement().getPlan(metadata, metaQuery.getSessionCatalog()));
       throw new UnsupportedOperationException();
         //return metaQuery;
     }
