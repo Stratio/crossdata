@@ -299,12 +299,12 @@ T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 // CLUSTER
 // ========================================================
 
-attachClusterStatement returns [AttachClusterStatement ccs]
+attachClusterStatement returns [AttachClusterStatement acs]
     @init{
         boolean ifNotExists = false;
     }
     @after{
-        ccs = new AttachClusterStatement(
+        acs = new AttachClusterStatement(
             $clusterName.text,
             ifNotExists,
             $datastoreName.text,
@@ -748,27 +748,27 @@ metaStatement returns [MetaStatement st]:
     st_nsnt   = insertIntoStatement { $st = st_nsnt;}
     | st_slct = selectStatement { $st = st_slct;}
     | st_crta = createTableStatement { $st = st_crta;}
-    | st_alta = alterTableStatement { $st = st_alta;}
+    | st_altt = alterTableStatement { $st = st_altt;}
     | st_pdtb = updateTableStatement { $st = st_pdtb; }
     | st_tbdr = dropTableStatement { $st = st_tbdr; }
     | st_trst = truncateStatement { $st = st_trst; }
-    | st_ls = listStatement { $st = st_ls; }
+    | st_lsst = listStatement { $st = st_lsst; }
     | st_stpr = stopProcessStatement { $st = st_stpr; }
     | st_xppl = explainPlanStatement { $st = st_xppl;}
-    | st_add = addStatement { $st = st_add; }
-    | st_add_m = addManifestStatement { $st = st_add_m; }
+    | st_adds = addStatement { $st = st_adds; }
+    | st_addm = addManifestStatement { $st = st_addm; }
     | st_drop_m = dropManifestStatement { $st = st_drop_m;}
-    | st_rs = removeUDFStatement { $st = st_rs; }
-    | st_ds = deleteStatement { $st = st_ds; }
+    | st_rust = removeUDFStatement { $st = st_rust; }
+    | st_dlst = deleteStatement { $st = st_dlst; }
     | st_desc = describeStatement { $st = st_desc;}
     | st_crks = createCatalogStatement { $st = st_crks; }
     | st_alks = alterCatalogStatement { $st = st_alks; }
     | st_drks = dropCatalogStatement { $st = st_drks ;}
-    | st_ccs = attachClusterStatement { $st = st_ccs;}
-    | st_dcs = detachClusterStatement {$st = st_dcs;}
-    | st_acs = alterClusterStatement {$st = st_acs;}
-    | st_cis = createIndexStatement { $st = st_cis; }
-    | st_dis = dropIndexStatement { $st = st_dis; }
+    | st_atcs = attachClusterStatement { $st = st_atcs;}
+    | st_dtcs = detachClusterStatement {$st = st_dtcs;}
+    | st_alcs = alterClusterStatement {$st = st_alcs;}
+    | st_cixs = createIndexStatement { $st = st_cixs; }
+    | st_dixs = dropIndexStatement { $st = st_dixs; }
     | st_crtr = createTriggerStatement { $st = st_crtr; }
     | st_drtr = dropTriggerStatement { $st = st_drtr; }
     ;

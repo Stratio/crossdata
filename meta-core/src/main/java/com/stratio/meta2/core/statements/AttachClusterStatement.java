@@ -67,7 +67,7 @@ public class AttachClusterStatement extends MetaStatement{
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("CREATE CLUSTER ");
+    StringBuilder sb = new StringBuilder("ATTACH CLUSTER ");
     if(ifNotExists){
       sb.append("IF NOT EXISTS ");
     }
