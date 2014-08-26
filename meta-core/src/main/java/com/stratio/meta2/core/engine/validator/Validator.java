@@ -24,7 +24,7 @@ import com.stratio.meta2.common.exception.validation.MustExistCatalogException;
 import com.stratio.meta2.common.exception.validation.NotMustExistCatalogException;
 import com.stratio.meta2.common.exception.validation.ValidationException;
 import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.metadata.CatalogName;
+import com.stratio.meta2.common.data.CatalogName;
 import org.apache.log4j.Logger;
 
 

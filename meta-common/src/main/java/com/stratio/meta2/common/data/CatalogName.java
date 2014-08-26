@@ -1,5 +1,5 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.  
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership.  The STRATIO (C) licenses this file
  * to you under the Apache License, Version 2.0 (the
@@ -16,43 +16,28 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.data;
 
-/**
- * Table name recognized by the parser. The name may contain:
- * <ul>
- *   <li>catalog.table</li>
- *   <li>table</li>
- * </ul>
- */
-public class TableName{
-
-
+public class CatalogName {
   private final String name;
 
-  private final CatalogName catalogName;
 
-  public TableName(String catalogName, String tableName){
-    this.catalogName=new CatalogName(catalogName);
-    this.name = tableName;
-  }
 
-  public CatalogName getCatalogName() {
-    return catalogName;
+  public CatalogName(String catalogName){
+    this.name = catalogName;
   }
 
   public String getName() {
     return name;
   }
 
-  public String getTableQualifiedName() {
-    return QualifiedNames.getTableQualifiedName(this.getCatalogName().getName(), getName());
+  public String getCatalogQualifiedName(){
+    return QualifiedNames.getCatalogQualifiedName(getName());
   }
-
-
 
   @Override
   public String toString() {
-    return getTableQualifiedName();
+    return this.getCatalogQualifiedName();
   }
+
 }

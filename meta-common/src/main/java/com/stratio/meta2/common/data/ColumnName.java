@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.data;
 
 public class ColumnName {
 

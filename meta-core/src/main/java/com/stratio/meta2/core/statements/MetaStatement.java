@@ -31,7 +31,7 @@ import com.stratio.meta.common.statements.structures.ColumnName;
 import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
-import com.stratio.meta2.metadata.CatalogName;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 

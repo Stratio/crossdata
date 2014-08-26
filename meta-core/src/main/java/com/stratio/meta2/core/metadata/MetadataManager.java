@@ -18,6 +18,7 @@ package com.stratio.meta2.core.metadata;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
+import com.stratio.meta2.common.data.*;
 import com.stratio.meta2.metadata.*;
 
 

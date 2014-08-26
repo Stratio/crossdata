@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.metadata;
 
+import com.stratio.meta2.common.data.CatalogName;
+
 import java.util.Map;
 
 public class CatalogMetadata implements IMetadata {

@@ -16,28 +16,28 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.data;
 
-public class ClusterName {
+public class ConnectorName {
   private final String name;
 
 
 
-  public ClusterName(String clusterName){
-    this.name = clusterName;
+  public ConnectorName(String connectorName){
+    this.name = connectorName;
   }
 
   public String getName() {
     return name;
   }
 
-  public String getClusterQualifiedName(){
-    return QualifiedNames.getClusterQualifiedName(getName());
+  public String getConnectorQualifiedName(){
+    return QualifiedNames.getConnectorQualifiedName(getName());
   }
 
   @Override
   public String toString() {
-    return this.getClusterQualifiedName();
+    return this.getConnectorQualifiedName();
   }
 
 }

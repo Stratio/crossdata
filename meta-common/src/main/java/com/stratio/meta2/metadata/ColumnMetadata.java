@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.metadata;
 
+import com.stratio.meta2.common.data.ColumnName;
+
 public class ColumnMetadata implements IMetadata {
   private final ColumnName name;
   private final Object[] parameters;

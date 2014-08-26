@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.common.exception.validation;
 
-import com.stratio.meta2.metadata.CatalogName;
+import com.stratio.meta2.common.data.CatalogName;
 
 public class NotMustExistCatalogException extends ValidationException {
   public NotMustExistCatalogException(CatalogName catalog) {
