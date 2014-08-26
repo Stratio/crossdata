@@ -39,15 +39,12 @@ public class Validator {
   private static final Logger LOG = Logger.getLogger(Validator.class);
 
   public ValidatedQuery validate(ParsedQuery parsedQuery) throws ValidationException {
-    this.validate(parsedQuery.getStatement());
+    this.validate(parsedQuery);
     return new ValidatedQuery(parsedQuery);
   }
 
-  private void validate(IStatement statement){
 
-  }
-
-  private void validate(Validation requirement, IStatement statement) throws ValidationException  {
+  private void validate(Validation requirement, ParsedQuery statement) throws ValidationException  {
     switch (requirement) {
       case MUST_NOT_EXIST_CATALOG:
         validateNotExistCatalog(statement.getCatalogs(), statement.getIfNotExists());

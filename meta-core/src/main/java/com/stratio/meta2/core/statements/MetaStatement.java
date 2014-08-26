@@ -216,36 +216,7 @@ public abstract class MetaStatement implements IStatement {
     return null;
   }
 
-
-  //IStatement Methods
-  public List<CatalogName> getCatalogs(){
-    throw new UnsupportedOperationException();
-  }
-
-
-  public List<TableName> getTables(){
-    throw new UnsupportedOperationException();
-  }
-
-
-  public List<ColumnName> getColumns(){
-    throw new UnsupportedOperationException();
-  }
-
-
-  public List<Assignation> getAssignations(){
-    throw new UnsupportedOperationException();
-  }
-
-
-  public boolean getIfExists(){
-    throw new UnsupportedOperationException();
-  }
-
-  public boolean getIfNotExists(){
-    throw new UnsupportedOperationException();
-  }
-
+  //TODO: This method should be abstract
   public ValidationRequirements getValidationRequirements(){
     throw new UnsupportedOperationException();
   }

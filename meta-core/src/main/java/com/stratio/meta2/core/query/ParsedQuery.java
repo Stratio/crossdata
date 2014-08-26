@@ -19,7 +19,14 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta.common.statements.structures.assignations.Assignation;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.meta2.core.statements.MetaStatement;
+
+import java.util.List;
 
 public class ParsedQuery extends BaseQuery {
   private final MetaStatement statement;
@@ -38,5 +45,39 @@ public class ParsedQuery extends BaseQuery {
 
   public QueryStatus getStatus() {
     return QueryStatus.PARSED;
+  }
+
+
+  //IStatement Methods
+  public List<CatalogName> getCatalogs(){
+    throw new UnsupportedOperationException();
+  }
+
+
+  public List<TableName> getTables(){
+    throw new UnsupportedOperationException();
+  }
+
+
+  public List<ColumnName> getColumns(){
+    throw new UnsupportedOperationException();
+  }
+
+
+  public List<Assignation> getAssignations(){
+    throw new UnsupportedOperationException();
+  }
+
+
+  public boolean getIfExists(){
+    throw new UnsupportedOperationException();
+  }
+
+  public boolean getIfNotExists(){
+    throw new UnsupportedOperationException();
+  }
+
+  public ValidationRequirements getValidationRequirements(){
+    return statement.getValidationRequirements();
   }
 }
