@@ -20,10 +20,10 @@ package com.stratio.meta.common.connector;
 
 import com.stratio.meta.common.exceptions.ExecutionException;
 import com.stratio.meta.common.exceptions.UnsupportedException;
-import com.stratio.meta2.metadata.CatalogMetadata;
-import com.stratio.meta2.metadata.CatalogName;
-import com.stratio.meta2.metadata.TableMetadata;
-import com.stratio.meta2.metadata.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.data.TableName;
 
 /**
  * Interface provided by a connector to access metadata related operations such as creating

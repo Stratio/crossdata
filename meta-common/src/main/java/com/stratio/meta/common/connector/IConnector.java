@@ -22,9 +22,6 @@ import com.stratio.meta.common.exceptions.ConnectionException;
 import com.stratio.meta.common.exceptions.InitializationException;
 import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta.common.security.ICredentials;
-import com.stratio.meta2.metadata.ClusterMetadata;
-import com.stratio.meta2.metadata.ConnectorAttachedMetadata;
-import com.stratio.meta2.metadata.DataStoreMetadata;
 
 /**
  * Common interface for META connectors.
