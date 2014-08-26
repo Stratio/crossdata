@@ -18,21 +18,19 @@
 
 package com.stratio.meta2.core.statements;
 
-import java.util.Iterator;
-import java.util.List;
-
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.CoreUtils;
-import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta2.core.statements.TableStatement;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.structures.Property;
 import com.stratio.meta2.core.structures.PropertyNameValue;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Class that models an {@code ALTER TABLE} statement from the META language.
@@ -75,7 +73,7 @@ public class AlterTableStatement extends TableStatement {
      */
     public AlterTableStatement(TableName tableName, String column, String type, List<Property> properties, int option) {
         this.command = false;
-      this.tableName = tableName;
+        this.tableName = tableName;
         this.column = column;
         this.type = type;
         this.properties = properties;
@@ -134,11 +132,11 @@ public class AlterTableStatement extends TableStatement {
         Result result = validateKeyspaceAndTable(
             metadata,
             sessionCatalog,
-            tableName.containsCatalog(), tableName.getCatalog(), tableName.getTableName());
+            tableName.containsCatalog(), tableName.getCatalogName().getName(), tableName.getName());
         if(!result.hasError()) {
             String effectiveKeyspace = getEffectiveCatalog();
-            System.out.println("validating: " + effectiveKeyspace + " table: " + tableName.getTableName());
-            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName.getTableName());
+            System.out.println("validating: " + effectiveKeyspace + " table: " + tableName.getName());
+            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName.getName());
 
             switch(option){
                 case 1:

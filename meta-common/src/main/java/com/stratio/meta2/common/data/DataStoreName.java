@@ -16,48 +16,27 @@
  * under the License.
  */
 
-package com.stratio.meta.common.statements.structures;
+package com.stratio.meta2.common.data;
 
-/**
- * Table name recognized by the parser. The name may contain:
- * <ul>
- *   <li>catalog.table</li>
- *   <li>table</li>
- * </ul>
- */
-public class TableName {
+public class DataStoreName {
+  private final String name;
 
-  private String catalog = null;
 
-  private final String tableName;
 
-  public TableName(String tableName){
-    this.tableName = tableName;
+  public DataStoreName(String dataStoreName){
+    this.name = dataStoreName;
   }
 
-  public void setCatalog(String catalog){
-    this.catalog = catalog;
+  public String getName() {
+    return name;
   }
 
-  public String getCatalog() {
-    return catalog;
-  }
-
-  public String getTableName() {
-    return tableName;
-  }
-
-  public boolean containsCatalog(){
-    return catalog != null;
+  public String getDataStoreQualifiedName(){
+    return QualifiedNames.getDataStoreQualifiedName(getName());
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    if(catalog != null){
-      sb.append(catalog).append(".");
-    }
-    sb.append(tableName);
-    return sb.toString();
+    return this.getDataStoreQualifiedName();
   }
 }

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.data;
 
 public class CatalogName {
   private final String name;

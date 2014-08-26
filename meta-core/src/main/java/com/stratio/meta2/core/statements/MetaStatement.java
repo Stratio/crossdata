@@ -26,13 +26,12 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.common.statements.structures.ColumnName;
-import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
-import com.stratio.meta2.metadata.CatalogName;
 import com.stratio.streaming.api.IStratioStreamingAPI;
-
 
 import java.util.List;
 
@@ -216,36 +215,7 @@ public abstract class MetaStatement implements IStatement {
     return null;
   }
 
-
-  //IStatement Methods
-  public List<CatalogName> getCatalogs(){
-    throw new UnsupportedOperationException();
-  }
-
-
-  public List<TableName> getTables(){
-    throw new UnsupportedOperationException();
-  }
-
-
-  public List<ColumnName> getColumns(){
-    throw new UnsupportedOperationException();
-  }
-
-
-  public List<Assignation> getAssignations(){
-    throw new UnsupportedOperationException();
-  }
-
-
-  public boolean getIfExists(){
-    throw new UnsupportedOperationException();
-  }
-
-  public boolean getIfNotExists(){
-    throw new UnsupportedOperationException();
-  }
-
+  //TODO: This method should be abstract
   public ValidationRequirements getValidationRequirements(){
     throw new UnsupportedOperationException();
   }

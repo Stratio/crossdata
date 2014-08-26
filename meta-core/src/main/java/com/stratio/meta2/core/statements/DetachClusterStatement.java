@@ -42,7 +42,7 @@ public class DetachClusterStatement extends MetaStatement{
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("DROP CLUSTER ");
+    StringBuilder sb = new StringBuilder("DETACH CLUSTER ");
     sb.append(clusterName);
     return sb.toString();
   }

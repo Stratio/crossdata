@@ -18,8 +18,7 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.statements.structures.TableName;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.common.data.TableName;
 
 /**
  * Meta statement that are executed over a table.
@@ -48,7 +47,7 @@ public abstract class TableStatement extends MetaStatement {
   public String getEffectiveCatalog() {
     String effective = null;
     if(tableName != null){
-      effective = tableName.getCatalog();
+      effective = tableName.getCatalogName().getName();
     }else{
       effective = catalog;
     }

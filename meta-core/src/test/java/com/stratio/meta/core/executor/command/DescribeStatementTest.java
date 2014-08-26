@@ -20,13 +20,13 @@ package com.stratio.meta.core.executor.command;
 
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.core.executor.BasicExecutorTest;
-import com.stratio.meta2.core.statements.DescribeStatement;
 import com.stratio.meta.core.structures.DescribeType;
-import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.core.statements.DescribeStatement;
 
 import org.testng.annotations.Test;
 
@@ -92,7 +92,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
 
     DescribeStatement stmt = new DescribeStatement(DescribeType.TABLE);
     stmt.setSessionCatalog("demo");
-    stmt.setTableName(new TableName("users"));
+    stmt.setTableName(new TableName(null, "users"));
 
     stmt.validate(metadataManager, null);
 

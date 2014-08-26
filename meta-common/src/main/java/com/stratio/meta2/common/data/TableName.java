@@ -16,28 +16,45 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.data;
 
-public class ClusterName {
+/**
+ * Table name recognized by the parser. The name may contain:
+ * <ul>
+ *   <li>catalog.table</li>
+ *   <li>table</li>
+ * </ul>
+ */
+public class TableName{
+
+
   private final String name;
 
+  private final CatalogName catalogName;
 
+  public TableName(String catalogName, String tableName){
+    this.catalogName=new CatalogName(catalogName);
+    this.name = tableName;
+  }
 
-  public ClusterName(String clusterName){
-    this.name = clusterName;
+  public CatalogName getCatalogName() {
+    return catalogName;
   }
 
   public String getName() {
     return name;
   }
 
-  public String getClusterQualifiedName(){
-    return QualifiedNames.getClusterQualifiedName(getName());
+  public String getTableQualifiedName() {
+    return QualifiedNames.getTableQualifiedName(this.getCatalogName().getName(), getName());
+  }
+
+  public boolean containsCatalog(){
+    return catalogName != null;
   }
 
   @Override
   public String toString() {
-    return this.getClusterQualifiedName();
+    return getTableQualifiedName();
   }
-
 }

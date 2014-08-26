@@ -16,43 +16,28 @@
  * under the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.data;
 
-/**
- * Table name recognized by the parser. The name may contain:
- * <ul>
- *   <li>catalog.table</li>
- *   <li>table</li>
- * </ul>
- */
-public class TableName{
-
-
+public class ConnectorName {
   private final String name;
 
-  private final CatalogName catalogName;
 
-  public TableName(String catalogName, String tableName){
-    this.catalogName=new CatalogName(catalogName);
-    this.name = tableName;
-  }
 
-  public CatalogName getCatalogName() {
-    return catalogName;
+  public ConnectorName(String connectorName){
+    this.name = connectorName;
   }
 
   public String getName() {
     return name;
   }
 
-  public String getTableQualifiedName() {
-    return QualifiedNames.getTableQualifiedName(this.getCatalogName().getName(), getName());
+  public String getConnectorQualifiedName(){
+    return QualifiedNames.getConnectorQualifiedName(getName());
   }
-
-
 
   @Override
   public String toString() {
-    return getTableQualifiedName();
+    return this.getConnectorQualifiedName();
   }
+
 }

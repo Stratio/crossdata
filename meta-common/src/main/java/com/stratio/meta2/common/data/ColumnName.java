@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.stratio.meta2.metadata;
+package com.stratio.meta2.common.data;
 
 public class ColumnName {
 
@@ -33,7 +33,6 @@ public class ColumnName {
     this.name = columnName;
   }
 
-
   public TableName getTableName() {
     return tableName;
   }
@@ -47,11 +46,9 @@ public class ColumnName {
         getTableName().getName(), getName());
   }
 
-
   @Override
   public String toString() {
     return this.getColumnQualifiedName();
   }
-
 
 }

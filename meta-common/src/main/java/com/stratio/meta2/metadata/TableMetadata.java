@@ -18,6 +18,9 @@
 
 package com.stratio.meta2.metadata;
 
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.TableName;
+
 import java.util.Map;
 
 public class TableMetadata implements IMetadata {
