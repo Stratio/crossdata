@@ -23,9 +23,6 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 /**
@@ -74,12 +71,4 @@ public class DropCatalogStatement extends MetaStatement {
     public String translateToCQL() {
         return this.toString();
     }
-
-    @Override
-    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        Tree tree = new Tree();
-        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-        return tree;
-    }
-    
 }

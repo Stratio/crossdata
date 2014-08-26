@@ -25,7 +25,7 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta2.core.statements.CreateTableStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
-import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta.streaming.MetaStream;
 import com.stratio.meta.streaming.StreamingUtils;
 import com.stratio.streaming.api.IStratioStreamingAPI;

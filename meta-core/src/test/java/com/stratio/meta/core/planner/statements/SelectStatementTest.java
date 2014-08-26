@@ -26,7 +26,7 @@ import com.stratio.meta.common.statements.structures.selectors.GroupByFunction;
 import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta.core.structures.SelectionAsterisk;

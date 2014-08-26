@@ -26,6 +26,7 @@ import com.datastax.driver.core.Session;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.DescribeType;
@@ -33,7 +34,10 @@ import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.metadata.CatalogName;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+
+import org.apache.commons.lang.NotImplementedException;
 
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
@@ -106,13 +110,6 @@ public class DescribeStatement extends TableStatement {
     return this.toString().replace("CATALOG", "KEYSPACE");
   }
 
-  @Override
-  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-    Tree steps = new Tree();
-    steps.setNode(new MetaStep(MetaPath.COMMAND, this));
-    return steps;
-  }
-
   /**
    * Execute the describe command.
    * 
@@ -158,12 +155,15 @@ public class DescribeStatement extends TableStatement {
   }
 
   @Override
-  public List<String> getCatalogs() {
-    List<String> result = new ArrayList<>();
+  public List<CatalogName> getCatalogs() {
+    throw new NotImplementedException();
+    /*
+    List<CatalogName> result = new ArrayList<>();
     if(DescribeType.CATALOG.equals(type)){
       result.add(getEffectiveCatalog());
     }
     return result;
+    */
   }
 
   @Override

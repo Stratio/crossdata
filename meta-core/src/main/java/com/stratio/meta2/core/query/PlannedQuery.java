@@ -18,24 +18,24 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta.common.logicalplan.LogicalPlan;
+import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.core.utils.Tree;
 
 public class PlannedQuery extends ValidatedQuery {
-  private final Tree treePlan;
+  private final LogicalWorkflow logicalWorkflow;
 
-  public PlannedQuery(ValidatedQuery validatedQuery, Tree treePlan) {
+  public PlannedQuery(ValidatedQuery validatedQuery, LogicalWorkflow logicalWorkflow) {
     super(validatedQuery);
-    this.treePlan = treePlan;
+    this.logicalWorkflow = logicalWorkflow;
   }
 
   PlannedQuery(PlannedQuery plannedQuery){
-    this(plannedQuery,plannedQuery.getTreePlan());
+    this(plannedQuery,plannedQuery.getLogicalWorkflow());
   }
 
-
-  public Tree getTreePlan() {
-    return treePlan;
+  public LogicalWorkflow getLogicalWorkflow() {
+    return logicalWorkflow;
   }
 
   public QueryStatus getStatus() {

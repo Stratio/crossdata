@@ -1,0 +1,166 @@
+<?xml version="1.0"?>
+<!--
+  ~ Licensed to STRATIO (C) under one or more contributor license agreements.
+  ~ See the NOTICE file distributed with this work for additional information
+  ~ regarding copyright ownership.  The STRATIO (C) licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.stratio.meta</groupId>
+		<artifactId>meta-parent</artifactId>
+		<version>0.0.8-SNAPSHOT</version>
+	</parent>
+	<artifactId>meta-rest</artifactId>
+	<name>Stratio META rest server</name>
+	<description>Stratio META</description>
+	<url>https://github.com/Stratio/stratio-meta/</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0t</url>
+        </license>
+    </licenses>
+
+	<scm>
+		<url>scm:git:git@github.com:Stratio/stratio-meta.git</url>
+		<connection>https://github.com/Stratio/stratio-meta/</connection>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>aagea</id>
+			<name>Álvaro Agea</name>
+			<email>aagea at stratio dot com</email>
+		</developer>
+		<developer>
+			<id>antonioalcocer</id>
+			<name>Antonio Alcocer</name>
+			<email>aalcocer at stratio dot com</email>
+		</developer>
+		<developer>
+			<id>miguel0afd</id>
+			<name>Miguel Angel Fernandez</name>
+			<email>mafernandez at stratio dot com</email>
+		</developer>
+		<developer>
+			<id>dhiguero</id>
+			<name>Daniel Higuero</name>
+			<email>dhiguero at stratio dot com</email>
+		</developer>
+		<developer>
+			<id>opuertas</id>
+			<name>Oscar Puertas</name>
+			<email>opuertas at stratio dot com</email>
+		</developer>
+		<developer>
+			<id>idiaz</id>
+			<name>Ivan Diaz</name>
+			<email>idiaz at stratio dot com</email>
+		</developer>
+	</developers>
+
+	<properties>
+		<jersey.version>2.10.1</jersey.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.glassfish.jersey</groupId>
+				<artifactId>jersey-bom</artifactId>
+				<version>${jersey.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	<dependencies>
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-grizzly2-http</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.9</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.stratio.meta</groupId>
+			<artifactId>meta-driver</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.stratio.meta</groupId>
+			<artifactId>meta-common</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.3.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.8.5</version>
+		</dependency>
+		<dependency>
+			<groupId>com.stratio.meta</groupId>
+			<artifactId>meta-core</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.test-framework</groupId>
+			<artifactId>jersey-test-framework-core</artifactId>
+			<version>2.1</version>
+		</dependency>
+
+
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.5.1</version>
+				<inherited>true</inherited>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.2.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>java</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<mainClass>com.stratio.meta.rest.Main</mainClass>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

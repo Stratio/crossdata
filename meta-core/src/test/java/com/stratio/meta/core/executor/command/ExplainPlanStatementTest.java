@@ -23,7 +23,7 @@ import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.executor.BasicExecutorTest;
 import com.stratio.meta2.core.statements.DropCatalogStatement;
-import com.stratio.meta.core.statements.ExplainPlanStatement;
+import com.stratio.meta2.core.statements.ExplainPlanStatement;
 import com.stratio.meta.core.utils.*;
 import org.testng.annotations.Test;
 

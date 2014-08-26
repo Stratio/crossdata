@@ -31,7 +31,7 @@ import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifie
 import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
-import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.Selection;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelectors;

@@ -31,7 +31,6 @@ options {
     import com.stratio.meta.common.statements.structures.window.*;
     import com.stratio.meta2.common.statements.structures.terms.*;
     import com.stratio.meta.common.statements.structures.selectors.*;
-    import com.stratio.meta.core.statements.*;
     import com.stratio.meta2.core.statements.*;
     import com.stratio.meta.core.structures.*;
     import com.stratio.meta2.core.structures.*;
@@ -229,6 +228,8 @@ T_HOURS: H O U R S;
 T_DAY: D A Y;
 T_DAYS: D A Y S;
 T_NULL: N U L L;
+T_ATTACH: A T T A C H;
+T_DETACH: D E T A C H;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -316,11 +317,11 @@ attachClusterStatement returns [AttachClusterStatement ccs]
     j=getJson
 ;
 
-dropClusterStatement returns [DropClusterStatement dcs]
+detachClusterStatement returns [DetachClusterStatement dcs]
     @after{
-        dcs = new DropClusterStatement($clusterName.text);
+        dcs = new DetachClusterStatement($clusterName.text);
     }:
-    T_DROP T_CLUSTER clusterName=T_IDENT
+    T_DETACH T_CLUSTER clusterName=T_IDENT
 ;
 
 alterClusterStatement returns [AlterClusterStatement acs]
@@ -763,7 +764,7 @@ metaStatement returns [MetaStatement st]:
     | st_alks = alterCatalogStatement { $st = st_alks; }
     | st_drks = dropCatalogStatement { $st = st_drks ;}
     | st_ccs = attachClusterStatement { $st = st_ccs;}
-    | st_dcs = dropClusterStatement {$st = st_dcs;}
+    | st_dcs = detachClusterStatement {$st = st_dcs;}
     | st_acs = alterClusterStatement {$st = st_acs;}
     | st_cis = createIndexStatement { $st = st_cis; }
     | st_dis = dropIndexStatement { $st = st_dis; }
