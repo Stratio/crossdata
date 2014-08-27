@@ -18,40 +18,42 @@
 
 package com.stratio.meta.common.statements.structures.selectors;
 
+import com.stratio.meta2.common.data.TableName;
+
 import java.io.Serializable;
 
 public class SelectorIdentifier extends SelectorMeta implements Serializable {
 
   private static final long serialVersionUID = -8632253820536763413L;
 
-  private String table;
+  private TableName table;
 
   private String field;
 
-  public SelectorIdentifier(String identifier) {
+  public SelectorIdentifier(String columnName) {
 
     this.type = TYPE_IDENT;
 
-    if (identifier.contains(".")) {
-      String[] idParts = identifier.split("\\.");
-      this.table = idParts[0];
+    if (columnName.contains(".")) {
+      String[] idParts = columnName.split("\\.");
+      this.table = new TableName("", idParts[0]);
       this.field = idParts[1];
     } else {
-      this.field = identifier;
+      this.field = columnName;
     }
   }
 
-  public SelectorIdentifier(String tableName, String fieldName) {
+  public SelectorIdentifier(TableName tableName, String fieldName) {
     this.type = TYPE_IDENT;
     this.table = tableName;
     this.field = fieldName;
   }
 
-  public String getTable() {
+  public TableName getTable() {
     return table;
   }
 
-  public void setTable(String table) {
+  public void setTable(TableName table) {
     this.table = table;
   }
 
@@ -74,8 +76,7 @@ public class SelectorIdentifier extends SelectorMeta implements Serializable {
   }
 
   @Override
-  public void addTablename(String tablename) {
-
+  public void addTablename(TableName tablename) {
     if (this.table == null)
       this.table = tablename;
   }
@@ -90,7 +91,7 @@ public class SelectorIdentifier extends SelectorMeta implements Serializable {
 
     if (identifier.contains(".")) {
       String[] idParts = identifier.split("\\.");
-      this.table = idParts[0];
+      this.table = new TableName("", idParts[0]);
       this.field = idParts[1];
     } else {
       this.field = identifier;

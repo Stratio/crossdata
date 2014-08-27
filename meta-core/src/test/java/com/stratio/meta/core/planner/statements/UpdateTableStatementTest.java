@@ -25,6 +25,7 @@ import com.stratio.meta.common.statements.structures.relationships.RelationCompa
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.StringTerm;
 import com.stratio.meta2.core.statements.UpdateTableStatement;
@@ -45,7 +46,7 @@ public class UpdateTableStatementTest  extends BasicPlannerTest {
     //ColumnName targetColumn, Operator operation, GenericTerm value
     List<Assignation> listAsig = Arrays.asList(new Assignation(idAsig, Operator.ASSIGN, vaAsig));
     List<Relation> whereClauses = Arrays.asList(relation);
-    stmt = new UpdateTableStatement("table1", listAsig, whereClauses);
+    stmt = new UpdateTableStatement(new TableName("", "table1"), listAsig, whereClauses);
     Tree tree = stmt.getPlan(_metadataManager, "demo");
     validateCassandraPath("planUpdateTableStatement");
   }

@@ -82,7 +82,7 @@ public class APIManager {
         result = MetadataResult.createSuccessMetadataResult();
         Map<String, TableMetadata> tableList = new HashMap<>();
         //Add db tables.
-        tableList.putAll(helper.toCatalogMetadata(catalogMetadata).getTables());
+        //tableList.putAll(helper.toCatalogMetadata(catalogMetadata).getTables());
         //Add ephemeral tables.
         //tableList.addAll(metadata.getEphemeralTables(cmd.params().get(0)));
         MetadataResult.class.cast(result).setTableList(new ArrayList(tableList.keySet()));

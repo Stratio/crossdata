@@ -26,6 +26,7 @@ import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.metadata.structures.TableType;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.streaming.StreamingUtils;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
@@ -121,7 +122,7 @@ public class MetadataManager {
    * @return The TableMetadata or null if the table does not exist in the catalog, or the client is
    *         not connected to Cassandra.
    */
-  public TableMetadata getTableMetadata(String catalog, String tablename) {
+  public TableMetadata getTableMetadata(String catalog, TableName tablename) {
     throw new UnsupportedOperationException();
     /*
     TableMetadata result = null;
@@ -155,7 +156,7 @@ public class MetadataManager {
    *         not connected to Cassandra.
    */
   public com.stratio.meta.common.metadata.structures.TableMetadata getTableGenericMetadata(
-      String catalog, String tablename) {
+      String catalog, TableName tablename) {
     throw new UnsupportedOperationException();
     /*
     com.stratio.meta.common.metadata.structures.TableMetadata result = null;
@@ -453,7 +454,9 @@ public class MetadataManager {
   }
 
   public com.stratio.meta.common.metadata.structures.TableMetadata convertStreamingToMeta(
-      String catalog, String tablename) {
+      String catalog, TableName tablename) {
+    throw new UnsupportedOperationException();
+    /*
     Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new HashSet<>();
     try {
       for (ColumnNameTypeValue col : stratioStreamingAPI.columnsFromStream(catalog + "_"
@@ -472,6 +475,7 @@ public class MetadataManager {
         new com.stratio.meta.common.metadata.structures.TableMetadata(tablename, catalog,
             TableType.EPHEMERAL, columns);
     return tableMetadata;
+    */
   }
 
   private ColumnType convertStreamingToMeta(com.stratio.streaming.commons.constants.ColumnType type) {

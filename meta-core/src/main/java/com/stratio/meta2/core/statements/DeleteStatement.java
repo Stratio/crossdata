@@ -27,6 +27,7 @@ import com.stratio.meta.common.statements.structures.relationships.RelationCompa
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.statements.structures.terms.Term;
 
@@ -51,7 +52,7 @@ public class DeleteStatement extends MetaStatement {
   /**
    * The name of the targe table.
    */
-  private String tableName = null;
+  private TableName tableName = null;
 
   /**
    * The list of {@link com.stratio.meta.common.statements.structures.relationships.Relation} found in the WHERE clause.
@@ -81,15 +82,8 @@ public class DeleteStatement extends MetaStatement {
    * 
    * @param tableName The name of the table.
    */
-  public void setTableName(String tableName) {
-    if (tableName.contains(".")) {
-      String[] ksAndTableName = tableName.split("\\.");
-      catalog = ksAndTableName[0];
-      this.tableName = ksAndTableName[1];
-      catalogInc = true;
-    } else {
+    public void setTableName(TableName tableName) {
       this.tableName = tableName;
-    }
   }
 
   /**

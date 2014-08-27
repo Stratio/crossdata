@@ -94,7 +94,7 @@ public class DescribeStatement extends TableStatement {
     if (this.tableName != null) {
       result =
           validateCatalogAndTable(metadata, sessionCatalog, tableName.isCompletedName(),
-                                   tableName.getCatalogName().getName(), tableName.getName());
+                                   tableName.getCatalogName().getName(), tableName);
     }
 
     return result;
@@ -132,7 +132,7 @@ public class DescribeStatement extends TableStatement {
       }
     } else if (type == DescribeType.TABLE) {
       com.stratio.meta.common.metadata.structures.TableMetadata tableInfo =
-          mm.getTableGenericMetadata(getEffectiveCatalog(), tableName.getName());
+          mm.getTableGenericMetadata(getEffectiveCatalog(), tableName);
       if (tableInfo == null) {
         result = Result.createExecutionErrorResult("TABLE " + tableName + " was not found");
       } else {
