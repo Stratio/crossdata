@@ -18,12 +18,13 @@
 
 package com.stratio.meta2.common.data;
 
-public class ClusterName {
+public class ClusterName extends FirstLevelName{
   private final String name;
 
 
 
   public ClusterName(String clusterName){
+    super();
     this.name = clusterName;
   }
 
@@ -31,13 +32,9 @@ public class ClusterName {
     return name;
   }
 
-  public String getClusterQualifiedName(){
+  public String getQualifiedName(){
     return QualifiedNames.getClusterQualifiedName(getName());
   }
 
-  @Override
-  public String toString() {
-    return this.getClusterQualifiedName();
-  }
 
 }

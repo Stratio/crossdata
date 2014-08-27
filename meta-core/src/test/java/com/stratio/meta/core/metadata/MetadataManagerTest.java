@@ -19,16 +19,20 @@
 package com.stratio.meta.core.metadata;
 
 import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.structures.IndexType;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
+
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.List;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 public class MetadataManagerTest extends BasicCoreCassandraTest {
 
@@ -37,34 +41,34 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
   @BeforeClass
   public static void setUpBeforeClass(){
     BasicCoreCassandraTest.setUpBeforeClass();
-    BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
+    BasicCoreCassandraTest.loadTestData("demo", "demoCatalog.cql");
     _metadataManager = new MetadataManager(_session, null);
     _metadataManager.loadMetadata();
   }
 
   @Test
-  public void getKeyspaceMetadata() {
-    String keyspace = "system";
+  public void getCatalogMetadata() {
+    String catalog = "system";
     int numTables = 16; //Number of system tables in Cassandra 2.0.5
-    KeyspaceMetadata metadata = _metadataManager.getKeyspaceMetadata(keyspace);
+    CatalogMetadata metadata = _metadataManager.getCatalogMetadata(catalog);
     assertNotNull(metadata, "Cannot retrieve catalog metadata");
-    assertEquals(keyspace, metadata.getName(), "Retrieved catalog name does not match");
+    assertEquals(catalog, metadata.getName(), "Retrieved catalog name does not match");
     assertEquals(numTables, metadata.getTables().size(), "Invalid number of columns");
   }
 
   @Test
   public void getTableMetadata() {
-    String keyspace = "system";
+    String catalog = "system";
     String [] tables = {
         "IndexInfo", "NodeIdInfo", "batchlog",
         "compaction_history", "compactions_in_progress",
         "hints", "local", "paxos", "peer_events",
         "peers", "range_xfers", "schema_columnfamilies",
-        "schema_columns", "schema_keyspaces",
+        "schema_columns", "schema_catalogs",
         "schema_triggers", "sstable_activity"};
     TableMetadata metadata = null;
     for(String table : tables){
-      metadata = _metadataManager.getTableMetadata(keyspace, table);
+      metadata = _metadataManager.getTableMetadata(catalog, table);
       assertNotNull(metadata, "Cannot retrieve table " + table + " metadata");
       assertEquals(table, metadata.getName(), "Retrieved table name does not match");
     }
@@ -72,22 +76,22 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
 
   @Test
   public void inspectTableMetadata() {
-    //CREATE TABLE schema_keyspaces (
-    //		  keyspace_name text,
+    //CREATE TABLE schema_catalogs (
+    //		  catalog_name text,
     //		  durable_writes boolean,
     //		  strategy_class text,
     //		  strategy_options text,
-    //		  PRIMARY KEY (keyspace_name))
+    //		  PRIMARY KEY (catalog_name))
 
-    String keyspace = "system";
-    String table = "schema_keyspaces";
+    String catalog = "system";
+    String table = "schema_catalogs";
 
     int numColumns = 4;
 
-    String [] columnNames = {"keyspace_name", "durable_writes", "strategy_class", "strategy_options"};
+    String [] columnNames = {"catalog_name", "durable_writes", "strategy_class", "strategy_options"};
     Class<?> [] columnClass = {String.class, Boolean.class, String.class, String.class};
 
-    TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);
+    TableMetadata metadata = _metadataManager.getTableMetadata(catalog, table);
     assertNotNull(metadata, "Cannot retrieve table metadata");
     assertEquals(table, metadata.getName(), "Retrieved table name does not match");
 
@@ -100,27 +104,27 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
   }
 
   @Test
-  public void getKeyspacesNames(){
-    List<String> keyspaces = _metadataManager.getKeyspacesNames();
-    assertNotNull(keyspaces, "Cannot retrieve the list of keyspaces");
-    assertTrue(keyspaces.size() >= 2, "At least two keyspaces should be returned: " + keyspaces.toString());
-    assertTrue(keyspaces.contains("system"), "system catalog not found");
-    assertTrue(keyspaces.contains("system_traces"), "system_traces catalog not found");
+  public void getCatalogsNames(){
+    List<String> catalogs = _metadataManager.getCatalogsNames();
+    assertNotNull(catalogs, "Cannot retrieve the list of catalogs");
+    assertTrue(catalogs.size() >= 2, "At least two catalogs should be returned: " + catalogs.toString());
+    assertTrue(catalogs.contains("system"), "system catalog not found");
+    assertTrue(catalogs.contains("system_traces"), "system_traces catalog not found");
   }
 
   @Test
   public void getTableNames(){
-    String keyspace = "system";
+    String catalog = "system";
     String [] systemTables = {
         "IndexInfo", "NodeIdInfo", "batchlog",
         "compaction_history", "compactions_in_progress",
         "hints", "local", "paxos", "peer_events",
         "peers", "range_xfers", "schema_columnfamilies",
-        "schema_columns", "schema_keyspaces",
+        "schema_columns", "schema_catalogs",
         "schema_triggers", "sstable_activity"};
-    List<String> tables = _metadataManager.getTablesNames(keyspace);
+    List<String> tables = _metadataManager.getTablesNames(catalog);
     assertNotNull(tables, "Cannot retrieve the list of table names");
-    assertEquals(systemTables.length, tables.size(), "At least two keyspaces should be returned");
+    assertEquals(systemTables.length, tables.size(), "At least two catalogs should be returned");
     for(String table : systemTables){
       assertTrue(tables.contains(table), "system table not found");
     }
@@ -129,7 +133,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
   @Test
   public void testGetColumnIndexes(){
 
-    String keyspace = "demo";
+    String catalog = "demo";
     String table = "users";
     //Columns with one index: email, name, phrase
     //Columns with two indexes: age, bool, gender
@@ -138,7 +142,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
     int numberIndexedColumnsLucene = 6;
     int numberIndexedColumnsDefault = 1;
 
-    TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);
+    TableMetadata metadata = _metadataManager.getTableMetadata(catalog, table);
     assertNotNull(metadata, "Cannot retrieve table metadata");
     assertEquals(table, metadata.getName(), "Retrieved table name does not match");
 
@@ -156,9 +160,9 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
 
   @Test
   public void getTableIndexNotFound(){
-    String keyspace = "demo";
+    String catalog = "demo";
     String table = "users_info";
-    TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);
+    TableMetadata metadata = _metadataManager.getTableMetadata(catalog, table);
     assertNotNull(metadata, "Cannot retrieve table metadata");
     List<CustomIndexMetadata> indexes = _metadataManager.getTableIndex(metadata);
     assertNotNull(indexes, "Cannot retrieve list of indexes");
@@ -168,18 +172,18 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
 
   @Test
   public void getTableComment(){
-    String keyspace = "demo";
+    String catalog = "demo";
     String table = "users";
-    String comment = _metadataManager.getTableComment(keyspace, table);
+    String comment = _metadataManager.getTableComment(catalog, table);
     assertNotNull(comment, "Cannot retrieve table comment");
     assertEquals("Users table", comment, "Invalid comment");
   }
 
   @Test
   public void getLuceneIndexNotFound(){
-    String keyspace = "demo";
+    String catalog = "demo";
     String table = "users_info";
-    TableMetadata metadata = _metadataManager.getTableMetadata(keyspace, table);
+    TableMetadata metadata = _metadataManager.getTableMetadata(catalog, table);
     assertNotNull(metadata, "Cannot retrieve table metadata");
     CustomIndexMetadata cim = _metadataManager.getLuceneIndex(metadata);
     assertNull(cim, "Table should not contain a Lucene index");

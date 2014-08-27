@@ -307,14 +307,14 @@ public class CreateIndexStatement extends MetaStatement {
   public Result validate(MetadataManager metadata, EngineConfig config) {
 
     //Validate target table
-    Result result = validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
-    String effectiveKeyspace = getEffectiveCatalog();
+    Result result = validateCatalogAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
+    String effectiveCatalog = getEffectiveCatalog();
 
     TableMetadata tableMetadata = null;
     if(!result.hasError()) {
-      tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+      tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
       this.metadata = tableMetadata;
-      result = validateOptions(effectiveKeyspace, tableMetadata);
+      result = validateOptions(effectiveCatalog, tableMetadata);
     }
 
     //Validate index name if not exists
@@ -391,11 +391,11 @@ public class CreateIndexStatement extends MetaStatement {
 
   /**
    * Validate the index options.
-   * @param effectiveKeyspace The effective keyspace used in the validation process.
+   * @param effectiveCatalog The effective catalog used in the validation process.
    * @param metadata The associated {@link com.datastax.driver.core.TableMetadata}.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateOptions(String effectiveKeyspace, TableMetadata metadata) {
+  private Result validateOptions(String effectiveCatalog, TableMetadata metadata) {
     Result result = QueryResult.createSuccessQueryResult();
     if(!options.isEmpty()){
       result = Result.createValidationErrorResult(
@@ -414,7 +414,7 @@ public class CreateIndexStatement extends MetaStatement {
       if (found) {
         result = Result.createValidationErrorResult(
             "Cannot create index: A Lucene index already exists on table "
-            + effectiveKeyspace + "."
+            + effectiveCatalog + "."
             + metadata.getName() + ". Use DROP INDEX " + column.getName()
                 .replace("stratio_lucene_", "") + "; to remove the index.");
       }
@@ -489,7 +489,7 @@ public class CreateIndexStatement extends MetaStatement {
   }
 
 
-  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
+  public Tree getPlan(MetadataManager metadataManager, String targetCatalog) {
     Tree result = new Tree();
 
     if(createIndex) {

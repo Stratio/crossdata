@@ -326,7 +326,7 @@ public class MetaStream {
             Row r = new Row();
             SelectStatement ss = SelectStatement.class.cast(queryStatements.get(qid));
             r.addCell("QID", new Cell(qid));
-            r.addCell("Table", new Cell(ss.getKeyspace() + "." + ss.getTableName()));
+            r.addCell("Table", new Cell(ss.getCatalog() + "." + ss.getTableName()));
             r.addCell("Type", new Cell(MetaPath.STREAMING));
             r.addCell("Query", new Cell(ss.toString()));
             rows.add(r);

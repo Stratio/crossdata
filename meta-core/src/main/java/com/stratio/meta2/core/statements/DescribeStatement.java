@@ -18,7 +18,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
@@ -28,6 +27,7 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import java.util.ArrayList;
@@ -84,16 +84,16 @@ public class DescribeStatement extends TableStatement {
     Result result = QueryResult.createSuccessQueryResult();
 
     if (this.catalog != null) {
-      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(this.catalog);
+      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(this.catalog);
       if (ksMetadata == null) {
         result =
-            Result.createValidationErrorResult("Keyspace " + this.catalog + " does not exist.");
+            Result.createValidationErrorResult("Catalog " + this.catalog + " does not exist.");
       }
     }
 
     if (this.tableName != null) {
       result =
-          validateKeyspaceAndTable(metadata, sessionCatalog, tableName.containsCatalog(),
+          validateCatalogAndTable(metadata, sessionCatalog, tableName.isCompletedName(),
                                    tableName.getCatalogName().getName(), tableName.getName());
     }
 
@@ -117,18 +117,18 @@ public class DescribeStatement extends TableStatement {
     Result result = null;
     if (type == DescribeType.CATALOG) {
 
-      KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(super.getEffectiveCatalog());
+      CatalogMetadata ksInfo = mm.getCatalogMetadata(super.getEffectiveCatalog());
       if (ksInfo == null) {
         result = Result.createExecutionErrorResult("KEYSPACE " + catalog + " was not found");
       } else {
-        result = CommandResult.createCommandResult(ksInfo.exportAsString());
+        result = CommandResult.createCommandResult(ksInfo.toString());
       }
     } else if (type == DescribeType.CATALOGS) {
-      List<String> keyspacesNames = mm.getKeyspacesNames();
-      if (keyspacesNames == null) {
-        result = Result.createExecutionErrorResult("No keyspaces found");
+      List<String> catalogsNames = mm.getCatalogsNames();
+      if (catalogsNames == null) {
+        result = Result.createExecutionErrorResult("No catalogs found");
       } else {
-        result = CommandResult.createCommandResult(keyspacesNames.toString());
+        result = CommandResult.createCommandResult(catalogsNames.toString());
       }
     } else if (type == DescribeType.TABLE) {
       com.stratio.meta.common.metadata.structures.TableMetadata tableInfo =

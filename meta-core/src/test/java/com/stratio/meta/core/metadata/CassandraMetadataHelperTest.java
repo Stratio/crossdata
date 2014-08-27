@@ -18,17 +18,11 @@
 
 package com.stratio.meta.core.metadata;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.stratio.meta.common.metadata.structures.CatalogMetadata;
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
+import com.stratio.meta2.common.metadata.TableMetadata;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
 
 public class CassandraMetadataHelperTest extends BasicCoreCassandraTest {
 
@@ -38,44 +32,53 @@ public class CassandraMetadataHelperTest extends BasicCoreCassandraTest {
 
   public void checkTables(TableMetadata tableMetadata,
       com.datastax.driver.core.TableMetadata cassandraTableMetadata) {
-    assertEquals(tableMetadata.getTableName(), cassandraTableMetadata.getName(),
+    throw new UnsupportedOperationException();
+    /*
+    assertEquals(tableMetadata.getName(), cassandraTableMetadata.getName(),
         "Invalid table name");
     assertEquals(tableMetadata.getColumns().size(), cassandraTableMetadata.getColumns().size(),
         "List of columns size does not match");
     com.datastax.driver.core.ColumnMetadata cassandraColumnMetadata = null;
-    for (ColumnMetadata columnMetadata : tableMetadata.getColumns()) {
-      cassandraColumnMetadata = cassandraTableMetadata.getColumn(columnMetadata.getColumnName());
+    for (ColumnMetadata columnMetadata: tableMetadata.getColumns().values()) {
+      cassandraColumnMetadata = cassandraTableMetadata.getColumn(new ColumnName(columnMetadata.getName()));
       assertNotNull(cassandraColumnMetadata,
-          "Cannot retrieve column " + columnMetadata.getColumnName());
+          "Cannot retrieve column " + columnMetadata.getName());
       assertEquals(columnMetadata.getType().getDbType(), cassandraColumnMetadata.getType()
           .getName().toString().toUpperCase(), "Invalid db type");
       assertEquals(columnMetadata.getType().getDbClass(), cassandraColumnMetadata.getType()
           .asJavaClass(), "Invalid db class");
     }
+    */
   }
 
   @BeforeClass
   public static void setUpBeforeClass() {
     BasicCoreCassandraTest.setUpBeforeClass();
-    BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
+    BasicCoreCassandraTest.loadTestData("demo", "demoCatalog.cql");
     metadataManager = new MetadataManager(_session, null);
     metadataManager.loadMetadata();
   }
 
   @Test
   public void toCatalogMetadata() {
-    KeyspaceMetadata keyspaceMetadata = metadataManager.getKeyspaceMetadata("demo");
-    CatalogMetadata catalogMetadata = helper.toCatalogMetadata(keyspaceMetadata);
-    assertEquals(catalogMetadata.getCatalogName(), keyspaceMetadata.getName(),
+    throw new UnsupportedOperationException();
+    /*
+    CatalogMetadata catalogMetadata = metadataManager.getCatalogMetadata("demo");
+    CatalogMetadata catalogMetadata = helper.toCatalogMetadata(catalogMetadata);
+    assertEquals(catalogMetadata.getCatalogName(), catalogMetadata.getName(),
         "Invalid catalog name");
+    */
   }
 
   @Test
   public void toTableMetadata() {
-    com.datastax.driver.core.TableMetadata cassandraTableMetadata =
+    throw new UnsupportedOperationException();
+    /*
+    TableMetadata cassandraTableMetadata =
         metadataManager.getTableMetadata("demo", "types");
     TableMetadata tableMetadata = helper.toTableMetadata("demo", cassandraTableMetadata);
     checkTables(tableMetadata, cassandraTableMetadata);
+    */
   }
 
 }

@@ -18,12 +18,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -34,13 +28,18 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta2.common.statements.structures.terms.FloatTerm;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
+
+import org.apache.log4j.Logger;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Class that models an {@code INSERT INTO} statement from the META language.
@@ -69,7 +68,7 @@ public class InsertIntoStatement extends MetaStatement {
   private List<String> ids;
 
   /**
-   * A {@link com.stratio.meta.core.statements.SelectStatement} to retrieve data if the insert type
+   * A {@link com.stratio.meta2.core.statements.SelectStatement} to retrieve data if the insert type
    * is matches {@code TYPE_SELECT_CLAUSE}.
    */
   private SelectStatement selectStatement;
@@ -111,7 +110,7 @@ public class InsertIntoStatement extends MetaStatement {
    * 
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
-   * @param selectStatement a {@link com.stratio.meta.core.statements.InsertIntoStatement}
+   * @param selectStatement a {@link com.stratio.meta2.core.statements.InsertIntoStatement}
    * @param cellValues List of {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param optsInc Boolean that indicates if there is options in the query.
@@ -143,7 +142,7 @@ public class InsertIntoStatement extends MetaStatement {
    * 
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
-   * @param selectStatement a {@link com.stratio.meta.core.statements.InsertIntoStatement}
+   * @param selectStatement a {@link com.stratio.meta2.core.statements.InsertIntoStatement}
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param options Query options.
    */
@@ -171,7 +170,7 @@ public class InsertIntoStatement extends MetaStatement {
    * 
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
-   * @param selectStatement a {@link com.stratio.meta.core.statements.InsertIntoStatement}
+   * @param selectStatement a {@link com.stratio.meta2.core.statements.InsertIntoStatement}
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    */
   public InsertIntoStatement(String tableName, List<String> ids, SelectStatement selectStatement,
@@ -220,11 +219,11 @@ public class InsertIntoStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result =
-        validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
+        validateCatalogAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
     if (!result.hasError()) {
-      String effectiveKeyspace = getEffectiveCatalog();
+      String effectiveCatalog = getEffectiveCatalog();
 
-      TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+      TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
 
       if (typeValues == TYPE_SELECT_CLAUSE) {
         result = Result.createValidationErrorResult("INSERT INTO with subqueries not supported.");
@@ -349,7 +348,7 @@ public class InsertIntoStatement extends MetaStatement {
   }
 
   /**
-   * Iterate over {@link com.stratio.meta.core.statements.InsertIntoStatement#cellValues} and add
+   * Iterate over {@link com.stratio.meta2.core.statements.InsertIntoStatement#cellValues} and add
    * values to {@link com.datastax.driver.core.querybuilder.Insert} object to be translated in CQL.
    * 
    * @param insertStmt

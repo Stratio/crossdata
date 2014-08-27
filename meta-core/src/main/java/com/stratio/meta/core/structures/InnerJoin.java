@@ -23,9 +23,9 @@ import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifie
 
 public class InnerJoin {
 
-  private String keyspace = null;
+  private String catalog = null;
 
-  private boolean keyspaceInc = false;
+  private boolean catalogInc = false;
 
   private String tableName;
 
@@ -39,9 +39,9 @@ public class InnerJoin {
 
     if (this.tableName.contains(".")) {
       String[] ksAndTablename = this.tableName.split("\\.");
-      keyspace = ksAndTablename[0];
+      catalog = ksAndTablename[0];
       this.tableName = ksAndTablename[1];
-      keyspaceInc = true;
+      catalogInc = true;
     }
   }
 
@@ -65,8 +65,8 @@ public class InnerJoin {
     return tableName;
   }
 
-  public String getKeyspace() {
-    return keyspace;
+  public String getCatalog() {
+    return catalog;
   }
 
   public SelectorIdentifier getLeftField() {
@@ -80,8 +80,8 @@ public class InnerJoin {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    if (keyspaceInc) {
-      sb.append(keyspace);
+    if (catalogInc) {
+      sb.append(catalog);
       sb.append(".");
     }
     sb.append(tableName);
@@ -89,7 +89,7 @@ public class InnerJoin {
     return sb.toString();
   }
 
-  public boolean isKeyspaceInc() {
-    return keyspaceInc;
+  public boolean isCatalogInc() {
+    return catalogInc;
   }
 }

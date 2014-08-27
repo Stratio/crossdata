@@ -14,14 +14,14 @@
 
 package com.stratio.meta2.common.data;
 
-public class ColumnName {
+public class ColumnName extends Name {
 
   /**
    * Name of the column.
    */
   private final String name;
 
-  private final TableName tableName;
+  private TableName tableName;
 
   /**
    * Default constructor.
@@ -29,26 +29,42 @@ public class ColumnName {
    * @param columnName Name of the column.
    */
   public ColumnName(String catalogName, String tableName, String columnName) {
-    this.tableName = new TableName(catalogName, tableName);
+    if(catalogName==null || catalogName.isEmpty() || tableName==null || tableName.isEmpty()) {
+      this.tableName=null;
+    }else {
+      this.tableName = new TableName(catalogName, tableName);
+    }
     this.name = columnName;
   }
 
+
+
   public TableName getTableName() {
     return tableName;
+  }
+
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
   }
 
   public String getName() {
     return name;
   }
 
-  public String getColumnQualifiedName() {
-    return QualifiedNames.getColumnQualifiedName(this.getTableName().getCatalogName().getName(),
-        getTableName().getName(), getName());
+  @Override
+  public boolean isCompletedName() {
+    return tableName != null;
   }
 
-  @Override
-  public String toString() {
-    return this.getColumnQualifiedName();
+  public String getQualifiedName() {
+    String result;
+    if (isCompletedName()) {
+      result= QualifiedNames.getColumnQualifiedName(this.getTableName().getCatalogName().getName(),
+          getTableName().getName(), getName());
+    }else {
+      result=QualifiedNames.getColumnQualifiedName(UNKNOWN_NAME, UNKNOWN_NAME, getName());
+    }
+    return result;
   }
 
 }

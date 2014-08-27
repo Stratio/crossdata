@@ -19,6 +19,7 @@
 package com.stratio.meta2.common.metadata;
 
 import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 
 import java.util.Map;
@@ -30,12 +31,12 @@ public class ClusterMetadata implements IMetadata {
 
   private final Map<String, Object> options;
 
-  private final Map<String, ConnectorAttachedMetadata> connectorAttachedRefs;
+  private final Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs;
 
 
 
   public ClusterMetadata(ClusterName name, DataStoreName dataStoreRef, Map<String, Object> options,
-      Map<String, ConnectorAttachedMetadata> connectorAttachedRefs) {
+      Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) {
     this.name = name;
     this.options = options;
     this.dataStoreRef = dataStoreRef;
@@ -57,7 +58,7 @@ public class ClusterMetadata implements IMetadata {
     return dataStoreRef;
   }
 
-  public Map<String, ConnectorAttachedMetadata> getConnectorAttachedRefs() {
+  public Map<ConnectorName, ConnectorAttachedMetadata> getConnectorAttachedRefs() {
     return connectorAttachedRefs;
   }
 }
