@@ -18,18 +18,25 @@
 
 package com.stratio.meta.common.utils;
 
+import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
+import com.stratio.meta2.common.statements.structures.terms.StringTerm;
+import com.stratio.meta2.common.statements.structures.terms.Term;
+
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Utility class for String transformation operations.
  */
 public class StringUtils {
-
-  /**
-   * Private constructor as all methods are static.
-   */
-  private StringUtils(){
-  };
 
   /**
    * Create a string from a list of objects using a separator between objects.
@@ -47,6 +54,42 @@ public class StringUtils {
     } else {
       return "";
     }
+  }
+
+  public static Map<Term, GenericTerm> convertJsonToOptions(String json){
+    Map<Term, GenericTerm> options = new HashMap<>();
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+    JsonFactory factory = mapper.getJsonFactory();
+    JsonParser jp;
+    try {
+      jp = factory.createJsonParser(json);
+      JsonNode root = mapper.readTree(jp);
+      Iterator<Map.Entry<String, JsonNode>> iter = root.getFields();
+      while(iter.hasNext()){
+        Map.Entry<String, JsonNode> entry = iter.next();
+        options.put(new StringTerm(entry.getKey()), GenericTerm.CreateGenericTerm(entry.getValue()));
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return options;
+  }
+
+  public static String getStringFromOptions(Map<Term, GenericTerm> options){
+    StringBuilder sb = new StringBuilder("{");
+    Iterator<Map.Entry<Term, GenericTerm>> entryIt = options.entrySet().iterator();
+    Map.Entry<Term, GenericTerm> e;
+    while(entryIt.hasNext()){
+      e = entryIt.next();
+      sb.append(e.getKey()).append(": ").append(e.getValue());
+      if(entryIt.hasNext()){
+        sb.append(", ");
+      }
+    }
+    sb.append("}");
+    return sb.toString();
   }
 
 }

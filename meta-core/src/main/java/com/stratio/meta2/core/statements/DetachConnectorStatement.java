@@ -5,9 +5,15 @@ import com.stratio.meta.core.utils.Tree;
 
 public class DetachConnectorStatement extends MetaStatement {
 
+  private String name;
+
+  public DetachConnectorStatement(String name){
+    this.name = name;
+  }
+
   @Override
   public String toString() {
-    return null;
+    return "DETACH CONNECTOR "+name;
   }
 
   @Override

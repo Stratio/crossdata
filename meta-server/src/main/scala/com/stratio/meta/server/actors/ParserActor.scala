@@ -19,7 +19,7 @@
 package com.stratio.meta.server.actors
 
 import akka.actor.{Props, ActorRef, ActorLogging, Actor}
-import com.stratio.meta.core.parser.Parser
+import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta.common.result.{QueryResult, Result}
 import com.stratio.meta.common.ask.Query
 import org.apache.log4j.Logger
@@ -33,13 +33,13 @@ class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTrac
   override lazy val timerName= this.getClass.getName
 
   def receive = {
-    case Query(queryId, keyspace, statement, user) => {
+    case Query(queryId, catalog, statement, user) => {
       log.debug("Init Parser Task")
       val timer=initTimer()
-      val stmt = parser.parseStatement(statement)
+      val stmt = parser.parseStatement(queryId, catalog, statement)
       stmt.setQueryId(queryId)
       if(!stmt.hasError){
-        stmt.setSessionKeyspace(keyspace)
+        stmt.setSessionCatalog(catalog)
       }
       validator forward stmt
       finishTimer(timer)

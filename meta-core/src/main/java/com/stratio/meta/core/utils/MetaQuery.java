@@ -52,7 +52,7 @@ public class MetaQuery {
 
   /**
    * The {@link com.stratio.meta2.core.statements.MetaStatement} build by the {@link
-   * com.stratio.meta.core.parser.Parser}.
+   * com.stratio.meta2.core.parser.Parser}.
    */
   private MetaStatement statement;
 
@@ -67,9 +67,9 @@ public class MetaQuery {
   private Result result;
 
   /**
-   * The keyspace on the user session launching the query.
+   * The catalog on the user session launching the query.
    */
-  private String sessionKeyspace;
+  private String sessionCatalog;
 
   /**
    * Class constructor.
@@ -219,21 +219,21 @@ public class MetaQuery {
   }
 
   /**
-   * Get the user session keyspace.
+   * Get the user session catalog.
    *
-   * @return The keyspace.
+   * @return The catalog.
    */
-  public String getSessionKeyspace() {
-    return sessionKeyspace;
+  public String getSessionCatalog() {
+    return sessionCatalog;
   }
 
   /**
-   * Set the user session keyspace.
+   * Set the user session catalog.
    *
-   * @param sessionKeyspace The keyspace.
+   * @param sessionCatalog The catalog.
    */
-  public void setSessionKeyspace(String sessionKeyspace) {
-    this.sessionKeyspace = sessionKeyspace;
-    statement.setSessionCatalog(sessionKeyspace);
+  public void setSessionCatalog(String sessionCatalog) {
+    this.sessionCatalog = sessionCatalog;
+    statement.setSessionCatalog(sessionCatalog);
   }
 }

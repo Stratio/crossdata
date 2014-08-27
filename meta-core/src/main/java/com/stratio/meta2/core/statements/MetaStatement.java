@@ -23,17 +23,11 @@ import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.streaming.api.IStratioStreamingAPI;
-
-import java.util.List;
 
 /**
  * Class that models a generic Statement supported by the META language.

@@ -18,13 +18,7 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
-import com.stratio.meta2.common.data.CatalogName;
-
-import java.util.List;
 
 public interface IStatement {
   /**

@@ -44,6 +44,9 @@ options {
 }
 
 @members {
+
+    private String userCatalog = "";
+
     private ErrorsHelper foundErrors = new ErrorsHelper();
 
     public ErrorsHelper getFoundErrors(){
@@ -230,15 +233,10 @@ T_DAYS: D A Y S;
 T_NULL: N U L L;
 T_ATTACH: A T T A C H;
 T_DETACH: D E T A C H;
+T_TO: T O;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
-
-//QUOTED_LITERAL
-//    @init{ StringBuilder sb = new StringBuilder(); }
-//    @after{ setText(sb.toString()); }:
-//        '\'' (c=~('\'') { sb.appendCodePoint(c);} | '\'' '\'' { sb.appendCodePoint('\''); })* '\''
-//    ;
 
 QUOTED_LITERAL
     @init{
@@ -251,19 +249,6 @@ QUOTED_LITERAL
     }:
         ('"' { initialQuotation = "\""; } |'\'') (c=~('"'|'\'') { sb.appendCodePoint(c);} | '\'' '\'' { sb.appendCodePoint('\''); })* ('"' { finalQuotation = "\""; } |'\'')
     ;
-
-//JSON
-//    @init{
-//        StringBuilder sb = new StringBuilder();
-//    }
-//    @after{
-//        setText("{" + sb.toString() + "}");
-//    }:
-//    T_START_SBRACKET
-//        ((c1=~(';' | ':') {sb.appendCodePoint(c1);})* T_COLON {sb.append(":");} (c2=~(';' | ',') {sb.appendCodePoint(c2);})*)?
-//        (T_COMMA {sb.append(",");} (c3=~(';' | ':') {sb.appendCodePoint(c3);})* T_COLON {sb.append(":");} (c4=~(';' | ',') {sb.appendCodePoint(c4);})*)*
-//    T_END_SBRACKET
-//    ;
 
 T_CONSTANT: (DIGIT)+;
 
@@ -329,6 +314,24 @@ alterClusterStatement returns [AlterClusterStatement acs]
         acs = new AlterClusterStatement($clusterName.text, j);
     }:
     T_ALTER T_CLUSTER clusterName=T_IDENT T_WITH T_OPTIONS j=getJson
+;
+
+// ========================================================
+// CONNECTOR
+// ========================================================
+
+attachConnectorStatement returns [AttachConnectorStatement acs]
+    @after{
+        $acs = new AttachConnectorStatement($connectorName.text, $clusterName.text, optionsJson);
+    }:
+    T_ATTACH T_CONNECTOR connectorName=QUOTED_LITERAL T_TO clusterName=QUOTED_LITERAL T_WITH T_OPTIONS optionsJson=getJson
+;
+
+detachConnectorStatement returns [DetachConnectorStatement dcs]
+    @after{
+        $dcs = new DetachConnectorStatement($connectorName.text);
+    }:
+    T_DETACH T_CONNECTOR connectorName=T_IDENT
 ;
 
 // ========================================================
@@ -477,15 +480,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	)*
 	T_END_PARENTHESIS
 	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.toString());})?
-	(T_WITH T_OPTIONS T_EQUAL optionsJson=getJson {$cis.setOptionsJson(optionsJson);}
-	    /*
-	    T_START_SBRACKET
-	    (key=getTerm T_COLON value=getGenericTerm {$cis.addOption(key, value);}
-		    (T_COMMA keyN=getTerm T_COLON valueN=getGenericTerm {$cis.addOption(keyN, valueN);})*
-		)?
-		T_END_SBRACKET
-		*/
-	)?
+	(T_WITH T_OPTIONS T_EQUAL optionsJson=getJson {$cis.setOptionsJson(optionsJson);})?
 ;
 
     //identProp1=T_IDENT T_EQUAL valueProp1=getTerm {properties.put($identProp1.text, valueProp1.toString());}
@@ -670,7 +665,8 @@ selectStatement returns [SelectStatement slctst]
 
         $slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
         $slctst.updateTableNames();
-    };
+    }
+;
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
     @init{
@@ -718,12 +714,12 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
                 $nsntst = new InsertIntoStatement(tableName, ids, cellValues, ifNotExists);
 
     }
-    ;
+;
 
 explainPlanStatement returns [ExplainPlanStatement xpplst]:
     T_EXPLAIN T_PLAN T_FOR parsedStmnt=metaStatement
     {$xpplst = new ExplainPlanStatement(parsedStmnt);}
-    ;
+;
 
 
 dropTableStatement returns [DropTableStatement drtbst]
@@ -735,14 +731,15 @@ dropTableStatement returns [DropTableStatement drtbst]
     (T_IF T_EXISTS { ifExists = true; })?
     identID=getTableID {
         $drtbst = new DropTableStatement(identID, ifExists);
-    };
+    }
+;
 
 truncateStatement returns [TruncateStatement trst]:
 	T_TRUNCATE
         ident=getTableID {
             $trst = new TruncateStatement(ident);
 	}
-F;
+;
 
 metaStatement returns [MetaStatement st]:
     st_nsnt   = insertIntoStatement { $st = st_nsnt;}
@@ -767,13 +764,19 @@ metaStatement returns [MetaStatement st]:
     | st_atcs = attachClusterStatement { $st = st_atcs;}
     | st_dtcs = detachClusterStatement {$st = st_dtcs;}
     | st_alcs = alterClusterStatement {$st = st_alcs;}
+    | st_atcn = attachConnectorStatement { $st = st_atcn;}
+    | st_decn = detachConnectorStatement { $st = st_decn;}
     | st_cixs = createIndexStatement { $st = st_cixs; }
     | st_dixs = dropIndexStatement { $st = st_dixs; }
     | st_crtr = createTriggerStatement { $st = st_crtr; }
     | st_drtr = dropTriggerStatement { $st = st_drtr; }
 ;
 
-query returns [MetaStatement st]:
+query returns [MetaStatement st]
+    @init{
+        boolean hasCatalog = false;
+    }:
+    (T_START_BRACKET (inputCatalog=T_IDENT { hasCatalog = true; })? T_END_BRACKET T_COMMA { if(hasCatalog) userCatalog = $inputCatalog.text; })?
 	mtst=metaStatement (T_SEMICOLON)+ EOF {
 		$st = mtst;
 	}
@@ -860,8 +863,7 @@ getTimeUnit returns [TimeUnit unit]:
     | T_HOUR {$unit=TimeUnit.HOURS;}
     | T_HOURS {$unit=TimeUnit.HOURS;}
     | T_DAY {$unit=TimeUnit.DAYS;}
-    | T_DAYS {$unit=TimeUnit.DAYS;}
-    )
+    | T_DAYS {$unit=TimeUnit.DAYS;})
 ;
 
 getSelectClause[Map fieldsAliasesMap] returns [SelectionClause sc]:
@@ -966,61 +968,6 @@ getValueAssign returns [GenericTerm valueAssign]
     )*
 ;
 
-//getValueAssign returns [GenericTerm valueAssign]:
-//    term1=getTerm { $valueAssign = new ValueAssignment(term1);}
-//    | ident=T_IDENT (T_PLUS (T_START_SBRACKET mapLiteral=getMapLiteral T_END_SBRACKET { $valueAssign = new ValueAssignment(new IdentMap($ident.text, mapLiteral));}
-//                             | value1=getIntSetOrList {
-//                                                        if(value1 instanceof IntTerm)
-//                                                            $valueAssign = new ValueAssignment(new IntTerm($ident.text, '+', ((IntTerm) value1).getTerm()));
-//                                                        else if(value1 instanceof ListLiteral)
-//                                                            $valueAssign = new ValueAssignment(new ListLiteral($ident.text, '+', ((ListLiteral) value1).getLiterals()));
-//                                                        else
-//                                                            $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '+', ((SetLiteral) value1).getLiterals()));
-//                                                       }
-//                           )
-//                    | T_SUBTRACT value2=getIntSetOrList {
-//                                                if(value2 instanceof IntTerm)
-//                                                    $valueAssign = new ValueAssignment(new IntTerm($ident.text, '-', ((IntTerm) value2).getTerm()));
-//                                                else if(value2 instanceof ListLiteral)
-//                                                    $valueAssign = new ValueAssignment(new ListLiteral($ident.text, '-', ((ListLiteral) value2).getLiterals()));
-//                                                else
-//                                                    $valueAssign = new ValueAssignment(new SetLiteral($ident.text, '-', ((SetLiteral) value2).getLiterals()));
-//                                                }
-//                )
-//;
-
-//getIntSetOrList returns [IdentIntOrLiteral iiol]
-//    @init{
-//    }:
-//    constant=getConstant { $iiol = new IntTerm(Integer.parseInt(constant));}
-//    | T_START_BRACKET list=getList T_END_BRACKET { $iiol = new ListLiteral(list);}
-//    | T_START_SBRACKET set=getSet T_END_SBRACKET { $iiol = new SetLiteral(set);}
-//;
-
-//getList returns [ArrayList list]
-//    @init{
-//        list = new ArrayList<String>();
-//    }:
-//    term1=getTerm {list.add(term1.toString());}
-//    (T_COMMA termN=getTerm {list.add(termN.toString());})*
-//    ;
-
-//getMapLiteral returns [Map<String, Term> mapTerms]
-//    @init{
-//        $mapTerms = new HashMap<>();
-//    }:
-//    (leftTerm1=getTerm T_COLON rightTerm1=getTerm {$mapTerms.put(leftTerm1.toString(), rightTerm1);}
-//    (T_COMMA leftTermN=getTerm T_COLON rightTermN=getTerm {$mapTerms.put(leftTermN.toString(), rightTermN);})*)?
-//    ;
-
-//getSet returns [Set set]
-//    @init{
-//        set = new HashSet<String>();
-//    }:
-//    term1=getTerm {set.add(term1.toString());}
-//    (T_COMMA termN=getTerm {set.add(termN.toString());})*
-//    ;
-
 getRelation returns [Relation mrel]:
     T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}
                             | T_TOKEN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationToken(listIds, operator, terms);})
@@ -1066,7 +1013,7 @@ getTerms returns [ArrayList list]
     }:
     term1=getTerm {list.add(term1);}
     (T_COMMA termN=getTerm {list.add(termN);})*
-    ;
+;
 
 getTermOrLiteral returns [GenericTerm vc]
     @init{
@@ -1101,20 +1048,6 @@ getCollectionTerms returns [CollectionTerms colTerms]:
     (mapOrSetCol=getMapOrSetTerms {colTerms = mapOrSetCol;}
     | listCol=getListTerms {colTerms = listCol;})
 ;
-
-//getMapOrListTerms returns [CollectionTerms colTerms]
-//    @init{
-//        colTerms = new ListTerms();
-//    }:
-//    T_START_SBRACKET
-//        (key=getTerm {colTerms.addTerm(key);}
-//            ((T_COMMA keyN=getTerm {colTerms.addTerm(keyN);})*
-//            | T_COLON {colTerms = new MapTerms();} value=getTerm {colTerms.addTerm(key, value);}
-//                                                   (T_COMMA keyN=getTerm T_COLON valueN=getTerm {colTerms.addTerm(keyN, valueN);})*
-//            )?
-//        )
-//    T_END_SBRACKET
-//;
 
 getMapOrSetTerms returns [CollectionTerms colTerms]
     @init{

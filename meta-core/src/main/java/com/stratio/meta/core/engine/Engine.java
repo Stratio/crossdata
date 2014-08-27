@@ -30,7 +30,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.core.api.APIManager;
 import com.stratio.meta.core.executor.Executor;
-import com.stratio.meta.core.parser.Parser;
+import com.stratio.meta2.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
 import com.stratio.meta.core.validator.Validator;
 import com.stratio.streaming.api.IStratioStreamingAPI;
@@ -46,14 +46,14 @@ import java.util.Map;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
- * {@link com.stratio.meta.core.parser.Parser}, {@link com.stratio.meta.core.validator.Validator},
+ * {@link com.stratio.meta2.core.parser.Parser}, {@link com.stratio.meta.core.validator.Validator},
  * {@link com.stratio.meta.core.planner.Planner}, and {@link com.stratio.meta.core.executor.Executor}.
  * Additionally, it also maintains the {@link com.datastax.driver.core.Session} with the Cassandra backend.
  */
 public class Engine {
 
   /**
-   * The {@link com.stratio.meta.core.parser.Parser} responsible for parse.
+   * The {@link com.stratio.meta2.core.parser.Parser} responsible for parse.
    */
   private final Parser parser;
 
@@ -235,7 +235,7 @@ public class Engine {
   /**
    * Get the parser.
    *
-   * @return a {@link com.stratio.meta.core.parser.Parser}
+   * @return a {@link com.stratio.meta2.core.parser.Parser}
    */
   public Parser getParser() {
     return parser;

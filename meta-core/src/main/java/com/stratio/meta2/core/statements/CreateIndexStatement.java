@@ -34,21 +34,13 @@ import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.StringTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
-import com.stratio.meta2.core.statements.MetaStatement;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.map.ObjectMapper;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Class that models a {@code CREATE INDEX} statement of the META language. This class recognizes the following syntax:
@@ -238,23 +230,7 @@ public class CreateIndexStatement extends MetaStatement {
   }
 
   public void setOptionsJson(String optionsJson){
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
-    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-    JsonFactory factory = mapper.getJsonFactory();
-    JsonParser jp;
-    try {
-      jp = factory.createJsonParser(optionsJson);
-      JsonNode root = mapper.readTree(jp);
-
-      Iterator<Entry<String, JsonNode>> iter = root.getFields();
-      while(iter.hasNext()){
-        Entry<String, JsonNode> entry = iter.next();
-        addOption(new StringTerm(entry.getKey()), GenericTerm.CreateGenericTerm(entry.getValue()));
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    options = StringUtils.convertJsonToOptions(optionsJson);
   }
 
   /**
@@ -319,17 +295,8 @@ public class CreateIndexStatement extends MetaStatement {
       sb.append(usingClass);
     }
     if(!options.isEmpty()){
-      sb.append(" WITH OPTIONS = {");
-      Iterator<Entry<Term, GenericTerm>> entryIt = options.entrySet().iterator();
-      Entry<Term, GenericTerm> e;
-      while(entryIt.hasNext()){
-        e = entryIt.next();
-        sb.append(e.getKey()).append(": ").append(e.getValue());
-        if(entryIt.hasNext()){
-          sb.append(", ");
-        }
-      }
-      sb.append("}");
+      sb.append(" WITH OPTIONS = ");
+      sb.append(StringUtils.getStringFromOptions(options));
     }
 
     return sb.toString();
