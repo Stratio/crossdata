@@ -226,7 +226,9 @@ public class UpdateTableStatement extends MetaStatement {
       }
 
       if (!result.hasError()) {
+        /*
         result = validateWhereClauses(tableMetadata);
+        */
       }
 
       if ((!result.hasError()) && condsInc) {
@@ -374,6 +376,7 @@ public class UpdateTableStatement extends MetaStatement {
     }
   }
 
+  /*
   private Result validateWhereClauses(TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
     for (Relation rel : whereClauses) {
@@ -401,5 +404,6 @@ public class UpdateTableStatement extends MetaStatement {
     }
     return result;
   }
+  */
 
 }

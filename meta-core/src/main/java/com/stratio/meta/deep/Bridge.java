@@ -142,12 +142,14 @@ public class Bridge {
     JavaRDD<Cells> rdd = deepContext.cassandraJavaRDD(config);
 
     // If where
+    /*
     if (ss.isWhereInc()) {
       List<Relation> where = ss.getWhere();
       for (Relation rel : where) {
         rdd = doWhere(rdd, rel);
       }
     }
+    */
 
     List<String> cols =
         DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
@@ -349,6 +351,7 @@ public class Bridge {
    * @param rel {@link com.stratio.meta.common.statements.structures.relationships.Relation} to apply
    * @return A new RDD with the result.
    */
+  /*
   private JavaRDD<Cells> doWhere(JavaRDD<Cells> rdd, Relation rel) {
     String operator = rel.getOperator();
     JavaRDD<Cells> result = null;
@@ -387,6 +390,7 @@ public class Bridge {
     }
     return result;
   }
+  */
 
   /**
    * Take a RDD and the group by information, and apply the requested grouping. If there is any

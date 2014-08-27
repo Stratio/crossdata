@@ -28,11 +28,9 @@ import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.common.statements.structures.terms.Term;
 
 /**
@@ -132,9 +130,11 @@ public class DeleteStatement extends MetaStatement {
       tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
       result = validateSelectionColumns(tableMetadata);
     }
+    /*
     if (!result.hasError()) {
       result = validateWhereClause(tableMetadata);
     }
+    */
 
     return result;
 
@@ -147,6 +147,7 @@ public class DeleteStatement extends MetaStatement {
    * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
+  /*
   private Result validateWhereClause(TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
     Iterator<Relation> relations = whereClauses.iterator();
@@ -223,7 +224,7 @@ public class DeleteStatement extends MetaStatement {
               + " table.");
     }
     return result;
-  }
+  }*/
 
   /**
    * Validate that the columns specified in the select are valid by checking that the selection

@@ -45,9 +45,6 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
-import com.stratio.meta.common.statements.structures.relationships.RelationIn;
-import com.stratio.meta.common.statements.structures.relationships.RelationToken;
 import com.stratio.meta.common.statements.structures.selectors.GroupByFunction;
 import com.stratio.meta.common.statements.structures.selectors.SelectorFunction;
 import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
@@ -556,9 +553,12 @@ public class SelectStatement extends MetaStatement {
         result =
             Result
                 .createValidationErrorResult("Where clauses in ephemeral tables are not supported yet.");
-      } else {
+      }
+      /*
+      else {
         result = validateWhereClause(tableMetadataFrom);
       }
+      */
 
     }
 
@@ -698,6 +698,7 @@ public class SelectStatement extends MetaStatement {
    * @param rc Relation of Comparator type.
    * @return Whether the relation is valid.
    */
+  /*
   private Result validateWhereSingleColumnRelation(String targetTable, String column,
       List<Term<?>> terms, Relation rc) {
     Result result = QueryResult.createSuccessQueryResult();
@@ -746,6 +747,7 @@ public class SelectStatement extends MetaStatement {
 
     return result;
   }
+  */
 
   /**
    * Validate that the where clause is valid by checking that columns exists on the target table and
@@ -753,6 +755,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
+  /*
   private Result validateWhereClause(TableMetadata tableMetadata) {
     // TODO: Check that the MATCH operator is only used in Lucene mapped columns.
     Result result = QueryResult.createSuccessQueryResult();
@@ -790,6 +793,7 @@ public class SelectStatement extends MetaStatement {
 
     return result;
   }
+  */
 
   /**
    * Validate whether the group by clause is valid or not by checking columns exist on the target
@@ -1063,6 +1067,7 @@ public class SelectStatement extends MetaStatement {
    * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
    * @return A String array with the column name and the lucene query, or null if no index is found.
    */
+  /*
   public String[] getLuceneWhereClause(MetadataManager metadata, TableMetadata tableMetadata) {
     String[] result = null;
     CustomIndexMetadata luceneIndex = metadata.getLuceneIndex(tableMetadata);
@@ -1099,6 +1104,7 @@ public class SelectStatement extends MetaStatement {
     }
     return result;
   }
+  */
 
   /**
    * Process a query pattern to determine the type of Lucene query. The supported types of queries
@@ -1344,6 +1350,7 @@ public class SelectStatement extends MetaStatement {
    * @param metaRelation The {@link com.stratio.meta.common.statements.structures.relationships.RelationCompare} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
+  /*
   private Clause getRelationCompareClause(Relation metaRelation) {
     Clause clause = null;
     RelationCompare relCompare = (RelationCompare) metaRelation;
@@ -1374,7 +1381,7 @@ public class SelectStatement extends MetaStatement {
         break;
     }
     return clause;
-  }
+  }*/
 
   /**
    * Get the driver clause associated with an in relation.
@@ -1382,6 +1389,7 @@ public class SelectStatement extends MetaStatement {
    * @param metaRelation The {@link com.stratio.meta.common.statements.structures.relationships.RelationIn} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
+  /*
   private Clause getRelationInClause(Relation metaRelation) {
     Clause clause = null;
     RelationIn relIn = (RelationIn) metaRelation;
@@ -1395,7 +1403,7 @@ public class SelectStatement extends MetaStatement {
     }
     clause = QueryBuilder.in(relIn.getIdentifiers().get(0).toString(), values);
     return clause;
-  }
+  }*/
 
   /**
    * Get the driver clause associated with an token relation.
@@ -1403,6 +1411,7 @@ public class SelectStatement extends MetaStatement {
    * @param metaRelation The {@link com.stratio.meta.common.statements.structures.relationships.RelationToken} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
+  /*
   private Clause getRelationTokenClause(Relation metaRelation) {
     Clause clause = null;
     RelationToken relToken = (RelationToken) metaRelation;
@@ -1444,6 +1453,7 @@ public class SelectStatement extends MetaStatement {
     }
     return clause;
   }
+  */
 
   /**
    * Get the driver where clause.
@@ -1451,6 +1461,7 @@ public class SelectStatement extends MetaStatement {
    * @param sel The current Select.
    * @return A {@link com.datastax.driver.core.querybuilder.Select.Where}.
    */
+  /*
   private Where getDriverWhere(Select sel) {
     Where whereStmt = null;
     String[] luceneWhere = getLuceneWhereClause(metadata, tableMetadataFrom);
@@ -1484,6 +1495,7 @@ public class SelectStatement extends MetaStatement {
     }
     return whereStmt;
   }
+  */
 
   @Override
   public Statement getDriverStatement() {
@@ -1515,12 +1527,17 @@ public class SelectStatement extends MetaStatement {
       sel.orderBy(orderings);
     }
 
+
     Where whereStmt = null;
+    /*
     if (this.whereInc) {
       whereStmt = getDriverWhere(sel);
     } else {
       whereStmt = sel.where();
     }
+    */
+    whereStmt = sel.where();
+
     LOG.trace("Executing: " + whereStmt.toString());
 
     return whereStmt;
@@ -1556,9 +1573,11 @@ public class SelectStatement extends MetaStatement {
     }
   }
 
+
   private void replaceAliasesInWhere(Map<String, String> fieldsAliasesMap,
       Map<String, String> tablesAliasesMap) {
 
+    /*
     if (this.where != null) {
       for (Relation whereCol : this.where) {
         for (SelectorIdentifier id : whereCol.getIdentifiers()) {
@@ -1574,6 +1593,7 @@ public class SelectStatement extends MetaStatement {
         }
       }
     }
+    */
   }
 
   private void replaceAliasesInGroupBy(Map<String, String> fieldsAliasesMap,
@@ -1666,6 +1686,7 @@ public class SelectStatement extends MetaStatement {
   public void updateTableNames() {
 
     // Adding table name to the identifiers in WHERE clause
+    /*
     if (this.where != null) {
       for (Relation whereCol : this.where) {
         for (SelectorIdentifier identifier : whereCol.getIdentifiers()) {
@@ -1673,6 +1694,7 @@ public class SelectStatement extends MetaStatement {
         }
       }
     }
+    */
 
     // Adding table name to the identifiers in GROUP BY clause
     if (this.group != null) {

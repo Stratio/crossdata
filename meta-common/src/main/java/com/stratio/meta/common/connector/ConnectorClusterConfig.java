@@ -63,5 +63,5 @@ public class ConnectorClusterConfig {
   public ClusterName getName() {
     return name;
   }
-  
+
 }

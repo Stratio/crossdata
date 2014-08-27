@@ -19,7 +19,7 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.common.statements.structures.assignations.Assignation;
-import com.stratio.meta.common.statements.structures.assignations.Operator;
+import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.relationships.RelationCompare;
 import com.stratio.meta.core.planner.BasicPlannerTest;

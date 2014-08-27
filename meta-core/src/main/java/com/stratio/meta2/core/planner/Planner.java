@@ -16,7 +16,6 @@ package com.stratio.meta2.core.planner;
 
 import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.common.statements.structures.relationships.RelationType;
 import com.stratio.meta2.core.query.PlannedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
 import com.stratio.meta2.core.statements.MetaStatement;
@@ -69,12 +68,6 @@ public class Planner {
 
   private Relation getRelation(MetaStatement statement) {
     // statement.getAssignations contiene la información necesaria para crear una Relation
-
-
-    return null;
-  }
-
-  private RelationType getRelationType(Relation relation) {
 
 
     return null;
