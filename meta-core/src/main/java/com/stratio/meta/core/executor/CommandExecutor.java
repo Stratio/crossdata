@@ -21,7 +21,6 @@ package com.stratio.meta.core.executor;
 import org.apache.log4j.Logger;
 
 import com.datastax.driver.core.Session;
-import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta2.core.statements.DescribeStatement;
 import com.stratio.meta2.core.statements.ExplainPlanStatement;

@@ -16,13 +16,14 @@
  * under the License.
  */
 
-package com.stratio.meta2.common.exception.validation;
+package com.stratio.meta.common.exceptions.validation;
 
-
+import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.common.data.CatalogName;
 
-public class MustExistCatalogException extends ValidationException {
-  public MustExistCatalogException(CatalogName catalog) {
-    super("Catalog [" + catalog + "]  doesn't exist yet");
+
+public class ExistCatalogException extends ValidationException {
+  public ExistCatalogException(CatalogName catalog) {
+    super("Catalog [" + catalog + "] exists already");
   }
 }

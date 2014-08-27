@@ -16,10 +16,13 @@
  * under the License.
  */
 
-package com.stratio.meta2.common.exception.validation;
+package com.stratio.meta.common.exceptions.validation;
 
-public class ValidationException extends Exception {
-  public ValidationException(String message){
-    super(message);
+import com.stratio.meta.common.exceptions.ValidationException;
+import com.stratio.meta2.common.data.TableName;
+
+public class NotExistTableException extends ValidationException {
+  public NotExistTableException(TableName table) {
+    super("Table [" + table + "]  doesn't exist yet");
   }
 }

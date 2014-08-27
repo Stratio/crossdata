@@ -16,12 +16,13 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.engine.validator;
+package com.stratio.meta.common.exceptions.validation;
 
-public enum Validation {
-  MUST_NOT_EXIST_CATALOG,
-  MUST_EXIST_CATALOG,
-  MUST_EXIST_TABLE,
-  MUST_NOT_EXIST_TABLE
+import com.stratio.meta.common.exceptions.ValidationException;
+import com.stratio.meta2.common.data.TableName;
 
+public class ExistTableException extends ValidationException {
+  public ExistTableException(TableName table) {
+    super("Table [" + table + "] exists already");
+  }
 }

@@ -16,12 +16,16 @@
  * under the License.
  */
 
-package com.stratio.meta2.common.exception.validation;
+package com.stratio.meta.common.exceptions;
 
-import com.stratio.meta2.common.data.CatalogName;
+public class IgnoreQueryException extends Exception {
+  /**
+   * Serial version UID in order to be {@link java.io.Serializable}.
+   */
+  private static final long serialVersionUID = 1878003904827417242L;
 
-public class NotMustExistCatalogException extends ValidationException {
-  public NotMustExistCatalogException(CatalogName catalog) {
-    super("Catalog [" + catalog + "] exists already");
+  public IgnoreQueryException(String cause){
+    super("Query has been ignored because: " + cause);
   }
+
 }

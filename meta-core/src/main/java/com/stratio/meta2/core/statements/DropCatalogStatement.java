@@ -23,6 +23,8 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.core.engine.validator.Validation;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 
 /**
  * Class that models a {@code DROP KEYSPACE} statement from the META language.
@@ -70,4 +72,8 @@ public class DropCatalogStatement extends MetaStatement {
     public String translateToCQL() {
         return this.toString();
     }
+
+  public ValidationRequirements getValidationRequirements(){
+    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG);
+  }
 }

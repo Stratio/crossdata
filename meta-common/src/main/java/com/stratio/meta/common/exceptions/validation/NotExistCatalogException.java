@@ -16,12 +16,14 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.engine.validator;
+package com.stratio.meta.common.exceptions.validation;
 
-public enum Validation {
-  MUST_NOT_EXIST_CATALOG,
-  MUST_EXIST_CATALOG,
-  MUST_EXIST_TABLE,
-  MUST_NOT_EXIST_TABLE
 
+import com.stratio.meta.common.exceptions.ValidationException;
+import com.stratio.meta2.common.data.CatalogName;
+
+public class NotExistCatalogException extends ValidationException {
+  public NotExistCatalogException(CatalogName catalog) {
+    super("Catalog [" + catalog + "]  doesn't exist yet");
+  }
 }

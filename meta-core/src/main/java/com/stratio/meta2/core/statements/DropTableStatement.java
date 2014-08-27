@@ -23,6 +23,8 @@ import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta2.core.engine.validator.Validation;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.statements.MetaStatement;
 
@@ -100,6 +102,10 @@ public class DropTableStatement extends MetaStatement {
   @Override
   public String translateToCQL() {
     return this.toString();
+  }
+
+  public ValidationRequirements getValidationRequirements(){
+    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE);
   }
 
 }

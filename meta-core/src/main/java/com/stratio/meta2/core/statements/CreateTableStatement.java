@@ -28,6 +28,8 @@ import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.core.engine.validator.Validation;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.meta2.core.structures.Property;
 import com.stratio.meta2.core.structures.PropertyNameValue;
 
@@ -438,5 +440,8 @@ public class CreateTableStatement extends MetaStatement {
       }
     }
     return sb.toString();
+  }
+  public ValidationRequirements getValidationRequirements(){
+    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_NOT_EXIST_TABLE);
   }
 }
