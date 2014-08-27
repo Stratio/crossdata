@@ -18,16 +18,15 @@
 
 package com.stratio.meta2.core.statements;
 
-import java.util.Iterator;
-
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
+
+import java.util.Iterator;
 
 /**
  * Class that models a {@code DROP INDEX} statement from the META language.
@@ -71,7 +70,7 @@ public class DropIndexStatement extends MetaStatement {
   /**
    * Set the index name.
    * 
-   * @param name The name of the index. The name may contain the name of the keyspace where the
+   * @param name The name of the index. The name may contain the name of the catalog where the
    *        index is active.
    */
   public void setName(String name) {
@@ -101,22 +100,22 @@ public class DropIndexStatement extends MetaStatement {
   public Result validate(MetadataManager metadata, EngineConfig config) {
 
     Result result = null;
-    //Get the effective keyspace based on the user specification during the create
-    //sentence, or taking the keyspace in use in the user session.
-    String effectiveKeyspace = getEffectiveCatalog();
+    //Get the effective catalog based on the user specification during the create
+    //sentence, or taking the catalog in use in the user session.
+    String effectiveCatalog = getEffectiveCatalog();
     if(catalogInc){
-      effectiveKeyspace = catalog;
+      effectiveCatalog = catalog;
     }
 
-    //Check that the keyspace and table exists.
-    if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+    //Check that the catalog and table exists.
+    if(effectiveCatalog == null || effectiveCatalog.length() == 0){
       result= Result.createValidationErrorResult(
           "Target catalog missing or no catalog has been selected.");
     }else{
-      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
       if(ksMetadata == null){
         result= Result.createValidationErrorResult(
-            "Keyspace " + effectiveKeyspace + " does not exist.");
+            "Catalog " + effectiveCatalog + " does not exist.");
       }else{
         result = validateIndexName(ksMetadata);
       }
@@ -125,23 +124,23 @@ public class DropIndexStatement extends MetaStatement {
   }
 
   /**
-   * Validate the existence of the index in the selected keyspace.
-   * @param ksMetadata The keyspace metadata.
+   * Validate the existence of the index in the selected catalog.
+   * @param ksMetadata The catalog metadata.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  public Result validateIndexName(KeyspaceMetadata ksMetadata){
+  public Result validateIndexName(CatalogMetadata ksMetadata){
     Result result = QueryResult.createSuccessQueryResult();
     boolean found = false;
-    Iterator<TableMetadata> tables = ksMetadata.getTables().iterator();
+    Iterator<TableMetadata> tables = ksMetadata.getTables().values().iterator();
 
     while(tables.hasNext() && !found){
       TableMetadata tableMetadata = tables.next();
-      Iterator<ColumnMetadata> columns = tableMetadata.getColumns().iterator();
+      Iterator<ColumnMetadata> columns = tableMetadata.getColumns().values().iterator();
       while(columns.hasNext() && !found){
         ColumnMetadata column = columns.next();
         if(column.getIndex() != null
-           && (column.getIndex().getName().equals(name)
-               || column.getIndex().getName().equals("stratio_lucene_" + name))){
+           && (column.getIndex().equals(name)
+               || column.getIndex().equals("stratio_lucene_" + name))){
           found = true;
           targetColumn = column;
         }

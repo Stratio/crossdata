@@ -18,18 +18,17 @@
 
 package com.stratio.meta.core.metadata;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.stratio.deep.entity.Cell;
-import com.stratio.meta.common.metadata.structures.CatalogMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta.common.metadata.structures.TableType;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractMetadataHelper {
 
@@ -44,19 +43,22 @@ public abstract class AbstractMetadataHelper {
   protected static Map<ColumnType, Class<?>> dbClass = new HashMap<>();
 
   /**
-   * Transform a Cassandra {@link com.datastax.driver.core.KeyspaceMetadata} into a META
+   * Transform a Cassandra {@link com.stratio.meta2.common.metadata.CatalogMetadata;} into a META
    * CatalogMetadata.
    * 
-   * @param keyspaceMetadata The keyspace metadata.
+   * @param catalogMetadata The catalog metadata.
    * @return A {@link com.stratio.meta.common.metadata.structures.CatalogMetadata}.
    */
-  public CatalogMetadata toCatalogMetadata(KeyspaceMetadata keyspaceMetadata) {
-    Set<TableMetadata> tables = new HashSet<>(keyspaceMetadata.getTables().size());
-    for (com.datastax.driver.core.TableMetadata table : keyspaceMetadata.getTables()) {
-      tables.add(toTableMetadata(keyspaceMetadata.getName(), table));
+  public CatalogMetadata toCatalogMetadata(CatalogMetadata catalogMetadata) {
+    throw new UnsupportedOperationException();
+    /*
+    Set<TableMetadata> tables = new HashSet<>(catalogMetadata.getTables().size());
+    for (TableMetadata table : catalogMetadata.getTables()) {
+      tables.add(toTableMetadata(catalogMetadata.getName(), table));
     }
-    CatalogMetadata result = new CatalogMetadata(keyspaceMetadata.getName(), tables);
+    CatalogMetadata result = new CatalogMetadata(catalogMetadata.getName(), tables);
     return result;
+    */
   }
 
   public TableMetadata toTableMetadata(String parentCatalog,

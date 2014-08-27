@@ -45,7 +45,11 @@ options {
 
 @members {
 
-    private String userCatalog = "";
+    private String sessionCatalog = "";
+
+    public String getEffectiveCatalog(String queryCatalog) {
+        return ((queryCatalog != null) && (!queryCatalog.isEmpty()))? queryCatalog: sessionCatalog;
+    }
 
     private ErrorsHelper foundErrors = new ErrorsHelper();
 
@@ -57,10 +61,6 @@ options {
     public void displayRecognitionError(String[] tokenNames, RecognitionException e){        
         String hdr = getErrorHeader(e);
         String msg = getErrorMessage(e, tokenNames);
-        /*System.err.println("Antlr exception: ");
-        System.err.print("\tError recognized: ");
-        System.err.print(hdr+": ");
-        System.err.println(msg);*/
         AntlrError antlrError = new AntlrError(hdr, msg);
         foundErrors.addError(antlrError);
     }
@@ -564,9 +564,9 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
 
 createTableStatement returns [CreateTableStatement crtast]
 @init{
-    LinkedHashMap<String, String> columns = new LinkedHashMap<>();
-    ArrayList<String>   primaryKey = new ArrayList<String>();
-    ArrayList<String> clusterKey = new ArrayList<String>();
+    LinkedHashMap<ColumnName, String> columns = new LinkedHashMap<>();
+    ArrayList<ColumnName> primaryKey = new ArrayList<>();
+    ArrayList<ColumnName> clusterKey = new ArrayList<>();
     int primaryKeyType = 0;
     int columnNumberPK= 0;
     int columnNumberPK_inter= 0;
@@ -576,24 +576,23 @@ createTableStatement returns [CreateTableStatement crtast]
     T_CREATE
     T_TABLE
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
-    tablename=getTableID
+    tablename=getTableID T_ON T_CLUSTER clusterID=T_IDENT
     T_START_PARENTHESIS (
-                ident_column1=getField type1=getDataType (T_PRIMARY T_KEY)? {columns.put(ident_column1, type1); primaryKeyType=1;}
+                ident_column1=getField type1=getDataType (T_PRIMARY T_KEY)? {columns.put(new ColumnName("", "", ident_column1), type1); primaryKeyType=1;}
                 (
-                    ( T_COMMA ident_columN=getField typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put(ident_columN, typeN);columnNumberPK_inter+=1;})
+                    ( T_COMMA ident_columN=getField typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put(new ColumnName("", "", ident_columN), typeN);columnNumberPK_inter+=1;})
                     |(
                         T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS
                         (
-                            (   primaryK=getField {primaryKey.add(primaryK);primaryKeyType=2;}
+                            (   primaryK=getField {primaryKey.add(new ColumnName("", "", primaryK)); primaryKeyType=2;}
 
-                                (T_COMMA partitionKN=getField {primaryKey.add(partitionKN);})*
+                                (T_COMMA partitionKN=getField {primaryKey.add(new ColumnName("", "", partitionKN));})*
                             )
                             |(
-                                T_START_PARENTHESIS partitionK=getField {primaryKey.add(partitionK); primaryKeyType=3;}
-                                    (T_COMMA partitionKN=getField {primaryKey.add(partitionKN);})*
+                                T_START_PARENTHESIS partitionK=getField {primaryKey.add(new ColumnName("", "", partitionK)); primaryKeyType=3;}
+                                    (T_COMMA partitionKN=getField {primaryKey.add(new ColumnName("", "", partitionKN));})*
                                 T_END_PARENTHESIS
-                                (T_COMMA clusterKN=getField {clusterKey.add(clusterKN);})*
-
+                                (T_COMMA clusterKN=getField {clusterKey.add(new ColumnName("", "", clusterKN));})*
                             )
                         )
                        T_END_PARENTHESIS
@@ -602,7 +601,7 @@ createTableStatement returns [CreateTableStatement crtast]
          )
     T_END_PARENTHESIS (T_WITH {withProperties=true;} properties=getMetaProperties)?
     {
-        $crtast = new CreateTableStatement(tablename, columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
+        $crtast = new CreateTableStatement(new TableName("", tablename), new ClusterName($clusterID.text), columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
         $crtast.setProperties(properties);
         $crtast.setIfNotExists(ifNotExists);
         $crtast.setWithProperties(withProperties);
@@ -741,8 +740,12 @@ truncateStatement returns [TruncateStatement trst]:
 	}
 ;
 
-metaStatement returns [MetaStatement st]:
-    st_nsnt   = insertIntoStatement { $st = st_nsnt;}
+metaStatement returns [MetaStatement st]
+    @init{
+        boolean hasCatalog = false;
+    }:
+    (T_START_BRACKET (inputCatalog=T_IDENT {hasCatalog=true;} )? T_END_BRACKET T_COMMA {if(hasCatalog) sessionCatalog = $inputCatalog.text;})?
+    (st_nsnt   = insertIntoStatement { $st = st_nsnt;}
     | st_slct = selectStatement { $st = st_slct;}
     | st_crta = createTableStatement { $st = st_crta;}
     | st_altt = alterTableStatement { $st = st_altt;}
@@ -769,14 +772,10 @@ metaStatement returns [MetaStatement st]:
     | st_cixs = createIndexStatement { $st = st_cixs; }
     | st_dixs = dropIndexStatement { $st = st_dixs; }
     | st_crtr = createTriggerStatement { $st = st_crtr; }
-    | st_drtr = dropTriggerStatement { $st = st_drtr; }
+    | st_drtr = dropTriggerStatement { $st = st_drtr; })
 ;
 
-query returns [MetaStatement st]
-    @init{
-        boolean hasCatalog = false;
-    }:
-    (T_START_BRACKET (inputCatalog=T_IDENT { hasCatalog = true; })? T_END_BRACKET T_COMMA { if(hasCatalog) userCatalog = $inputCatalog.text; })?
+query returns [MetaStatement st]:
 	mtst=metaStatement (T_SEMICOLON)+ EOF {
 		$st = mtst;
 	}

@@ -18,22 +18,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
@@ -71,6 +55,22 @@ import com.stratio.meta2.core.structures.OrderDirection;
 import com.stratio.meta2.core.structures.Ordering;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
+
+import org.apache.log4j.Logger;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -219,22 +219,22 @@ public class SelectStatement extends MetaStatement {
   }
 
   /**
-   * Get the keyspace specified in the select statement.
+   * Get the catalog specified in the select statement.
    * 
-   * @return The keyspace or null if not specified.
+   * @return The catalog or null if not specified.
    */
-  public String getKeyspace() {
+  public String getCatalog() {
     return catalog;
   }
 
   /**
-   * Set the keyspace specified in the select statement.
+   * Set the catalog specified in the select statement.
    * 
-   * @param keyspace The name of the keyspace.
+   * @param catalog The name of the catalog.
    */
-  public void setKeyspace(String keyspace) {
+  public void setCatalog(String catalog) {
     this.catalogInc = true;
-    this.catalog = keyspace;
+    this.catalog = catalog;
   }
 
   /**
@@ -481,9 +481,9 @@ public class SelectStatement extends MetaStatement {
   /** {@inheritDoc} */
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
-    // Validate FROM keyspace
+    // Validate FROM catalog
     Result result =
-        validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
+        validateCatalogAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
 
     if ((!result.hasError()) && (result instanceof CommandResult)
         && ("streaming".equalsIgnoreCase(((CommandResult) result).getResult().toString()))) {
@@ -502,16 +502,16 @@ public class SelectStatement extends MetaStatement {
 
     if (!result.hasError() && joinInc) {
       result =
-          validateKeyspaceAndTable(metadata, sessionCatalog, join.isKeyspaceInc(),
-              join.getKeyspace(), join.getTablename());
+          validateCatalogAndTable(metadata, sessionCatalog, join.isCatalogInc(),
+              join.getCatalog(), join.getTablename());
     }
 
     String effectiveKs1 = getEffectiveCatalog();
     String effectiveKs2 = null;
     if (joinInc) {
       SelectStatement secondSelect = new SelectStatement("");
-      if (join.getKeyspace() != null) {
-        secondSelect.setKeyspace(join.getKeyspace());
+      if (join.getCatalog() != null) {
+        secondSelect.setCatalog(join.getCatalog());
       }
       secondSelect.setSessionCatalog(this.sessionCatalog);
       effectiveKs2 = secondSelect.getEffectiveCatalog();

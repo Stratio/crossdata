@@ -48,4 +48,8 @@ public class CatalogMetadata implements IMetadata {
     return tables;
   }
 
+  @Override
+  public String toString() {
+    throw new UnsupportedOperationException();
+  }
 }

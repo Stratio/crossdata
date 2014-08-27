@@ -1,3 +1,4 @@
+
 /*
  * Licensed to STRATIO (C) under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for additional information
@@ -37,15 +38,28 @@ public class Parser {
    */
   private static final Logger LOG = Logger.getLogger(Parser.class);
 
+  public MetaQuery parseStatement(String inputText){
+    return parseStatement("", "", inputText);
+  }
+
+  public MetaQuery parseStatement(String sessionCatalog, String inputText){
+    return parseStatement("", sessionCatalog, inputText);
+  }
+
   /**
    * Parse a input text and return the equivalent Statement.
    * @param inputText The input text.
    * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
    */
-  public MetaQuery parseStatement(String queryId, String catalog, String inputText){
+  public MetaQuery parseStatement(String queryId, String sessionCatalog, String inputText){
     MetaQuery metaQuery = new MetaQuery(inputText);
     MetaStatement resultStatement;
-    ANTLRStringStream input = new ANTLRStringStream("["+catalog+"], "+inputText);
+    ANTLRStringStream input;
+    if((sessionCatalog != null) && (!sessionCatalog.isEmpty())){
+      input = new ANTLRStringStream("["+sessionCatalog+"], "+inputText);
+    } else {
+      input = new ANTLRStringStream(inputText);
+    }
     MetaLexer lexer = new MetaLexer(input);
     CommonTokenStream tokens = new CommonTokenStream(lexer);
     com.stratio.meta.core.grammar.generated.MetaParser parser = new com.stratio.meta.core.grammar.generated.MetaParser(tokens);
