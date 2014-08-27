@@ -25,7 +25,7 @@ package com.stratio.meta2.common.data;
  *   <li>table</li>
  * </ul>
  */
-public class TableName{
+public class TableName extends Name{
 
 
   private final String name;
@@ -33,6 +33,11 @@ public class TableName{
   private final CatalogName catalogName;
 
   public TableName(String catalogName, String tableName){
+    this(catalogName,tableName,true);
+  }
+
+  public TableName(String catalogName, String tableName, boolean isCompleted){
+    super(isCompleted);
     this.catalogName=new CatalogName(catalogName);
     this.name = tableName;
   }

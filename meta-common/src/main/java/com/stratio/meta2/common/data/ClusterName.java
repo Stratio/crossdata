@@ -18,12 +18,13 @@
 
 package com.stratio.meta2.common.data;
 
-public class ClusterName {
+public class ClusterName extends Name {
   private final String name;
 
 
 
   public ClusterName(String clusterName){
+    super();
     this.name = clusterName;
   }
 

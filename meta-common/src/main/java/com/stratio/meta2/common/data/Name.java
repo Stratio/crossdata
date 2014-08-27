@@ -18,27 +18,16 @@
 
 package com.stratio.meta2.common.data;
 
-public class CatalogName extends Name {
-  private final String name;
-
-
-
-  public CatalogName(String catalogName){
-    super();
-    this.name = catalogName;
+public class Name {
+  private final boolean isCompletedName;
+  public Name(){
+    this(true);
+  }
+  public Name(boolean isCompletedName){
+    this.isCompletedName=isCompletedName;
   }
 
-  public String getName() {
-    return name;
+  public boolean isCompletedName() {
+    return isCompletedName;
   }
-
-  public String getCatalogQualifiedName(){
-    return QualifiedNames.getCatalogQualifiedName(getName());
-  }
-
-  @Override
-  public String toString() {
-    return this.getCatalogQualifiedName();
-  }
-
 }

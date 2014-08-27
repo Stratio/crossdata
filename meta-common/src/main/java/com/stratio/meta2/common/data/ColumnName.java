@@ -14,7 +14,7 @@
 
 package com.stratio.meta2.common.data;
 
-public class ColumnName {
+public class ColumnName extends Name {
 
   /**
    * Name of the column.
@@ -29,6 +29,11 @@ public class ColumnName {
    * @param columnName Name of the column.
    */
   public ColumnName(String catalogName, String tableName, String columnName) {
+    this(catalogName,tableName,columnName,true);
+  }
+
+  public ColumnName(String catalogName, String tableName, String columnName, boolean isCompleted) {
+    super(isCompleted);
     this.tableName = new TableName(catalogName, tableName);
     this.name = columnName;
   }

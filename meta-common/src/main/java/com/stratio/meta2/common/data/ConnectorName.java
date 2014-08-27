@@ -18,12 +18,13 @@
 
 package com.stratio.meta2.common.data;
 
-public class ConnectorName {
+public class ConnectorName extends Name {
   private final String name;
 
 
 
   public ConnectorName(String connectorName){
+    super();
     this.name = connectorName;
   }
 

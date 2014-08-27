@@ -18,12 +18,13 @@
 
 package com.stratio.meta2.common.data;
 
-public class DataStoreName {
+public class DataStoreName extends Name {
   private final String name;
 
 
 
   public DataStoreName(String dataStoreName){
+    super();
     this.name = dataStoreName;
   }
 
