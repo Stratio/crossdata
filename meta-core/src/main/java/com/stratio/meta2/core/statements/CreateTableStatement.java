@@ -225,7 +225,7 @@ public class CreateTableStatement extends MetaStatement {
     if (ifNotExists) {
       sb.append("IF NOT EXISTS ");
     }
-    sb.append(tableName.getTableQualifiedName());
+    sb.append(tableName.getQualifiedName());
     sb.append(" ON CLUSTER ").append(clusterName).append(" ");
     if (primaryKeyType == PRIMARY_SINGLE) {
       sb.append(getSinglePKString());
