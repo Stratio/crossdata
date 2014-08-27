@@ -1,5 +1,5 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.  
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership.  The STRATIO (C) licenses this file
  * to you under the Apache License, Version 2.0 (the
@@ -18,22 +18,27 @@
 
 package com.stratio.meta2.common.data;
 
-public class ConnectorName extends FirstLevelName {
-  private final String name;
 
 
+public abstract class Name  {
 
-  public ConnectorName(String connectorName){
-    super();
-    this.name = connectorName;
+  protected final String UNKNOWN_NAME="<UNKNOWN_NAME>";
+
+  public abstract boolean isCompletedName();
+
+  public abstract String getQualifiedName();
+
+  @Override
+  public String toString() {
+    return this.getQualifiedName();
   }
 
-  public String getName() {
-    return name;
+  @Override
+  public boolean equals(Object o){
+    boolean result=false;
+    if(o instanceof Name) {
+      result = this.toString().equals(o.toString());
+    }
+    return result;
   }
-
-  public String getQualifiedName(){
-    return QualifiedNames.getConnectorQualifiedName(getName());
-  }
-
 }

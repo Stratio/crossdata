@@ -93,7 +93,7 @@ public class DescribeStatement extends TableStatement {
 
     if (this.tableName != null) {
       result =
-          validateCatalogAndTable(metadata, sessionCatalog, tableName.containsCatalog(),
+          validateCatalogAndTable(metadata, sessionCatalog, tableName.isCompletedName(),
                                    tableName.getCatalogName().getName(), tableName.getName());
     }
 

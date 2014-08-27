@@ -25,15 +25,21 @@ package com.stratio.meta2.common.data;
  *   <li>table</li>
  * </ul>
  */
-public class TableName{
+public class TableName extends Name{
 
 
   private final String name;
 
-  private final CatalogName catalogName;
+  private CatalogName catalogName;
 
   public TableName(String catalogName, String tableName){
-    this.catalogName=new CatalogName(catalogName);
+
+    if(catalogName == null || catalogName.isEmpty()){
+      this.catalogName=null;
+    }else{
+      this.catalogName=new CatalogName(catalogName);
+    }
+
     this.name = tableName;
   }
 
@@ -41,20 +47,26 @@ public class TableName{
     return catalogName;
   }
 
+  public void setCatalogName(CatalogName catalogName) {
+    this.catalogName=catalogName;
+  }
+
   public String getName() {
     return name;
   }
 
-  public String getTableQualifiedName() {
-    return QualifiedNames.getTableQualifiedName(this.getCatalogName().getName(), getName());
+  @Override public boolean isCompletedName() {
+    return catalogName!=null;
   }
 
-  public boolean containsCatalog(){
-    return catalogName != null;
+  public String getQualifiedName() {
+    String result;
+    if(isCompletedName()){
+      result= QualifiedNames.getTableQualifiedName(this.getCatalogName().getName(), getName());
+    } else{
+      result= QualifiedNames.getTableQualifiedName(UNKNOWN_NAME,getName());
+    }
+    return result;
   }
 
-  @Override
-  public String toString() {
-    return getTableQualifiedName();
-  }
 }

@@ -18,12 +18,19 @@
 
 package com.stratio.meta.common.connector;
 
+import com.stratio.meta2.common.data.ClusterName;
+
 import java.util.Map;
 
 /**
  * Configuration used by a connector to establish a connection to a specific cluster.
  */
 public class ConnectorClusterConfig {
+
+  /**
+   * Name of the target cluster.
+   */
+  private final ClusterName name;
 
   /**
    * Map of options required by a connector in order to be able to establish a connection
@@ -33,9 +40,11 @@ public class ConnectorClusterConfig {
 
   /**
    * Class constructor.
+   * @param name Name of the target cluster.
    * @param options Map of options.
    */
-  public ConnectorClusterConfig(Map<String, Object> options) {
+  public ConnectorClusterConfig(ClusterName name, Map<String, Object> options) {
+    this.name = name;
     this.options = options;
   }
 
@@ -46,4 +55,13 @@ public class ConnectorClusterConfig {
   public Map<String, Object> getOptions() {
     return options;
   }
+
+  /**
+   * Get the name of the target cluster.
+   * @return A {@link com.stratio.meta2.common.data.ClusterName}.
+   */
+  public ClusterName getName() {
+    return name;
+  }
+  
 }
