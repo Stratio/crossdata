@@ -18,12 +18,7 @@
 
 package com.stratio.meta2.core.statements;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -32,8 +27,13 @@ import com.stratio.meta.common.statements.structures.relationships.RelationCompa
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.statements.structures.terms.Term;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Class that models a {@code SELECT} statement from the META language. This class recognizes the
@@ -52,7 +52,7 @@ public class DeleteStatement extends MetaStatement {
   /**
    * The name of the targe table.
    */
-  private String tableName = null;
+  private TableName tableName = null;
 
   /**
    * The list of {@link com.stratio.meta.common.statements.structures.relationships.Relation} found in the WHERE clause.
@@ -82,15 +82,8 @@ public class DeleteStatement extends MetaStatement {
    * 
    * @param tableName The name of the table.
    */
-  public void setTableName(String tableName) {
-    if (tableName.contains(".")) {
-      String[] ksAndTableName = tableName.split("\\.");
-      catalog = ksAndTableName[0];
-      this.tableName = ksAndTableName[1];
-      catalogInc = true;
-    } else {
+    public void setTableName(TableName tableName) {
       this.tableName = tableName;
-    }
   }
 
   /**
@@ -124,12 +117,12 @@ public class DeleteStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
 
-    Result result = validateKeyspaceAndTable(metadata, sessionCatalog);
-    String effectiveKeyspace = getEffectiveCatalog();
+    Result result = validateCatalogAndTable(metadata, sessionCatalog);
+    String effectiveCatalog = getEffectiveCatalog();
 
     TableMetadata tableMetadata = null;
     if (!result.hasError()) {
-      tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+      tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
       result = validateSelectionColumns(tableMetadata);
     }
     if (!result.hasError()) {
@@ -251,31 +244,31 @@ public class DeleteStatement extends MetaStatement {
   }
 
   /**
-   * Validate that a valid keyspace is present, and that the table does not exits unless
+   * Validate that a valid catalog is present, and that the table does not exits unless
    * {@code ifNotExists} has been specified.
    * 
    * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
    *        required information.
-   * @param targetKeyspace The target keyspace where the query will be executed.
+   * @param targetCatalog The target catalog where the query will be executed.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace) {
+  private Result validateCatalogAndTable(MetadataManager metadata, String targetCatalog) {
     Result result = QueryResult.createSuccessQueryResult();
-    // Get the effective keyspace based on the user specification during the create
-    // sentence, or taking the keyspace in use in the user session.
-    String effectiveKeyspace = getEffectiveCatalog();
+    // Get the effective catalog based on the user specification during the create
+    // sentence, or taking the catalog in use in the user session.
+    String effectiveCatalog = getEffectiveCatalog();
 
-    // Check that the keyspace and table exists.
-    if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
+    // Check that the catalog and table exists.
+    if (effectiveCatalog == null || effectiveCatalog.length() == 0) {
       result =
           Result.createValidationErrorResult("Target catalog missing or no catalog has been selected.");
     } else {
-      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
       if (ksMetadata == null) {
         result =
-            Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
+            Result.createValidationErrorResult("Catalog " + effectiveCatalog + " does not exist.");
       } else {
-        TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+        TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
         if (tableMetadata == null) {
           result = Result.createValidationErrorResult("Table " + tableName + " does not exist.");
         }

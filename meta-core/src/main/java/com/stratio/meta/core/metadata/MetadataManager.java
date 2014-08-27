@@ -18,16 +18,7 @@
 
 package com.stratio.meta.core.metadata;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
@@ -35,15 +26,24 @@ import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.metadata.structures.TableType;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.streaming.StreamingUtils;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
 
+import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Metadata Manager of the META server that maintains and up-to-date version of the metadata
- * associated with the existing keyspaces and tables.
+ * associated with the existing catalogs and tables.
  */
 public class MetadataManager {
 
@@ -94,38 +94,43 @@ public class MetadataManager {
   }
 
   /**
-   * Get the Metadata associated with a keyspace.
+   * Get the Metadata associated with a catalog.
    * 
-   * @param keyspace The target keyspace.
-   * @return The KeyspaceMetadata or null if the keyspace is not found, or the client is not
+   * @param catalog The target catalog.
+   * @return The CatalogMetadata or null if the catalog is not found, or the client is not
    *         connected to Cassandra.
    */
-  public KeyspaceMetadata getKeyspaceMetadata(String keyspace) {
-    KeyspaceMetadata result = null;
+  public CatalogMetadata getCatalogMetadata(String catalog) {
+    throw new UnsupportedOperationException();
+    /*
+    CatalogMetadata result = null;
     if (clusterMetadata != null) {
-      result = clusterMetadata.getKeyspace(keyspace);
+      result = clusterMetadata.getCatalog(catalog);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Cluster metadata: " + result);
       }
     }
     return result;
+    */
   }
 
   /**
-   * Get the Metadata associated with a {@code tablename} of a {@code keyspace}.
+   * Get the Metadata associated with a {@code tablename} of a {@code catalog}.
    * 
-   * @param keyspace The target keyspace.
+   * @param catalog The target catalog.
    * @param tablename The target table.
-   * @return The TableMetadata or null if the table does not exist in the keyspace, or the client is
+   * @return The TableMetadata or null if the table does not exist in the catalog, or the client is
    *         not connected to Cassandra.
    */
-  public TableMetadata getTableMetadata(String keyspace, String tablename) {
+  public TableMetadata getTableMetadata(String catalog, TableName tablename) {
+    throw new UnsupportedOperationException();
+    /*
     TableMetadata result = null;
-    if (clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null) {
+    if (clusterMetadata != null && clusterMetadata.getCatalog(catalog) != null) {
       boolean found = false;
       // Iterate through the tables matching the name. We cannot use the getTable
       // method as it changes the names using the Metadata.handleId
-      Iterator<TableMetadata> tables = clusterMetadata.getKeyspace(keyspace).getTables().iterator();
+      Iterator<TableMetadata> tables = clusterMetadata.getCatalog(catalog).getTables().iterator();
       TableMetadata tableMetadata = null;
       while (!found && tables.hasNext()) {
         tableMetadata = tables.next();
@@ -139,34 +144,36 @@ public class MetadataManager {
       }
     }
     return result;
+    */
   }
 
   /**
-   * Get the Metadata associated with a {@code tablename} of a {@code keyspace}.
+   * Get the Metadata associated with a {@code tablename} of a {@code catalog}.
    * 
-   * @param keyspace The target keyspace.
+   * @param catalog The target catalog.
    * @param tablename The target table.
-   * @return The TableMetadata or null if the table does not exist in the keyspace, or the client is
+   * @return The TableMetadata or null if the table does not exist in the catalog, or the client is
    *         not connected to Cassandra.
    */
   public com.stratio.meta.common.metadata.structures.TableMetadata getTableGenericMetadata(
-      String keyspace, String tablename) {
-
+      String catalog, TableName tablename) {
+    throw new UnsupportedOperationException();
+    /*
     com.stratio.meta.common.metadata.structures.TableMetadata result = null;
 
-    if (clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null
+    if (clusterMetadata != null && clusterMetadata.getCatalog(catalog) != null
         && tablename != null) {
       boolean found = false;
 
       // TODO Make it generic
       AbstractMetadataHelper helper = new CassandraMetadataHelper();
-      KeyspaceMetadata keyspaceMetadata = getKeyspaceMetadata(keyspace);
+      CatalogMetadata catalogMetadata = getCatalogMetadata(catalog);
 
       List<com.stratio.meta.common.metadata.structures.TableMetadata> tableList = new ArrayList<>();
       // Adding db tables
-      tableList.addAll(helper.toCatalogMetadata(keyspaceMetadata).getTables());
+      tableList.addAll(helper.toCatalogMetadata(catalogMetadata).getTables());
       // Adding ephemeral tables
-      tableList.addAll(this.getEphemeralTables(keyspace));
+      tableList.addAll(this.getEphemeralTables(catalog));
 
       Iterator<com.stratio.meta.common.metadata.structures.TableMetadata> tablesIt =
           tableList.iterator();
@@ -180,56 +187,66 @@ public class MetadataManager {
     }
 
     return result;
+    */
   }
 
   /**
-   * Get the comment associated with a {@code tablename} of a {@code keyspace}.
+   * Get the comment associated with a {@code tablename} of a {@code catalog}.
    * 
-   * @param keyspace The target keyspace.
+   * @param catalog The target catalog.
    * @param tablename The target table.
-   * @return The comment or null if the table does not exist in the keyspace, or the client is not
+   * @return The comment or null if the table does not exist in the catalog, or the client is not
    *         connected to Cassandra.
    */
-  public String getTableComment(String keyspace, String tablename) {
+  public String getTableComment(String catalog, String tablename) {
+    throw new UnsupportedOperationException();
+    /*
     String result = null;
-    if (clusterMetadata != null && clusterMetadata.getKeyspace(keyspace) != null) {
-      result = clusterMetadata.getKeyspace(keyspace).getTable(tablename).getOptions().getComment();
+    if (clusterMetadata != null && clusterMetadata.getCatalog(catalog) != null) {
+      result = clusterMetadata.getCatalog(catalog).getTable(tablename).getOptions().getComment();
     }
     return result;
+    */
   }
 
   /**
-   * Get the list of keyspaces in Cassandra.
+   * Get the list of catalogs in Cassandra.
    * 
-   * @return The list of keyspaces or empty if not connected.
+   * @return The list of catalogs or empty if not connected.
    */
-  public List<String> getKeyspacesNames() {
+  public List<String> getCatalogsNames() {
+    throw new UnsupportedOperationException();
+    /*
     List<String> result = new ArrayList<>();
     if (clusterMetadata != null) {
-      for (KeyspaceMetadata list : clusterMetadata.getKeyspaces()) {
+      for (CatalogMetadata list : clusterMetadata.getCatalogs()) {
         result.add(list.getName());
       }
     }
     return result;
+    */
   }
 
   /**
-   * Get the list of tables in a Cassandra keyspaces.
+   * Get the list of tables in a Cassandra catalogs.
    * 
-   * @param catalog The name of the keyspace
-   * @return The list of tables or empty if the keyspace does not exist, or the not connected.
+   * @param catalog The name of the catalog
+   * @return The list of tables or empty if the catalog does not exist, or the not connected.
    */
   public List<String> getTablesNames(String catalog) {
+    throw new UnsupportedOperationException();
+    /*
     List<String> result = new ArrayList<>();
     // Retrieve database tables.
-    if (clusterMetadata != null && clusterMetadata.getKeyspace(catalog) != null) {
-      KeyspaceMetadata km = clusterMetadata.getKeyspace(catalog);
+    if (clusterMetadata != null && clusterMetadata.getCatalog(catalog) != null) {
+      CatalogMetadata km = clusterMetadata.getCatalog(catalog);
       for (TableMetadata tm : km.getTables()) {
         result.add(tm.getName());
       }
     }
 
     return result;
+    */
   }
 
   /**
@@ -437,7 +454,9 @@ public class MetadataManager {
   }
 
   public com.stratio.meta.common.metadata.structures.TableMetadata convertStreamingToMeta(
-      String catalog, String tablename) {
+      String catalog, TableName tablename) {
+    throw new UnsupportedOperationException();
+    /*
     Set<com.stratio.meta.common.metadata.structures.ColumnMetadata> columns = new HashSet<>();
     try {
       for (ColumnNameTypeValue col : stratioStreamingAPI.columnsFromStream(catalog + "_"
@@ -456,6 +475,7 @@ public class MetadataManager {
         new com.stratio.meta.common.metadata.structures.TableMetadata(tablename, catalog,
             TableType.EPHEMERAL, columns);
     return tableMetadata;
+    */
   }
 
   private ColumnType convertStreamingToMeta(com.stratio.streaming.commons.constants.ColumnType type) {

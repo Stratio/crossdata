@@ -18,12 +18,13 @@
 
 package com.stratio.meta.core.structures;
 
+import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.data.TableName;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
-import com.stratio.meta.common.utils.StringUtils;
 
 public class SelectionSelectors extends Selection {
 
@@ -64,8 +65,8 @@ public class SelectionSelectors extends Selection {
   }
 
   @Override
-  public void addTablename(String tablename) {
-    for (SelectionSelector selectionSelector : selectors) {
+  public void addTablename(TableName tablename) {
+    for (SelectionSelector selectionSelector: selectors) {
       selectionSelector.addTablename(tablename);
     }
   }

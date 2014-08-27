@@ -24,14 +24,14 @@ import org.testng.annotations.Test;
 public class DropCatalogStatementTest extends ParsingTest {
 
     @Test
-    public void dropKeyspace() {
-        String inputText = "drop keyspace IF EXISTS mykeyspace;";
-        testRegularStatement(inputText, "dropKeyspace");
+    public void dropCatalog() {
+        String inputText = "drop catalog IF EXISTS mycatalog;";
+        testRegularStatement(inputText, "dropCatalog");
     }
 
     @Test
     public void dropWrongPlaceForIfExists(){
-        String inputText = "DROP KEYSPACE mykeyspace IF EXISTS;";
+        String inputText = "DROP KEYSPACE mycatalog IF EXISTS;";
         testRecoverableError(inputText, "dropWrongPlaceForIfExists");
     }
 

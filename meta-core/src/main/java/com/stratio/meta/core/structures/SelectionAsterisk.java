@@ -18,6 +18,8 @@
 
 package com.stratio.meta.core.structures;
 
+import com.stratio.meta2.common.data.TableName;
+
 public class SelectionAsterisk extends Selection {
 
   /**
@@ -33,7 +35,7 @@ public class SelectionAsterisk extends Selection {
   }
 
   @Override
-  public void addTablename(String tablename) {
+  public void addTablename(TableName tablename) {
 
   }
 

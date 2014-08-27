@@ -20,53 +20,42 @@ package com.stratio.meta.core.structures;
 
 
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta2.common.data.TableName;
 
 public class InnerJoin {
 
-  private String keyspace = null;
+  private String catalog = null;
 
-  private boolean keyspaceInc = false;
+  private boolean catalogInc = false;
 
-  private String tableName;
+  private TableName tableName;
 
   private SelectorIdentifier leftField;
 
   private SelectorIdentifier rightField;
 
-  private InnerJoin(String tableName) {
-
+  private InnerJoin(TableName tableName) {
     this.tableName = tableName;
-
-    if (this.tableName.contains(".")) {
-      String[] ksAndTablename = this.tableName.split("\\.");
-      keyspace = ksAndTablename[0];
-      this.tableName = ksAndTablename[1];
-      keyspaceInc = true;
-    }
   }
 
-  public InnerJoin(String tableName, String leftField, String rightField) {
-
+  public InnerJoin(TableName tableName, String leftField, String rightField) {
     this(tableName);
-
     this.leftField = new SelectorIdentifier(leftField);
     this.rightField = new SelectorIdentifier(rightField);
   }
 
-  public InnerJoin(String tableName, SelectorIdentifier leftField, SelectorIdentifier rightField) {
-
+  public InnerJoin(TableName tableName, SelectorIdentifier leftField, SelectorIdentifier rightField) {
     this(tableName);
-
     this.leftField = leftField;
     this.rightField = rightField;
   }
 
-  public String getTablename() {
+  public TableName getTablename() {
     return tableName;
   }
 
-  public String getKeyspace() {
-    return keyspace;
+  public String getCatalog() {
+    return catalog;
   }
 
   public SelectorIdentifier getLeftField() {
@@ -80,8 +69,8 @@ public class InnerJoin {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    if (keyspaceInc) {
-      sb.append(keyspace);
+    if (catalogInc) {
+      sb.append(catalog);
       sb.append(".");
     }
     sb.append(tableName);
@@ -89,7 +78,7 @@ public class InnerJoin {
     return sb.toString();
   }
 
-  public boolean isKeyspaceInc() {
-    return keyspaceInc;
+  public boolean isCatalogInc() {
+    return catalogInc;
   }
 }

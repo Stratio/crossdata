@@ -120,7 +120,7 @@ public class AlterTableStatement extends TableStatement {
     /**
      * Validate the semantics of the current statement. This method checks the
      * existing metadata to determine that all referenced entities exists in the
-     * {@code targetKeyspace} and the types are compatible with the assignations
+     * {@code targetCatalog} and the types are compatible with the assignations
      * or comparisons.
      *
      * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
@@ -129,14 +129,14 @@ public class AlterTableStatement extends TableStatement {
      */
     @Override
     public Result validate(MetadataManager metadata, EngineConfig config) {
-        Result result = validateKeyspaceAndTable(
+        Result result = validateCatalogAndTable(
             metadata,
             sessionCatalog,
-            tableName.isCompletedName(), tableName.getCatalogName().getName(), tableName.getName());
+            tableName.isCompletedName(), tableName.getCatalogName().getName(), tableName);
         if(!result.hasError()) {
-            String effectiveKeyspace = getEffectiveCatalog();
-            System.out.println("validating: " + effectiveKeyspace + " table: " + tableName.getName());
-            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName.getName());
+            String effectiveCatalog = getEffectiveCatalog();
+            System.out.println("validating: " + effectiveCatalog + " table: " + tableName.getName());
+            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
 
             switch(option){
                 case 1:

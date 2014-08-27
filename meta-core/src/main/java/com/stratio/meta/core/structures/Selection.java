@@ -18,6 +18,8 @@
 
 package com.stratio.meta.core.structures;
 
+import com.stratio.meta2.common.data.TableName;
+
 public abstract class Selection {
 
   public static final int TYPE_SELECTOR = 1;
@@ -36,7 +38,7 @@ public abstract class Selection {
   @Override
   public abstract String toString();
 
-  public abstract void addTablename(String tablename);
+  public abstract void addTablename(TableName tablename);
 
   /**
    * Checks whether the selection clause contains some function or not
