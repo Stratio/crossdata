@@ -19,6 +19,7 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.statements.DropTableStatement;
 import org.testng.annotations.Test;
 
@@ -27,7 +28,7 @@ public class DropTableStatementTest  extends BasicPlannerTest {
     @Test
     public void testPlanForDropTable(){
         String inputText = "DROP TABLE demo.users;";
-        stmt = new DropTableStatement("demo.users", false);
+        stmt = new DropTableStatement(new TableName("demo", "users"), false);
         validateCassandraPath("testPlanForDropTable");
     }
 }

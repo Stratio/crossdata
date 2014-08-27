@@ -31,6 +31,7 @@ import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.StringTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
@@ -74,7 +75,7 @@ public class CreateIndexStatement extends MetaStatement {
   /**
    * The name of the target table.
    */
-  private String tableName = null;
+  private TableName tableName = null;
 
   /**
    * The list of columns covered by the index. Only one column is allowed for {@code DEFAULT} indexes.
@@ -192,16 +193,8 @@ public class CreateIndexStatement extends MetaStatement {
    * Set the name of the target table.
    * @param tableName The name.
    */
-  public void setTableName(String tableName){
-    if(tableName.contains(".")){
-      String[] ksAndTablename = tableName.split("\\.");
-      catalog = ksAndTablename[0];
-      this.tableName = ksAndTablename[1];
-      catalogInc = true;
-    }else {
+  public void setTableName(TableName tableName){
       this.tableName = tableName;
-    }
-
   }
 
   /**

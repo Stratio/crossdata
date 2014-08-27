@@ -68,6 +68,18 @@ public class ParsedQuery extends BaseQuery {
     throw new UnsupportedOperationException();
   }
 
+  //public List<OrderBy> getOrderByColumns();
+  //OrderBy-> List<Columns> order (ASC, DESC)
+
+  //public List<Selector> groupBy
+
+  public int getLimit(){
+    //TODO set limit
+    return 1000;
+  }
+
+  //public ???? getOptions(); //Quorum, consistency, ...
+
 
   public boolean getIfExists(){
     throw new UnsupportedOperationException();

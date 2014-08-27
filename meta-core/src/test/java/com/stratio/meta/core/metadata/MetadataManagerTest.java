@@ -22,6 +22,7 @@ import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.structures.IndexType;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 
 import org.testng.annotations.BeforeClass;
@@ -68,7 +69,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
         "schema_triggers", "sstable_activity"};
     TableMetadata metadata = null;
     for(String table : tables){
-      metadata = _metadataManager.getTableMetadata(catalog, table);
+      metadata = _metadataManager.getTableMetadata(catalog, new TableName("", table));
       assertNotNull(metadata, "Cannot retrieve table " + table + " metadata");
       assertEquals(table, metadata.getName(), "Retrieved table name does not match");
     }
@@ -91,7 +92,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
     String [] columnNames = {"catalog_name", "durable_writes", "strategy_class", "strategy_options"};
     Class<?> [] columnClass = {String.class, Boolean.class, String.class, String.class};
 
-    TableMetadata metadata = _metadataManager.getTableMetadata(catalog, table);
+    TableMetadata metadata = _metadataManager.getTableMetadata(catalog, new TableName("", table));
     assertNotNull(metadata, "Cannot retrieve table metadata");
     assertEquals(table, metadata.getName(), "Retrieved table name does not match");
 
@@ -142,7 +143,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
     int numberIndexedColumnsLucene = 6;
     int numberIndexedColumnsDefault = 1;
 
-    TableMetadata metadata = _metadataManager.getTableMetadata(catalog, table);
+    TableMetadata metadata = _metadataManager.getTableMetadata(catalog, new TableName("", table));
     assertNotNull(metadata, "Cannot retrieve table metadata");
     assertEquals(table, metadata.getName(), "Retrieved table name does not match");
 
@@ -162,7 +163,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
   public void getTableIndexNotFound(){
     String catalog = "demo";
     String table = "users_info";
-    TableMetadata metadata = _metadataManager.getTableMetadata(catalog, table);
+    TableMetadata metadata = _metadataManager.getTableMetadata(catalog, new TableName("", table));
     assertNotNull(metadata, "Cannot retrieve table metadata");
     List<CustomIndexMetadata> indexes = _metadataManager.getTableIndex(metadata);
     assertNotNull(indexes, "Cannot retrieve list of indexes");
@@ -183,7 +184,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
   public void getLuceneIndexNotFound(){
     String catalog = "demo";
     String table = "users_info";
-    TableMetadata metadata = _metadataManager.getTableMetadata(catalog, table);
+    TableMetadata metadata = _metadataManager.getTableMetadata(catalog, new TableName("", table));
     assertNotNull(metadata, "Cannot retrieve table metadata");
     CustomIndexMetadata cim = _metadataManager.getLuceneIndex(metadata);
     assertNull(cim, "Table should not contain a Lucene index");

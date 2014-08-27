@@ -27,6 +27,8 @@ import com.stratio.meta2.core.engine.validator.Validation;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.common.data.TableName;
+
 
 /**
  * Class that models a {@code DROP TABLE} statement from the META language.
@@ -36,7 +38,7 @@ public class DropTableStatement extends MetaStatement {
   /**
    * The name of the target table.
    */
-  private String tableName;
+  private TableName tableName;
 
   /**
    * Whether the table should be dropped only if exists.
@@ -45,19 +47,12 @@ public class DropTableStatement extends MetaStatement {
 
   /**
    * Class constructor.
-   * 
+   *
    * @param tableName The name of the table.
    * @param ifExists Whether it should be dropped only if exists.
    */
-  public DropTableStatement(String tableName, boolean ifExists) {
-    if (tableName.contains(".")) {
-      String[] ksAndTableName = tableName.split("\\.");
-      catalog = ksAndTableName[0];
-      this.tableName = ksAndTableName[1];
-      catalogInc = true;
-    } else {
-      this.tableName = tableName;
-    }
+  public DropTableStatement(TableName tableName, boolean ifExists) {
+    this.tableName = tableName;
     this.ifExists = ifExists;
   }
 
@@ -66,7 +61,7 @@ public class DropTableStatement extends MetaStatement {
    * 
    * @return The name.
    */
-  public String getTableName() {
+  public TableName getTableName() {
     return tableName;
   }
 
@@ -75,15 +70,8 @@ public class DropTableStatement extends MetaStatement {
    * 
    * @param tableName The name of the table.
    */
-  public void setTableName(String tableName) {
-    if (tableName.contains(".")) {
-      String[] ksAndTableName = tableName.split("\\.");
-      catalog = ksAndTableName[0];
-      this.tableName = ksAndTableName[1];
-      catalogInc = true;
-    } else {
-      this.tableName = tableName;
-    }
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
   }
 
   @Override

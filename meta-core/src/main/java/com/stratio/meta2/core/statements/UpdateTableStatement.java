@@ -32,6 +32,7 @@ import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.terms.FloatTerm;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
@@ -49,7 +50,7 @@ public class UpdateTableStatement extends MetaStatement {
   /**
    * The name of the table.
    */
-  private String tableName;
+  private TableName tableName;
 
   /**
    * Whether options are included.
@@ -92,18 +93,11 @@ public class UpdateTableStatement extends MetaStatement {
    * @param condsInc Whether conditions are included.
    * @param conditions The map of conditions.
    */
-  public UpdateTableStatement(String tableName, boolean optsInc, List<Option> options,
+  public UpdateTableStatement(TableName tableName, boolean optsInc, List<Option> options,
       List<Assignation> assignations, List<Relation> whereClauses, boolean condsInc,
       Map<String, Term<?>> conditions) {
     this.command = false;
-    if (tableName.contains(".")) {
-      String[] ksAndTableName = tableName.split("\\.");
-      catalog = ksAndTableName[0];
-      this.tableName = ksAndTableName[1];
-      catalogInc = true;
-    } else {
-      this.tableName = tableName;
-    }
+    this.tableName = tableName;
 
     this.optsInc = optsInc;
 
@@ -131,7 +125,7 @@ public class UpdateTableStatement extends MetaStatement {
    * @param whereClauses The list of relations.
    * @param conditions The map of conditions.
    */
-  public UpdateTableStatement(String tableName, List<Option> options, List<Assignation> assignations,
+  public UpdateTableStatement(TableName tableName, List<Option> options, List<Assignation> assignations,
       List<Relation> whereClauses, Map<String, Term<?>> conditions) {
     this(tableName, true, options, assignations, whereClauses, true, conditions);
   }
@@ -144,7 +138,7 @@ public class UpdateTableStatement extends MetaStatement {
    * @param whereClauses The list of relations.
    * @param conditions The map of conditions.
    */
-  public UpdateTableStatement(String tableName, List<Assignation> assignations,
+  public UpdateTableStatement(TableName tableName, List<Assignation> assignations,
       List<Relation> whereClauses, Map<String, Term<?>> conditions) {
     this(tableName, false, null, assignations, whereClauses, true, conditions);
   }
@@ -157,7 +151,7 @@ public class UpdateTableStatement extends MetaStatement {
    * @param assignations The list of assignations.
    * @param whereClauses The list of relations.
    */
-  public UpdateTableStatement(String tableName, List<Option> options, List<Assignation> assignations,
+  public UpdateTableStatement(TableName tableName, List<Option> options, List<Assignation> assignations,
       List<Relation> whereClauses) {
     this(tableName, true, options, assignations, whereClauses, false, null);
   }
@@ -169,7 +163,7 @@ public class UpdateTableStatement extends MetaStatement {
    * @param assignations The list of assignations.
    * @param whereClauses The list of relations.
    */
-  public UpdateTableStatement(String tableName, List<Assignation> assignations,
+  public UpdateTableStatement(TableName tableName, List<Assignation> assignations,
       List<Relation> whereClauses) {
     this(tableName, false, null, assignations, whereClauses, false, null);
   }
@@ -226,7 +220,9 @@ public class UpdateTableStatement extends MetaStatement {
       }
 
       if (!result.hasError()) {
+        /*
         result = validateWhereClauses(tableMetadata);
+        */
       }
 
       if ((!result.hasError()) && condsInc) {
@@ -374,6 +370,7 @@ public class UpdateTableStatement extends MetaStatement {
     }
   }
 
+  /*
   private Result validateWhereClauses(TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
     for (Relation rel : whereClauses) {
@@ -401,5 +398,6 @@ public class UpdateTableStatement extends MetaStatement {
     }
     return result;
   }
+  */
 
 }

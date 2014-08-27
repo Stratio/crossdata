@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,46 +16,34 @@
  * under the License.
  */
 
-package com.stratio.meta.common.statements.structures.assignations;
+package com.stratio.meta2.common.statements.structures.selectors;
+
+import com.stratio.meta2.common.data.ColumnName;
 
 /**
- * Operators supported in an {@link com.stratio.meta.common.statements.structures.assignations.Assignation}.
+ * Single column selector.
  */
-public enum Operator {
-  ADD{
-    @Override
-    public String toString() {
-      return "+";
-    }
-  },
-  SUBTRACT{
-    @Override
-    public String toString() {
-      return "-";
-    }
-  },
-  IN{
-    @Override
-    public String toString() {
-      return "IN";
-    }
-  },
-  BETWEEN{
-    @Override
-    public String toString() {
-      return "BETWEEN";
-    }
-  },
-  COMPARE{
-    @Override
-    public String toString() {
-      return "=";
-    }
-  },
-  ASSIGN{
-    public String toString() {
-      return "=";
-    }
-  };
+public class ColumnSelector extends Selector{
 
+  /**
+   * Name of the selected column.
+   */
+  private ColumnName name;
+
+  public ColumnSelector(ColumnName name){
+    this.name = name;
+  }
+
+  public ColumnName getName() {
+    return name;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(name.toString());
+    if(this.alias != null){
+      sb.append(" AS ").append(alias);
+    }
+    return sb.toString();
+  }
 }

@@ -121,19 +121,23 @@ public class Bridge {
    * @return a {@link com.stratio.meta.common.data.ResultSet}
    */
   public ResultSet executeLeafNode(MetaStatement stmt, boolean isRoot) {
+    throw new UnsupportedOperationException();
+
+    /*
     SelectStatement ss = (SelectStatement) stmt;
 
     ss.addTablenameToIds();
 
     // LEAF
     String[] columnsSet = {};
+
     if (ss.getSelectionClause().getType() == SelectionClause.TYPE_SELECTION) {
       columnsSet = DeepUtils.retrieveSelectorFields(ss);
     }
     ICassandraDeepJobConfig<Cells> config =
         DeepJobConfigFactory.create().session(session).host(engineConfig.getRandomCassandraHost())
             .rpcPort(engineConfig.getCassandraPort()).keyspace(ss.getEffectiveCatalog())
-            .table(ss.getTableName());
+            .table(ss.getTableName().getName());
 
     config =
         (columnsSet.length == 0) ? config.initialize() : config.inputColumns(columnsSet)
@@ -142,12 +146,14 @@ public class Bridge {
     JavaRDD<Cells> rdd = deepContext.cassandraJavaRDD(config);
 
     // If where
+
     if (ss.isWhereInc()) {
       List<Relation> where = ss.getWhere();
       for (Relation rel : where) {
         rdd = doWhere(rdd, rel);
       }
     }
+
 
     List<String> cols =
         DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
@@ -165,6 +171,7 @@ public class Bridge {
             ss.getOrder());
 
     return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
+    */
   }
 
   /**
@@ -175,6 +182,8 @@ public class Bridge {
    * @return a {@link com.stratio.meta.common.data.ResultSet}
    */
   public ResultSet executeRootNode(MetaStatement stmt, List<Result> resultsFromChildren) {
+    throw new UnsupportedOperationException();
+    /*
     SelectStatement ss = (SelectStatement) stmt;
 
     ss.addTablenameToIds();
@@ -224,6 +233,7 @@ public class Bridge {
             ss.getOrder());
 
     return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
+    */
   }
 
   private ResultSet replaceWithAliases(Map<String, String> fieldsAliasesMap,
@@ -349,6 +359,7 @@ public class Bridge {
    * @param rel {@link com.stratio.meta.common.statements.structures.relationships.Relation} to apply
    * @return A new RDD with the result.
    */
+  /*
   private JavaRDD<Cells> doWhere(JavaRDD<Cells> rdd, Relation rel) {
     String operator = rel.getOperator();
     JavaRDD<Cells> result = null;
@@ -387,6 +398,7 @@ public class Bridge {
     }
     return result;
   }
+  */
 
   /**
    * Take a RDD and the group by information, and apply the requested grouping. If there is any

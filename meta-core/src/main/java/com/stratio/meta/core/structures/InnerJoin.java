@@ -20,6 +20,7 @@ package com.stratio.meta.core.structures;
 
 
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta2.common.data.TableName;
 
 public class InnerJoin {
 
@@ -27,41 +28,29 @@ public class InnerJoin {
 
   private boolean catalogInc = false;
 
-  private String tableName;
+  private TableName tableName;
 
   private SelectorIdentifier leftField;
 
   private SelectorIdentifier rightField;
 
-  private InnerJoin(String tableName) {
-
+  private InnerJoin(TableName tableName) {
     this.tableName = tableName;
-
-    if (this.tableName.contains(".")) {
-      String[] ksAndTablename = this.tableName.split("\\.");
-      catalog = ksAndTablename[0];
-      this.tableName = ksAndTablename[1];
-      catalogInc = true;
-    }
   }
 
-  public InnerJoin(String tableName, String leftField, String rightField) {
-
+  public InnerJoin(TableName tableName, String leftField, String rightField) {
     this(tableName);
-
     this.leftField = new SelectorIdentifier(leftField);
     this.rightField = new SelectorIdentifier(rightField);
   }
 
-  public InnerJoin(String tableName, SelectorIdentifier leftField, SelectorIdentifier rightField) {
-
+  public InnerJoin(TableName tableName, SelectorIdentifier leftField, SelectorIdentifier rightField) {
     this(tableName);
-
     this.leftField = leftField;
     this.rightField = rightField;
   }
 
-  public String getTablename() {
+  public TableName getTablename() {
     return tableName;
   }
 

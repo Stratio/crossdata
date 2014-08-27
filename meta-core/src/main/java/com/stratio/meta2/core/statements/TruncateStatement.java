@@ -25,23 +25,18 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
 
 public class TruncateStatement extends MetaStatement {
 
-  private String ident;
+  private TableName tablename;
 
-  public TruncateStatement(String ident) {
+  public TruncateStatement(TableName tablename) {
     this.command = false;
-    this.ident = ident;
-    if (ident.contains(".")) {
-      String[] ksAndTableName = ident.split("\\.");
-      catalog = ksAndTableName[0];
-      this.ident = ksAndTableName[1];
-      catalogInc = true;
-    }
+    this.tablename = tablename;
   }
 
   public boolean isCatalogInc() {
@@ -60,19 +55,12 @@ public class TruncateStatement extends MetaStatement {
     this.catalog = catalog;
   }
 
-  public String getIdent() {
-    return ident;
+  public TableName getTablename() {
+    return tablename;
   }
 
-  public void setIdent(String ident) {
-    if (ident.contains(".")) {
-      String[] ksAndTablename = ident.split("\\.");
-      catalog = ksAndTablename[0];
-      this.ident = ksAndTablename[1];
-      catalogInc = true;
-    } else {
-      this.ident = ident;
-    }
+  public void setTablename(TableName tablename) {
+    this.tablename = tablename;
   }
 
   @Override
@@ -81,7 +69,7 @@ public class TruncateStatement extends MetaStatement {
     if (catalogInc) {
       sb.append(catalog).append(".");
     }
-    sb.append(ident);
+    sb.append(tablename);
     return sb.toString();
   }
 
@@ -95,9 +83,9 @@ public class TruncateStatement extends MetaStatement {
   public Statement getDriverStatement() {
     Truncate truncateQuery;
     if (catalogInc) {
-      truncateQuery = truncate(catalog, ident);
+      truncateQuery = truncate(catalog, tablename.getName());
     } else {
-      truncateQuery = truncate(ident);
+      truncateQuery = truncate(tablename.getName());
     }
     return truncateQuery;
   }
@@ -121,9 +109,9 @@ public class TruncateStatement extends MetaStatement {
           result= Result.createValidationErrorResult(
               "Catalog " + effectiveCatalog + " does not exist.");
         }else {
-          TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, ident);
+          TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tablename);
           if (tableMetadata == null) {
-            result= Result.createValidationErrorResult("Table " + ident + " does not exist.");
+            result= Result.createValidationErrorResult("Table " + tablename + " does not exist.");
           }
         }
       }
