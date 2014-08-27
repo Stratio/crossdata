@@ -34,14 +34,15 @@ public class FunctionSelector extends Selector{
   /**
    * List of columns.
    */
-  private List<ColumnSelector> functionColumns;
+  private List<Selector> functionColumns;
 
   /**
    * Class constructor.
    * @param functionName Name of the function.
    */
-  public FunctionSelector(String functionName) {
+  public FunctionSelector(String functionName, List<Selector> functionColumns) {
     this.functionName = functionName;
+    this.functionColumns = functionColumns;
   }
 
   /**
@@ -64,7 +65,7 @@ public class FunctionSelector extends Selector{
   public String toString() {
     StringBuilder sb = new StringBuilder(functionName);
     sb.append("(");
-    Iterator<ColumnSelector> selectors = functionColumns.iterator();
+    Iterator<Selector> selectors = functionColumns.iterator();
     while(selectors.hasNext()){
       sb.append(selectors.next().toString());
       if(selectors.hasNext()){

@@ -121,12 +121,16 @@ public class Bridge {
    * @return a {@link com.stratio.meta.common.data.ResultSet}
    */
   public ResultSet executeLeafNode(MetaStatement stmt, boolean isRoot) {
+    throw new UnsupportedOperationException();
+
+    /*
     SelectStatement ss = (SelectStatement) stmt;
 
     ss.addTablenameToIds();
 
     // LEAF
     String[] columnsSet = {};
+
     if (ss.getSelectionClause().getType() == SelectionClause.TYPE_SELECTION) {
       columnsSet = DeepUtils.retrieveSelectorFields(ss);
     }
@@ -142,14 +146,14 @@ public class Bridge {
     JavaRDD<Cells> rdd = deepContext.cassandraJavaRDD(config);
 
     // If where
-    /*
+
     if (ss.isWhereInc()) {
       List<Relation> where = ss.getWhere();
       for (Relation rel : where) {
         rdd = doWhere(rdd, rel);
       }
     }
-    */
+
 
     List<String> cols =
         DeepUtils.retrieveSelectors(((SelectionList) ss.getSelectionClause()).getSelection());
@@ -167,6 +171,7 @@ public class Bridge {
             ss.getOrder());
 
     return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
+    */
   }
 
   /**
@@ -177,6 +182,8 @@ public class Bridge {
    * @return a {@link com.stratio.meta.common.data.ResultSet}
    */
   public ResultSet executeRootNode(MetaStatement stmt, List<Result> resultsFromChildren) {
+    throw new UnsupportedOperationException();
+    /*
     SelectStatement ss = (SelectStatement) stmt;
 
     ss.addTablenameToIds();
@@ -226,6 +233,7 @@ public class Bridge {
             ss.getOrder());
 
     return replaceWithAliases(ss.getFieldsAliasesMap(), resultSet);
+    */
   }
 
   private ResultSet replaceWithAliases(Map<String, String> fieldsAliasesMap,

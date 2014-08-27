@@ -30,6 +30,7 @@ options {
     import com.stratio.meta.common.statements.structures.relationships.*;
     import com.stratio.meta.common.statements.structures.window.*;
     import com.stratio.meta2.common.statements.structures.terms.*;
+    import com.stratio.meta2.common.statements.structures.selectors.*;
     import com.stratio.meta.common.statements.structures.selectors.*;
     import com.stratio.meta2.core.statements.*;
     import com.stratio.meta.core.structures.*;
@@ -632,38 +633,34 @@ selectStatement returns [SelectStatement slctst]
         boolean orderInc = false;
         boolean groupInc = false;
         boolean limitInc = false;
-        boolean disable = false;
         Map fieldsAliasesMap = new HashMap<String, String>();
         Map tablesAliasesMap = new HashMap<String, String>();
         MutablePair<String, String> pair = new MutablePair<>();
     }:
-    T_SELECT selClause=getSelectClause[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
-    (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
-    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON getFields[pair])?
+    T_SELECT selClause=getSelectExpression[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
+    //(T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
+    //(T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON getFields[pair])?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses)?
-    (T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
-    (T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
-    (T_LIMIT {limitInc = true;} constant=getConstant)?
-    (T_DISABLE T_ANALYTICS {disable = true;})?
+    //(T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
+    //(T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
+    //(T_LIMIT {limitInc = true;} constant=getConstant)?
     {
         $slctst = new SelectStatement(selClause, tablename);
-        if(windowInc)
-            $slctst.setWindow(window);
-        if(joinInc)
-            $slctst.setJoin(new InnerJoin(identJoin, pair.getLeft(), pair.getRight()));
+        //if(windowInc)
+        //    $slctst.setWindow(window);
+        //if(joinInc)
+        //    $slctst.setJoin(new InnerJoin(identJoin, pair.getLeft(), pair.getRight()));
         if(whereInc)
              $slctst.setWhere(whereClauses);
-        if(orderInc)
-             $slctst.setOrder(ordering);
-        if(groupInc)
-             $slctst.setGroup(groupby);
-        if(limitInc)
-             $slctst.setLimit(Integer.parseInt(constant));
-        if(disable)
-            $slctst.setDisableAnalytics(true);
+        //if(orderInc)
+        //     $slctst.setOrder(ordering);
+        //if(groupInc)
+        //     $slctst.setGroup(groupby);
+        //if(limitInc)
+        //     $slctst.setLimit(Integer.parseInt(constant));
 
-        $slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
-        $slctst.updateTableNames();
+        //$slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
+        //$slctst.updateTableNames();
     }
 ;
 
@@ -865,49 +862,35 @@ getTimeUnit returns [TimeUnit unit]:
     | T_DAYS {$unit=TimeUnit.DAYS;})
 ;
 
-getSelectClause[Map fieldsAliasesMap] returns [SelectionClause sc]:
-    scc=getSelectionCount {$sc = scc;}
-    | scl=getSelectionList[fieldsAliasesMap] {$sc = scl;}
-;
-
-getSelectionCount returns [SelectionCount scc]
+getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
     @init{
-        boolean identInc = false;
-        char symbol = '*';
-    }:
-    T_COUNT T_START_PARENTHESIS symbolStr=getCountSymbol { symbol=symbolStr.charAt(0); } T_END_PARENTHESIS
-    (T_AS {identInc = true;} ident=T_IDENT )?
-    {
-        if(identInc)
-            $scc = new SelectionCount(symbol, identInc, $ident.text);
-        else
-            $scc = new SelectionCount(symbol);
+        boolean distinct = false;
+        List<Selector> selectors = new ArrayList<>();
     }
-;
+    @after{
+        se = new SelectExpression(selectors);
+        se.setDistinct(distinct);
+    }:
+    (T_DISTINCT {distinct = true;})?
+
+    (
+        T_ASTERISK { s = new AsteriskSelector(); selectors.add(s);}
+        | s=getSelector
+                (T_AS alias1=getAlias {
+                    s.setAlias($alias1.text);
+                    fieldsAliasesMap.put($alias1.text, s.toString());}
+                )? {selectors.add(s);}
+            (T_COMMA s=getSelector
+                    (T_AS aliasN=getAlias {
+                        s.setAlias($aliasN.text);
+                        fieldsAliasesMap.put($aliasN.text, s.toString());}
+                    )? {selectors.add(s);})*
+    )
+
+    ;
 
 getCountSymbol returns [String str]:
     '1' {$str = new String("1");}
-;
-
-getSelectionList[Map fieldsAliasesMap] returns [SelectionList scl]
-    @init{
-        boolean distinct = false;
-    }:
-    (T_DISTINCT {distinct = true;})? selections=getSelection[fieldsAliasesMap]
-    { $scl = new SelectionList(distinct, selections);}
-;
-
-getSelection[Map fieldsAliasesMap] returns [Selection slct]
-    @init{
-        SelectionSelector slsl;
-        ArrayList<SelectionSelector> selections = new ArrayList<>();
-    }:
-    (
-        T_ASTERISK { $slct = new SelectionAsterisk();}
-        | selector1=getSelector { slsl = new SelectionSelector(selector1);} (T_AS alias1=getAlias {slsl.setAlias($alias1.text); fieldsAliasesMap.put($alias1.text, selector1.toString());})? {selections.add(slsl);}
-            (T_COMMA selectorN=getSelector {slsl = new SelectionSelector(selectorN);} (T_AS aliasN=getAlias {slsl.setAlias($aliasN.text); fieldsAliasesMap.put($aliasN.text, selectorN.toString());})? {selections.add(slsl);})*
-            { $slct = new SelectionSelectors(selections);}
-    )
 ;
 
 getAlias returns [String alias]:
@@ -915,27 +898,30 @@ getAlias returns [String alias]:
 ;
 
 
-getSelector returns [SelectorMeta slmt]
+getSelector returns [Selector s]
     @init{
-        ArrayList<SelectorMeta> params = new ArrayList<>();
-        GroupByFunction gbFunc = null;
+        List<Selector> params = new ArrayList<>();
+        String name = null;
+        //String functionName = null;
     }:
-    ( (T_SUM {gbFunc = GroupByFunction.SUM;}
-       | T_MAX {gbFunc = GroupByFunction.MAX;}
-       | T_MIN {gbFunc = GroupByFunction.MIN;}
-       | T_AVG {gbFunc = GroupByFunction.AVG;}
-       | T_COUNT {gbFunc = GroupByFunction.COUNT;}
-      )
-            T_START_PARENTHESIS
-                (select1=getSelector {params.add(select1);}
-                | T_ASTERISK {params.add(new SelectorIdentifier("*"));}
-                )?
-            T_END_PARENTHESIS {$slmt = new SelectorGroupBy(gbFunc, params.get(0));}
-        | (identID=getTableID | luceneID=T_LUCENE) (
-            {if (identID != null) $slmt = new SelectorIdentifier(identID); else $slmt = new SelectorIdentifier($luceneID.text);}
-            | T_START_PARENTHESIS (select1=getSelector {params.add(select1);} (T_COMMA selectN=getSelector {params.add(selectN);})*)?
-                T_END_PARENTHESIS {$slmt = new SelectorFunction(identID, params);}
+    (
+        (functionName=T_SUM
+            | functionName=T_MAX
+            | functionName=T_MIN
+            | functionName=T_AVG
+            | functionName=T_COUNT
         )
+
+        T_START_PARENTHESIS
+            (select1=getSelector {params.add(select1);}
+            | T_ASTERISK {params.add(new AsteriskSelector());}
+            )?
+        T_END_PARENTHESIS {s = new FunctionSelector($functionName.text, params);}
+
+        |
+
+        (columnName=getColumn {s = new ColumnSelector(columnName);})
+
     )
 ;
 
@@ -967,13 +953,18 @@ getValueAssign returns [GenericTerm valueAssign]
     )*
 ;
 
-getRelation returns [Relation mrel]:
-    T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}
-                            | T_TOKEN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationToken(listIds, operator, terms);})
-    | (ident=T_IDENT | ident=T_KS_AND_TN) ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, termR);}
-                    | T_IN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationIn($ident.text, terms);}
-                    | T_BETWEEN term1=getTerm T_AND term2=getTerm {$mrel = new RelationBetween($ident.text, term1, term2);}
-                    )
+getRelation returns [Relation mrel]
+    @after{
+        $mrel = null;
+    }:
+//TODO
+
+//    T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}
+//                            | T_TOKEN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationToken(listIds, operator, terms);})
+//    | (ident=T_IDENT | ident=T_KS_AND_TN) ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, termR);}
+//                    | T_IN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationIn($ident.text, terms);}
+//                    | T_BETWEEN term1=getTerm T_AND term2=getTerm {$mrel = new RelationBetween($ident.text, term1, term2);}
+//                    )
 ;
 
 getComparator returns [String comparator]:
@@ -1028,9 +1019,9 @@ getTermOrLiteral returns [GenericTerm vc]
     T_END_SBRACKET {$vc=cl;}
 ;
 
-getAliasedTableID[Map tablesAliasesMap] returns [String tableID]:
-	(ident1=T_IDENT {$tableID = new String($ident1.text);}
-    | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);}) (alias=T_IDENT {tablesAliasesMap.put($alias.text, $tableID);})?
+getAliasedTableID[Map tablesAliasesMap] returns [TableName result]:
+	tableN=getTable (alias=T_IDENT {tablesAliasesMap.put($alias.text, tableN.toString());})?
+	{result = tableN;}
     ;
 
 getTableID returns [String tableID]:

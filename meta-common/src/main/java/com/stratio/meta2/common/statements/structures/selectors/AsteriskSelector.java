@@ -18,35 +18,13 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import java.util.List;
-
 /**
- * Class that contains the list of elements requested by the user in a SELECT statement. For
- * example, given the following statement: SELECT a, b as z, function(c) FROM t this class contains
- * a list with a, b as z, function(c).
+ * Asterisk selector.
  */
-public class SelectExpression {
+public class AsteriskSelector extends Selector{
 
-  /**
-   * List of selectors.
-   */
-  private final List<Selector> selectorList;
-
-  private boolean distinct = false;
-
-  public SelectExpression(List<Selector> selectorList) {
-    this.selectorList = selectorList;
-  }
-
-  public List<Selector> getSelectorList() {
-    return selectorList;
-  }
-
-  public void setDistinct(boolean distinct) {
-    this.distinct = distinct;
-  }
-
-  public boolean isDistinct() {
-    return distinct;
+  @Override
+  public String toString() {
+    return "*";
   }
 }

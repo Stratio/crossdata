@@ -61,6 +61,9 @@ public enum Operator {
       return "=";
     }
   },
+  /**
+   * Assign relationship for update-like statements.
+   */
   ASSIGN{
     public String toString() {
       return "=";

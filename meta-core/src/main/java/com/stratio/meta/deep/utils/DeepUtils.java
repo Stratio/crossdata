@@ -248,6 +248,8 @@ public final class DeepUtils {
    * @return Array of fields in selection clause or null if all fields has been selected
    */
   public static String[] retrieveSelectorFields(SelectStatement ss) {
+    throw new UnsupportedOperationException();
+    /*
     // Retrieve selected column names
     SelectionList sList = (SelectionList) ss.getSelectionClause();
     Selection selection = sList.getSelection();
@@ -269,6 +271,7 @@ public final class DeepUtils {
       }
     }
     return columnsSet.toArray(new String[columnsSet.size()]);
+    */
   }
 
   /**
