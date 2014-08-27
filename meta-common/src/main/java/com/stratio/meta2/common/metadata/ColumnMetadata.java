@@ -32,8 +32,6 @@ public class ColumnMetadata implements IMetadata {
     this.columnType = columnType;
   }
 
-
-
   public ColumnName getName() {
     return name;
   }
@@ -46,5 +44,7 @@ public class ColumnMetadata implements IMetadata {
     return columnType;
   }
 
-
+  public String getIndex() {
+    throw new UnsupportedOperationException();
+  }
 }

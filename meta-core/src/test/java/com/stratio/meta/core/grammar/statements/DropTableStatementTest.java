@@ -23,16 +23,30 @@ import org.testng.annotations.Test;
 
 public class DropTableStatementTest extends ParsingTest {
 
-    @Test
-    public void dropTable() {
-        String inputText = "DROP TABLE IF EXISTS lastTable;";
-        testRegularStatement(inputText, "dropTable");
-    }
+  @Test
+  public void dropTable() {
+    String inputText = "DROP TABLE IF EXISTS lastTable;";
+    testRegularStatement(inputText, "dropTable");
+  }
 
-    @Test
-    public void dropNotMissing(){
-        String inputText = "DROP TABLE IF EXISTS _lastTable;";
-        testRecoverableError(inputText, "dropNotMissing");
-    }
+  @Test
+  public void dropNotMissing(){
+    String inputText = "DROP TABLE IF EXISTS _lastTable;";
+    testRecoverableError(inputText, "dropNotMissing");
+  }
+
+  @Test
+  public void dropTableWithCatalog() {
+    String inputText = "[ oldcatalog ], DROP TABLE lastTable;";
+    String expectedText = inputText.replace("[ oldcatalog ], ", "");
+    testRegularStatement(inputText, expectedText, "dropTableWithCatalog");
+  }
+
+  @Test
+  public void dropTableWithEmptyCatalog() {
+    String inputText = "[ ], DROP TABLE lastTable;";
+    String expectedText = inputText.replace("[ ], ", "");
+    testRegularStatement(inputText, expectedText, "dropTableWithEmptyCatalog");
+  }
 
 }

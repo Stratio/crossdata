@@ -203,7 +203,7 @@ public class UpdateTableStatement extends MetaStatement {
 
   /**
    * Validate the semantics of the current statement. This method checks the existing metadata to
-   * determine that all referenced entities exists in the {@code targetKeyspace} and the types are
+   * determine that all referenced entities exists in the {@code targetCatalog} and the types are
    * compatible with the assignations or comparisons.
    * 
    * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
@@ -213,7 +213,7 @@ public class UpdateTableStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result =
-        validateKeyspaceAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
+        validateCatalogAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
     if (!result.hasError()) {
       TableMetadata tableMetadata = metadata.getTableMetadata(getEffectiveCatalog(), tableName);
 
