@@ -18,6 +18,8 @@
 
 package com.stratio.meta.common.statements.structures.selectors;
 
+import com.stratio.meta2.common.data.TableName;
+
 import java.io.Serializable;
 
 public class SelectorGroupBy extends SelectorMeta implements Serializable {
@@ -58,7 +60,7 @@ public class SelectorGroupBy extends SelectorMeta implements Serializable {
   }
 
   @Override
-  public void addTablename(String tablename) {
+  public void addTablename(TableName tablename) {
     param.addTablename(tablename);
   }
 

@@ -137,7 +137,7 @@ public class Bridge {
     ICassandraDeepJobConfig<Cells> config =
         DeepJobConfigFactory.create().session(session).host(engineConfig.getRandomCassandraHost())
             .rpcPort(engineConfig.getCassandraPort()).keyspace(ss.getEffectiveCatalog())
-            .table(ss.getTableName());
+            .table(ss.getTableName().getName());
 
     config =
         (columnsSet.length == 0) ? config.initialize() : config.inputColumns(columnsSet)

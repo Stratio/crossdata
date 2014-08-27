@@ -52,6 +52,15 @@ options {
         return ((queryCatalog != null) && (!queryCatalog.isEmpty()))? queryCatalog: sessionCatalog;
     }
 
+    public TableName normalizeTableName(String str){
+        if(str.contains(".")){
+            String[] idParts = str.split("\\.");
+            return new TableName(idParts[0], idParts[1]);
+        } else {
+            return new TableName(sessionCatalog, str);
+        }
+    }
+
     private ErrorsHelper foundErrors = new ErrorsHelper();
 
     public ErrorsHelper getFoundErrors(){
@@ -394,9 +403,9 @@ deleteStatement returns [DeleteStatement ds]
         firstField=getField {$ds.addColumn(firstField);}
 		(T_COMMA field=getField {$ds.addColumn(field);})*
         T_END_PARENTHESIS
-        )?
+    )?
 	T_FROM
-	tableName=getTableID {$ds.setTableName(tableName);}
+	tableName=getTableName {$ds.setTableName(tableName);}
 	T_WHERE
 	rel1=getRelation {$ds.addRelation(rel1);} (T_AND relN=getRelation {$ds.addRelation(relN);})*
 ;
@@ -473,7 +482,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	T_CREATE {$cis.setIndexType("default");} (indexType=getIndexType {$cis.setIndexType(indexType);})? T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
 	(name=T_IDENT {$cis.setName($name.text);})?
-	T_ON tableName=getTableID {$cis.setTableName(tableName);}
+	T_ON tableName=getTableName {$cis.setTableName(tableName);}
 	T_START_PARENTHESIS
         firstField=getField {$cis.addColumn(firstField);}
 	(T_COMMA
@@ -518,7 +527,7 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
         ArrayList<Relation> whereclauses = new ArrayList<>();
         Map<String, Term<?>> conditions = new HashMap<>();
     }:
-    T_UPDATE tablename=getTableID
+    T_UPDATE tablename=getTableName
     (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (T_AND optN=getOption {options.add(optN);})*)?
     T_SET assig1=getAssignment {assignations.add(assig1);} (T_COMMA assigN=getAssignment {assignations.add(assigN);})*
     T_WHERE rel1=getRelation {whereclauses.add(rel1);} (T_AND relN=getRelation {whereclauses.add(relN);})*
@@ -539,7 +548,7 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
 ;
 
 stopProcessStatement returns [StopProcessStatement stprst]:
-    T_STOP T_PROCESS ident=getProcess { $stprst = new StopProcessStatement(ident); }
+    T_STOP T_PROCESS tablename=getProcess { $stprst = new StopProcessStatement(tablename); }
 ;
 
 getProcess returns [String procname]:
@@ -548,10 +557,10 @@ getProcess returns [String procname]:
 
 dropTriggerStatement returns [DropTriggerStatement drtrst]:
     T_DROP
-    T_TRIGGER ident=T_IDENT
+    T_TRIGGER tablename=T_IDENT
     T_ON
     ident2=T_IDENT
-    {$drtrst = new DropTriggerStatement($ident.text,$ident2.text);}
+    {$drtrst = new DropTriggerStatement($tablename.text,$ident2.text);}
     ;
 
 createTriggerStatement returns [CreateTriggerStatement crtrst]:
@@ -573,11 +582,10 @@ createTableStatement returns [CreateTableStatement crtast]
     int columnNumberPK_inter= 0;
     boolean ifNotExists = false;
     boolean withProperties = false;
-    }:
-    T_CREATE
-    T_TABLE
+ }:
+    T_CREATE T_TABLE
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
-    tablename=getTableID T_ON T_CLUSTER clusterID=T_IDENT
+    tablename=getTableName T_ON T_CLUSTER clusterID=T_IDENT
     T_START_PARENTHESIS (
                 ident_column1=getField type1=getDataType (T_PRIMARY T_KEY)? {columns.put(new ColumnName("", "", ident_column1), type1); primaryKeyType=1;}
                 (
@@ -602,7 +610,7 @@ createTableStatement returns [CreateTableStatement crtast]
          )
     T_END_PARENTHESIS (T_WITH {withProperties=true;} properties=getMetaProperties)?
     {
-        $crtast = new CreateTableStatement(new TableName("", tablename), new ClusterName($clusterID.text), columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
+        $crtast = new CreateTableStatement(tablename, new ClusterName($clusterID.text), columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
         $crtast.setProperties(properties);
         $crtast.setIfNotExists(ifNotExists);
         $crtast.setWithProperties(withProperties);
@@ -615,7 +623,7 @@ alterTableStatement returns [AlterTableStatement altast]
     }:
     T_ALTER
     T_TABLE
-    //tablename=getTableID
+    //tablename=getTableName
     tableName = getTable
     (T_ALTER column=getField T_TYPE type=T_IDENT {option=1;}
         |T_ADD column=getField type=T_IDENT {option=2;}
@@ -650,6 +658,8 @@ selectStatement returns [SelectStatement slctst]
         //    $slctst.setWindow(window);
         //if(joinInc)
         //    $slctst.setJoin(new InnerJoin(identJoin, pair.getLeft(), pair.getRight()));
+        //if(joinInc)
+        //    $slctst.setJoin(new InnerJoin(new TableName("", identJoin), pair.getLeft(), pair.getRight()));
         if(whereInc)
              $slctst.setWhere(whereClauses);
         //if(orderInc)
@@ -675,7 +685,7 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
     }:
     T_INSERT
     T_INTO
-    tableName=getTableID
+    tableName=getTableName
     T_START_PARENTHESIS
     ident1=getField {ids.add(ident1);}
     (T_COMMA identN=getField {ids.add(identN);})*
@@ -725,15 +735,15 @@ dropTableStatement returns [DropTableStatement drtbst]
     T_DROP
     T_TABLE
     (T_IF T_EXISTS { ifExists = true; })?
-    identID=getTableID {
+    identID=getTableName {
         $drtbst = new DropTableStatement(identID, ifExists);
     }
 ;
 
 truncateStatement returns [TruncateStatement trst]:
 	T_TRUNCATE
-        ident=getTableID {
-            $trst = new TruncateStatement(ident);
+        tablename=getTableName {
+            $trst = new TruncateStatement(tablename);
 	}
 ;
 
@@ -838,8 +848,8 @@ getWhereClauses returns [ArrayList<Relation> clauses]
 ;
 
 getFields[MutablePair pair]:
-    ident1L=getTableID { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableID { pair.setRight(ident1R); }
-    | T_START_PARENTHESIS ident1L=getTableID { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableID { pair.setRight(ident1R); } T_END_PARENTHESIS
+    ident1L=getTableName { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableName { pair.setRight(ident1R); }
+    | T_START_PARENTHESIS ident1L=getTableName { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableName { pair.setRight(ident1R); } T_END_PARENTHESIS
 ;
 
 getWindow returns [Window ws]:
@@ -861,6 +871,7 @@ getTimeUnit returns [TimeUnit unit]:
     | T_DAY {$unit=TimeUnit.DAYS;}
     | T_DAYS {$unit=TimeUnit.DAYS;})
 ;
+
 
 getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
     @init{
@@ -894,7 +905,7 @@ getCountSymbol returns [String str]:
 ;
 
 getAlias returns [String alias]:
-	ident=T_IDENT {$alias=$ident.text;}
+	tablename=T_IDENT {$alias=$tablename.text;}
 ;
 
 
@@ -904,6 +915,7 @@ getSelector returns [Selector s]
         String name = null;
         //String functionName = null;
     }:
+
     (
         (functionName=T_SUM
             | functionName=T_MAX
@@ -926,10 +938,10 @@ getSelector returns [Selector s]
 ;
 
 getListTypes returns [String listType]:
-	//ident=('PROCESS' | 'UDF' | 'TRIGGER' | 'process' | 'udf' | 'trigger') {$listType = new String($ident.text);}
-	//ident=('PROCESS' | 'UDF' | 'TRIGGER') {$listType = new String($ident.text);}
-	//ident=(T_PROCESS | 'UDF' | 'TRIGGER') {$listType = new String($ident.text);}
-	ident=(T_PROCESS | T_UDF | T_TRIGGER) {$listType = new String($ident.text);}
+	//tablename=('PROCESS' | 'UDF' | 'TRIGGER' | 'process' | 'udf' | 'trigger') {$listType = new String($tablename.text);}
+	//tablename=('PROCESS' | 'UDF' | 'TRIGGER') {$listType = new String($tablename.text);}
+	//tablename=(T_PROCESS | 'UDF' | 'TRIGGER') {$listType = new String($tablename.text);}
+	tablename=(T_PROCESS | T_UDF | T_TRIGGER) {$listType = new String($tablename.text);}
 	;
 
 getAssignment returns [Assignation assign]:
@@ -961,10 +973,11 @@ getRelation returns [Relation mrel]
 
 //    T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}
 //                            | T_TOKEN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationToken(listIds, operator, terms);})
-//    | (ident=T_IDENT | ident=T_KS_AND_TN) ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($ident.text, compSymbol, termR);}
-//                    | T_IN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationIn($ident.text, terms);}
-//                    | T_BETWEEN term1=getTerm T_AND term2=getTerm {$mrel = new RelationBetween($ident.text, term1, term2);}
+//    | (tablename=T_IDENT | tablename=T_KS_AND_TN) ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($tablename.text, compSymbol, termR);}
+//                    | T_IN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationIn($tablename.text, terms);}
+//                    | T_BETWEEN term1=getTerm T_AND term2=getTerm {$mrel = new RelationBetween($tablename.text, term1, term2);}
 //                    )
+
 ;
 
 getComparator returns [String comparator]:
@@ -1024,10 +1037,10 @@ getAliasedTableID[Map tablesAliasesMap] returns [TableName result]:
 	{result = tableN;}
     ;
 
-getTableID returns [String tableID]:
-    (ident1=T_IDENT {$tableID = new String($ident1.text);}
-    | ident2=T_KS_AND_TN {$tableID = new String($ident2.text);})
-    ;
+getTableName returns [TableName tableName]:
+    (ident1=T_IDENT {$tableName = normalizeTableName($ident1.text);}
+    | ident2=T_KS_AND_TN {$tableName = normalizeTableName($ident2.text);})
+;
 
 getGenericTerm returns [GenericTerm genericTerm]:
     (colTerms=getCollectionTerms {genericTerm = colTerms;}
@@ -1082,7 +1095,7 @@ getTerm returns [Term term]:
 ;
 
 getPartialTerm returns [Term term]:
-    ident=T_IDENT {$term = new StringTerm($ident.text);}
+    tablename=T_IDENT {$term = new StringTerm($tablename.text);}
     | constant=getConstant {$term = new LongTerm(constant);}
     | T_FALSE {$term = new BooleanTerm("false");}
     | T_TRUE {$term = new BooleanTerm("true");}

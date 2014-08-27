@@ -22,6 +22,8 @@ import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class TableMetadata implements IMetadata {
@@ -33,13 +35,19 @@ public class TableMetadata implements IMetadata {
 
   private final ClusterName clusterRef;
 
+  private final List<ColumnName> partitionKey;
+  private final List<ColumnName> clusterKey;
+
   public TableMetadata(TableName name, Map<String, Object> options,
-      Map<ColumnName, ColumnMetadata> columns, ClusterName clusterRef) {
+      Map<ColumnName, ColumnMetadata> columns, ClusterName clusterRef,
+      List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
     this.name = name;
     this.options = options;
     this.columns = columns;
     this.clusterRef = clusterRef;
 
+    this.partitionKey = partitionKey;
+    this.clusterKey = clusterKey;
   }
 
 
@@ -60,5 +68,18 @@ public class TableMetadata implements IMetadata {
     return clusterRef;
   }
 
+  public List<ColumnName> getPartitionKey() {
+    return partitionKey;
+  }
 
+  public List<ColumnName> getClusterKey() {
+    return clusterKey;
+  }
+
+  public List<ColumnName> getPrimaryKey() {
+    List<ColumnName> result= new ArrayList<>();
+    result.addAll(partitionKey);
+    result.addAll(clusterKey);
+    return result;
+  }
 }

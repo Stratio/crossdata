@@ -132,11 +132,11 @@ public class AlterTableStatement extends TableStatement {
         Result result = validateCatalogAndTable(
             metadata,
             sessionCatalog,
-            tableName.isCompletedName(), tableName.getCatalogName().getName(), tableName.getName());
+            tableName.isCompletedName(), tableName.getCatalogName().getName(), tableName);
         if(!result.hasError()) {
             String effectiveCatalog = getEffectiveCatalog();
             System.out.println("validating: " + effectiveCatalog + " table: " + tableName.getName());
-            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName.getName());
+            TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
 
             switch(option){
                 case 1:

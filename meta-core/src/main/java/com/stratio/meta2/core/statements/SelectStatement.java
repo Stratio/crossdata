@@ -45,6 +45,7 @@ import com.stratio.meta.core.structures.SelectionSelector;
 import com.stratio.meta.core.structures.SelectionSelectors;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
+import com.stratio.meta2.common.statements.structures.terms.Term;
 import com.stratio.meta2.core.structures.OrderDirection;
 import com.stratio.meta2.core.structures.Ordering;
 import com.stratio.streaming.api.IStratioStreamingAPI;
@@ -440,7 +441,7 @@ public class SelectStatement extends MetaStatement {
 
 
   private boolean checkSelectorExists(SelectorIdentifier selector) {
-    return !findColumn(selector.getTable(), selector.getField()).hasError();
+    return !findColumn(selector.getTable().getName(), selector.getField()).hasError();
   }
 
   /**
@@ -507,14 +508,15 @@ public class SelectStatement extends MetaStatement {
       com.stratio.meta.common.metadata.structures.TableMetadata streamingMetadata,
       TableMetadata tableJoin, String colName) {
     Result result = QueryResult.createSuccessQueryResult();
+
     /*
-    if (tableName.equalsIgnoreCase(streamingMetadata.getTableName())) {
+    if (tableName.getName().equalsIgnoreCase(streamingMetadata.getTableName())) {
       if (streamingMetadata.getColumn(colName) == null) {
         result =
             Result.createValidationErrorResult("Field '" + colName
                 + "' not found in ephemeral table '" + tableName + "'.");
       }
-    } else if (tableName.equalsIgnoreCase(tableJoin.getName())) {
+    } else if (tableName.getName().equalsIgnoreCase(tableJoin.getName())) {
       if (tableJoin.getColumn(colName) == null) {
         result =
             Result.createValidationErrorResult("Field '" + colName + "' not found in table '"
@@ -748,7 +750,7 @@ public class SelectStatement extends MetaStatement {
           innerFunction[pos] = QueryBuilder.raw(selMeta.toString());
           pos++;
         }
-        result = result.fcall(selFunction.getName(), innerFunction);
+        result = result.fcall(selFunction.getName().getName(), innerFunction);
       }
     }
     return result;
@@ -977,9 +979,9 @@ public class SelectStatement extends MetaStatement {
     /*
     Select sel;
     if (this.catalogInc) {
-      sel = builder.from(this.catalog, this.tableName);
+      sel = builder.from(catalog, tableName.getName());
     } else {
-      sel = builder.from(this.tableName);
+      sel = builder.from(tableName.getName());
     }
 
     if (this.limitInc) {
@@ -1038,7 +1040,7 @@ public class SelectStatement extends MetaStatement {
         if (identifier != null) {
           String table = tablesAliasesMap.get(identifier.getTable());
           if (table != null) {
-            identifier.setTable(table);
+            identifier.setTable(new TableName("", table));
           }
         }
       }
@@ -1056,7 +1058,7 @@ public class SelectStatement extends MetaStatement {
         for (SelectorIdentifier id : whereCol.getIdentifiers()) {
           String table = tablesAliasesMap.get(id.getTable());
           if (table != null) {
-            id.setTable(table);
+            id.setTable(new TableName("", table));
           }
 
           String identifier = fieldsAliasesMap.get(id.toString());
@@ -1078,7 +1080,7 @@ public class SelectStatement extends MetaStatement {
 
         String table = tablesAliasesMap.get(selectorIdentifier.getTable());
         if (table != null) {
-          selectorIdentifier.setTable(table);
+          selectorIdentifier.setTable(new TableName("", table));
         }
 
         String identifier = fieldsAliasesMap.get(selectorIdentifier.toString());
@@ -1098,7 +1100,7 @@ public class SelectStatement extends MetaStatement {
 
         String table = tablesAliasesMap.get(selectorIdentifier.getTable());
         if (table != null) {
-          selectorIdentifier.setTable(table);
+          selectorIdentifier.setTable(new TableName("", table));
         }
 
         String identifier = fieldsAliasesMap.get(selectorIdentifier.toString());
@@ -1112,16 +1114,16 @@ public class SelectStatement extends MetaStatement {
   private void replaceAliasesInJoin(Map<String, String> tablesAliasesMap) {
 
     if (this.join != null) {
-      String leftTable = this.join.getLeftField().getTable();
+      TableName leftTable = this.join.getLeftField().getTable();
       String tableName = tablesAliasesMap.get(leftTable);
       if (tableName != null) {
-        this.join.getLeftField().setTable(tableName);
+        this.join.getLeftField().setTable(new TableName("", tableName));
       }
 
-      String rightTable = this.join.getRightField().getTable();
+      TableName rightTable = this.join.getRightField().getTable();
       tableName = tablesAliasesMap.get(rightTable);
       if (tableName != null) {
-        this.join.getRightField().setTable(tableName);
+        this.join.getRightField().setTable(new TableName("", tableName));
       }
     }
   }

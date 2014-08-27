@@ -25,7 +25,7 @@ package com.stratio.meta2.common.data;
  *   <li>table</li>
  * </ul>
  */
-public class TableName extends Name{
+public class TableName extends Name {
 
 
   private final String name;

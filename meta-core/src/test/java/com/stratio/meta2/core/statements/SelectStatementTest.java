@@ -22,6 +22,7 @@ import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.grammar.ParsingTest;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
+import com.stratio.meta2.common.data.TableName;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -66,6 +67,7 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
     return stmt;
   }
 
+  /*
   public MetaStatement testGetLuceneWhereClause(String inputText, String expected, String keyspace,
       String tablename, String methodName) {
     // Parse the statement
@@ -76,15 +78,16 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
     assertFalse(mq.hasError(), "Parsing expecting '" + inputText + "' from '" + st.toString()
         + "' returned: " + getErrorMessage(mq.getResult()));
 
-    _metadataManager.getTableMetadata(keyspace, tablename);
+    _metadataManager.getTableMetadata(keyspace, new TableName("", tablename));
 
     String[] result =
         SelectStatement.class.cast(st).getLuceneWhereClause(_metadataManager,
-            _metadataManager.getTableMetadata(keyspace, tablename));
+            _metadataManager.getTableMetadata(keyspace, new TableName("", tablename)));
     assertEquals(result[1], expected, "Lucene where clause does not match");
 
     return st;
   }
+  */
 
     /* Tests that concentrate on the generated Lucene syntax. */
 

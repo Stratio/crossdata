@@ -295,7 +295,7 @@ public class CreateTableStatement extends MetaStatement {
         result = Result.createValidationErrorResult("Catalog " + effectiveCatalog + " does not exist.");
       }else {
         TableMetadata
-            tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName.getName());
+            tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
         if (tableMetadata != null && !ifNotExists) {
           result = Result.createValidationErrorResult("Table " + tableName + " already exists.");
         } else if (tableMetadata == null){

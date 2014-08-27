@@ -25,6 +25,7 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.streaming.api.IStratioStreamingAPI;
@@ -120,7 +121,7 @@ public abstract class MetaStatement implements IStatement {
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   protected Result validateCatalogAndTable(MetadataManager metadata, String targetCatalog,
-      boolean catalogInc, String stmtCatalog, String tableName) {
+      boolean catalogInc, String stmtCatalog, TableName tableName) {
     Result result = QueryResult.createSuccessQueryResult();
     // Get the effective catalog based on the user specification during the create
     // sentence, or taking the catalog in use in the user session.

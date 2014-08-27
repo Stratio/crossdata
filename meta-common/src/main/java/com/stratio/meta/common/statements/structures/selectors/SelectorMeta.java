@@ -18,6 +18,8 @@
 
 package com.stratio.meta.common.statements.structures.selectors;
 
+import com.stratio.meta2.common.data.TableName;
+
 public abstract class SelectorMeta {
 
   public static final int TYPE_IDENT = 1;
@@ -37,5 +39,5 @@ public abstract class SelectorMeta {
   @Override
   public abstract String toString();
 
-  public abstract void addTablename(String tablename);
+  public abstract void addTablename(TableName tablename);
 }

@@ -30,6 +30,7 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.terms.FloatTerm;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
@@ -60,7 +61,7 @@ public class InsertIntoStatement extends MetaStatement {
   /**
    * The name of the target table.
    */
-  private String tableName;
+  private TableName tableName;
 
   /**
    * The list of columns to be assigned.
@@ -117,17 +118,11 @@ public class InsertIntoStatement extends MetaStatement {
    * @param options Query options.
    * @param typeValues Integer that indicates if values come from insert or select.
    */
-  public InsertIntoStatement(String tableName, List<String> ids, SelectStatement selectStatement,
+  public InsertIntoStatement(TableName tableName, List<String> ids, SelectStatement selectStatement,
       List<GenericTerm> cellValues, boolean ifNotExists, boolean optsInc, List<Option> options,
       int typeValues) {
     this.command = false;
     this.tableName = tableName;
-    if (tableName.contains(".")) {
-      String[] ksAndTableName = tableName.split("\\.");
-      catalog = ksAndTableName[0];
-      this.tableName = ksAndTableName[1];
-      catalogInc = true;
-    }
     this.ids = ids;
     this.selectStatement = selectStatement;
     this.cellValues = cellValues;
@@ -146,7 +141,7 @@ public class InsertIntoStatement extends MetaStatement {
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param options Query options.
    */
-  public InsertIntoStatement(String tableName, List<String> ids, SelectStatement selectStatement,
+  public InsertIntoStatement(TableName tableName, List<String> ids, SelectStatement selectStatement,
       boolean ifNotExists, List<Option> options) {
     this(tableName, ids, selectStatement, null, ifNotExists, true, options, 1);
   }
@@ -160,7 +155,7 @@ public class InsertIntoStatement extends MetaStatement {
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param options Query options.
    */
-  public InsertIntoStatement(String tableName, List<String> ids, List<GenericTerm> cellValues,
+  public InsertIntoStatement(TableName tableName, List<String> ids, List<GenericTerm> cellValues,
       boolean ifNotExists, List<Option> options) {
     this(tableName, ids, null, cellValues, ifNotExists, true, options, 2);
   }
@@ -173,7 +168,7 @@ public class InsertIntoStatement extends MetaStatement {
    * @param selectStatement a {@link com.stratio.meta2.core.statements.InsertIntoStatement}
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    */
-  public InsertIntoStatement(String tableName, List<String> ids, SelectStatement selectStatement,
+  public InsertIntoStatement(TableName tableName, List<String> ids, SelectStatement selectStatement,
       boolean ifNotExists) {
     this(tableName, ids, selectStatement, null, ifNotExists, false, null, 1);
   }
@@ -186,7 +181,7 @@ public class InsertIntoStatement extends MetaStatement {
    * @param cellValues List of {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    */
-  public InsertIntoStatement(String tableName, List<String> ids, List<GenericTerm> cellValues,
+  public InsertIntoStatement(TableName tableName, List<String> ids, List<GenericTerm> cellValues,
       boolean ifNotExists) {
     this(tableName, ids, null, cellValues, ifNotExists, false, null, 2);
   }
@@ -329,8 +324,8 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     Insert insertStmt =
-        this.catalogInc ? QueryBuilder.insertInto(this.catalog, this.tableName) : QueryBuilder
-            .insertInto(this.tableName);
+        this.catalogInc ? QueryBuilder.insertInto(this.catalog, this.tableName.getName()) : QueryBuilder
+            .insertInto(this.tableName.getName());
 
     try {
       iterateValuesAndInsertThem(insertStmt);
