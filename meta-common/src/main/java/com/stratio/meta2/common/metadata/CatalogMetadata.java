@@ -19,6 +19,7 @@
 package com.stratio.meta2.common.metadata;
 
 import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.TableName;
 
 import java.util.Map;
 
@@ -27,10 +28,10 @@ public class CatalogMetadata implements IMetadata {
 
   private final Map<String, Object> options;
 
-  private final Map<String, TableMetadata> tables;
+  private final Map<TableName, TableMetadata> tables;
 
   public CatalogMetadata(CatalogName name, Map<String, Object> options,
-      Map<String, TableMetadata> tables) {
+      Map<TableName, TableMetadata> tables) {
     this.name = name;
     this.options = options;
     this.tables = tables;
@@ -44,7 +45,7 @@ public class CatalogMetadata implements IMetadata {
     return options;
   }
 
-  public Map<String, TableMetadata> getTables() {
+  public Map<TableName, TableMetadata> getTables() {
     return tables;
   }
 

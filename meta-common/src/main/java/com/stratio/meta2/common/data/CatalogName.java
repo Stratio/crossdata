@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.common.data;
 
-public class CatalogName extends Name {
+public class CatalogName extends FirstLevelName {
   private final String name;
 
 
@@ -32,13 +32,9 @@ public class CatalogName extends Name {
     return name;
   }
 
-  public String getCatalogQualifiedName(){
+
+
+  @Override public String getQualifiedName() {
     return QualifiedNames.getCatalogQualifiedName(getName());
   }
-
-  @Override
-  public String toString() {
-    return this.getCatalogQualifiedName();
-  }
-
 }

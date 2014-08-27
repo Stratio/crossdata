@@ -18,16 +18,25 @@
 
 package com.stratio.meta2.common.data;
 
-public class Name {
-  private final boolean isCompletedName;
-  public Name(){
-    this(true);
-  }
-  public Name(boolean isCompletedName){
-    this.isCompletedName=isCompletedName;
+
+
+public abstract class Name  {
+
+  public abstract boolean isCompletedName();
+
+  public abstract String getQualifiedName();
+
+  @Override
+  public String toString() {
+    return this.getQualifiedName();
   }
 
-  public boolean isCompletedName() {
-    return isCompletedName;
+  @Override
+  public boolean equals(Object o){
+    boolean result=false;
+    if(o instanceof Name) {
+      result = this.toString().equals(o.toString());
+    }
+    return result;
   }
 }

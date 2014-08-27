@@ -132,7 +132,7 @@ public class AlterTableStatement extends TableStatement {
         Result result = validateKeyspaceAndTable(
             metadata,
             sessionCatalog,
-            tableName.containsCatalog(), tableName.getCatalogName().getName(), tableName.getName());
+            tableName.isCompletedName(), tableName.getCatalogName().getName(), tableName.getName());
         if(!result.hasError()) {
             String effectiveKeyspace = getEffectiveCatalog();
             System.out.println("validating: " + effectiveKeyspace + " table: " + tableName.getName());

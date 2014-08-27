@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.common.data;
 
-public class DataStoreName extends Name {
+public class DataStoreName extends FirstLevelName {
   private final String name;
 
 
@@ -32,12 +32,7 @@ public class DataStoreName extends Name {
     return name;
   }
 
-  public String getDataStoreQualifiedName(){
+  public String getQualifiedName(){
     return QualifiedNames.getDataStoreQualifiedName(getName());
-  }
-
-  @Override
-  public String toString() {
-    return this.getDataStoreQualifiedName();
   }
 }

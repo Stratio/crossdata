@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.common.data;
 
-public class ClusterName extends Name {
+public class ClusterName extends FirstLevelName{
   private final String name;
 
 
@@ -32,13 +32,9 @@ public class ClusterName extends Name {
     return name;
   }
 
-  public String getClusterQualifiedName(){
+  public String getQualifiedName(){
     return QualifiedNames.getClusterQualifiedName(getName());
   }
 
-  @Override
-  public String toString() {
-    return this.getClusterQualifiedName();
-  }
 
 }

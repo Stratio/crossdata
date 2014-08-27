@@ -93,7 +93,7 @@ public class DescribeStatement extends TableStatement {
 
     if (this.tableName != null) {
       result =
-          validateKeyspaceAndTable(metadata, sessionCatalog, tableName.containsCatalog(),
+          validateKeyspaceAndTable(metadata, sessionCatalog, tableName.isCompletedName(),
                                    tableName.getCatalogName().getName(), tableName.getName());
     }
 
