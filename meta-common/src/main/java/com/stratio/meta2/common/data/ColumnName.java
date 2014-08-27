@@ -21,9 +21,7 @@ public class ColumnName extends Name {
    */
   private final String name;
 
-  private final TableName tableName;
-
-  private final boolean isCompleted;
+  private TableName tableName;
 
   /**
    * Default constructor.
@@ -32,11 +30,9 @@ public class ColumnName extends Name {
    */
   public ColumnName(String catalogName, String tableName, String columnName) {
     if(catalogName==null || catalogName.isEmpty() || tableName==null || tableName.isEmpty()) {
-      this.isCompleted=false;
       this.tableName=null;
     }else {
       this.tableName = new TableName(catalogName, tableName);
-      this.isCompleted=true;
     }
     this.name = columnName;
   }
@@ -47,19 +43,26 @@ public class ColumnName extends Name {
     return tableName;
   }
 
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
+  }
+
   public String getName() {
     return name;
   }
 
-  @Override public boolean isCompletedName() {
-   return isCompleted;
+  @Override
+  public boolean isCompletedName() {
+    return tableName != null;
   }
 
   public String getQualifiedName() {
-    String result ="";
-    if(isCompleted) {
+    String result;
+    if (isCompletedName()) {
       result= QualifiedNames.getColumnQualifiedName(this.getTableName().getCatalogName().getName(),
           getTableName().getName(), getName());
+    }else {
+      result=QualifiedNames.getColumnQualifiedName(UNKNOWN_NAME, UNKNOWN_NAME, getName());
     }
     return result;
   }

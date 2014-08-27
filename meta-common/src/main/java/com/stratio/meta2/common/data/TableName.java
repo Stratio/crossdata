@@ -30,17 +30,13 @@ public class TableName extends Name{
 
   private final String name;
 
-  private final CatalogName catalogName;
-
-  private final boolean isCompleted;
+  private CatalogName catalogName;
 
   public TableName(String catalogName, String tableName){
 
     if(catalogName == null || catalogName.isEmpty()){
-      this.isCompleted=false;
       this.catalogName=null;
     }else{
-      this.isCompleted=true;
       this.catalogName=new CatalogName(catalogName);
     }
 
@@ -51,16 +47,26 @@ public class TableName extends Name{
     return catalogName;
   }
 
+  public void setCatalogName(CatalogName catalogName) {
+    this.catalogName=catalogName;
+  }
+
   public String getName() {
     return name;
   }
 
   @Override public boolean isCompletedName() {
-    return this.isCompleted;
+    return catalogName!=null;
   }
 
   public String getQualifiedName() {
-    return QualifiedNames.getTableQualifiedName(this.getCatalogName().getName(), getName());
+    String result;
+    if(isCompletedName()){
+      result= QualifiedNames.getTableQualifiedName(this.getCatalogName().getName(), getName());
+    } else{
+      result= QualifiedNames.getTableQualifiedName(UNKNOWN_NAME,getName());
+    }
+    return result;
   }
 
 }
