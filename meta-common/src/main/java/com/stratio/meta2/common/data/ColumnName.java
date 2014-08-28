@@ -39,6 +39,17 @@ public class ColumnName extends Name {
     this.name = columnName;
   }
 
+  /**
+   * Constructor using existing TableName.
+   *
+   * @param tableName TableName.
+   * @param columnName Name of the column.
+   */
+  public ColumnName(TableName tableName, String columnName) {
+    this.tableName = tableName;
+    this.name = columnName;
+  }
+
   public TableName getTableName() {
     return tableName;
   }

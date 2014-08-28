@@ -25,21 +25,22 @@ import com.stratio.meta.common.security.ICredentials;
 import com.stratio.meta2.common.data.ClusterName;
 
 /**
- * Common interface for META connectors.
- * A connector provides implementations for storage and query engines. Notice that connectors do not
- * need to provide both functionalities at the same time.
+ * Common interface for META connectors. A connector provides implementations for storage and query
+ * engines. Notice that connectors do not need to provide both functionalities at the same time.
  */
 public interface IConnector {
 
   /**
    * Get the name of the datastore required by the connector. Several connectors may declare the
    * same datastore name.
+   *
    * @return The name.
    */
   public String getDatastoreName();
 
   /**
    * Initialize the connector service.
+   *
    * @param configuration The configuration.
    * @throws InitializationException If the connector initialization fails.
    */
@@ -47,26 +48,31 @@ public interface IConnector {
 
   /**
    * Connect to a datastore using a set of options.
+   *
    * @param credentials The required credentials
-   * @param config The cluster configuration.
+   * @param config      The cluster configuration.
    * @throws ConnectionException If the connection could not be established.
    */
-  public void connect(ICredentials credentials, ConnectorClusterConfig config) throws ConnectionException;
+  public void connect(ICredentials credentials, ConnectorClusterConfig config)
+      throws ConnectionException;
 
   /**
    * Close the connection with the underlying datastore.
+   *
    * @throws ConnectionException If the close operation cannot be performed.
    */
   public void close(ClusterName name) throws ConnectionException;
 
   /**
    * Retrieve the connectivity status with the datastore.
+   *
    * @return Whether it is connected or not.
    */
   public boolean isConnected(ClusterName name);
 
   /**
    * Get the storage engine.
+   *
    * @return An implementation of {@link com.stratio.meta.common.connector.IStorageEngine}.
    * @throws UnsupportedException If the connector does not provide this functionality.
    */
@@ -74,6 +80,7 @@ public interface IConnector {
 
   /**
    * Get the query engine.
+   *
    * @return An implementation of {@link com.stratio.meta.common.connector.IQueryEngine}.
    * @throws UnsupportedException If the connector does not provide this functionality.
    */
@@ -81,6 +88,7 @@ public interface IConnector {
 
   /**
    * Get the metadata engine.
+   *
    * @return An implementation of {@link com.stratio.meta.common.connector.IMetadataEngine}.
    * @throws UnsupportedException If the connector does not provide this functionality.
    */

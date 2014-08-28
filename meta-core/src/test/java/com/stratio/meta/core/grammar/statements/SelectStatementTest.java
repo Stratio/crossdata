@@ -114,15 +114,17 @@ public class SelectStatementTest extends ParsingTest {
   public void selectWithTimeWindow() {
     String inputText =
         "SELECT table1.column1 FROM table1 WITH WINDOW 5 SECONDS WHERE table1.column2 = 3;";
-    testRegularStatement(inputText, "selectWithTimeWindow");
+    String expectedText =
+        "SELECT <unknown_name>.table1.column1 FROM <unknown_name>.table1 WITH WINDOW 5 SECONDS WHERE <unknown_name>.table1.column2 = 3;";
+    testRegularStatement(inputText, expectedText, "selectWithTimeWindow");
   }
 
   @Test
   public void selectStatementWindows() {
     for (String w : new String[] {"5 ROWS", "LAST", "5 SECONDS"}) {
       String inputText =
-          "SELECT newtb.ident1 FROM newks.newtb WITH WINDOW " + w
-              + " WHERE newtb.ident1 LIKE whatever;";
+          "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + w
+              + " WHERE newks.newtb.ident1 LIKE whatever;";
       testRegularStatement(inputText, "selectStatementWindows");
     }
 
@@ -131,8 +133,8 @@ public class SelectStatementTest extends ParsingTest {
     for (String t : new String[] {"SECONDS", "MINUTES", "HOURS", "DAYS"}) {
       for (int i = 10; i-- > 2;) {
         String inputText =
-            "SELECT newtb.ident1 FROM newks.newtb WITH WINDOW " + i + " " + t
-                + " WHERE newtb.ident1 LIKE whatever;";
+            "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + i + " " + t
+                + " WHERE newks.newtb.ident1 LIKE whatever;";
         testRegularStatement(inputText, "selectStatementWindows");
       }
 
@@ -145,14 +147,9 @@ public class SelectStatementTest extends ParsingTest {
 
   @Test
   public void selectStatementJoin() {
-
     String inputText =
-        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON field1=field2 WHERE c.x = y;";
-
-    String expectedText =
-        "SELECT c.a, c.b FROM c INNER JOIN tablename ON field1=field2 WHERE c.x = y;";
-
-    testRegularStatement(inputText, expectedText, "selectStatementJoins");
+        "SELECT c.t1.a, c.t2.b FROM c.t1 INNER JOIN c.t2 ON c.t1.a = aa WHERE c.t1.a = y;";
+    testRegularStatement(inputText, "selectStatementJoins");
   }
 
   @Test
@@ -247,8 +244,8 @@ public class SelectStatementTest extends ParsingTest {
 
   @Test
   public void selectSelectors() {
-    for (String c : new String[] {"COUNT(*)", "myUDF(table0.field0)", "table0.field0"}) {
-      String inputText = "SELECT " + c + " from table0;";
+    for (String c : new String[] {"COUNT(*)", "myUDF(c.table0.field0)", "c.table0.field0"}) {
+      String inputText = "SELECT " + c + " from c.table0;";
       testRegularStatement(inputText, "selectSelectors");
     }
   }
@@ -380,7 +377,7 @@ public class SelectStatementTest extends ParsingTest {
   @Test
   public void testSimpleQueryWithAliasesOk() {
 
-    String inputText = "SELECT users.gender as genero FROM demo.users;";
+    String inputText = "SELECT demo.users.gender as genero FROM demo.users;";
 
     testRegularStatement(inputText, "testSimpleGroupQueryWithAliasesOk");
   }
