@@ -76,4 +76,8 @@ public class ColumnName extends Name {
     return result;
   }
 
+  @Override public NameType getType() {
+    return null;
+  }
+
 }

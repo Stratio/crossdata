@@ -36,5 +36,9 @@ public class ClusterName extends FirstLevelName{
     return QualifiedNames.getClusterQualifiedName(getName());
   }
 
+  @Override public NameType getType() {
+    return NameType.Cluster;
+  }
+
 
 }

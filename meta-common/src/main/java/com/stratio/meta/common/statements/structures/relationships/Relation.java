@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
  */
-public abstract class Relation {
+public class Relation {
 
   /**
    * Identifier in the left part of the relationship.
@@ -51,6 +51,12 @@ public abstract class Relation {
    * List of terms on the right part of the relationship.
    */
   protected List<Term<?>> terms;
+
+  public Relation(Selector selector, Operator operator, List<Term<?>> terms){
+    this.identifier = selector;
+    this.operator = operator;
+    this.terms = terms;
+  }
 
   public Selector getIdentifier() {
     return identifier;
