@@ -442,6 +442,8 @@ public class CreateTableStatement extends MetaStatement {
     return sb.toString();
   }
   public ValidationRequirements getValidationRequirements(){
-    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_NOT_EXIST_TABLE);
+    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG)
+        .add(Validation.MUST_EXIST_CLUSTER)
+        .add(Validation.MUST_NOT_EXIST_TABLE);
   }
 }

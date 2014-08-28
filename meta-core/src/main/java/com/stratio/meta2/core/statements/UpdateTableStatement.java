@@ -1,19 +1,15 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership.  The STRATIO (C) licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Licensed to STRATIO (C) under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright ownership. The STRATIO
+ * (C) licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.stratio.meta2.core.statements;
@@ -37,6 +33,7 @@ import com.stratio.meta2.common.statements.structures.terms.FloatTerm;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,8 +122,8 @@ public class UpdateTableStatement extends MetaStatement {
    * @param whereClauses The list of relations.
    * @param conditions The map of conditions.
    */
-  public UpdateTableStatement(TableName tableName, List<Option> options, List<Assignation> assignations,
-      List<Relation> whereClauses, Map<String, Term<?>> conditions) {
+  public UpdateTableStatement(TableName tableName, List<Option> options,
+      List<Assignation> assignations, List<Relation> whereClauses, Map<String, Term<?>> conditions) {
     this(tableName, true, options, assignations, whereClauses, true, conditions);
   }
 
@@ -151,8 +148,8 @@ public class UpdateTableStatement extends MetaStatement {
    * @param assignations The list of assignations.
    * @param whereClauses The list of relations.
    */
-  public UpdateTableStatement(TableName tableName, List<Option> options, List<Assignation> assignations,
-      List<Relation> whereClauses) {
+  public UpdateTableStatement(TableName tableName, List<Option> options,
+      List<Assignation> assignations, List<Relation> whereClauses) {
     this(tableName, true, options, assignations, whereClauses, false, null);
   }
 
@@ -221,8 +218,8 @@ public class UpdateTableStatement extends MetaStatement {
 
       if (!result.hasError()) {
         /*
-        result = validateWhereClauses(tableMetadata);
-        */
+         * result = validateWhereClauses(tableMetadata);
+         */
       }
 
       if ((!result.hasError()) && condsInc) {
@@ -277,13 +274,15 @@ public class UpdateTableStatement extends MetaStatement {
             Result.createValidationErrorResult("TIMESTAMP and TTL are the only accepted options.");
       }
     }
-    for (Option opt: options) {
+    for (Option opt : options) {
       if (opt.getProperties().getType() != GenericTerm.SIMPLE_TERM) {
-        result = Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
+        result =
+            Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
       } else {
         Term simpleTerm = (Term) opt.getProperties();
-        if(!simpleTerm.isConstant()){
-          result = Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
+        if (!simpleTerm.isConstant()) {
+          result =
+              Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
         }
       }
     }
@@ -309,8 +308,8 @@ public class UpdateTableStatement extends MetaStatement {
       ColumnMetadata cm = tableMetadata.getColumn(colId);
       if (cm == null) {
         result =
-            Result.createValidationErrorResult("Column " + colId
-                + " not found in " + tableMetadata.getName() + ".");
+            Result.createValidationErrorResult("Column " + colId + " not found in "
+                + tableMetadata.getName() + ".");
         break;
       }
 
@@ -319,9 +318,8 @@ public class UpdateTableStatement extends MetaStatement {
       if (!result.hasError()) {
         if (!CoreUtils.supportedTypes.contains(idClazz.getSimpleName().toLowerCase())) {
           result =
-              Result.createValidationErrorResult("Column " + colId
-                  + " is of type " + cm.getType().asJavaClass().getSimpleName()
-                  + ", which is not supported yet.");
+              Result.createValidationErrorResult("Column " + colId + " is of type "
+                  + cm.getType().asJavaClass().getSimpleName() + ", which is not supported yet.");
         }
       }
 
@@ -342,8 +340,8 @@ public class UpdateTableStatement extends MetaStatement {
           String valueClass = valueClazz.getSimpleName();
           if (!idClazz.getSimpleName().equalsIgnoreCase(valueClass)) {
             result =
-                Result.createValidationErrorResult(cm.getName() + " and " + valueTerm.getTermValue()
-                    + " are not compatible type.");
+                Result.createValidationErrorResult(cm.getName() + " and "
+                    + valueTerm.getTermValue() + " are not compatible type.");
           }
         } else {
           result = Result.createValidationErrorResult("Collections are not supported yet.");
@@ -354,7 +352,7 @@ public class UpdateTableStatement extends MetaStatement {
   }
 
   private void updateTermClassesInAssignations(TableMetadata tableMetadata) {
-    for (Assignation assignment: assignations) {
+    for (Assignation assignment : assignations) {
       String ident = assignment.getTargetColumn().getName();
       ColumnMetadata cm = tableMetadata.getColumn(ident);
       Term<?> valueTerm = (Term<?>) assignment.getValue();
@@ -370,34 +368,9 @@ public class UpdateTableStatement extends MetaStatement {
     }
   }
 
-  /*
-  private Result validateWhereClauses(TableMetadata tableMetadata) {
-    Result result = QueryResult.createSuccessQueryResult();
-    for (Relation rel : whereClauses) {
-      Term<?> term = rel.getTerms().get(0);
-      Class<?> valueClazz = term.getTermClass();
-      for (SelectorIdentifier id : rel.getIdentifiers()) {
-        boolean foundAndSameType = false;
-        for (ColumnMetadata cm : tableMetadata.getColumns()) {
-          if (cm.getName().equalsIgnoreCase(id.toString())
-              && (cm.getType().asJavaClass() == valueClazz)) {
-            foundAndSameType = true;
-            break;
-          }
-        }
-        if (!foundAndSameType) {
-          result =
-              Result.createValidationErrorResult("Column " + id + " not found in "
-                  + tableMetadata.getName());
-          break;
-        }
-      }
-      if (result.hasError()) {
-        break;
-      }
-    }
-    return result;
+  @Override
+  public ValidationRequirements getValidationRequirements() {
+    return new ValidationRequirements();
   }
-  */
 
 }

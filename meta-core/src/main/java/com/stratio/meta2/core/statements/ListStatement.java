@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.statements;
 
+import com.stratio.meta2.core.engine.validator.Validation;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.result.QueryResult;
@@ -72,5 +74,9 @@ public class ListStatement extends MetaStatement {
 
   public Result execute(String queryId, IStratioStreamingAPI stratioStreamingAPI) {
     return MetaStream.listStreamingQueries(queryId, stratioStreamingAPI);
+  }
+  @Override
+  public ValidationRequirements getValidationRequirements() {
+    return new ValidationRequirements();
   }
 }
