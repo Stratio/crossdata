@@ -14,8 +14,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
@@ -24,12 +22,10 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
-
-import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -193,7 +189,7 @@ public class DeleteStatement extends MetaStatement {
         result =
             Result.createValidationErrorResult("Internal column " + c
                 + " cannot be part of the WHERE " + "clause.");
-      } else if (tableMetadata.getColumn(c) == null) {
+      } else if (tableMetadata.getColumns().get(c) == null) {
         result =
             Result.createValidationErrorResult("Column " + c + " does not exists in table "
                 + tableMetadata.getName());
@@ -222,7 +218,8 @@ public class DeleteStatement extends MetaStatement {
     if (effectiveCatalog == null || effectiveCatalog.length() == 0) {
       result =
           Result
-              .createValidationErrorResult("Target catalog missing or no catalog has been selected.");
+              .createValidationErrorResult(
+                  "Target catalog missing or no catalog has been selected.");
     } else {
       CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
       if (ksMetadata == null) {

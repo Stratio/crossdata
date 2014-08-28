@@ -69,4 +69,8 @@ public class TableName extends Name {
     return result;
   }
 
+  @Override public NameType getType() {
+    return NameType.Table;
+  }
+
 }

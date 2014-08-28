@@ -28,6 +28,8 @@ public abstract class Name  {
 
   public abstract String getQualifiedName();
 
+  public abstract NameType getType();
+
   @Override
   public String toString() {
     return this.getQualifiedName();
@@ -37,7 +39,8 @@ public abstract class Name  {
   public boolean equals(Object o){
     boolean result=false;
     if(o instanceof Name) {
-      result = this.toString().equals(o.toString());
+      Name name= (Name)o;
+      result = this.toString().equals(name.toString()) && this.getType()==name.getType();
     }
     return result;
   }

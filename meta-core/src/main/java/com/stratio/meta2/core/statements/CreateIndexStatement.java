@@ -14,26 +14,29 @@
 
 package com.stratio.meta2.core.statements;
 
-    import java.util.*;
+import com.datastax.driver.core.DataType;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta.core.metadata.CustomIndexMetadata;
+import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.IndexType;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
+import com.stratio.meta2.common.statements.structures.terms.StringTerm;
+import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 
-    import com.datastax.driver.core.ColumnMetadata;
-    import com.datastax.driver.core.DataType;
-    import com.datastax.driver.core.TableMetadata;
-    import com.stratio.meta.common.result.QueryResult;
-    import com.stratio.meta.common.result.Result;
-    import com.stratio.meta.common.utils.StringUtils;
-    import com.stratio.meta.core.engine.EngineConfig;
-    import com.stratio.meta.core.metadata.CustomIndexMetadata;
-    import com.stratio.meta.core.metadata.MetadataManager;
-    import com.stratio.meta.core.structures.IndexType;
-    import com.stratio.meta.core.utils.MetaPath;
-    import com.stratio.meta.core.utils.MetaStep;
-    import com.stratio.meta.core.utils.Tree;
-    import com.stratio.meta2.common.data.TableName;
-    import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
-    import com.stratio.meta2.common.statements.structures.terms.StringTerm;
-    import com.stratio.meta2.common.statements.structures.terms.Term;
-    import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class that models a {@code CREATE INDEX} statement of the META language. This class recognizes
@@ -322,7 +325,8 @@ public class CreateIndexStatement extends MetaStatement {
       if (name != null && name.toLowerCase().startsWith("stratio")) {
         result =
             Result
-                .createValidationErrorResult("Internal namespace stratio cannot be use on index name "
+                .createValidationErrorResult(
+                    "Internal namespace stratio cannot be use on index name "
                     + name);
       } else {
         result = validateIndexName(metadata, tableMetadata);
@@ -353,16 +357,11 @@ public class CreateIndexStatement extends MetaStatement {
    */
   private Result validateSelectionColumns(TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
-
-    for (String c : targetColumns) {
-      if (c.toLowerCase().startsWith("stratio")) {
-        result =
-            Result.createValidationErrorResult("Internal column " + c
-                + " cannot be part of the WHERE clause.");
-      } else if (tableMetadata.getColumn(c) == null) {
-        result =
-            Result.createValidationErrorResult("Column " + c + " does not exist in table "
-                + tableMetadata.getName());
+    for(String c : targetColumns){
+      if(c.toLowerCase().startsWith("stratio")){
+        result = Result.createValidationErrorResult("Internal column " + c + " cannot be part of the WHERE clause.");
+      }else if(tableMetadata.getColumns().get(c) == null){
+        result = Result.createValidationErrorResult("Column " + c + " does not exist in table " + tableMetadata.getName());
       }
     }
 
@@ -406,11 +405,11 @@ public class CreateIndexStatement extends MetaStatement {
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateOptions(String effectiveCatalog, TableMetadata metadata) {
-    Result result = QueryResult.createSuccessQueryResult();
-    if (!options.isEmpty()) {
-      result =
-          Result
-              .createValidationErrorResult("WITH OPTIONS clause not supported in index creation.");
+    throw new UnsupportedOperationException();
+    /*Result result = QueryResult.createSuccessQueryResult();
+    if(!options.isEmpty()){
+      result = Result.createValidationErrorResult(
+          "WITH OPTIONS clause not supported in index creation.");
     }
     if (!createIfNotExists && IndexType.LUCENE.equals(type)) {
       Iterator<ColumnMetadata> columns = metadata.getColumns().iterator();
@@ -433,7 +432,7 @@ public class CreateIndexStatement extends MetaStatement {
                     + column.getName().replace("stratio_lucene_", "") + "; to remove the index.");
       }
     }
-    return result;
+    return result;*/
   }
 
   /**
@@ -470,7 +469,7 @@ public class CreateIndexStatement extends MetaStatement {
     for (String column : targetColumns) {
       sb.append(column);
       sb.append(":");
-      sb.append(luceneTypes.get(metadata.getColumn(column).getType().toString()));
+      sb.append(luceneTypes.get(metadata.getColumns().get(column).getColumnType().toString()));
       sb.append(",");
     }
 

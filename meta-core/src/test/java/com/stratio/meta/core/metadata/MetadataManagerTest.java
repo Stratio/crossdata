@@ -18,12 +18,11 @@
 
 package com.stratio.meta.core.metadata;
 
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -83,8 +82,8 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
     //		  strategy_class text,
     //		  strategy_options text,
     //		  PRIMARY KEY (catalog_name))
-
-    String catalog = "system";
+    throw new UnsupportedOperationException();
+    /*String catalog = "system";
     String table = "schema_catalogs";
 
     int numColumns = 4;
@@ -98,10 +97,10 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
 
     assertEquals(numColumns, metadata.getColumns().size(), "Invalid number of columns");
     for(int columnIndex = 0; columnIndex < numColumns; columnIndex++){
-      ColumnMetadata cm = metadata.getColumn(columnNames[columnIndex]);
+      ColumnMetadata cm = metadata.getColumns().get(columnNames[columnIndex]);
       assertNotNull(cm, "Cannot retrieve column");
-      assertEquals(columnClass[columnIndex], cm.getType().asJavaClass(), "Column type does not match");
-    }
+      assertEquals(columnClass[columnIndex], cm.getColumnType().asJavaClass(), "Column type does not match");
+    }*/
   }
 
   @Test
