@@ -139,9 +139,36 @@ public class SelectStatementTest extends ParsingTest {
   }
 
   @Test
-  public void selectStatement2() {
+  public void basicSelectAsterisk(){
+    String inputText = "SELECT * FROM table1;";
+    String expectedText = "SELECT * FROM <unknown_name>.table1;";
+    testRegularStatement(inputText, expectedText, "basicSelectAsterisk");
+  }
+
+  @Test
+  public void basicSelectAsteriskWithCatalog(){
+    String inputText = "SELECT * FROM catalog1.table1;";
+    testRegularStatement(inputText, "basicSelectAsteriskWithCatalog");
+  }
+
+  @Test
+  public void singleColumn() {
     String inputText = "SELECT newtb.lucene FROM newks.newtb;";
-    testRegularStatement(inputText, "selectStatement2");
+    String expectedText = "SELECT <unknown_name>.newtb.lucene FROM newks.newtb;";
+    testRegularStatement(inputText, expectedText, "singleColumn");
+  }
+
+  @Test
+  public void singleColumnWithCatalog() {
+    String inputText = "SELECT newks.newtb.lucene FROM newks.newtb;";
+    testRegularStatement(inputText, "singleColumnWithCatalog");
+  }
+
+  @Test
+  public void singleColumnWithSessionCatalog() {
+    String inputText = "SELECT newtb.lucene FROM newks.newtb;";
+    String expectedText = "SELECT newks.newtb.lucene FROM newks.newtb;";
+    testRegularStatementSession("newks", inputText, expectedText, "singleColumnWithSessionCatalog");
   }
 
   @Test

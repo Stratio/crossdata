@@ -39,6 +39,51 @@ public class ParsingTest {
 
   protected final Parser parser = new Parser();
 
+  public MetaStatement testRegularStatementSession(String sessionCatalog, String inputText, String methodName){
+    MetaQuery mq = parser.parseStatement(UUID.randomUUID().toString(), sessionCatalog, inputText);
+    MetaStatement st = mq.getStatement();
+    ErrorResult er = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "null");
+    if (ErrorResult.class.isInstance(mq.getResult())) {
+      er = ErrorResult.class.cast(mq.getResult());
+    }
+
+    assertNotNull(st, "Cannot parse " + methodName
+                      + " parser error: " + mq.hasError()
+                      + " -> " + er.getErrorMessage());
+    assertFalse(mq.hasError(), "Parsing expecting '" + inputText
+                               + "' from '" + st.toString() + "' returned: " + er
+        .getErrorMessage());
+
+    assertTrue(inputText.equalsIgnoreCase(st.toString() + ";"),
+               "Cannot parse " + methodName
+               + ": \nexpecting\n'" + inputText
+               + "' \nfrom\n'" + st.toString() + ";'"
+    );
+    return st;
+  }
+
+  public MetaStatement testRegularStatementSession(String sessionCatalog, String inputText, String expectedText, String methodName){
+    MetaQuery mq = parser.parseStatement(UUID.randomUUID().toString(), sessionCatalog, inputText);
+    MetaStatement st = mq.getStatement();
+    ErrorResult er = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "null");
+    if (ErrorResult.class.isInstance(mq.getResult())) {
+      er = ErrorResult.class.cast(mq.getResult());
+    }
+    assertNotNull(st, "Cannot parse " + methodName
+                      + " parser error: " + mq.hasError()
+                      + " -> " + er.getErrorMessage());
+    assertFalse(mq.hasError(), "Parsing expecting '" + inputText
+                               + "' from '" + st.toString() + "' returned: " + er
+        .getErrorMessage());
+
+    assertTrue(expectedText.equalsIgnoreCase(st.toString() + ";"),
+               "Cannot parse " + methodName
+               + ": expecting " + System.lineSeparator() + "'" + expectedText
+               + "' from " + System.lineSeparator() + "'" + st.toString() + ";"
+    );
+    return st;
+  }
+
   public MetaStatement testRegularStatement(String inputText, String methodName) {
     MetaQuery mq = parser.parseStatement(UUID.randomUUID().toString(), "", inputText);
     MetaStatement st = mq.getStatement();
