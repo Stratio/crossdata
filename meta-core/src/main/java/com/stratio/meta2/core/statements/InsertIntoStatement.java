@@ -1,19 +1,15 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership.  The STRATIO (C) licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Licensed to STRATIO (C) under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright ownership. The STRATIO
+ * (C) licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.stratio.meta2.core.statements;
@@ -36,6 +32,8 @@ import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
 
+import com.stratio.meta2.core.engine.validator.Validation;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import org.apache.log4j.Logger;
 
 import java.util.Iterator;
@@ -75,8 +73,8 @@ public class InsertIntoStatement extends MetaStatement {
   private SelectStatement selectStatement;
 
   /**
-   * A list of {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} with the literal values to be
-   * assigned if the insert type matches {@code TYPE_VALUES_CLAUSE}.
+   * A list of {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} with the
+   * literal values to be assigned if the insert type matches {@code TYPE_VALUES_CLAUSE}.
    */
   private List<GenericTerm> cellValues;
 
@@ -112,15 +110,16 @@ public class InsertIntoStatement extends MetaStatement {
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
    * @param selectStatement a {@link com.stratio.meta2.core.statements.InsertIntoStatement}
-   * @param cellValues List of {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
+   * @param cellValues List of
+   *        {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param optsInc Boolean that indicates if there is options in the query.
    * @param options Query options.
    * @param typeValues Integer that indicates if values come from insert or select.
    */
-  public InsertIntoStatement(TableName tableName, List<String> ids, SelectStatement selectStatement,
-      List<GenericTerm> cellValues, boolean ifNotExists, boolean optsInc, List<Option> options,
-      int typeValues) {
+  public InsertIntoStatement(TableName tableName, List<String> ids,
+      SelectStatement selectStatement, List<GenericTerm> cellValues, boolean ifNotExists,
+      boolean optsInc, List<Option> options, int typeValues) {
     this.command = false;
     this.tableName = tableName;
     this.ids = ids;
@@ -141,8 +140,8 @@ public class InsertIntoStatement extends MetaStatement {
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param options Query options.
    */
-  public InsertIntoStatement(TableName tableName, List<String> ids, SelectStatement selectStatement,
-      boolean ifNotExists, List<Option> options) {
+  public InsertIntoStatement(TableName tableName, List<String> ids,
+      SelectStatement selectStatement, boolean ifNotExists, List<Option> options) {
     this(tableName, ids, selectStatement, null, ifNotExists, true, options, 1);
   }
 
@@ -151,7 +150,8 @@ public class InsertIntoStatement extends MetaStatement {
    * 
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
-   * @param cellValues List of {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
+   * @param cellValues List of
+   *        {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param options Query options.
    */
@@ -168,8 +168,8 @@ public class InsertIntoStatement extends MetaStatement {
    * @param selectStatement a {@link com.stratio.meta2.core.statements.InsertIntoStatement}
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    */
-  public InsertIntoStatement(TableName tableName, List<String> ids, SelectStatement selectStatement,
-      boolean ifNotExists) {
+  public InsertIntoStatement(TableName tableName, List<String> ids,
+      SelectStatement selectStatement, boolean ifNotExists) {
     this(tableName, ids, selectStatement, null, ifNotExists, false, null, 1);
   }
 
@@ -178,7 +178,8 @@ public class InsertIntoStatement extends MetaStatement {
    * 
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
-   * @param cellValues List of {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
+   * @param cellValues List of
+   *        {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    */
   public InsertIntoStatement(TableName tableName, List<String> ids, List<GenericTerm> cellValues,
@@ -324,8 +325,8 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     Insert insertStmt =
-        this.catalogInc ? QueryBuilder.insertInto(this.catalog, this.tableName.getName()) : QueryBuilder
-            .insertInto(this.tableName.getName());
+        this.catalogInc ? QueryBuilder.insertInto(this.catalog, this.tableName.getName())
+            : QueryBuilder.insertInto(this.tableName.getName());
 
     try {
       iterateValuesAndInsertThem(insertStmt);
@@ -394,5 +395,10 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     return optionsStmt;
+  }
+
+  @Override
+  public ValidationRequirements getValidationRequirements() {
+    return new ValidationRequirements();
   }
 }

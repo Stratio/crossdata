@@ -211,8 +211,6 @@ public abstract class MetaStatement implements IStatement {
   }
 
   //TODO: This method should be abstract
-  public ValidationRequirements getValidationRequirements(){
-    throw new UnsupportedOperationException();
-  }
+  public abstract ValidationRequirements getValidationRequirements();
 }
 

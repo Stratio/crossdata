@@ -20,6 +20,8 @@ package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.core.engine.validator.Validation;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 
 public class AddDatastoreStatement extends MetaStatement {
 
@@ -46,5 +48,11 @@ public class AddDatastoreStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     return null;
+  }
+
+  @Override
+  public ValidationRequirements getValidationRequirements() {
+    return new ValidationRequirements().add(Validation.MUST_NOT_EXIST_DATASTORE).
+        add(Validation.VALID_DATASTORE_MANIFEST);
   }
 }

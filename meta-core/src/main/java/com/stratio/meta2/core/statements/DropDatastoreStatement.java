@@ -2,6 +2,8 @@ package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.core.engine.validator.Validation;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 
 public class DropDatastoreStatement extends MetaStatement {
 
@@ -24,5 +26,10 @@ public class DropDatastoreStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     return null;
+  }
+
+  @Override
+  public ValidationRequirements getValidationRequirements() {
+    return new ValidationRequirements().add(Validation.MUST_EXIST_DATASTORE);
   }
 }
