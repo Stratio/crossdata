@@ -125,44 +125,4 @@ public class SelectStatementTest extends BasicCoreCassandraTest {
     testIndexStatement(inputText, expectedText, "demo", "translateToCQL2LuceneOk");
   }
 
-    @Test
-    public void processLuceneQueryType(){
-        String inputText = "SELECT * FROM demo.users WHERE name MATCH 'name_1*' AND age > 20;";
-        String methodName = "processLuceneQueryType";
-        MetaQuery mq = parser.parseStatement(UUID.randomUUID().toString(), "demo", inputText);
-        MetaStatement st = mq.getStatement();
-        assertNotNull(st, "Cannot parse "+methodName
-                + " parser error: " + mq.hasError()
-                + " -> " + getErrorMessage(mq.getResult()));
-        assertFalse(mq.hasError(), "Parsing expecting '" + inputText
-                + "' from '" + st.toString() + "' returned: " + getErrorMessage(mq.getResult()));
-        SelectStatement ss = SelectStatement.class.cast(st);
-
-        String [][] queries = {
-                //Input    Type       parsed
-                {"?",     "wildcard", "?"},
-                {"*",     "wildcard", "*"},
-                {"\\?",   "match",    "?"},
-                {"\\*",   "match",    "*"},
-                {"\\?sf", "match",    "?sf"},
-                {"af\\?", "match",    "af?"},
-                {"s\\?f", "match",    "s?f"},
-                {"sdf",   "match",    "sdf"},
-                {"*asd*", "wildcard", "*asd*"},
-                {"?as?",  "wildcard", "?as?"},
-                {"?as*",  "wildcard", "?as*"},
-                {"[asd",  "regex",    "[asd"},
-                {"fa]",   "regex",    "fa]"},
-                {"]*sf",  "regex",    "]*sf"},
-                {"~as",   "match",    "~as"},
-                {"as~2",  "fuzzy",    "as~2"}};
-
-        for(String [] query : queries) {
-            String [] result = ss.processLuceneQueryType(query[0]);
-            assertEquals(result[0], query[1], "Query type does not match");
-            assertEquals(result[1], query[2], "Parsed does not match");
-        }
-
-    }
-
 }

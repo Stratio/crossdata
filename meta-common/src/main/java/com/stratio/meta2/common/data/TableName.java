@@ -27,6 +27,7 @@ package com.stratio.meta2.common.data;
  */
 public class TableName extends Name {
 
+  //TODO Include table alias
 
   private final String name;
 

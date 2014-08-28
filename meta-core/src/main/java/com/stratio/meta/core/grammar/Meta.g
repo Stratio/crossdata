@@ -657,28 +657,26 @@ selectStatement returns [SelectStatement slctst]
         MutablePair<String, String> pair = new MutablePair<>();
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
-    //(T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
-    //(T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON getFields[pair])?
+    (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
+    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON joinRelations=getWhereClauses)?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses)?
     //(T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
     //(T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
-    //(T_LIMIT {limitInc = true;} constant=getConstant)?
+    (T_LIMIT {limitInc = true;} constant=getConstant)?
     {
         $slctst = new SelectStatement(selClause, tablename);
-        //if(windowInc)
-        //    $slctst.setWindow(window);
-        //if(joinInc)
-        //    $slctst.setJoin(new InnerJoin(identJoin, pair.getLeft(), pair.getRight()));
-        //if(joinInc)
-        //    $slctst.setJoin(new InnerJoin(new TableName("", identJoin), pair.getLeft(), pair.getRight()));
+        if(windowInc)
+            $slctst.setWindow(window);
+        if(joinInc)
+            $slctst.setJoin(new InnerJoin(identJoin, joinRelations));
         if(whereInc)
              $slctst.setWhere(whereClauses);
         //if(orderInc)
         //     $slctst.setOrder(ordering);
         //if(groupInc)
         //     $slctst.setGroup(groupby);
-        //if(limitInc)
-        //     $slctst.setLimit(Integer.parseInt(constant));
+        if(limitInc)
+             $slctst.setLimit(Integer.parseInt(constant));
 
         //$slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
         //$slctst.updateTableNames();
