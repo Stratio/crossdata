@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -48,5 +49,18 @@ public class SelectExpression {
 
   public boolean isDistinct() {
     return distinct;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    Iterator<Selector> selectors = selectorList.iterator();
+    while(selectors.hasNext()){
+      sb.append(selectors.next().toString());
+      if(selectors.hasNext()){
+        sb.append(", ");
+      }
+    }
+    return sb.toString();
   }
 }

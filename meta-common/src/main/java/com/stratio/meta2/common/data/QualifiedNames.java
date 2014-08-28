@@ -16,7 +16,7 @@ package com.stratio.meta2.common.data;
 
 public class QualifiedNames {
   public static String getCatalogQualifiedName(String name) {
-    return normalize("catalog." + name);
+    return normalize(name);
   }
 
   public static CatalogName getCatalogNameFromQualifiedName(String qualifiedName){

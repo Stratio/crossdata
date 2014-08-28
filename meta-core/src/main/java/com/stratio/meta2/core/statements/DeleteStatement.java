@@ -1,19 +1,15 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership.  The STRATIO (C) licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Licensed to STRATIO (C) under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright ownership. The STRATIO
+ * (C) licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.stratio.meta2.core.statements;
@@ -27,6 +23,7 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +48,8 @@ public class DeleteStatement extends MetaStatement {
   private TableName tableName = null;
 
   /**
-   * The list of {@link com.stratio.meta.common.statements.structures.relationships.Relation} found in the WHERE clause.
+   * The list of {@link com.stratio.meta.common.statements.structures.relationships.Relation} found
+   * in the WHERE clause.
    */
   private List<Relation> whereClauses;
 
@@ -78,12 +76,13 @@ public class DeleteStatement extends MetaStatement {
    * 
    * @param tableName The name of the table.
    */
-    public void setTableName(TableName tableName) {
-      this.tableName = tableName;
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
   }
 
   /**
-   * Add a new {@link com.stratio.meta.common.statements.structures.relationships.Relation} found in a WHERE clause.
+   * Add a new {@link com.stratio.meta.common.statements.structures.relationships.Relation} found in
+   * a WHERE clause.
    * 
    * @param relation The relation.
    */
@@ -122,10 +121,8 @@ public class DeleteStatement extends MetaStatement {
       result = validateSelectionColumns(tableMetadata);
     }
     /*
-    if (!result.hasError()) {
-      result = validateWhereClause(tableMetadata);
-    }
-    */
+     * if (!result.hasError()) { result = validateWhereClause(tableMetadata); }
+     */
 
     return result;
 
@@ -139,83 +136,43 @@ public class DeleteStatement extends MetaStatement {
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   /*
-  private Result validateWhereClause(TableMetadata tableMetadata) {
-    Result result = QueryResult.createSuccessQueryResult();
-    Iterator<Relation> relations = whereClauses.iterator();
-    while (!result.hasError() && relations.hasNext()) {
-      Relation relation = relations.next();
-      //TODO Uncomment
-      //relation.updateTermClass(tableMetadata);
-      if (Relation.TYPE_COMPARE == relation.getType()) {
-        result = validateCompareRelation(relation, tableMetadata);
-      } else if (Relation.TYPE_IN == relation.getType()) {
-        // TODO: Check IN relation
-        result = Result.createValidationErrorResult("IN clause not supported.");
-      } else if (Relation.TYPE_TOKEN == relation.getType()) {
-        // TODO: Check IN relation
-        result = Result.createValidationErrorResult("TOKEN function not supported.");
-      } else if (Relation.TYPE_BETWEEN == relation.getType()) {
-        // TODO: Check IN relation
-        result = Result.createValidationErrorResult("BETWEEN clause not supported.");
-      }
-
-    }
-    return result;
-  }
-
-  private Result validateCompareRelation(Relation relation, TableMetadata tableMetadata) {
-    Result result = QueryResult.createSuccessQueryResult();
-    // Check comparison, =, >, <, etc.
-    RelationCompare rc = RelationCompare.class.cast(relation);
-    String column = rc.getIdentifiers().get(0).toString();
-    if (tableMetadata.getColumn(column) == null) {
-      result =
-          Result.createValidationErrorResult("Column " + column + " does not exist in table "
-              + tableMetadata.getName());
-    }
-
-    ColumnMetadata cm = tableMetadata.getColumn(column);
-    if (cm != null) {
-      // relation.updateTermClass(tableMetadata);
-      Term t = Term.class.cast(rc.getTerms().get(0));
-      if (!tableMetadata.getColumn(column).getType().asJavaClass().equals(t.getTermClass())) {
-        result =
-            Result.createValidationErrorResult("Column " + column + " of type "
-                + tableMetadata.getColumn(rc.getIdentifiers().get(0).toString()).getType().asJavaClass()
-                + " does not accept " + t.getTermClass() + " values (" + t.toString() + ")");
-      }
-
-      if (Boolean.class.equals(tableMetadata.getColumn(column).getType().asJavaClass())) {
-        boolean supported = true;
-        switch (rc.getOperator()) {
-          case ">":
-            supported = false;
-            break;
-          case "<":
-            supported = false;
-            break;
-          case ">=":
-            supported = false;
-            break;
-          case "<=":
-            supported = false;
-            break;
-          default:
-            break;
-        }
-        if (!supported) {
-          result =
-              Result.createValidationErrorResult("Operand " + rc.getOperator() + " not supported"
-                  + " for column " + column + ".");
-        }
-      }
-    } else {
-      result =
-          Result.createValidationErrorResult("Column " + column + " not found in " + tableName
-              + " table.");
-    }
-    return result;
-  }*/
+   * private Result validateWhereClause(TableMetadata tableMetadata) { Result result =
+   * QueryResult.createSuccessQueryResult(); Iterator<Relation> relations = whereClauses.iterator();
+   * while (!result.hasError() && relations.hasNext()) { Relation relation = relations.next();
+   * //TODO Uncomment //relation.updateTermClass(tableMetadata); if (Relation.TYPE_COMPARE ==
+   * relation.getType()) { result = validateCompareRelation(relation, tableMetadata); } else if
+   * (Relation.TYPE_IN == relation.getType()) { // TODO: Check IN relation result =
+   * Result.createValidationErrorResult("IN clause not supported."); } else if (Relation.TYPE_TOKEN
+   * == relation.getType()) { // TODO: Check IN relation result =
+   * Result.createValidationErrorResult("TOKEN function not supported."); } else if
+   * (Relation.TYPE_BETWEEN == relation.getType()) { // TODO: Check IN relation result =
+   * Result.createValidationErrorResult("BETWEEN clause not supported."); }
+   * 
+   * } return result; }
+   * 
+   * private Result validateCompareRelation(Relation relation, TableMetadata tableMetadata) { Result
+   * result = QueryResult.createSuccessQueryResult(); // Check comparison, =, >, <, etc.
+   * RelationCompare rc = RelationCompare.class.cast(relation); String column =
+   * rc.getIdentifiers().get(0).toString(); if (tableMetadata.getColumn(column) == null) { result =
+   * Result.createValidationErrorResult("Column " + column + " does not exist in table " +
+   * tableMetadata.getName()); }
+   * 
+   * ColumnMetadata cm = tableMetadata.getColumn(column); if (cm != null) { //
+   * relation.updateTermClass(tableMetadata); Term t = Term.class.cast(rc.getTerms().get(0)); if
+   * (!tableMetadata.getColumn(column).getType().asJavaClass().equals(t.getTermClass())) { result =
+   * Result.createValidationErrorResult("Column " + column + " of type " +
+   * tableMetadata.getColumn(rc.getIdentifiers().get(0).toString()).getType().asJavaClass() +
+   * " does not accept " + t.getTermClass() + " values (" + t.toString() + ")"); }
+   * 
+   * if (Boolean.class.equals(tableMetadata.getColumn(column).getType().asJavaClass())) { boolean
+   * supported = true; switch (rc.getOperator()) { case ">": supported = false; break; case "<":
+   * supported = false; break; case ">=": supported = false; break; case "<=": supported = false;
+   * break; default: break; } if (!supported) { result =
+   * Result.createValidationErrorResult("Operand " + rc.getOperator() + " not supported" +
+   * " for column " + column + "."); } } } else { result =
+   * Result.createValidationErrorResult("Column " + column + " not found in " + tableName +
+   * " table."); } return result; }
+   */
 
   /**
    * Validate that the columns specified in the select are valid by checking that the selection
@@ -260,7 +217,9 @@ public class DeleteStatement extends MetaStatement {
     // Check that the catalog and table exists.
     if (effectiveCatalog == null || effectiveCatalog.length() == 0) {
       result =
-          Result.createValidationErrorResult("Target catalog missing or no catalog has been selected.");
+          Result
+              .createValidationErrorResult(
+                  "Target catalog missing or no catalog has been selected.");
     } else {
       CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
       if (ksMetadata == null) {
@@ -281,6 +240,11 @@ public class DeleteStatement extends MetaStatement {
   @Override
   public String translateToCQL() {
     return this.toString();
+  }
+
+  @Override
+  public ValidationRequirements getValidationRequirements() {
+    return new ValidationRequirements();
   }
 
 }

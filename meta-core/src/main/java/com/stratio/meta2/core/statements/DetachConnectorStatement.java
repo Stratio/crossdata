@@ -4,6 +4,8 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
+import com.stratio.meta2.core.engine.validator.Validation;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 
 public class DetachConnectorStatement extends MetaStatement {
 
@@ -28,5 +30,11 @@ public class DetachConnectorStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     return null;
+  }
+
+  @Override
+  public ValidationRequirements getValidationRequirements() {
+    return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER)
+        .add(Validation.MUST_EXIST_ATTACH_CONNECTOR_CLUSTER);
   }
 }

@@ -61,6 +61,17 @@ options {
         }
     }
 
+    public ColumnName normalizeColumnName(String str){
+        String [] columnTokens = str.split("\\.");
+        if(columnTokens.length == 1){
+            return new ColumnName(sessionCatalog, null, columnTokens[0]);
+        }else if(columnTokens.length == 2){
+            return new ColumnName(sessionCatalog, columnTokens[0], columnTokens[1]);
+        }else{
+            return new ColumnName(columnTokens[0], columnTokens[1], columnTokens[2]);
+        }
+    }
+
     private ErrorsHelper foundErrors = new ErrorsHelper();
 
     public ErrorsHelper getFoundErrors(){
@@ -923,7 +934,7 @@ getSelector returns [Selector s]
 
         |
 
-        (columnName=getColumn {s = new ColumnSelector(columnName);})
+        (columnName=getColumnName {s = new ColumnSelector(columnName);})
 
     )
 ;
@@ -1024,8 +1035,14 @@ getTermOrLiteral returns [GenericTerm vc]
 ;
 
 getAliasedTableID[Map tablesAliasesMap] returns [TableName result]:
-	tableN=getTable (alias=T_IDENT {tablesAliasesMap.put($alias.text, tableN.toString());})?
+	tableN=getTableName (alias=T_IDENT {tablesAliasesMap.put($alias.text, tableN.toString());})?
 	{result = tableN;}
+    ;
+
+getColumnName returns [ColumnName columnName]:
+    (ident1=T_IDENT {$columnName = normalizeColumnName($ident1.text);}
+    | ident2=T_KS_AND_TN {$columnName = normalizeColumnName($ident2.text);}
+    | ident3=T_CTLG_TBL_COL {$columnName = normalizeColumnName($ident3.text);})
     ;
 
 getTableName returns [TableName tableName]:

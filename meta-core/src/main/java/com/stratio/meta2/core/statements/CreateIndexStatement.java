@@ -1,19 +1,15 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership.  The STRATIO (C) licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to STRATIO (C) under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright ownership. The STRATIO
+ * (C) licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.stratio.meta2.core.statements;
@@ -34,6 +30,7 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.StringTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +39,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class that models a {@code CREATE INDEX} statement of the META language. This class recognizes the following syntax:
+ * Class that models a {@code CREATE INDEX} statement of the META language. This class recognizes
+ * the following syntax:
  * <p>
  * CREATE {@link IndexType} INDEX (IF NOT EXISTS)? {@literal <index_name>} <br>
  * ON {@literal <tableName>} ( {@literal <identifier> , ..., <identifier>}) <br>
@@ -76,7 +74,8 @@ public class CreateIndexStatement extends MetaStatement {
   private TableName tableName = null;
 
   /**
-   * The list of columns covered by the index. Only one column is allowed for {@code DEFAULT} indexes.
+   * The list of columns covered by the index. Only one column is allowed for {@code DEFAULT}
+   * indexes.
    */
   private List<String> targetColumns = null;
 
@@ -102,7 +101,7 @@ public class CreateIndexStatement extends MetaStatement {
    */
   private transient TableMetadata metadata = null;
 
-  static{
+  static {
     luceneTypes.put(DataType.text().toString(), "{type:\"string\"}");
     luceneTypes.put(DataType.varchar().toString(), "{type:\"string\"}");
     luceneTypes.put(DataType.inet().toString(), "{type:\"string\"}");
@@ -119,7 +118,7 @@ public class CreateIndexStatement extends MetaStatement {
   /**
    * Class constructor.
    */
-  public CreateIndexStatement(){
+  public CreateIndexStatement() {
     this.command = false;
     targetColumns = new ArrayList<>();
     options = new LinkedHashMap<>();
@@ -127,21 +126,23 @@ public class CreateIndexStatement extends MetaStatement {
 
   /**
    * Set the type of index.
+   *
    * @param type The type from {@link com.stratio.meta.core.structures.IndexType}.
    */
-  public void setIndexType(String type){
+  public void setIndexType(String type) {
     this.type = IndexType.valueOf(type.toUpperCase());
   }
 
   /**
    * Set that the index should be created if not exists.
    */
-  public void setCreateIfNotExists(){
+  public void setCreateIfNotExists() {
     createIfNotExists = true;
   }
 
   /**
    * Set the type of index.
+   *
    * @param type A {@link com.stratio.meta.core.structures.IndexType}.
    */
   public void setType(IndexType type) {
@@ -150,6 +151,7 @@ public class CreateIndexStatement extends MetaStatement {
 
   /**
    * If the IF NOT EXISTS clause has been specified.
+   *
    * @return Whether the index should be created only if not exists.
    */
   public boolean isCreateIfNotExists() {
@@ -158,6 +160,7 @@ public class CreateIndexStatement extends MetaStatement {
 
   /**
    * Set the value of the IF NOT EXISTS clause.
+   *
    * @param ifNotExists If it has been specified or not.
    */
   public void setCreateIfNotExists(boolean ifNotExists) {
@@ -166,86 +169,94 @@ public class CreateIndexStatement extends MetaStatement {
 
   /**
    * Set the name of the index.
+   *
    * @param name The name.
    */
-  public void setName(String name){
-    if(name.contains(".")){
+  public void setName(String name) {
+    if (name.contains(".")) {
       String[] ksAndTablename = name.split("\\.");
       catalog = ksAndTablename[0];
       this.name = ksAndTablename[1];
       catalogInc = true;
-    }else {
+    } else {
       this.name = name;
     }
   }
 
   /**
    * Get the index name.
+   *
    * @return The name.
    */
-  public String getName(){
+  public String getName() {
     return name;
   }
 
   /**
    * Set the name of the target table.
+   *
    * @param tableName The name.
    */
-  public void setTableName(TableName tableName){
-      this.tableName = tableName;
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
   }
 
   /**
    * Add a column to the list of indexed columns.
+   *
    * @param column The name of the column.
    */
-  public void addColumn(String column){
+  public void addColumn(String column) {
     targetColumns.add(column);
   }
 
   /**
    * Set a USING class that implements the custom index.
+   *
    * @param using The qualified name of the class.
    */
-  public void setUsingClass(String using){
+  public void setUsingClass(String using) {
     usingClass = using;
   }
 
   /**
    * Add an options to the index.
+   *
    * @param key The option key.
    * @param value The option value.
    */
-  public void addOption(Term key, GenericTerm value){
+  public void addOption(Term key, GenericTerm value) {
     options.put(key, value);
   }
 
-  public void setOptionsJson(String optionsJson){
+  public void setOptionsJson(String optionsJson) {
     options = StringUtils.convertJsonToOptions(optionsJson);
   }
 
   /**
    * Get the map of options.
+   *
    * @return The map of options.
    */
-  public Map<Term, GenericTerm> getOptions(){
+  public Map<Term, GenericTerm> getOptions() {
     return options;
   }
 
   /**
-   * Get the name of the index. If a LUCENE index is to be created, the name of the index
-   * is prepended with {@code stratio_lucene_}. If a name for the index is not specified, the index
+   * Get the name of the index. If a LUCENE index is to be created, the name of the index is
+   * prepended with {@code stratio_lucene_}. If a name for the index is not specified, the index
    * will be named using the concatenation of the target column names.
+   *
    * @return The name of the index.
    */
-  protected String getIndexName(){
+  protected String getIndexName() {
     String result = null;
-    if(name == null){
+    if (name == null) {
       StringBuilder sb = new StringBuilder();
-      if(IndexType.LUCENE.equals(type)){
+      if (IndexType.LUCENE.equals(type)) {
         sb.append("stratio_lucene_");
         sb.append(tableName);
-      }else {
+      } else {
         sb.append(tableName);
         for (String c : targetColumns) {
           sb.append("_");
@@ -254,9 +265,9 @@ public class CreateIndexStatement extends MetaStatement {
         sb.append("_idx");
       }
       result = sb.toString();
-    }else{
+    } else {
       result = name;
-      if(IndexType.LUCENE.equals(type)){
+      if (IndexType.LUCENE.equals(type)) {
         result = "stratio_lucene_" + name;
       }
     }
@@ -268,24 +279,24 @@ public class CreateIndexStatement extends MetaStatement {
     StringBuilder sb = new StringBuilder("CREATE ");
     sb.append(type);
     sb.append(" INDEX ");
-    if(createIfNotExists){
+    if (createIfNotExists) {
       sb.append("IF NOT EXISTS ");
     }
 
-    if(name != null){
+    if (name != null) {
       sb.append(getIndexName()).append(" ");
     }
     sb.append("ON ");
-    if(catalogInc){
+    if (catalogInc) {
       sb.append(catalog).append(".");
     }
     sb.append(tableName);
     sb.append(" (").append(StringUtils.stringList(targetColumns, ", ")).append(")");
-    if(usingClass != null){
+    if (usingClass != null) {
       sb.append(" USING ");
       sb.append(usingClass);
     }
-    if(!options.isEmpty()){
+    if (!options.isEmpty()) {
       sb.append(" WITH OPTIONS = ");
       sb.append(StringUtils.getStringFromOptions(options));
     }
@@ -297,36 +308,39 @@ public class CreateIndexStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
 
-    //Validate target table
-    Result result = validateCatalogAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
+    // Validate target table
+    Result result =
+        validateCatalogAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
     String effectiveCatalog = getEffectiveCatalog();
 
     TableMetadata tableMetadata = null;
-    if(!result.hasError()) {
+    if (!result.hasError()) {
       tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
       this.metadata = tableMetadata;
       result = validateOptions(effectiveCatalog, tableMetadata);
     }
 
-    //Validate index name if not exists
-    if(!result.hasError()){
-      if(name != null && name.toLowerCase().startsWith("stratio")){
-        result = Result.createValidationErrorResult(
-            "Internal namespace stratio cannot be use on index name " + name);
-      }else {
+    // Validate index name if not exists
+    if (!result.hasError()) {
+      if (name != null && name.toLowerCase().startsWith("stratio")) {
+        result =
+            Result
+                .createValidationErrorResult(
+                    "Internal namespace stratio cannot be use on index name "
+                    + name);
+      } else {
         result = validateIndexName(metadata, tableMetadata);
       }
     }
 
-    //Validate target columns
-    if(!result.hasError()){
+    // Validate target columns
+    if (!result.hasError()) {
       result = validateSelectionColumns(tableMetadata);
     }
 
-    //If the syntax is valid and we are dealing with a Lucene index, complete the missing fields.
-    if(!result.hasError()
-       && IndexType.LUCENE.equals(type)
-       && (options.isEmpty() || usingClass == null)){
+    // If the syntax is valid and we are dealing with a Lucene index, complete the missing fields.
+    if (!result.hasError() && IndexType.LUCENE.equals(type)
+        && (options.isEmpty() || usingClass == null)) {
       options.clear();
       options.putAll(generateLuceneOptions());
       usingClass = "org.apache.cassandra.db.index.stratio.RowIndex";
@@ -337,12 +351,12 @@ public class CreateIndexStatement extends MetaStatement {
 
   /**
    * Validate that the target columns exists in the table.
+   *
    * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateSelectionColumns(TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
-
     for(String c : targetColumns){
       if(c.toLowerCase().startsWith("stratio")){
         result = Result.createValidationErrorResult("Internal column " + c + " cannot be part of the WHERE clause.");
@@ -356,25 +370,28 @@ public class CreateIndexStatement extends MetaStatement {
 
   /**
    * Validate that the index name is valid an has not been previously used.
+   *
    * @param metadata The associated {@link com.stratio.meta.core.metadata.MetadataManager}.
    * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateIndexName(MetadataManager metadata, TableMetadata tableMetadata){
+  private Result validateIndexName(MetadataManager metadata, TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
     String indexName = getIndexName();
 
     List<CustomIndexMetadata> allIndex = metadata.getTableIndex(tableMetadata);
 
     boolean found = false;
-    for(int index = 0; index < allIndex.size() && !found; index++){
-      if(allIndex.get(index).getIndexName().equalsIgnoreCase(indexName)){
+    for (int index = 0; index < allIndex.size() && !found; index++) {
+      if (allIndex.get(index).getIndexName().equalsIgnoreCase(indexName)) {
         found = true;
       }
     }
-    if(found && !createIfNotExists){
-      result = Result.createValidationErrorResult("Index " + name + " already exists in table " + tableName);
-    }else{
+    if (found && !createIfNotExists) {
+      result =
+          Result.createValidationErrorResult("Index " + name + " already exists in table "
+              + tableName);
+    } else {
       createIndex = true;
     }
     return result;
@@ -382,6 +399,7 @@ public class CreateIndexStatement extends MetaStatement {
 
   /**
    * Validate the index options.
+   *
    * @param effectiveCatalog The effective catalog used in the validation process.
    * @param metadata The associated {@link com.datastax.driver.core.TableMetadata}.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
@@ -393,7 +411,7 @@ public class CreateIndexStatement extends MetaStatement {
       result = Result.createValidationErrorResult(
           "WITH OPTIONS clause not supported in index creation.");
     }
-    if(!createIfNotExists && IndexType.LUCENE.equals(type)) {
+    if (!createIfNotExists && IndexType.LUCENE.equals(type)) {
       Iterator<ColumnMetadata> columns = metadata.getColumns().iterator();
       boolean found = false;
       ColumnMetadata column = null;
@@ -404,11 +422,14 @@ public class CreateIndexStatement extends MetaStatement {
         }
       }
       if (found) {
-        result = Result.createValidationErrorResult(
-            "Cannot create index: A Lucene index already exists on table "
-            + effectiveCatalog + "."
-            + metadata.getName() + ". Use DROP INDEX " + column.getName()
-                .replace("stratio_lucene_", "") + "; to remove the index.");
+        result =
+            Result
+                .createValidationErrorResult("Cannot create index: A Lucene index already exists on table "
+                    + effectiveCatalog
+                    + "."
+                    + metadata.getName()
+                    + ". Use DROP INDEX "
+                    + column.getName().replace("stratio_lucene_", "") + "; to remove the index.");
       }
     }
     return result;*/
@@ -416,12 +437,13 @@ public class CreateIndexStatement extends MetaStatement {
 
   /**
    * Generate the set of Lucene options required to create an index.
+   *
    * @return The set of options.
    */
-  protected Map<Term, GenericTerm> generateLuceneOptions(){
+  protected Map<Term, GenericTerm> generateLuceneOptions() {
     Map<Term, GenericTerm> result = new HashMap<>();
 
-    //TODO: Read parameters from default configuration and merge with the user specification.
+    // TODO: Read parameters from default configuration and merge with the user specification.
     result.put(new StringTerm("'refresh_seconds'"), new StringTerm("'1'"));
 
     result.put(new StringTerm("'num_cached_filters'"), new StringTerm("'1'"));
@@ -435,15 +457,16 @@ public class CreateIndexStatement extends MetaStatement {
 
   /**
    * Generate the Lucene options schema that corresponds with the selected column.
+   *
    * @return The JSON representation of the Lucene schema.
    */
-  protected String generateLuceneSchema(){
+  protected String generateLuceneSchema() {
     StringBuilder sb = new StringBuilder();
     sb.append("{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\",");
     sb.append("fields:{");
 
-    //Iterate throught the columns.
-    for(String column : targetColumns){
+    // Iterate throught the columns.
+    for (String column : targetColumns) {
       sb.append(column);
       sb.append(":");
       sb.append(luceneTypes.get(metadata.getColumns().get(column).getColumnType().toString()));
@@ -457,23 +480,23 @@ public class CreateIndexStatement extends MetaStatement {
   @Override
   public String translateToCQL() {
 
-    if(IndexType.LUCENE.equals(type)){
+    if (IndexType.LUCENE.equals(type)) {
       targetColumns.clear();
       targetColumns.add(getIndexName());
     }
 
     String cqlString = this.toString().replace(" DEFAULT ", " ");
-    if(cqlString.contains(" LUCENE ")){
+    if (cqlString.contains(" LUCENE ")) {
       cqlString = this.toString().replace("CREATE LUCENE ", "CREATE CUSTOM ");
     }
 
-    if(name == null){
+    if (name == null) {
       cqlString = cqlString.replace("INDEX ON", "INDEX " + getIndexName() + " ON");
     }
 
-    if(cqlString.contains("USING")){
+    if (cqlString.contains("USING")) {
       cqlString = cqlString.replace("USING ", "USING '");
-      if(cqlString.contains("WITH ")){
+      if (cqlString.contains("WITH ")) {
         cqlString = cqlString.replace(" WITH OPTIONS", "' WITH OPTIONS");
       }
     }
@@ -484,10 +507,10 @@ public class CreateIndexStatement extends MetaStatement {
   public Tree getPlan(MetadataManager metadataManager, String targetCatalog) {
     Tree result = new Tree();
 
-    if(createIndex) {
-      //Add CREATE INDEX as the root.
+    if (createIndex) {
+      // Add CREATE INDEX as the root.
       result.setNode(new MetaStep(MetaPath.CASSANDRA, translateToCQL()));
-      //Add alter table as leaf if LUCENE index is selected.
+      // Add alter table as leaf if LUCENE index is selected.
       if (IndexType.LUCENE.equals(type)) {
         StringBuilder alterStatement = new StringBuilder("ALTER TABLE ");
         if (catalogInc) {
@@ -506,8 +529,13 @@ public class CreateIndexStatement extends MetaStatement {
     return result;
   }
 
-  public void setCreateIndex(Boolean createIndex){
+  public void setCreateIndex(Boolean createIndex) {
     this.createIndex = createIndex;
+  }
+
+  @Override
+  public ValidationRequirements getValidationRequirements() {
+    return new ValidationRequirements();
   }
 
 }

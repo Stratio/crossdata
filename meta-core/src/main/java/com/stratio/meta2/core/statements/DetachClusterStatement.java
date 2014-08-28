@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.statements;
 
+import com.stratio.meta2.core.engine.validator.Validation;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 
@@ -50,5 +52,10 @@ public class DetachClusterStatement extends MetaStatement{
   @Override
   public String translateToCQL() {
     return null;
+  }
+
+  @Override
+  public ValidationRequirements getValidationRequirements() {
+    return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER);
   }
 }

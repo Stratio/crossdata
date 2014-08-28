@@ -1,24 +1,19 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership.  The STRATIO (C) licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Licensed to STRATIO (C) under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright ownership. The STRATIO
+ * (C) licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
@@ -27,6 +22,8 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.meta2.core.structures.Property;
 import com.stratio.meta2.core.structures.PropertyNameValue;
 
@@ -66,6 +63,7 @@ public class AlterTableStatement extends TableStatement {
 
   /**
    * Class constructor.
+   *
    * @param tableName The name of the table.
    * @param column The name of the column.
    * @param type The data type of the column.
@@ -135,8 +133,7 @@ public class AlterTableStatement extends TableStatement {
       String effectiveCatalog = getEffectiveCatalog();
       System.out.println("validating: " + effectiveCatalog + " table: " + tableName.getName());
       TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
-
-      switch(option){
+      switch (option) {
         case 1:
           result = validateAlter(tableMetadata);
           break;
@@ -159,7 +156,8 @@ public class AlterTableStatement extends TableStatement {
     return tableMetadata.getColumns().get(column) != null;
   }
 
-  private boolean existsType(TableMetadata tableMetadata){
+
+  private boolean existsType(TableMetadata tableMetadata) {
     return CoreUtils.supportedTypes.contains(type.toLowerCase());
   }
 
@@ -188,9 +186,11 @@ public class AlterTableStatement extends TableStatement {
 
   private Result validateDrop(TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
-    //Validate target column name
-    if(!existsColumn(tableMetadata)){
-      result = Result.createValidationErrorResult("Column '"+this.column+"' not found.");
+    // Validate target column name
+    if (existsColumn(tableMetadata)) {
+      result = Result.createValidationErrorResult("Column '" + this.column + "' already exists.");
+    } else if (!existsType(tableMetadata)) { // Validate type
+      result = Result.createValidationErrorResult("Type '" + this.type + "' not found.");
     }
     return result;
   }
@@ -223,4 +223,10 @@ public class AlterTableStatement extends TableStatement {
     }
     return result;
   }
+
+  @Override
+  public ValidationRequirements getValidationRequirements() {
+    return new ValidationRequirements();
+  }
+
 }

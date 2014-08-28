@@ -1,19 +1,15 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership.  The STRATIO (C) licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Licensed to STRATIO (C) under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright ownership. The STRATIO
+ * (C) licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.stratio.meta2.core.statements;
@@ -28,6 +24,7 @@ import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import java.util.ArrayList;
@@ -86,15 +83,14 @@ public class DescribeStatement extends TableStatement {
     if (this.catalog != null) {
       CatalogMetadata ksMetadata = metadata.getCatalogMetadata(this.catalog);
       if (ksMetadata == null) {
-        result =
-            Result.createValidationErrorResult("Catalog " + this.catalog + " does not exist.");
+        result = Result.createValidationErrorResult("Catalog " + this.catalog + " does not exist.");
       }
     }
 
     if (this.tableName != null) {
       result =
-          validateCatalogAndTable(metadata, sessionCatalog, tableName.isCompletedName(),
-                                   tableName.getCatalogName().getName(), tableName);
+          validateCatalogAndTable(metadata, sessionCatalog, tableName.isCompletedName(), tableName
+              .getCatalogName().getName(), tableName);
     }
 
     return result;
@@ -151,7 +147,7 @@ public class DescribeStatement extends TableStatement {
 
   public List<CatalogName> getCatalogs() {
     List<CatalogName> result = new ArrayList<>();
-    if(DescribeType.CATALOG.equals(type)){
+    if (DescribeType.CATALOG.equals(type)) {
       result.add(new CatalogName(getEffectiveCatalog()));
     }
     return result;
@@ -159,9 +155,15 @@ public class DescribeStatement extends TableStatement {
 
   public List<TableName> getTables() {
     List<TableName> result = new ArrayList<>();
-    if(DescribeType.TABLE.equals(type)){
+    if (DescribeType.TABLE.equals(type)) {
       result.add(tableName);
     }
     return result;
   }
+
+  @Override
+  public ValidationRequirements getValidationRequirements() {
+    return new ValidationRequirements();
+  }
+
 }

@@ -1,19 +1,15 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership.  The STRATIO (C) licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Licensed to STRATIO (C) under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright ownership. The STRATIO
+ * (C) licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.stratio.meta2.core.statements;
@@ -46,6 +42,7 @@ import com.stratio.meta.core.structures.SelectionSelectors;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
 import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.meta2.core.structures.OrderDirection;
 import com.stratio.meta2.core.structures.Ordering;
 import com.stratio.streaming.api.IStratioStreamingAPI;
@@ -93,8 +90,8 @@ public class SelectStatement extends MetaStatement {
   private boolean windowInc = false;
 
   /**
-   * The {@link com.stratio.meta.common.statements.structures.window.Window} specified in the Select statement for
-   * streaming queries.
+   * The {@link com.stratio.meta.common.statements.structures.window.Window} specified in the Select
+   * statement for streaming queries.
    */
   private Window window = null;
 
@@ -114,7 +111,8 @@ public class SelectStatement extends MetaStatement {
   private boolean whereInc = false;
 
   /**
-   * The list of {@link com.stratio.meta.common.statements.structures.relationships.Relation} found in the WHERE clause.
+   * The list of {@link com.stratio.meta.common.statements.structures.relationships.Relation} found
+   * in the WHERE clause.
    */
   private List<Relation> where = null;
 
@@ -195,8 +193,9 @@ public class SelectStatement extends MetaStatement {
   /**
    * Class constructor.
    * 
-   * @param selectExpression The {@link com.stratio.meta2.common.statements.structures.selectors.SelectExpression}
-   *                         of the Select statement.
+   * @param selectExpression The
+   *        {@link com.stratio.meta2.common.statements.structures.selectors.SelectExpression} of the
+   *        Select statement.
    * @param tableName The name of the target table.
    */
   public SelectStatement(SelectExpression selectExpression, TableName tableName) {
@@ -241,7 +240,8 @@ public class SelectStatement extends MetaStatement {
   }
 
   /**
-   * Set the {@link com.stratio.meta.common.statements.structures.window.Window} for streaming queries.
+   * Set the {@link com.stratio.meta.common.statements.structures.window.Window} for streaming
+   * queries.
    * 
    * @param window The window.
    */
@@ -510,24 +510,15 @@ public class SelectStatement extends MetaStatement {
     Result result = QueryResult.createSuccessQueryResult();
 
     /*
-    if (tableName.getName().equalsIgnoreCase(streamingMetadata.getTableName())) {
-      if (streamingMetadata.getColumn(colName) == null) {
-        result =
-            Result.createValidationErrorResult("Field '" + colName
-                + "' not found in ephemeral table '" + tableName + "'.");
-      }
-    } else if (tableName.getName().equalsIgnoreCase(tableJoin.getName())) {
-      if (tableJoin.getColumn(colName) == null) {
-        result =
-            Result.createValidationErrorResult("Field '" + colName + "' not found in table '"
-                + tableName + "'.");
-      }
-    } else {
-      result =
-          Result.createValidationErrorResult("Table '" + tableName
-              + "' doesn't match to any incoming tables.");
-    }
-    */
+     * if (tableName.getName().equalsIgnoreCase(streamingMetadata.getTableName())) { if
+     * (streamingMetadata.getColumn(colName) == null) { result =
+     * Result.createValidationErrorResult("Field '" + colName + "' not found in ephemeral table '" +
+     * tableName + "'."); } } else if (tableName.getName().equalsIgnoreCase(tableJoin.getName())) {
+     * if (tableJoin.getColumn(colName) == null) { result =
+     * Result.createValidationErrorResult("Field '" + colName + "' not found in table '" + tableName
+     * + "'."); } } else { result = Result.createValidationErrorResult("Table '" + tableName +
+     * "' doesn't match to any incoming tables."); }
+     */
     return result;
   }
 
@@ -540,43 +531,24 @@ public class SelectStatement extends MetaStatement {
    * @return A String array with the column name and the lucene query, or null if no index is found.
    */
   /*
-  public String[] getLuceneWhereClause(MetadataManager metadata, TableMetadata tableMetadata) {
-    String[] result = null;
-    CustomIndexMetadata luceneIndex = metadata.getLuceneIndex(tableMetadata);
-    int addedClauses = 0;
-    if (luceneIndex != null) {
-      // TODO: Check in the validator that the query uses AND with the lucene mapped columns.
-      StringBuilder sb = new StringBuilder("{filter:{type:\"boolean\",must:[");
-
-      // Iterate throughout the relations of the where clause looking for MATCH.
-      for (Relation relation : where) {
-        if (Relation.TYPE_COMPARE == relation.getType()
-            && "MATCH".equalsIgnoreCase(relation.getOperator())) {
-          RelationCompare rc = RelationCompare.class.cast(relation);
-          // String column = rc.getIdentifiers().get(0).toString();
-          String column = rc.getIdentifiers().get(0).getField();
-          String value = rc.getTerms().get(0).toString();
-          // Generate query for column
-          String[] processedQuery = processLuceneQueryType(value);
-          sb.append("{type:\"");
-          sb.append(processedQuery[0]);
-          sb.append("\",field:\"");
-          sb.append(column);
-          sb.append("\",value:\"");
-          sb.append(processedQuery[1]);
-          sb.append("\"},");
-          addedClauses++;
-        }
-      }
-      sb.replace(sb.length() - 1, sb.length(), "");
-      sb.append("]}}");
-      if (addedClauses > 0) {
-        result = new String[] {luceneIndex.getIndexName(), sb.toString()};
-      }
-    }
-    return result;
-  }
-  */
+   * public String[] getLuceneWhereClause(MetadataManager metadata, TableMetadata tableMetadata) {
+   * String[] result = null; CustomIndexMetadata luceneIndex =
+   * metadata.getLuceneIndex(tableMetadata); int addedClauses = 0; if (luceneIndex != null) { //
+   * TODO: Check in the validator that the query uses AND with the lucene mapped columns.
+   * StringBuilder sb = new StringBuilder("{filter:{type:\"boolean\",must:[");
+   * 
+   * // Iterate throughout the relations of the where clause looking for MATCH. for (Relation
+   * relation : where) { if (Relation.TYPE_COMPARE == relation.getType() &&
+   * "MATCH".equalsIgnoreCase(relation.getOperator())) { RelationCompare rc =
+   * RelationCompare.class.cast(relation); // String column = rc.getIdentifiers().get(0).toString();
+   * String column = rc.getIdentifiers().get(0).getField(); String value =
+   * rc.getTerms().get(0).toString(); // Generate query for column String[] processedQuery =
+   * processLuceneQueryType(value); sb.append("{type:\""); sb.append(processedQuery[0]);
+   * sb.append("\",field:\""); sb.append(column); sb.append("\",value:\"");
+   * sb.append(processedQuery[1]); sb.append("\"},"); addedClauses++; } } sb.replace(sb.length() -
+   * 1, sb.length(), ""); sb.append("]}}"); if (addedClauses > 0) { result = new String[]
+   * {luceneIndex.getIndexName(), sb.toString()}; } } return result; }
+   */
 
   /**
    * Process a query pattern to determine the type of Lucene query. The supported types of queries
@@ -682,45 +654,25 @@ public class SelectStatement extends MetaStatement {
   }
 
   /*
-  public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName,
-      String outgoing) {
-    StringBuilder querySb = new StringBuilder("from ");
-    querySb.append(streamName);
-    if (windowInc) {
-      querySb.append("#window.timeBatch( ").append(getWindow().toString().toLowerCase())
-          .append(" )");
-    }
-
-    List<String> ids = new ArrayList<>();
-    boolean asterisk = false;
-    SelectionClause selectionClause = getSelectionClause();
-    if (selectionClause.getType() == SelectionClause.TYPE_SELECTION) {
-      SelectionList selectionList = (SelectionList) selectionClause;
-      Selection selection = selectionList.getSelection();
-      if (selection.getType() == Selection.TYPE_ASTERISK) {
-        asterisk = true;
-      }
-    }
-    if (asterisk) {
-      List<ColumnNameTypeValue> cols = null;
-      try {
-        cols = stratioStreamingAPI.columnsFromStream(streamName);
-      } catch (Exception e) {
-        LOG.error(e);
-      }
-      for (ColumnNameTypeValue ctv : cols) {
-        ids.add(ctv.getColumn());
-      }
-    } else {
-      ids = getSelectionClause().getFields();
-    }
-
-    String idsStr = Arrays.toString(ids.toArray()).replace("[", "").replace("]", "");
-    querySb.append(" select ").append(idsStr).append(" insert into ");
-    querySb.append(outgoing);
-    return querySb.toString();
-  }
-  */
+   * public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName,
+   * String outgoing) { StringBuilder querySb = new StringBuilder("from ");
+   * querySb.append(streamName); if (windowInc) {
+   * querySb.append("#window.timeBatch( ").append(getWindow().toString().toLowerCase())
+   * .append(" )"); }
+   * 
+   * List<String> ids = new ArrayList<>(); boolean asterisk = false; SelectionClause selectionClause
+   * = getSelectionClause(); if (selectionClause.getType() == SelectionClause.TYPE_SELECTION) {
+   * SelectionList selectionList = (SelectionList) selectionClause; Selection selection =
+   * selectionList.getSelection(); if (selection.getType() == Selection.TYPE_ASTERISK) { asterisk =
+   * true; } } if (asterisk) { List<ColumnNameTypeValue> cols = null; try { cols =
+   * stratioStreamingAPI.columnsFromStream(streamName); } catch (Exception e) { LOG.error(e); } for
+   * (ColumnNameTypeValue ctv : cols) { ids.add(ctv.getColumn()); } } else { ids =
+   * getSelectionClause().getFields(); }
+   * 
+   * String idsStr = Arrays.toString(ids.toArray()).replace("[", "").replace("]", "");
+   * querySb.append(" select ").append(idsStr).append(" insert into "); querySb.append(outgoing);
+   * return querySb.toString(); }
+   */
 
   /**
    * Get the driver representation of the fields found in the selection clause.
@@ -763,25 +715,15 @@ public class SelectStatement extends MetaStatement {
    */
   private Select.Builder getDriverBuilder() {
     /*
-    Select.Builder builder;
-    if (selectionClause.getType() == SelectionClause.TYPE_COUNT) {
-      builder = QueryBuilder.select().countAll();
-    } else {
-      // Selection type
-      SelectionList selList = (SelectionList) selectionClause;
-      if (selList.getSelection().getType() != Selection.TYPE_ASTERISK) {
-        Select.Selection selection = QueryBuilder.select();
-        if (selList.isDistinct()) {
-          selection = selection.distinct();
-        }
-        // Select the required columns.
-        SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection();
-        builder = getDriverBuilderSelection(selSelectors, selection);
-      } else {
-        builder = QueryBuilder.select().all();
-      }
-    }
-    */
+     * Select.Builder builder; if (selectionClause.getType() == SelectionClause.TYPE_COUNT) {
+     * builder = QueryBuilder.select().countAll(); } else { // Selection type SelectionList selList
+     * = (SelectionList) selectionClause; if (selList.getSelection().getType() !=
+     * Selection.TYPE_ASTERISK) { Select.Selection selection = QueryBuilder.select(); if
+     * (selList.isDistinct()) { selection = selection.distinct(); } // Select the required columns.
+     * SelectionSelectors selSelectors = (SelectionSelectors) selList.getSelection(); builder =
+     * getDriverBuilderSelection(selSelectors, selection); } else { builder =
+     * QueryBuilder.select().all(); } }
+     */
     return null;
   }
 
@@ -822,113 +764,66 @@ public class SelectStatement extends MetaStatement {
   /**
    * Get the driver clause associated with a compare relation.
    * 
-   * @param metaRelation The {@link com.stratio.meta.common.statements.structures.relationships.RelationCompare} clause.
+   * @param metaRelation The
+   *        {@link com.stratio.meta.common.statements.structures.relationships.RelationCompare}
+   *        clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
   /*
-  private Clause getRelationCompareClause(Relation metaRelation) {
-    Clause clause = null;
-    RelationCompare relCompare = (RelationCompare) metaRelation;
-    String field = relCompare.getIdentifiers().get(0).getField();
-    Object value = relCompare.getTerms().get(0).getTermValue();
-    value = getWhereCastValue(field, value);
-    switch (relCompare.getOperator().toUpperCase()) {
-      case "=":
-        clause = QueryBuilder.eq(field, value);
-        break;
-      case ">":
-        clause = QueryBuilder.gt(field, value);
-        break;
-      case ">=":
-        clause = QueryBuilder.gte(field, value);
-        break;
-      case "<":
-        clause = QueryBuilder.lt(field, value);
-        break;
-      case "<=":
-        clause = QueryBuilder.lte(field, value);
-        break;
-      case "MATCH":
-        // Processed as LuceneIndex
-        break;
-      default:
-        LOG.error("Unsupported operator: " + relCompare.getOperator());
-        break;
-    }
-    return clause;
-  }*/
+   * private Clause getRelationCompareClause(Relation metaRelation) { Clause clause = null;
+   * RelationCompare relCompare = (RelationCompare) metaRelation; String field =
+   * relCompare.getIdentifiers().get(0).getField(); Object value =
+   * relCompare.getTerms().get(0).getTermValue(); value = getWhereCastValue(field, value); switch
+   * (relCompare.getOperator().toUpperCase()) { case "=": clause = QueryBuilder.eq(field, value);
+   * break; case ">": clause = QueryBuilder.gt(field, value); break; case ">=": clause =
+   * QueryBuilder.gte(field, value); break; case "<": clause = QueryBuilder.lt(field, value); break;
+   * case "<=": clause = QueryBuilder.lte(field, value); break; case "MATCH": // Processed as
+   * LuceneIndex break; default: LOG.error("Unsupported operator: " + relCompare.getOperator());
+   * break; } return clause; }
+   */
 
   /**
    * Get the driver clause associated with an in relation.
    * 
-   * @param metaRelation The {@link com.stratio.meta.common.statements.structures.relationships.RelationIn} clause.
+   * @param metaRelation The
+   *        {@link com.stratio.meta.common.statements.structures.relationships.RelationIn} clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
   /*
-  private Clause getRelationInClause(Relation metaRelation) {
-    Clause clause = null;
-    RelationIn relIn = (RelationIn) metaRelation;
-    List<Term<?>> terms = relIn.getTerms();
-    String field = relIn.getIdentifiers().get(0).getField();
-    Object[] values = new Object[relIn.numberOfTerms()];
-    int nTerm = 0;
-    for (Term<?> term : terms) {
-      values[nTerm] = getWhereCastValue(field, term.getTermValue());
-      nTerm++;
-    }
-    clause = QueryBuilder.in(relIn.getIdentifiers().get(0).toString(), values);
-    return clause;
-  }*/
+   * private Clause getRelationInClause(Relation metaRelation) { Clause clause = null; RelationIn
+   * relIn = (RelationIn) metaRelation; List<Term<?>> terms = relIn.getTerms(); String field =
+   * relIn.getIdentifiers().get(0).getField(); Object[] values = new Object[relIn.numberOfTerms()];
+   * int nTerm = 0; for (Term<?> term : terms) { values[nTerm] = getWhereCastValue(field,
+   * term.getTermValue()); nTerm++; } clause =
+   * QueryBuilder.in(relIn.getIdentifiers().get(0).toString(), values); return clause; }
+   */
 
   /**
    * Get the driver clause associated with an token relation.
    * 
-   * @param metaRelation The {@link com.stratio.meta.common.statements.structures.relationships.RelationToken} clause.
+   * @param metaRelation The
+   *        {@link com.stratio.meta.common.statements.structures.relationships.RelationToken}
+   *        clause.
    * @return A {@link com.datastax.driver.core.querybuilder.Clause}.
    */
   /*
-  private Clause getRelationTokenClause(Relation metaRelation) {
-    Clause clause = null;
-    RelationToken relToken = (RelationToken) metaRelation;
-
-    List<String> names = new ArrayList<>();
-    for (SelectorIdentifier identifier : relToken.getIdentifiers()) {
-      names.add(identifier.toString());
-    }
-
-    if (!relToken.isRightSideTokenType()) {
-      Object value = relToken.getTerms().get(0).getTermValue();
-      switch (relToken.getOperator()) {
-        case "=":
-          clause =
-              QueryBuilder.eq(QueryBuilder.token(names.toArray(new String[names.size()])), value);
-          break;
-        case ">":
-          clause =
-              QueryBuilder.gt(QueryBuilder.token(names.toArray(new String[names.size()])), value);
-          break;
-        case ">=":
-          clause =
-              QueryBuilder.gte(QueryBuilder.token(names.toArray(new String[names.size()])), value);
-          break;
-        case "<":
-          clause =
-              QueryBuilder.lt(QueryBuilder.token(names.toArray(new String[names.size()])), value);
-          break;
-        case "<=":
-          clause =
-              QueryBuilder.lte(QueryBuilder.token(names.toArray(new String[names.size()])), value);
-          break;
-        default:
-          LOG.error("Unsupported operator " + relToken.getOperator());
-          break;
-      }
-    } else {
-      return null;
-    }
-    return clause;
-  }
-  */
+   * private Clause getRelationTokenClause(Relation metaRelation) { Clause clause = null;
+   * RelationToken relToken = (RelationToken) metaRelation;
+   * 
+   * List<String> names = new ArrayList<>(); for (SelectorIdentifier identifier :
+   * relToken.getIdentifiers()) { names.add(identifier.toString()); }
+   * 
+   * if (!relToken.isRightSideTokenType()) { Object value =
+   * relToken.getTerms().get(0).getTermValue(); switch (relToken.getOperator()) { case "=": clause =
+   * QueryBuilder.eq(QueryBuilder.token(names.toArray(new String[names.size()])), value); break;
+   * case ">": clause = QueryBuilder.gt(QueryBuilder.token(names.toArray(new String[names.size()])),
+   * value); break; case ">=": clause = QueryBuilder.gte(QueryBuilder.token(names.toArray(new
+   * String[names.size()])), value); break; case "<": clause =
+   * QueryBuilder.lt(QueryBuilder.token(names.toArray(new String[names.size()])), value); break;
+   * case "<=": clause = QueryBuilder.lte(QueryBuilder.token(names.toArray(new
+   * String[names.size()])), value); break; default: LOG.error("Unsupported operator " +
+   * relToken.getOperator()); break; } } else { return null; } return clause; }
+   */
 
   /**
    * Get the driver where clause.
@@ -937,115 +832,65 @@ public class SelectStatement extends MetaStatement {
    * @return A {@link com.datastax.driver.core.querybuilder.Select.Where}.
    */
   /*
-  private Where getDriverWhere(Select sel) {
-    Where whereStmt = null;
-    String[] luceneWhere = getLuceneWhereClause(metadata, tableMetadataFrom);
-    if (luceneWhere != null) {
-      Clause lc = QueryBuilder.eq(luceneWhere[0], luceneWhere[1]);
-      whereStmt = sel.where(lc);
-    }
-    for (Relation metaRelation : this.where) {
-      Clause clause = null;
-      switch (metaRelation.getType()) {
-        case Relation.TYPE_COMPARE:
-          clause = getRelationCompareClause(metaRelation);
-          break;
-        case Relation.TYPE_IN:
-          clause = getRelationInClause(metaRelation);
-          break;
-        case Relation.TYPE_TOKEN:
-          clause = getRelationTokenClause(metaRelation);
-          break;
-        default:
-          LOG.error("Unsupported relation type: " + metaRelation.getType());
-          break;
-      }
-      if (clause != null) {
-        if (whereStmt == null) {
-          whereStmt = sel.where(clause);
-        } else {
-          whereStmt = whereStmt.and(clause);
-        }
-      }
-    }
-    return whereStmt;
-  }
-  */
+   * private Where getDriverWhere(Select sel) { Where whereStmt = null; String[] luceneWhere =
+   * getLuceneWhereClause(metadata, tableMetadataFrom); if (luceneWhere != null) { Clause lc =
+   * QueryBuilder.eq(luceneWhere[0], luceneWhere[1]); whereStmt = sel.where(lc); } for (Relation
+   * metaRelation : this.where) { Clause clause = null; switch (metaRelation.getType()) { case
+   * Relation.TYPE_COMPARE: clause = getRelationCompareClause(metaRelation); break; case
+   * Relation.TYPE_IN: clause = getRelationInClause(metaRelation); break; case Relation.TYPE_TOKEN:
+   * clause = getRelationTokenClause(metaRelation); break; default:
+   * LOG.error("Unsupported relation type: " + metaRelation.getType()); break; } if (clause != null)
+   * { if (whereStmt == null) { whereStmt = sel.where(clause); } else { whereStmt =
+   * whereStmt.and(clause); } } } return whereStmt; }
+   */
 
   @Override
   public Statement getDriverStatement() {
     Select.Builder builder = getDriverBuilder();
 
     /*
-    Select sel;
-    if (this.catalogInc) {
-      sel = builder.from(catalog, tableName.getName());
-    } else {
-      sel = builder.from(tableName.getName());
-    }
-
-    if (this.limitInc) {
-      sel.limit(this.limit);
-    }
-
-    if (this.orderInc) {
-      com.datastax.driver.core.querybuilder.Ordering[] orderings =
-          new com.datastax.driver.core.querybuilder.Ordering[order.size()];
-      int nOrdering = 0;
-      for (Ordering metaOrdering : this.order) {
-        if (metaOrdering.isDirInc() && (metaOrdering.getOrderDir() == OrderDirection.DESC)) {
-          orderings[nOrdering] = QueryBuilder.desc(metaOrdering.getSelectorIdentifier().toString());
-        } else {
-          orderings[nOrdering] = QueryBuilder.asc(metaOrdering.getSelectorIdentifier().toString());
-        }
-        nOrdering++;
-      }
-      sel.orderBy(orderings);
-    }
-
-
-    Where whereStmt = null;
-
-    if (this.whereInc) {
-      whereStmt = getDriverWhere(sel);
-    } else {
-      whereStmt = sel.where();
-    }
-
-    LOG.trace("Executing: " + whereStmt.toString());
-    */
+     * Select sel; if (this.catalogInc) { sel = builder.from(catalog, tableName.getName()); } else {
+     * sel = builder.from(tableName.getName()); }
+     * 
+     * if (this.limitInc) { sel.limit(this.limit); }
+     * 
+     * if (this.orderInc) { com.datastax.driver.core.querybuilder.Ordering[] orderings = new
+     * com.datastax.driver.core.querybuilder.Ordering[order.size()]; int nOrdering = 0; for
+     * (Ordering metaOrdering : this.order) { if (metaOrdering.isDirInc() &&
+     * (metaOrdering.getOrderDir() == OrderDirection.DESC)) { orderings[nOrdering] =
+     * QueryBuilder.desc(metaOrdering.getSelectorIdentifier().toString()); } else {
+     * orderings[nOrdering] = QueryBuilder.asc(metaOrdering.getSelectorIdentifier().toString()); }
+     * nOrdering++; } sel.orderBy(orderings); }
+     * 
+     * 
+     * Where whereStmt = null;
+     * 
+     * if (this.whereInc) { whereStmt = getDriverWhere(sel); } else { whereStmt = sel.where(); }
+     * 
+     * LOG.trace("Executing: " + whereStmt.toString());
+     */
     return null;
   }
 
   public void addTablenameToIds() {
-    //selectionClause.addTablename(tableName);
+    // selectionClause.addTablename(tableName);
   }
 
   private void replaceAliasesInSelect(Map<String, String> tablesAliasesMap) {
     /*
-    if (this.selectionClause instanceof SelectionList
-        && ((SelectionList) this.selectionClause).getSelection() instanceof SelectionSelectors) {
-      List<SelectionSelector> selectors =
-          ((SelectionSelectors) ((SelectionList) this.selectionClause).getSelection())
-              .getSelectors();
-
-      for (SelectionSelector selector : selectors) {
-        SelectorIdentifier identifier = null;
-        if (selector.getSelector() instanceof SelectorIdentifier) {
-          identifier = (SelectorIdentifier) selector.getSelector();
-        } else if (selector.getSelector() instanceof SelectorGroupBy) {
-          identifier = (SelectorIdentifier) ((SelectorGroupBy) selector.getSelector()).getParam();
-        }
-
-        if (identifier != null) {
-          String table = tablesAliasesMap.get(identifier.getTable());
-          if (table != null) {
-            identifier.setTable(new TableName("", table));
-          }
-        }
-      }
-    }
-    */
+     * if (this.selectionClause instanceof SelectionList && ((SelectionList)
+     * this.selectionClause).getSelection() instanceof SelectionSelectors) { List<SelectionSelector>
+     * selectors = ((SelectionSelectors) ((SelectionList) this.selectionClause).getSelection())
+     * .getSelectors();
+     * 
+     * for (SelectionSelector selector : selectors) { SelectorIdentifier identifier = null; if
+     * (selector.getSelector() instanceof SelectorIdentifier) { identifier = (SelectorIdentifier)
+     * selector.getSelector(); } else if (selector.getSelector() instanceof SelectorGroupBy) {
+     * identifier = (SelectorIdentifier) ((SelectorGroupBy) selector.getSelector()).getParam(); }
+     * 
+     * if (identifier != null) { String table = tablesAliasesMap.get(identifier.getTable()); if
+     * (table != null) { identifier.setTable(new TableName("", table)); } } } }
+     */
   }
 
 
@@ -1053,22 +898,13 @@ public class SelectStatement extends MetaStatement {
       Map<String, String> tablesAliasesMap) {
 
     /*
-    if (this.where != null) {
-      for (Relation whereCol : this.where) {
-        for (SelectorIdentifier id : whereCol.getIdentifiers()) {
-          String table = tablesAliasesMap.get(id.getTable());
-          if (table != null) {
-            id.setTable(new TableName("", table));
-          }
-
-          String identifier = fieldsAliasesMap.get(id.toString());
-          if (identifier != null) {
-            id.setIdentifier(identifier);
-          }
-        }
-      }
-    }
-    */
+     * if (this.where != null) { for (Relation whereCol : this.where) { for (SelectorIdentifier id :
+     * whereCol.getIdentifiers()) { String table = tablesAliasesMap.get(id.getTable()); if (table !=
+     * null) { id.setTable(new TableName("", table)); }
+     * 
+     * String identifier = fieldsAliasesMap.get(id.toString()); if (identifier != null) {
+     * id.setIdentifier(identifier); } } } }
+     */
   }
 
   private void replaceAliasesInGroupBy(Map<String, String> fieldsAliasesMap,
@@ -1162,28 +998,22 @@ public class SelectStatement extends MetaStatement {
 
     // Adding table name to the identifiers in WHERE clause
     /*
-    if (this.where != null) {
-      for (Relation whereCol : this.where) {
-        for (SelectorIdentifier identifier : whereCol.getIdentifiers()) {
-          identifier.addTablename(this.tableName);
-        }
-      }
-    }
+     * if (this.where != null) { for (Relation whereCol : this.where) { for (SelectorIdentifier
+     * identifier : whereCol.getIdentifiers()) { identifier.addTablename(this.tableName); } } }
+     * 
+     * // Adding table name to the identifiers in GROUP BY clause if (this.group != null) { for
+     * (GroupBy groupByCol : this.group) {
+     * groupByCol.getSelectorIdentifier().addTablename(this.tableName); } }
+     * 
+     * // Adding table name to the identifiers in ORDER BY clause if (this.order != null) { for
+     * (Ordering orderByCol : this.order) {
+     * orderByCol.getSelectorIdentifier().addTablename(this.tableName); } }
+     */
+  }
 
-    // Adding table name to the identifiers in GROUP BY clause
-    if (this.group != null) {
-      for (GroupBy groupByCol : this.group) {
-        groupByCol.getSelectorIdentifier().addTablename(this.tableName);
-      }
-    }
-
-    // Adding table name to the identifiers in ORDER BY clause
-    if (this.order != null) {
-      for (Ordering orderByCol : this.order) {
-        orderByCol.getSelectorIdentifier().addTablename(this.tableName);
-      }
-    }
-    */
+  @Override
+  public ValidationRequirements getValidationRequirements() {
+    return new ValidationRequirements();
   }
 
 }
