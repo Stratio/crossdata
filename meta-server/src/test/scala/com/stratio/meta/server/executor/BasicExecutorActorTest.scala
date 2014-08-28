@@ -32,6 +32,7 @@ import scala.collection.mutable
 import com.stratio.meta.common.result.{ErrorResult, QueryResult, CommandResult, Result}
 import com.stratio.meta.communication.ACK
 import com.stratio.meta.common.ask.Query
+import com.stratio.meta.server.actors.ConnectorActor
 
 /**
  * To generate unit test of proxy actor
@@ -39,8 +40,8 @@ import com.stratio.meta.common.ask.Query
 class BasicExecutorActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
   val engine:Engine =  createEngine.create()
-
-  lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
+  lazy val connectorActorRef = system.actorOf(ConnectorActor.props())
+  lazy val executorRef = system.actorOf(ExecutorActor.props(connectorActorRef,engine.getExecutor),"TestExecutorActor")
 
   override def beforeCassandraFinish() {
     shutdown(system)

@@ -37,6 +37,7 @@ import com.stratio.meta.communication.ACK
 import com.stratio.meta.communication.ACK
 import scala.util.Success
 import com.stratio.meta.common.ask.Query
+import com.stratio.meta.server.actors.ConnectorActor
 
 /**
  * Planner actor tests.
@@ -44,8 +45,8 @@ import com.stratio.meta.common.ask.Query
 class BasicPlannerActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
   val engine:Engine =  createEngine.create()
-
-  lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
+  lazy val connectorActorRef = system.actorOf(ConnectorActor.props())
+  lazy val executorRef = system.actorOf(ExecutorActor.props(connectorActorRef,engine.getExecutor),"TestExecutorActor")
   lazy val plannerRef = system.actorOf(PlannerActor.props(executorRef,engine.getPlanner),"TestPlanerActor")
   lazy val plannerRefTest= system.actorOf(PlannerActor.props(testActor,engine.getPlanner),"TestPlanerActorTest")
 

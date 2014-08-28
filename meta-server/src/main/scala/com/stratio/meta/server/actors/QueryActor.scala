@@ -30,7 +30,8 @@ object QueryActor{
 
 class QueryActor(engine: Engine) extends Actor{
   val log =Logger.getLogger(classOf[QueryActor])
-  val executorActorRef = context.actorOf(ExecutorActor.props(engine.getExecutor),"ExecutorActor")
+  val connectorActorRef = context.actorOf(ConnectorActor.props())
+  val executorActorRef = context.actorOf(ExecutorActor.props(connectorActorRef,engine.getExecutor),"ExecutorActor")
   val plannerActorRef = context.actorOf(PlannerActor.props(executorActorRef,engine.getPlanner),"PlanerActor")
   val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef,engine.getValidator),"ValidatorActor")
   val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef,engine.getParser),"ParserActor")
