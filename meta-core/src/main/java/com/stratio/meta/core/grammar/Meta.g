@@ -933,6 +933,7 @@ getSelector returns [Selector s]
             | functionName=T_MIN
             | functionName=T_AVG
             | functionName=T_COUNT
+            | functionName=T_IDENT
         )
 
         T_START_PARENTHESIS
@@ -978,8 +979,10 @@ getValueAssign returns [GenericTerm valueAssign]
 
 getRelation returns [Relation mrel]
     @after{
-        $mrel = null;
+        $mrel = new Relation(s, operator, terms);
     }:
+    s=getSelector operator=getComparator terms=getTerms
+
 //TODO
 
 //    T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}
@@ -991,15 +994,15 @@ getRelation returns [Relation mrel]
 
 ;
 
-getComparator returns [String comparator]:
-    T_EQUAL {$comparator="=";}
-    | T_GT {$comparator=">";}
-    | T_LT {$comparator="<";}
-    | T_GTE {$comparator=">=";}
-    | T_LTE {$comparator="<=";}
-    | T_NOT_EQUAL {$comparator="<>";}
-    | T_LIKE {$comparator="LIKE";}
-    | T_MATCH {$comparator="MATCH";}
+getComparator returns [Operator op]:
+    T_EQUAL {$op = Operator.COMPARE;}
+    | T_GT {$op = Operator.GREATER_THAN;}
+    | T_LT {$op = Operator.LOWER_THAN;}
+    | T_GTE {$op = Operator.GREATER_EQUAL_THAN;}
+    | T_LTE {$op = Operator.LOWER_EQUAL_THAN;}
+    | T_NOT_EQUAL {$op = Operator.NOT_EQUAL;}
+    | T_LIKE {$op = Operator.LIKE;}
+    | T_MATCH {$op = Operator.MATCH;}
 ;
 
 getIds returns [ArrayList<String> listStrs]
