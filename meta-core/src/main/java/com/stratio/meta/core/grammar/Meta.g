@@ -352,7 +352,7 @@ detachConnectorStatement returns [DetachConnectorStatement dcs]
     @after{
         $dcs = new DetachConnectorStatement(new ConnectorName($connectorName.text), new ClusterName($clusterName.text));
     }:
-    T_DETACH T_CONNECTOR connectorName=T_IDENT FROM clusterName=T_IDENT
+    T_DETACH T_CONNECTOR connectorName=T_IDENT T_FROM clusterName=T_IDENT
 ;
 
 // ========================================================
