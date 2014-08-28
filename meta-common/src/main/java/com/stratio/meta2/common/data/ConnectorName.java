@@ -36,4 +36,8 @@ public class ConnectorName extends FirstLevelName {
     return QualifiedNames.getConnectorQualifiedName(getName());
   }
 
+  @Override public NameType getType() {
+    return NameType.Connector;
+  }
+
 }
