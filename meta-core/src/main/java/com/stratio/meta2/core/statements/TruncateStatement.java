@@ -15,7 +15,6 @@
 package com.stratio.meta2.core.statements;
 
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Truncate;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -23,6 +22,7 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;

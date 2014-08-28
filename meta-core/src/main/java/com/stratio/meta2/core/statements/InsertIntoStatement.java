@@ -14,12 +14,9 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
@@ -27,10 +24,8 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.statements.structures.terms.FloatTerm;
+import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
-import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
-import com.stratio.meta2.common.statements.structures.terms.Term;
 
 import com.stratio.meta2.core.engine.validator.Validation;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
@@ -231,9 +226,10 @@ public class InsertIntoStatement extends MetaStatement {
   }
 
   public void updateTermClass(TableMetadata tableMetadata) {
-    for (int i = 0; i < ids.size(); i++) {
+    throw new UnsupportedOperationException();
+    /*for (int i = 0; i < ids.size(); i++) {
       Class<? extends Comparable<?>> dataType =
-          (Class<? extends Comparable<?>>) tableMetadata.getColumn(ids.get(i)).getType()
+          (Class<? extends Comparable<?>>) tableMetadata.getColumns().get(ids.get(i)).getColumnType()
               .asJavaClass();
       if (cellValues.get(i) instanceof Term) {
         Term<?> term = (Term<?>) cellValues.get(i);
@@ -243,7 +239,7 @@ public class InsertIntoStatement extends MetaStatement {
           cellValues.set(i, new FloatTerm((Term<Double>) term));
         }
       }
-    }
+    }*/
   }
 
   /**
@@ -254,7 +250,8 @@ public class InsertIntoStatement extends MetaStatement {
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateColumns(TableMetadata tableMetadata) {
-    Result result = QueryResult.createSuccessQueryResult();
+    throw new UnsupportedOperationException();
+    /*Result result = QueryResult.createSuccessQueryResult();
 
     // Validate target column names
     for (String c : ids) {
@@ -269,13 +266,13 @@ public class InsertIntoStatement extends MetaStatement {
       if (cellValues.size() == ids.size()) {
         updateTermClass(tableMetadata);
         for (int index = 0; index < cellValues.size(); index++) {
-          cm = tableMetadata.getColumn(ids.get(index));
+          cm = tableMetadata.getColumns().get(ids.get(index));
           if (cm != null) {
             Term<?> t = Term.class.cast(cellValues.get(index));
-            if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
+            if (!cm.getColumnType().asJavaClass().equals(t.getTermClass())) {
               result =
                   Result.createValidationErrorResult("Column " + ids.get(index) + " of type "
-                      + cm.getType().asJavaClass() + " does not accept " + t.getTermClass()
+                      + cm.getColumnType().asJavaClass() + " does not accept " + t.getTermClass()
                       + " values (" + cellValues.get(index) + ")");
             }
           } else {
@@ -288,7 +285,7 @@ public class InsertIntoStatement extends MetaStatement {
         result = Result.createValidationErrorResult("Number of columns and values does not match.");
       }
     }
-    return result;
+    return result;*/
   }
 
   @Override

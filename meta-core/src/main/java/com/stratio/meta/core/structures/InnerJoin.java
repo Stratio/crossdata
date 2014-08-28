@@ -19,66 +19,49 @@
 package com.stratio.meta.core.structures;
 
 
+import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta2.common.data.TableName;
 
+import java.util.Iterator;
+import java.util.List;
+
 public class InnerJoin {
-
-  private String catalog = null;
-
-  private boolean catalogInc = false;
 
   private TableName tableName;
 
-  private SelectorIdentifier leftField;
-
-  private SelectorIdentifier rightField;
+  private List<Relation> relations;
 
   private InnerJoin(TableName tableName) {
     this.tableName = tableName;
   }
 
-  public InnerJoin(TableName tableName, String leftField, String rightField) {
+  public InnerJoin(TableName tableName, List<Relation> joinRelations) {
     this(tableName);
-    this.leftField = new SelectorIdentifier(leftField);
-    this.rightField = new SelectorIdentifier(rightField);
-  }
-
-  public InnerJoin(TableName tableName, SelectorIdentifier leftField, SelectorIdentifier rightField) {
-    this(tableName);
-    this.leftField = leftField;
-    this.rightField = rightField;
+    this.relations = joinRelations;
   }
 
   public TableName getTablename() {
     return tableName;
   }
 
-  public String getCatalog() {
-    return catalog;
-  }
-
-  public SelectorIdentifier getLeftField() {
-    return leftField;
-  }
-
-  public SelectorIdentifier getRightField() {
-    return rightField;
+  public List<Relation> getRelations() {
+    return relations;
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    if (catalogInc) {
-      sb.append(catalog);
-      sb.append(".");
-    }
     sb.append(tableName);
-    sb.append(" ON ").append(leftField).append("=").append(rightField);
+    sb.append(" ON ");
+    Iterator<Relation> it = relations.iterator();
+    while(it.hasNext()){
+      sb.append(it.next());
+      if(it.hasNext()){
+        sb.append(" AND ");
+      }
+    }
     return sb.toString();
   }
 
-  public boolean isCatalogInc() {
-    return catalogInc;
-  }
 }

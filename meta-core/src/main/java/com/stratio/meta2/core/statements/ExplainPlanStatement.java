@@ -25,14 +25,14 @@ import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 public class ExplainPlanStatement extends MetaStatement {
 
   /**
-   * The {@link com.stratio.meta.core.statements.MetaStatement} to be analyzed.
+   * The {@link com.stratio.meta2.core.statements.MetaStatement} to be analyzed.
    */
   private MetaStatement metaStatement;
 
   /**
    * Class constructor.
    * 
-   * @param metaStatement The {@link com.stratio.meta.core.statements.MetaStatement} to be analyzed.
+   * @param metaStatement The {@link com.stratio.meta2.core.statements.MetaStatement} to be analyzed.
    */
   public ExplainPlanStatement(MetaStatement metaStatement) {
     this.command = true;
