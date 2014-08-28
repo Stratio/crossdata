@@ -37,8 +37,6 @@ public class ColumnName extends Name {
     this.name = columnName;
   }
 
-
-
   public TableName getTableName() {
     return tableName;
   }

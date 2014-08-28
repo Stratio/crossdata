@@ -18,9 +18,7 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
@@ -32,13 +30,13 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.StringTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -348,7 +346,7 @@ public class CreateIndexStatement extends MetaStatement {
     for(String c : targetColumns){
       if(c.toLowerCase().startsWith("stratio")){
         result = Result.createValidationErrorResult("Internal column " + c + " cannot be part of the WHERE clause.");
-      }else if(tableMetadata.getColumn(c) == null){
+      }else if(tableMetadata.getColumns().get(c) == null){
         result = Result.createValidationErrorResult("Column " + c + " does not exist in table " + tableMetadata.getName());
       }
     }
@@ -389,7 +387,8 @@ public class CreateIndexStatement extends MetaStatement {
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateOptions(String effectiveCatalog, TableMetadata metadata) {
-    Result result = QueryResult.createSuccessQueryResult();
+    throw new UnsupportedOperationException();
+    /*Result result = QueryResult.createSuccessQueryResult();
     if(!options.isEmpty()){
       result = Result.createValidationErrorResult(
           "WITH OPTIONS clause not supported in index creation.");
@@ -412,7 +411,7 @@ public class CreateIndexStatement extends MetaStatement {
                 .replace("stratio_lucene_", "") + "; to remove the index.");
       }
     }
-    return result;
+    return result;*/
   }
 
   /**
@@ -447,7 +446,7 @@ public class CreateIndexStatement extends MetaStatement {
     for(String column : targetColumns){
       sb.append(column);
       sb.append(":");
-      sb.append(luceneTypes.get(metadata.getColumn(column).getType().toString()));
+      sb.append(luceneTypes.get(metadata.getColumns().get(column).getColumnType().toString()));
       sb.append(",");
     }
 

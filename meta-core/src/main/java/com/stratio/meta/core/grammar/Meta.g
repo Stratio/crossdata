@@ -339,9 +339,9 @@ attachConnectorStatement returns [AttachConnectorStatement acs]
 
 detachConnectorStatement returns [DetachConnectorStatement dcs]
     @after{
-        $dcs = new DetachConnectorStatement($connectorName.text);
+        $dcs = new DetachConnectorStatement(new ConnectorName($connectorName.text), new ClusterName($clusterName.text));
     }:
-    T_DETACH T_CONNECTOR connectorName=T_IDENT
+    T_DETACH T_CONNECTOR connectorName=T_IDENT FROM clusterName=T_IDENT
 ;
 
 // ========================================================
@@ -573,41 +573,36 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
 ;
 
 createTableStatement returns [CreateTableStatement crtast]
-@init{
-    LinkedHashMap<ColumnName, String> columns = new LinkedHashMap<>();
-    ArrayList<ColumnName> primaryKey = new ArrayList<>();
-    ArrayList<ColumnName> clusterKey = new ArrayList<>();
-    int primaryKeyType = 0;
-    int columnNumberPK= 0;
-    int columnNumberPK_inter= 0;
-    boolean ifNotExists = false;
-    boolean withProperties = false;
- }:
-    T_CREATE T_TABLE
-    (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
-    tablename=getTableName T_ON T_CLUSTER clusterID=T_IDENT
+    @init{
+        LinkedHashMap<ColumnName, String> columns = new LinkedHashMap<>();
+        ArrayList<ColumnName> primaryKey = new ArrayList<>();
+        ArrayList<ColumnName> clusterKey = new ArrayList<>();
+        int primaryKeyType = 0;
+        int columnNumberPK= 0;
+        int columnNumberPK_inter= 0;
+        boolean ifNotExists = false;
+        boolean withProperties = false;
+    }:
+    T_CREATE T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})? tablename=getTableName T_ON T_CLUSTER clusterID=T_IDENT
     T_START_PARENTHESIS (
-                ident_column1=getField type1=getDataType (T_PRIMARY T_KEY)? {columns.put(new ColumnName("", "", ident_column1), type1); primaryKeyType=1;}
-                (
-                    ( T_COMMA ident_columN=getField typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put(new ColumnName("", "", ident_columN), typeN);columnNumberPK_inter+=1;})
-                    |(
-                        T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS
-                        (
-                            (   primaryK=getField {primaryKey.add(new ColumnName("", "", primaryK)); primaryKeyType=2;}
-
-                                (T_COMMA partitionKN=getField {primaryKey.add(new ColumnName("", "", partitionKN));})*
-                            )
-                            |(
-                                T_START_PARENTHESIS partitionK=getField {primaryKey.add(new ColumnName("", "", partitionK)); primaryKeyType=3;}
-                                    (T_COMMA partitionKN=getField {primaryKey.add(new ColumnName("", "", partitionKN));})*
-                                T_END_PARENTHESIS
-                                (T_COMMA clusterKN=getField {clusterKey.add(new ColumnName("", "", clusterKN));})*
-                            )
+        ident_column1=getField type1=getDataType (T_PRIMARY T_KEY)? {columns.put(new ColumnName(tablename.getCatalogName().getName(), tablename.getName(), ident_column1), type1); primaryKeyType=1;}
+            (
+                (T_COMMA ident_columN=getField typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put(new ColumnName(tablename.getCatalogName().getName(), tablename.getName(), ident_columN), typeN); columnNumberPK_inter+=1;})
+                |(T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS
+                    (
+                        (primaryK=getField {primaryKey.add(new ColumnName(tablename.getCatalogName().getName(), tablename.getName(), primaryK)); primaryKeyType=2;}
+                            (T_COMMA partitionKN=getField {primaryKey.add(new ColumnName(tablename.getCatalogName().getName(), tablename.getName(), partitionKN));})*
                         )
-                       T_END_PARENTHESIS
-                   )
-                )*
-         )
+                        |(T_START_PARENTHESIS partitionK=getField {primaryKey.add(new ColumnName(tablename.getCatalogName().getName(), tablename.getName(), partitionK)); primaryKeyType=3;}
+                            (T_COMMA partitionKN=getField {primaryKey.add(new ColumnName(tablename.getCatalogName().getName(), tablename.getName(), partitionKN));})*
+                            T_END_PARENTHESIS
+                            (T_COMMA clusterKN=getField {clusterKey.add(new ColumnName(tablename.getCatalogName().getName(), tablename.getName(), clusterKN));})*
+                        )
+                    )
+                    T_END_PARENTHESIS
+                )
+            )*
+        )
     T_END_PARENTHESIS (T_WITH {withProperties=true;} properties=getMetaProperties)?
     {
         $crtast = new CreateTableStatement(tablename, new ClusterName($clusterID.text), columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
@@ -618,19 +613,16 @@ createTableStatement returns [CreateTableStatement crtast]
 ;
 
 alterTableStatement returns [AlterTableStatement altast]
-@init{
+    @init{
         int option= 0;
     }:
-    T_ALTER
-    T_TABLE
-    //tablename=getTableName
-    tableName = getTable
-    (T_ALTER column=getField T_TYPE type=T_IDENT {option=1;}
-        |T_ADD column=getField type=T_IDENT {option=2;}
-        |T_DROP column=getField {option=3;}
+    T_ALTER T_TABLE tablename=getTableName
+    (T_ALTER column=getColumn T_TYPE type=T_IDENT {option=1;}
+        |T_ADD column=getColumn type=T_IDENT {option=2;}
+        |T_DROP column=getColumn {option=3;}
         |(T_WITH {option=4;} props=getMetaProperties)?
     )
-    {$altast = new AlterTableStatement(tableName, column, $type.text, props, option);  }
+    {$altast = new AlterTableStatement(tablename, column, $type.text, props, option);  }
 ;
 
 selectStatement returns [SelectStatement slctst]
@@ -897,8 +889,7 @@ getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
                         fieldsAliasesMap.put($aliasN.text, s.toString());}
                     )? {selectors.add(s);})*
     )
-
-    ;
+;
 
 getCountSymbol returns [String str]:
     '1' {$str = new String("1");}

@@ -18,24 +18,18 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
-import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta.core.utils.ParserUtils;
-import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.statements.structures.terms.FloatTerm;
+import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
-import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
 
 import java.util.ArrayList;
@@ -233,15 +227,16 @@ public class UpdateTableStatement extends MetaStatement {
   }
 
   private Result validateConds(TableMetadata tableMetadata) {
-    updateTermClassesInConditions(tableMetadata);
+    throw new UnsupportedOperationException();
+    /*updateTermClassesInConditions(tableMetadata);
     Result result = QueryResult.createSuccessQueryResult();
     for (String key : conditions.keySet()) {
-      ColumnMetadata cm = tableMetadata.getColumn(key);
+      ColumnMetadata cm = tableMetadata.getColumns().get(key);
       if (cm != null) {
-        if (!(cm.getType().asJavaClass() == conditions.get(key).getTermClass())) {
+        if (!(cm.getColumnType() == conditions.get(key).getTermClass())) {
           result =
               Result.createValidationErrorResult("Column " + key + " should be type "
-                  + cm.getType().asJavaClass().getSimpleName());
+                  + cm.getColumnType().asJavaClass().getSimpleName());
         }
       } else {
         result =
@@ -249,12 +244,13 @@ public class UpdateTableStatement extends MetaStatement {
                 + tableName);
       }
     }
-    return result;
+    return result;*/
   }
 
   private void updateTermClassesInConditions(TableMetadata tableMetadata) {
-    for (String ident : conditions.keySet()) {
-      ColumnMetadata cm = tableMetadata.getColumn(ident);
+    throw new UnsupportedOperationException();
+    /*for (String ident : conditions.keySet()) {
+      ColumnMetadata cm = tableMetadata.getColumns().get(ident);
       Term<?> term = conditions.get(ident);
       if ((cm != null) && (term != null)) {
         if (term instanceof Term) {
@@ -265,7 +261,7 @@ public class UpdateTableStatement extends MetaStatement {
           }
         }
       }
-    }
+    }*/
   }
 
   private Result validateOptions() {
@@ -297,7 +293,8 @@ public class UpdateTableStatement extends MetaStatement {
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateAssignations(TableMetadata tableMetadata) {
-    updateTermClassesInAssignations(tableMetadata);
+    throw new UnsupportedOperationException();
+    /*updateTermClassesInAssignations(tableMetadata);
     Result result = QueryResult.createSuccessQueryResult();
     for (int index = 0; index < assignations.size(); index++) {
       Assignation assignment = assignations.get(index);
@@ -306,7 +303,7 @@ public class UpdateTableStatement extends MetaStatement {
 
       // Check if identifier exists
       String colId = targetCol.getName();
-      ColumnMetadata cm = tableMetadata.getColumn(colId);
+      ColumnMetadata cm = tableMetadata.getColumns().get(colId);
       if (cm == null) {
         result =
             Result.createValidationErrorResult("Column " + colId
@@ -315,12 +312,12 @@ public class UpdateTableStatement extends MetaStatement {
       }
 
       // Check if column data type of the identifier is one of the supported types
-      Class<?> idClazz = cm.getType().asJavaClass();
+      Class<?> idClazz = cm.getColumnType().asJavaClass();
       if (!result.hasError()) {
         if (!CoreUtils.supportedTypes.contains(idClazz.getSimpleName().toLowerCase())) {
           result =
               Result.createValidationErrorResult("Column " + colId
-                  + " is of type " + cm.getType().asJavaClass().getSimpleName()
+                  + " is of type " + cm.getColumnType().asJavaClass().getSimpleName()
                   + ", which is not supported yet.");
         }
       }
@@ -328,7 +325,7 @@ public class UpdateTableStatement extends MetaStatement {
       // Check if identifier is simple, otherwise it refers to a collection, which are not supported
       // yet
       if (!result.hasError()) {
-        if (cm.getType().isCollection()) {
+        if (cm.getColumnType().isCollection()) {
           result = Result.createValidationErrorResult("Collections are not supported yet.");
         }
       }
@@ -350,13 +347,14 @@ public class UpdateTableStatement extends MetaStatement {
         }
       }
     }
-    return result;
+    return result;*/
   }
 
   private void updateTermClassesInAssignations(TableMetadata tableMetadata) {
-    for (Assignation assignment: assignations) {
+    throw new UnsupportedOperationException();
+    /*for (Assignation assignment: assignations) {
       String ident = assignment.getTargetColumn().getName();
-      ColumnMetadata cm = tableMetadata.getColumn(ident);
+      ColumnMetadata cm = tableMetadata.getColumns().get(ident);
       Term<?> valueTerm = (Term<?>) assignment.getValue();
       if ((cm != null) && (valueTerm != null)) {
         if (valueTerm instanceof Term) {
@@ -367,7 +365,7 @@ public class UpdateTableStatement extends MetaStatement {
           }
         }
       }
-    }
+    }*/
   }
 
   /*

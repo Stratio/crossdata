@@ -37,57 +37,57 @@ public class CreateTableStatementTest extends ParsingTest {
 
   @Test
   public void createTableBasic() {
-    String inputText = "create table adsa (something text primary key, something2 int, something3 bool);";
+    String inputText = "CREATE TABLE adsa ON CLUSTER siliconValley (something text primary key, something2 int, something3 bool);";
     testRegularStatement(inputText, "createTableBasic");
   }
 
   @Test
   public void createTableBasic2() {
-    String inputText = "create table adsa (something text, something2 int primary key, something3 bool);";
+    String inputText = "CREATE TABLE adsa ON CLUSTER siliconValley (something text, something2 int primary key, something3 bool);";
     testRegularStatement(inputText, "createTableBasic2");
   }
 
   @Test
   public void createTableBasic3() {
-    String inputText = "create table adsa (something text, something2 int, something3 bool primary key);";
+    String inputText = "CREATE TABLE adsa ON CLUSTER siliconValley (something text, something2 int, something3 bool primary key);";
     testRegularStatement(inputText, "createTableBasic3");
   }
 
   @Test
   public void createTableBasic4() {
-    String inputText = "create table adsa (something text, something2 int, something3 bool, primary key (something));";
+    String inputText = "CREATE TABLE adsa ON CLUSTER siliconValley (something text, something2 int, something3 bool, primary key (something));";
     testRegularStatement(inputText, "createTableBasic4");
   }
 
   @Test
   public void createTableBasic5() {
-    String inputText = "create table adsa (something text, something2 int, something3 bool, primary key (something, something2));";
+    String inputText = "CREATE TABLE adsa ON CLUSTER siliconValley (something text, something2 int, something3 bool, primary key (something, something2));";
     testRegularStatement(inputText, "createTableBasic5");
   }
 
   @Test
   public void createTableBasic6() {
-    String inputText = "create table adsa (something text, something2 int, something3 bool, primary key ((something, something2), something3));";
+    String inputText = "CREATE TABLE adsa ON CLUSTER siliconValley (something text, something2 int, something3 bool, primary key ((something, something2), something3));";
     testRegularStatement(inputText, "createTableBasic6");
   }
 
   @Test
   public void createTableBasic7() {
-    String inputText = "create table adsa (something text, something2 int, something3 bool, primary key ((something, something2), something3)) "
+    String inputText = "CREATE TABLE adsa ON CLUSTER siliconValley (something text, something2 int, something3 bool, primary key ((something, something2), something3)) "
                        + "with propiedad1=prop1 and propiedad2=2 and propiedad3=3.0;";
     testRegularStatement(inputText, "createTableBasic7");
   }
 
   @Test
   public void createEphemeralTable() {
-    String inputText = "create table temporal (name varchar, age int, rating double, member boolean, primary key (name)) "
+    String inputText = "CREATE TABLE temporal ON CLUSTER siliconValley (name varchar, age int, rating double, member boolean, primary key (name)) "
                        + "with ephemeral=true;";
     testRegularStatement(inputText, "createEphemeralTable");
   }
 
   @Test
   public void createTableWithManyProperties() {
-    String inputText = "CREATE TABLE key_space1.users (name varchar, password varchar, color varchar, gender varchar,"
+    String inputText = "CREATE TABLE key_space1.users ON CLUSTER siliconValley (name varchar, password varchar, color varchar, gender varchar,"
                        + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                        + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
                        + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
@@ -103,21 +103,21 @@ public class CreateTableStatementTest extends ParsingTest {
       originalOK = true;
     }
 
-    String alternative1Str = "CREATE TABLE key_space1.users (name varchar, password varchar, color varchar, gender varchar,"
+    String alternative1Str = "CREATE TABLE key_space1.users ON CLUSTER siliconValley (name varchar, password varchar, color varchar, gender varchar,"
                              + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                              + "WITH compression={chunk_length_kb: 64, sstable_compression: DeflateCompressor} AND "
                              + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
     if(alternative1Str.equalsIgnoreCase(st.toString()+";")){
       alternative1 = true;
     }
-    String alternative2Str = "CREATE TABLE key_space1.users (name varchar, password varchar, color varchar, gender varchar,"
+    String alternative2Str = "CREATE TABLE key_space1.users ON CLUSTER siliconValley (name varchar, password varchar, color varchar, gender varchar,"
                              + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                              + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
                              + "compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND read_repair_chance=1.0;";
     if(alternative2Str.equalsIgnoreCase(st.toString()+";")){
       alternative2 = true;
     }
-    String alternative3Str = "CREATE TABLE key_space1.users (name varchar, password varchar, color varchar, gender varchar,"
+    String alternative3Str = "CREATE TABLE key_space1.users ON CLUSTER siliconValley (name varchar, password varchar, color varchar, gender varchar,"
                              + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                              + "WITH compression={chunk_length_kb: 64, sstable_compression: DeflateCompressor} AND "
                              + "compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND read_repair_chance=1.0;";
@@ -131,21 +131,21 @@ public class CreateTableStatementTest extends ParsingTest {
 
   @Test
   public void createTableCompactStorage() {
-    String inputText = "CREATE TABLE key_space1.sblocks (block_id uuid, subblock_id uuid, data blob, PRIMARY KEY "
+    String inputText = "CREATE TABLE key_space1.sblocks ON CLUSTER siliconValley (block_id uuid, subblock_id uuid, data blob, PRIMARY KEY "
                        + "(block_id, subblock_id)) WITH COMPACT STORAGE;";
     testRegularStatement(inputText, "createTableCompactStorage");
   }
 
   @Test
   public void createTableClustering() {
-    String inputText = "create table key_space1.timeseries (event_type text, insertion_time timestamp, event blob,"
+    String inputText = "CREATE TABLE key_space1.timeseries ON CLUSTER siliconValley (event_type text, insertion_time timestamp, event blob,"
                        + " PRIMARY KEY (event_type, insertion_time)) WITH CLUSTERING ORDER BY (insertion_time DESC);";
     testRegularStatement(inputText, "createTableClustering");
   }
 
   @Test
   public void createTableWithProperties() {
-    String inputText = "CREATE TABLE key_space1.test (name varchar, color varchar, gender varchar, food varchar, "
+    String inputText = "CREATE TABLE key_space1.test ON CLUSTER siliconValley (name varchar, color varchar, gender varchar, food varchar, "
                        + "animal varchar, PRIMARY KEY (name)) WITH compression={sstable_compression: DeflateCompressor, "
                        + "chunk_length_kb: 64} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
                        + "read_repair_chance=1.0;";
@@ -164,21 +164,21 @@ public class CreateTableStatementTest extends ParsingTest {
       originalOK = true;
     }
 
-    String alternative1Str = "CREATE TABLE key_space1.test (name varchar, color varchar, gender varchar, food varchar, "
+    String alternative1Str = "CREATE TABLE key_space1.test ON CLUSTER siliconValley (name varchar, color varchar, gender varchar, food varchar, "
                              + "animal varchar, PRIMARY KEY (name)) WITH compression={chunk_length_kb: 64, "
                              + "sstable_compression: DeflateCompressor} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
                              + "read_repair_chance=1.0;";
     if(alternative1Str.equalsIgnoreCase(st.toString()+";")){
       alternative1 = true;
     }
-    String alternative2Str = "CREATE TABLE key_space1.test (name varchar, color varchar, gender varchar, food varchar, "
+    String alternative2Str = "CREATE TABLE key_space1.test ON CLUSTER siliconValley (name varchar, color varchar, gender varchar, food varchar, "
                              + "animal varchar, PRIMARY KEY (name)) WITH compression={sstable_compression: DeflateCompressor, "
                              + "chunk_length_kb: 64} AND compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND "
                              + "read_repair_chance=1.0;";
     if(alternative2Str.equalsIgnoreCase(st.toString()+";")){
       alternative2 = true;
     }
-    String alternative3Str = "CREATE TABLE key_space1.test (name varchar, color varchar, gender varchar, food varchar, "
+    String alternative3Str = "CREATE TABLE key_space1.test ON CLUSTER siliconValley (name varchar, color varchar, gender varchar, food varchar, "
                              + "animal varchar, PRIMARY KEY (name)) WITH compression={chunk_length_kb: 64, "
                              + "sstable_compression: DeflateCompressor} AND compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND "
                              + "read_repair_chance=1.0;";
@@ -192,14 +192,14 @@ public class CreateTableStatementTest extends ParsingTest {
 
   @Test
   public void createTableMapColumn() {
-    String inputText = "CREATE TABLE demo.banks (day text, key uuid, latitude double, longitude double, name text, "
+    String inputText = "CREATE TABLE demo.banks ON CLUSTER siliconValley (day text, key uuid, latitude double, longitude double, name text, "
                        + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key));";
     testRegularStatement(inputText, "createTableMapColumn");
   }
 
   @Test
   public void createTableWrongColumnDefinition(){
-    String inputText = "CREATE TABLE adsa (something text, primary key ([something, something2],something3));";
+    String inputText = "CREATE TABLE adsa ON CLUSTER siliconValley (something text, primary key ([something, something2],something3));";
     testParseFails(inputText, "createTableWrongColumnDefinition");
   }
 
@@ -211,14 +211,14 @@ public class CreateTableStatementTest extends ParsingTest {
         //,"ephemeral=false" //TODO: ¿tiene sentido?
         ,"CLUSTERING ORDER BY (insertion_time DESC) and ephemeral=true"
     }){
-      String inputText = "create table key_space1.timeseries (event_type text, insertion_time timestamp, event blob,"
+      String inputText = "CREATE TABLE key_space1.timeseries ON CLUSTER siliconValley (event_type text, insertion_time timestamp, event blob,"
                          + " PRIMARY KEY (event_type, insertion_time)) WITH "+o+";";
       testRegularStatement(inputText, "createTableWithGetMetaProperty");
     }
 
     //,"ephemeral=false" //TODO: ¿tiene sentido?
         /*
-        String inputText = "create table key_space1.timeseries (event_type text, insertion_time timestamp, event blob,"
+        String inputText = "CREATE TABLE key_space1.timeseries (event_type text, insertion_time timestamp, event blob,"
                 + " PRIMARY KEY (event_type, insertion_time)) WITH ephemeral=false;";
         testRegularStatement(inputText, inputText,"createTableWithGetMetaProperty");
         */
@@ -226,7 +226,7 @@ public class CreateTableStatementTest extends ParsingTest {
 
   @Test
   public void createTableWithOptions(){
-    String inputText = "CREATE TABLE key_space1.wallet (day text, key uuid, latitude double, longitude double, name text, "
+    String inputText = "CREATE TABLE key_space1.wallet ON CLUSTER siliconValley (day text, key uuid, latitude double, longitude double, name text, "
                        + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key)) WITH COMPACT STORAGE AND " +
                        "read_repair_chance=1.0;";
     testRegularStatement(inputText, "createTableWithOptions");

@@ -27,7 +27,6 @@ package com.stratio.meta2.common.data;
  */
 public class TableName extends Name {
 
-
   private final String name;
 
   private CatalogName catalogName;
