@@ -33,7 +33,6 @@ public class TableName extends Name {
   private CatalogName catalogName;
 
   public TableName(String catalogName, String tableName){
-
     if(catalogName == null || catalogName.isEmpty()){
       this.catalogName=null;
     }else{
