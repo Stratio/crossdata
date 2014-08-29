@@ -16,9 +16,10 @@
  * under the License.
  */
 
-package com.stratio.meta.core.grammar.statements;
+package com.stratio.meta2.core.grammar.statements;
 
 import com.stratio.meta.core.grammar.ParsingTest;
+
 import org.testng.annotations.Test;
 
 public class DropTableStatementTest extends ParsingTest {
@@ -26,7 +27,8 @@ public class DropTableStatementTest extends ParsingTest {
   @Test
   public void dropTable() {
     String inputText = "DROP TABLE IF EXISTS lastTable;";
-    testRegularStatement(inputText, "dropTable");
+    String expectedText = "DROP TABLE IF EXISTS demo.lastTable;";
+    testRegularStatementSession("demo", inputText, expectedText, "dropTable");
   }
 
   @Test
@@ -38,14 +40,14 @@ public class DropTableStatementTest extends ParsingTest {
   @Test
   public void dropTableWithCatalog() {
     String inputText = "[ oldcatalog ], DROP TABLE lastTable;";
-    String expectedText = inputText.replace("[ oldcatalog ], ", "");
+    String expectedText = "DROP TABLE oldcatalog.lastTable;";
     testRegularStatement(inputText, expectedText, "dropTableWithCatalog");
   }
 
   @Test
   public void dropTableWithEmptyCatalog() {
     String inputText = "[ ], DROP TABLE lastTable;";
-    String expectedText = inputText.replace("[ ], ", "");
+    String expectedText = "DROP TABLE <unknown_name>.lastTable;";
     testRegularStatement(inputText, expectedText, "dropTableWithEmptyCatalog");
   }
 

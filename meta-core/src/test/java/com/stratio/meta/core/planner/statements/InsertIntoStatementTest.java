@@ -19,13 +19,14 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.core.statements.InsertIntoStatement;
 import com.stratio.meta.core.structures.Option;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.terms.BooleanTerm;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.LongTerm;
 import com.stratio.meta2.common.statements.structures.terms.StringTerm;
+import com.stratio.meta2.core.statements.InsertIntoStatement;
 
 import org.testng.annotations.Test;
 
@@ -35,19 +36,23 @@ import java.util.List;
 
 public class InsertIntoStatementTest extends BasicPlannerTest {
 
-	@Test
-	public void testPlanForInsert() {
-		String inputText = "INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
-		List<String> ids = Arrays.asList("name", "gender", "email", "age",
-				"bool", "phrase");
-		List<GenericTerm> list = new ArrayList<>();
-		list.add(new StringTerm("name_0"));
-		list.add(new StringTerm("male"));
-		list.add(new LongTerm("10"));
-		list.add(new BooleanTerm("false"));
-		list.add(new StringTerm(""));
-		stmt = new InsertIntoStatement(new TableName("demo", "users"), ids, list, false,
-				new ArrayList<Option>());
-		validateCassandraPath("testPlanForInsert");
-	}
+  @Test
+  public void testPlanForInsert() {
+    String inputText = "INSERT INTO demo.users (name, gender, email, age, bool, phrase) VALUES ('name_0', 'male', 'name_0@domain.com', 10, true, '');";
+    TableName tablename = new TableName("demo", "users");
+    List<ColumnName> ids = Arrays.asList(new ColumnName(tablename, "name"),
+                                         new ColumnName(tablename, "gender"),
+                                         new ColumnName(tablename, "email"),
+                                         new ColumnName(tablename, "age"),
+                                         new ColumnName(tablename, "bool"),
+                                         new ColumnName(tablename, "phrase"));
+    List<GenericTerm> list = new ArrayList<>();
+    list.add(new StringTerm("name_0"));
+    list.add(new StringTerm("male"));
+    list.add(new LongTerm("10"));
+    list.add(new BooleanTerm("false"));
+    list.add(new StringTerm(""));
+    stmt = new InsertIntoStatement(tablename, ids, list, false, new ArrayList<Option>());
+    validateCassandraPath("testPlanForInsert");
+  }
 }

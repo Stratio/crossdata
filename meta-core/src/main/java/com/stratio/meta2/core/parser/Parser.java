@@ -25,6 +25,8 @@ import com.stratio.meta.core.grammar.generated.MetaLexer;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.ErrorsHelper;
 import com.stratio.meta.core.utils.MetaQuery;
+import com.stratio.meta2.core.query.BaseQuery;
+import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -37,6 +39,10 @@ public class Parser {
    * Class logger.
    */
   private static final Logger LOG = Logger.getLogger(Parser.class);
+
+  public ParsedQuery parse(BaseQuery baseQuery){
+    return null;
+  }
 
   public MetaQuery parseStatement(String inputText){
     return parseStatement("", "", inputText);

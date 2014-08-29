@@ -162,10 +162,7 @@ public class UpdateTableStatement extends MetaStatement {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("UPDATE ");
-    if (catalogInc) {
-      sb.append(catalog).append(".");
-    }
-    sb.append(tableName);
+    sb.append(tableName.getQualifiedName());
     if (optsInc) {
       sb.append(" ").append("USING ");
       sb.append(StringUtils.stringList(options, " AND "));

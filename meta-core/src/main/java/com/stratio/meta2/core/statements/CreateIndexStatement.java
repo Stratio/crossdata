@@ -25,6 +25,7 @@ import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
@@ -77,7 +78,7 @@ public class CreateIndexStatement extends MetaStatement {
    * The list of columns covered by the index. Only one column is allowed for {@code DEFAULT}
    * indexes.
    */
-  private List<String> targetColumns = null;
+  private List<ColumnName> targetColumns = null;
 
   /**
    * The name of the class that implements the secondary index.
@@ -206,7 +207,7 @@ public class CreateIndexStatement extends MetaStatement {
    *
    * @param column The name of the column.
    */
-  public void addColumn(String column) {
+  public void addColumn(ColumnName column) {
     targetColumns.add(column);
   }
 
@@ -250,7 +251,7 @@ public class CreateIndexStatement extends MetaStatement {
    * @return The name of the index.
    */
   protected String getIndexName() {
-    String result = null;
+    String result;
     if (name == null) {
       StringBuilder sb = new StringBuilder();
       if (IndexType.LUCENE.equals(type)) {
@@ -258,9 +259,9 @@ public class CreateIndexStatement extends MetaStatement {
         sb.append(tableName);
       } else {
         sb.append(tableName);
-        for (String c : targetColumns) {
+        for (ColumnName c: targetColumns) {
           sb.append("_");
-          sb.append(c);
+          sb.append(c.getQualifiedName());
         }
         sb.append("_idx");
       }
@@ -357,8 +358,8 @@ public class CreateIndexStatement extends MetaStatement {
    */
   private Result validateSelectionColumns(TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
-    for(String c : targetColumns){
-      if(c.toLowerCase().startsWith("stratio")){
+    for(ColumnName c: targetColumns){
+      if(c.getName().toLowerCase().startsWith("stratio")){
         result = Result.createValidationErrorResult("Internal column " + c + " cannot be part of the WHERE clause.");
       }else if(tableMetadata.getColumns().get(c) == null){
         result = Result.createValidationErrorResult("Column " + c + " does not exist in table " + tableMetadata.getName());
@@ -466,10 +467,10 @@ public class CreateIndexStatement extends MetaStatement {
     sb.append("fields:{");
 
     // Iterate throught the columns.
-    for (String column : targetColumns) {
-      sb.append(column);
+    for (ColumnName column: targetColumns) {
+      sb.append(column.getQualifiedName());
       sb.append(":");
-      sb.append(luceneTypes.get(metadata.getColumns().get(column).getColumnType().toString()));
+      sb.append(luceneTypes.get(metadata.getColumns().get(column.getQualifiedName()).getColumnType().toString()));
       sb.append(",");
     }
 
@@ -482,7 +483,7 @@ public class CreateIndexStatement extends MetaStatement {
 
     if (IndexType.LUCENE.equals(type)) {
       targetColumns.clear();
-      targetColumns.add(getIndexName());
+      targetColumns.add(new ColumnName(tableName, getIndexName()));
     }
 
     String cqlString = this.toString().replace(" DEFAULT ", " ");
@@ -502,7 +503,6 @@ public class CreateIndexStatement extends MetaStatement {
     }
     return cqlString;
   }
-
 
   public Tree getPlan(MetadataManager metadataManager, String targetCatalog) {
     Tree result = new Tree();

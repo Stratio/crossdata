@@ -18,10 +18,9 @@
 
 package com.stratio.meta2.core.statements;
 
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
-import com.stratio.meta2.common.data.TableName;
-
 
 /**
  * Class that models a {@code DROP TABLE} statement from the META language.
@@ -73,10 +72,7 @@ public class DropTableStatement extends MetaStatement {
     if (ifExists) {
       sb.append("IF EXISTS ");
     }
-    if (catalogInc) {
-      sb.append(catalog).append(".");
-    }
-    sb.append(tableName);
+    sb.append(tableName.getQualifiedName());
     return sb.toString();
   }
 
