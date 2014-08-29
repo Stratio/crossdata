@@ -39,6 +39,7 @@ class ServerActor(engine:Engine) extends Actor {
   val log =Logger.getLogger(classOf[ServerActor])
   val queryActorRef= context.actorOf(QueryActor.props(engine),"QueryActor")
   val cmdActorRef= context.actorOf(APIActor.props(engine.getAPIManager),"APIActor")
+
   def receive = {
     case query:Query =>
       //println("query: " + query)

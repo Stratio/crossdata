@@ -23,11 +23,12 @@ import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
-import com.stratio.meta2.core.statements.CreateTableStatement;
-import com.stratio.meta2.core.statements.MetaStatement;
-import com.stratio.meta.core.statements.SelectStatement;
 import com.stratio.meta.streaming.MetaStream;
 import com.stratio.meta.streaming.StreamingUtils;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.core.statements.CreateTableStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.constants.ColumnType;
 import com.stratio.streaming.messaging.ColumnNameType;
@@ -69,9 +70,9 @@ public class StreamExecutor {
       CreateTableStatement cts= (CreateTableStatement) stmt;
       String tableEphemeralName= cts.getEffectiveCatalog()+"_"+cts.getTableName() ;
       List<ColumnNameType> columnList = new ArrayList<>();
-      for (Map.Entry<String, String> column : cts.getColumnsWithTypes().entrySet()) {
+      for (Map.Entry<ColumnName, String> column : cts.getColumnsWithTypes().entrySet()) {
         ColumnType type = StreamingUtils.metaToStreamingType(column.getValue());
-        ColumnNameType streamColumn = new ColumnNameType(column.getKey(), type);
+        ColumnNameType streamColumn = new ColumnNameType(column.getKey().getName(), type);
         columnList.add(streamColumn);
       }
       return MetaStream.createEphemeralTable(queryId, stratioStreamingAPI, tableEphemeralName,

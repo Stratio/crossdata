@@ -26,11 +26,12 @@ import org.apache.log4j.Logger
 
 object QueryActor{
   def props(engine: Engine): Props = Props(new QueryActor(engine))
+
 }
 
 class QueryActor(engine: Engine) extends Actor{
   val log =Logger.getLogger(classOf[QueryActor])
-  val connectorActorRef = context.actorOf(ConnectorActor.props())
+  val connectorActorRef = context.actorOf(Props[ConnectorActor2], name =  "ConnectorActor2")
   val executorActorRef = context.actorOf(ExecutorActor.props(connectorActorRef,engine.getExecutor),"ExecutorActor")
   val plannerActorRef = context.actorOf(PlannerActor.props(executorActorRef,engine.getPlanner),"PlanerActor")
   val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef,engine.getValidator),"ValidatorActor")
@@ -39,11 +40,11 @@ class QueryActor(engine: Engine) extends Actor{
   //var querySender : ActorRef = null;
 
   override def receive: Receive = {
-    case Query(queryId, keyspace, statement, user) => {
-      log.debug("User "+ user + " ks: "+ keyspace + " stmt: " + statement + " id: " + queryId)
+    case Query(queryId, catalog, statement, user) => {
+      log.debug("User "+ user + " catalog: "+ catalog + " stmt: " + statement + " id: " + queryId)
       //querySender = sender
-      parserActorRef forward Query(queryId, keyspace, statement, user)
-      //parserActorRef ! Query(queryId, keyspace, statement, user)
+      parserActorRef forward Query(queryId, catalog, statement, user)
+      //parserActorRef ! Query(queryId, catalog, statement, user)
       log.debug("Finish Query")
     }
     //case r: Result => {

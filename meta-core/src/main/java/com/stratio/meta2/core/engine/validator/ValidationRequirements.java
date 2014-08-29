@@ -32,8 +32,8 @@ public class ValidationRequirements {
     this.validations = new ArrayList<>();
   }
 
-  public ValidationRequirements mustNotExistCatalog(){
-    this.validations.add(Validation.MUST_NOT_EXIST_CATALOG);
+  public ValidationRequirements add(Validation requirement){
+    this.validations.add(requirement);
     return this;
   }
 }

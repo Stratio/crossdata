@@ -21,6 +21,7 @@ package com.stratio.meta.core.structures;
 import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
+import com.stratio.meta2.common.data.TableName;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,7 @@ public abstract class SelectionClause {
 
   public abstract List<SelectorGroupBy> getSelectorsGroupBy();
 
-  public abstract void addTablename(String tablename);
+  public abstract void addTablename(TableName tablename);
 
   public abstract List<String> getIds();
 

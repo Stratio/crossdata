@@ -33,6 +33,7 @@ import com.stratio.meta.common.result.{ErrorResult, QueryResult, CommandResult, 
 import com.stratio.meta.communication.ACK
 import com.stratio.meta.common.ask.Query
 import com.stratio.meta.server.actors.ConnectorActor
+import java.util.UUID
 
 /**
  * To generate unit test of proxy actor
@@ -58,8 +59,8 @@ class BasicExecutorActorTest extends ActorReceiveUtils with FunSuiteLike with Be
   }
 
   def executeStatement(query: String, keyspace: String, shouldExecute: Boolean) : Result = {
-    val parsedStmt = engine.getParser.parseStatement(query)
-    parsedStmt.setSessionKeyspace(keyspace)
+    val parsedStmt = engine.getParser.parseStatement(UUID.randomUUID().toString, "ks_demo", query)
+    parsedStmt.setSessionCatalog(keyspace)
     val validatedStmt=engine.getValidator.validateQuery(parsedStmt)
     val stmt = engine.getPlanner.planQuery(validatedStmt)
     executorRef ! stmt

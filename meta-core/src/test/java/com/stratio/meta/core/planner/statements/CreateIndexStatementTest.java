@@ -19,7 +19,8 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.CreateIndexStatement;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.core.statements.CreateIndexStatement;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.Tree;
@@ -36,7 +37,7 @@ public class CreateIndexStatementTest extends BasicPlannerTest {
         String inputText = "CREATE DEFAULT INDEX ON demo.users (email);";
         stmt = new CreateIndexStatement();
         ((CreateIndexStatement)stmt).setType(IndexType.DEFAULT);
-        ((CreateIndexStatement)stmt).setTableName("demo.users");
+        ((CreateIndexStatement)stmt).setTableName(new TableName("demo", "users"));
         ((CreateIndexStatement)stmt).addColumn("email");
         ((CreateIndexStatement)stmt).setCreateIndex(true);
         validateCassandraPath("testPlanDefaultIndex");
@@ -48,7 +49,7 @@ public class CreateIndexStatementTest extends BasicPlannerTest {
         stmt = new CreateIndexStatement();
         ((CreateIndexStatement)stmt).setType(IndexType.LUCENE);
         ((CreateIndexStatement)stmt).setName("new_index");
-        ((CreateIndexStatement)stmt).setTableName("demo.types");
+        ((CreateIndexStatement)stmt).setTableName(new TableName("demo", "types"));
         ((CreateIndexStatement)stmt).addColumn("varchar_column");
         ((CreateIndexStatement)stmt).addColumn("boolean_column");
         ((CreateIndexStatement)stmt).setCreateIndex(true);

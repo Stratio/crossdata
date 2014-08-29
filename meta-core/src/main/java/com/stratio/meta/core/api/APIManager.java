@@ -18,23 +18,24 @@
 
 package com.stratio.meta.core.api;
 
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.common.ask.APICommand;
 import com.stratio.meta.common.ask.Command;
-import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class APIManager {
 
@@ -73,21 +74,22 @@ public class APIManager {
     if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
       LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
       result = MetadataResult.createSuccessMetadataResult();
-      MetadataResult.class.cast(result).setCatalogList(metadata.getKeyspacesNames());
+      MetadataResult.class.cast(result).setCatalogList(metadata.getCatalogsNames());
     } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
       LOG.info("Processing " + APICommand.LIST_TABLES().toString());
-      KeyspaceMetadata keyspaceMetadata = metadata.getKeyspaceMetadata(cmd.params().get(0));
-      if (keyspaceMetadata != null) {
+      CatalogMetadata catalogMetadata = metadata.getCatalogMetadata(cmd.params().get(0));
+      if (catalogMetadata != null) {
         result = MetadataResult.createSuccessMetadataResult();
-        List<TableMetadata> tableList = new ArrayList<>();
+        Map<String, TableMetadata> tableList = new HashMap<>();
         //Add db tables.
-        tableList.addAll(helper.toCatalogMetadata(keyspaceMetadata).getTables());
+        //TODO: Review...
+        //tableList.putAll(helper.toCatalogMetadata(catalogMetadata).getTables());
         //Add ephemeral tables.
         //tableList.addAll(metadata.getEphemeralTables(cmd.params().get(0)));
-        MetadataResult.class.cast(result).setTableList(tableList);
+        MetadataResult.class.cast(result).setTableList(new ArrayList(tableList.keySet()));
       } else {
         result =
-            Result.createExecutionErrorResult("Keyspace " + cmd.params().get(0) + " not found");
+            Result.createExecutionErrorResult("Catalog " + cmd.params().get(0) + " not found");
       }
     } else {
       result =

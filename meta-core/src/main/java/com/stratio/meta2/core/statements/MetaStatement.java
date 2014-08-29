@@ -18,23 +18,17 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.statements.StatementType;
-import com.stratio.meta.common.statements.structures.ColumnName;
-import com.stratio.meta.common.statements.structures.TableName;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.streaming.api.IStratioStreamingAPI;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
-import java.util.List;
 
 /**
  * Class that models a generic Statement supported by the META language.
@@ -107,7 +101,7 @@ public abstract class MetaStatement implements IStatement {
 
   /**
    * Validate the semantics of the current statement. This method checks the existing metadata to
-   * determine that all referenced entities exists in the {@code targetKeyspace} and the types are
+   * determine that all referenced entities exists in the {@code targetCatalog} and the types are
    * compatible with the assignations or comparisons.
    * 
    * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
@@ -119,42 +113,42 @@ public abstract class MetaStatement implements IStatement {
   }
 
   /**
-   * Validate that a valid keyspace and table is present.
+   * Validate that a valid catalog and table is present.
    * 
    * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
    *        required information.
-   * @param targetKeyspace The target keyspace where the query will be executed.
+   * @param targetCatalog The target catalog where the query will be executed.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  protected Result validateKeyspaceAndTable(MetadataManager metadata, String targetKeyspace,
-      boolean keyspaceInc, String stmtKeyspace, String tableName) {
+  protected Result validateCatalogAndTable(MetadataManager metadata, String targetCatalog,
+      boolean catalogInc, String stmtCatalog, TableName tableName) {
     Result result = QueryResult.createSuccessQueryResult();
-    // Get the effective keyspace based on the user specification during the create
-    // sentence, or taking the keyspace in use in the user session.
-    String effectiveKeyspace = targetKeyspace;
-    if (keyspaceInc) {
-      effectiveKeyspace = stmtKeyspace;
+    // Get the effective catalog based on the user specification during the create
+    // sentence, or taking the catalog in use in the user session.
+    String effectiveCatalog = targetCatalog;
+    if (catalogInc) {
+      effectiveCatalog = stmtCatalog;
     }
 
-    // Check that the keyspace and table exists.
-    if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
+    // Check that the catalog and table exists.
+    if (effectiveCatalog == null || effectiveCatalog.length() == 0) {
       result =
           Result
               .createValidationErrorResult("Target catalog missing or no catalog has been selected.");
     } else {
-      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
       if (ksMetadata == null) {
         result =
             Result
-                .createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
+                .createValidationErrorResult("Catalog " + effectiveCatalog + " does not exist.");
       } else {
         com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata =
-            metadata.getTableGenericMetadata(effectiveKeyspace, tableName);
+            metadata.getTableGenericMetadata(effectiveCatalog, tableName);
         if (tableMetadata == null) {
-          if (!metadata.checkStream(effectiveKeyspace + "_" + tableName)) {
+          if (!metadata.checkStream(effectiveCatalog + "_" + tableName)) {
             result =
                 Result.createValidationErrorResult("Table " + tableName + " does not exist in "
-                    + effectiveKeyspace + ".");
+                    + effectiveCatalog + ".");
           } else {
             result = CommandResult.createCommandResult("streaming");
           }
@@ -194,17 +188,6 @@ public abstract class MetaStatement implements IStatement {
   }
 
   /**
-   * Get a tree that contains the planning for executing the query. The plan will be executed
-   * starting from the leaves and finishing at the tree root.
-   * 
-   * @param metadataManager The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
-   *        the required information.
-   * @param targetKeyspace The target keyspace where the query will be executed.
-   * @return A {@link com.stratio.meta.core.utils.Tree} with the execution plan.
-   */
-  public abstract Tree getPlan(MetadataManager metadataManager, String targetKeyspace);
-
-  /**
    * Set the catalog to be described.
    *
    * @param catalog The name.
@@ -222,38 +205,14 @@ public abstract class MetaStatement implements IStatement {
     sessionCatalog = targetCatalog;
   }
 
-
-  //IStatement Methods
-  public List<String> getCatalogs(){
-    throw new NotImplementedException();
+  @Deprecated
+  public Tree getPlan(MetadataManager metadataManager, String targetCatalog){
+    return null;
   }
 
-
-  public List<TableName> getTables(){
-    throw new NotImplementedException();
-  }
-
-
-  public List<ColumnName> getColumns(){
-    throw new NotImplementedException();
-  }
-
-
-  public List<Assignation> getAssignations(){
-    throw new NotImplementedException();
-  }
-
-
-  public boolean getIfExists(){
-    throw new NotImplementedException();
-  }
-
-  public boolean getIfNotExists(){
-    throw new NotImplementedException();
-  }
-
+  //TODO: This method should be abstract
   public ValidationRequirements getValidationRequirements(){
-    throw new NotImplementedException();
+    throw new UnsupportedOperationException();
   }
 }
 

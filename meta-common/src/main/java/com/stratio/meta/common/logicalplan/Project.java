@@ -18,14 +18,15 @@
 
 package com.stratio.meta.common.logicalplan;
 
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
 
 import java.util.List;
 
 /**
  * Project operation to retrieve a list of columns from the datastore.
  */
-public class Project extends LogicalStep{
+public class Project extends TransformationStep{
 
   /**
    * Catalog name.
@@ -35,12 +36,12 @@ public class Project extends LogicalStep{
   /**
    * Table name.
    */
-  private final String tableName;
+  private final TableName tableName;
 
   /**
    * List of columns.
    */
-  private final List<ColumnMetadata> columnList;
+  private final List<ColumnName> columnList;
 
   /**
    * Create a projection.
@@ -48,7 +49,7 @@ public class Project extends LogicalStep{
    * @param tableName Table name.
    * @param columnList List of columns.
    */
-  public Project(String catalogName, String tableName, List<ColumnMetadata> columnList) {
+  public Project(String catalogName, TableName tableName, List<ColumnName> columnList) {
     this.catalogName = catalogName;
     this.tableName = tableName;
     this.columnList = columnList;
@@ -66,15 +67,15 @@ public class Project extends LogicalStep{
    * Get the name of the target table.
    * @return The name.
    */
-  public String getTableName() {
+  public TableName getTableName() {
     return tableName;
   }
 
   /**
    * Get the list of columns to be retrieved.
-   * @return A list of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata}.
+   * @return A list of {@link com.stratio.meta2.common.data.ColumnName}.
    */
-  public List<ColumnMetadata> getColumnList() {
+  public List<ColumnName> getColumnList() {
     return columnList;
   }
 

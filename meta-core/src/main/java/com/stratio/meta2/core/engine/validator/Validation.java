@@ -19,5 +19,9 @@
 package com.stratio.meta2.core.engine.validator;
 
 public enum Validation {
-  MUST_NOT_EXIST_CATALOG
+  MUST_NOT_EXIST_CATALOG,
+  MUST_EXIST_CATALOG,
+  MUST_EXIST_TABLE,
+  MUST_NOT_EXIST_TABLE
+
 }

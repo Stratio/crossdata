@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.metadata;
 
+import com.stratio.meta2.common.data.QualifiedNames;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -32,13 +33,6 @@ public class QualifiedNameTest {
   public void testTableQualifiedName(){
     String name= QualifiedNames.getTableQualifiedName("test","taBle");
     Assert.assertEquals(name,"catalog.test.table");
-  }
-
-  @Test
-  public void testCatalogFromTableQualifiedName(){
-    String name= QualifiedNames.getTableQualifiedName("test","taBle");
-    String extractCatalog= QualifiedNames.getCatalogFromTableQualifiedName(name);
-    Assert.assertEquals(extractCatalog,"catalog.test");
   }
 
   @Test

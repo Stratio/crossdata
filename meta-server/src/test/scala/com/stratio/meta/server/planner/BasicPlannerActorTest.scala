@@ -38,6 +38,7 @@ import com.stratio.meta.communication.ACK
 import scala.util.Success
 import com.stratio.meta.common.ask.Query
 import com.stratio.meta.server.actors.ConnectorActor
+import java.util.UUID
 
 /**
  * Planner actor tests.
@@ -60,8 +61,8 @@ class BasicPlannerActorTest extends ActorReceiveUtils with FunSuiteLike with Bef
   }
 
   def executeStatement(query: String, keyspace: String, shouldExecute: Boolean) : Result = {
-    val parsedStmt = engine.getParser.parseStatement(query)
-    parsedStmt.setSessionKeyspace(keyspace)
+    val parsedStmt = engine.getParser.parseStatement(UUID.randomUUID().toString, "ks_demo", query)
+    parsedStmt.setSessionCatalog(keyspace)
     val stmt=engine.getValidator.validateQuery(parsedStmt)
     plannerRef ! stmt
 
@@ -80,8 +81,8 @@ class BasicPlannerActorTest extends ActorReceiveUtils with FunSuiteLike with Bef
   test("executor resend to executor message 1"){
     within(5000 millis){
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
-      val stmt = engine.getParser.parseStatement(query)
-      stmt.setSessionKeyspace("")
+      val stmt = engine.getParser.parseStatement(UUID.randomUUID().toString(), "ks_demo1", query)
+      stmt.setSessionCatalog("")
       val stmt1=engine.getValidator.validateQuery(stmt)
       plannerRefTest ! stmt1
       expectMsgClass(classOf[ACK])
@@ -93,8 +94,8 @@ class BasicPlannerActorTest extends ActorReceiveUtils with FunSuiteLike with Bef
   test("executor resend to executor message 2"){
     within(5000 millis){
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
-      val stmt = engine.getParser.parseStatement(query)
-      stmt.setSessionKeyspace("")
+      val stmt = engine.getParser.parseStatement(UUID.randomUUID().toString, "ks_demo", query)
+      stmt.setSessionCatalog("")
       val stmt1=engine.getValidator.validateQuery(stmt)
       stmt1.setErrorMessage(ErrorType.PARSING, "Error creating KEYSPACE ks_demo1 - resent 2")
       plannerRefTest ! stmt1
@@ -106,8 +107,8 @@ class BasicPlannerActorTest extends ActorReceiveUtils with FunSuiteLike with Bef
   test("executor resend to executor message 3"){
     within(5000 millis){
       val query="create KEYSPACE ks_demo1 WITH replication = {class: SimpleStrategy, replication_factor: 1};"
-      val stmt = engine.getParser.parseStatement(query)
-      stmt.setSessionKeyspace("ks_demo1")
+      val stmt = engine.getParser.parseStatement(UUID.randomUUID().toString, "ks_demo", query)
+      stmt.setSessionCatalog("ks_demo1")
       val stmt1=engine.getValidator.validateQuery(stmt)
       stmt1.setErrorMessage(ErrorType.PARSING, "it is a test of error")
       var complete:Boolean=true

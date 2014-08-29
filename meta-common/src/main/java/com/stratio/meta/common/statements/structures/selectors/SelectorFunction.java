@@ -19,25 +19,26 @@
 package com.stratio.meta.common.statements.structures.selectors;
 
 import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.data.TableName;
 
 import java.util.List;
 
 public class SelectorFunction extends SelectorMeta {
 
-  private String name;
+  private TableName name;
   private List<SelectorMeta> params;
 
-  public SelectorFunction(String name, List<SelectorMeta> params) {
+  public SelectorFunction(TableName name, List<SelectorMeta> params) {
     this.type = TYPE_FUNCTION;
     this.name = name;
     this.params = params;
   }
 
-  public String getName() {
+  public TableName getName() {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(TableName name) {
     this.name = name;
   }
 
@@ -47,13 +48,13 @@ public class SelectorFunction extends SelectorMeta {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(name);
+    StringBuilder sb = new StringBuilder(name.getName());
     sb.append("(").append(StringUtils.stringList(params, ", ")).append(")");
     return sb.toString();
   }
 
   @Override
-  public void addTablename(String tablename) {
+  public void addTablename(TableName tablename) {
     for(SelectorMeta param: params){
       param.addTablename(tablename);
     }

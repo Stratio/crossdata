@@ -31,7 +31,7 @@ import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifie
 import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
-import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.Selection;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelectors;
@@ -248,6 +248,8 @@ public final class DeepUtils {
    * @return Array of fields in selection clause or null if all fields has been selected
    */
   public static String[] retrieveSelectorFields(SelectStatement ss) {
+    throw new UnsupportedOperationException();
+    /*
     // Retrieve selected column names
     SelectionList sList = (SelectionList) ss.getSelectionClause();
     Selection selection = sList.getSelection();
@@ -269,6 +271,7 @@ public final class DeepUtils {
       }
     }
     return columnsSet.toArray(new String[columnsSet.size()]);
+    */
   }
 
   /**

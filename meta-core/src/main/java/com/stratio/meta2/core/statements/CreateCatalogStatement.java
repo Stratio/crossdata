@@ -18,16 +18,16 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.core.engine.validator.Validation;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+
 
 /**
  * Class that models a {@code CREATE CATALOG} statement from the META language. Catalog
@@ -37,7 +37,7 @@ import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 public class CreateCatalogStatement extends MetaStatement {
 
   /**
-   * Whether the keyspace should be created only if it not exists.
+   * Whether the Catalog should be created only if it not exists.
    */
   private final boolean ifNotExists;
 
@@ -80,9 +80,9 @@ public class CreateCatalogStatement extends MetaStatement {
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();
     if(catalog!= null && catalog.length() > 0) {
-      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(catalog);
+      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(catalog);
       if(ksMetadata != null && !ifNotExists){
-        result = Result.createValidationErrorResult("Keyspace " + catalog + " already exists.");
+        result = Result.createValidationErrorResult("Catalog " + catalog + " already exists.");
       }
     }else{
       result = Result.createValidationErrorResult("Empty catalog name found.");
@@ -105,15 +105,13 @@ public class CreateCatalogStatement extends MetaStatement {
     }
   }
 
-  @Override
-  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-    Tree tree = new Tree();
-    tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-    return tree;
+  public Tree getPlan(MetadataManager metadataManager, String targetCatalog) {
+    return null;
   }
 
   public ValidationRequirements getValidationRequirements(){
-    return new ValidationRequirements().mustNotExistCatalog();
+    return new ValidationRequirements().add(Validation.MUST_NOT_EXIST_CATALOG);
   }
+
 }
 

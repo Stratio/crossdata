@@ -20,11 +20,18 @@ package com.stratio.meta.communication
 
 import com.stratio.meta.common.result.QueryStatus
 
-case class ACK(queryId:String, status:QueryStatus)
-
-case class Connect(msg:String)
-
-case class Reply(msg:String)
-
-case class Disconnect(userId:String)
+case class ACK(queryId: String, status: QueryStatus)
+case class Connect(msg: String)
+case class Reply(msg: String)
+case class Disconnect(userId: String)
+//Connector messages
+case class MetadataEngineRequest(msg: String) //TODO: change params
+case class DataStoreNameRequest(msg: String) //TODO: change params
+case class InitRequest(msg: String) //TODO: change params
+case class ConnectRequest(msg: String) //TODO: change params
+case class CloseRequest(msg: String) //TODO: change params
+case class IsConnectedRequest(msg: String) //TODO: change params
+case class StorageEngineRequest(msg: String) //TODO: change params
+case class QueryEngineRequest(msg: String) //TODO: change params
+ 
 

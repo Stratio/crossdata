@@ -19,7 +19,8 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.TruncateStatement;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.core.statements.TruncateStatement;
 import org.testng.annotations.Test;
 
 public class TruncateStatementTest  extends BasicPlannerTest {
@@ -27,7 +28,7 @@ public class TruncateStatementTest  extends BasicPlannerTest {
     @Test
     public void testPlanForTruncate(){
         String inputText = "TRUNCATE demo.users;";
-        stmt = new TruncateStatement("demo.users");
+        stmt = new TruncateStatement(new TableName("demo", "users"));
         validateCassandraPath("testPlanForTruncate");
     }
 }

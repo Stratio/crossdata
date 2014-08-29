@@ -18,17 +18,18 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta2.common.statements.structures.terms.BooleanTerm;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.core.engine.validator.Validation;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.meta2.core.structures.Property;
 import com.stratio.meta2.core.structures.PropertyNameValue;
 
@@ -48,22 +49,24 @@ public class CreateTableStatement extends MetaStatement {
   /**
    * The name of the target table.
    */
-  private String tableName;
+  private TableName tableName;
+
+  private ClusterName clusterName;
 
   /**
    * A map with the name of the columns in the table and the associated data type.
    */
-  private Map<String, String> columnsWithType;
+  private Map<ColumnName, String> columnsWithType;
 
   /**
    * The list of columns that are part of the primary key.
    */
-  private List<String> primaryKey;
+  private List<ColumnName> primaryKey;
 
   /**
    * The list of columns that are part of the clustering key.
    */
-  private List<String> clusterKey;
+  private List<ColumnName> clusterKey;
 
   /**
    * The list of {@link com.stratio.meta2.core.structures.Property} of the table.
@@ -117,17 +120,11 @@ public class CreateTableStatement extends MetaStatement {
    * @param columnNumberPK The number of the column associated with the primary key. This value is
    *        only used if the type of primary key is {@code 1}.
    */
-  public CreateTableStatement(String tableName, Map<String, String> columns,
-                              List<String> primaryKey, List<String> clusterKey, int primaryKeyType, int columnNumberPK) {
+  public CreateTableStatement(TableName tableName, ClusterName clusterName, Map<ColumnName, String> columns,
+                              List<ColumnName> primaryKey, List<ColumnName> clusterKey, int primaryKeyType, int columnNumberPK) {
     this.command = false;
-    if (tableName.contains(".")) {
-      String[] ksAndTablename = tableName.split("\\.");
-      catalog = ksAndTablename[0];
-      this.tableName = ksAndTablename[1];
-      catalogInc = true;
-    } else {
-      this.tableName = tableName;
-    }
+    this.tableName = tableName;
+    this.clusterName = clusterName;
     this.columnsWithType = columns;
     this.primaryKey = primaryKey;
     this.clusterKey = clusterKey;
@@ -135,21 +132,25 @@ public class CreateTableStatement extends MetaStatement {
     this.columnNumberPK = columnNumberPK;
   }
 
-  public Map<String, String> getColumnsWithTypes() {
+  public Map<ColumnName, String> getColumnsWithTypes() {
     return columnsWithType;
   }
 
-  public String getTableName() {
+  public TableName getTableName() {
     return tableName;
   }
 
+  public ClusterName getClusterName() {
+    return clusterName;
+  }
+
   /**
-   * Set the keyspace specified in the create table statement.
+   * Set the catalog specified in the create table statement.
    *
-   * @param keyspace The name of the keyspace.
+   * @param catalog The name of the catalog.
    */
-  public void setKeyspace(String keyspace) {
-    this.catalog = keyspace;
+  public void setCatalog(String catalog) {
+    this.catalog = catalog;
   }
 
   /**
@@ -176,10 +177,10 @@ public class CreateTableStatement extends MetaStatement {
 
   public String getSinglePKString() {
     StringBuilder sb = new StringBuilder(" (");
-    Set<String> keySet = columnsWithType.keySet();
+    Set<ColumnName> keySet = columnsWithType.keySet();
     int i = 0;
-    for (Iterator<String> it = keySet.iterator(); it.hasNext();) {
-      String key = it.next();
+    for (Iterator<ColumnName> it = keySet.iterator(); it.hasNext();) {
+      ColumnName key = it.next();
       String vp = columnsWithType.get(key);
       sb.append(key).append(" ").append(vp);
       if (i == columnNumberPK) {
@@ -201,7 +202,7 @@ public class CreateTableStatement extends MetaStatement {
       sb.append("(");
     }
 
-    Iterator<String> pks = primaryKey.iterator();
+    Iterator<ColumnName> pks = primaryKey.iterator();
     while (pks.hasNext()) {
       sb.append(pks.next());
       if (pks.hasNext()) {
@@ -211,7 +212,7 @@ public class CreateTableStatement extends MetaStatement {
 
     if (primaryKeyType == PRIMARY_AND_CLUSTERING_SPECIFIED) {
       sb.append(")");
-      for (String key : clusterKey) {
+      for (ColumnName key : clusterKey) {
         sb.append(", ").append(key);
       }
     }
@@ -222,22 +223,18 @@ public class CreateTableStatement extends MetaStatement {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("Create table ");
+    StringBuilder sb = new StringBuilder("CREATE TABLE ");
     if (ifNotExists) {
       sb.append("IF NOT EXISTS ");
     }
-
-    if (catalogInc) {
-      sb.append(catalog).append(".");
-    }
-    sb.append(tableName);
-
+    sb.append(tableName.getQualifiedName());
+    sb.append(" ON CLUSTER ").append(clusterName).append(" ");
     if (primaryKeyType == PRIMARY_SINGLE) {
       sb.append(getSinglePKString());
     } else {
-      Set<String> keySet = columnsWithType.keySet();
+      Set<ColumnName> keySet = columnsWithType.keySet();
       sb.append(" (");
-      for (String key : keySet) {
+      for (ColumnName key : keySet) {
         String vp = columnsWithType.get(key);
         sb.append(key).append(" ").append(vp).append(", ");
       }
@@ -253,10 +250,10 @@ public class CreateTableStatement extends MetaStatement {
   /** {@inheritDoc} */
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
-    Result result = validateKeyspaceAndTable(metadata);
+    Result result = validateCatalogAndTable(metadata);
 
     if (!result.hasError()){
-      result=validateEphimeral(metadata);
+      result=validateEphemeral(metadata);
     }
 
     if(!result.hasError()){
@@ -268,7 +265,7 @@ public class CreateTableStatement extends MetaStatement {
     return result;
   }
 
-  private Result validateEphimeral(MetadataManager metadata) {
+  private Result validateEphemeral(MetadataManager metadata) {
     Result result = QueryResult.createSuccessQueryResult();
     createTable = true;
     if (metadata.checkStream(getEffectiveCatalog()+"."+tableName)){
@@ -279,27 +276,28 @@ public class CreateTableStatement extends MetaStatement {
   }
 
   /**
-   * Validate that a valid keyspace is present, and that the table does not
+   * Validate that a valid catalog is present, and that the table does not
    * exits unless {@code ifNotExists} has been specified.
    * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
    *                 the required information.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateKeyspaceAndTable(MetadataManager metadata){
+  private Result validateCatalogAndTable(MetadataManager metadata){
     Result result = QueryResult.createSuccessQueryResult();
-    //Get the effective keyspace based on the user specification during the create
-    //sentence, or taking the keyspace in use in the user session.
-    String effectiveKeyspace = getEffectiveCatalog();
+    //Get the effective catalog based on the user specification during the create
+    //sentence, or taking the catalog in use in the user session.
+    String effectiveCatalog = getEffectiveCatalog();
 
-    //Check that the keyspace exists, and that the table does not exits.
-    if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
+    //Check that the catalog exists, and that the table does not exits.
+    if(effectiveCatalog == null || effectiveCatalog.length() == 0){
       result = Result.createValidationErrorResult("Target catalog missing or no catalog has been selected.");
     }else{
-      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
+      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
       if(ksMetadata == null){
-        result = Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
+        result = Result.createValidationErrorResult("Catalog " + effectiveCatalog + " does not exist.");
       }else {
-        TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+        TableMetadata
+            tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
         if (tableMetadata != null && !ifNotExists) {
           result = Result.createValidationErrorResult("Table " + tableName + " already exists.");
         } else if (tableMetadata == null){
@@ -319,14 +317,14 @@ public class CreateTableStatement extends MetaStatement {
   private Result validateColumns(){
     Result result = QueryResult.createSuccessQueryResult();
     //The columns in the primary key must be declared.
-    for (String pk : primaryKey) {
+    for (ColumnName pk : primaryKey) {
       if(!columnsWithType.containsKey(pk)){
         result= Result.createValidationErrorResult("Missing declaration for Primary Key column " + pk);
       }
     }
 
     //The columns in the clustering key must be declared and not part of the primary key.
-    for(String ck : clusterKey){
+    for(ColumnName ck : clusterKey){
       if(!columnsWithType.containsKey(ck)){
         result= Result.createValidationErrorResult("Missing declaration for Clustering Key column " + ck);
       }
@@ -337,8 +335,8 @@ public class CreateTableStatement extends MetaStatement {
 
     String [] supported = {"BIGINT", "BOOLEAN", "COUNTER", "DOUBLE", "FLOAT", "INT", "VARCHAR"};
     Set<String> supportedColumns = new HashSet<>(Arrays.asList(supported));
-    for(String c : columnsWithType.keySet()){
-      if(!supportedColumns.contains(columnsWithType.get(c).toUpperCase()) || c.toLowerCase().startsWith("stratio")){
+    for(ColumnName c : columnsWithType.keySet()){
+      if(!supportedColumns.contains(columnsWithType.get(c).toUpperCase()) || c.getName().toLowerCase().startsWith("stratio")){
         result= Result.createValidationErrorResult("Column " + c + " with datatype " + columnsWithType.get(c) + " not supported.");
       }
     }
@@ -443,32 +441,7 @@ public class CreateTableStatement extends MetaStatement {
     }
     return sb.toString();
   }
-
-  @Override
-  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-    Tree tree = new Tree();
-    if (createTable) {
-      tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-      boolean streamingMode = false;
-      if (withProperties) {
-        for (Property property : properties) {
-          if (property.getType() == Property.TYPE_NAME_VALUE) {
-            PropertyNameValue pnv = (PropertyNameValue) property;
-            String propName = pnv.getName();
-            if ("ephemeral".equalsIgnoreCase(propName)
-                && (pnv.getVp().getTermClass() == Boolean.class)
-                && ((BooleanTerm) pnv.getVp()).getTermValue()) {
-              streamingMode = true;
-              break;
-            }
-          }
-        }
-      }
-      if (streamingMode) {
-        tree.setNode(new MetaStep(MetaPath.STREAMING, this));
-      }
-    }
-    return tree;
+  public ValidationRequirements getValidationRequirements(){
+    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_NOT_EXIST_TABLE);
   }
-
 }

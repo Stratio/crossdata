@@ -18,20 +18,17 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 
 import java.util.Map;
 
 /**
- * Class that models an {@code ALTER KEYSPACE} statement from the META language.
+ * Class that models an {@code ALTER Catalog} statement from the META language.
  */
 public class AlterCatalogStatement extends MetaStatement {
 
@@ -41,7 +38,7 @@ public class AlterCatalogStatement extends MetaStatement {
   private final String options;
 
   /**
-   * The map of properties of the keyspace. The different options accepted by a keyspace are
+   * The map of properties of the Catalog. The different options accepted by a Catalog are
    * determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
    */
   private Map<String, GenericTerm> properties;
@@ -78,9 +75,9 @@ public class AlterCatalogStatement extends MetaStatement {
     Result result = QueryResult.createSuccessQueryResult();
 
     if (catalog != null && catalog.length() > 0) {
-      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(catalog);
+      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(catalog);
       if (ksMetadata == null) {
-        result = Result.createValidationErrorResult("Keyspace " + catalog + " not found.");
+        result = Result.createValidationErrorResult("Catalog " + catalog + " not found.");
       }
     } else {
       result = Result.createValidationErrorResult("Empty catalog name found.");
@@ -94,13 +91,6 @@ public class AlterCatalogStatement extends MetaStatement {
     }
 
     return result;
-  }
-
-  @Override
-  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-    Tree tree = new Tree();
-    tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-    return tree;
   }
 
 }

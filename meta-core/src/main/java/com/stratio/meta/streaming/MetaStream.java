@@ -31,7 +31,7 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta2.core.statements.MetaStatement;
-import com.stratio.meta.core.statements.SelectStatement;
+import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.messages.StreamQuery;
@@ -326,7 +326,7 @@ public class MetaStream {
             Row r = new Row();
             SelectStatement ss = SelectStatement.class.cast(queryStatements.get(qid));
             r.addCell("QID", new Cell(qid));
-            r.addCell("Table", new Cell(ss.getKeyspace() + "." + ss.getTableName()));
+            r.addCell("Table", new Cell(ss.getCatalog() + "." + ss.getTableName()));
             r.addCell("Type", new Cell(MetaPath.STREAMING));
             r.addCell("Query", new Cell(ss.toString()));
             rows.add(r);

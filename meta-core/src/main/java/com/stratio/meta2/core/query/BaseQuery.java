@@ -19,6 +19,7 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.common.data.CatalogName;
 
 public class BaseQuery {
   /**
@@ -32,16 +33,16 @@ public class BaseQuery {
   private final String queryId;
 
 
-  private final String defaultKeyspace;
+  private final CatalogName defaultCatalog;
 
-  public BaseQuery(String queryId, String query, String defaultKeyspace) {
+  public BaseQuery(String queryId, String query, CatalogName defaultCatalog) {
     this.queryId = queryId;
     this.query = query;
-    this.defaultKeyspace = defaultKeyspace;
+    this.defaultCatalog = defaultCatalog;
   }
 
   BaseQuery(BaseQuery baseQuery) {
-    this(baseQuery.getQueryId(), baseQuery.getQuery(), baseQuery.getDefaultKeyspace());
+    this(baseQuery.getQueryId(), baseQuery.getQuery(), baseQuery.getDefaultCatalog());
   }
 
   public String getQuery() {
@@ -56,7 +57,7 @@ public class BaseQuery {
     return QueryStatus.NONE;
   }
 
-  public String getDefaultKeyspace() {
-    return defaultKeyspace;
+  public CatalogName getDefaultCatalog() {
+    return defaultCatalog;
   }
 }

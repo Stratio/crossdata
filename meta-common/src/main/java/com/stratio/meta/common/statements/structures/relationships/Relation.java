@@ -21,6 +21,9 @@ package com.stratio.meta.common.statements.structures.relationships;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.terms.FloatTerm;
 import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
@@ -35,54 +38,29 @@ import java.util.List;
 public abstract class Relation {
 
   /**
-   * Constant to define compare relationships (e.g., >, <, =, etc.).
+   * Identifier in the left part of the relationship.
    */
-  public static final int TYPE_COMPARE = 1;
-
-  /**
-   * Constant to define inclusion relationships.
-   */
-  public static final int TYPE_IN = 2;
-
-  /**
-   * Constant to define comparisons with the {@code TOKEN} cassandra function.
-   */
-  public static final int TYPE_TOKEN = 3;
-
-  /**
-   * Constant to define range comparisons.
-   */
-  public static final int TYPE_BETWEEN = 4;
-
-  /**
-   * List of identifiers in the left part of the relationship.
-   */
-  protected List<SelectorIdentifier> identifiers;
+  protected Selector identifier;
 
   /**
    * Operator to be applied to solve the relationship.
    */
-  protected String operator;
+  protected Operator operator;
 
   /**
    * List of terms on the right part of the relationship.
    */
   protected List<Term<?>> terms;
 
-  /**
-   * Type of relationship.
-   */
-  protected int type;
-
-  public List<SelectorIdentifier> getIdentifiers() {
-    return identifiers;
+  public Selector getIdentifier() {
+    return identifier;
   }
 
-  public String getOperator() {
+  public Operator getOperator() {
     return operator;
   }
 
-  public void setOperator(String operator) {
+  public void setOperator(Operator operator) {
     this.operator = operator;
   }
 
@@ -98,14 +76,9 @@ public abstract class Relation {
     this.terms = terms;
   }
 
-  public int getType() {
-    return type;
-  }
 
-  public void setType(int type) {
-    this.type = type;
-  }
 
+  /*
   public void updateTermClass(TableMetadata tableMetadata) {
     for (int i = 0; i < terms.size(); i++) {
 
@@ -127,9 +100,23 @@ public abstract class Relation {
       }
     }
   }
+  */
 
   @Override
-  public abstract String toString();
+  public String toString() {
+
+    StringBuilder sb = new StringBuilder(identifier.toString());
+    sb.append(" ").append(operator).append(" ");
+    if(Operator.BETWEEN.equals(operator)) {
+      sb.append(StringUtils.stringList(terms, " AND "));
+    }else if(Operator.IN.equals(operator)){
+      sb.append("(").append(StringUtils.stringList(terms, ", ")).append(")");
+    }else{
+      sb.append(StringUtils.stringList(terms, ", "));
+    }
+
+    return sb.toString();
+  }
 
   /**
    * Gets the string values list for the terms

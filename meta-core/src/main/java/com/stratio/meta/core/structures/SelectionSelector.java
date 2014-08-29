@@ -19,6 +19,7 @@
 package com.stratio.meta.core.structures;
 
 import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
+import com.stratio.meta2.common.data.TableName;
 
 public class SelectionSelector {
     
@@ -70,7 +71,7 @@ public class SelectionSelector {
         return sb.toString();
     }
 
-  public void addTablename(String tablename) {
+  public void addTablename(TableName tablename) {
     selector.addTablename(tablename);
   }
 }

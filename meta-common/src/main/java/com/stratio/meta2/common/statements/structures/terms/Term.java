@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.common.statements.structures.terms;
 
-import com.stratio.meta.common.statements.structures.assignations.Operator;
+import com.stratio.meta.common.statements.structures.relationships.Operator;
 
 import java.io.Serializable;
 import java.util.Iterator;

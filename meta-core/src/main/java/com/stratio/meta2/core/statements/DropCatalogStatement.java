@@ -18,15 +18,13 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.Tree;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.core.engine.validator.Validation;
+import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 
 /**
  * Class that models a {@code DROP KEYSPACE} statement from the META language.
@@ -34,7 +32,7 @@ import com.stratio.meta2.core.statements.MetaStatement;
 public class DropCatalogStatement extends MetaStatement {
 
     /**
-     * Whether the keyspace should be removed only if exists.
+     * Whether the catalog should be removed only if exists.
      */
     private boolean ifExists;
 
@@ -63,9 +61,9 @@ public class DropCatalogStatement extends MetaStatement {
     @Override
     public Result validate(MetadataManager metadata, EngineConfig config) {
         Result result = QueryResult.createSuccessQueryResult();
-        KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(catalog);
+        CatalogMetadata ksMetadata = metadata.getCatalogMetadata(catalog);
         if(ksMetadata == null && !ifExists){
-            result = Result.createValidationErrorResult("Keyspace " + catalog + " does not exist.");
+            result = Result.createValidationErrorResult("Catalog " + catalog + " does not exist.");
         }
         return result;
     }
@@ -75,11 +73,7 @@ public class DropCatalogStatement extends MetaStatement {
         return this.toString();
     }
 
-    @Override
-    public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-        Tree tree = new Tree();
-        tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
-        return tree;
-    }
-    
+  public ValidationRequirements getValidationRequirements(){
+    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG);
+  }
 }

@@ -19,7 +19,8 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta.core.statements.InsertIntoStatement;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.core.statements.InsertIntoStatement;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta2.common.statements.structures.terms.BooleanTerm;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
@@ -45,7 +46,7 @@ public class InsertIntoStatementTest extends BasicPlannerTest {
 		list.add(new LongTerm("10"));
 		list.add(new BooleanTerm("false"));
 		list.add(new StringTerm(""));
-		stmt = new InsertIntoStatement("demo.users", ids, list, false,
+		stmt = new InsertIntoStatement(new TableName("demo", "users"), ids, list, false,
 				new ArrayList<Option>());
 		validateCassandraPath("testPlanForInsert");
 	}

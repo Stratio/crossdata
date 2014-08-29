@@ -19,23 +19,18 @@
 package com.stratio.meta.common.logicalplan;
 
 import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.common.statements.structures.relationships.RelationType;
 
 /**
  * Filter the results retrieved through a Project operation.
  */
-public class Filter extends LogicalStep{
+public class Filter extends TransformationStep{
 
   /**
    * Type of operation to be executed.
    */
   private final Operations operation;
-
-  /**
-   * Type of relation.
-   */
-  private final RelationType type;
 
   /**
    * Relationship.
@@ -45,12 +40,10 @@ public class Filter extends LogicalStep{
   /**
    * Create filter operation to be executed over a existing dataset.
    * @param operation The operation to be executed.
-   * @param type The type of relation.
    * @param relation The relationship.
    */
-  public Filter(Operations operation, RelationType type, Relation relation) {
+  public Filter(Operations operation, Relation relation) {
     this.operation = operation;
-    this.type = type;
     this.relation = relation;
   }
 
@@ -60,14 +53,6 @@ public class Filter extends LogicalStep{
    */
   public Operations getOperation(){
     return operation;
-  }
-
-  /**
-   * Get the type of relationship.
-   * @return A {@link com.stratio.meta.common.statements.structures.relationships.RelationType}.
-   */
-  public RelationType getType() {
-    return type;
   }
 
   /**

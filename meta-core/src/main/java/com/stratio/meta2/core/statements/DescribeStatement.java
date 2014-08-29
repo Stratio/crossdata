@@ -18,10 +18,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
@@ -29,11 +25,13 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.DescribeType;
-import com.stratio.meta.common.statements.structures.TableName;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
@@ -86,16 +84,17 @@ public class DescribeStatement extends TableStatement {
     Result result = QueryResult.createSuccessQueryResult();
 
     if (this.catalog != null) {
-      KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(this.catalog);
+      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(this.catalog);
       if (ksMetadata == null) {
         result =
-            Result.createValidationErrorResult("Keyspace " + this.catalog + " does not exist.");
+            Result.createValidationErrorResult("Catalog " + this.catalog + " does not exist.");
       }
     }
 
     if (this.tableName != null) {
       result =
-          validateKeyspaceAndTable(metadata, sessionCatalog, tableName.containsCatalog(), tableName.getCatalog(), tableName.getTableName());
+          validateCatalogAndTable(metadata, sessionCatalog, tableName.isCompletedName(),
+                                   tableName.getCatalogName().getName(), tableName);
     }
 
     return result;
@@ -104,13 +103,6 @@ public class DescribeStatement extends TableStatement {
   @Override
   public String translateToCQL() {
     return this.toString().replace("CATALOG", "KEYSPACE");
-  }
-
-  @Override
-  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-    Tree steps = new Tree();
-    steps.setNode(new MetaStep(MetaPath.COMMAND, this));
-    return steps;
   }
 
   /**
@@ -125,22 +117,22 @@ public class DescribeStatement extends TableStatement {
     Result result = null;
     if (type == DescribeType.CATALOG) {
 
-      KeyspaceMetadata ksInfo = mm.getKeyspaceMetadata(super.getEffectiveCatalog());
+      CatalogMetadata ksInfo = mm.getCatalogMetadata(super.getEffectiveCatalog());
       if (ksInfo == null) {
         result = Result.createExecutionErrorResult("KEYSPACE " + catalog + " was not found");
       } else {
-        result = CommandResult.createCommandResult(ksInfo.exportAsString());
+        result = CommandResult.createCommandResult(ksInfo.toString());
       }
     } else if (type == DescribeType.CATALOGS) {
-      List<String> keyspacesNames = mm.getKeyspacesNames();
-      if (keyspacesNames == null) {
-        result = Result.createExecutionErrorResult("No keyspaces found");
+      List<String> catalogsNames = mm.getCatalogsNames();
+      if (catalogsNames == null) {
+        result = Result.createExecutionErrorResult("No catalogs found");
       } else {
-        result = CommandResult.createCommandResult(keyspacesNames.toString());
+        result = CommandResult.createCommandResult(catalogsNames.toString());
       }
     } else if (type == DescribeType.TABLE) {
       com.stratio.meta.common.metadata.structures.TableMetadata tableInfo =
-          mm.getTableGenericMetadata(getEffectiveCatalog(), tableName.getTableName());
+          mm.getTableGenericMetadata(getEffectiveCatalog(), tableName);
       if (tableInfo == null) {
         result = Result.createExecutionErrorResult("TABLE " + tableName + " was not found");
       } else {
@@ -157,16 +149,14 @@ public class DescribeStatement extends TableStatement {
     return result;
   }
 
-  @Override
-  public List<String> getCatalogs() {
-    List<String> result = new ArrayList<>();
+  public List<CatalogName> getCatalogs() {
+    List<CatalogName> result = new ArrayList<>();
     if(DescribeType.CATALOG.equals(type)){
-      result.add(getEffectiveCatalog());
+      result.add(new CatalogName(getEffectiveCatalog()));
     }
     return result;
   }
 
-  @Override
   public List<TableName> getTables() {
     List<TableName> result = new ArrayList<>();
     if(DescribeType.TABLE.equals(type)){
