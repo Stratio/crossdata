@@ -18,17 +18,9 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.engine.validator.Validation;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
-import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.statements.MetaStatement;
-import com.stratio.meta2.common.data.TableName;
-
 
 /**
  * Class that models a {@code DROP TABLE} statement from the META language.
@@ -80,10 +72,7 @@ public class DropTableStatement extends MetaStatement {
     if (ifExists) {
       sb.append("IF EXISTS ");
     }
-    if (catalogInc) {
-      sb.append(catalog).append(".");
-    }
-    sb.append(tableName);
+    sb.append(tableName.getQualifiedName());
     return sb.toString();
   }
 

@@ -18,14 +18,8 @@
 
 package com.stratio.meta.common.statements.structures.relationships;
 
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.TableMetadata;
-import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.common.statements.structures.terms.FloatTerm;
-import com.stratio.meta2.common.statements.structures.terms.IntegerTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
 
 import java.util.ArrayList;

@@ -23,12 +23,12 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.utils.ParserUtils;
+import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
-
-import com.stratio.meta2.core.engine.validator.Validation;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+
 import org.apache.log4j.Logger;
 
 import java.util.Iterator;
@@ -59,7 +59,7 @@ public class InsertIntoStatement extends MetaStatement {
   /**
    * The list of columns to be assigned.
    */
-  private List<String> ids;
+  private List<ColumnName> ids;
 
   /**
    * A {@link com.stratio.meta2.core.statements.SelectStatement} to retrieve data if the insert type
@@ -101,7 +101,7 @@ public class InsertIntoStatement extends MetaStatement {
 
   /**
    * InsertIntoStatement general constructor.
-   * 
+   *
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
    * @param selectStatement a {@link com.stratio.meta2.core.statements.InsertIntoStatement}
@@ -112,9 +112,9 @@ public class InsertIntoStatement extends MetaStatement {
    * @param options Query options.
    * @param typeValues Integer that indicates if values come from insert or select.
    */
-  public InsertIntoStatement(TableName tableName, List<String> ids,
-      SelectStatement selectStatement, List<GenericTerm> cellValues, boolean ifNotExists,
-      boolean optsInc, List<Option> options, int typeValues) {
+  public InsertIntoStatement(TableName tableName, List<ColumnName> ids,
+                             SelectStatement selectStatement, List<GenericTerm> cellValues, boolean ifNotExists,
+                             boolean optsInc, List<Option> options, int typeValues) {
     this.command = false;
     this.tableName = tableName;
     this.ids = ids;
@@ -128,21 +128,21 @@ public class InsertIntoStatement extends MetaStatement {
 
   /**
    * InsertIntoStatement constructor comes from INSERT INTO .. SELECT .. with options.
-   * 
+   *
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
    * @param selectStatement a {@link com.stratio.meta2.core.statements.InsertIntoStatement}
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param options Query options.
    */
-  public InsertIntoStatement(TableName tableName, List<String> ids,
-      SelectStatement selectStatement, boolean ifNotExists, List<Option> options) {
+  public InsertIntoStatement(TableName tableName, List<ColumnName> ids,
+                             SelectStatement selectStatement, boolean ifNotExists, List<Option> options) {
     this(tableName, ids, selectStatement, null, ifNotExists, true, options, 1);
   }
 
   /**
    * InsertIntoStatement constructor comes from INSERT INTO .. VALUES .. with options.
-   * 
+   *
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
    * @param cellValues List of
@@ -150,35 +150,35 @@ public class InsertIntoStatement extends MetaStatement {
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param options Query options.
    */
-  public InsertIntoStatement(TableName tableName, List<String> ids, List<GenericTerm> cellValues,
-      boolean ifNotExists, List<Option> options) {
+  public InsertIntoStatement(TableName tableName, List<ColumnName> ids, List<GenericTerm> cellValues,
+                             boolean ifNotExists, List<Option> options) {
     this(tableName, ids, null, cellValues, ifNotExists, true, options, 2);
   }
 
   /**
    * InsertIntoStatement constructor comes from INSERT INTO .. SELECT .. without options.
-   * 
+   *
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
    * @param selectStatement a {@link com.stratio.meta2.core.statements.InsertIntoStatement}
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    */
-  public InsertIntoStatement(TableName tableName, List<String> ids,
-      SelectStatement selectStatement, boolean ifNotExists) {
+  public InsertIntoStatement(TableName tableName, List<ColumnName> ids,
+                             SelectStatement selectStatement, boolean ifNotExists) {
     this(tableName, ids, selectStatement, null, ifNotExists, false, null, 1);
   }
 
   /**
    * InsertIntoStatement constructor comes from INSERT INTO .. VALUES .. without options.
-   * 
+   *
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
    * @param cellValues List of
    *        {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    */
-  public InsertIntoStatement(TableName tableName, List<String> ids, List<GenericTerm> cellValues,
-      boolean ifNotExists) {
+  public InsertIntoStatement(TableName tableName, List<ColumnName> ids, List<GenericTerm> cellValues,
+                             boolean ifNotExists) {
     this(tableName, ids, null, cellValues, ifNotExists, false, null, 2);
   }
 
@@ -245,7 +245,7 @@ public class InsertIntoStatement extends MetaStatement {
   /**
    * Check that the specified columns exist on the target table and that the semantics of the
    * assigned values match.
-   * 
+   *
    * @param tableMetadata Table metadata associated with the target table.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
@@ -323,7 +323,7 @@ public class InsertIntoStatement extends MetaStatement {
 
     Insert insertStmt =
         this.catalogInc ? QueryBuilder.insertInto(this.catalog, this.tableName.getName())
-            : QueryBuilder.insertInto(this.tableName.getName());
+                        : QueryBuilder.insertInto(this.tableName.getName());
 
     try {
       iterateValuesAndInsertThem(insertStmt);
@@ -343,29 +343,29 @@ public class InsertIntoStatement extends MetaStatement {
   /**
    * Iterate over {@link com.stratio.meta2.core.statements.InsertIntoStatement#cellValues} and add
    * values to {@link com.datastax.driver.core.querybuilder.Insert} object to be translated in CQL.
-   * 
+   *
    * @param insertStmt
    */
   private void iterateValuesAndInsertThem(Insert insertStmt) {
     Iterator<GenericTerm> it = this.cellValues.iterator();
-    for (String id : this.ids) {
+    for (ColumnName id: this.ids) {
       GenericTerm genericTerm = it.next();
       if (genericTerm.toString().matches("[0123456789.]+")) {
-        insertStmt = insertStmt.value(id, Integer.parseInt(genericTerm.toString()));
+        insertStmt = insertStmt.value(id.getName(), Integer.parseInt(genericTerm.toString()));
       } else if (genericTerm.toString().contains("-")) {
-        insertStmt = insertStmt.value(id, UUID.fromString(genericTerm.toString()));
+        insertStmt = insertStmt.value(id.getName(), UUID.fromString(genericTerm.toString()));
       } else if ("true".equalsIgnoreCase(genericTerm.toString())
-          || "false".equalsIgnoreCase(genericTerm.toString())) {
-        insertStmt = insertStmt.value(id, Boolean.valueOf(genericTerm.toString()));
+                 || "false".equalsIgnoreCase(genericTerm.toString())) {
+        insertStmt = insertStmt.value(id.getName(), Boolean.valueOf(genericTerm.toString()));
       } else {
-        insertStmt = insertStmt.value(id, genericTerm.toString());
+        insertStmt = insertStmt.value(id.getName(), genericTerm.toString());
       }
     }
   }
 
   /**
    * Check the options for InsertIntoStatement.
-   * 
+   *
    * @param insertStmt a {@link com.datastax.driver.core.querybuilder.Insert} where insert the
    *        options.
    * @return a {@link com.datastax.driver.core.querybuilder.Insert.Options}
@@ -379,11 +379,11 @@ public class InsertIntoStatement extends MetaStatement {
           if ("ttl".equalsIgnoreCase(option.getNameProperty())) {
             optionsStmt =
                 insertStmt.using(QueryBuilder.ttl(Integer.parseInt(option.getProperties()
-                    .toString())));
+                                                                       .toString())));
           } else if ("timestamp".equalsIgnoreCase(option.getNameProperty())) {
             optionsStmt =
                 insertStmt.using(QueryBuilder.timestamp(Integer.parseInt(option.getProperties()
-                    .toString())));
+                                                                             .toString())));
           } else {
             LOG.warn("Unsupported option: " + option.getNameProperty());
           }

@@ -57,7 +57,10 @@ options {
     }
 
     public TableName getEffectiveTable(TableName tn) {
-        return new TableName(getEffectiveCatalog(tn), tn.getName());
+        if(tn != null){
+            return new TableName(getEffectiveCatalog(tn), tn.getName());
+        }
+        return null;
     }
 
     public TableName normalizeTableName(String str){
@@ -503,9 +506,9 @@ createIndexStatement returns [CreateIndexStatement cis]
 	(name=T_IDENT {$cis.setName($name.text);})?
 	T_ON tableName=getTableName {$cis.setTableName(tableName);}
 	T_START_PARENTHESIS
-        firstField=getField {$cis.addColumn(firstField);}
+        firstField=getColumnName[tableName] {$cis.addColumn(firstField);}
 	(T_COMMA
-		field=getField {$cis.addColumn(field);}
+		field=getColumnName[tableName] {$cis.addColumn(field);}
 	)*
 	T_END_PARENTHESIS
 	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.toString());})?
@@ -548,8 +551,8 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
     }:
     T_UPDATE tablename=getTableName
     (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (T_AND optN=getOption {options.add(optN);})*)?
-    T_SET assig1=getAssignment {assignations.add(assig1);} (T_COMMA assigN=getAssignment {assignations.add(assigN);})*
-    T_WHERE rel1=getRelation {whereclauses.add(rel1);} (T_AND relN=getRelation {whereclauses.add(relN);})*
+    T_SET assig1=getAssignment[tablename] {assignations.add(assig1);} (T_COMMA assigN=getAssignment[tablename] {assignations.add(assigN);})*
+    (T_WHERE whereClauses=getWhereClauses)?
     (T_IF id1=T_IDENT T_EQUAL term1=getTerm {condsInc = true; conditions.put($id1.text, term1);}
                     (T_AND idN=T_IDENT T_EQUAL termN=getTerm {conditions.put($idN.text, termN);})*)?
     {
@@ -685,27 +688,24 @@ selectStatement returns [SelectStatement slctst]
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
     @init{
-        ArrayList<String> ids = new ArrayList<>();
+        ArrayList<ColumnName> ids = new ArrayList<>();
         boolean ifNotExists = false;
         int typeValues = InsertIntoStatement.TYPE_VALUES_CLAUSE;
         ArrayList<GenericTerm> cellValues = new ArrayList<>();
         boolean optsInc = false;
         ArrayList<Option> options = new ArrayList<>();
     }:
-    T_INSERT
-    T_INTO
-    tableName=getTableName
+    T_INSERT T_INTO tableName=getTableName
     T_START_PARENTHESIS
-    ident1=getField {ids.add(ident1);}
-    (T_COMMA identN=getField {ids.add(identN);})*
+        ident1=getColumnName[tableName] {ids.add(ident1);} (T_COMMA identN=getColumnName[tableName] {ids.add(identN);})*
     T_END_PARENTHESIS
     (
         selectStmnt=selectStatement {typeValues = InsertIntoStatement.TYPE_SELECT_CLAUSE;}
         |
         T_VALUES
         T_START_PARENTHESIS
-            term1=getTermOrLiteral {cellValues.add(term1);}
-            (T_COMMA termN=getTermOrLiteral {cellValues.add(termN);})*
+            term1=getGenericTerm {cellValues.add(term1);}
+            (T_COMMA termN=getGenericTerm {cellValues.add(termN);})*
         T_END_PARENTHESIS
     )
     (T_IF T_NOT T_EXISTS {ifNotExists=true;} )?
@@ -741,9 +741,7 @@ dropTableStatement returns [DropTableStatement drtbst]
     @init{
         boolean ifExists = false;
     }:
-    T_DROP
-    T_TABLE
-    (T_IF T_EXISTS { ifExists = true; })?
+    T_DROP T_TABLE (T_IF T_EXISTS { ifExists = true; })?
     identID=getTableName {
         $drtbst = new DropTableStatement(identID, ifExists);
     }
@@ -948,8 +946,8 @@ getListTypes returns [String listType]:
 	tablename=(T_PROCESS | T_UDF | T_TRIGGER) {$listType = new String($tablename.text);}
 ;
 
-getAssignment returns [Assignation assign]:
-    firstTerm=getTerm
+getAssignment[TableName tableName] returns [Assignation assign]:
+    firstTerm=getColumnName[tableName]
         //T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName(null, firstTerm.toString()), Operator.ASSIGN, value);}
         (T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName(null, firstTerm.toString()), Operator.ASSIGN, value);}
         | T_START_BRACKET indexTerm=getTerm T_END_BRACKET T_EQUAL termValue=getValueAssign {

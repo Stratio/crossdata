@@ -23,17 +23,24 @@ import org.testng.annotations.Test;
 
 public class TruncateStatementTest extends ParsingTest {
 
-    @Test
-    public void truncateTable() {
-        String inputText = "TRUNCATE usersTable;";
-        testRegularStatement(inputText, "truncateTable");
-    }
+  @Test
+  public void truncateTable1() {
+    String inputText = "TRUNCATE usersTable;";
+    String expectedText = "TRUNCATE <unknown_name>.usersTable;";
+    testRegularStatement(inputText, expectedText, "truncateTable1");
+  }
 
-    @Test
-    public void truncateWrongIdentifier(){
-        String inputText = "TRUNCATE companyKS..usersTable;";
-        testRecoverableError(inputText, "truncateWrongIdentifier");
-    }
+  @Test
+  public void truncateTable2() {
+    String inputText = "[demo], TRUNCATE usersTable;";
+    String expectedText = "TRUNCATE demo.usersTable;";
+    testRegularStatement(inputText, expectedText, "truncateTable2");
+  }
 
+  @Test
+  public void truncateWrongIdentifier(){
+    String inputText = "TRUNCATE companyKS..usersTable;";
+    testRecoverableError(inputText, "truncateWrongIdentifier");
+  }
 
 }

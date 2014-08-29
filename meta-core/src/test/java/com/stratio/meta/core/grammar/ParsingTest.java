@@ -118,15 +118,12 @@ public class ParsingTest {
     assertNotNull(st, "Cannot parse " + methodName
                       + " parser error: " + mq.hasError()
                       + " -> " + er.getErrorMessage());
-    assertFalse(mq.hasError(), "Parsing expecting '" + inputText
-                               + "' from '" + st.toString() + "' returned: " + er
-        .getErrorMessage());
+    assertFalse(mq.hasError(), "Parsing expecting '" + inputText + "' from '" + st.toString() + "' returned: " + er.getErrorMessage());
 
     assertTrue(expectedQuery.equalsIgnoreCase(st.toString() + ";"),
                "Cannot parse " + methodName
                + ": expecting " + System.lineSeparator() + "'" + expectedQuery
-               + "' from " + System.lineSeparator() + "'" + st.toString() + ";"
-    );
+               + "' from " + System.lineSeparator() + "'" + st.toString() + ";");
     return st;
   }
 
