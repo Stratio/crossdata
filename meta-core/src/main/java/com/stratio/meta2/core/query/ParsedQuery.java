@@ -47,32 +47,6 @@ public class ParsedQuery extends BaseQuery {
     return QueryStatus.PARSED;
   }
 
-
-  //IStatement Methods
-  public List<CatalogName> getCatalogs(){
-    throw new UnsupportedOperationException();
-  }
-
-
-  public List<TableName> getTables(){
-    throw new UnsupportedOperationException();
-  }
-
-
-  public List<ColumnName> getColumns(){
-    throw new UnsupportedOperationException();
-  }
-
-
-  public List<Assignation> getAssignations(){
-    throw new UnsupportedOperationException();
-  }
-
-  //public List<OrderBy> getOrderByColumns();
-  //OrderBy-> List<Columns> order (ASC, DESC)
-
-  //public List<Selector> groupBy
-
   public int getLimit(){
     //TODO set limit
     return 1000;

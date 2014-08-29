@@ -64,6 +64,8 @@ public class Validator {
   }
   private void validateRequirements(Validation requirement, ParsedQuery parsedQuery)
       throws ValidationException, IgnoreQueryException {
+    /*
+    TODO Move to ValidatedQuery
     switch (requirement) {
       case MUST_NOT_EXIST_CATALOG:
         validateNotExistCatalog(parsedQuery.getCatalogs(), parsedQuery.getIfNotExists());
@@ -79,6 +81,7 @@ public class Validator {
             parsedQuery.getDefaultCatalog());
         break;
     }
+    */
   }
 
   private void validateNotExistTable(List<TableName> tables, boolean hasIfNotExists,

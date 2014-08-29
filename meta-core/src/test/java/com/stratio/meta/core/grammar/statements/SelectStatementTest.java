@@ -82,6 +82,12 @@ public class SelectStatementTest extends ParsingTest {
     testRegularStatementSession("newks", inputText, expectedText, "singleColumnWithSessionCatalog");
   }
 
+  @Test
+  public void testSimpleQueryWithAliasesOk() {
+    String inputText = "SELECT demo.users.gender as genero FROM demo.users;";
+    testRegularStatement(inputText, "testSimpleGroupQueryWithAliasesOk");
+  }
+
   //
   // Select with where clauses
   //
@@ -152,6 +158,7 @@ public class SelectStatementTest extends ParsingTest {
     testRegularStatement(inputText, "selectStatementJoins");
   }
 
+  /*
   @Test
   public void selectStatementJoinWithParenthesis() {
 
@@ -163,7 +170,9 @@ public class SelectStatementTest extends ParsingTest {
 
     testRegularStatement(inputText, expectedText, "selectStatementJoins");
   }
+  */
 
+  /*
   @Test
   public void selectStatementAliasedColumnsJoin() {
 
@@ -211,11 +220,12 @@ public class SelectStatementTest extends ParsingTest {
     testRegularStatement(inputText, expectedText, "selectStatementJoins");
 
   }
-
+*/
   //
   // Select with order by
   //
 
+  /*
   @Test
   public void selectStatementCombineOrderby() {
     for (String s : new String[] {"ASC", "DESC", "ASC, b.anothercolumn ASC",
@@ -227,21 +237,13 @@ public class SelectStatementTest extends ParsingTest {
 
   }
 
-
-
-
-
-
-
-
-
   @Test
   public void selectWrongLikeWord() {
     String inputText =
         "SELECT newtb.ident1, myfunction(newtb.innerIdent, newtb.anotherIdent) LIKE ident1 FROM newks.newtb;";
     testParseFails(inputText, "selectWrongLikeWord");
   }
-
+*/
   @Test
   public void selectSelectors() {
     for (String c : new String[] {"COUNT(*)", "myUDF(c.table0.field0)", "c.table0.field0"}) {
@@ -250,6 +252,7 @@ public class SelectStatementTest extends ParsingTest {
     }
   }
 
+  /*
   @Test
   public void selectWithInClauseOk() {
 
@@ -296,23 +299,21 @@ public class SelectStatementTest extends ParsingTest {
     testRecoverableError(inputText, "selectWithInClauseOneValueOk");
   }
 
+  /*
   @Test
   public void selectGroupedWithCountOk() {
-
     String inputText = "SELECT users.gender, COUNT(*) FROM demo.users GROUP BY users.gender;";
     testRegularStatement(inputText, "selectGroupedWithCountOk");
   }
 
   @Test
   public void selectAliasGroupedWithCountOk() {
-
     String inputText = "SELECT users.gender as g, COUNT(*) FROM demo.users GROUP BY users.gender;";
     testRegularStatement(inputText, "selectAliasGroupedWithCountOk");
   }
 
   @Test
   public void selectGroupedWithSumOk() {
-
     String inputText = "SELECT users.gender, SUM(users.age) FROM demo.users GROUP BY users.gender;";
     testRegularStatement(inputText, "selectGroupedWithSumOk");
   }
@@ -373,15 +374,9 @@ public class SelectStatementTest extends ParsingTest {
     String inputText = "SELECT users.gender FROM demo.users ORDER BY sum(users.age);";
     testRecoverableError(inputText, "selectGroupedWithSumOk");
   }
+*/
 
-  @Test
-  public void testSimpleQueryWithAliasesOk() {
-
-    String inputText = "SELECT demo.users.gender as genero FROM demo.users;";
-
-    testRegularStatement(inputText, "testSimpleGroupQueryWithAliasesOk");
-  }
-
+  /*
   @Test
   public void testSimpleGroupQueryWithAliasesOk() {
 
@@ -401,11 +396,13 @@ public class SelectStatementTest extends ParsingTest {
 
     testRegularStatement(inputText, "testComplexQueryWithAliasesOk");
   }
+  */
 
   //
   // Complex cases
   //
 
+  /*
   @Test
   public void complexSelect() {
     String inputText =
@@ -414,5 +411,6 @@ public class SelectStatementTest extends ParsingTest {
         + " ORDER BY newtb.id1 ASC GROUP BY newtb.col1 LIMIT 50 DISABLE ANALYTICS;";
     testRegularStatement(inputText, "complexSelect");
   }
+  */
 
 }

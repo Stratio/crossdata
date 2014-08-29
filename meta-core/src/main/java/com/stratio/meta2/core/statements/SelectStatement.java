@@ -24,13 +24,16 @@ import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.InnerJoin;
+import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.meta2.core.structures.Ordering;
 
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;

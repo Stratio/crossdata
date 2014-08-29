@@ -57,7 +57,10 @@ options {
     }
 
     public TableName getEffectiveTable(TableName tn) {
-        return new TableName(getEffectiveCatalog(tn), tn.getName());
+        if(tn != null){
+            return new TableName(getEffectiveCatalog(tn), tn.getName());
+        }
+        return null;
     }
 
     public TableName normalizeTableName(String str){

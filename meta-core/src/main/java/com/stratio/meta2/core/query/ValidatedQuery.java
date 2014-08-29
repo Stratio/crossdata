@@ -19,6 +19,12 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta.common.statements.structures.assignations.Assignation;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
+
+import java.util.List;
 
 public class ValidatedQuery extends ParsedQuery {
   public ValidatedQuery(ParsedQuery parsedQuery){
@@ -28,6 +34,32 @@ public class ValidatedQuery extends ParsedQuery {
   ValidatedQuery(ValidatedQuery validatedQuery){
     this((ParsedQuery)validatedQuery);
   }
+
+  //IStatement Methods move to MetaStatement
+  public List<CatalogName> getCatalogs(){
+    throw new UnsupportedOperationException();
+  }
+
+
+  public List<TableName> getTables(){
+    throw new UnsupportedOperationException();
+  }
+
+
+  public List<ColumnName> getColumns(){
+    throw new UnsupportedOperationException();
+  }
+
+
+  public List<Assignation> getAssignations(){
+    throw new UnsupportedOperationException();
+  }
+
+  //public List<OrderBy> getOrderByColumns();
+  //OrderBy-> List<Columns> order (ASC, DESC)
+
+  //public List<Selector> groupBy
+
   public QueryStatus getStatus() {
     return QueryStatus.VALIDATED;
   }

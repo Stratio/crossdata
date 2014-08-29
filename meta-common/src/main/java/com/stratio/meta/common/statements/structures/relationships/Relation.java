@@ -92,8 +92,6 @@ public class Relation {
     }else if(Operator.IN.equals(operator)){
       sb.append("(").append(StringUtils.stringList(terms, ", ")).append(")");
     }else{
-      System.out.println("-> terms: " + terms);
-      System.out.println("-> terms.size: " + terms.size());
       sb.append(StringUtils.stringList(terms, ", "));
     }
 
