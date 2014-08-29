@@ -34,7 +34,6 @@ public class ColumnSelector extends Selector{
   private ColumnName name;
 
   public ColumnSelector(ColumnName name){
-    System.out.println(">>>>>>>>>> TRACE: new ColumnSelector = "+name.getQualifiedName());
     this.name = name;
   }
 
