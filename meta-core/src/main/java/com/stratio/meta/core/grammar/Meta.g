@@ -414,22 +414,13 @@ describeStatement returns [DescribeStatement descs]:
     )
 ;
 
-//DELETE (col1, col2) FROM table1 WHERE field1=value1 AND field2=value2;
+//DELETE FROM table1 WHERE field1=value1 AND field2=value2;
 deleteStatement returns [DeleteStatement ds]
 	@init{
 		$ds = new DeleteStatement();
 	}:
-	T_DELETE
-	(
-        T_START_PARENTHESIS
-        firstField=getField {$ds.addColumn(firstField);}
-		(T_COMMA field=getField {$ds.addColumn(field);})*
-        T_END_PARENTHESIS
-    )?
-	T_FROM
-	tableName=getTableName {$ds.setTableName(tableName);}
-	T_WHERE
-	rel1=getRelation {$ds.addRelation(rel1);} (T_AND relN=getRelation {$ds.addRelation(relN);})*
+	T_DELETE T_FROM tableName=getTableName {$ds.setTableName(tableName);}
+	T_WHERE rel1=getRelation {$ds.addRelation(rel1);} (T_AND relN=getRelation {$ds.addRelation(relN);})*
 ;
 
 //ADD \"index_path\";
@@ -948,10 +939,10 @@ getListTypes returns [String listType]:
 
 getAssignment[TableName tableName] returns [Assignation assign]:
     firstTerm=getColumnName[tableName]
-        //T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName(null, firstTerm.toString()), Operator.ASSIGN, value);}
-        (T_EQUAL value=getValueAssign {$assign = new Assignation(new ColumnName(null, firstTerm.toString()), Operator.ASSIGN, value);}
+        //T_EQUAL value=getValueAssign {$assign = new Assignation(firstTerm, Operator.ASSIGN, value);}
+        (T_EQUAL value=getValueAssign {$assign = new Assignation(firstTerm, Operator.ASSIGN, value);}
         | T_START_BRACKET indexTerm=getTerm T_END_BRACKET T_EQUAL termValue=getValueAssign {
-            $assign = new Assignation (new ColumnName(null, firstTerm.toString()+"["+indexTerm.toString()+"]"), Operator.ASSIGN, termValue);
+            $assign = new Assignation (new ColumnName(firstTerm.getTableName(), firstTerm.toString()+"["+indexTerm.toString()+"]"), Operator.ASSIGN, termValue);
         })
 ;
 

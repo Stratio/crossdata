@@ -27,7 +27,7 @@ import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
-import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -162,10 +162,7 @@ public class UpdateTableStatement extends MetaStatement {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("UPDATE ");
-    if (catalogInc) {
-      sb.append(catalog).append(".");
-    }
-    sb.append(tableName);
+    sb.append(tableName.getQualifiedName());
     if (optsInc) {
       sb.append(" ").append("USING ");
       sb.append(StringUtils.stringList(options, " AND "));

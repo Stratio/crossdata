@@ -25,8 +25,8 @@ public class UpdateTableStatementTest extends ParsingTest {
 
   @Test
   public void updateBasic() {
-    String inputText = "UPDATE table1 SET field1 = value1 WHERE field3 = value3;";
-    String expectedText = "UPDATE <unknown_name>.table1 SET <unknown_name>.table1.field1 = value1 WHERE <unknown_name>.table1.field3 = value3;";
+    String inputText = "UPDATE demo.table1 SET field1 = value1 WHERE field3 = value3;";
+    String expectedText = "UPDATE demo.table1 SET demo.table1.field1 = value1 WHERE demo.table1.field3 = value3;";
     testRegularStatement(inputText, expectedText, "updateBasic");
   }
 

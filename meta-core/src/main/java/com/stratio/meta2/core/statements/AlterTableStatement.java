@@ -23,7 +23,7 @@ import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 import com.stratio.meta2.core.structures.Property;
 import com.stratio.meta2.core.structures.PropertyNameValue;
 
@@ -216,7 +216,8 @@ public class AlterTableStatement extends TableStatement {
         } else if("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
                   && propertyNameValue.getVp().getTermClass() != Boolean.class){
           // If property ephemeral_persist_on is present, it must be a string type
-          result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
+          result= Result.createValidationErrorResult(
+              "Property 'ephemeral_persist_on' must be a string");
           exit = true;
         }
       }

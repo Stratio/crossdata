@@ -20,60 +20,48 @@ package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.statements.structures.assignations.Assignation;
-import com.stratio.meta2.common.data.*;
-import com.stratio.meta2.core.validator.ValidationRequirements;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.Name;
+import com.stratio.meta2.common.data.TableName;
 
 import java.util.List;
 
-public class ParsedQuery extends BaseQuery {
-  private final MetaStatement statement;
-  public ParsedQuery(BaseQuery baseQuery, MetaStatement statement){
-    super(baseQuery);
-    this.statement=statement;
+public class NormalizedQuery extends ParsedQuery {
+  public NormalizedQuery(ParsedQuery parsedQuery){
+    super(parsedQuery);
   }
 
-  ParsedQuery(ParsedQuery parsedQuery){
-    this(parsedQuery,parsedQuery.getStatement());
+  NormalizedQuery(NormalizedQuery normalizedQuery){
+    this((ParsedQuery)normalizedQuery);
   }
-
-  public MetaStatement getStatement(){
-    return this.statement;
-  }
-
   public QueryStatus getStatus() {
-    return QueryStatus.PARSED;
+    return QueryStatus.NORMALIZED;
   }
 
-  public int getLimit(){
-    //TODO set limit
-    return 1000;
-  }
-
-  //public ???? getOptions(); //Quorum, consistency, ...
-
-
-  public boolean getIfExists(){
+  //IStatement Methods move to MetaStatement
+  public List<CatalogName> getCatalogs(){
     throw new UnsupportedOperationException();
   }
 
-  public boolean getIfNotExists(){
+
+  public List<TableName> getTables(){
     throw new UnsupportedOperationException();
   }
 
-  public ValidationRequirements getValidationRequirements(){
-    return statement.getValidationRequirements();
-  }
 
-  public List<ClusterName> getClusters() {
+  public List<ColumnName> getColumns(){
     throw new UnsupportedOperationException();
   }
 
-  public List<ConnectorName> getConnectors() {
+
+  public List<Assignation> getAssignations(){
     throw new UnsupportedOperationException();
   }
 
-  public List<DataStoreName> getDatastores() {
-    throw new UnsupportedOperationException();
-  }
+  //public List<OrderBy> getOrderByColumns();
+  //OrderBy-> List<Columns> order (ASC, DESC)
+
+  //public List<Selector> groupBy
+
 }
