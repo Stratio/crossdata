@@ -2,15 +2,11 @@ package com.stratio.connector
 
 import akka.actor.{ActorSystem,Props}
 import com.typesafe.config.ConfigFactory
-<<<<<<< HEAD
 import com.stratio.connector.cassandra.CassandraConnector
 import com.stratio.meta.common.connector.IConnector
-import java.io.File
-=======
 import akka.actor.ActorSystem
 import akka.actor.Props
 //import com.stratio.connector.cassandra.CassandraConnector
->>>>>>> 74602793e4b6c396387a6559e1cb0dcef738fccc
 
 object ConnectorApp {
     val usage = """Usage: 
@@ -51,16 +47,8 @@ object ConnectorApp {
        }
   }
 
-<<<<<<< HEAD
   def startup(connector:IConnector,ports: Seq[String]): Unit = {
     println("using connector with datastorename="+connector.getDatastoreName())
-=======
-  def startup(ports: Seq[String]): Unit = {
-	   //TODO: Compile problems
-    /*val connector=new CassandraConnector()
-    println("datastorename="+connector.getDatastoreName())*/
->>>>>>> 74602793e4b6c396387a6559e1cb0dcef738fccc
-
     ports foreach { port =>
       // Override the configuration of the port
       val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).
