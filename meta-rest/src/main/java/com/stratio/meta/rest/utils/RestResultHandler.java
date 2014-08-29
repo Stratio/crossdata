@@ -42,6 +42,7 @@ public class RestResultHandler implements IResultHandler {
 
   @Override
   public void processAck(String queryId, QueryStatus status) {
+    this.queryId=queryId;
     this.status = status;
   }
 

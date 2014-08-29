@@ -75,7 +75,7 @@ public class JsonMetaResultSet implements Serializable {
       for (Entry<String, Cell> c : r.getCells().entrySet()) {
         String value = "";
         value += c.getValue().getValue().toString();
-        rowResult += c.getKey() + ": '" + value + "', ";
+        rowResult +="'" + c.getKey() +"'"+ ": '" + value + "', ";
       }
       rowResult = rowResult.substring(0, rowResult.length() - 2); // removes last comma
       rowResult += "}";

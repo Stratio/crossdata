@@ -1,19 +1,15 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership.  The STRATIO (C) licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Licensed to STRATIO (C) under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright ownership. The STRATIO
+ * (C) licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.stratio.meta.rest;
@@ -75,9 +71,6 @@ public class RestServer {
   @Produces(MediaType.TEXT_PLAIN)
   public String postQuery(@FormParam("catalog") String catalog, @FormParam("query") String query) {
     String queryId = "";
-
-
-
     try {
       System.out.println("[MetaRestServer] query: " + query + " catalog " + catalog);
       driver.executeAsyncQuery(query, catalog, callback);
@@ -100,8 +93,16 @@ public class RestServer {
     if (callbackResult != null) {
       if (callbackResult instanceof QueryResult) {
         QueryResult qr = (QueryResult) callbackResult;
+        if (qr.getResultSet().isEmpty())
+          return mapper.writeValueAsString(callbackResult);
         JsonQueryResult jqr = RestServerUtils.toJsonQueryResult(qr);
-        return mapper.writeValueAsString(jqr);
+        String result = "";
+        try {
+          result = mapper.writeValueAsString(jqr);
+        } catch (IOException e) {
+          result = mapper.writeValueAsString(e.toString());
+        }
+        return result;
       } else {
         return mapper.writeValueAsString(callbackResult);
       }
@@ -109,7 +110,7 @@ public class RestServer {
       if (callback.getErrorResult() != null) {
         return mapper.writeValueAsString(callback.getErrorResult());
       } else {
-        return "OK";
+        return mapper.writeValueAsString(callback);
       }
     }
   }
