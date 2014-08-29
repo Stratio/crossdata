@@ -36,12 +36,13 @@ public abstract class Name  {
   }
 
   @Override
+  public int hashCode(){
+    String code= getType() + getQualifiedName();
+    return code.hashCode();
+  }
+
+  @Override
   public boolean equals(Object o){
-    boolean result=false;
-    if(o instanceof Name) {
-      Name name= (Name)o;
-      result = this.toString().equals(name.toString()) && this.getType()==name.getType();
-    }
-    return result;
+    return (this == o) || ((o instanceof Name) && (this.hashCode() == o.hashCode()));
   }
 }
