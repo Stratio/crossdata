@@ -16,21 +16,19 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.engine.validator;
+package com.stratio.meta2.core.query;
 
-public enum Validation {
-  MUST_NOT_EXIST_CATALOG,
-  MUST_EXIST_CATALOG,
-  MUST_EXIST_TABLE,
-  MUST_NOT_EXIST_TABLE,
-  MUST_NOT_EXIST_CLUSTER,
-  MUST_EXIST_CLUSTER,
-  MUST_EXIST_CONNECTOR,
-  MUST_NOT_EXIST_CONNECTOR,
-  MUST_EXIST_DATASTORE,
-  MUST_NOT_EXIST_DATASTORE,
-  VALID_DATASTORE_MANIFEST, VALID_CLUSTER_OPTIONS, VALID_CONNECTOR_OPTIONS, MUST_EXIST_ATTACH_CONNECTOR_CLUSTER, VALID_CONNECTOR_MANIFEST
+import com.stratio.meta.common.result.QueryStatus;
 
+public class NormalizedQuery extends ParsedQuery {
+  public NormalizedQuery(ParsedQuery parsedQuery){
+    super(parsedQuery);
+  }
 
-
+  NormalizedQuery(NormalizedQuery normalizedQuery){
+    this((ParsedQuery)normalizedQuery);
+  }
+  public QueryStatus getStatus() {
+    return QueryStatus.NORMALIZED;
+  }
 }

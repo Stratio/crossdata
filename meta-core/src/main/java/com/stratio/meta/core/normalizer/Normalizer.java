@@ -16,14 +16,15 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.statements;
+package com.stratio.meta.core.normalizer;
 
-import com.stratio.meta2.core.validator.ValidationRequirements;
+import com.stratio.meta2.core.query.NormalizedQuery;
+import com.stratio.meta2.core.query.ParsedQuery;
 
-public interface IStatement {
-  /**
-   * Get the validations requirements for the statement
-   * @return ValidationRequirements is a validation option list
-   */
-  public ValidationRequirements getValidationRequirements();
+public class Normalizer {
+  public NormalizedQuery normalize(ParsedQuery parsedQuery){
+
+    return new NormalizedQuery(parsedQuery);
+  }
+
 }

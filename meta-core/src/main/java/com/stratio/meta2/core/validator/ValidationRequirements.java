@@ -16,14 +16,24 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.statements;
+package com.stratio.meta2.core.validator;
 
-import com.stratio.meta2.core.validator.ValidationRequirements;
+import java.util.ArrayList;
+import java.util.List;
 
-public interface IStatement {
-  /**
-   * Get the validations requirements for the statement
-   * @return ValidationRequirements is a validation option list
-   */
-  public ValidationRequirements getValidationRequirements();
+public class ValidationRequirements {
+  private final List<Validation> validations;
+
+  List<Validation> getValidations(){
+    return validations;
+  }
+
+  public ValidationRequirements() {
+    this.validations = new ArrayList<>();
+  }
+
+  public ValidationRequirements add(Validation requirement){
+    this.validations.add(requirement);
+    return this;
+  }
 }

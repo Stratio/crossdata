@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.engine.validator;
+package com.stratio.meta2.core.validator;
 
 import java.util.List;
 
@@ -26,6 +26,7 @@ import com.stratio.meta.common.exceptions.validation.ExistNameException;
 import com.stratio.meta.common.exceptions.validation.NotExistNameException;
 import com.stratio.meta2.common.data.Name;
 import com.stratio.meta2.core.metadata.MetadataManager;
+import com.stratio.meta2.core.query.NormalizedQuery;
 import org.apache.log4j.Logger;
 
 
@@ -38,10 +39,10 @@ public class Validator {
    */
   private static final Logger LOG = Logger.getLogger(Validator.class);
 
-  public ValidatedQuery validate(ParsedQuery parsedQuery)
+  public ValidatedQuery validate(NormalizedQuery normalizedQuery)
       throws ValidationException, IgnoreQueryException {
-    this.validateRequirements(parsedQuery);
-    return new ValidatedQuery(parsedQuery) ;
+    this.validateRequirements(normalizedQuery);
+    return new ValidatedQuery(normalizedQuery) ;
   }
 
 
@@ -71,7 +72,7 @@ public class Validator {
         validateNotExist(parsedQuery.getClusters(),parsedQuery.getIfNotExists());
         break;
       case MUST_EXIST_CLUSTER:
-        validateExist(parsedQuery.getClusters(),parsedQuery.getIfExists());
+        validateExist(parsedQuery.getClusters(), parsedQuery.getIfExists());
         break;
       case MUST_EXIST_CONNECTOR:
         validateExist(parsedQuery.getConnectors(),parsedQuery.getIfExists());
