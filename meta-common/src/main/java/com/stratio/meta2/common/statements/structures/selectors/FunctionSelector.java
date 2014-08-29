@@ -18,6 +18,9 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
+import com.stratio.meta2.common.data.ColumnName;
+
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -78,4 +81,9 @@ public class FunctionSelector extends Selector{
     }
     return sb.toString();
   }
+
+  public List<Selector> getFunctionColumns() {
+    return functionColumns;
+  }
+
 }

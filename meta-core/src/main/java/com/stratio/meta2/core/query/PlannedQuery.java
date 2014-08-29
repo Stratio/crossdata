@@ -25,8 +25,8 @@ import com.stratio.meta.common.result.QueryStatus;
 public class PlannedQuery extends ValidatedQuery {
   private final LogicalWorkflow logicalWorkflow;
 
-  public PlannedQuery(ValidatedQuery validatedQuery, LogicalWorkflow logicalWorkflow) {
-    super(validatedQuery);
+  public PlannedQuery(NormalizedQuery normalizedQuery, LogicalWorkflow logicalWorkflow) {
+    super(normalizedQuery);
     this.logicalWorkflow = logicalWorkflow;
   }
 

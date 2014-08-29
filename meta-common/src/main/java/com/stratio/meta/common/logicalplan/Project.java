@@ -21,17 +21,13 @@ package com.stratio.meta.common.logicalplan;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Project operation to retrieve a list of columns from the datastore.
  */
 public class Project extends TransformationStep{
-
-  /**
-   * Catalog name.
-   */
-  private final String catalogName;
 
   /**
    * Table name.
@@ -41,18 +37,32 @@ public class Project extends TransformationStep{
   /**
    * List of columns.
    */
-  private final List<ColumnName> columnList;
+  private final List<ColumnName> columnList = new ArrayList<>();
 
   /**
    * Create a projection.
-   * @param catalogName Catalog name.
+   * @param tableName The table name.
+   */
+  public Project(TableName tableName){
+    this.tableName = tableName;
+  }
+
+  /**
+   * Create a projection.
    * @param tableName Table name.
    * @param columnList List of columns.
    */
-  public Project(String catalogName, TableName tableName, List<ColumnName> columnList) {
-    this.catalogName = catalogName;
+  public Project(TableName tableName, List<ColumnName> columnList) {
     this.tableName = tableName;
-    this.columnList = columnList;
+    this.columnList.addAll(columnList);
+  }
+
+  /**
+   * Add a column to the list of columns to be projected.
+   * @param column The column.
+   */
+  public void addColumn(ColumnName column){
+    this.columnList.add(column);
   }
 
   /**
@@ -60,7 +70,7 @@ public class Project extends TransformationStep{
    * @return The name.
    */
   public String getCatalogName() {
-    return catalogName;
+    return this.tableName.getCatalogName().getName();
   }
 
   /**

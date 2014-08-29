@@ -15,10 +15,21 @@
 package com.stratio.meta2.core.planner;
 
 import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta.common.logicalplan.LogicalStep;
+import com.stratio.meta.common.logicalplan.LogicalWorkflow;
+import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.core.query.NormalizedQuery;
 import com.stratio.meta2.core.query.PlannedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
 import com.stratio.meta2.core.statements.MetaStatement;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class in charge of defining the set of {@link com.stratio.meta.common.logicalplan.LogicalStep}
@@ -29,48 +40,69 @@ import com.stratio.meta2.core.statements.MetaStatement;
  */
 public class Planner {
 
-  public Planner() {}
-
   /**
    * Create a PlannedQuery with the {@link com.stratio.meta.common.logicalplan.LogicalWorkflow}
-   * required to execute the user statement.
-   * @param validatedQuery The validated query.
+   * required to execute the user statement. This method is intended to be used only with
+   * Select statements as any other can be directly executed.
+   * @param query A {@link com.stratio.meta2.core.query.NormalizedQuery}.
    * @return A {@link com.stratio.meta2.core.query.PlannedQuery}.
    */
-  public PlannedQuery planQuery(ValidatedQuery validatedQuery) {
-    //LogicalWorkflow workflow = new LogicalWorkflow();
-/*
-    // crear la proyección necesaria
-    MetaStatement statement = validatedQuery.getStatement();
-    if (statement.getTables().size() == 1) { // en caso de que haya una tabla como target
-      TableName table = statement.getTables().get(0);
-      Project project = new Project(statement.getEffectiveCatalog(), table, statement.getColumns());
+  public PlannedQuery planQuery(NormalizedQuery query) {
+    //Build the workflow.
+    LogicalWorkflow workflow = buildWorkflow(query);
 
-    } else { // en caso de que haya más tablas (ex. join, delete multi columna...) no está contemplado de momento
+    //Plan the workflow execution into different connectors.
 
+    //Return the planned query.
+    PlannedQuery pq = new PlannedQuery(query, workflow);
+    return pq;
+  }
+
+  /**
+   * Build a workflow with the {@link com.stratio.meta.common.logicalplan.LogicalStep} required
+   * to execute a query. This method does not determine which connector will execute which part
+   * of the workflow.
+   * @param query The query to be planned.
+   * @return A Logical workflow.
+   */
+  protected LogicalWorkflow buildWorkflow(NormalizedQuery query){
+    //Define the list of projects
+    Map<String, Project> projectSteps = getProjects(query);
+    addProjectedColumns(projectSteps, query);
+
+    //Prepare the result.
+    List<LogicalStep> initialSteps = new ArrayList<>();
+    for(Project p : projectSteps.values()){
+      initialSteps.add(p);
     }
-    // crear el filtro
-    Relation relation = getRelation(statement);
-    Filter filter = new Filter(getOperation(statement), getRelationType(relation), relation);
-    
-    
-    // crear la ventana para streaming
-*/
-    return null;
+    LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
+    return workflow;
   }
 
-  private Operations getOperation(MetaStatement statement) {
-    // switch en funcion del statement (instanceof) devuelve la operación a la que corresponde? -> o polimorfismo ( en cada statement poner un método getOperation ) 
-    
 
-    return null;
+  /**
+   * Add the columns that need to be retrieved to the initial steps map.
+   * @param projectSteps The map associating table names to Project steps.
+   * @param query The query to be planned.
+   */
+  private void addProjectedColumns(Map<String, Project> projectSteps, NormalizedQuery query) {
+    for(ColumnName cn : query.getColumns()){
+      projectSteps.get(cn.getTableName().getQualifiedName()).addColumn(cn);
+    }
   }
 
-  private Relation getRelation(MetaStatement statement) {
-    // statement.getAssignations contiene la información necesaria para crear una Relation
-
-
-    return null;
+  /**
+   * Get a Map associating fully qualified table names with their Project logical step.
+   * @param query The query to be planned.
+   * @return A map with the projections.
+   */
+  protected Map<String,Project> getProjects(NormalizedQuery query) {
+    Map<String, Project> projects = new HashMap<>();
+    for(TableName tn : query.getTables()){
+      Project p = new Project(tn);
+      projects.put(tn.getQualifiedName(), p);
+    }
+    return projects;
   }
 
 }

@@ -20,6 +20,9 @@ package com.stratio.meta2.common.statements.structures.selectors;
 
 import com.stratio.meta2.common.data.ColumnName;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Single column selector.
  */
@@ -46,4 +49,5 @@ public class ColumnSelector extends Selector{
     }
     return sb.toString();
   }
+
 }
