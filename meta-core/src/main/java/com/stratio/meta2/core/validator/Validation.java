@@ -16,14 +16,21 @@
  * under the License.
  */
 
-package com.stratio.meta.common.exceptions.validation;
+package com.stratio.meta2.core.validator;
 
-import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta2.common.data.CatalogName;
+public enum Validation {
+  MUST_NOT_EXIST_CATALOG,
+  MUST_EXIST_CATALOG,
+  MUST_EXIST_TABLE,
+  MUST_NOT_EXIST_TABLE,
+  MUST_NOT_EXIST_CLUSTER,
+  MUST_EXIST_CLUSTER,
+  MUST_EXIST_CONNECTOR,
+  MUST_NOT_EXIST_CONNECTOR,
+  MUST_EXIST_DATASTORE,
+  MUST_NOT_EXIST_DATASTORE,
+  VALID_DATASTORE_MANIFEST, VALID_CLUSTER_OPTIONS, VALID_CONNECTOR_OPTIONS, MUST_EXIST_ATTACH_CONNECTOR_CLUSTER, VALID_CONNECTOR_MANIFEST
 
 
-public class ExistCatalogException extends ValidationException {
-  public ExistCatalogException(CatalogName catalog) {
-    super("Catalog [" + catalog + "] exists already");
-  }
+
 }

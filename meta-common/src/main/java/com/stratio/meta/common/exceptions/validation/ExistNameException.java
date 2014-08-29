@@ -16,24 +16,15 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.engine.validator;
+package com.stratio.meta.common.exceptions.validation;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.stratio.meta.common.exceptions.ValidationException;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.Name;
 
-public class ValidationRequirements {
-  private final List<Validation> validations;
 
-  List<Validation> getValidations(){
-    return validations;
-  }
-
-  public ValidationRequirements() {
-    this.validations = new ArrayList<>();
-  }
-
-  public ValidationRequirements add(Validation requirement){
-    this.validations.add(requirement);
-    return this;
+public class ExistNameException extends ValidationException {
+  public ExistNameException(Name name) {
+    super(" [" + name + "] exists already");
   }
 }
