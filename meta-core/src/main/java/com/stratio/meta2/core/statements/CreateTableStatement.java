@@ -18,7 +18,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
@@ -28,6 +27,7 @@ import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.engine.validator.Validation;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.meta2.core.structures.Property;
@@ -228,7 +228,7 @@ public class CreateTableStatement extends MetaStatement {
       sb.append("IF NOT EXISTS ");
     }
     sb.append(tableName.getQualifiedName());
-    sb.append(" ON CLUSTER ").append(clusterName).append(" ");
+    sb.append(" ON CLUSTER ").append(clusterName);
     if (primaryKeyType == PRIMARY_SINGLE) {
       sb.append(getSinglePKString());
     } else {
@@ -442,6 +442,8 @@ public class CreateTableStatement extends MetaStatement {
     return sb.toString();
   }
   public ValidationRequirements getValidationRequirements(){
-    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_NOT_EXIST_TABLE);
+    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG)
+        .add(Validation.MUST_EXIST_CLUSTER)
+        .add(Validation.MUST_NOT_EXIST_TABLE);
   }
 }

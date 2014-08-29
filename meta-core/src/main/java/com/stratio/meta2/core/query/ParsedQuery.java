@@ -20,9 +20,7 @@ package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.statements.structures.assignations.Assignation;
-import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.data.*;
 import com.stratio.meta2.core.engine.validator.ValidationRequirements;
 import com.stratio.meta2.core.statements.MetaStatement;
 
@@ -91,5 +89,17 @@ public class ParsedQuery extends BaseQuery {
 
   public ValidationRequirements getValidationRequirements(){
     return statement.getValidationRequirements();
+  }
+
+  public List<ClusterName> getClusters() {
+    throw new UnsupportedOperationException();
+  }
+
+  public List<ConnectorName> getConnectors() {
+    throw new UnsupportedOperationException();
+  }
+
+  public List<DataStoreName> getDatastores() {
+    throw new UnsupportedOperationException();
   }
 }

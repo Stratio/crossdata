@@ -43,7 +43,7 @@ public abstract class AbstractMetadataHelper {
   protected static Map<ColumnType, Class<?>> dbClass = new HashMap<>();
 
   /**
-   * Transform a Cassandra {@link com.stratio.meta2.common.metadata.CatalogMetadata;} into a META
+   * Transform a Cassandra {@link com.stratio.meta2.common.metadata.CatalogMetadata} into a META
    * CatalogMetadata.
    * 
    * @param catalogMetadata The catalog metadata.

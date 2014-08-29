@@ -73,6 +73,36 @@ public enum Operator {
     public String toString() {
       return "MATCH";
     }
+  },
+  GREATER_THAN{
+    public String toString() {
+      return ">";
+    }
+  },
+  LOWER_THAN{
+    public String toString() {
+      return "<";
+    }
+  },
+  GREATER_EQUAL_THAN{
+    public String toString() {
+      return ">=";
+    }
+  },
+  LOWER_EQUAL_THAN{
+    public String toString() {
+      return "<=";
+    }
+  },
+  NOT_EQUAL{
+    public String toString() {
+      return "<>";
+    }
+  },
+  LIKE{
+    public String toString() {
+      return "LIKE";
+    }
   };
 
 }

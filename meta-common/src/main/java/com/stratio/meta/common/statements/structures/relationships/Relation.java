@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
  */
-public abstract class Relation {
+public class Relation {
 
   /**
    * Identifier in the left part of the relationship.
@@ -51,6 +51,12 @@ public abstract class Relation {
    * List of terms on the right part of the relationship.
    */
   protected List<Term<?>> terms;
+
+  public Relation(Selector selector, Operator operator, List<Term<?>> terms){
+    this.identifier = selector;
+    this.operator = operator;
+    this.terms = terms;
+  }
 
   public Selector getIdentifier() {
     return identifier;
@@ -76,32 +82,6 @@ public abstract class Relation {
     this.terms = terms;
   }
 
-
-
-  /*
-  public void updateTermClass(TableMetadata tableMetadata) {
-    for (int i = 0; i < terms.size(); i++) {
-
-      String columnFullName = identifiers.get(0).toString();
-      String columnName = columnFullName.substring(columnFullName.indexOf(".") + 1);
-
-      ColumnMetadata column = tableMetadata.getColumn(columnName);
-      if (column != null) {
-        Class<? extends Comparable<?>> dataType =
-            (Class<? extends Comparable<?>>) column.getType().getDbClass();
-        if (terms.get(i) instanceof Term) {
-          Term<?> term = terms.get(i);
-          if (dataType == Integer.class && term.getTermClass() == Long.class) {
-            terms.set(i, new IntegerTerm((Term<Long>) term));
-          } else if (dataType == Float.class && term.getTermClass() == Double.class) {
-            terms.set(i, new FloatTerm((Term<Double>) term));
-          }
-        }
-      }
-    }
-  }
-  */
-
   @Override
   public String toString() {
 
@@ -112,6 +92,8 @@ public abstract class Relation {
     }else if(Operator.IN.equals(operator)){
       sb.append("(").append(StringUtils.stringList(terms, ", ")).append(")");
     }else{
+      System.out.println("-> terms: " + terms);
+      System.out.println("-> terms.size: " + terms.size());
       sb.append(StringUtils.stringList(terms, ", "));
     }
 

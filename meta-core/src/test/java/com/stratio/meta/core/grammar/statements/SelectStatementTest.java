@@ -24,21 +24,107 @@ import com.stratio.meta.core.grammar.ParsingTest;
 
 public class SelectStatementTest extends ParsingTest {
 
+  //
+  // Basic tests without WHERE clauses
+  //
+
   @Test
-  public void selectStatement() {
+  public void basicSelectAsterisk(){
+    String inputText = "SELECT * FROM table1;";
+    String expectedText = "SELECT * FROM <unknown_name>.table1;";
+    testRegularStatement(inputText, expectedText, "basicSelectAsterisk");
+  }
+
+  @Test
+  public void basicSelectAsteriskWithCatalog(){
+    String inputText = "SELECT * FROM catalog1.table1;";
+    testRegularStatement(inputText, "basicSelectAsteriskWithCatalog");
+  }
+
+  @Test
+  public void singleColumn() {
+    String inputText = "SELECT newtb.lucene FROM newks.newtb;";
+    String expectedText = "SELECT <unknown_name>.newtb.lucene FROM newks.newtb;";
+    testRegularStatement(inputText, expectedText, "singleColumn");
+  }
+
+  @Test
+  public void singleColumnWithCatalog() {
+    String inputText = "SELECT newks.newtb.lucene FROM newks.newtb;";
+    testRegularStatement(inputText, "singleColumnWithCatalog");
+  }
+
+  @Test
+  public void functionSingleColumn() {
+    String inputText = "SELECT sum(newtb.lucene) FROM newks.newtb;";
+    String expectedText = "SELECT sum(<unknown_name>.newtb.lucene) FROM newks.newtb;";
+    testRegularStatement(inputText, expectedText, "functionSingleColumn");
+  }
+
+  @Test
+  public void function2SingleColumn() {
+    String inputText = "SELECT myfunction(newtb.lucene) FROM newks.newtb;";
+    String expectedText = "SELECT myfunction(<unknown_name>.newtb.lucene) FROM newks.newtb;";
+    testRegularStatement(inputText, expectedText, "function2SingleColumn");
+  }
+
+  @Test
+  public void singleColumnWithSessionCatalog() {
+    String inputText = "SELECT newtb.lucene FROM newks.newtb;";
+    String expectedText = "SELECT newks.newtb.lucene FROM newks.newtb;";
+    testRegularStatementSession("newks", inputText, expectedText, "singleColumnWithSessionCatalog");
+  }
+
+  @Test
+  public void singleColumnWithAliasWithSessionCatalog() {
+    String inputText = "SELECT newtb.lucene AS c FROM newks.newtb;";
+    String expectedText = "SELECT newks.newtb.lucene AS c FROM newks.newtb;";
+    testRegularStatementSession("newks", inputText, expectedText, "singleColumnWithSessionCatalog");
+  }
+
+  //
+  // Select with where clauses
+  //
+
+  @Test
+  public void selectWithCompareRelationships() {
+    String [] relationships = {"=", ">", "<", ">=", "<=", "MATCH"};
+    for(String r : relationships) {
+      String inputText = "SELECT * FROM demo.emp WHERE a " + r + " 5;";
+      String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a " + r + " 5;";
+      testRegularStatement(inputText, expectedText, "selectWithMatch");
+    }
+  }
+
+  @Test
+  public void selectWith2CompareRelationships() {
+    String [] relationships = {"=", ">", "<", ">=", "<=", "MATCH"};
+    for(String r : relationships) {
+      String inputText = "SELECT * FROM demo.emp WHERE a " + r + " 5 AND b " + r + " 10;";
+      String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a " + r + " 5 AND <unknown_name>.<unknown_name>.b " + r + " 10;";
+      testRegularStatement(inputText, expectedText, "selectWithMatch");
+    }
+  }
+
+  //
+  // Select with window
+  //
+
+  @Test
+  public void selectWithTimeWindow() {
     String inputText =
-        "SELECT newtb.ident1 AS name1, myfunction(newtb.innerIdent, newtb.anotherIdent) AS functionName "
-            + "FROM newks.newtb WITH WINDOW 5 ROWS INNER JOIN tablename ON field1=field2 WHERE newtb.ident1 LIKE whatever"
-            + " ORDER BY newtb.id1 ASC GROUP BY newtb.col1 LIMIT 50 DISABLE ANALYTICS;";
-    testRegularStatement(inputText, "selectStatement");
+        "SELECT table1.column1 FROM table1 WITH WINDOW 5 SECONDS WHERE table1.column2 = 3;";
+    String expectedText =
+        "SELECT <unknown_name>.table1.column1 FROM <unknown_name>.table1 WITH WINDOW 5 SECONDS WHERE <unknown_name>.table1.column2 = 3;";
+    testRegularStatement(inputText, expectedText, "selectWithTimeWindow");
   }
 
   @Test
   public void selectStatementWindows() {
     for (String w : new String[] {"5 ROWS", "LAST", "5 SECONDS"}) {
       String inputText =
-          "SELECT newtb.ident1 FROM newks.newtb WITH WINDOW " + w
-              + " WHERE newtb.ident1 LIKE whatever;";
+          "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + w
+              + " WHERE newks.newtb.ident1 LIKE whatever;";
       testRegularStatement(inputText, "selectStatementWindows");
     }
 
@@ -47,24 +133,23 @@ public class SelectStatementTest extends ParsingTest {
     for (String t : new String[] {"SECONDS", "MINUTES", "HOURS", "DAYS"}) {
       for (int i = 10; i-- > 2;) {
         String inputText =
-            "SELECT newtb.ident1 FROM newks.newtb WITH WINDOW " + i + " " + t
-                + " WHERE newtb.ident1 LIKE whatever;";
+            "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + i + " " + t
+                + " WHERE newks.newtb.ident1 LIKE whatever;";
         testRegularStatement(inputText, "selectStatementWindows");
       }
 
     }
   }
 
+  //
+  // Select with JOIN
+  //
+
   @Test
   public void selectStatementJoin() {
-
     String inputText =
-        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON field1=field2 WHERE c.x = y;";
-
-    String expectedText =
-        "SELECT c.a, c.b FROM c INNER JOIN tablename ON field1=field2 WHERE c.x = y;";
-
-    testRegularStatement(inputText, expectedText, "selectStatementJoins");
+        "SELECT c.t1.a, c.t2.b FROM c.t1 INNER JOIN c.t2 ON c.t1.a = aa WHERE c.t1.a = y;";
+    testRegularStatement(inputText, "selectStatementJoins");
   }
 
   @Test
@@ -127,6 +212,10 @@ public class SelectStatementTest extends ParsingTest {
 
   }
 
+  //
+  // Select with order by
+  //
+
   @Test
   public void selectStatementCombineOrderby() {
     for (String s : new String[] {"ASC", "DESC", "ASC, b.anothercolumn ASC",
@@ -138,24 +227,13 @@ public class SelectStatementTest extends ParsingTest {
 
   }
 
-  @Test
-  public void selectStatement2() {
-    String inputText = "SELECT newtb.lucene FROM newks.newtb;";
-    testRegularStatement(inputText, "selectStatement2");
-  }
 
-  @Test
-  public void selectWithTimeWindow() {
-    String inputText =
-        "SELECT table1.column1 FROM table1 WITH WINDOW 5 SECONDS WHERE table1.column2 = 3;";
-    testRegularStatement(inputText, "selectWithTimeWindow");
-  }
 
-  @Test
-  public void selectWithMatch() {
-    String inputText = "SELECT * FROM demo.emp WHERE emp.first_name MATCH s2o;";
-    testRegularStatement(inputText, "selectWithMatch");
-  }
+
+
+
+
+
 
   @Test
   public void selectWrongLikeWord() {
@@ -166,8 +244,8 @@ public class SelectStatementTest extends ParsingTest {
 
   @Test
   public void selectSelectors() {
-    for (String c : new String[] {"COUNT(*)", "myUDF(table0.field0)", "table0.field0"}) {
-      String inputText = "SELECT " + c + " from table0;";
+    for (String c : new String[] {"COUNT(*)", "myUDF(c.table0.field0)", "c.table0.field0"}) {
+      String inputText = "SELECT " + c + " from c.table0;";
       testRegularStatement(inputText, "selectSelectors");
     }
   }
@@ -299,7 +377,7 @@ public class SelectStatementTest extends ParsingTest {
   @Test
   public void testSimpleQueryWithAliasesOk() {
 
-    String inputText = "SELECT users.gender as genero FROM demo.users;";
+    String inputText = "SELECT demo.users.gender as genero FROM demo.users;";
 
     testRegularStatement(inputText, "testSimpleGroupQueryWithAliasesOk");
   }
@@ -323,4 +401,18 @@ public class SelectStatementTest extends ParsingTest {
 
     testRegularStatement(inputText, "testComplexQueryWithAliasesOk");
   }
+
+  //
+  // Complex cases
+  //
+
+  @Test
+  public void complexSelect() {
+    String inputText =
+        "SELECT newtb.ident1 AS name1, myfunction(newtb.innerIdent, newtb.anotherIdent) AS functionName "
+        + "FROM newks.newtb WITH WINDOW 5 ROWS INNER JOIN tablename ON field1=field2 WHERE newtb.ident1 LIKE whatever"
+        + " ORDER BY newtb.id1 ASC GROUP BY newtb.col1 LIMIT 50 DISABLE ANALYTICS;";
+    testRegularStatement(inputText, "complexSelect");
+  }
+
 }

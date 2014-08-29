@@ -18,23 +18,11 @@
 
 package com.stratio.meta2.common.data;
 
-public class CatalogName extends FirstLevelName {
-  private final String name;
-
-  public CatalogName(String catalogName){
-    super();
-    this.name = catalogName;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  @Override public String getQualifiedName() {
-    return QualifiedNames.getCatalogQualifiedName(getName());
-  }
-
-  @Override public NameType getType() {
-    return NameType.Catalog;
-  }
+public enum NameType {
+  Catalog,
+  Cluster,
+  Column,
+  Connector,
+  DataStore,
+  Table
 }

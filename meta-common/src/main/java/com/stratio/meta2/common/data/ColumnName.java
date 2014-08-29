@@ -25,19 +25,30 @@ public class ColumnName extends Name {
 
   /**
    * Default constructor.
-   * 
+   *
+   * @param catalogName Name of the catalog.
+   * @param tableName Name of the table.
    * @param columnName Name of the column.
    */
   public ColumnName(String catalogName, String tableName, String columnName) {
-    if(catalogName==null || catalogName.isEmpty() || tableName==null || tableName.isEmpty()) {
-      this.tableName=null;
-    }else {
+    if(tableName != null && !tableName.isEmpty()){
       this.tableName = new TableName(catalogName, tableName);
+    }else{
+      this.tableName = null;
     }
     this.name = columnName;
   }
 
-
+  /**
+   * Constructor using existing TableName.
+   *
+   * @param tableName TableName.
+   * @param columnName Name of the column.
+   */
+  public ColumnName(TableName tableName, String columnName) {
+    this.tableName = tableName;
+    this.name = columnName;
+  }
 
   public TableName getTableName() {
     return tableName;
@@ -53,7 +64,7 @@ public class ColumnName extends Name {
 
   @Override
   public boolean isCompletedName() {
-    return tableName != null;
+    return tableName != null && tableName.isCompletedName();
   }
 
   public String getQualifiedName() {
@@ -61,10 +72,23 @@ public class ColumnName extends Name {
     if (isCompletedName()) {
       result= QualifiedNames.getColumnQualifiedName(this.getTableName().getCatalogName().getName(),
           getTableName().getName(), getName());
-    }else {
-      result=QualifiedNames.getColumnQualifiedName(UNKNOWN_NAME, UNKNOWN_NAME, getName());
+    }else{
+      String catalogName = UNKNOWN_NAME;
+      String tableName = UNKNOWN_NAME;
+      if(this.getTableName() != null){
+        tableName = this.getTableName().getName();
+        if(this.getTableName().getCatalogName() != null){
+          catalogName = this.getTableName().getCatalogName().getName();
+        }
+      }
+
+      result=QualifiedNames.getColumnQualifiedName(catalogName, tableName, getName());
     }
     return result;
+  }
+
+  @Override public NameType getType() {
+    return null;
   }
 
 }

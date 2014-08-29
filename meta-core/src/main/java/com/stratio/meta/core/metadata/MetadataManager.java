@@ -18,16 +18,15 @@
 
 package com.stratio.meta.core.metadata;
 
-import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.metadata.structures.TableType;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.streaming.StreamingUtils;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
@@ -334,6 +333,8 @@ public class MetadataManager {
    * @return A list of {@link com.stratio.meta.core.metadata.CustomIndexMetadata} with the indexes.
    */
   public List<CustomIndexMetadata> getTableIndex(TableMetadata tableMetadata) {
+    throw new UnsupportedOperationException();
+    /*
     List<CustomIndexMetadata> result = new ArrayList<>();
 
     // Iterate through the table columns.
@@ -363,7 +364,7 @@ public class MetadataManager {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Table " + tableMetadata.getName() + " has " + result.size() + " indexed columns.");
     }
-    return result;
+    return result;*/
   }
 
   public boolean checkStream(String ephemeralTableName) {

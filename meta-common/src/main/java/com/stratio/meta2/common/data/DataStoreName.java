@@ -35,4 +35,8 @@ public class DataStoreName extends FirstLevelName {
   public String getQualifiedName(){
     return QualifiedNames.getDataStoreQualifiedName(getName());
   }
+
+  @Override public NameType getType() {
+    return NameType.DataStore;
+  }
 }

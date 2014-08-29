@@ -22,13 +22,10 @@ import java.util.List;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta.common.exceptions.validation.ExistCatalogException;
-import com.stratio.meta.common.exceptions.validation.ExistTableException;
-import com.stratio.meta.common.exceptions.validation.NotExistTableException;
-import com.stratio.meta.common.exceptions.validation.NotExistCatalogException;
-import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta.common.exceptions.validation.ExistNameException;
+import com.stratio.meta.common.exceptions.validation.NotExistNameException;
+import com.stratio.meta2.common.data.Name;
 import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.common.data.CatalogName;
 import org.apache.log4j.Logger;
 
 
@@ -47,13 +44,6 @@ public class Validator {
     return new ValidatedQuery(parsedQuery) ;
   }
 
-  private void completeTableName(TableName tableName, CatalogName defaultCatalog) {
-    if(!tableName.isCompletedName()){
-      tableName.setCatalogName(defaultCatalog);
-    }
-  }
-
-
 
 
   private void validateRequirements(ParsedQuery parsedQuery)
@@ -66,94 +56,85 @@ public class Validator {
       throws ValidationException, IgnoreQueryException {
     switch (requirement) {
       case MUST_NOT_EXIST_CATALOG:
-        validateNotExistCatalog(parsedQuery.getCatalogs(), parsedQuery.getIfNotExists());
+        validateNotExist(parsedQuery.getCatalogs(), parsedQuery.getIfNotExists());
         break;
       case MUST_EXIST_CATALOG:
-        validateExistCatalog(parsedQuery.getCatalogs(), parsedQuery.getIfExists());
+        validateExist(parsedQuery.getCatalogs(), parsedQuery.getIfExists());
         break;
        case MUST_EXIST_TABLE:
-         validateExistTable(parsedQuery.getTables(),parsedQuery.getIfExists(),parsedQuery.getDefaultCatalog());
+         validateExist(parsedQuery.getTables(), parsedQuery.getIfExists());
          break;
       case MUST_NOT_EXIST_TABLE:
-        validateNotExistTable(parsedQuery.getTables(), parsedQuery.getIfNotExists(),
-            parsedQuery.getDefaultCatalog());
+        validateNotExist(parsedQuery.getTables(), parsedQuery.getIfNotExists());
+        break;
+      case MUST_NOT_EXIST_CLUSTER:
+        validateNotExist(parsedQuery.getClusters(),parsedQuery.getIfNotExists());
+        break;
+      case MUST_EXIST_CLUSTER:
+        validateExist(parsedQuery.getClusters(),parsedQuery.getIfExists());
+        break;
+      case MUST_EXIST_CONNECTOR:
+        validateExist(parsedQuery.getConnectors(),parsedQuery.getIfExists());
+        break;
+      case MUST_NOT_EXIST_CONNECTOR:
+        validateNotExist(parsedQuery.getConnectors(),parsedQuery.getIfNotExists());
+        break;
+      case MUST_EXIST_DATASTORE:
+        validateNotExist(parsedQuery.getDatastores(),parsedQuery.getIfExists());
+        break;
+      case MUST_NOT_EXIST_DATASTORE:
+        validateNotExist(parsedQuery.getDatastores(),parsedQuery.getIfNotExists());
+        break;
+      case VALID_DATASTORE_MANIFEST:
+        break;
+      case VALID_CLUSTER_OPTIONS:
+        break;
+      case VALID_CONNECTOR_OPTIONS:
+        break;
+      case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
+        break;
+      case VALID_CONNECTOR_MANIFEST:
         break;
     }
   }
 
-  private void validateNotExistTable(List<TableName> tables, boolean hasIfNotExists,
-      CatalogName defaultCatalog) throws IgnoreQueryException, ExistTableException {
-    for(TableName tableName:tables){
-      validateNotExistTable(tableName, hasIfNotExists, defaultCatalog);
-    }
 
-  }
-  private void validateNotExistTable(TableName table, boolean hasIfNotExists,
-      CatalogName defaultCatalog) throws IgnoreQueryException, ExistTableException {
-    completeTableName(table,defaultCatalog);
-    if(MetadataManager.MANAGER.existsTable(table)){
-      if(hasIfNotExists){
-        throw new IgnoreQueryException("TABLE ["+ table + "] EXIST");
-      }else{
-        throw new ExistTableException(table);
-      }
-    }
-  }
 
-  private void validateExistTable(List<TableName> tables, boolean hasIfExists, CatalogName defaultCatalog)
-      throws IgnoreQueryException, NotExistTableException {
-    for(TableName tableName:tables){
-      validateExistTable(tableName,hasIfExists,defaultCatalog);
+  private void validateExist(List<? extends Name> names, boolean hasIfExists)
+      throws IgnoreQueryException, NotExistNameException {
+    for(Name name:names){
+      this.validateExist(name, hasIfExists);
     }
   }
 
 
-  private void validateExistTable(TableName table, boolean hasIfExists, CatalogName defaultCatalog)
-      throws IgnoreQueryException, NotExistTableException {
-    completeTableName(table,defaultCatalog);
-    if(!MetadataManager.MANAGER.existsTable(table)){
-      if(hasIfExists){
-        throw new IgnoreQueryException("TABLE ["+ table + "] NOT EXISTS");
-      }else{
-        throw new NotExistTableException(table);
-      }
-    }
-  }
 
-  private void validateExistCatalog(List<CatalogName> catalogs, boolean hasIfExists)
-      throws NotExistCatalogException, IgnoreQueryException {
-    for(CatalogName catalog:catalogs){
-      this.validateExistCatalog(catalog, hasIfExists);
-    }
-
-  }
-
-  private void validateExistCatalog(CatalogName catalog, boolean hasIfExists)
-      throws NotExistCatalogException, IgnoreQueryException {
-    if(!MetadataManager.MANAGER.existsCatalog(catalog)){
+  private void validateExist(Name name, boolean hasIfExists)
+      throws NotExistNameException, IgnoreQueryException {
+    if(!MetadataManager.MANAGER.exists(name)){
       if(hasIfExists) {
-        throw new IgnoreQueryException("CATALOG["+ catalog + "] NOT EXIST");
+        throw new IgnoreQueryException("["+ name + "] doesn't exist");
       }else{
-        throw new NotExistCatalogException(catalog);
+        throw new NotExistNameException(name);
       }
     }
   }
 
-  private void validateNotExistCatalog(List<CatalogName> catalogs, boolean hasIfNotExist)
-      throws ExistCatalogException, IgnoreQueryException {
-    for(CatalogName catalog:catalogs){
-      this.validateNotExistCatalog(catalog,hasIfNotExist);
+  private void validateNotExist(List<? extends Name> names, boolean hasIfNotExist)
+      throws ExistNameException, IgnoreQueryException {
+    for(Name name:names){
+      this.validateNotExistCatalog(name,hasIfNotExist);
     }
   }
 
 
-  private void validateNotExistCatalog(CatalogName catalog, boolean onlyIfNotExis)
-      throws ExistCatalogException, IgnoreQueryException {
-    if(MetadataManager.MANAGER.existsCatalog(catalog)){
-      if(onlyIfNotExis) {
-        throw new IgnoreQueryException("CATALOG["+ catalog + "] EXIST");
+  private void validateNotExistCatalog(Name name, boolean onlyIfNotExist)
+      throws ExistNameException, IgnoreQueryException {
+    if(MetadataManager.MANAGER.exists(name)){
+      if(onlyIfNotExist) {
+        throw new IgnoreQueryException("["+ name + "] exists");
       }else{
-        throw new ExistCatalogException(catalog);
+        throw new ExistNameException(name);
       }
     }
   }

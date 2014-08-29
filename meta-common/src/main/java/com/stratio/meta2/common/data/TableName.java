@@ -27,13 +27,13 @@ package com.stratio.meta2.common.data;
  */
 public class TableName extends Name {
 
+  //TODO Include table alias
 
   private final String name;
 
   private CatalogName catalogName;
 
   public TableName(String catalogName, String tableName){
-
     if(catalogName == null || catalogName.isEmpty()){
       this.catalogName=null;
     }else{
@@ -67,6 +67,10 @@ public class TableName extends Name {
       result= QualifiedNames.getTableQualifiedName(UNKNOWN_NAME,getName());
     }
     return result;
+  }
+
+  @Override public NameType getType() {
+    return NameType.Table;
   }
 
 }
