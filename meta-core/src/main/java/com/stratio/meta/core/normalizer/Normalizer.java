@@ -16,14 +16,31 @@
  * under the License.
  */
 
-package com.stratio.meta.common.exceptions.validation;
+package com.stratio.meta.core.normalizer;
+
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.core.query.NormalizedQuery;
+import com.stratio.meta2.core.query.ParsedQuery;
 
 
-import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta2.common.data.CatalogName;
+import java.util.List;
 
-public class NotExistCatalogException extends ValidationException {
-  public NotExistCatalogException(CatalogName catalog) {
-    super("Catalog [" + catalog + "]  doesn't exist yet");
+public class Normalizer {
+
+  public NormalizedQuery normalize(ParsedQuery parsedQuery){
+    NormalizedFields fields=new NormalizedFields();
+
+    return new NormalizedQuery(parsedQuery);
   }
+
+  public List<TableName> normalizeSelector(ParsedQuery parsedQuery, NormalizedFields fields){
+
+    return null;
+  }
+
+  public List<ColumnName> normalizeColumns(){
+    return null;
+  }
+
 }

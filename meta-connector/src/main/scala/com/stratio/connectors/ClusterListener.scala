@@ -4,13 +4,7 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import akka.actor.ActorLogging
 import akka.actor.Actor
-import akka.cluster.MemberStatus
-import akka.actor.Props
 import akka.actor.RootActorPath
-import akka.actor.ActorPath
-import akka.actor.ActorPathExtractor
-import akka.actor.RootActorPath
-import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.communication._
 
 

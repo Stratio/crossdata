@@ -5,8 +5,8 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
 import com.stratio.meta2.common.statements.structures.terms.Term;
-import com.stratio.meta2.core.engine.validator.Validation;
-import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+import com.stratio.meta2.core.validator.Validation;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.Map;
 

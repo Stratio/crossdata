@@ -16,31 +16,24 @@
  * under the License.
  */
 
-package com.stratio.meta.core.grammar.statements;
+package com.stratio.meta2.core.validator;
 
-import com.stratio.meta.core.grammar.ParsingTest;
-import org.testng.annotations.Test;
+import java.util.ArrayList;
+import java.util.List;
 
-public class TruncateStatementTest extends ParsingTest {
+public class ValidationRequirements {
+  private final List<Validation> validations;
 
-  @Test
-  public void truncateTable1() {
-    String inputText = "TRUNCATE usersTable;";
-    String expectedText = "TRUNCATE <unknown_name>.usersTable;";
-    testRegularStatement(inputText, expectedText, "truncateTable1");
+  List<Validation> getValidations(){
+    return validations;
   }
 
-  @Test
-  public void truncateTable2() {
-    String inputText = "[demo], TRUNCATE usersTable;";
-    String expectedText = "TRUNCATE demo.usersTable;";
-    testRegularStatement(inputText, expectedText, "truncateTable2");
+  public ValidationRequirements() {
+    this.validations = new ArrayList<>();
   }
 
-  @Test
-  public void truncateWrongIdentifier(){
-    String inputText = "TRUNCATE companyKS..usersTable;";
-    testRecoverableError(inputText, "truncateWrongIdentifier");
+  public ValidationRequirements add(Validation requirement){
+    this.validations.add(requirement);
+    return this;
   }
-
 }

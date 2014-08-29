@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,28 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta2.common.statements.structures.selectors;
+package com.stratio.meta2.core.statements;
 
-import com.stratio.meta2.common.data.ColumnName;
-
-import java.util.List;
-
-/**
- * This class represents one of the elements requested in a SELECT statement.
- */
-public abstract class Selector {
-
-  /**
-   * The alias to be applied to the current Selector.
-   */
-  protected String alias = null;
-
-  /**
-   * Set the alias for this selector.
-   * @param alias The alias.
-   */
-  public void setAlias(String alias) {
-    this.alias = alias;
-  }
-
+public abstract class StorageStatement extends MetaStatement {
 }

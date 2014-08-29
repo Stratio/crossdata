@@ -16,7 +16,7 @@ package com.stratio.meta2.core.statements;
 
 import java.util.List;
 
-import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.result.QueryResult;

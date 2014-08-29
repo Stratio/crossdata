@@ -17,7 +17,7 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 
 /**
  * Class that models an {@code EXPLAIN PLAN} statement from the META language.

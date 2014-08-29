@@ -25,10 +25,13 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
-import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+
+import java.util.List;
 
 /**
  * Class that models a generic Statement supported by the META language.
@@ -212,5 +215,22 @@ public abstract class MetaStatement implements IStatement {
 
   //TODO: This method should be abstract
   public abstract ValidationRequirements getValidationRequirements();
+
+  /**
+   * Get the list of tables involved in the current statement.
+   * @return The list or null if no tables are available.
+   */
+  public List<TableName> getTables(){
+    return null;
+  }
+
+  /**
+   * Get the list of columns involved in the current statement.
+   * @return The list or null if no columns are available.
+   */
+  public List<ColumnName> getColumns(){
+    return null;
+  }
+
 }
 

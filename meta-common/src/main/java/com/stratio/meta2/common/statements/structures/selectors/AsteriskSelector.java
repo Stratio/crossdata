@@ -18,6 +18,10 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
+import com.stratio.meta2.common.data.ColumnName;
+
+import java.util.List;
+
 /**
  * Asterisk selector.
  */
@@ -27,4 +31,5 @@ public class AsteriskSelector extends Selector{
   public String toString() {
     return "*";
   }
+
 }

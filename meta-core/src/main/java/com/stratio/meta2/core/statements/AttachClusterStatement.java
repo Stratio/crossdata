@@ -18,9 +18,8 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta2.core.engine.validator.Validation;
-import com.stratio.meta2.core.engine.validator.ValidationRequirements;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.validator.Validation;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 
 
 /**

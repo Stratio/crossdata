@@ -23,7 +23,7 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,11 +36,6 @@ import java.util.List;
  * {@literal <where_clause>};
  */
 public class DeleteStatement extends MetaStatement {
-
-  /**
-   * The list of columns to be removed.
-   */
-  private List<String> targetColumns = null;
 
   /**
    * The name of the targe table.
@@ -58,17 +53,7 @@ public class DeleteStatement extends MetaStatement {
    */
   public DeleteStatement() {
     this.command = false;
-    targetColumns = new ArrayList<>();
     whereClauses = new ArrayList<>();
-  }
-
-  /**
-   * Add a new column to be deleted.
-   * 
-   * @param column The column name.
-   */
-  public void addColumn(String column) {
-    targetColumns.add(column);
   }
 
   /**
@@ -92,11 +77,7 @@ public class DeleteStatement extends MetaStatement {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("DELETE ");
-    if (!targetColumns.isEmpty()) {
-      sb.append("(").append(StringUtils.stringList(targetColumns, ", ")).append(") ");
-    }
-    sb.append("FROM ");
+    StringBuilder sb = new StringBuilder("DELETE FROM ");
     if (catalogInc) {
       sb.append(catalog).append(".");
     }
@@ -111,21 +92,7 @@ public class DeleteStatement extends MetaStatement {
   /** {@inheritDoc} */
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
-
-    Result result = validateCatalogAndTable(metadata, sessionCatalog);
-    String effectiveCatalog = getEffectiveCatalog();
-
-    TableMetadata tableMetadata = null;
-    if (!result.hasError()) {
-      tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
-      result = validateSelectionColumns(tableMetadata);
-    }
-    /*
-     * if (!result.hasError()) { result = validateWhereClause(tableMetadata); }
-     */
-
-    return result;
-
+    return validateCatalogAndTable(metadata, sessionCatalog);
   }
 
   /**
@@ -173,31 +140,6 @@ public class DeleteStatement extends MetaStatement {
    * Result.createValidationErrorResult("Column " + column + " not found in " + tableName +
    * " table."); } return result; }
    */
-
-  /**
-   * Validate that the columns specified in the select are valid by checking that the selection
-   * columns exists in the table.
-   * 
-   * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
-   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
-   */
-  private Result validateSelectionColumns(TableMetadata tableMetadata) {
-    Result result = QueryResult.createSuccessQueryResult();
-
-    for (String c : targetColumns) {
-      if (c.toLowerCase().startsWith("stratio")) {
-        result =
-            Result.createValidationErrorResult("Internal column " + c
-                + " cannot be part of the WHERE " + "clause.");
-      } else if (tableMetadata.getColumns().get(c) == null) {
-        result =
-            Result.createValidationErrorResult("Column " + c + " does not exists in table "
-                + tableMetadata.getName());
-      }
-    }
-
-    return result;
-  }
 
   /**
    * Validate that a valid catalog is present, and that the table does not exits unless

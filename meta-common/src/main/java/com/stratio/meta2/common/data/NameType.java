@@ -24,5 +24,9 @@ public enum NameType {
   Column,
   Connector,
   DataStore,
-  Table
+  Table;
+
+  public String toString(){
+    return name();
+  }
 }

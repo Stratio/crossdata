@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta2.core.engine.validator.ValidationRequirements;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 
 public interface IStatement {
   /**
