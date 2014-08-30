@@ -23,13 +23,23 @@
     </properties>
   
   <dependencies>
+  
+   <!-- CONNECTOR INTERFACE AND ALL THE CONNECTORS -->
    <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-common</artifactId>
             <version>${meta.version}</version>
    </dependency>
+
+   <!--dependency>
+	<groupId>com.stratio.connector</groupId>
+    <artifactId>connector-cassandra-core</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+   </dependency-->
+
+   
   
-  
+    <!-- SCALA AND AKKA -->
     <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>

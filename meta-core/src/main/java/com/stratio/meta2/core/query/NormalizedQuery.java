@@ -62,6 +62,6 @@ public class NormalizedQuery extends SelectParsedQuery {
   //public List<OrderBy> getOrderByColumns();
   //OrderBy-> List<Columns> order (ASC, DESC)
 
-  //public List<Selector> groupBy
+  //public List<Selector> groupBy, getJoin, ....
 
 }

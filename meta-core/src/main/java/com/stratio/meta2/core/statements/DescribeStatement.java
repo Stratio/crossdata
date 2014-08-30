@@ -113,7 +113,7 @@ public class DescribeStatement extends TableStatement {
     Result result = null;
     if (type == DescribeType.CATALOG) {
 
-      CatalogMetadata ksInfo = mm.getCatalogMetadata(super.getEffectiveCatalog());
+      CatalogMetadata ksInfo = mm.getCatalogMetadata(getEffectiveCatalog());
       if (ksInfo == null) {
         result = Result.createExecutionErrorResult("KEYSPACE " + catalog + " was not found");
       } else {

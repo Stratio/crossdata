@@ -56,6 +56,11 @@ public class DeleteStatement extends MetaStatement {
     whereClauses = new ArrayList<>();
   }
 
+  public DeleteStatement(TableName tableName, List<Relation> whereClauses) {
+    this.tableName = tableName;
+    this.whereClauses = whereClauses;
+  }
+
   /**
    * Set the name of the table.
    * 

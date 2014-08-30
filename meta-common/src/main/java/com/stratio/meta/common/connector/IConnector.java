@@ -30,13 +30,20 @@ import com.stratio.meta2.common.data.ClusterName;
  */
 public interface IConnector {
 
+
   /**
-   * Get the name of the datastore required by the connector. Several connectors may declare the
-   * same datastore name.
-   *
-   * @return The name.
+   * Get the name of the actor.
+   * @return A name.
    */
-  public String getDatastoreName();
+  public String getConnectorName();
+
+  /**
+   * Get the names of the datastores required by the connector.
+   * Several connectors may declare the same datastore name.
+   *
+   * @return The names.
+   */
+  public String [] getDatastoreName();
 
   /**
    * Initialize the connector service.
