@@ -18,8 +18,12 @@
 
 package com.stratio.meta.core.normalizer;
 
+import com.stratio.meta.core.structures.Selection;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.statements.structures.selectors.FunctionSelector;
+import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.query.NormalizedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
@@ -35,7 +39,22 @@ public class Normalizer {
     return new NormalizedQuery(parsedQuery);
   }
 
-  public List<TableName> normalizeSelector(SelectParsedQuery parsedQuery, NormalizedFields fields){
+
+  public NormalizedFields normalize(SelectExpression selectExpression, NormalizedFields fields){
+    fields.setDistinctSelect(selectExpression.isDistinct());
+    for(Selector selector:selectExpression.getSelectorList()){
+      switch(selector.getType()){
+        case FUNCTION:
+          FunctionSelector functionSelector=(FunctionSelector)selector;
+
+          break;
+        case COLUMN:
+          break;
+        case ASTERISK:
+          break;
+      }
+    }
+
 
     return null;
   }

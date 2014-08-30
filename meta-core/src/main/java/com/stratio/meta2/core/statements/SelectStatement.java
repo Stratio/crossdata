@@ -125,27 +125,6 @@ public class SelectStatement extends MetaStatement {
    */
   private int limit = 0;
 
-  // TODO: We should probably remove this an pass it as parameters.
-  /**
-   * The {@link com.stratio.meta.core.metadata.MetadataManager} used to retrieve table metadata
-   * during the validation process and the statement execution phase.
-   */
-  private MetadataManager metadata = null;
-
-  /**
-   * The {@link com.datastax.driver.core.TableMetadata} associated with the table specified in the
-   * FROM of the Select statement.
-   */
-  private TableMetadata tableMetadataFrom = null;
-
-  /**
-   * Map with the collection of {@link com.datastax.driver.core.ColumnMetadata} associated with the
-   * tables specified in the FROM and the INNER JOIN parts of the Select statement. A virtual table
-   * named {@code any} is used to match unqualified column names.
-   */
-  private Map<String, Collection<ColumnMetadata>> columns = new HashMap<>();
-
-  private boolean streamMode = false;
 
   /**
    * Class logger.
@@ -349,9 +328,6 @@ public class SelectStatement extends MetaStatement {
     return window;
   }
 
-  public MetadataManager getMetadata() {
-    return metadata;
-  }
 
   public Map<String, String> getFieldsAliasesMap() {
     return fieldsAliasesMap;

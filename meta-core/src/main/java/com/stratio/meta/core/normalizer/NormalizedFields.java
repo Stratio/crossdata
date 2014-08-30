@@ -36,6 +36,10 @@ public class NormalizedFields {
   private final List<ColumnSelector> columnSelectors=new ArrayList<>();
   private final List<Relation> relations=new ArrayList<>();
 
+  private boolean distinctSelect=false;
+
+
+
 
   public Set<ColumnName> getColumnNames() {
     return columnNames;
@@ -55,5 +59,13 @@ public class NormalizedFields {
 
   public List<Relation> getRelations() {
     return relations;
+  }
+
+  public boolean isDistinctSelect() {
+    return distinctSelect;
+  }
+
+  void setDistinctSelect(boolean distinctSelect) {
+    this.distinctSelect = distinctSelect;
   }
 }

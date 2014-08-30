@@ -208,6 +208,10 @@ public abstract class MetaStatement implements IStatement {
     sessionCatalog = targetCatalog;
   }
 
+  public List<TableName> getFromTables(){
+    return null;
+  }
+
   @Deprecated
   public Tree getPlan(MetadataManager metadataManager, String targetCatalog){
     return null;
@@ -216,13 +220,8 @@ public abstract class MetaStatement implements IStatement {
   //TODO: This method should be abstract
   public abstract ValidationRequirements getValidationRequirements();
 
-  /**
-   * Get the list of tables involved in the current statement.
-   * @return The list or null if no tables are available.
-   */
-  public List<TableName> getTables(){
-    return null;
-  }
+
+
 
   /**
    * Get the list of columns involved in the current statement.

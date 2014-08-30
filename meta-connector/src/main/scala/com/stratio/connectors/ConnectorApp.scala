@@ -2,7 +2,7 @@ package com.stratio.connector
 
 import akka.actor.{ActorSystem,Props}
 import com.typesafe.config.ConfigFactory
-import com.stratio.connector.cassandra.CassandraConnector
+//import com.stratio.connector.cassandra.CassandraConnector
 import com.stratio.meta.common.connector.IConnector
 import akka.actor.ActorSystem
 import akka.actor.Props

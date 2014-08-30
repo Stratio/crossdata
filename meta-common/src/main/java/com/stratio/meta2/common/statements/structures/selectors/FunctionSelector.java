@@ -86,4 +86,7 @@ public class FunctionSelector extends Selector{
     return functionColumns;
   }
 
+  @Override public SelectorType getType() {
+    return SelectorType.FUNCTION;
+  }
 }

@@ -40,4 +40,6 @@ public abstract class Selector {
     this.alias = alias;
   }
 
+  public abstract SelectorType getType();
+
 }

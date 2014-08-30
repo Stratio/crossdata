@@ -43,35 +43,4 @@ public abstract class ParsedQuery extends BaseQuery {
     return QueryStatus.PARSED;
   }
 
-  public int getLimit(){
-    //TODO set limit
-    return 1000;
-  }
-
-  //public ???? getOptions(); //Quorum, consistency, ...
-
-
-  public boolean getIfExists(){
-    throw new UnsupportedOperationException();
-  }
-
-  public boolean getIfNotExists(){
-    throw new UnsupportedOperationException();
-  }
-
-  public ValidationRequirements getValidationRequirements(){
-    return statement.getValidationRequirements();
-  }
-
-  public List<ClusterName> getClusters() {
-    throw new UnsupportedOperationException();
-  }
-
-  public List<ConnectorName> getConnectors() {
-    throw new UnsupportedOperationException();
-  }
-
-  public List<DataStoreName> getDatastores() {
-    throw new UnsupportedOperationException();
-  }
 }
