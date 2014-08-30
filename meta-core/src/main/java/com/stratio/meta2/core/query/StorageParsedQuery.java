@@ -19,14 +19,19 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.StorageStatement;
 
 public class StorageParsedQuery extends ParsedQuery {
   public StorageParsedQuery(BaseQuery baseQuery,
-      MetaStatement statement) {
+      StorageStatement statement) {
     super(baseQuery, statement);
   }
 
-  StorageParsedQuery(ParsedQuery parsedQuery) {
+  StorageParsedQuery(StorageParsedQuery parsedQuery) {
     super(parsedQuery);
+  }
+
+  public StorageStatement getStatement(){
+    return (StorageStatement)statement;
   }
 }

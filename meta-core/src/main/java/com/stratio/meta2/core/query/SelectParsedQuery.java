@@ -18,5 +18,18 @@
 
 package com.stratio.meta2.core.query;
 
-public class SelectParsedQuery {
+import com.stratio.meta2.core.statements.SelectStatement;
+
+public class SelectParsedQuery extends ParsedQuery {
+  public SelectParsedQuery(BaseQuery baseQuery,
+      SelectStatement statement) {
+    super(baseQuery, statement);
+  }
+
+  SelectParsedQuery(SelectParsedQuery parsedQuery) {
+    super(parsedQuery);
+  }
+  public SelectStatement getStatement(){
+    return (SelectStatement)statement;
+  }
 }

@@ -22,7 +22,7 @@ package com.stratio.meta2.common.data;
 
 public abstract class Name  {
 
-  protected final String UNKNOWN_NAME="<UNKNOWN_NAME>";
+  final String UNKNOWN_NAME="<UNKNOWN_NAME>";
 
   public abstract boolean isCompletedName();
 

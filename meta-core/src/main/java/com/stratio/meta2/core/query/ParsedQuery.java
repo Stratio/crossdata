@@ -26,8 +26,8 @@ import com.stratio.meta2.core.statements.MetaStatement;
 
 import java.util.List;
 
-public class ParsedQuery extends BaseQuery {
-  private final MetaStatement statement;
+public abstract class ParsedQuery extends BaseQuery {
+  final MetaStatement statement;
   public ParsedQuery(BaseQuery baseQuery, MetaStatement statement){
     super(baseQuery);
     this.statement=statement;
@@ -37,9 +37,7 @@ public class ParsedQuery extends BaseQuery {
     this(parsedQuery,parsedQuery.getStatement());
   }
 
-  public MetaStatement getStatement(){
-    return this.statement;
-  }
+  public abstract MetaStatement getStatement();
 
   public QueryStatus getStatus() {
     return QueryStatus.PARSED;
