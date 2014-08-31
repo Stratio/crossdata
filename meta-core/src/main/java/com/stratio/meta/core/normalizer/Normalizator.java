@@ -20,8 +20,10 @@ package com.stratio.meta.core.normalizer;
 
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.exceptions.validation.AmbiguousNameException;
+import com.stratio.meta.common.exceptions.validation.BadFormatException;
 import com.stratio.meta.common.exceptions.validation.NotExistNameException;
-import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
@@ -31,7 +33,6 @@ import com.stratio.meta2.core.query.SelectParsedQuery;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class Normalizator {
   private NormalizedFields fields=new NormalizedFields();
@@ -52,12 +53,22 @@ public class Normalizator {
   public void normalizeTables() throws
       ValidationException {
     List<TableName> fromTables= parsedQuery.getStatement().getFromTables();
-    CatalogName sessionCatalog=parsedQuery.getDefaultCatalog();
     for(TableName tableName: fromTables){
-      check(tableName,sessionCatalog);
+      checkTable(tableName);
       fields.getCatalogNames().add(tableName.getCatalogName());
-      fields.getFromTableNames().add(tableName);
+      fields.getSearchTableNames().add(tableName);
       fields.getTableNames().add(tableName);
+    }
+  }
+
+  public void normalizeJoins() throws NotExistNameException {
+    InnerJoin innerJoin= parsedQuery.getStatement().getJoin();
+    if(innerJoin!=null){
+      TableName joinTable = innerJoin.getTablename();
+      checkTable(joinTable);
+      fields.getSearchTableNames().add(joinTable);
+      fields.getTableNames().add(joinTable);
+
     }
   }
 
@@ -66,16 +77,33 @@ public class Normalizator {
       throws AmbiguousNameException, NotExistNameException {
     SelectExpression selectExpression=parsedQuery.getStatement().getSelectExpression();
     fields.setDistinctSelect(selectExpression.isDistinct());
-    List<Selector> normalizeSelectors=check(selectExpression.getSelectorList(),fields.getTableNames());
+    List<Selector> normalizeSelectors= checkListSelector(selectExpression.getSelectorList());
     fields.getSelectors().addAll(normalizeSelectors);
-
   }
 
 
-  public void check(TableName tableName, CatalogName sessionCatalog)
+  public void checkRelations(List<Relation> relations)
+      throws BadFormatException, AmbiguousNameException, NotExistNameException {
+    for(Relation relation:relations){
+      switch (relation.getIdentifier().getType()){
+        case FUNCTION:
+          checkFunctionSelector((FunctionSelector) relation.getIdentifier());
+          break;
+        case COLUMN:
+          checkColumnSelector((ColumnSelector)relation.getIdentifier());
+          break;
+        case ASTERISK:
+          throw new BadFormatException("You mustn't put asterisk in relations");
+      }
+      //TODO: Resolve terms problem
+    }
+  }
+
+
+  public void checkTable(TableName tableName)
       throws NotExistNameException {
     if (!tableName.isCompletedName()) {
-      tableName.setCatalogName(sessionCatalog);
+      tableName.setCatalogName(parsedQuery.getDefaultCatalog());
     }
     if (!MetadataManager.MANAGER.exists(tableName)) {
       throw new NotExistNameException(tableName);
@@ -84,21 +112,21 @@ public class Normalizator {
 
 
 
-  public void check(ColumnSelector selector,Set<TableName> tableNames)
+  public void checkColumnSelector(ColumnSelector selector)
       throws AmbiguousNameException, NotExistNameException {
     ColumnName columnName=selector.getName();
     if(!columnName.isCompletedName()){
-      TableName searched=this.searchTableNameByColumn(columnName, tableNames);
+      TableName searched=this.searchTableNameByColumn(columnName);
       columnName.setTableName(searched);
     }
     fields.getColumnNames().add(columnName);
     fields.getTableNames().add(columnName.getTableName());
   }
 
-  public TableName searchTableNameByColumn(ColumnName columnName, Set<TableName> tableNames)
+  public TableName searchTableNameByColumn(ColumnName columnName)
       throws AmbiguousNameException, NotExistNameException {
     TableName selectTableName=null;
-    for(TableName tableName:tableNames){
+    for(TableName tableName:fields.getSearchTableNames()){
       columnName.setTableName(tableName);
       if(MetadataManager.MANAGER.exists(columnName)){
         if(selectTableName==null){
@@ -115,46 +143,44 @@ public class Normalizator {
     return selectTableName;
   }
 
-  public List<ColumnSelector> check(AsteriskSelector asteriskSelector, Set<TableName> tableNames){
+  public List<ColumnSelector> checkAsteriskSelector(){
     List<ColumnSelector> columnSelectors =new ArrayList<>();
-    for(TableName table: tableNames){
+    for(TableName table: fields.getSearchTableNames()){
       TableMetadata tableMetadata =MetadataManager.MANAGER.getTable(table);
       for(ColumnName columnName:tableMetadata.getColumns().keySet()){
         ColumnSelector selector=new ColumnSelector(columnName);
         columnSelectors.add(selector);
         fields.getColumnNames().add(columnName);
-
       }
     }
     return columnSelectors;
   }
-  public List<Selector> check(List<Selector> selectors, Set<TableName> tableNames)
+  public List<Selector> checkListSelector(List<Selector> selectors)
       throws AmbiguousNameException, NotExistNameException {
     List<Selector> result=new ArrayList<>();
     for(Selector selector:selectors){
       switch(selector.getType()){
         case FUNCTION:
           FunctionSelector functionSelector=(FunctionSelector)selector;
-          check(functionSelector,tableNames);
+          checkFunctionSelector(functionSelector);
           result.add(functionSelector);
           break;
         case COLUMN:
           ColumnSelector columnSelector=(ColumnSelector)selector;
-          check(columnSelector,tableNames);
+          checkColumnSelector(columnSelector);
           result.add(columnSelector);
           break;
         case ASTERISK:
-          AsteriskSelector asteriskSelector =(AsteriskSelector) selector;
-          result.addAll(check(asteriskSelector, tableNames));
+          result.addAll(checkAsteriskSelector());
           break;
       }
     }
     return result;
   }
 
-  public void check(FunctionSelector functionSelector, Set<TableName> tableNames)
+  public void checkFunctionSelector(FunctionSelector functionSelector)
       throws AmbiguousNameException, NotExistNameException {
-    List<Selector> normalizeSelector=check(functionSelector.getFunctionColumns(),tableNames);
+    List<Selector> normalizeSelector= checkListSelector(functionSelector.getFunctionColumns());
     functionSelector.getFunctionColumns().clear();
     functionSelector.getFunctionColumns().addAll(normalizeSelector);
   }
