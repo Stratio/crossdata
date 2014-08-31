@@ -23,6 +23,7 @@ import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,8 +33,9 @@ import java.util.Set;
 public class NormalizedFields {
   private final Set<ColumnName> columnNames=new HashSet<>();
   private final Set<TableName> tableNames=new HashSet<>();
+  private final Set<TableName> fromTableNames= new HashSet<>();
   private final Set<CatalogName> catalogNames=new HashSet<>();
-  private final List<ColumnSelector> columnSelectors=new ArrayList<>();
+  private final List<Selector> selectors=new ArrayList<>();
   private final List<Relation> relations=new ArrayList<>();
 
   private boolean distinctSelect=false;
@@ -49,12 +51,14 @@ public class NormalizedFields {
     return tableNames;
   }
 
+  public Set<TableName> getFromTableNames() { return fromTableNames;}
+
   public Set<CatalogName> getCatalogNames() {
     return catalogNames;
   }
 
-  public List<ColumnSelector> getColumnSelectors() {
-    return columnSelectors;
+  public List<Selector> getSelectors() {
+    return selectors;
   }
 
   public List<Relation> getRelations() {

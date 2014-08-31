@@ -19,10 +19,10 @@
 package com.stratio.meta.common.exceptions.validation;
 
 import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.data.ColumnName;
 
-public class NotExistTableException extends ValidationException {
-  public NotExistTableException(TableName table) {
-    super("Table [" + table + "]  doesn't exist yet");
+public class AmbiguousNameException extends ValidationException {
+  public AmbiguousNameException(ColumnName columnName) {
+    super("Column name [" + columnName + "] is ambiguous");
   }
 }
