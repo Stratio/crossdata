@@ -23,14 +23,20 @@ import java.util.List;
 /**
  * Workflow defining the steps to be executed to retrieve the requested data.
  * Notice that a workflow may contain several entry points (e.g., for a JOIN
- * operation).
+ * operation). The list of initial steps contains Project operations that should
+ * be navigated using the getNextStep to determine the next step.
  */
 public class LogicalWorkflow {
 
   /**
-   * List of initial steps.
+   * List of initial steps. All initial steps MUST be Project operations.
    */
   private final List<LogicalStep> initialSteps;
+
+  /**
+   * Last logical step.
+   */
+  private LogicalStep lastStep;
 
   /**
    * Workflow constructor.
@@ -46,5 +52,21 @@ public class LogicalWorkflow {
    */
   public List<LogicalStep> getInitialSteps() {
     return initialSteps;
+  }
+
+  /**
+   * Set the last step of the workflow.
+   * @param lastStep The last logical step.
+   */
+  public void setLastStep(LogicalStep lastStep) {
+    this.lastStep = lastStep;
+  }
+
+  /**
+   * Get the last step of the workflow.
+   * @return A {@link com.stratio.meta.common.logicalplan.LogicalStep}.
+   */
+  public LogicalStep getLastStep() {
+    return lastStep;
   }
 }

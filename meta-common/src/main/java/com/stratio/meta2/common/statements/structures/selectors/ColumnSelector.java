@@ -19,9 +19,12 @@
 package com.stratio.meta2.common.statements.structures.selectors;
 
 import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Single column selector.
@@ -52,5 +55,10 @@ public class ColumnSelector extends Selector{
 
   @Override public SelectorType getType() {
     return SelectorType.COLUMN;
+  }
+
+  @Override
+  public Set<TableName> getSelectorTables() {
+    return new HashSet(Arrays.asList(this.name.getTableName()));
   }
 }

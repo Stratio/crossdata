@@ -19,8 +19,10 @@
 package com.stratio.meta2.common.statements.structures.selectors;
 
 import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * This class represents one of the elements requested in a SELECT statement.
@@ -40,6 +42,16 @@ public abstract class Selector {
     this.alias = alias;
   }
 
+  /**
+   * Get the selector type.
+   * @return A {@link com.stratio.meta2.common.statements.structures.selectors.SelectorType}.
+   */
   public abstract SelectorType getType();
+
+  /**
+   * Get the tables associated with the current selector.
+   * @return A set of {@link com.stratio.meta2.common.data.TableName}.
+   */
+  public abstract Set<TableName> getSelectorTables();
 
 }

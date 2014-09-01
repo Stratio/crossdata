@@ -100,7 +100,7 @@ public class ParsingTest {
   public MetaStatement testRegularStatement(String inputText, String methodName) {
     MetaStatement st = null;
     try {
-      st = parser.parseStatement("", inputText);
+      st = parser.parseStatement("parsing-test", inputText);
     } catch (ParsingException e) {
       e.printStackTrace();
     }
@@ -129,7 +129,7 @@ public class ParsingTest {
                                             String methodName) {
     MetaStatement st = null;
     try {
-      st = parser.parseStatement("", inputText);
+      st = parser.parseStatement("parsing-test", inputText);
     } catch (ParsingException e) {
       e.printStackTrace();
     }
@@ -153,7 +153,7 @@ public class ParsingTest {
   public void testParseFails(String inputText, String methodName) {
     MetaStatement st = null;
     try {
-      st = parser.parseStatement("", inputText);
+      st = parser.parseStatement("parsing-test", inputText);
     } catch (ParsingException e) {
       e.printStackTrace();
     }
@@ -165,7 +165,7 @@ public class ParsingTest {
   public void testRecoverableError(String inputText, String methodName) {
     MetaStatement st = null;
     try {
-      st = parser.parseStatement("", inputText);
+      st = parser.parseStatement("parsing-test", inputText);
     } catch (ParsingException e) {
       e.printStackTrace();
     }

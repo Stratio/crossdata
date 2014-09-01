@@ -62,14 +62,14 @@ public class PlannerWorkflowTest {
       this.stmt = stmt;
     }
 
-    /*public NormalizedQueryWrapper(ParsedQuery parsedQuery) {
+    public NormalizedQueryWrapper(SelectParsedQuery parsedQuery) {
       super(parsedQuery);
     }
 
-    public NormalizedQueryWrapper(SelectStatement stmt, ParsedQuery parsedQuery){
+    public NormalizedQueryWrapper(SelectStatement stmt, SelectParsedQuery parsedQuery){
       super(parsedQuery);
       this.stmt = stmt;
-    }*/
+    }
 
     @Override
     public List<TableName> getTables() {
@@ -110,14 +110,20 @@ public class PlannerWorkflowTest {
       result.addAll(getSelectorColumns(r.getIdentifier()));
       return result;
     }
+
+    @Override
+    public List<Relation> getRelationships() {
+      return stmt.getWhere();
+    }
   }
 
-  /*public LogicalWorkflow getWorkflow(String statement, String methodName) {
+  public LogicalWorkflow getWorkflow(String statement, String methodName) {
     MetaStatement stmt = helperPT.testRegularStatement(statement, methodName);
+    SelectStatement ss = SelectStatement.class.cast(stmt);
     NormalizedQuery nq = new NormalizedQueryWrapper(
-            SelectStatement.class.cast(stmt), new ParsedQuery(new BaseQuery("42", statement, null), stmt));
+            SelectStatement.class.cast(stmt), new SelectParsedQuery(new BaseQuery("42", statement, null), ss));
     return planner.buildWorkflow(nq);
-  }*/
+  }
 
   public void assertNumberInitialSteps(LogicalWorkflow workflow, int expected) {
     assertNotNull(workflow, "Expecting workflow");
@@ -143,7 +149,7 @@ public class PlannerWorkflowTest {
 
   }
 
-  /*@Test
+  @Test
   public void selectSingleColumn() {
     String inputText = "SELECT c.t.a FROM c.t;";
     String [] expectedColumns = {"c.t.a"};
@@ -171,6 +177,6 @@ public class PlannerWorkflowTest {
     assertNumberInitialSteps(workflow, 2);
     assertColumnsInProject(workflow, "c.t1", expectedColumnsT1);
     assertColumnsInProject(workflow, "c.t2", expectedColumnsT2);
-  }*/
+  }
 
 }

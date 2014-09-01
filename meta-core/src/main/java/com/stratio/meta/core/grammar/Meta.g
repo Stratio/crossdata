@@ -925,9 +925,31 @@ getSelector[TableName tablename] returns [Selector s]
             )?
         T_END_PARENTHESIS {s = new FunctionSelector($functionName.text, params);}
         |
-        (columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);})
+        (
+            columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);}
+            | constant=getConstant {s = new IntegerSelector(constant);}
+            | T_FALSE {s = new BooleanSelector(false);}
+            | T_TRUE {s = new BooleanSelector(true);}
+            | floatingNumber=T_FLOAT {s = new FloatingPointSelector($floatingNumber.text);}
+            | path=T_PATH {s = new StringSelector($path.text);}
+            | qLiteral=QUOTED_LITERAL {s = new StringSelector($qLiteral.text);}
+        )
     )
 ;
+
+// Migrate
+//
+//     | constant=getConstant {$term = new LongTerm(constant);}
+//     | T_FALSE {$term = new BooleanTerm("false");}
+//     | T_TRUE {$term = new BooleanTerm("true");}
+//     | floatingNumber=T_FLOAT {$term = new DoubleTerm($floatingNumber.text);}
+//    NO | ksAndTn=T_KS_AND_TN {$term = new StringTerm($ksAndTn.text);}
+//    NO | noIdent=T_TERM {$term = new StringTerm($noIdent.text);}
+//     | path=T_PATH {$term = new StringTerm($path.text);}
+//     | qLiteral=QUOTED_LITERAL {$term = new StringTerm($qLiteral.text);}
+//
+//
+
 
 getListTypes returns [String listType]:
 	//tablename=('PROCESS' | 'UDF' | 'TRIGGER' | 'process' | 'udf' | 'trigger') {$listType = new String($tablename.text);}

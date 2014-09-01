@@ -19,10 +19,13 @@
 package com.stratio.meta2.common.statements.structures.selectors;
 
 import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Selector composed by a function and the list of columns required by the function.
@@ -88,5 +91,14 @@ public class FunctionSelector extends Selector{
 
   @Override public SelectorType getType() {
     return SelectorType.FUNCTION;
+  }
+
+  @Override
+  public Set<TableName> getSelectorTables() {
+    Set<TableName> result = new HashSet<>();
+    for(Selector s : this.functionColumns){
+      result.addAll(s.getSelectorTables());
+    }
+    return result;
   }
 }

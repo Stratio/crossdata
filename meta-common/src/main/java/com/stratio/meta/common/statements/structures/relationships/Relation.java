@@ -19,12 +19,15 @@
 package com.stratio.meta.common.statements.structures.relationships;
 
 import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.terms.Term;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
@@ -74,6 +77,14 @@ public class Relation {
 
   public void setTerms(List<Term<?>> terms) {
     this.terms = terms;
+  }
+
+  /**
+   * Get the tables queried on the selector.
+   * @return A set of {@link com.stratio.meta2.common.data.TableName}.
+   */
+  public Set<TableName> getSelectorTables(){
+    return identifier.getSelectorTables();
   }
 
   @Override
