@@ -19,23 +19,21 @@
 package com.stratio.meta.communication
 
 import com.stratio.meta.common.result.QueryStatus
+import com.stratio.meta.common.logicalplan.LogicalWorkflow
+import com.stratio.meta2.common.metadata.DataStoreMetadata
 
-case class ACK(queryId:String, status:QueryStatus)
-
-case class Connect(msg:String)
-
-case class Reply(msg:String)
-
-case class Disconnect(userId:String)
+case class ACK(queryId: String, status: QueryStatus)
+case class Connect(msg: String)
+case class Reply(msg: String)
+case class Disconnect(userId: String)
 
 //Connector messages
-case class MetadataEngineRequest(msg:String) //TODO: change params
-case class DataStoreNameRequest(msg:String) //TODO: change params
-case class InitRequest(msg:String) //TODO: change params
-case class ConnectRequest(msg:String) //TODO: change params
-case class CloseRequest(msg:String) //TODO: change params
-case class IsConnectedRequest(msg:String) //TODO: change params
-case class StorageEngineRequest(msg:String) //TODO: change params
-case class QueryEngineRequest(msg:String) //TODO: change params
- 
+case class ConnectToConnector(msg: String)
+case class Execute(workflow: LogicalWorkflow) 
+case class DisconnectFromConnector(msg: String)
+case class Request(msg:String)
+case class Response(msg:String)
+case class MetadataStruct(clusterName:String, connectorName:String, metaData:String)
+case class StorageQueryStruct(clusterName:String, connectorName:String, storageQuery:String)
+case class WorkflowStruct(clusterName:String, connectorName:String, workFlow:LogicalWorkflow)
 
