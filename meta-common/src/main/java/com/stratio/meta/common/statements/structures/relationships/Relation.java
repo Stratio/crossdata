@@ -37,7 +37,7 @@ public class Relation {
   /**
    * Identifier in the left part of the relationship.
    */
-  protected Selector identifier;
+  protected Selector leftTerm;
 
   /**
    * Operator to be applied to solve the relationship.
@@ -45,18 +45,24 @@ public class Relation {
   protected Operator operator;
 
   /**
-   * List of selectors on the right part of the relationship.
+   * Right part of the relationship.
    */
-  protected List<Selector> rightSelectors;
+  protected Selector rightTerm;
 
-  public Relation(Selector selector, Operator operator, List<Selector> rightSelectors){
-    this.identifier = selector;
+  /**
+   * Class constructor.
+   * @param selector The Selector found in the left-part of the relationship.
+   * @param operator The operator to be applied.
+   * @param rightTerm The Selector found in the right-part of the relationship.
+   */
+  public Relation(Selector selector, Operator operator, Selector rightTerm){
+    this.leftTerm = selector;
     this.operator = operator;
-    this.rightSelectors = rightSelectors;
+    this.rightTerm = rightTerm;
   }
 
-  public Selector getIdentifier() {
-    return identifier;
+  public Selector getLeftTerm() {
+    return leftTerm;
   }
 
   public Operator getOperator() {
@@ -67,16 +73,8 @@ public class Relation {
     this.operator = operator;
   }
 
-  public List<Selector> getRightSelectors() {
-    return rightSelectors;
-  }
-
-  public int numberOfRightSelectors(){
-    return rightSelectors.size();
-  }
-
-  public void setRightSelectors(List<Selector> rightSelectors) {
-    this.rightSelectors = rightSelectors;
+  public Selector getRightTerm() {
+    return rightTerm;
   }
 
   /**
@@ -84,20 +82,14 @@ public class Relation {
    * @return A set of {@link com.stratio.meta2.common.data.TableName}.
    */
   public Set<TableName> getSelectorTables(){
-    return identifier.getSelectorTables();
+    return leftTerm.getSelectorTables();
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(identifier.toString());
+    StringBuilder sb = new StringBuilder(leftTerm.toString());
     sb.append(" ").append(operator).append(" ");
-    if(Operator.BETWEEN.equals(operator)) {
-      sb.append(StringUtils.stringList(rightSelectors, " AND "));
-    }else if(Operator.IN.equals(operator)){
-      sb.append("(").append(StringUtils.stringList(rightSelectors, ", ")).append(")");
-    }else{
-      sb.append(StringUtils.stringList(rightSelectors, ", "));
-    }
+    sb.append(rightTerm);
     return sb.toString();
   }
 

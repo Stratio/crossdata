@@ -74,27 +74,27 @@ public enum Operator {
       return "MATCH";
     }
   },
-  GREATER_THAN{
+  GT{
     public String toString() {
       return ">";
     }
   },
-  LOWER_THAN{
+  LT{
     public String toString() {
       return "<";
     }
   },
-  GREATER_EQUAL_THAN{
+  GET{
     public String toString() {
       return ">=";
     }
   },
-  LOWER_EQUAL_THAN{
+  LET{
     public String toString() {
       return "<=";
     }
   },
-  NOT_EQUAL{
+  DISTINCT{
     public String toString() {
       return "<>";
     }

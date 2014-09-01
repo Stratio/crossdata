@@ -431,19 +431,6 @@ addStatement returns [AddStatement as]:
 	T_ADD name=QUOTED_LITERAL {$as = new AddStatement($name.text);}
 ;
 
-//ADD (DATASTORE | CONNECTOR) \"path\";
-addManifestStatement returns [MetaStatement ams]
-    @init{
-        boolean dataStore = true;
-    }:
-    T_ADD (T_DATASTORE | T_CONNECTOR { dataStore = false; } ) path=QUOTED_LITERAL
-    { if(dataStore)
-        $ams = new AddDataStoreStatement($path.text);
-      else
-        $ams = new AddConnectorStatement($path.text);
-    }
-;
-
 //DROP (DATASTORE | CONNECTOR) \"name\";
 dropManifestStatement returns [MetaStatement dms]
     @init{
@@ -761,7 +748,6 @@ metaStatement returns [MetaStatement st]
     | st_stpr = stopProcessStatement { $st = st_stpr; }
     | st_xppl = explainPlanStatement { $st = st_xppl;}
     | st_adds = addStatement { $st = st_adds; }
-    | st_addm = addManifestStatement { $st = st_addm; }
     | st_drmn = dropManifestStatement { $st = st_drmn;}
     | st_rust = removeUDFStatement { $st = st_rust; }
     | st_dlst = deleteStatement { $st = st_dlst; }
@@ -979,26 +965,22 @@ getValueAssign returns [GenericTerm valueAssign]
 ;
 
 getRelation[TableName tablename] returns [Relation mrel]
-    @init{
-        List<Selector> rightSelectors = new ArrayList<>();
-    }
     @after{
-        $mrel = new Relation(s, operator, rightSelectors);
+        $mrel = new Relation(s, operator, rs);
     }:
     s=getSelector[tablename]
     operator=getComparator
-    rs=getSelector[null] {rightSelectors.add(rs);}
-     (T_COMMA rs=getSelector[null] {rightSelectors.add(rs);})*
+    rs=getSelector[null]
 
 ;
 
 getComparator returns [Operator op]:
     T_EQUAL {$op = Operator.COMPARE;}
-    | T_GT {$op = Operator.GREATER_THAN;}
-    | T_LT {$op = Operator.LOWER_THAN;}
-    | T_GTE {$op = Operator.GREATER_EQUAL_THAN;}
-    | T_LTE {$op = Operator.LOWER_EQUAL_THAN;}
-    | T_NOT_EQUAL {$op = Operator.NOT_EQUAL;}
+    | T_GT {$op = Operator.GT;}
+    | T_LT {$op = Operator.LT;}
+    | T_GTE {$op = Operator.GET;}
+    | T_LTE {$op = Operator.LET;}
+    | T_NOT_EQUAL {$op = Operator.DISTINCT;}
     | T_LIKE {$op = Operator.LIKE;}
     | T_MATCH {$op = Operator.MATCH;}
 ;

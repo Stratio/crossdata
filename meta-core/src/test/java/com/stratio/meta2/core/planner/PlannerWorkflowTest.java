@@ -107,7 +107,7 @@ public class PlannerWorkflowTest {
 
     private List<ColumnName> getRelationColumns(Relation r) {
       List<ColumnName> result = new ArrayList<>();
-      result.addAll(getSelectorColumns(r.getIdentifier()));
+      result.addAll(getSelectorColumns(r.getLeftTerm()));
       return result;
     }
 
@@ -169,7 +169,7 @@ public class PlannerWorkflowTest {
   @Test
   public void selectJoinMultipleColumns() {
     //TODO update on clause when fullyqualifed names are supported in the JOIN.
-    String inputText = "SELECT c.t1.a, c.t1.b, c.t2.c, c.t2.d FROM c.t1 INNER JOIN c.t2 ON c.t1.aa = aa;";
+    String inputText = "SELECT c.t1.a, c.t1.b, c.t2.c, c.t2.d FROM c.t1 INNER JOIN c.t2 ON c.t1.aa = \"aa\";";
     String [] expectedColumnsT1 = {"c.t1.a", "c.t1.b", "c.t1.aa"};
     String [] expectedColumnsT2 = {"c.t2.c", "c.t2.d"};
 

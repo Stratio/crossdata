@@ -16,24 +16,37 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.grammar.statements;
+package com.stratio.meta2.common.api;
 
-import com.stratio.meta.core.grammar.ParsingTest;
+public class Manifest {
 
-import org.testng.annotations.Test;
+  public static final int TYPE_DATASTORE = 1;
+  public static final int TYPE_CONNECTOR = 2;
 
-public class DropConnectorTest extends ParsingTest {
+  private int typeDatastore;
+  private String json;
 
-  @Test
-  public void dropConnectorSimple() {
-    String inputText = "DROP CONNECTOR myConnector;";
-    testRegularStatement(inputText, "dropConnectorSimple");
+  public Manifest(int typeDatastore) {
+    this.typeDatastore = typeDatastore;
   }
 
-  @Test
-  public void dropConnectorError() {
-    String inputText = "DROP CONNECTOR *myConnector";
-    testParserFails(inputText, "dropConnectorError");
+  public int getTypeDatastore() {
+    return typeDatastore;
   }
 
+  public void parseFromFile(String substring) {
+    this.json = "";
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    if(typeDatastore == TYPE_DATASTORE){
+      sb.append("DATASTORE");
+    } else {
+      sb.append("CONNECTOR");
+    }
+    sb.append(System.lineSeparator()).append(json);
+    return sb.toString();
+  }
 }

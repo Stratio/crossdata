@@ -130,15 +130,15 @@ public class Normalizator {
   public void checkJoinRelations(List<Relation> relations)
       throws BadFormatException, AmbiguousNameException, NotExistNameException {
     for(Relation relation:relations){
-      switch (relation.getIdentifier().getType()){
+      switch (relation.getLeftTerm().getType()){
         case FUNCTION:
-          checkFunctionSelector((FunctionSelector) relation.getIdentifier());
+          checkFunctionSelector((FunctionSelector) relation.getLeftTerm());
           break;
         case COLUMN:
-          checkColumnSelector((ColumnSelector)relation.getIdentifier());
+          checkColumnSelector((ColumnSelector)relation.getLeftTerm());
           break;
         case ASTERISK:
-          throw new BadFormatException("You mustn't put asterisk in relations");
+          throw new BadFormatException("Asterisk not supported in relations.");
       }
       switch (relation.getOperator()) {
         case COMPARE:

@@ -18,6 +18,8 @@
 
 package com.stratio.meta.common.logicalplan;
 
+import com.stratio.meta.common.connector.Operations;
+
 import java.util.List;
 
 /**
@@ -28,6 +30,14 @@ import java.util.List;
 public class UnionStep extends LogicalStep{
 
   private List<LogicalStep> previousSteps;
+
+  /**
+   * Class constructor.
+   * @param operation The operation to be applied.
+   */
+  public UnionStep(Operations operation) {
+    super(operation);
+  }
 
   public void setPreviousSteps(List<LogicalStep> previousSteps) {
     this.previousSteps = previousSteps;
