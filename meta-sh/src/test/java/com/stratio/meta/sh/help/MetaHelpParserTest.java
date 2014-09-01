@@ -18,8 +18,8 @@
 
 package com.stratio.meta.sh.help;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
+import com.stratio.meta.sh.help.generated.MetaHelpLexer;
+import com.stratio.meta.sh.help.generated.MetaHelpParser;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -27,8 +27,8 @@ import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
-import com.stratio.meta.sh.help.generated.MetaHelpLexer;
-import com.stratio.meta.sh.help.generated.MetaHelpParser;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 public class MetaHelpParserTest {
 
@@ -38,23 +38,23 @@ public class MetaHelpParserTest {
   private final Logger logger = Logger.getLogger(MetaHelpParserTest.class);
 
   protected static String[][] supportedHelpCommands = { {"exit", "EXIT"}, {"quit", "EXIT"},
-      {"datatypes", "DATATYPES"}, {"create", "CREATE"}, {"create keyspace", "CREATE_KEYSPACE"},
-      {"create table", "CREATE_TABLE"}, {"create index", "CREATE_INDEX"},
-      {"create default index", "CREATE_INDEX"}, {"create lucene index", "CREATE_LUCENE_INDEX"},
-      {"update", "UPDATE"}, {"insert", "INSERT_INTO"}, {"insert into", "INSERT_INTO"},
-      {"truncate", "TRUNCATE"}, {"drop", "DROP"}, {"drop index", "DROP_INDEX"},
-      {"drop table", "DROP_TABLE"}, {"drop keyspace", "DROP_KEYSPACE"},
-      {"drop trigger", "DROP_TRIGGER"}, {"select", "SELECT"}, {"add", "ADD"}, {"list", "LIST"},
-      {"list process", "LIST_PROCESS"}, {"list udf", "LIST_UDF"}, {"list trigger", "LIST_TRIGGER"},
-      {"remove udf", "REMOVE_UDF"}, {"delete", "DELETE"}, {"set options", "SET_OPTIONS"},
-      {"explain plan", "EXPLAIN_PLAN"}, {"alter", "ALTER"}, {"alter keyspace", "ALTER_KEYSPACE"},
-      {"alter table", "ALTER_TABLE"}, {"stop", "STOP"}, {"describe", "DESCRIBE"},
-      {"describe keyspace", "DESCRIBE_KEYSPACE"}, {"describe table", "DESCRIBE_TABLE"},};
+                                                        {"datatypes", "DATATYPES"}, {"create", "CREATE"}, {"create keyspace", "CREATE_KEYSPACE"},
+                                                        {"create table", "CREATE_TABLE"}, {"create index", "CREATE_INDEX"},
+                                                        {"create default index", "CREATE_INDEX"}, {"create lucene index", "CREATE_LUCENE_INDEX"},
+                                                        {"update", "UPDATE"}, {"insert", "INSERT_INTO"}, {"insert into", "INSERT_INTO"},
+                                                        {"truncate", "TRUNCATE"}, {"drop", "DROP"}, {"drop index", "DROP_INDEX"},
+                                                        {"drop table", "DROP_TABLE"}, {"drop keyspace", "DROP_KEYSPACE"},
+                                                        {"drop trigger", "DROP_TRIGGER"}, {"select", "SELECT"}, {"add", "ADD"}, {"list", "LIST"},
+                                                        {"list process", "LIST_PROCESS"}, {"list udf", "LIST_UDF"}, {"list trigger", "LIST_TRIGGER"},
+                                                        {"remove udf", "REMOVE_UDF"}, {"delete", "DELETE"}, {"set options", "SET_OPTIONS"},
+                                                        {"explain plan", "EXPLAIN_PLAN"}, {"alter", "ALTER"}, {"alter keyspace", "ALTER_KEYSPACE"},
+                                                        {"alter table", "ALTER_TABLE"}, {"stop", "STOP"}, {"describe", "DESCRIBE"},
+                                                        {"describe keyspace", "DESCRIBE_KEYSPACE"}, {"describe table", "DESCRIBE_TABLE"},};
 
 
   /**
    * Parse a input text and return the equivalent HelpStatement.
-   * 
+   *
    * @param inputText The input text.
    * @return A Statement or null if the process failed.
    */

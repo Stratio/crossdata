@@ -22,18 +22,18 @@ import com.stratio.meta.core.grammar.ParsingTest;
 
 import org.testng.annotations.Test;
 
-public class DetachClusterTest extends ParsingTest {
+public class DropConnectorStatementTest extends ParsingTest {
 
   @Test
-  public void detachClusterSimple() {
-    String inputText = "DETACH CLUSTER myCluster;";
-    testRegularStatement(inputText, "detachClusterSimple");
+  public void dropConnectorSimple() {
+    String inputText = "DROP CONNECTOR myConnector;";
+    testRegularStatement(inputText, "dropConnectorSimple");
   }
 
   @Test
-  public void detachClusterError() {
-    String inputText = "DETACH CLUSTER *myCluster";
-    testParserFails(inputText, "detachClusterError");
+  public void dropConnectorError() {
+    String inputText = "DROP CONNECTOR *myConnector";
+    testParserFails(inputText, "dropConnectorError");
   }
 
 }
