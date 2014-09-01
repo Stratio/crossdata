@@ -41,7 +41,8 @@ class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTrac
       if(!stmt.hasError){
         stmt.setSessionCatalog(catalog)
       }
-      validator forward stmt*/
+      validator forward stmt
+      */
       finishTimer(timer)
       log.debug("Finish Parser Task")
     }

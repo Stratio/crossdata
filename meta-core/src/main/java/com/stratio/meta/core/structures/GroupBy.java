@@ -17,33 +17,23 @@
  */
 
 package com.stratio.meta.core.structures;
-
-import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class GroupBy implements Serializable {
 
   private static final long serialVersionUID = 1946514142415876581L;
 
-  private SelectorIdentifier selectorIdentifier;
+  private final List<Selector> selectorIdentifier=new ArrayList<>();
 
-  public GroupBy(String identifier) {
-    this.selectorIdentifier = new SelectorIdentifier(identifier);
-  }
 
-  public SelectorIdentifier getSelectorIdentifier() {
+
+  public List<Selector> getSelectorIdentifier() {
     return selectorIdentifier;
   }
 
-  public void setSelectorIdentifier(SelectorIdentifier selectorIdentifier) {
-    this.selectorIdentifier = selectorIdentifier;
-  }
-
-  @Override
-  public String toString() {
-
-    return selectorIdentifier.toString();
-  }
 }

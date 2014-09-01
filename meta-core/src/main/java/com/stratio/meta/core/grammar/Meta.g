@@ -292,12 +292,12 @@ T_KS_AND_TN: T_IDENT (POINT T_IDENT)?;
 //T_CTLG_TBL_COL: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)? (POINT LETTER (LETTER | DIGIT | '_')*)?;
 T_CTLG_TBL_COL: T_IDENT (POINT T_IDENT (POINT T_IDENT)?)?;
 
-T_TERM: (LETTER | DIGIT | '_' | POINT)+;
-
 T_FLOAT:   ('0'..'9')+ POINT ('0'..'9')* EXPONENT?
      |   POINT ('0'..'9')+ EXPONENT?
      |   ('0'..'9')+ EXPONENT
      ;
+
+T_TERM: (LETTER | DIGIT | '_' | POINT)+;
 
 T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 
@@ -834,8 +834,9 @@ getGroupBy returns [ArrayList<GroupBy> groups]
         groups = new ArrayList<>();
         GroupBy groupBy;
     }:
-    ident1=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($ident1.text); groups.add(groupBy);}
-    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($identN.text); groups.add(groupBy);})*
+    //TODO: Change to support group by
+    ident1=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy(); groups.add(groupBy);}
+    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy(); groups.add(groupBy);})*
 ;
 
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
@@ -870,7 +871,6 @@ getTimeUnit returns [TimeUnit unit]:
     | T_DAY {$unit=TimeUnit.DAYS;}
     | T_DAYS {$unit=TimeUnit.DAYS;})
 ;
-
 
 getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
     @init{
@@ -925,9 +925,31 @@ getSelector[TableName tablename] returns [Selector s]
             )?
         T_END_PARENTHESIS {s = new FunctionSelector($functionName.text, params);}
         |
-        (columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);})
+        (
+            columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);}
+            | floatingNumber=T_FLOAT {s = new FloatingPointSelector($floatingNumber.text);}
+            | constant=getConstant {s = new IntegerSelector(constant);}
+            | T_FALSE {s = new BooleanSelector(false);}
+            | T_TRUE {s = new BooleanSelector(true);}
+            | path=T_PATH {s = new StringSelector($path.text);}
+            | qLiteral=QUOTED_LITERAL {s = new StringSelector($qLiteral.text);}
+        )
     )
 ;
+
+// Migrate
+//
+//     | constant=getConstant {$term = new LongTerm(constant);}
+//     | T_FALSE {$term = new BooleanTerm("false");}
+//     | T_TRUE {$term = new BooleanTerm("true");}
+//     | floatingNumber=T_FLOAT {$term = new DoubleTerm($floatingNumber.text);}
+//    NO | ksAndTn=T_KS_AND_TN {$term = new StringTerm($ksAndTn.text);}
+//    NO | noIdent=T_TERM {$term = new StringTerm($noIdent.text);}
+//     | path=T_PATH {$term = new StringTerm($path.text);}
+//     | qLiteral=QUOTED_LITERAL {$term = new StringTerm($qLiteral.text);}
+//
+//
+
 
 getListTypes returns [String listType]:
 	//tablename=('PROCESS' | 'UDF' | 'TRIGGER' | 'process' | 'udf' | 'trigger') {$listType = new String($tablename.text);}
@@ -957,17 +979,17 @@ getValueAssign returns [GenericTerm valueAssign]
 ;
 
 getRelation[TableName tablename] returns [Relation mrel]
+    @init{
+        List<Selector> rightSelectors = new ArrayList<>();
+    }
     @after{
-        $mrel = new Relation(s, operator, terms);
+        $mrel = new Relation(s, operator, rightSelectors);
     }:
-    s=getSelector[tablename] operator=getComparator terms=getTerms
-//TODO
-//    T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}
-//                            | T_TOKEN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationToken(listIds, operator, terms);})
-//    | (tablename=T_IDENT | tablename=T_KS_AND_TN) ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($tablename.text, compSymbol, termR);}
-//                    | T_IN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationIn($tablename.text, terms);}
-//                    | T_BETWEEN term1=getTerm T_AND term2=getTerm {$mrel = new RelationBetween($tablename.text, term1, term2);}
-//                    )
+    s=getSelector[tablename]
+    operator=getComparator
+    rs=getSelector[null] {rightSelectors.add(rs);}
+     (T_COMMA rs=getSelector[null] {rightSelectors.add(rs);})*
+
 ;
 
 getComparator returns [Operator op]:

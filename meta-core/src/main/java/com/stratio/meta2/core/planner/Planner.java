@@ -17,6 +17,7 @@ package com.stratio.meta2.core.planner;
 import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.query.NormalizedQuery;
@@ -89,8 +90,34 @@ public class Planner {
     }
   }
 
-  private void addFilter(Map<String, Project> projectMap, NormalizedQuery query){
-    //Add filter from where
+  /**
+   * Add Filter operations after the Project. The Filter operations to be applied are associated
+   * with the where clause found.
+   * @param projectMap The map associating table names to Project steps.
+   * @param query The query to be planned.
+   */
+  private Map<String, LogicalStep> addFilter(Map<String, Project> projectMap, NormalizedQuery query){
+    Map<String, LogicalStep> lastSteps = new HashMap<>();
+    for(Map.Entry<String, Project> e : projectMap.entrySet()){
+      lastSteps.put(e.getKey(), e.getValue());
+    }
+
+    //Add filter from where.
+    LogicalStep ls = null;
+    for(Relation r : query.getRelationships()){
+      ls = lastSteps.get(r.getIdentifier());
+    }
+    //TODO
+    return null;
+  }
+
+
+  /**
+   * Add Filter operations after the Project.
+   * @param projectMap
+   * @param query
+   */
+  private void addJoin(Map<String, Project> projectMap, NormalizedQuery query){
     //Add filter from Join
   }
 

@@ -18,28 +18,48 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 
-import java.util.List;
 import java.util.Set;
 
 /**
- * Asterisk selector.
+ * Integer value selector.
  */
-public class AsteriskSelector extends Selector{
+public class IntegerSelector extends Selector{
 
-  @Override
-  public String toString() {
-    return "*";
+  /**
+   * The integer value with long precision.
+   */
+  private final long value;
+
+  /**
+   * Class constructor.
+   * @param value The integer/long value.
+   */
+  public IntegerSelector(String value) {
+    this.value = Long.valueOf(value);
   }
 
-  @Override public SelectorType getType() {
-    return SelectorType.ASTERISK;
+  /**
+   * Get the long value.
+   * @return A long value.
+   */
+  public long getValue() {
+    return value;
+  }
+
+  @Override
+  public SelectorType getType() {
+    return SelectorType.INTEGER;
   }
 
   @Override
   public Set<TableName> getSelectorTables() {
     return null;
+  }
+
+  @Override
+  public String toString() {
+    return Long.toString(value);
   }
 }

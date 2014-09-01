@@ -19,12 +19,15 @@
 package com.stratio.meta.common.statements.structures.relationships;
 
 import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.terms.Term;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
@@ -42,14 +45,14 @@ public class Relation {
   protected Operator operator;
 
   /**
-   * List of terms on the right part of the relationship.
+   * List of selectors on the right part of the relationship.
    */
-  protected List<Term<?>> terms;
+  protected List<Selector> rightSelectors;
 
-  public Relation(Selector selector, Operator operator, List<Term<?>> terms){
+  public Relation(Selector selector, Operator operator, List<Selector> rightSelectors){
     this.identifier = selector;
     this.operator = operator;
-    this.terms = terms;
+    this.rightSelectors = rightSelectors;
   }
 
   public Selector getIdentifier() {
@@ -64,16 +67,24 @@ public class Relation {
     this.operator = operator;
   }
 
-  public List<Term<?>> getTerms() {
-    return terms;
+  public List<Selector> getRightSelectors() {
+    return rightSelectors;
   }
 
-  public int numberOfTerms() {
-    return this.terms.size();
+  public int numberOfRightSelectors(){
+    return rightSelectors.size();
   }
 
-  public void setTerms(List<Term<?>> terms) {
-    this.terms = terms;
+  public void setRightSelectors(List<Selector> rightSelectors) {
+    this.rightSelectors = rightSelectors;
+  }
+
+  /**
+   * Get the tables queried on the selector.
+   * @return A set of {@link com.stratio.meta2.common.data.TableName}.
+   */
+  public Set<TableName> getSelectorTables(){
+    return identifier.getSelectorTables();
   }
 
   @Override
@@ -81,11 +92,11 @@ public class Relation {
     StringBuilder sb = new StringBuilder(identifier.toString());
     sb.append(" ").append(operator).append(" ");
     if(Operator.BETWEEN.equals(operator)) {
-      sb.append(StringUtils.stringList(terms, " AND "));
+      sb.append(StringUtils.stringList(rightSelectors, " AND "));
     }else if(Operator.IN.equals(operator)){
-      sb.append("(").append(StringUtils.stringList(terms, ", ")).append(")");
+      sb.append("(").append(StringUtils.stringList(rightSelectors, ", ")).append(")");
     }else{
-      sb.append(StringUtils.stringList(terms, ", "));
+      sb.append(StringUtils.stringList(rightSelectors, ", "));
     }
     return sb.toString();
   }
@@ -95,16 +106,18 @@ public class Relation {
    * 
    * @return Terms string values
    */
+  /*
   public List<String> getTermsStringValues() {
 
     List<String> termsValuesList = new ArrayList<>();
 
-    Iterator<Term<?>> terms = this.getTerms().iterator();
+    Iterator<Selector> terms = rightSelectors.iterator();
     while (terms.hasNext()) {
-      Term<?> term = terms.next();
-      termsValuesList.add(term.toString());
+      Selector s = terms.next();
+      termsValuesList.add(s.toString());
     }
 
     return termsValuesList;
   }
+  */
 }

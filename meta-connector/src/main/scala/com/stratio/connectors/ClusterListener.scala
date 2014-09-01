@@ -26,6 +26,7 @@ class ClusterListener extends Actor with ActorLogging {
 
   def receive = {
     
+    /*
     case metadataEngineRequest:MetadataEngineRequest=>
       //getMetadataEngine()
       log.info("->"+"Receiving MetadataRequest")
@@ -58,6 +59,8 @@ class ClusterListener extends Actor with ActorLogging {
     case queryEngineRequest:com.stratio.meta.communication.QueryEngineRequest=>
       //getQueryEngine()d
       log.info("->"+"Receiving MetadataRequest")
+      * 
+      */
       
     case s:String=>
       log.info("->"+"Receiving String: {}",s)

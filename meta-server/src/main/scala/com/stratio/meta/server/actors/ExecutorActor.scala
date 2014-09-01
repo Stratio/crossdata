@@ -29,10 +29,10 @@ import com.stratio.meta.common.actor.ActorResultListener
 import java.util.concurrent.{ExecutorService, Executors}
 
 object ExecutorActor{
-  def props(executor:Executor): Props = Props(new ExecutorActor(executor))
+  def props(connectorActor:ActorRef,executor:Executor): Props = Props(new ExecutorActor(connectorActor,executor))
 }
 
-class ExecutorActor(executor:Executor) extends Actor with TimeTracker with ActorResultListener{
+class ExecutorActor(connectorActor:ActorRef,executor:Executor) extends Actor with TimeTracker with ActorResultListener{
 
   /**
    * Map that associates a query identifier with the sender that sent that query.
@@ -43,6 +43,7 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker with Actor
   override lazy val timerName: String = this.getClass.getName
 
   override def receive: Receive = {
+    //TODO case toConnectorActor vs case toCommand
     case query:MetaQuery if query.getPlan.involvesStreaming() =>
       //Sender is mutable
       val querySender = sender

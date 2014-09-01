@@ -40,7 +40,7 @@ public class ErrorsHelper {
   }
 
   public String toString(String query) {
-    String result="\033[31mParser exception: \033[0m";
+    String result="Parser exception: ";
     if (!antlrErrors.isEmpty()) {
       AntlrError ae = antlrErrors.get(0);
       result = parseAntlrErrorToString(ae,query);
@@ -49,7 +49,7 @@ public class ErrorsHelper {
   }
 
   public static String parseAntlrErrorToString(AntlrError ae, String query){
-    StringBuilder sb = new StringBuilder("\033[31mParser exception: \033[0m");
+    StringBuilder sb = new StringBuilder("Parser exception: ");
     sb.append(System.lineSeparator());
     sb.append(ae.toStringWithTokenTranslation()).append(System.lineSeparator());
     sb.append("\t").append(ParserUtils.getQueryWithSign(query, ae));

@@ -88,6 +88,34 @@ public class SelectStatementTest extends ParsingTest {
     testRegularStatement(inputText, "testSimpleGroupQueryWithAliasesOk");
   }
 
+  @Test
+  public void basicSelectIntColumn(){
+    String inputText = "SELECT 1 FROM table1;";
+    String expectedText = "SELECT 1 FROM <unknown_name>.table1;";
+    testRegularStatement(inputText, expectedText, "basicSelectIntColumn");
+  }
+
+  @Test
+  public void basicSelectDoubleColumn(){
+    String inputText = "SELECT 1.1234 FROM table1;";
+    String expectedText = "SELECT 1.1234 FROM <unknown_name>.table1;";
+    testRegularStatement(inputText, expectedText, "basicSelectDoubleColumn");
+  }
+
+  @Test
+  public void basicSelectBooleanColumn(){
+    String inputText = "SELECT true FROM table1;";
+    String expectedText = "SELECT true FROM <unknown_name>.table1;";
+    testRegularStatement(inputText, expectedText, "basicSelectBooleanColumn");
+  }
+
+  @Test
+  public void basicSelectQuotedLiteralColumn(){
+    String inputText = "SELECT \"literal\" FROM table1;";
+    String expectedText = "SELECT \"literal\" FROM <unknown_name>.table1;";
+    testRegularStatement(inputText, expectedText, "basicSelectBooleanColumn");
+  }
+
   //
   // Select with where clauses
   //
@@ -130,7 +158,7 @@ public class SelectStatementTest extends ParsingTest {
     for (String w : new String[] {"5 ROWS", "LAST", "5 SECONDS"}) {
       String inputText =
           "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + w
-              + " WHERE newks.newtb.ident1 LIKE whatever;";
+              + " WHERE newks.newtb.ident1 LIKE \"whatever\";";
       testRegularStatement(inputText, "selectStatementWindows");
     }
 
@@ -140,7 +168,7 @@ public class SelectStatementTest extends ParsingTest {
       for (int i = 10; i-- > 2;) {
         String inputText =
             "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + i + " " + t
-                + " WHERE newks.newtb.ident1 LIKE whatever;";
+                + " WHERE newks.newtb.ident1 LIKE \"whatever\";";
         testRegularStatement(inputText, "selectStatementWindows");
       }
 
@@ -154,7 +182,7 @@ public class SelectStatementTest extends ParsingTest {
   @Test
   public void selectStatementJoin() {
     String inputText =
-        "SELECT c.t1.a, c.t2.b FROM c.t1 INNER JOIN c.t2 ON c.t1.a = aa WHERE c.t1.a = y;";
+        "SELECT c.t1.a, c.t2.b FROM c.t1 INNER JOIN c.t2 ON c.t1.a = c.t2.aa WHERE c.t1.a = \"y\";";
     testRegularStatement(inputText, "selectStatementJoins");
   }
 
