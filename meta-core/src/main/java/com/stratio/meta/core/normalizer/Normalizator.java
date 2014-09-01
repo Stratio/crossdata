@@ -77,7 +77,6 @@ public class Normalizator {
   }
 
   public void normalizeOrderBy(){
-    parsedQuery.getStatement().getOrder()
   }
 
   public void normalizeSelectExpresion()
@@ -142,23 +141,18 @@ public class Normalizator {
       }
       switch (relation.getOperator()) {
         case COMPARE:
-        case ASSIGN:
-        case GREATER_THAN:
-        case LOWER_THAN:
-        case GREATER_EQUAL_THAN:
-        case LOWER_EQUAL_THAN:
-          if (relation.getRightSelector().getType() == SelectorType.COLUMN){
-            checkColumnSelector((ColumnSelector) relation.getRightSelector());
+          if (relation.getRightTerm().getType() == SelectorType.COLUMN){
+            checkColumnSelector((ColumnSelector) relation.getRightTerm());
           } else{
             throw new BadFormatException("You must compare with a column");
           }
           break;
+        case ASSIGN:
         case ADD:
         case SUBTRACT:
         case IN:
         case BETWEEN:
         case MATCH:
-        case NOT_EQUAL:
         case LIKE:
           throw new BadFormatException("Compare operations (=,<,>,>=,>=) are just valid");
       }
