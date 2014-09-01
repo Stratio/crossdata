@@ -357,7 +357,7 @@ public class CreateTableStatement extends MetaStatement {
       Property property = props.next();
       if (property.getType() == Property.TYPE_NAME_VALUE) {
         PropertyNameValue propertyNameValue = (PropertyNameValue) property;
-        if ("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
+        /*if ("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
             && propertyNameValue.getVp().getTermClass() != Boolean.class) {
           // If property ephemeral is present, it must be a boolean type
           result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
@@ -372,7 +372,7 @@ public class CreateTableStatement extends MetaStatement {
           // If property ephemeral_persist_on is present, it must be a string type
           result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
           exit = true;
-        }
+        }*/
       }
     }
     return result;

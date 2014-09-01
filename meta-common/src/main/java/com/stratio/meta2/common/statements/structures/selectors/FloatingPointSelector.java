@@ -41,6 +41,10 @@ public class FloatingPointSelector extends Selector{
     this.value = Double.valueOf(value);
   }
 
+  public FloatingPointSelector(double value) {
+    this.value = value;
+  }
+
 
   @Override
   public SelectorType getType() {

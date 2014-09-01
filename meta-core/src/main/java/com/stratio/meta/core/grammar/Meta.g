@@ -26,10 +26,9 @@ options {
 @header {
     package com.stratio.meta.core.grammar.generated;
     import com.stratio.meta2.common.data.*;
-    import com.stratio.meta.common.statements.structures.assignations.*;
+    import com.stratio.meta2.common.statements.structures.selectors.*;
     import com.stratio.meta.common.statements.structures.relationships.*;
     import com.stratio.meta.common.statements.structures.window.*;
-    import com.stratio.meta2.common.statements.structures.terms.*;
     import com.stratio.meta2.common.statements.structures.selectors.*;
     import com.stratio.meta.common.statements.structures.selectors.*;
     import com.stratio.meta2.core.statements.*;
@@ -409,7 +408,7 @@ describeStatement returns [DescribeStatement descs]:
     T_DESCRIBE (
         T_CATALOG {$descs = new DescribeStatement(DescribeType.CATALOG);} (catalog=T_IDENT { $descs.setCatalog($catalog.text);})?
     	| T_CATALOGS {$descs = new DescribeStatement(DescribeType.CATALOGS);}
-        | T_TABLE tableName=getTable { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tableName);}
+        | T_TABLE tablename=getTable { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
         | T_TABLES {$descs = new DescribeStatement(DescribeType.TABLES);}
     )
 ;
@@ -417,11 +416,11 @@ describeStatement returns [DescribeStatement descs]:
 //DELETE FROM table1 WHERE field1=value1 AND field2=value2;
 deleteStatement returns [DeleteStatement ds]
 	@after{
-		$ds = new DeleteStatement(tableName, whereClauses);
+		$ds = new DeleteStatement(tablename, whereClauses);
 	}:
-	T_DELETE T_FROM tableName=getTableName
-	T_WHERE whereClauses=getWhereClauses[tableName]
-	//T_WHERE rel1=getRelation[tableName] {$ds.addRelation(rel1);} (T_AND relN=getRelation[tableName] {$ds.addRelation(relN);})*
+	T_DELETE T_FROM tablename=getTableName
+	T_WHERE whereClauses=getWhereClauses[tablename]
+	//T_WHERE rel1=getRelation[tablename] {$ds.addRelation(rel1);} (T_AND relN=getRelation[tablename] {$ds.addRelation(relN);})*
 ;
 
 //ADD \"index_path\";
@@ -458,7 +457,7 @@ listStatement returns [ListStatement ls]:
 
 //REMOVE UDF \"jar.name\";"
 removeUDFStatement returns [RemoveUDFStatement rus]:
-	//T_REMOVE 'UDF' (T_QUOTE | T_SINGLE_QUOTE) jar=getTerm {$rus = new RemoveUDFStatement(jar);} (T_QUOTE | T_SINGLE_QUOTE)
+	//T_REMOVE 'UDF' (T_QUOTE | T_SINGLE_QUOTE) jar=getSelector[null] {$rus = new RemoveUDFStatement(jar);} (T_QUOTE | T_SINGLE_QUOTE)
 	T_REMOVE T_UDF jar=QUOTED_LITERAL {$rus = new RemoveUDFStatement($jar.text);}
 ;
 
@@ -483,21 +482,21 @@ createIndexStatement returns [CreateIndexStatement cis]
 	T_CREATE {$cis.setIndexType("default");} (indexType=getIndexType {$cis.setIndexType(indexType);})? T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
 	(name=T_IDENT {$cis.setName($name.text);})?
-	T_ON tableName=getTableName {$cis.setTableName(tableName);}
+	T_ON tablename=getTableName {$cis.setTableName(tablename);}
 	T_START_PARENTHESIS
-        firstField=getColumnName[tableName] {$cis.addColumn(firstField);}
+        firstField=getColumnName[tablename] {$cis.addColumn(firstField);}
 	(T_COMMA
-		field=getColumnName[tableName] {$cis.addColumn(field);}
+		field=getColumnName[tablename] {$cis.addColumn(field);}
 	)*
 	T_END_PARENTHESIS
-	(T_USING usingClass=getTerm {$cis.setUsingClass(usingClass.toString());})?
+	(T_USING usingClass=getSelector[tablename] {$cis.setUsingClass(usingClass.toString());})?
 	(T_WITH T_OPTIONS T_EQUAL optionsJson=getJson {$cis.setOptionsJson(optionsJson);})?
 ;
 
-    //identProp1=T_IDENT T_EQUAL valueProp1=getTerm {properties.put($identProp1.text, valueProp1.toString());}
+    //identProp1=T_IDENT T_EQUAL valueProp1=getSelector[tablename] {properties.put($identProp1.text, valueProp1.toString());}
     /*
-    (T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=T_IDENT T_COLON value=getTerm {$cis.addOption($key.text, value.toString());}
-            (T_AND key=T_IDENT T_COLON value=getTerm {$cis.addOption($key.text, value.toString());} )* T_END_SBRACKET
+    (T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=T_IDENT T_COLON value=getSelector[tablename] {$cis.addOption($key.text, value.toString());}
+            (T_AND key=T_IDENT T_COLON value=getSelector[tablename] {$cis.addOption($key.text, value.toString());} )* T_END_SBRACKET
     */
 
 getField returns [String newField]:
@@ -524,15 +523,15 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
         boolean optsInc = false;
         boolean condsInc = false;
         ArrayList<Option> options = new ArrayList<>();
-        ArrayList<Assignation> assignations = new ArrayList<>();
-        Map<String, Term<?>> conditions = new HashMap<>();
+        ArrayList<Relation> assignations = new ArrayList<>();
+        Map<Selector, Selector> conditions = new HashMap<>();
     }:
     T_UPDATE tablename=getTableName
-    (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (T_AND optN=getOption {options.add(optN);})*)?
+    (T_USING opt1=getOption[tablename] {optsInc = true; options.add(opt1);} (T_AND optN=getOption[tablename] {options.add(optN);})*)?
     T_SET assig1=getAssignment[tablename] {assignations.add(assig1);} (T_COMMA assigN=getAssignment[tablename] {assignations.add(assigN);})*
     (T_WHERE whereClauses=getWhereClauses[tablename])?
-    (T_IF id1=T_IDENT T_EQUAL term1=getTerm {condsInc = true; conditions.put($id1.text, term1);}
-                    (T_AND idN=T_IDENT T_EQUAL termN=getTerm {conditions.put($idN.text, termN);})*)?
+    (T_IF id1=getSelector[tablename] T_EQUAL term1=getSelector[tablename] {condsInc = true; conditions.put(id1, term1);}
+                    (T_AND idN=getSelector[tablename] T_EQUAL termN=getSelector[tablename] {conditions.put(idN, termN);})*)?
     {
         if(optsInc)
             if(condsInc)
@@ -603,7 +602,7 @@ createTableStatement returns [CreateTableStatement crtast]
                 )
             )*
         )
-    T_END_PARENTHESIS (T_WITH {withProperties=true;} properties=getMetaProperties)?
+    T_END_PARENTHESIS (T_WITH {withProperties=true;} properties=getMetaProperties[tablename])?
     {
         $crtast = new CreateTableStatement(tablename, new ClusterName($clusterID.text), columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
         $crtast.setProperties(properties);
@@ -620,7 +619,7 @@ alterTableStatement returns [AlterTableStatement altast]
     (T_ALTER column=getColumnName[tablename] T_TYPE type=T_IDENT {option=1;}
         |T_ADD column=getColumnName[tablename] type=T_IDENT {option=2;}
         |T_DROP column=getColumnName[tablename] {option=3;}
-        |(T_WITH {option=4;} props=getMetaProperties)?
+        |(T_WITH {option=4;} props=getMetaProperties[tablename])?
     )
     {$altast = new AlterTableStatement(tablename, column, $type.text, props, option);  }
 ;
@@ -669,42 +668,42 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
         ArrayList<ColumnName> ids = new ArrayList<>();
         boolean ifNotExists = false;
         int typeValues = InsertIntoStatement.TYPE_VALUES_CLAUSE;
-        ArrayList<GenericTerm> cellValues = new ArrayList<>();
+        ArrayList<Selector> cellValues = new ArrayList<>();
         boolean optsInc = false;
         ArrayList<Option> options = new ArrayList<>();
     }:
-    T_INSERT T_INTO tableName=getTableName
+    T_INSERT T_INTO tablename=getTableName
     T_START_PARENTHESIS
-        ident1=getColumnName[tableName] {ids.add(ident1);} (T_COMMA identN=getColumnName[tableName] {ids.add(identN);})*
+        ident1=getColumnName[tablename] {ids.add(ident1);} (T_COMMA identN=getColumnName[tablename] {ids.add(identN);})*
     T_END_PARENTHESIS
     (
         selectStmnt=selectStatement {typeValues = InsertIntoStatement.TYPE_SELECT_CLAUSE;}
         |
         T_VALUES
         T_START_PARENTHESIS
-            term1=getGenericTerm {cellValues.add(term1);}
-            (T_COMMA termN=getGenericTerm {cellValues.add(termN);})*
+            term1=getSelector[tablename] {cellValues.add(term1);}
+            (T_COMMA termN=getSelector[tablename] {cellValues.add(termN);})*
         T_END_PARENTHESIS
     )
     (T_IF T_NOT T_EXISTS {ifNotExists=true;} )?
     (
         T_USING {optsInc=true;}
-        opt1=getOption {
+        opt1=getOption[tablename] {
             options.add(opt1);
         }
-        (T_AND optN=getOption {options.add(optN);})*
+        (T_AND optN=getOption[tablename] {options.add(optN);})*
     )?
     {
         if(typeValues==InsertIntoStatement.TYPE_SELECT_CLAUSE)
             if(optsInc)
-                $nsntst = new InsertIntoStatement(tableName, ids, selectStmnt, ifNotExists, options);
+                $nsntst = new InsertIntoStatement(tablename, ids, selectStmnt, ifNotExists, options);
             else
-                $nsntst = new InsertIntoStatement(tableName, ids, selectStmnt, ifNotExists);
+                $nsntst = new InsertIntoStatement(tablename, ids, selectStmnt, ifNotExists);
         else
             if(optsInc)
-                $nsntst = new InsertIntoStatement(tableName, ids, cellValues, ifNotExists, options);
+                $nsntst = new InsertIntoStatement(tablename, ids, cellValues, ifNotExists, options);
             else
-                $nsntst = new InsertIntoStatement(tableName, ids, cellValues, ifNotExists);
+                $nsntst = new InsertIntoStatement(tablename, ids, cellValues, ifNotExists);
 
     }
 ;
@@ -781,22 +780,22 @@ getIndexType returns [String indexType]:
     {$indexType=$idxType.text;}
 ;
 
-getMetaProperties returns [ArrayList<Property> props]
+getMetaProperties[TableName tablename] returns [ArrayList<Property> props]
     @init{
         $props = new ArrayList<>();
     }:
-    firstProp=getMetaProperty {$props.add(firstProp);}
-    (T_AND newProp=getMetaProperty {$props.add(newProp);})*
+    firstProp=getMetaProperty[tablename] {$props.add(firstProp);}
+    (T_AND newProp=getMetaProperty[tablename] {$props.add(newProp);})*
 ;
 
-getMetaProperty returns [Property mp]
+getMetaProperty[TableName tablename] returns [Property mp]
     @init{
-        BooleanTerm boolProp = new BooleanTerm("true");
+        BooleanSelector boolProp = new BooleanSelector("true");
     }:
-    (identProp=T_IDENT T_EQUAL valueProp=getTerm {$mp = new PropertyNameValue($identProp.text, new StringTerm(valueProp.toString()));}
+    (identProp=getSelector[tablename] T_EQUAL valueProp=getSelector[tablename] {$mp = new PropertyNameValue(identProp, new StringSelector(valueProp.toString()));}
     | T_COMPACT T_STORAGE {$mp = new PropertyCompactStorage();}
     | T_CLUSTERING T_ORDER T_BY T_START_PARENTHESIS ordering=getOrdering {$mp = new PropertyClusteringOrder(ordering);} T_END_PARENTHESIS)
-    | T_EPHEMERAL ( | T_EQUAL (T_FALSE { boolProp = new BooleanTerm("false");} | T_TRUE )) {$mp = new PropertyNameValue("ephemeral", boolProp);}
+    | T_EPHEMERAL ( | T_EQUAL (T_FALSE { boolProp = new BooleanSelector("false");} | T_TRUE )) {$mp = new PropertyNameValue(new StringSelector("ephemeral"), boolProp);}
 ;
 
 getDataType returns [String dataType]:
@@ -926,13 +925,13 @@ getSelector[TableName tablename] returns [Selector s]
 // Migrate
 //
 //     | constant=getConstant {$term = new LongTerm(constant);}
-//     | T_FALSE {$term = new BooleanTerm("false");}
-//     | T_TRUE {$term = new BooleanTerm("true");}
+//     | T_FALSE {$term = new BooleanSelector("false");}
+//     | T_TRUE {$term = new BooleanSelector("true");}
 //     | floatingNumber=T_FLOAT {$term = new DoubleTerm($floatingNumber.text);}
-//    NO | ksAndTn=T_KS_AND_TN {$term = new StringTerm($ksAndTn.text);}
-//    NO | noIdent=T_TERM {$term = new StringTerm($noIdent.text);}
-//     | path=T_PATH {$term = new StringTerm($path.text);}
-//     | qLiteral=QUOTED_LITERAL {$term = new StringTerm($qLiteral.text);}
+//    NO | ksAndTn=T_KS_AND_TN {$term = new StringSelector($ksAndTn.text);}
+//    NO | noIdent=T_TERM {$term = new StringSelector($noIdent.text);}
+//     | path=T_PATH {$term = new StringSelector($path.text);}
+//     | qLiteral=QUOTED_LITERAL {$term = new StringSelector($qLiteral.text);}
 //
 //
 
@@ -944,23 +943,27 @@ getListTypes returns [String listType]:
 	tablename=(T_PROCESS | T_UDF | T_TRIGGER) {$listType = new String($tablename.text);}
 ;
 
-getAssignment[TableName tableName] returns [Assignation assign]:
-    firstTerm=getColumnName[tableName]
-        (T_EQUAL value=getValueAssign {$assign = new Assignation(firstTerm, Operator.ASSIGN, value);}
-        | T_START_BRACKET indexTerm=getTerm T_END_BRACKET T_EQUAL termValue=getValueAssign {
-            $assign = new Assignation (new ColumnName(firstTerm.getTableName(), firstTerm.getName()+"["+indexTerm.toString()+"]"), Operator.ASSIGN, termValue);
+getAssignment[TableName tablename] returns [Relation assign]:
+    firstTerm=getSelector[tablename]
+        (T_EQUAL value=getValueAssign[tablename] {$assign = new Relation(firstTerm, Operator.ASSIGN, value);}
+        | T_START_BRACKET indexTerm=getSelector[tablename] T_END_BRACKET T_EQUAL termValue=getValueAssign[tablename] {
+            //TODO: Support index for collections (Example: cities[2] = 'Madrid')
+            $assign = new Relation (firstTerm, Operator.ASSIGN, termValue);
         })
 ;
 
-getValueAssign returns [GenericTerm valueAssign]
+getValueAssign[TableName tablename] returns [List<Selector> valueAssign]
     @init{
         Operator op = Operator.ADD;
+        valueAssign = new ArrayList<>();
     }:
-    //firstTerm=getGenericTerm T_PLUS secondTerm=getGenericTerm
-    vAssign=getGenericTerm {valueAssign = vAssign;}
+    //firstTerm=getSelector[tablename] T_PLUS secondTerm=getSelector
+    vAssign=getSelector[tablename] {valueAssign.add(vAssign);}
     (
         operator=(T_PLUS | T_SUBTRACT {op = Operator.SUBTRACT;} )
-        termN=getGenericTerm {valueAssign.addCompoundTerm(op, termN);}
+        termN=getSelector[tablename] {
+            //TODO: Relation of Relation (Example: amount = amount + 5)
+        }
     )*
 ;
 
@@ -996,38 +999,24 @@ getIds returns [ArrayList<String> listStrs]
     ident1=T_IDENT {listStrs.add($ident1.text);} (T_COMMA identN=T_IDENT {listStrs.add($identN.text);})*
 ;
 
-getOptions returns [ArrayList<Option> opts]@init{
+getOptions[TableName tablename] returns [ArrayList<Option> opts]@init{
         opts = new ArrayList<>();
     }:
-    opt1=getOption {opts.add(opt1);} (optN=getOption {opts.add(optN);})*
+    opt1=getOption[tablename] {opts.add(opt1);} (optN=getOption[tablename] {opts.add(optN);})*
 ;
 
-getOption returns [Option opt]:
+getOption[TableName tablename] returns [Option opt]:
     T_COMPACT T_STORAGE {$opt=new Option(Option.OPTION_COMPACT);}
     | T_CLUSTERING T_ORDER {$opt=new Option(Option.OPTION_CLUSTERING);}
-    | identProp=T_IDENT T_EQUAL valueProp=getTerm {$opt=new Option($identProp.text, valueProp);}
+    | identProp=T_IDENT T_EQUAL valueProp=getSelector[tablename] {$opt=new Option($identProp.text, valueProp);}
 ;
 
-getTerms returns [ArrayList list]
+getSelectors[TableName tablename] returns [ArrayList list]
     @init{
-        list = new ArrayList<Term>();
+        list = new ArrayList<Selector>();
     }:
-    term1=getTerm {list.add(term1);}
-    (T_COMMA termN=getTerm {list.add(termN);})*
-;
-
-getTermOrLiteral returns [GenericTerm vc]
-    @init{
-        ListTerms cl = new ListTerms();
-    }:
-    term=getTerm {$vc=term;}
-    |
-    T_START_SBRACKET
-    (
-        term1=getTerm {cl.addTerm(term1);}
-        (T_COMMA termN=getTerm {cl.addTerm(termN);})*
-    )?
-    T_END_SBRACKET {$vc=cl;}
+    term1=getSelector[tablename] {list.add(term1);}
+    (T_COMMA termN=getSelector[tablename] {list.add(termN);})*
 ;
 
 getAliasedTableID[Map tablesAliasesMap] returns [TableName result]:
@@ -1041,73 +1030,9 @@ getColumnName[TableName tn] returns [ColumnName columnName]:
     | ident3=T_CTLG_TBL_COL {$columnName = normalizeColumnName(tn, $ident3.text);})
 ;
 
-getTableName returns [TableName tableName]:
-    (ident1=T_IDENT {$tableName = normalizeTableName($ident1.text);}
-    | ident2=T_KS_AND_TN {$tableName = normalizeTableName($ident2.text);})
-;
-
-getGenericTerm returns [GenericTerm genericTerm]:
-    (colTerms=getCollectionTerms {genericTerm = colTerms;}
-    | simpleTerm=getTerm {genericTerm = simpleTerm;})
-;
-
-getCollectionTerms returns [CollectionTerms colTerms]:
-    (mapOrSetCol=getMapOrSetTerms {colTerms = mapOrSetCol;}
-    | listCol=getListTerms {colTerms = listCol;})
-;
-
-getMapOrSetTerms returns [CollectionTerms colTerms]
-    @init{
-        colTerms = new ListTerms();
-    }:
-    T_START_SBRACKET
-         (mapTerms=getMapTerms {colTerms=mapTerms;}
-         | setTerms=getSetTerms {colTerms=setTerms;})
-    T_END_SBRACKET
-;
-
-getMapTerms returns [MapTerms mapTerms]
-    @init{
-        mapTerms = new MapTerms();
-    }:
-    (key=getTerm T_COLON value=getTerm {mapTerms.addTerm(key, value);}
-        (T_COMMA keyN=getTerm T_COLON valueN=getTerm {mapTerms.addTerm(keyN, valueN);})*
-    )?
-;
-
-getSetTerms returns [SetTerms setTerms]
-    @init{
-        setTerms = new SetTerms();
-    }:
-    (value=getTerm {setTerms.addTerm(value);} (T_COMMA valueN=getTerm {setTerms.addTerm(valueN);})*)?
-;
-
-getListTerms returns [ListTerms listTerms]
-    @init{
-        listTerms = new ListTerms();
-    }:
-    T_START_BRACKET
-        (value=getTerm {listTerms.addTerm(value);}
-            (T_COMMA valueN=getTerm {listTerms.addTerm(valueN);})*
-        )?
-    T_END_BRACKET
-;
-
-getTerm returns [Term term]:
-    term1=getPartialTerm ( {$term = term1;} |
-    T_AT term2=getPartialTerm {$term = new StringTerm(term1.getTermValue()+"@"+term2.getTermValue());} )
-;
-
-getPartialTerm returns [Term term]:
-    tablename=T_IDENT {$term = new StringTerm($tablename.text);}
-    | constant=getConstant {$term = new LongTerm(constant);}
-    | T_FALSE {$term = new BooleanTerm("false");}
-    | T_TRUE {$term = new BooleanTerm("true");}
-    | floatingNumber=T_FLOAT {$term = new DoubleTerm($floatingNumber.text);}
-    | ksAndTn=T_KS_AND_TN {$term = new StringTerm($ksAndTn.text);}
-    | noIdent=T_TERM {$term = new StringTerm($noIdent.text);}
-    | path=T_PATH {$term = new StringTerm($path.text);}
-    | qLiteral=QUOTED_LITERAL {$term = new StringTerm($qLiteral.text);}
+getTableName returns [TableName tablename]:
+    (ident1=T_IDENT {tablename = normalizeTableName($ident1.text);}
+    | ident2=T_KS_AND_TN {tablename = normalizeTableName($ident2.text);})
 ;
 
 getConstant returns [String constStr]:
@@ -1143,7 +1068,7 @@ getPairJson returns [String strJson]
     @after{
         strJson = sb.toString();
     }:
-    keyTerm=getTerm {sb.append(keyTerm.toString());}
+    keyTerm=getSelector[null] {sb.append(keyTerm.toString());}
     T_COLON {sb.append(": ");}
     valueJson=getValueJson {sb.append(valueJson);}
 ;
@@ -1167,43 +1092,10 @@ getValueJson returns [String strJson]
     @after{
         strJson = sb.toString();
     }:
-    (tokenTerm=getTerm {sb.append(tokenTerm.toString());}
+    (tokenTerm=getSelector[null] {sb.append(tokenTerm.toString());}
     | objectJson=getObjectJson {sb.append(objectJson);}
     | arrayJson=getArrayJson {sb.append(arrayJson);})
 ;
-
-/*
-getValueJson returns [String strJson]
-    @init{
-        StringBuilder sb = new StringBuilder();
-    }
-    @after{
-        strJson = sb.toString();
-    }:
-    (tokenString=T_STRING {sb.append($tokenString.text);}
-    | tokenNumber=T_NUMBER {sb.append($tokenNumber.text);}
-    | objectJson=getObjectJson {sb.append(objectJson);}
-    | arrayJson=getArrayJson {sb.append(arrayJson);}
-    | tokenTrue=T_TRUE {sb.append($tokenTrue.text);}
-    | tokenFalse=T_FALSE {sb.append($tokenFalse.text);}
-    | tokenNull=T_NULL {sb.append($tokenNull.text);})
-;
-
-T_STRING: '"' (ESC | ~["\\])* '"';
-
-fragment ESC: '\\' (["\\/bfnrt] | UNICODE);
-fragment UNICODE: 'u' HEX HEX HEX HEX;
-fragment HEX: [0-9a-fA-F];
-
-T_NUMBER:
-    ('-'? INT '.' INT EXP?
-    |   '-'? INT EXP
-    |   '-'? INT)
-;
-
-fragment INT: '0' | [1-9] [0-9]*;
-fragment EXP: [Ee] [+\-]? INT;
-*/
 
 getColumn returns [ColumnName column]
     @init{

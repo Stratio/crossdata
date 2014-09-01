@@ -26,7 +26,7 @@ import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import org.apache.log4j.Logger;
@@ -68,10 +68,10 @@ public class InsertIntoStatement extends MetaStatement {
   private SelectStatement selectStatement;
 
   /**
-   * A list of {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} with the
+   * A list of {@link com.stratio.meta2.common.statements.structures.selectors.Selector} with the
    * literal values to be assigned if the insert type matches {@code TYPE_VALUES_CLAUSE}.
    */
-  private List<GenericTerm> cellValues;
+  private List<Selector> cellValues;
 
   /**
    * Indicates if exists "IF NOT EXISTS" clause.
@@ -106,14 +106,14 @@ public class InsertIntoStatement extends MetaStatement {
    * @param ids List of name of fields in the table.
    * @param selectStatement a {@link com.stratio.meta2.core.statements.InsertIntoStatement}
    * @param cellValues List of
-   *        {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
+   *        {@link com.stratio.meta2.common.statements.structures.selectors.Selector} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param optsInc Boolean that indicates if there is options in the query.
    * @param options Query options.
    * @param typeValues Integer that indicates if values come from insert or select.
    */
   public InsertIntoStatement(TableName tableName, List<ColumnName> ids,
-                             SelectStatement selectStatement, List<GenericTerm> cellValues, boolean ifNotExists,
+                             SelectStatement selectStatement, List<Selector> cellValues, boolean ifNotExists,
                              boolean optsInc, List<Option> options, int typeValues) {
     this.command = false;
     this.tableName = tableName;
@@ -146,11 +146,11 @@ public class InsertIntoStatement extends MetaStatement {
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
    * @param cellValues List of
-   *        {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
+   *        {@link com.stratio.meta2.common.statements.structures.selectors.Selector} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    * @param options Query options.
    */
-  public InsertIntoStatement(TableName tableName, List<ColumnName> ids, List<GenericTerm> cellValues,
+  public InsertIntoStatement(TableName tableName, List<ColumnName> ids, List<Selector> cellValues,
                              boolean ifNotExists, List<Option> options) {
     this(tableName, ids, null, cellValues, ifNotExists, true, options, 2);
   }
@@ -174,10 +174,10 @@ public class InsertIntoStatement extends MetaStatement {
    * @param tableName Tablename target.
    * @param ids List of name of fields in the table.
    * @param cellValues List of
-   *        {@link com.stratio.meta2.common.statements.structures.terms.GenericTerm} to insert.
+   *        {@link com.stratio.meta2.common.statements.structures.selectors.Selector} to insert.
    * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
    */
-  public InsertIntoStatement(TableName tableName, List<ColumnName> ids, List<GenericTerm> cellValues,
+  public InsertIntoStatement(TableName tableName, List<ColumnName> ids, List<Selector> cellValues,
                              boolean ifNotExists) {
     this(tableName, ids, null, cellValues, ifNotExists, false, null, 2);
   }
@@ -347,9 +347,9 @@ public class InsertIntoStatement extends MetaStatement {
    * @param insertStmt
    */
   private void iterateValuesAndInsertThem(Insert insertStmt) {
-    Iterator<GenericTerm> it = this.cellValues.iterator();
+    Iterator<Selector> it = this.cellValues.iterator();
     for (ColumnName id: this.ids) {
-      GenericTerm genericTerm = it.next();
+      Selector genericTerm = it.next();
       if (genericTerm.toString().matches("[0123456789.]+")) {
         insertStmt = insertStmt.value(id.getName(), Integer.parseInt(genericTerm.toString()));
       } else if (genericTerm.toString().contains("-")) {
