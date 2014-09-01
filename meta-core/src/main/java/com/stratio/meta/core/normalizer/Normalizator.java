@@ -33,10 +33,7 @@ import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
-import com.stratio.meta2.common.statements.structures.selectors.FunctionSelector;
-import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.common.statements.structures.selectors.*;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 
@@ -79,6 +76,9 @@ public class Normalizator {
     }
   }
 
+  public void normalizeOrderBy(){
+    parsedQuery.getStatement().getOrder()
+  }
 
   public void normalizeSelectExpresion()
       throws AmbiguousNameException, NotExistNameException {
@@ -127,7 +127,7 @@ public class Normalizator {
 
   }
 
-  public void checkRelations(List<Relation> relations)
+  public void checkJoinRelations(List<Relation> relations)
       throws BadFormatException, AmbiguousNameException, NotExistNameException {
     for(Relation relation:relations){
       switch (relation.getIdentifier().getType()){
@@ -140,7 +140,28 @@ public class Normalizator {
         case ASTERISK:
           throw new BadFormatException("You mustn't put asterisk in relations");
       }
-      //TODO: Resolve terms problem
+      switch (relation.getOperator()) {
+        case COMPARE:
+        case ASSIGN:
+        case GREATER_THAN:
+        case LOWER_THAN:
+        case GREATER_EQUAL_THAN:
+        case LOWER_EQUAL_THAN:
+          if (relation.getRightSelector().getType() == SelectorType.COLUMN){
+            checkColumnSelector((ColumnSelector) relation.getRightSelector());
+          } else{
+            throw new BadFormatException("You must compare with a column");
+          }
+          break;
+        case ADD:
+        case SUBTRACT:
+        case IN:
+        case BETWEEN:
+        case MATCH:
+        case NOT_EQUAL:
+        case LIKE:
+          throw new BadFormatException("Compare operations (=,<,>,>=,>=) are just valid");
+      }
     }
   }
 
