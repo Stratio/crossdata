@@ -21,17 +21,14 @@ package com.stratio.meta2.core.validator;
 import java.util.List;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
-import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.exceptions.validation.ExistNameException;
 import com.stratio.meta.common.exceptions.validation.NotExistNameException;
 import com.stratio.meta2.common.data.Name;
 import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.query.NormalizedQuery;
-import org.apache.log4j.Logger;
-
-
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
+import org.apache.log4j.Logger;
+
 
 public class Validator {
   /**
@@ -39,65 +36,10 @@ public class Validator {
    */
   private static final Logger LOG = Logger.getLogger(Validator.class);
 
-  public ValidatedQuery validate(NormalizedQuery normalizedQuery)
-      throws ValidationException, IgnoreQueryException {
-    this.validateRequirements(normalizedQuery);
-    return new ValidatedQuery(normalizedQuery) ;
+  public ValidatedQuery validate(ParsedQuery parsedQuery){
+    return null;
   }
 
-
-
-  private void validateRequirements(NormalizedQuery normalizedQuery)
-      throws ValidationException, IgnoreQueryException {
-    for(Validation req:normalizedQuery.getValidationRequirements().getValidations()){
-      validateRequirements(req,normalizedQuery);
-    }
-  }
-  private void validateRequirements(Validation requirement, NormalizedQuery normalizedQuery)
-      throws ValidationException, IgnoreQueryException {
-    switch (requirement) {
-      case MUST_NOT_EXIST_CATALOG:
-        validateNotExist(normalizedQuery.getCatalogs(), normalizedQuery.getIfNotExists());
-        break;
-      case MUST_EXIST_CATALOG:
-        validateExist(normalizedQuery.getCatalogs(), normalizedQuery.getIfExists());
-        break;
-       case MUST_EXIST_TABLE:
-         validateExist(normalizedQuery.getTables(), normalizedQuery.getIfExists());
-         break;
-      case MUST_NOT_EXIST_TABLE:
-        validateNotExist(normalizedQuery.getTables(), normalizedQuery.getIfNotExists());
-        break;
-      case MUST_NOT_EXIST_CLUSTER:
-        validateNotExist(normalizedQuery.getClusters(),normalizedQuery.getIfNotExists());
-        break;
-      case MUST_EXIST_CLUSTER:
-        validateExist(normalizedQuery.getClusters(), normalizedQuery.getIfExists());
-        break;
-      case MUST_EXIST_CONNECTOR:
-        validateExist(normalizedQuery.getConnectors(),normalizedQuery.getIfExists());
-        break;
-      case MUST_NOT_EXIST_CONNECTOR:
-        validateNotExist(normalizedQuery.getConnectors(),normalizedQuery.getIfNotExists());
-        break;
-      case MUST_EXIST_DATASTORE:
-        validateNotExist(normalizedQuery.getDatastores(),normalizedQuery.getIfExists());
-        break;
-      case MUST_NOT_EXIST_DATASTORE:
-        validateNotExist(normalizedQuery.getDatastores(),normalizedQuery.getIfNotExists());
-        break;
-      case VALID_DATASTORE_MANIFEST:
-        break;
-      case VALID_CLUSTER_OPTIONS:
-        break;
-      case VALID_CONNECTOR_OPTIONS:
-        break;
-      case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
-        break;
-      case VALID_CONNECTOR_MANIFEST:
-        break;
-    }
-  }
 
 
 

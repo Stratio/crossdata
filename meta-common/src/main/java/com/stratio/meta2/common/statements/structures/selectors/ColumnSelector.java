@@ -50,4 +50,7 @@ public class ColumnSelector extends Selector{
     return sb.toString();
   }
 
+  @Override public SelectorType getType() {
+    return SelectorType.COLUMN;
+  }
 }

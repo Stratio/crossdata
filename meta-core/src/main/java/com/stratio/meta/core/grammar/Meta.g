@@ -416,11 +416,12 @@ describeStatement returns [DescribeStatement descs]:
 
 //DELETE FROM table1 WHERE field1=value1 AND field2=value2;
 deleteStatement returns [DeleteStatement ds]
-	@init{
-		$ds = new DeleteStatement();
+	@after{
+		$ds = new DeleteStatement(tableName, whereClauses);
 	}:
-	T_DELETE T_FROM tableName=getTableName {$ds.setTableName(tableName);}
-	T_WHERE rel1=getRelation {$ds.addRelation(rel1);} (T_AND relN=getRelation {$ds.addRelation(relN);})*
+	T_DELETE T_FROM tableName=getTableName
+	T_WHERE whereClauses=getWhereClauses[tableName]
+	//T_WHERE rel1=getRelation[tableName] {$ds.addRelation(rel1);} (T_AND relN=getRelation[tableName] {$ds.addRelation(relN);})*
 ;
 
 //ADD \"index_path\";
@@ -537,26 +538,25 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
         boolean condsInc = false;
         ArrayList<Option> options = new ArrayList<>();
         ArrayList<Assignation> assignations = new ArrayList<>();
-        ArrayList<Relation> whereclauses = new ArrayList<>();
         Map<String, Term<?>> conditions = new HashMap<>();
     }:
     T_UPDATE tablename=getTableName
     (T_USING opt1=getOption {optsInc = true; options.add(opt1);} (T_AND optN=getOption {options.add(optN);})*)?
     T_SET assig1=getAssignment[tablename] {assignations.add(assig1);} (T_COMMA assigN=getAssignment[tablename] {assignations.add(assigN);})*
-    (T_WHERE whereClauses=getWhereClauses)?
+    (T_WHERE whereClauses=getWhereClauses[tablename])?
     (T_IF id1=T_IDENT T_EQUAL term1=getTerm {condsInc = true; conditions.put($id1.text, term1);}
                     (T_AND idN=T_IDENT T_EQUAL termN=getTerm {conditions.put($idN.text, termN);})*)?
     {
         if(optsInc)
             if(condsInc)
-                $pdtbst = new UpdateTableStatement(tablename, options, assignations, whereclauses, conditions);
+                $pdtbst = new UpdateTableStatement(tablename, options, assignations, whereClauses, conditions);
             else
-                $pdtbst = new UpdateTableStatement(tablename, options, assignations, whereclauses);
+                $pdtbst = new UpdateTableStatement(tablename, options, assignations, whereClauses);
         else
             if(condsInc)
-                $pdtbst = new UpdateTableStatement(tablename, assignations, whereclauses, conditions);
+                $pdtbst = new UpdateTableStatement(tablename, assignations, whereClauses, conditions);
             else
-                $pdtbst = new UpdateTableStatement(tablename, assignations, whereclauses);
+                $pdtbst = new UpdateTableStatement(tablename, assignations, whereClauses);
     }
 ;
 
@@ -652,8 +652,8 @@ selectStatement returns [SelectStatement slctst]
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
-    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON joinRelations=getWhereClauses)?
-    (T_WHERE {whereInc = true;} whereClauses=getWhereClauses)?
+    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON joinRelations=getWhereClauses[tablename])?
+    (T_WHERE {whereInc = true;} whereClauses=getWhereClauses[null])?
     //(T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
     //(T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
     (T_LIMIT {limitInc = true;} constant=getConstant)?
@@ -838,11 +838,11 @@ getGroupBy returns [ArrayList<GroupBy> groups]
     (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($identN.text); groups.add(groupBy);})*
 ;
 
-getWhereClauses returns [ArrayList<Relation> clauses]
+getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
     @init{
         clauses = new ArrayList<>();
     }:
-    rel1=getRelation {clauses.add(rel1);} (T_AND relN=getRelation {clauses.add(relN);})*
+    rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND relN=getRelation[tablename] {clauses.add(relN);})*
 ;
 
 getFields[MutablePair pair]:
@@ -884,12 +884,12 @@ getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
     (T_DISTINCT {distinct = true;})?
     (
         T_ASTERISK { s = new AsteriskSelector(); selectors.add(s);}
-        | s=getSelector
+        | s=getSelector[null]
                 (T_AS alias1=getAlias {
                     s.setAlias($alias1.text);
                     fieldsAliasesMap.put($alias1.text, s.toString());}
                 )? {selectors.add(s);}
-            (T_COMMA s=getSelector
+            (T_COMMA s=getSelector[null]
                     (T_AS aliasN=getAlias {
                         s.setAlias($aliasN.text);
                         fieldsAliasesMap.put($aliasN.text, s.toString());}
@@ -905,8 +905,7 @@ getAlias returns [String alias]:
 	tablename=T_IDENT {$alias=$tablename.text;}
 ;
 
-
-getSelector returns [Selector s]
+getSelector[TableName tablename] returns [Selector s]
     @init{
         List<Selector> params = new ArrayList<>();
         String name = null;
@@ -921,12 +920,12 @@ getSelector returns [Selector s]
             | functionName=T_IDENT
         )
         T_START_PARENTHESIS
-            (select1=getSelector {params.add(select1);}
+            (select1=getSelector[tablename] {params.add(select1);}
             | T_ASTERISK {params.add(new AsteriskSelector());}
             )?
         T_END_PARENTHESIS {s = new FunctionSelector($functionName.text, params);}
         |
-        (columnName=getColumnName[null] {s = new ColumnSelector(columnName);})
+        (columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);})
     )
 ;
 
@@ -939,10 +938,9 @@ getListTypes returns [String listType]:
 
 getAssignment[TableName tableName] returns [Assignation assign]:
     firstTerm=getColumnName[tableName]
-        //T_EQUAL value=getValueAssign {$assign = new Assignation(firstTerm, Operator.ASSIGN, value);}
         (T_EQUAL value=getValueAssign {$assign = new Assignation(firstTerm, Operator.ASSIGN, value);}
         | T_START_BRACKET indexTerm=getTerm T_END_BRACKET T_EQUAL termValue=getValueAssign {
-            $assign = new Assignation (new ColumnName(firstTerm.getTableName(), firstTerm.toString()+"["+indexTerm.toString()+"]"), Operator.ASSIGN, termValue);
+            $assign = new Assignation (new ColumnName(firstTerm.getTableName(), firstTerm.getName()+"["+indexTerm.toString()+"]"), Operator.ASSIGN, termValue);
         })
 ;
 
@@ -958,11 +956,11 @@ getValueAssign returns [GenericTerm valueAssign]
     )*
 ;
 
-getRelation returns [Relation mrel]
+getRelation[TableName tablename] returns [Relation mrel]
     @after{
         $mrel = new Relation(s, operator, terms);
     }:
-    s=getSelector operator=getComparator terms=getTerms
+    s=getSelector[tablename] operator=getComparator terms=getTerms
 //TODO
 //    T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}
 //                            | T_TOKEN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationToken(listIds, operator, terms);})

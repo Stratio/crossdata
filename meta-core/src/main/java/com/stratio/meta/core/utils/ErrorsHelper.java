@@ -23,6 +23,8 @@ import java.util.List;
 
 public class ErrorsHelper {
 
+  private String message;
+
   private List<AntlrError> antlrErrors = new ArrayList<>();
 
   public void addError(AntlrError antlrError) {
@@ -70,4 +72,11 @@ public class ErrorsHelper {
 
 
 
+  public String getMessage() {
+    return message;
+  }
+
+  public void setMessage(String message) {
+    this.message = message;
+  }
 }

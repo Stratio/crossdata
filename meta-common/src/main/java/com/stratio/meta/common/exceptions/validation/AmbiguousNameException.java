@@ -16,20 +16,13 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.query;
+package com.stratio.meta.common.exceptions.validation;
 
-import com.stratio.meta2.core.statements.SelectStatement;
+import com.stratio.meta.common.exceptions.ValidationException;
+import com.stratio.meta2.common.data.ColumnName;
 
-public class SelectParsedQuery extends ParsedQuery {
-  public SelectParsedQuery(BaseQuery baseQuery,
-      SelectStatement statement) {
-    super(baseQuery, statement);
-  }
-
-  SelectParsedQuery(SelectParsedQuery parsedQuery) {
-    super(parsedQuery);
-  }
-  public SelectStatement getStatement(){
-    return (SelectStatement)statement;
+public class AmbiguousNameException extends ValidationException {
+  public AmbiguousNameException(ColumnName columnName) {
+    super("Column name [" + columnName + "] is ambiguous");
   }
 }

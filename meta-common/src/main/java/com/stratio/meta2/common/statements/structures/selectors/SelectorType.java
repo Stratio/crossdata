@@ -16,13 +16,11 @@
  * under the License.
  */
 
-package com.stratio.meta.common.exceptions.validation;
+package com.stratio.meta2.common.statements.structures.selectors;
 
-import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta2.common.data.TableName;
+public enum SelectorType {
+  FUNCTION,
+  COLUMN,
+  ASTERISK
 
-public class NotExistTableException extends ValidationException {
-  public NotExistTableException(TableName table) {
-    super("Table [" + table + "]  doesn't exist yet");
-  }
 }

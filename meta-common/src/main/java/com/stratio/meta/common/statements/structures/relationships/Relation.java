@@ -50,7 +50,6 @@ public class Relation {
     this.identifier = selector;
     this.operator = operator;
     this.terms = terms;
-    System.out.println(">>>>>>>>>> TRACE: new Relation = "+this.toString());
   }
 
   public Selector getIdentifier() {
@@ -79,7 +78,6 @@ public class Relation {
 
   @Override
   public String toString() {
-
     StringBuilder sb = new StringBuilder(identifier.toString());
     sb.append(" ").append(operator).append(" ");
     if(Operator.BETWEEN.equals(operator)) {
@@ -89,7 +87,6 @@ public class Relation {
     }else{
       sb.append(StringUtils.stringList(terms, ", "));
     }
-
     return sb.toString();
   }
 

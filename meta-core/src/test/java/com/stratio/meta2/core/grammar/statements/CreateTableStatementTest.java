@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
+import com.stratio.meta.common.exceptions.ParsingException;
 import com.stratio.meta.core.grammar.ParsingTest;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta2.core.statements.MetaStatement;
@@ -101,7 +102,12 @@ public class CreateTableStatementTest extends ParsingTest {
                        + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                        + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
                        + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
-    MetaStatement st = parser.parseStatement(UUID.randomUUID().toString(), "key_space1", inputText).getStatement();
+    MetaStatement st = null;
+    try {
+      st = parser.parseStatement("key_space1", inputText);
+    } catch (ParsingException e) {
+      e.printStackTrace();
+    }
     assertNotNull(st, "Cannot parse createTableWithManyProperties");
 
     boolean originalOK = false;
@@ -163,8 +169,12 @@ public class CreateTableStatementTest extends ParsingTest {
                        + "chunk_length_kb: 64} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
                        + "read_repair_chance=1.0;";
     //MetaStatement st = parser.parseStatement(inputText).getStatement();
-    MetaQuery mq = parser.parseStatement(UUID.randomUUID().toString(), "key_space1", inputText);
-    MetaStatement st = mq.getStatement();
+    MetaStatement st = null;
+    try {
+      st = parser.parseStatement("key_space1", inputText);
+    } catch (ParsingException e) {
+      e.printStackTrace();
+    }
 
     assertNotNull(st, "Statement should not be null createTableWithProperties");
 

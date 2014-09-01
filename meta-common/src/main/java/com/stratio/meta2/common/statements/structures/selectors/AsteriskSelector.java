@@ -32,4 +32,7 @@ public class AsteriskSelector extends Selector{
     return "*";
   }
 
+  @Override public SelectorType getType() {
+    return SelectorType.ASTERISK;
+  }
 }

@@ -19,10 +19,9 @@
 package com.stratio.meta.common.exceptions.validation;
 
 import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta2.common.data.TableName;
 
-public class ExistTableException extends ValidationException {
-  public ExistTableException(TableName table) {
-    super("Table [" + table + "] exists already");
+public class BadFormatException extends ValidationException {
+  public BadFormatException(String cause) {
+    super(cause);
   }
 }

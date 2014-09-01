@@ -27,13 +27,13 @@ import com.stratio.meta2.common.data.TableName;
 
 import java.util.List;
 
-public class NormalizedQuery extends ParsedQuery {
-  public NormalizedQuery(ParsedQuery parsedQuery){
+public class NormalizedQuery extends SelectParsedQuery {
+  public NormalizedQuery(SelectParsedQuery parsedQuery){
     super(parsedQuery);
   }
 
   NormalizedQuery(NormalizedQuery normalizedQuery){
-    this((ParsedQuery)normalizedQuery);
+    this((SelectParsedQuery)normalizedQuery);
   }
   public QueryStatus getStatus() {
     return QueryStatus.NORMALIZED;
