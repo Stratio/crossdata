@@ -20,7 +20,7 @@ package com.stratio.meta.server.executor
 
 import com.stratio.meta.core.engine.Engine
 import akka.actor.ActorSystem
-import com.stratio.meta.server.actors.ExecutorActor
+import com.stratio.meta.server.actors.{ExecutorActor, ConnectorActor}
 import akka.testkit._
 import com.typesafe.config.ConfigFactory
 import org.scalatest.FunSuiteLike
@@ -40,8 +40,8 @@ import java.util.UUID
 class BasicExecutorActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
   val engine:Engine =  createEngine.create()
-
-  lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
+  lazy val connectorTest= system.actorOf(ConnectorActor.props(),"ConnectorActorTest")
+  lazy val executorRef = system.actorOf( ExecutorActor.props(connectorTest,engine.getExecutor),"TestExecutorActor")
 
   override def beforeCassandraFinish() {
     shutdown(system)

@@ -38,7 +38,8 @@ class BasicParserActorTest extends ActorReceiveUtils with FunSuiteLike with Befo
   val engine:Engine =  createEngine.create()
 
 
-  lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
+  lazy val connectorTest= system.actorOf(ConnectorActor.props(),"ConnectorActorTest")
+  lazy val executorRef = system.actorOf( ExecutorActor.props(connectorTest,engine.getExecutor),"TestExecutorActor")
   lazy val plannerRef = system.actorOf(PlannerActor.props(executorRef,engine.getPlanner),"TestPlanerActor")
   lazy val validatorRef = system.actorOf(ValidatorActor.props(plannerRef,engine.getValidator),"TestValidatorActor")
   lazy val parserRef = system.actorOf(ParserActor.props(validatorRef,engine.getParser),"TestParserActor")

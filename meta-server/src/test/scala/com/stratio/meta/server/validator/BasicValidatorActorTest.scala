@@ -38,6 +38,7 @@ import com.stratio.meta.communication.ACK
 import com.stratio.meta.communication.ACK
 import scala.util.Success
 import java.util.UUID
+import com.stratio.meta.server.actors.ConnectorActor
 
 /**
  * Validator actor tests.
@@ -45,7 +46,9 @@ import java.util.UUID
 class BasicValidatorActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
   val engine:Engine =  createEngine.create()
-  lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
+  lazy val connectorTest= system.actorOf(ConnectorActor.props(),"ConnectorActorTest")
+  lazy val executorRef = system.actorOf( ExecutorActor.props(connectorTest,engine.getExecutor),"TestExecutorActor")
+  //lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
   lazy val plannerRef = system.actorOf(PlannerActor.props(executorRef,engine.getPlanner),"TestPlanerActor")
   lazy val validatorRef = system.actorOf(ValidatorActor.props(plannerRef,engine.getValidator),"TestValidatorActor")
 
