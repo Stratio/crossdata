@@ -44,19 +44,19 @@ public class AddStatementTest extends ParsingTest{
     @Test
     public void addStartingQuoteMissing1(){
         String inputText = "ADD /dir/jar_name-v1.0.jar;\"";
-        testRecoverableError(inputText, "addStartingQuoteMissing1");
+        testParserFails(inputText, "addStartingQuoteMissing1");
     }
 
     @Test
     public void addEndingQuoteMissing2(){
         String inputText = "ADD \"/dir/jar_name-v1.0.jar;";
-        testRecoverableError(inputText, "addEndingQuoteMissing2");
+      testParserFails(inputText, "addEndingQuoteMissing2");
     }
 
     @Test
     public void addInvalidPath(){
         String inputText = "ADD \"@jar_name-v1.0.jar;\"";
-        testParseFails(inputText, "addInvalidPath");
+        testParserFails(inputText, "addInvalidPath");
     }
 
 

@@ -47,13 +47,13 @@ public class DeleteStatementTest extends ParsingTest {
   @Test
   public void deleteInvalidOperator() {
     String inputText = "DELETE FROM table1 WHERE field1 = value1 OR field2 = value2;";
-    testRecoverableError(inputText, "deleteInvalidOperator");
+    testParserFails(inputText, "deleteInvalidOperator");
   }
 
   @Test
   public void deleteWrongPropertyAssignment(){
     String inputText = "DELETE FROM table1 WHERE field1: value1;";
-    testRecoverableError(inputText, "deleteWrongPropertyAssignment");
+    testParserFails(inputText, "deleteWrongPropertyAssignment");
   }
 
 }

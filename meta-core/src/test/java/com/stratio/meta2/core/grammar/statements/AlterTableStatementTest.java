@@ -82,7 +82,7 @@ public class AlterTableStatementTest extends ParsingTest{
   @Test
   public void alterWrongPropertyIdentifier(){
     String inputText = "ALTER TABLE demo.myTable WITH 2property1=value1;";
-    testRecoverableError(inputText, "alterWrongPropertyIdentifier");
+    testParserFails(inputText, "alterWrongPropertyIdentifier");
   }
 
 }

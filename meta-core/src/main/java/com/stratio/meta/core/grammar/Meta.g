@@ -323,13 +323,13 @@ attachClusterStatement returns [AttachClusterStatement acs]
         acs = new AttachClusterStatement(
             $clusterName.text,
             ifNotExists,
-            $datastoreName.text,
+            $dataStoreName.text,
             j);
     }:
     T_ATTACH T_CLUSTER
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     clusterName=T_IDENT
-    T_ON T_DATASTORE datastoreName=QUOTED_LITERAL
+    T_ON T_DATASTORE dataStoreName=QUOTED_LITERAL
     T_WITH T_OPTIONS
     j=getJson
 ;
@@ -434,11 +434,11 @@ addStatement returns [AddStatement as]:
 //ADD (DATASTORE | CONNECTOR) \"path\";
 addManifestStatement returns [MetaStatement ams]
     @init{
-        boolean datastore = true;
+        boolean dataStore = true;
     }:
-    T_ADD (T_DATASTORE | T_CONNECTOR { datastore = false; } ) path=QUOTED_LITERAL
-    { if(datastore)
-        $ams = new AddDatastoreStatement($path.text);
+    T_ADD (T_DATASTORE | T_CONNECTOR { dataStore = false; } ) path=QUOTED_LITERAL
+    { if(dataStore)
+        $ams = new AddDataStoreStatement($path.text);
       else
         $ams = new AddConnectorStatement($path.text);
     }
@@ -447,11 +447,11 @@ addManifestStatement returns [MetaStatement ams]
 //DROP (DATASTORE | CONNECTOR) \"name\";
 dropManifestStatement returns [MetaStatement dms]
     @init{
-        boolean datastore = true;
+        boolean dataStore = true;
     }:
-    T_DROP (T_DATASTORE | T_CONNECTOR { datastore = false; } ) name=QUOTED_LITERAL
-    { if(datastore)
-        $dms = new DropDatastoreStatement($name.text);
+    T_DROP (T_DATASTORE | T_CONNECTOR { dataStore = false; } ) name=T_IDENT
+    { if(dataStore)
+        $dms = new DropDataStoreStatement($name.text);
       else
         $dms = new DropConnectorStatement($name.text);
     }

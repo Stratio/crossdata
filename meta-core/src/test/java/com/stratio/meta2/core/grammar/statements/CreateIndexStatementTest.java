@@ -100,13 +100,13 @@ public class CreateIndexStatementTest extends ParsingTest{
   @Test
   public void createIndexWrongOptionAssignment(){
     String inputText = "CREATE LUCENE INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1:val1;";
-    testRecoverableError(inputText, "createIndexWrongOptionAssignment");
+    testParserFails(inputText, "createIndexWrongOptionAssignment");
   }
 
   @Test
   public void createIndexDefaultBasicWithSpaceBeforeSemicolon() {
     String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1; field2);";
-    testRecoverableError(inputText, "createIndexDefaultBasicWithSpaceBeforeSemicolon");
+    testParserFails(inputText, "createIndexDefaultBasicWithSpaceBeforeSemicolon");
   }
 
   @Test

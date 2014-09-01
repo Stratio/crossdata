@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,23 +16,24 @@
  * under the License.
  */
 
-package com.stratio.meta.core.grammar.statements;
+package com.stratio.meta2.core.grammar.statements;
 
 import com.stratio.meta.core.grammar.ParsingTest;
+
 import org.testng.annotations.Test;
 
-public class StopProcessStatementTest extends ParsingTest {
+public class DropConnectorTest extends ParsingTest {
 
   @Test
-  public void stopProcess() {
-    String inputText = "STOP process process1;";
-    testRegularStatement(inputText, "stopProcess");
+  public void dropConnectorSimple() {
+    String inputText = "DROP CONNECTOR myConnector;";
+    testRegularStatement(inputText, "dropConnectorSimple");
   }
 
   @Test
-  public void stopWrongProcessIdentifier(){
-    String inputText = "STOP process kstest]process1;";
-    testParserFails(inputText, "stopWrongProcessIdentifier");
+  public void dropConnectorError() {
+    String inputText = "DROP CONNECTOR *myConnector";
+    testParserFails(inputText, "dropConnectorError");
   }
 
 }

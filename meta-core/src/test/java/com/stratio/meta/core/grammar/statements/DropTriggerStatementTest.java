@@ -32,7 +32,7 @@ public class DropTriggerStatementTest extends ParsingTest {
     @Test
     public void dropTriggerWrongAssignment(){
         String inputText = "drop trigger trigger1 on table_name = 20;";
-        testParseFails(inputText, "dropTriggerWrongAssignment");
+        testParserFails(inputText, "dropTriggerWrongAssignment");
     }
 
 }

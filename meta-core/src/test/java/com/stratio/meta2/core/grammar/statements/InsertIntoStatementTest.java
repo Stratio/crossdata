@@ -67,7 +67,7 @@ public class InsertIntoStatementTest extends ParsingTest {
     String inputText =
         "INSERT INTI mykeyspace.tablename (ident1, ident2) VALUES(term1, term2)"
         + " IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
-    testRecoverableError(inputText, "wrongIntoToken");
+    testParserFails(inputText, "wrongIntoToken");
   }
 
   @Test
@@ -75,7 +75,7 @@ public class InsertIntoStatementTest extends ParsingTest {
     String inputText =
         "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUED (term1, term2)"
         + " IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
-    testParseFails(inputText, "insertIntoWrongValuesToken");
+    testParserFails(inputText, "insertIntoWrongValuesToken");
   }
 
   @Test

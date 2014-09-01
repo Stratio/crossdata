@@ -33,7 +33,7 @@ public class CreateCatalogStatementTest extends ParsingTest {
   @Test
   public void createCatalogIfNotExistsWithEmptyOptions() {
     String inputText = "CREATE CATALOG IF NOT EXISTS catalog1 WITH {};";
-    String expectedText = "CREATE CATALOG IF NOT EXISTS catalog1;";
+    String expectedText = "CREATE CATALOG IF NOT EXISTS catalog1 WITH {};";
     testRegularStatement(inputText, expectedText, "createCatalogIfNotExistsWithEmptyOptions");
   }
 
@@ -46,7 +46,7 @@ public class CreateCatalogStatementTest extends ParsingTest {
   @Test
   public void createCatalogWrongName() {
     String inputText = "CREATE CATALOG remove.name;";
-    testParseFails(inputText, "createCatalogWrongName");
+    testParserFails(inputText, "createCatalogWrongName");
   }
 
 

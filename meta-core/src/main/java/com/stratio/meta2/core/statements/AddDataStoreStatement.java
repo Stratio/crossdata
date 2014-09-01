@@ -23,11 +23,11 @@ import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-public class AddDatastoreStatement extends MetaStatement {
+public class AddDataStoreStatement extends MetaStatement {
 
   private String path;
 
-  public AddDatastoreStatement(String path){
+  public AddDataStoreStatement(String path){
     this.path = path;
   }
 

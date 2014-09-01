@@ -68,9 +68,7 @@ public class CreateCatalogStatement extends MetaStatement {
       sb.append("IF NOT EXISTS ");
     }
     sb.append(catalog);
-    System.out.println(options.toString());
-    System.out.println(options.length());
-    if((options != null) && (options.length() > 0)) {
+    if((options != null) && (!options.isEmpty())) {
       sb.append(" WITH ").append(options);
     }
     return sb.toString();

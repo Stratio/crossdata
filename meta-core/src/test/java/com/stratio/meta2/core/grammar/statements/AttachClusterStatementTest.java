@@ -29,13 +29,13 @@ public class AttachClusterStatementTest extends ParsingTest{
 
   @Test
   public void createClusterWithoutOptions() {
-    String inputText = "CREATE CLUSTER dev ON DATASTORE \"db\";";
-    testParseFails(inputText, "createClusterWithoutOptions");
+    String inputText = "ATTACH CLUSTER dev ON DATASTORE \"db\";";
+    testParserFails(inputText, "createClusterWithoutOptions");
   }
 
   @Test
   public void createClusterBasicDoubleQuote() {
-    String inputText = "CREATE CLUSTER dev ON DATASTORE \"db\""
+    String inputText = "ATTACH CLUSTER dev ON DATASTORE \"db\""
                        + " WITH OPTIONS {\"host\": \"127.0.0.1\", port: 1234};";
     String expectedText = inputText;
     testRegularStatement(inputText, expectedText, "createClusterBasicDoubleQuote");
@@ -43,7 +43,7 @@ public class AttachClusterStatementTest extends ParsingTest{
 
   @Test
   public void createClusterBasicSingleQuote() {
-    String inputText = "CREATE CLUSTER dev ON DATASTORE 'db'"
+    String inputText = "ATTACH CLUSTER dev ON DATASTORE 'db'"
                        + " WITH OPTIONS {\"host1\": \"127.0.0.1\"};";
     String expectedText = inputText;
     testRegularStatement(inputText, expectedText, "createClusterBasicSingleQuote");
@@ -51,24 +51,56 @@ public class AttachClusterStatementTest extends ParsingTest{
 
   @Test
   public void createClusterBasicIfNotExists() {
-    String inputText = "CREATE CLUSTER IF NOT EXISTS dev ON DATASTORE 'db'"
+    String inputText = "ATTACH CLUSTER IF NOT EXISTS dev ON DATASTORE 'db'"
                        + " WITH OPTIONS {\"host1\": \"127.0.0.1\"};";
     String expectedText = inputText;
     testRegularStatement(inputText, expectedText, "createClusterBasicIfNotExists");
   }
 
   @Test
+  public void attachClusterSimple() {
+    String inputText = "ATTACH CLUSTER production_madrid ON DATASTORE \"cassandra\" WITH OPTIONS {host: 127.0.0.1, port: 9160, mode: \"random\"};";
+    String expectedText = "ATTACH CLUSTER production_madrid ON DATASTORE \"cassandra\" WITH OPTIONS {host: 127.0.0.1, port: 9160, mode: \"random\"};";
+    testRegularStatement(inputText, expectedText, "attachClusterSimple");
+  }
+
+  @Test
+  public void attachClusterIfNotExists() {
+    String inputText = "ATTACH CLUSTER IF NOT EXISTS productionMadrid ON DATASTORE 'cassandra' WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, exhaustive: false};";
+    String expectedText = "ATTACH CLUSTER IF NOT EXISTS productionMadrid ON DATASTORE 'cassandra' WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, exhaustive: false};";
+    testRegularStatement(inputText, expectedText, "attachClusterIfNotExists");
+  }
+
+  @Test
+  public void attachClusterWrongClusterName() {
+    String inputText = "ATTACH CLUSTER ^productionMadrid ON DATASTORE 'cassandra' WITH OPTIONS {'host': '127.0.0.1'};";
+    testParserFails(inputText, "attachClusterWrongName");
+  }
+
+  @Test
+  public void attachClusterWrongDataStore() {
+    String inputText = "ATTACH CLUSTER productionMadrid ON DATASTORE {mongodb} WITH OPTIONS {'host': '127.0.0.1'};";
+    testParserFails(inputText, "attachClusterWrongDataStore");
+  }
+
+  @Test
+  public void attachClusterWrongJson() {
+    String inputText = "ATTACH CLUSTER productionMadrid ON DATASTORE 'cassandra' WITH OPTIONS {mainClass: com.stratio.cluster.executor, 25};";
+    testParserFails(inputText, "attachClusterWrongJson");
+  }
+
+  @Test
   public void createClusterMissingEndBracket() {
-    String inputText = "CREATE CLUSTER dev ON DATASTORE \"db\""
+    String inputText = "ATTACH CLUSTER dev ON DATASTORE \"db\""
                        + " WITH OPTIONS {host:127.0.0.1;";
-    testParseFails(inputText, "createClusterMissingEndBracket");
+    testParserFails(inputText, "createClusterMissingEndBracket");
   }
 
   @Test
   public void createClusterMissingBrackets() {
-    String inputText = "CREATE CLUSTER dev ON DATASTORE \"db\""
+    String inputText = "ATTACH CLUSTER dev ON DATASTORE \"db\""
                        + " WITH OPTIONS host:127.0.0.1;";
-    testParseFails(inputText, "createClusterMissingBrackets");
+    testParserFails(inputText, "createClusterMissingBrackets");
   }
 
 }

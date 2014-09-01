@@ -32,7 +32,7 @@ public class CreateTriggerStatementTest extends ParsingTest {
     @Test
     public void createTriggerWrongAsWordUse(){
         String inputText = "create trigger trigger1 on table_name USING triggerClassName AS ident1;";
-        testParseFails(inputText, "createTriggerWrongAsWordUse");
+        testParserFails(inputText, "createTriggerWrongAsWordUse");
     }
 
 
