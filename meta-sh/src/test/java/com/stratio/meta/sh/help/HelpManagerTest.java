@@ -24,22 +24,22 @@ import static org.testng.Assert.assertNotNull;
 
 public class HelpManagerTest {
 
-    private HelpManager manager = new HelpManager();
+  private HelpManager manager = new HelpManager();
 
-    @Test
-    public void testLoadHelpContent() throws Exception {
-        HelpContent content = manager.loadHelpContent();
-        assertNotNull(content, "Cannot load help");
-        assertNotNull(content.getContent(), "Null help content returned.");
+  @Test
+  public void testLoadHelpContent() throws Exception {
+    HelpContent content = manager.loadHelpContent();
+    assertNotNull(content, "Cannot load help");
+    assertNotNull(content.getContent(), "Null help content returned.");
 
-        HelpEntry entry = content.getContent().get(0);
-        assertNotNull(entry.getEntry(), "Cannot read entry");
-        assertNotNull(entry.getHelp(), "Cannot read help");
+    HelpEntry entry = content.getContent().get(0);
+    assertNotNull(entry.getEntry(), "Cannot read entry");
+    assertNotNull(entry.getHelp(), "Cannot read help");
 
-        assertNotNull(content.getHelp(), "Null help map returned.");
-        for(HelpType type : HelpType.values()){
-            assertNotNull(content.getHelp().containsKey(type), "Cannot find help associated with " + type + " in help map");
-            assertNotNull(content.searchHelp(type), "Cannot find help associated with " + type);
-        }
+    assertNotNull(content.getHelp(), "Null help map returned.");
+    for(HelpType type : HelpType.values()){
+      assertNotNull(content.getHelp().containsKey(type), "Cannot find help associated with " + type + " in help map");
+      assertNotNull(content.searchHelp(type), "Cannot find help associated with " + type);
     }
+  }
 }

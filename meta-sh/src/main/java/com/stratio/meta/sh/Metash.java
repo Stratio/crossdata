@@ -18,25 +18,8 @@
 
 package com.stratio.meta.sh;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
-
-import jline.console.ConsoleReader;
-
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
-
 import com.stratio.meta.common.exceptions.ConnectionException;
 import com.stratio.meta.common.result.IResultHandler;
-
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
@@ -48,6 +31,23 @@ import com.stratio.meta.sh.help.generated.MetaHelpParser;
 import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
+import com.stratio.meta2.common.api.Manifest;
+
+import jline.console.ConsoleReader;
+
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 
 /**
  * Interactive META console.
@@ -350,6 +350,8 @@ public class Metash {
             println("");
           } else if (toExecute.toLowerCase().startsWith("help")) {
             showHelp(sb.toString());
+          } else if (toExecute.toLowerCase().startsWith("add datastore") || toExecute.toLowerCase().startsWith("add connector")){
+            parseXML(toExecute);
           } else {
             executeQuery(toExecute);
             println("");
@@ -371,6 +373,22 @@ public class Metash {
     } catch (IOException ex) {
       LOG.error("Cannot read from console.", ex);
     }
+  }
+
+  public static String parseXML(String sentence) {
+    System.out.println(" >>> TRACE: sentence(1): "+sentence);
+    sentence = sentence.substring(4);
+    System.out.println(" >>> TRACE: sentence(2): "+sentence);
+    Manifest manifest = null;
+    if(sentence.toLowerCase().startsWith("datastore")){
+      manifest = new Manifest(Manifest.TYPE_DATASTORE);
+    } else if(sentence.toLowerCase().startsWith("connector")) {
+      manifest = new Manifest(Manifest.TYPE_CONNECTOR);
+    }
+    sentence = sentence.substring(11, sentence.length() - 1);
+    System.out.println(" >>> TRACE: sentence(3): "+sentence);
+    manifest.parseFromFile(sentence);
+    return manifest.toString();
   }
 
   /**

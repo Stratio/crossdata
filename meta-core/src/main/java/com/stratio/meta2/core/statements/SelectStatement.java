@@ -113,7 +113,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * The {@link com.stratio.meta.core.structures.GroupBy} clause.
    */
-  private List<GroupBy> group = null;
+  private GroupBy group = null;
 
   /**
    * Whether a LIMIT clause has been specified.
@@ -274,7 +274,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @param group The group by.
    */
-  public void setGroup(List<GroupBy> group) {
+  public void setGroup(GroupBy group) {
     this.groupInc = true;
     this.group = group;
   }
@@ -284,7 +284,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @return list of {@link com.stratio.meta.core.structures.GroupBy}.
    */
-  public List<GroupBy> getGroup() {
+  public GroupBy getGroup() {
     return group;
   }
 
@@ -366,9 +366,10 @@ public class SelectStatement extends MetaStatement {
     if (orderInc) {
       sb.append(" ORDER BY ").append(StringUtils.stringList(order, ", "));
     }
-    if (groupInc) {
+    //TODO: Update group by detection
+    /*if (groupInc) {
       sb.append(" GROUP BY ").append(StringUtils.stringList(group, ", "));
-    }
+    }*/
     if (limitInc) {
       sb.append(" LIMIT ").append(limit);
     }

@@ -1,6 +1,6 @@
 /*
  * Licensed to STRATIO (C) under one or more contributor license agreements.
- * See the NOTICE file distributed with this work for dropitional information
+ * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership.  The STRATIO (C) licenses this file
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
@@ -22,18 +22,24 @@ import com.stratio.meta.core.grammar.ParsingTest;
 
 import org.testng.annotations.Test;
 
-public class DropDataStoreTest extends ParsingTest {
+public class DropCatalogStatementTest extends ParsingTest {
 
   @Test
-  public void dropDatastoreSimple() {
-    String inputText = "DROP DATASTORE myDatastore;";
-    testRegularStatement(inputText, "dropDatastoreSimple");
+  public void dropCatalogSimple() {
+    String inputText = "DROP CATALOG myCatalog;";
+    testRegularStatement(inputText, "dropCatalogSimple");
   }
 
   @Test
-  public void dropDatastoreError() {
-    String inputText = "DROP DATASTORE _myDatastore";
-    testParserFails(inputText, "dropDatastoreError");
+  public void dropCatalogIfExistsSimple() {
+    String inputText = "DROP CATALOG IF EXISTS myCatalog;";
+    testRegularStatement(inputText, "dropCatalogSimple");
+  }
+
+    @Test
+  public void dropCatalogError() {
+    String inputText = "DROP CATALOG _myCatalog";
+    testParserFails(inputText, "dropCatalogError");
   }
 
 }
