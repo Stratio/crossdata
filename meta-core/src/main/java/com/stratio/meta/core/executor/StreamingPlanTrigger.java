@@ -1,20 +1,19 @@
 /*
- * Stratio Meta
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Copyright (c) 2014, Stratio, All rights reserved.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.executor;
@@ -24,6 +23,7 @@ import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
@@ -40,10 +40,11 @@ public class StreamingPlanTrigger implements Runnable, ActorResultListener{
   private final DeepSparkContext deepSparkContext;
   private final EngineConfig engineConfig;
   private final ActorResultListener callback;
+  private final MetadataManager metadataManager;
 
   public StreamingPlanTrigger(MetaQuery metaQuery, Session session,
                               IStratioStreamingAPI stratioStreamingAPI,
-                              DeepSparkContext deepSparkContext, EngineConfig engineConfig,
+                              DeepSparkContext deepSparkContext, MetadataManager metadataManager, EngineConfig engineConfig,
                               ActorResultListener callbackActor) {
 
     this.metaQuery = metaQuery;
@@ -52,6 +53,7 @@ public class StreamingPlanTrigger implements Runnable, ActorResultListener{
     this.deepSparkContext = deepSparkContext;
     this.engineConfig = engineConfig;
     this.callback = callbackActor;
+    this.metadataManager = metadataManager;
   }
 
   @Override
@@ -60,7 +62,7 @@ public class StreamingPlanTrigger implements Runnable, ActorResultListener{
     Tree t = new Tree(metaQuery.getPlan().getNode());
     t.setParent(new Tree());
     t.executeTreeDownTop(metaQuery.getQueryId(), session, stratioStreamingAPI,
-                                                      deepSparkContext, engineConfig, this);
+                                                      deepSparkContext, metadataManager, engineConfig, this);
   }
 
   @Override
@@ -69,7 +71,7 @@ public class StreamingPlanTrigger implements Runnable, ActorResultListener{
     //Get the children -> Select from deep -> Join on Deep.
     Tree t = metaQuery.getPlan().getChildren().get(0);
     Result r = t.executeTreeDownTop(metaQuery.getQueryId(), session, stratioStreamingAPI,
-                                    deepSparkContext, engineConfig, null, result);
+                                    deepSparkContext, metadataManager, engineConfig, null, result);
     r.setQueryId(metaQuery.getQueryId());
     callback.processResults(r);
   }

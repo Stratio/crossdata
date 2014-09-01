@@ -1,39 +1,48 @@
 /*
- * Stratio Meta
- * 
- * Copyright (c) 2014, Stratio, All rights reserved.
- * 
- * This library is free software; you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation; either version
- * 3.0 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License along with this library.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.statements;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
-import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.stratio.meta.common.metadata.structures.MetadataUtils;
+import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta.core.metadata.CassandraMetadataHelper;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.BooleanTerm;
+import com.stratio.meta.core.structures.DoubleTerm;
 import com.stratio.meta.core.structures.FloatTerm;
 import com.stratio.meta.core.structures.IntegerTerm;
+import com.stratio.meta.core.structures.LongTerm;
 import com.stratio.meta.core.structures.Option;
+import com.stratio.meta.core.structures.StringTerm;
 import com.stratio.meta.core.structures.Term;
 import com.stratio.meta.core.structures.ValueCell;
 import com.stratio.meta.core.utils.MetaPath;
@@ -100,6 +109,8 @@ public class InsertIntoStatement extends MetaStatement {
    */
   private int typeValues;
 
+  private boolean streamMode = false;
+
   /**
    * Class logger.
    */
@@ -124,9 +135,8 @@ public class InsertIntoStatement extends MetaStatement {
     this.tableName = tableName;
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      this.setKeyspace(ksAndTableName[0]);
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
     }
     this.ids = ids;
     this.selectStatement = selectStatement;
@@ -191,14 +201,29 @@ public class InsertIntoStatement extends MetaStatement {
     this(tableName, ids, null, cellValues, ifNotExists, false, null, 2);
   }
 
+  public String getTableName() {
+    return tableName;
+  }
+
+  public List<String> getIds() {
+    return ids;
+  }
+
+  public List<ValueCell<?>> getCellValues() {
+    return cellValues;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("INSERT INTO ");
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (this.isKeyspaceIncluded()) {
+      sb.append(this.getEffectiveKeyspace()).append(".");
     }
-    sb.append(tableName).append(" (");
-    sb.append(ParserUtils.stringList(ids, ", ")).append(") ");
+    sb.append(tableName).append(" ");
+    if (!ids.isEmpty()) {
+      sb.append("(");
+      sb.append(ParserUtils.stringList(ids, ", ")).append(") ");
+    }
     if (typeValues == TYPE_SELECT_CLAUSE) {
       sb.append(selectStatement.toString());
     } else {
@@ -218,12 +243,17 @@ public class InsertIntoStatement extends MetaStatement {
 
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
-    Result result =
-        validateKeyspaceAndTable(metadata, sessionKeyspace, keyspaceInc, keyspace, tableName);
-    if (!result.hasError()) {
-      String effectiveKeyspace = getEffectiveKeyspace();
+    Result result = validateKeyspaceAndTable(metadata, this.getEffectiveKeyspace(), tableName);
 
-      TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
+    if ((!result.hasError()) && (result instanceof CommandResult)
+        && ("streaming".equalsIgnoreCase(((CommandResult) result).getResult().toString()))) {
+      streamMode = true;
+    }
+
+    if (!result.hasError()) {
+      com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata =
+          metadata.getTableGenericMetadata(getEffectiveKeyspace(), tableName);
+      // TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
 
       if (typeValues == TYPE_SELECT_CLAUSE) {
         result = Result.createValidationErrorResult("INSERT INTO with subqueries not supported.");
@@ -234,17 +264,66 @@ public class InsertIntoStatement extends MetaStatement {
     return result;
   }
 
-  public void updateTermClass(TableMetadata tableMetadata) {
+  public void updateTermClass(
+      com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata) {
     for (int i = 0; i < ids.size(); i++) {
       Class<? extends Comparable<?>> dataType =
           (Class<? extends Comparable<?>>) tableMetadata.getColumn(ids.get(i)).getType()
-              .asJavaClass();
+              .getDbClass();
       if (cellValues.get(i) instanceof Term) {
         Term<?> term = (Term<?>) cellValues.get(i);
-        if (dataType == Integer.class && term.getTermClass() == Long.class) {
-          cellValues.set(i, new IntegerTerm((Term<Long>) term));
-        } else if (dataType == Float.class && term.getTermClass() == Double.class) {
-          cellValues.set(i, new FloatTerm((Term<Double>) term));
+
+        Class<? extends Comparable<?>> parserClass = term.getTermClass();
+
+        LOG.debug("Column = " + ids.get(i) + ", type = " + parserClass);
+
+        if (dataType != parserClass) {
+          LOG.debug("Converting from " + parserClass + " to " + dataType);
+          if (dataType == Boolean.class) {
+            if (term instanceof StringTerm) {
+              cellValues.set(i, new BooleanTerm(((StringTerm) term).getTermValue()));
+            } else {
+              cellValues.set(i, new BooleanTerm((Term<Boolean>) term));
+            }
+          } else if (dataType == Double.class) {
+            if (term instanceof StringTerm) {
+              cellValues.set(i, new DoubleTerm(((StringTerm) term).getTermValue()));
+            } else if (term instanceof LongTerm) {
+              cellValues.set(i, new DoubleTerm(((Long) term.getTermValue()).doubleValue()));
+            } else {
+              cellValues.set(i, new DoubleTerm((Term<Double>) term));
+            }
+          } else if (dataType == Float.class) {
+            if (term instanceof StringTerm) {
+              cellValues.set(i, new FloatTerm(((StringTerm) term).getTermValue()));
+            } else if (term instanceof LongTerm) {
+              cellValues.set(i, new FloatTerm((((Long) term.getTermValue()).floatValue())));
+            } else {
+              cellValues.set(i, new FloatTerm((Term<Double>) term));
+            }
+          } else if (dataType == Integer.class) {
+            if (term instanceof StringTerm) {
+              cellValues.set(i, new IntegerTerm(((StringTerm) term).getTermValue()));
+            } else if (term instanceof DoubleTerm) {
+              cellValues.set(i, new IntegerTerm((((Double) term.getTermValue()).intValue())));
+            } else {
+              cellValues.set(i, new IntegerTerm((Term<Long>) term));
+            }
+          } else if (dataType == Long.class) {
+            if (term instanceof StringTerm) {
+              cellValues.set(i, new LongTerm(((StringTerm) term).getTermValue()));
+            } else if (term instanceof DoubleTerm) {
+              cellValues.set(i, new LongTerm(((Double) term.getTermValue()).longValue()));
+            } else {
+              cellValues.set(i, new LongTerm((Term<Long>) term));
+            }
+          } else {
+            cellValues.set(i, new StringTerm((Term<String>) term));
+          }
+          Class<? extends Comparable<?>> newDataType =
+              (Class<? extends Comparable<?>>) tableMetadata.getColumn(ids.get(i)).getType()
+                  .getDbClass();
+          LOG.debug("New DataType = " + newDataType);
         }
       }
     }
@@ -257,8 +336,19 @@ public class InsertIntoStatement extends MetaStatement {
    * @param tableMetadata Table metadata associated with the target table.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateColumns(TableMetadata tableMetadata) {
+  private Result validateColumns(
+      com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
+
+    // INSERT INTO table VALUES (...) -> columns ids array is empty;
+    if (ids.isEmpty()) {
+      for (com.stratio.meta.common.metadata.structures.ColumnMetadata c : tableMetadata
+          .getColumns()) {
+        if (!c.getColumnName().toLowerCase().startsWith("stratio")) {
+          ids.add(c.getColumnName());
+        }
+      }
+    }
 
     // Validate target column names
     for (String c : ids) {
@@ -269,23 +359,37 @@ public class InsertIntoStatement extends MetaStatement {
       }
     }
     if (!result.hasError()) {
-      ColumnMetadata cm = null;
+      com.stratio.meta.common.metadata.structures.ColumnMetadata cm = null;
       if (cellValues.size() == ids.size()) {
-        updateTermClass(tableMetadata);
-        for (int index = 0; index < cellValues.size(); index++) {
-          cm = tableMetadata.getColumn(ids.get(index));
-          if (cm != null) {
-            Term<?> t = Term.class.cast(cellValues.get(index));
-            if (!cm.getType().asJavaClass().equals(t.getTermClass())) {
-              result =
-                  Result.createValidationErrorResult("Column " + ids.get(index) + " of type "
-                      + cm.getType().asJavaClass() + " does not accept " + t.getTermClass()
-                      + " values (" + cellValues.get(index) + ")");
-            }
-          } else {
+        // Checking insertion fields
+        for (int i = 0; i < ids.size(); i++) {
+          com.stratio.meta.common.metadata.structures.ColumnMetadata column =
+              tableMetadata.getColumn(ids.get(i));
+          if (column == null) {
             result =
-                Result.createValidationErrorResult("Column " + ids.get(index) + " not found in "
-                    + tableMetadata.getName());
+                Result.createValidationErrorResult("Column [" + ids.get(i)
+                    + "] not found in table [" + tableMetadata.getTableName() + "]");
+          }
+        }
+
+        if (!result.hasError()) {
+          updateTermClass(tableMetadata);
+          for (int index = 0; index < cellValues.size(); index++) {
+            cm = tableMetadata.getColumn(ids.get(index));
+            if (cm != null) {
+              Term<?> t = Term.class.cast(cellValues.get(index));
+              MetadataUtils.updateType(cm);
+              if (!cm.getType().getDbClass().equals(t.getTermClass())) {
+                result =
+                    Result.createValidationErrorResult("Column " + ids.get(index) + " of type "
+                        + cm.getType().getDbClass() + " does not accept " + t.getTermClass()
+                        + " values (" + cellValues.get(index) + ")");
+              }
+            } else {
+              result =
+                  Result.createValidationErrorResult("Column " + ids.get(index) + " not found in "
+                      + tableMetadata.getTableName());
+            }
           }
         }
       } else {
@@ -296,10 +400,14 @@ public class InsertIntoStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
+    TableMetadata metadata = metadataManager.getTableMetadata(getEffectiveKeyspace(), tableName);
+    CassandraMetadataHelper cmh = new CassandraMetadataHelper();
+    com.stratio.meta.common.metadata.structures.TableMetadata metadataCommons =
+        cmh.toTableMetadata(getEffectiveKeyspace(), metadata);
     StringBuilder sb = new StringBuilder("INSERT INTO ");
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (this.isKeyspaceIncluded()) {
+      sb.append(this.getEffectiveKeyspace()).append(".");
     }
     sb.append(tableName).append(" (");
     sb.append(ParserUtils.stringList(ids, ", "));
@@ -309,7 +417,8 @@ public class InsertIntoStatement extends MetaStatement {
     }
     if (typeValues == TYPE_VALUES_CLAUSE) {
       sb.append("VALUES (");
-      sb.append(ParserUtils.addSingleQuotesToString(ParserUtils.stringList(cellValues, ", "), ","));
+      sb.append(ParserUtils.addSingleQuotesToString(ParserUtils.stringList(cellValues, ", "), ",",
+          metadataCommons, ids));
       sb.append(")");
     }
     if (ifNotExists) {
@@ -328,9 +437,7 @@ public class InsertIntoStatement extends MetaStatement {
       return null;
     }
 
-    Insert insertStmt =
-        this.keyspaceInc ? QueryBuilder.insertInto(this.keyspace, this.tableName) : QueryBuilder
-            .insertInto(this.tableName);
+    Insert insertStmt = QueryBuilder.insertInto(this.getEffectiveKeyspace(), this.tableName);
 
     try {
       iterateValuesAndInsertThem(insertStmt);
@@ -350,7 +457,11 @@ public class InsertIntoStatement extends MetaStatement {
   @Override
   public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
     Tree tree = new Tree();
-    tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+    if (streamMode) {
+      tree.setNode(new MetaStep(MetaPath.STREAMING, this));
+    } else {
+      tree.setNode(new MetaStep(MetaPath.CASSANDRA, this));
+    }
     return tree;
   }
 
@@ -406,5 +517,21 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     return optionsStmt;
+  }
+
+  private List<Term<?>> termTypeNormalization(List<Term<?>> terms, Class<?> columnType) {
+
+    List<Term<?>> normalizedTerms = new ArrayList<>();
+    for (Term<?> term : terms) {
+      if (columnType.equals(Double.class) && term.getTermClass().equals(Long.class)) {
+        normalizedTerms.add(new DoubleTerm(((Long) term.getTermValue()).doubleValue()));
+      } else if (columnType.equals(Long.class) && term.getTermClass().equals(Double.class)) {
+        normalizedTerms.add(new LongTerm(((Double) term.getTermValue()).longValue()));
+      } else {
+        normalizedTerms.add(term);
+      }
+    }
+
+    return normalizedTerms;
   }
 }

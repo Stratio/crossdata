@@ -1,17 +1,19 @@
 /*
- * Stratio Meta
- * 
- * Copyright (c) 2014, Stratio, All rights reserved.
- * 
- * This library is free software; you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation; either version
- * 3.0 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License along with this library.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.planner.statements;
@@ -47,7 +49,8 @@ public class SelectStatementTest extends BasicPlannerTest {
 
   @Test
   public void testWhereIndexNonRelational() {
-    // "SELECT name, age, info FROM demo.users WHERE age = 10";
+
+    // SELECT name, age, info FROM demo.users WHERE age = 10;
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(
             new SelectorIdentifier("age")), new SelectionSelector(new SelectorIdentifier("info")));
@@ -63,7 +66,8 @@ public class SelectStatementTest extends BasicPlannerTest {
 
   @Test
   public void testWhereWithPartialPartitionKey() {
-    // "SELECT name, age FROM demo.users WHERE name = 'name_5' AND age = 15;";
+
+    // SELECT name, age FROM demo.users WHERE name = 'name_5' AND age = 15;
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(
             new SelectorIdentifier("age")));
@@ -80,7 +84,8 @@ public class SelectStatementTest extends BasicPlannerTest {
 
   @Test
   public void testWhereIndexRelational() {
-    // "SELECT name, age FROM users WHERE age > 13";
+
+    // SELECT name, age FROM users WHERE age > 13;
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(
             new SelectorIdentifier("age")), new SelectionSelector(new SelectorIdentifier("info")));
@@ -96,7 +101,8 @@ public class SelectStatementTest extends BasicPlannerTest {
 
   @Test
   public void testWhereNoIndex() {
-    // "SELECT * FROM demo.types WHERE int_column=104;";
+
+    // SELECT * FROM demo.types WHERE int_column=104;
     SelectionClause selClause = new SelectionList(new SelectionAsterisk());
     stmt = new SelectStatement(selClause, "demo.types");
     Relation relation = new RelationCompare("int_column", "=", new LongTerm("104"));
@@ -109,8 +115,8 @@ public class SelectStatementTest extends BasicPlannerTest {
   @Test
   public void testSimpleJoin() {
 
-    // "SELECT users.name, users.age, users_info.info FROM demo.users INNER JOIN demo.users_info ON users.name=users_info.link_name;";
-
+    // SELECT users.name, users.age, users_info.info FROM demo.users INNER JOIN demo.users_info ON
+    // users.name=users_info.link_name;
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("users.name")),
             new SelectionSelector(new SelectorIdentifier("users.age")), new SelectionSelector(
@@ -119,8 +125,8 @@ public class SelectStatementTest extends BasicPlannerTest {
     stmt = new SelectStatement(selClause, "demo.users");
     InnerJoin join = new InnerJoin("demo.users_info", "users.name", "users_info.link_name");
     ((SelectStatement) stmt).setJoin(join);
-    ((SelectStatement) stmt).setSessionKeyspace("demo");
-    ((SelectStatement) stmt).validate(_metadataManager, null);
+    stmt.setSessionKeyspace("demo");
+    stmt.validate(_metadataManager, null);
     validateDeepPath("testSimpleJoin");
 
   }
@@ -128,8 +134,8 @@ public class SelectStatementTest extends BasicPlannerTest {
   @Test
   public void testComplexJoinNoMatch() {
 
-    // "SELECT users.name, users.age, users_info.info FROM demo.users INNER JOIN demo.users_info ON users.name=users_info.link_name WHERE name = 'name_3';";
-
+    // SELECT users.name, users.age, users_info.info FROM demo.users INNER JOIN demo.users_info ON
+    // users.name=users_info.link_name WHERE name = 'name_3';
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("users.name")),
             new SelectionSelector(new SelectorIdentifier("users.age")), new SelectionSelector(
@@ -138,8 +144,8 @@ public class SelectStatementTest extends BasicPlannerTest {
     stmt = new SelectStatement(selClause, "demo.users");
     InnerJoin join = new InnerJoin("demo.users_info", "users.name", "users_info.link_name");
     ((SelectStatement) stmt).setJoin(join);
-    ((SelectStatement) stmt).setSessionKeyspace("demo");
-    ((SelectStatement) stmt).validate(_metadataManager, null);
+    stmt.setSessionKeyspace("demo");
+    stmt.validate(_metadataManager, null);
 
     List<Relation> clause = new ArrayList<>();
     Relation relation = new RelationCompare("users.name", "=", new StringTerm("name_3"));
@@ -151,7 +157,7 @@ public class SelectStatementTest extends BasicPlannerTest {
   @Test
   public void testWhereWithInClause() {
 
-    // "SELECT name, age FROM demo.users WHERE name IN ('name_5', 'name_11') AND age = 15;";
+    // SELECT name, age FROM demo.users WHERE name IN ('name_5', 'name_11') AND age = 15;
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(
             new SelectorIdentifier("age")));
@@ -171,7 +177,8 @@ public class SelectStatementTest extends BasicPlannerTest {
 
   @Test
   public void testWhereWithBetweenClause() {
-    // "SELECT name, age FROM demo.users WHERE name IN ('name_5', 'name_11') AND age = 15;";
+
+    // SELECT name, age FROM demo.users WHERE name IN ('name_5', 'name_11') AND age = 15;
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("name")), new SelectionSelector(
             new SelectorIdentifier("age")));
@@ -190,8 +197,7 @@ public class SelectStatementTest extends BasicPlannerTest {
   @Test
   public void testGroupByWithCount() {
 
-    // "SELECT gender, COUNT(*) FROM demo.users GROUP BY gender;";
-
+    // SELECT gender, COUNT(*) FROM demo.users GROUP BY gender;
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("gender")),
             new SelectionSelector(new SelectorGroupBy(GroupByFunction.COUNT,
@@ -211,8 +217,7 @@ public class SelectStatementTest extends BasicPlannerTest {
   @Test
   public void testSimpleOrderByOk() {
 
-    // "SELECT age FROM demo.users ORDER BY age;";
-
+    // SELECT age FROM demo.users ORDER BY age;
     List<SelectionSelector> selectionSelectors =
         Arrays.asList(new SelectionSelector(new SelectorIdentifier("age")));
 

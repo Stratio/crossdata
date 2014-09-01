@@ -1,33 +1,22 @@
 /*
- * Stratio Meta
- * 
- * Copyright (c) 2014, Stratio, All rights reserved.
- * 
- * This library is free software; you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation; either version
- * 3.0 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License along with this library.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.cassandra;
-
-import static org.testng.Assert.assertTrue;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
@@ -38,6 +27,22 @@ import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.test.CCMHandler;
+import com.stratio.streaming.api.IStratioStreamingAPI;
+import com.stratio.streaming.api.StratioStreamingAPIFactory;
+import com.stratio.streaming.commons.exceptions.StratioEngineConnectionException;
+
+import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.testng.Assert.assertTrue;
 
 
 public class BasicCoreCassandraTest {
@@ -57,6 +62,8 @@ public class BasicCoreCassandraTest {
    */
   protected static Session _session = null;
 
+  protected static IStratioStreamingAPI stratioStreamingAPI = null;
+
   /**
    * Class logger.
    */
@@ -67,6 +74,13 @@ public class BasicCoreCassandraTest {
     CCMHandler.startCCM();
     initCassandraConnection();
     dropKeyspaceIfExists("testKS");
+    try {
+      stratioStreamingAPI =
+          StratioStreamingAPIFactory.create()
+              .initializeWithServerConfig("127.0.0.1", 9092, "127.0.0.1", 2181);
+    } catch (StratioEngineConnectionException e) {
+      e.printStackTrace();
+    }
   }
 
   @AfterClass
@@ -119,6 +133,7 @@ public class BasicCoreCassandraTest {
     try {
       _session.execute(query);
     } catch (InvalidQueryException iqe) {
+      logger.info("Invalid query exception; keyspace doesn't exist: " + iqe.getMessage());
       ksExists = false;
     }
 
@@ -173,14 +188,14 @@ public class BasicCoreCassandraTest {
         }
       }
     } catch (IOException e) {
-      logger.error(e.getStackTrace());
+      logger.error("IOException", e);
     }
     return result;
   }
 
-  public static String getErrorMessage(Result metaResult){
+  public static String getErrorMessage(Result metaResult) {
     String result = "Invalid class: " + metaResult.getClass();
-    if(ErrorResult.class.isInstance(metaResult)){
+    if (ErrorResult.class.isInstance(metaResult)) {
       result = ErrorResult.class.cast(metaResult).getErrorMessage();
     }
     return result;

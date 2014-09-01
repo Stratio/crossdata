@@ -1,20 +1,42 @@
 /*
- * Stratio Meta
- * 
- * Copyright (c) 2014, Stratio, All rights reserved.
- * 
- * This library is free software; you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation; either version
- * 3.0 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License along with this library.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.sh.utils;
+
+import com.stratio.meta.common.data.MetaResultSet;
+import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.ResultSet;
+import com.stratio.meta.common.data.Row;
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.ConnectResult;
+import com.stratio.meta.common.result.ErrorResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+
+import jline.console.ConsoleReader;
+import jline.console.history.History;
+import jline.console.history.MemoryHistory;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -30,26 +52,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Map;
-
-import jline.console.ConsoleReader;
-import jline.console.history.History;
-import jline.console.history.MemoryHistory;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.Days;
-
-import com.stratio.meta.common.data.CassandraResultSet;
-import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.data.ResultSet;
-import com.stratio.meta.common.data.Row;
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.ConnectResult;
-import com.stratio.meta.common.result.ErrorResult;
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
 
 public class ConsoleUtils {
 
@@ -106,7 +108,7 @@ public class ConsoleUtils {
       return System.lineSeparator() + "OK";
     }
 
-    CassandraResultSet resultSet = (CassandraResultSet) queryResult.getResultSet();
+    MetaResultSet resultSet = (MetaResultSet) queryResult.getResultSet();
 
     Map<String, Integer> colWidths = calculateColWidths(resultSet);
 
@@ -153,8 +155,8 @@ public class ConsoleUtils {
     Map<String, Integer> colWidths = new HashMap<>();
 
     // Get column names or aliases width
-    CassandraResultSet cassandraResultSet = (CassandraResultSet) resultSet;
-    for (ColumnMetadata columnMetadata : cassandraResultSet.getColumnMetadata()) {
+    MetaResultSet metaResultSet = (MetaResultSet) resultSet;
+    for (ColumnMetadata columnMetadata: metaResultSet.getColumnMetadata()) {
       colWidths.put(columnMetadata.getColumnName(), columnMetadata.getColumnNameToShow().length());
     }
 
@@ -163,7 +165,7 @@ public class ConsoleUtils {
       for (String key : row.getCells().keySet()) {
         String cellContent = String.valueOf(row.getCell(key).getValue());
         int currentWidth = colWidths.get(key);
-        if (cellContent.length() > currentWidth) {
+        if ((cellContent != null) && (cellContent.length() > currentWidth)) {
           colWidths.put(key, cellContent.length());
         }
       }

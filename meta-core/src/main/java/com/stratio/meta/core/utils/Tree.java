@@ -1,20 +1,19 @@
 /*
- * Stratio Meta
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Copyright (c) 2014, Stratio, All rights reserved.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.utils;
@@ -29,10 +28,10 @@ import com.stratio.meta.core.executor.CassandraExecutor;
 import com.stratio.meta.core.executor.CommandExecutor;
 import com.stratio.meta.core.executor.DeepExecutor;
 import com.stratio.meta.core.executor.StreamExecutor;
+import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
-import org.apache.spark.SparkEnv;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -167,6 +166,7 @@ public class Tree {
                               Session session,
                               IStratioStreamingAPI stratioStreamingAPI,
                               DeepSparkContext deepSparkContext,
+                              MetadataManager metadataManager,
                               EngineConfig engineConfig,
                               List<Result> resultsFromChildren,
                               ActorResultListener callbackActor){
@@ -179,7 +179,7 @@ public class Tree {
     if(myPath == MetaPath.COMMAND){
       result = CommandExecutor.execute(queryId, myStep.getStmt(), session, stratioStreamingAPI);
     } else if(myPath == MetaPath.CASSANDRA){
-      result = CassandraExecutor.execute(myStep, session);
+      result = CassandraExecutor.execute(myStep, session, metadataManager);
     } else if(myPath == MetaPath.DEEP){
       result = DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session, deepSparkContext, engineConfig);
     } else if(myPath == MetaPath.STREAMING){
@@ -202,30 +202,30 @@ public class Tree {
   public Result executeTreeDownTop(
       String queryId,
       Session session, IStratioStreamingAPI stratioStreamingAPI,
-      DeepSparkContext deepSparkContext, EngineConfig engineConfig,
+      DeepSparkContext deepSparkContext, MetadataManager metadataManager, EngineConfig engineConfig,
       ActorResultListener callbackActor){
     // Get results from my children
     List<Result> resultsFromChildren = new ArrayList<>();
     for(Tree child: children){
-      resultsFromChildren.add(child.executeTreeDownTop(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor));
+      resultsFromChildren.add(child.executeTreeDownTop(queryId, session, stratioStreamingAPI, deepSparkContext, metadataManager, engineConfig, callbackActor));
     }
     // Execute myself and return final result
-    return executeMyself(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, resultsFromChildren, callbackActor);
+    return executeMyself(queryId, session, stratioStreamingAPI, deepSparkContext, metadataManager, engineConfig, resultsFromChildren, callbackActor);
   }
 
   public Result executeTreeDownTop(
       String queryId,
       Session session, IStratioStreamingAPI stratioStreamingAPI,
-      DeepSparkContext deepSparkContext, EngineConfig engineConfig,
+      DeepSparkContext deepSparkContext, MetadataManager metadataManager, EngineConfig engineConfig,
       ActorResultListener callbackActor, Result result){
     // Get results from my children
     List<Result> resultsFromChildren = new ArrayList<>();
     resultsFromChildren.add(result);
     for(Tree child: children){
-      resultsFromChildren.add(child.executeTreeDownTop(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor));
+      resultsFromChildren.add(child.executeTreeDownTop(queryId, session, stratioStreamingAPI, deepSparkContext, metadataManager, engineConfig, callbackActor));
     }
     // Execute myself and return final result
-    return executeMyself(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, resultsFromChildren, callbackActor);
+    return executeMyself(queryId, session, stratioStreamingAPI, deepSparkContext, metadataManager, engineConfig, resultsFromChildren, callbackActor);
   }
 
   /**
@@ -269,16 +269,16 @@ public class Tree {
   }
 
   public Result executeTreeTopDown(String queryId, List<Result> resultsFromParents, Session session,
-                                   DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
+                                   DeepSparkContext deepSparkContext, MetadataManager metadataManager, EngineConfig engineConfig) {
 
     if(children.size() == 0){
       //No more children, execute final node.
-      return executeMyself(queryId, session, null, deepSparkContext,
+      return executeMyself(queryId, session, null, deepSparkContext, metadataManager,
                            engineConfig, resultsFromParents, null);
     }else{
-      resultsFromParents.add(executeMyself(queryId, session, null, deepSparkContext,
+      resultsFromParents.add(executeMyself(queryId, session, null, deepSparkContext, metadataManager,
                                            engineConfig, resultsFromParents, null));
-      return children.get(0).executeTreeTopDown(queryId, resultsFromParents, session, deepSparkContext, engineConfig);
+      return children.get(0).executeTreeTopDown(queryId, resultsFromParents, session, deepSparkContext, metadataManager, engineConfig);
     }
 
   }

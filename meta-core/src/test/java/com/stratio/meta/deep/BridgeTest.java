@@ -1,20 +1,37 @@
 /*
- * Stratio Meta
- * 
- * Copyright (c) 2014, Stratio, All rights reserved.
- * 
- * This library is free software; you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation; either version
- * 3.0 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License along with this library.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.deep;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import com.stratio.deep.context.CassandraDeepSparkContext;
+import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.data.Row;
@@ -51,20 +68,6 @@ import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
 
-import org.apache.log4j.Logger;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-
 public class BridgeTest extends BasicCoreCassandraTest {
 
   private final static String CONSTANT_USERS_GENDER = "users.gender";
@@ -98,10 +101,10 @@ public class BridgeTest extends BasicCoreCassandraTest {
     BasicCoreCassandraTest.setUpBeforeClass();
     BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
     EngineConfig config = initConfig();
-    deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
-    executor = new Executor(_session, null, deepContext, config);
-    metadataManager = new MetadataManager(_session, null);
+    deepContext = new CassandraDeepSparkContext(config.getSparkMaster(), config.getJobName());
+    metadataManager = new MetadataManager(_session, stratioStreamingAPI);
     metadataManager.loadMetadata();
+    executor = new Executor(_session, null, deepContext, metadataManager, config);
   }
 
   @AfterClass
@@ -334,6 +337,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     metaQuery.setPlan(tree);
     metaQuery.setStatus(QueryStatus.PLANNED);
     validateOk(metaQuery, "testLessThan");
+    validateRowsAndCols(metaQuery, "testLessEqualThan", 10, 1);
   }
 
   @Test
@@ -356,7 +360,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
     Tree tree = new Tree();
     tree.setNode(new MetaStep(MetaPath.DEEP, firstSelect));
     metaQuery.setPlan(tree);
-    validateOk(metaQuery, "testLessEqualThan");
+    validateRowsAndCols(metaQuery, "testLessEqualThan", 11, 1);
   }
 
   @Test
@@ -649,7 +653,7 @@ public class BridgeTest extends BasicCoreCassandraTest {
 
     // ORDERING
     List<Ordering> orderings = new ArrayList<>();
-    Ordering order1 = new Ordering(CONSTANT_AGE, true, OrderDirection.DESC);
+    Ordering order1 = new Ordering("users", CONSTANT_AGE, true, OrderDirection.DESC);
     orderings.add(order1);
     joinSelect.setOrder(orderings);
 

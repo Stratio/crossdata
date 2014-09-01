@@ -1,63 +1,65 @@
 /*
- * Stratio Meta
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Copyright (c) 2014, Stratio, All rights reserved.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.planner.statements;
+
+import static org.testng.Assert.assertTrue;
+
+import java.util.List;
+
+import org.testng.annotations.Test;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.statements.CreateIndexStatement;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.Tree;
-import org.testng.annotations.Test;
-
-import java.util.List;
-
-import static org.testng.Assert.assertTrue;
 
 public class CreateIndexStatementTest extends BasicPlannerTest {
 
-    @Test
-    public void testPlanDefaultIndex(){
-        String inputText = "CREATE DEFAULT INDEX ON demo.users (email);";
-        stmt = new CreateIndexStatement();
-        ((CreateIndexStatement)stmt).setType(IndexType.DEFAULT);
-        ((CreateIndexStatement)stmt).setTableName("demo.users");
-        ((CreateIndexStatement)stmt).addColumn("email");
-        ((CreateIndexStatement)stmt).setCreateIndex(true);
-        validateCassandraPath("testPlanDefaultIndex");
-    }
+  @Test
+  public void testPlanDefaultIndex() {
 
-    @Test
-    public void testPlanLuceneIndex(){
-        String inputText = "CREATE LUCENE INDEX new_index ON demo.types (varchar_column, boolean_column);";
-        stmt = new CreateIndexStatement();
-        ((CreateIndexStatement)stmt).setType(IndexType.LUCENE);
-        ((CreateIndexStatement)stmt).setName("new_index");
-        ((CreateIndexStatement)stmt).setTableName("demo.types");
-        ((CreateIndexStatement)stmt).addColumn("varchar_column");
-        ((CreateIndexStatement)stmt).addColumn("boolean_column");
-        ((CreateIndexStatement)stmt).setCreateIndex(true);
-        Tree tree = stmt.getPlan(_metadataManager,"demo");
-        assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
-        List<Tree> children = tree.getChildren();
-        for(Tree t : children){
-            assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
-        }
+    // CREATE DEFAULT INDEX ON demo.users (email);
+    stmt = new CreateIndexStatement();
+    ((CreateIndexStatement) stmt).setType(IndexType.DEFAULT);
+    ((CreateIndexStatement) stmt).setTableName("demo.users");
+    ((CreateIndexStatement) stmt).addColumn("email");
+    ((CreateIndexStatement) stmt).setCreateIndex(true);
+    validateCassandraPath("testPlanDefaultIndex");
+  }
+
+  @Test
+  public void testPlanLuceneIndex() {
+
+    // CREATE LUCENE INDEX new_index ON demo.types (varchar_column, boolean_column);
+    stmt = new CreateIndexStatement();
+    ((CreateIndexStatement) stmt).setType(IndexType.LUCENE);
+    ((CreateIndexStatement) stmt).setName("new_index");
+    ((CreateIndexStatement) stmt).setTableName("demo.types");
+    ((CreateIndexStatement) stmt).addColumn("varchar_column");
+    ((CreateIndexStatement) stmt).addColumn("boolean_column");
+    ((CreateIndexStatement) stmt).setCreateIndex(true);
+    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
+    List<Tree> children = tree.getChildren();
+    for (Tree t : children) {
+      assertTrue(t.getNode().getPath().equals(MetaPath.CASSANDRA));
     }
+  }
 }

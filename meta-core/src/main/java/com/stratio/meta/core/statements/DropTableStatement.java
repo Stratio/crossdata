@@ -1,17 +1,19 @@
 /*
- * Stratio Meta
- * 
- * Copyright (c) 2014, Stratio, All rights reserved.
- * 
- * This library is free software; you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation; either version
- * 3.0 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License along with this library.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.statements;
@@ -50,9 +52,8 @@ public class DropTableStatement extends MetaStatement {
   public DropTableStatement(String tableName, boolean ifExists) {
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      this.setKeyspace(ksAndTableName[0]);
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
     } else {
       this.tableName = tableName;
     }
@@ -76,9 +77,8 @@ public class DropTableStatement extends MetaStatement {
   public void setTableName(String tableName) {
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      this.setKeyspace(ksAndTableName[0]);
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
     } else {
       this.tableName = tableName;
     }
@@ -90,8 +90,8 @@ public class DropTableStatement extends MetaStatement {
     if (ifExists) {
       sb.append("IF EXISTS ");
     }
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (this.isKeyspaceIncluded()) {
+      sb.append(this.getEffectiveKeyspace()).append(".");
     }
     sb.append(tableName);
     return sb.toString();
@@ -101,22 +101,23 @@ public class DropTableStatement extends MetaStatement {
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();
 
-    String effectiveKeyspace = getEffectiveKeyspace();
-    if(keyspaceInc){
-      effectiveKeyspace = keyspace;
-    }
+    String effectiveKeyspace = this.getEffectiveKeyspace();
 
-    //Check that the keyspace and table exists.
-    if(effectiveKeyspace == null || effectiveKeyspace.length() == 0){
-      result= Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
-    }else{
+    // Check that the keyspace and table exists.
+    if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
+      result =
+          Result
+              .createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+    } else {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
-      if(ksMetadata == null){
-        result= Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
-      }else {
+      if (ksMetadata == null) {
+        result =
+            Result
+                .createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
+      } else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata == null) {
-          result= Result.createValidationErrorResult("Table " + tableName + " does not exist.");
+          result = Result.createValidationErrorResult("Table " + tableName + " does not exist.");
         }
       }
     }
@@ -125,7 +126,7 @@ public class DropTableStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
     return this.toString();
   }
 

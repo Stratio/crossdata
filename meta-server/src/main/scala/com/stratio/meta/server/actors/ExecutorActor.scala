@@ -1,20 +1,19 @@
 /*
- * Stratio Meta
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Copyright (c) 2014, Stratio, All rights reserved.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.server.actors
@@ -41,7 +40,7 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker with Actor
   var senderMap : java.util.Map[String, ActorRef] = new java.util.HashMap[String, ActorRef]()
 
   val log =Logger.getLogger(classOf[ExecutorActor])
-  override val timerName: String = this.getClass.getName
+  override lazy val timerName: String = this.getClass.getName
 
   override def receive: Receive = {
     case query:MetaQuery if query.getPlan.involvesStreaming() =>
@@ -68,12 +67,17 @@ class ExecutorActor(executor:Executor) extends Actor with TimeTracker with Actor
   }
 
   override def processResults(result: Result): Unit = {
-    //val r = result.asInstanceOf[QueryResult]
-    //System.out.println("####################################################################################3############################################## "
-    //                   + "Sending partial results: " + !r.isLastResultSet + ", QID: " + result.getQueryId
-    //                   + " page: " + r.getResultPage + " results: " + r.getResultSet.size());
-    //System.out.println("####################################################################################3############################################## "
-    //                   + "Sending partial results for QID: " + result.getQueryId);
+    /*
+    if (result.isInstanceOf[QueryResult]){
+      val r = result.asInstanceOf[QueryResult]
+      System.out.println("TRACE: "+System.lineSeparator()
+                         + "####################################################################################<>############################################## "
+                         + "Sending partial results: " + !r.isLastResultSet + ", QID: " + result.getQueryId
+                         + " page: " + r.getResultPage + " results: " + r.getResultSet.size());
+      val destination = senderMap.get(result.getQueryId)
+      System.out.println("TRACE: destination = " + destination.toString());
+    }
+    */
     senderMap.get(result.getQueryId) ! result
   }
 }

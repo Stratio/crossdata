@@ -1,20 +1,19 @@
 /*
- * Stratio Meta
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Copyright (c) 2014, Stratio, All rights reserved.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.engine;
@@ -22,28 +21,21 @@ package com.stratio.meta.core.engine;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.stratio.deep.context.CassandraDeepSparkContext;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.core.api.APIManager;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
 import com.stratio.meta.core.validator.Validator;
-import com.stratio.meta.streaming.StreamingUtils;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.SparkEnv;
-import org.apache.spark.storage.BlockManagerMasterActor;
-import org.apache.spark.storage.StorageStatus;
 
 import java.util.Arrays;
-import java.util.Map;
-
-import scala.Tuple2;
-import scala.collection.Iterator;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
@@ -110,7 +102,7 @@ public class Engine {
     validator = new Validator(session, stratioStreamingAPI, config);
     manager = new APIManager(session, stratioStreamingAPI);
     planner = new Planner(session, stratioStreamingAPI);
-    executor = new Executor(session, stratioStreamingAPI, deepContext, config);
+    executor = new Executor(session, stratioStreamingAPI, deepContext, validator.getMetadata(), config);
   }
 
   /**
@@ -121,7 +113,8 @@ public class Engine {
   private IStratioStreamingAPI initializeStreaming(EngineConfig config){
     IStratioStreamingAPI stratioStreamingAPI = null;
     if(config.getKafkaServer() != null && config.getZookeeperServer() != null
-       && !"null".equals(config.getKafkaServer()) && !"null".equals(config.getZookeeperServer())) {
+       && !"null".equals(config.getKafkaServer()) && !"null".equals(config.getZookeeperServer())
+       && config.getKafkaServer().length()>0  && config.getZookeeperServer().length()>0) {
       try {
         stratioStreamingAPI = StratioStreamingAPIFactory.create().initializeWithServerConfig(
             config.getKafkaServer(),
@@ -182,7 +175,7 @@ public class Engine {
                                               "0")//String.valueOf(StreamingUtils.findFreePort()))
                                          .set("spark.ui.port",
                                               "0");//String.valueOf(StreamingUtils.findFreePort()));
-    DeepSparkContext result = new DeepSparkContext(new SparkContext(config.getSparkMaster(), config.getJobName(), sparkConf));
+    DeepSparkContext result = new CassandraDeepSparkContext(new SparkContext(config.getSparkMaster(), config.getJobName(), sparkConf));
 
     if(!config.getSparkMaster().toLowerCase().startsWith("local")){
       for(String jar : config.getJars()){

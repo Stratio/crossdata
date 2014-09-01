@@ -1,16 +1,21 @@
-/**
- * Copyright (C) 2014 Stratio (http://stratio.com)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+/*
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
+
 package com.stratio.meta.streaming.utils;
 
 import java.util.ArrayList;
@@ -23,14 +28,19 @@ import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
+import org.apache.log4j.Logger;
+
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.stratio.streaming.commons.constants.BUS;
+import com.stratio.streaming.commons.constants.ColumnType;
 import com.stratio.streaming.commons.constants.STREAM_OPERATIONS;
 import com.stratio.streaming.commons.messages.ColumnNameTypeValue;
 import com.stratio.streaming.commons.messages.StratioStreamingMessage;
 
 public class StreamingDataGenerator {
+
+  private static final Logger logger = Logger.getLogger(StreamingDataGenerator.class);
 
   private static boolean unlimited = false;
 
@@ -56,20 +66,24 @@ public class StreamingDataGenerator {
 
       Producer<String, String> producer = null;
       if (args != null && args.length > 0) {
-        producer = new Producer<String, String>(createProducerConfig(args[0]));
+        producer = new Producer<>(createProducerConfig(args[0]));
       } else {
         throw new RuntimeException("Parameters are incorrect!");
       }
 
       int ageValue = (int) (Math.random() * 80);
 
+      double ratingValue = ageValue / 3.14;
+
+      boolean memberValue = (ageValue % 2) == 0;
+
       ExecutorService es = Executors.newFixedThreadPool(10);
-      es.execute(new DataSender(producer, "name_" + nameCounter, ageValue));
+      es.execute(new DataSender(producer, "name_" + nameCounter, ageValue, ratingValue, memberValue));
 
       es.shutdown();
 
       if (nameCounter % 10 == 0 && nameCounter != rowsLimit) {
-        System.out.println("Sleeping for 5 seconds...");
+        logger.debug("Sleeping for 5 seconds...");
         Thread.sleep(5000);
       }
     }
@@ -87,19 +101,25 @@ public class StreamingDataGenerator {
     private final Producer<String, String> producer;
     private final String name;
     private final int age;
+    private final double rating;
+    private final boolean member;
 
-    public DataSender(Producer<String, String> producer, String name, int value) {
+    public DataSender(Producer<String, String> producer, String name, int value, double rating,
+        boolean member) {
       super();
       this.producer = producer;
       this.name = name;
       this.age = value;
+      this.rating = rating;
+      this.member = member;
     }
 
     @Override
     public void run() {
       Gson gson = new Gson();
 
-      for (StratioStreamingMessage message : generateStratioStreamingMessages(name, age)) {
+      for (StratioStreamingMessage message : generateStratioStreamingMessages(name, age, rating,
+          member)) {
         KeyedMessage<String, String> busMessage =
             new KeyedMessage<String, String>(BUS.TOPICS, STREAM_OPERATIONS.MANIPULATION.INSERT,
                 gson.toJson(message));
@@ -108,8 +128,9 @@ public class StreamingDataGenerator {
 
     }
 
-    private List<StratioStreamingMessage> generateStratioStreamingMessages(String name, int value) {
-      List<StratioStreamingMessage> result = new ArrayList<StratioStreamingMessage>();
+    private List<StratioStreamingMessage> generateStratioStreamingMessages(String name, int value,
+        double rating, boolean member) {
+      List<StratioStreamingMessage> result = new ArrayList<>();
 
       StratioStreamingMessage message = new StratioStreamingMessage();
 
@@ -121,9 +142,10 @@ public class StreamingDataGenerator {
       message.setRequest("dummy request");
 
       List<ColumnNameTypeValue> sensorData = Lists.newArrayList();
-      sensorData.add(new ColumnNameTypeValue("name", null, name));
-      sensorData.add(new ColumnNameTypeValue("age", null, value));
-      // sensorData.add(new ColumnNameTypeValue("data", null, value));
+      sensorData.add(new ColumnNameTypeValue("name", ColumnType.STRING, name));
+      sensorData.add(new ColumnNameTypeValue("age", ColumnType.INTEGER, value));
+      sensorData.add(new ColumnNameTypeValue("rating", ColumnType.DOUBLE, rating));
+      sensorData.add(new ColumnNameTypeValue("member", ColumnType.BOOLEAN, member));
 
       message.setColumns(sensorData);
 

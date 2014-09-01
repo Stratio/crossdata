@@ -1,20 +1,19 @@
 /*
- * Stratio Meta
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Copyright (c) 2014, Stratio, All rights reserved.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.utils;
@@ -39,27 +38,27 @@ public class CreateTokensFile {
 
     public static void main(String[] args) {                
         try {
-            String workingDir = System.getProperty("user.dir");
-            if(workingDir.endsWith("stratio-meta")){
-                workingDir = workingDir.concat("/meta-core/");
-            } else if(!workingDir.endsWith("meta-core")){
-                workingDir = workingDir.substring(0, workingDir.lastIndexOf("/"));
-                workingDir = workingDir.concat("/meta-core/");
-            } else {
-                workingDir = workingDir.concat("/");
-            }
-            
-            String metaGrammarPath = workingDir+"src/main/java/com/stratio/meta/core/grammar/Meta.g";
-            String metaTokens = workingDir+"src/main/resources/com/stratio/meta/parser/tokens.txt";
-            File fileGrammar = new File(metaGrammarPath);  
-            File outFile = new File(metaTokens);
+          String workingDir = System.getProperty("user.dir");
+          if(workingDir.endsWith("stratio-meta")){
+              workingDir = workingDir.concat("/meta-core/");
+          } else if(!workingDir.endsWith("meta-core")){
+              workingDir = workingDir.substring(0, workingDir.lastIndexOf("/"));
+              workingDir = workingDir.concat("/meta-core/");
+          } else {
+              workingDir = workingDir.concat("/");
+          }
+          
+          String metaGrammarPath = workingDir+"src/main/java/com/stratio/meta/core/grammar/Meta.g";
+          String metaTokens = workingDir+"src/main/resources/tokens.txt";
+          File fileGrammar = new File(metaGrammarPath);  
+          File outFile = new File(metaTokens);
 
-            LOG.info("Reading grammar from " + fileGrammar.getAbsolutePath());
-            BufferedWriter bw;
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(
-                            new FileInputStream(fileGrammar), Charset.forName("UTF-8")))) {
-                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile, true), "UTF-8"));
+          LOG.info("Reading grammar from " + fileGrammar.getAbsolutePath());
+          BufferedWriter bw;
+          try (BufferedReader br = new BufferedReader(
+                  new InputStreamReader(
+                          new FileInputStream(fileGrammar), Charset.forName("UTF-8")))) {
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile, false), "UTF-8"));
                 String line = br.readLine();
                 while (line != null){
                     if(line.startsWith("T_")){

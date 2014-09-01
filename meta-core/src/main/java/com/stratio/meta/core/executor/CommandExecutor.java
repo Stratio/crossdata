@@ -1,31 +1,37 @@
 /*
- * Stratio Meta
- * 
- * Copyright (c) 2014, Stratio, All rights reserved.
- * 
- * This library is free software; you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation; either version
- * 3.0 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License along with this library.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.executor;
 
-import org.apache.log4j.Logger;
-
 import com.datastax.driver.core.Session;
+import com.stratio.meta.common.data.MetaResultSet;
+import com.stratio.meta.common.data.ResultSet;
+import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.DescribeStatement;
 import com.stratio.meta.core.statements.ExplainPlanStatement;
 import com.stratio.meta.core.statements.ListStatement;
 import com.stratio.meta.core.statements.MetaStatement;
 import com.stratio.meta.core.statements.StopProcessStatement;
+import com.stratio.meta.core.statements.UseStatement;
 import com.stratio.streaming.api.IStratioStreamingAPI;
+
+import org.apache.log4j.Logger;
 
 public class CommandExecutor {
 
@@ -60,6 +66,12 @@ public class CommandExecutor {
       } else if (stmt instanceof StopProcessStatement) {
         StopProcessStatement stopStmt = (StopProcessStatement) stmt;
         return stopStmt.execute(stratioStreamingAPI);
+      } else if (stmt instanceof UseStatement){
+        ResultSet resultSet = new MetaResultSet();
+        QueryResult qr = QueryResult.createQueryResult(resultSet);
+        qr.setQueryId(queryId);
+        qr.setCurrentCatalog("");
+        return qr;
       } else {
         return Result.createExecutionErrorResult("Command not supported yet.");
       }

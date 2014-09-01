@@ -1,17 +1,19 @@
 /*
- * Stratio Meta
- * 
- * Copyright (c) 2014, Stratio, All rights reserved.
- * 
- * This library is free software; you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation; either version
- * 3.0 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License along with this library.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.sh;
@@ -29,8 +31,11 @@ import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.exceptions.ExecutionException;
+import com.stratio.meta.common.exceptions.ParsingException;
+import com.stratio.meta.common.exceptions.UnsupportedException;
+import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.result.IResultHandler;
-
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
@@ -42,17 +47,6 @@ import com.stratio.meta.sh.help.generated.MetaHelpParser;
 import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
-
-import jline.console.ConsoleReader;
-
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 
 /**
  * Interactive META console.
@@ -164,7 +158,7 @@ public class Metash {
   /**
    * Flush the console output and show the current prompt.
    */
-  protected void flush(){
+  protected void flush() {
     try {
       console.getOutput().write(console.getPrompt());
       console.flush();
@@ -176,7 +170,7 @@ public class Metash {
 
   /**
    * Set the console prompt.
-   *
+   * 
    * @param currentKeyspace The currentCatalog.
    */
   private void setPrompt(String currentKeyspace) {
@@ -185,8 +179,10 @@ public class Metash {
       sb.append(currentUser);
     } else {
       sb.append(currentUser);
-      sb.append(":");
-      sb.append(currentKeyspace);
+      if (!currentKeyspace.isEmpty()) {
+        sb.append(":");
+        sb.append(currentKeyspace);
+      }
     }
     sb.append(">\033[0m ");
     console.setPrompt(sb.toString());
@@ -227,20 +223,21 @@ public class Metash {
    * 
    * @param cmd The query.
    */
-  private void executeQuery(String cmd){
-    if(this.useAsync){
+  private void executeQuery(String cmd) {
+    if (this.useAsync) {
       executeAsyncQuery(cmd);
-    }else{
+    } else {
       executeSyncQuery(cmd);
     }
   }
 
   /**
    * Execute a query using synchronous execution.
+   * 
    * @param cmd The query.
    */
   private void executeSyncQuery(String cmd) {
-    LOG.debug("Command: " + cmd);
+    LOG.debug("Command: " + cmd + "|");
     long queryStart = System.currentTimeMillis();
     long queryEnd = queryStart;
     Result metaResult = null;
@@ -250,24 +247,27 @@ public class Metash {
       updatePrompt(metaResult);
       println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
       println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
-    } catch (Exception e) {
+    } catch (ConnectionException | ParsingException | ValidationException | ExecutionException
+        | UnsupportedException e) {
       println("\033[31mError:\033[0m " + e.getMessage());
     }
   }
 
   /**
    * Remove the {@link com.stratio.meta.common.result.IResultHandler} associated with a query.
+   * 
    * @param queryId The query identifier.
    */
-  protected void removeResultsHandler(String queryId){
+  protected void removeResultsHandler(String queryId) {
     metaDriver.removeResultHandler(queryId);
   }
 
   /**
    * Execute a query asynchronously.
+   * 
    * @param cmd The query.
    */
-  private void executeAsyncQuery(String cmd){
+  private void executeAsyncQuery(String cmd) {
     String queryId = null;
     try {
       queryId = metaDriver.asyncExecuteQuery(currentCatalog, cmd, resultHandler);
@@ -275,7 +275,7 @@ public class Metash {
       println("QID: " + queryId);
       println("");
     } catch (ConnectionException e) {
-      LOG.error(e.getMessage(), e);
+      LOG.error("Error connecting", e);
       println("ERROR: " + e.getMessage());
     }
 
@@ -292,9 +292,7 @@ public class Metash {
       QueryResult qr = QueryResult.class.cast(result);
       if (qr.isCatalogChanged()) {
         currentCatalog = qr.getCurrentCatalog();
-        if (!currentCatalog.isEmpty()) {
-          setPrompt(currentCatalog);
-        }
+        setPrompt(currentCatalog);
       }
     }
   }
@@ -345,7 +343,7 @@ public class Metash {
       StringBuilder sb = new StringBuilder(cmd);
 
       while (!cmd.trim().toLowerCase().startsWith("exit")
-             && !cmd.trim().toLowerCase().startsWith("quit")) {
+          && !cmd.trim().toLowerCase().startsWith("quit")) {
         cmd = console.readLine();
         sb.append(cmd).append(" ");
         if (sb.toString().trim().endsWith(";")) {
@@ -355,7 +353,7 @@ public class Metash {
           } else if (sb.toString().toLowerCase().startsWith("help")) {
             showHelp(sb.toString());
           } else {
-            executeQuery(sb.toString());
+            executeQuery(sb.toString().trim());
             println("");
           }
           sb = new StringBuilder();
@@ -376,9 +374,8 @@ public class Metash {
    */
   public static void main(String[] args) {
     boolean async = true;
-    if(args.length > 0){
+    if (args.length > 0) {
       async = !"--sync".equals(args[0]);
-      LOG.info("Using asynchronous behaviour");
     }
     Metash sh = new Metash(async);
     if (sh.connect()) {

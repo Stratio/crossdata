@@ -230,12 +230,12 @@ T_IDENT: LETTER (LETTER | DIGIT | '_')*;
 
 T_KS_AND_TN: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)?; 
 
-T_TERM: (LETTER | DIGIT | '_' | POINT)+;
-
 T_FLOAT:   ('0'..'9')+ POINT ('0'..'9')* EXPONENT?
      |   POINT ('0'..'9')+ EXPONENT?
      |   ('0'..'9')+ EXPONENT
      ;
+
+T_TERM: (LETTER | DIGIT | '_' | POINT)+;
 
 T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 
@@ -520,10 +520,12 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
     T_INSERT 
     T_INTO 
     tableName=getTableID
-    T_START_PARENTHESIS 
-    ident1=getField {ids.add(ident1);}
-    (T_COMMA identN=getField {ids.add(identN);})*
-    T_END_PARENTHESIS
+    (
+        T_START_PARENTHESIS 
+        ident1=getField {ids.add(ident1);}
+        (T_COMMA identN=getField {ids.add(identN);})*
+        T_END_PARENTHESIS
+    )?
     ( 
         selectStmnt=selectStatement {typeValues = InsertIntoStatement.TYPE_SELECT_CLAUSE;}
         | 
@@ -602,8 +604,10 @@ setOptionsStatement returns [SetOptionsStatement stptst]
 
 useStatement returns [UseStatement usst]:
     T_USE
-    iden=T_IDENT {$usst = new UseStatement($iden.text);};
-
+    (
+    iden=T_IDENT {$usst = new UseStatement($iden.text);}
+    |T_SUBTRACT {$usst = new UseStatement("-");}
+    );
 dropKeyspaceStatement returns [DropKeyspaceStatement drksst]
     @init{
         boolean ifExists = false;
@@ -761,9 +765,11 @@ getWindow returns [WindowSelect ws]:
 getTimeUnit returns [TimeUnit unit]:
     ( T_SEC {$unit=TimeUnit.SECONDS;}
     | T_SECS {$unit=TimeUnit.SECONDS;}
+    | T_SECOND {$unit=TimeUnit.SECONDS;}
     | T_SECONDS {$unit=TimeUnit.SECONDS;}
     | T_MIN {$unit=TimeUnit.MINUTES;}
     | T_MINS {$unit=TimeUnit.MINUTES;}
+    | T_MINUTE {$unit=TimeUnit.MINUTES;}
     | T_MINUTES {$unit=TimeUnit.MINUTES;}
     | T_HOUR {$unit=TimeUnit.HOURS;}
     | T_HOURS {$unit=TimeUnit.HOURS;}
@@ -773,8 +779,9 @@ getTimeUnit returns [TimeUnit unit]:
 ;
 
 getSelectClause[Map fieldsAliasesMap] returns [SelectionClause sc]:
-    scc=getSelectionCount {$sc = scc;}
-    | scl=getSelectionList[fieldsAliasesMap] {$sc = scl;}
+    //scc=getSelectionCount {$sc = scc;}
+    //| 
+    scl=getSelectionList[fieldsAliasesMap] {$sc = scl;}
 ;
 
 getSelectionCount returns [SelectionCount scc]
@@ -985,14 +992,14 @@ getTerm returns [Term term]:
 ;
 
 getPartialTerm returns [Term term]:
-    ident=T_IDENT {$term = new StringTerm($ident.text);}
-    | constant=getConstant {$term = new LongTerm(constant);}
-    | T_FALSE {$term = new BooleanTerm("false");}
+    T_FALSE {$term = new BooleanTerm("false");}
     | T_TRUE {$term = new BooleanTerm("true");}
     | floatingNumber=T_FLOAT {$term = new DoubleTerm($floatingNumber.text);}
+    | constant=getConstant {$term = new LongTerm(constant);}
     | ksAndTn=T_KS_AND_TN {$term = new StringTerm($ksAndTn.text);}
-    | noIdent=T_TERM {$term = new StringTerm($noIdent.text);}
     | path=T_PATH {$term = new StringTerm($path.text);}
+    | ident=T_IDENT {$term = new StringTerm($ident.text);}
+    | noIdent=T_TERM {$term = new StringTerm($noIdent.text);}
     | qLiteral=QUOTED_LITERAL {$term = new StringTerm($qLiteral.text, true);}
 ;
 

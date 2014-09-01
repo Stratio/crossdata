@@ -1,20 +1,19 @@
 /*
- * Stratio Meta
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Copyright (c) 2014, Stratio, All rights reserved.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.statements;
@@ -41,6 +40,7 @@ public class ExplainPlanStatement extends MetaStatement {
 
   /**
    * Class constructor.
+   * 
    * @param metaStatement The {@link com.stratio.meta.core.statements.MetaStatement} to be analyzed.
    */
   public ExplainPlanStatement(MetaStatement metaStatement) {
@@ -60,18 +60,17 @@ public class ExplainPlanStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
     return this.toString();
   }
 
   /**
-   * Validate the semantics of the current statement. This method checks the
-   * existing metadata to determine that all referenced entities exists in the
-   * {@code targetKeyspace} and the types are compatible with the assignations
-   * or comparisons.
-   *
-   * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
-   *                 the required information.
+   * Validate the semantics of the current statement. This method checks the existing metadata to
+   * determine that all referenced entities exists in the {@code targetKeyspace} and the types are
+   * compatible with the assignations or comparisons.
+   * 
+   * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
+   *        required information.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   @Override
@@ -86,10 +85,15 @@ public class ExplainPlanStatement extends MetaStatement {
     return tree;
   }
 
-  public Result execute(Session session, IStratioStreamingAPI stratioStreamingAPI){
-    return CommandResult.createCommandResult(
-        getMetaStatement().getPlan(new MetadataManager(session, stratioStreamingAPI),
-                                                     getMetaStatement().getEffectiveKeyspace()).toStringDownTop());
+  public Result execute(Session session, IStratioStreamingAPI stratioStreamingAPI) {
+    return CommandResult.createCommandResult(getMetaStatement().getPlan(
+        new MetadataManager(session, stratioStreamingAPI),
+        getMetaStatement().getEffectiveKeyspace()).toStringDownTop());
   }
 
+  @Override
+  public void setSessionKeyspace(String targetKeyspace) {
+    super.setSessionKeyspace(targetKeyspace);
+    this.metaStatement.setSessionKeyspace(targetKeyspace);
+  }
 }

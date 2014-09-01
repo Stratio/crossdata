@@ -1,17 +1,19 @@
 /*
- * Stratio Meta
- * 
- * Copyright (c) 2014, Stratio, All rights reserved.
- * 
- * This library is free software; you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation; either version
- * 3.0 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License along with this library.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.statements;
@@ -27,6 +29,10 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta.core.structures.DoubleTerm;
+import com.stratio.meta.core.structures.FloatTerm;
+import com.stratio.meta.core.structures.IntegerTerm;
+import com.stratio.meta.core.structures.LongTerm;
 import com.stratio.meta.core.structures.Relation;
 import com.stratio.meta.core.structures.RelationCompare;
 import com.stratio.meta.core.structures.Term;
@@ -85,9 +91,8 @@ public class DeleteStatement extends MetaStatement {
   public void setTableName(String tableName) {
     if (tableName.contains(".")) {
       String[] ksAndTableName = tableName.split("\\.");
-      keyspace = ksAndTableName[0];
+      this.setKeyspace(ksAndTableName[0]);
       this.tableName = ksAndTableName[1];
-      keyspaceInc = true;
     } else {
       this.tableName = tableName;
     }
@@ -109,8 +114,8 @@ public class DeleteStatement extends MetaStatement {
       sb.append("(").append(ParserUtils.stringList(targetColumns, ", ")).append(") ");
     }
     sb.append("FROM ");
-    if (keyspaceInc) {
-      sb.append(keyspace).append(".");
+    if (this.isKeyspaceIncluded()) {
+      sb.append(this.getEffectiveKeyspace()).append(".");
     }
     sb.append(tableName);
     if (!whereClauses.isEmpty()) {
@@ -124,7 +129,7 @@ public class DeleteStatement extends MetaStatement {
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
 
-    Result result = validateKeyspaceAndTable(metadata, sessionKeyspace);
+    Result result = validateKeyspaceAndTable(metadata, this.getEffectiveKeyspace());
     String effectiveKeyspace = getEffectiveKeyspace();
 
     TableMetadata tableMetadata = null;
@@ -177,19 +182,25 @@ public class DeleteStatement extends MetaStatement {
     String column = rc.getIdentifiers().get(0).toString();
     if (tableMetadata.getColumn(column) == null) {
       result =
-          Result.createValidationErrorResult("Column " + column + " does not exist in table "
+          Result.createValidationErrorResult("Column '" + column + "' does not exist in table "
               + tableMetadata.getName());
     }
 
     ColumnMetadata cm = tableMetadata.getColumn(column);
     if (cm != null) {
+
+      rc.setTerms(termTypeNormalization(rc.getTerms(), cm.getType().asJavaClass()));
+
       // relation.updateTermClass(tableMetadata);
       Term t = Term.class.cast(rc.getTerms().get(0));
       if (!tableMetadata.getColumn(column).getType().asJavaClass().equals(t.getTermClass())) {
         result =
-            Result.createValidationErrorResult("Column " + column + " of type "
-                + tableMetadata.getColumn(rc.getIdentifiers().get(0).toString()).getType().asJavaClass()
-                + " does not accept " + t.getTermClass() + " values (" + t.toString() + ")");
+            Result.createValidationErrorResult("Column "
+                + column
+                + " of type "
+                + tableMetadata.getColumn(rc.getIdentifiers().get(0).toString()).getType()
+                    .asJavaClass() + " does not accept " + t.getTermClass() + " values ("
+                + t.toString() + ")");
       }
 
       if (Boolean.class.equals(tableMetadata.getColumn(column).getType().asJavaClass())) {
@@ -222,6 +233,26 @@ public class DeleteStatement extends MetaStatement {
               + " table.");
     }
     return result;
+  }
+
+  private List<Term<?>> termTypeNormalization(List<Term<?>> terms, Class<?> columnType) {
+
+    List<Term<?>> normalizedTerms = new ArrayList<>();
+    for (Term<?> term : terms) {
+      if (columnType.equals(Double.class) && term.getTermClass().equals(Long.class)) {
+        normalizedTerms.add(new DoubleTerm(((Long) term.getTermValue()).doubleValue()));
+      } else if (columnType.equals(Float.class) && term.getTermClass().equals(Long.class)) {
+        normalizedTerms.add(new FloatTerm(((Long) term.getTermValue()).floatValue()));
+      } else if (columnType.equals(Long.class) && term.getTermClass().equals(Double.class)) {
+        normalizedTerms.add(new LongTerm(((Double) term.getTermValue()).longValue()));
+      } else if (columnType.equals(Integer.class) && term.getTermClass().equals(Double.class)) {
+        normalizedTerms.add(new IntegerTerm(((Double) term.getTermValue()).intValue()));
+      } else {
+        normalizedTerms.add(term);
+      }
+    }
+
+    return normalizedTerms;
   }
 
   /**
@@ -267,12 +298,14 @@ public class DeleteStatement extends MetaStatement {
     // Check that the keyspace and table exists.
     if (effectiveKeyspace == null || effectiveKeyspace.length() == 0) {
       result =
-          Result.createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
+          Result
+              .createValidationErrorResult("Target keyspace missing or no keyspace has been selected.");
     } else {
       KeyspaceMetadata ksMetadata = metadata.getKeyspaceMetadata(effectiveKeyspace);
       if (ksMetadata == null) {
         result =
-            Result.createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
+            Result
+                .createValidationErrorResult("Keyspace " + effectiveKeyspace + " does not exist.");
       } else {
         TableMetadata tableMetadata = metadata.getTableMetadata(effectiveKeyspace, tableName);
         if (tableMetadata == null) {
@@ -284,9 +317,8 @@ public class DeleteStatement extends MetaStatement {
     return result;
   }
 
-
   @Override
-  public String translateToCQL() {
+  public String translateToCQL(MetadataManager metadataManager) {
     return this.toString();
   }
 

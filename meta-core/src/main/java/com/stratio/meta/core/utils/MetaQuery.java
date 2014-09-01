@@ -1,23 +1,24 @@
 /*
- * Stratio Meta
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Copyright (c) 2014, Stratio, All rights reserved.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta.core.utils;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.stratio.meta.common.result.ErrorType;
 import com.stratio.meta.common.result.QueryResult;
@@ -26,8 +27,8 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.statements.MetaStatement;
 
 /**
- * Class that contains all the information required to execute a statement. The different {@link
- * com.stratio.meta.core.engine.Engine} steps will populate the query information.
+ * Class that contains all the information required to execute a statement. The different
+ * {@link com.stratio.meta.core.engine.Engine} steps will populate the query information.
  */
 public class MetaQuery {
 
@@ -52,8 +53,8 @@ public class MetaQuery {
   private boolean hasError = false;
 
   /**
-   * The {@link com.stratio.meta.core.statements.MetaStatement} build by the {@link
-   * com.stratio.meta.core.parser.Parser}.
+   * The {@link com.stratio.meta.core.statements.MetaStatement} build by the
+   * {@link com.stratio.meta.core.parser.Parser}.
    */
   private MetaStatement statement;
 
@@ -82,7 +83,7 @@ public class MetaQuery {
 
   /**
    * Class constructor.
-   *
+   * 
    * @param query The user query.
    */
   public MetaQuery(String query) {
@@ -92,7 +93,7 @@ public class MetaQuery {
 
   /**
    * Get the user query.
-   *
+   * 
    * @return The query or null if not set.
    */
   public String getQuery() {
@@ -101,7 +102,7 @@ public class MetaQuery {
 
   /**
    * Set the user query.
-   *
+   * 
    * @param query The user query.
    */
   public void setQuery(String query) {
@@ -110,7 +111,7 @@ public class MetaQuery {
 
   /**
    * Get the query identifier.
-   *
+   * 
    * @return The identifier.
    */
   public String getQueryId() {
@@ -119,7 +120,7 @@ public class MetaQuery {
 
   /**
    * Set the query identifier.
-   *
+   * 
    * @param queryId The identifier.
    */
   public void setQueryId(String queryId) {
@@ -128,7 +129,7 @@ public class MetaQuery {
 
   /**
    * Set the execution status.
-   *
+   * 
    * @param status A {@link com.stratio.meta.common.result.QueryStatus}.
    */
   public void setStatus(QueryStatus status) {
@@ -137,7 +138,7 @@ public class MetaQuery {
 
   /**
    * Whether the query processing or execution is erroneous.
-   *
+   * 
    * @return Whether there is an error or not.
    */
   public boolean hasError() {
@@ -146,8 +147,8 @@ public class MetaQuery {
 
   /**
    * Set the error message and {@code hasError} to true.
-   *
-   * @param type     Error type.
+   * 
+   * @param type Error type.
    * @param errorMsg The error message.
    */
   public void setErrorMessage(ErrorType type, String errorMsg) {
@@ -165,7 +166,7 @@ public class MetaQuery {
 
   /**
    * Set the parsed {@link com.stratio.meta.core.statements.MetaStatement}.
-   *
+   * 
    * @param statement The statement.
    */
   public void setStatement(MetaStatement statement) {
@@ -174,7 +175,7 @@ public class MetaQuery {
 
   /**
    * Get the parsed statement.
-   *
+   * 
    * @return The {@link com.stratio.meta.core.statements.MetaStatement}.
    */
   public MetaStatement getStatement() {
@@ -183,7 +184,7 @@ public class MetaQuery {
 
   /**
    * Get the execution plan.
-   *
+   * 
    * @return A {@link com.stratio.meta.core.utils.Tree} with the plan.
    */
   public Tree getPlan() {
@@ -192,7 +193,7 @@ public class MetaQuery {
 
   /**
    * Set the execution plan.
-   *
+   * 
    * @param plan A {@link com.stratio.meta.core.utils.Tree}.
    */
   public void setPlan(Tree plan) {
@@ -201,7 +202,7 @@ public class MetaQuery {
 
   /**
    * Set the execution result.
-   *
+   * 
    * @param result A {@link com.stratio.meta.common.result.Result}.
    */
   public void setResult(Result result) {
@@ -211,7 +212,7 @@ public class MetaQuery {
 
   /**
    * Get the execution result.
-   *
+   * 
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
   public Result getResult() {
@@ -221,7 +222,7 @@ public class MetaQuery {
 
   /**
    * Get the user session keyspace.
-   *
+   * 
    * @return The keyspace.
    */
   public String getSessionKeyspace() {
@@ -230,11 +231,14 @@ public class MetaQuery {
 
   /**
    * Set the user session keyspace.
-   *
+   * 
    * @param sessionKeyspace The keyspace.
    */
   public void setSessionKeyspace(String sessionKeyspace) {
-    this.sessionKeyspace = sessionKeyspace;
-    statement.setSessionKeyspace(sessionKeyspace);
+
+    if (!StringUtils.isEmpty(sessionKeyspace)) {
+      this.sessionKeyspace = sessionKeyspace;
+      statement.setSessionKeyspace(sessionKeyspace);
+    }
   }
 }
