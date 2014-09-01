@@ -18,7 +18,8 @@
 
 package com.stratio.meta.common.logicalplan;
 
-import java.util.ArrayList;
+import com.stratio.meta.common.connector.Operations;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,6 +33,14 @@ public class TransformationStep extends LogicalStep{
    * Single previous step.
    */
   private LogicalStep previous;
+
+  /**
+   * Class constructor.
+   * @param operation The operation to be applied.
+   */
+  public TransformationStep(Operations operation) {
+    super(operation);
+  }
 
   @Override
   public List<LogicalStep> getPreviousSteps() {

@@ -23,6 +23,7 @@ import com.stratio.meta.common.exceptions.ExecutionException;
 import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.TableMetadata;
 
 import java.util.Collection;
 
@@ -36,12 +37,12 @@ public interface IStorageEngine {
    * Insert a single row in a table.
    *
    * @param targetCluster Target cluster.
-   * @param targetTable   Target table fully qualified including catalog.
+   * @param targetTable   Target table metadata including fully qualified including catalog.
    * @param row           The row to be inserted.
    * @throws UnsupportedException If the operation is not supported.
    * @throws ExecutionException   If the execution fails.
    */
-  public void insert(ClusterName targetCluster, TableName targetTable, Row row)
+  public void insert(ClusterName targetCluster, TableMetadata targetTable, Row row)
       throws UnsupportedException,
              ExecutionException;
 
@@ -49,12 +50,12 @@ public interface IStorageEngine {
    * Insert a collection of rows in a table.
    *
    * @param targetCluster Target cluster.
-   * @param targetTable   Target table fully qualified including catalog.
+   * @param targetTable   Target table metadata including fully qualified including catalog.
    * @param rows          Collection of rows to be inserted.
    * @throws UnsupportedException If the operation is not supported.
    * @throws ExecutionException   If the execution fails.
    */
-  public void insert(ClusterName targetCluster, TableName targetTable, Collection<Row> rows)
+  public void insert(ClusterName targetCluster, TableMetadata targetTable, Collection<Row> rows)
       throws UnsupportedException,
              ExecutionException;
 
