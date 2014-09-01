@@ -140,7 +140,7 @@ public class ParsingTest {
   public void testParserFails(String inputText, String methodName) {
     MetaStatement st = null;
     try {
-      st = parser.parseStatement("", inputText);
+      st = parser.parseStatement("parsing-test", inputText);
     } catch (ParsingException e) {
       StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER EXCEPTION: ").append(e.getMessage());
       sb.append(System.lineSeparator());

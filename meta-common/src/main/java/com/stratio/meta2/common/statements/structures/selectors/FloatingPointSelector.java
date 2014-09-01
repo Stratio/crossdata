@@ -18,28 +18,42 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 
-import java.util.List;
 import java.util.Set;
 
 /**
- * Asterisk selector.
+ * A floating point selector.
  */
-public class AsteriskSelector extends Selector{
+public class FloatingPointSelector extends Selector{
 
-  @Override
-  public String toString() {
-    return "*";
+  /**
+   * Double precision value.
+   */
+  private final double value;
+
+  /**
+   * Class constructor.
+   * @param value A double value.
+   */
+  public FloatingPointSelector(String value) {
+    System.out.println("FloatingPointSelector(" + value + ")");
+    this.value = Double.valueOf(value);
   }
 
-  @Override public SelectorType getType() {
-    return SelectorType.ASTERISK;
+
+  @Override
+  public SelectorType getType() {
+    return SelectorType.FLOATING_POINT;
   }
 
   @Override
   public Set<TableName> getSelectorTables() {
     return null;
+  }
+
+  @Override
+  public String toString() {
+    return Double.toString(value);
   }
 }

@@ -18,28 +18,48 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 
-import java.util.List;
 import java.util.Set;
 
 /**
- * Asterisk selector.
+ * String selector. This type of Selector will be used for enquoted strings.
  */
-public class AsteriskSelector extends Selector{
+public class StringSelector extends Selector{
 
-  @Override
-  public String toString() {
-    return "*";
+  /**
+   * The string value.
+   */
+  private final String value;
+
+  /**
+   * Class constructor.
+   * @param value The string value.
+   */
+  public StringSelector(String value) {
+    this.value = value;
   }
 
-  @Override public SelectorType getType() {
-    return SelectorType.ASTERISK;
+  /**
+   * Get the value.
+   * @return The string value.
+   */
+  public String getValue() {
+    return value;
+  }
+
+  @Override
+  public SelectorType getType() {
+    return SelectorType.STRING;
   }
 
   @Override
   public Set<TableName> getSelectorTables() {
     return null;
+  }
+
+  @Override
+  public String toString() {
+    return value;
   }
 }
