@@ -14,14 +14,16 @@ class ConnectorApp {
     """
 
   def main(args: Array[String]): Unit = {
+
     //if (args.length == 0) println(usage)
     val options = nextOption(Map(),args.toList)
     var connectortype:Option[String]=options.get( Symbol("connectortype"))
     var port:Option[String]=options.get(Symbol("port"))
     if(port==None)port=Some("2551")
+    val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     if(connectortype==None)connectortype=Some("cassandra")
     val c=getConnector(connectortype.get.asInstanceOf[String])
-    startup(c,Seq(port.get.asInstanceOf[String]) )
+    startup(c,Seq(port.get.asInstanceOf[String]),config)
   }
 
   def getConnector(connectortype:String):IConnector={
@@ -47,20 +49,19 @@ class ConnectorApp {
        }
   }
 
-  def startup(connector:IConnector,port:String): Unit = {
-    return startup(connector,Array(port))
+  def startup(connector:IConnector,port:String,config:com.typesafe.config.Config): Unit = {
+    return startup(connector,Array(port),config)
   }
 
-  def startup(connector:IConnector,ports:Array[String]): Unit = {
-    return startup(connector,ports.toList)
+  def startup(connector:IConnector,ports:Array[String],config:com.typesafe.config.Config): Unit = {
+    return startup(connector,ports.toList,config)
   }
 
-  def startup(connector:IConnector,ports: Seq[String]): Unit = {
+  def startup(connector:IConnector,ports: Seq[String],config:com.typesafe.config.Config): Unit = {
     println("using connector with datastorename="+connector.getDatastoreName())
     ports foreach { port =>
       // Override the configuration of the port
-      val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).
-      	withFallback(ConfigFactory.load())
+      //val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
 
       // Create an Akka system
       val system = ActorSystem("MetaServerCluster", config)
