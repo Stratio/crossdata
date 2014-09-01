@@ -48,7 +48,7 @@ class ConnectorApp {
   }
 
   def startup(connector:IConnector,port:String): Unit = {
-    return startup(connector,{port})
+    return startup(connector,Array(port))
   }
 
   def startup(connector:IConnector,ports:Array[String]): Unit = {

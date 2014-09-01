@@ -431,19 +431,6 @@ addStatement returns [AddStatement as]:
 	T_ADD name=QUOTED_LITERAL {$as = new AddStatement($name.text);}
 ;
 
-//ADD (DATASTORE | CONNECTOR) \"path\";
-addManifestStatement returns [MetaStatement ams]
-    @init{
-        boolean dataStore = true;
-    }:
-    T_ADD (T_DATASTORE | T_CONNECTOR { dataStore = false; } ) path=QUOTED_LITERAL
-    { if(dataStore)
-        $ams = new AddDataStoreStatement($path.text);
-      else
-        $ams = new AddConnectorStatement($path.text);
-    }
-;
-
 //DROP (DATASTORE | CONNECTOR) \"name\";
 dropManifestStatement returns [MetaStatement dms]
     @init{
@@ -761,7 +748,6 @@ metaStatement returns [MetaStatement st]
     | st_stpr = stopProcessStatement { $st = st_stpr; }
     | st_xppl = explainPlanStatement { $st = st_xppl;}
     | st_adds = addStatement { $st = st_adds; }
-    | st_addm = addManifestStatement { $st = st_addm; }
     | st_drmn = dropManifestStatement { $st = st_drmn;}
     | st_rust = removeUDFStatement { $st = st_rust; }
     | st_dlst = deleteStatement { $st = st_dlst; }
@@ -834,8 +820,9 @@ getGroupBy returns [ArrayList<GroupBy> groups]
         groups = new ArrayList<>();
         GroupBy groupBy;
     }:
-    ident1=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($ident1.text); groups.add(groupBy);}
-    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($identN.text); groups.add(groupBy);})*
+    //TODO: Change to support group by
+    ident1=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy(); groups.add(groupBy);}
+    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy(); groups.add(groupBy);})*
 ;
 
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]

@@ -18,21 +18,27 @@
 
 package com.stratio.meta.core.normalizer;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.exceptions.validation.AmbiguousNameException;
 import com.stratio.meta.common.exceptions.validation.BadFormatException;
 import com.stratio.meta.common.exceptions.validation.NotExistNameException;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.common.statements.structures.selectors.*;
+import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
+import com.stratio.meta2.common.statements.structures.selectors.FunctionSelector;
+import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.SelectParsedQuery;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Normalizator {
   private NormalizedFields fields=new NormalizedFields();
@@ -40,6 +46,7 @@ public class Normalizator {
 
   public Normalizator(SelectParsedQuery parsedQuery) {
     this.parsedQuery = parsedQuery;
+    parsedQuery.getStatement().getGroup();
   }
 
   public NormalizedFields getFields() {
@@ -81,6 +88,44 @@ public class Normalizator {
     fields.getSelectors().addAll(normalizeSelectors);
   }
 
+  public void normalizeGroupBy() throws BadFormatException, AmbiguousNameException,
+      NotExistNameException {
+    GroupBy groupBy = parsedQuery.getStatement().getGroup();
+    Set<ColumnName> columnNames = new HashSet<>();
+    for (Selector selector : groupBy.getSelectorIdentifier()) {
+      switch (selector.getType()) {
+        case FUNCTION:
+          throw new BadFormatException("Function include into groupBy is not valid");
+        case COLUMN:
+          checkColumnSelector((ColumnSelector) selector);
+          if (columnNames.add(((ColumnSelector) selector).getName())) {
+            throw new BadFormatException("Column into group by is repeated");
+          }
+          break;
+        case ASTERISK:
+          throw new BadFormatException("Asterisk include into groupBy is not valid");
+      }
+    }
+    //Check if all columns are correct
+    for (Selector selector : fields.getSelectors()) {
+      switch (selector.getType()) {
+        case FUNCTION:
+
+          break;
+        case COLUMN:
+          ColumnName name = ((ColumnSelector) selector).getName();
+          if (!columnNames.contains(name)) {
+            throw new BadFormatException(
+                "All columns in the select clause must be in the group by or it must be aggregation function.");
+          }
+          break;
+        case ASTERISK:
+          throw new BadFormatException("Asterisk is not valid with group by statements");
+
+      }
+    }
+
+  }
 
   public void checkRelations(List<Relation> relations)
       throws BadFormatException, AmbiguousNameException, NotExistNameException {
@@ -109,8 +154,6 @@ public class Normalizator {
       throw new NotExistNameException(tableName);
     }
   }
-
-
 
   public void checkColumnSelector(ColumnSelector selector)
       throws AmbiguousNameException, NotExistNameException {

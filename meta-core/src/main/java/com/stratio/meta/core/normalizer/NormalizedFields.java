@@ -19,6 +19,7 @@
 package com.stratio.meta.core.normalizer;
 
 import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
@@ -36,6 +37,7 @@ public class NormalizedFields {
   private final Set<CatalogName> catalogNames=new HashSet<>();
   private final List<Selector> selectors=new ArrayList<>();
   private final List<Relation> relations=new ArrayList<>();
+  private GroupBy groupBy=null;
 
   private boolean distinctSelect=false;
 
@@ -60,6 +62,8 @@ public class NormalizedFields {
     return selectors;
   }
 
+
+
   public List<Relation> getRelations() {
     return relations;
   }
@@ -70,5 +74,13 @@ public class NormalizedFields {
 
   void setDistinctSelect(boolean distinctSelect) {
     this.distinctSelect = distinctSelect;
+  }
+
+  public GroupBy getGroupBy() {
+    return groupBy;
+  }
+
+  public void setGroupBy(GroupBy groupBy) {
+    this.groupBy = groupBy;
   }
 }

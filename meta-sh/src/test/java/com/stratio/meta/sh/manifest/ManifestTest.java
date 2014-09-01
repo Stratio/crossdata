@@ -16,24 +16,24 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.grammar.statements;
+package com.stratio.meta.sh.manifest;
 
-import com.stratio.meta.core.grammar.ParsingTest;
+import com.stratio.meta.sh.Metash;
 
 import org.testng.annotations.Test;
 
-public class DetachConnectorTest extends ParsingTest {
+public class ManifestTest {
 
   @Test
-  public void detachConnectorSimple() {
-    String inputText = "DETACH CONNECTOR myConnector;";
-    testRegularStatement(inputText, "detachConnectorSimple");
+  public void testDataStoreManifest() {
+    String parsedManifest = Metash.parseXML("Add DataStore \"ManifestTest.xml\"");
+    assert(parsedManifest.equalsIgnoreCase("DATASTORE"+System.lineSeparator()+""));
   }
 
   @Test
-  public void detachConnectorError() {
-    String inputText = "DETACH CONNECTOR $myConnector";
-    testParserFails(inputText, "detachConnectorError");
+  public void testConnectorManifest() {
+    String parsedManifest = Metash.parseXML("Add Connector \"ManifestTest.xml\"");
+    assert(parsedManifest.equalsIgnoreCase("CONNECTOR"+System.lineSeparator()+""));
   }
 
 }
