@@ -24,12 +24,16 @@ import com.stratio.meta.core.grammar.generated.MetaLexer;
 import com.stratio.meta.core.grammar.generated.MetaParser;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.ErrorsHelper;
-import com.stratio.meta2.core.query.*;
+import com.stratio.meta2.core.query.BaseQuery;
+import com.stratio.meta2.core.query.MetaDataParsedQuery;
+import com.stratio.meta2.core.query.ParsedQuery;
+import com.stratio.meta2.core.query.SelectParsedQuery;
+import com.stratio.meta2.core.query.StorageParsedQuery;
 import com.stratio.meta2.core.statements.MetaDataStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
-
 import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta2.core.statements.StorageStatement;
+
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
@@ -60,17 +64,16 @@ public class Parser {
    * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
    */
   public MetaStatement parseStatement(String sessionCatalog, String query) throws ParsingException {
-
+    ANTLRStringStream input = new ANTLRStringStream("["+sessionCatalog+"], "+query);
     if(sessionCatalog==null || sessionCatalog.isEmpty()){
-      throw new ParsingException("Session Catalog is NULL");
+      input = new ANTLRStringStream(query);
     }
 
-    MetaStatement resultStatement=null;
-    ANTLRStringStream input = new ANTLRStringStream("["+sessionCatalog+"], "+query);
     MetaLexer lexer = new MetaLexer(input);
     CommonTokenStream tokens = new CommonTokenStream(lexer);
     MetaParser parser = new MetaParser(tokens);
     ErrorsHelper foundErrors = new ErrorsHelper();
+    MetaStatement resultStatement=null;
     try {
       resultStatement = parser.query();
       foundErrors = parser.getFoundErrors();

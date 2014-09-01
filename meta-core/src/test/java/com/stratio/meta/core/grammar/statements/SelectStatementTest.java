@@ -18,9 +18,9 @@
 
 package com.stratio.meta.core.grammar.statements;
 
-import org.testng.annotations.Test;
-
 import com.stratio.meta.core.grammar.ParsingTest;
+
+import org.testng.annotations.Test;
 
 public class SelectStatementTest extends ParsingTest {
 
@@ -241,7 +241,7 @@ public class SelectStatementTest extends ParsingTest {
   public void selectWrongLikeWord() {
     String inputText =
         "SELECT newtb.ident1, myfunction(newtb.innerIdent, newtb.anotherIdent) LIKE ident1 FROM newks.newtb;";
-    testParseFails(inputText, "selectWrongLikeWord");
+    testParserFails(inputText, "selectWrongLikeWord");
   }
 */
   @Test
@@ -288,7 +288,7 @@ public class SelectStatementTest extends ParsingTest {
 
     String inputText =
         "SELECT users.name FROM demo.users WHERE users.email BETWEEN 'aaaa_00@domain.com' AND 'zzzz_99@domain.com' AND 'wrong@domain.com';";
-    testRecoverableError(inputText, "selectWithBetweenClauseThreeValuesFail");
+    testParserFails(inputText, "selectWithBetweenClauseThreeValuesFail");
   }
 
   @Test
@@ -296,7 +296,7 @@ public class SelectStatementTest extends ParsingTest {
 
     String inputText =
         "SELECT users.name FROM demo.users WHERE users.email BETWEEN 'aaaa_00@domain.com';";
-    testRecoverableError(inputText, "selectWithInClauseOneValueOk");
+    testParserFails(inputText, "selectWithInClauseOneValueOk");
   }
 
   /*
@@ -372,7 +372,7 @@ public class SelectStatementTest extends ParsingTest {
   public void selectSimpleOrderByFail() {
 
     String inputText = "SELECT users.gender FROM demo.users ORDER BY sum(users.age);";
-    testRecoverableError(inputText, "selectGroupedWithSumOk");
+    testParserFails(inputText, "selectGroupedWithSumOk");
   }
 */
 

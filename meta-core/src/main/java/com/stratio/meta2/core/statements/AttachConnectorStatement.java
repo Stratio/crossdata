@@ -28,7 +28,7 @@ public class AttachConnectorStatement extends MetaStatement {
 
   @Override
   public String toString() {
-    return "ATTACH CONNECTOR" + connectorName + " TO "+ clusterName + "WITH OPTIONS " + StringUtils.getStringFromOptions(options);
+    return "ATTACH CONNECTOR " + connectorName + " TO "+ clusterName + " WITH OPTIONS " + StringUtils.getStringFromOptions(options);
   }
 
   @Override

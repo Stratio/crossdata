@@ -5,17 +5,17 @@ import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-public class DropDatastoreStatement extends MetaStatement {
+public class DropDataStoreStatement extends MetaStatement {
 
   private String name;
 
-  public DropDatastoreStatement(String name){
+  public DropDataStoreStatement(String name){
     this.name = name;
   }
 
   @Override
   public String toString() {
-    return null;
+    return "DROP DATASTORE "+name;
   }
 
   @Override

@@ -62,13 +62,13 @@ public class UpdateTableStatementTest extends ParsingTest {
   @Test
   public void updateForInvalidAssignment(){
     String inputText = "UPDATE table1 SET field1 = value1 WHERE field3: value3;";
-    testRecoverableError(inputText, "updateForInvalidAssignment");
+    testParserFails(inputText, "updateForInvalidAssignment");
   }
 
   @Test
   public void updateWrongSpelling(){
     String inputText = "UPDDATE table1 SET field1 = value1 WHERE field3: value3;";
-    testParseFails(inputText, "updateWrongSpelling");
+    testParserFails(inputText, "updateWrongSpelling");
   }
 
   @Test

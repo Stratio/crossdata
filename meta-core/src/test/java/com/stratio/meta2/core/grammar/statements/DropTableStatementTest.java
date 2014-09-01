@@ -34,7 +34,7 @@ public class DropTableStatementTest extends ParsingTest {
   @Test
   public void dropNotMissing(){
     String inputText = "DROP TABLE IF EXISTS _lastTable;";
-    testRecoverableError(inputText, "dropNotMissing");
+    testParserFails(inputText, "dropNotMissing");
   }
 
   @Test

@@ -23,35 +23,35 @@ import org.testng.annotations.Test;
 
 public class RemoveUDFStatementTest extends ParsingTest {
 
-    //REMOVE UDF
-    @Test
-    public void basic() {
-        String inputText = "REMOVE UDF \"jar.name\";";
-        testRegularStatement(inputText, "removeUDF");
-    }
+  //REMOVE UDF
+  @Test
+  public void basic() {
+    String inputText = "REMOVE UDF \"jar.name\";";
+    testRegularStatement(inputText, "removeUDF");
+  }
 
-    @Test
-    public void unexpectedWordFail() {
-        String inputText = "REMOVE UDF \"jar.name\" NOW;";
-        testParseFails(inputText, "unexpectedWordFail");
-    }
+  @Test
+  public void unexpectedWordFail() {
+    String inputText = "REMOVE UDF \"jar.name\" NOW;";
+    testParserFails(inputText, "unexpectedWordFail");
+  }
 
-    @Test
-    public void startingQuoteMissing1Fail(){
-        String inputText = "REMOVE UDF /dir/jar_name-v1.0.jar;\"";
-        testRecoverableError(inputText, "startingQuoteMissing1Fail");
-    }
+  @Test
+  public void startingQuoteMissing1Fail(){
+    String inputText = "REMOVE UDF /dir/jar_name-v1.0.jar;\"";
+    testParserFails(inputText, "startingQuoteMissing1Fail");
+  }
 
-    @Test
-    public void fatalErrorInParser(){
-        String inputText = "REMOVE UDF \";\";";
-        testParseFails(inputText, "fatalErrorInParser");
-    }
+  @Test
+  public void fatalErrorInParser(){
+    String inputText = "REMOVE UDF \";\";";
+    testParserFails(inputText, "fatalErrorInParser");
+  }
 
-    @Test
-    public void startingQuoteMissing2Fail(){
-        String inputText = "REMOVE UDF \"/dir/jar_name-v1.0.jar;";
-        testRecoverableError(inputText, "startingQuoteMissing2Fail");
-    }
+  @Test
+  public void startingQuoteMissing2Fail(){
+    String inputText = "REMOVE UDF \"/dir/jar_name-v1.0.jar;";
+    testParserFails(inputText, "startingQuoteMissing2Fail");
+  }
 
 }
