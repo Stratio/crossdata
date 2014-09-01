@@ -103,27 +103,116 @@ public enum Operations {
 
   /**
    * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
-   * that are part of the primary key.
+   * that are part of the primary key with an equal operator.
    */
-  FILTER_PK,
+  FILTER_PK_EQ,
 
   /**
    * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
-   * that are not indexed by the underlying datastore.
+   * that are part of the primary key with greater than operator.
    */
-  FILTER_NON_INDEXED,
+  FILTER_PK_GT,
 
   /**
    * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
-   * that have an associated index in the underlying datastore.
+   * that are part of the primary key with less than operator.
    */
-  FILTER_INDEXED,
+  FILTER_PK_LT,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that are part of the primary key with greater than or equal operator.
+   */
+  FILTER_PK_GET,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that are part of the primary key with less than or equal operator.
+   */
+  FILTER_PK_LET,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that are part of the primary key with distinct operator.
+   */
+  FILTER_PK_DISTINCT,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that are not indexed by the underlying datastore with an equal operator.
+   */
+  FILTER_NON_INDEXED_EQ,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that are not indexed by the underlying datastore with a greater than operator.
+   */
+  FILTER_NON_INDEXED_GT,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that are not indexed by the underlying datastore with a less than operator.
+   */
+  FILTER_NON_INDEXED_LT,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that are not indexed by the underlying datastore with greater than or equal operator.
+   */
+  FILTER_NON_INDEXED_GET,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that are not indexed by the underlying datastore with less than or equal operator.
+   */
+  FILTER_NON_INDEXED_LET,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that are not indexed by the underlying datastore with a distinct operator.
+   */
+  FILTER_NON_INDEXED_DISTINCT,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that have an associated index in the underlying datastore with an equal operator.
+   */
+  FILTER_INDEXED_EQ,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that have an associated index in the underlying datastore with a greater than operator.
+   */
+  FILTER_INDEXED_GT,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that have an associated index in the underlying datastore with a less than operator.
+   */
+  FILTER_INDEXED_LT,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that have an associated index in the underlying datastore with a greater than or equal operator.
+   */
+  FILTER_INDEXED_GET,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that have an associated index in the underlying datastore with a less than or equal operator.
+   */
+  FILTER_INDEXED_LET,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations on columns
+   * that have an associated index in the underlying datastore with a distinct operator.
+   */
+  FILTER_INDEXED_DISTINCT,
 
   /**
    * The engine supports full text search syntax in {@link com.stratio.meta.common.logicalplan.Filter}
    * operations.
    */
   FILTER_FULLTEXT
-  ;
 
 }

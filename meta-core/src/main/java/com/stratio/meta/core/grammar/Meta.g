@@ -965,26 +965,22 @@ getValueAssign returns [GenericTerm valueAssign]
 ;
 
 getRelation[TableName tablename] returns [Relation mrel]
-    @init{
-        List<Selector> rightSelectors = new ArrayList<>();
-    }
     @after{
-        $mrel = new Relation(s, operator, rightSelectors);
+        $mrel = new Relation(s, operator, rs);
     }:
     s=getSelector[tablename]
     operator=getComparator
-    rs=getSelector[null] {rightSelectors.add(rs);}
-     (T_COMMA rs=getSelector[null] {rightSelectors.add(rs);})*
+    rs=getSelector[null]
 
 ;
 
 getComparator returns [Operator op]:
     T_EQUAL {$op = Operator.COMPARE;}
-    | T_GT {$op = Operator.GREATER_THAN;}
-    | T_LT {$op = Operator.LOWER_THAN;}
-    | T_GTE {$op = Operator.GREATER_EQUAL_THAN;}
-    | T_LTE {$op = Operator.LOWER_EQUAL_THAN;}
-    | T_NOT_EQUAL {$op = Operator.NOT_EQUAL;}
+    | T_GT {$op = Operator.GT;}
+    | T_LT {$op = Operator.LT;}
+    | T_GTE {$op = Operator.GET;}
+    | T_LTE {$op = Operator.LET;}
+    | T_NOT_EQUAL {$op = Operator.DISTINCT;}
     | T_LIKE {$op = Operator.LIKE;}
     | T_MATCH {$op = Operator.MATCH;}
 ;

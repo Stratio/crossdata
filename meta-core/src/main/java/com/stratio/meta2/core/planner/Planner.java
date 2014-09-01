@@ -106,7 +106,7 @@ public class Planner {
     //Add filter from where.
     LogicalStep ls = null;
     for(Relation r : query.getRelationships()){
-      ls = lastSteps.get(r.getIdentifier());
+      ls = lastSteps.get(r.getLeftTerm());
     }
     //TODO
     return null;
