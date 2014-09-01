@@ -18,6 +18,8 @@
 
 package com.stratio.meta.common.logicalplan;
 
+import com.stratio.meta.common.connector.Operations;
+
 import java.util.List;
 
 /**
@@ -26,9 +28,30 @@ import java.util.List;
 public abstract class LogicalStep {
 
   /**
+   * Type of operation to be executed.
+   */
+  private final Operations operation;
+
+  /**
    * Next step to be executed.
    */
   private LogicalStep nextStep;
+
+  /**
+   * Class constructor.
+   * @param operation The operation to be applied.
+   */
+  protected LogicalStep(Operations operation) {
+    this.operation = operation;
+  }
+
+  /**
+   * Get the type of operation associated with this filter.
+   * @return A {@link com.stratio.meta.common.connector.Operations}.
+   */
+  public Operations getOperation(){
+    return operation;
+  }
 
   /**
    * Get the next {@link com.stratio.meta.common.logicalplan.LogicalStep} to be executed.

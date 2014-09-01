@@ -27,10 +27,6 @@ import com.stratio.meta.common.statements.structures.relationships.Relation;
  */
 public class Filter extends TransformationStep{
 
-  /**
-   * Type of operation to be executed.
-   */
-  private final Operations operation;
 
   /**
    * Relationship.
@@ -43,17 +39,11 @@ public class Filter extends TransformationStep{
    * @param relation The relationship.
    */
   public Filter(Operations operation, Relation relation) {
-    this.operation = operation;
+    super(operation);
     this.relation = relation;
   }
 
-  /**
-   * Get the type of operation associated with this filter.
-   * @return A {@link com.stratio.meta.common.connector.Operations}.
-   */
-  public Operations getOperation(){
-    return operation;
-  }
+
 
   /**
    * Get the relationship.

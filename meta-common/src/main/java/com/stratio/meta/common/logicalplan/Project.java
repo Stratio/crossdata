@@ -18,6 +18,7 @@
 
 package com.stratio.meta.common.logicalplan;
 
+import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 
@@ -41,18 +42,22 @@ public class Project extends TransformationStep{
 
   /**
    * Create a projection.
+   * @param operation The operation to be applied.
    * @param tableName The table name.
    */
-  public Project(TableName tableName){
+  public Project(Operations operation, TableName tableName){
+    super(operation);
     this.tableName = tableName;
   }
 
   /**
    * Create a projection.
+   * @param operation The operation to be applied.
    * @param tableName Table name.
    * @param columnList List of columns.
    */
-  public Project(TableName tableName, List<ColumnName> columnList) {
+  public Project(Operations operation, TableName tableName, List<ColumnName> columnList) {
+    super(operation);
     this.tableName = tableName;
     this.columnList.addAll(columnList);
   }

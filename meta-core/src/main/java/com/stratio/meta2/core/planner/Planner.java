@@ -14,6 +14,7 @@
 
 package com.stratio.meta2.core.planner;
 
+import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
@@ -105,7 +106,7 @@ public class Planner {
     //Add filter from where.
     LogicalStep ls = null;
     for(Relation r : query.getRelationships()){
-      ls = lastSteps.get(r.getIdentifier());
+      ls = lastSteps.get(r.getLeftTerm());
     }
     //TODO
     return null;
@@ -130,7 +131,7 @@ public class Planner {
   protected Map<String, Project> getProjects(NormalizedQuery query) {
     Map<String, Project> projects = new HashMap<>();
     for (TableName tn : query.getTables()) {
-      Project p = new Project(tn);
+      Project p = new Project(Operations.PROJECT, tn);
       projects.put(tn.getQualifiedName(), p);
     }
     return projects;

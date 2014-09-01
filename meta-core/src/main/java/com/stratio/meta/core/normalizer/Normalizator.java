@@ -33,10 +33,7 @@ import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
-import com.stratio.meta2.common.statements.structures.selectors.FunctionSelector;
-import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.common.statements.structures.selectors.*;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 
@@ -79,6 +76,8 @@ public class Normalizator {
     }
   }
 
+  public void normalizeOrderBy(){
+  }
 
   public void normalizeSelectExpresion()
       throws AmbiguousNameException, NotExistNameException {
@@ -127,20 +126,36 @@ public class Normalizator {
 
   }
 
-  public void checkRelations(List<Relation> relations)
+  public void checkJoinRelations(List<Relation> relations)
       throws BadFormatException, AmbiguousNameException, NotExistNameException {
     for(Relation relation:relations){
-      switch (relation.getIdentifier().getType()){
+      switch (relation.getLeftTerm().getType()){
         case FUNCTION:
-          checkFunctionSelector((FunctionSelector) relation.getIdentifier());
+          checkFunctionSelector((FunctionSelector) relation.getLeftTerm());
           break;
         case COLUMN:
-          checkColumnSelector((ColumnSelector)relation.getIdentifier());
+          checkColumnSelector((ColumnSelector)relation.getLeftTerm());
           break;
         case ASTERISK:
-          throw new BadFormatException("You mustn't put asterisk in relations");
+          throw new BadFormatException("Asterisk not supported in relations.");
       }
-      //TODO: Resolve terms problem
+      switch (relation.getOperator()) {
+        case COMPARE:
+          if (relation.getRightTerm().getType() == SelectorType.COLUMN){
+            checkColumnSelector((ColumnSelector) relation.getRightTerm());
+          } else{
+            throw new BadFormatException("You must compare with a column");
+          }
+          break;
+        case ASSIGN:
+        case ADD:
+        case SUBTRACT:
+        case IN:
+        case BETWEEN:
+        case MATCH:
+        case LIKE:
+          throw new BadFormatException("Compare operations (=,<,>,>=,>=) are just valid");
+      }
     }
   }
 

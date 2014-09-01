@@ -23,6 +23,7 @@ import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.TableMetadata;
 
 import java.util.List;
 
@@ -59,6 +60,10 @@ public class NormalizedQuery extends SelectParsedQuery {
   }
 
   public List<Relation> getRelationships(){
+    throw new UnsupportedOperationException();
+  }
+
+  public List<TableMetadata> getTableMetadata(){
     throw new UnsupportedOperationException();
   }
 
