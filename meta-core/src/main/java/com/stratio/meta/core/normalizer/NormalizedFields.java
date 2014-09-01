@@ -33,7 +33,6 @@ import java.util.Set;
 public class NormalizedFields {
   private final Set<ColumnName> columnNames=new HashSet<>();
   private final Set<TableName> tableNames=new HashSet<>();
-  private final Set<TableName> searchTableNames = new HashSet<>();
   private final Set<CatalogName> catalogNames=new HashSet<>();
   private final List<Selector> selectors=new ArrayList<>();
   private final List<Relation> relations=new ArrayList<>();
@@ -48,11 +47,8 @@ public class NormalizedFields {
     return columnNames;
   }
 
-  public Set<TableName> getTableNames() {
-    return tableNames;
-  }
 
-  public Set<TableName> getSearchTableNames() { return searchTableNames;}
+  public Set<TableName> getTableNames() { return tableNames ;}
 
   public Set<CatalogName> getCatalogNames() {
     return catalogNames;
