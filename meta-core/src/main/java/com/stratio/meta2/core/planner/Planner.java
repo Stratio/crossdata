@@ -14,17 +14,13 @@
 
 package com.stratio.meta2.core.planner;
 
-import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
-import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.query.NormalizedQuery;
 import com.stratio.meta2.core.query.PlannedQuery;
-import com.stratio.meta2.core.query.ValidatedQuery;
-import com.stratio.meta2.core.statements.MetaStatement;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,17 +29,17 @@ import java.util.Map;
 
 /**
  * Class in charge of defining the set of {@link com.stratio.meta.common.logicalplan.LogicalStep}
- * required to execute a statement. This set of steps are ordered as a workflow on a
- * {@link com.stratio.meta.common.logicalplan.LogicalWorkflow} structure. Notice that the
- * LogicalWorkflow may contain several initial steps, but it will always finish in a single
- * operation.
+ * required to execute a statement. This set of steps are ordered as a workflow on a {@link
+ * com.stratio.meta.common.logicalplan.LogicalWorkflow} structure. Notice that the LogicalWorkflow
+ * may contain several initial steps, but it will always finish in a single operation.
  */
 public class Planner {
 
   /**
    * Create a PlannedQuery with the {@link com.stratio.meta.common.logicalplan.LogicalWorkflow}
-   * required to execute the user statement. This method is intended to be used only with
-   * Select statements as any other can be directly executed.
+   * required to execute the user statement. This method is intended to be used only with Select
+   * statements as any other can be directly executed.
+   *
    * @param query A {@link com.stratio.meta2.core.query.NormalizedQuery}.
    * @return A {@link com.stratio.meta2.core.query.PlannedQuery}.
    */
@@ -59,20 +55,21 @@ public class Planner {
   }
 
   /**
-   * Build a workflow with the {@link com.stratio.meta.common.logicalplan.LogicalStep} required
-   * to execute a query. This method does not determine which connector will execute which part
-   * of the workflow.
+   * Build a workflow with the {@link com.stratio.meta.common.logicalplan.LogicalStep} required to
+   * execute a query. This method does not determine which connector will execute which part of the
+   * workflow.
+   *
    * @param query The query to be planned.
    * @return A Logical workflow.
    */
-  protected LogicalWorkflow buildWorkflow(NormalizedQuery query){
+  protected LogicalWorkflow buildWorkflow(NormalizedQuery query) {
     //Define the list of projects
     Map<String, Project> projectSteps = getProjects(query);
     addProjectedColumns(projectSteps, query);
 
     //Prepare the result.
     List<LogicalStep> initialSteps = new ArrayList<>();
-    for(Project p : projectSteps.values()){
+    for (Project p : projectSteps.values()) {
       initialSteps.add(p);
     }
     LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
@@ -82,23 +79,30 @@ public class Planner {
 
   /**
    * Add the columns that need to be retrieved to the initial steps map.
+   *
    * @param projectSteps The map associating table names to Project steps.
-   * @param query The query to be planned.
+   * @param query        The query to be planned.
    */
   private void addProjectedColumns(Map<String, Project> projectSteps, NormalizedQuery query) {
-    for(ColumnName cn : query.getColumns()){
+    for (ColumnName cn : query.getColumns()) {
       projectSteps.get(cn.getTableName().getQualifiedName()).addColumn(cn);
     }
   }
 
+  private void addFilter(Map<String, Project> projectMap, NormalizedQuery query){
+    //Add filter from where
+    //Add filter from Join
+  }
+
   /**
    * Get a Map associating fully qualified table names with their Project logical step.
+   *
    * @param query The query to be planned.
    * @return A map with the projections.
    */
-  protected Map<String,Project> getProjects(NormalizedQuery query) {
+  protected Map<String, Project> getProjects(NormalizedQuery query) {
     Map<String, Project> projects = new HashMap<>();
-    for(TableName tn : query.getTables()){
+    for (TableName tn : query.getTables()) {
       Project p = new Project(tn);
       projects.put(tn.getQualifiedName(), p);
     }
