@@ -123,7 +123,6 @@ public class PlannerWorkflowTest {
     while(targetProject == null && initialSteps.hasNext()){
       LogicalStep ls = initialSteps.next();
       Project p = Project.class.cast(ls);
-      System.out.println("tableName: " + p.getTableName().getQualifiedName());
       if(tableName.equalsIgnoreCase(p.getTableName().getQualifiedName())){
         targetProject = p;
       }
