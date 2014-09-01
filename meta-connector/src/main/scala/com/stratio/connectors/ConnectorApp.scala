@@ -8,7 +8,7 @@ import akka.actor.ActorSystem
 import akka.actor.Props
 //import com.stratio.connector.cassandra.CassandraConnector
 
-object ConnectorApp {
+class ConnectorApp {
     val usage = """Usage: 
       connectorApp [--port <port number>] [--connectortype <connector type name>] 
     """
@@ -45,6 +45,14 @@ object ConnectorApp {
         	println(usage)
             exit(1) 
        }
+  }
+
+  def startup(connector:IConnector,port:String): Unit = {
+    return startup(connector,{port})
+  }
+
+  def startup(connector:IConnector,ports:Array[String]): Unit = {
+    return startup(connector,ports.toList)
   }
 
   def startup(connector:IConnector,ports: Seq[String]): Unit = {
