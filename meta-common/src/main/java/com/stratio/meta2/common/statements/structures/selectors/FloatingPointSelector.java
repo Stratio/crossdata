@@ -37,6 +37,7 @@ public class FloatingPointSelector extends Selector{
    * @param value A double value.
    */
   public FloatingPointSelector(String value) {
+    System.out.println("FloatingPointSelector(" + value + ")");
     this.value = Double.valueOf(value);
   }
 
@@ -49,5 +50,10 @@ public class FloatingPointSelector extends Selector{
   @Override
   public Set<TableName> getSelectorTables() {
     return null;
+  }
+
+  @Override
+  public String toString() {
+    return Double.toString(value);
   }
 }

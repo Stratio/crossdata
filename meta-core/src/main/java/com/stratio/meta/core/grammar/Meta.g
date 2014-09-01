@@ -292,12 +292,12 @@ T_KS_AND_TN: T_IDENT (POINT T_IDENT)?;
 //T_CTLG_TBL_COL: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)? (POINT LETTER (LETTER | DIGIT | '_')*)?;
 T_CTLG_TBL_COL: T_IDENT (POINT T_IDENT (POINT T_IDENT)?)?;
 
-T_TERM: (LETTER | DIGIT | '_' | POINT)+;
-
 T_FLOAT:   ('0'..'9')+ POINT ('0'..'9')* EXPONENT?
      |   POINT ('0'..'9')+ EXPONENT?
      |   ('0'..'9')+ EXPONENT
      ;
+
+T_TERM: (LETTER | DIGIT | '_' | POINT)+;
 
 T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
 
@@ -323,13 +323,13 @@ attachClusterStatement returns [AttachClusterStatement acs]
         acs = new AttachClusterStatement(
             $clusterName.text,
             ifNotExists,
-            $datastoreName.text,
+            $dataStoreName.text,
             j);
     }:
     T_ATTACH T_CLUSTER
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     clusterName=T_IDENT
-    T_ON T_DATASTORE datastoreName=QUOTED_LITERAL
+    T_ON T_DATASTORE dataStoreName=QUOTED_LITERAL
     T_WITH T_OPTIONS
     j=getJson
 ;
@@ -434,11 +434,11 @@ addStatement returns [AddStatement as]:
 //ADD (DATASTORE | CONNECTOR) \"path\";
 addManifestStatement returns [MetaStatement ams]
     @init{
-        boolean datastore = true;
+        boolean dataStore = true;
     }:
-    T_ADD (T_DATASTORE | T_CONNECTOR { datastore = false; } ) path=QUOTED_LITERAL
-    { if(datastore)
-        $ams = new AddDatastoreStatement($path.text);
+    T_ADD (T_DATASTORE | T_CONNECTOR { dataStore = false; } ) path=QUOTED_LITERAL
+    { if(dataStore)
+        $ams = new AddDataStoreStatement($path.text);
       else
         $ams = new AddConnectorStatement($path.text);
     }
@@ -447,11 +447,11 @@ addManifestStatement returns [MetaStatement ams]
 //DROP (DATASTORE | CONNECTOR) \"name\";
 dropManifestStatement returns [MetaStatement dms]
     @init{
-        boolean datastore = true;
+        boolean dataStore = true;
     }:
-    T_DROP (T_DATASTORE | T_CONNECTOR { datastore = false; } ) name=QUOTED_LITERAL
-    { if(datastore)
-        $dms = new DropDatastoreStatement($name.text);
+    T_DROP (T_DATASTORE | T_CONNECTOR { dataStore = false; } ) name=T_IDENT
+    { if(dataStore)
+        $dms = new DropDataStoreStatement($name.text);
       else
         $dms = new DropConnectorStatement($name.text);
     }
@@ -871,7 +871,6 @@ getTimeUnit returns [TimeUnit unit]:
     | T_DAYS {$unit=TimeUnit.DAYS;})
 ;
 
-
 getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
     @init{
         boolean distinct = false;
@@ -927,10 +926,10 @@ getSelector[TableName tablename] returns [Selector s]
         |
         (
             columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);}
+            | floatingNumber=T_FLOAT {s = new FloatingPointSelector($floatingNumber.text);}
             | constant=getConstant {s = new IntegerSelector(constant);}
             | T_FALSE {s = new BooleanSelector(false);}
             | T_TRUE {s = new BooleanSelector(true);}
-            | floatingNumber=T_FLOAT {s = new FloatingPointSelector($floatingNumber.text);}
             | path=T_PATH {s = new StringSelector($path.text);}
             | qLiteral=QUOTED_LITERAL {s = new StringSelector($qLiteral.text);}
         )
@@ -979,17 +978,17 @@ getValueAssign returns [GenericTerm valueAssign]
 ;
 
 getRelation[TableName tablename] returns [Relation mrel]
+    @init{
+        List<Selector> rightSelectors = new ArrayList<>();
+    }
     @after{
-        $mrel = new Relation(s, operator, terms);
+        $mrel = new Relation(s, operator, rightSelectors);
     }:
-    s=getSelector[tablename] operator=getComparator terms=getTerms
-//TODO
-//    T_TOKEN T_START_PARENTHESIS listIds=getIds T_END_PARENTHESIS operator=getComparator (term=getTerm {$mrel = new RelationToken(listIds, operator, term);}
-//                            | T_TOKEN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationToken(listIds, operator, terms);})
-//    | (tablename=T_IDENT | tablename=T_KS_AND_TN) ( compSymbol=getComparator termR=getTerm {$mrel = new RelationCompare($tablename.text, compSymbol, termR);}
-//                    | T_IN T_START_PARENTHESIS terms=getTerms T_END_PARENTHESIS {$mrel = new RelationIn($tablename.text, terms);}
-//                    | T_BETWEEN term1=getTerm T_AND term2=getTerm {$mrel = new RelationBetween($tablename.text, term1, term2);}
-//                    )
+    s=getSelector[tablename]
+    operator=getComparator
+    rs=getSelector[null] {rightSelectors.add(rs);}
+     (T_COMMA rs=getSelector[null] {rightSelectors.add(rs);})*
+
 ;
 
 getComparator returns [Operator op]:

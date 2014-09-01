@@ -41,4 +41,30 @@ public class AlterClusterStatementTest extends ParsingTest {
     testRegularStatement(inputText, "alterClusterBasic");
   }
 
+  @Test
+  public void alterClusterSimple() {
+    String inputText = "ALTER CLUSTER production_madrid WITH OPTIONS {host: 127.0.0.1, port: 9160, mode: \"random\"};";
+    String expectedText = "ALTER CLUSTER production_madrid ON DATASTORE cassandra WITH OPTIONS {host: 127.0.0.1, port: 9160, mode: random};";
+    testRegularStatement(inputText, expectedText, "alterClusterSimple");
+  }
+
+  @Test
+  public void alterClusterIfExists() {
+    String inputText = "ALTER CLUSTER IF EXISTS productionMadrid WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, exhaustive: false};";
+    String expectedText = "ALTER CLUSTER IF EXISTS productionMadrid ON DATASTORE cassandra WITH OPTIONS {host: '127.0.0.1', port: 9160, exhaustive: false};";
+    testRegularStatement(inputText, expectedText, "alterClusterIfExists");
+  }
+
+  @Test
+  public void alterClusterWrongClusterName() {
+    String inputText = "ALTER CLUSTER ^productionMadrid WITH OPTIONS {'host': '127.0.0.1'};";
+    testParserFails(inputText, "alterClusterWrongName");
+  }
+
+  @Test
+  public void alterClusterWrongJson() {
+    String inputText = "ALTER CLUSTER productionMadrid WITH OPTIONS {25: com.stratio.35.executor};";
+    testParserFails(inputText, "alterClusterWrongJson");
+  }
+
 }

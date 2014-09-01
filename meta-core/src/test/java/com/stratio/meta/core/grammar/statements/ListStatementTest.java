@@ -50,13 +50,13 @@ public class ListStatementTest extends ParsingTest {
     @Test
     public void listReservedWordUse(){
         String inputText = "LIST PROCESS LAST;";
-        testParseFails(inputText, "listReservedWordUse");
+        testParserFails(inputText, "listReservedWordUse");
     }
 
     @Test
     public void listUnknownFail(){
         String inputText = "LIST UNKNOWN;";
-        testParseFails(inputText, "listUnknownFail");
+        testParserFails(inputText, "listUnknownFail");
     }
 
 }

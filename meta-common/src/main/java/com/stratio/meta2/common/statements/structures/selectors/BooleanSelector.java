@@ -57,4 +57,9 @@ public class BooleanSelector extends Selector{
   public Set<TableName> getSelectorTables() {
     return null;
   }
+
+  @Override
+  public String toString() {
+    return Boolean.toString(value);
+  }
 }

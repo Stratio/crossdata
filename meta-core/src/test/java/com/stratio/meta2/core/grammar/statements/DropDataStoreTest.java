@@ -1,12 +1,12 @@
 /*
  * Licensed to STRATIO (C) under one or more contributor license agreements.
- * See the NOTICE file distributed with this work for additional information
+ * See the NOTICE file distributed with this work for dropitional information
  * regarding copyright ownership.  The STRATIO (C) licenses this file
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,23 +16,24 @@
  * under the License.
  */
 
-package com.stratio.meta.core.grammar.statements;
+package com.stratio.meta2.core.grammar.statements;
 
 import com.stratio.meta.core.grammar.ParsingTest;
+
 import org.testng.annotations.Test;
 
-public class StopProcessStatementTest extends ParsingTest {
+public class DropDataStoreTest extends ParsingTest {
 
   @Test
-  public void stopProcess() {
-    String inputText = "STOP process process1;";
-    testRegularStatement(inputText, "stopProcess");
+  public void dropDatastoreSimple() {
+    String inputText = "DROP DATASTORE myDatastore;";
+    testRegularStatement(inputText, "dropDatastoreSimple");
   }
 
   @Test
-  public void stopWrongProcessIdentifier(){
-    String inputText = "STOP process kstest]process1;";
-    testParserFails(inputText, "stopWrongProcessIdentifier");
+  public void dropDatastoreError() {
+    String inputText = "DROP DATASTORE _myDatastore";
+    testParserFails(inputText, "dropDatastoreError");
   }
 
 }

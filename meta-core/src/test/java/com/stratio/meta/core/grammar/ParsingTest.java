@@ -19,19 +19,14 @@
 package com.stratio.meta.core.grammar;
 
 import com.stratio.meta.common.exceptions.ParsingException;
-import com.stratio.meta.common.result.ErrorResult;
-import com.stratio.meta.common.result.ErrorType;
-import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta2.core.parser.Parser;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 
 /**
@@ -41,87 +36,28 @@ public class ParsingTest {
 
   protected final Parser parser = new Parser();
 
-  public MetaStatement testRegularStatementSession(String sessionCatalog, String inputText, String methodName){
-    MetaStatement st = null;
-    try {
-      st = parser.parseStatement(sessionCatalog, inputText);
-    } catch (ParsingException e) {
-      e.printStackTrace();
-    }
-
-    /*ErrorResult er = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "null");
-    if (ErrorResult.class.isInstance(mq.getResult())) {
-      er = ErrorResult.class.cast(mq.getResult());
-    }
-
-    assertNotNull(st, "Cannot parse " + methodName
-                      + " parser error: " + mq.hasError()
-                      + " -> " + er.getErrorMessage());
-    assertFalse(mq.hasError(), "Parsing expecting '" + inputText
-                               + "' from '" + st.toString() + "' returned: " + er
-        .getErrorMessage());*/
-
-    assertTrue(inputText.equalsIgnoreCase(st.toString() + ";"),
-               "Cannot parse " + methodName
-               + ": \nexpecting\n'" + inputText
-               + "' \nfrom\n'" + st.toString() + ";'"
-    );
-    return st;
-  }
-
-  public MetaStatement testRegularStatementSession(String sessionCatalog, String inputText, String expectedText, String methodName){
-    MetaStatement st = null;
-    try {
-      st = parser.parseStatement(sessionCatalog, inputText);
-    } catch (ParsingException e) {
-      e.printStackTrace();
-    }
-
-    /*ErrorResult er = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "null");
-
-    if (ErrorResult.class.isInstance(mq.getResult())) {
-      er = ErrorResult.class.cast(mq.getResult());
-    }
-    assertNotNull(st, "Cannot parse " + methodName
-                      + " parser error: " + mq.hasError()
-                      + " -> " + er.getErrorMessage());
-    assertFalse(mq.hasError(), "Parsing expecting '" + inputText
-                               + "' from '" + st.toString() + "' returned: " + er
-        .getErrorMessage());*/
-
-    assertTrue(expectedText.equalsIgnoreCase(st.toString() + ";"),
-               "Cannot parse " + methodName
-               + ": expecting " + System.lineSeparator() + "'" + expectedText
-               + "' from " + System.lineSeparator() + "'" + st.toString() + ";"
-    );
-    return st;
-  }
-
   public MetaStatement testRegularStatement(String inputText, String methodName) {
     MetaStatement st = null;
     try {
-      st = parser.parseStatement("parsing-test", inputText);
+      st = parser.parseStatement("", inputText);
     } catch (ParsingException e) {
+      StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());
+      sb.append(System.lineSeparator());
+      if((e.getErrors() != null) && (!e.getErrors().isEmpty())){
+        for(String errorStr: e.getErrors()){
+          sb.append(" - "+errorStr);
+          sb.append(System.lineSeparator());
+        }
+      }
+      System.err.println(sb.toString());
       e.printStackTrace();
+      fail(sb.toString(), e);
     }
-
-    /*ErrorResult er = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "null");
-    if (ErrorResult.class.isInstance(mq.getResult())) {
-      er = ErrorResult.class.cast(mq.getResult());
-    }
-
-    assertNotNull(st, "Cannot parse " + methodName
-                      + " parser error: " + mq.hasError()
-                      + " -> " + er.getErrorMessage());
-    assertFalse(mq.hasError(), "Parsing expecting '" + inputText
-                               + "' from '" + st.toString() + "' returned: " + er
-        .getErrorMessage());*/
 
     assertTrue(inputText.equalsIgnoreCase(st.toString() + ";"),
                "Cannot parse " + methodName
-               + ": \nexpecting\n'" + inputText
-               + "' \nfrom\n'" + st.toString() + ";'"
-    );
+               + ": " + System.lineSeparator() +" expecting" + System.lineSeparator() + "'" + inputText
+               + "' " + System.lineSeparator() + "from" + System.lineSeparator() + "'" + st.toString() + ";'");
     return st;
   }
 
@@ -129,19 +65,20 @@ public class ParsingTest {
                                             String methodName) {
     MetaStatement st = null;
     try {
-      st = parser.parseStatement("parsing-test", inputText);
+      st = parser.parseStatement("", inputText);
     } catch (ParsingException e) {
+      StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());
+      sb.append(System.lineSeparator());
+      if((e.getErrors() != null) && (!e.getErrors().isEmpty())){
+        for(String errorStr: e.getErrors()){
+          sb.append(" - "+errorStr);
+          sb.append(System.lineSeparator());
+        }
+      }
+      System.err.println(sb.toString());
       e.printStackTrace();
+      fail(sb.toString(), e);
     }
-
-   /* ErrorResult er = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "null");
-    if (ErrorResult.class.isInstance(mq.getResult())) {
-      er = ErrorResult.class.cast(mq.getResult());
-    }
-    assertNotNull(st, "Cannot parse " + methodName
-                      + " parser error: " + mq.hasError()
-                      + " -> " + er.getErrorMessage());
-    assertFalse(mq.hasError(), "Parsing expecting '" + inputText + "' from '" + st.toString() + "' returned: " + er.getErrorMessage());*/
 
     assertTrue(expectedQuery.equalsIgnoreCase(st.toString() + ";"),
                "Cannot parse " + methodName
@@ -150,32 +87,118 @@ public class ParsingTest {
     return st;
   }
 
-  public void testParseFails(String inputText, String methodName) {
+  public MetaStatement testRegularStatementSession(String sessionCatalog, String inputText, String methodName){
     MetaStatement st = null;
     try {
-      st = parser.parseStatement("parsing-test", inputText);
+      st = parser.parseStatement(sessionCatalog, inputText);
     } catch (ParsingException e) {
+      StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());
+      sb.append(System.lineSeparator());
+      if((e.getErrors() != null) && (!e.getErrors().isEmpty())){
+        for(String errorStr: e.getErrors()){
+          sb.append(" - "+errorStr);
+          sb.append(System.lineSeparator());
+        }
+      }
+      System.err.println(sb.toString());
       e.printStackTrace();
+      fail(sb.toString(), e);
     }
-    assertNotNull(st, "Parser should return a query");
-    /*assertTrue(mq.hasError(), "Parser should return and error for " + methodName);
-    assertNull(mq.getStatement(), "Null statement expected. Returned: " + mq.getStatement());*/
+
+    assertTrue(inputText.equalsIgnoreCase(st.toString() + ";"),
+               "Cannot parse " + methodName
+               + ": " + System.lineSeparator() + "expecting" + System.lineSeparator() + "'" + inputText
+               + "' " + System.lineSeparator() + "from" + System.lineSeparator() + "'" + st.toString() + ";'");
+    return st;
   }
 
-  public void testRecoverableError(String inputText, String methodName) {
+  public MetaStatement testRegularStatementSession(String sessionCatalog, String inputText, String expectedText, String methodName){
+    MetaStatement st = null;
+    try {
+      st = parser.parseStatement(sessionCatalog, inputText);
+    } catch (ParsingException e) {
+      StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());
+      sb.append(System.lineSeparator());
+      if((e.getErrors() != null) && (!e.getErrors().isEmpty())){
+        for(String errorStr: e.getErrors()){
+          sb.append(" - "+errorStr);
+          sb.append(System.lineSeparator());
+        }
+      }
+      System.err.println(sb.toString());
+      e.printStackTrace();
+      fail(sb.toString(), e);
+    }
+
+    assertTrue(expectedText.equalsIgnoreCase(st.toString() + ";"),
+               "Cannot parse " + methodName
+               + ": expecting " + System.lineSeparator() + "'" + expectedText
+               + "' from " + System.lineSeparator() + "'" + st.toString() + ";");
+    return st;
+  }
+
+  public void testParserFails(String inputText, String methodName) {
     MetaStatement st = null;
     try {
       st = parser.parseStatement("parsing-test", inputText);
     } catch (ParsingException e) {
-      e.printStackTrace();
+      StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER EXCEPTION: ").append(e.getMessage());
+      sb.append(System.lineSeparator());
+      if((e.getErrors() != null) && (!e.getErrors().isEmpty())){
+        for(String errorStr: e.getErrors()){
+          sb.append(" - "+errorStr);
+          sb.append(System.lineSeparator());
+        }
+      }
+      System.err.println(sb.toString());
+      return;
     }
-    /*assertTrue(metaQuery.hasError(), "No errors reported in " + methodName);*/
+
+    if(st != null){
+      try {
+        st.toString();
+      } catch (NullPointerException npe){
+        System.err.println("[" + methodName + "] PARSER EXCEPTION: " + npe.getMessage());
+        npe.printStackTrace();
+        return;
+      }
+      assertFalse(inputText.equalsIgnoreCase(st.toString()+";"), "Test passed but it should have failed");
+    }
+  }
+
+  public void testParserFails(String sessionCatalog, String inputText, String methodName) {
+    MetaStatement st = null;
+    try {
+      st = parser.parseStatement(sessionCatalog, inputText);
+    } catch (ParsingException e) {
+      StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER EXCEPTION: ").append(e.getMessage());
+      sb.append(System.lineSeparator());
+      if((e.getErrors() != null) && (!e.getErrors().isEmpty())){
+        for(String errorStr: e.getErrors()){
+          sb.append(" - "+errorStr);
+          sb.append(System.lineSeparator());
+        }
+      }
+      System.err.println(sb.toString());
+      return;
+    }
+
+    if(st != null){
+      try {
+        st.toString();
+      } catch (NullPointerException npe){
+        System.err.println("[" + methodName + "] PARSER EXCEPTION: " + npe.getMessage());
+        npe.printStackTrace();
+        return;
+      }
+      assertFalse(inputText.equalsIgnoreCase(st.toString()+";"), "Test passed but it should have failed");
+    }
   }
 
   @Test
   public void unknownFirstWordOfStatement() {
     String inputText = "WINDOWS GO HOME;";
-    testParseFails(inputText, "unknown_first_word_of_statement");
+    testParserFails(inputText, "unknown_first_word_of_statement");
   }
 
 }

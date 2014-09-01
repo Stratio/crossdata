@@ -20,12 +20,9 @@ package com.stratio.meta2.core.grammar.statements;
 
 import com.stratio.meta.common.exceptions.ParsingException;
 import com.stratio.meta.core.grammar.ParsingTest;
-import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 import org.testng.annotations.Test;
-
-import java.util.UUID;
 
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
@@ -225,7 +222,7 @@ public class CreateTableStatementTest extends ParsingTest {
   @Test
   public void createTableWrongColumnDefinition(){
     String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, PRIMARY KEY ([something, something2],something3));";
-    testParseFails(inputText, "createTableWrongColumnDefinition");
+    testParserFails(inputText, "createTableWrongColumnDefinition");
   }
 
   @Test

@@ -57,4 +57,9 @@ public class IntegerSelector extends Selector{
   public Set<TableName> getSelectorTables() {
     return null;
   }
+
+  @Override
+  public String toString() {
+    return Long.toString(value);
+  }
 }

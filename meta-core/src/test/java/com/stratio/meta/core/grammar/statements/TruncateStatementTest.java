@@ -40,7 +40,7 @@ public class TruncateStatementTest extends ParsingTest {
   @Test
   public void truncateWrongIdentifier(){
     String inputText = "TRUNCATE companyKS..usersTable;";
-    testRecoverableError(inputText, "truncateWrongIdentifier");
+    testParserFails(inputText, "truncateWrongIdentifier");
   }
 
 }

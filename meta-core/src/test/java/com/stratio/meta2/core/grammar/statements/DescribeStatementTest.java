@@ -45,7 +45,7 @@ public class DescribeStatementTest extends ParsingTest {
   @Test
   public void describeTableFail() {
     String inputText = "DESCRIBE UNKNOWN catalog1.table1;";
-    testParseFails(inputText, "describeTableFail");
+    testParserFails(inputText, "describeTableFail");
   }
 
   @Test

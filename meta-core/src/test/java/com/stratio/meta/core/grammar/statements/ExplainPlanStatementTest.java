@@ -39,13 +39,13 @@ public class ExplainPlanStatementTest extends ParsingTest {
   @Test
   public void explainPlanForWrongPlanToken() {
     String inputText = "EXPLAIN PLAANS FOR DROP INDEX indexName;";
-    testParseFails(inputText, "wrongPlanToken");
+    testParserFails(inputText, "wrongPlanToken");
   }
 
   @Test
   public void explainPlanForWrongFromToken() {
     String inputText = "EXPLAIN PLAN FOR SELECT * FROMS demo.users;";
-    testParseFails(inputText, "wrongPlanToken");
+    testParserFails(inputText, "wrongPlanToken");
   }
 
 }
