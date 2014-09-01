@@ -834,8 +834,9 @@ getGroupBy returns [ArrayList<GroupBy> groups]
         groups = new ArrayList<>();
         GroupBy groupBy;
     }:
-    ident1=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($ident1.text); groups.add(groupBy);}
-    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy($identN.text); groups.add(groupBy);})*
+    //TODO: Change to support group by
+    ident1=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy(); groups.add(groupBy);}
+    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy(); groups.add(groupBy);})*
 ;
 
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
