@@ -18,8 +18,8 @@
 
 package com.stratio.meta.communication
 
-import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
+import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta2.common.metadata.DataStoreMetadata
 
 case class ACK(queryId: String, status: QueryStatus)
