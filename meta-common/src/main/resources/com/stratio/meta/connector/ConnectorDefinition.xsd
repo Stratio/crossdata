@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:element name="Connector" type="ConnectorType"/>
-  <xs:complexType name="ConnectorType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="ConnectorName"/>
-      <xs:element type="DataStoresNameType" name="DataStoresName"/>
-      <xs:element type="xs:string" name="Version"/>
-      <xs:element type="RequiredPropertiesType" name="RequiredProperties"/>
-      <xs:element type="OptionalPropertiesType" name="OptionalProperties"/>
-      <xs:element type="SupportedOperationsType" name="SupportedOperations"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="OptionalPropertiesType">
-    <xs:sequence>
-      <xs:element type="PropertyType" name="Property"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="PropertyType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="Name"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="RequiredPropertiesType">
-    <xs:sequence>
-      <xs:element type="PropertyType" name="Property"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="DataStoresNameType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="Datastore"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="SupportedOperationsType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="operation"/>
-    </xs:sequence>
-  </xs:complexType>
+    <xs:element name="Connector" type="ConnectorType"/>
+    <xs:complexType name="ConnectorType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="ConnectorName"/>
+            <xs:element type="DataStoresNameType" name="DataStoresName"/>
+            <xs:element type="xs:string" name="Version"/>
+            <xs:element type="RequiredPropertiesType" name="RequiredProperties"/>
+            <xs:element type="OptionalPropertiesType" name="OptionalProperties"/>
+            <xs:element type="SupportedOperationsType" name="SupportedOperations"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="OptionalPropertiesType">
+        <xs:sequence>
+            <xs:element type="PropertyType" name="Property" maxOccurs="unbounded" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PropertyType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="Name"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="RequiredPropertiesType">
+        <xs:sequence>
+            <xs:element type="PropertyType" name="Property" maxOccurs="unbounded" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DataStoresNameType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="Datastore"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SupportedOperationsType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="operation" maxOccurs="unbounded" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
 </xs:schema>
