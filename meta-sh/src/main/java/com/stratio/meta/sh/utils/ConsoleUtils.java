@@ -18,6 +18,36 @@
 
 package com.stratio.meta.sh.utils;
 
+import com.stratio.meta.common.data.CassandraResultSet;
+import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.ResultSet;
+import com.stratio.meta.common.data.Row;
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.ConnectResult;
+import com.stratio.meta.common.result.ErrorResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.api.Manifest;
+import com.stratio.meta2.common.api.generated.connector.ConnectorFactory;
+import com.stratio.meta2.common.api.generated.connector.ConnectorType;
+import com.stratio.meta2.common.api.generated.data.store.DataStoreFactory;
+import com.stratio.meta2.common.api.generated.data.store.DataStoreType;
+
+import jline.console.ConsoleReader;
+import jline.console.history.History;
+import jline.console.history.MemoryHistory;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -33,25 +63,9 @@ import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Map;
 
-import jline.console.ConsoleReader;
-import jline.console.history.History;
-import jline.console.history.MemoryHistory;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.Days;
-
-import com.stratio.meta.common.data.CassandraResultSet;
-import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.data.ResultSet;
-import com.stratio.meta.common.data.Row;
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.ConnectResult;
-import com.stratio.meta.common.result.ErrorResult;
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 public class ConsoleUtils {
 
@@ -272,6 +286,61 @@ public class ConsoleUtils {
       }
       bufferWriter.flush();
     }
+  }
+
+  public static Manifest parseFromXmlToManifest(int manifestType, String path) {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    try {
+      DocumentBuilder builder = factory.newDocumentBuilder();
+      Document document = builder.parse(new File(path));
+      NodeList nodeList = document.getDocumentElement().getChildNodes();
+      if(manifestType == Manifest.TYPE_DATASTORE){
+        return parseFromXmlToDataStoreManifest(nodeList);
+      } else {
+        return parseFromXmlToConnectorManifest(nodeList);
+      }
+    } catch (ParserConfigurationException e) {
+      e.printStackTrace();
+      return null;
+    } catch (SAXException e) {
+      e.printStackTrace();
+      return null;
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
+
+  private static Manifest parseFromXmlToDataStoreManifest(NodeList nodeList){
+    DataStoreFactory dataStoreFactory = new DataStoreFactory();
+    DataStoreType dsManifest = dataStoreFactory.createDataStoreType();
+    for (int i = 0; i < nodeList.getLength(); i++) {
+      Node node = nodeList.item(i);
+      if (node.getNodeType() == Node.ELEMENT_NODE) {
+        Element elem = (Element) node;
+        System.out.println(">>>>>>> TRACE: elem = " + elem.getTagName());
+        NodeList secondLevelNodeList = elem.getChildNodes();
+        for (int j = 0; j < secondLevelNodeList.getLength(); j++) {
+          Node secondLevelNode = secondLevelNodeList.item(j);
+          if (secondLevelNode.getNodeType() == Node.TEXT_NODE) {
+            System.out.println(">>>>>>>> TRACE: "+secondLevelNode.toString());
+            if(!secondLevelNode.getNodeValue().isEmpty()){
+              System.out.println(">>>>>>> TRACE: value = '"+secondLevelNode.getNodeValue()+"' "+secondLevelNode.toString());
+            }
+          } else {
+            Element secondLevelElem = (Element) secondLevelNode;
+            System.out.println(">>>>>>> TRACE: secondLevelElem = " + secondLevelElem.getTagName());
+          }
+        }
+      }
+    }
+    return dsManifest;
+  }
+
+  private static Manifest parseFromXmlToConnectorManifest(NodeList nodeList) {
+    ConnectorFactory connectorFactory = new ConnectorFactory();
+    ConnectorType conManifest = connectorFactory.createConnectorType();
+    return conManifest;
   }
 
 }

@@ -27,6 +27,7 @@ import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import org.apache.log4j.Logger;
@@ -376,11 +377,11 @@ public class InsertIntoStatement extends MetaStatement {
     if (this.optsInc) {
       for (Option option : this.options) {
         if (option.getFixedOption() == Option.OPTION_PROPERTY) {
-          if ("ttl".equalsIgnoreCase(option.getNameProperty())) {
+          if ("ttl".equalsIgnoreCase(((StringSelector) option.getNameProperty()).getValue())) {
             optionsStmt =
                 insertStmt.using(QueryBuilder.ttl(Integer.parseInt(option.getProperties()
                                                                        .toString())));
-          } else if ("timestamp".equalsIgnoreCase(option.getNameProperty())) {
+          } else if ("timestamp".equalsIgnoreCase(((StringSelector) option.getNameProperty()).getValue())) {
             optionsStmt =
                 insertStmt.using(QueryBuilder.timestamp(Integer.parseInt(option.getProperties()
                                                                              .toString())));

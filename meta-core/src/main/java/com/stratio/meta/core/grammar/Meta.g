@@ -29,8 +29,6 @@ options {
     import com.stratio.meta2.common.statements.structures.selectors.*;
     import com.stratio.meta.common.statements.structures.relationships.*;
     import com.stratio.meta.common.statements.structures.window.*;
-    import com.stratio.meta2.common.statements.structures.selectors.*;
-    import com.stratio.meta.common.statements.structures.selectors.*;
     import com.stratio.meta2.core.statements.*;
     import com.stratio.meta.core.structures.*;
     import com.stratio.meta2.core.structures.*;
@@ -341,10 +339,13 @@ detachClusterStatement returns [DetachClusterStatement dcs]
 ;
 
 alterClusterStatement returns [AlterClusterStatement acs]
+    @init{
+        boolean ifExists = false;
+    }
     @after{
-        acs = new AlterClusterStatement($clusterName.text, j);
+        acs = new AlterClusterStatement($clusterName.text, ifExists, j);
     }:
-    T_ALTER T_CLUSTER clusterName=T_IDENT T_WITH T_OPTIONS j=getJson
+    T_ALTER T_CLUSTER (T_IF T_EXISTS {ifExists = true;} )? clusterName=T_IDENT T_WITH T_OPTIONS j=getJson
 ;
 
 // ========================================================
@@ -489,7 +490,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 		field=getColumnName[tablename] {$cis.addColumn(field);}
 	)*
 	T_END_PARENTHESIS
-	(T_USING usingClass=getSelector[tablename] {$cis.setUsingClass(usingClass.toString());})?
+	(T_USING usingClass=QUOTED_LITERAL {$cis.setUsingClass($usingClass.text);})?
 	(T_WITH T_OPTIONS T_EQUAL optionsJson=getJson {$cis.setOptionsJson(optionsJson);})?
 ;
 
@@ -794,7 +795,7 @@ getMetaProperty[TableName tablename] returns [Property mp]
     }:
     (identProp=getSelector[tablename] T_EQUAL valueProp=getSelector[tablename] {$mp = new PropertyNameValue(identProp, new StringSelector(valueProp.toString()));}
     | T_COMPACT T_STORAGE {$mp = new PropertyCompactStorage();}
-    | T_CLUSTERING T_ORDER T_BY T_START_PARENTHESIS ordering=getOrdering {$mp = new PropertyClusteringOrder(ordering);} T_END_PARENTHESIS)
+    | T_CLUSTERING T_ORDER T_BY T_START_PARENTHESIS ordering=getOrdering[tablename] {$mp = new PropertyClusteringOrder(ordering);} T_END_PARENTHESIS)
     | T_EPHEMERAL ( | T_EQUAL (T_FALSE { boolProp = new BooleanSelector("false");} | T_TRUE )) {$mp = new PropertyNameValue(new StringSelector("ephemeral"), boolProp);}
 ;
 
@@ -805,13 +806,13 @@ getDataType returns [String dataType]:
     {$dataType = $ident1.text.concat(ident2==null?"":"<"+$ident2.text).concat(ident3==null?"":","+$ident3.text).concat(ident2==null?"":">");}
 ;
 
-getOrdering returns [ArrayList<Ordering> order]
+getOrdering[TableName tablename] returns [ArrayList<Ordering> order]
     @init{
         order = new ArrayList<>();
         Ordering ordering;
     }:
-    ident1=(T_KS_AND_TN | T_IDENT) {ordering = new Ordering($ident1.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
-    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {ordering = new Ordering($identN.text);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+    ident1=getSelector[tablename] {ordering = new Ordering(ident1);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
+    (T_COMMA identN=getSelector[tablename] {ordering = new Ordering(identN);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
 ;
 
 getGroupBy returns [ArrayList<GroupBy> groups]
@@ -1003,7 +1004,7 @@ getOptions[TableName tablename] returns [ArrayList<Option> opts]@init{
 getOption[TableName tablename] returns [Option opt]:
     T_COMPACT T_STORAGE {$opt=new Option(Option.OPTION_COMPACT);}
     | T_CLUSTERING T_ORDER {$opt=new Option(Option.OPTION_CLUSTERING);}
-    | identProp=T_IDENT T_EQUAL valueProp=getSelector[tablename] {$opt=new Option($identProp.text, valueProp);}
+    | identProp=getSelector[tablename] T_EQUAL valueProp=getSelector[tablename] {$opt=new Option(identProp, valueProp);}
 ;
 
 getSelectors[TableName tablename] returns [ArrayList list]

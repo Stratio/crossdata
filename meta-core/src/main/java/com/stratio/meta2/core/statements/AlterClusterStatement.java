@@ -27,6 +27,8 @@ public class AlterClusterStatement extends MetaStatement {
    */
   private final String clusterName;
 
+  private final boolean ifExists;
+
   /**
    * A JSON with the options specified by the user.
    */
@@ -38,14 +40,18 @@ public class AlterClusterStatement extends MetaStatement {
    * @param clusterName The name of the cluster.
    * @param options A JSON with the cluster options.
    */
-  public AlterClusterStatement(String clusterName, String options) {
+  public AlterClusterStatement(String clusterName, boolean ifExists, String options) {
     this.clusterName = clusterName;
+    this.ifExists = ifExists;
     this.options = options;
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("ALTER CLUSTER ");
+    if(ifExists){
+      sb.append("IF EXISTS ");
+    }
     sb.append(clusterName);
     sb.append(" WITH OPTIONS ").append(options);
     return sb.toString();

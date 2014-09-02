@@ -78,9 +78,9 @@ public class CreateTableStatementTest extends ParsingTest {
   @Test
   public void createTableBasic7() {
     String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 bool, PRIMARY KEY ((something, something2), something3)) "
-                       + "WITH propiedad1=prop1 AND propiedad2=2 and propiedad3=3.0;";
+                       + "WITH 'propiedad1'='prop1' AND 'propiedad2'=2 and 'propiedad3'=3.0;";
     String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley (demo.myTable.something text, demo.myTable.something2 int, demo.myTable.something3 bool, PRIMARY KEY ((demo.myTable.something, demo.myTable.something2), demo.myTable.something3)) "
-                          + "WITH propiedad1=prop1 and propiedad2=2 AND propiedad3=3.0;";
+                          + "WITH 'propiedad1'='prop1' and 'propiedad2'=2 AND 'propiedad3'=3.0;";
     testRegularStatementSession("demo", inputText, expectedText, "createTableBasic7");
   }
 
@@ -162,9 +162,9 @@ public class CreateTableStatementTest extends ParsingTest {
   @Test
   public void createTableWithProperties() {
     String inputText = "CREATE TABLE key_space1.test ON CLUSTER siliconValley (name varchar, color varchar, gender varchar, food varchar, "
-                       + "animal varchar, PRIMARY KEY (name)) WITH compression={sstable_compression: DeflateCompressor, "
-                       + "chunk_length_kb: 64} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
-                       + "read_repair_chance=1.0;";
+                       + "animal varchar, PRIMARY KEY (name)) WITH 'compression'='{sstable_compression: DeflateCompressor, "
+                       + "chunk_length_kb: 64}' AND 'compaction'='{class: SizeTieredCompactionStrategy, min_threshold: 6}' AND "
+                       + "'read_repair_chance'=1.0;";
     //MetaStatement st = parser.parseStatement(inputText).getStatement();
     MetaStatement st = null;
     try {
@@ -238,10 +238,10 @@ public class CreateTableStatementTest extends ParsingTest {
   public void createTableWithOptions(){
     String inputText = "CREATE TABLE key_space1.wallet ON CLUSTER siliconValley (day text, key uuid, latitude double, longitude double, name text, "
                        + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key)) WITH COMPACT STORAGE AND " +
-                       "read_repair_chance=1.0;";
+                       "'read_repair_chance'=1.0;";
     String expectedText = "CREATE TABLE key_space1.wallet ON CLUSTER cluster.siliconValley (key_space1.wallet.day text, key_space1.wallet.key uuid, key_space1.wallet.latitude double, key_space1.wallet.longitude double, key_space1.wallet.name text, "
                           + "key_space1.wallet.address text, key_space1.wallet.tags map<text,boolean>, key_space1.wallet.lucene text, PRIMARY KEY (key_space1.wallet.day, key_space1.wallet.key)) WITH COMPACT STORAGE AND " +
-                          "read_repair_chance=1.0;";
+                          "'read_repair_chance'=1.0;";
     testRegularStatementSession("demo", inputText, expectedText, "createTableWithOptions");
   }
 

@@ -379,15 +379,14 @@ public class Metash {
     System.out.println(" >>> TRACE: sentence(1): "+sentence);
     sentence = sentence.substring(4);
     System.out.println(" >>> TRACE: sentence(2): "+sentence);
-    Manifest manifest = null;
-    if(sentence.toLowerCase().startsWith("datastore")){
-      manifest = new Manifest(Manifest.TYPE_DATASTORE);
-    } else if(sentence.toLowerCase().startsWith("connector")) {
-      manifest = new Manifest(Manifest.TYPE_CONNECTOR);
+    int type_manifest = Manifest.TYPE_DATASTORE;
+    if(sentence.toLowerCase().startsWith("connector")) {
+      type_manifest = Manifest.TYPE_CONNECTOR;
     }
     sentence = sentence.substring(11, sentence.length() - 1);
     System.out.println(" >>> TRACE: sentence(3): "+sentence);
-    manifest.parseFromFile(sentence);
+    //Manifest manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest, sentence);
+    Manifest manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest, sentence);
     return manifest.toString();
   }
 

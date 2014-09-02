@@ -74,8 +74,8 @@ public class AlterTableStatementTest extends ParsingTest{
 
   @Test
   public void alterTableBasic3() {
-    String inputText = "ALTER TABLE demo.myTable WITH property1=value1 AND property2=2 and property3=3.0;";
-    String expectedText = "ALTER TABLE demo.myTable WITH property1=value1 AND property2=2 and property3=3.0;";
+    String inputText = "ALTER TABLE demo.myTable WITH 'property1'='value1' AND 'property2'=2 and 'property3'=3.0;";
+    String expectedText = "ALTER TABLE demo.myTable WITH 'property1'='value1' AND 'property2'=2 and 'property3'=3.0;";
     testRegularStatement(inputText, expectedText, "alterTableBasic3");
   }
 

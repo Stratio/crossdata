@@ -46,8 +46,8 @@ public class CreateIndexStatementTest extends ParsingTest{
 
   @Test
   public void createIndexDefaultUsing() {
-    String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1, field2) USING com.company.Index.class;";
-    String expectedText = "CREATE DEFAULT INDEX index1 ON <unknown_name>.table1 (<unknown_name>.table1.field1, <unknown_name>.table1.field2) USING com.company.Index.class;";
+    String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1, field2) USING \"com.company.Index.class\";";
+    String expectedText = "CREATE DEFAULT INDEX index1 ON <unknown_name>.table1 (<unknown_name>.table1.field1, <unknown_name>.table1.field2) USING \"com.company.Index.class\";";
     testRegularStatement(inputText, expectedText, "createIndexDefaultUsing");
   }
 
@@ -78,22 +78,22 @@ public class CreateIndexStatementTest extends ParsingTest{
 
   @Test
   public void createIndexDefaultAll() {
-    String inputText =    "[demo], CREATE DEFAULT INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING com.company.Index.class WITH OPTIONS = {'key1': 'val1'};";
-    String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING com.company.Index.class WITH OPTIONS = {key1: val1};";
+    String inputText =    "[demo], CREATE DEFAULT INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING 'com.company.Index.class' WITH OPTIONS = {'key1': 'val1'};";
+    String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH OPTIONS = {key1: val1};";
     testRegularStatement(inputText, expectedText, "createIndexDefaultAll");
   }
 
   @Test
   public void createDefaultIndexWithOptions2() {
-    String inputText =    "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (field1, field2) USING com.company.Index.class WITH OPTIONS = {'key1': 'val1', 'key2': 'val2'};";
-    String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING com.company.Index.class WITH OPTIONS = {key1: val1, key2: val2};";
+    String inputText =    "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (field1, field2) USING 'com.company.Index.class' WITH OPTIONS = {'key1': 'val1', 'key2': 'val2'};";
+    String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH OPTIONS = {key1: val1, key2: val2};";
     testRegularStatement(inputText, expectedText, "createIndexWithOptions2");
   }
 
   @Test
   public void createLuceneIndexWithOptions2() {
-    String inputText =    "CREATE LUCENE INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING com.company.Index.class WITH OPTIONS = {'key1': 'val1', 'key2': 'val2'};";
-    String expectedText = "CREATE LUCENE INDEX IF NOT EXISTS stratio_lucene_index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING com.company.Index.class WITH OPTIONS = {key1: val1, key2: val2};";
+    String inputText =    "CREATE LUCENE INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING 'com.company.Index.class' WITH OPTIONS = {'key1': 'val1', 'key2': 'val2'};";
+    String expectedText = "CREATE LUCENE INDEX IF NOT EXISTS stratio_lucene_index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH OPTIONS = {key1: val1, key2: val2};";
     testRegularStatementSession("demo", inputText, expectedText, "createIndexWithOptions2");
   }
 

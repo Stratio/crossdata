@@ -25,9 +25,9 @@ import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -90,14 +90,16 @@ public class UpdateTableStatement extends MetaStatement {
 
     this.optsInc = optsInc;
 
+    this.options = options;
+
     // this.options = options;
-    if (optsInc) {
+    /*if (optsInc) {
       this.options = new ArrayList<>();
       for (Option opt : options) {
         opt.setNameProperty(opt.getNameProperty().toLowerCase());
         this.options.add(opt);
       }
-    }
+    }*/
 
     this.assignations = assignations;
     this.whereClauses = whereClauses;
@@ -259,8 +261,7 @@ public class UpdateTableStatement extends MetaStatement {
   private Result validateOptions() {
     Result result = QueryResult.createSuccessQueryResult();
     for (Option opt : options) {
-      if (!("ttl".equalsIgnoreCase(opt.getNameProperty()) || "timestamp".equalsIgnoreCase(opt
-          .getNameProperty()))) {
+      if (!("ttl".equalsIgnoreCase(((StringSelector) opt.getNameProperty()).getValue()) || "timestamp".equalsIgnoreCase(((StringSelector) opt.getNameProperty()).getValue()))) {
         result =
             Result.createValidationErrorResult("TIMESTAMP and TTL are the only accepted options.");
       }
