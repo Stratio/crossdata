@@ -2,10 +2,10 @@ package com.stratio.connector
 
 import akka.actor.{ActorSystem,Props}
 import com.typesafe.config.ConfigFactory
-//import com.stratio.connector.cassandra.CassandraConnector
 import com.stratio.meta.common.connector.IConnector
 import akka.actor.ActorSystem
 import akka.actor.Props
+import akka.actor.ActorRef
 //import com.stratio.connector.cassandra.CassandraConnector
 
 class ConnectorApp {
@@ -49,16 +49,16 @@ class ConnectorApp {
        }
   }
 
-  def startup(connector:IConnector,port:String,config:com.typesafe.config.Config): Unit = {
+  def startup(connector:IConnector,port:String,config:com.typesafe.config.Config): ActorRef= {
     return startup(connector,Array(port),config)
   }
 
-  def startup(connector:IConnector,ports:Array[String],config:com.typesafe.config.Config): Unit = {
+  def startup(connector:IConnector,ports:Array[String],config:com.typesafe.config.Config): ActorRef= {
     return startup(connector,ports.toList,config)
   }
 
-  def startup(connector:IConnector,ports: Seq[String],config:com.typesafe.config.Config): Unit = {
-    println("using connector with datastorename="+connector.getDatastoreName())
+  def startup(connector:IConnector,ports: Seq[String],config:com.typesafe.config.Config): ActorRef= {
+    var actorClusterNode:ActorRef=null
     ports foreach { port =>
       // Override the configuration of the port
       //val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
@@ -66,10 +66,10 @@ class ConnectorApp {
       // Create an Akka system
       val system = ActorSystem("MetaServerCluster", config)
       // Create an actor that handles cluster domain events
-      val actorClusterNode=system.actorOf(Props[ClusterListener], name = "clusterListener")
-      
+      actorClusterNode=system.actorOf(Props[ClusterListener], name = "clusterListener")
       actorClusterNode ! "I'm in!!!"
     }
+    actorClusterNode
   }
 
 }

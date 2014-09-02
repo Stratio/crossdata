@@ -31,6 +31,25 @@
             <version>${meta.version}</version>
    </dependency>
 
+   <dependency>
+	<groupId>org.scalamock</groupId>
+	<artifactId>scalamock-core_2.10</artifactId>
+	<version>3.0</version>
+  	<scope>test</scope>
+   </dependency>
+   <dependency>
+	<groupId>org.scalamock</groupId>
+	<artifactId>scalamock-scalatest-support_2.10</artifactId>
+	<version>3.0</version>
+   </dependency>
+   <dependency>
+     <groupId>org.scalatest</groupId>
+     <artifactId>scalatest_2.10</artifactId>
+     <version>2.1.0</version>
+     <scope>test</scope>
+   </dependency>
+
+
    <!--dependency>
 	<groupId>com.stratio.connector</groupId>
     <artifactId>connector-cassandra-core</artifactId>
@@ -55,7 +74,6 @@
             <artifactId>akka-contrib_2.10</artifactId>
             <version>${akka.version}</version>
 	  </dependency>
-
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
                 <artifactId>akka-cluster_${scala.dep.version}</artifactId>
@@ -71,6 +89,11 @@
                 <artifactId>akka-slf4j_${scala.dep.version}</artifactId>
                 <version>${akka.version}</version>
             </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-testkit_2.10</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
  
   </dependencies>
  <build>
@@ -130,8 +153,27 @@
                     </execution>
                 </executions>
             </plugin>
+
+<plugin>
+  <groupId>org.scalatest</groupId>
+  <artifactId>scalatest-maven-plugin</artifactId>
+  <version>1.0</version>
+  <configuration>
+    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+    <junitxml>.</junitxml>
+    <filereports>WDF TestSuite.txt</filereports>
+  </configuration>
+  <executions>
+    <execution>
+      <id>test</id>
+      <goals>
+        <goal>test</goal>
+      </goals>
+    </execution>
+  </executions>
+</plugin>
             
-        </plugins>
+</plugins>
  
  
  

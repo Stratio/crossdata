@@ -52,12 +52,12 @@ class ExecutorActor(connectorActor:ActorRef,executor:Executor) extends Actor wit
       processResults(result)
     case query:MetaQuery if !query.hasError=> {
       val querySender = sender
-      log.debug("Init Executor Task")
+      log.info("Init Executor Task")
       val timer=initTimer()
       val result = executor.executeQuery(query, this).getResult
       querySender ! result
       finishTimer(timer)
-      log.debug("Finish Executor Task")
+      log.info("Finish Executor Task")
     }
     case query:MetaQuery if query.hasError=>{
       sender ! query.getResult

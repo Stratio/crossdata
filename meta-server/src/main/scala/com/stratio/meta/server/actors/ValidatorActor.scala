@@ -23,6 +23,7 @@ import com.stratio.meta.core.utils.MetaQuery
 import com.stratio.meta.core.validator.Validator
 import org.apache.log4j.Logger
 import com.stratio.meta.common.result.Result
+import com.stratio.meta2.core.statements.MetaStatement
 
 object ValidatorActor{
   def props(planner:ActorRef, validator:Validator): Props= Props(new ValidatorActor(planner,validator))
@@ -47,18 +48,23 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
 
   override def receive: Receive = {
     case query:MetaQuery if !query.hasError=> {
-      log.debug("Init Validator Task")
-
+      log.info("validator query without errors")
       val timer=initTimer()
 
       planner forward validator.validateQuery(query)
       finishTimer(timer)
-      log.debug("Finish Validator Task")
+      log.info("Finish Validator Task")
     }
     case query:MetaQuery if query.hasError=>{
+      log.info("validator query witherrors")
       sender ! query.getResult
     }
+    case statement:MetaStatement=> {
+      
+      log.info("validator metaStatement")
+    }
     case _ => {
+      log.info("validator _")
       sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
     }
   }
