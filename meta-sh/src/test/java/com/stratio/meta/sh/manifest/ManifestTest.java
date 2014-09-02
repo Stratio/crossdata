@@ -26,13 +26,13 @@ public class ManifestTest {
 
   @Test
   public void testDataStoreManifest() {
-    String parsedManifest = Metash.parseXML("Add DataStore \"/home/mafernandez/workspace/DataStoreManifest.xml\"");
+    String parsedManifest = Metash.parseXML("Add DataStore \"meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xml\"");
     assert(parsedManifest.equalsIgnoreCase("DATASTORE"+System.lineSeparator()+""));
   }
 
   @Test
   public void testConnectorManifest() {
-    String parsedManifest = Metash.parseXML("Add Connector \"ConnectorManifest.xml\"");
+    String parsedManifest = Metash.parseXML("Add Connector \"meta-common/src/main/resources/com/stratio/meta/connector/ConnectorDefinition.xml\"");
     assert(parsedManifest.equalsIgnoreCase("CONNECTOR"+System.lineSeparator()+""));
   }
 
