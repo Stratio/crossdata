@@ -1,29 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:element name="DataStore" type="DataStoreType"/>
-  <xs:complexType name="clusterType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="name"/>
-      <xs:element type="hostsType" name="hosts"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="hostsType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="host"/>
-      <xs:element type="xs:string" name="port"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="DataStoreType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="Name"/>
-      <xs:element type="xs:string" name="Version"/>
-      <xs:element type="RequiredPropertiesType" name="RequiredProperties"/>
-      <xs:element type="xs:string" name="OptionalProperties"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="RequiredPropertiesType">
-    <xs:sequence>
-      <xs:element type="clusterType" name="cluster"/>
-    </xs:sequence>
-  </xs:complexType>
+    <xs:element name="DataStore" type="DataStoreType"/>
+    <xs:complexType name="clusterType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="name"/>
+            <xs:element type="hostsType" name="hosts" maxOccurs="unbounded" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="hostsType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="host"/>
+            <xs:element type="xs:string" name="port"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DataStoreType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="Name"/>
+            <xs:element type="xs:string" name="Version"/>
+            <xs:element type="RequiredPropertiesType" name="RequiredProperties"/>
+            <xs:element type="OptionalPropertiesType" name="OptionalProperties"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="OptionalPropertiesType">
+        <xs:sequence>
+            <xs:element type="PropertyType" name="Property" maxOccurs="unbounded" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PropertyType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="Name"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="RequiredPropertiesType">
+        <xs:sequence>
+            <xs:element type="clusterType" name="cluster"/>
+        </xs:sequence>
+    </xs:complexType>
 </xs:schema>
