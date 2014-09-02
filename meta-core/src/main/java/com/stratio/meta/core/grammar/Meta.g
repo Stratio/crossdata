@@ -952,13 +952,12 @@ getAssignment[TableName tablename] returns [Relation assign]:
         })
 ;
 
-getValueAssign[TableName tablename] returns [List<Selector> valueAssign]
+getValueAssign[TableName tablename] returns [Selector valueAssign]
     @init{
         Operator op = Operator.ADD;
-        valueAssign = new ArrayList<>();
     }:
     //firstTerm=getSelector[tablename] T_PLUS secondTerm=getSelector
-    vAssign=getSelector[tablename] {valueAssign.add(vAssign);}
+    vAssign=getSelector[tablename] {valueAssign = vAssign;}
     (
         operator=(T_PLUS | T_SUBTRACT {op = Operator.SUBTRACT;} )
         termN=getSelector[tablename] {
