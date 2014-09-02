@@ -18,36 +18,36 @@
 
 package com.stratio.meta2.core.structures;
 
-import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class PropertyNameValue extends Property {
 
-  private String name;
-  private Term vp;
+  private Selector name;
+  private Selector vp;
 
   public PropertyNameValue() {
     super(TYPE_NAME_VALUE);
   }
 
-  public PropertyNameValue(String name, Term vp) {
+  public PropertyNameValue(Selector name, Selector vp) {
     super(TYPE_NAME_VALUE);
     this.name = name;
     this.vp = vp;
   }
 
-  public String getName() {
+  public Selector getName() {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(Selector name) {
     this.name = name;
   }
 
-  public Term getVp() {
+  public Selector getVp() {
     return vp;
   }
 
-  public void setVp(Term vp) {
+  public void setVp(Selector vp) {
     this.vp = vp;
   }
 

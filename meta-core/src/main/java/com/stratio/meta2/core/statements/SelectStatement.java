@@ -31,6 +31,7 @@ import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.FunctionSelector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.core.structures.OrderBy;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import com.stratio.meta2.core.structures.Ordering;
@@ -103,6 +104,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * The list of {@link com.stratio.meta2.core.structures.Ordering} clauses.
    */
+  @Deprecated
   private List<Ordering> order = null;
 
   /**
@@ -114,6 +116,9 @@ public class SelectStatement extends MetaStatement {
    * The {@link com.stratio.meta.core.structures.GroupBy} clause.
    */
   private GroupBy group = null;
+
+  private OrderBy orderBy=null;
+
 
   /**
    * Whether a LIMIT clause has been specified.
@@ -246,6 +251,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @param order The order.
    */
+  @Deprecated
   public void setOrder(List<Ordering> order) {
     this.orderInc = true;
     this.order = order;
@@ -256,6 +262,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @return list of {@link com.stratio.meta2.core.structures.Ordering}.
    */
+  @Deprecated
   public List<Ordering> getOrder() {
     return order;
   }
@@ -265,6 +272,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @return {@code true} if is included.
    */
+  @Deprecated
   public boolean isOrderInc() {
     return orderInc;
   }
@@ -451,4 +459,11 @@ public class SelectStatement extends MetaStatement {
     return new ValidationRequirements();
   }
 
+  public OrderBy getOrderBy() {
+    return orderBy;
+  }
+
+  public void setOrderBy(OrderBy orderBy) {
+    this.orderBy = orderBy;
+  }
 }

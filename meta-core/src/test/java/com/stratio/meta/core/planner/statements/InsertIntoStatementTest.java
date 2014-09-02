@@ -22,10 +22,10 @@ import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.statements.structures.terms.BooleanTerm;
-import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
-import com.stratio.meta2.common.statements.structures.terms.LongTerm;
-import com.stratio.meta2.common.statements.structures.terms.StringTerm;
+import com.stratio.meta2.common.statements.structures.selectors.BooleanSelector;
+import com.stratio.meta2.common.statements.structures.selectors.IntegerSelector;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.statements.InsertIntoStatement;
 
 import org.testng.annotations.Test;
@@ -46,12 +46,12 @@ public class InsertIntoStatementTest extends BasicPlannerTest {
                                          new ColumnName(tablename, "age"),
                                          new ColumnName(tablename, "bool"),
                                          new ColumnName(tablename, "phrase"));
-    List<GenericTerm> list = new ArrayList<>();
-    list.add(new StringTerm("name_0"));
-    list.add(new StringTerm("male"));
-    list.add(new LongTerm("10"));
-    list.add(new BooleanTerm("false"));
-    list.add(new StringTerm(""));
+    List<Selector> list = new ArrayList<>();
+    list.add(new StringSelector("name_0"));
+    list.add(new StringSelector("male"));
+    list.add(new IntegerSelector("10"));
+    list.add(new BooleanSelector("false"));
+    list.add(new StringSelector(""));
     stmt = new InsertIntoStatement(tablename, ids, list, false, new ArrayList<Option>());
     validateCassandraPath("testPlanForInsert");
   }

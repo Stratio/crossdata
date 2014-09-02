@@ -16,7 +16,6 @@ package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
@@ -25,8 +24,7 @@ import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
-import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.ArrayList;
@@ -56,7 +54,7 @@ public class UpdateTableStatement extends MetaStatement {
   /**
    * The list of assignations.
    */
-  private List<Assignation> assignations;
+  private List<Relation> assignations;
 
   /**
    * The list of relations.
@@ -71,7 +69,7 @@ public class UpdateTableStatement extends MetaStatement {
   /**
    * Map of conditions.
    */
-  private Map<String, Term<?>> conditions;
+  private Map<Selector, Selector> conditions;
 
   /**
    * Class constructor.
@@ -85,8 +83,8 @@ public class UpdateTableStatement extends MetaStatement {
    * @param conditions The map of conditions.
    */
   public UpdateTableStatement(TableName tableName, boolean optsInc, List<Option> options,
-      List<Assignation> assignations, List<Relation> whereClauses, boolean condsInc,
-      Map<String, Term<?>> conditions) {
+      List<Relation> assignations, List<Relation> whereClauses, boolean condsInc,
+      Map<Selector, Selector> conditions) {
     this.command = false;
     this.tableName = tableName;
 
@@ -117,7 +115,7 @@ public class UpdateTableStatement extends MetaStatement {
    * @param conditions The map of conditions.
    */
   public UpdateTableStatement(TableName tableName, List<Option> options,
-      List<Assignation> assignations, List<Relation> whereClauses, Map<String, Term<?>> conditions) {
+      List<Relation> assignations, List<Relation> whereClauses, Map<Selector, Selector> conditions) {
     this(tableName, true, options, assignations, whereClauses, true, conditions);
   }
 
@@ -129,8 +127,8 @@ public class UpdateTableStatement extends MetaStatement {
    * @param whereClauses The list of relations.
    * @param conditions The map of conditions.
    */
-  public UpdateTableStatement(TableName tableName, List<Assignation> assignations,
-      List<Relation> whereClauses, Map<String, Term<?>> conditions) {
+  public UpdateTableStatement(TableName tableName, List<Relation> assignations,
+      List<Relation> whereClauses, Map<Selector, Selector> conditions) {
     this(tableName, false, null, assignations, whereClauses, true, conditions);
   }
 
@@ -143,7 +141,7 @@ public class UpdateTableStatement extends MetaStatement {
    * @param whereClauses The list of relations.
    */
   public UpdateTableStatement(TableName tableName, List<Option> options,
-      List<Assignation> assignations, List<Relation> whereClauses) {
+      List<Relation> assignations, List<Relation> whereClauses) {
     this(tableName, true, options, assignations, whereClauses, false, null);
   }
 
@@ -154,7 +152,7 @@ public class UpdateTableStatement extends MetaStatement {
    * @param assignations The list of assignations.
    * @param whereClauses The list of relations.
    */
-  public UpdateTableStatement(TableName tableName, List<Assignation> assignations,
+  public UpdateTableStatement(TableName tableName, List<Relation> assignations,
       List<Relation> whereClauses) {
     this(tableName, false, null, assignations, whereClauses, false, null);
   }
@@ -267,7 +265,7 @@ public class UpdateTableStatement extends MetaStatement {
             Result.createValidationErrorResult("TIMESTAMP and TTL are the only accepted options.");
       }
     }
-    for (Option opt : options) {
+    /*for (Option opt : options) {
       if (opt.getProperties().getType() != GenericTerm.SIMPLE_TERM) {
         result =
             Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
@@ -278,7 +276,7 @@ public class UpdateTableStatement extends MetaStatement {
               Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
         }
       }
-    }
+    }*/
     return result;
   }
 

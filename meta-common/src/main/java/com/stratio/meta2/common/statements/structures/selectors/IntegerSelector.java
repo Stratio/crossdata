@@ -40,6 +40,10 @@ public class IntegerSelector extends Selector{
     this.value = Long.valueOf(value);
   }
 
+  public IntegerSelector(int value) {
+    this.value = value;
+  }
+
   /**
    * Get the long value.
    * @return A long value.

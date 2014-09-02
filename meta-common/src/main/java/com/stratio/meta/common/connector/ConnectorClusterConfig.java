@@ -36,14 +36,14 @@ public class ConnectorClusterConfig {
    * Map of options required by a connector in order to be able to establish a connection
    * to an existing datastore cluster.
    */
-  private final Map<String, Object> options;
+  private final Map<String, String> options;
 
   /**
    * Class constructor.
    * @param name Name of the target cluster.
    * @param options Map of options.
    */
-  public ConnectorClusterConfig(ClusterName name, Map<String, Object> options) {
+  public ConnectorClusterConfig(ClusterName name, Map<String, String> options) {
     this.name = name;
     this.options = options;
   }
@@ -52,7 +52,7 @@ public class ConnectorClusterConfig {
    * Get the cluster options.
    * @return A map of options.
    */
-  public Map<String, Object> getOptions() {
+  public Map<String, String> getOptions() {
     return options;
   }
 

@@ -28,9 +28,8 @@ import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
-import com.stratio.meta2.common.statements.structures.terms.StringTerm;
-import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.ArrayList;
@@ -88,7 +87,7 @@ public class CreateIndexStatement extends MetaStatement {
   /**
    * The map of options passed to the index during its creation.
    */
-  private Map<Term, GenericTerm> options = null;
+  private Map<Selector, Selector> options = null;
 
   /**
    * Map of lucene types associated with Cassandra data types.
@@ -226,7 +225,7 @@ public class CreateIndexStatement extends MetaStatement {
    * @param key The option key.
    * @param value The option value.
    */
-  public void addOption(Term key, GenericTerm value) {
+  public void addOption(Selector key, Selector value) {
     options.put(key, value);
   }
 
@@ -239,7 +238,7 @@ public class CreateIndexStatement extends MetaStatement {
    *
    * @return The map of options.
    */
-  public Map<Term, GenericTerm> getOptions() {
+  public Map<Selector, Selector> getOptions() {
     return options;
   }
 
@@ -441,17 +440,17 @@ public class CreateIndexStatement extends MetaStatement {
    *
    * @return The set of options.
    */
-  protected Map<Term, GenericTerm> generateLuceneOptions() {
-    Map<Term, GenericTerm> result = new HashMap<>();
+  protected Map<Selector, Selector> generateLuceneOptions() {
+    Map<Selector, Selector> result = new HashMap<>();
 
     // TODO: Read parameters from default configuration and merge with the user specification.
-    result.put(new StringTerm("'refresh_seconds'"), new StringTerm("'1'"));
+    result.put(new StringSelector("'refresh_seconds'"), new StringSelector("'1'"));
 
-    result.put(new StringTerm("'num_cached_filters'"), new StringTerm("'1'"));
-    result.put(new StringTerm("'ram_buffer_mb'"), new StringTerm("'32'"));
-    result.put(new StringTerm("'max_merge_mb'"), new StringTerm("'5'"));
-    result.put(new StringTerm("'max_cached_mb'"), new StringTerm("'30'"));
-    result.put(new StringTerm("'schema'"), new StringTerm("'" + generateLuceneSchema() + "'"));
+    result.put(new StringSelector("'num_cached_filters'"), new StringSelector("'1'"));
+    result.put(new StringSelector("'ram_buffer_mb'"), new StringSelector("'32'"));
+    result.put(new StringSelector("'max_merge_mb'"), new StringSelector("'5'"));
+    result.put(new StringSelector("'max_cached_mb'"), new StringSelector("'30'"));
+    result.put(new StringSelector("'schema'"), new StringSelector("'" + generateLuceneSchema() + "'"));
 
     return result;
   }
