@@ -57,22 +57,22 @@ public class CreateIndexStatementTest extends ParsingTest{
                        + " (day, entry_id, latitude, longitude, name, address, tags)"
                        + " USING 'org.apache.cassandra.db.index.stratio.RowIndex'"
                        + " WITH OPTIONS = {'schema': "
-                       + "'{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\","
-                       + "fields:"
-                       + "{day:{type:\"date\", pattern:\"yyyy-MM-dd\"},"
-                       + " entry_id:{type:\"uuid\"}, latitude:{type:\"double\"},"
-                       + " longitude:{type:\"double\"}, name:{type:\"text\"},"
-                       + " address:{type:\"string\"}, tags:{type:\"boolean\"}}}'};";
+                       + "'{default_analyzer: \"org.apache.lucene.analysis.standard.StandardAnalyzer\","
+                       + "fields: "
+                       + "{day: {type: \"date\", pattern: \"yyyy-MM-dd\"},"
+                       + " entry_id: {type: \"uuid\"}, latitude: {type: \"double\"},"
+                       + " longitude: {type: \"double\"}, name: {type: \"text\"},"
+                       + " address: {type: \"string\"}, tags: {type: \"boolean\"}}}'};";
     String expectedText = "CREATE LUCENE INDEX stratio_lucene_demo_banks ON demo.banks"
                           + " (demo.banks.day, demo.banks.entry_id, demo.banks.latitude, demo.banks.longitude, demo.banks.name, demo.banks.address, demo.banks.tags)"
                           + " USING 'org.apache.cassandra.db.index.stratio.RowIndex'"
-                          + " WITH OPTIONS = {'schema': "
-                          + "'{default_analyzer:\"org.apache.lucene.analysis.standard.StandardAnalyzer\","
-                          + "fields:"
-                          + "{day:{type:\"date\", pattern:\"yyyy-MM-dd\"},"
-                          + " entry_id:{type:\"uuid\"}, latitude:{type:\"double\"},"
-                          + " longitude:{type:\"double\"}, name:{type:\"text\"},"
-                          + " address:{type:\"string\"}, tags:{type:\"boolean\"}}}'};";
+                          + " WITH OPTIONS = {schema: "
+                          + "{default_analyzer: \"org.apache.lucene.analysis.standard.StandardAnalyzer\","
+                          + "fields: "
+                          + "{day: {type: \"date\", pattern: \"yyyy-MM-dd\"},"
+                          + " entry_id: {type: \"uuid\"}, latitude: {type: \"double\"},"
+                          + " longitude: {type: \"double\"}, name: {type: \"text\"},"
+                          + " address: {type: \"string\"}, tags: {type: \"boolean\"}}}};";
     testRegularStatementSession("demo", inputText, expectedText, "createIndexLucene");
   }
 

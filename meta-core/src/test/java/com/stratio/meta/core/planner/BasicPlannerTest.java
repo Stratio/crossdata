@@ -27,7 +27,7 @@ import org.testng.annotations.BeforeClass;
 
 import static org.testng.Assert.assertTrue;
 
-public class BasicPlannerTest extends BasicCoreCassandraTest{
+public class BasicPlannerTest extends BasicCoreCassandraTest {
 
   protected static MetadataManager _metadataManager = null;
 

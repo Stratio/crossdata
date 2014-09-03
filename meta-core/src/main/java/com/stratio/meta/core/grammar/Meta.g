@@ -267,7 +267,7 @@ T_TO: T O;
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
 
-QUOTED_LITERAL
+/*QUOTED_LITERAL
     @init{
         StringBuilder sb = new StringBuilder();
         String initialQuotation = "'";
@@ -277,7 +277,18 @@ QUOTED_LITERAL
         setText(initialQuotation+sb.toString()+finalQuotation);
     }:
         ('"' { initialQuotation = "\""; } |'\'') (c=~('"'|'\'') { sb.appendCodePoint(c);} | '\'' '\'' { sb.appendCodePoint('\''); })* ('"' { finalQuotation = "\""; } |'\'')
-    ;
+;*/
+
+QUOTED_LITERAL
+    @init{
+        StringBuilder sb = new StringBuilder();
+    }
+    @after{
+        setText(sb.toString());
+    }:
+      ('"' { sb.append('"'); })   (c=~('"') { sb.appendCodePoint(c);})*  ('"' { sb.append('"'); })
+    | ('\'' { sb.append('\''); }) (c=~('\'') { sb.appendCodePoint(c);})* ('\'' { sb.append('\''); })
+;
 
 T_CONSTANT: (DIGIT)+;
 
@@ -493,12 +504,6 @@ createIndexStatement returns [CreateIndexStatement cis]
 	(T_USING usingClass=QUOTED_LITERAL {$cis.setUsingClass($usingClass.text);})?
 	(T_WITH T_OPTIONS T_EQUAL optionsJson=getJson {$cis.setOptionsJson(optionsJson);})?
 ;
-
-    //identProp1=T_IDENT T_EQUAL valueProp1=getSelector[tablename] {properties.put($identProp1.text, valueProp1.toString());}
-    /*
-    (T_WITH T_OPTIONS T_EQUAL T_START_SBRACKET key=T_IDENT T_COLON value=getSelector[tablename] {$cis.addOption($key.text, value.toString());}
-            (T_AND key=T_IDENT T_COLON value=getSelector[tablename] {$cis.addOption($key.text, value.toString());} )* T_END_SBRACKET
-    */
 
 getField returns [String newField]:
     (unitField=getUnits {$newField = unitField;}
@@ -923,19 +928,6 @@ getSelector[TableName tablename] returns [Selector s]
     )
 ;
 
-// Migrate
-//
-//     | constant=getConstant {$term = new LongTerm(constant);}
-//     | T_FALSE {$term = new BooleanSelector("false");}
-//     | T_TRUE {$term = new BooleanSelector("true");}
-//     | floatingNumber=T_FLOAT {$term = new DoubleTerm($floatingNumber.text);}
-//    NO | ksAndTn=T_KS_AND_TN {$term = new StringSelector($ksAndTn.text);}
-//    NO | noIdent=T_TERM {$term = new StringSelector($noIdent.text);}
-//     | path=T_PATH {$term = new StringSelector($path.text);}
-//     | qLiteral=QUOTED_LITERAL {$term = new StringSelector($qLiteral.text);}
-//
-//
-
 
 getListTypes returns [String listType]:
 	//tablename=('PROCESS' | 'UDF' | 'TRIGGER' | 'process' | 'udf' | 'trigger') {$listType = new String($tablename.text);}
@@ -1020,10 +1012,26 @@ getAliasedTableID[Map tablesAliasesMap] returns [TableName result]:
 	{result = tableN;}
 ;
 
-getColumnName[TableName tn] returns [ColumnName columnName]:
-    (ident1=T_IDENT {$columnName = normalizeColumnName(tn, $ident1.text);}
-    | ident2=T_KS_AND_TN {$columnName = normalizeColumnName(tn, $ident2.text);}
-    | ident3=T_CTLG_TBL_COL {$columnName = normalizeColumnName(tn, $ident3.text);})
+getColumnName[TableName tablename] returns [ColumnName columnName]:
+    ( ident1=T_IDENT {$columnName = normalizeColumnName(tablename, $ident1.text);}
+    | ident2=T_KS_AND_TN {$columnName = normalizeColumnName(tablename, $ident2.text);}
+    | ident3=T_CTLG_TBL_COL {$columnName = normalizeColumnName(tablename, $ident3.text);}
+    | allowedReservedWord=getAllowedReservedWord {$columnName = normalizeColumnName(tablename, allowedReservedWord);})
+;
+
+getAllowedReservedWord returns [String str]:
+    ident=(T_SEC
+    | T_SECS
+    | T_SECOND
+    | T_SECONDS
+    | T_MINS
+    | T_MINUTE
+    | T_MINUTES
+    | T_HOUR
+    | T_HOURS
+    | T_DAY
+    | T_DAYS)
+    { $str = new String($ident.text); }
 ;
 
 getTableName returns [TableName tablename]:

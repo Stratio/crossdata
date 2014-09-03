@@ -132,9 +132,9 @@ public class ConsoleUtils {
     sb.append(System.lineSeparator());
     sb.append(bar).append(System.lineSeparator());
     sb.append("| ");
-    for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
+    for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
       sb.append(
-          StringUtils.rightPad("\033[34;1m" + columnMetadata.getColumnNameToShow() + "\033[0m ",
+          StringUtils.rightPad(columnMetadata.getColumnNameToShow(),
               colWidths.get(columnMetadata.getColumnName()) + 12)).append("| ");
     }
 
@@ -142,7 +142,7 @@ public class ConsoleUtils {
     sb.append(bar);
     sb.append(System.lineSeparator());
 
-    for (Row row : resultSet) {
+    for (Row row: resultSet) {
       sb.append("| ");
       for (Map.Entry<String, Cell> entry : row.getCells().entrySet()) {
         String str = String.valueOf(entry.getValue().getValue());
