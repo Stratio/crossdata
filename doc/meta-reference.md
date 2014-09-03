@@ -35,9 +35,9 @@ The META Console
 
 To start the META console:
 
-~~~~ {code}
+```shell-session
 $ metash
-~~~~
+```
 
 Available commands are:
 
@@ -63,11 +63,11 @@ Creates a new keyspace on the system specifying its replication properties.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 CREATE KEYSPACE (IF NOT EXISTS)? <keyspace_name>
 WITH replication = <options_map>
 (AND durable_writes = <boolean>)?;
-~~~~
+```
 
 where durable_writes defaults to true.
 
@@ -76,11 +76,11 @@ NetworkTopologyStrategy for a multi-datacenter setup.
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 CREATE KEYSPACE test
 WITH replication = {class: SimpleStrategy, replication_factor: 3}
 AND durable_writes = false;
-~~~~
+```
 
 ### CREATE TABLE
 
@@ -88,15 +88,15 @@ Creates a new table on the selected keyspace.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 CREATE TABLE (IF NOT EXISTS)? <tablename>
             '('<definition> (',' <definition>)*')'
              (WITH <option> (AND <option>)*)?;
-~~~~
+```
 
 where:
 
-~~~~ {prettyprint lang-meta}
+```sql
 <column-definition> ::= <identifier> <type> (PRIMARY KEY)?
                       | PRIMARY KEY '('<partition-key>(',' <identifier>)*')'
 
@@ -111,7 +111,7 @@ where:
                | CLUSTERING ORDER
 
 <property> ::= 'EPHEMERAL = true'
-~~~~
+```
 
 See [Apache Cassandra CQL3 documentation](http://cassandra.apache.org/doc/cql3/CQL.html#createTableStmt "Apache Cassandra CQL3 documentation") for a full list of available table properties.
 
@@ -122,7 +122,7 @@ The &lt;primary_key> can take two forms:
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 CREATE TABLE users (
       user_id      int,
       location_id  int,
@@ -131,9 +131,9 @@ CREATE TABLE users (
       email        varchar,
       PRIMARY KEY (user_id, location_id)
 );
-~~~~
+```
 
-~~~~ {prettyprint lang-meta}
+```sql
 CREATE TABLE wallet (
       wallet_id int,
       user_id int,
@@ -141,16 +141,16 @@ CREATE TABLE wallet (
       city varchar,
       PRIMARY KEY(wallet_id,user_id)
 );
-~~~~
+```
 
-~~~~ {prettyprint lang-meta}
+```sql
 CREATE TABLE ratings (
       user_id int,
       rating double,
       member boolean,
       PRIMARY KEY(user_id)
 ) WITH EPHEMERAL = true;
-~~~~
+```
 
 For more information about supported column types see [Datatypes](#datatypes "List of supported datatypes").
 
@@ -160,16 +160,16 @@ Creates an index on a set of columns of a table.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 CREATE DEFAULT INDEX (IF NOT EXISTS)?
 <index_name>? ON <tablename> '(' <columname> (',' <columnname>)* ')' ;
-~~~~
+```
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 CREATE DEFAULT INDEX users_index ON users (email);
-~~~~
+```
 
 ### CREATE LUCENE INDEX
 
@@ -179,16 +179,16 @@ use of the WITH OPTIONS statement.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 CREATE LUCENE INDEX (IF NOT EXISTS)?
 <index_name>? ON <tablename> '(' <columname> (',' <columnname>)* ')' ;
-~~~~
+```
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 CREATE LUCENE INDEX users_index ON users (user_id, email, message);
-~~~~
+```
 
 DELETE
 ------
@@ -197,14 +197,14 @@ Deletes row(s) of a table.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 DELETE ( <selection> (',' <selection> )* )?
 FROM <tablename> WHERE <where-clause>;
-~~~~
+```
 
 where
 
-~~~~ {prettyprint lang-meta}
+```sql
 <selection>    ::= <identifier> ( '[' <term> ']' )?
 
 <where-clause> ::= <relation> ( AND | OR <relation> )*
@@ -214,13 +214,13 @@ where
                      | <identifier> (ALL | ANY) '?'
 
 <operator>     ::= ( '=' | '>' | '>=' | '<' | '<=' )
-~~~~
+```
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 DELETE FROM users WHERE user_id = 100;
-~~~~
+```
 
 DESCRIBE
 --------
@@ -229,16 +229,16 @@ Provides information about the table or keyspace.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 DESCRIBE ( KEYSPACE ( <keyspace> )? | TABLE <tablename> );
 DESCRIBE ( KEYSPACES | TABLES );
-~~~~
+```
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 DESCRIBE TABLE users;
-~~~~
+```
 
 DROP
 ----
@@ -255,15 +255,15 @@ Removes an existing keyspace.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 DROP KEYSPACE (IF EXISTS)? <keyspace>;
-~~~~
+```
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 DROP KEYSPACE IF EXISTS test;
-~~~~
+```
 
 ### DROP TABLE
 
@@ -271,15 +271,15 @@ Removes an existing table.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 DROP TABLE (IF EXISTS)? <tablename>;
-~~~~
+```
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 DROP TABLE IF EXISTS users;
-~~~~
+```
 
 ### DROP INDEX
 
@@ -287,15 +287,15 @@ Removes an existing index.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 DROP INDEX (IF EXISTS)? ( <keyspace>. )? <index_name>;
-~~~~
+```
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 DROP INDEX users_index;
-~~~~
+```
 
 INSERT INTO
 -----------
@@ -304,26 +304,26 @@ Inserts new values in a table of the keyspace
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 INSERT INTO <tablename> '(' <identifier> ( ',' <identifier> )* ')'
 VALUES '(' <term-or-literal> ( ',' <term-or-literal> )* ')';
-~~~~
+```
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 INSERT INTO users (user_id, location_id, email)
 VALUES (100, 28010, 'jdoe@example.com');
-~~~~
+```
 
-~~~~ {prettyprint lang-meta}
+```sql
 INSERT INTO wallet (wallet_id, user_id, amount, city)
 VALUES (200, 100, 5000, 'Barcelona');
 INSERT INTO wallet (wallet_id, user_id, amount, city)
 VALUES (100, 100, 2000, 'Madrid');
 INSERT INTO wallet (wallet_id, user_id, amount, city)
 VALUES (100, 200, 4000, 'London');
-~~~~
+```
 
 LIST PROCESS
 ------------
@@ -332,19 +332,19 @@ List active processes.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 LIST PROCESS
-~~~~
+```
 
 Example of output:
 
-~~~~ {prettyprint lang-meta}
+```sql
 -------------------------------------------------------------------------------------------------
 | QID                                  | Table   | Query                                        |
 -------------------------------------------------------------------------------------------------
 | fbafe0af-8bb3-4c45-98a4-288d1797f31b | ratings | SELECT * FROM ratings WITH WINDOW 6 SECONDS  |
 -------------------------------------------------------------------------------------------------
-~~~~
+```
 
 SELECT
 ------
@@ -355,18 +355,18 @@ Retrieves a subset of data from an existing table.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 SELECT <select-clause>
 FROM <tablename> ( <alias> )?
 ( INNER JOIN <tablename> ON '('? <field1> = <field2> ')'? )?
 ( WHERE <where-clause> )?
 ( ORDER BY <identifier> ('ASC'|'DESC')? (, <identifier> ('ASC'|'DESC')? )* )?
 ( GROUP BY <identifier> (, <identifier>)* )?
-~~~~
+```
 
 where
 
-~~~~ {prettyprint lang-meta}
+```sql
 <select-clause>  ::= DISTINCT? <selection-list>
                       | COUNT '(' ( '*' | '1' ) ')' (AS <identifier>)?
 
@@ -386,7 +386,7 @@ where
                      <identifier> IN '(' <term1> (, <term2>)* ')'
 
 <operator>       ::= '=' | '>' | '>=' | '<' | '<=' | '<>' | 'MATCH'
-~~~~
+```
 
 INNER JOIN permits to combine two tables A and B by comparing each row in A with each one in B selecting
  all rows that match the join-predicate.
@@ -398,17 +398,17 @@ ORDER BY will sort the results in ascending order by default.
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 SELECT email FROM users
 WHERE user_id > 100
 ORDER BY email DESC;
-~~~~
+```
 
 #### INNER JOIN
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 SELECT user_id, email, wallet_id, amount, city
 FROM test.users
 INNER JOIN test.wallet ON users.user_id = wallet.user_id;
@@ -420,7 +420,7 @@ INNER JOIN test.wallet ON users.user_id = wallet.user_id;
 | 100     | jdoe@example.com | 100       | 2000   | Madrid    |
 | 100     | jdoe@example.com | 300       | 4000   | Bilbao    |
 ---------------------------------------------------------------
-~~~~
+```
 
 #### WHERE CLAUSE
 
@@ -428,7 +428,7 @@ The WHERE clause can contain a non-indexed column.
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 SELECT user_id, email, wallet_id, amount, city
 FROM test.users
 INNER JOIN test.wallet ON users.user_id = wallet.user_id
@@ -439,21 +439,21 @@ WHERE wallet.city = 'Madrid';
 ------------------------------------------------------------
 | 100     | jdoe@example.com | 100       | 2000   | Madrid |
 ------------------------------------------------------------
-~~~~
+```
 
 ### Ephemeral tables
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 SELECT <select-clause>
 FROM <tablename>
 WITH WINDOW <window_length> ;
-~~~~
+```
 
 where
 
-~~~~ {prettyprint lang-meta}
+```sql
 <select-clause>  ::= '*' | <selection-list>
 
 <window_length>  ::= <size> <unit>
@@ -466,11 +466,11 @@ where
                      ( 'minute' | 'minutes' | 'min' ) |
                      ( 'second' | 'seconds' | 'sec' ) |
                      ( 'millisecond' | 'milliseconds' )
-~~~~
+```
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 SELECT * FROM ratings WITH WINDOW 6 sec;
 
 ---------------------------------
@@ -482,7 +482,7 @@ SELECT * FROM ratings WITH WINDOW 6 sec;
 | 106     | 67.00956   | false  |
 | 107     | 25.745227  | false  |
 ---------------------------------
-~~~~
+```
 
 STOP PROCESS
 ------------
@@ -491,15 +491,15 @@ Terminate an active process.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 STOP PROCESS <process_id>
-~~~~
+```
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 STOP PROCESS b4d2c152-5a11-4f6b-9efe-caa5f6aa90d9;
-~~~~
+```
 
 TRUNCATE
 --------
@@ -508,15 +508,15 @@ Deletes all data in a table.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 TRUNCATE <tablename>;
-~~~~
+```
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 TRUNCATE users;
-~~~~
+```
 
 USE
 ---
@@ -525,15 +525,15 @@ Sets the working keyspace.
 
 Syntax:
 
-~~~~ {prettyprint lang-meta}
+```sql
 USE <keyspace>;
-~~~~
+```
 
 Example:
 
-~~~~ {prettyprint lang-meta}
+```sql
 USE test;
-~~~~
+```
 
 Datatypes
 =========

@@ -46,9 +46,9 @@ The META server receives user requests and processes them in several steps: Pars
 
 To show how META server works, examples based on the following query will be used for each step:
 
-~~~~ {.prettyprint .lang-meta}
+```sql
 SELECT name, id FROM users WHERE city = "Madrid";
-~~~~
+```
 
 Step 1: Parsing
 ---------------
