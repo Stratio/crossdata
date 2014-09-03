@@ -35,6 +35,7 @@ import com.stratio.meta.common.ask.Command
 import com.stratio.meta.common.ask.Query
 import com.stratio.meta.communication.Disconnect
 import com.stratio.meta.driver.utils.RetryPolitics
+import com.stratio.meta2.common.api.Manifest
 
 object BasicDriver extends DriverConfig {
   /**
@@ -206,7 +207,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    *         containing the error message.
    */
   def listTables(catalogName: String): MetadataResult = {
-    val params: java.util.List[String] = new java.util.ArrayList[String]
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(catalogName)
     val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_TABLES, params))
     result.asInstanceOf[MetadataResult]
@@ -217,11 +218,23 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @return A MetadataResult with a map of columns.
    */
   def listFields(catalogName: String, tableName: String): MetadataResult = {
-    val params: java.util.List[String] = new java.util.ArrayList[String]
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(catalogName)
     params.add(tableName)
     val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_COLUMNS, params))
     result.asInstanceOf[MetadataResult]
+  }
+
+  /**
+   * Send manifest to the server
+   * @param manifest The manifest to be sent
+   * @return A CommandResult with a string
+   */
+  def addManifest(manifest: Manifest): CommandResult = {
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(manifest)
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.ADD_MANIFEST, params))
+    result.asInstanceOf[CommandResult]
   }
 
   def sendQuery(message: AnyRef){

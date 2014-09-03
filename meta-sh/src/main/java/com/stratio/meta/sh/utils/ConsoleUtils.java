@@ -31,12 +31,8 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta2.common.api.Manifest;
 import com.stratio.meta2.common.api.generated.connector.ConnectorFactory;
 import com.stratio.meta2.common.api.generated.connector.ConnectorType;
-import com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType;
-import com.stratio.meta2.common.api.generated.datastore.ClusterType;
 import com.stratio.meta2.common.api.generated.datastore.DataStoreFactory;
 import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
-import com.stratio.meta2.common.api.generated.datastore.HostsType;
-import com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType;
 
 import jline.console.ConsoleReader;
 import jline.console.history.History;
@@ -46,15 +42,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -66,9 +59,10 @@ import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Map;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 public class ConsoleUtils {
 
@@ -292,122 +286,35 @@ public class ConsoleUtils {
   }
 
   public static Manifest parseFromXmlToManifest(int manifestType, String path) {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    if(manifestType == Manifest.TYPE_DATASTORE){
+      return parseFromXmlToDataStoreManifest(path);
+    } else {
+      return parseFromXmlToConnectorManifest(path);
+    }
+  }
+
+  private static DataStoreType parseFromXmlToDataStoreManifest(String path) {
     try {
-      DocumentBuilder builder = factory.newDocumentBuilder();
-      Document document = builder.parse(new File(path));
-      if(manifestType == Manifest.TYPE_DATASTORE){
-        return parseFromXmlToDataStoreManifest(document);
-      } else {
-        return parseFromXmlToConnectorManifest(document);
-      }
-    } catch (ParserConfigurationException e) {
-      e.printStackTrace();
-      return null;
-    } catch (SAXException e) {
-      e.printStackTrace();
-      return null;
-    } catch (IOException e) {
+      JAXBContext jaxbContext = JAXBContext.newInstance(DataStoreFactory.class);
+      Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+      JAXBElement<DataStoreType> unmarshalledDataStore = (JAXBElement<DataStoreType>) unmarshaller.unmarshal(new FileInputStream(path));
+      return unmarshalledDataStore.getValue();
+    } catch (JAXBException | FileNotFoundException e) {
       e.printStackTrace();
       return null;
     }
   }
 
-  private static DataStoreType parseFromXmlToDataStoreManifest(Document document) {
-    DataStoreFactory dataStoreFactory = new DataStoreFactory();
-    DataStoreType manifest = dataStoreFactory.createDataStoreType();
-    // NAME
-    manifest.setName(document.getElementsByTagName("Name").item(0).getNodeValue());
-    // VERSION
-    manifest.setVersion(document.getElementsByTagName("Version").item(0).getNodeValue());
-    // REQUIRED PROPERTIES
-    RequiredPropertiesType requiredPropertiesType = dataStoreFactory.createRequiredPropertiesType();
-    NodeList requiredPropertiesNode = document.getElementsByTagName("RequiredProperties");
-    Element requiredPropertiesElement = (Element) requiredPropertiesNode.item(0);
-      // CLUSTER
-    ClusterType clusterType = dataStoreFactory.createClusterType();
-    Element clusterElement = (Element) requiredPropertiesElement.getElementsByTagName("cluster").item(0);
-        // NAME
-    clusterType.setName(clusterElement.getElementsByTagName("name").item(0).getNodeValue());
-        // HOSTS
-    HostsType hostsType = dataStoreFactory.createHostsType();
-    Element hostsElement = (Element) clusterElement.getElementsByTagName("hosts").item(0);
-          // HOST
-    hostsType.setHost(hostsElement.getElementsByTagName("host").item(0).getNodeValue());
-          // PORT
-    hostsType.setPort(hostsElement.getElementsByTagName("port").item(0).getNodeValue());
-
-    /*clusterType.setHosts(hostsType);
-    requiredPropertiesType.setCluster(clusterType);
-    manifest.setRequiredProperties(requiredPropertiesType);
-
-    // OPTIONAL PROPERTIES
-    OptionalPropertiesType optionalPropertiesType = dataStoreFactory.createOptionalPropertiesType();
-    manifest.setOptionalProperties(
-        document.getElementsByTagName("OptionalProperties").item(0).getNodeValue());*/
-    return manifest;
-  }
-
-  private static ConnectorType parseFromXmlToConnectorManifest(Document document) {
-    return null;
-  }
-
-  /*public static Manifest parseFromXmlToManifest(int manifestType, String path) {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+  private static Manifest parseFromXmlToConnectorManifest(String path) {
     try {
-      DocumentBuilder builder = factory.newDocumentBuilder();
-      Document document = builder.parse(new File(path));
-      NodeList nodeList = document.getDocumentElement().getChildNodes();
-      if(manifestType == Manifest.TYPE_DATASTORE){
-        return parseFromXmlToDataStoreManifest(nodeList);
-      } else {
-        return parseFromXmlToConnectorManifest(nodeList);
-      }
-    } catch (ParserConfigurationException e) {
-      e.printStackTrace();
-      return null;
-    } catch (SAXException e) {
-      e.printStackTrace();
-      return null;
-    } catch (IOException e) {
+      JAXBContext jaxbContext = JAXBContext.newInstance(ConnectorFactory.class);
+      Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+      JAXBElement<ConnectorType> unmarshalledDataStore = (JAXBElement<ConnectorType>) unmarshaller.unmarshal(new FileInputStream(path));
+      return unmarshalledDataStore.getValue();
+    } catch (JAXBException | FileNotFoundException e) {
       e.printStackTrace();
       return null;
     }
   }
-
-  private static Object parsePartialXmlToObject(int depth, NodeList nodeList){
-    Object object = null;
-    if(depth == 1){
-      DataStoreFactory dataStoreFactory = new DataStoreFactory();
-      object = dataStoreFactory.createDataStoreType();
-    }
-    for(int i = 0; i < nodeList.getLength(); i++){
-      Node node = nodeList.item(i);
-      if (node.getNodeType() == Node.TEXT_NODE) {
-        String nodeValue = node.getNodeValue().trim();
-        if(!nodeValue.isEmpty()){
-          System.out.println(">>>>>>> TRACE: nodeValue = "+nodeValue);
-        }
-        return null;
-      } else {
-        Element elem = (Element) node;
-        System.out.println(">>>>>>> TRACE: elem = " + elem.getTagName());
-        NodeList newNodeList = elem.getChildNodes();
-        parsePartialXmlToObject(depth+1, newNodeList);
-        return null;
-      }
-    }
-    return object;
-  }
-
-  private static Manifest parseFromXmlToDataStoreManifest(NodeList nodeList){
-    return (DataStoreType) parsePartialXmlToObject(1, nodeList);
-  }
-
-  private static Manifest parseFromXmlToConnectorManifest(NodeList nodeList) {
-    ConnectorFactory connectorFactory = new ConnectorFactory();
-    ConnectorType conManifest = connectorFactory.createConnectorType();
-    return conManifest;
-  }*/
 
 }

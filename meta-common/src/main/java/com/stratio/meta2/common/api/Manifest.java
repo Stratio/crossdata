@@ -18,18 +18,25 @@
 
 package com.stratio.meta2.common.api;
 
-public abstract class Manifest {
+import java.io.Serializable;
+
+public abstract class Manifest implements Serializable {
 
   public static final int TYPE_DATASTORE = 1;
   public static final int TYPE_CONNECTOR = 2;
 
   protected int manifestType;
 
+  protected Manifest(int manifestType) {
+    this.manifestType = manifestType;
+  }
+
   public int getManifestType() {
     return manifestType;
   }
 
   @Override
-  public abstract String toString();
-
+  public String toString() {
+    return ManifestHelper.manifestToString(this);
+  }
 }

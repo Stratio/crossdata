@@ -70,7 +70,7 @@ import javax.xml.bind.annotation.XmlType;
 public class ConnectorType extends Manifest {
 
   public ConnectorType() {
-    this.manifestType = Manifest.TYPE_CONNECTOR;
+    super(Manifest.TYPE_CONNECTOR);
   }
 
   @XmlElement(name = "ConnectorName", required = true)
@@ -230,8 +230,4 @@ public class ConnectorType extends Manifest {
     this.supportedOperations = value;
   }
 
-  @Override
-  public String toString() {
-    return null;
-  }
 }

@@ -238,7 +238,7 @@ public class Metash {
     LOG.debug("Command: " + cmd);
     long queryStart = System.currentTimeMillis();
     long queryEnd = queryStart;
-    Result metaResult = null;
+    Result metaResult;
     try {
       metaResult = metaDriver.executeQuery(currentCatalog, cmd);
       queryEnd = System.currentTimeMillis();
@@ -263,7 +263,7 @@ public class Metash {
    * @param cmd The query.
    */
   private void executeAsyncQuery(String cmd){
-    String queryId = null;
+    String queryId;
     try {
       queryId = metaDriver.asyncExecuteQuery(currentCatalog, cmd, resultHandler);
       LOG.debug("Async command: " + cmd + " id: " + queryId);
@@ -338,7 +338,7 @@ public class Metash {
     try {
       String cmd = "";
       StringBuilder sb = new StringBuilder(cmd);
-      String toExecute = null;
+      String toExecute;
       while (!cmd.trim().toLowerCase().startsWith("exit")
              && !cmd.trim().toLowerCase().startsWith("quit")) {
         cmd = console.readLine();
@@ -351,7 +351,8 @@ public class Metash {
           } else if (toExecute.toLowerCase().startsWith("help")) {
             showHelp(sb.toString());
           } else if (toExecute.toLowerCase().startsWith("add datastore") || toExecute.toLowerCase().startsWith("add connector")){
-            parseXML(toExecute);
+            sendManifest(toExecute);
+            println("");
           } else {
             executeQuery(toExecute);
             println("");
@@ -375,18 +376,34 @@ public class Metash {
     }
   }
 
-  public static String parseXML(String sentence) {
-    System.out.println(" >>> TRACE: sentence(1): "+sentence);
+  public String sendManifest(String sentence) {
+    LOG.debug("Command: " + sentence);
+    // Get manifest type
     sentence = sentence.substring(4);
-    System.out.println(" >>> TRACE: sentence(2): "+sentence);
     int type_manifest = Manifest.TYPE_DATASTORE;
     if(sentence.toLowerCase().startsWith("connector")) {
       type_manifest = Manifest.TYPE_CONNECTOR;
     }
+
+    // Get path to the XML file
     sentence = sentence.substring(11, sentence.length() - 1);
-    System.out.println(" >>> TRACE: sentence(3): "+sentence);
-    //Manifest manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest, sentence);
+
+    // Create Manifest object from XML file
     Manifest manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest, sentence);
+
+    long queryStart = System.currentTimeMillis();
+    long queryEnd = queryStart;
+    Result metaResult;
+    try {
+      metaResult = metaDriver.addManifest(manifest);
+      queryEnd = System.currentTimeMillis();
+      updatePrompt(metaResult);
+      println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
+      println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
+    } catch (Exception e) {
+      println("\033[31mError:\033[0m " + e.getMessage());
+    }
+
     return manifest.toString();
   }
 
@@ -397,7 +414,7 @@ public class Metash {
    */
   public void executeScript(String scriptPath){
     BufferedReader input = null;
-    String query = null;
+    String query;
     int numberOps = 0;
     try {
       input =
