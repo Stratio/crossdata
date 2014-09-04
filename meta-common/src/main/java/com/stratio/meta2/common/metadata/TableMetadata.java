@@ -108,7 +108,11 @@ public class TableMetadata implements IMetadata {
    * @return Whether is indexed or not.
    */
   public boolean isIndexed(ColumnName columnName){
-    //TODO Implement isIndexed()
+    for(IndexMetadata indexMetadata:indexes.values()){
+      if(indexMetadata.getColumns().contains(columnName)){
+        return true;
+      }
+    }
     return false;
   }
 
