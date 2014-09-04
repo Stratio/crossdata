@@ -20,7 +20,7 @@ package com.stratio.meta2.core.grammar.statements;
 
 import org.testng.annotations.Test;
 
-import com.stratio.meta.core.grammar.ParsingTest;
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class DescribeStatementTest extends ParsingTest {
 

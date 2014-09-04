@@ -19,11 +19,11 @@ public class QualifiedNames {
     return normalize(name);
   }
 
-  public static CatalogName getCatalogNameFromQualifiedName(String qualifiedName){
-    CatalogName catalogName =null;
-    String [] arrNames= qualifiedName.split("\\.");
-    if(arrNames.length == 2){
-      catalogName=new CatalogName(arrNames[1]);
+  public static CatalogName getCatalogNameFromQualifiedName(String qualifiedName) {
+    CatalogName catalogName = null;
+    String[] arrNames = qualifiedName.split("\\.");
+    if (arrNames.length == 2) {
+      catalogName = new CatalogName(arrNames[1]);
     }
     return catalogName;
   }
@@ -33,66 +33,26 @@ public class QualifiedNames {
     return normalize(getCatalogQualifiedName(catalog) + "." + name);
   }
 
-  public static TableName getTableNameFromQualifiedName(String qualifiedName){
-    TableName tableName =null;
-    String [] arrNames= qualifiedName.split("\\.");
-    if(arrNames.length == 3){
-      tableName=new TableName(arrNames[1],arrNames[2]);
-    }
-    return tableName;
-  }
-
 
   public static String getColumnQualifiedName(String catalog, String table, String name) {
     return normalize(getTableQualifiedName(catalog, table) + "." + name);
-  }
-
-  public static ColumnName getColumnNameFromQualifiedName(String qualifiedName){
-    ColumnName columnName =null;
-    String [] arrNames= qualifiedName.split("\\.");
-    if(arrNames.length == 4){
-      columnName=new ColumnName(arrNames[1],arrNames[2],arrNames[3]);
-    }
-    return columnName;
   }
 
   public static String getClusterQualifiedName(String name) {
     return normalize("cluster." + name);
   }
 
-  public static ClusterName getClusterNameFromQualifiedName(String qualifiedName){
-    ClusterName clusterName =null;
-    String [] arrNames= qualifiedName.split("\\.");
-    if(arrNames.length == 2){
-      clusterName=new ClusterName(arrNames[1]);
-    }
-    return clusterName;
-  }
-
   public static String getConnectorQualifiedName(String name) {
     return normalize("connector." + name);
   }
 
-  public static ConnectorName getConnectorNameFromQualifiedName(String qualifiedName){
-    ConnectorName connectorName =null;
-    String [] arrNames= qualifiedName.split("\\.");
-    if(arrNames.length == 2){
-      connectorName=new ConnectorName(arrNames[1]);
-    }
-    return connectorName;
-  }
-
-  public static String getDataStoreQualifiedName(String name){
+  public static String getDataStoreQualifiedName(String name) {
     return normalize("datastore." + name);
   }
 
-  public static DataStoreName getDataStoreNameFromQualifiedName(String qualifiedName){
-    DataStoreName dataStoreName =null;
-    String [] arrNames= qualifiedName.split("\\.");
-    if(arrNames.length == 2){
-      dataStoreName=new DataStoreName(arrNames[1]);
-    }
-    return dataStoreName;
+  public static String getIndexQualifiedName(String catalog, String table,
+      String name) {
+    return normalize(getTableQualifiedName(catalog,table) + ".INDEX["+  name +"]");
   }
 
   private static String normalize(String qName) {

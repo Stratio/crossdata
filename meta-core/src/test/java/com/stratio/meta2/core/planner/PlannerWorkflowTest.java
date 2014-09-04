@@ -22,7 +22,7 @@ import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.core.grammar.ParsingTest;
+import com.stratio.meta2.core.grammar.ParsingTest;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -32,7 +32,6 @@ import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.NormalizedQuery;
-import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.statements.SelectStatement;
@@ -41,7 +40,6 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.grammar;
+package com.stratio.meta2.core.grammar;
 
 import com.stratio.meta.common.exceptions.ParsingException;
 import com.stratio.meta2.core.parser.Parser;

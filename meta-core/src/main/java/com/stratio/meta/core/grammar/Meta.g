@@ -34,7 +34,7 @@ options {
     import com.stratio.meta2.core.structures.*;
     import com.stratio.meta.core.utils.*;
     import java.util.LinkedHashMap;
-    import java.util.HashMap;
+    import java.util.LinkedList;
     import java.util.Map;
     import java.util.Set;
     import java.util.HashSet;
@@ -290,7 +290,7 @@ QUOTED_LITERAL
     | ('\'' { sb.append('\''); }) (c=~('\'') { sb.appendCodePoint(c);})* ('\'' { sb.append('\''); })
 ;
 
-T_CONSTANT: (DIGIT)+;
+T_CONSTANT: '-'? (DIGIT)+;
 
 T_IDENT: LETTER (LETTER | DIGIT | '_')*;
 
@@ -300,10 +300,12 @@ T_KS_AND_TN: T_IDENT (POINT T_IDENT)?;
 //T_CTLG_TBL_COL: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)? (POINT LETTER (LETTER | DIGIT | '_')*)?;
 T_CTLG_TBL_COL: T_IDENT (POINT T_IDENT (POINT T_IDENT)?)?;
 
-T_FLOAT:   ('0'..'9')+ POINT ('0'..'9')* EXPONENT?
-     |   POINT ('0'..'9')+ EXPONENT?
-     |   ('0'..'9')+ EXPONENT
-     ;
+T_FLOAT:
+    '-'?
+    ( ('0'..'9')+ POINT ('0'..'9')* EXPONENT?
+    | POINT ('0'..'9')+ EXPONENT?
+    | ('0'..'9')+ EXPONENT)
+;
 
 T_TERM: (LETTER | DIGIT | '_' | POINT)+;
 
@@ -530,7 +532,7 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
         boolean condsInc = false;
         ArrayList<Option> options = new ArrayList<>();
         ArrayList<Relation> assignations = new ArrayList<>();
-        Map<Selector, Selector> conditions = new HashMap<>();
+        Map<Selector, Selector> conditions = new LinkedHashMap<>();
     }:
     T_UPDATE tablename=getTableName
     (T_USING opt1=getOption[tablename] {optsInc = true; options.add(opt1);} (T_AND optN=getOption[tablename] {options.add(optN);})*)?
@@ -638,17 +640,21 @@ selectStatement returns [SelectStatement slctst]
         boolean orderInc = false;
         boolean groupInc = false;
         boolean limitInc = false;
-        Map fieldsAliasesMap = new HashMap<String, String>();
-        Map tablesAliasesMap = new HashMap<String, String>();
+        Map fieldsAliasesMap = new LinkedHashMap<String, String>();
+        Map tablesAliasesMap = new LinkedHashMap<String, String>();
         MutablePair<String, String> pair = new MutablePair<>();
+    }
+    @after{
+        slctst.setFieldsAliases(fieldsAliasesMap);
+        slctst.setTablesAliases(tablesAliasesMap);
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
-    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON joinRelations=getWhereClauses[tablename])?
+    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON joinRelations=getWhereClauses[null])?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses[null])?
     //(T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
     //(T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
-    (T_LIMIT {limitInc = true;} constant=getConstant)?
+    (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
         $slctst = new SelectStatement(selClause, tablename);
         if(windowInc)
@@ -662,7 +668,7 @@ selectStatement returns [SelectStatement slctst]
         //if(groupInc)
         //     $slctst.setGroup(groupby);
         if(limitInc)
-             $slctst.setLimit(Integer.parseInt(constant));
+             $slctst.setLimit(Integer.parseInt($constant.text));
 
         //$slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
         //$slctst.updateTableNames();
@@ -786,9 +792,9 @@ getIndexType returns [String indexType]:
     {$indexType=$idxType.text;}
 ;
 
-getMetaProperties[TableName tablename] returns [ArrayList<Property> props]
+getMetaProperties[TableName tablename] returns [LinkedList<Property> props]
     @init{
-        $props = new ArrayList<>();
+        $props = new LinkedList<>();
     }:
     firstProp=getMetaProperty[tablename] {$props.add(firstProp);}
     (T_AND newProp=getMetaProperty[tablename] {$props.add(newProp);})*
@@ -844,8 +850,8 @@ getFields[MutablePair pair]:
 
 getWindow returns [Window ws]:
     (T_LAST {$ws = new Window(WindowType.LAST);}
-    | cnstnt=getConstant (T_ROWS {$ws = new Window(WindowType.NUM_ROWS); $ws.setNumRows(Integer.parseInt(cnstnt));}
-                       | unit=getTimeUnit {$ws = new Window(WindowType.TEMPORAL); $ws.setTimeWindow(Integer.parseInt(cnstnt), unit);}
+    | cnstnt=T_CONSTANT (T_ROWS {$ws = new Window(WindowType.NUM_ROWS); $ws.setNumRows(Integer.parseInt($cnstnt.text));}
+                       | unit=getTimeUnit {$ws = new Window(WindowType.TEMPORAL); $ws.setTimeWindow(Integer.parseInt($cnstnt.text), unit);}
                        )
     )
 ;
@@ -876,24 +882,16 @@ getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
     (
         T_ASTERISK { s = new AsteriskSelector(); selectors.add(s);}
         | s=getSelector[null]
-                (T_AS alias1=getAlias {
+                (T_AS alias1=T_IDENT {
                     s.setAlias($alias1.text);
                     fieldsAliasesMap.put($alias1.text, s.toString());}
                 )? {selectors.add(s);}
             (T_COMMA s=getSelector[null]
-                    (T_AS aliasN=getAlias {
+                    (T_AS aliasN=T_IDENT {
                         s.setAlias($aliasN.text);
                         fieldsAliasesMap.put($aliasN.text, s.toString());}
                     )? {selectors.add(s);})*
     )
-;
-
-getCountSymbol returns [String str]:
-    '1' {$str = new String("1");}
-;
-
-getAlias returns [String alias]:
-	tablename=T_IDENT {$alias=$tablename.text;}
 ;
 
 getSelector[TableName tablename] returns [Selector s]
@@ -919,7 +917,7 @@ getSelector[TableName tablename] returns [Selector s]
         (
             columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);}
             | floatingNumber=T_FLOAT {s = new FloatingPointSelector($floatingNumber.text);}
-            | constant=getConstant {s = new IntegerSelector(constant);}
+            | constant=T_CONSTANT {s = new IntegerSelector($constant.text);}
             | T_FALSE {s = new BooleanSelector(false);}
             | T_TRUE {s = new BooleanSelector(true);}
             | path=T_PATH {s = new StringSelector($path.text);}
@@ -965,7 +963,7 @@ getRelation[TableName tablename] returns [Relation mrel]
     }:
     s=getSelector[tablename]
     operator=getComparator
-    rs=getSelector[null]
+    rs=getSelector[tablename]
 
 ;
 
@@ -1008,7 +1006,7 @@ getSelectors[TableName tablename] returns [ArrayList list]
 ;
 
 getAliasedTableID[Map tablesAliasesMap] returns [TableName result]:
-	tableN=getTableName (alias=T_IDENT {tablesAliasesMap.put($alias.text, tableN.toString());})?
+	tableN=getTableName (T_AS alias=T_IDENT {tablesAliasesMap.put($alias.text, tableN.toString()); tableN.setAlias($alias.text); })?
 	{result = tableN;}
 ;
 
@@ -1037,11 +1035,6 @@ getAllowedReservedWord returns [String str]:
 getTableName returns [TableName tablename]:
     (ident1=T_IDENT {tablename = normalizeTableName($ident1.text);}
     | ident2=T_KS_AND_TN {tablename = normalizeTableName($ident2.text);})
-;
-
-getConstant returns [String constStr]:
-    constToken=T_CONSTANT {$constStr = new String($constToken.text);}
-    | '1' {$constStr = new String("1");}
 ;
 
 getFloat returns [String floating]:

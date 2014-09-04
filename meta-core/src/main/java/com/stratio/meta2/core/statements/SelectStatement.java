@@ -14,33 +14,21 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Select;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.window.Window;
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.InnerJoin;
-import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.statements.structures.selectors.AsteriskSelector;
-import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
-import com.stratio.meta2.common.statements.structures.selectors.FunctionSelector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.structures.OrderBy;
-import com.stratio.meta2.core.validator.ValidationRequirements;
-
 import com.stratio.meta2.core.structures.Ordering;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -137,6 +125,8 @@ public class SelectStatement extends MetaStatement {
   private static final Logger LOG = Logger.getLogger(SelectStatement.class);
 
   private Map<String, String> fieldsAliasesMap;
+
+  private Map<String, String> tablesAliasesMap;
 
   /**
    * Class constructor.
@@ -341,8 +331,16 @@ public class SelectStatement extends MetaStatement {
     return fieldsAliasesMap;
   }
 
-  public void setFieldsAliasesMap(Map<String, String> fieldsAliasesMap) {
+  public void setFieldsAliases(Map fieldsAliasesMap) {
     this.fieldsAliasesMap = fieldsAliasesMap;
+  }
+
+  public Map<String, String> getTablesAliasesMap() {
+    return tablesAliasesMap;
+  }
+
+  public void setTablesAliases(Map tablesAliasesMap) {
+    this.tablesAliasesMap = tablesAliasesMap;
   }
 
   /**
