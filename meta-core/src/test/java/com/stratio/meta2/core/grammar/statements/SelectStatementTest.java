@@ -90,6 +90,13 @@ public class SelectStatementTest extends ParsingTest {
   }
 
   @Test
+  public void innerJoinWithTableAliases() {
+    String inputText = "SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID;";
+    String expectedText = "SELECT <unknown_name>.<unknown_name>.field1, <unknown_name>.<unknown_name>.field2 FROM demo.clients AS table1 INNER JOIN demo.sales AS table2 ON <unknown_name>.<unknown_name>.identifier = <unknown_name>.<unknown_name>.codeID;";
+    testRegularStatementSession("demo", inputText, expectedText, "innerJoinWithTableAliases");
+  }
+
+  @Test
   public void testSimpleQueryWithAliasesOk() {
     String inputText = "SELECT demo.users.gender as genero FROM demo.users;";
     testRegularStatement(inputText, "testSimpleGroupQueryWithAliasesOk");

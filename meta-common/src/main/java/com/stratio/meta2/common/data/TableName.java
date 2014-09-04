@@ -27,11 +27,11 @@ package com.stratio.meta2.common.data;
  */
 public class TableName extends Name {
 
-  //TODO Include table alias
-
   private final String name;
 
   private CatalogName catalogName;
+
+  private String alias = null;
 
   public TableName(String catalogName, String tableName){
     if(catalogName == null || catalogName.isEmpty()){
@@ -55,6 +55,14 @@ public class TableName extends Name {
     return name;
   }
 
+  public String getAlias() {
+    return alias;
+  }
+
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
+
   @Override public boolean isCompletedName() {
     return catalogName!=null;
   }
@@ -65,6 +73,9 @@ public class TableName extends Name {
       result= QualifiedNames.getTableQualifiedName(this.getCatalogName().getName(), getName());
     } else{
       result= QualifiedNames.getTableQualifiedName(UNKNOWN_NAME,getName());
+    }
+    if(alias != null){
+      result = result + " AS " + alias;
     }
     return result;
   }
