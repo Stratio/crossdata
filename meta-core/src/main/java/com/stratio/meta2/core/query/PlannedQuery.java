@@ -18,7 +18,6 @@
 
 package com.stratio.meta2.core.query;
 
-//import com.stratio.meta.common.logicalplan.LogicalPlan;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.result.QueryStatus;
 

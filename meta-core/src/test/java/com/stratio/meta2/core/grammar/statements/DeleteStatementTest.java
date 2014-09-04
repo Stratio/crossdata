@@ -16,31 +16,31 @@
  * under the License.
  */
 
-package com.stratio.meta.core.grammar.statements;
+package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta.core.grammar.ParsingTest;
+import com.stratio.meta2.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
 
 public class DeleteStatementTest extends ParsingTest {
 
   @Test
   public void deleteWhere() {
-    String inputText = "[demo], DELETE FROM table1 WHERE field1 = value1;";
-    String expectedText = "DELETE FROM demo.table1 WHERE demo.table1.field1 = value1;";
+    String inputText = "[demo], DELETE FROM table1 WHERE field1 = 'value1';";
+    String expectedText = "DELETE FROM demo.table1 WHERE demo.table1.field1 = 'value1';";
     testRegularStatement(inputText, expectedText, "deleteWhere");
   }
 
   @Test
   public void deleteSelection() {
-    String inputText = "[demo], DELETE FROM table1 WHERE field1 = value1;";
-    String expectedText = "DELETE FROM demo.table1 WHERE demo.table1.field1 = value1;";
+    String inputText = "[demo], DELETE FROM table1 WHERE field1 = 'value1';";
+    String expectedText = "DELETE FROM demo.table1 WHERE demo.table1.field1 = 'value1';";
     testRegularStatement(inputText, expectedText, "deleteSelection");
   }
 
   @Test
   public void deleteFull() {
-    String inputText = "[demo], DELETE FROM table1 WHERE field1 = value1 AND field2 = value2;";
-    String expectedText = "DELETE FROM demo.table1 WHERE demo.table1.field1 = value1 AND demo.table1.field2 = value2;";
+    String inputText = "[demo], DELETE FROM table1 WHERE field1 = 'value1' AND field2 = 'value2';";
+    String expectedText = "DELETE FROM demo.table1 WHERE demo.table1.field1 = 'value1' AND demo.table1.field2 = 'value2';";
     testRegularStatement(inputText, expectedText, "deleteFull");
   }
 

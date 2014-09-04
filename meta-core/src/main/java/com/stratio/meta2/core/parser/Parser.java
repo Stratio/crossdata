@@ -64,8 +64,10 @@ public class Parser {
    * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
    */
   public MetaStatement parseStatement(String sessionCatalog, String query) throws ParsingException {
+    String modifiedQuery = "["+sessionCatalog+"], "+query;
     ANTLRStringStream input = new ANTLRStringStream("["+sessionCatalog+"], "+query);
     if(sessionCatalog==null || sessionCatalog.isEmpty()){
+      modifiedQuery = query;
       input = new ANTLRStringStream(query);
     }
 
@@ -86,7 +88,7 @@ public class Parser {
       }
     }
     if(!foundErrors.isEmpty()){
-      throw new ParsingException(foundErrors.toString(query));
+      throw new ParsingException(foundErrors.toString(modifiedQuery));
     }
     return resultStatement;
   }

@@ -37,7 +37,6 @@ public class FloatingPointSelector extends Selector{
    * @param value A double value.
    */
   public FloatingPointSelector(String value) {
-    System.out.println("FloatingPointSelector(" + value + ")");
     this.value = Double.valueOf(value);
   }
 

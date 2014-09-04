@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta.core.grammar.ParsingTest;
+import com.stratio.meta2.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
 
 public class UpdateTableStatementTest extends ParsingTest {
@@ -113,9 +113,9 @@ public class UpdateTableStatementTest extends ParsingTest {
   @Test
   public void updateTablenameIfAnd2() {
     String inputText = "UPDATE tester.myTable USING 'prop1' = 342 SET ident1 = 'term1', ident2 = 'term2'"
-                       + " WHERE ident3 = 'Big Data' IF field3 = 26 AND field2 = 25;";
+                       + " WHERE ident3 = 'Big Data' IF field3 = 86 AND field2 = 25;";
     String expectedText = "UPDATE tester.myTable USING 'prop1' = 342 SET tester.myTable.ident1 = 'term1', tester.myTable.ident2 = 'term2'"
-                          + " WHERE tester.myTable.ident3 = 'Big Data' IF tester.myTable.field3 = 26 AND tester.myTable.field2 = 25;";
+                          + " WHERE tester.myTable.ident3 = 'Big Data' IF tester.myTable.field3 = 86 AND tester.myTable.field2 = 25;";
     testRegularStatementSession("demo", inputText, expectedText, "updateTablenameIfAnd2");
   }
 

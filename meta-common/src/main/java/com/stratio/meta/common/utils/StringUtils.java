@@ -30,8 +30,8 @@ import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +59,7 @@ public class StringUtils {
   }
 
   public static Map<Selector, Selector> convertJsonToOptions(String json){
-    Map<Selector, Selector> options = new HashMap<>();
+    Map<Selector, Selector> options = new LinkedHashMap<>();
     ObjectMapper mapper = new ObjectMapper();
     mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
     mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);

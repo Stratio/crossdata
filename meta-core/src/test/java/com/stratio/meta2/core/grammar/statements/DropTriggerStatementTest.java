@@ -16,31 +16,23 @@
  * under the License.
  */
 
-package com.stratio.meta.core.grammar.statements;
+package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta.core.grammar.ParsingTest;
+import com.stratio.meta2.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
 
-public class TruncateStatementTest extends ParsingTest {
+public class DropTriggerStatementTest extends ParsingTest {
 
   @Test
-  public void truncateTable1() {
-    String inputText = "TRUNCATE usersTable;";
-    String expectedText = "TRUNCATE <unknown_name>.usersTable;";
-    testRegularStatement(inputText, expectedText, "truncateTable1");
+  public void dropTrigger() {
+    String inputText = "drop trigger trigger1 on table_name;";
+    testRegularStatement(inputText, "dropTrigger");
   }
 
   @Test
-  public void truncateTable2() {
-    String inputText = "[demo], TRUNCATE usersTable;";
-    String expectedText = "TRUNCATE demo.usersTable;";
-    testRegularStatement(inputText, expectedText, "truncateTable2");
-  }
-
-  @Test
-  public void truncateWrongIdentifier(){
-    String inputText = "TRUNCATE companyKS..usersTable;";
-    testParserFails(inputText, "truncateWrongIdentifier");
+  public void dropTriggerWrongAssignment(){
+    String inputText = "drop trigger trigger1 on table_name = 20;";
+    testParserFails(inputText, "dropTriggerWrongAssignment");
   }
 
 }
