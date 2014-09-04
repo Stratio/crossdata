@@ -843,6 +843,13 @@ getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
     rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND relN=getRelation[tablename] {clauses.add(relN);})*
 ;
 
+getRelation[TableName tablename] returns [Relation mrel]
+    @after{
+        $mrel = new Relation(s, operator, rs);
+    }:
+    s=getSelector[tablename] operator=getComparator rs=getSelector[tablename]
+;
+
 getFields[MutablePair pair]:
     ident1L=getTableName { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableName { pair.setRight(ident1R); }
     | T_START_PARENTHESIS ident1L=getTableName { pair.setLeft(ident1L); } T_EQUAL ident1R=getTableName { pair.setRight(ident1R); } T_END_PARENTHESIS
@@ -955,16 +962,6 @@ getValueAssign[TableName tablename] returns [Selector valueAssign]
             //TODO: Relation of Relation (Example: amount = amount + 5)
         }
     )*
-;
-
-getRelation[TableName tablename] returns [Relation mrel]
-    @after{
-        $mrel = new Relation(s, operator, rs);
-    }:
-    s=getSelector[tablename]
-    operator=getComparator
-    rs=getSelector[tablename]
-
 ;
 
 getComparator returns [Operator op]:

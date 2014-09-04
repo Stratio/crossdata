@@ -168,6 +168,13 @@ public class SelectStatementTest extends ParsingTest {
     }
   }
 
+  @Test
+  public void selectWithParenthesisInWhere() {
+    String inputText = "SELECT * FROM demo.emp WHERE a = 10 AND ( b = 20 AND ( c = 30 AND d = 40));";
+    String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a = 10 AND ( <unknown_name>.<unknown_name>.b = 20 AND ( <unknown_name>.<unknown_name>.c = 30 AND <unknown_name>.<unknown_name>.d = 40));";
+    testRegularStatement(inputText, expectedText, "selectWithParenthesisInWhere");
+  }
+
   //
   // Select with window
   //

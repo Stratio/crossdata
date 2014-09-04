@@ -80,7 +80,7 @@ public class UpdateTableStatementTest extends ParsingTest {
     testRegularStatement(inputText, expectedText, "updateWhereUsingAnd");
   }
 
-  /*@Test
+  @Test
   public void updateWhereWithCollectionMap() {
     String inputText = "UPDATE demo.table1 SET emails[admin] = myemail@mycompany.org WHERE field3 = value3;";
     String expectedText = "UPDATE demo.table1 SET demo.table1.emails[admin] = myemail@mycompany.org WHERE demo.table1.field3 = value3;";
@@ -99,7 +99,7 @@ public class UpdateTableStatementTest extends ParsingTest {
     String inputText = "[demo], UPDATE table1 SET emails = emails + [myemail@mycompany.org] WHERE field3 = value3;";
     String expectedText = "UPDATE demo.table1 SET demo.table1.emails = emails + [myemail@mycompany.org] WHERE demo.table1.field3 = value3;";
     testRegularStatement(inputText, expectedText, "updateWhereWithCollectionList");
-  }*/
+  }
 
   @Test
   public void updateTablenameIfAnd1() {
