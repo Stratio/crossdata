@@ -18,16 +18,16 @@
 
 package com.stratio.meta.server.executor
 
-import com.stratio.meta.core.engine.Engine
+import com.stratio.meta2.core.engine.Engine
 import akka.actor.ActorSystem
-import com.stratio.meta.server.actors.{ExecutorActor, ConnectorActor}
+import com.stratio.meta2.server.actors.{ExecutorActor, ConnectorActor}
 import akka.testkit._
 import com.typesafe.config.ConfigFactory
 import org.scalatest.FunSuiteLike
 import scala.concurrent.duration._
 import org.testng.Assert._
 import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
-import com.stratio.meta.server.utilities._
+import com.stratio.meta2.server.utilities._
 import scala.collection.mutable
 import com.stratio.meta.common.result.{ErrorResult, QueryResult, CommandResult, Result}
 import com.stratio.meta.communication.ACK
