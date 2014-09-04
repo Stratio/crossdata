@@ -28,7 +28,7 @@ import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
-import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 import org.apache.log4j.Logger;
 
@@ -157,25 +157,25 @@ public class CoreUtils {
     return crs;
   }
 
-  public static boolean castForLongType(ColumnMetadata cm, Term<?> term) {
+  public static boolean castForLongType(ColumnMetadata cm, Selector term) {
     boolean required = false;
-    if (((cm.getType().asJavaClass() == Integer.class)
+    /*if (((cm.getType().asJavaClass() == Integer.class)
          || (cm.getType().asJavaClass() == Long.class))
         && ((term.getTermClass() == Integer.class)
             || (term.getTermClass() == Long.class))) {
       required = true;
-    }
+    }*/
     return required;
   }
 
-  public static boolean castForDoubleType(ColumnMetadata cm, Term<?> term) {
+  public static boolean castForDoubleType(ColumnMetadata cm, Selector term) {
     boolean required = false;
-    if ((cm.getType().asJavaClass() == Double.class)
+    /*if ((cm.getType().asJavaClass() == Double.class)
         || (cm.getType().asJavaClass() == Float.class)
            && ((term.getTermClass() == Double.class)
                || (term.getTermClass() == Float.class))) {
       required = true;
-    }
+    }*/
     return required;
   }
 

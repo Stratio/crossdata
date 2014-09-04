@@ -40,6 +40,10 @@ public class BooleanSelector extends Selector{
     this.value = value;
   }
 
+  public BooleanSelector(String value) {
+    this.value = Boolean.valueOf(value);
+  }
+
   /**
    * Get the value of this selector.
    * @return A boolean value.

@@ -18,7 +18,7 @@
 
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class Option {
 
@@ -27,10 +27,10 @@ public class Option {
   public static final int OPTION_CLUSTERING = 3;
 
   private int fixedOption;
-  private String nameProperty;
-  private GenericTerm valueProperty;
+  private Selector nameProperty;
+  private Selector valueProperty;
 
-  public Option(int fixedOption, String nameProperty, GenericTerm properties) {
+  public Option(int fixedOption, Selector nameProperty, Selector properties) {
     this.fixedOption = fixedOption;
     this.nameProperty = nameProperty;
     this.valueProperty = properties;
@@ -40,7 +40,7 @@ public class Option {
     this(fixedOption, null, null);
   }
 
-  public Option(String nameProperty, GenericTerm properties) {
+  public Option(Selector nameProperty, Selector properties) {
     this.fixedOption = OPTION_PROPERTY;
     this.nameProperty = nameProperty;
     this.valueProperty = properties;
@@ -54,19 +54,19 @@ public class Option {
     this.fixedOption = fixedOption;
   }
 
-  public String getNameProperty() {
+  public Selector getNameProperty() {
     return nameProperty;
   }
 
-  public void setNameProperty(String nameProperty) {
+  public void setNameProperty(Selector nameProperty) {
     this.nameProperty = nameProperty;
   }
 
-  public GenericTerm getProperties() {
+  public Selector getProperties() {
     return valueProperty;
   }
 
-  public void setProperties(GenericTerm properties) {
+  public void setProperties(Selector properties) {
     this.valueProperty = properties;
   }
 

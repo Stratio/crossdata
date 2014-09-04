@@ -16,21 +16,26 @@
  * under the License.
  */
 
-package com.stratio.meta2.common.statements.structures.terms;
+package com.stratio.meta2.core.structures;
 
-public class IntegerTerm extends Term<Integer> {
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
-  private static final long serialVersionUID = 7097178218828822792L;
+import java.util.ArrayList;
+import java.util.List;
 
-  public IntegerTerm(String term) {
-    super(Integer.class, Integer.valueOf(term));
+public class OrderBy {
+  private final List<Selector> selectorList=new ArrayList<>();
+  private OrderDirection direction= OrderDirection.ASC;
+
+  public List<Selector> getSelectorList() {
+    return selectorList;
   }
 
-  public IntegerTerm(Term<Long> term) {
-    super(Integer.class, term.getTermValue().intValue());
+  public void setDirection(OrderDirection direction) {
+    this.direction = direction;
   }
 
-  public IntegerTerm(int intValue) {
-    super(Integer.class, intValue);
+  public OrderDirection getDirection() {
+    return direction;
   }
 }

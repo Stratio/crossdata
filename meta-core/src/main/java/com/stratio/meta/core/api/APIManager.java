@@ -21,6 +21,7 @@ package com.stratio.meta.core.api;
 import com.datastax.driver.core.Session;
 import com.stratio.meta.common.ask.APICommand;
 import com.stratio.meta.common.ask.Command;
+import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.Result;
@@ -70,14 +71,14 @@ public class APIManager {
    * @return A {@link com.stratio.meta.common.result.MetadataResult}.
    */
   public Result processRequest(Command cmd) {
-    Result result = null;
+    Result result;
     if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
       LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
       result = MetadataResult.createSuccessMetadataResult();
       MetadataResult.class.cast(result).setCatalogList(metadata.getCatalogsNames());
     } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
       LOG.info("Processing " + APICommand.LIST_TABLES().toString());
-      CatalogMetadata catalogMetadata = metadata.getCatalogMetadata(cmd.params().get(0));
+      CatalogMetadata catalogMetadata = metadata.getCatalogMetadata((String) cmd.params().get(0));
       if (catalogMetadata != null) {
         result = MetadataResult.createSuccessMetadataResult();
         Map<String, TableMetadata> tableList = new HashMap<>();
@@ -91,6 +92,10 @@ public class APIManager {
         result =
             Result.createExecutionErrorResult("Catalog " + cmd.params().get(0) + " not found");
       }
+    } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
+      LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
+      //TODO: Add Manifest
+      result = CommandResult.createCommandResult("OK");
     } else {
       result =
           Result.createExecutionErrorResult("Command " + cmd.commandType() + " not supported");

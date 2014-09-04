@@ -18,11 +18,9 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 /**

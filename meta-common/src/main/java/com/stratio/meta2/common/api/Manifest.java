@@ -18,35 +18,25 @@
 
 package com.stratio.meta2.common.api;
 
-public class Manifest {
+import java.io.Serializable;
+
+public abstract class Manifest implements Serializable {
 
   public static final int TYPE_DATASTORE = 1;
   public static final int TYPE_CONNECTOR = 2;
 
-  private int typeDatastore;
-  private String json;
+  protected int manifestType;
 
-  public Manifest(int typeDatastore) {
-    this.typeDatastore = typeDatastore;
+  protected Manifest(int manifestType) {
+    this.manifestType = manifestType;
   }
 
-  public int getTypeDatastore() {
-    return typeDatastore;
-  }
-
-  public void parseFromFile(String substring) {
-    this.json = "";
+  public int getManifestType() {
+    return manifestType;
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    if(typeDatastore == TYPE_DATASTORE){
-      sb.append("DATASTORE");
-    } else {
-      sb.append("CONNECTOR");
-    }
-    sb.append(System.lineSeparator()).append(json);
-    return sb.toString();
+    return ManifestHelper.manifestToString(this);
   }
 }

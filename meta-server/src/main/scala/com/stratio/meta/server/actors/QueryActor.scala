@@ -40,11 +40,11 @@ class QueryActor(engine: Engine,connectorActorRef:ActorRef) extends Actor{
 
   override def receive: Receive = {
     case Query(queryId, catalog, statement, user) => {
-      log.debug("User "+ user + " catalog: "+ catalog + " stmt: " + statement + " id: " + queryId)
+      log.info("User "+ user + " catalog: "+ catalog + " stmt: " + statement + " id: " + queryId)
       //querySender = sender
       parserActorRef forward Query(queryId, catalog, statement, user)
       //parserActorRef ! Query(queryId, catalog, statement, user)
-      log.debug("Finish Query")
+      log.info("Finish Query")
     }
     //case r: Result => {
     //  querySender ! r

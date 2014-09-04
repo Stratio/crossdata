@@ -20,6 +20,8 @@ package com.stratio.meta.deep.comparators;
 
 import com.stratio.deep.entity.Cell;
 import com.stratio.deep.entity.Cells;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.core.structures.OrderDirection;
 import com.stratio.meta2.core.structures.Ordering;
 
@@ -40,7 +42,7 @@ public class DeepComparatorTest {
   public void testSimpleCompareOk() {
 
     List<Ordering> fieldsOrdering = new ArrayList<>();
-    fieldsOrdering.add(new Ordering(CONSTANT_NAME));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_NAME))));
 
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
@@ -65,7 +67,7 @@ public class DeepComparatorTest {
   public void testSimpleAscCompareOk() {
 
     List<Ordering> fieldsOrdering = new ArrayList<>();
-    fieldsOrdering.add(new Ordering("name", true, OrderDirection.ASC));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_NAME)), true, OrderDirection.ASC));
 
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
@@ -82,7 +84,7 @@ public class DeepComparatorTest {
   public void testSimpleDescCompareOk() {
 
     List<Ordering> fieldsOrdering = new ArrayList<>();
-    fieldsOrdering.add(new Ordering("name", true, OrderDirection.DESC));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_NAME)), true, OrderDirection.DESC));
 
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
@@ -99,7 +101,7 @@ public class DeepComparatorTest {
   public void testSimpleEqualsCompareOk() {
 
     List<Ordering> fieldsOrdering = new ArrayList<>();
-    fieldsOrdering.add(new Ordering("name"));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_NAME))));
 
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
@@ -116,8 +118,8 @@ public class DeepComparatorTest {
   public void testMultipleCompareOk() {
 
     List<Ordering> fieldsOrdering = new ArrayList<>();
-    fieldsOrdering.add(new Ordering("name"));
-    fieldsOrdering.add(new Ordering("age"));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_NAME))));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_AGE))));
 
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
@@ -134,8 +136,8 @@ public class DeepComparatorTest {
   public void testMultipleAscCompareOk() {
 
     List<Ordering> fieldsOrdering = new ArrayList<>();
-    fieldsOrdering.add(new Ordering("name", true, OrderDirection.ASC));
-    fieldsOrdering.add(new Ordering("age", true, OrderDirection.ASC));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_NAME)), true, OrderDirection.ASC));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_AGE)), true, OrderDirection.ASC));
 
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
@@ -152,8 +154,8 @@ public class DeepComparatorTest {
   public void testMultipleDescCompareOk() {
 
     List<Ordering> fieldsOrdering = new ArrayList<>();
-    fieldsOrdering.add(new Ordering("name", true, OrderDirection.DESC));
-    fieldsOrdering.add(new Ordering("age", true, OrderDirection.DESC));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_NAME)), true, OrderDirection.DESC));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_AGE)), true, OrderDirection.DESC));
 
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
@@ -170,8 +172,8 @@ public class DeepComparatorTest {
   public void testMultipleCompareEqualsFirstFieldOk() {
 
     List<Ordering> fieldsOrdering = new ArrayList<>();
-    fieldsOrdering.add(new Ordering("name"));
-    fieldsOrdering.add(new Ordering("age"));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_NAME))));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_AGE))));
 
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
@@ -188,8 +190,8 @@ public class DeepComparatorTest {
   public void testMultipleAscCompareEqualsFirstFieldOk() {
 
     List<Ordering> fieldsOrdering = new ArrayList<>();
-    fieldsOrdering.add(new Ordering("name", true, OrderDirection.ASC));
-    fieldsOrdering.add(new Ordering("age", true, OrderDirection.ASC));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_NAME)), true, OrderDirection.ASC));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_AGE)), true, OrderDirection.ASC));
 
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
@@ -206,8 +208,8 @@ public class DeepComparatorTest {
   public void testMultipleDescCompareEqualsFirstFieldOk() {
 
     List<Ordering> fieldsOrdering = new ArrayList<>();
-    fieldsOrdering.add(new Ordering("name", true, OrderDirection.DESC));
-    fieldsOrdering.add(new Ordering("age", true, OrderDirection.DESC));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_NAME)), true, OrderDirection.DESC));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_AGE)), true, OrderDirection.DESC));
 
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 
@@ -224,8 +226,8 @@ public class DeepComparatorTest {
   public void testMultipleEqualsCompareOk() {
 
     List<Ordering> fieldsOrdering = new ArrayList<>();
-    fieldsOrdering.add(new Ordering("name"));
-    fieldsOrdering.add(new Ordering("age"));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_NAME))));
+    fieldsOrdering.add(new Ordering(new ColumnSelector(new ColumnName(null, CONSTANT_AGE))));
 
     DeepComparator comparator = new DeepComparator(fieldsOrdering);
 

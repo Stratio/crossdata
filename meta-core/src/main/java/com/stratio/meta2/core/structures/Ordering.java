@@ -18,34 +18,35 @@
 
 package com.stratio.meta2.core.structures;
 
-import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 import java.io.Serializable;
 
+@Deprecated
 public class Ordering implements Serializable {
 
   private static final long serialVersionUID = -5118851402738503002L;
 
-  private SelectorIdentifier selectorIdentifier;
+  private Selector selector;
   private boolean dirInc;
   private OrderDirection orderDir;
 
-  public Ordering(String identifier, boolean dirInc, OrderDirection orderDir) {
-    this.selectorIdentifier = new SelectorIdentifier(identifier);
+  public Ordering(Selector selector, boolean dirInc, OrderDirection orderDir) {
+    this.selector = selector;
     this.dirInc = dirInc;
     this.orderDir = orderDir;
   }
 
-  public Ordering(String identifier) {
-    this(identifier, false, null);
+  public Ordering(Selector selector) {
+    this(selector, false, null);
   }
 
-  public SelectorIdentifier getSelectorIdentifier() {
-    return selectorIdentifier;
+  public Selector getSelector() {
+    return selector;
   }
 
-  public void setSelectorIdentifier(SelectorIdentifier selectorIdentifier) {
-    this.selectorIdentifier = selectorIdentifier;
+  public void setSelector(Selector selector) {
+    this.selector = selector;
   }
 
   public boolean isDirInc() {
@@ -67,7 +68,7 @@ public class Ordering implements Serializable {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(selectorIdentifier.toString());
+    StringBuilder sb = new StringBuilder(selector.toString());
     if (dirInc) {
       sb.append(" ").append(orderDir);
     }

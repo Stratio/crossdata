@@ -16,23 +16,13 @@
  * under the License.
  */
 
-package com.stratio.meta2.common.statements.structures.terms;
+package com.stratio.meta.common.exceptions.validation;
 
-public class BooleanTerm extends Term<Boolean> {
+import com.stratio.meta.common.exceptions.ValidationException;
+import com.stratio.meta2.common.data.ColumnName;
 
-  private static final long serialVersionUID = 2872212148572680680L;
-
-  /**
-   * Class constructor.
-   *
-   * @param term
-   *            The string representation of a Boolean value.
-   */
-  public BooleanTerm(String term) {
-    super(Boolean.class, Boolean.valueOf(term));
-  }
-
-  public BooleanTerm(boolean booleanValue) {
-    super(Boolean.class, booleanValue);
+public class NotValidColumnException extends ValidationException {
+  public NotValidColumnException(ColumnName name) {
+    super(name +"is not valid column in this sentence");
   }
 }
