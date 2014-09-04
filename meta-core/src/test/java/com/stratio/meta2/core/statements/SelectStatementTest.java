@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.core.grammar.ParsingTest;
+//import com.stratio.meta.core.grammar.ParsingTest;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta2.common.data.TableName;
@@ -37,7 +37,7 @@ public class SelectStatementTest {
 
   protected static MetadataManager _metadataManager = null;
 
-  protected static final ParsingTest _pt = new ParsingTest();
+  //protected static final ParsingTest _pt = new ParsingTest();
 
   @BeforeClass
   public static void setUpBeforeClass() {
