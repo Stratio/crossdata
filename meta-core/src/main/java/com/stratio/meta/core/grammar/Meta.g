@@ -643,10 +643,14 @@ selectStatement returns [SelectStatement slctst]
         Map fieldsAliasesMap = new LinkedHashMap<String, String>();
         Map tablesAliasesMap = new LinkedHashMap<String, String>();
         MutablePair<String, String> pair = new MutablePair<>();
+    }
+    @after{
+        slctst.setFieldsAliases(fieldsAliasesMap);
+        slctst.setTablesAliases(tablesAliasesMap);
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
-    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON joinRelations=getWhereClauses[tablename])?
+    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON joinRelations=getWhereClauses[null])?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses[null])?
     //(T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
     //(T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
@@ -878,20 +882,16 @@ getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
     (
         T_ASTERISK { s = new AsteriskSelector(); selectors.add(s);}
         | s=getSelector[null]
-                (T_AS alias1=getAlias {
+                (T_AS alias1=T_IDENT {
                     s.setAlias($alias1.text);
                     fieldsAliasesMap.put($alias1.text, s.toString());}
                 )? {selectors.add(s);}
             (T_COMMA s=getSelector[null]
-                    (T_AS aliasN=getAlias {
+                    (T_AS aliasN=T_IDENT {
                         s.setAlias($aliasN.text);
                         fieldsAliasesMap.put($aliasN.text, s.toString());}
                     )? {selectors.add(s);})*
     )
-;
-
-getAlias returns [String alias]:
-	tablename=T_IDENT {$alias=$tablename.text;}
 ;
 
 getSelector[TableName tablename] returns [Selector s]
@@ -963,7 +963,7 @@ getRelation[TableName tablename] returns [Relation mrel]
     }:
     s=getSelector[tablename]
     operator=getComparator
-    rs=getSelector[null]
+    rs=getSelector[tablename]
 
 ;
 
@@ -1006,7 +1006,7 @@ getSelectors[TableName tablename] returns [ArrayList list]
 ;
 
 getAliasedTableID[Map tablesAliasesMap] returns [TableName result]:
-	tableN=getTableName (alias=T_IDENT {tablesAliasesMap.put($alias.text, tableN.toString());})?
+	tableN=getTableName (T_AS alias=T_IDENT {tablesAliasesMap.put($alias.text, tableN.toString()); tableN.setAlias($alias.text); })?
 	{result = tableN;}
 ;
 
