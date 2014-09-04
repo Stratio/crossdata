@@ -843,11 +843,19 @@ getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
     rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND relN=getRelation[tablename] {clauses.add(relN);})*
 ;
 
+getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
+    @init{
+        clauses = new ArrayList<>();
+    }:
+    rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND relN=getRelation[tablename] {clauses.add(relN);})*
+;
+
 getRelation[TableName tablename] returns [Relation mrel]
     @after{
         $mrel = new Relation(s, operator, rs);
     }:
-    s=getSelector[tablename] operator=getComparator rs=getSelector[tablename]
+    ( s=getSelector[tablename] operator=getComparator rs=getSelector[tablename]
+    | T_START_PARENTHESIS s=getSelector[tablename] operator=getComparator rs=getSelector[tablename] T_END_PARENTHESIS )
 ;
 
 getFields[MutablePair pair]:
