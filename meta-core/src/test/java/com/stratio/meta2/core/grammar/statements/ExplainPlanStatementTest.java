@@ -16,11 +16,11 @@
  * under the License.
  */
 
-package com.stratio.meta.core.grammar.statements;
+package com.stratio.meta2.core.grammar.statements;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 import org.testng.annotations.Test;
-
-import com.stratio.meta.core.grammar.ParsingTest;
 
 public class ExplainPlanStatementTest extends ParsingTest {
 
@@ -33,7 +33,8 @@ public class ExplainPlanStatementTest extends ParsingTest {
   @Test
   public void explainPlanForSimpleSelect() {
     String inputText = "EXPLAIN PLAN FOR SELECT users.name, users.age FROM demo.users;";
-    testRegularStatement(inputText, "explainPlanForSimpleSelect");
+    String expectedText = "EXPLAIN PLAN FOR SELECT demo.users.name, demo.users.age FROM demo.users;";
+    testRegularStatementSession("demo", inputText, expectedText, "explainPlanForSimpleSelect");
   }
 
   @Test

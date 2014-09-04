@@ -93,13 +93,15 @@ public class ParserUtils {
   }
 
   public static String getQueryWithSign(String query, AntlrError ae) {
+    int marker = 0;
     if(query.startsWith("[")){
-      query.replaceAll("\\[.\\], ", "");
+      marker = query.indexOf("], ")+3;
+      query = query.substring(marker);
     }
     StringBuilder sb = new StringBuilder(query);
-    int pos = getCharPosition(ae);
+    int pos = getCharPosition(ae)-marker;
     if(pos >= 0){
-      sb.insert(getCharPosition(ae), "\033[35m|\033[0m");
+      sb.insert(pos, "?");
     }
     return sb.toString();
   }

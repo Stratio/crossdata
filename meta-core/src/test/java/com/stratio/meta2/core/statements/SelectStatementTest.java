@@ -19,19 +19,13 @@
 package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
-import com.stratio.meta.core.grammar.ParsingTest;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.UUID;
-
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
 
 public class SelectStatementTest extends BasicCoreCassandraTest {
 

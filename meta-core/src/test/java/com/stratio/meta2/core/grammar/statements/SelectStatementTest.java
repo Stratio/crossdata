@@ -16,9 +16,9 @@
  * under the License.
  */
 
-package com.stratio.meta.core.grammar.statements;
+package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta.core.grammar.ParsingTest;
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 import org.testng.annotations.Test;
 
@@ -32,6 +32,13 @@ public class SelectStatementTest extends ParsingTest {
   public void basicSelectAsterisk(){
     String inputText = "SELECT * FROM table1;";
     String expectedText = "SELECT * FROM <unknown_name>.table1;";
+    testRegularStatement(inputText, expectedText, "basicSelectAsterisk");
+  }
+
+  @Test
+  public void basicSelectAsteriskWithLimit(){
+    String inputText = "SELECT * FROM table1 LIMIT 1;";
+    String expectedText = "SELECT * FROM <unknown_name>.table1 LIMIT 1;";
     testRegularStatement(inputText, expectedText, "basicSelectAsterisk");
   }
 
@@ -96,10 +103,24 @@ public class SelectStatementTest extends ParsingTest {
   }
 
   @Test
+  public void basicSelectNegativeIntColumn(){
+    String inputText = "SELECT -99 FROM table1;";
+    String expectedText = "SELECT -99 FROM <unknown_name>.table1;";
+    testRegularStatement(inputText, expectedText, "basicSelectNegativeIntColumn");
+  }
+
+  @Test
   public void basicSelectDoubleColumn(){
     String inputText = "SELECT 1.1234 FROM table1;";
     String expectedText = "SELECT 1.1234 FROM <unknown_name>.table1;";
     testRegularStatement(inputText, expectedText, "basicSelectDoubleColumn");
+  }
+
+  @Test
+  public void basicSelectNegativeDoubleColumn(){
+    String inputText = "SELECT -9.9876 FROM table1;";
+    String expectedText = "SELECT -9.9876 FROM <unknown_name>.table1;";
+    testRegularStatement(inputText, expectedText, "basicSelectNegativeDoubleColumn");
   }
 
   @Test
@@ -151,6 +172,15 @@ public class SelectStatementTest extends ParsingTest {
     String expectedText =
         "SELECT <unknown_name>.table1.column1 FROM <unknown_name>.table1 WITH WINDOW 5 SECONDS WHERE <unknown_name>.table1.column2 = 3;";
     testRegularStatement(inputText, expectedText, "selectWithTimeWindow");
+  }
+
+  @Test
+  public void selectWithTimeWindow2() {
+    String inputText =
+        "SELECT table1.column1 FROM table1 WITH WINDOW 1 min WHERE table1.column2 = 3;";
+    String expectedText =
+        "SELECT <unknown_name>.table1.column1 FROM <unknown_name>.table1 WITH WINDOW 1 MINUTES WHERE <unknown_name>.table1.column2 = 3;";
+    testRegularStatement(inputText, expectedText, "selectWithTimeWindow2");
   }
 
   @Test

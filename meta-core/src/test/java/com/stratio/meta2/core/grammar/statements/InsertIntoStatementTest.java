@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta.core.grammar.ParsingTest;
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 import org.testng.annotations.Test;
 
@@ -35,12 +35,20 @@ public class InsertIntoStatementTest extends ParsingTest {
   }
 
   @Test
+  public void insertIntoNegativeInteger() {
+    String inputText =
+        "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (1, -4);";
+    String expectText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2) VALUES (1, -4);";
+    testRegularStatement(inputText, expectText, "insertIntoNegativeInteger");
+  }
+
+  @Test
   public void insertIntoUsing() {
     String inputText =
-        "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES ('term1', 'term2') "
-        + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = '{innerTerm: result}';";
-    String expectText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2) VALUES ('term1', 'term2') "
-                        + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = '{innerTerm: result}';";
+        "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (-3.75, 'term2') "
+        + "IF NOT EXISTS USING COMPACT STORAGE AND 'prop1' = '{innerTerm: result}';";
+    String expectText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2) VALUES (-3.75, 'term2') "
+                        + "IF NOT EXISTS USING COMPACT STORAGE AND 'prop1' = '{innerTerm: result}';";
     testRegularStatement(inputText, expectText, "insertInto");
   }
 
@@ -48,9 +56,9 @@ public class InsertIntoStatementTest extends ParsingTest {
   public void insertInto2() {
     String inputText =
         "INSERT INTO tablename (column1, column2) VALUES ('value1', 'value2')"
-        + " IF NOT EXISTS USING TTL = 10;";
+        + " IF NOT EXISTS USING 'TTL' = 10;";
     String expectText = "INSERT INTO <unknown_name>.tablename (<unknown_name>.tablename.column1, <unknown_name>.tablename.column2) VALUES ('value1', 'value2')"
-                        + " IF NOT EXISTS USING TTL = 10;";
+                        + " IF NOT EXISTS USING 'TTL' = 10;";
     testRegularStatement(inputText, expectText, "insertInto2");
   }
 
@@ -82,9 +90,9 @@ public class InsertIntoStatementTest extends ParsingTest {
   public void insertIntoSelect() {
     String inputText =
         "INSERT INTO tablename (ident1, ident2) SELECT c.a, c.b from c "
-        + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = '{innerTerm: result}';";
+        + "IF NOT EXISTS USING COMPACT STORAGE AND 'prop1' = '{innerTerm: result}';";
     String expectText = "INSERT INTO demo.tablename (demo.tablename.ident1, demo.tablename.ident2) SELECT demo.c.a, demo.c.b from demo.c "
-                        + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = '{innerTerm: result}';";
+                        + "IF NOT EXISTS USING COMPACT STORAGE AND 'prop1' = '{innerTerm: result}';";
     testRegularStatementSession("demo", inputText, expectText, "insertIntoSelect");
   }
 

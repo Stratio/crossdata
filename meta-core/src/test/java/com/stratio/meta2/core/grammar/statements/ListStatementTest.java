@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -19,21 +19,44 @@
 package com.stratio.meta2.core.grammar.statements;
 
 import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
 
-public class DropConnectorStatementTest extends ParsingTest {
+public class ListStatementTest extends ParsingTest {
 
   @Test
-  public void dropConnectorSimple() {
-    String inputText = "DROP CONNECTOR myConnector;";
-    testRegularStatement(inputText, "dropConnectorSimple");
+  public void listProcess() {
+    String inputText = "LIST PROCESS;";
+    testRegularStatement(inputText, "listProcess");
   }
 
   @Test
-  public void dropConnectorError() {
-    String inputText = "DROP CONNECTOR *myConnector";
-    testParserFails(inputText, "dropConnectorError");
+  public void listProcessLowercase() {
+    String inputText = "LIST process;";
+    testRegularStatement(inputText, "listProcessLowercase");
+  }
+
+  @Test
+  public void listUdf() {
+    String inputText = "LIST UDF;";
+    testRegularStatement(inputText, "listUdf");
+  }
+
+  @Test
+  public void listTrigger() {
+    String inputText = "LIST TRIGGER;";
+    testRegularStatement(inputText, "listTrigger");
+  }
+
+  @Test
+  public void listReservedWordUse(){
+    String inputText = "LIST PROCESS LAST;";
+    testParserFails(inputText, "listReservedWordUse");
+  }
+
+  @Test
+  public void listUnknownFail(){
+    String inputText = "LIST UNKNOWN;";
+    testParserFails(inputText, "listUnknownFail");
   }
 
 }

@@ -28,15 +28,15 @@ import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.core.validator.Validation;
-import com.stratio.meta2.core.validator.ValidationRequirements;
 import com.stratio.meta2.core.structures.Property;
 import com.stratio.meta2.core.structures.PropertyNameValue;
+import com.stratio.meta2.core.validator.Validation;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,7 +71,7 @@ public class CreateTableStatement extends MetaStatement {
   /**
    * The list of {@link com.stratio.meta2.core.structures.Property} of the table.
    */
-  private List<Property> properties = new ArrayList<>();
+  private List<Property> properties = new LinkedList<>();
 
   /**
    * The type of primary key. Accepted values are:

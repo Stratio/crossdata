@@ -18,14 +18,9 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta.common.exceptions.ParsingException;
-import com.stratio.meta.core.grammar.ParsingTest;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
 
 public class CreateTableStatementTest extends ParsingTest {
 
@@ -97,48 +92,15 @@ public class CreateTableStatementTest extends ParsingTest {
   public void createTableWithManyProperties() {
     String inputText = "CREATE TABLE key_space1.users ON CLUSTER siliconValley (name varchar, password varchar, color varchar, gender varchar,"
                        + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
-                       + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
-                       + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
-    MetaStatement st = null;
-    try {
-      st = parser.parseStatement("key_space1", inputText);
-    } catch (ParsingException e) {
-      e.printStackTrace();
-    }
-    assertNotNull(st, "Cannot parse createTableWithManyProperties");
+                       + "WITH 'compression'='{sstable_compression: DeflateCompressor, chunk_length_kb: 64}' AND "
+                       + "'compaction'='{class: SizeTieredCompactionStrategy, min_threshold: 6}' AND 'read_repair_chance'=1.0;";
 
-    boolean originalOK = false;
-    boolean alternative1 = false;
-    boolean alternative2 = false;
-    boolean alternative3 = false;
+    String expectedText = "CREATE TABLE key_space1.users ON CLUSTER cluster.siliconValley (key_space1.users.name varchar, key_space1.users.password varchar, key_space1.users.color varchar, key_space1.users.gender varchar,"
+                       + " key_space1.users.food varchar, key_space1.users.animal varchar, key_space1.users.age int, key_space1.users.code int, PRIMARY KEY ((key_space1.users.name, key_space1.users.gender), key_space1.users.color, key_space1.users.animal)) "
+                       + "WITH 'compression'='{sstable_compression: DeflateCompressor, chunk_length_kb: 64}' AND "
+                       + "'compaction'='{class: SizeTieredCompactionStrategy, min_threshold: 6}' AND 'read_repair_chance'=1.0;";
 
-    if(inputText.equalsIgnoreCase(st.toString()+";")){
-      originalOK = true;
-    }
-
-    String alternative1Str = "CREATE TABLE key_space1.users ON CLUSTER cluster.siliconValley (key_space1.users.name varchar, key_space1.users.password varchar, key_space1.users.color varchar, key_space1.users.gender varchar,"
-                             + " key_space1.users.food varchar, key_space1.users.animal varchar, key_space1.users.age int, key_space1.users.code int, PRIMARY KEY ((key_space1.users.name, key_space1.users.gender), key_space1.users.color, key_space1.users.animal)) "
-                             + "WITH compression={chunk_length_kb: 64, sstable_compression: DeflateCompressor} AND "
-                             + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND read_repair_chance=1.0;";
-    if(alternative1Str.equalsIgnoreCase(st.toString()+";")){
-      alternative1 = true;
-    }
-    String alternative2Str = "CREATE TABLE key_space1.users ON CLUSTER cluster.siliconValley (key_space1.users.name varchar, key_space1.users.password varchar, key_space1.users.color varchar, key_space1.users.gender varchar,"
-                             + " key_space1.users.food varchar, key_space1.users.animal varchar, key_space1.users.age int, key_space1.users.code int, PRIMARY KEY ((key_space1.users.name, key_space1.users.gender), key_space1.users.color, key_space1.users.animal)) "
-                             + "WITH compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64} AND "
-                             + "compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND read_repair_chance=1.0;";
-    if(alternative2Str.equalsIgnoreCase(st.toString()+";")){
-      alternative2 = true;
-    }
-    String alternative3Str = "CREATE TABLE key_space1.users ON CLUSTER cluster.siliconValley (key_space1.users.name varchar, key_space1.users.password varchar, key_space1.users.color varchar, key_space1.users.gender varchar,"
-                             + " key_space1.users.food varchar, key_space1.users.animal varchar, key_space1.users.age int, key_space1.users.code int, PRIMARY KEY ((key_space1.users.name, key_space1.users.gender), key_space1.users.color, key_space1.users.animal)) "
-                             + "WITH compression={chunk_length_kb: 64, sstable_compression: DeflateCompressor} AND "
-                             + "compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND read_repair_chance=1.0;";
-    if(alternative3Str.equalsIgnoreCase(st.toString()+";")){
-      alternative3 = true;
-    }
-
-    assertTrue((originalOK || alternative1 || alternative2 || alternative3), "Cannot parse createTableWithManyProperties");
+    testRegularStatementSession("key_space1", inputText, expectedText, "createTableWithManyProperties");
   }
 
   @Test
@@ -165,49 +127,13 @@ public class CreateTableStatementTest extends ParsingTest {
                        + "animal varchar, PRIMARY KEY (name)) WITH 'compression'='{sstable_compression: DeflateCompressor, "
                        + "chunk_length_kb: 64}' AND 'compaction'='{class: SizeTieredCompactionStrategy, min_threshold: 6}' AND "
                        + "'read_repair_chance'=1.0;";
-    //MetaStatement st = parser.parseStatement(inputText).getStatement();
-    MetaStatement st = null;
-    try {
-      st = parser.parseStatement("key_space1", inputText);
-    } catch (ParsingException e) {
-      e.printStackTrace();
-    }
 
-    assertNotNull(st, "Statement should not be null createTableWithProperties");
+    String expectedText = "CREATE TABLE key_space1.test ON CLUSTER cluster.siliconValley (key_space1.test.name varchar, key_space1.test.color varchar, key_space1.test.gender varchar, key_space1.test.food varchar, "
+                       + "key_space1.test.animal varchar, PRIMARY KEY (key_space1.test.name)) WITH 'compression'='{sstable_compression: DeflateCompressor, "
+                       + "chunk_length_kb: 64}' AND 'compaction'='{class: SizeTieredCompactionStrategy, min_threshold: 6}' AND "
+                       + "'read_repair_chance'=1.0;";
 
-    boolean originalOK = false;
-    boolean alternative1 = false;
-    boolean alternative2 = false;
-    boolean alternative3 = false;
-
-    if(inputText.equalsIgnoreCase(st.toString()+";")){
-      originalOK = true;
-    }
-
-    String alternative1Str = "CREATE TABLE key_space1.test ON CLUSTER cluster.siliconValley (key_space1.test.name varchar, key_space1.test.color varchar, key_space1.test.gender varchar, key_space1.test.food varchar, "
-                             + "key_space1.test.animal varchar, PRIMARY KEY (key_space1.test.name)) WITH compression={chunk_length_kb: 64, "
-                             + "sstable_compression: DeflateCompressor} AND compaction={class: SizeTieredCompactionStrategy, min_threshold: 6} AND "
-                             + "read_repair_chance=1.0;";
-    if(alternative1Str.equalsIgnoreCase(st.toString()+";")){
-      alternative1 = true;
-    }
-    String alternative2Str = "CREATE TABLE key_space1.test ON CLUSTER cluster.siliconValley (key_space1.test.name varchar, key_space1.test.color varchar, key_space1.test.gender varchar, key_space1.test.food varchar, "
-                             + "key_space1.test.animal varchar, PRIMARY KEY (key_space1.test.name)) WITH compression={sstable_compression: DeflateCompressor, "
-                             + "chunk_length_kb: 64} AND compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND "
-                             + "read_repair_chance=1.0;";
-    if(alternative2Str.equalsIgnoreCase(st.toString()+";")){
-      alternative2 = true;
-    }
-    String alternative3Str = "CREATE TABLE key_space1.test ON CLUSTER cluster.siliconValley (key_space1.test.name varchar, key_space1.test.color varchar, key_space1.test.gender varchar, key_space1.test.food varchar, "
-                             + "key_space1.test.animal varchar, PRIMARY KEY (key_space1.test.name)) WITH compression={chunk_length_kb: 64, "
-                             + "sstable_compression: DeflateCompressor} AND compaction={min_threshold: 6, class: SizeTieredCompactionStrategy} AND "
-                             + "read_repair_chance=1.0;";
-    if(alternative3Str.equalsIgnoreCase(st.toString()+";")){
-      alternative3 = true;
-    }
-
-    assertTrue((originalOK || alternative1 || alternative2 || alternative3),
-               "Cannot parse createTableWithProperties");
+    testRegularStatementSession("key_space1", inputText, expectedText, "createTableWithProperties");
   }
 
   @Test

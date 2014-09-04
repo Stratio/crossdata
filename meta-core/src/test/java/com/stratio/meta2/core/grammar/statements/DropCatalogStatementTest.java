@@ -18,11 +18,17 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta.core.grammar.ParsingTest;
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 import org.testng.annotations.Test;
 
 public class DropCatalogStatementTest extends ParsingTest {
+
+  @Test
+  public void dropCatalog() {
+    String inputText = "drop catalog IF EXISTS mycatalog;";
+    testRegularStatement(inputText, "dropCatalog");
+  }
 
   @Test
   public void dropCatalogSimple() {
@@ -36,10 +42,16 @@ public class DropCatalogStatementTest extends ParsingTest {
     testRegularStatement(inputText, "dropCatalogSimple");
   }
 
-    @Test
+  @Test
   public void dropCatalogError() {
     String inputText = "DROP CATALOG _myCatalog";
     testParserFails(inputText, "dropCatalogError");
+  }
+
+  @Test
+  public void dropWrongPlaceForIfExists(){
+    String inputText = "DROP CATALOG mycatalog IF EXISTS;";
+    testParserFails(inputText, "dropWrongPlaceForIfExists");
   }
 
 }

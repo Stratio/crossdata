@@ -18,11 +18,11 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta.core.grammar.ParsingTest;
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 import org.testng.annotations.Test;
 
-public class CreateIndexStatementTest extends ParsingTest{
+public class CreateIndexStatementTest extends ParsingTest {
 
   // CREATE <type_index>? INDEX (IF NOT EXISTS)? <identifier>? ON <tablename> '(' <identifier> (',' <identifier>)* ')'
   // ( USING <string> )? WITH OPTIONS? (<maps> AND <maps>...) ';'

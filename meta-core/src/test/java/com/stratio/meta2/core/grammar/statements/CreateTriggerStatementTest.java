@@ -16,23 +16,24 @@
  * under the License.
  */
 
-package com.stratio.meta.core.grammar.statements;
+package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta.core.grammar.ParsingTest;
+import com.stratio.meta2.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
 
-public class DropCatalogStatementTest extends ParsingTest {
+public class CreateTriggerStatementTest extends ParsingTest {
 
-  @Test
-  public void dropCatalog() {
-    String inputText = "drop catalog IF EXISTS mycatalog;";
-    testRegularStatement(inputText, "dropCatalog");
-  }
+    @Test
+    public void createTrigger() {
+        String inputText = "create trigger trigger1 on table_name USING triggerClassName;";
+        testRegularStatement(inputText, "createTrigger");
+    }
 
-  @Test
-  public void dropWrongPlaceForIfExists(){
-    String inputText = "DROP KEYSPACE mycatalog IF EXISTS;";
-    testParserFails(inputText, "dropWrongPlaceForIfExists");
-  }
+    @Test
+    public void createTriggerWrongAsWordUse(){
+        String inputText = "create trigger trigger1 on table_name USING triggerClassName AS ident1;";
+        testParserFails(inputText, "createTriggerWrongAsWordUse");
+    }
+
 
 }
