@@ -24,8 +24,10 @@ import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.grammar.ParsingTest;
 import com.stratio.meta.core.structures.InnerJoin;
+import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.query.BaseQuery;
@@ -56,19 +58,15 @@ public class PlannerWorkflowTest {
 
     private SelectStatement stmt = null;
 
-    public NormalizedQueryWrapper(SelectParsedQuery parsedQuery,
-                                  SelectStatement stmt) {
-      super(parsedQuery);
-      this.stmt = stmt;
-    }
-
-    public NormalizedQueryWrapper(SelectParsedQuery parsedQuery) {
-      super(parsedQuery);
-    }
+    private List<TableMetadata> tableMetadataList = new ArrayList<>();
 
     public NormalizedQueryWrapper(SelectStatement stmt, SelectParsedQuery parsedQuery){
       super(parsedQuery);
       this.stmt = stmt;
+    }
+
+    public void addTableMetadata(TableMetadata tm){
+      tableMetadataList.add(tm);
     }
 
     @Override
@@ -115,6 +113,30 @@ public class PlannerWorkflowTest {
     public List<Relation> getRelationships() {
       return stmt.getWhere();
     }
+
+    @Override
+    public List<TableMetadata> getTableMetadata() {
+      return tableMetadataList;
+    }
+  }
+
+  public TableMetadata getTestTableMetadata(){
+    String catalog = "c";
+    String table = "t";
+    String [] columns = {"a", "b", "c", "d"};
+    TableName tn = new TableName(catalog, table);
+    ClusterName clusterRef = new ClusterName("test_cluster");
+    List<ColumnName> partitionKey = new ArrayList<>();
+    partitionKey.add(new ColumnName(catalog, table, columns[0]));
+    List<ColumnName> clusterKey = new ArrayList<>();
+
+    TableMetadata tm = new TableMetadata(tn,//TableName
+        null, //Map<String, Object> options,
+        null, //Map<ColumnName, ColumnMetadata> columns,
+        clusterRef,
+        partitionKey,
+        clusterKey);
+    return tm;
   }
 
   public LogicalWorkflow getWorkflow(String statement, String methodName) {
@@ -122,6 +144,7 @@ public class PlannerWorkflowTest {
     SelectStatement ss = SelectStatement.class.cast(stmt);
     NormalizedQuery nq = new NormalizedQueryWrapper(
             SelectStatement.class.cast(stmt), new SelectParsedQuery(new BaseQuery("42", statement, null), ss));
+    NormalizedQueryWrapper.class.cast(nq).addTableMetadata(getTestTableMetadata());
     return planner.buildWorkflow(nq);
   }
 
