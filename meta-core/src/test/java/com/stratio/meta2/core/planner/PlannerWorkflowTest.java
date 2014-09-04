@@ -179,4 +179,12 @@ public class PlannerWorkflowTest {
     assertColumnsInProject(workflow, "c.t2", expectedColumnsT2);
   }
 
+  @Test
+  public void selectBasicWhere() {
+    String inputText = "SELECT c.t.a, c.t.b, c.t.c FROM c.t WHERE c.t.a = 3;";
+    String [] expectedColumns = {"c.t.a", "c.t.b", "c.t.c"};
+    LogicalWorkflow workflow = getWorkflow(inputText, "selectBasicWhere");
+    assertColumnsInProject(workflow, "c.t", expectedColumns);
+  }
+
 }

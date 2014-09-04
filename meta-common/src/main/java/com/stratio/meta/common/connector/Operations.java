@@ -213,6 +213,42 @@ public enum Operations {
    * The engine supports full text search syntax in {@link com.stratio.meta.common.logicalplan.Filter}
    * operations.
    */
-  FILTER_FULLTEXT
+  FILTER_FULLTEXT,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations using
+   * a function as part of a relation using with an equal operator.
+   */
+  FILTER_FUNCTION_EQ,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations using
+   * a function as part of a relation using with a greater than operator.
+   */
+  FILTER_FUNCTION_GT,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations using
+   * a function as part of a relation using with a less than operator.
+   */
+  FILTER_FUNCTION_LT,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations using
+   * a function as part of a relation using with a greater than or equal operator.
+   */
+  FILTER_FUNCTION_GET,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations using
+   * a function as part of a relation using with a less than or equal operator.
+   */
+  FILTER_FUNCTION_LET,
+
+  /**
+   * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations using
+   * a function as part of a relation using with a distinct operator.
+   */
+  FILTER_FUNCTION_DISTINCT,
 
 }

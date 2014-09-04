@@ -82,4 +82,24 @@ public class TableMetadata implements IMetadata {
     result.addAll(clusterKey);
     return result;
   }
+
+  /**
+   * Determine whether the selected column is part of the primary key or not.
+   * @param columnName The column name.
+   * @return Whether is part of the primary key.
+   */
+  public boolean isPK(ColumnName columnName){
+    return partitionKey.contains(columnName) || clusterKey.contains(columnName);
+  }
+
+  /**
+   * Determine whether the selected column has an associated index.
+   * @param columnName The column name.
+   * @return Whether is indexed or not.
+   */
+  public boolean isIndexed(ColumnName columnName){
+    //TODO Implement isIndexed()
+    return false;
+  }
+
 }
