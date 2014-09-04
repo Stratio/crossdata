@@ -22,7 +22,8 @@ import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.statements.structures.terms.BooleanTerm;
+import com.stratio.meta2.common.statements.structures.selectors.BooleanSelector;
+import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.statements.CreateTableStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.structures.Property;
@@ -82,7 +83,7 @@ public class CreateTableStatementTest extends BasicPlannerTest {
             Arrays.asList(new ColumnName("demo", "table_temporal", "name")), 1, 1);
     stmt.setSessionCatalog("demo");
 
-    Property prop = new PropertyNameValue("ephemeral", new BooleanTerm("true"));
+    Property prop = new PropertyNameValue(new StringSelector("ephemeral"), new BooleanSelector("true"));
 
     ((CreateTableStatement) stmt).setProperties(Collections.singletonList(prop));
 

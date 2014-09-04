@@ -36,7 +36,7 @@ public class AttachClusterStatementTest extends ParsingTest{
   @Test
   public void createClusterBasicDoubleQuote() {
     String inputText = "ATTACH CLUSTER dev ON DATASTORE \"db\""
-                       + " WITH OPTIONS {\"host\": \"127.0.0.1\", port: 1234};";
+                       + " WITH OPTIONS {\"host\": \"127.0.0.1\", 'port': 1234};";
     String expectedText = inputText;
     testRegularStatement(inputText, expectedText, "createClusterBasicDoubleQuote");
   }
@@ -59,15 +59,15 @@ public class AttachClusterStatementTest extends ParsingTest{
 
   @Test
   public void attachClusterSimple() {
-    String inputText = "ATTACH CLUSTER production_madrid ON DATASTORE \"cassandra\" WITH OPTIONS {host: 127.0.0.1, port: 9160, mode: \"random\"};";
-    String expectedText = "ATTACH CLUSTER production_madrid ON DATASTORE \"cassandra\" WITH OPTIONS {host: 127.0.0.1, port: 9160, mode: \"random\"};";
+    String inputText = "ATTACH CLUSTER production_madrid ON DATASTORE \"cassandra\" WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'mode': \"random\"};";
+    String expectedText = "ATTACH CLUSTER production_madrid ON DATASTORE \"cassandra\" WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'mode': \"random\"};";
     testRegularStatement(inputText, expectedText, "attachClusterSimple");
   }
 
   @Test
   public void attachClusterIfNotExists() {
-    String inputText = "ATTACH CLUSTER IF NOT EXISTS productionMadrid ON DATASTORE 'cassandra' WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, exhaustive: false};";
-    String expectedText = "ATTACH CLUSTER IF NOT EXISTS productionMadrid ON DATASTORE 'cassandra' WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, exhaustive: false};";
+    String inputText = "ATTACH CLUSTER IF NOT EXISTS productionMadrid ON DATASTORE 'cassandra' WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, 'exhaustive': false};";
+    String expectedText = "ATTACH CLUSTER IF NOT EXISTS productionMadrid ON DATASTORE 'cassandra' WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, 'exhaustive': false};";
     testRegularStatement(inputText, expectedText, "attachClusterIfNotExists");
   }
 

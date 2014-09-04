@@ -19,8 +19,6 @@
 package com.stratio.meta.deep;
 
 import com.datastax.driver.core.Session;
-import com.stratio.deep.config.DeepJobConfigFactory;
-import com.stratio.deep.config.ICassandraDeepJobConfig;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.data.CassandraResultSet;
@@ -29,32 +27,18 @@ import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnType;
-import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.engine.EngineConfig;
-import com.stratio.meta2.core.statements.MetaStatement;
-import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.GroupBy;
-import com.stratio.meta.core.structures.SelectionClause;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.deep.comparators.DeepComparator;
-import com.stratio.meta.deep.functions.Between;
-import com.stratio.meta.deep.functions.DeepEquals;
-import com.stratio.meta.deep.functions.GreaterEqualThan;
-import com.stratio.meta.deep.functions.GreaterThan;
-import com.stratio.meta.deep.functions.In;
-import com.stratio.meta.deep.functions.JoinCells;
-import com.stratio.meta.deep.functions.LessEqualThan;
-import com.stratio.meta.deep.functions.LessThan;
-import com.stratio.meta.deep.functions.MapKeyForJoin;
-import com.stratio.meta.deep.functions.NotEquals;
 import com.stratio.meta.deep.transformation.AverageAggregatorMapping;
 import com.stratio.meta.deep.transformation.GroupByAggregation;
 import com.stratio.meta.deep.transformation.GroupByMapping;
 import com.stratio.meta.deep.transformation.KeyRemover;
 import com.stratio.meta.deep.utils.DeepUtils;
-import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta2.core.structures.Ordering;
 
 import org.apache.log4j.Logger;
@@ -66,8 +50,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import scala.Tuple2;
 
 /**
  * Class that performs as a Bridge between Meta and Stratio Deep.

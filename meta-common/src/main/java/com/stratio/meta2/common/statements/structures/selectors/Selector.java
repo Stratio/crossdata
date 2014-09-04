@@ -18,10 +18,9 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 
-import java.util.List;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -53,5 +52,17 @@ public abstract class Selector {
    * @return A set of {@link com.stratio.meta2.common.data.TableName}.
    */
   public abstract Set<TableName> getSelectorTables();
+
+  public String getSelectorTablesAsString(){
+    StringBuilder sb = new StringBuilder();
+    Iterator<TableName> it = getSelectorTables().iterator();
+    while(it.hasNext()){
+      sb.append(it.next().getQualifiedName());
+      if(it.hasNext()){
+        sb.append("-");
+      }
+    }
+    return sb.toString();
+  }
 
 }

@@ -18,9 +18,11 @@
 
 package com.stratio.meta.common.utils;
 
-import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
-import com.stratio.meta2.common.statements.structures.terms.StringTerm;
-import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.selectors.BooleanSelector;
+import com.stratio.meta2.common.statements.structures.selectors.FloatingPointSelector;
+import com.stratio.meta2.common.statements.structures.selectors.IntegerSelector;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
@@ -56,8 +58,8 @@ public class StringUtils {
     }
   }
 
-  public static Map<Term, GenericTerm> convertJsonToOptions(String json){
-    Map<Term, GenericTerm> options = new HashMap<>();
+  public static Map<Selector, Selector> convertJsonToOptions(String json){
+    Map<Selector, Selector> options = new HashMap<>();
     ObjectMapper mapper = new ObjectMapper();
     mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
     mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
@@ -69,7 +71,8 @@ public class StringUtils {
       Iterator<Map.Entry<String, JsonNode>> iter = root.getFields();
       while(iter.hasNext()){
         Map.Entry<String, JsonNode> entry = iter.next();
-        options.put(new StringTerm(entry.getKey()), GenericTerm.CreateGenericTerm(entry.getValue()));
+        Selector selector = convertJsonNodeToMetaParserType(entry.getValue());
+        options.put(new StringSelector(entry.getKey()), selector);
       }
     } catch (IOException e) {
       e.printStackTrace();
@@ -77,10 +80,24 @@ public class StringUtils {
     return options;
   }
 
-  public static String getStringFromOptions(Map<Term, GenericTerm> options){
+  private static Selector convertJsonNodeToMetaParserType(JsonNode jsonNode) {
+    Selector selector;
+    if (jsonNode.isBigDecimal() || jsonNode.isDouble()){
+      selector = new FloatingPointSelector(jsonNode.getDoubleValue());
+    } else if (jsonNode.isBoolean()){
+      selector = new BooleanSelector(jsonNode.getBooleanValue());
+    } else if (jsonNode.isInt() || jsonNode.isBigInteger() || jsonNode.isLong()){
+      selector = new IntegerSelector(jsonNode.getIntValue());
+    } else {
+      selector = new StringSelector(jsonNode.getTextValue());
+    }
+    return selector;
+  }
+
+  public static String getStringFromOptions(Map<Selector, Selector> options){
     StringBuilder sb = new StringBuilder("{");
-    Iterator<Map.Entry<Term, GenericTerm>> entryIt = options.entrySet().iterator();
-    Map.Entry<Term, GenericTerm> e;
+    Iterator<Map.Entry<Selector, Selector>> entryIt = options.entrySet().iterator();
+    Map.Entry<Selector, Selector> e;
     while(entryIt.hasNext()){
       e = entryIt.next();
       sb.append(e.getKey()).append(": ").append(e.getValue());

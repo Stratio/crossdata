@@ -23,7 +23,7 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
-import com.stratio.meta2.common.statements.structures.terms.GenericTerm;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.Map;
@@ -42,19 +42,19 @@ public class AlterCatalogStatement extends MetaStatement {
    * The map of properties of the Catalog. The different options accepted by a Catalog are
    * determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
    */
-  private Map<String, GenericTerm> properties;
+  private Map<Selector, Selector> properties;
 
   /**
    * Class constructor.
    *
    * @param catalogName The name of the catalog.
-   * @param JSON        A JSON with the storage options.
+   * @param options     A JSON with the storage options.
    */
-  public AlterCatalogStatement(String catalogName, String JSON) {
+  public AlterCatalogStatement(String catalogName, String options) {
     this.command = false;
     this.catalog = catalogName;
     this.catalogInc = true;
-    this.options = JSON;
+    this.options = options;
   }
 
   @Override

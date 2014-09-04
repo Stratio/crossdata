@@ -19,11 +19,9 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.common.statements.structures.assignations.Assignation;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.Name;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 
@@ -57,7 +55,7 @@ public class NormalizedQuery extends SelectParsedQuery {
   }
 
 
-  public List<Assignation> getAssignations(){
+  public List<Relation> getAssignations(){
     throw new UnsupportedOperationException();
   }
 

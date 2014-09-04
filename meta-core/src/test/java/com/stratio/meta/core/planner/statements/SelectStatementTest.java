@@ -18,30 +18,7 @@
 
 package com.stratio.meta.core.planner.statements;
 
-import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.common.statements.structures.selectors.GroupByFunction;
-import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
-import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.core.statements.SelectStatement;
-import com.stratio.meta.core.structures.GroupBy;
-import com.stratio.meta.core.structures.InnerJoin;
-import com.stratio.meta.core.structures.SelectionAsterisk;
-import com.stratio.meta.core.structures.SelectionClause;
-import com.stratio.meta.core.structures.SelectionList;
-import com.stratio.meta.core.structures.SelectionSelector;
-import com.stratio.meta.core.structures.SelectionSelectors;
-import com.stratio.meta2.common.statements.structures.terms.LongTerm;
-import com.stratio.meta2.common.statements.structures.terms.StringTerm;
-import com.stratio.meta2.common.statements.structures.terms.Term;
-import com.stratio.meta2.core.structures.Ordering;
-
-import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class SelectStatementTest extends BasicPlannerTest {
 

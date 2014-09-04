@@ -19,6 +19,7 @@
 package com.stratio.meta.deep.comparators;
 
 import com.stratio.deep.entity.Cells;
+import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.core.structures.OrderDirection;
 import com.stratio.meta2.core.structures.Ordering;
 
@@ -56,7 +57,7 @@ public class DeepComparator implements Comparator<Cells>, Serializable {
     Iterator<Ordering> it = orderings.iterator();
     while (!resolution && it.hasNext()) {
       Ordering ordering = it.next();
-      String currentField = ordering.getSelectorIdentifier().getField();
+      String currentField = ((ColumnSelector) ordering.getSelector()).getName().getName();
       result =
           ((Comparable) o1.getCellByName(currentField).getCellValue()).compareTo(o2.getCellByName(
               currentField).getCellValue());

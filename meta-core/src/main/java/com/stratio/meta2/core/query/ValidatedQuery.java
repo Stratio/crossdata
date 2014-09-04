@@ -15,12 +15,6 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.common.statements.structures.assignations.Assignation;
-import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.TableName;
-
-import java.util.List;
 
 public class ValidatedQuery extends NormalizedQuery {
   public ValidatedQuery(NormalizedQuery parsedQuery) {

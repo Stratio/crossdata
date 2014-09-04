@@ -24,5 +24,5 @@ import com.stratio.meta.common.ask.APICommand.APICommand
  * Class that wrappers the calls to the META API.
  * @param commandType Type of command to be executed.
  */
-case class Command(commandType: APICommand, params: java.util.List[String])
+case class Command(commandType: APICommand, params: java.util.List[AnyRef])
 

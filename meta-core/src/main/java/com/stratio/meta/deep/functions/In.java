@@ -19,7 +19,7 @@
 package com.stratio.meta.deep.functions;
 
 import com.stratio.deep.entity.Cells;
-import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 import org.apache.spark.api.java.function.Function;
 
@@ -40,7 +40,7 @@ public class In implements Function<Cells, Boolean> {
   /**
    * IDs in the IN clause.
    */
-  private List<Term<?>> terms;
+  private List<Selector> terms;
 
   /**
    * In apply in filter to a field in a Deep Cell.
@@ -48,7 +48,7 @@ public class In implements Function<Cells, Boolean> {
    * @param field Name of the field to check.
    * @param terms List of terms of the IN clause.
    */
-  public In(String field, List<Term<?>> terms) {
+  public In(String field, List<Selector> terms) {
     this.field = field;
     this.terms = terms;
   }
@@ -59,20 +59,19 @@ public class In implements Function<Cells, Boolean> {
     Boolean isValid = false;
     Object cellValue = cells.getCellByName(field).getCellValue();
 
-    Class<?> dataType = (Class<?>) terms.get(0).getTermClass();
+    /*Class<?> dataType = (Class<?>) terms.get(0).getTermClass();
     Object currentValue = dataType.cast(cellValue);
     if (currentValue != null) {
       isValid = isIncludedInList(terms, currentValue);
-    }
+    }*/
 
     return isValid;
   }
 
-  private Boolean isIncludedInList(List<Term<?>> list, Object value) {
-
-    for (Term<?> term : list) {
-      if (term.getTermValue().equals(value))
-        return true;
+  private Boolean isIncludedInList(List<Selector> list, Object value) {
+    for (Selector term : list) {
+      /*if (term.getTermValue().equals(value))
+        return true;*/
     }
 
     return false;

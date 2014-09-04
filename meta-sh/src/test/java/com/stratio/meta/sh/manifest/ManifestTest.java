@@ -18,22 +18,99 @@
 
 package com.stratio.meta.sh.manifest;
 
-import com.stratio.meta.sh.Metash;
+import com.stratio.meta.sh.utils.ConsoleUtils;
+import com.stratio.meta2.common.api.Manifest;
+import com.stratio.meta2.common.api.ManifestHelper;
 
 import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertTrue;
 
 public class ManifestTest {
 
   @Test
   public void testDataStoreManifest() {
-    String parsedManifest = Metash.parseXML("Add DataStore \"ManifestTest.xml\"");
-    assert(parsedManifest.equalsIgnoreCase("DATASTORE"+System.lineSeparator()+""));
+
+    Manifest
+        manifest =
+        ConsoleUtils.parseFromXmlToManifest(Manifest.TYPE_DATASTORE,
+                                            "meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xml");
+
+    String parsedManifest = ManifestHelper.manifestToString(manifest);
+
+    StringBuilder sb = new StringBuilder("DATASTORE");
+    sb.append(System.lineSeparator());
+
+    // NAME
+    sb.append("Name: ").append("string").append(System.lineSeparator());
+
+    // VERSION
+    sb.append("Version: ").append("string").append(System.lineSeparator());
+
+    // REQUIRED PARAMETERS
+    sb.append("Required parameters: ").append(System.lineSeparator());
+    sb.append("\t").append("Cluster: ").append(System.lineSeparator());
+    sb.append("\t").append("\t").append("Name: ").append("string").append(System.lineSeparator());
+    sb.append("\t").append("\t").append("Hosts: ").append(System.lineSeparator());
+    sb.append("\t").append("\t").append("\t").append("Host: ").append("string").append(System.lineSeparator());
+    sb.append("\t").append("\t").append("\t").append("Port: ").append("string").append(System.lineSeparator());
+
+    // OPTIONAL PROPERTIES
+    sb.append("Optional properties: ").append(System.lineSeparator());
+    sb.append("\t").append("Property").append(System.lineSeparator());
+    sb.append("\t").append("\t").append("Name: ").append("string").append(System.lineSeparator());
+
+    // ERROR MESSAGE
+    StringBuilder sbError = new StringBuilder(System.lineSeparator());
+    sbError.append("Expecting:  ").append(sb.toString()).append(System.lineSeparator());
+    sbError.append("Instead of: ").append(parsedManifest);
+
+    assertTrue(parsedManifest.equalsIgnoreCase(sb.toString()), sbError.toString());
   }
 
   @Test
   public void testConnectorManifest() {
-    String parsedManifest = Metash.parseXML("Add Connector \"ManifestTest.xml\"");
-    assert(parsedManifest.equalsIgnoreCase("CONNECTOR"+System.lineSeparator()+""));
+
+    Manifest manifest = ConsoleUtils.parseFromXmlToManifest(Manifest.TYPE_CONNECTOR,
+                                                            "meta-common/src/main/resources/com/stratio/meta/connector/ConnectorDefinition.xml");
+
+    String parsedManifest = ManifestHelper.manifestToString(manifest);
+
+    StringBuilder sb = new StringBuilder("CONNECTOR");
+    sb.append(System.lineSeparator());
+
+    // CONNECTOR NAME
+    sb.append("ConnectorName: ").append("string").append(System.lineSeparator());
+
+    // DATA STORES NAME
+    sb.append("DataStoresName: ").append(System.lineSeparator());
+    sb.append("\t").append("Datastore: ").append("string").append(System.lineSeparator());
+
+    // VERSION
+    sb.append("Version: ").append("string").append(System.lineSeparator());
+
+    // REQUIRED PROPERTIES
+    sb.append("Required properties: ").append(System.lineSeparator());
+    sb.append("\t").append("Property: ").append(System.lineSeparator());
+    sb.append("\t").append("\t").append("Name: ").append("string").append(
+        System.lineSeparator());
+
+    // OPTIONAL PROPERTIES
+    sb.append("Optional properties: ").append(System.lineSeparator());
+    sb.append("\t").append("Property: ").append(System.lineSeparator());
+    sb.append("\t").append("\t").append("Name: ").append("string").append(
+        System.lineSeparator());
+
+    // SUPPORTED OPERATIONS
+    sb.append("Supported operations: ").append(System.lineSeparator());
+    sb.append("\t").append("Operation: ").append("string").append(System.lineSeparator());
+
+    // ERROR MESSAGE
+    StringBuilder sbError = new StringBuilder(System.lineSeparator());
+    sbError.append("Expecting:  ").append(sb.toString()).append(System.lineSeparator());
+    sbError.append("Instead of: ").append(parsedManifest);
+
+    assertTrue(parsedManifest.equalsIgnoreCase(sb.toString()), sbError.toString());
   }
 
 }

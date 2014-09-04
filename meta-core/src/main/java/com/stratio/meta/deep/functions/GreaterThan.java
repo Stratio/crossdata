@@ -19,7 +19,7 @@
 package com.stratio.meta.deep.functions;
 
 import com.stratio.deep.entity.Cells;
-import com.stratio.meta2.common.statements.structures.terms.Term;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 import org.apache.spark.api.java.function.Function;
 
@@ -33,7 +33,7 @@ public class GreaterThan implements Function<Cells, Boolean> {
   /**
    * Term to compare.
    */
-  private Term<?> term;
+  private Selector term;
 
   /**
    * Name of the field of the cell to compare.
@@ -46,7 +46,7 @@ public class GreaterThan implements Function<Cells, Boolean> {
    * @param field Name of the field to check.
    * @param term Term to compare to.
    */
-  public GreaterThan(String field, Term<?> term) {
+  public GreaterThan(String field, Selector term) {
     this.term = term;
     this.field = field;
   }

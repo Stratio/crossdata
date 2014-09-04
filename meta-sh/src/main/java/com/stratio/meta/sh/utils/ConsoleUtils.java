@@ -18,10 +18,36 @@
 
 package com.stratio.meta.sh.utils;
 
+import com.stratio.meta.common.data.CassandraResultSet;
+import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.ResultSet;
+import com.stratio.meta.common.data.Row;
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.ConnectResult;
+import com.stratio.meta.common.result.ErrorResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.api.Manifest;
+import com.stratio.meta2.common.api.generated.connector.ConnectorFactory;
+import com.stratio.meta2.common.api.generated.connector.ConnectorType;
+import com.stratio.meta2.common.api.generated.datastore.DataStoreFactory;
+import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
+
+import jline.console.ConsoleReader;
+import jline.console.history.History;
+import jline.console.history.MemoryHistory;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,25 +59,10 @@ import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Map;
 
-import jline.console.ConsoleReader;
-import jline.console.history.History;
-import jline.console.history.MemoryHistory;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.Days;
-
-import com.stratio.meta.common.data.CassandraResultSet;
-import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.data.ResultSet;
-import com.stratio.meta.common.data.Row;
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.ConnectResult;
-import com.stratio.meta.common.result.ErrorResult;
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 public class ConsoleUtils {
 
@@ -121,9 +132,9 @@ public class ConsoleUtils {
     sb.append(System.lineSeparator());
     sb.append(bar).append(System.lineSeparator());
     sb.append("| ");
-    for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
+    for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
       sb.append(
-          StringUtils.rightPad("\033[34;1m" + columnMetadata.getColumnNameToShow() + "\033[0m ",
+          StringUtils.rightPad(columnMetadata.getColumnNameToShow(),
               colWidths.get(columnMetadata.getColumnName()) + 12)).append("| ");
     }
 
@@ -131,7 +142,7 @@ public class ConsoleUtils {
     sb.append(bar);
     sb.append(System.lineSeparator());
 
-    for (Row row : resultSet) {
+    for (Row row: resultSet) {
       sb.append("| ");
       for (Map.Entry<String, Cell> entry : row.getCells().entrySet()) {
         String str = String.valueOf(entry.getValue().getValue());
@@ -271,6 +282,38 @@ public class ConsoleUtils {
         bufferWriter.newLine();
       }
       bufferWriter.flush();
+    }
+  }
+
+  public static Manifest parseFromXmlToManifest(int manifestType, String path) {
+    if(manifestType == Manifest.TYPE_DATASTORE){
+      return parseFromXmlToDataStoreManifest(path);
+    } else {
+      return parseFromXmlToConnectorManifest(path);
+    }
+  }
+
+  private static DataStoreType parseFromXmlToDataStoreManifest(String path) {
+    try {
+      JAXBContext jaxbContext = JAXBContext.newInstance(DataStoreFactory.class);
+      Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+      JAXBElement<DataStoreType> unmarshalledDataStore = (JAXBElement<DataStoreType>) unmarshaller.unmarshal(new FileInputStream(path));
+      return unmarshalledDataStore.getValue();
+    } catch (JAXBException | FileNotFoundException e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
+
+  private static Manifest parseFromXmlToConnectorManifest(String path) {
+    try {
+      JAXBContext jaxbContext = JAXBContext.newInstance(ConnectorFactory.class);
+      Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+      JAXBElement<ConnectorType> unmarshalledDataStore = (JAXBElement<ConnectorType>) unmarshaller.unmarshal(new FileInputStream(path));
+      return unmarshalledDataStore.getValue();
+    } catch (JAXBException | FileNotFoundException e) {
+      e.printStackTrace();
+      return null;
     }
   }
 

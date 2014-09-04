@@ -27,9 +27,9 @@ public class InsertIntoStatementTest extends ParsingTest {
   @Test
   public void insertInto() {
     String inputText =
-        "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (term1, term2) "
+        "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES ('term1', 'term2') "
         + "IF NOT EXISTS;";
-    String expectText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2) VALUES (term1, term2) "
+    String expectText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2) VALUES ('term1', 'term2') "
                         + "IF NOT EXISTS;";
     testRegularStatement(inputText, expectText, "insertInto");
   }
@@ -37,19 +37,19 @@ public class InsertIntoStatementTest extends ParsingTest {
   @Test
   public void insertIntoUsing() {
     String inputText =
-        "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (term1, term2) "
-        + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
-    String expectText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2) VALUES (term1, term2) "
-                        + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
+        "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES ('term1', 'term2') "
+        + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = '{innerTerm: result}';";
+    String expectText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2) VALUES ('term1', 'term2') "
+                        + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = '{innerTerm: result}';";
     testRegularStatement(inputText, expectText, "insertInto");
   }
 
   @Test
   public void insertInto2() {
     String inputText =
-        "INSERT INTO tablename (column1, column2) VALUES (value1, value2)"
+        "INSERT INTO tablename (column1, column2) VALUES ('value1', 'value2')"
         + " IF NOT EXISTS USING TTL = 10;";
-    String expectText = "INSERT INTO <unknown_name>.tablename (<unknown_name>.tablename.column1, <unknown_name>.tablename.column2) VALUES (value1, value2)"
+    String expectText = "INSERT INTO <unknown_name>.tablename (<unknown_name>.tablename.column1, <unknown_name>.tablename.column2) VALUES ('value1', 'value2')"
                         + " IF NOT EXISTS USING TTL = 10;";
     testRegularStatement(inputText, expectText, "insertInto2");
   }
@@ -57,8 +57,8 @@ public class InsertIntoStatementTest extends ParsingTest {
   @Test
   public void insertIntoAllValueTypes() {
     String inputText =
-        "INSERT INTO mykeyspace.tablename (c1, c2, c3, c4, c5) VALUES (text, 'quoted_text', 123, 1.23, true);";
-    String expectText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.c1, mykeyspace.tablename.c2, mykeyspace.tablename.c3, mykeyspace.tablename.c4, mykeyspace.tablename.c5) VALUES (text, 'quoted_text', 123, 1.23, true);";
+        "INSERT INTO mykeyspace.tablename (c1, c2, c3, c4, c5) VALUES ('text', 'quoted_text', 123, 1.23, true);";
+    String expectText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.c1, mykeyspace.tablename.c2, mykeyspace.tablename.c3, mykeyspace.tablename.c4, mykeyspace.tablename.c5) VALUES ('text', 'quoted_text', 123, 1.23, true);";
     testRegularStatementSession("demo", inputText, expectText, "insertIntoAllValueTypes");
   }
 
@@ -82,9 +82,9 @@ public class InsertIntoStatementTest extends ParsingTest {
   public void insertIntoSelect() {
     String inputText =
         "INSERT INTO tablename (ident1, ident2) SELECT c.a, c.b from c "
-        + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
-    String expectText = "INSERT INTO demo.tablename (demo.tablename.ident1, demo.tablename.ident2) SELECT c.a, c.b from c "
-                        + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
+        + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = '{innerTerm: result}';";
+    String expectText = "INSERT INTO demo.tablename (demo.tablename.ident1, demo.tablename.ident2) SELECT demo.c.a, demo.c.b from demo.c "
+                        + "IF NOT EXISTS USING COMPACT STORAGE AND prop1 = '{innerTerm: result}';";
     testRegularStatementSession("demo", inputText, expectText, "insertIntoSelect");
   }
 
