@@ -16,18 +16,9 @@
  * under the License.
  */
 
-package com.stratio.meta2.common.data;
+package com.stratio.meta2.common.metadata;
 
-public enum NameType {
-  Catalog,
-  Cluster,
-  Column,
-  Connector,
-  DataStore,
-  Table,
-  Index;
-
-  public String toString(){
-    return name();
-  }
+public enum IndexType {
+  FULL_TEXT,
+  DEFAULT
 }
