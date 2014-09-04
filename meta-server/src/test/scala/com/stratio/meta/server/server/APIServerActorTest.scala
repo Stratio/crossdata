@@ -97,7 +97,7 @@ class APIServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFa
   }
 
   test ("API List tables"){
-    var params : java.util.List[String] = new java.util.ArrayList[String]
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add("demo_server")
     val cmd: Command = new Command(APICommand.LIST_TABLES, params)
     var result : MetadataResult = null
@@ -119,7 +119,7 @@ class APIServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFa
   }
 
   test ("API List tables from unknown catalog"){
-    var params : java.util.List[String] = new java.util.ArrayList[String]
+    val params : java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add("unknown")
     val cmd: Command = new Command(APICommand.LIST_TABLES, params)
     var result : MetadataResult = null

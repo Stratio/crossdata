@@ -66,7 +66,7 @@ import javax.xml.bind.annotation.XmlType;
 public class DataStoreType extends Manifest {
 
   public DataStoreType() {
-    this.manifestType = Manifest.TYPE_DATASTORE;
+    super(Manifest.TYPE_DATASTORE);
   }
 
   @XmlElement(name = "Name", required = true)
@@ -174,8 +174,4 @@ public class DataStoreType extends Manifest {
     this.optionalProperties = value;
   }
 
-  @Override
-  public String toString() {
-    return null;
-  }
 }
