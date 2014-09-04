@@ -20,6 +20,7 @@ package com.stratio.meta2.common.metadata;
 
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.TableName;
 
 import java.util.ArrayList;
@@ -33,17 +34,22 @@ public class TableMetadata implements IMetadata {
 
   private final Map<ColumnName, ColumnMetadata> columns;
 
+  private final Map<IndexName, IndexMetadata> indexes;
+
   private final ClusterName clusterRef;
 
   private final List<ColumnName> partitionKey;
   private final List<ColumnName> clusterKey;
 
+
   public TableMetadata(TableName name, Map<String, Object> options,
-      Map<ColumnName, ColumnMetadata> columns, ClusterName clusterRef,
+      Map<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
+      ClusterName clusterRef,
       List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
     this.name = name;
     this.options = options;
     this.columns = columns;
+    this.indexes = indexes;
     this.clusterRef = clusterRef;
 
     this.partitionKey = partitionKey;
@@ -82,4 +88,32 @@ public class TableMetadata implements IMetadata {
     result.addAll(clusterKey);
     return result;
   }
+
+  public Map<IndexName, IndexMetadata> getIndexes() {
+    return indexes;
+  }
+
+  /**
+   * Determine whether the selected column is part of the primary key or not.
+   * @param columnName The column name.
+   * @return Whether is part of the primary key.
+   */
+  public boolean isPK(ColumnName columnName){
+    return partitionKey.contains(columnName) || clusterKey.contains(columnName);
+  }
+
+  /**
+   * Determine whether the selected column has an associated index.
+   * @param columnName The column name.
+   * @return Whether is indexed or not.
+   */
+  public boolean isIndexed(ColumnName columnName){
+    for(IndexMetadata indexMetadata:indexes.values()){
+      if(indexMetadata.getColumns().contains(columnName)){
+        return true;
+      }
+    }
+    return false;
+  }
+
 }

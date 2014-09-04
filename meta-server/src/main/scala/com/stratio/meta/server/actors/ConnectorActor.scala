@@ -1,11 +1,7 @@
 package com.stratio.meta.server.actors
 
-import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSelection, Props, ReceiveTimeout, RootActorPath }
+import akka.actor.{Actor, ActorLogging, ActorRef, Props, ReceiveTimeout, RootActorPath}
 import akka.cluster.ClusterEvent._
-import akka.actor.RootActorPath
-import akka.cluster.Cluster
-import akka.actor.ReceiveTimeout
-import com.stratio.meta2.core.query.InProgressQuery
 import com.stratio.meta.communication._
 
 object ConnectorActor {
@@ -22,7 +18,7 @@ class ConnectorActor extends Actor with ActorLogging {
 
     case MemberUp(member) =>
       println("Member is Up: " + member.toString + member.getRoles.toString())
-      val memberActorRef = context.actorSelection(RootActorPath(member.address) / "user" / "clusterListener")
+      val memberActorRef = context.actorSelection(RootActorPath(member.address) / "user" / "meta-connector")
       //      connectorsMap += (member.toString -> memberActorRef)
       memberActorRef ! new Request("name")
 

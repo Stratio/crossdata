@@ -88,7 +88,7 @@ public class ColumnName extends Name {
   }
 
   @Override public NameType getType() {
-    return null;
+    return NameType.Column;
   }
 
   @Override

@@ -18,6 +18,7 @@
 
 package com.stratio.meta.common.logicalplan;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -36,7 +37,7 @@ public class LogicalWorkflow {
   /**
    * Last logical step.
    */
-  private LogicalStep lastStep;
+  private LogicalStep lastStep = null;
 
   /**
    * Workflow constructor.
@@ -67,6 +68,13 @@ public class LogicalWorkflow {
    * @return A {@link com.stratio.meta.common.logicalplan.LogicalStep}.
    */
   public LogicalStep getLastStep() {
+    if(lastStep == null && initialSteps.size() > 0){
+      //Find last step.
+      LogicalStep last = initialSteps.get(0);
+      while(last.getNextStep() != null){
+        last = last.getNextStep();
+      }
+    }
     return lastStep;
   }
 }
