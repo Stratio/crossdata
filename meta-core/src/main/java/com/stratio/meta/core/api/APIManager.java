@@ -18,7 +18,6 @@
 
 package com.stratio.meta.core.api;
 
-import com.datastax.driver.core.Session;
 import com.stratio.meta.common.ask.APICommand;
 import com.stratio.meta.common.ask.Command;
 import com.stratio.meta.common.result.CommandResult;
@@ -57,10 +56,10 @@ public class APIManager {
 
   /**
    * Class constructor.
-   * @param session Cassandra session used to retrieve the metadata.
+   * @param stratioStreamingAPI Cassandra session used to retrieve the metadata.
    */
-  public APIManager(Session session, IStratioStreamingAPI stratioStreamingAPI){
-    metadata = new MetadataManager(session, stratioStreamingAPI);
+  public APIManager(IStratioStreamingAPI stratioStreamingAPI){
+    metadata = new MetadataManager(stratioStreamingAPI);
     metadata.loadMetadata();
     helper = new CassandraMetadataHelper();
   }

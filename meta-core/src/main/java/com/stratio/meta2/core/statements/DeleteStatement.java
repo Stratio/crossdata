@@ -104,7 +104,7 @@ public class DeleteStatement extends MetaStatement {
    * Validate that the columns specified in the select are valid by checking that the selection
    * columns exists in the table.
    * 
-   * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
+   * @param tableMetadata The associated {@link com.stratio.meta2.common.metadata.TableMetadata}.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   /*

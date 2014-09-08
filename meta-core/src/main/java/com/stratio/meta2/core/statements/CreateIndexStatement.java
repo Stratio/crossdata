@@ -14,7 +14,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.DataType;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
@@ -101,7 +100,7 @@ public class CreateIndexStatement extends MetaStatement {
    */
   private transient TableMetadata metadata = null;
 
-  static {
+  /*static {
     luceneTypes.put(DataType.text().toString(), "{type:\"string\"}");
     luceneTypes.put(DataType.varchar().toString(), "{type:\"string\"}");
     luceneTypes.put(DataType.inet().toString(), "{type:\"string\"}");
@@ -113,7 +112,7 @@ public class CreateIndexStatement extends MetaStatement {
     luceneTypes.put(DataType.cfloat().toString(), "{type:\"float\"}");
     luceneTypes.put(DataType.cint().toString(), "{type:\"integer\"}");
     luceneTypes.put(DataType.uuid().toString(), "{type:\"uuid\"}");
-  }
+  }*/
 
   /**
    * Class constructor.
@@ -372,7 +371,7 @@ public class CreateIndexStatement extends MetaStatement {
    * Validate that the index name is valid an has not been previously used.
    *
    * @param metadata The associated {@link com.stratio.meta.core.metadata.MetadataManager}.
-   * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
+   * @param tableMetadata The associated {@link com.stratio.meta2.common.metadata.TableMetadata}.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateIndexName(MetadataManager metadata, TableMetadata tableMetadata) {
@@ -401,7 +400,7 @@ public class CreateIndexStatement extends MetaStatement {
    * Validate the index options.
    *
    * @param effectiveCatalog The effective catalog used in the validation process.
-   * @param metadata The associated {@link com.datastax.driver.core.TableMetadata}.
+   * @param metadata The associated {@link com.stratio.meta2.common.metadata.TableMetadata}.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   private Result validateOptions(String effectiveCatalog, TableMetadata metadata) {

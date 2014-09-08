@@ -18,7 +18,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -181,14 +180,18 @@ public abstract class MetaStatement implements IStatement {
     return null;
   }
 
-  /**
-   * Get the {@link Statement} equivalent of the current query.
+/*
+  */
+/**
+   * Get the Statement equivalent of the current query.
    * 
    * @return The Statement or null if the driver translation cannot be done.
-   */
+   *//*
+
   public Statement getDriverStatement() {
     return null;
   }
+*/
 
   /**
    * Set the catalog to be described.

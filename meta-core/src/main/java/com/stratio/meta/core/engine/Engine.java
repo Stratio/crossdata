@@ -18,9 +18,6 @@
 
 package com.stratio.meta.core.engine;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.InMemoryFormat;
 import com.hazelcast.config.MapConfig;
@@ -48,7 +45,6 @@ import java.util.Map;
  * Execution engine that creates all entities required for processing an executing a query:
  * {@link com.stratio.meta2.core.parser.Parser}, {@link com.stratio.meta.core.validator.Validator},
  * {@link com.stratio.meta.core.planner.Planner}, and {@link com.stratio.meta.core.executor.Executor}.
- * Additionally, it also maintains the {@link com.datastax.driver.core.Session} with the Cassandra backend.
  */
 public class Engine {
 
@@ -80,7 +76,7 @@ public class Engine {
   /**
    * Datastax Java Driver session.
    */
-  private final Session session;
+  //private final Session session;
 
   /**
    * Hazelcast instance.
@@ -108,7 +104,7 @@ public class Engine {
 
     this.deepContext = initializeDeep(config);
 
-    this.session=initializeDB(config);
+    //this.session=initializeDB(config);
 
     hazelcast = initializeHazelcast(config);
     hazelcastMap = hazelcast.getMap(config.getHazelcastMapName());
@@ -116,10 +112,10 @@ public class Engine {
     IStratioStreamingAPI stratioStreamingAPI = initializeStreaming(config);
 
     parser = new Parser();
-    validator = new Validator(session, stratioStreamingAPI, config);
-    manager = new APIManager(session, stratioStreamingAPI);
-    planner = new Planner(session, stratioStreamingAPI);
-    executor = new Executor(session, stratioStreamingAPI, deepContext, config);
+    validator = new Validator(config);
+    manager = new APIManager(stratioStreamingAPI);
+    planner = new Planner(stratioStreamingAPI);
+    executor = new Executor(stratioStreamingAPI, deepContext, config);
   }
 
   /**
@@ -162,7 +158,7 @@ public class Engine {
    * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
    * @return A new Session.
    */
-  private Session initializeDB(EngineConfig config){
+  /*private Session initializeDB(EngineConfig config){
     Cluster cluster = Cluster.builder()
         .addContactPoints(config.getCassandraHosts())
         .withPort(config.getCassandraPort()).build();
@@ -178,7 +174,7 @@ public class Engine {
     }
 
     return result;
-  }
+  }*/
 
   /**
    * Initialize the DeepSparkContext adding the required jars if the deployment is not local.
@@ -285,7 +281,7 @@ public class Engine {
    */
   public void shutdown(){
     deepContext.stop();
-    session.close();
+    //session.close();
     hazelcast.shutdown();
   }
 

@@ -40,7 +40,7 @@ public class AlterCatalogStatement extends MetaStatement {
 
   /**
    * The map of properties of the Catalog. The different options accepted by a Catalog are
-   * determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
+   * determined by the selected replication.
    */
   private Map<Selector, Selector> properties;
 

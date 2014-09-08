@@ -14,7 +14,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.Session;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -104,11 +103,11 @@ public class DescribeStatement extends TableStatement {
   /**
    * Execute the describe command.
    * 
-   * @param session The {@link com.datastax.driver.core.Session} used to retrieve the medatada.
+   * @param stratioStreamingAPI
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
-  public Result execute(Session session, IStratioStreamingAPI stratioStreamingAPI) {
-    MetadataManager mm = new MetadataManager(session, stratioStreamingAPI);
+  public Result execute(IStratioStreamingAPI stratioStreamingAPI) {
+    MetadataManager mm = new MetadataManager(stratioStreamingAPI);
     mm.loadMetadata();
     Result result = null;
     if (type == DescribeType.CATALOG) {

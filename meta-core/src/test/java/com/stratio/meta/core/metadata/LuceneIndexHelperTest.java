@@ -28,40 +28,41 @@ import static org.testng.Assert.assertNotNull;
 
 public class LuceneIndexHelperTest extends BasicCoreCassandraTest {
 
-    @BeforeClass
-    public static void setUpBeforeClass(){
-        BasicCoreCassandraTest.setUpBeforeClass();
-        BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-    }
+  @BeforeClass
+  public static void setUpBeforeClass(){
+    BasicCoreCassandraTest.setUpBeforeClass();
+    BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
+  }
 
-    @Test
-    public void processLuceneMapping(){
-        String options = "{\"schema\":\"{default_analyzer:\\\"org.apache.lucene.analysis.standard.StandardAnalyzer\\\",fields:{name:{type:\\\"string\\\"}, gender:{type:\\\"string\\\"}, email:{type:\\\"string\\\"}, age:{type:\\\"integer\\\"}, bool:{type:\\\"boolean\\\"}, phrase:{type:\\\"text\\\", analyzer:\\\"org.apache.lucene.analysis.en.EnglishAnalyzer\\\"}}}\",\"refresh_seconds\":\"1\",\"class_name\":\"org.apache.cassandra.db.index.stratio.RowIndex\"}";
+  @Test
+  public void processLuceneMapping(){
+    String options = "{\"schema\":\"{default_analyzer:\\\"org.apache.lucene.analysis.standard.StandardAnalyzer\\\",fields:{name:{type:\\\"string\\\"}, gender:{type:\\\"string\\\"}, email:{type:\\\"string\\\"}, age:{type:\\\"integer\\\"}, bool:{type:\\\"boolean\\\"}, phrase:{type:\\\"text\\\", analyzer:\\\"org.apache.lucene.analysis.en.EnglishAnalyzer\\\"}}}\",\"refresh_seconds\":\"1\",\"class_name\":\"org.apache.cassandra.db.index.stratio.RowIndex\"}";
 
-        int numColumns = 6;
-        LuceneIndexHelper lih = new LuceneIndexHelper(_session);
-        CustomIndexMetadata cim = lih.processLuceneMapping(null, "stratio_lucene_index", options);
+    int numColumns = 6;
+    LuceneIndexHelper lih = new LuceneIndexHelper(null);
+    CustomIndexMetadata cim = lih.processLuceneMapping(null, "stratio_lucene_index", options);
 
-        assertEquals(numColumns, cim.getIndexedColumns().size(), "Invalid number of indexes");
+    assertEquals(numColumns, cim.getIndexedColumns().size(), "Invalid number of indexes");
 
-    }
+  }
 
-    @Test
-    public void getLuceneIndex(){
-        String keyspace = "demo";
-        String table = "users";
-        String column = "stratio_lucene_index_1";
-        int numIndexedColumns = 6;
+  @Test
+  public void getLuceneIndex(){
+    String keyspace = "demo";
+    String table = "users";
+    String column = "stratio_lucene_index_1";
+    int numIndexedColumns = 6;
 
-        ColumnMetadata cm = _session.getCluster().getMetadata()
+        /*ColumnMetadata cm = _session.getCluster().getMetadata()
                 .getKeyspace(keyspace)
                 .getTable(table)
-                .getColumn(column);
-        assertNotNull(cm, "Cannot retrieve test column");
-        LuceneIndexHelper lih = new LuceneIndexHelper(_session);
-        CustomIndexMetadata index = lih.getLuceneIndex(cm, column);
+                .getColumn(column);*/
+    ColumnMetadata cm = null;
+    assertNotNull(cm, "Cannot retrieve test column");
+    LuceneIndexHelper lih = new LuceneIndexHelper(null);
+    CustomIndexMetadata index = lih.getLuceneIndex(cm, column);
 
-        assertEquals(numIndexedColumns, index.getIndexedColumns().size(), "Invalid number of indexes");
+    assertEquals(numIndexedColumns, index.getIndexedColumns().size(), "Invalid number of indexes");
 
-    }
+  }
 }

@@ -18,15 +18,15 @@
 
 package com.stratio.meta.core.executor;
 
-import com.datastax.driver.core.Session;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta.deep.Bridge;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.statements.SelectStatement;
-import com.stratio.meta.deep.Bridge;
+
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -50,7 +50,6 @@ public class DeepExecutor {
    * @param stmt {@link com.stratio.meta2.core.statements.MetaStatement}
    * @param resultsFromChildren List of {@link com.stratio.meta.common.result.Result} of children.
    * @param isRoot Indicates if these node is root.
-   * @param session Cassandra datastax java driver {@link com.datastax.driver.core.Session}.
    * @param deepSparkContext Spark context from Deep
    * @param engineConfig The {@link com.stratio.meta.core.engine.EngineConfig}.
    * @return a {@link com.stratio.meta.common.result.Result} of execution in Spark.
@@ -58,13 +57,12 @@ public class DeepExecutor {
   public static Result execute(MetaStatement stmt,
                                List<Result> resultsFromChildren,
                                boolean isRoot,
-                               Session session,
                                DeepSparkContext deepSparkContext,
                                EngineConfig engineConfig) {
 
     if (stmt instanceof SelectStatement) {
       SelectStatement ss = (SelectStatement) stmt;
-      Bridge bridge = new Bridge(session, deepSparkContext, engineConfig);
+      Bridge bridge = new Bridge(deepSparkContext, engineConfig);
       ResultSet resultSet;
       try {
         resultSet = bridge.execute(ss, resultsFromChildren, isRoot);

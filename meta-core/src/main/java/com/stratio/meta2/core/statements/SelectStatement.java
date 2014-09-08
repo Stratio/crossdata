@@ -14,8 +14,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Select;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.window.Window;
 import com.stratio.meta.common.utils.StringUtils;
@@ -441,16 +439,16 @@ public class SelectStatement extends MetaStatement {
   /**
    * Get the driver builder object with the selection clause.
    * 
-   * @return A {@link com.datastax.driver.core.querybuilder.Select.Builder}.
+   * @return A Builder.
    */
-  private Select.Builder getDriverBuilder() {
+  /*private Select.Builder getDriverBuilder() {
     return null;
-  }
+  }*/
 
-  @Override
+  /*@Override
   public Statement getDriverStatement() {
     return null;
-  }
+  }*/
 
   @Override
   public ValidationRequirements getValidationRequirements() {

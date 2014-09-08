@@ -18,9 +18,6 @@
 
 package com.stratio.meta2.core.engine;
 
-import com.datastax.driver.core.Cluster;
-//import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.InMemoryFormat;
 import com.hazelcast.config.MapConfig;
@@ -48,7 +45,6 @@ import java.util.Map;
  * Execution engine that creates all entities required for processing an executing a query:
  * {@link com.stratio.meta2.core.parser.Parser}, {@link com.stratio.meta.core.validator.Validator},
  * {@link com.stratio.meta.core.planner.Planner}, and {@link com.stratio.meta.core.executor.Executor}.
- * Additionally, it also maintains the {@link com.datastax.driver.core.Session} with the Cassandra backend.
  */
 public class Engine {
 
@@ -77,9 +73,6 @@ public class Engine {
    */
   private final APIManager manager;
 
-  /**
-   * Datastax Java Driver session.
-   */
   //private final Session session;
 
   /**

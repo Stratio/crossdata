@@ -18,11 +18,6 @@
 
 package com.stratio.meta.core.cassandra;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.test.CCMHandler;
@@ -57,7 +52,7 @@ public class BasicCoreCassandraTest {
   /**
    * Session to launch queries on C*.
    */
-  protected static Session _session = null;
+  //protected static Session _session = null;
 
   /**
    * Class logger.
@@ -74,7 +69,7 @@ public class BasicCoreCassandraTest {
   @AfterClass
   public static void tearDownAfterClass() {
     dropKeyspaceIfExists("testKs");
-    closeCassandraConnection();
+    //closeCassandraConnection();
   }
 
   /**
@@ -86,9 +81,9 @@ public class BasicCoreCassandraTest {
    */
   protected static boolean connect(String host) {
     boolean result = false;
-    Cluster c = Cluster.builder().addContactPoint(host).build();
+    /*Cluster c = Cluster.builder().addContactPoint(host).build();
     _session = c.connect();
-    result = null == _session.getLoggedKeyspace();
+    result = null == _session.getLoggedKeyspace();*/
     return result;
   }
 
@@ -106,9 +101,9 @@ public class BasicCoreCassandraTest {
   /**
    * Close the Cassandra session.
    */
-  public static void closeCassandraConnection() {
+  /*public static void closeCassandraConnection() {
     _session.close();
-  }
+  }*/
 
   /**
    * Drop a keyspace if it exists in the database.
@@ -118,7 +113,7 @@ public class BasicCoreCassandraTest {
   public static void dropKeyspaceIfExists(String targetKeyspace) {
     String query = "USE " + targetKeyspace;
     boolean ksExists = true;
-    try {
+    /*try {
       _session.execute(query);
     } catch (InvalidQueryException iqe) {
       ksExists = false;
@@ -131,7 +126,7 @@ public class BasicCoreCassandraTest {
       } catch (Exception e) {
         logger.error("Cannot drop catalog: " + targetKeyspace, e);
       }
-    }
+    }*/
   }
 
   /**
@@ -142,7 +137,7 @@ public class BasicCoreCassandraTest {
    * @param path The path of the CQL script.
    */
   protected static void loadTestData(String keyspace, String path) {
-    KeyspaceMetadata metadata = _session.getCluster().getMetadata().getKeyspace(keyspace);
+    /*KeyspaceMetadata metadata = _session.getCluster().getMetadata().getKeyspace(keyspace);
     if (metadata == null) {
       logger.info("Creating catalog " + keyspace + " using " + path);
       List<String> scriptLines = loadScript(path);
@@ -153,7 +148,7 @@ public class BasicCoreCassandraTest {
           logger.debug("Executing: " + cql + " -> " + result.toString());
         }
       }
-    }
+    }*/
     logger.info("Using existing catalog " + keyspace);
   }
 

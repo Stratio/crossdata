@@ -95,7 +95,7 @@ public class CassandraExecutor {
     protected static Result execute(MetaStatement stmt, Session session) {
         Statement driverStmt = null;
         try {
-            driverStmt = stmt.getDriverStatement();
+            //driverStmt = stmt.getDriverStatement();
             ResultSet resultSet;
             if (driverStmt != null) {
                 resultSet = session.execute(driverStmt);

@@ -18,18 +18,15 @@
 
 package com.stratio.meta2.core.executor;
 
-import com.datastax.driver.core.Session;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.core.engine.Engine;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
-import org.apache.spark.SparkEnv;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,9 +38,6 @@ public class Executor {
    */
   private static final Logger LOG = Logger.getLogger(Executor.class.getName());
 
-  /**
-   * Cassandra datastax java driver session.
-   */
   //private final Session session;
 
   /**
@@ -65,7 +59,7 @@ public class Executor {
 
   /**
    * Executor constructor.
-   * @param session Cassandra datastax java driver session.
+   * @param stratioStreamingAPI
    * @param deepSparkContext Spark context.
    * @param engineConfig a {@link com.stratio.meta.core.engine.EngineConfig}
    */

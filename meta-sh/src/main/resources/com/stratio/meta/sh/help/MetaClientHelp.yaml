@@ -180,8 +180,7 @@ content:
           IF field5 = transaction_value;
       
       For more information about the use of IF check:
-      
-      http://www.datastax.com/dev/blog/lightweight-transactions-in-cassandra-2-0
+
       
   - entry: INSERT_INTO
     help: |

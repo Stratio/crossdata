@@ -18,11 +18,10 @@
 
 package com.stratio.meta.core.planner;
 
-import com.datastax.driver.core.Session;
+import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.meta.common.result.QueryStatus;
 
 public class Planner {
 
@@ -34,10 +33,10 @@ public class Planner {
     /**
      * Planner constructor.
      *
-     * @param session Cassandra datastax java driver session.
+     * @param stratioStreamingAPI
      */
-    public Planner(Session session, IStratioStreamingAPI stratioStreamingAPI){
-        metadata = new MetadataManager(session, stratioStreamingAPI);
+    public Planner(IStratioStreamingAPI stratioStreamingAPI){
+        metadata = new MetadataManager(stratioStreamingAPI);
         metadata.loadMetadata();
     }
 

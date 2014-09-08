@@ -18,14 +18,13 @@
 
 package com.stratio.meta.core.metadata;
 
-import com.datastax.driver.core.Metadata;
-import com.datastax.driver.core.Session;
 import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.metadata.structures.TableType;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta.streaming.StreamingUtils;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.ClusterMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.commons.exceptions.StratioEngineOperationException;
@@ -47,14 +46,9 @@ import java.util.Set;
 public class MetadataManager {
 
   /**
-   * Cluster metadata in Cassandra.
+   * Cluster metadata.
    */
-  private Metadata clusterMetadata = null;
-
-  /**
-   * Cassandra session used to query the custom index information.
-   */
-  private final Session session;
+  private ClusterMetadata clusterMetadata = null;
 
   /**
    * Lucene index helper used to parse custom index options.
@@ -74,11 +68,10 @@ public class MetadataManager {
   /**
    * Class constructor.
    * 
-   * @param cassandraSession The Cassandra session used to retrieve index metadata.
+   * @param stratioStreamingAPI
    */
-  public MetadataManager(Session cassandraSession, IStratioStreamingAPI stratioStreamingAPI) {
-    session = cassandraSession;
-    luceneHelper = new LuceneIndexHelper(session);
+  public MetadataManager(IStratioStreamingAPI stratioStreamingAPI) {
+    luceneHelper = new LuceneIndexHelper(null);
     this.stratioStreamingAPI = stratioStreamingAPI;
   }
 
@@ -88,7 +81,6 @@ public class MetadataManager {
    * @return Whether the metadata has been loaded or not.
    */
   public boolean loadMetadata() {
-    clusterMetadata = session.getCluster().getMetadata();
     return clusterMetadata != null;
   }
 

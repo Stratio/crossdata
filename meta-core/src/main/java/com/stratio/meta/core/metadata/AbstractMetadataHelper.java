@@ -61,21 +61,20 @@ public abstract class AbstractMetadataHelper {
     */
   }
 
-  public TableMetadata toTableMetadata(String parentCatalog,
-      com.datastax.driver.core.TableMetadata tableMetadata) {
+  public TableMetadata toTableMetadata(String parentCatalog, TableMetadata tableMetadata) {
     Set<ColumnMetadata> columns = new HashSet<>(tableMetadata.getColumns().size());
-    for (com.datastax.driver.core.ColumnMetadata column : tableMetadata.getColumns()) {
-      columns.add(toColumnMetadata(tableMetadata.getName(), column));
+    for (ColumnMetadata column: tableMetadata.getColumns()) {
+      columns.add(toColumnMetadata(tableMetadata.getTableName(), column));
     }
     TableMetadata result =
-        new TableMetadata(tableMetadata.getName(), parentCatalog, TableType.DATABASE, columns);
+        new TableMetadata(tableMetadata.getTableName(), parentCatalog, TableType.DATABASE, columns);
     return result;
   }
 
   public ColumnMetadata toColumnMetadata(String parentTable,
-      com.datastax.driver.core.ColumnMetadata columnMetadata) {
-    ColumnMetadata result = new ColumnMetadata(parentTable, columnMetadata.getName());
-    ColumnType type = toColumnType(columnMetadata.getType().getName().toString());
+      ColumnMetadata columnMetadata) {
+    ColumnMetadata result = new ColumnMetadata(parentTable, columnMetadata.getTableName());
+    ColumnType type = toColumnType(columnMetadata.getType().getDbType().toString());
     result.setType(type);
     return result;
   }

@@ -20,14 +20,9 @@ package com.stratio.meta.server.config
 
 import org.scalatest.{Suite, BeforeAndAfterAll}
 import com.stratio.meta.test.CCMHandler
-import com.datastax.driver.core._
 import org.testng.Assert._
 import org.apache.log4j.Logger
-import com.datastax.driver.core.exceptions.InvalidQueryException
 import java.net.URL
-import java.util
-import java.io.IOException
-import scala.collection.mutable.MutableList
 import com.stratio.meta.common.result.{Result, ErrorResult}
 
 trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
@@ -41,7 +36,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
   /**
    * Session to launch queries on C*.
    */
-  protected var _session: Session = null
+  //protected var _session: Session = null
 
 
   /**
@@ -57,9 +52,9 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
    */
   protected def connect(host: String): Boolean = {
     var result: Boolean = false
-    val c: Cluster = Cluster.builder.addContactPoint(host).build
+    /*val c: Cluster = Cluster.builder.addContactPoint(host).build
     _session = c.connect
-    result = null == _session.getLoggedKeyspace
+    result = null == _session.getLoggedKeyspace*/
     return result
   }
 
@@ -74,7 +69,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
   def dropKeyspaceIfExists(targetKeyspace: String) {
     val query: String = "USE " + targetKeyspace
     var ksExists: Boolean = true
-    try {
+    /*try {
       val result: ResultSet = _session.execute(query)
     }
     catch {
@@ -92,7 +87,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
           logger.error("Cannot drop keyspace: " + targetKeyspace, e)
         }
       }
-    }
+    }*/
   }
 
   /**
@@ -102,7 +97,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
    * @param path The path of the CQL script.
    */
   def loadTestData(keyspace: String, path: String) {
-    val metadata: KeyspaceMetadata = _session.getCluster.getMetadata.getKeyspace(keyspace)
+    /*val metadata: KeyspaceMetadata = _session.getCluster.getMetadata.getKeyspace(keyspace)
     if (metadata == null) {
       logger.info("Creating keyspace " + keyspace + " using " + path)
       val scriptLines: Iterator[String] = loadScript(path)
@@ -117,7 +112,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
         }
       }
       logger.info("Executed " + scriptLines.size + " lines")
-    }
+    }*/
     logger.info("Using existing keyspace " + keyspace)
   }
 
@@ -137,13 +132,13 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
 
   def checkColumnExists(keyspace: String, tablename: String, columnName: String): Boolean = {
     var exists: Boolean = false
-    val metadata: KeyspaceMetadata = _session.getCluster.getMetadata.getKeyspace(keyspace)
+    /*val metadata: KeyspaceMetadata = _session.getCluster.getMetadata.getKeyspace(keyspace)
     if(metadata != null){
       val tableMetadata: TableMetadata = metadata.getTable(tablename)
       if(tableMetadata != null){
         exists = tableMetadata.getColumn(columnName) != null
       }
-    }
+    }*/
     return exists
   }
 
@@ -179,7 +174,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
   }
 
   def afterCassandraFinish(): Unit = {
-    _session.close()
+    //_session.close()
   }
 
 }
