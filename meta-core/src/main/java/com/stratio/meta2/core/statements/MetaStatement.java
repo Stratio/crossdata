@@ -23,7 +23,6 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
@@ -168,13 +167,6 @@ public abstract class MetaStatement implements IStatement {
   }
 
   /**
-   * Translate the statement into the CQL equivalent when possible.String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
-   * 
-   * @return The CQL equivalent.
-   */
-  public abstract String translateToCQL();
-
-  /**
    * Set the catalog to be described.
    *
    * @param catalog The name.
@@ -193,11 +185,6 @@ public abstract class MetaStatement implements IStatement {
   }
 
   public List<TableName> getFromTables(){
-    return null;
-  }
-
-  @Deprecated
-  public Tree getPlan(MetadataManager metadataManager, String targetCatalog){
     return null;
   }
 

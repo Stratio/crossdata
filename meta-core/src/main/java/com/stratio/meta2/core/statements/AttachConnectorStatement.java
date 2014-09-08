@@ -1,8 +1,6 @@
 package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
@@ -28,16 +26,6 @@ public class AttachConnectorStatement extends MetaStatement {
   @Override
   public String toString() {
     return "ATTACH CONNECTOR " + connectorName + " TO "+ clusterName + " WITH OPTIONS " + StringUtils.getStringFromOptions(options);
-  }
-
-  @Override
-  public String translateToCQL() {
-    return null;
-  }
-
-  @Override
-  public Tree getPlan(MetadataManager metadataManager, String targetKeyspace) {
-    return null;
   }
 
   public ValidationRequirements getValidationRequirements() {

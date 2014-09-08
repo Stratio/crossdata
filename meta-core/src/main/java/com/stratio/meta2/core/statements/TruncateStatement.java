@@ -66,23 +66,6 @@ public class TruncateStatement extends MetaStatement {
     return sb.toString();
   }
 
-
-  @Override
-  public String translateToCQL() {
-    return this.toString();
-  }
-
-  /*@Override
-  public Statement getDriverStatement() {
-    Truncate truncateQuery;
-    if (catalogInc) {
-      truncateQuery = truncate(catalog, tablename.getName());
-    } else {
-      truncateQuery = truncate(tablename.getName());
-    }
-    return truncateQuery;
-  }*/
-
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();

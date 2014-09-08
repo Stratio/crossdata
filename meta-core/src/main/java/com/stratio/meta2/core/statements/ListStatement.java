@@ -35,29 +35,24 @@ public class ListStatement extends MetaStatement {
 
   private static final Logger LOG = Logger.getLogger(ListStatement.class);
   /**
-     * The {@link com.stratio.meta.core.structures.ListType} to be executed.
-     */
-    private ListType type = null;
+   * The {@link com.stratio.meta.core.structures.ListType} to be executed.
+   */
+  private ListType type = null;
 
-    /**
-     * Class constructor.
-     * @param type The {@link com.stratio.meta.core.structures.ListType} to be executed.
-     */
-    public ListStatement(String type){
-        this.command = true;
-        this.type = ListType.valueOf(type.toUpperCase());
-    }
+  /**
+   * Class constructor.
+   * @param type The {@link com.stratio.meta.core.structures.ListType} to be executed.
+   */
+  public ListStatement(String type){
+    this.command = true;
+    this.type = ListType.valueOf(type.toUpperCase());
+  }
 
-    @Override
-    public String toString() {
-            return "LIST " + type;
-    }
+  @Override
+  public String toString() {
+    return "LIST " + type;
+  }
 
-    @Override
-    public String translateToCQL() {
-        return this.toString();
-    }
-    
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
 

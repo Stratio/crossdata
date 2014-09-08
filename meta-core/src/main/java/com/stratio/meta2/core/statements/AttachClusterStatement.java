@@ -79,11 +79,6 @@ public class AttachClusterStatement extends MetaStatement{
   }
 
   @Override
-  public String translateToCQL() {
-    return null;
-  }
-
-  @Override
   public ValidationRequirements getValidationRequirements() {
     return new ValidationRequirements().add(Validation.MUST_EXIST_DATASTORE)
         .add(Validation.VALID_CLUSTER_OPTIONS);

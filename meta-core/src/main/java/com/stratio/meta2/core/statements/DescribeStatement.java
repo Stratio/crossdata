@@ -94,11 +94,6 @@ public class DescribeStatement extends TableStatement {
     return result;
   }
 
-  @Override
-  public String translateToCQL() {
-    return this.toString().replace("CATALOG", "KEYSPACE");
-  }
-
   /**
    * Execute the describe command.
    *

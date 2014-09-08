@@ -75,11 +75,6 @@ public class StopProcessStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
-    return this.toString();
-  }
-
-  @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
     // TODO: Check user query identifier.
     // Result result= Result.createValidationErrorResult("UDF and TRIGGER not supported yet");

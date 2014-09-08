@@ -378,46 +378,6 @@ public class CreateTableStatement extends MetaStatement {
     return result;
   }
 
-  @Override
-  public String translateToCQL() {
-    String cqlString = this.toString();
-    if (!cqlString.contains(" WITH ")) {
-      return cqlString;
-    }
-    StringBuilder sb = new StringBuilder();
-    int i = 0;
-    while (i < cqlString.length()) {
-      char c = cqlString.charAt(i);
-      if (c == '{') {
-        sb.append("{");
-        int newI = cqlString.indexOf('}', i);
-        String insideBracket = cqlString.substring(i + 1, newI);
-        insideBracket = insideBracket.replace(":", " ").replace(",", " ");
-
-        boolean wasChanged = true;
-        while (wasChanged) {
-          int before = insideBracket.length();
-          insideBracket = insideBracket.replace("  ", " ");
-          int after = insideBracket.length();
-          if (before == after) {
-            wasChanged = false;
-          }
-        }
-
-        insideBracket = insideBracket.trim();
-        String[] splits = insideBracket.split(" ");
-        // Check between brackets
-        sb.append(addQuotesAndClassifyParams(splits));
-        sb.append("}");
-        i = newI;
-      } else {
-        sb.append(c);
-      }
-      i++;
-    }
-    return sb.toString();
-  }
-
   /**
    * Read splits, add single quotes (if neccesary) and group params in pair to CQL format.
    *

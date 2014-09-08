@@ -183,12 +183,6 @@ public class DeleteStatement extends MetaStatement {
     return result;
   }
 
-
-  @Override
-  public String translateToCQL() {
-    return this.toString();
-  }
-
   @Override
   public ValidationRequirements getValidationRequirements() {
     return new ValidationRequirements();

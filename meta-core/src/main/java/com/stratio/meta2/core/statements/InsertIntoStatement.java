@@ -19,7 +19,6 @@ import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
-import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
@@ -282,58 +281,6 @@ public class InsertIntoStatement extends MetaStatement {
     }
     return result;*/
   }
-
-  @Override
-  public String translateToCQL() {
-    StringBuilder sb = new StringBuilder("INSERT INTO ");
-    if (catalogInc) {
-      sb.append(catalog).append(".");
-    }
-    sb.append(tableName).append(" (");
-    sb.append(StringUtils.stringList(ids, ", "));
-    sb.append(") ");
-    if (typeValues == TYPE_SELECT_CLAUSE) {
-      sb.append(selectStatement.toString());
-    }
-    if (typeValues == TYPE_VALUES_CLAUSE) {
-      sb.append("VALUES (");
-      sb.append(ParserUtils.addSingleQuotesToString(StringUtils.stringList(cellValues, ", "), ","));
-      sb.append(")");
-    }
-    if (ifNotExists) {
-      sb.append(" IF NOT EXISTS");
-    }
-    if (optsInc) {
-      sb.append(" USING ");
-      sb.append(StringUtils.stringList(options, " AND "));
-    }
-    return sb.append(";").toString();
-  }
-
-  /*@Override
-  public Statement getDriverStatement() {
-    if (this.typeValues == TYPE_SELECT_CLAUSE) {
-      return null;
-    }
-
-    Insert insertStmt =
-        this.catalogInc ? QueryBuilder.insertInto(this.catalog, this.tableName.getName())
-                        : QueryBuilder.insertInto(this.tableName.getName());
-
-    try {
-      iterateValuesAndInsertThem(insertStmt);
-    } catch (Exception ex) {
-      return null;
-    }
-
-    if (this.ifNotExists) {
-      insertStmt = insertStmt.ifNotExists();
-    }
-
-    Insert.Options optionsStmt = checkOptions(insertStmt);
-
-    return optionsStmt == null ? insertStmt : optionsStmt;
-  }*/
 
   /**
    * Iterate over InsertIntoStatement#cellValues and add

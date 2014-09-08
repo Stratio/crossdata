@@ -22,12 +22,10 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
-
 
 /**
  * Class that models a {@code CREATE CATALOG} statement from the META language. Catalog
@@ -91,16 +89,6 @@ public class CreateCatalogStatement extends MetaStatement {
     //}
 
     return result;
-  }
-
-  @Override
-  public String translateToCQL() {
-    String metaStr = this.toString();
-    if(metaStr.contains("{")){
-      return ParserUtils.translateLiteralsToCQL(metaStr);
-    } else {
-      return metaStr;
-    }
   }
 
   public Tree getPlan(MetadataManager metadataManager, String targetCatalog) {

@@ -58,11 +58,6 @@ public class AlterClusterStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
-    return null;
-  }
-
-  @Override
   public ValidationRequirements getValidationRequirements() {
     return new ValidationRequirements();
   }

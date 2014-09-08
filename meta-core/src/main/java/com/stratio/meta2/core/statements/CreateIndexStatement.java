@@ -21,9 +21,6 @@ import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.IndexType;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.MetaStep;
-import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
@@ -474,57 +471,6 @@ public class CreateIndexStatement extends MetaStatement {
 
     sb.append("}}");
     return sb.toString().replace(",}}", "}}");
-  }
-
-  @Override
-  public String translateToCQL() {
-
-    if (IndexType.LUCENE.equals(type)) {
-      targetColumns.clear();
-      targetColumns.add(new ColumnName(tableName, getIndexName()));
-    }
-
-    String cqlString = this.toString().replace(" DEFAULT ", " ");
-    if (cqlString.contains(" LUCENE ")) {
-      cqlString = this.toString().replace("CREATE LUCENE ", "CREATE CUSTOM ");
-    }
-
-    if (name == null) {
-      cqlString = cqlString.replace("INDEX ON", "INDEX " + getIndexName() + " ON");
-    }
-
-    if (cqlString.contains("USING")) {
-      cqlString = cqlString.replace("USING ", "USING '");
-      if (cqlString.contains("WITH ")) {
-        cqlString = cqlString.replace(" WITH OPTIONS", "' WITH OPTIONS");
-      }
-    }
-    return cqlString;
-  }
-
-  public Tree getPlan(MetadataManager metadataManager, String targetCatalog) {
-    Tree result = new Tree();
-
-    if (createIndex) {
-      // Add CREATE INDEX as the root.
-      result.setNode(new MetaStep(MetaPath.CASSANDRA, translateToCQL()));
-      // Add alter table as leaf if LUCENE index is selected.
-      if (IndexType.LUCENE.equals(type)) {
-        StringBuilder alterStatement = new StringBuilder("ALTER TABLE ");
-        if (catalogInc) {
-          alterStatement.append(catalog);
-          alterStatement.append(".");
-        }
-        alterStatement.append(tableName);
-        alterStatement.append(" ADD ");
-        alterStatement.append(getIndexName());
-        alterStatement.append(" TEXT;");
-
-        result.addChild(new Tree(new MetaStep(MetaPath.CASSANDRA, alterStatement.toString())));
-      }
-    }
-
-    return result;
   }
 
   public void setCreateIndex(Boolean createIndex) {

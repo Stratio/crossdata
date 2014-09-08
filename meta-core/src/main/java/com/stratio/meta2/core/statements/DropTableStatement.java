@@ -76,11 +76,6 @@ public class DropTableStatement extends MetaStatement {
     return sb.toString();
   }
 
-  @Override
-  public String translateToCQL() {
-    return this.toString();
-  }
-
   public ValidationRequirements getValidationRequirements(){
     return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE);
   }

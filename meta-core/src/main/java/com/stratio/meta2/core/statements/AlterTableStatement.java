@@ -108,11 +108,6 @@ public class AlterTableStatement extends TableStatement {
     return sb.toString();
   }
 
-  @Override
-  public String translateToCQL() {
-    return this.toString();
-  }
-
   /**
    * Validate the semantics of the current statement. This method checks the
    * existing metadata to determine that all referenced entities exists in the

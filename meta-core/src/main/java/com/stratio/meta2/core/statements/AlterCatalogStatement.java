@@ -66,11 +66,6 @@ public class AlterCatalogStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
-    return this.toString();
-  }
-
-  @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
 
     Result result = QueryResult.createSuccessQueryResult();

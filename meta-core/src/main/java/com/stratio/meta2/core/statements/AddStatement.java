@@ -42,11 +42,6 @@ public class AddStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
-    return this.toString();
-  }
-
-  @Override
   public ValidationRequirements getValidationRequirements() {
     return new ValidationRequirements();
   }

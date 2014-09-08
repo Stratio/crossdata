@@ -50,11 +50,6 @@ public class ExplainPlanStatement extends MetaStatement {
     return sb.toString();
   }
 
-  @Override
-  public String translateToCQL() {
-    return this.toString();
-  }
-
   /**
    * Validate the semantics of the current statement. This method checks the existing metadata to
    * determine that all referenced entities exists in the {@code targetKeyspace} and the types are
