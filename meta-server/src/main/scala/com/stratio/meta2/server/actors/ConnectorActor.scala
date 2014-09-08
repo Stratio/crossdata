@@ -40,6 +40,21 @@ class ConnectorActor extends Actor with ActorLogging {
 
     case ReceiveTimeout =>
       println("ReceiveTimeout")
+      
+    case _:ConnectToConnector=>
+      println("connecting to connector ")
+
+    case _: DisconnectFromConnector=>
+      println("disconnecting from connector")
+
+    case ex:Execute=>
+      println("Executing workflow "+ex.workflow.toString())
+      println("initial steps->"+ex.workflow.getInitialSteps())
+    //case _: Request=>
+    //case _: Response=>
+    //case _: MetadataStruct=>
+    //case _: StorageQueryStruct=>
+    //case _: WorkflowStruct=>
 
     case toConnector: MetadataStruct =>
       connectorsMap(toConnector.connectorName) ! toConnector
@@ -54,7 +69,7 @@ class ConnectorActor extends Actor with ActorLogging {
       connectorsMap += (response.msg -> sender)
 
     case other =>
-      println("connector actor receive event")
+      println("connector actor receives event")
     //      sender ! "OK"
     //memberActorRef.tell(objetoConWorkflow, context.sender)
   }
