@@ -14,8 +14,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Truncate;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
@@ -25,9 +23,7 @@ import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
-
-public class TruncateStatement extends MetaStatement {
+public class TruncateStatement extends StorageStatement {
 
   private TableName tablename;
 
@@ -68,23 +64,6 @@ public class TruncateStatement extends MetaStatement {
     }
     sb.append(tablename);
     return sb.toString();
-  }
-
-
-  @Override
-  public String translateToCQL() {
-    return this.toString();
-  }
-
-  @Override
-  public Statement getDriverStatement() {
-    Truncate truncateQuery;
-    if (catalogInc) {
-      truncateQuery = truncate(catalog, tablename.getName());
-    } else {
-      truncateQuery = truncate(tablename.getName());
-    }
-    return truncateQuery;
   }
 
   @Override

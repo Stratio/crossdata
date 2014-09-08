@@ -16,7 +16,7 @@ package com.stratio.meta2.core.statements;
 
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-public class RemoveUDFStatement extends MetaStatement {
+public class RemoveUDFStatement extends MetaDataStatement {
 
   /**
    * The target jar name.
@@ -36,11 +36,6 @@ public class RemoveUDFStatement extends MetaStatement {
   @Override
   public String toString() {
     return "REMOVE UDF " + jarName;
-  }
-
-  @Override
-  public String translateToCQL() {
-    return this.toString();
   }
 
   @Override

@@ -19,7 +19,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 /**
  * Class that models a {@code CREATE TRIGGER} statement from the META language.
  */
-public class CreateTriggerStatement extends MetaStatement {
+public class CreateTriggerStatement extends MetaDataStatement {
 
   /**
    * The name of the trigger.
@@ -59,11 +59,6 @@ public class CreateTriggerStatement extends MetaStatement {
     sb.append(" using ");
     sb.append(className);
     return sb.toString();
-  }
-
-  @Override
-  public String translateToCQL() {
-    return this.toString();
   }
 
   @Override

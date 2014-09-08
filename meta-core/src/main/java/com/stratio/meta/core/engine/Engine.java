@@ -18,9 +18,6 @@
 
 package com.stratio.meta.core.engine;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.InMemoryFormat;
 import com.hazelcast.config.MapConfig;
@@ -33,8 +30,6 @@ import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta2.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
 import com.stratio.meta.core.validator.Validator;
-import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.streaming.api.StratioStreamingAPIFactory;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
@@ -48,7 +43,6 @@ import java.util.Map;
  * Execution engine that creates all entities required for processing an executing a query:
  * {@link com.stratio.meta2.core.parser.Parser}, {@link com.stratio.meta.core.validator.Validator},
  * {@link com.stratio.meta.core.planner.Planner}, and {@link com.stratio.meta.core.executor.Executor}.
- * Additionally, it also maintains the {@link com.datastax.driver.core.Session} with the Cassandra backend.
  */
 public class Engine {
 
@@ -80,7 +74,7 @@ public class Engine {
   /**
    * Datastax Java Driver session.
    */
-  private final Session session;
+  //private final Session session;
 
   /**
    * Hazelcast instance.
@@ -108,18 +102,18 @@ public class Engine {
 
     this.deepContext = initializeDeep(config);
 
-    this.session=initializeDB(config);
+    //this.session=initializeDB(config);
 
     hazelcast = initializeHazelcast(config);
     hazelcastMap = hazelcast.getMap(config.getHazelcastMapName());
 
-    IStratioStreamingAPI stratioStreamingAPI = initializeStreaming(config);
+    //IStratioStreamingAPI stratioStreamingAPI = initializeStreaming(config);
 
     parser = new Parser();
-    validator = new Validator(session, stratioStreamingAPI, config);
-    manager = new APIManager(session, stratioStreamingAPI);
-    planner = new Planner(session, stratioStreamingAPI);
-    executor = new Executor(session, stratioStreamingAPI, deepContext, config);
+    validator = new Validator(config);
+    manager = new APIManager();
+    planner = new Planner();
+    executor = new Executor(deepContext, config);
   }
 
   /**
@@ -127,7 +121,7 @@ public class Engine {
    * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
    * @return An instance of {@link com.stratio.streaming.api.IStratioStreamingAPI}.
    */
-  private IStratioStreamingAPI initializeStreaming(EngineConfig config){
+  /*private IStratioStreamingAPI initializeStreaming(EngineConfig config){
     IStratioStreamingAPI stratioStreamingAPI = null;
     if(config.getKafkaServer() != null && config.getZookeeperServer() != null
        && !"null".equals(config.getKafkaServer()) && !"null".equals(config.getZookeeperServer())) {
@@ -155,14 +149,14 @@ public class Engine {
                + " Please configure zookeeper and kafka servers");
     }
     return stratioStreamingAPI;
-  }
+  }*/
 
   /**
    * Initialize the connection to the underlying database.
    * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
    * @return A new Session.
    */
-  private Session initializeDB(EngineConfig config){
+  /*private Session initializeDB(EngineConfig config){
     Cluster cluster = Cluster.builder()
         .addContactPoints(config.getCassandraHosts())
         .withPort(config.getCassandraPort()).build();
@@ -178,7 +172,7 @@ public class Engine {
     }
 
     return result;
-  }
+  }*/
 
   /**
    * Initialize the DeepSparkContext adding the required jars if the deployment is not local.
@@ -285,7 +279,7 @@ public class Engine {
    */
   public void shutdown(){
     deepContext.stop();
-    session.close();
+    //session.close();
     hazelcast.shutdown();
   }
 

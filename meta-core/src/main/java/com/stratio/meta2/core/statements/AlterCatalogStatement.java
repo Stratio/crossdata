@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * Class that models an {@code ALTER Catalog} statement from the META language.
  */
-public class AlterCatalogStatement extends MetaStatement {
+public class AlterCatalogStatement extends MetaDataStatement {
 
   /**
    * A JSON with the options specified by the user.
@@ -40,7 +40,7 @@ public class AlterCatalogStatement extends MetaStatement {
 
   /**
    * The map of properties of the Catalog. The different options accepted by a Catalog are
-   * determined by the selected {@link com.datastax.driver.core.ReplicationStrategy}.
+   * determined by the selected replication.
    */
   private Map<Selector, Selector> properties;
 
@@ -63,11 +63,6 @@ public class AlterCatalogStatement extends MetaStatement {
     sb.append(catalog);
     sb.append(" WITH ").append(this.options);
     return sb.toString();
-  }
-
-  @Override
-  public String translateToCQL() {
-    return this.toString();
   }
 
   @Override

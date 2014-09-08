@@ -37,32 +37,37 @@ public class BasicPlannerTest extends BasicCoreCassandraTest {
   public static void setUpBeforeClass(){
     BasicCoreCassandraTest.setUpBeforeClass();
     BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-    _metadataManager = new MetadataManager(_session, null);
+    _metadataManager = new MetadataManager();
     _metadataManager.loadMetadata();
   }
 
   public void validateCassandraPath(String method){
-    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    //Tree tree = stmt.getPlan(_metadataManager, "demo");
+    Tree tree = null;
     assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA), method+": Plan path should be CASSANDRA");
   }
 
   public void validateDeepPath(String method){
-    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    //Tree tree = stmt.getPlan(_metadataManager, "demo");
+    Tree tree = null;
     assertTrue(tree.getNode().getPath().equals(MetaPath.DEEP), method+": Plan path should be DEEP");
   }
 
   public void validateCommandPath(String method){
-    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    //Tree tree = stmt.getPlan(_metadataManager, "demo");
+    Tree tree = null;
     assertTrue(tree.getNode().getPath().equals(MetaPath.COMMAND), method+": Plan path should be COMMAND");
   }
 
   public void validateStreamingPath(String method){
-    Tree tree = stmt.getPlan(_metadataManager, "demo");
+    //Tree tree = stmt.getPlan(_metadataManager, "demo");
+    Tree tree = null;
     assertTrue(tree.getNode().getPath().equals(MetaPath.STREAMING), method+": Plan path should be STREAMING");
   }
 
   public void validateNotSupported(){
-    Tree tree = stmt.getPlan(_metadataManager,"demo");
+    //Tree tree = stmt.getPlan(_metadataManager,"demo");
+    Tree tree = null;
     assertTrue(tree.isEmpty(), "Sentence planification not supported - planificationNotSupported");
   }
 }

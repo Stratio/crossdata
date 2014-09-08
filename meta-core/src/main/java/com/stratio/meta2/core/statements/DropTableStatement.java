@@ -25,7 +25,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 /**
  * Class that models a {@code DROP TABLE} statement from the META language.
  */
-public class DropTableStatement extends MetaStatement {
+public class DropTableStatement extends MetaDataStatement {
 
   /**
    * The name of the target table.
@@ -74,11 +74,6 @@ public class DropTableStatement extends MetaStatement {
     }
     sb.append(tableName.getQualifiedName());
     return sb.toString();
-  }
-
-  @Override
-  public String translateToCQL() {
-    return this.toString();
   }
 
   public ValidationRequirements getValidationRequirements(){

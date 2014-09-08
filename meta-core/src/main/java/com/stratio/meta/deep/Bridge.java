@@ -18,7 +18,6 @@
 
 package com.stratio.meta.deep;
 
-import com.datastax.driver.core.Session;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.deep.entity.Cells;
 import com.stratio.meta.common.data.CassandraResultSet;
@@ -74,7 +73,7 @@ public class Bridge {
   /**
    * Datastax Java Driver session.
    */
-  private Session session;
+  //private Session session;
 
   /**
    * Global configuration.
@@ -83,15 +82,13 @@ public class Bridge {
 
   /**
    * Brigde Constructor.
-   * 
-   * @param session Cassandra session. {@link com.datastax.driver.core.Session}
+   *
    * @param deepSparkContext Spark context from Deep
    * @param config A {@link com.stratio.meta.core.engine.EngineConfig}, contains global
    *        configuration
    */
-  public Bridge(Session session, DeepSparkContext deepSparkContext, EngineConfig config) {
+  public Bridge(DeepSparkContext deepSparkContext, EngineConfig config) {
     this.deepContext = deepSparkContext;
-    this.session = session;
     this.engineConfig = config;
   }
 

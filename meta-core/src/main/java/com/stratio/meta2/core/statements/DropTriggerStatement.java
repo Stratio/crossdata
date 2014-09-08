@@ -19,7 +19,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 /**
  * Class that models a {@code DROP TRIGGER} statement from the META language.
  */
-public class DropTriggerStatement extends MetaStatement {
+public class DropTriggerStatement extends MetaDataStatement {
 
   /**
    * The name of the trigger.
@@ -50,11 +50,6 @@ public class DropTriggerStatement extends MetaStatement {
     sb.append(" on ");
     sb.append(tableName);
     return sb.toString();
-  }
-
-  @Override
-  public String translateToCQL() {
-    return this.toString();
   }
 
   @Override

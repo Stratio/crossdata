@@ -14,7 +14,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.Session;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -25,7 +24,6 @@ import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.core.validator.ValidationRequirements;
-import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,12 +31,17 @@ import java.util.List;
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
  */
-public class DescribeStatement extends TableStatement {
+public class DescribeStatement extends MetaDataStatement implements ITableStatement {
 
   /**
    * Type of description required: {@code CATALOG} or {@code TABLE}.
    */
   private DescribeType type;
+
+  /**
+   * The target table.
+   */
+  private TableName tableName;
 
   /**
    * Class constructor.
@@ -96,19 +99,13 @@ public class DescribeStatement extends TableStatement {
     return result;
   }
 
-  @Override
-  public String translateToCQL() {
-    return this.toString().replace("CATALOG", "KEYSPACE");
-  }
-
   /**
    * Execute the describe command.
-   * 
-   * @param session The {@link com.datastax.driver.core.Session} used to retrieve the medatada.
+   *
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
-  public Result execute(Session session, IStratioStreamingAPI stratioStreamingAPI) {
-    MetadataManager mm = new MetadataManager(session, stratioStreamingAPI);
+  public Result execute() {
+    MetadataManager mm = new MetadataManager();
     mm.loadMetadata();
     Result result = null;
     if (type == DescribeType.CATALOG) {
@@ -164,6 +161,28 @@ public class DescribeStatement extends TableStatement {
   @Override
   public ValidationRequirements getValidationRequirements() {
     return new ValidationRequirements();
+  }
+
+  public TableName getTableName() {
+    return tableName;
+  }
+
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
+  }
+
+  @Override
+  public String getEffectiveCatalog() {
+    String effective;
+    if(tableName != null){
+      effective = tableName.getCatalogName().getName();
+    }else{
+      effective = catalog;
+    }
+    if(sessionCatalog != null){
+      effective = sessionCatalog;
+    }
+    return effective;
   }
 
 }

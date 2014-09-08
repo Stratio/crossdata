@@ -29,49 +29,44 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 /**
  * Class that models a {@code DROP KEYSPACE} statement from the META language.
  */
-public class DropCatalogStatement extends MetaStatement {
+public class DropCatalogStatement extends MetaDataStatement {
 
-    /**
-     * Whether the catalog should be removed only if exists.
-     */
-    private boolean ifExists;
+  /**
+   * Whether the catalog should be removed only if exists.
+   */
+  private boolean ifExists;
 
-    /**
-     * Class constructor.
-     * @param catalog The name of the catalog.
-     * @param ifExists Whether it should be removed only if exists.
-     */
-    public DropCatalogStatement(String catalog, boolean ifExists) {
-        this.command = false;
-        this.catalog = catalog;
-      this.catalogInc = true;
-        this.ifExists = ifExists;
-    }    
+  /**
+   * Class constructor.
+   * @param catalog The name of the catalog.
+   * @param ifExists Whether it should be removed only if exists.
+   */
+  public DropCatalogStatement(String catalog, boolean ifExists) {
+    this.command = false;
+    this.catalog = catalog;
+    this.catalogInc = true;
+    this.ifExists = ifExists;
+  }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("DROP CATALOG ");
-        if(ifExists){
-           sb.append("IF EXISTS ");
-        } 
-        sb.append(catalog);
-        return sb.toString();
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("DROP CATALOG ");
+    if(ifExists){
+      sb.append("IF EXISTS ");
     }
+    sb.append(catalog);
+    return sb.toString();
+  }
 
-    @Override
-    public Result validate(MetadataManager metadata, EngineConfig config) {
-        Result result = QueryResult.createSuccessQueryResult();
-        CatalogMetadata ksMetadata = metadata.getCatalogMetadata(catalog);
-        if(ksMetadata == null && !ifExists){
-            result = Result.createValidationErrorResult("Catalog " + catalog + " does not exist.");
-        }
-        return result;
+  @Override
+  public Result validate(MetadataManager metadata, EngineConfig config) {
+    Result result = QueryResult.createSuccessQueryResult();
+    CatalogMetadata ksMetadata = metadata.getCatalogMetadata(catalog);
+    if(ksMetadata == null && !ifExists){
+      result = Result.createValidationErrorResult("Catalog " + catalog + " does not exist.");
     }
-
-    @Override
-    public String translateToCQL() {
-        return this.toString();
-    }
+    return result;
+  }
 
   public ValidationRequirements getValidationRequirements(){
     return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG);

@@ -14,32 +14,25 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
-import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import org.apache.log4j.Logger;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Class that models an {@code INSERT INTO} statement from the META language.
  */
-public class InsertIntoStatement extends MetaStatement {
+public class InsertIntoStatement extends StorageStatement {
 
   /**
    * Constant to define an {@code INSERT INTO} that takes the input values from a {@code SELECT}
@@ -289,65 +282,13 @@ public class InsertIntoStatement extends MetaStatement {
     return result;*/
   }
 
-  @Override
-  public String translateToCQL() {
-    StringBuilder sb = new StringBuilder("INSERT INTO ");
-    if (catalogInc) {
-      sb.append(catalog).append(".");
-    }
-    sb.append(tableName).append(" (");
-    sb.append(StringUtils.stringList(ids, ", "));
-    sb.append(") ");
-    if (typeValues == TYPE_SELECT_CLAUSE) {
-      sb.append(selectStatement.toString());
-    }
-    if (typeValues == TYPE_VALUES_CLAUSE) {
-      sb.append("VALUES (");
-      sb.append(ParserUtils.addSingleQuotesToString(StringUtils.stringList(cellValues, ", "), ","));
-      sb.append(")");
-    }
-    if (ifNotExists) {
-      sb.append(" IF NOT EXISTS");
-    }
-    if (optsInc) {
-      sb.append(" USING ");
-      sb.append(StringUtils.stringList(options, " AND "));
-    }
-    return sb.append(";").toString();
-  }
-
-  @Override
-  public Statement getDriverStatement() {
-    if (this.typeValues == TYPE_SELECT_CLAUSE) {
-      return null;
-    }
-
-    Insert insertStmt =
-        this.catalogInc ? QueryBuilder.insertInto(this.catalog, this.tableName.getName())
-                        : QueryBuilder.insertInto(this.tableName.getName());
-
-    try {
-      iterateValuesAndInsertThem(insertStmt);
-    } catch (Exception ex) {
-      return null;
-    }
-
-    if (this.ifNotExists) {
-      insertStmt = insertStmt.ifNotExists();
-    }
-
-    Insert.Options optionsStmt = checkOptions(insertStmt);
-
-    return optionsStmt == null ? insertStmt : optionsStmt;
-  }
-
   /**
-   * Iterate over {@link com.stratio.meta2.core.statements.InsertIntoStatement#cellValues} and add
-   * values to {@link com.datastax.driver.core.querybuilder.Insert} object to be translated in CQL.
+   * Iterate over InsertIntoStatement#cellValues and add
+   * values to Insert object to be translated in CQL.
    *
    * @param insertStmt
    */
-  private void iterateValuesAndInsertThem(Insert insertStmt) {
+  /*private void iterateValuesAndInsertThem(Insert insertStmt) {
     Iterator<Selector> it = this.cellValues.iterator();
     for (ColumnName id: this.ids) {
       Selector genericTerm = it.next();
@@ -362,16 +303,16 @@ public class InsertIntoStatement extends MetaStatement {
         insertStmt = insertStmt.value(id.getName(), genericTerm.toString());
       }
     }
-  }
+  }*/
 
   /**
    * Check the options for InsertIntoStatement.
    *
-   * @param insertStmt a {@link com.datastax.driver.core.querybuilder.Insert} where insert the
+   * //@param insertStmt a Insert where insert the
    *        options.
-   * @return a {@link com.datastax.driver.core.querybuilder.Insert.Options}
+   * //@return a Options
    */
-  private Insert.Options checkOptions(Insert insertStmt) {
+  /*private Insert.Options checkOptions(Insert insertStmt) {
     Insert.Options optionsStmt = null;
 
     if (this.optsInc) {
@@ -393,7 +334,7 @@ public class InsertIntoStatement extends MetaStatement {
     }
 
     return optionsStmt;
-  }
+  }*/
 
   @Override
   public ValidationRequirements getValidationRequirements() {

@@ -28,7 +28,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  * storage, the user must specify the hosts and ports where the datastore is available in the JSON
  * options.
  */
-public class AttachClusterStatement extends MetaStatement{
+public class AttachClusterStatement extends MetaDataStatement {
 
   /**
    * Cluster name given by the user. This name will be used to refer to the cluster when creating
@@ -76,11 +76,6 @@ public class AttachClusterStatement extends MetaStatement{
     sb.append(" ON DATASTORE ").append(datastoreName);
     sb.append(" WITH OPTIONS ").append(options);
     return sb.toString();
-  }
-
-  @Override
-  public String translateToCQL() {
-    return null;
   }
 
   @Override

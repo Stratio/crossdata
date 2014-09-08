@@ -18,18 +18,15 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.Statement;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.core.validator.ValidationRequirements;
-import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import java.util.List;
 
@@ -166,28 +163,7 @@ public abstract class MetaStatement implements IStatement {
    * @return The catalog specified in the statement or the session catalog otherwise.
    */
   public String getEffectiveCatalog() {
-    return catalogInc ? catalog : sessionCatalog;
-  }
-
-  /**
-   * Translate the statement into the CQL equivalent when possible.
-   * 
-   * @return The CQL equivalent.
-   */
-  public abstract String translateToCQL();
-
-  public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName,
-      String outgoing) {
-    return null;
-  }
-
-  /**
-   * Get the {@link Statement} equivalent of the current query.
-   * 
-   * @return The Statement or null if the driver translation cannot be done.
-   */
-  public Statement getDriverStatement() {
-    return null;
+    return catalogInc? catalog: sessionCatalog;
   }
 
   /**
@@ -212,15 +188,8 @@ public abstract class MetaStatement implements IStatement {
     return null;
   }
 
-  @Deprecated
-  public Tree getPlan(MetadataManager metadataManager, String targetCatalog){
-    return null;
-  }
-
   //TODO: This method should be abstract
   public abstract ValidationRequirements getValidationRequirements();
-
-
 
 
   /**

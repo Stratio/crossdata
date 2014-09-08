@@ -18,23 +18,32 @@
 
 package com.stratio.meta2.core.statements;
 
+//public abstract class TableStatement extends MetaStatement;
+
 import com.stratio.meta2.common.data.TableName;
 
 /**
  * Meta statement that are executed over a table.
  */
-public abstract class TableStatement extends MetaStatement {
+public interface ITableStatement {
 
   /**
    * The target table.
    */
-  protected TableName tableName;
+  //protected TableName tableName;
 
   /**
    * Get the table to be described.
    *
    * @return The name or null if not set.
    */
+  public TableName getTableName();
+
+  public void setTableName(TableName tableName);
+
+  public String getEffectiveCatalog();
+
+  /*
   public TableName getTableName() {
     return tableName;
   }
@@ -45,7 +54,7 @@ public abstract class TableStatement extends MetaStatement {
 
   @Override
   public String getEffectiveCatalog() {
-    String effective = null;
+    String effective;
     if(tableName != null){
       effective = tableName.getCatalogName().getName();
     }else{
@@ -56,4 +65,6 @@ public abstract class TableStatement extends MetaStatement {
     }
     return effective;
   }
+  */
+
 }

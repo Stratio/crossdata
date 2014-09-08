@@ -35,7 +35,7 @@ import java.util.List;
  * DELETE ( {@literal <column>}, ( ',' {@literal <column>} )*)? FROM {@literal <tablename>} WHERE
  * {@literal <where_clause>};
  */
-public class DeleteStatement extends MetaStatement {
+public class DeleteStatement extends StorageStatement implements ITableStatement {
 
   /**
    * The name of the targe table.
@@ -104,7 +104,7 @@ public class DeleteStatement extends MetaStatement {
    * Validate that the columns specified in the select are valid by checking that the selection
    * columns exists in the table.
    * 
-   * @param tableMetadata The associated {@link com.datastax.driver.core.TableMetadata}.
+   * @param tableMetadata The associated {@link com.stratio.meta2.common.metadata.TableMetadata}.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
   /*
@@ -183,15 +183,27 @@ public class DeleteStatement extends MetaStatement {
     return result;
   }
 
-
-  @Override
-  public String translateToCQL() {
-    return this.toString();
-  }
-
   @Override
   public ValidationRequirements getValidationRequirements() {
     return new ValidationRequirements();
+  }
+
+  public TableName getTableName() {
+    return tableName;
+  }
+
+  @Override
+  public String getEffectiveCatalog() {
+    String effective;
+    if(tableName != null){
+      effective = tableName.getCatalogName().getName();
+    }else{
+      effective = catalog;
+    }
+    if(sessionCatalog != null){
+      effective = sessionCatalog;
+    }
+    return effective;
   }
 
 }

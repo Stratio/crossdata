@@ -40,7 +40,7 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
   public static void setUpBeforeClass() {
     BasicCoreCassandraTest.setUpBeforeClass();
     BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-    metadataManager = new MetadataManager(_session, null);
+    metadataManager = new MetadataManager();
     metadataManager.loadMetadata();
   }
 

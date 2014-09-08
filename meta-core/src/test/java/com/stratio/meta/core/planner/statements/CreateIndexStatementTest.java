@@ -56,7 +56,8 @@ public class CreateIndexStatementTest extends BasicPlannerTest {
     ((CreateIndexStatement)stmt).addColumn(new ColumnName(tablename, "varchar_column"));
     ((CreateIndexStatement)stmt).addColumn(new ColumnName(tablename, "boolean_column"));
     ((CreateIndexStatement)stmt).setCreateIndex(true);
-    Tree tree = stmt.getPlan(_metadataManager,"demo");
+    //Tree tree = stmt.getPlan(_metadataManager,"demo");
+    Tree tree = null;
     assertTrue(tree.getNode().getPath().equals(MetaPath.CASSANDRA));
     List<Tree> children = tree.getChildren();
     for(Tree t : children){

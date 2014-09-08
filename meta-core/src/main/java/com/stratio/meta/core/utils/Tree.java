@@ -18,7 +18,6 @@
 
 package com.stratio.meta.core.utils;
 
-import com.datastax.driver.core.Session;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.result.QueryResult;
@@ -28,10 +27,8 @@ import com.stratio.meta.core.executor.CassandraExecutor;
 import com.stratio.meta.core.executor.CommandExecutor;
 import com.stratio.meta.core.executor.DeepExecutor;
 import com.stratio.meta.core.executor.StreamExecutor;
-import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
-import org.apache.spark.SparkEnv;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,15 +153,12 @@ public class Tree {
 
   /**
    * Execute the current node of the tree.
-   * @param session The Cassandra session.
    * @param deepSparkContext The Deep context.
    * @param engineConfig The engine configuration.
    * @param resultsFromChildren The results from the children.
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
   public Result executeMyself(String queryId,
-                              Session session,
-                              IStratioStreamingAPI stratioStreamingAPI,
                               DeepSparkContext deepSparkContext,
                               EngineConfig engineConfig,
                               List<Result> resultsFromChildren,
@@ -176,13 +170,13 @@ public class Tree {
     MetaStep myStep = node;
     MetaPath myPath = myStep.getPath();
     if(myPath == MetaPath.COMMAND){
-      result = CommandExecutor.execute(queryId, myStep.getStmt(), session, stratioStreamingAPI);
+      result = CommandExecutor.execute(queryId, myStep.getStmt());
     } else if(myPath == MetaPath.CASSANDRA){
-      result = CassandraExecutor.execute(myStep, session);
+      result = CassandraExecutor.execute(myStep, null);
     } else if(myPath == MetaPath.DEEP){
-      result = DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), session, deepSparkContext, engineConfig);
+      result = DeepExecutor.execute(myStep.getStmt(), resultsFromChildren, isRoot(), deepSparkContext, engineConfig);
     } else if(myPath == MetaPath.STREAMING){
-      result = StreamExecutor.execute(queryId, myStep.getStmt(), stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor, isRoot());
+      result = StreamExecutor.execute(queryId, myStep.getStmt(), null, deepSparkContext, engineConfig, callbackActor, isRoot());
     } else if(myPath == MetaPath.UNSUPPORTED){
       result = Result.createUnsupportedOperationErrorResult("Query not supported.");
     } else {
@@ -193,38 +187,32 @@ public class Tree {
 
   /**
    * Execute the elements of the tree starting from the bottom up.
-   * @param session The Cassandra session.
    * @param deepSparkContext The Deep context.
    * @param engineConfig The engine configuration.
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
-  public Result executeTreeDownTop(
-      String queryId,
-      Session session, IStratioStreamingAPI stratioStreamingAPI,
-      DeepSparkContext deepSparkContext, EngineConfig engineConfig,
+  public Result executeTreeDownTop(String queryId, DeepSparkContext deepSparkContext, EngineConfig engineConfig,
       ActorResultListener callbackActor){
     // Get results from my children
     List<Result> resultsFromChildren = new ArrayList<>();
     for(Tree child: children){
-      resultsFromChildren.add(child.executeTreeDownTop(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor));
+      resultsFromChildren.add(child.executeTreeDownTop(queryId, deepSparkContext, engineConfig, callbackActor));
     }
     // Execute myself and return final result
-    return executeMyself(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, resultsFromChildren, callbackActor);
+    return executeMyself(queryId, deepSparkContext, engineConfig, resultsFromChildren, callbackActor);
   }
 
-  public Result executeTreeDownTop(
-      String queryId,
-      Session session, IStratioStreamingAPI stratioStreamingAPI,
+  public Result executeTreeDownTop(String queryId,
       DeepSparkContext deepSparkContext, EngineConfig engineConfig,
       ActorResultListener callbackActor, Result result){
     // Get results from my children
     List<Result> resultsFromChildren = new ArrayList<>();
     resultsFromChildren.add(result);
     for(Tree child: children){
-      resultsFromChildren.add(child.executeTreeDownTop(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, callbackActor));
+      resultsFromChildren.add(child.executeTreeDownTop(queryId, deepSparkContext, engineConfig, callbackActor));
     }
     // Execute myself and return final result
-    return executeMyself(queryId, session, stratioStreamingAPI, deepSparkContext, engineConfig, resultsFromChildren, callbackActor);
+    return executeMyself(queryId, deepSparkContext, engineConfig, resultsFromChildren, callbackActor);
   }
 
   /**
@@ -267,17 +255,17 @@ public class Tree {
     return involvesStreaming;
   }
 
-  public Result executeTreeTopDown(String queryId, List<Result> resultsFromParents, Session session,
+  public Result executeTreeTopDown(String queryId, List<Result> resultsFromParents,
                                    DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
 
     if(children.size() == 0){
       //No more children, execute final node.
-      return executeMyself(queryId, session, null, deepSparkContext,
+      return executeMyself(queryId, deepSparkContext,
                            engineConfig, resultsFromParents, null);
     }else{
-      resultsFromParents.add(executeMyself(queryId, session, null, deepSparkContext,
+      resultsFromParents.add(executeMyself(queryId, deepSparkContext,
                                            engineConfig, resultsFromParents, null));
-      return children.get(0).executeTreeTopDown(queryId, resultsFromParents, session, deepSparkContext, engineConfig);
+      return children.get(0).executeTreeTopDown(queryId, resultsFromParents, deepSparkContext, engineConfig);
     }
 
   }

@@ -14,8 +14,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Select;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.window.Window;
 import com.stratio.meta.common.utils.StringUtils;
@@ -381,75 +379,6 @@ public class SelectStatement extends MetaStatement {
     }
 
     return sb.toString().replace("  ", " ");
-  }
-
-  /**
-   * Creates a String representing the Statement with CQL syntax.
-   * 
-   * @return CQL string
-   */
-  @Override
-  public String translateToCQL() {
-    StringBuilder sb = new StringBuilder(this.toString());
-
-    if (sb.toString().contains("TOKEN(")) {
-      int currentLength = 0;
-      int newLength = sb.toString().length();
-      while (newLength != currentLength) {
-        currentLength = newLength;
-        sb = new StringBuilder(sb.toString().replaceAll("(.*)" // $1
-            + "(=|<|>|<=|>=|<>|LIKE)" // $2
-            + "(\\s?)" // $3
-            + "(TOKEN\\()" // $4
-            + "([^'][^\\)]+)" // $5
-            + "(\\).*)", // $6
-            "$1$2$3$4'$5'$6"));
-        sb = new StringBuilder(sb.toString().replaceAll("(.*TOKEN\\(')" // $1
-            + "([^,]+)" // $2
-            + "(,)" // $3
-            + "(\\s*)" // $4
-            + "([^']+)" // $5
-            + "(')" // $6
-            + "(\\).*)", // $7
-            "$1$2'$3$4'$5$6$7"));
-        sb = new StringBuilder(sb.toString().replaceAll("(.*TOKEN\\(')" // $1
-            + "(.+)" // $2
-            + "([^'])" // $3
-            + "(,)" // $4
-            + "(\\s*)" // $5
-            + "([^']+)" // $6
-            + "(')" // $7
-            + "(\\).*)", // $8
-            "$1$2$3'$4$5'$6$7$8"));
-        sb = new StringBuilder(sb.toString().replaceAll("(.*TOKEN\\(')" // $1
-            + "(.+)" // $2
-            + "([^'])" // $3
-            + "(,)" // $4
-            + "(\\s*)" // $5
-            + "([^']+)" // $6
-            + "(')" // $7
-            + "([^TOKEN]+)" // $8
-            + "('\\).*)", // $9
-            "$1$2$3'$4$5'$6$7$8$9"));
-        newLength = sb.toString().length();
-      }
-    }
-
-    return sb.toString();
-  }
-
-  /**
-   * Get the driver builder object with the selection clause.
-   * 
-   * @return A {@link com.datastax.driver.core.querybuilder.Select.Builder}.
-   */
-  private Select.Builder getDriverBuilder() {
-    return null;
-  }
-
-  @Override
-  public Statement getDriverStatement() {
-    return null;
   }
 
   @Override

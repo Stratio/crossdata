@@ -14,22 +14,22 @@
 
 package com.stratio.meta2.core.statements;
 
-import java.util.List;
-
-import com.stratio.meta2.core.validator.ValidationRequirements;
-import org.apache.log4j.Logger;
-
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.streaming.MetaStream;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 import com.stratio.streaming.commons.messages.StreamQuery;
 import com.stratio.streaming.commons.streams.StratioStream;
 
-public class StopProcessStatement extends MetaStatement {
+import org.apache.log4j.Logger;
+
+import java.util.List;
+
+public class StopProcessStatement extends MetaDataStatement {
 
   private String queryId;
   private static final Logger LOG = Logger.getLogger(StopProcessStatement.class);
@@ -75,11 +75,6 @@ public class StopProcessStatement extends MetaStatement {
   }
 
   @Override
-  public String translateToCQL() {
-    return this.toString();
-  }
-
-  @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
     // TODO: Check user query identifier.
     // Result result= Result.createValidationErrorResult("UDF and TRIGGER not supported yet");
@@ -90,8 +85,8 @@ public class StopProcessStatement extends MetaStatement {
     return QueryResult.createSuccessQueryResult();
   }
 
-  public Result execute(IStratioStreamingAPI stratioStreamingAPI) {
-    return MetaStream.removeStreamingQuery(this.getQueryId(), stratioStreamingAPI);
+  public Result execute() {
+    return MetaStream.removeStreamingQuery(this.getQueryId(), null);
   }
 
   @Override

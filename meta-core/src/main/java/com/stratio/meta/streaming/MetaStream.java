@@ -184,7 +184,8 @@ public class MetaStream {
       LOG.debug("Outgoing topic: "+outgoing);
 
       // Create topic
-      String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
+      //String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
+      String query = null;
       String streamingQueryId = stratioStreamingAPI.addQuery(streamName, query);
       streamingQueries.put(queryId, streamingQueryId);
       resultPages.put(queryId, 0);
