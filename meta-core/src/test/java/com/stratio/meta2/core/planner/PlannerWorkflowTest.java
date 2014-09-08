@@ -131,6 +131,7 @@ public class PlannerWorkflowTest {
     TableMetadata tm = new TableMetadata(tn,//TableName
         null, //Map<String, Object> options,
         null, //Map<ColumnName, ColumnMetadata> columns,
+        null,
         clusterRef,
         partitionKey,
         clusterKey);
