@@ -80,6 +80,13 @@ public class UpdateTableStatementTest extends ParsingTest {
     testRegularStatement(inputText, expectedText, "updateWhereUsingAnd");
   }
 
+  @Test
+  public void updateSetWithSeveralOperators() {
+    String inputText = "[demo], UPDATE table1 SET count = count * 2 / expenses, estimation = true  WHERE field3 = 'value3';";
+    String expectedText = "UPDATE demo.table1 SET demo.table1.count = demo.table1.count * 2 / demo.table1.expenses, demo.table1.estimation = true WHERE demo.table1.field3 = 'value3';";
+    testRegularStatement(inputText, expectedText, "updateSetWithSeveralOperators");
+  }
+
   /*@Test
   public void updateWhereWithCollectionMap() {
     String inputText = "UPDATE demo.table1 SET emails[admin] = myemail@mycompany.org WHERE field3 = value3;";

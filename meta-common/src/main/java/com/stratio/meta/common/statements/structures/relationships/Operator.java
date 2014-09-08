@@ -19,7 +19,7 @@
 package com.stratio.meta.common.statements.structures.relationships;
 
 /**
- * Operators supported in an {@link com.stratio.meta.common.statements.structures.assignations.Assignation}.
+ * Operators supported in an {@link com.stratio.meta.common.statements.structures.relationships.Relation}.
  */
 public enum Operator {
   ADD{
@@ -32,6 +32,18 @@ public enum Operator {
     @Override
     public String toString() {
       return "-";
+    }
+  },
+  DIVISION{
+    @Override
+    public String toString() {
+      return "/";
+    }
+  },
+  MULTIPLICATION{
+    @Override
+    public String toString() {
+      return "*";
     }
   },
   /**

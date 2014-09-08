@@ -29,7 +29,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta2.core.api.APIManager;
-import com.stratio.meta.core.executor.Executor;
+import com.stratio.meta2.core.executor.Executor;
 import com.stratio.meta2.core.parser.Parser;
 import com.stratio.meta2.core.planner.Planner;
 import com.stratio.meta2.core.validator.Validator;
@@ -70,7 +70,7 @@ public class Engine {
   /**
    * The {@link com.stratio.meta.core.executor.Executor} responsible for execution.
    */
-  //private final Executor executor;
+  private final Executor executor;
 
   /**
    * The {@link com.stratio.meta.core.api.APIManager} responsible for API calls.
@@ -123,6 +123,7 @@ public class Engine {
     //planner = new Planner(session, stratioStreamingAPI);
     planner = new Planner();
     //executor = new Executor(session, stratioStreamingAPI, deepContext, config);
+    executor = new Executor(stratioStreamingAPI, deepContext, null);
   }
 
   /**
@@ -270,11 +271,9 @@ public class Engine {
    *
    * @return a {@link com.stratio.meta.core.executor.Executor}
    */
-  /*
   public Executor getExecutor() {
     return executor;
   }
-  */
 
   /**
    * Get the API manager.

@@ -233,6 +233,7 @@ T_START_BRACKET: '[';
 T_END_BRACKET: ']';
 T_PLUS: '+';
 T_SUBTRACT: '-';
+T_SLASH: '/';
 T_INTERROGATION: '?';
 T_ASTERISK: '*';
 T_GROUP: G R O U P;
@@ -267,18 +268,6 @@ T_TO: T O;
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
 
-/*QUOTED_LITERAL
-    @init{
-        StringBuilder sb = new StringBuilder();
-        String initialQuotation = "'";
-        String finalQuotation = "'";
-    }
-    @after{
-        setText(initialQuotation+sb.toString()+finalQuotation);
-    }:
-        ('"' { initialQuotation = "\""; } |'\'') (c=~('"'|'\'') { sb.appendCodePoint(c);} | '\'' '\'' { sb.appendCodePoint('\''); })* ('"' { finalQuotation = "\""; } |'\'')
-;*/
-
 QUOTED_LITERAL
     @init{
         StringBuilder sb = new StringBuilder();
@@ -294,10 +283,8 @@ T_CONSTANT: '-'? (DIGIT)+;
 
 T_IDENT: LETTER (LETTER | DIGIT | '_')*;
 
-//T_KS_AND_TN: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)?;
 T_KS_AND_TN: T_IDENT (POINT T_IDENT)?;
 
-//T_CTLG_TBL_COL: LETTER (LETTER | DIGIT | '_')* (POINT LETTER (LETTER | DIGIT | '_')*)? (POINT LETTER (LETTER | DIGIT | '_')*)?;
 T_CTLG_TBL_COL: T_IDENT (POINT T_IDENT (POINT T_IDENT)?)?;
 
 T_FLOAT:
@@ -308,18 +295,6 @@ T_FLOAT:
 ;
 
 T_TERM: (LETTER | DIGIT | '_' | POINT)+;
-
-T_PATH: (LETTER | DIGIT | '_' | POINT | '-' | '/')+;
-
-//READ_ANY
-//    @init{
-//        StringBuilder sb = new StringBuilder();
-//    }
-//    @after{
-//        setText(sb.toString());
-//    }:
-//        (c=(.) {sb.appendCodePoint(c);})+
-//    ;
 
 // ========================================================
 // CLUSTER
@@ -434,13 +409,10 @@ deleteStatement returns [DeleteStatement ds]
 	}:
 	T_DELETE T_FROM tablename=getTableName
 	T_WHERE whereClauses=getWhereClauses[tablename]
-	//T_WHERE rel1=getRelation[tablename] {$ds.addRelation(rel1);} (T_AND relN=getRelation[tablename] {$ds.addRelation(relN);})*
 ;
 
 //ADD \"index_path\";
 addStatement returns [AddStatement as]:
-	//T_ADD (T_QUOTE | T_SINGLE_QUOTE) name=T_PATH (T_QUOTE | T_SINGLE_QUOTE) {$as = new AddStatement($name.text);}
-	//T_ADD T_QUOTE name=T_PATH T_QUOTE {$as = new AddStatement($name.text);}
 	T_ADD name=QUOTED_LITERAL {$as = new AddStatement($name.text);}
 ;
 
@@ -471,7 +443,6 @@ listStatement returns [ListStatement ls]:
 
 //REMOVE UDF \"jar.name\";"
 removeUDFStatement returns [RemoveUDFStatement rus]:
-	//T_REMOVE 'UDF' (T_QUOTE | T_SINGLE_QUOTE) jar=getSelector[null] {$rus = new RemoveUDFStatement(jar);} (T_QUOTE | T_SINGLE_QUOTE)
 	T_REMOVE T_UDF jar=QUOTED_LITERAL {$rus = new RemoveUDFStatement($jar.text);}
 ;
 
@@ -555,11 +526,7 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
 ;
 
 stopProcessStatement returns [StopProcessStatement stprst]:
-    T_STOP T_PROCESS tablename=getProcess { $stprst = new StopProcessStatement(tablename); }
-;
-
-getProcess returns [String procname]:
-    processname=(T_PATH | T_IDENT) {$procname = $processname.text;}
+    T_STOP T_PROCESS tablename=T_IDENT { $stprst = new StopProcessStatement($tablename.text); }
 ;
 
 dropTriggerStatement returns [DropTriggerStatement drtrst]:
@@ -840,7 +807,15 @@ getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
     @init{
         clauses = new ArrayList<>();
     }:
-    rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND relN=getRelation[tablename] {clauses.add(relN);})*
+    T_START_PARENTHESIS rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})* T_END_PARENTHESIS (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
+    | rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
+;
+
+getRelation[TableName tablename] returns [Relation mrel]
+    @after{
+        $mrel = new Relation(s, operator, rs);
+    }:
+    s=getSelector[tablename] operator=getComparator rs=getSelector[tablename]
 ;
 
 getFields[MutablePair pair]:
@@ -898,7 +873,6 @@ getSelector[TableName tablename] returns [Selector s]
     @init{
         List<Selector> params = new ArrayList<>();
         String name = null;
-        //String functionName = null;
     }:
     (
         (functionName=T_SUM
@@ -920,51 +894,36 @@ getSelector[TableName tablename] returns [Selector s]
             | constant=T_CONSTANT {s = new IntegerSelector($constant.text);}
             | T_FALSE {s = new BooleanSelector(false);}
             | T_TRUE {s = new BooleanSelector(true);}
-            | path=T_PATH {s = new StringSelector($path.text);}
             | qLiteral=QUOTED_LITERAL {s = new StringSelector($qLiteral.text);}
         )
     )
 ;
 
-
 getListTypes returns [String listType]:
-	//tablename=('PROCESS' | 'UDF' | 'TRIGGER' | 'process' | 'udf' | 'trigger') {$listType = new String($tablename.text);}
-	//tablename=('PROCESS' | 'UDF' | 'TRIGGER') {$listType = new String($tablename.text);}
-	//tablename=(T_PROCESS | 'UDF' | 'TRIGGER') {$listType = new String($tablename.text);}
 	tablename=(T_PROCESS | T_UDF | T_TRIGGER) {$listType = new String($tablename.text);}
 ;
 
 getAssignment[TableName tablename] returns [Relation assign]:
-    firstTerm=getSelector[tablename]
-        (T_EQUAL value=getValueAssign[tablename] {$assign = new Relation(firstTerm, Operator.ASSIGN, value);}
-        | T_START_BRACKET indexTerm=getSelector[tablename] T_END_BRACKET T_EQUAL termValue=getValueAssign[tablename] {
-            //TODO: Support index for collections (Example: cities[2] = 'Madrid')
-            $assign = new Relation (firstTerm, Operator.ASSIGN, termValue);
-        })
+    firstTerm=getSelector[tablename] T_EQUAL value=getSelector[tablename] {$assign = new Relation(firstTerm, Operator.ASSIGN, value);}
+    ( moreOperations=getOperations[tablename, $assign] { $assign = moreOperations; } )?
+    //TODO: Support index for collections (Example: cities[2] = 'Madrid')
 ;
 
-getValueAssign[TableName tablename] returns [Selector valueAssign]
+getOperations[TableName tablename, Relation relation] returns [ComplexRelation complexRelation]
     @init{
-        Operator op = Operator.ADD;
+        ComplexRelation cr = new ComplexRelation(relation);
+    }
+    @after{
+        $complexRelation = cr;
     }:
-    //firstTerm=getSelector[tablename] T_PLUS secondTerm=getSelector
-    vAssign=getSelector[tablename] {valueAssign = vAssign;}
-    (
-        operator=(T_PLUS | T_SUBTRACT {op = Operator.SUBTRACT;} )
-        termN=getSelector[tablename] {
-            //TODO: Relation of Relation (Example: amount = amount + 5)
-        }
-    )*
+    (operator=getOperator termN=getSelector[tablename] { cr.addRelation(operator, termN); } )+
 ;
 
-getRelation[TableName tablename] returns [Relation mrel]
-    @after{
-        $mrel = new Relation(s, operator, rs);
-    }:
-    s=getSelector[tablename]
-    operator=getComparator
-    rs=getSelector[tablename]
-
+getOperator returns [Operator op]:
+    T_PLUS {$op = Operator.ADD;}
+    | T_SUBTRACT {$op = Operator.SUBTRACT;}
+    | T_ASTERISK {$op = Operator.MULTIPLICATION;}
+    | T_SLASH {$op = Operator.DIVISION;}
 ;
 
 getComparator returns [Operator op]:
@@ -1028,7 +987,8 @@ getAllowedReservedWord returns [String str]:
     | T_HOUR
     | T_HOURS
     | T_DAY
-    | T_DAYS)
+    | T_DAYS
+    | T_COUNT)
     { $str = new String($ident.text); }
 ;
 
