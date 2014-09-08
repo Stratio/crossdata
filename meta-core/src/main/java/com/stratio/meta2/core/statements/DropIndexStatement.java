@@ -32,7 +32,7 @@ import java.util.Iterator;
 /**
  * Class that models a {@code DROP INDEX} statement from the META language.
  */
-public class DropIndexStatement extends MetaStatement {
+public class DropIndexStatement extends MetaDataStatement {
 
   /**
    * Whether the index should be dropped only if exists.

@@ -34,7 +34,7 @@ import java.util.Map;
 /**
  * Class that models an {@code UPDATE} statement from the META language.
  */
-public class UpdateTableStatement extends MetaStatement {
+public class UpdateTableStatement extends StorageStatement implements ITableStatement {
 
   /**
    * The name of the table.
@@ -360,6 +360,28 @@ public class UpdateTableStatement extends MetaStatement {
   @Override
   public ValidationRequirements getValidationRequirements() {
     return new ValidationRequirements();
+  }
+
+  public TableName getTableName() {
+    return tableName;
+  }
+
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
+  }
+
+  @Override
+  public String getEffectiveCatalog() {
+    String effective;
+    if(tableName != null){
+      effective = tableName.getCatalogName().getName();
+    }else{
+      effective = catalog;
+    }
+    if(sessionCatalog != null){
+      effective = sessionCatalog;
+    }
+    return effective;
   }
 
 }

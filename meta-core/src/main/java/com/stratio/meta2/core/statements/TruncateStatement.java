@@ -23,7 +23,7 @@ import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-public class TruncateStatement extends MetaStatement {
+public class TruncateStatement extends StorageStatement {
 
   private TableName tablename;
 

@@ -26,7 +26,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  * Class that models a {@code DROP CLUSTER} statement from the META language. In order to remove
  * an active cluster from the system, the user is required to delete first the existing tables.
  */
-public class DetachClusterStatement extends MetaStatement{
+public class DetachClusterStatement extends MetaDataStatement{
 
   /**
    * Cluster name given by the user.

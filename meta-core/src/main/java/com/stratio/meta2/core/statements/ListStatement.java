@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 /**
  * Class that models a {@code LIST} statement from the META language.
  */
-public class ListStatement extends MetaStatement {
+public class ListStatement extends MetaDataStatement {
 
   private static final Logger LOG = Logger.getLogger(ListStatement.class);
   /**

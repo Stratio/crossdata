@@ -35,7 +35,7 @@ import java.util.List;
  * DELETE ( {@literal <column>}, ( ',' {@literal <column>} )*)? FROM {@literal <tablename>} WHERE
  * {@literal <where_clause>};
  */
-public class DeleteStatement extends MetaStatement {
+public class DeleteStatement extends StorageStatement implements ITableStatement {
 
   /**
    * The name of the targe table.
@@ -186,6 +186,24 @@ public class DeleteStatement extends MetaStatement {
   @Override
   public ValidationRequirements getValidationRequirements() {
     return new ValidationRequirements();
+  }
+
+  public TableName getTableName() {
+    return tableName;
+  }
+
+  @Override
+  public String getEffectiveCatalog() {
+    String effective;
+    if(tableName != null){
+      effective = tableName.getCatalogName().getName();
+    }else{
+      effective = catalog;
+    }
+    if(sessionCatalog != null){
+      effective = sessionCatalog;
+    }
+    return effective;
   }
 
 }

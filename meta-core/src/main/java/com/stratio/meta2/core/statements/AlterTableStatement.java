@@ -33,7 +33,12 @@ import java.util.List;
 /**
  * Class that models an {@code ALTER TABLE} statement from the META language.
  */
-public class AlterTableStatement extends TableStatement {
+public class AlterTableStatement extends MetaDataStatement implements ITableStatement {
+
+  /**
+   * The target table.
+   */
+  private TableName tableName;
 
   /**
    * Type of alter. Accepted values are:
@@ -70,7 +75,8 @@ public class AlterTableStatement extends TableStatement {
    * @param properties The type of modification.
    * @param option The map of options.
    */
-  public AlterTableStatement(TableName tableName, ColumnName column, String type, List<Property> properties, int option) {
+  public AlterTableStatement(TableName tableName, ColumnName column, String type,
+                             List<Property> properties, int option) {
     this.command = false;
     this.tableName = tableName;
     this.column = column;
@@ -223,6 +229,28 @@ public class AlterTableStatement extends TableStatement {
   @Override
   public ValidationRequirements getValidationRequirements() {
     return new ValidationRequirements();
+  }
+
+  public TableName getTableName() {
+    return tableName;
+  }
+
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
+  }
+
+  @Override
+  public String getEffectiveCatalog() {
+    String effective;
+    if(tableName != null){
+      effective = tableName.getCatalogName().getName();
+    }else{
+      effective = catalog;
+    }
+    if(sessionCatalog != null){
+      effective = sessionCatalog;
+    }
+    return effective;
   }
 
 }

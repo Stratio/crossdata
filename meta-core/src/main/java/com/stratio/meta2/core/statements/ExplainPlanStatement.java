@@ -22,7 +22,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 /**
  * Class that models an {@code EXPLAIN PLAN} statement from the META language.
  */
-public class ExplainPlanStatement extends MetaStatement {
+public class ExplainPlanStatement extends MetaDataStatement {
 
   /**
    * The {@link com.stratio.meta2.core.statements.MetaStatement} to be analyzed.

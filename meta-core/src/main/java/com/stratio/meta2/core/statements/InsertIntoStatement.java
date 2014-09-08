@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Class that models an {@code INSERT INTO} statement from the META language.
  */
-public class InsertIntoStatement extends MetaStatement {
+public class InsertIntoStatement extends StorageStatement {
 
   /**
    * Constant to define an {@code INSERT INTO} that takes the input values from a {@code SELECT}

@@ -31,12 +31,17 @@ import java.util.List;
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
  */
-public class DescribeStatement extends TableStatement {
+public class DescribeStatement extends MetaDataStatement implements ITableStatement {
 
   /**
    * Type of description required: {@code CATALOG} or {@code TABLE}.
    */
   private DescribeType type;
+
+  /**
+   * The target table.
+   */
+  private TableName tableName;
 
   /**
    * Class constructor.
@@ -156,6 +161,28 @@ public class DescribeStatement extends TableStatement {
   @Override
   public ValidationRequirements getValidationRequirements() {
     return new ValidationRequirements();
+  }
+
+  public TableName getTableName() {
+    return tableName;
+  }
+
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
+  }
+
+  @Override
+  public String getEffectiveCatalog() {
+    String effective;
+    if(tableName != null){
+      effective = tableName.getCatalogName().getName();
+    }else{
+      effective = catalog;
+    }
+    if(sessionCatalog != null){
+      effective = sessionCatalog;
+    }
+    return effective;
   }
 
 }

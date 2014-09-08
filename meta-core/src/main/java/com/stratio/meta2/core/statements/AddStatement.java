@@ -19,7 +19,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 /**
  * Class that models an {@code ADD} statement from the META language.
  */
-public class AddStatement extends MetaStatement {
+public class AddStatement extends MetaDataStatement {
 
   /**
    * The path to load the jar file.

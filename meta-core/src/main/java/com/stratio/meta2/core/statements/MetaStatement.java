@@ -163,7 +163,7 @@ public abstract class MetaStatement implements IStatement {
    * @return The catalog specified in the statement or the session catalog otherwise.
    */
   public String getEffectiveCatalog() {
-    return catalogInc ? catalog : sessionCatalog;
+    return catalogInc? catalog: sessionCatalog;
   }
 
   /**

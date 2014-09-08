@@ -44,7 +44,7 @@ import java.util.Set;
 /**
  * Class that models a {@code CREATE TABLE} statement of the META language.
  */
-public class CreateTableStatement extends MetaStatement {
+public class CreateTableStatement extends MetaDataStatement implements ITableStatement {
 
   /**
    * The name of the target table.
@@ -120,8 +120,10 @@ public class CreateTableStatement extends MetaStatement {
    * @param columnNumberPK The number of the column associated with the primary key. This value is
    *        only used if the type of primary key is {@code 1}.
    */
-  public CreateTableStatement(TableName tableName, ClusterName clusterName, Map<ColumnName, String> columns,
-                              List<ColumnName> primaryKey, List<ColumnName> clusterKey, int primaryKeyType, int columnNumberPK) {
+  public CreateTableStatement(TableName tableName, ClusterName clusterName,
+                              Map<ColumnName, String> columns,
+                              List<ColumnName> primaryKey, List<ColumnName> clusterKey,
+                              int primaryKeyType, int columnNumberPK) {
     this.command = false;
     this.tableName = tableName;
     this.clusterName = clusterName;
@@ -401,9 +403,29 @@ public class CreateTableStatement extends MetaStatement {
     }
     return sb.toString();
   }
+
   public ValidationRequirements getValidationRequirements(){
     return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG)
         .add(Validation.MUST_EXIST_CLUSTER)
         .add(Validation.MUST_NOT_EXIST_TABLE);
   }
+
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
+  }
+
+  @Override
+  public String getEffectiveCatalog() {
+    String effective;
+    if(tableName != null){
+      effective = tableName.getCatalogName().getName();
+    }else{
+      effective = catalog;
+    }
+    if(sessionCatalog != null){
+      effective = sessionCatalog;
+    }
+    return effective;
+  }
+
 }
