@@ -30,8 +30,6 @@ import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta2.core.parser.Parser;
 import com.stratio.meta.core.planner.Planner;
 import com.stratio.meta.core.validator.Validator;
-import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.streaming.api.StratioStreamingAPIFactory;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
@@ -109,13 +107,13 @@ public class Engine {
     hazelcast = initializeHazelcast(config);
     hazelcastMap = hazelcast.getMap(config.getHazelcastMapName());
 
-    IStratioStreamingAPI stratioStreamingAPI = initializeStreaming(config);
+    //IStratioStreamingAPI stratioStreamingAPI = initializeStreaming(config);
 
     parser = new Parser();
     validator = new Validator(config);
-    manager = new APIManager(stratioStreamingAPI);
-    planner = new Planner(stratioStreamingAPI);
-    executor = new Executor(stratioStreamingAPI, deepContext, config);
+    manager = new APIManager();
+    planner = new Planner();
+    executor = new Executor(deepContext, config);
   }
 
   /**
@@ -123,7 +121,7 @@ public class Engine {
    * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
    * @return An instance of {@link com.stratio.streaming.api.IStratioStreamingAPI}.
    */
-  private IStratioStreamingAPI initializeStreaming(EngineConfig config){
+  /*private IStratioStreamingAPI initializeStreaming(EngineConfig config){
     IStratioStreamingAPI stratioStreamingAPI = null;
     if(config.getKafkaServer() != null && config.getZookeeperServer() != null
        && !"null".equals(config.getKafkaServer()) && !"null".equals(config.getZookeeperServer())) {
@@ -151,7 +149,7 @@ public class Engine {
                + " Please configure zookeeper and kafka servers");
     }
     return stratioStreamingAPI;
-  }
+  }*/
 
   /**
    * Initialize the connection to the underlying database.

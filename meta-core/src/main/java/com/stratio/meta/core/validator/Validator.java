@@ -30,7 +30,7 @@ public class Validator {
   private final EngineConfig config;
 
   public Validator(EngineConfig config){
-    metadata = new MetadataManager(null);
+    metadata = new MetadataManager();
     metadata.loadMetadata();
     this.config = config;
   }

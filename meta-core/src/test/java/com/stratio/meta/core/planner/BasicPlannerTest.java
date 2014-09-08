@@ -37,7 +37,7 @@ public class BasicPlannerTest extends BasicCoreCassandraTest {
   public static void setUpBeforeClass(){
     BasicCoreCassandraTest.setUpBeforeClass();
     BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-    _metadataManager = new MetadataManager(null);
+    _metadataManager = new MetadataManager();
     _metadataManager.loadMetadata();
   }
 

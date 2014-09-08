@@ -24,7 +24,6 @@ import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.core.validator.ValidationRequirements;
-import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,12 +101,11 @@ public class DescribeStatement extends TableStatement {
 
   /**
    * Execute the describe command.
-   * 
-   * @param stratioStreamingAPI
+   *
    * @return A {@link com.stratio.meta.common.result.Result}.
    */
-  public Result execute(IStratioStreamingAPI stratioStreamingAPI) {
-    MetadataManager mm = new MetadataManager(stratioStreamingAPI);
+  public Result execute() {
+    MetadataManager mm = new MetadataManager();
     mm.loadMetadata();
     Result result = null;
     if (type == DescribeType.CATALOG) {

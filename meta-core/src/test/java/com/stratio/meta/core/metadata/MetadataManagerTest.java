@@ -42,7 +42,7 @@ public class MetadataManagerTest extends BasicCoreCassandraTest {
   public static void setUpBeforeClass(){
     BasicCoreCassandraTest.setUpBeforeClass();
     BasicCoreCassandraTest.loadTestData("demo", "demoCatalog.cql");
-    _metadataManager = new MetadataManager(null);
+    _metadataManager = new MetadataManager();
     _metadataManager.loadMetadata();
   }
 

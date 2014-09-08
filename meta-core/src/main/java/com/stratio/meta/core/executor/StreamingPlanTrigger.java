@@ -56,8 +56,7 @@ public class StreamingPlanTrigger implements Runnable, ActorResultListener{
     //Register this thread as the callback for the streaming results.
     Tree t = new Tree(metaQuery.getPlan().getNode());
     t.setParent(new Tree());
-    t.executeTreeDownTop(metaQuery.getQueryId(), stratioStreamingAPI,
-                                                      deepSparkContext, engineConfig, this);
+    t.executeTreeDownTop(metaQuery.getQueryId(), deepSparkContext, engineConfig, this);
   }
 
   @Override
@@ -65,8 +64,7 @@ public class StreamingPlanTrigger implements Runnable, ActorResultListener{
     //Each time new results are received, trigger the execution of the childs.
     //Get the children -> Select from deep -> Join on Deep.
     Tree t = metaQuery.getPlan().getChildren().get(0);
-    Result r = t.executeTreeDownTop(metaQuery.getQueryId(), stratioStreamingAPI,
-                                    deepSparkContext, engineConfig, null, result);
+    Result r = t.executeTreeDownTop(metaQuery.getQueryId(), deepSparkContext, engineConfig, null, result);
     r.setQueryId(metaQuery.getQueryId());
     callback.processResults(r);
   }

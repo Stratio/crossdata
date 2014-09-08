@@ -55,7 +55,7 @@ public class CassandraMetadataHelperTest extends BasicCoreCassandraTest {
   public static void setUpBeforeClass() {
     BasicCoreCassandraTest.setUpBeforeClass();
     BasicCoreCassandraTest.loadTestData("demo", "demoCatalog.cql");
-    metadataManager = new MetadataManager(null);
+    metadataManager = new MetadataManager();
     metadataManager.loadMetadata();
   }
 

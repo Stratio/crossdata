@@ -28,7 +28,6 @@ import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.core.validator.ValidationRequirements;
-import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import java.util.List;
 
@@ -169,29 +168,11 @@ public abstract class MetaStatement implements IStatement {
   }
 
   /**
-   * Translate the statement into the CQL equivalent when possible.
+   * Translate the statement into the CQL equivalent when possible.String query = ss.translateToSiddhi(stratioStreamingAPI, streamName, outgoing);
    * 
    * @return The CQL equivalent.
    */
   public abstract String translateToCQL();
-
-  public String translateToSiddhi(IStratioStreamingAPI stratioStreamingAPI, String streamName,
-      String outgoing) {
-    return null;
-  }
-
-/*
-  */
-/**
-   * Get the Statement equivalent of the current query.
-   * 
-   * @return The Statement or null if the driver translation cannot be done.
-   *//*
-
-  public Statement getDriverStatement() {
-    return null;
-  }
-*/
 
   /**
    * Set the catalog to be described.
@@ -222,8 +203,6 @@ public abstract class MetaStatement implements IStatement {
 
   //TODO: This method should be abstract
   public abstract ValidationRequirements getValidationRequirements();
-
-
 
 
   /**

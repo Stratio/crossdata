@@ -25,7 +25,6 @@ import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
 
@@ -52,9 +51,8 @@ public class APIManager {
 
   /**
    * Class constructor.
-   * @param stratioStreamingAPI
    */
-  public APIManager(IStratioStreamingAPI stratioStreamingAPI){
+  public APIManager(){
     //metadata = new MetadataManager(session, stratioStreamingAPI);
     //metadata = new MetadataManager();
     //metadata.loadMetadata();

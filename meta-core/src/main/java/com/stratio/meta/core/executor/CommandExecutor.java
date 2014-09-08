@@ -24,7 +24,6 @@ import com.stratio.meta2.core.statements.ExplainPlanStatement;
 import com.stratio.meta2.core.statements.ListStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.statements.StopProcessStatement;
-import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
 
@@ -45,21 +44,21 @@ public class CommandExecutor {
    * @param stmt Statement to execute.
    * @return a {@link com.stratio.meta.common.result.Result}.
    */
-  public static Result execute(String queryId, MetaStatement stmt, IStratioStreamingAPI stratioStreamingAPI) {
+  public static Result execute(String queryId, MetaStatement stmt) {
     try {
       if (stmt instanceof DescribeStatement) {
         DescribeStatement descStmt = (DescribeStatement) stmt;
-        return descStmt.execute(stratioStreamingAPI);
+        return descStmt.execute();
       } else if (stmt instanceof ExplainPlanStatement) {
         ExplainPlanStatement explainStmt = (ExplainPlanStatement) stmt;
         //return explainStmt.execute(session, stratioStreamingAPI);
         throw new UnsupportedOperationException();
       } else if (stmt instanceof ListStatement) {
         ListStatement listStmt = (ListStatement) stmt;
-        return listStmt.execute(queryId, stratioStreamingAPI);
+        return listStmt.execute(queryId);
       } else if (stmt instanceof StopProcessStatement) {
         StopProcessStatement stopStmt = (StopProcessStatement) stmt;
-        return stopStmt.execute(stratioStreamingAPI);
+        return stopStmt.execute();
       } else {
         return Result.createExecutionErrorResult("Command not supported yet.");
       }

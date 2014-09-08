@@ -29,7 +29,6 @@ import com.stratio.meta.core.metadata.CassandraMetadataHelper;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
 
@@ -56,10 +55,9 @@ public class APIManager {
 
   /**
    * Class constructor.
-   * @param stratioStreamingAPI Cassandra session used to retrieve the metadata.
    */
-  public APIManager(IStratioStreamingAPI stratioStreamingAPI){
-    metadata = new MetadataManager(stratioStreamingAPI);
+  public APIManager(){
+    metadata = new MetadataManager();
     metadata.loadMetadata();
     helper = new CassandraMetadataHelper();
   }

@@ -21,7 +21,6 @@ package com.stratio.meta.core.planner;
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
-import com.stratio.streaming.api.IStratioStreamingAPI;
 
 public class Planner {
 
@@ -33,10 +32,9 @@ public class Planner {
     /**
      * Planner constructor.
      *
-     * @param stratioStreamingAPI
      */
-    public Planner(IStratioStreamingAPI stratioStreamingAPI){
-        metadata = new MetadataManager(stratioStreamingAPI);
+    public Planner(){
+        metadata = new MetadataManager();
         metadata.loadMetadata();
     }
 

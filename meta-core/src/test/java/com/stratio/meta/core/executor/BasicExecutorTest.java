@@ -52,8 +52,8 @@ public class BasicExecutorTest extends BasicCoreCassandraTest {
     BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
     EngineConfig config = initConfig();
     deepContext = new DeepSparkContext(config.getSparkMaster(), config.getJobName());
-    executor = new Executor(null, deepContext, config);
-    metadataManager = new MetadataManager(null);
+    executor = new Executor(deepContext, config);
+    metadataManager = new MetadataManager();
     metadataManager.loadMetadata();
   }
 

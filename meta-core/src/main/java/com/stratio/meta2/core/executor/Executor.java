@@ -24,7 +24,6 @@ import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.core.engine.EngineConfig;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.Tree;
-import com.stratio.streaming.api.IStratioStreamingAPI;
 
 import org.apache.log4j.Logger;
 
@@ -53,21 +52,19 @@ public class Executor {
   /**
    * Stratio Streaming API.
    */
-  private final IStratioStreamingAPI stratioStreamingAPI;
+  //private final IStratioStreamingAPI stratioStreamingAPI;
 
   private final ExecutorService executorService;
 
   /**
    * Executor constructor.
-   * @param stratioStreamingAPI
    * @param deepSparkContext Spark context.
    * @param engineConfig a {@link com.stratio.meta.core.engine.EngineConfig}
    */
-  public Executor(IStratioStreamingAPI stratioStreamingAPI, DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
+  public Executor(DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
     //this.session = session;
     this.deepSparkContext = deepSparkContext;
     this.engineConfig = engineConfig;
-    this.stratioStreamingAPI = stratioStreamingAPI;
     this.executorService = Executors.newFixedThreadPool(3);
   }
 
