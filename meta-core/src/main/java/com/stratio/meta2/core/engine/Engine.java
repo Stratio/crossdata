@@ -85,9 +85,9 @@ public class Engine {
   /**
    * Hazelcast instance.
    */
-  private final HazelcastInstance hazelcast;
+  //private final HazelcastInstance hazelcast;
 
-  private final Map<String, byte[]> hazelcastMap;
+  //private final Map<String, byte[]> hazelcastMap;
 
   /**
    * Deep Spark context.
@@ -110,8 +110,8 @@ public class Engine {
 
     //this.session=initializeDB(config);
 
-    hazelcast = initializeHazelcast(config);
-    hazelcastMap = hazelcast.getMap(config.getHazelcastMapName());
+    //hazelcast = initializeHazelcast(config);
+    //hazelcastMap = hazelcast.getMap(config.getHazelcastMapName());
 
     IStratioStreamingAPI stratioStreamingAPI = initializeStreaming(config);
 
@@ -283,9 +283,11 @@ public class Engine {
     return manager;
   }
 
+  /*
   public Map<String, byte[]> getHazelcastMap() {
     return hazelcastMap;
   }
+  */
 
   /**
    * Close open connections.
@@ -293,7 +295,7 @@ public class Engine {
   public void shutdown(){
     deepContext.stop();
     //session.close();
-    hazelcast.shutdown();
+    //hazelcast.shutdown();
   }
 
 }
