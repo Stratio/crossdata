@@ -175,7 +175,7 @@ public class Metash {
    * @param currentKeyspace The currentCatalog.
    */
   private void setPrompt(String currentKeyspace) {
-    StringBuilder sb = new StringBuilder("\033[36mmetash-sh:");
+    StringBuilder sb = new StringBuilder("metash-sh:");
     if (currentKeyspace == null) {
       sb.append(currentUser);
     } else {
@@ -183,7 +183,7 @@ public class Metash {
       sb.append(":");
       sb.append(currentKeyspace);
     }
-    sb.append(">\033[0m ");
+    sb.append("> ");
     console.setPrompt(sb.toString());
   }
 
@@ -243,10 +243,10 @@ public class Metash {
       metaResult = metaDriver.executeQuery(currentCatalog, cmd);
       queryEnd = System.currentTimeMillis();
       updatePrompt(metaResult);
-      println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
+      println("Result: " + ConsoleUtils.stringResult(metaResult));
       println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
     } catch (Exception e) {
-      println("\033[31mError:\033[0m " + e.getMessage());
+      println("Error: " + e.getMessage());
     }
   }
 
@@ -342,6 +342,7 @@ public class Metash {
       while (!cmd.trim().toLowerCase().startsWith("exit")
              && !cmd.trim().toLowerCase().startsWith("quit")) {
         cmd = console.readLine();
+        //Does it make sense? We add a space at the end and afterwards we trim the String
         sb.append(cmd).append(" ");
         toExecute = sb.toString().trim();
         if (toExecute.endsWith(";")) {
@@ -373,10 +374,12 @@ public class Metash {
       }
     } catch (IOException ex) {
       LOG.error("Cannot read from console.", ex);
+    } catch (Exception e) {
+      LOG.error("Cannot read from console.", e);
     }
   }
 
-  public String sendManifest(String sentence) {
+  public String sendManifest(String sentence) throws Exception {
     LOG.debug("Command: " + sentence);
     // Get manifest type
     sentence = sentence.substring(4);
@@ -398,10 +401,11 @@ public class Metash {
       metaResult = metaDriver.addManifest(manifest);
       queryEnd = System.currentTimeMillis();
       updatePrompt(metaResult);
-      println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(metaResult));
+      println("Result: " + ConsoleUtils.stringResult(metaResult));
       println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
     } catch (Exception e) {
-      println("\033[31mError:\033[0m " + e.getMessage());
+      println("Error: " + e.getMessage());
+      throw new Exception();
     }
 
     return manifest.toString();

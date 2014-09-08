@@ -24,9 +24,12 @@ import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
 import com.stratio.meta2.common.api.generated.datastore.HostsType;
 import com.stratio.meta2.common.api.generated.datastore.PropertyType;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ManifestHelper {
+public class ManifestHelper implements Serializable {
+
+  private static final long serialVersionUID = -6979108221035957858L;
 
   public static String manifestToString(Manifest manifest){
     String result = null;

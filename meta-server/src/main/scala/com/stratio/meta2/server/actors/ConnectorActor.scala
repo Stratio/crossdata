@@ -10,7 +10,7 @@ object ConnectorActor {
 
 class ConnectorActor extends Actor with ActorLogging {
 
-  log.info("levantado el connector actor")
+  log.info("Lifting connector actor")
 
   var connectorsMap: Map[String, ActorRef] = Map()
 

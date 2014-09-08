@@ -26,6 +26,8 @@
 
 package com.stratio.meta2.common.api.generated.connector;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -55,8 +57,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "DataStoresNameType", propOrder = {
     "datastore"
 })
-public class DataStoresNameType {
+public class DataStoresNameType implements Serializable {
 
+  private static final long serialVersionUID = 4720743468259910932L;
   @XmlElement(name = "Datastore", required = true)
   protected String datastore;
 

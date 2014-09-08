@@ -49,7 +49,7 @@ public class ShellResultHandler implements IResultHandler{
   @Override
   public void processError(Result errorResult) {
     parent.println("");
-    parent.println("\033[32mResult:\033[0m " + ConsoleUtils.stringResult(errorResult));
+    parent.println("Result: " + ConsoleUtils.stringResult(errorResult));
     parent.flush();
   }
 
@@ -57,7 +57,7 @@ public class ShellResultHandler implements IResultHandler{
   public void processResult(Result result) {
     parent.updatePrompt(result);
     StringBuilder sb = new StringBuilder(System.lineSeparator());
-    sb.append("\033[32mResult:\033[0m QID: " + result.getQueryId() + System.lineSeparator() + ConsoleUtils.stringResult(result));
+    sb.append("Result: QID: " + result.getQueryId() + System.lineSeparator() + ConsoleUtils.stringResult(result));
     if(QueryResult.class.isInstance(result)){
       QueryResult r = QueryResult.class.cast(result);
       sb.append(System.lineSeparator()).append("Result page: " + r.getResultPage());

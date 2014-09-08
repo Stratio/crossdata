@@ -26,6 +26,7 @@
 
 package com.stratio.meta2.common.api.generated.connector;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -56,8 +57,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "SupportedOperationsType", propOrder = {
     "operation"
 })
-public class SupportedOperationsType {
+public class SupportedOperationsType implements Serializable {
 
+  private static final long serialVersionUID = 7393543114588196401L;
   protected List<String> operation;
 
   /**

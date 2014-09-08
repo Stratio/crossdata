@@ -236,23 +236,6 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
     return result;*/
   }
 
-  private void updateTermClassesInConditions(TableMetadata tableMetadata) {
-    throw new UnsupportedOperationException();
-    /*for (String ident : conditions.keySet()) {
-      ColumnMetadata cm = tableMetadata.getColumns().get(ident);
-      Term<?> term = conditions.get(ident);
-      if ((cm != null) && (term != null)) {
-        if (term instanceof Term) {
-          if (CoreUtils.castForLongType(cm, term)) {
-            conditions.put(ident, new IntegerTerm((Term<Long>) term));
-          } else if (CoreUtils.castForDoubleType(cm, term)) {
-            conditions.put(ident, new FloatTerm((Term<Double>) term));
-          }
-        }
-      }
-    }*/
-  }
-
   private Result validateOptions() {
     Result result = QueryResult.createSuccessQueryResult();
     for (Option opt : options) {
@@ -337,24 +320,6 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
       }
     }
     return result;*/
-  }
-
-  private void updateTermClassesInAssignations(TableMetadata tableMetadata) {
-    throw new UnsupportedOperationException();
-    /*for (Assignation assignment: assignations) {
-      String ident = assignment.getTargetColumn().getName();
-      ColumnMetadata cm = tableMetadata.getColumns().get(ident);
-      Term<?> valueTerm = (Term<?>) assignment.getValue();
-      if ((cm != null) && (valueTerm != null)) {
-        if (valueTerm instanceof Term) {
-          if (CoreUtils.castForLongType(cm, valueTerm)) {
-            assignment.setValue(new IntegerTerm((Term<Long>) valueTerm));
-          } else if (CoreUtils.castForDoubleType(cm, valueTerm)) {
-            assignment.setValue(new FloatTerm((Term<Double>) valueTerm));
-          }
-        }
-      }
-    }*/
   }
 
   @Override
