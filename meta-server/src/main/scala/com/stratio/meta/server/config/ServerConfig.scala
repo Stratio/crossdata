@@ -34,7 +34,8 @@ object ServerConfig{
   val SERVER_USER_CONFIG_RESOURCE = "external.config.resource"
 }
 
-trait ServerConfig extends CassandraConfig with SparkConfig with StreamingConfig with HazelcastConfig {
+//trait ServerConfig extends CassandraConfig with SparkConfig with StreamingConfig with HazelcastConfig {
+trait ServerConfig extends SparkConfig with StreamingConfig with HazelcastConfig {
 
   lazy val logger:Logger = ???
 
@@ -76,8 +77,8 @@ trait ServerConfig extends CassandraConfig with SparkConfig with StreamingConfig
 
   lazy val engineConfig:EngineConfig = {
     val result= new EngineConfig()
-    result.setCassandraHosts(cassandraHosts)
-    result.setCassandraPort(cassandraPort)
+    //result.setCassandraHosts(cassandraHosts)
+    //result.setCassandraPort(cassandraPort)
     result.setSparkMaster(sparkMaster)
     result.setClasspathJars(sparkClasspath)
     result.setKafkaServer(kafkaServer)

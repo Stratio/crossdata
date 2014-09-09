@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.server.server
+package com.stratio.meta2.server.server
 
 import akka.actor.{Props}
 import org.scalatest.FunSuiteLike
@@ -29,6 +29,7 @@ import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandr
 import com.stratio.meta.common.result._
 import com.stratio.meta.common.ask.Connect
 import com.stratio.meta.common.ask.Query
+import com.stratio.meta2.server.actors.ServerActor
 
 /**
  * Server Actor tests.

@@ -37,7 +37,7 @@ import com.stratio.meta.common.ask.Query
 import com.stratio.meta.communication.ACK
 import scala.util.Success
 import java.util.UUID
-import com.stratio.meta.server.actors.ConnectorActor
+import com.stratio.meta2.server.actors.ConnectorActor
 
 /**
  * Validator actor tests.

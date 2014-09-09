@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.server.query
+package com.stratio.meta2.server.query
 
 import akka.testkit.{ImplicitSender, DefaultTimeout, TestKit}
 import akka.actor.{Props, ActorSystem}
@@ -32,6 +32,7 @@ import akka.pattern.ask
 import org.testng.Assert._
 import com.stratio.meta.common.result.{Result, ErrorResult, QueryResult}
 import com.stratio.meta.communication.ACK
+import com.stratio.meta2.server.actors.QueryActor
 
 class BasicQueryActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 

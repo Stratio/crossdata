@@ -20,7 +20,6 @@ package com.stratio.meta.server
 
 import akka.actor.{ Props, ActorSystem}
 import akka.contrib.pattern.ClusterReceptionistExtension
-import com.stratio.meta.server.actors.ServerActor
 import com.stratio.meta.core.engine.Engine
 import com.stratio.meta.server.config.ServerConfig
 import scala.annotation.tailrec

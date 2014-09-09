@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.server.server
+package com.stratio.meta2.server.server
 
 import com.stratio.meta.common.ask.{APICommand, Command}
 import com.stratio.meta.common.result.{Result, MetadataResult}
@@ -27,12 +27,12 @@ import com.stratio.meta.server.utilities.{createEngine, TestKitUsageSpec}
 import org.scalatest.FunSuiteLike
 import com.stratio.meta.server.config.BeforeAndAfterCassandra
 import com.stratio.meta.core.engine.Engine
-import com.stratio.meta.server.actors.ServerActor
 import org.testng.Assert._
 import scala.concurrent.{Await, Future}
 import akka.pattern.ask
 import scala.concurrent.duration._
 import scala.collection.mutable.ListBuffer
+import com.stratio.meta2.server.actors.ServerActor
 
 /**
  * To generate unit test of query actor
