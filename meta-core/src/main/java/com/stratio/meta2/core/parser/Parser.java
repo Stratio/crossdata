@@ -47,13 +47,13 @@ public class Parser {
 
   public ParsedQuery parse(BaseQuery baseQuery) throws ParsingException {
     ParsedQuery result=null;
-    MetaStatement metaStatement= this.parseStatement(baseQuery.getDefaultCatalog().toString(),baseQuery.getQuery());
+    MetaStatement metaStatement = this.parseStatement(baseQuery.getDefaultCatalog().toString(), baseQuery.getQuery());
     if(metaStatement instanceof SelectStatement){
-      result=new SelectParsedQuery(baseQuery,(SelectStatement)metaStatement);
-    }else if(metaStatement instanceof StorageStatement){
-      result=new StorageParsedQuery(baseQuery,(StorageStatement)metaStatement);
-    }else if(metaStatement instanceof MetaDataStatement) {
-      result=new MetaDataParsedQuery(baseQuery,(MetaDataStatement)metaStatement);
+      result = new SelectParsedQuery(baseQuery, (SelectStatement) metaStatement);
+    } else if (metaStatement instanceof StorageStatement){
+      result = new StorageParsedQuery(baseQuery, (StorageStatement)metaStatement);
+    } else if (metaStatement instanceof MetaDataStatement) {
+      result = new MetaDataParsedQuery(baseQuery, (MetaDataStatement)metaStatement);
     }
     return result;
   }
