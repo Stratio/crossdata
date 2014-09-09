@@ -24,6 +24,7 @@ import com.stratio.meta.core.validator.Validator
 import org.apache.log4j.Logger
 import com.stratio.meta.common.result.Result
 import com.stratio.meta2.core.statements.MetaStatement
+import com.stratio.meta2.core.query.ParsedQuery
 
 object ValidatorActor{
   def props(planner:ActorRef, validator:Validator): Props= Props(new ValidatorActor(planner,validator))
@@ -47,7 +48,10 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
   override lazy val timerName= this.getClass.getName
 
   override def receive: Receive = {
-    case query:MetaQuery if !query.hasError=> {
+    case query: ParsedQuery => {
+      log.info("Validator Actor received ParsedQuery")
+    }
+    case query: MetaQuery if !query.hasError=> {
       log.info("validator query without errors")
       val timer=initTimer()
 
@@ -55,11 +59,11 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
       finishTimer(timer)
       log.info("Finish Validator Task")
     }
-    case query:MetaQuery if query.hasError=>{
+    case query: MetaQuery if query.hasError=>{
       log.info("validator query witherrors")
       sender ! query.getResult
     }
-    case statement:MetaStatement=> {
+    case statement: MetaStatement=> {
       
       log.info("validator metaStatement")
     }
