@@ -18,17 +18,24 @@
 
 package com.stratio.meta.driver;
 
-import static org.testng.Assert.*;
+import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.ConnectResult;
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.api.generated.datastore.ClusterType;
+import com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType;
+import com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType;
+import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.stratio.meta.common.exceptions.ConnectionException;
-import com.stratio.meta.common.exceptions.ParsingException;
-import com.stratio.meta.common.result.ConnectResult;
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 public class ConnectTest extends DriverParentTest {
 
@@ -81,7 +88,30 @@ public class ConnectTest extends DriverParentTest {
 
   }
 
+  @Test(dependsOnGroups = {"connect"})
+  public void sendManifest() {
+    Result metaResult = null;
 
+    // Create Manifest
+    DataStoreType manifest = new DataStoreType();
+    manifest.setName("string_name");
+    manifest.setVersion("0.0.1");
+    RequiredPropertiesType rp = new RequiredPropertiesType();
+    ClusterType ct = new ClusterType();
+    ct.setName("string_host");
+    rp.setCluster(ct);
+    manifest.setRequiredProperties(rp);
+    OptionalPropertiesType op = new OptionalPropertiesType();
+    manifest.setOptionalProperties(op);
+
+    // API Call
+    metaResult = driver.addManifest(manifest);
+
+    // Process result
+    assertFalse(metaResult.hasError());
+    CommandResult r = CommandResult.class.cast(metaResult);
+    assertTrue(((String) r.getResult()).equalsIgnoreCase("OK"), "sendManifest: " + System.lineSeparator() + " Cannot add manifest.");
+  }
 
   @Test(groups = {"query", "create Ks"}, dependsOnGroups = {"connect"})
   public void ExecuteCreatewitherrorTest() {
@@ -90,8 +120,6 @@ public class ConnectTest extends DriverParentTest {
     try {
       driver.executeQuery("ks_demo", msg);
       fail("Expecting ParsingException");
-    } catch (ParsingException e) {
-      e.printStackTrace();
     } catch (Exception e){
       e.printStackTrace();
       fail("Expecting ParsingException");

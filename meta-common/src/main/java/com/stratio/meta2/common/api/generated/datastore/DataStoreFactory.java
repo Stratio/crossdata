@@ -26,6 +26,8 @@
 
 package com.stratio.meta2.common.api.generated.datastore;
 
+import java.io.Serializable;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
@@ -47,9 +49,10 @@ import javax.xml.namespace.QName;
  *
  */
 @XmlRegistry
-public class DataStoreFactory {
+public class DataStoreFactory implements Serializable {
 
   private final static QName _DataStore_QNAME = new QName("", "DataStore");
+  private static final long serialVersionUID = 5488190701482501301L;
 
   /**
    * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: generated

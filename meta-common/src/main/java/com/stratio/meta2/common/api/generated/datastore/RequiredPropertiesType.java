@@ -26,6 +26,8 @@
 
 package com.stratio.meta2.common.api.generated.datastore;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -55,8 +57,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "RequiredPropertiesType", propOrder = {
     "cluster"
 })
-public class RequiredPropertiesType {
+public class RequiredPropertiesType implements Serializable {
 
+  private static final long serialVersionUID = 5870841654968577693L;
   @XmlElement(required = true)
   protected ClusterType cluster;
 

@@ -24,6 +24,7 @@ import java.io.Serializable;
 
 public class StreamRow implements Serializable {
 
+  private static final long serialVersionUID = -4982170211236952066L;
   private String name;
 
   private ColumnType type;

@@ -26,6 +26,7 @@
 
 package com.stratio.meta2.common.api.generated.connector;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -57,8 +58,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "OptionalPropertiesType", propOrder = {
     "property"
 })
-public class OptionalPropertiesType {
+public class OptionalPropertiesType implements Serializable {
 
+  private static final long serialVersionUID = -5018331624344488068L;
   @XmlElement(name = "Property")
   protected List<PropertyType> property;
 

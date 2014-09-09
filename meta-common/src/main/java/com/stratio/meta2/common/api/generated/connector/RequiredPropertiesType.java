@@ -26,6 +26,7 @@
 
 package com.stratio.meta2.common.api.generated.connector;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -57,8 +58,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "RequiredPropertiesType", propOrder = {
     "property"
 })
-public class RequiredPropertiesType {
+public class RequiredPropertiesType implements Serializable {
 
+  private static final long serialVersionUID = -1520242171821858719L;
   @XmlElement(name = "Property")
   protected List<PropertyType> property;
 

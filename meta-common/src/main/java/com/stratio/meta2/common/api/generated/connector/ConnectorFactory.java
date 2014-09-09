@@ -26,6 +26,8 @@
 
 package com.stratio.meta2.common.api.generated.connector;
 
+import java.io.Serializable;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
@@ -47,9 +49,10 @@ import javax.xml.namespace.QName;
  *
  */
 @XmlRegistry
-public class ConnectorFactory {
+public class ConnectorFactory implements Serializable {
 
   private final static QName _Connector_QNAME = new QName("", "Connector");
+  private static final long serialVersionUID = 4399986588512302541L;
 
   /**
    * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: generated

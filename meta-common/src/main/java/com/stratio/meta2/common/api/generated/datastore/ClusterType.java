@@ -26,6 +26,7 @@
 
 package com.stratio.meta2.common.api.generated.datastore;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -59,8 +60,9 @@ import javax.xml.bind.annotation.XmlType;
     "name",
     "hosts"
 })
-public class ClusterType {
+public class ClusterType implements Serializable {
 
+  private static final long serialVersionUID = 1018394430895642796L;
   @XmlElement(required = true)
   protected String name;
   protected List<HostsType> hosts;
