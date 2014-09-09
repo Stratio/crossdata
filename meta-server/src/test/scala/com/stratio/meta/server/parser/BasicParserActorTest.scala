@@ -32,6 +32,7 @@ import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandr
 import com.stratio.meta.common.result.{ErrorResult, QueryResult, CommandResult, Result}
 import com.stratio.meta.communication.ACK
 import com.stratio.meta.common.ask.Query
+import com.stratio.meta2.server.actors.ConnectorActor
 
 class BasicParserActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 

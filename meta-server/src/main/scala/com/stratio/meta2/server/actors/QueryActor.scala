@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.server.actors
+package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.meta.common.ask.Query
@@ -31,10 +31,10 @@ object QueryActor{
 
 class QueryActor(engine: Engine,connectorActorRef:ActorRef) extends Actor{
   val log =Logger.getLogger(classOf[QueryActor])
-  val executorActorRef = context.actorOf(ExecutorActor.props(connectorActorRef,engine.getExecutor),"ExecutorActor")
-  val plannerActorRef = context.actorOf(PlannerActor.props(executorActorRef,engine.getPlanner),"PlanerActor")
-  val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef,engine.getValidator),"ValidatorActor")
-  val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef,engine.getParser),"ParserActor")
+  //val executorActorRef = context.actorOf(ExecutorActor.props(connectorActorRef,engine.getExecutor),"ExecutorActor")
+  //val plannerActorRef = context.actorOf(PlannerActor.props(executorActorRef,engine.getPlanner),"PlanerActor")
+  //val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef,engine.getValidator),"ValidatorActor")
+  //val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef,engine.getParser),"ParserActor")
 
   //var querySender : ActorRef = null;
 
@@ -42,7 +42,7 @@ class QueryActor(engine: Engine,connectorActorRef:ActorRef) extends Actor{
     case Query(queryId, catalog, statement, user) => {
       log.info("User "+ user + " catalog: "+ catalog + " stmt: " + statement + " id: " + queryId)
       //querySender = sender
-      parserActorRef forward Query(queryId, catalog, statement, user)
+      //parserActorRef forward Query(queryId, catalog, statement, user)
       //parserActorRef ! Query(queryId, catalog, statement, user)
       log.info("Finish Query")
     }

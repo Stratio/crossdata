@@ -16,10 +16,9 @@
 * under the License.
 */
 
-package com.stratio.meta.server.actors
+package com.stratio.meta2.server.actors
 
 import java.util.UUID
-
 import akka.actor.{Actor, Props, ReceiveTimeout}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
@@ -28,6 +27,7 @@ import com.stratio.meta.common.result._
 import com.stratio.meta.communication.Disconnect
 import com.stratio.meta.core.engine.Engine
 import org.apache.log4j.Logger
+import com.stratio.meta2.server.actors.ConnectorActor
 
 object ServerActor{
   def props(engine: Engine): Props = Props(new ServerActor(engine))
@@ -37,7 +37,7 @@ class ServerActor(engine:Engine) extends Actor {
   val log =Logger.getLogger(classOf[ServerActor])
   val connectorActorRef=context.actorOf(ConnectorActor.props(),"ConnectorActor")
   val queryActorRef= context.actorOf(QueryActor.props(engine,connectorActorRef),"QueryActor")
-  val cmdActorRef= context.actorOf(APIActor.props(engine.getAPIManager),"APIActor")
+  //val cmdActorRef= context.actorOf(APIActor.props(engine.getAPIManager),"APIActor")
 
 
   override def preStart(): Unit = {
@@ -64,7 +64,7 @@ class ServerActor(engine:Engine) extends Actor {
     }
     case cmd: Command => {
       log.info("API Command call " + cmd.commandType)
-      cmdActorRef forward cmd
+      //cmdActorRef forward cmd
     }
     //pass the message to the connectorActor to extract the member in the cluster
     case member: MemberUp => {
