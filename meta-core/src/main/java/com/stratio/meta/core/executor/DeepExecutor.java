@@ -22,7 +22,7 @@ import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.deep.Bridge;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.statements.SelectStatement;
@@ -51,7 +51,7 @@ public class DeepExecutor {
    * @param resultsFromChildren List of {@link com.stratio.meta.common.result.Result} of children.
    * @param isRoot Indicates if these node is root.
    * @param deepSparkContext Spark context from Deep
-   * @param engineConfig The {@link com.stratio.meta.core.engine.EngineConfig}.
+   * @param engineConfig The {@link com.stratio.meta2.core.engine.EngineConfig}.
    * @return a {@link com.stratio.meta.common.result.Result} of execution in Spark.
    */
   public static Result execute(MetaStatement stmt,

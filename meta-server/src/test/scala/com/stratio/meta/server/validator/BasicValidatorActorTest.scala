@@ -18,7 +18,7 @@
 
 package com.stratio.meta.server.validator
 
-import com.stratio.meta.core.engine.Engine
+import com.stratio.meta2.core.engine.Engine
 import akka.actor.ActorSystem
 import com.stratio.meta.server.actors.{ValidatorActor, PlannerActor, ExecutorActor}
 import akka.testkit._
@@ -44,6 +44,7 @@ import com.stratio.meta2.server.actors.ConnectorActor
  */
 class BasicValidatorActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
+  /*
   val engine:Engine =  createEngine.create()
   lazy val connectorTest= system.actorOf(ConnectorActor.props(),"ConnectorActorTest")
   lazy val executorRef = system.actorOf( ExecutorActor.props(connectorTest,engine.getExecutor),"TestExecutorActor")
@@ -248,6 +249,8 @@ class BasicValidatorActorTest extends ActorReceiveUtils with FunSuiteLike with B
       executeStatement(msg, "ks_demo", false, "Expecting keyspace not exists.")
     }
   }
+  * 
+  */
 
 }
 

@@ -18,7 +18,7 @@
 
 package com.stratio.meta.server.utilities
 
-import com.stratio.meta.core.engine.{Engine, EngineConfig}
+import com.stratio.meta2.core.engine.{Engine, EngineConfig}
 
 /**
  * To generate unit test of proxy actor

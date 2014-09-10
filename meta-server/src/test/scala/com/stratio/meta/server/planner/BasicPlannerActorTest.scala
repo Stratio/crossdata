@@ -18,7 +18,7 @@
 
 package com.stratio.meta.server.planner
 
-import com.stratio.meta.core.engine.Engine
+import com.stratio.meta2.core.engine.Engine
 import akka.actor.ActorSystem
 import com.stratio.meta.server.actors.{PlannerActor,  ExecutorActor}
 import akka.testkit._
@@ -47,6 +47,7 @@ class BasicPlannerActorTest extends ActorReceiveUtils with FunSuiteLike with Bef
 
   val engine:Engine =  createEngine.create()
 
+  /*
   lazy val connectorTest= system.actorOf(ConnectorActor.props(),"ConnectorActorTest")
   lazy val executorRef = system.actorOf( ExecutorActor.props(connectorTest,engine.getExecutor),"TestExecutorActor")
   //lazy val executorRef = system.actorOf(ExecutorActor.props(engine.getExecutor),"TestExecutorActor")
@@ -252,6 +253,8 @@ class BasicPlannerActorTest extends ActorReceiveUtils with FunSuiteLike with Bef
       executeStatement(msg, "ks_demo", false)
     }
   }
+  * 
+  */
 
 }
 

@@ -44,6 +44,7 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
     metadataManager.loadMetadata();
   }
 
+  /*
   public void validateOk(String inputText, String expectedText, String methodName) {
     MetaStatement stmt = pt.testRegularStatement(inputText, expectedText, methodName);
     Result result = stmt.validate(metadataManager, null);
@@ -75,5 +76,6 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
     assertTrue(result.hasError(),
                "Cannot validate sentence - " + methodName + ": " + getErrorMessage(result));
   }
+  */
 
 }

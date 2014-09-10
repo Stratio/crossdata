@@ -39,13 +39,13 @@ class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTrac
       val timer=initTimer()
       //val stmt = parser.parseStatement(queryId, catalog, statement)
       //val stmt = parser.parseStatement(catalog, statement)
-      val baseQuery = new BaseQuery(queryId, statement, catalog)
-      val stmt = parser.parseStatement(baseQuery)
+      //val baseQuery = new BaseQuery(queryId, statement, catalog)
+      //val stmt = parser.parseStatement(baseQuery)
       //stmt.setQueryId(queryId)
       //if(!stmt.hasError){
-      stmt.setSessionCatalog(catalog)
+      //stmt.setSessionCatalog(catalog)
       //}
-      validator forward stmt
+      //validator forward stmt
       finishTimer(timer)
       log.info("Finish Parser Task")
     }

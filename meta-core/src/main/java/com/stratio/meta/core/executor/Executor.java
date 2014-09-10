@@ -21,7 +21,7 @@ package com.stratio.meta.core.executor;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.Tree;
 
@@ -57,7 +57,7 @@ public class Executor {
   /**
    * Executor constructor.
    * @param deepSparkContext Spark context.
-   * @param engineConfig a {@link com.stratio.meta.core.engine.EngineConfig}
+   * @param engineConfig a {@link com.stratio.meta2.core.engine.EngineConfig}
    */
   public Executor(DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
     this.deepSparkContext = deepSparkContext;
@@ -85,14 +85,16 @@ public class Executor {
       // If the task involves streaming and it is a non-single statement (e.g., SELECT * FROM t WITH
       // WINDOW 2 s), create an execution trigger handler in such a way that the remainder of the
       // plan is executed each time new streaming data arrives.
-      StreamingPlanTrigger st = new StreamingPlanTrigger(metaQuery, null, deepSparkContext, engineConfig, callbackActor);
-      executorService.execute(st);
+      //StreamingPlanTrigger st = new StreamingPlanTrigger(metaQuery, null, deepSparkContext, engineConfig, callbackActor);
+      //executorService.execute(st);
 
     }else {
 
+    	/*
       // Execute plan
       metaQuery.setResult(
           plan.executeTreeDownTop(metaQuery.getQueryId(), deepSparkContext, engineConfig, callbackActor));
+          */
     }
 
     return metaQuery;

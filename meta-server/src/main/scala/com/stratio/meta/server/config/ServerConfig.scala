@@ -18,7 +18,7 @@
 
 package com.stratio.meta.server.config
 
-import com.stratio.meta.core.engine.EngineConfig
+import com.stratio.meta2.core.engine.EngineConfig
 import com.typesafe.config.{ConfigFactory, Config}
 import java.io.File
 import org.apache.log4j.Logger

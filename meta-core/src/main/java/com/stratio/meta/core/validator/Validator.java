@@ -19,7 +19,7 @@
 package com.stratio.meta.core.validator;
 
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;
 
@@ -38,7 +38,7 @@ public class Validator {
   public MetaQuery validateQuery(MetaQuery metaQuery) {
     //TODO: Implement metadata invalidation messages between servers.
     metadata.loadMetadata();
-    metaQuery.setResult(metaQuery.getStatement().validate(metadata, config));
+    //metaQuery.setResult(metaQuery.getStatement().validate(metadata, config));
     if(!metaQuery.hasError()) {
       metaQuery.setStatus(QueryStatus.VALIDATED);
     }

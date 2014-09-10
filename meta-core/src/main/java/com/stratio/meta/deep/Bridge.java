@@ -27,7 +27,7 @@ import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.deep.comparators.DeepComparator;
@@ -84,7 +84,7 @@ public class Bridge {
    * Brigde Constructor.
    *
    * @param deepSparkContext Spark context from Deep
-   * @param config A {@link com.stratio.meta.core.engine.EngineConfig}, contains global
+   * @param config A {@link com.stratio.meta2.core.engine.EngineConfig}, contains global
    *        configuration
    */
   public Bridge(DeepSparkContext deepSparkContext, EngineConfig config) {

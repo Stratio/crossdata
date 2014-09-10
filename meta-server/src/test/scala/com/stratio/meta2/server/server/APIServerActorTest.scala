@@ -26,7 +26,7 @@ import com.typesafe.config.ConfigFactory
 import com.stratio.meta.server.utilities.{createEngine, TestKitUsageSpec}
 import org.scalatest.FunSuiteLike
 import com.stratio.meta.server.config.BeforeAndAfterCassandra
-import com.stratio.meta.core.engine.Engine
+import com.stratio.meta2.core.engine.Engine
 import org.testng.Assert._
 import scala.concurrent.{Await, Future}
 import akka.pattern.ask

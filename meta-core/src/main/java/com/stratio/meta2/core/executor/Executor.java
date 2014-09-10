@@ -21,7 +21,7 @@ package com.stratio.meta2.core.executor;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.Tree;
 
@@ -59,7 +59,7 @@ public class Executor {
   /**
    * Executor constructor.
    * @param deepSparkContext Spark context.
-   * @param engineConfig a {@link com.stratio.meta.core.engine.EngineConfig}
+   * @param engineConfig a {@link com.stratio.meta2.core.engine.EngineConfig}
    */
   public Executor(DeepSparkContext deepSparkContext, EngineConfig engineConfig) {
     //this.session = session;

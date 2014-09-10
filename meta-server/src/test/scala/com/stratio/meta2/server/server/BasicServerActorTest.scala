@@ -22,7 +22,7 @@ import akka.actor.{Props}
 import org.scalatest.FunSuiteLike
 import com.stratio.meta.server.actors._
 import scala.concurrent.duration._
-import com.stratio.meta.core.engine.Engine
+import com.stratio.meta2.core.engine.Engine
 import org.testng.Assert._
 import com.stratio.meta.server.utilities._
 import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
