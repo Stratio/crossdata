@@ -31,6 +31,7 @@ import com.stratio.meta.server.actors.ParserActor
 import com.stratio.meta.server.actors.APIActor
 import com.stratio.meta.server.actors.ValidatorActor
 import com.stratio.meta.server.actors.PlannerActor
+import com.stratio.meta2.core.parser.Parser
 
 object ServerActor{
   def props(engine: Engine): Props = Props(new ServerActor(engine))
@@ -39,8 +40,8 @@ object ServerActor{
 class ServerActor(engine:Engine) extends Actor {
   val log =Logger.getLogger(classOf[ServerActor])
 
-  val parserActorRef=context.actorOf(ParserActor.props(null,null),"ParserActor") 
-  val APIActorRef=context.actorOf(APIActor.props(null),"APIActor") 
+  val parserActorRef=context.actorOf(ParserActor.props(null,engine.getParser()),"ParserActor") 
+  val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()),"APIActor") 
   
   //val normalizerActorRef=context.actorOf(NormalizerActor.props(engine),"NormalizerActor") 
   

@@ -23,6 +23,7 @@ import com.stratio.meta.common.ask.Command;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
+import com.stratio.meta2.core.api.APIManager;
 
 import org.testng.annotations.Test;
 

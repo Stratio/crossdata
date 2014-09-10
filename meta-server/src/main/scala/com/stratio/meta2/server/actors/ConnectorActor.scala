@@ -52,9 +52,11 @@ class ConnectorActor extends Actor with ActorLogging {
     case _: DisconnectFromConnector=>
       println("disconnecting from connector")
 
+      /*
     case ex:Execute=>
       println("Executing workflow "+ex.workflow.toString())
       println("initial steps->"+ex.workflow.getInitialSteps())
+     */
     //case _: Request=>
     //case _: Response=>
     //case _: MetadataStruct=>
