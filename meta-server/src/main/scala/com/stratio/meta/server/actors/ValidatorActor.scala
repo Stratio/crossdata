@@ -60,7 +60,7 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
       log.info("Finish Validator Task")
     }
     case query: MetaQuery if query.hasError=>{
-      log.info("validator query witherrors")
+      log.info("validator query with errors")
       sender ! query.getResult
     }
     case statement: MetaStatement=> {

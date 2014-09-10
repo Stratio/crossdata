@@ -23,7 +23,7 @@ import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta.common.result.{QueryResult, Result}
 import com.stratio.meta.common.ask.Query
 import org.apache.log4j.Logger
-import com.stratio.meta2.core.query.BaseQuery
+import com.stratio.meta2.core.query.{SelectParsedQuery, StorageParsedQuery, MetaDataParsedQuery, BaseQuery}
 
 object ParserActor{
   def props(validator:ActorRef, parser:Parser): Props= Props(new ParserActor(validator,parser))
@@ -39,12 +39,21 @@ class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTrac
       val timer=initTimer()
       //val stmt = parser.parseStatement(queryId, catalog, statement)
       //val stmt = parser.parseStatement(catalog, statement)
-      //val baseQuery = new BaseQuery(queryId, statement, catalog)
-      //val stmt = parser.parseStatement(baseQuery)
+      val baseQuery = new BaseQuery(queryId, statement, catalog)
+      val stmt = parser.parseStatement(baseQuery)
       //stmt.setQueryId(queryId)
       //if(!stmt.hasError){
       //stmt.setSessionCatalog(catalog)
       //}
+
+      if(stmt.isInstanceOf[SelectParsedQuery]){
+        normalizer forward stmt
+      } else if(stmt.isInstanceOf[StorageParsedQuery] || stmt.isInstanceOf[MetaDataParsedQuery] ){
+        validator forward stmt
+      } else {
+        sender ! Result.createUnsupportedOperationErrorResult("Unexpected result from Parser")
+      }
+
       //validator forward stmt
       finishTimer(timer)
       log.info("Finish Parser Task")

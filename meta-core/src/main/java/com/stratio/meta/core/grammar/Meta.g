@@ -287,12 +287,7 @@ T_KS_AND_TN: T_IDENT (POINT T_IDENT)?;
 
 T_CTLG_TBL_COL: T_IDENT (POINT T_IDENT (POINT T_IDENT)?)?;
 
-T_FLOAT:
-    '-'?
-    ( ('0'..'9')+ POINT ('0'..'9')* EXPONENT?
-    | POINT ('0'..'9')+ EXPONENT?
-    | ('0'..'9')+ EXPONENT)
-;
+T_FLOAT: '-'? (('0'..'9')+ POINT ('0'..'9')* EXPONENT? | POINT ('0'..'9')+ EXPONENT? | ('0'..'9')+ EXPONENT);
 
 T_TERM: (LETTER | DIGIT | '_' | POINT)+;
 
@@ -988,7 +983,13 @@ getAllowedReservedWord returns [String str]:
     | T_HOURS
     | T_DAY
     | T_DAYS
-    | T_COUNT)
+    | T_COUNT
+    | T_PLAN
+    | T_TYPE
+    | T_LIMIT
+    | T_PROCESS
+    | T_STORAGE
+    | T_OPTIONS)
     { $str = new String($ident.text); }
 ;
 
