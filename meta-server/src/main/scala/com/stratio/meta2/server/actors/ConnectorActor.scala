@@ -3,6 +3,7 @@ package com.stratio.meta2.server.actors
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, ReceiveTimeout, RootActorPath}
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
+import com.stratio.meta2.core.query.InProgressQuery
 
 object ConnectorActor {
   def props(): Props = Props(new ConnectorActor)
@@ -15,6 +16,10 @@ class ConnectorActor extends Actor with ActorLogging {
   var connectorsMap: Map[String, ActorRef] = Map()
 
   def receive = {
+
+    case query: InProgressQuery => {
+      log.info("Connector Actor received InProgressQuery")
+    }
 
     case MemberUp(member) =>
       println("Member is Up: " + member.toString + member.getRoles.toString())

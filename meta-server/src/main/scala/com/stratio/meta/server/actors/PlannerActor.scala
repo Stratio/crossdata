@@ -24,6 +24,7 @@ import com.stratio.meta.core.utils.MetaQuery
 import org.apache.log4j.Logger
 import com.stratio.meta.communication.ACK
 import com.stratio.meta.common.result.{Result, QueryResult, QueryStatus}
+import com.stratio.meta2.core.query.{ValidatedQuery, PlannedQuery}
 
 object PlannerActor{
   def props(executor:ActorRef, planner:Planner): Props =Props(new PlannerActor(executor,planner))
@@ -33,6 +34,9 @@ class PlannerActor(executor:ActorRef, planner:Planner) extends Actor with TimeTr
   val log =Logger.getLogger(classOf[PlannerActor])
   override lazy val timerName= this.getClass.getName
   def receive = {
+    case query: ValidatedQuery => {
+      log.info("Planner Actor received ValidatedQuery")
+    }
     case query:MetaQuery if !query.hasError=> {
       log.info("Init Planner Task")
       val timer=initTimer()
