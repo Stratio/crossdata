@@ -29,7 +29,7 @@ public abstract class ParsedQuery extends BaseQuery {
   }
 
   ParsedQuery(ParsedQuery parsedQuery){
-    this(parsedQuery,parsedQuery.getStatement());
+    this(parsedQuery, parsedQuery.getStatement());
   }
 
   public abstract MetaStatement getStatement();
@@ -38,4 +38,8 @@ public abstract class ParsedQuery extends BaseQuery {
     return QueryStatus.PARSED;
   }
 
+  @Override
+  public String toString() {
+    return statement.toString();
+  }
 }

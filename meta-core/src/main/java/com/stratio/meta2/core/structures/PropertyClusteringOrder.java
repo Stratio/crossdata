@@ -20,32 +20,37 @@ package com.stratio.meta2.core.structures;
 
 import com.stratio.meta.common.utils.StringUtils;
 
-import java.util.List;
-
 public class PropertyClusteringOrder extends Property {
 
-  private List<Ordering> order;
+  private OrderBy orderBy;
 
   public PropertyClusteringOrder() {
     super(TYPE_CLUSTERING_ORDER);
   }
 
-  public PropertyClusteringOrder(List<Ordering> order) {
+  public PropertyClusteringOrder(OrderBy orderBy) {
     super(TYPE_CLUSTERING_ORDER);
-    this.order = order;
+    this.orderBy = orderBy;
   }
 
-  public List<Ordering> getOrder() {
-    return order;
+  public OrderBy getOrder() {
+    return orderBy;
   }
 
-  public void setOrder(List<Ordering> order) {
-    this.order = order;
+  public void setOrder(OrderBy orderBy) {
+    this.orderBy = orderBy;
   }
 
   @Override
   public String toString() {
-    return "CLUSTERING ORDER BY ("+ StringUtils.stringList(order, ", ")+")";
+    StringBuilder sb = new StringBuilder("CLUSTERING ORDER BY ");
+    sb.append("(");
+    sb.append(StringUtils.stringList(orderBy.getSelectorList(), ","));
+    if(orderBy.getDirection() == OrderDirection.DESC){
+      sb.append("DESC ");
+    }
+    sb.append(")");
+    return sb.toString();
   }
 
 }

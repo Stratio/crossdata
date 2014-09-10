@@ -30,8 +30,6 @@ public class GroupBy implements Serializable {
 
   private final List<Selector> selectorIdentifier=new ArrayList<>();
 
-
-
   public List<Selector> getSelectorIdentifier() {
     return selectorIdentifier;
   }

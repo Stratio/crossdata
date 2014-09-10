@@ -22,7 +22,6 @@ import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta2.core.grammar.ParsingTest;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -30,10 +29,11 @@ import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.core.grammar.ParsingTest;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.NormalizedQuery;
+import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
-import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.statements.SelectStatement;
 
 import org.testng.annotations.Test;
@@ -43,8 +43,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.testng.Assert.*;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class PlannerWorkflowTest {
 
@@ -139,7 +140,7 @@ public class PlannerWorkflowTest {
   }
 
   public LogicalWorkflow getWorkflow(String statement, String methodName) {
-    MetaStatement stmt = helperPT.testRegularStatement(statement, methodName);
+    ParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
     SelectStatement ss = SelectStatement.class.cast(stmt);
     NormalizedQuery nq = new NormalizedQueryWrapper(
             SelectStatement.class.cast(stmt), new SelectParsedQuery(new BaseQuery("42", statement, null), ss));

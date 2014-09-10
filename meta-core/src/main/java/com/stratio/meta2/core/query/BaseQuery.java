@@ -32,7 +32,6 @@ public class BaseQuery {
    */
   private final String queryId;
 
-
   private final CatalogName defaultCatalog;
 
   public BaseQuery(String queryId, String query, CatalogName defaultCatalog) {
