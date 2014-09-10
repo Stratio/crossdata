@@ -26,7 +26,6 @@ import com.stratio.meta.common.ask.{Command, Connect, Query}
 import com.stratio.meta.common.result._
 import com.stratio.meta.communication.Disconnect
 import com.stratio.meta2.core.engine.Engine
-import com.stratio.meta2.server.actors.CoordinatorActor
 import org.apache.log4j.Logger
 import com.stratio.meta.server.actors.ParserActor
 import com.stratio.meta.server.actors.APIActor
@@ -41,19 +40,17 @@ class ServerActor(engine:Engine) extends Actor {
   val log =Logger.getLogger(classOf[ServerActor])
 
   val parserActorRef=context.actorOf(ParserActor.props(null,null),"ParserActor") 
-  
-  val normalizerActorRef=context.actorOf(NormalizerActor.props(engine),"NormalizerActor") 
-  
-  //coordinator
-  val plannerActorRef=context.actorOf(PlannerActor.props(null,null))
-  val validatorActorRef=context.actorOf(ValidatorActor.props(plannerActorRef,null))
-
-  val coordinatorActorRef=context.actorOf(CoordinatorActor.props(),"CoordinatorActor") 
-
-  val connectorActorRef=context.actorOf(ConnectorActor.props(),"ConnectorActor") 
-  val queryActorRef= context.actorOf(QueryActor.props(engine,connectorActorRef),"QueryActor")
-  //val cmdActorRef= context.actorOf(APIActor.props(engine.getAPIManager),"APIActor")
   val APIActorRef=context.actorOf(APIActor.props(null),"APIActor") 
+  
+  //val normalizerActorRef=context.actorOf(NormalizerActor.props(engine),"NormalizerActor") 
+  
+  //val plannerActorRef=context.actorOf(PlannerActor.props(null,null))
+  //val validatorActorRef=context.actorOf(ValidatorActor.props(plannerActorRef,null))
+
+  //val coordinatorActorRef=context.actorOf(CoordinatorActor.props(),"CoordinatorActor") 
+
+  //val connectorActorRef=context.actorOf(ConnectorActor.props(),"ConnectorActor") 
+  //val queryActorRef= context.actorOf(QueryActor.props(engine,connectorActorRef),"QueryActor")
 
 
   override def preStart(): Unit = {
@@ -65,9 +62,13 @@ class ServerActor(engine:Engine) extends Actor {
     Cluster(context.system).unsubscribe(self)
 
   def receive = {
+    case command:Command =>
+      println("command: " + command)
+      
     case query:Query =>
-      //println("query: " + query)
-      queryActorRef forward query
+      println("query: " + query)
+      //queryActorRef forward query
+      
     case Connect(user)=> {
       log.info("Welcome " + user +"!")
       //println("Welcome " + user +"!")
@@ -75,8 +76,7 @@ class ServerActor(engine:Engine) extends Actor {
     }
     case Disconnect(user)=> {
       log.info("Goodbye " + user +".")
-      //println("Welcome " + user +"!")
-      sender ! DisconnectResult.createDisconnectResult(user)
+      //sender ! DisconnectResult.createDisconnectResult(user)
     }
     case cmd: Command => {
       log.info("API Command call " + cmd.commandType)
@@ -84,34 +84,31 @@ class ServerActor(engine:Engine) extends Actor {
     }
     //pass the message to the connectorActor to extract the member in the cluster
     case member: MemberUp => {
-      //println("Member is Up: " + member.toString + member.getRoles.toString())
-      connectorActorRef ! member
+      log info("Member is Up: {}" + member.toString)
+      //connectorActorRef ! member
       //val memberActorRef = context.actorSelection(RootActorPath(member.address) / "user" / "clusterListener")
       // connectorsMap += (member.toString -> memberActorRef)
       //memberActorRef ! "hola pichi, estás metaregistrado"
     }
     case state: CurrentClusterState => {
-      //log.info("Current members: {}"+ state.members.mkString(", "))
-      connectorActorRef ! state
+      log.info("Current members: {}"+ state.members.mkString(", "))
+      //connectorActorRef ! state
     }
 
     //    case UnreachableMember(member) => {
     case member: UnreachableMember => {
-
-      //log.info("Member detected as unreachable: {}"+ member)
-      connectorActorRef ! member
+      log.info("Member detected as unreachable: {}"+ member)
+      //connectorActorRef ! member
     }
 
 
     case member: MemberRemoved=>{
-      //      log.info("Member is Removed: {} after {}",
-      //        member.address, previousStatus)
-      connectorActorRef ! member
+            log.info("Member is Removed: {} after {}");//, member.address, previousStatus)
+      //connectorActorRef ! member
     }
 
     case _: MemberEvent =>{
       log.info("Receiving anything else")
-
 
     }
 
@@ -121,10 +118,6 @@ class ServerActor(engine:Engine) extends Actor {
 
     case ReceiveTimeout =>{
       println("ReceiveTimeout")
-    }
-
-    case other =>{
-      println("connector actor receive event")
     }
 
     case _ => {

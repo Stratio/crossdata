@@ -351,7 +351,7 @@ public class Metash {
             println("");
           } else if (toExecute.toLowerCase().startsWith("help")) {
             showHelp(sb.toString());
-          } else if (toExecute.toLowerCase().startsWith("add datastore") || toExecute.toLowerCase().startsWith("add connector")){
+          } else if (toExecute.toLowerCase().startsWith("add manifest") ){
             sendManifest(toExecute);
             println("");
           } else {
