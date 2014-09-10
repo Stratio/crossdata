@@ -25,6 +25,7 @@ import com.hazelcast.config.MaxSizeConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.stratio.deep.context.DeepSparkContext;
+import com.stratio.meta.core.normalizer.Normalizer;
 import com.stratio.meta2.core.api.APIManager;
 import com.stratio.meta2.core.executor.Executor;
 import com.stratio.meta2.core.parser.Parser;
@@ -71,7 +72,8 @@ public class Engine {
    */
   private final APIManager manager;
 
-  //private final Session session;
+
+  private Normalizer normalizer;
 
   /**
    * Hazelcast instance.
@@ -85,6 +87,7 @@ public class Engine {
    */
   private final DeepSparkContext deepContext;
 
+
   /**
    * Class logger.
    */
@@ -93,7 +96,7 @@ public class Engine {
   /**
    * Class constructor.
    *
-   * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
+   * @param config The {@link com.stratio.meta2.core.engine.EngineConfig}.
    */
   public Engine(EngineConfig config) {
 
@@ -115,11 +118,12 @@ public class Engine {
     planner = new Planner();
     //executor = new Executor(session, stratioStreamingAPI, deepContext, config);
     executor = new Executor(deepContext, null);
+    setNormalizer(new Normalizer());
   }
 
   /**
    * Initialize the connection with Stratio Streaming.
-   * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
+   * @param config The {@link com.stratio.meta2.core.engine.EngineConfig}.
    * @return An instance of {@link com.stratio.streaming.api.IStratioStreamingAPI}.
    */
   /*private IStratioStreamingAPI initializeStreaming(EngineConfig config){
@@ -154,7 +158,7 @@ public class Engine {
 
   /**
    * Initialize the connection to the underlying database.
-   * @param config The {@link com.stratio.meta.core.engine.EngineConfig}.
+   * @param config The {@link com.stratio.meta2.core.engine.EngineConfig}.
    * @return A new Session.
    */
 
@@ -180,7 +184,7 @@ public class Engine {
 
   /**
    * Initialize the DeepSparkContext adding the required jars if the deployment is not local.
-   * @param config The {@link com.stratio.meta.core.engine.EngineConfig}
+   * @param config The {@link com.stratio.meta2.core.engine.EngineConfig}
    * @return A new context.
    */
   private DeepSparkContext initializeDeep(EngineConfig config){
@@ -202,7 +206,7 @@ public class Engine {
 
   /**
    * Initializes the {@link com.hazelcast.core.HazelcastInstance} to be used using {@code config} .
-   * @param config An {@link com.stratio.meta.core.engine.EngineConfig}.
+   * @param config An {@link com.stratio.meta2.core.engine.EngineConfig}.
    * @return a new {@link com.hazelcast.core.HazelcastInstance}.
    */
   private HazelcastInstance initializeHazelcast(EngineConfig config) {
@@ -288,5 +292,13 @@ public class Engine {
     //session.close();
     //hazelcast.shutdown();
   }
+
+public Normalizer getNormalizer() {
+	return normalizer;
+}
+
+public void setNormalizer(Normalizer normalizer) {
+	this.normalizer = normalizer;
+}
 
 }

@@ -23,6 +23,7 @@ import org.testng.annotations.Test;
 
 public class CreateCatalogStatementTest extends BasicValidatorTest {
 
+	/*
   @Test
   public void createCatalogIfNotExists() {
     String inputText = "CREATE CATALOG IF NOT EXISTS new_catalog;";
@@ -46,5 +47,6 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
     String inputText = "CREATE CATALOG new_catalog WITH {\"comment\":\"This is a comment\"};";
     validateOk(inputText, "createCatalogWithOptions");
   }
+  */
 
 }

@@ -19,7 +19,7 @@
 package com.stratio.meta.streaming;
 
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
-import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.streaming.api.IStratioStreamingAPI;
 import com.stratio.streaming.api.StratioStreamingAPIFactory;
 import com.stratio.streaming.commons.exceptions.StratioEngineConnectionException;

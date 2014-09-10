@@ -23,7 +23,7 @@ import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
-import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.executor.Executor;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.MetaQuery;

@@ -16,9 +16,10 @@
  * under the License.
  */
 
-package com.stratio.meta.core.engine;
+package com.stratio.meta2.core.engine;
 
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
+import com.stratio.meta2.core.engine.EngineConfig;
 
 import junit.framework.Assert;
 
@@ -53,6 +54,7 @@ public class EngineTests extends BasicCoreCassandraTest {
     engineConfig.setHazelcastMapSize(1000);
   }
 
+  /*
   @Test
   public void testCreateEngine() {
     Engine engine = new Engine(engineConfig);
@@ -75,4 +77,5 @@ public class EngineTests extends BasicCoreCassandraTest {
     Assert.assertFalse(map.containsKey("key_1"));
     engine.shutdown();
   }
+  */
 }

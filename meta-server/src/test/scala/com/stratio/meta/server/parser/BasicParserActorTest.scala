@@ -18,7 +18,7 @@
 
 package com.stratio.meta.server.parser
 
-import com.stratio.meta.core.engine.Engine
+import com.stratio.meta2.core.engine.Engine
 import akka.actor.ActorSystem
 import com.stratio.meta.server.actors._
 import akka.testkit._
@@ -38,6 +38,7 @@ class BasicParserActorTest extends ActorReceiveUtils with FunSuiteLike with Befo
 
   val engine:Engine =  createEngine.create()
 
+  /*
 
   lazy val connectorTest= system.actorOf(ConnectorActor.props(),"ConnectorActorTest")
   lazy val executorRef = system.actorOf( ExecutorActor.props(connectorTest,engine.getExecutor),"TestExecutorActor")
@@ -183,6 +184,8 @@ class BasicParserActorTest extends ActorReceiveUtils with FunSuiteLike with Befo
       executeStatement(msg, "ks_demo", false)
     }
   }
+  * 
+  */
 
 
 }

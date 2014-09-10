@@ -23,6 +23,7 @@ import org.testng.annotations.Test;
 
 public class DropCatalogStatementTest extends BasicValidatorTest {
 
+	/*
     @Test
     public void validateOk(){
         String inputText = "DROP CATALOG demo;";
@@ -40,4 +41,5 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
         String inputText = "DROP CATALOG unknown;";
         validateFail(inputText, "validateNotExists");
     }
+    */
 }

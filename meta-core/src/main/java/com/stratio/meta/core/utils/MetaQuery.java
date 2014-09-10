@@ -26,7 +26,7 @@ import com.stratio.meta2.core.statements.MetaStatement;
 
 /**
  * Class that contains all the information required to execute a statement. The different {@link
- * com.stratio.meta.core.engine.Engine} steps will populate the query information.
+ * com.stratio.meta2.core.engine.Engine} steps will populate the query information.
  */
 public class MetaQuery {
 

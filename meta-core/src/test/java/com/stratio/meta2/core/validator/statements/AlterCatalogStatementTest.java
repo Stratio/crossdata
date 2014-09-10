@@ -24,6 +24,7 @@ import org.testng.annotations.Test;
 
 public class AlterCatalogStatementTest extends BasicValidatorTest {
 
+	/*
   @Test
   public void alterCatalogInvalidOptions() {
     String inputText = "ALTER CATALOG demo WITH {};";
@@ -41,5 +42,6 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
     String inputText = "ALTER CATALOG key_space1 WITH {\"comment\":\"This is a comment\"};";
     validateFail(inputText, "alterCatalogInvalidOptions");
   }
+  */
 
 }

@@ -20,7 +20,7 @@ package com.stratio.meta.server
 
 import org.apache.commons.daemon.{DaemonContext, Daemon}
 import org.apache.log4j.Logger
-import com.stratio.meta.core.engine.Engine
+import com.stratio.meta2.core.engine.Engine
 import akka.actor.ActorSystem
 import akka.contrib.pattern.ClusterReceptionistExtension
 import com.stratio.meta.server.config.ServerConfig
@@ -49,7 +49,7 @@ class MetaServer extends Daemon with ServerConfig{
 
   override def init(p1: DaemonContext): Unit = {
     logger.info("Init Meta Server --- v0.0.5")
-    val serverActor = system.actorOf(ServerActor.props(engine), actorName)
-    ClusterReceptionistExtension(system).registerService(serverActor)
+    //val serverActor = system.actorOf(ServerActor.props(engine), actorName)
+    //ClusterReceptionistExtension(system).registerService(serverActor)
   }
 }

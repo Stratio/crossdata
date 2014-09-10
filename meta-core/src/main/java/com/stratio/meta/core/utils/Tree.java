@@ -22,7 +22,7 @@ import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.common.actor.ActorResultListener;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.engine.EngineConfig;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.executor.CassandraExecutor;
 import com.stratio.meta.core.executor.CommandExecutor;
 import com.stratio.meta.core.executor.DeepExecutor;

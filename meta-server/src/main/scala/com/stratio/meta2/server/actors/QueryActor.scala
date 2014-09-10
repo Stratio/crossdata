@@ -21,7 +21,7 @@ package com.stratio.meta2.server.actors
 import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.meta.common.ask.Query
 import com.stratio.meta.common.result.Result
-import com.stratio.meta.core.engine.Engine
+import com.stratio.meta2.core.engine.Engine
 import org.apache.log4j.Logger
 
 object QueryActor{
