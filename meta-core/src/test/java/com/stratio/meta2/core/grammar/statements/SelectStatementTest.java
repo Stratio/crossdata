@@ -231,10 +231,26 @@ public class SelectStatementTest extends ParsingTest {
   //
 
   @Test
-  public void selectStatementJoin() {
+  public void selectStatementJoins() {
     String inputText =
         "SELECT c.t1.a, c.t2.b FROM c.t1 INNER JOIN c.t2 ON c.t1.a = c.t2.aa WHERE c.t1.a = \"y\";";
     testRegularStatement(inputText, "selectStatementJoins");
+  }
+
+  @Test
+  public void selectStatementJoinComplex() {
+    String inputText =
+        "SELECT colSales, colRevenues FROM tableClients "
+        + "INNER JOIN tableCostumers ON AssistantId = clientId "
+        + "WHERE colCity = 'Madrid' "
+        + "ORDER BY age "
+        + "GROUP BY gender;";
+    String expectedText = "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM <unknown_name>.tableClients "
+                          + "INNER JOIN <unknown_name>.tableCostumers ON <unknown_name>.<unknown_name>.AssistantId = <unknown_name>.<unknown_name>.clientId "
+                          + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
+                          + "ORDER BY <unknown_name>.<unknown_name>.age "
+                          + "GROUP BY <unknown_name>.<unknown_name>.gender;";
+    testRegularStatement(inputText, expectedText, "selectStatementJoinComplex");
   }
 
   /*
@@ -491,5 +507,20 @@ public class SelectStatementTest extends ParsingTest {
     testRegularStatement(inputText, "complexSelect");
   }
   */
+
+
+  @Test
+  public void selectComplex() {
+    String inputText =
+        "SELECT colSales, colRevenues FROM tableClients "
+        + "WHERE colCity = 'Madrid' "
+        + "ORDER BY age "
+        + "GROUP BY gender;";
+    String expectedText = "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM <unknown_name>.tableClients "
+                          + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
+                          + "ORDER BY <unknown_name>.<unknown_name>.age "
+                          + "GROUP BY <unknown_name>.<unknown_name>.gender;";
+    testRegularStatement(inputText, expectedText, "selectComplex");
+  }
 
 }

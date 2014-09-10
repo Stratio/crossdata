@@ -21,11 +21,26 @@ package com.stratio.meta2.core.structures;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class OrderBy {
-  private final List<Selector> selectorList=new ArrayList<>();
+  private List<Selector> selectorList = new ArrayList<>();
   private OrderDirection direction= OrderDirection.ASC;
+
+  public OrderBy(OrderDirection direction,
+                 List<Selector> selectorList) {
+    this.direction = direction;
+    this.selectorList = selectorList;
+  }
+
+  public OrderBy(List<Selector> selectorList) {
+    this.selectorList = selectorList;
+  }
+
+  public void setSelectorList(List<Selector> selectorList){
+    this.selectorList = selectorList;
+  }
 
   public List<Selector> getSelectorList() {
     return selectorList;
@@ -37,5 +52,25 @@ public class OrderBy {
 
   public OrderDirection getDirection() {
     return direction;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+
+    Iterator<Selector> iter = selectorList.iterator();
+
+    while(iter.hasNext()){
+      sb.append(iter.next());
+      if(iter.hasNext()){
+        sb.append(", ");
+      }
+    }
+
+    if(direction == OrderDirection.DESC){
+      sb.append(" DESC");
+    }
+
+    return sb.toString();
   }
 }

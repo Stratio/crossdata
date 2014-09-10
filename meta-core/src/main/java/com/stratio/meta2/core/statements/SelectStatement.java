@@ -17,12 +17,11 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.window.Window;
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.structures.OrderBy;
-import com.stratio.meta2.core.structures.Ordering;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import org.apache.log4j.Logger;
@@ -88,12 +87,6 @@ public class SelectStatement extends MetaStatement {
   private boolean orderInc = false;
 
   /**
-   * The list of {@link com.stratio.meta2.core.structures.Ordering} clauses.
-   */
-  @Deprecated
-  private List<Ordering> order = null;
-
-  /**
    * Whether a GROUP BY clause has been specified.
    */
   private boolean groupInc = false;
@@ -101,9 +94,9 @@ public class SelectStatement extends MetaStatement {
   /**
    * The {@link com.stratio.meta.core.structures.GroupBy} clause.
    */
-  private GroupBy group = null;
+  private List<Selector> group = null;
 
-  private OrderBy orderBy=null;
+  private OrderBy orderBy = null;
 
 
   /**
@@ -235,27 +228,6 @@ public class SelectStatement extends MetaStatement {
   }
 
   /**
-   * Set the {@link Ordering} in the ORDER BY clause.
-   * 
-   * @param order The order.
-   */
-  @Deprecated
-  public void setOrder(List<Ordering> order) {
-    this.orderInc = true;
-    this.order = order;
-  }
-
-  /**
-   * Return ORDER BY clause.
-   * 
-   * @return list of {@link com.stratio.meta2.core.structures.Ordering}.
-   */
-  @Deprecated
-  public List<Ordering> getOrder() {
-    return order;
-  }
-
-  /**
    * Check if ORDER BY clause is included.
    * 
    * @return {@code true} if is included.
@@ -270,7 +242,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @param group The group by.
    */
-  public void setGroup(GroupBy group) {
+  public void setGroup(List<Selector> group) {
     this.groupInc = true;
     this.group = group;
   }
@@ -280,7 +252,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @return list of {@link com.stratio.meta.core.structures.GroupBy}.
    */
-  public GroupBy getGroup() {
+  public List<Selector> getGroup() {
     return group;
   }
 
@@ -368,12 +340,11 @@ public class SelectStatement extends MetaStatement {
       sb.append(StringUtils.stringList(where, " AND "));
     }
     if (orderInc) {
-      sb.append(" ORDER BY ").append(StringUtils.stringList(order, ", "));
+      sb.append(" ORDER BY ").append(orderBy);
     }
-    //TODO: Update group by detection
-    /*if (groupInc) {
+    if (groupInc) {
       sb.append(" GROUP BY ").append(StringUtils.stringList(group, ", "));
-    }*/
+    }
     if (limitInc) {
       sb.append(" LIMIT ").append(limit);
     }
@@ -391,6 +362,7 @@ public class SelectStatement extends MetaStatement {
   }
 
   public void setOrderBy(OrderBy orderBy) {
+    this.orderInc = true;
     this.orderBy = orderBy;
   }
 }

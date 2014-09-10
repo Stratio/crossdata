@@ -19,10 +19,14 @@
 package com.stratio.meta2.core.grammar;
 
 import com.stratio.meta.common.exceptions.ParsingException;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.core.parser.Parser;
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.query.BaseQuery;
+import com.stratio.meta2.core.query.ParsedQuery;
 
 import org.testng.annotations.Test;
+
+import java.util.UUID;
 
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -36,10 +40,12 @@ public class ParsingTest {
 
   protected final Parser parser = new Parser();
 
-  public MetaStatement testRegularStatement(String inputText, String methodName) {
-    MetaStatement st = null;
+  public ParsedQuery testRegularStatement(String inputText, String methodName) {
+    ParsedQuery st = null;
     try {
-      st = parser.parseStatement("", inputText);
+      BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
+      //st = parser.parse("", inputText);
+      st = parser.parse(baseQuery);
     } catch (ParsingException e) {
       StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());
       sb.append(System.lineSeparator());
@@ -61,11 +67,13 @@ public class ParsingTest {
     return st;
   }
 
-  public MetaStatement testRegularStatement(String inputText, String expectedQuery,
-                                            String methodName) {
-    MetaStatement st = null;
+  public ParsedQuery testRegularStatement(String inputText, String expectedQuery,
+                                          String methodName) {
+    ParsedQuery st = null;
     try {
-      st = parser.parseStatement("", inputText);
+      BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
+      //st = parser.parse("", inputText);
+      st = parser.parse(baseQuery);
     } catch (ParsingException e) {
       StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());
       sb.append(System.lineSeparator());
@@ -87,10 +95,13 @@ public class ParsingTest {
     return st;
   }
 
-  public MetaStatement testRegularStatementSession(String sessionCatalog, String inputText, String methodName){
-    MetaStatement st = null;
+  public ParsedQuery testRegularStatementSession(String sessionCatalog, String inputText,
+                                                 String methodName){
+    ParsedQuery st = null;
     try {
-      st = parser.parseStatement(sessionCatalog, inputText);
+      BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(sessionCatalog));
+      //st = parser.parse(sessionCatalog, inputText);
+      st = parser.parse(baseQuery);
     } catch (ParsingException e) {
       StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());
       sb.append(System.lineSeparator());
@@ -112,10 +123,13 @@ public class ParsingTest {
     return st;
   }
 
-  public MetaStatement testRegularStatementSession(String sessionCatalog, String inputText, String expectedText, String methodName){
-    MetaStatement st = null;
+  public ParsedQuery testRegularStatementSession(String sessionCatalog, String inputText,
+                                                 String expectedText, String methodName){
+    ParsedQuery st = null;
     try {
-      st = parser.parseStatement(sessionCatalog, inputText);
+      BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(sessionCatalog));
+      //st = parser.parse(sessionCatalog, inputText);
+      st = parser.parse(baseQuery);
     } catch (ParsingException e) {
       StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());
       sb.append(System.lineSeparator());
@@ -138,9 +152,11 @@ public class ParsingTest {
   }
 
   public void testParserFails(String inputText, String methodName) {
-    MetaStatement st = null;
+    ParsedQuery st = null;
     try {
-      st = parser.parseStatement("parsing-test", inputText);
+      BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
+      //st = parser.parse("parsing-test", inputText);
+      st = parser.parse(baseQuery);
     } catch (ParsingException e) {
       StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER EXCEPTION: ").append(e.getMessage());
       sb.append(System.lineSeparator());
@@ -167,9 +183,11 @@ public class ParsingTest {
   }
 
   public void testParserFails(String sessionCatalog, String inputText, String methodName) {
-    MetaStatement st = null;
+    ParsedQuery st = null;
     try {
-      st = parser.parseStatement(sessionCatalog, inputText);
+      BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
+      //st = parser.parse(sessionCatalog, inputText);
+      st = parser.parse(baseQuery);
     } catch (ParsingException e) {
       StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER EXCEPTION: ").append(e.getMessage());
       sb.append(System.lineSeparator());

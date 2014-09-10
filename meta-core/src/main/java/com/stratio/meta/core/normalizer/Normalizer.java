@@ -18,31 +18,16 @@
 
 package com.stratio.meta.core.normalizer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta.common.exceptions.validation.AmbiguousNameException;
-import com.stratio.meta.common.exceptions.validation.NotExistNameException;
-import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.statements.structures.selectors.*;
-import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.NormalizedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 
 public class Normalizer {
 
   public NormalizedQuery normalize(SelectParsedQuery parsedQuery) throws ValidationException {
-    NormalizedFields fields=new NormalizedFields();
-
+    NormalizedFields fields = new NormalizedFields();
+    // TODO: something with the fields
     return new NormalizedQuery(parsedQuery);
   }
-
-
-
 
 }

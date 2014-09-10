@@ -614,8 +614,8 @@ selectStatement returns [SelectStatement slctst]
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
     (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON joinRelations=getWhereClauses[null])?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses[null])?
-    //(T_ORDER T_BY {orderInc = true;} ordering=getOrdering)?
-    //(T_GROUP T_BY {groupInc = true;} groupby=getGroupBy)?
+    (T_ORDER T_BY {orderInc = true;} ordering=getOrdering[null])?
+    (T_GROUP T_BY {groupInc = true;} groupby=getGroupBy[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
         $slctst = new SelectStatement(selClause, tablename);
@@ -625,10 +625,10 @@ selectStatement returns [SelectStatement slctst]
             $slctst.setJoin(new InnerJoin(identJoin, joinRelations));
         if(whereInc)
              $slctst.setWhere(whereClauses);
-        //if(orderInc)
-        //     $slctst.setOrder(ordering);
-        //if(groupInc)
-        //     $slctst.setGroup(groupby);
+        if(orderInc)
+             $slctst.setOrderBy(ordering);
+        if(groupInc)
+             $slctst.setGroup(groupby);
         if(limitInc)
              $slctst.setLimit(Integer.parseInt($constant.text));
 
@@ -779,23 +779,25 @@ getDataType returns [String dataType]:
     {$dataType = $ident1.text.concat(ident2==null?"":"<"+$ident2.text).concat(ident3==null?"":","+$ident3.text).concat(ident2==null?"":">");}
 ;
 
-getOrdering[TableName tablename] returns [ArrayList<Ordering> order]
+getOrdering[TableName tablename] returns [OrderBy orderBy]
     @init{
-        order = new ArrayList<>();
-        Ordering ordering;
+        List<Selector> selectorListOrder = new ArrayList<>();
+        OrderDirection direction = OrderDirection.ASC;
+    }
+    @after{
+        $orderBy = new OrderBy(direction, selectorListOrder);
     }:
-    ident1=getSelector[tablename] {ordering = new Ordering(ident1);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);}
-    (T_COMMA identN=getSelector[tablename] {ordering = new Ordering(identN);} (T_ASC {ordering.setOrderDir(OrderDirection.ASC);} | T_DESC {ordering.setOrderDir(OrderDirection.DESC);})? {order.add(ordering);})*
+    ident1=getSelector[tablename] {selectorListOrder.add(ident1);}
+    (T_COMMA identN=getSelector[tablename] {selectorListOrder.add(identN);})*
+    (T_ASC | T_DESC { direction = OrderDirection.DESC; } )?
 ;
 
-getGroupBy returns [ArrayList<GroupBy> groups]
+getGroupBy[TableName tablename] returns [ArrayList<Selector> groups]
     @init{
         groups = new ArrayList<>();
-        GroupBy groupBy;
     }:
-    //TODO: Change to support group by
-    ident1=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy(); groups.add(groupBy);}
-    (T_COMMA identN=(T_KS_AND_TN | T_IDENT) {groupBy = new GroupBy(); groups.add(groupBy);})*
+    ident1=getSelector[tablename] {groups.add(ident1);}
+    (T_COMMA identN=getSelector[tablename] {groups.add(identN);})*
 ;
 
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
