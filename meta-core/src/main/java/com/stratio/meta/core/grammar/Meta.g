@@ -983,7 +983,13 @@ getAllowedReservedWord returns [String str]:
     | T_HOURS
     | T_DAY
     | T_DAYS
-    | T_COUNT)
+    | T_COUNT
+    | T_PLAN
+    | T_TYPE
+    | T_LIMIT
+    | T_PROCESS
+    | T_STORAGE
+    | T_OPTIONS)
     { $str = new String($ident.text); }
 ;
 
