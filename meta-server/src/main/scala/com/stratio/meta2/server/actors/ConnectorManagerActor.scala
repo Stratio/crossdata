@@ -5,11 +5,11 @@ import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
 import com.stratio.meta2.core.query.InProgressQuery
 
-object ConnectorActor {
-  def props(): Props = Props(new ConnectorActor)
+object ConnectorManagerActor {
+  def props(): Props = Props(new ConnectorManagerActor)
 }
 
-class ConnectorActor extends Actor with ActorLogging {
+class ConnectorManagerActor extends Actor with ActorLogging {
 
   log.info("Lifting connector actor")
 

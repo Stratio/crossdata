@@ -50,7 +50,7 @@ class ServerActor(engine:Engine) extends Actor {
 
   //val coordinatorActorRef=context.actorOf(CoordinatorActor.props(),"CoordinatorActor") 
 
-  //val connectorActorRef=context.actorOf(ConnectorActor.props(),"ConnectorActor") 
+  //val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(),"ConnectorManagerActor") 
   //val queryActorRef= context.actorOf(QueryActor.props(engine,connectorActorRef),"QueryActor")
 
 
