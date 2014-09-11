@@ -7,7 +7,7 @@ import com.stratio.meta2.core.query
 import com.stratio.meta2.core.query.SelectPlannedQuery
 
 object CoordinatorActor {
-  def props(): Props = Props()
+  def props(): Props = Props(new CoordinatorActor)
 }
 
 class CoordinatorActor extends Actor with ActorLogging {
