@@ -25,7 +25,9 @@ import com.stratio.meta2.core.query.SelectParsedQuery;
 public class Normalizer {
 
   public NormalizedQuery normalize(SelectParsedQuery parsedQuery) throws ValidationException {
-    NormalizedFields fields = new NormalizedFields();
+    //NormalizedFields fields = new NormalizedFields();
+    Normalizator normalizator = new Normalizator(parsedQuery);
+    normalizator.execute();
     // TODO: something with the fields
     return new NormalizedQuery(parsedQuery);
   }

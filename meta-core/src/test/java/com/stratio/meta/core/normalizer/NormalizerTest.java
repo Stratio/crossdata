@@ -46,7 +46,7 @@ import static org.testng.Assert.fail;
 
 public class NormalizerTest {
 
-  // TODO: SetUpBeforeClass to mock MetaDataManager
+  // TODO: SetUpBeforeClass for mocking MetaDataManager
 
   public void testSelectedParserQuery(SelectParsedQuery selectParsedQuery, String expectedText, String methodName){
     Normalizer normalizer = new Normalizer();
