@@ -15,15 +15,24 @@
 package com.stratio.meta2.core.metadata;
 
 
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.ConnectorName;
+import com.stratio.meta2.common.data.DataStoreName;
+import com.stratio.meta2.common.data.FirstLevelName;
+import com.stratio.meta2.common.data.Name;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
+import com.stratio.meta2.common.metadata.ConnectorMetadata;
+import com.stratio.meta2.common.metadata.DataStoreMetadata;
+import com.stratio.meta2.common.metadata.IMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
+
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
-
-import com.stratio.meta.common.ask.Connect;
-import com.stratio.meta2.common.data.*;
-import com.stratio.meta2.common.metadata.*;
-import joptsimple.internal.Column;
-
-
 
 public enum MetadataManager {
   MANAGER;
@@ -33,16 +42,11 @@ public enum MetadataManager {
   private Map<FirstLevelName, IMetadata> metadata;
   private Lock writeLock;
 
-
   private void shouldBeInit() {
     if (!isInit) {
       throw new MetadataManagerException("Metadata is not initialized yet.");
     }
   }
-
-
-
-
 
   public boolean exists(Name name){
     boolean result=false;
@@ -93,9 +97,6 @@ public enum MetadataManager {
     return result;
   }
 
-
-
-
   public boolean exists(ColumnName name){
     boolean result = false;
     if (exists(name.getTableName())) {
@@ -104,11 +105,6 @@ public enum MetadataManager {
     }
     return result;
   }
-
-
-
-
-
 
   public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock) {
     if (metadata != null && writeLock != null) {
@@ -240,7 +236,5 @@ public enum MetadataManager {
     shouldExist(name);
     return (ConnectorMetadata) metadata.get(name);
   }
-  
-  
 
 }

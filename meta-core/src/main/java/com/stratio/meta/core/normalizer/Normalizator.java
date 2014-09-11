@@ -3,9 +3,9 @@
  * distributed with this work for additional information regarding copyright ownership. The STRATIO
  * (C) licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -20,6 +20,7 @@ import com.stratio.meta.common.exceptions.validation.BadFormatException;
 import com.stratio.meta.common.exceptions.validation.NotExistNameException;
 import com.stratio.meta.common.exceptions.validation.NotValidColumnException;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
@@ -44,15 +45,24 @@ public class Normalizator {
 
   public Normalizator(SelectParsedQuery parsedQuery) {
     this.parsedQuery = parsedQuery;
-    parsedQuery.getStatement().getGroup();
+    parsedQuery.getStatement().getGroupBy();
   }
 
   public NormalizedFields getFields() {
     return fields;
   }
 
-  public void execute() {
+  public void execute() throws ValidationException {
+    initFields();
+    normalizeTables();
+    normalizeSelectExpresion();
+    normalizeJoins();
+    normalizeOrderBy();
+    normalizeGroupBy();
+  }
 
+  private void initFields() {
+    // TODO: Fill in fields with initial values
   }
 
   public void normalizeTables() throws ValidationException {
@@ -95,7 +105,6 @@ public class Normalizator {
   public void normalizeOrderBy(OrderBy orderBy)
       throws BadFormatException, AmbiguousNameException, NotExistNameException,
              NotValidColumnException {
-
     for (Selector selector: orderBy.getSelectorList()) {
       switch (selector.getType()){
         case COLUMN:
@@ -121,9 +130,8 @@ public class Normalizator {
     }
   }
 
-  public void normalizeSelectExpresion(SelectExpression selectExpression )
+  public void normalizeSelectExpresion(SelectExpression selectExpression)
       throws AmbiguousNameException, NotExistNameException, NotValidColumnException {
-
     fields.setDistinctSelect(selectExpression.isDistinct());
     List<Selector> normalizeSelectors = checkListSelector(selectExpression.getSelectorList());
     fields.getSelectors().addAll(normalizeSelectors);
@@ -131,44 +139,45 @@ public class Normalizator {
 
   public void normalizeGroupBy() throws BadFormatException, AmbiguousNameException,
                                         NotExistNameException, NotValidColumnException {
-    List<Selector> groupByList = parsedQuery.getStatement().getGroup();
-    if((groupByList != null) && (!groupByList.isEmpty())){
-      for(Selector groupBy: groupByList){
-        normalizeGroupBy(groupBy);
-      }
+    GroupBy groupBy = parsedQuery.getStatement().getGroupBy();
+    if(groupBy!=null){
+      normalizeGroupBy(groupBy);
     }
   }
 
-  public void normalizeGroupBy(Selector selector) throws BadFormatException, AmbiguousNameException,
-                                                         NotExistNameException, NotValidColumnException {
+  public void normalizeGroupBy(GroupBy groupBy) throws BadFormatException, AmbiguousNameException,
+                                                       NotExistNameException, NotValidColumnException {
     Set<ColumnName> columnNames = new HashSet<>();
-    switch (selector.getType()) {
-      case FUNCTION:
-        throw new BadFormatException("Function include into groupBy is not valid");
-      case COLUMN:
-        checkColumnSelector((ColumnSelector) selector);
-        if (columnNames.add(((ColumnSelector) selector).getName())) {
-          throw new BadFormatException("Column into group by is repeated");
-        }
-        break;
-      case ASTERISK:
-        throw new BadFormatException("Asterisk include into groupBy is not valid");
+    for (Selector selector: groupBy.getSelectorIdentifier()) {
+      switch (selector.getType()) {
+        case FUNCTION:
+          throw new BadFormatException("Function include into groupBy is not valid");
+        case COLUMN:
+          checkColumnSelector((ColumnSelector) selector);
+          if (columnNames.add(((ColumnSelector) selector).getName())) {
+            throw new BadFormatException("Column into group by is repeated");
+          }
+          break;
+        case ASTERISK:
+          throw new BadFormatException("Asterisk include into groupBy is not valid");
+      }
     }
     // Check if all columns are correct
-    switch (selector.getType()) {
-      case FUNCTION:
+    for (Selector selector: fields.getSelectors()) {
+      switch (selector.getType()) {
+        case FUNCTION:
 
-        break;
-      case COLUMN:
-        ColumnName name = ((ColumnSelector) selector).getName();
-        if (!columnNames.contains(name)) {
-          throw new BadFormatException(
-              "All columns in the select clause must be in the group by or it must be aggregation function.");
-        }
-        break;
-      case ASTERISK:
-        throw new BadFormatException("Asterisk is not valid with group by statements");
-
+          break;
+        case COLUMN:
+          ColumnName name = ((ColumnSelector) selector).getName();
+          if (!columnNames.contains(name)) {
+            throw new BadFormatException(
+                "All columns in the select clause must be in the group by or it must be aggregation function.");
+          }
+          break;
+        case ASTERISK:
+          throw new BadFormatException("Asterisk is not valid with group by statements");
+      }
     }
   }
 
@@ -204,7 +213,6 @@ public class Normalizator {
       }
     }
   }
-
 
   public void checkTable(TableName tableName) throws NotExistNameException {
     if (!tableName.isCompletedName()) {

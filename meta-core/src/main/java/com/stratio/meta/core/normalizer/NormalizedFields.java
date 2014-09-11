@@ -24,6 +24,7 @@ import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.core.structures.OrderBy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,22 +32,39 @@ import java.util.List;
 import java.util.Set;
 
 public class NormalizedFields {
-  private final Set<ColumnName> columnNames=new HashSet<>();
-  private final Set<TableName> tableNames=new HashSet<>();
-  private final Set<CatalogName> catalogNames=new HashSet<>();
-  private final List<Selector> selectors=new ArrayList<>();
-  private final List<Relation> relations=new ArrayList<>();
-  private GroupBy groupBy=null;
+  private Set<ColumnName> columnNames = new HashSet<>();
+  private Set<TableName> tableNames = new HashSet<>();
+  private Set<CatalogName> catalogNames = new HashSet<>();
+  private List<Selector> selectors = new ArrayList<>(); // It can includes functions, column names, asterisks...
+  private boolean distinctSelect = false;
+  private List<Relation> relations = new ArrayList<>(); // Where clauses
+  private OrderBy orderBy = null;
+  private GroupBy groupBy = null;
 
-  private boolean distinctSelect=false;
+  public NormalizedFields() {
+  }
 
-
-
+  public NormalizedFields(Set<ColumnName> columnNames,
+                          Set<TableName> tableNames,
+                          Set<CatalogName> catalogNames,
+                          List<Selector> selectors,
+                          boolean distinctSelect,
+                          List<Relation> relations,
+                          GroupBy groupBy,
+                          OrderBy orderBy) {
+    this.columnNames = columnNames;
+    this.tableNames = tableNames;
+    this.catalogNames = catalogNames;
+    this.selectors = selectors;
+    this.relations = relations;
+    this.groupBy = groupBy;
+    this.orderBy = orderBy;
+    this.distinctSelect = distinctSelect;
+  }
 
   public Set<ColumnName> getColumnNames() {
     return columnNames;
   }
-
 
   public Set<TableName> getTableNames() { return tableNames ;}
 
@@ -58,22 +76,48 @@ public class NormalizedFields {
     return selectors;
   }
 
-
+  public boolean isDistinctSelect() {
+    return distinctSelect;
+  }
 
   public List<Relation> getRelations() {
     return relations;
   }
 
-  public boolean isDistinctSelect() {
-    return distinctSelect;
+  public GroupBy getGroupBy() {
+    return groupBy;
   }
 
-  void setDistinctSelect(boolean distinctSelect) {
+  public OrderBy getOrderBy() {
+    return orderBy;
+  }
+
+  public void setColumnNames(Set<ColumnName> columnNames) {
+    this.columnNames = columnNames;
+  }
+
+  public void setTableNames(Set<TableName> tableNames) {
+    this.tableNames = tableNames;
+  }
+
+  public void setCatalogNames(Set<CatalogName> catalogNames) {
+    this.catalogNames = catalogNames;
+  }
+
+  public void setSelectors(List<Selector> selectors) {
+    this.selectors = selectors;
+  }
+
+  public void setDistinctSelect(boolean distinctSelect) {
     this.distinctSelect = distinctSelect;
   }
 
-  public GroupBy getGroupBy() {
-    return groupBy;
+  public void setRelations(List<Relation> relations) {
+    this.relations = relations;
+  }
+
+  public void setOrderBy(OrderBy orderBy) {
+    this.orderBy = orderBy;
   }
 
   public void setGroupBy(GroupBy groupBy) {
