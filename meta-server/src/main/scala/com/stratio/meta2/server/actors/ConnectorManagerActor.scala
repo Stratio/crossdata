@@ -7,6 +7,9 @@ import com.stratio.meta2.core.query.InProgressQuery
 import akka.cluster.Cluster
 import java.util.HashMap
 import akka.actor.ActorSelection
+import com.stratio.meta2.core.query.MetadataInProgressQuery
+import com.stratio.meta2.core.query.SelectInProgressQuery
+import com.stratio.meta2.core.query.StorageInProgressQuery
 
 object ConnectorManagerActor {
   def props(): Props = Props(new ConnectorManagerActor)
@@ -50,10 +53,13 @@ class ConnectorManagerActor extends Actor with ActorLogging {
     }
 
 
-    case query: InProgressQuery => {
-      log.info("Connector Actor received InProgressQuery")
-    }
-
+    case query: StorageInProgressQuery=>
+      log.info("storage in progress query")
+    case query: SelectInProgressQuery=>
+      log.info("select in progress query")
+    case query: MetadataInProgressQuery=>
+      log.info("metadata in progress query")
+     
 
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))

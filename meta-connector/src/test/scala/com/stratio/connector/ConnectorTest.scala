@@ -45,7 +45,7 @@ class ConnectorTest extends FunSuite with MockFactory{
     
     //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE
     test("Connect to Connector Test") {
-    	val port="2558"
+    	val port="2559"
 		val m = mock[IConnector]
 		//(m.getConnectorName _).expects().returning("My New Connector")
 		val c = new ConnectorApp()
@@ -65,7 +65,5 @@ class ConnectorTest extends FunSuite with MockFactory{
 
     	assert("Hello World" == "Hello World")
 	}
-
-    
     
 }
