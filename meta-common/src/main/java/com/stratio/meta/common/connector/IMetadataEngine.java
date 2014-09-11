@@ -23,6 +23,7 @@ import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.data.TableName;
 
@@ -77,5 +78,30 @@ public interface IMetadataEngine {
    */
   public void dropTable(ClusterName targetCluster, TableName name) throws UnsupportedException,
                                                                           ExecutionException;
+
+  /**
+   * Createa Index in the underlying datastore.
+   *
+   * @param targetCluster Target cluster.
+   * @param indexMetadata The index.
+   * @throws UnsupportedException If the operation is not supported.
+   * @throws ExecutionException   If the execution fails.
+   */
+    public void createIndex(ClusterName targetCluster, IndexMetadata indexMetadata)
+        throws UnsupportedException,
+               ExecutionException;
+
+
+   /**
+     * Drop an existing index.
+     *
+     * @param targetCluster Target cluster.
+     * @param indexMetadata          The name of the table.
+     * @throws UnsupportedException If the operation is not supported.
+     * @throws ExecutionException   If the execution fails.
+     */
+    public void dropIndex(ClusterName targetCluster, IndexMetadata indexMetadata)
+        throws UnsupportedException,
+               ExecutionException;
 
 }
