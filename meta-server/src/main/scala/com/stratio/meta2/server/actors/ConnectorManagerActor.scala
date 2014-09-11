@@ -4,6 +4,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props, ReceiveTimeout, RootAct
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
 import com.stratio.meta2.core.query.InProgressQuery
+import akka.cluster.Cluster
 
 object ConnectorManagerActor {
   def props(): Props = Props(new ConnectorManagerActor)
@@ -12,20 +13,42 @@ object ConnectorManagerActor {
 class ConnectorManagerActor extends Actor with ActorLogging {
 
   log.info("Lifting connector actor")
+  val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
+  //coordinatorActorRef ! "hola"
 
   var connectorsMap: Map[String, ActorRef] = Map()
 
+  override def preStart(): Unit = {
+    //#subscribe
+    Cluster(context.system).subscribe(self, classOf[MemberEvent])
+    //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
+  }
+  override def postStop(): Unit =
+    Cluster(context.system).unsubscribe(self)
+
   def receive = {
+
+    case mu: MemberUp => {
+      log.info("Member is Up: {}" + mu.toString+mu.member.getRoles)
+      val it=mu.member.getRoles.iterator()
+      while(it.hasNext()){
+    	  var rol=it.next()
+    	  rol match{
+    	    case "connector"=>
+    	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
+    	    	connectorActorRef ! "hola"
+    	  }
+    	  log.info("has role: {}" + rol)
+      }
+      // connectorsMap += (member.toString -> memberActorRef)
+      //memberActorRef ! "hola pichi, estás metaregistrado"
+    }
+
 
     case query: InProgressQuery => {
       log.info("Connector Actor received InProgressQuery")
     }
 
-    case MemberUp(member) =>
-      println("Member is Up: " + member.toString + member.getRoles.toString())
-      val memberActorRef = context.actorSelection(RootActorPath(member.address) / "user" / "meta-connector")
-      //      connectorsMap += (member.toString -> memberActorRef)
-      memberActorRef ! new Request("name")
 
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))

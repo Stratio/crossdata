@@ -5,7 +5,7 @@ import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
 
 object CoordinatorActor {
-  def props(): Props = Props()
+  def props(): Props = Props(new CoordinatorActor)
 }
 
 class CoordinatorActor extends Actor with ActorLogging {
@@ -17,7 +17,7 @@ class CoordinatorActor extends Actor with ActorLogging {
   def receive = {
 
     case _=>
-      println("coordinator actor receives event")
+      log.info("coordinator actor receives event")
     //      sender ! "OK"
     //memberActorRef.tell(objetoConWorkflow, context.sender)
   }
