@@ -5,6 +5,8 @@ import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
 import com.stratio.meta2.core.query.InProgressQuery
 import akka.cluster.Cluster
+import java.util.HashMap
+import akka.actor.ActorSelection
 
 object ConnectorManagerActor {
   def props(): Props = Props(new ConnectorManagerActor)
@@ -16,7 +18,8 @@ class ConnectorManagerActor extends Actor with ActorLogging {
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
   //coordinatorActorRef ! "hola"
 
-  var connectorsMap: Map[String, ActorRef] = Map()
+  //var connectorsMap:scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String,ActorRef]()
+  var connectorsMap:scala.collection.mutable.Map[String, ActorSelection] = scala.collection.mutable.Map[String,ActorSelection]()
 
   override def preStart(): Unit = {
     //#subscribe
@@ -36,7 +39,9 @@ class ConnectorManagerActor extends Actor with ActorLogging {
     	  rol match{
     	    case "connector"=>
     	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
-    	    	connectorActorRef ! "hola"
+    	    	val id=java.util.UUID.randomUUID.toString()
+    	    	connectorsMap.put(mu.member.toString, connectorActorRef)
+    	    	//connectorActorRef ! "hola"
     	  }
     	  log.info("has role: {}" + rol)
       }
@@ -96,7 +101,7 @@ class ConnectorManagerActor extends Actor with ActorLogging {
       connectorsMap(toConnector.connectorName) ! toConnector
 
     case response: Response =>
-      connectorsMap += (response.msg -> sender)
+      //connectorsMap += (response.msg -> sender)
 
     case other =>
       println("connector actor receives event")
