@@ -22,7 +22,7 @@ import akka.actor.{Actor, Props}
 import org.apache.log4j.Logger
 import com.stratio.meta.common.result.Result
 import com.stratio.meta.common.ask.Command
-import com.stratio.meta.core.api.APIManager
+import com.stratio.meta2.core.api.APIManager
 
 object APIActor{
   def props(metadata: APIManager): Props = Props(new APIActor(metadata))

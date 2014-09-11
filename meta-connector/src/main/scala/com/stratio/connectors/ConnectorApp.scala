@@ -4,17 +4,11 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import com.stratio.connectors.config.ConnectConfig
 import com.stratio.meta.common.connector.IConnector
 import com.typesafe.config.ConfigFactory
-import org.apache.log4j.{BasicConfigurator, Logger}
+import org.apache.log4j.{BasicConfigurator}
 
 //import com.stratio.connector.cassandra.CassandraConnector
 
-class ConnectorApp  extends ConnectConfig {
-
-    override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
-    val usage = """Usage: 
-      connectorApp [--port <port number>] [--connectortype <connector type name>] 
-    """
-    lazy val system = ActorSystem(clusterName, config)
+object ConnectorApp extends ConnectorApp{
   def main(args: Array[String]): Unit = {
     BasicConfigurator.configure()
     //if (args.length == 0) println(usage)
@@ -27,6 +21,14 @@ class ConnectorApp  extends ConnectConfig {
     val c=getConnector(connectortype.get.asInstanceOf[String])
     startup(c,Seq(port.get.asInstanceOf[String]),config)
   }
+}
+
+class ConnectorApp  extends ConnectConfig {
+
+    val usage = """Usage: 
+      connectorApp [--port <port number>] [--connectortype <connector type name>] 
+    """
+    lazy val system = ActorSystem(clusterName, config)
 
   def getConnector(connectortype:String):IConnector={
     connectortype match {
@@ -52,21 +54,18 @@ class ConnectorApp  extends ConnectConfig {
   }
 
   def startup(connector:IConnector,port:String,config:com.typesafe.config.Config): ActorRef= {
-    logger.info("startup 1")
-    return startup(connector,Array(port),config)
+    startup(connector,Array(port),config)
   }
 
   def startup(connector:IConnector,ports:Array[String],config:com.typesafe.config.Config): ActorRef= {
-    logger.info("startup 2")
-    return startup(connector,ports.toList,config)
+    startup(connector,ports.toList,config)
   }
 
   def startup(connector:IConnector,ports: Seq[String],config:com.typesafe.config.Config): ActorRef= {
-    logger.info("startup 3")
     var actorClusterNode:ActorRef=null
     ports foreach { port =>
       // Override the configuration of the port
-      //val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
+      val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
 
       // Create an Akka system
 
@@ -76,16 +75,13 @@ class ConnectorApp  extends ConnectConfig {
     }
     actorClusterNode
   }
-  def startup(connector:IConnector){
-    logger.info("startup 4")
-
-
+  def startup(connector:IConnector):ActorRef={
       // Create an Akka system
 
       // Create an actor that handles cluster domain events
      val actorClusterNode=system.actorOf(Props[ClusterListener], name = actorName)
      actorClusterNode ! "I'm in!!!"
-
+     actorClusterNode
 
   }
 

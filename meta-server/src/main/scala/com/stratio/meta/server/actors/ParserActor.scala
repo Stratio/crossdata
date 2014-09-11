@@ -37,6 +37,7 @@ class ParserActor(validator: ActorRef, normalizer: ActorRef, parser:Parser) exte
   def receive = {
     case Query(queryId, catalog, statement, user) => {
       log.info("Init Parser Task {}{}{}{}",queryId, catalog, statement, user)
+      /*
       val timer=initTimer()
       //val stmt = parser.parseStatement(queryId, catalog, statement)
       //val stmt = parser.parseStatement(catalog, statement)
@@ -58,6 +59,7 @@ class ParserActor(validator: ActorRef, normalizer: ActorRef, parser:Parser) exte
       //validator forward stmt
       finishTimer(timer)
       log.info("Finish Parser Task")
+      */
     }
     case _ => {
       sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")

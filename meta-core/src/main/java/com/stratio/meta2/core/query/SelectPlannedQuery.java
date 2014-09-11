@@ -16,41 +16,25 @@
  * under the License.
  */
 
-package com.stratio.meta2.common.metadata;
+package com.stratio.meta2.core.query;
 
-import com.stratio.meta2.common.data.IndexName;
+import com.stratio.meta.common.logicalplan.LogicalWorkflow;
+import com.stratio.meta.common.result.QueryStatus;
 
-import java.util.List;
-import java.util.Map;
+public class SelectPlannedQuery extends PlannedQuery {
+  private final LogicalWorkflow logicalWorkflow;
 
-public class IndexMetadata implements IMetadata {
-  private final IndexName name;
-  private final List<ColumnMetadata> columns;
-  private final IndexType type;
-  private final Map<String, Object> options;
-
-  public IndexMetadata(IndexName name, List<ColumnMetadata> columns, IndexType type,
-      Map<String, Object> options) {
-    this.name = name;
-    this.columns = columns;
-    this.type = type;
-    this.options = options;
+  public SelectPlannedQuery(ValidatedQuery validatedQuery, LogicalWorkflow logicalWorkflow) {
+    super(validatedQuery);
+    this.logicalWorkflow = logicalWorkflow;
   }
 
-  public IndexName getName() {
-    return name;
+  SelectPlannedQuery(SelectPlannedQuery plannedQuery){
+    this(plannedQuery,plannedQuery.getLogicalWorkflow());
   }
 
-  public List<ColumnMetadata> getColumns() {
-    return columns;
-  }
-
-  public IndexType getType() {
-    return type;
-  }
-
-  public Map<String, Object> getOptions() {
-    return options;
+  public LogicalWorkflow getLogicalWorkflow() {
+    return logicalWorkflow;
   }
 
 }

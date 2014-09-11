@@ -16,41 +16,31 @@
  * under the License.
  */
 
-package com.stratio.meta2.common.metadata;
+package com.stratio.meta2.core.query;
 
-import com.stratio.meta2.common.data.IndexName;
+import com.stratio.meta.common.metadata.structures.TableMetadata;
+import com.stratio.meta2.common.data.ClusterName;
 
-import java.util.List;
-import java.util.Map;
+public class StorageInProgressQuery extends InProgressQuery {
+  
+  private ClusterName cluster;
 
-public class IndexMetadata implements IMetadata {
-  private final IndexName name;
-  private final List<ColumnMetadata> columns;
-  private final IndexType type;
-  private final Map<String, Object> options;
+  private TableMetadata tableMetaData;
 
-  public IndexMetadata(IndexName name, List<ColumnMetadata> columns, IndexType type,
-      Map<String, Object> options) {
-    this.name = name;
-    this.columns = columns;
-    this.type = type;
-    this.options = options;
+  
+  public StorageInProgressQuery(PlannedQuery validatedQuery) {
+    super(validatedQuery);
   }
 
-  public IndexName getName() {
-    return name;
+  StorageInProgressQuery(StorageInProgressQuery plannedQuery){
+    this((PlannedQuery)plannedQuery);
   }
-
-  public List<ColumnMetadata> getColumns() {
-    return columns;
+  
+  public ClusterName getCluster() {
+    return cluster;
   }
-
-  public IndexType getType() {
-    return type;
+  
+  public TableMetadata getTableMetaData() {
+    return tableMetaData;
   }
-
-  public Map<String, Object> getOptions() {
-    return options;
-  }
-
 }

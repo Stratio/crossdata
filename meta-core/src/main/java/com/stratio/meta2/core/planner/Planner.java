@@ -29,6 +29,8 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
 import com.stratio.meta2.core.query.NormalizedQuery;
 import com.stratio.meta2.core.query.PlannedQuery;
+import com.stratio.meta2.core.query.SelectPlannedQuery;
+import com.stratio.meta2.core.query.ValidatedQuery;
 
 import org.apache.log4j.Logger;
 
@@ -58,14 +60,14 @@ public class Planner {
    * @param query A {@link com.stratio.meta2.core.query.NormalizedQuery}.
    * @return A {@link com.stratio.meta2.core.query.PlannedQuery}.
    */
-  public PlannedQuery planQuery(NormalizedQuery query) {
+  public SelectPlannedQuery planQuery(ValidatedQuery query) {
     //Build the workflow.
     LogicalWorkflow workflow = buildWorkflow(query);
 
     //Plan the workflow execution into different connectors.
 
     //Return the planned query.
-    PlannedQuery pq = new PlannedQuery(query, workflow);
+    SelectPlannedQuery pq = new SelectPlannedQuery(query, workflow);
     return pq;
   }
 
