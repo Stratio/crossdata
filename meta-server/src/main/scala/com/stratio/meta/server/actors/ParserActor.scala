@@ -24,12 +24,13 @@ import com.stratio.meta.common.result.{QueryResult, Result}
 import com.stratio.meta.common.ask.Query
 import org.apache.log4j.Logger
 import com.stratio.meta2.core.query.{SelectParsedQuery, StorageParsedQuery, MetaDataParsedQuery, BaseQuery}
+import com.stratio.meta2.common.data.CatalogName
 
 object ParserActor{
-  def props(validator:ActorRef, parser:Parser): Props= Props(new ParserActor(validator,parser))
+  def props(validator:ActorRef, normalizer: ActorRef, parser:Parser): Props= Props(new ParserActor(validator, normalizer, parser))
 }
 
-class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTracker {
+class ParserActor(validator: ActorRef, normalizer: ActorRef, parser:Parser) extends Actor with TimeTracker {
   val log =Logger.getLogger(classOf[ParserActor])
   override lazy val timerName= this.getClass.getName
 
@@ -40,8 +41,8 @@ class ParserActor(validator:ActorRef, parser:Parser) extends Actor with TimeTrac
       val timer=initTimer()
       //val stmt = parser.parseStatement(queryId, catalog, statement)
       //val stmt = parser.parseStatement(catalog, statement)
-      val baseQuery = new BaseQuery(queryId, statement, catalog)
-      val stmt = parser.parseStatement(baseQuery)
+      val baseQuery = new BaseQuery(queryId, statement, new CatalogName(catalog))
+      val stmt = parser.parse(baseQuery)
       //stmt.setQueryId(queryId)
       //if(!stmt.hasError){
       //stmt.setSessionCatalog(catalog)

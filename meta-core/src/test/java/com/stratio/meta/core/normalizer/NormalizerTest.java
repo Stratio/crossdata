@@ -21,6 +21,7 @@ package com.stratio.meta.core.normalizer;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
@@ -44,6 +45,8 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 public class NormalizerTest {
+
+  // TODO: SetUpBeforeClass for mocking MetaDataManager
 
   public void testSelectedParserQuery(SelectParsedQuery selectParsedQuery, String expectedText, String methodName){
     Normalizer normalizer = new Normalizer();
@@ -76,25 +79,31 @@ public class NormalizerTest {
                           + "ORDER BY myCatalog.tableClients.age "
                           + "GROUP BY myCatalog.tableClients.gender;";
 
+    // BASE QUERY
     BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
 
+    // SELECTORS
     List<Selector> selectorList = new ArrayList<>();
     selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
     selectorList.add(new ColumnSelector(new ColumnName(null, "colRevenues")));
 
     SelectExpression selectExpression = new SelectExpression(selectorList);
 
+    // SELECT STATEMENT
     SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName(null, "tableClients"));
 
+    // WHERE CLAUSES
     List<Relation> where = new ArrayList<>();
     where.add(new Relation(new ColumnSelector(new ColumnName(null, "colCity")), Operator.ASSIGN, new StringSelector("Madrid")));
     selectStatement.setWhere(where);
 
+    // ORDER BY
     List<Selector> selectorListOrder = new ArrayList<>();
     selectorListOrder.add(new ColumnSelector(new ColumnName(null, "age")));
     OrderBy orderBy = new OrderBy(selectorListOrder);
     selectStatement.setOrderBy(orderBy);
 
+    // GROUP BY
     List<Selector> group = new ArrayList<>();
     group.add(new ColumnSelector(new ColumnName(null, "gender")));
     selectStatement.setGroup(group);
@@ -111,12 +120,60 @@ public class NormalizerTest {
 
     String inputText =
         "SELECT colSales, colRevenues FROM tableClients "
-        + "INNER JOIN tableCostumers ON AssistantId = clientId "
+        + "INNER JOIN tableCostumers ON assistantId = clientId "
         + "WHERE colCity = 'Madrid' "
         + "ORDER BY age "
         + "GROUP BY gender;";
 
-    String expectedText = "";
+    String expectedText = "SELECT demo.january.colSales, myCatalog.tableCostumers.january.colRevenues FROM demo.january.tableClients "
+                          + "INNER JOIN myCatalog.tableCostumers ON myCatalog.tableCostumers.assistantId = demo.january.clientId "
+                          + "WHERE myCatalog.tableCostumers.colCity = 'Madrid' "
+                          + "ORDER BY myCatalog.tableCostumers.age "
+                          + "GROUP BY demo.january.gender;";
+
+
+    // BASE QUERY
+    BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
+
+    // SELECTORS
+    List<Selector> selectorList = new ArrayList<>();
+    selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
+    selectorList.add(new ColumnSelector(new ColumnName(null, "colRevenues")));
+
+    SelectExpression selectExpression = new SelectExpression(selectorList);
+
+    // SELECT STATEMENT
+    SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName(null, "tableClients"));
+
+    // TODO: Inner Join
+    List<Relation> joinRelations = new ArrayList<>();
+    Relation relation = new Relation(
+        new ColumnSelector(new ColumnName(null, "assistandId")),
+        Operator.ASSIGN,
+        new ColumnSelector(new ColumnName(null, "clientId")));
+    joinRelations.add(relation);
+    InnerJoin innerJoin = new InnerJoin(new TableName(null, "tableCostumers"), joinRelations);
+    selectStatement.setJoin(innerJoin);
+
+    // WHERE CLAUSES
+    List<Relation> where = new ArrayList<>();
+    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colCity")), Operator.ASSIGN, new StringSelector("Madrid")));
+    selectStatement.setWhere(where);
+
+    // ORDER BY
+    List<Selector> selectorListOrder = new ArrayList<>();
+    selectorListOrder.add(new ColumnSelector(new ColumnName(null, "age")));
+    OrderBy orderBy = new OrderBy(selectorListOrder);
+    selectStatement.setOrderBy(orderBy);
+
+    // GROUP BY
+    List<Selector> group = new ArrayList<>();
+    group.add(new ColumnSelector(new ColumnName(null, "gender")));
+    selectStatement.setGroup(group);
+
+    SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+    testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
 
   }
 
