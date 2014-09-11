@@ -18,20 +18,14 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.result.QueryStatus;
 
-public abstract class PlannedQuery extends ValidatedQuery {
-
-  public PlannedQuery(ValidatedQuery validatedQuery) {
+public class MetadataPlannedQuery extends PlannedQuery {
+  
+  public MetadataPlannedQuery(ValidatedQuery validatedQuery) {
     super(validatedQuery);
   }
 
-  PlannedQuery(PlannedQuery plannedQuery){
+  MetadataPlannedQuery(MetadataPlannedQuery plannedQuery){
     this((ValidatedQuery)plannedQuery);
-  }
-
-  
-  public QueryStatus getStatus() {
-    return QueryStatus.PLANNED;
   }
 }

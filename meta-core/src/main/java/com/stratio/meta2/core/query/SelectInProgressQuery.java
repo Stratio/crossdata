@@ -18,20 +18,17 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta.common.metadata.structures.TableMetadata;
+import com.stratio.meta2.common.data.ClusterName;
 
-public abstract class PlannedQuery extends ValidatedQuery {
-
-  public PlannedQuery(ValidatedQuery validatedQuery) {
+public class SelectInProgressQuery extends InProgressQuery {
+  
+  
+  public SelectInProgressQuery(PlannedQuery validatedQuery) {
     super(validatedQuery);
   }
 
-  PlannedQuery(PlannedQuery plannedQuery){
-    this((ValidatedQuery)plannedQuery);
-  }
-
-  
-  public QueryStatus getStatus() {
-    return QueryStatus.PLANNED;
+  SelectInProgressQuery(SelectInProgressQuery plannedQuery){
+    this((PlannedQuery)plannedQuery);
   }
 }

@@ -18,20 +18,23 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.result.QueryStatus;
 
-public abstract class PlannedQuery extends ValidatedQuery {
+public class SelectPlannedQuery extends PlannedQuery {
+  private final LogicalWorkflow logicalWorkflow;
 
-  public PlannedQuery(ValidatedQuery validatedQuery) {
+  public SelectPlannedQuery(ValidatedQuery validatedQuery, LogicalWorkflow logicalWorkflow) {
     super(validatedQuery);
+    this.logicalWorkflow = logicalWorkflow;
   }
 
-  PlannedQuery(PlannedQuery plannedQuery){
-    this((ValidatedQuery)plannedQuery);
+  SelectPlannedQuery(SelectPlannedQuery plannedQuery){
+    this(plannedQuery,plannedQuery.getLogicalWorkflow());
   }
 
-  
-  public QueryStatus getStatus() {
-    return QueryStatus.PLANNED;
+  public LogicalWorkflow getLogicalWorkflow() {
+    return logicalWorkflow;
   }
+
 }

@@ -18,20 +18,33 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta.common.metadata.structures.TableMetadata;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
 
-public abstract class PlannedQuery extends ValidatedQuery {
-
-  public PlannedQuery(ValidatedQuery validatedQuery) {
+public class MetadataInProgressQuery extends InProgressQuery {
+  
+  private ClusterName cluster;
+  private TableMetadata tableMetaData;
+  private CatalogMetadata catalogMetadata;
+  
+  public MetadataInProgressQuery(PlannedQuery validatedQuery) {
     super(validatedQuery);
   }
 
-  PlannedQuery(PlannedQuery plannedQuery){
-    this((ValidatedQuery)plannedQuery);
+  MetadataInProgressQuery(MetadataInProgressQuery plannedQuery){
+    this((PlannedQuery)plannedQuery);
+  }
+  
+  public ClusterName getCluster() {
+    return cluster;
+  }
+  
+  public TableMetadata getTableMetaData() {
+    return tableMetaData;
   }
 
-  
-  public QueryStatus getStatus() {
-    return QueryStatus.PLANNED;
+  public CatalogMetadata getCatalogMetadata() {
+    return catalogMetadata;
   }
 }
