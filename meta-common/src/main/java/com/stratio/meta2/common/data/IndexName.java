@@ -26,6 +26,8 @@ public class IndexName extends Name {
 
   private TableName tableName;
 
+  private String catalogName;
+
   /**
    * Default constructor.
    *
@@ -82,6 +84,8 @@ public class IndexName extends Name {
         tableName = this.getTableName().getName();
         if(this.getTableName().getCatalogName() != null){
           catalogName = this.getTableName().getCatalogName().getName();
+        }else{
+          catalogName=this.catalogName;
         }
       }
 
