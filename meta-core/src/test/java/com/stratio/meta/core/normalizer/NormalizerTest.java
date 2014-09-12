@@ -44,7 +44,7 @@ import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
-import com.stratio.meta2.core.metadata.MetadataManager;
+import com.stratio.meta2.core.metadata.MockMetadataManager;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.NormalizedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
@@ -83,7 +83,7 @@ public class NormalizerTest {
         new HashSet<String>() //othersProperties
         );
     md.put(new DataStoreName("Cassandra"), dsmd);
-    MetadataManager.MANAGER.init(md, new ReentrantLock());
+    MockMetadataManager.MANAGER.init(md, new ReentrantLock());
 
     // CLUSTER
     ClusterName clusterName = new ClusterName("testing");
@@ -93,7 +93,7 @@ public class NormalizerTest {
 
     ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreRef, clusterOptions, connectorAttachedRefs);
 
-    MetadataManager.MANAGER.createCluster(clusterMetadata);
+    MockMetadataManager.MANAGER.createCluster(clusterMetadata);
 
     // CATALOG 1
     HashMap<TableName, TableMetadata> tables = new HashMap<>();
@@ -162,7 +162,7 @@ public class NormalizerTest {
         tables // tables
     );
 
-    MetadataManager.MANAGER.createCatalog(catalogMetadata);
+    MockMetadataManager.MANAGER.createCatalog(catalogMetadata);
 
     // CATALOG 2
     tables = new HashMap<>();
@@ -219,7 +219,7 @@ public class NormalizerTest {
         tables // tables
     );
 
-    MetadataManager.MANAGER.createCatalog(catalogMetadata);
+    MockMetadataManager.MANAGER.createCatalog(catalogMetadata);
 
   }
 
@@ -254,40 +254,41 @@ public class NormalizerTest {
     String inputText = "SELECT colSales, colExpenses FROM tableClients "
                        + "WHERE colCity = 'Madrid' "
                        + "ORDER BY age "
-                       + "GROUP BY gender;";
+                       + "GROUP BY colSales, colExpenses;";
 
-    String expectedText = "SELECT myCatalog.tableClients.colSales, myCatalog.tableClients.colExpenses FROM myCatalog.tableClients "
-                          + "WHERE myCatalog.tableClients.colPlace = 'Madrid' "
-                          + "ORDER BY myCatalog.tableClients.year "
-                          + "GROUP BY myCatalog.tableClients.gender;";
+    String expectedText = "SELECT demo.tableClients.colSales, demo.tableClients.colExpenses FROM demo.tableClients "
+                          + "WHERE demo.tableClients.colPlace = 'Madrid' "
+                          + "ORDER BY demo.tableClients.year "
+                          + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses;";
 
     // BASE QUERY
-    BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("myCatalog"));
+    BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
 
     // SELECTORS
     List<Selector> selectorList = new ArrayList<>();
     selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
-    selectorList.add(new ColumnSelector(new ColumnName(null, "colRevenues")));
+    selectorList.add(new ColumnSelector(new ColumnName(null, "colExpenses")));
 
     SelectExpression selectExpression = new SelectExpression(selectorList);
 
     // SELECT STATEMENT
-    SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("myCatalog", "tableClients"));
+    SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
 
     // WHERE CLAUSES
     List<Relation> where = new ArrayList<>();
-    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colCity")), Operator.ASSIGN, new StringSelector("Madrid")));
+    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colPlace")), Operator.ASSIGN, new StringSelector("Madrid")));
     selectStatement.setWhere(where);
 
     // ORDER BY
     List<Selector> selectorListOrder = new ArrayList<>();
-    selectorListOrder.add(new ColumnSelector(new ColumnName(null, "age")));
+    selectorListOrder.add(new ColumnSelector(new ColumnName(null, "year")));
     OrderBy orderBy = new OrderBy(selectorListOrder);
     selectStatement.setOrderBy(orderBy);
 
     // GROUP BY
     List<Selector> groupBy = new ArrayList<>();
-    groupBy.add(new ColumnSelector(new ColumnName(null, "gender")));
+    groupBy.add(new ColumnSelector(new ColumnName(null, "colSales")));
+    groupBy.add(new ColumnSelector(new ColumnName(null, "colExpenses")));
     selectStatement.setGroupBy(new GroupBy(groupBy));
 
     SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);

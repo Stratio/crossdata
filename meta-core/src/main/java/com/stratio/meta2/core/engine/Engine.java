@@ -18,6 +18,13 @@
 
 package com.stratio.meta2.core.engine;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
+
 import com.hazelcast.config.Config;
 import com.hazelcast.config.InMemoryFormat;
 import com.hazelcast.config.MapConfig;
@@ -27,18 +34,11 @@ import com.hazelcast.core.HazelcastInstance;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.core.normalizer.Normalizer;
 import com.stratio.meta2.core.api.APIManager;
+import com.stratio.meta2.core.coordinator.Coordinator;
 import com.stratio.meta2.core.executor.Executor;
 import com.stratio.meta2.core.parser.Parser;
 import com.stratio.meta2.core.planner.Planner;
 import com.stratio.meta2.core.validator.Validator;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
@@ -74,6 +74,8 @@ public class Engine {
 
 
   private Normalizer normalizer;
+  
+  private final Coordinator coordinator;
 
   /**
    * Hazelcast instance.
@@ -118,6 +120,7 @@ public class Engine {
     planner = new Planner();
     //executor = new Executor(session, stratioStreamingAPI, deepContext, config);
     executor = new Executor(deepContext, null);
+    coordinator = new Coordinator();
     setNormalizer(new Normalizer());
   }
 
@@ -268,6 +271,10 @@ public class Engine {
    */
   public Executor getExecutor() {
     return executor;
+  }
+
+  public Coordinator getCoordinator() {
+    return coordinator;
   }
 
   /**
