@@ -16,32 +16,31 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
+package com.stratio.meta2.core.query;
 
-import java.io.Serializable;
-import java.util.List;
+import com.stratio.meta.common.metadata.structures.TableMetadata;
+import com.stratio.meta2.common.data.ClusterName;
 
+public class StorageInProgressQuery extends InProgressQuery {
+  
+  private ClusterName cluster;
 
-public class GroupBy implements Serializable {
+  private TableMetadata tableMetaData;
 
-  private static final long serialVersionUID = 1946514142415876581L;
-
-  private List<Selector> selectorIdentifier;
-
-  public GroupBy() {
+  
+  public StorageInProgressQuery(PlannedQuery validatedQuery) {
+    super(validatedQuery);
   }
 
-  public GroupBy(
-      List<Selector> selectorIdentifier) {
-    this.selectorIdentifier = selectorIdentifier;
+  StorageInProgressQuery(StorageInProgressQuery plannedQuery){
+    this((PlannedQuery)plannedQuery);
   }
-
-  public List<Selector> getSelectorIdentifier() {
-    return selectorIdentifier;
+  
+  public ClusterName getCluster() {
+    return cluster;
   }
-
-  public void setSelectorIdentifier(List<Selector> selectorIdentifier) {
-    this.selectorIdentifier = selectorIdentifier;
+  
+  public TableMetadata getTableMetaData() {
+    return tableMetaData;
   }
 }

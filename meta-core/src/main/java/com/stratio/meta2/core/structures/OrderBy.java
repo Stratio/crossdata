@@ -28,6 +28,9 @@ public class OrderBy {
   private List<Selector> selectorList = new ArrayList<>();
   private OrderDirection direction= OrderDirection.ASC;
 
+  public OrderBy() {
+  }
+
   public OrderBy(OrderDirection direction,
                  List<Selector> selectorList) {
     this.direction = direction;

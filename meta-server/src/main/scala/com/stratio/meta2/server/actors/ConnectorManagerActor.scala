@@ -4,6 +4,12 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props, ReceiveTimeout, RootAct
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
 import com.stratio.meta2.core.query.InProgressQuery
+import akka.cluster.Cluster
+import java.util.HashMap
+import akka.actor.ActorSelection
+import com.stratio.meta2.core.query.MetadataInProgressQuery
+import com.stratio.meta2.core.query.SelectInProgressQuery
+import com.stratio.meta2.core.query.StorageInProgressQuery
 
 object ConnectorManagerActor {
   def props(): Props = Props(new ConnectorManagerActor)
@@ -12,20 +18,48 @@ object ConnectorManagerActor {
 class ConnectorManagerActor extends Actor with ActorLogging {
 
   log.info("Lifting connector actor")
+  val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
+  //coordinatorActorRef ! "hola"
 
-  var connectorsMap: Map[String, ActorRef] = Map()
+  //var connectorsMap:scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String,ActorRef]()
+  var connectorsMap:scala.collection.mutable.Map[String, ActorSelection] = scala.collection.mutable.Map[String,ActorSelection]()
+
+  override def preStart(): Unit = {
+    //#subscribe
+    Cluster(context.system).subscribe(self, classOf[MemberEvent])
+    //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
+  }
+  override def postStop(): Unit =
+    Cluster(context.system).unsubscribe(self)
 
   def receive = {
 
-    case query: InProgressQuery => {
-      log.info("Connector Actor received InProgressQuery")
+    case mu: MemberUp => {
+      log.info("Member is Up: {}" + mu.toString+mu.member.getRoles)
+      val it=mu.member.getRoles.iterator()
+      while(it.hasNext()){
+    	  var rol=it.next()
+    	  rol match{
+    	    case "connector"=>
+    	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
+    	    	val id=java.util.UUID.randomUUID.toString()
+    	    	connectorsMap.put(mu.member.toString, connectorActorRef)
+    	    	//connectorActorRef ! "hola"
+    	  }
+    	  log.info("has role: {}" + rol)
+      }
+      // connectorsMap += (member.toString -> memberActorRef)
+      //memberActorRef ! "hola pichi, estás metaregistrado"
     }
 
-    case MemberUp(member) =>
-      println("Member is Up: " + member.toString + member.getRoles.toString())
-      val memberActorRef = context.actorSelection(RootActorPath(member.address) / "user" / "meta-connector")
-      //      connectorsMap += (member.toString -> memberActorRef)
-      memberActorRef ! new Request("name")
+
+    case query: StorageInProgressQuery=>
+      log.info("storage in progress query")
+    case query: SelectInProgressQuery=>
+      log.info("select in progress query")
+    case query: MetadataInProgressQuery=>
+      log.info("metadata in progress query")
+     
 
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))
@@ -73,7 +107,7 @@ class ConnectorManagerActor extends Actor with ActorLogging {
       connectorsMap(toConnector.connectorName) ! toConnector
 
     case response: Response =>
-      connectorsMap += (response.msg -> sender)
+      //connectorsMap += (response.msg -> sender)
 
     case other =>
       println("connector actor receives event")

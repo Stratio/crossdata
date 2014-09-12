@@ -614,8 +614,8 @@ selectStatement returns [SelectStatement slctst]
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
     (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON joinRelations=getWhereClauses[null])?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses[null])?
-    (T_ORDER T_BY {orderInc = true;} ordering=getOrdering[null])?
-    (T_GROUP T_BY {groupInc = true;} groupby=getGroupBy[null])?
+    (T_ORDER T_BY {orderInc = true;} orderBy=getOrdering[null])?
+    (T_GROUP T_BY {groupInc = true;} groupBy=getGroupBy[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
         $slctst = new SelectStatement(selClause, tablename);
@@ -626,9 +626,9 @@ selectStatement returns [SelectStatement slctst]
         if(whereInc)
              $slctst.setWhere(whereClauses);
         if(orderInc)
-             $slctst.setOrderBy(ordering);
+             $slctst.setOrderBy(orderBy);
         if(groupInc)
-             $slctst.setGroup(groupby);
+             $slctst.setGroupBy(new GroupBy(groupBy));
         if(limitInc)
              $slctst.setLimit(Integer.parseInt($constant.text));
 

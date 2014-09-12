@@ -16,13 +16,6 @@ class ClusterListener extends Actor with ActorLogging {
   val cluster = Cluster(context.system)
 
   // subscribe to cluster changes, re-subscribe when restart 
-  override def preStart(): Unit = {
-    //#subscribe
-    cluster.subscribe(self, classOf[MemberEvent])
-    //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
-  }
-
-  override def postStop(): Unit = cluster.unsubscribe(self)
 
   def receive = {
     
@@ -63,12 +56,14 @@ class ClusterListener extends Actor with ActorLogging {
       */
       
     case s:String=>
+      println("->"+"Receiving String: {}"+s)
       log.info("->"+"Receiving String: {}",s)
 
     case MemberUp(member) =>
+      println("member up")
       log.info("*******Member is Up: {} {}!!!!!", member.toString ,member.getRoles)
-      val actorRefe=context.actorSelection(RootActorPath(member.address) / "user" / "clusterListener" )
-      actorRefe ! "hola "+member.address+ "  "+RootActorPath(member.address) 
+      //val actorRefe=context.actorSelection(RootActorPath(member.address) / "user" / "clusterListener" )
+      //actorRefe ! "hola "+member.address+ "  "+RootActorPath(member.address) 
       
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))

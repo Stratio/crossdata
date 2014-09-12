@@ -28,7 +28,6 @@ public class Normalizer {
     //NormalizedFields fields = new NormalizedFields();
     Normalizator normalizator = new Normalizator(parsedQuery);
     normalizator.execute();
-    // TODO: something with the fields
     return new NormalizedQuery(parsedQuery);
   }
 

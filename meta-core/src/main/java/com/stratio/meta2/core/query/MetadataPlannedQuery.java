@@ -16,32 +16,16 @@
  * under the License.
  */
 
-package com.stratio.meta.core.structures;
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
-
-import java.io.Serializable;
-import java.util.List;
+package com.stratio.meta2.core.query;
 
 
-public class GroupBy implements Serializable {
-
-  private static final long serialVersionUID = 1946514142415876581L;
-
-  private List<Selector> selectorIdentifier;
-
-  public GroupBy() {
+public class MetadataPlannedQuery extends PlannedQuery {
+  
+  public MetadataPlannedQuery(ValidatedQuery validatedQuery) {
+    super(validatedQuery);
   }
 
-  public GroupBy(
-      List<Selector> selectorIdentifier) {
-    this.selectorIdentifier = selectorIdentifier;
-  }
-
-  public List<Selector> getSelectorIdentifier() {
-    return selectorIdentifier;
-  }
-
-  public void setSelectorIdentifier(List<Selector> selectorIdentifier) {
-    this.selectorIdentifier = selectorIdentifier;
+  MetadataPlannedQuery(MetadataPlannedQuery plannedQuery){
+    this((ValidatedQuery)plannedQuery);
   }
 }
