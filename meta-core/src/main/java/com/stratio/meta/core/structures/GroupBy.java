@@ -27,7 +27,10 @@ public class GroupBy implements Serializable {
 
   private static final long serialVersionUID = 1946514142415876581L;
 
-  private final List<Selector> selectorIdentifier;
+  private List<Selector> selectorIdentifier;
+
+  public GroupBy() {
+  }
 
   public GroupBy(
       List<Selector> selectorIdentifier) {
@@ -38,4 +41,7 @@ public class GroupBy implements Serializable {
     return selectorIdentifier;
   }
 
+  public void setSelectorIdentifier(List<Selector> selectorIdentifier) {
+    this.selectorIdentifier = selectorIdentifier;
+  }
 }

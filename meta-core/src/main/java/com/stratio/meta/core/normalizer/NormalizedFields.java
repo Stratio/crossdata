@@ -38,8 +38,8 @@ public class NormalizedFields {
   private List<Selector> selectors = new ArrayList<>(); // It can includes functions, column names, asterisks...
   private boolean distinctSelect = false;
   private List<Relation> relations = new ArrayList<>(); // Where clauses
-  private OrderBy orderBy = null;
-  private GroupBy groupBy = null;
+  private OrderBy orderBy = new OrderBy();
+  private GroupBy groupBy = new GroupBy();
 
   public NormalizedFields() {
   }

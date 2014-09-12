@@ -18,5 +18,46 @@
 
 package com.stratio.meta2.core.statements;
 
+import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ConnectorMetadata;
+import com.stratio.meta2.common.metadata.DataStoreMetadata;
+
 public abstract class MetaDataStatement extends MetaStatement {
+
+    protected ClusterMetadata clusterMetadata=null;
+
+    protected ConnectorMetadata connectorMetadata=null;
+
+    protected DataStoreMetadata dataStoreMetadata=null;
+
+
+
+    public MetaDataStatement(){
+        super();
+    }
+
+
+    public ClusterMetadata getClusterMetadata() {
+        return clusterMetadata;
+    }
+
+    public void setClusterMetadata(ClusterMetadata clusterMetadata) {
+        this.clusterMetadata = clusterMetadata;
+    }
+
+    public ConnectorMetadata getConnectorMetadata() {
+        return connectorMetadata;
+    }
+
+    public void setConnectorMetadata(ConnectorMetadata connectorMetadata) {
+        this.connectorMetadata = connectorMetadata;
+    }
+
+    public DataStoreMetadata getDataStoreMetadata() {
+        return dataStoreMetadata;
+    }
+
+    public void setDataStoreMetadata(DataStoreMetadata dataStoreMetadata) {
+        this.dataStoreMetadata = dataStoreMetadata;
+    }
 }
