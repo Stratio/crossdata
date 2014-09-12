@@ -30,7 +30,7 @@ import com.stratio.meta2.common.statements.structures.selectors.FunctionSelector
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
-import com.stratio.meta2.core.metadata.MetadataManager;
+import com.stratio.meta2.core.metadata.MockMetadataManager;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.structures.OrderBy;
 
@@ -45,7 +45,6 @@ public class Normalizator {
 
   public Normalizator(SelectParsedQuery parsedQuery) {
     this.parsedQuery = parsedQuery;
-    parsedQuery.getStatement().getGroupBy();
   }
 
   public NormalizedFields getFields() {
@@ -53,16 +52,12 @@ public class Normalizator {
   }
 
   public void execute() throws ValidationException {
-    initFields();
     normalizeTables();
     normalizeSelectExpresion();
     normalizeJoins();
+    normalizeWhere();
     normalizeOrderBy();
     normalizeGroupBy();
-  }
-
-  private void initFields() {
-    // TODO: Fill in fields with initial values
   }
 
   public void normalizeTables() throws ValidationException {
@@ -91,6 +86,17 @@ public class Normalizator {
     TableName joinTable = innerJoin.getTablename();
     checkTable(joinTable);
     fields.getTableNames().add(joinTable);
+  }
+
+  private void normalizeWhere() {
+    List<Relation> where = parsedQuery.getStatement().getWhere();
+    if(where!=null && !where.isEmpty()){
+      normalizeWhere(where);
+    }
+  }
+
+  private void normalizeWhere(List<Relation> where) {
+    //TODO Continue with the next steps
   }
 
   public void normalizeOrderBy()
@@ -154,7 +160,7 @@ public class Normalizator {
           throw new BadFormatException("Function include into groupBy is not valid");
         case COLUMN:
           checkColumnSelector((ColumnSelector) selector);
-          if (columnNames.add(((ColumnSelector) selector).getName())) {
+          if (!columnNames.add(((ColumnSelector) selector).getName())) {
             throw new BadFormatException("Column into group by is repeated");
           }
           break;
@@ -218,7 +224,7 @@ public class Normalizator {
     if (!tableName.isCompletedName()) {
       tableName.setCatalogName(parsedQuery.getDefaultCatalog());
     }
-    if (!MetadataManager.MANAGER.exists(tableName)) {
+    if (!MockMetadataManager.MANAGER.exists(tableName)) {
       throw new NotExistNameException(tableName);
     }
   }
@@ -242,7 +248,7 @@ public class Normalizator {
     TableName selectTableName = null;
     for (TableName tableName: fields.getTableNames()) {
       columnName.setTableName(tableName);
-      if (MetadataManager.MANAGER.exists(columnName)) {
+      if (MockMetadataManager.MANAGER.exists(columnName)) {
         if (selectTableName == null) {
           selectTableName = tableName;
         } else {
@@ -260,7 +266,7 @@ public class Normalizator {
   public List<ColumnSelector> checkAsteriskSelector() {
     List<ColumnSelector> columnSelectors = new ArrayList<>();
     for (TableName table: fields.getTableNames()) {
-      TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(table);
+      TableMetadata tableMetadata = MockMetadataManager.MANAGER.getTable(table);
       for (ColumnName columnName: tableMetadata.getColumns().keySet()) {
         ColumnSelector selector = new ColumnSelector(columnName);
         columnSelectors.add(selector);

@@ -367,7 +367,8 @@ public class SelectStatement extends MetaStatement {
     this.orderBy = orderBy;
   }
 
-  public List<TableName> getTableNames() {
+  @Override
+  public List<TableName> getFromTables() {
     ArrayList<TableName> tableNames = new ArrayList<>();
     tableNames.add(tableName);
     if(joinInc){
