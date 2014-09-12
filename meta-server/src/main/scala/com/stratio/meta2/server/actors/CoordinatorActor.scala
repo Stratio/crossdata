@@ -1,16 +1,16 @@
 package com.stratio.meta2.server.actors
 
-import akka.actor.{ Actor, ActorLogging, ActorRef, Props, ReceiveTimeout, RootActorPath }
-import akka.cluster.ClusterEvent._
-import com.stratio.meta.communication._
+import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.query
-import com.stratio.meta2.core.query.SelectPlannedQuery
+import akka.actor.{Props, ActorLogging, Actor, ActorRef}
+import akka.cluster.ClusterEvent._
+import com.stratio.meta2.core.query.PlannedQuery
 
 object CoordinatorActor {
-  def props(): Props = Props(new CoordinatorActor)
+  def props(conector:ActorRef, coordinator:Coordinator): Props =Props(new CoordinatorActor(conector,coordinator))
 }
 
-class CoordinatorActor extends Actor with ActorLogging {
+class CoordinatorActor(conector:ActorRef, coordinator:Coordinator) extends Actor with ActorLogging {
 
   log.info("Lifting coordinator actor")
 
@@ -18,8 +18,8 @@ class CoordinatorActor extends Actor with ActorLogging {
 
   def receive = {
 
-    case query: SelectPlannedQuery => {
-      log.info("Connector Actor received InProgressQuery")
+    case query: PlannedQuery => {
+      log.info("Connector Actor received PlannedQuery")
     }
 
     case _ =>
