@@ -17,15 +17,16 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.statements.structures.window.Window;
 import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.structures.OrderBy;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -94,7 +95,7 @@ public class SelectStatement extends MetaStatement {
   /**
    * The {@link com.stratio.meta.core.structures.GroupBy} clause.
    */
-  private List<Selector> group = null;
+  private GroupBy groupBy = null;
 
   private OrderBy orderBy = null;
 
@@ -240,11 +241,11 @@ public class SelectStatement extends MetaStatement {
   /**
    * Set the {@link com.stratio.meta.core.structures.GroupBy} clause.
    * 
-   * @param group The group by.
+   * @param groupBy The group by.
    */
-  public void setGroup(List<Selector> group) {
+  public void setGroupBy(GroupBy groupBy) {
     this.groupInc = true;
-    this.group = group;
+    this.groupBy = groupBy;
   }
 
   /**
@@ -252,8 +253,8 @@ public class SelectStatement extends MetaStatement {
    * 
    * @return list of {@link com.stratio.meta.core.structures.GroupBy}.
    */
-  public List<Selector> getGroup() {
-    return group;
+  public GroupBy getGroupBy() {
+    return groupBy;
   }
 
   /**
@@ -343,7 +344,7 @@ public class SelectStatement extends MetaStatement {
       sb.append(" ORDER BY ").append(orderBy);
     }
     if (groupInc) {
-      sb.append(" GROUP BY ").append(StringUtils.stringList(group, ", "));
+      sb.append(" GROUP BY ").append(StringUtils.stringList(groupBy.getSelectorIdentifier(), ", "));
     }
     if (limitInc) {
       sb.append(" LIMIT ").append(limit);
@@ -364,5 +365,14 @@ public class SelectStatement extends MetaStatement {
   public void setOrderBy(OrderBy orderBy) {
     this.orderInc = true;
     this.orderBy = orderBy;
+  }
+
+  public List<TableName> getTableNames() {
+    ArrayList<TableName> tableNames = new ArrayList<>();
+    tableNames.add(tableName);
+    if(joinInc){
+      tableNames.add(join.getTablename());
+    }
+    return tableNames;
   }
 }
