@@ -30,7 +30,7 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike {
 
 		test("Basic Coordinator Mock test") {
 		  within(5000 millis){
-	  		val coordinatorActor=system.actorOf(CoordinatorActor.props(),"CoordinatorActor") 
+	  		val coordinatorActor=system.actorOf(CoordinatorActor.props(null,null),"CoordinatorActor") 
 	  		coordinatorActor! "Hola"
 	  		//expectMsg("Hola") // bounded to 1 second
 	  		//expectMsg("Hola") // bounded to the remainder of the 1 second
