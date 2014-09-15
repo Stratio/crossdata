@@ -59,7 +59,6 @@ class ConnectorManagerActor extends Actor with ActorLogging {
       log.info("select in progress query")
     case query: MetadataInProgressQuery=>
       log.info("metadata in progress query")
-     
 
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))
@@ -108,6 +107,9 @@ class ConnectorManagerActor extends Actor with ActorLogging {
 
     case response: Response =>
       //connectorsMap += (response.msg -> sender)
+      
+    case "QUERY!!!" =>
+      sender ! "Ok"
 
     case other =>
       println("connector actor receives event")
