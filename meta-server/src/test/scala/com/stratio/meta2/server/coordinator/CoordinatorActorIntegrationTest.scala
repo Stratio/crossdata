@@ -16,6 +16,7 @@
  * under the License.
  */
 
+/*
 import scala.concurrent.duration.DurationInt
 import org.scalatest.FunSuiteLike
 import com.stratio.meta.server.config.ActorReceiveUtils
@@ -46,3 +47,4 @@ class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLik
 		}
 
 }
+*/

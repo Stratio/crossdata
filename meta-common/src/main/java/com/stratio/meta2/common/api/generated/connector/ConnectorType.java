@@ -27,6 +27,8 @@
 package com.stratio.meta2.common.api.generated.connector;
 
 import com.stratio.meta2.common.api.Manifest;
+import com.stratio.meta2.common.api.ManifestException;
+import com.stratio.meta2.common.api.ManifestHelper;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -106,8 +108,9 @@ public class ConnectorType extends Manifest {
    *     {@link String }
    *
    */
-  public void setConnectorName(String value) {
+  public void setConnectorName(String value) throws ManifestException {
     this.connectorName = value;
+    ManifestHelper.checkName(value);
   }
 
   /**
@@ -115,7 +118,7 @@ public class ConnectorType extends Manifest {
    *
    * @return
    *     possible object is
-   *     {@link DataStoresNameType }
+   *     {@link com.stratio.meta2.common.api.generated.connector.DataStoresNameType }
    *
    */
   public DataStoresNameType getDataStoresName() {
@@ -127,7 +130,7 @@ public class ConnectorType extends Manifest {
    *
    * @param value
    *     allowed object is
-   *     {@link DataStoresNameType }
+   *     {@link com.stratio.meta2.common.api.generated.connector.DataStoresNameType }
    *
    */
   public void setDataStoresName(DataStoresNameType value) {
@@ -163,7 +166,7 @@ public class ConnectorType extends Manifest {
    *
    * @return
    *     possible object is
-   *     {@link RequiredPropertiesType }
+   *     {@link com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType }
    *
    */
   public RequiredPropertiesType getRequiredProperties() {
@@ -175,7 +178,7 @@ public class ConnectorType extends Manifest {
    *
    * @param value
    *     allowed object is
-   *     {@link RequiredPropertiesType }
+   *     {@link com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType }
    *
    */
   public void setRequiredProperties(RequiredPropertiesType value) {

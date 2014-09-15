@@ -66,9 +66,9 @@ class ServerActor(engine:Engine) extends Actor {
   */
 
   def receive = {
-    case command:Command =>
+    /*case command:Command =>
       println("command: " + command)
-      
+    */
     case query:Query =>
       println("query: " + query)
       //queryActorRef forward query
