@@ -30,51 +30,51 @@ public class CreateTableStatementTest extends ParsingTest {
 
   @Test
   public void createTableBasic() {
-    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, something2 int, something3 bool);";
-    String expectedText = "CREATE TABLE <unknown_name>.myTable ON CLUSTER cluster.siliconvalley (<unknown_name>.myTable.something text PRIMARY KEY, <unknown_name>.myTable.something2 int, <unknown_name>.myTable.something3 bool);";
+    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, something2 int, something3 boolean);";
+    String expectedText = "CREATE TABLE <unknown_name>.myTable ON CLUSTER cluster.siliconvalley (<unknown_name>.myTable.something text PRIMARY KEY, <unknown_name>.myTable.something2 int, <unknown_name>.myTable.something3 boolean);";
     testRegularStatement(inputText, expectedText, "createTableBasic");
   }
 
   @Test
   public void createTableBasic2() {
-    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int PRIMARY KEY, something3 bool);";
-    String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley (demo.myTable.something text, demo.myTable.something2 int PRIMARY KEY, demo.myTable.something3 bool);";
+    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int PRIMARY KEY, something3 boolean);";
+    String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley (demo.myTable.something text, demo.myTable.something2 int PRIMARY KEY, demo.myTable.something3 boolean);";
     testRegularStatementSession("demo", inputText, expectedText, "createTableBasic2");
   }
 
   @Test
   public void createTableBasic3() {
-    String inputText = "CREATE TABLE business.myTable ON CLUSTER siliconValley (something text, something2 int, something3 bool PRIMARY KEY);";
-    String expectedText = "CREATE TABLE business.myTable ON CLUSTER cluster.siliconValley (business.myTable.something text, business.myTable.something2 int, business.myTable.something3 bool PRIMARY KEY);";
+    String inputText = "CREATE TABLE business.myTable ON CLUSTER siliconValley (something text, something2 int, something3 boolean PRIMARY KEY);";
+    String expectedText = "CREATE TABLE business.myTable ON CLUSTER cluster.siliconValley (business.myTable.something text, business.myTable.something2 int, business.myTable.something3 boolean PRIMARY KEY);";
     testRegularStatementSession("demo", inputText, expectedText, "createTableBasic3");
   }
 
   @Test
   public void createTableBasic4() {
-    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 bool, PRIMARY KEY (something));";
-    String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley (demo.myTable.something text, demo.myTable.something2 int, demo.myTable.something3 bool, PRIMARY KEY (demo.myTable.something));";
+    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 boolean, PRIMARY KEY (something));";
+    String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley (demo.myTable.something text, demo.myTable.something2 int, demo.myTable.something3 boolean, PRIMARY KEY (demo.myTable.something));";
     testRegularStatementSession("demo", inputText, expectedText, "createTableBasic4");
   }
 
   @Test
   public void createTableBasic5() {
-    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 bool, PRIMARY KEY (something, something2));";
-    String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley (demo.myTable.something text, demo.myTable.something2 int, demo.myTable.something3 bool, PRIMARY KEY (demo.myTable.something, demo.myTable.something2));";
+    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 boolean, PRIMARY KEY (something, something2));";
+    String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley (demo.myTable.something text, demo.myTable.something2 int, demo.myTable.something3 boolean, PRIMARY KEY (demo.myTable.something, demo.myTable.something2));";
     testRegularStatementSession("demo", inputText, expectedText, "createTableBasic5");
   }
 
   @Test
   public void createTableBasic6() {
-    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 bool, PRIMARY KEY ((something, something2), something3));";
-    String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley (demo.myTable.something text, demo.myTable.something2 int, demo.myTable.something3 bool, PRIMARY KEY ((demo.myTable.something, demo.myTable.something2), demo.myTable.something3));";
+    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 boolean, PRIMARY KEY ((something, something2), something3));";
+    String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley (demo.myTable.something text, demo.myTable.something2 int, demo.myTable.something3 boolean, PRIMARY KEY ((demo.myTable.something, demo.myTable.something2), demo.myTable.something3));";
     testRegularStatementSession("demo", inputText, expectedText, "createTableBasic6");
   }
 
   @Test
   public void createTableBasic7() {
-    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 bool, PRIMARY KEY ((something, something2), something3)) "
+    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 boolean, PRIMARY KEY ((something, something2), something3)) "
                        + "WITH 'propiedad1'='prop1' AND 'propiedad2'=2 and 'propiedad3'=3.0;";
-    String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley (demo.myTable.something text, demo.myTable.something2 int, demo.myTable.something3 bool, PRIMARY KEY ((demo.myTable.something, demo.myTable.something2), demo.myTable.something3)) "
+    String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley (demo.myTable.something text, demo.myTable.something2 int, demo.myTable.something3 boolean, PRIMARY KEY ((demo.myTable.something, demo.myTable.something2), demo.myTable.something3)) "
                           + "WITH 'propiedad1'='prop1' and 'propiedad2'=2 AND 'propiedad3'=3.0;";
     testRegularStatementSession("demo", inputText, expectedText, "createTableBasic7");
   }
@@ -105,18 +105,18 @@ public class CreateTableStatementTest extends ParsingTest {
 
   @Test
   public void createTableCompactStorage() {
-    String inputText = "CREATE TABLE key_space1.sblocks ON CLUSTER siliconValley (block_id uuid, subblock_id uuid, data blob, PRIMARY KEY "
+    String inputText = "CREATE TABLE key_space1.sblocks ON CLUSTER siliconValley (block_id varchar, subblock_id varchar, data text, PRIMARY KEY "
                        + "(block_id, subblock_id)) WITH COMPACT STORAGE;";
-    String expectedText = "CREATE TABLE key_space1.sblocks ON CLUSTER cluster.siliconValley (key_space1.sblocks.block_id uuid, key_space1.sblocks.subblock_id uuid, key_space1.sblocks.data blob, PRIMARY KEY "
+    String expectedText = "CREATE TABLE key_space1.sblocks ON CLUSTER cluster.siliconValley (key_space1.sblocks.block_id varchar, key_space1.sblocks.subblock_id varchar, key_space1.sblocks.data text, PRIMARY KEY "
                           + "(key_space1.sblocks.block_id, key_space1.sblocks.subblock_id)) WITH COMPACT STORAGE;";
     testRegularStatementSession("demo", inputText, expectedText, "createTableCompactStorage");
   }
 
   @Test
   public void createTableClustering() {
-    String inputText = "CREATE TABLE key_space1.timeseries ON CLUSTER siliconValley (event_type text, insertion_time timestamp, event blob,"
+    String inputText = "CREATE TABLE key_space1.timeseries ON CLUSTER siliconValley (event_type text, insertion_time text, event text,"
                        + " PRIMARY KEY (event_type, insertion_time)) WITH CLUSTERING ORDER BY (insertion_time DESC);";
-    String expectedText = "CREATE TABLE key_space1.timeseries ON CLUSTER cluster.siliconValley (key_space1.timeseries.event_type text, key_space1.timeseries.insertion_time timestamp, key_space1.timeseries.event blob,"
+    String expectedText = "CREATE TABLE key_space1.timeseries ON CLUSTER cluster.siliconValley (key_space1.timeseries.event_type text, key_space1.timeseries.insertion_time text, key_space1.timeseries.event text,"
                           + " PRIMARY KEY (key_space1.timeseries.event_type, key_space1.timeseries.insertion_time)) WITH CLUSTERING ORDER BY (key_space1.timeseries.insertion_time DESC);";
     testRegularStatementSession("demo", inputText, expectedText, "createTableClustering");
   }
@@ -138,9 +138,9 @@ public class CreateTableStatementTest extends ParsingTest {
 
   @Test
   public void createTableMapColumn() {
-    String inputText = "CREATE TABLE demo.banks ON CLUSTER siliconValley (day text, key uuid, latitude double, longitude double, name text, "
+    String inputText = "CREATE TABLE demo.banks ON CLUSTER siliconValley (day text, key varchar, latitude double, longitude double, name text, "
                        + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key));";
-    String expectedText = "CREATE TABLE demo.banks ON CLUSTER cluster.siliconValley (demo.banks.day text, demo.banks.key uuid, demo.banks.latitude double, demo.banks.longitude double, demo.banks.name text, "
+    String expectedText = "CREATE TABLE demo.banks ON CLUSTER cluster.siliconValley (demo.banks.day text, demo.banks.key varchar, demo.banks.latitude double, demo.banks.longitude double, demo.banks.name text, "
                           + "demo.banks.address text, demo.banks.tags map<text,boolean>, demo.banks.lucene text, PRIMARY KEY (demo.banks.day, demo.banks.key));";
     testRegularStatementSession("demo", inputText, expectedText, "createTableMapColumn");
   }
@@ -153,19 +153,19 @@ public class CreateTableStatementTest extends ParsingTest {
 
   @Test
   public void createTableWithGetMetaProperty() {
-    String inputText = "CREATE TABLE key_space1.timeseries ON CLUSTER siliconValley (event_type text, insertion_time timestamp, event blob,"
+    String inputText = "CREATE TABLE key_space1.timeseries ON CLUSTER siliconValley (event_type text, insertion_time text, event text,"
                        + " PRIMARY KEY (event_type, insertion_time)) WITH CLUSTERING ORDER BY (insertion_time DESC) AND ephemeral=true;";
-    String expectedText = "CREATE TABLE key_space1.timeseries ON CLUSTER cluster.siliconValley (key_space1.timeseries.event_type text, key_space1.timeseries.insertion_time timestamp, key_space1.timeseries.event blob,"
+    String expectedText = "CREATE TABLE key_space1.timeseries ON CLUSTER cluster.siliconValley (key_space1.timeseries.event_type text, key_space1.timeseries.insertion_time text, key_space1.timeseries.event text,"
                           + " PRIMARY KEY (key_space1.timeseries.event_type, key_space1.timeseries.insertion_time)) WITH CLUSTERING ORDER BY (key_space1.timeseries.insertion_time DESC) AND ephemeral=true;";
     testRegularStatementSession("demo", inputText, expectedText, "createTableWithGetMetaProperty");
   }
 
   @Test
   public void createTableWithOptions(){
-    String inputText = "CREATE TABLE key_space1.wallet ON CLUSTER siliconValley (day text, key uuid, latitude double, longitude double, name text, "
+    String inputText = "CREATE TABLE key_space1.wallet ON CLUSTER siliconValley (day text, key varchar, latitude double, longitude double, name text, "
                        + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key)) WITH COMPACT STORAGE AND " +
                        "'read_repair_chance'=1.0;";
-    String expectedText = "CREATE TABLE key_space1.wallet ON CLUSTER cluster.siliconValley (key_space1.wallet.day text, key_space1.wallet.key uuid, key_space1.wallet.latitude double, key_space1.wallet.longitude double, key_space1.wallet.name text, "
+    String expectedText = "CREATE TABLE key_space1.wallet ON CLUSTER cluster.siliconValley (key_space1.wallet.day text, key_space1.wallet.key varchar, key_space1.wallet.latitude double, key_space1.wallet.longitude double, key_space1.wallet.name text, "
                           + "key_space1.wallet.address text, key_space1.wallet.tags map<text,boolean>, key_space1.wallet.lucene text, PRIMARY KEY (key_space1.wallet.day, key_space1.wallet.key)) WITH COMPACT STORAGE AND " +
                           "'read_repair_chance'=1.0;";
     testRegularStatementSession("demo", inputText, expectedText, "createTableWithOptions");

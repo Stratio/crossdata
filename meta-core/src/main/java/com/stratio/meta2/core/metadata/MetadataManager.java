@@ -15,21 +15,9 @@
 package com.stratio.meta2.core.metadata;
 
 
-import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.ConnectorName;
-import com.stratio.meta2.common.data.DataStoreName;
-import com.stratio.meta2.common.data.FirstLevelName;
-import com.stratio.meta2.common.data.Name;
-import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
-import com.stratio.meta2.common.metadata.ClusterMetadata;
-import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
-import com.stratio.meta2.common.metadata.ConnectorMetadata;
-import com.stratio.meta2.common.metadata.DataStoreMetadata;
-import com.stratio.meta2.common.metadata.IMetadata;
-import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta.core.structures.IndexType;
+import com.stratio.meta2.common.data.*;
+import com.stratio.meta2.common.metadata.*;
 
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -69,6 +57,9 @@ public enum MetadataManager {
       case Table:
         result=exists((TableName)name);
         break;
+      case Index:
+        result=exists((IndexName)name);
+        break;
     }
     return result;
   }
@@ -104,6 +95,15 @@ public enum MetadataManager {
       result = catalogMetadata.getColumns().containsKey(name);
     }
     return result;
+  }
+
+  public boolean exists(IndexName name){
+   boolean result = false;
+   if (exists(name.getTableName())) {
+     TableMetadata tableMetadata = this.getTable(name.getTableName());
+     result = tableMetadata.getIndexes().containsKey(name);
+   }
+   return result;
   }
 
   public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock) {

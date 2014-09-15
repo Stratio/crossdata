@@ -33,4 +33,8 @@ public class AttachConnectorStatement extends MetaDataStatement {
         .add(Validation.MUST_EXIST_CONNECTOR)
         .add(Validation.VALID_CONNECTOR_OPTIONS);
   }
+
+  public Map<Selector, Selector> getOptions() {
+    return options;
+  }
 }

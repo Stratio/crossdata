@@ -26,21 +26,21 @@ public class AttachConnectorStatementTest extends ParsingTest {
 
   @Test
   public void attachConnectorSimple1() {
-    String inputText = "ATTACH CONNECTOR 'cass_con_native' TO \"cassandraCluster\" WITH OPTIONS {\"ConsistencyLevel\": \"Quorum\", 'DefaultLimit': 999};";
-    String expectedText = "ATTACH CONNECTOR 'cass_con_native' TO \"cassandraCluster\" WITH OPTIONS {ConsistencyLevel: Quorum, DefaultLimit: 999};";
+    String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {\"ConsistencyLevel\": \"Quorum\", 'DefaultLimit': 999};";
+    String expectedText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {ConsistencyLevel: Quorum, DefaultLimit: 999};";
     testRegularStatement(inputText, expectedText, "attachConnectorSimple1");
   }
 
   @Test
   public void attachConnectorSimple2() {
-    String inputText = "ATTACH CONNECTOR \"cass_con_native\" TO 'cassandraCluster' WITH OPTIONS {'ConsistencyLevel': 'Quorum', \"DefaultLimit\": 999};";
-    String expectedText = "ATTACH CONNECTOR \"cass_con_native\" TO 'cassandraCluster' WITH OPTIONS {ConsistencyLevel: Quorum, DefaultLimit: 999};";
+    String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {'ConsistencyLevel': 'Quorum', \"DefaultLimit\": 999};";
+    String expectedText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {ConsistencyLevel: Quorum, DefaultLimit: 999};";
     testRegularStatement(inputText, expectedText, "attachConnectorSimple2");
   }
 
   @Test
   public void attachConnectorWrongConnectorName() {
-    String inputText = "ATTACH CONNECTOR ^cass_con_native TO 'cassandraCluster' WITH OPTIONS {'ConsistencyLevel': Quorum};";
+    String inputText = "ATTACH CONNECTOR ^cass_con_native TO cassandraCluster WITH OPTIONS {'ConsistencyLevel': Quorum};";
     testParserFails(inputText, "attachConnectorWrongName");
   }
 
@@ -52,7 +52,7 @@ public class AttachConnectorStatementTest extends ParsingTest {
 
   @Test
   public void attachConnectorWrongJson() {
-    String inputText = "ATTACH CONNECTOR productionMadrid ON DATASTORE 'cassandra' WITH OPTIONS {connector.path: /home/stratio/connector/cass_con_native.xml};";
+    String inputText = "ATTACH CONNECTOR productionMadrid ON DATASTORE cassandra WITH OPTIONS {connector.path: /home/stratio/connector/cass_con_native.xml};";
     testParserFails(inputText, "attachConnectorWrongJson");
   }
 

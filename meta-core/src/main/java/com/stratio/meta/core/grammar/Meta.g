@@ -264,6 +264,13 @@ T_NULL: N U L L;
 T_ATTACH: A T T A C H;
 T_DETACH: D E T A C H;
 T_TO: T O;
+T_DOUBLE: D O U B L E;
+T_MAP: M A P;
+T_INT: I N T;
+T_BOOLEAN: B O O L E A N;
+T_VARCHAR: V A R C H A R;
+T_TEXT: T E X T;
+T_BIGINT: B I G I N T;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -339,7 +346,7 @@ attachConnectorStatement returns [AttachConnectorStatement acs]
     @after{
         $acs = new AttachConnectorStatement($connectorName.text, $clusterName.text, optionsJson);
     }:
-    T_ATTACH T_CONNECTOR connectorName=QUOTED_LITERAL T_TO clusterName=QUOTED_LITERAL T_WITH T_OPTIONS optionsJson=getJson
+    T_ATTACH T_CONNECTOR connectorName=T_IDENT T_TO clusterName=T_IDENT T_WITH T_OPTIONS optionsJson=getJson
 ;
 
 detachConnectorStatement returns [DetachConnectorStatement dcs]
@@ -773,10 +780,39 @@ getMetaProperty[TableName tablename] returns [Property mp]
 ;
 
 getDataType returns [String dataType]:
-    (
-        ident1=T_IDENT (T_LT ident2=T_IDENT (T_COMMA ident3=T_IDENT)? T_GT)?
+    ( ident1=getBasicType
+    | ident1=getCollectionType T_LT ident2=getBasicType T_GT
+    | ident1=getMapType T_LT ident2=getBasicType T_COMMA ident3=getBasicType T_GT
     )
-    {$dataType = $ident1.text.concat(ident2==null?"":"<"+$ident2.text).concat(ident3==null?"":","+$ident3.text).concat(ident2==null?"":">");}
+    {$dataType = ident1.concat(ident2==null?"":"<"+ident2).concat(ident3==null?"":","+ident3).concat(ident2==null?"":">");}
+;
+
+getBasicType returns [String dataType]
+    @after{
+        $dataType = $str.text;
+    }:
+    str=( T_BIGINT
+        | T_BOOLEAN
+        | T_DOUBLE
+        | T_FLOAT
+        | T_INT
+        | T_TEXT
+        | T_VARCHAR)
+;
+
+getCollectionType returns [String dataType]
+    @after{
+        $dataType = $str.text;
+    }:
+    str=( T_SET
+        | T_LIST)
+;
+
+getMapType returns [String dataType]
+    @after{
+        $dataType = $str.text;
+    }:
+    str=T_MAP
 ;
 
 getOrdering[TableName tablename] returns [OrderBy orderBy]
@@ -901,7 +937,7 @@ getListTypes returns [String listType]:
 ;
 
 getAssignment[TableName tablename] returns [Relation assign]:
-    firstTerm=getSelector[tablename] T_EQUAL value=getSelector[tablename] {$assign = new Relation(firstTerm, Operator.ASSIGN, value);}
+    firstTerm=getSelector[tablename] T_EQUAL value=getSelector[tablename] {$assign = new Relation(firstTerm, Operator.COMPARE, value);}
     ( moreOperations=getOperations[tablename, $assign] { $assign = moreOperations; } )?
     //TODO: Support index for collections (Example: cities[2] = 'Madrid')
 ;
@@ -991,7 +1027,12 @@ getAllowedReservedWord returns [String str]:
     | T_LIMIT
     | T_PROCESS
     | T_STORAGE
-    | T_OPTIONS)
+    | T_OPTIONS
+    | T_CATALOG
+    | T_MAP
+    | T_INT
+    | T_BOOLEAN
+    | T_TEXT)
     { $str = new String($ident.text); }
 ;
 

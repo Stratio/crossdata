@@ -23,6 +23,7 @@ import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.ArrayList;
@@ -160,7 +161,14 @@ public class DescribeStatement extends MetaDataStatement implements ITableStatem
 
   @Override
   public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
+      ValidationRequirements validationRequirements=new ValidationRequirements();
+      if (catalog!=null) {
+          validationRequirements.add(Validation.MUST_EXIST_CATALOG);
+          if (tableName!=null)
+             validationRequirements.add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE);
+      }
+      return validationRequirements;
+
   }
 
   public TableName getTableName() {

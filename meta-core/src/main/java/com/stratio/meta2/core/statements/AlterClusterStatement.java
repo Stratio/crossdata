@@ -14,6 +14,7 @@
 
 package com.stratio.meta2.core.statements;
 
+import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 
@@ -59,6 +60,7 @@ public class AlterClusterStatement extends MetaDataStatement {
 
   @Override
   public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
+    return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER);
   }
+
 }
