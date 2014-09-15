@@ -83,4 +83,9 @@ public class AttachClusterStatement extends MetaDataStatement {
     return new ValidationRequirements().add(Validation.MUST_EXIST_DATASTORE)
         .add(Validation.VALID_CLUSTER_OPTIONS);
   }
+
+
+  public String getOptions() {
+    return options;
+  }
 }

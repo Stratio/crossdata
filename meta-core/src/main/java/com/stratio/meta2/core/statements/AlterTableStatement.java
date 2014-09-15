@@ -23,6 +23,7 @@ import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 import com.stratio.meta2.core.structures.Property;
 import com.stratio.meta2.core.structures.PropertyNameValue;
@@ -228,7 +229,24 @@ public class AlterTableStatement extends MetaDataStatement implements ITableStat
 
   @Override
   public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
+    ValidationRequirements validationRequirements;
+    switch (option) {
+        case 1:
+            validationRequirements=new ValidationRequirements().add(Validation.MUST_EXIST_TABLE).add(Validation.MUST_EXIST_COLUMN);
+            break;
+        case 2:
+            validationRequirements=new ValidationRequirements().add(Validation.MUST_EXIST_TABLE).add(Validation.MUST_NOT_EXIST_COLUMN);
+            break;
+        case 3:
+            validationRequirements=new ValidationRequirements().add(Validation.MUST_EXIST_TABLE).add(Validation.MUST_EXIST_COLUMN);
+            break;
+        case 4:
+            validationRequirements=new ValidationRequirements().add(Validation.MUST_EXIST_TABLE).add(Validation.MUST_EXIST_PROPERTIES);
+            break;
+        default:
+            validationRequirements=new ValidationRequirements();
+    }
+    return validationRequirements;
   }
 
   public TableName getTableName() {
