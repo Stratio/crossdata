@@ -27,6 +27,8 @@
 package com.stratio.meta2.common.api.generated.datastore;
 
 import com.stratio.meta2.common.api.Manifest;
+import com.stratio.meta2.common.api.ManifestException;
+import com.stratio.meta2.common.api.ManifestHelper;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -98,8 +100,9 @@ public class DataStoreType extends Manifest {
    *     {@link String }
    *
    */
-  public void setName(String value) {
+  public void setName(String value) throws ManifestException {
     this.name = value;
+    ManifestHelper.checkName(value);
   }
 
   /**

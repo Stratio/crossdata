@@ -901,7 +901,7 @@ getListTypes returns [String listType]:
 ;
 
 getAssignment[TableName tablename] returns [Relation assign]:
-    firstTerm=getSelector[tablename] T_EQUAL value=getSelector[tablename] {$assign = new Relation(firstTerm, Operator.ASSIGN, value);}
+    firstTerm=getSelector[tablename] T_EQUAL value=getSelector[tablename] {$assign = new Relation(firstTerm, Operator.COMPARE, value);}
     ( moreOperations=getOperations[tablename, $assign] { $assign = moreOperations; } )?
     //TODO: Support index for collections (Example: cities[2] = 'Madrid')
 ;

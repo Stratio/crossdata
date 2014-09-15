@@ -279,7 +279,7 @@ public class Engine {
 
   /**
    * Get the API manager.
-   * @return A {@link com.stratio.meta.core.api.APIManager}.
+   * @return A {@link com.stratio.meta2.core.api.APIManager}.
    */
   public APIManager getAPIManager(){
     return manager;

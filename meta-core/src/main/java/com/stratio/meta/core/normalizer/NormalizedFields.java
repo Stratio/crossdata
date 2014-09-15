@@ -37,7 +37,8 @@ public class NormalizedFields {
   private Set<CatalogName> catalogNames = new HashSet<>();
   private List<Selector> selectors = new ArrayList<>(); // It can includes functions, column names, asterisks...
   private boolean distinctSelect = false;
-  private List<Relation> relations = new ArrayList<>(); // Where clauses
+  private List<Relation> relations = new ArrayList<>(); // Join relations
+  private List<Relation> where = new ArrayList<>();
   private OrderBy orderBy = new OrderBy();
   private GroupBy groupBy = new GroupBy();
 
@@ -50,6 +51,7 @@ public class NormalizedFields {
                           List<Selector> selectors,
                           boolean distinctSelect,
                           List<Relation> relations,
+                          List<Relation> where,
                           GroupBy groupBy,
                           OrderBy orderBy) {
     this.columnNames = columnNames;
@@ -57,6 +59,7 @@ public class NormalizedFields {
     this.catalogNames = catalogNames;
     this.selectors = selectors;
     this.relations = relations;
+    this.where = where;
     this.groupBy = groupBy;
     this.orderBy = orderBy;
     this.distinctSelect = distinctSelect;
@@ -66,61 +69,70 @@ public class NormalizedFields {
     return columnNames;
   }
 
-  public Set<TableName> getTableNames() { return tableNames ;}
-
-  public Set<CatalogName> getCatalogNames() {
-    return catalogNames;
-  }
-
-  public List<Selector> getSelectors() {
-    return selectors;
-  }
-
-  public boolean isDistinctSelect() {
-    return distinctSelect;
-  }
-
-  public List<Relation> getRelations() {
-    return relations;
-  }
-
-  public GroupBy getGroupBy() {
-    return groupBy;
-  }
-
-  public OrderBy getOrderBy() {
-    return orderBy;
-  }
-
   public void setColumnNames(Set<ColumnName> columnNames) {
     this.columnNames = columnNames;
   }
 
+  public Set<TableName> getTableNames() { return tableNames ;}
+
   public void setTableNames(Set<TableName> tableNames) {
     this.tableNames = tableNames;
+  }
+
+  public Set<CatalogName> getCatalogNames() {
+    return catalogNames;
   }
 
   public void setCatalogNames(Set<CatalogName> catalogNames) {
     this.catalogNames = catalogNames;
   }
 
+  public List<Selector> getSelectors() {
+    return selectors;
+  }
+
   public void setSelectors(List<Selector> selectors) {
     this.selectors = selectors;
+  }
+
+  public boolean isDistinctSelect() {
+    return distinctSelect;
   }
 
   public void setDistinctSelect(boolean distinctSelect) {
     this.distinctSelect = distinctSelect;
   }
 
+  public List<Relation> getRelations() {
+    return relations;
+  }
+
   public void setRelations(List<Relation> relations) {
     this.relations = relations;
+  }
+
+  public List<Relation> getWhere() {
+    return where;
+  }
+
+  public void setWhere(List<Relation> where) {
+    this.where = where;
+  }
+
+  public OrderBy getOrderBy() {
+    return orderBy;
   }
 
   public void setOrderBy(OrderBy orderBy) {
     this.orderBy = orderBy;
   }
 
+  public GroupBy getGroupBy() {
+    return groupBy;
+  }
+
   public void setGroupBy(GroupBy groupBy) {
     this.groupBy = groupBy;
   }
+
 }

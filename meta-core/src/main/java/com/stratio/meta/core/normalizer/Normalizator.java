@@ -75,10 +75,13 @@ public class Normalizator {
     }
   }
 
-  public void normalizeJoins() throws NotExistNameException {
+  public void normalizeJoins()
+      throws NotExistNameException, BadFormatException, AmbiguousNameException,
+             NotValidColumnException {
     InnerJoin innerJoin = parsedQuery.getStatement().getJoin();
     if(innerJoin!=null){
       normalizeJoins(innerJoin);
+      checkJoinRelations(innerJoin.getRelations());
     }
   }
 
@@ -88,15 +91,19 @@ public class Normalizator {
     fields.getTableNames().add(joinTable);
   }
 
-  private void normalizeWhere() {
+  private void normalizeWhere()
+      throws BadFormatException, AmbiguousNameException, NotValidColumnException,
+             NotExistNameException {
     List<Relation> where = parsedQuery.getStatement().getWhere();
     if(where!=null && !where.isEmpty()){
       normalizeWhere(where);
     }
   }
 
-  private void normalizeWhere(List<Relation> where) {
-    //TODO Continue with the next steps
+  private void normalizeWhere(List<Relation> where)
+      throws BadFormatException, AmbiguousNameException, NotValidColumnException,
+             NotExistNameException {
+    checkWhereRelations(where);
   }
 
   public void normalizeOrderBy()
@@ -190,16 +197,7 @@ public class Normalizator {
   public void checkJoinRelations(List<Relation> relations) throws BadFormatException,
                                                                   AmbiguousNameException, NotExistNameException, NotValidColumnException {
     for (Relation relation: relations) {
-      switch (relation.getLeftTerm().getType()) {
-        case FUNCTION:
-          checkFunctionSelector((FunctionSelector) relation.getLeftTerm());
-          break;
-        case COLUMN:
-          checkColumnSelector((ColumnSelector) relation.getLeftTerm());
-          break;
-        case ASTERISK:
-          throw new BadFormatException("Asterisk not supported in relations.");
-      }
+      checkRelation(relation);
       switch (relation.getOperator()) {
         case COMPARE:
           if (relation.getRightTerm().getType() == SelectorType.COLUMN) {
@@ -217,6 +215,28 @@ public class Normalizator {
         case LIKE:
           throw new BadFormatException("Compare operations (=,<,>,>=,>=) are just valid");
       }
+    }
+  }
+
+  public void checkWhereRelations(List<Relation> relations) throws BadFormatException,
+                                                                  AmbiguousNameException, NotExistNameException, NotValidColumnException {
+    for (Relation relation: relations) {
+      checkRelation(relation);
+    }
+  }
+
+  public void checkRelation(Relation relation)
+      throws NotValidColumnException, NotExistNameException, AmbiguousNameException,
+             BadFormatException {
+    switch (relation.getLeftTerm().getType()) {
+      case FUNCTION:
+        checkFunctionSelector((FunctionSelector) relation.getLeftTerm());
+        break;
+      case COLUMN:
+        checkColumnSelector((ColumnSelector) relation.getLeftTerm());
+        break;
+      case ASTERISK:
+        throw new BadFormatException("Asterisk not supported in relations.");
     }
   }
 

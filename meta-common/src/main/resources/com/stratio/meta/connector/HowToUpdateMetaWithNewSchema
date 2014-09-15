@@ -1,0 +1,7 @@
+1.- $JAVA_HOME/bin/xjc DataStoreDefinition.xsd
+2.- mv generated/ObjectFactory.java generated/DataStoreFactory.java
+3.- mv generated/* ../../../../../java/com/stratio/meta2/common/api/generated/datastore/
+
+1.- $JAVA_HOME/bin/xjc ConnectorDefinition.xsd
+2.- mv generated/ObjectFactory.java generated/ConnectorFactory.java
+3.- mv generated/* ../../../../../java/com/stratio/meta2/common/api/generated/connector/

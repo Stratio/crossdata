@@ -3,7 +3,7 @@
     <xs:element name="Connector" type="ConnectorType"/>
     <xs:complexType name="ConnectorType">
         <xs:sequence>
-            <xs:element type="xs:string" name="ConnectorName"/>
+            <xs:element type="IdentifierType" name="ConnectorName"/>
             <xs:element type="DataStoresNameType" name="DataStoresName"/>
             <xs:element type="xs:string" name="Version"/>
             <xs:element type="RequiredPropertiesType" name="RequiredProperties"/>
@@ -11,6 +11,11 @@
             <xs:element type="SupportedOperationsType" name="SupportedOperations"/>
         </xs:sequence>
     </xs:complexType>
+    <xs:simpleType name="IdentifierType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[a-zA-Z]([a-zA-Z0-9_])*" />
+        </xs:restriction>
+    </xs:simpleType>
     <xs:complexType name="OptionalPropertiesType">
         <xs:sequence>
             <xs:element type="PropertyType" name="Property" maxOccurs="unbounded" minOccurs="0"/>
@@ -28,7 +33,7 @@
     </xs:complexType>
     <xs:complexType name="DataStoresNameType">
         <xs:sequence>
-            <xs:element type="xs:string" name="Datastore"/>
+            <xs:element type="IdentifierType" name="Datastore"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="SupportedOperationsType">

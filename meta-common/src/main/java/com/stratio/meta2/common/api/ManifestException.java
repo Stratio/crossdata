@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,26 +16,8 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.validator;
+package com.stratio.meta2.common.api;
 
-public enum Validation {
-  MUST_NOT_EXIST_CATALOG,
-  MUST_EXIST_CATALOG,
-  MUST_EXIST_TABLE,
-  MUST_NOT_EXIST_TABLE,
-  MUST_NOT_EXIST_CLUSTER,
-  MUST_EXIST_CLUSTER,
-  MUST_EXIST_CONNECTOR,
-  MUST_NOT_EXIST_CONNECTOR,
-  MUST_EXIST_DATASTORE,
-  MUST_NOT_EXIST_DATASTORE,
-  VALID_DATASTORE_MANIFEST, VALID_CLUSTER_OPTIONS, VALID_CONNECTOR_OPTIONS, MUST_EXIST_ATTACH_CONNECTOR_CLUSTER, VALID_CONNECTOR_MANIFEST,
-  MUST_EXIST_PROPERTIES,
-  MUST_NOT_EXIST_INDEX,
-  MUST_EXIST_INDEX,
-  MUST_EXIST_COLUMN,
-  MUST_NOT_EXIST_COLUMN
-
-
+public class ManifestException extends Exception {
 
 }

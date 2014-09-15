@@ -257,9 +257,9 @@ public class NormalizerTest {
                        + "GROUP BY colSales, colExpenses;";
 
     String expectedText = "SELECT demo.tableClients.colSales, demo.tableClients.colExpenses FROM demo.tableClients "
-                          + "WHERE demo.tableClients.colPlace = 'Madrid' "
+                          + "WHERE demo.tableClients.colPlace = Madrid "
                           + "ORDER BY demo.tableClients.year "
-                          + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses;";
+                          + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses";
 
     // BASE QUERY
     BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
@@ -276,7 +276,7 @@ public class NormalizerTest {
 
     // WHERE CLAUSES
     List<Relation> where = new ArrayList<>();
-    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colPlace")), Operator.ASSIGN, new StringSelector("Madrid")));
+    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colPlace")), Operator.COMPARE, new StringSelector("Madrid")));
     selectStatement.setWhere(where);
 
     // ORDER BY
@@ -302,17 +302,17 @@ public class NormalizerTest {
     String methodName = "testNormalizeInnerJoin";
 
     String inputText =
-        "SELECT colSales, colRevenues FROM tableClients "
+        "SELECT colSales, colFee FROM tableClients "
         + "INNER JOIN tableCostumers ON assistantId = clientId "
         + "WHERE colCity = 'Madrid' "
         + "ORDER BY age "
-        + "GROUP BY gender;";
+        + "GROUP BY colSales, colFee;";
 
-    String expectedText = "SELECT demo.tableClients.colSales, myCatalog.tableCostumers.january.colRevenues FROM demo.tableClients "
+    String expectedText = "SELECT demo.tableClients.colSales, myCatalog.tableCostumers.colFee FROM demo.tableClients "
                           + "INNER JOIN myCatalog.tableCostumers ON myCatalog.tableCostumers.assistantId = demo.tableClients.clientId "
-                          + "WHERE myCatalog.tableCostumers.colCity = 'Madrid' "
+                          + "WHERE myCatalog.tableCostumers.colCity = Madrid "
                           + "ORDER BY myCatalog.tableCostumers.age "
-                          + "GROUP BY demo.tableClients.gender;";
+                          + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee";
 
 
     // BASE QUERY
@@ -321,7 +321,7 @@ public class NormalizerTest {
     // SELECTORS
     List<Selector> selectorList = new ArrayList<>();
     selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
-    selectorList.add(new ColumnSelector(new ColumnName(null, "colRevenues")));
+    selectorList.add(new ColumnSelector(new ColumnName(null, "colFee")));
 
     SelectExpression selectExpression = new SelectExpression(selectorList);
 
@@ -330,16 +330,16 @@ public class NormalizerTest {
 
     List<Relation> joinRelations = new ArrayList<>();
     Relation relation = new Relation(
-        new ColumnSelector(new ColumnName(null, "assistandId")),
-        Operator.ASSIGN,
+        new ColumnSelector(new ColumnName(null, "assistantId")),
+        Operator.COMPARE,
         new ColumnSelector(new ColumnName(null, "clientId")));
     joinRelations.add(relation);
-    InnerJoin innerJoin = new InnerJoin(new TableName(null, "tableCostumers"), joinRelations);
+    InnerJoin innerJoin = new InnerJoin(new TableName("myCatalog", "tableCostumers"), joinRelations);
     selectStatement.setJoin(innerJoin);
 
     // WHERE CLAUSES
     List<Relation> where = new ArrayList<>();
-    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colCity")), Operator.ASSIGN, new StringSelector("Madrid")));
+    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colCity")), Operator.COMPARE, new StringSelector("Madrid")));
     selectStatement.setWhere(where);
 
     // ORDER BY
@@ -350,7 +350,8 @@ public class NormalizerTest {
 
     // GROUP BY
     List<Selector> groupBy = new ArrayList<>();
-    groupBy.add(new ColumnSelector(new ColumnName(null, "gender")));
+    groupBy.add(new ColumnSelector(new ColumnName(null, "colSales")));
+    groupBy.add(new ColumnSelector(new ColumnName(null, "colFee")));
     selectStatement.setGroupBy(new GroupBy(groupBy));
 
     SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);

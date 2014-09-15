@@ -23,18 +23,19 @@ import java.util.Map;
 import java.util.Set;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
+import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.exceptions.validation.ExistNameException;
 import com.stratio.meta.common.exceptions.validation.NotExistNameException;
 import com.stratio.meta2.common.api.Manifest;
-import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.common.data.DataStoreName;
-import com.stratio.meta2.common.data.Name;
-import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.data.*;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
+import com.stratio.meta2.common.metadata.IndexMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.MetaDataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
+import com.stratio.meta2.core.statements.*;
 import org.apache.log4j.Logger;
 
 
@@ -45,7 +46,7 @@ public class Validator {
   private static final Logger LOG = Logger.getLogger(Validator.class);
 
   public ValidatedQuery validate(ParsedQuery parsedQuery)
-      throws ExistNameException, IgnoreQueryException, NotExistNameException {
+      throws ValidationException, IgnoreQueryException {
       ValidatedQuery validatedQuery=null;
       MetaDataParsedQuery metaDataParsedQuery=null;
 
@@ -102,22 +103,38 @@ public class Validator {
                   validateManifest(connectorManifest);
                   break;
               case VALID_CLUSTER_OPTIONS:
-                  //TODO What can we validate if it is a Set<String>?
-                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
-                  Set<String> dataStoreOtherProperties=metaDataParsedQuery.getStatement().getDataStoreMetadata().getOthersProperties();
-                  Set<String> dataStoreRequiredProperties=metaDataParsedQuery.getStatement().getDataStoreMetadata().getRequiredProperties();
-                  validateProperties(dataStoreOtherProperties);
-                  validateProperties(dataStoreRequiredProperties);
+                  validateOptions(parsedQuery.getStatement());
                   break;
               case VALID_CONNECTOR_OPTIONS:
-                  //TODO What can we validate if it is a Set<String>?
-                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
-                  Set<String> connectorOtherProperties=metaDataParsedQuery.getStatement().getConnectorMetadata().getOthersProperties();
-                  Set<String> connectorRequiredProperties=metaDataParsedQuery.getStatement().getConnectorMetadata().getRequiredProperties();
-                  validateProperties(connectorOtherProperties);
-                  validateProperties(connectorRequiredProperties);
+                  validateOptions(parsedQuery.getStatement());
                   break;
               case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
+                  break;
+              case MUST_EXIST_PROPERTIES:
+                  if (parsedQuery.getStatement() instanceof AlterCatalogStatement) {
+                      AlterCatalogStatement stmt=(AlterCatalogStatement)parsedQuery.getStatement();
+                      validateExistsAlterCatalogProperties(stmt);
+                  }
+                  break;
+              case MUST_NOT_EXIST_INDEX:
+                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
+                  Map<IndexName, IndexMetadata> indexes=metaDataParsedQuery.getStatement().getTableMetadata().getIndexes();
+                  validateNotIndexExist(indexes, true);
+                  break;
+              case MUST_EXIST_INDEX:
+                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
+                  Map<IndexName, IndexMetadata> indexExists=metaDataParsedQuery.getStatement().getTableMetadata().getIndexes();
+                  validateIndexExist(indexExists, true);
+                  break;
+              case MUST_EXIST_COLUMN:
+                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
+                  TableMetadata tableMetadata=metaDataParsedQuery.getStatement().getTableMetadata();
+                  validateExistColumn(tableMetadata);
+                  break;
+              case MUST_NOT_EXIST_COLUMN:
+                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
+                  TableMetadata tableMetadataNotExist=metaDataParsedQuery.getStatement().getTableMetadata();
+                  validateNotExistColumn(tableMetadataNotExist);
                   break;
               default:
                   break;
@@ -129,9 +146,33 @@ public class Validator {
   }
 
 
+    private void validateExistColumn(TableMetadata tableMetadata) throws NotExistNameException {
+        for (ColumnName columnName:tableMetadata.getColumns().keySet()){
+            if(!MetadataManager.MANAGER.exists(columnName)){
+                throw new NotExistNameException(columnName);
+            }
+        }
+    }
+
+    private void validateNotExistColumn(TableMetadata tableMetadata)
+        throws ExistNameException {
+        for (ColumnName columnName:tableMetadata.getColumns().keySet()){
+            if(MetadataManager.MANAGER.exists(columnName)){
+                throw new ExistNameException(columnName);
+            }
+        }
+    }
+
+    private void validateExistsAlterCatalogProperties(AlterCatalogStatement stmt) throws ValidationException {
+        if (stmt.getOptions().isEmpty()){
+            throw new ValidationException("AlterCatalog options can't be empty");
+        }
+
+    }
 
 
-  private void validateExist(List<? extends Name> names, boolean hasIfExists)
+
+    private void validateExist(List<? extends Name> names, boolean hasIfExists)
       throws IgnoreQueryException, NotExistNameException {
     for(Name name:names){
       this.validateExist(name, hasIfExists);
@@ -185,10 +226,65 @@ public class Validator {
 
   }
 
-  private void validateProperties(Set<String> properties){
+  private void validateOptions(MetaStatement stmt) throws ValidationException {
+
+      if (stmt instanceof AttachClusterStatement) {
+          AttachClusterStatement myStmt = (AttachClusterStatement) stmt;
+          if (myStmt.getOptions().isEmpty()){
+              throw new ValidationException("AttachClusteStatemet options can't be empty");
+          }
+      }else {
+          if (stmt instanceof AttachConnectorStatement) {
+              AttachConnectorStatement myStmt = (AttachConnectorStatement) stmt;
+              if (myStmt.getOptions().isEmpty()){
+                  throw new ValidationException("AttachConnectorStatemet options can't be empty");
+              }
+          }
+      }
+
+
 
   }
 
+  private void validateIndexExist(Map<IndexName, IndexMetadata> indexes, boolean hasIfExists)
+      throws IgnoreQueryException, ExistNameException {
+      for (IndexName indexName:indexes.keySet()) {
+          if (MetadataManager.MANAGER.exists(indexName)) {
+              if (hasIfExists) {
+                  throw new IgnoreQueryException("[" + indexName + "] exists");
+              } else {
+                  throw new ExistNameException(indexName);
+              }
+          }
+      }
+
+  }
+
+  private void validateNotIndexExist(Map<IndexName, IndexMetadata> indexes, boolean hasIfExists)
+      throws IgnoreQueryException, NotExistNameException {
+      for (IndexName indexName:indexes.keySet()) {
+          if (!MetadataManager.MANAGER.exists(indexName)) {
+              if (hasIfExists) {
+                  throw new IgnoreQueryException("[" + indexName + "]  not exists");
+              } else {
+                  throw new NotExistNameException(indexName);
+              }
+          }
+          for(ColumnMetadata columnMetadata:indexes.get(indexName).getColumns()) {
+              if (!MetadataManager.MANAGER.exists(columnMetadata.getName())) {
+                  if (hasIfExists) {
+                      throw new IgnoreQueryException("[" + columnMetadata.getName() + "]  not exists to create the index [" + indexName +"]");
+                  } else {
+                      throw new NotExistNameException(indexName);
+                  }
+              }
+          }
+
+
+
+      }
+
+  }
 
 
 }

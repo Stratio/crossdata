@@ -26,6 +26,7 @@ import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
+import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.ArrayList;
@@ -479,7 +480,7 @@ public class CreateIndexStatement extends MetaDataStatement {
 
   @Override
   public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
+    return new ValidationRequirements().add(Validation.MUST_NOT_EXIST_INDEX).add(Validation.MUST_EXIST_TABLE);
   }
 
 }
