@@ -24,10 +24,73 @@ package com.stratio.meta2.common.metadata;
  */
 public enum ColumnType {
   BIGINT("SQL_BIGINT"), BOOLEAN("BOOLEAN"), DOUBLE("SQL_DOUBLE"), FLOAT("SQL_FLOAT"), INT(
-      "SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"), NATIVE(null);
+      "SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"), NATIVE(null),
+  SET(null){
+    ColumnType columnType;
+
+    public ColumnType getColumnType() {
+      return columnType;
+    }
+
+    public void setColumnType(ColumnType columnType) {
+      this.columnType = columnType;
+    }
+
+    @Override
+    public String toString() {
+      return "SET<"+columnType+">";
+    }
+  },
+  LIST(null){
+    ColumnType columnType;
+
+    public ColumnType getColumnType() {
+      return columnType;
+    }
+
+    public void setColumnType(ColumnType columnType) {
+      this.columnType = columnType;
+    }
+
+    @Override
+    public String toString() {
+      return "LIST<"+columnType+">";
+    }
+  },
+  MAP(null){
+    ColumnType keyType;
+    ColumnType valueType;
+
+    public ColumnType getKeyType() {
+      return keyType;
+    }
+
+    public void setKeyType(ColumnType keyType) {
+      this.keyType = keyType;
+    }
+
+    public ColumnType getValueType() {
+      return valueType;
+    }
+
+    public void setValueType(ColumnType valueType) {
+      this.valueType = valueType;
+    }
+
+    public void setTypes(ColumnType keyType, ColumnType valueType){
+      this.keyType = keyType;
+      this.valueType = valueType;
+    }
+
+    @Override
+    public String toString() {
+      return "MAP<"+keyType+", "+valueType+">";
+    }
+  }
+  ;
+
 
   private final String standardType;
-
 
   ColumnType(String standardType) {
     this.standardType = standardType;
