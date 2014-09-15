@@ -17,6 +17,7 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.CoreUtils;
@@ -60,8 +61,7 @@ public class AlterTableStatement extends MetaDataStatement implements ITableStat
   /**
    * Target column datatype used with {@code ALTER} or {@code ADD}.
    */
-  // TODO: Use ColumnType
-  private String type;
+  private ColumnType type;
 
   /**
    * The list of {@link com.stratio.meta2.core.structures.Property} of the table.
@@ -77,7 +77,7 @@ public class AlterTableStatement extends MetaDataStatement implements ITableStat
    * @param properties The type of modification.
    * @param option The map of options.
    */
-  public AlterTableStatement(TableName tableName, ColumnName column, String type,
+  public AlterTableStatement(TableName tableName, ColumnName column, ColumnType type,
                              List<Property> properties, int option) {
     this.command = false;
     this.tableName = tableName;
@@ -89,6 +89,9 @@ public class AlterTableStatement extends MetaDataStatement implements ITableStat
 
   @Override
   public String toString() {
+    ColumnType columnType =  null;
+    columnType = ColumnType.BIGINT;
+    columnType.setInnerType(ColumnType.BIGINT);
     StringBuilder sb = new StringBuilder("ALTER TABLE ");
     sb.append(tableName.getQualifiedName());
     switch(option){
@@ -161,7 +164,7 @@ public class AlterTableStatement extends MetaDataStatement implements ITableStat
 
 
   private boolean existsType(TableMetadata tableMetadata) {
-    return CoreUtils.supportedTypes.contains(type.toLowerCase());
+    return CoreUtils.supportedTypes.contains(type.toString().toLowerCase());
   }
 
   private Result validateAlter(TableMetadata tableMetadata) {

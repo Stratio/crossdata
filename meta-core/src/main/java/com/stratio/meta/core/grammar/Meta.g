@@ -33,6 +33,7 @@ options {
     import com.stratio.meta.core.structures.*;
     import com.stratio.meta2.core.structures.*;
     import com.stratio.meta.core.utils.*;
+    import com.stratio.meta2.common.metadata.*;
     import java.util.LinkedHashMap;
     import java.util.LinkedList;
     import java.util.Map;
@@ -550,7 +551,7 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
 
 createTableStatement returns [CreateTableStatement crtast]
     @init{
-        LinkedHashMap<ColumnName, String> columns = new LinkedHashMap<>();
+        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
         ArrayList<ColumnName> primaryKey = new ArrayList<>();
         ArrayList<ColumnName> clusterKey = new ArrayList<>();
         int primaryKeyType = 0;
@@ -593,12 +594,12 @@ alterTableStatement returns [AlterTableStatement altast]
         int option= 0;
     }:
     T_ALTER T_TABLE tablename=getTableName
-    (T_ALTER column=getColumnName[tablename] T_TYPE type=T_IDENT {option=1;}
+    (T_ALTER column=getColumnName[tablename] T_TYPE dataType=getDataType {option=1;}
         |T_ADD column=getColumnName[tablename] type=T_IDENT {option=2;}
         |T_DROP column=getColumnName[tablename] {option=3;}
         |(T_WITH {option=4;} props=getMetaProperties[tablename])?
     )
-    {$altast = new AlterTableStatement(tablename, column, $type.text, props, option);  }
+    {$altast = new AlterTableStatement(tablename, column, dataType, props, option);  }
 ;
 
 selectStatement returns [SelectStatement slctst]
@@ -779,40 +780,30 @@ getMetaProperty[TableName tablename] returns [Property mp]
     | T_EPHEMERAL ( | T_EQUAL (T_FALSE { boolProp = new BooleanSelector("false");} | T_TRUE )) {$mp = new PropertyNameValue(new StringSelector("ephemeral"), boolProp);}
 ;
 
-getDataType returns [String dataType]:
+getDataType returns [ColumnType dataType]:
     ( ident1=getBasicType
-    | ident1=getCollectionType T_LT ident2=getBasicType T_GT
-    | ident1=getMapType T_LT ident2=getBasicType T_COMMA ident3=getBasicType T_GT
-    )
-    {$dataType = ident1.concat(ident2==null?"":"<"+ident2).concat(ident3==null?"":","+ident3).concat(ident2==null?"":">");}
+    | ident1=getCollectionType T_LT ident2=getBasicType T_GT { ident1.setInnerType(ident2); }
+    | ident1=getMapType T_LT ident2=getBasicType T_COMMA ident3=getBasicType T_GT { ident1.setTypes(ident2, ident3); }
+    ) { $dataType = ident1; }
 ;
 
-getBasicType returns [String dataType]
-    @after{
-        $dataType = $str.text;
-    }:
-    str=( T_BIGINT
-        | T_BOOLEAN
-        | T_DOUBLE
-        | T_FLOAT
-        | T_INT
-        | T_TEXT
-        | T_VARCHAR)
+getBasicType returns [ColumnType dataType]:
+    T_BIGINT { $dataType=ColumnType.BIGINT; }
+    | T_BOOLEAN { $dataType=ColumnType.BOOLEAN; }
+    | T_DOUBLE { $dataType=ColumnType.DOUBLE; }
+    | T_FLOAT { $dataType=ColumnType.FLOAT; }
+    | T_INT { $dataType=ColumnType.INT; }
+    | T_TEXT { $dataType=ColumnType.TEXT; }
+    | T_VARCHAR { $dataType=ColumnType.VARCHAR; }
 ;
 
-getCollectionType returns [String dataType]
-    @after{
-        $dataType = $str.text;
-    }:
-    str=( T_SET
-        | T_LIST)
+getCollectionType returns [ColumnType dataType]:
+    T_SET { $dataType = ColumnType.SET; }
+    | T_LIST { $dataType = ColumnType.LIST; }
 ;
 
-getMapType returns [String dataType]
-    @after{
-        $dataType = $str.text;
-    }:
-    str=T_MAP
+getMapType returns [ColumnType dataType]:
+    T_MAP { $dataType = ColumnType.MAP; }
 ;
 
 getOrdering[TableName tablename] returns [OrderBy orderBy]

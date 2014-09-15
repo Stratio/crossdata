@@ -70,8 +70,8 @@ public class StreamExecutor {
       CreateTableStatement cts= (CreateTableStatement) stmt;
       String tableEphemeralName= cts.getEffectiveCatalog()+"_"+cts.getTableName() ;
       List<ColumnNameType> columnList = new ArrayList<>();
-      for (Map.Entry<ColumnName, String> column : cts.getColumnsWithTypes().entrySet()) {
-        ColumnType type = StreamingUtils.metaToStreamingType(column.getValue());
+      for (Map.Entry<ColumnName, com.stratio.meta2.common.metadata.ColumnType> column : cts.getColumnsWithTypes().entrySet()) {
+        ColumnType type = StreamingUtils.metaToStreamingType(column.getValue().toString());
         ColumnNameType streamColumn = new ColumnNameType(column.getKey().getName(), type);
         columnList.add(streamColumn);
       }

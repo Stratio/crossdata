@@ -21,6 +21,7 @@ package com.stratio.meta.core.planner.statements;
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.core.statements.AlterTableStatement;
 import com.stratio.meta2.core.structures.Property;
 
@@ -32,7 +33,7 @@ public class AlterTableStatementTest extends BasicPlannerTest {
     @Test
     public void testPlanForAlter(){
         String inputText = "ALTER TABLE table1 ADD column1 INT;";
-        stmt = new AlterTableStatement(new TableName("demo", "table1"), new ColumnName("demo", "table1", "column1"), "int", new ArrayList<Property>(), 1);
+        stmt = new AlterTableStatement(new TableName("demo", "table1"), new ColumnName("demo", "table1", "column1"), ColumnType.INT, new ArrayList<Property>(), 1);
         validateCassandraPath("testPlanForAlter");
     }
 }

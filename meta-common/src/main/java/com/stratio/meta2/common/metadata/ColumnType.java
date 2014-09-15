@@ -23,74 +23,31 @@ package com.stratio.meta2.common.metadata;
  * NATIVE type has been added to map those types that are not generic and database dependant.
  */
 public enum ColumnType {
-  BIGINT("SQL_BIGINT"), BOOLEAN("BOOLEAN"), DOUBLE("SQL_DOUBLE"), FLOAT("SQL_FLOAT"), INT(
-      "SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"), NATIVE(null),
-  SET(null){
-    ColumnType columnType;
-
-    public ColumnType getColumnType() {
-      return columnType;
-    }
-
-    public void setColumnType(ColumnType columnType) {
-      this.columnType = columnType;
-    }
-
+  BIGINT("SQL_BIGINT"), BOOLEAN("BOOLEAN"), DOUBLE("SQL_DOUBLE"), FLOAT("SQL_FLOAT"),
+  INT("SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"), NATIVE(null),
+  SET("SET"){
     @Override
     public String toString() {
-      return "SET<"+columnType+">";
+      return "SET<"+getInnerType()+">";
     }
   },
-  LIST(null){
-    ColumnType columnType;
-
-    public ColumnType getColumnType() {
-      return columnType;
-    }
-
-    public void setColumnType(ColumnType columnType) {
-      this.columnType = columnType;
-    }
-
+  LIST("LIST"){
     @Override
     public String toString() {
-      return "LIST<"+columnType+">";
+      return "LIST<"+getInnerType()+">";
     }
   },
-  MAP(null){
-    ColumnType keyType;
-    ColumnType valueType;
-
-    public ColumnType getKeyType() {
-      return keyType;
-    }
-
-    public void setKeyType(ColumnType keyType) {
-      this.keyType = keyType;
-    }
-
-    public ColumnType getValueType() {
-      return valueType;
-    }
-
-    public void setValueType(ColumnType valueType) {
-      this.valueType = valueType;
-    }
-
-    public void setTypes(ColumnType keyType, ColumnType valueType){
-      this.keyType = keyType;
-      this.valueType = valueType;
-    }
-
+  MAP("MAP"){
     @Override
     public String toString() {
-      return "MAP<"+keyType+", "+valueType+">";
+      return "MAP<"+getInnerType()+", "+getValueType()+">";
     }
   }
   ;
 
-
   private final String standardType;
+  private ColumnType innerType;
+  private ColumnType valueType;
 
   ColumnType(String standardType) {
     this.standardType = standardType;
@@ -99,4 +56,26 @@ public enum ColumnType {
   public String getStandardType() {
     return standardType;
   }
+
+  public ColumnType getInnerType() {
+    return innerType;
+  }
+
+  public void setInnerType(ColumnType innerType) {
+    this.innerType = innerType;
+  }
+
+  public ColumnType getValueType() {
+    return valueType;
+  }
+
+  public void setValueType(ColumnType valueType) {
+    this.valueType = valueType;
+  }
+
+  public void setTypes(ColumnType innerType, ColumnType valueType){
+    this.innerType = innerType;
+    this.valueType = valueType;
+  }
+
 }
