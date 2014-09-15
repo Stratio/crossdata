@@ -19,6 +19,7 @@
 package com.stratio.meta.sh;
 
 import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
@@ -342,7 +343,6 @@ public class Metash {
       while (!cmd.trim().toLowerCase().startsWith("exit")
              && !cmd.trim().toLowerCase().startsWith("quit")) {
         cmd = console.readLine();
-        //Does it make sense? We add a space at the end and afterwards we trim the String
         sb.append(cmd).append(" ");
         toExecute = sb.toString().trim();
         if (toExecute.endsWith(";")) {
@@ -379,7 +379,7 @@ public class Metash {
     }
   }
 
-  public String sendManifest(String sentence) throws Exception {
+  public String sendManifest(String sentence) {
     LOG.debug("Command: " + sentence);
     // Get manifest type
     sentence = sentence.substring(4);
@@ -392,21 +392,28 @@ public class Metash {
     sentence = sentence.substring(11, sentence.length() - 1);
 
     // Create Manifest object from XML file
-    Manifest manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest, sentence);
+    Manifest manifest = null;
+    try {
+      manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest, sentence);
+    } catch (ManifestException e) {
+      LOG.error("Manifest couldn't be parsed", e);
+      return null;
+    }
 
     long queryStart = System.currentTimeMillis();
     long queryEnd = queryStart;
     Result metaResult;
+
     try {
       metaResult = metaDriver.addManifest(manifest);
-      queryEnd = System.currentTimeMillis();
-      updatePrompt(metaResult);
-      println("Result: " + ConsoleUtils.stringResult(metaResult));
-      println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
-    } catch (Exception e) {
-      println("Error: " + e.getMessage());
-      throw new Exception();
+    } catch (ManifestException e) {
+      LOG.error("Manifest couldn't be parsed", e);
+      return null;
     }
+    queryEnd = System.currentTimeMillis();
+    updatePrompt(metaResult);
+    println("Result: " + ConsoleUtils.stringResult(metaResult));
+    println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
 
     return manifest.toString();
   }

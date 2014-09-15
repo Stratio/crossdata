@@ -27,8 +27,6 @@
 package com.stratio.meta2.common.api.generated.connector;
 
 import com.stratio.meta2.common.api.Manifest;
-import com.stratio.meta2.common.api.ManifestException;
-import com.stratio.meta2.common.api.ManifestHelper;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -108,9 +106,8 @@ public class ConnectorType extends Manifest {
    *     {@link String }
    *
    */
-  public void setConnectorName(String value) throws ManifestException {
+  public void setConnectorName(String value) {
     this.connectorName = value;
-    ManifestHelper.checkName(value);
   }
 
   /**

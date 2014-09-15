@@ -22,6 +22,7 @@ import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
+import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
@@ -292,7 +293,8 @@ public class ConsoleUtils {
     }
   }
 
-  public static Manifest parseFromXmlToManifest(int manifestType, String path) throws SAXException {
+  public static Manifest parseFromXmlToManifest(int manifestType, String path) throws
+                                                                               ManifestException {
     if(manifestType == Manifest.TYPE_DATASTORE){
       return parseFromXmlToDataStoreManifest(path);
     } else {
@@ -300,7 +302,8 @@ public class ConsoleUtils {
     }
   }
 
-  private static DataStoreType parseFromXmlToDataStoreManifest(String path) throws SAXException {
+  private static DataStoreType parseFromXmlToDataStoreManifest(String path)
+      throws ManifestException {
     try {
       SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
       Schema schema = sf.newSchema(new File(DATASTORE_SCHEMA_PATH));
@@ -312,13 +315,12 @@ public class ConsoleUtils {
 
       JAXBElement<DataStoreType> unmarshalledDataStore = (JAXBElement<DataStoreType>) unmarshaller.unmarshal(new FileInputStream(path));
       return unmarshalledDataStore.getValue();
-    } catch (JAXBException | FileNotFoundException e) {
-      e.printStackTrace();
-      return null;
+    } catch (JAXBException | SAXException | FileNotFoundException e) {
+      throw new ManifestException(e);
     }
   }
 
-  private static Manifest parseFromXmlToConnectorManifest(String path) throws SAXException {
+  private static Manifest parseFromXmlToConnectorManifest(String path) throws ManifestException {
     try {
       SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
       Schema schema = sf.newSchema(new File(CONNECTOR_SCHEMA_PATH));
@@ -330,9 +332,8 @@ public class ConsoleUtils {
 
       JAXBElement<ConnectorType> unmarshalledDataStore = (JAXBElement<ConnectorType>) unmarshaller.unmarshal(new FileInputStream(path));
       return unmarshalledDataStore.getValue();
-    } catch (JAXBException | FileNotFoundException e) {
-      e.printStackTrace();
-      return null;
+    } catch (JAXBException | SAXException | FileNotFoundException e) {
+      throw new ManifestException(e);
     }
   }
 

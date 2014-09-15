@@ -47,7 +47,7 @@ public class PropertyClusteringOrder extends Property {
     sb.append("(");
     sb.append(StringUtils.stringList(orderBy.getSelectorList(), ","));
     if(orderBy.getDirection() == OrderDirection.DESC){
-      sb.append("DESC ");
+      sb.append(" DESC");
     }
     sb.append(")");
     return sb.toString();

@@ -18,12 +18,12 @@
 
 package com.stratio.meta.sh.manifest;
 
+import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta2.common.api.Manifest;
 import com.stratio.meta2.common.api.ManifestHelper;
 
 import org.testng.annotations.Test;
-import org.xml.sax.SAXException;
 
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
@@ -39,7 +39,7 @@ public class ManifestTest {
     try {
       manifest = ConsoleUtils.parseFromXmlToManifest(Manifest.TYPE_DATASTORE,
                                                      "meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xml");
-    } catch (SAXException e) {
+    } catch (ManifestException e) {
       fail("Manifest validation failed", e);
     }
 
@@ -82,7 +82,7 @@ public class ManifestTest {
     try {
       manifest = ConsoleUtils.parseFromXmlToManifest(Manifest.TYPE_CONNECTOR,
                                                      "meta-common/src/main/resources/com/stratio/meta/connector/ConnectorDefinition.xml");
-    } catch (SAXException e) {
+    } catch (ManifestException e) {
       fail("Manifest validation failed", e);
     }
 

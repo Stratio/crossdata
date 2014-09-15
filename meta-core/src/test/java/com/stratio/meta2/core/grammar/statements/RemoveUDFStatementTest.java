@@ -44,7 +44,7 @@ public class RemoveUDFStatementTest extends ParsingTest {
 
   @Test
   public void fatalErrorInParser(){
-    String inputText = "REMOVE UDF \";\";";
+    String inputText = "REMOVE UDF ;";
     testParserFails(inputText, "fatalErrorInParser");
   }
 

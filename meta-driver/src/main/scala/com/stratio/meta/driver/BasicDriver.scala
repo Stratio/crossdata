@@ -230,6 +230,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @param manifest The manifest to be sent
    * @return A CommandResult with a string
    */
+  @throws(classOf[ManifestException])
   def addManifest(manifest: Manifest): CommandResult = {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(manifest)
