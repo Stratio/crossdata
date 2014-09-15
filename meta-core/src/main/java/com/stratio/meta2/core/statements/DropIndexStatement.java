@@ -25,6 +25,7 @@ import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.Iterator;
@@ -159,7 +160,7 @@ public class DropIndexStatement extends MetaDataStatement {
 
   @Override
   public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
+    return new ValidationRequirements().add(Validation.MUST_EXIST_INDEX);
   }
 
 }

@@ -24,6 +24,7 @@ import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.Map;
@@ -91,7 +92,10 @@ public class AlterCatalogStatement extends MetaDataStatement {
 
   @Override
   public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
+    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_PROPERTIES);
   }
 
+  public String getOptions() {
+    return options;
+  }
 }
