@@ -24,7 +24,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 public class EngineConfig {
@@ -55,29 +54,34 @@ public class EngineConfig {
   private int cassandraPort;
 
   /**
-   * Hazelcast hosts addresses.
+   * The Grid listen address.
    */
-  private String[] hazelcastHosts;
+  private String gridListenAddress;
 
   /**
-   * Hazelcast port.
+   * Grid hosts contact addresses.
    */
-  private int hazelcastPort;
+  private String[] gridContactHosts;
 
   /**
-   * Hazelcast map name.
+   * Cgrid port.
    */
-  private String hazelcastMapName;
+  private int gridPort;
 
   /**
-   * Hazelcast map number of backups.
+   * Grid initial members.
    */
-  private int hazelcastMapBackups;
+  private int gridMinInitialMembers;
 
   /**
-   * Hazelcast map max number of entities per node.
+   * Grid join timeout.
    */
-  private int hazelcastMapSize;
+  private long gridJoinTimeout;
+
+  /**
+   * Grid files persistence path.
+   */
+  private String gridPersistencePath;
 
   /**
    * Spark Master spark://HOST:PORT/.
@@ -134,44 +138,52 @@ public class EngineConfig {
     this.cassandraPort = cassandraPort;
   }
 
-  public String[] getHazelcastHosts() {
-    return hazelcastHosts.clone();
+  public String getGridListenAddress() {
+    return gridListenAddress;
   }
 
-  public void setHazelcastHosts(String[] hazelcastHosts) {
-    this.hazelcastHosts = Arrays.copyOf(hazelcastHosts, hazelcastHosts.length);;
+  public void setGridListenAddress(String gridListenAddress) {
+    this.gridListenAddress = gridListenAddress;
   }
 
-  public int getHazelcastPort() {
-    return hazelcastPort;
+  public String[] getGridContactHosts() {
+    return gridContactHosts.clone();
   }
 
-  public void setHazelcastPort(int hazelcastPort) {
-    this.hazelcastPort = hazelcastPort;
+  public void setGridContactHosts(String[] gridContactHosts) {
+    this.gridContactHosts = Arrays.copyOf(gridContactHosts, gridContactHosts.length);;
   }
 
-  public String getHazelcastMapName() {
-    return hazelcastMapName;
+  public int getGridPort() {
+    return gridPort;
   }
 
-  public void setHazelcastMapName(String hazelcastMapName) {
-    this.hazelcastMapName = hazelcastMapName;
+  public void setGridPort(int gridPort) {
+    this.gridPort = gridPort;
   }
 
-  public int getHazelcastMapBackups() {
-    return hazelcastMapBackups;
+  public int getGridMinInitialMembers() {
+    return gridMinInitialMembers;
   }
 
-  public void setHazelcastMapBackups(int hazelcastMapBackups) {
-    this.hazelcastMapBackups = hazelcastMapBackups;
+  public void setGridMinInitialMembers(int gridMinInitialMembers) {
+    this.gridMinInitialMembers = gridMinInitialMembers;
   }
 
-  public int getHazelcastMapSize() {
-    return hazelcastMapSize;
+  public long getGridJoinTimeout() {
+    return gridJoinTimeout;
   }
 
-  public void setHazelcastMapSize(int hazelcastMapSize) {
-    this.hazelcastMapSize = hazelcastMapSize;
+  public void setGridJoinTimeout(long gridJoinTimeout) {
+    this.gridJoinTimeout = gridJoinTimeout;
+  }
+
+  public String getGridPersistencePath() {
+    return gridPersistencePath;
+  }
+
+  public void setGridPersistencePath(String gridPersistencePath) {
+    this.gridPersistencePath = gridPersistencePath;
   }
 
   /**

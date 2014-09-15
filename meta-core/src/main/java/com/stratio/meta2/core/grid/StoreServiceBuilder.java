@@ -1,0 +1,74 @@
+/*
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package com.stratio.meta2.core.grid;
+
+import org.jgroups.JChannel;
+
+/**
+ * Builder for creating a new {@link com.stratio.meta2.core.grid.StoreService}.
+ */
+public class StoreServiceBuilder {
+
+  private JChannel channel;
+  private String name;
+  private String path;
+
+  /**
+   * Sets the JGroups channel to be used.
+   *
+   * @param channel the JGroups channel to be used.
+   * @return this.
+   */
+  public StoreServiceBuilder setChannel(JChannel channel) {
+    this.channel = channel;
+    return this;
+  }
+
+  /**
+   * Sets the cluster name.
+   *
+   * @param name the cluster name.
+   * @return this.
+   */
+  public StoreServiceBuilder setName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  /**
+   * Sets the  persistence path.
+   *
+   * @param path the persistence path.
+   * @return this.
+   */
+  public StoreServiceBuilder setPath(String path) {
+    this.path = path;
+    return this;
+  }
+
+  /**
+   * Returns a new {@link com.stratio.meta2.core.grid.StoreService}.
+   *
+   * @return a new {@link com.stratio.meta2.core.grid.StoreService}.
+   */
+  public StoreService build() {
+    return new StoreService(channel, name, path);
+  }
+
+}
