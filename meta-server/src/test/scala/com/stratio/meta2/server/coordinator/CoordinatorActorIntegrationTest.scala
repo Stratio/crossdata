@@ -29,10 +29,10 @@ import com.stratio.meta2.server.actors.ConnectorManagerActor
 class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with MockFactory{
 //class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike {
 
-		test("Basic Coordinator Mock test") {
+		test("Basic Coordinator-ConnectorManager test") {
 		  within(1000 millis){
-	  		val coordinatorActor=system.actorOf(CoordinatorActor.props(null,null),"CoordinatorActor") 
 	  		val connectorManagerActor=system.actorOf(ConnectorManagerActor.props(),"ConnectorManagerActor") 
+	  		val coordinatorActor=system.actorOf(CoordinatorActor.props(connectorManagerActor,null),"CoordinatorActor") 
 	  		val pq= new SelectPlannedQuery(null,null)
 	  		coordinatorActor! pq
 	  		expectMsg("Ok") // bounded to 1 second
