@@ -65,7 +65,7 @@ public class LockService implements Closeable {
    */
   @Override
   public void close() {
-    channel.disconnect();
+//    channel.disconnect();
   }
 
 }

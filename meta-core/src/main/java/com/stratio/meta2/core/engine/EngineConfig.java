@@ -41,12 +41,12 @@ public class EngineConfig {
   /**
    * Jars to exclude. Prefixes.
    */
-  private static final String [] FORBIDDEN_JARS = {"akka"};
+  private static final String[] FORBIDDEN_JARS = {"akka"};
 
   /**
    * Cassandra hosts.
    */
-  private String [] cassandraHosts;
+  private String[] cassandraHosts;
 
   /**
    * Cassandra port.
@@ -151,7 +151,7 @@ public class EngineConfig {
   }
 
   public void setGridContactHosts(String[] gridContactHosts) {
-    this.gridContactHosts = Arrays.copyOf(gridContactHosts, gridContactHosts.length);;
+    this.gridContactHosts = Arrays.copyOf(gridContactHosts, gridContactHosts.length);
   }
 
   public int getGridPort() {
@@ -191,7 +191,7 @@ public class EngineConfig {
    *
    * @return Spark Master URL in a String.
    */
-  public String getSparkMaster(){
+  public String getSparkMaster() {
     return sparkMaster;
   }
 
@@ -200,8 +200,8 @@ public class EngineConfig {
    *
    * @param sparkMaster Spark Master URL spark://HOST:PORT/
    */
-  public void setSparkMaster(String sparkMaster){
-    this.sparkMaster=sparkMaster;
+  public void setSparkMaster(String sparkMaster) {
+    this.sparkMaster = sparkMaster;
   }
 
   /**
@@ -209,7 +209,7 @@ public class EngineConfig {
    *
    * @return the job name.
    */
-  public String getJobName(){
+  public String getJobName() {
     return JOBNAME;
   }
 
@@ -219,7 +219,7 @@ public class EngineConfig {
    *
    * @return random cassandra host.
    */
-  public String getRandomCassandraHost(){
+  public String getRandomCassandraHost() {
     Random rand = new Random();
     return cassandraHosts[rand.nextInt(cassandraHosts.length)];
   }
@@ -229,7 +229,7 @@ public class EngineConfig {
    *
    * @param jars List of paths.
    */
-  public void setJars(List<String> jars){
+  public void setJars(List<String> jars) {
     this.jars = jars;
   }
 
@@ -238,7 +238,7 @@ public class EngineConfig {
    *
    * @return list of paths, each point to one jar
    */
-  public List<String> getJars(){
+  public List<String> getJars() {
     return jars;
   }
 
@@ -247,17 +247,18 @@ public class EngineConfig {
    *
    * @param path Path to classpath
    */
-  public void setClasspathJars(String path){
+  public void setClasspathJars(String path) {
     jars = new ArrayList<>();
     File file = new File(path);
-    if(file.exists() && !sparkMaster.toLowerCase().startsWith("local") && file.listFiles() != null) {
+    if (file.exists() && !sparkMaster.toLowerCase().startsWith("local")
+        && file.listFiles() != null) {
       File[] files = file.listFiles();
       for (File f : files) {
         if (filterJars(f.getName())) {
           jars.add(path + f.getName());
         }
       }
-    }else if(!sparkMaster.toLowerCase().startsWith("local")){
+    } else if (!sparkMaster.toLowerCase().startsWith("local")) {
       LOG.error("Spark classpath null or incorrect directory.");
     }
   }
@@ -268,7 +269,7 @@ public class EngineConfig {
    * @param jar .jar to check
    * @return {@code true} if is not forbidden.
    */
-  private boolean filterJars(String jar){
+  private boolean filterJars(String jar) {
     for (String forbiddenJar : FORBIDDEN_JARS) {
       if (jar.startsWith(forbiddenJar)) {
         return false;
@@ -323,5 +324,28 @@ public class EngineConfig {
 
   public void setStreamingGroupId(String streamingGroupId) {
     this.streamingGroupId = streamingGroupId;
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("EngineConfig{");
+    sb.append("cassandraHosts=").append(Arrays.toString(cassandraHosts));
+    sb.append(", cassandraPort=").append(cassandraPort);
+    sb.append(", gridListenAddress='").append(gridListenAddress).append('\'');
+    sb.append(", gridContactHosts=").append(Arrays.toString(gridContactHosts));
+    sb.append(", gridPort=").append(gridPort);
+    sb.append(", gridMinInitialMembers=").append(gridMinInitialMembers);
+    sb.append(", gridJoinTimeout=").append(gridJoinTimeout);
+    sb.append(", gridPersistencePath='").append(gridPersistencePath).append('\'');
+    sb.append(", sparkMaster='").append(sparkMaster).append('\'');
+    sb.append(", jars=").append(jars);
+    sb.append(", kafkaServer='").append(kafkaServer).append('\'');
+    sb.append(", kafkaPort=").append(kafkaPort);
+    sb.append(", zookeeperServer='").append(zookeeperServer).append('\'');
+    sb.append(", zookeeperPort=").append(zookeeperPort);
+    sb.append(", streamingDuration=").append(streamingDuration);
+    sb.append(", streamingGroupId='").append(streamingGroupId).append('\'');
+    sb.append('}');
+    return sb.toString();
   }
 }

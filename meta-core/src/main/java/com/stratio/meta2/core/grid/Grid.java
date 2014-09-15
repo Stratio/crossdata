@@ -19,6 +19,7 @@
 package com.stratio.meta2.core.grid;
 
 import org.jgroups.Channel;
+import org.jgroups.JChannel;
 
 import java.io.Closeable;
 import java.util.concurrent.locks.Lock;
@@ -77,7 +78,7 @@ public class Grid implements Closeable {
    * @param name the {@link org.jgroups.Channel}'s name
    * @return a distributed {@link org.jgroups.Channel} with the specified name
    */
-  public Channel channel(String name) {
+  public JChannel channel(String name) {
     return channelService.build(name);
   }
 

@@ -105,7 +105,7 @@ public class Engine {
       this.grid = initializeGrid(config);
     } catch (Exception e) {
       LOG.error("Unable to start grid", e);
-      throw new RuntimeException("Unable to start grid", e);
+      throw new RuntimeException("Unable to start grid: " + config, e);
     }
 
     //this.session=initializeDB(config);

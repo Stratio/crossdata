@@ -120,7 +120,7 @@ public class Store {
    * @return a new {@link javax.transaction.TransactionManager} for this store.
    * @throws SystemException
    */
-  public TransactionManager transaction() {
+  public TransactionManager transactionManager() {
     return transactionManager;
   }
 

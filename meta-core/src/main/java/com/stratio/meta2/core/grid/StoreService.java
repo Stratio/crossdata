@@ -46,8 +46,10 @@ import java.util.concurrent.TimeUnit;
 public class StoreService implements Closeable {
 
   private final JChannel channel;
+  private final GlobalConfiguration gc;
   private final Configuration config;
   private final EmbeddedCacheManager manager;
+  private final JGroupsTransport transport;
 
   /**
    * Builds a new {@link com.stratio.meta2.core.grid.StoreService}.
@@ -58,10 +60,12 @@ public class StoreService implements Closeable {
    */
   StoreService(JChannel channel, String clusterName, String path) {
     this.channel = channel;
-    JGroupsTransport transport = new JGroupsTransport(channel);
-    GlobalConfiguration gc = new GlobalConfigurationBuilder().transport()
+    transport = new JGroupsTransport(channel);
+    gc = new GlobalConfigurationBuilder().transport()
         .transport(transport)
         .clusterName(clusterName)
+        .globalJmxStatistics()
+        .allowDuplicateDomains(true).disable()
         .build();
     config = new ConfigurationBuilder().transaction()
         .transactionManagerLookup(new GenericTransactionManagerLookup())
@@ -113,6 +117,7 @@ public class StoreService implements Closeable {
   @Override
   public void close() {
     manager.stop();
+    transport.stop();
     channel.disconnect();
   }
 }
