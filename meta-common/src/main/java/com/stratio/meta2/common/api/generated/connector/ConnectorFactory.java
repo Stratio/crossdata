@@ -110,7 +110,7 @@ public class ConnectorFactory implements Serializable {
   }
 
   /**
-   * Create an instance of {@link JAXBElement }{@code <}{@link ConnectorType }{@code >}}
+   * Create an instance of {@link javax.xml.bind.JAXBElement }{@code <}{@link ConnectorType }{@code >}}
    *
    */
   @XmlElementDecl(namespace = "", name = "Connector")

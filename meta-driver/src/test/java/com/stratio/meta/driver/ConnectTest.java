@@ -23,6 +23,7 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.api.ManifestException;
 import com.stratio.meta2.common.api.generated.datastore.ClusterType;
 import com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType;
 import com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType;
@@ -94,7 +95,11 @@ public class ConnectTest extends DriverParentTest {
 
     // Create Manifest
     DataStoreType manifest = new DataStoreType();
-    manifest.setName("string_name");
+    try {
+      manifest.setName("string_name");
+    } catch (ManifestException e) {
+      logger.info("Manifest name doesn't match LETTER (LETTER | DIGIT | '_')*", e);
+    }
     manifest.setVersion("0.0.1");
     RequiredPropertiesType rp = new RequiredPropertiesType();
     ClusterType ct = new ClusterType();

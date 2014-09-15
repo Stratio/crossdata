@@ -119,4 +119,10 @@ public class ManifestHelper implements Serializable {
     return sb.toString();
   }
 
+  public static void checkName(String name) throws ManifestException {
+    if(!name.matches("[a-zA-Z][a-zA-Z0-9_]*")){
+      throw new ManifestException();
+    }
+  }
+
 }

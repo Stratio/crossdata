@@ -18,34 +18,6 @@
 
 package com.stratio.meta2.common.api;
 
-import java.io.Serializable;
+public class ManifestException extends Exception {
 
-public abstract class Manifest implements Serializable {
-
-  /*
-   * NOTE: Every time we create a new DataStoreType and a new ConnectorType with xjc, we have to check:
-   * - both classes must extend Manifest
-   * - update ManifestHelper if necessary
-   * - the rest of created classes must implement Serializable
-   * - Use of ManifestHelper.checkName(name);
-   */
-
-  public static final int TYPE_DATASTORE = 1;
-  public static final int TYPE_CONNECTOR = 2;
-  private static final long serialVersionUID = -614600537779801491L;
-
-  protected int manifestType;
-
-  protected Manifest(int manifestType) {
-    this.manifestType = manifestType;
-  }
-
-  public int getManifestType() {
-    return manifestType;
-  }
-
-  @Override
-  public String toString() {
-    return ManifestHelper.manifestToString(this);
-  }
 }

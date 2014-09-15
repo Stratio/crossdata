@@ -16,7 +16,8 @@
  * under the License.
  */
 
-/*import scala.concurrent.duration.DurationInt
+/*
+import scala.concurrent.duration.DurationInt
 import org.scalatest.FunSuiteLike
 import com.stratio.meta.server.config.ActorReceiveUtils
 import com.stratio.meta2.server.actors.CoordinatorActor
@@ -24,13 +25,16 @@ import akka.actor.actorRef2Scala
 import com.stratio.meta2.core.query.PlannedQuery
 import org.scalamock.scalatest.MockFactory
 import com.stratio.meta2.core.query.SelectPlannedQuery
+import com.stratio.meta2.server.actors.ConnectorManagerActor
+import com.stratio.meta2.core.coordinator.Coordinator
 
-class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory{
+class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with MockFactory{
 //class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike {
 
-		test("Basic Coordinator Mock test") {
+		test("Basic Coordinator-ConnectorManager test") {
 		  within(1000 millis){
-	  		val coordinatorActor=system.actorOf(CoordinatorActor.props(null,null),"CoordinatorActor") 
+	  		val connectorManagerActor=system.actorOf(ConnectorManagerActor.props(),"ConnectorManagerActor") 
+	  		val coordinatorActor=system.actorOf(CoordinatorActor.props(connectorManagerActor,new Coordinator),"CoordinatorActor") 
 	  		val pq= new SelectPlannedQuery(null,null)
 	  		coordinatorActor! pq
 	  		expectMsg("Ok") // bounded to 1 second
@@ -42,4 +46,5 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
 	  		}
 		}
 
-}*/
+}
+*/

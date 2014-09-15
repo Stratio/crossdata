@@ -3,7 +3,7 @@
     <xs:element name="DataStore" type="DataStoreType"/>
     <xs:complexType name="clusterType">
         <xs:sequence>
-            <xs:element type="xs:string" name="name"/>
+            <xs:element type="IdentifierType" name="name"/>
             <xs:element type="hostsType" name="hosts" maxOccurs="unbounded" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
@@ -15,12 +15,17 @@
     </xs:complexType>
     <xs:complexType name="DataStoreType">
         <xs:sequence>
-            <xs:element type="xs:string" name="Name"/>
+            <xs:element type="IdentifierType" name="Name"/>
             <xs:element type="xs:string" name="Version"/>
             <xs:element type="RequiredPropertiesType" name="RequiredProperties"/>
             <xs:element type="OptionalPropertiesType" name="OptionalProperties"/>
         </xs:sequence>
     </xs:complexType>
+    <xs:simpleType name="IdentifierType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[a-zA-Z]([a-zA-Z0-9_])*" />
+        </xs:restriction>
+    </xs:simpleType>
     <xs:complexType name="OptionalPropertiesType">
         <xs:sequence>
             <xs:element type="PropertyType" name="Property" maxOccurs="unbounded" minOccurs="0"/>
