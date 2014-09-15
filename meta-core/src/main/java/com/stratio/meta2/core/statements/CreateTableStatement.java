@@ -56,6 +56,7 @@ public class CreateTableStatement extends MetaDataStatement implements ITableSta
   /**
    * A map with the name of the columns in the table and the associated data type.
    */
+  // TODO: Use Map<ColumnName, ColumnType>
   private Map<ColumnName, String> columnsWithType;
 
   /**

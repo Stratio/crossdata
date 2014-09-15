@@ -60,6 +60,7 @@ public class AlterTableStatement extends MetaDataStatement implements ITableStat
   /**
    * Target column datatype used with {@code ALTER} or {@code ADD}.
    */
+  // TODO: Use ColumnType
   private String type;
 
   /**
