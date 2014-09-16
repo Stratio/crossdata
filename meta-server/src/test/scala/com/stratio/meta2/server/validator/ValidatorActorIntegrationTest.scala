@@ -21,6 +21,7 @@ package com.stratio.meta2.server.validator
 import akka.actor.{ActorSystem, actorRef2Scala}
 import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.query.{SelectParsedQuery, BaseQuery}
+import com.stratio.meta2.core.statements.SelectStatement
 import com.stratio.meta2.server.actors._
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.core.engine.Engine
@@ -28,6 +29,7 @@ import com.stratio.meta2.server.utilities.createEngine
 import org.apache.log4j.Logger
 import org.scalatest.{FunSuiteLike, Suite}
 import scala.concurrent.duration.DurationInt
+import com.stratio.meta2.common.data.TableName
 
 class ValidatorActorIntegrationTest  extends ActorReceiveUtils with FunSuiteLike with ServerConfig{
     this:Suite =>
@@ -54,12 +56,13 @@ class ValidatorActorIntegrationTest  extends ActorReceiveUtils with FunSuiteLike
 
     test("Validator->Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
       within(5000 millis){
+        var tablename=new com.stratio.meta2.common.data.TableName("catalog","table")
         val parsedQuery=new SelectParsedQuery(
               new BaseQuery(
                 "query_id-2384234-1341234-23434",
                 "select * from myQuery;",
                 new CatalogName("myCatalog")
-              ),null
+              ),new SelectStatement(tablename)
         )
         validatorActor ! parsedQuery
         expectMsg("Ok") // bounded to 1 second

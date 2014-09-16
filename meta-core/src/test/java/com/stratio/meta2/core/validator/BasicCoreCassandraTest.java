@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.cassandra;
+package com.stratio.meta2.core.validator;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
@@ -24,7 +24,6 @@ import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.test.CCMHandler;
 import com.stratio.meta2.core.parser.Parser;
-
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
