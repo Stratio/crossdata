@@ -22,6 +22,7 @@ import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.statements.structures.selectors.BooleanSelector;
 import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.statements.CreateTableStatement;
@@ -49,10 +50,10 @@ public class CreateTableStatementTest extends BasicPlannerTest {
   public void testPlanForCreateTable() {
     String inputText =
         "CREATE TABLE demo.new_table ON CLUSTER clusterDemo (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id, name));";
-    Map<ColumnName, String> columns = new HashMap();
-    columns.put(new ColumnName("demo", "new_table", "id"), "INT");
-    columns.put(new ColumnName("demo", "new_table", "name"), "VARCHAR");
-    columns.put(new ColumnName("demo", "new_table", "check"), "BOOLEAN");
+    Map<ColumnName, ColumnType> columns = new HashMap();
+    columns.put(new ColumnName("demo", "new_table", "id"), ColumnType.INT);
+    columns.put(new ColumnName("demo", "new_table", "name"), ColumnType.VARCHAR);
+    columns.put(new ColumnName("demo", "new_table", "check"), ColumnType.BOOLEAN);
     stmt =
         new CreateTableStatement(new TableName("demo", "new_table"), new ClusterName("clusterDemo"), columns, Arrays.asList(new ColumnName("demo", "new_table", "id")),
             Arrays.asList(new ColumnName("demo", "new_table", "name")), 1, 1);
@@ -74,10 +75,10 @@ public class CreateTableStatementTest extends BasicPlannerTest {
   public void testPlanForEphemeralCreateTable() {
     String inputText =
         "CREATE TABLE demo.table_temporal (id INT, name VARCHAR, check BOOLEAN, PRIMARY KEY (id)) WITH ephemeral = true;";
-    Map<ColumnName, String> columns = new HashMap();
-    columns.put(new ColumnName("demo", "table_temporal", "id"), "INT");
-    columns.put(new ColumnName("demo", "table_temporal", "name"), "VARCHAR");
-    columns.put(new ColumnName("demo", "table_temporal", "check"), "BOOLEAN");
+    Map<ColumnName, ColumnType> columns = new HashMap();
+    columns.put(new ColumnName("demo", "table_temporal", "id"), ColumnType.INT);
+    columns.put(new ColumnName("demo", "table_temporal", "name"), ColumnType.VARCHAR);
+    columns.put(new ColumnName("demo", "table_temporal", "check"), ColumnType.BOOLEAN);
     stmt =
         new CreateTableStatement(new TableName("demo", "new_table"), new ClusterName("clusterDemo"), columns, Arrays.asList(new ColumnName("demo", "table_temporal", "id")),
             Arrays.asList(new ColumnName("demo", "table_temporal", "name")), 1, 1);

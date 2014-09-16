@@ -23,11 +23,31 @@ package com.stratio.meta2.common.metadata;
  * NATIVE type has been added to map those types that are not generic and database dependant.
  */
 public enum ColumnType {
-  BIGINT("SQL_BIGINT"), BOOLEAN("BOOLEAN"), DOUBLE("SQL_DOUBLE"), FLOAT("SQL_FLOAT"), INT(
-      "SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"), NATIVE(null);
+  BIGINT("SQL_BIGINT"), BOOLEAN("BOOLEAN"), DOUBLE("SQL_DOUBLE"), FLOAT("SQL_FLOAT"),
+  INT("SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"), NATIVE(null),
+  SET("SET"){
+    @Override
+    public String toString() {
+      return "SET<"+getInnerType()+">";
+    }
+  },
+  LIST("LIST"){
+    @Override
+    public String toString() {
+      return "LIST<"+getInnerType()+">";
+    }
+  },
+  MAP("MAP"){
+    @Override
+    public String toString() {
+      return "MAP<"+getInnerType()+", "+getValueType()+">";
+    }
+  }
+  ;
 
   private final String standardType;
-
+  private ColumnType innerType;
+  private ColumnType valueType;
 
   ColumnType(String standardType) {
     this.standardType = standardType;
@@ -36,4 +56,26 @@ public enum ColumnType {
   public String getStandardType() {
     return standardType;
   }
+
+  public ColumnType getInnerType() {
+    return innerType;
+  }
+
+  public void setInnerType(ColumnType innerType) {
+    this.innerType = innerType;
+  }
+
+  public ColumnType getValueType() {
+    return valueType;
+  }
+
+  public void setValueType(ColumnType valueType) {
+    this.valueType = valueType;
+  }
+
+  public void setTypes(ColumnType innerType, ColumnType valueType){
+    this.innerType = innerType;
+    this.valueType = valueType;
+  }
+
 }

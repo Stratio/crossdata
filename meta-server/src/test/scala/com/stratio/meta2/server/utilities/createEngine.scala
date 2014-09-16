@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.server.utilities
 
+import java.util.Random
+
 import com.stratio.meta2.core.engine.{Engine, EngineConfig}
 
 /**
@@ -34,6 +36,12 @@ object createEngine {
     //result.setZookeeperServer("127.0.0.1")
     //result.setZookeeperPort(2181)
     result.setSparkMaster("local[2]")
+    result.setGridListenAddress("localhost")
+    result.setGridContactHosts(Array[String]())
+    result.setGridMinInitialMembers(1)
+    result.setGridPort(5900)
+    result.setGridJoinTimeout(3000)
+    result.setGridPersistencePath("/tmp/meta-test-" + new Random().nextInt(100000))
     result
   }
   new Engine(engineConfig)

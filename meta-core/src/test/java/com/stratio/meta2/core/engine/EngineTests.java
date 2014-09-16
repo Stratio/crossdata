@@ -19,19 +19,15 @@
 package com.stratio.meta2.core.engine;
 
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
-import com.stratio.meta2.core.engine.EngineConfig;
+import com.stratio.meta2.core.grid.Grid;
+import com.stratio.meta2.core.grid.Store;
 
-import junit.framework.Assert;
-
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Map;
-
-import com.hazelcast.core.*;
-import com.hazelcast.config.*;
+import java.util.Random;
 
 
 public class EngineTests extends BasicCoreCassandraTest {
@@ -47,11 +43,12 @@ public class EngineTests extends BasicCoreCassandraTest {
     engineConfig.setSparkMaster("local");
     engineConfig.setClasspathJars("/");
     engineConfig.setJars(Arrays.asList("akka-1.0.jar", "deep-0.2.0.jar"));
-    engineConfig.setHazelcastHosts(new String[]{"localhost"});
-    engineConfig.setHazelcastPort(5900);
-    engineConfig.setHazelcastMapName("schema");
-    engineConfig.setHazelcastMapBackups(2);
-    engineConfig.setHazelcastMapSize(1000);
+    engineConfig.setGridListenAddress("localhost");
+    engineConfig.setGridContactHosts(new String[]{});
+    engineConfig.setGridMinInitialMembers(1);
+    engineConfig.setGridPort(5900);
+    engineConfig.setGridJoinTimeout(3000);
+    engineConfig.setGridPersistencePath("/tmp/meta-test-" + new Random().nextInt(100000));
   }
 
   /*
@@ -78,4 +75,17 @@ public class EngineTests extends BasicCoreCassandraTest {
     engine.shutdown();
   }
   */
+
+  @Test(enabled = false)
+  public void testGrid() {
+    Engine engine = new Engine(engineConfig);
+    Grid grid = engine.getGrid();
+    Store store = grid.store("test");
+    store.put("k1", "v1");
+    Assert.assertEquals("v1", store.get("k1"));
+    store.remove("k1");
+    Assert.assertNull(store.get("k1"));
+    engine.shutdown();
+  }
+
 }

@@ -30,6 +30,8 @@ import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
+import java.util.Random;
+
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
@@ -69,6 +71,12 @@ public class BasicExecutorTest extends BasicCoreCassandraTest {
     engineConfig.setCassandraHosts(cassandraHosts);
     engineConfig.setCassandraPort(9042);
     engineConfig.setSparkMaster("local");
+    engineConfig.setGridListenAddress("localhost");
+    engineConfig.setGridContactHosts(new String[]{});
+    engineConfig.setGridMinInitialMembers(1);
+    engineConfig.setGridPort(5900);
+    engineConfig.setGridJoinTimeout(3000);
+    engineConfig.setGridPersistencePath("/tmp/meta-test-" + new Random().nextInt(100000));
     return engineConfig;
   }
 

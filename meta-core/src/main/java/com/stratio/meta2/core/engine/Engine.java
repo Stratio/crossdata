@@ -18,19 +18,13 @@
 
 package com.stratio.meta2.core.engine;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.stratio.meta2.core.grid.Grid;
+import com.stratio.meta2.core.grid.GridBuilder;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.config.InMemoryFormat;
-import com.hazelcast.config.MapConfig;
-import com.hazelcast.config.MaxSizeConfig;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.core.normalizer.Normalizer;
 import com.stratio.meta2.core.api.APIManager;
@@ -68,7 +62,7 @@ public class Engine {
   private final Executor executor;
 
   /**
-   * The {@link com.stratio.meta.core.api.APIManager} responsible for API calls.
+   * The {@link com.stratio.meta2.core.api.APIManager} responsible for API calls.
    */
   private final APIManager manager;
 
@@ -90,6 +84,9 @@ public class Engine {
   private final DeepSparkContext deepContext;
 
 
+  private final Grid grid;
+
+
   /**
    * Class logger.
    */
@@ -103,6 +100,13 @@ public class Engine {
   public Engine(EngineConfig config) {
 
     this.deepContext = initializeDeep(config);
+
+    try {
+      this.grid = initializeGrid(config);
+    } catch (Exception e) {
+      LOG.error("Unable to start grid", e);
+      throw new RuntimeException("Unable to start grid: " + config, e);
+    }
 
     //this.session=initializeDB(config);
 
@@ -208,33 +212,28 @@ public class Engine {
   }
 
   /**
-   * Initializes the {@link com.hazelcast.core.HazelcastInstance} to be used using {@code config} .
+   * Initializes the {@link com.stratio.meta2.core.grid.Grid} to be used using {@code config}.
    * @param config An {@link com.stratio.meta2.core.engine.EngineConfig}.
-   * @return a new {@link com.hazelcast.core.HazelcastInstance}.
+   * @return a new {@link com.stratio.meta2.core.grid.Grid}.
    */
-  private HazelcastInstance initializeHazelcast(EngineConfig config) {
-
-    MapConfig mapCfg = new MapConfig();
-    mapCfg.setName(config.getHazelcastMapName());
-    mapCfg.setBackupCount(config.getHazelcastMapBackups());
-    mapCfg.getMaxSizeConfig().setSize(config.getHazelcastMapSize());
-    mapCfg.getMaxSizeConfig().setMaxSizePolicy(MaxSizeConfig.MaxSizePolicy.PER_NODE);
-    mapCfg.setInMemoryFormat(InMemoryFormat.OBJECT);
-
-    Config cfg = new Config();
-    cfg.getNetworkConfig().setPort(config.getHazelcastPort());
-    cfg.getNetworkConfig().setPortAutoIncrement(false);
-    cfg.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
-    cfg.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
-    cfg.getNetworkConfig().getJoin().getTcpIpConfig()
-        .setMembers(new ArrayList<String>(Arrays.asList(config.getHazelcastHosts())));
-    cfg.addMapConfig(mapCfg);
-
-    return Hazelcast.newHazelcastInstance(cfg);
+  private Grid initializeGrid(EngineConfig config) {
+    int port = config.getGridPort();
+    GridBuilder gridBuilder = new GridBuilder();
+    for (String host : config.getGridContactHosts()) {
+      gridBuilder = gridBuilder.withContactPoint(host, port);
+    }
+    return gridBuilder.withListenAddress(config.getGridListenAddress(), port)
+                      .withMinInitialMembers(config.getGridMinInitialMembers())
+                      .withJoinTimeoutInMs(config.getGridJoinTimeout())
+                      .withPersistencePath(config.getGridPersistencePath()).build();
   }
 
   public DeepSparkContext getDeepContext() {
     return deepContext;
+  }
+
+  public Grid getGrid() {
+    return grid;
   }
 
   /**
@@ -296,16 +295,17 @@ public class Engine {
    */
   public void shutdown(){
     deepContext.stop();
+    grid.close();
     //session.close();
     //hazelcast.shutdown();
   }
 
-public Normalizer getNormalizer() {
-	return normalizer;
-}
+  public Normalizer getNormalizer() {
+    return normalizer;
+  }
 
-public void setNormalizer(Normalizer normalizer) {
-	this.normalizer = normalizer;
-}
+  public void setNormalizer(Normalizer normalizer) {
+    this.normalizer = normalizer;
+  }
 
 }

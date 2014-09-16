@@ -33,6 +33,7 @@ options {
     import com.stratio.meta.core.structures.*;
     import com.stratio.meta2.core.structures.*;
     import com.stratio.meta.core.utils.*;
+    import com.stratio.meta2.common.metadata.*;
     import java.util.LinkedHashMap;
     import java.util.LinkedList;
     import java.util.Map;
@@ -264,6 +265,13 @@ T_NULL: N U L L;
 T_ATTACH: A T T A C H;
 T_DETACH: D E T A C H;
 T_TO: T O;
+T_DOUBLE: D O U B L E;
+T_MAP: M A P;
+T_INT: I N T;
+T_BOOLEAN: B O O L E A N;
+T_VARCHAR: V A R C H A R;
+T_TEXT: T E X T;
+T_BIGINT: B I G I N T;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -339,7 +347,7 @@ attachConnectorStatement returns [AttachConnectorStatement acs]
     @after{
         $acs = new AttachConnectorStatement($connectorName.text, $clusterName.text, optionsJson);
     }:
-    T_ATTACH T_CONNECTOR connectorName=QUOTED_LITERAL T_TO clusterName=QUOTED_LITERAL T_WITH T_OPTIONS optionsJson=getJson
+    T_ATTACH T_CONNECTOR connectorName=T_IDENT T_TO clusterName=T_IDENT T_WITH T_OPTIONS optionsJson=getJson
 ;
 
 detachConnectorStatement returns [DetachConnectorStatement dcs]
@@ -543,7 +551,7 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
 
 createTableStatement returns [CreateTableStatement crtast]
     @init{
-        LinkedHashMap<ColumnName, String> columns = new LinkedHashMap<>();
+        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
         ArrayList<ColumnName> primaryKey = new ArrayList<>();
         ArrayList<ColumnName> clusterKey = new ArrayList<>();
         int primaryKeyType = 0;
@@ -554,6 +562,7 @@ createTableStatement returns [CreateTableStatement crtast]
     }:
     T_CREATE T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})? tablename=getTableName T_ON T_CLUSTER clusterID=T_IDENT
     T_START_PARENTHESIS (
+        //id1=getColumnName[tablename] type1=getDataType (T_PRIMARY T_KEY { primaryKey.add(); } )?
         ident_column1=getField type1=getDataType (T_PRIMARY T_KEY)? {columns.put(new ColumnName(tablename, ident_column1), type1); primaryKeyType=1;}
             (
                 (T_COMMA ident_columN=getField typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put(new ColumnName(tablename, ident_columN), typeN); columnNumberPK_inter+=1;})
@@ -586,12 +595,12 @@ alterTableStatement returns [AlterTableStatement altast]
         int option= 0;
     }:
     T_ALTER T_TABLE tablename=getTableName
-    (T_ALTER column=getColumnName[tablename] T_TYPE type=T_IDENT {option=1;}
+    (T_ALTER column=getColumnName[tablename] T_TYPE dataType=getDataType {option=1;}
         |T_ADD column=getColumnName[tablename] type=T_IDENT {option=2;}
         |T_DROP column=getColumnName[tablename] {option=3;}
         |(T_WITH {option=4;} props=getMetaProperties[tablename])?
     )
-    {$altast = new AlterTableStatement(tablename, column, $type.text, props, option);  }
+    {$altast = new AlterTableStatement(tablename, column, dataType, props, option);  }
 ;
 
 selectStatement returns [SelectStatement slctst]
@@ -772,11 +781,30 @@ getMetaProperty[TableName tablename] returns [Property mp]
     | T_EPHEMERAL ( | T_EQUAL (T_FALSE { boolProp = new BooleanSelector("false");} | T_TRUE )) {$mp = new PropertyNameValue(new StringSelector("ephemeral"), boolProp);}
 ;
 
-getDataType returns [String dataType]:
-    (
-        ident1=T_IDENT (T_LT ident2=T_IDENT (T_COMMA ident3=T_IDENT)? T_GT)?
-    )
-    {$dataType = $ident1.text.concat(ident2==null?"":"<"+$ident2.text).concat(ident3==null?"":","+$ident3.text).concat(ident2==null?"":">");}
+getDataType returns [ColumnType dataType]:
+    ( ident1=getBasicType
+    | ident1=getCollectionType T_LT ident2=getBasicType T_GT { ident1.setInnerType(ident2); }
+    | ident1=getMapType T_LT ident2=getBasicType T_COMMA ident3=getBasicType T_GT { ident1.setTypes(ident2, ident3); }
+    ) { $dataType = ident1; }
+;
+
+getBasicType returns [ColumnType dataType]:
+    T_BIGINT { $dataType=ColumnType.BIGINT; }
+    | T_BOOLEAN { $dataType=ColumnType.BOOLEAN; }
+    | T_DOUBLE { $dataType=ColumnType.DOUBLE; }
+    | T_FLOAT { $dataType=ColumnType.FLOAT; }
+    | T_INT { $dataType=ColumnType.INT; }
+    | T_TEXT { $dataType=ColumnType.TEXT; }
+    | T_VARCHAR { $dataType=ColumnType.VARCHAR; }
+;
+
+getCollectionType returns [ColumnType dataType]:
+    T_SET { $dataType = ColumnType.SET; }
+    | T_LIST { $dataType = ColumnType.LIST; }
+;
+
+getMapType returns [ColumnType dataType]:
+    T_MAP { $dataType = ColumnType.MAP; }
 ;
 
 getOrdering[TableName tablename] returns [OrderBy orderBy]
@@ -991,7 +1019,14 @@ getAllowedReservedWord returns [String str]:
     | T_LIMIT
     | T_PROCESS
     | T_STORAGE
-    | T_OPTIONS)
+    | T_OPTIONS
+    | T_CATALOG
+    | T_MAP
+    | T_INT
+    | T_BOOLEAN
+    | T_TEXT
+    | T_LUCENE
+    | T_KEY)
     { $str = new String($ident.text); }
 ;
 

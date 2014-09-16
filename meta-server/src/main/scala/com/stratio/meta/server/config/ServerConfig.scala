@@ -35,7 +35,7 @@ object ServerConfig{
 }
 
 //trait ServerConfig extends CassandraConfig with SparkConfig with StreamingConfig with HazelcastConfig {
-trait ServerConfig extends SparkConfig with StreamingConfig with HazelcastConfig {
+trait ServerConfig extends SparkConfig with StreamingConfig with GridConfig {
 
   lazy val logger:Logger = ???
 
@@ -87,11 +87,12 @@ trait ServerConfig extends SparkConfig with StreamingConfig with HazelcastConfig
     result.setZookeeperPort(zookeeperPort)
     result.setStreamingDuration(streamingDuration)
     result.setStreamingGroupId(streamingGroupId)
-    result.setHazelcastHosts(hazelcastHosts)
-    result.setHazelcastPort(hazelcastPort)
-    result.setHazelcastMapName(hazelcastMapName)
-    result.setHazelcastMapSize(hazelcastMapSize)
-    result.setHazelcastMapBackups(hazelcastMapBackup)
+    result.setGridListenAddress(gridListenAddress)
+    result.setGridContactHosts(gridContactHosts)
+    result.setGridPort(gridPort)
+    result.setGridMinInitialMembers(gridMinInitialMembers)
+    result.setGridJoinTimeout(gridJoinTimeout)
+    result.setGridPersistencePath(gridPersistencePath)
     result
   }
 

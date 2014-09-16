@@ -3,13 +3,9 @@ package com.stratio.meta2.server.actors
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, ReceiveTimeout, RootActorPath}
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
-import com.stratio.meta2.core.query.InProgressQuery
+import com.stratio.meta2.core.query._
 import akka.cluster.Cluster
-import java.util.HashMap
 import akka.actor.ActorSelection
-import com.stratio.meta2.core.query.MetadataInProgressQuery
-import com.stratio.meta2.core.query.SelectInProgressQuery
-import com.stratio.meta2.core.query.StorageInProgressQuery
 
 object ConnectorManagerActor {
   def props(): Props = Props(new ConnectorManagerActor)
@@ -59,7 +55,6 @@ class ConnectorManagerActor extends Actor with ActorLogging {
       log.info("select in progress query")
     case query: MetadataInProgressQuery=>
       log.info("metadata in progress query")
-     
 
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))
@@ -108,6 +103,11 @@ class ConnectorManagerActor extends Actor with ActorLogging {
 
     case response: Response =>
       //connectorsMap += (response.msg -> sender)
+
+    case query: SelectPlannedQuery => {
+      log.info("ConnectorManagerActor received SelectPlannedQuery")
+      sender ! "Ok"
+    }
 
     case other =>
       println("connector actor receives event")
