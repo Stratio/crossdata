@@ -18,15 +18,18 @@
 
 package com.stratio.meta2.core.engine;
 
+
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.core.normalizer.Normalizer;
+import com.stratio.meta2.common.data.FirstLevelName;
+import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.core.api.APIManager;
 import com.stratio.meta2.core.connector.ConnectorManager;
 import com.stratio.meta2.core.coordinator.Coordinator;
 import com.stratio.meta2.core.executor.Executor;
 import com.stratio.meta2.core.grid.Grid;
-import com.stratio.meta2.core.grid.GridBuilder;
-import com.stratio.meta2.core.grid.Store;
+import com.stratio.meta2.core.grid.GridInitializer;
+import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.parser.Parser;
 import com.stratio.meta2.core.planner.Planner;
 import com.stratio.meta2.core.validator.Validator;
@@ -34,6 +37,8 @@ import com.stratio.meta2.core.validator.Validator;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+
+import java.util.Map;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
@@ -129,9 +134,9 @@ public class Engine {
     setNormalizer(new Normalizer());
     connectorManager = new ConnectorManager();
 
-    Store store = grid.store("meta");
-    // TODO:
-    // MetadataManager metadataManager = MetadataManager.MANAGER.init(store.advancedCache, grid.lock("meta"));
+    Map<FirstLevelName, IMetadata> metadataMap = grid.map("meta");
+
+    MetadataManager.MANAGER.init(metadataMap, grid.lock("meta"));
   }
 
   /**
@@ -224,14 +229,15 @@ public class Engine {
    */
   private Grid initializeGrid(EngineConfig config) {
     int port = config.getGridPort();
-    GridBuilder gridBuilder = new GridBuilder();
+    GridInitializer gridInitializer = Grid.initializer();
     for (String host : config.getGridContactHosts()) {
-      gridBuilder = gridBuilder.withContactPoint(host, port);
+      gridInitializer = gridInitializer.withContactPoint(host);
     }
-    return gridBuilder.withListenAddress(config.getGridListenAddress(), port)
-                      .withMinInitialMembers(config.getGridMinInitialMembers())
-                      .withJoinTimeoutInMs(config.getGridJoinTimeout())
-                      .withPersistencePath(config.getGridPersistencePath()).build();
+    return gridInitializer.withPort(config.getGridPort())
+                          .withListenAddress(config.getGridListenAddress())
+                          .withMinInitialMembers(config.getGridMinInitialMembers())
+                          .withJoinTimeoutInMs(config.getGridJoinTimeout())
+                          .withPersistencePath(config.getGridPersistencePath()).init();
   }
 
   public DeepSparkContext getDeepContext() {

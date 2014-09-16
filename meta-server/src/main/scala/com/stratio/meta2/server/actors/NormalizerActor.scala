@@ -1,9 +1,6 @@
 package com.stratio.meta2.server.actors
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props, ReceiveTimeout, RootActorPath}
-import akka.cluster.ClusterEvent._
-import com.stratio.meta.communication._
-import com.stratio.meta.core.normalizer.Normalizer
+import akka.actor.{Actor, ActorLogging, Props}
 import com.stratio.meta2.core.engine.Engine
 
 object NormalizerActor {

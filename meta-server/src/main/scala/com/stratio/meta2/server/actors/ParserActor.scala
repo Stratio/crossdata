@@ -19,11 +19,10 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.stratio.meta.server.actors.TimeTracker
+import com.stratio.meta.common.ask.Query
 import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta2.core.query.BaseQuery
-import com.stratio.meta.common.ask.Query
 import org.apache.log4j.Logger
 
 object ParserActor{
@@ -48,9 +47,9 @@ class ParserActor(validator: ActorRef, parser:Parser) extends Actor with TimeTra
       //stmt.setSessionCatalog(catalog)
       //}
       val parsedquery=parser.parse(baseQuery)
-      log.info("\nSending Ok back and sending the parsedquery to the validator")
-      sender ! "Ok"
-      validator ! parsedquery
+      log.info("\forwarding parsedquery to the validator "+parsedquery)
+      //sender ! "Ok"
+      validator forward parsedquery
 
       /*
       if(stmt.isInstanceOf[SelectParsedQuery]){
