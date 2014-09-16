@@ -49,9 +49,10 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
 
   override def receive: Receive = {
     case query: ParsedQuery => {
-      log.info("Validator Actor received ParsedQuery "+query)
+      log.info("Validator Actor received ParsedQuery ")
       val validatedquery=validator.validate(query)
-      log.info("Validator Actor sends to planner: "+validatedquery)
+      log.info("Validator Actor sends validated query to planner ")
+      log.info("Validatedquery= "+validatedquery)
       planner forward validatedquery
       sender ! "Ok"
     }

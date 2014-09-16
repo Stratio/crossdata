@@ -34,7 +34,7 @@ class PlannerActor(coordinator:ActorRef, planner:Planner) extends Actor with Tim
   def receive = {
     case query: ValidatedQuery => {
       log.info("Planner Actor received ValidatedQuery")
-      println("Planner Actor received ValidatedQuery")
+      log.info("ValidatedQuery ="+query)
       coordinator forward planner.planQuery(query)
       sender ! "Ok"
     }
@@ -57,7 +57,7 @@ class PlannerActor(coordinator:ActorRef, planner:Planner) extends Actor with Tim
     */
     case _ => {
       //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
-      sender ! "wtf"
+      sender ! "KO"
     }
   }
 
