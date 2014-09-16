@@ -85,9 +85,7 @@ public class Engine {
    */
   private final DeepSparkContext deepContext;
 
-
   private final Grid grid;
-
 
   /**
    * Class logger.
