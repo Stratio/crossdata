@@ -42,7 +42,7 @@ class ServerActor(engine:Engine) extends Actor {
 
   val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()),"APIActor")
 
-  val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(), "ConnectorManagerActor")
+  val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(engine.getConnectorManager()), "ConnectorManagerActor")
   val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()), "CoordinatorActor")
   val plannerActorRef=context.actorOf(PlannerActor.props(coordinatorActorRef, engine.getPlanner), "PlannerActor")
   val validatorActorRef=context.actorOf(ValidatorActor.props(plannerActorRef, engine.getValidator), "ValidatorActor")
