@@ -59,6 +59,11 @@ public enum Operations {
   PROJECT,
 
   /**
+   * The engine supports aliasing output names.
+   */
+  SELECT_OPERATOR,
+
+  /**
    * The engine supports {@link com.stratio.meta.common.statements.structures.window.Window} logical
    * plans for streaming-like datastores.
    */

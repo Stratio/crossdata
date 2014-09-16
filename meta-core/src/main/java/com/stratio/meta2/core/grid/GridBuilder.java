@@ -40,6 +40,9 @@ import org.jgroups.stack.ProtocolStack;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Builder for creating a new {@link Grid}.
+ */
 public class GridBuilder {
 
   private static final String DEFAULT_LISTEN_HOST = "localhost";
@@ -51,31 +54,70 @@ public class GridBuilder {
   private long timeout;
   private String path;
 
-  public GridBuilder withListenAddress(String address, int port) {
-    listenAddress = ChannelServiceBuilder.ip(address, port);
+  /**
+   * Returns a {@link GridBuilder} using the specified local listen address for the service.
+   *
+   * @param host the listen address host
+   * @param port the listen address port
+   * @return a {@link GridBuilder} using the specified local listen address for the service
+   */
+  public GridBuilder withListenAddress(String host, int port) {
+    listenAddress = ChannelServiceBuilder.ip(host, port);
     return this;
   }
 
-  public GridBuilder withContactPoint(String address, int port) {
-    contactPoints.add(ChannelServiceBuilder.ip(address, port));
+  /**
+   * Returns a {@link GridBuilder} using the specified contact point in addition  to the existing
+   * ones.
+   *
+   * @param host the contact point host
+   * @param port the contact point port
+   * @return a {@link GridBuilder} using the specified contact point in addition  to the existing
+   * ones
+   */
+  public GridBuilder withContactPoint(String host, int port) {
+    contactPoints.add(ChannelServiceBuilder.ip(host, port));
     return this;
   }
 
+  /**
+   * Returns a {@link GridBuilder} using the specified minimum number of initial members.
+   *
+   * @param minInitialMembers the minimum number of initial members
+   * @return a {@link GridBuilder} using the specified minimum number of initial members
+   */
   public GridBuilder withMinInitialMembers(int minInitialMembers) {
     this.minInitialMembers = minInitialMembers;
     return this;
   }
 
+  /**
+   * Returns a {@link GridBuilder} using the specified cluster join timeout.
+   *
+   * @param timeout the specified cluster join timeout in milliseconds
+   * @return a {@link GridBuilder} using the specified cluster join timeout
+   */
   public GridBuilder withJoinTimeoutInMs(long timeout) {
     this.timeout = timeout;
     return this;
   }
 
+  /**
+   * Returns a {@link GridBuilder} using the specified files persistence path.
+   *
+   * @param path the files persistence path
+   * @return a {@link GridBuilder} using the specified files persistence path
+   */
   public GridBuilder withPersistencePath(String path) {
     this.path = path;
     return this;
   }
 
+  /**
+   * Returns the new {@link Grid} defined by this.
+   *
+   * @return the new {@link Grid} defined by this.
+   */
   public Grid build() {
 
     if (listenAddress == null) {
