@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -19,40 +19,32 @@
 package com.stratio.meta2.common.metadata;
 
 import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 
 import java.util.Map;
 
-public class ClusterMetadata implements IMetadata {
-
-  private final ClusterName name;
+public class ClusterAttachedMetadata {
+  private final ClusterName clusterRef;
   private final DataStoreName dataStoreRef;
-  private final Map<String, Object> options;
-  private final Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs;
+  private final Map<String, String> properties;
 
-  public ClusterMetadata(ClusterName name, DataStoreName dataStoreRef, Map<String, Object> options,
-      Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) {
-    this.name = name;
-    this.options = options;
+  public ClusterAttachedMetadata(ClusterName clusterRef,
+                                 DataStoreName dataStoreRef,
+                                 Map<String, String> properties) {
+    this.clusterRef = clusterRef;
     this.dataStoreRef = dataStoreRef;
-    this.connectorAttachedRefs = connectorAttachedRefs;
+    this.properties = properties;
   }
 
-  public ClusterName getName() {
-    return name;
-  }
-
-  public Map<String, Object> getOptions() {
-    return options;
+  public ClusterName getClusterRef() {
+    return clusterRef;
   }
 
   public DataStoreName getDataStoreRef() {
     return dataStoreRef;
   }
 
-  public Map<ConnectorName, ConnectorAttachedMetadata> getConnectorAttachedRefs() {
-    return connectorAttachedRefs;
+  public Map<String, String> getProperties() {
+    return properties;
   }
-
 }

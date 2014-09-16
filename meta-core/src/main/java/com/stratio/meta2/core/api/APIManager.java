@@ -24,13 +24,26 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.api.Manifest;
+import com.stratio.meta2.common.api.generated.connector.ConnectorType;
+import com.stratio.meta2.common.api.generated.connector.DataStoresNameType;
+import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
+import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
+import com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType;
+import com.stratio.meta2.common.data.ConnectorName;
+import com.stratio.meta2.common.data.DataStoreName;
+import com.stratio.meta2.common.metadata.ConnectorMetadata;
+import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.core.metadata.MetadataManager;
 
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class APIManager {
 
@@ -49,10 +62,13 @@ public class APIManager {
    */
   //private final AbstractMetadataHelper helper;
 
+  private final MetadataManager metadataManager;
+
   /**
    * Class constructor.
    */
-  public APIManager(){
+  public APIManager(MetadataManager metadataManager){
+    this.metadataManager = metadataManager;
     //metadata = new MetadataManager(session, stratioStreamingAPI);
     //metadata = new MetadataManager();
     //metadata.loadMetadata();
@@ -90,7 +106,7 @@ public class APIManager {
       //}
     } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
       LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
-      //TODO: Add Manifest
+      persistManifest((Manifest) cmd.params().get(0));
       result = CommandResult.createCommandResult("OK");
     } else {
       result =
@@ -99,4 +115,38 @@ public class APIManager {
     }
     return result;
   }
+
+  private void persistManifest(Manifest manifest){
+    if(manifest.getManifestType() == Manifest.TYPE_DATASTORE){
+      persistDataStore((DataStoreType) manifest);
+    } else {
+      persistConnector((ConnectorType) manifest);
+    }
+  }
+
+  private void persistDataStore(DataStoreType dataStoreType){
+    DataStoreName name = new DataStoreName(dataStoreType.getName());
+    String version = dataStoreType.getVersion();
+    com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType requiredProperties = dataStoreType.getRequiredProperties();
+    OptionalPropertiesType optionalProperties = dataStoreType.getOptionalProperties();
+    DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(name, version, requiredProperties, optionalProperties);
+    metadataManager.createDataStore(dataStoreMetadata);
+  }
+
+  private void persistConnector(ConnectorType connectorType){
+    ConnectorName name = new ConnectorName(connectorType.getConnectorName());
+    String version = connectorType.getVersion();
+
+    DataStoresNameType dataStoresName = connectorType.getDataStoresName();
+    Set<DataStoreName> dataStoreRefs = new HashSet<>();
+    dataStoreRefs.add(new DataStoreName(dataStoresName.getDatastore()));
+
+    com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType requiredProperties = connectorType.getRequiredProperties();
+    com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType
+        optionalProperties = connectorType.getOptionalProperties();
+    SupportedOperationsType supportedOperations = connectorType.getSupportedOperations();
+    ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs, requiredProperties, optionalProperties, supportedOperations);
+    metadataManager.createConnector(connectorMetadata);
+  }
+
 }

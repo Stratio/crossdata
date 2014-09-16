@@ -21,8 +21,6 @@ package com.stratio.meta2.common.data;
 public class DataStoreName extends FirstLevelName {
   private final String name;
 
-
-
   public DataStoreName(String dataStoreName){
     super();
     this.name = dataStoreName;

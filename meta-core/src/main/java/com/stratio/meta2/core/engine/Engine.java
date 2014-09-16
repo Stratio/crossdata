@@ -26,6 +26,7 @@ import com.stratio.meta2.core.coordinator.Coordinator;
 import com.stratio.meta2.core.executor.Executor;
 import com.stratio.meta2.core.grid.Grid;
 import com.stratio.meta2.core.grid.GridBuilder;
+import com.stratio.meta2.core.grid.Store;
 import com.stratio.meta2.core.parser.Parser;
 import com.stratio.meta2.core.planner.Planner;
 import com.stratio.meta2.core.validator.Validator;
@@ -119,7 +120,7 @@ public class Engine {
     //validator = new Validator(session, stratioStreamingAPI, config);
     validator = new Validator();
     //manager = new APIManager(session, stratioStreamingAPI);
-    manager = new APIManager();
+    manager = new APIManager(null);
     //planner = new Planner(session, stratioStreamingAPI);
     planner = new Planner();
     //executor = new Executor(session, stratioStreamingAPI, deepContext, config);
@@ -127,6 +128,10 @@ public class Engine {
     coordinator = new Coordinator();
     setNormalizer(new Normalizer());
     connectorManager = new ConnectorManager();
+
+    Store store = grid.store("meta");
+    // TODO:
+    // MetadataManager metadataManager = MetadataManager.MANAGER.init(store.advancedCache, grid.lock("meta"));
   }
 
   /**
