@@ -20,7 +20,7 @@ package com.stratio.meta2.server.actors
 
 import java.util.UUID
 import akka.actor.{Actor, Props, ReceiveTimeout}
-import akka.cluster.Cluster
+//import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.ask.{Command, Connect, Query}
 import com.stratio.meta.common.result._
@@ -30,8 +30,8 @@ import org.apache.log4j.Logger
 import com.stratio.meta.server.actors.ParserActor
 import com.stratio.meta.server.actors.APIActor
 import com.stratio.meta.server.actors.ValidatorActor
-import com.stratio.meta.server.actors.PlannerActor
-import com.stratio.meta2.core.parser.Parser
+//import com.stratio.meta.server.actors.PlannerActor
+//import com.stratio.meta2.core.parser.Parser
 
 object ServerActor{
   def props(engine: Engine): Props = Props(new ServerActor(engine))
@@ -40,19 +40,16 @@ object ServerActor{
 class ServerActor(engine:Engine) extends Actor {
   val log =Logger.getLogger(classOf[ServerActor])
 
-  val parserActorRef=context.actorOf(ParserActor.props(null,null,engine.getParser()),"ParserActor") 
-  val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()),"APIActor") 
-  val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(),"ConnectorManagerActor") 
-  val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef,engine.getCoordinator()),"CoordinatorActor") 
-  
+  val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()),"APIActor")
+
+  val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(), "ConnectorManagerActor")
+  val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()), "CoordinatorActor")
+  val plannerActorRef=context.actorOf(PlannerActor.props(coordinatorActorRef, engine.getPlanner), "PlannerActor")
+  val validatorActorRef=context.actorOf(ValidatorActor.props(plannerActorRef, engine.getValidator), "ValidatorActor")
+  val parserActorRef=context.actorOf(ParserActor.props(validatorActorRef, engine.getParser()),"ParserActor")
+
   //val normalizerActorRef=context.actorOf(NormalizerActor.props(engine),"NormalizerActor") 
-  
-  //val plannerActorRef=context.actorOf(PlannerActor.props(null,null))
-  //val validatorActorRef=context.actorOf(ValidatorActor.props(plannerActorRef,null))
-
-
   //val queryActorRef= context.actorOf(QueryActor.props(engine,connectorActorRef),"QueryActor")
-
 
   /*
   override def preStart(): Unit = {
@@ -71,7 +68,7 @@ class ServerActor(engine:Engine) extends Actor {
     */
     case query:Query =>
       println("query: " + query)
-      //queryActorRef forward query
+      parserActorRef forward query
       
     case Connect(user)=> {
       log.info("Welcome " + user +"!")

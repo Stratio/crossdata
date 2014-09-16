@@ -20,7 +20,7 @@ package com.stratio.meta.server.actors
 
 import akka.actor.{Props, ActorRef, Actor}
 import com.stratio.meta.core.utils.MetaQuery
-import com.stratio.meta.core.validator.Validator
+import com.stratio.meta2.core.validator.Validator
 import org.apache.log4j.Logger
 import com.stratio.meta.common.result.Result
 import com.stratio.meta2.core.statements.MetaStatement
@@ -50,12 +50,18 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
   override def receive: Receive = {
     case query: ParsedQuery => {
       log.info("Validator Actor received ParsedQuery")
+      log.info("validator query without errors")
+      val timer=initTimer()
+
+      planner forward validator.validate(query)
+      finishTimer(timer)
+      log.info("Finish Validator Task")
     }
     case query: MetaQuery if !query.hasError=> {
       log.info("validator query without errors")
       val timer=initTimer()
 
-      planner forward validator.validateQuery(query)
+      //planner forward validator.validateQuery(query)
       finishTimer(timer)
       log.info("Finish Validator Task")
     }

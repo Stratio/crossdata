@@ -21,6 +21,12 @@ class CoordinatorActor(connector: ActorRef, coordinator: Coordinator) extends Ac
       println() // doesn't print log.info if this statement is not written
       connector forward query
     }
+    case query: PlannedQuery => {
+      log.info("CoordinatorActor Received PlannedQuery")
+      println() // doesn't print log.info if this statement is not written
+
+      connector forward coordinator.coordinate(query)
+    }
       /*
     case query: PlannedQuery => {
       log.info("CoordinatorActor received PlannedQuery")
@@ -28,7 +34,6 @@ class CoordinatorActor(connector: ActorRef, coordinator: Coordinator) extends Ac
       connector forward query
     }
     */
-
 
     case _ =>
       sender ! "KO"
