@@ -18,19 +18,13 @@
 
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta2.common.data.CatalogName
-import com.stratio.meta2.core.statements.MetaStatement
-
 import scala.concurrent.duration.DurationInt
 import org.scalatest.FunSuiteLike
 import com.stratio.meta.server.config.{ServerConfig, ActorReceiveUtils}
 import com.stratio.meta2.server.actors.{ServerActor, CoordinatorActor, ConnectorManagerActor}
 import akka.actor.{ActorSystem, actorRef2Scala}
 import com.stratio.meta2.core.query._
-//import org.scalamock.scalatest.MockFactory
 import com.stratio.meta2.core.coordinator.Coordinator
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.Spec
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{Suite, BeforeAndAfterAll}
 import org.apache.log4j.Logger
 

@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.server.planner
 
-import com.stratio.meta.server.config.{ServerConfig, ActorReceiveUtils, BeforeAndAfterCassandra}
+import com.stratio.meta.server.config.{ServerConfig, ActorReceiveUtils}
 import com.stratio.meta.server.utilities._
 import com.stratio.meta2.core.engine.Engine
 //import org.scalamock.scalatest.proxy.MockFactory
