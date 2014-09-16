@@ -2,7 +2,7 @@ package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.stratio.meta2.core.coordinator.Coordinator
-import com.stratio.meta2.core.query.SelectPlannedQuery
+import com.stratio.meta2.core.query.{PlannedQuery, SelectPlannedQuery}
 
 object CoordinatorActor {
   def props(connector: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor(connector, coordinator))
