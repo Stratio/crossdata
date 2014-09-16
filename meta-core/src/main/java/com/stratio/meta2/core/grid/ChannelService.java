@@ -64,13 +64,13 @@ public class ChannelService implements Closeable {
    * defined by the specified properties.  All the created channels will be forked from the
    * specified base channel.
    *
-   * @param listenAddress      The listen address.
-   * @param initialHosts       The other nodes contact addresses.
-   * @param minInitialMemebers The minimum of required nodes at startup.
-   * @param timeout            The base channel timeout in milliseconds.
+   * @param listenAddress     The listen address.
+   * @param initialHosts      The other nodes contact addresses.
+   * @param minInitialMembers The minimum of required nodes at startup.
+   * @param timeout           The base channel timeout in milliseconds.
    */
   public ChannelService(IpAddress listenAddress, List<IpAddress> initialHosts,
-                        int minInitialMemebers, long timeout) {
+                        int minInitialMembers, long timeout) {
 
     TCP tcp = new TCP();
     tcp.setBindAddress(listenAddress.getIpAddress());
@@ -81,7 +81,7 @@ public class ChannelService implements Closeable {
     TCPPING tcpping = new TCPPING();
     tcpping.setInitialHosts(initialHosts);
     tcpping.setPortRange(1);
-    tcpping.setNumInitialMembers(minInitialMemebers);
+    tcpping.setNumInitialMembers(minInitialMembers);
     tcpping.setTimeout(timeout);
 
     channel = new JChannel(false);
@@ -101,7 +101,7 @@ public class ChannelService implements Closeable {
     stack.addProtocol(new UNICAST2());
     stack.addProtocol(new STABLE());
     stack.addProtocol(new GMS());
-    stack.addProtocol(new UFC());
+//    stack.addProtocol(new UFC());
     stack.addProtocol(new MFC());
     stack.addProtocol(new FRAG2());
 
@@ -110,6 +110,15 @@ public class ChannelService implements Closeable {
     } catch (Exception e) {
       throw new RuntimeException("Unable to create channel", e);
     }
+  }
+
+  /**
+   * Returns the base channel.
+   *
+   * @return the base channel
+   */
+  public JChannel getBaseChannel() {
+    return channel;
   }
 
   /**
@@ -147,6 +156,7 @@ public class ChannelService implements Closeable {
   @Override
   public void close() {
     channel.disconnect();
+    channel.close();
   }
 
 }

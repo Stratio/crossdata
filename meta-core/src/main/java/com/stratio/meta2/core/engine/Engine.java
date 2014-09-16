@@ -19,7 +19,7 @@
 package com.stratio.meta2.core.engine;
 
 import com.stratio.meta2.core.grid.Grid;
-import com.stratio.meta2.core.grid.GridBuilder;
+import com.stratio.meta2.core.grid.GridInitializer;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
@@ -218,14 +218,15 @@ public class Engine {
    */
   private Grid initializeGrid(EngineConfig config) {
     int port = config.getGridPort();
-    GridBuilder gridBuilder = new GridBuilder();
+    GridInitializer gridInitializer = Grid.initializer();
     for (String host : config.getGridContactHosts()) {
-      gridBuilder = gridBuilder.withContactPoint(host, port);
+      gridInitializer = gridInitializer.withContactPoint(host);
     }
-    return gridBuilder.withListenAddress(config.getGridListenAddress(), port)
-                      .withMinInitialMembers(config.getGridMinInitialMembers())
-                      .withJoinTimeoutInMs(config.getGridJoinTimeout())
-                      .withPersistencePath(config.getGridPersistencePath()).build();
+    return gridInitializer.withPort(config.getGridPort())
+                          .withListenAddress(config.getGridListenAddress())
+                          .withMinInitialMembers(config.getGridMinInitialMembers())
+                          .withJoinTimeoutInMs(config.getGridJoinTimeout())
+                          .withPersistencePath(config.getGridPersistencePath()).init();
   }
 
   public DeepSparkContext getDeepContext() {
