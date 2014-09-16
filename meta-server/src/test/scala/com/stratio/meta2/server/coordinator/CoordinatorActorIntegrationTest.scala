@@ -26,7 +26,7 @@ import com.stratio.meta.server.config.{ServerConfig, ActorReceiveUtils}
 import com.stratio.meta2.server.actors.{ServerActor, CoordinatorActor, ConnectorManagerActor}
 import akka.actor.{ActorSystem, actorRef2Scala}
 import com.stratio.meta2.core.query._
-import org.scalamock.scalatest.MockFactory
+//import org.scalamock.scalatest.MockFactory
 import com.stratio.meta2.core.coordinator.Coordinator
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.Spec
@@ -34,8 +34,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{Suite, BeforeAndAfterAll}
 import org.apache.log4j.Logger
 
-class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig{
-//class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig{
+//class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig{
+class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig{
     this:Suite =>
 
     override lazy val logger =Logger.getLogger(classOf[CoordinatorActorIntegrationTest])
@@ -56,7 +56,7 @@ class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLik
 
 
 		test("Basic Coordinator-ConnectorManager test") {
-		  within(1000 millis){
+		  within(5000 millis){
         //val pq=mock[PlannedQuery]
 	  		coordinatorActor! pq
 	  		expectMsg("Ok") // bounded to 1 second
