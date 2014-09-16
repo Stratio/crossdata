@@ -6,12 +6,13 @@ import com.stratio.meta.communication._
 import com.stratio.meta2.core.query._
 import akka.cluster.Cluster
 import akka.actor.ActorSelection
+import com.stratio.meta2.core.connector.ConnectorManager
 
 object ConnectorManagerActor {
-  def props(): Props = Props(new ConnectorManagerActor)
+  def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))
 }
 
-class ConnectorManagerActor extends Actor with ActorLogging {
+class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor with ActorLogging {
 
   log.info("Lifting connector actor")
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")

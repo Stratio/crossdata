@@ -50,6 +50,12 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
   override def receive: Receive = {
     case query: ParsedQuery => {
       log.info("Validator Actor received ParsedQuery")
+      log.info("validator query without errors")
+      val timer=initTimer()
+
+      planner forward validator.validate(query)
+      finishTimer(timer)
+      log.info("Finish Validator Task")
     }
     case query: MetaQuery if !query.hasError=> {
       log.info("validator query without errors")

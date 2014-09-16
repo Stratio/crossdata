@@ -63,8 +63,7 @@ class ParserActor(validator: ActorRef, parser:Parser) extends Actor with TimeTra
       */
     }
     case _ => {
-      //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
-      sender ! "KO"
+      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
     }
   }
 

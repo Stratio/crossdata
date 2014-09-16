@@ -19,21 +19,22 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.stratio.meta.core.planner.Planner
 import com.stratio.meta.server.actors.TimeTracker
 import com.stratio.meta2.core.query.ValidatedQuery
 import org.apache.log4j.Logger
+import com.stratio.meta2.core.planner.Planner
 
 object PlannerActor{
   def props(executor:ActorRef, planner:Planner): Props =Props(new PlannerActor(executor,planner))
 }
 
-class PlannerActor(executor:ActorRef, planner:Planner) extends Actor with TimeTracker {
+class PlannerActor(coordinator:ActorRef, planner:Planner) extends Actor with TimeTracker {
   val log =Logger.getLogger(classOf[PlannerActor])
   override lazy val timerName= this.getClass.getName
   def receive = {
     case query: ValidatedQuery => {
       log.info("Planner Actor received ValidatedQuery")
+      coordinator forward planner.planQuery(query)
     }
       /*
     case query:MetaQuery if !query.hasError=> {

@@ -80,7 +80,7 @@ public interface IMetadataEngine {
                                                                           ExecutionException;
 
   /**
-   * Createa Index in the underlying datastore.
+   * Create an Index in the underlying datastore.
    *
    * @param targetCluster Target cluster.
    * @param indexMetadata The index.
