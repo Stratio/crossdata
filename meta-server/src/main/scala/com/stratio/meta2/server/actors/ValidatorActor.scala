@@ -49,7 +49,11 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
 
   override def receive: Receive = {
     case query: ParsedQuery => {
-      log.info("Validator Actor received ParsedQuery")
+      log.info("Validator Actor received ParsedQuery "+query)
+      val validatedquery=validator.validate(query)
+      log.info("Validator Actor sends to planner: "+validatedquery)
+      planner forward validatedquery
+      sender ! "Ok"
     }
     case query: MetaQuery if !query.hasError=> {
       log.info("validator query without errors")
@@ -69,6 +73,7 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
     }
     case _ => {
       log.info("validator _")
+      sender ! "KO"
       //sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
     }
   }

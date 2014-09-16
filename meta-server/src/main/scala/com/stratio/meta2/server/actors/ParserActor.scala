@@ -48,9 +48,9 @@ class ParserActor(validator: ActorRef, parser:Parser) extends Actor with TimeTra
       //stmt.setSessionCatalog(catalog)
       //}
       val parsedquery=parser.parse(baseQuery)
-      log.info("\nSending Ok back and sending the parsedquery to the validator")
-      sender ! "Ok"
-      validator ! parsedquery
+      log.info("\forwarding parsedquery to the validator "+parsedquery)
+      //sender ! "Ok"
+      validator forward parsedquery
 
       /*
       if(stmt.isInstanceOf[SelectParsedQuery]){

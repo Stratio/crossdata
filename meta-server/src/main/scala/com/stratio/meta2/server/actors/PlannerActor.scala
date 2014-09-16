@@ -34,7 +34,9 @@ class PlannerActor(coordinator:ActorRef, planner:Planner) extends Actor with Tim
   def receive = {
     case query: ValidatedQuery => {
       log.info("Planner Actor received ValidatedQuery")
+      println("Planner Actor received ValidatedQuery")
       coordinator forward planner.planQuery(query)
+      sender ! "Ok"
     }
       /*
     case query:MetaQuery if !query.hasError=> {
