@@ -16,6 +16,10 @@ import java.util.concurrent.locks.Lock;
 
 import javax.transaction.TransactionManager;
 
+/**
+ * Tests {@link Grid}.
+ */
+
 @Test(testName = "GridTest")
 public class GridTest {
 
@@ -24,19 +28,28 @@ public class GridTest {
   private String syncMessage;
   private String asyncMessage;
 
+  /**
+   * Starts the common {@link Grid} used by all its tests.
+   */
   @BeforeClass
   public void setUp() {
     String path = "/tmp/meta-test-" + new Random().nextInt(100000);
     grid = new GridBuilder().withListenAddress("localhost", 7810).withPersistencePath(path).build();
   }
 
+  /**
+   * Stops the common {@link Grid} used by all its tests.
+   */
   @AfterClass
   public void tearDown() {
     grid.close();
   }
 
-  @Test(testName = "testGridMap")
-  public void testGridMap() throws Exception {
+  /**
+   * Tests {@link Grid} distributed storing.
+   */
+  @Test(testName = "testGridStore")
+  public void testGridStore() throws Exception {
     Store store = grid.store("test");
     TransactionManager tm = store.transactionManager();
     tm.begin();
@@ -48,6 +61,9 @@ public class GridTest {
     tm.commit();
   }
 
+  /**
+   * Tests {@link Grid} distributed locking.
+   */
   @Test(testName = "testGridLock")
   public void testGridLock() throws Exception {
     Lock lock = grid.lock("test");
@@ -55,6 +71,9 @@ public class GridTest {
     lock.unlock();
   }
 
+  /**
+   * Tests {@link Grid} distributed synchronous channeling.
+   */
   @Test(testName = "testGridSyncChannel")
   public void testGridSyncChannel() throws Exception {
     JChannel syncChannel = grid.channel("test");
@@ -72,6 +91,9 @@ public class GridTest {
     Assert.assertEquals(syncMessage, "hello");
   }
 
+  /**
+   * Tests {@link Grid} distributed asynchronous channeling.
+   */
   @Test(testName = "testGridAsyncChannel")
   public void testGridAsyncChannel() throws Exception {
     JChannel asyncChannel = grid.channel("test_async");

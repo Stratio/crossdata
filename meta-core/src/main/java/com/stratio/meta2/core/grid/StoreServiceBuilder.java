@@ -30,10 +30,10 @@ public class StoreServiceBuilder {
   private String path;
 
   /**
-   * Sets the JGroups channel to be used.
+   * Returns a {@link StoreServiceBuilder} using the specified JGroups channel.
    *
-   * @param channel the JGroups channel to be used.
-   * @return this.
+   * @param channel the JGroups channel to be used
+   * @return a {@link StoreServiceBuilder} using the specified JGroups channel
    */
   public StoreServiceBuilder setChannel(JChannel channel) {
     this.channel = channel;
@@ -41,10 +41,10 @@ public class StoreServiceBuilder {
   }
 
   /**
-   * Sets the cluster name.
+   * Returns a {@link StoreServiceBuilder} using the specified cluster name.
    *
-   * @param name the cluster name.
-   * @return this.
+   * @param name the cluster name
+   * @return a {@link StoreServiceBuilder} using the specified cluster name.
    */
   public StoreServiceBuilder setName(String name) {
     this.name = name;
@@ -52,10 +52,10 @@ public class StoreServiceBuilder {
   }
 
   /**
-   * Sets the  persistence path.
+   * Returns a {@link StoreServiceBuilder} using the specified files persistence path.
    *
-   * @param path the persistence path.
-   * @return this.
+   * @param path the files persistence path
+   * @return a {@link StoreServiceBuilder} using the specified files persistence path
    */
   public StoreServiceBuilder setPath(String path) {
     this.path = path;
@@ -63,9 +63,9 @@ public class StoreServiceBuilder {
   }
 
   /**
-   * Returns a new {@link com.stratio.meta2.core.grid.StoreService}.
+   * Returns the new {@link StoreService} defined by this.
    *
-   * @return a new {@link com.stratio.meta2.core.grid.StoreService}.
+   * @return a new {@link StoreService} defined by this
    */
   public StoreService build() {
     return new StoreService(channel, name, path);
