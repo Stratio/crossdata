@@ -39,7 +39,7 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike  with Ser
     override lazy val logger =Logger.getLogger(classOf[CoordinatorActorIntegrationTest])
     lazy val system1 = ActorSystem(clusterName,config)
 
-    val connectorManagerActor=system1.actorOf(ConnectorManagerActor.props(),"ConnectorManagerActor")
+    val connectorManagerActor=system1.actorOf(ConnectorManagerActor.props(null),"ConnectorManagerActor")
     val coordinatorActor=system1.actorOf(CoordinatorActor.props(connectorManagerActor,new Coordinator),"CoordinatorActor")
 
     val pq = new SelectPlannedQuery(
