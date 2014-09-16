@@ -18,21 +18,22 @@
 
 package com.stratio.meta2.core.engine;
 
-import com.stratio.meta2.core.grid.Grid;
-import com.stratio.meta2.core.grid.GridInitializer;
-
-import org.apache.log4j.Logger;
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
 
 import com.stratio.deep.context.DeepSparkContext;
 import com.stratio.meta.core.normalizer.Normalizer;
 import com.stratio.meta2.core.api.APIManager;
+import com.stratio.meta2.core.connector.ConnectorManager;
 import com.stratio.meta2.core.coordinator.Coordinator;
 import com.stratio.meta2.core.executor.Executor;
+import com.stratio.meta2.core.grid.Grid;
+import com.stratio.meta2.core.grid.GridInitializer;
 import com.stratio.meta2.core.parser.Parser;
 import com.stratio.meta2.core.planner.Planner;
 import com.stratio.meta2.core.validator.Validator;
+
+import org.apache.log4j.Logger;
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
@@ -71,6 +72,8 @@ public class Engine {
   
   private final Coordinator coordinator;
 
+  private final ConnectorManager connectorManager;
+
   /**
    * Hazelcast instance.
    */
@@ -83,9 +86,7 @@ public class Engine {
    */
   private final DeepSparkContext deepContext;
 
-
   private final Grid grid;
-
 
   /**
    * Class logger.
@@ -126,6 +127,7 @@ public class Engine {
     executor = new Executor(deepContext, null);
     coordinator = new Coordinator();
     setNormalizer(new Normalizer());
+    connectorManager = new ConnectorManager();
   }
 
   /**
@@ -275,6 +277,10 @@ public class Engine {
 
   public Coordinator getCoordinator() {
     return coordinator;
+  }
+
+  public ConnectorManager getConnectorManager() {
+    return connectorManager;
   }
 
   /**

@@ -40,7 +40,7 @@ import java.util.UUID
 class BasicExecutorActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
   val engine:Engine =  createEngine.create()
-  lazy val connectorTest= system.actorOf(ConnectorManagerActor.props(),"ConnectorActorTest")
+  lazy val connectorTest= system.actorOf(ConnectorManagerActor.props(null),"ConnectorActorTest")
   lazy val executorRef = system.actorOf( ExecutorActor.props(connectorTest,engine.getExecutor),"TestExecutorActor")
 
   override def beforeCassandraFinish() {

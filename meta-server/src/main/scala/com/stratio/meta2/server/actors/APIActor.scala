@@ -16,13 +16,13 @@
  * under the License.
  */
 
-package com.stratio.meta.server.actors
+package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, Props}
-import org.apache.log4j.Logger
-import com.stratio.meta.common.result.Result
 import com.stratio.meta.common.ask.Command
+import com.stratio.meta.common.result.Result
 import com.stratio.meta2.core.api.APIManager
+import org.apache.log4j.Logger
 
 object APIActor{
   def props(metadata: APIManager): Props = Props(new APIActor(metadata))
@@ -36,7 +36,7 @@ class APIActor(metadata: APIManager) extends Actor with TimeTracker {
     case cmd:Command => {
       log.info("command received "+cmd.toString)
       //val timer = initTimer()
-      sender ! metadata.processRequest(cmd)
+      //sender ! metadata.processRequest(cmd)
       //finishTimer(timer)
     }
     case _ => {

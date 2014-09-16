@@ -16,15 +16,14 @@
  * under the License.
  */
 
-package com.stratio.meta.server.actors
+package com.stratio.meta2.server.actors
 
-import akka.actor.{Props, ActorRef, Actor}
+import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.meta.core.utils.MetaQuery
+import com.stratio.meta2.core.query.ParsedQuery
+import com.stratio.meta2.core.statements.MetaStatement
 import com.stratio.meta2.core.validator.Validator
 import org.apache.log4j.Logger
-import com.stratio.meta.common.result.Result
-import com.stratio.meta2.core.statements.MetaStatement
-import com.stratio.meta2.core.query.ParsedQuery
 
 object ValidatorActor{
   def props(planner:ActorRef, validator:Validator): Props= Props(new ValidatorActor(planner,validator))
@@ -33,7 +32,7 @@ object ValidatorActor{
 /**
  * Actor in charge of the validation of sentences.
  * @param planner The associated planner actor.
- * @param validator The associated {@link com.stratio.meta.core.validator.Validator}.
+ * @param validator The associated com.stratio.meta.core.validator.Validator}.
  */
 class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with TimeTracker{
 
@@ -49,13 +48,12 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
 
   override def receive: Receive = {
     case query: ParsedQuery => {
-      log.info("Validator Actor received ParsedQuery")
-      log.info("validator query without errors")
-      val timer=initTimer()
-
-      planner forward validator.validate(query)
-      finishTimer(timer)
-      log.info("Finish Validator Task")
+      log.info("Validator Actor received ParsedQuery ")
+      val validatedquery=validator.validate(query)
+      log.info("Validator Actor sends validated query to planner ")
+      log.info("Validatedquery= "+validatedquery)
+      planner forward validatedquery
+      sender ! "Ok"
     }
     case query: MetaQuery if !query.hasError=> {
       log.info("validator query without errors")
@@ -75,7 +73,8 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
     }
     case _ => {
       log.info("validator _")
-      sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
+      sender ! "KO"
+      //sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
     }
   }
 }

@@ -19,39 +19,33 @@
 package com.stratio.meta2.server.actors
 
 import java.util.UUID
+
 import akka.actor.{Actor, Props, ReceiveTimeout}
-import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
+import akka.routing.RoundRobinRouter
 import com.stratio.meta.common.ask.{Command, Connect, Query}
 import com.stratio.meta.common.result._
 import com.stratio.meta.communication.Disconnect
 import com.stratio.meta2.core.engine.Engine
+import com.stratio.meta2.server.config.NumberActorConfig
 import org.apache.log4j.Logger
-import com.stratio.meta.server.actors.ParserActor
-import com.stratio.meta.server.actors.APIActor
-import com.stratio.meta.server.actors.ValidatorActor
-import com.stratio.meta.server.actors.PlannerActor
-import com.stratio.meta2.core.parser.Parser
+
 
 object ServerActor{
   def props(engine: Engine): Props = Props(new ServerActor(engine))
 }
 
-class ServerActor(engine:Engine) extends Actor {
+class ServerActor(engine:Engine) extends Actor  with NumberActorConfig{
   val log =Logger.getLogger(classOf[ServerActor])
 
-  val parserActorRef=context.actorOf(ParserActor.props(null,null,engine.getParser()),"ParserActor") 
-  val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()),"APIActor") 
-  val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(),"ConnectorManagerActor") 
-  val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef,engine.getCoordinator()),"CoordinatorActor") 
-  
-  //val normalizerActorRef=context.actorOf(NormalizerActor.props(engine),"NormalizerActor") 
-  
-  //val plannerActorRef=context.actorOf(PlannerActor.props(null,null))
-  //val validatorActorRef=context.actorOf(ValidatorActor.props(plannerActorRef,null))
 
+  val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(null).withRouter(RoundRobinRouter(nrOfInstances=num_connector_manag_actor)).withRouter(RoundRobinRouter(nrOfInstances=num_coordinator_actor)),"ConnectorManagerActor")
+  val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef,engine.getCoordinator()),"CoordinatorActor")
+  val plannerActorRef=context.actorOf(PlannerActor.props(coordinatorActorRef,engine.getPlanner).withRouter(RoundRobinRouter(nrOfInstances=num_planner_actor)),"PlannerActor")
+  val validatorActorRef=context.actorOf(ValidatorActor.props(plannerActorRef,engine.getValidator).withRouter(RoundRobinRouter(nrOfInstances=num_validator_actor)),"ValidatorActor")
+  val parserActorRef=context.actorOf(ParserActor.props(validatorActorRef,engine.getParser()).withRouter(RoundRobinRouter(nrOfInstances=num_parser_actor)),"ParserActor")
+  val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()).withRouter(RoundRobinRouter(nrOfInstances=num_api_actor)),"APIActor")
 
-  //val queryActorRef= context.actorOf(QueryActor.props(engine,connectorActorRef),"QueryActor")
 
 
   /*
@@ -66,13 +60,10 @@ class ServerActor(engine:Engine) extends Actor {
   */
 
   def receive = {
-    /*case command:Command =>
-      println("command: " + command)
-    */
-    case query:Query =>
+    case query:Query => {
       println("query: " + query)
-      //queryActorRef forward query
-      
+      parserActorRef forward query
+    }
     case Connect(user)=> {
       log.info("Welcome " + user +"!")
       //println("Welcome " + user +"!")
@@ -84,39 +75,31 @@ class ServerActor(engine:Engine) extends Actor {
     }
     case cmd: Command => {
       log.info("API Command call " + cmd.commandType)
-      //cmdActorRef forward cmd
+      APIActorRef forward cmd
     }
     //pass the message to the connectorActor to extract the member in the cluster
     case state: CurrentClusterState => {
       log.info("Current members: {}"+ state.members.mkString(", "))
       //connectorActorRef ! state
     }
-
-    //    case UnreachableMember(member) => {
+    //case UnreachableMember(member) => {
     case member: UnreachableMember => {
       log.info("Member detected as unreachable: {}"+ member)
       //connectorActorRef ! member
     }
-
-
     case member: MemberRemoved=>{
-            log.info("Member is Removed: {} after {}");//, member.address, previousStatus)
+      log.info("Member is Removed: {} after {}");//, member.address, previousStatus)
       //connectorActorRef ! member
     }
-
     case _: MemberEvent =>{
       log.info("Receiving anything else")
-
     }
-
     case _: ClusterDomainEvent =>{
       println("ClusterDomainEvent")
     }
-
     case ReceiveTimeout =>{
       println("ReceiveTimeout")
     }
-
     case _ => {
       println("Unknown!!!!");
       sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")

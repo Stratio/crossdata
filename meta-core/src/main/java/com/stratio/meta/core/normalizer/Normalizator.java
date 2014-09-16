@@ -53,7 +53,7 @@ public class Normalizator {
 
   public void execute() throws ValidationException {
     normalizeTables();
-    normalizeSelectExpresion();
+    normalizeSelectExpression();
     normalizeJoins();
     normalizeWhere();
     normalizeOrderBy();
@@ -135,7 +135,7 @@ public class Normalizator {
     }
   }
 
-  public void normalizeSelectExpresion()
+  public void normalizeSelectExpression()
       throws AmbiguousNameException, NotExistNameException, NotValidColumnException {
     SelectExpression selectExpression = parsedQuery.getStatement().getSelectExpression();
     if(selectExpression!=null){

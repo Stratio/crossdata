@@ -562,6 +562,7 @@ createTableStatement returns [CreateTableStatement crtast]
     }:
     T_CREATE T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})? tablename=getTableName T_ON T_CLUSTER clusterID=T_IDENT
     T_START_PARENTHESIS (
+        //id1=getColumnName[tablename] type1=getDataType (T_PRIMARY T_KEY { primaryKey.add(); } )?
         ident_column1=getField type1=getDataType (T_PRIMARY T_KEY)? {columns.put(new ColumnName(tablename, ident_column1), type1); primaryKeyType=1;}
             (
                 (T_COMMA ident_columN=getField typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put(new ColumnName(tablename, ident_columN), typeN); columnNumberPK_inter+=1;})
@@ -713,11 +714,11 @@ truncateStatement returns [TruncateStatement trst]:
 	}
 ;
 
-metaStatement returns [MetaStatement st]
-    @init{
-        boolean hasCatalog = false;
-    }:
-    (T_START_BRACKET (inputCatalog=T_IDENT {hasCatalog=true;} )? T_END_BRACKET T_COMMA {if(hasCatalog) sessionCatalog = $inputCatalog.text;})?
+metaStatement returns [MetaStatement st]:
+    (T_START_BRACKET
+        ( allowedReservedWord=getAllowedReservedWord { sessionCatalog = allowedReservedWord; }
+        | inputCatalog=T_IDENT { sessionCatalog = $inputCatalog.text; } )?
+    T_END_BRACKET T_COMMA)?
     (st_nsnt   = insertIntoStatement { $st = st_nsnt;}
     | st_slct = selectStatement { $st = st_slct;}
     | st_crta = createTableStatement { $st = st_crta;}
@@ -1023,7 +1024,9 @@ getAllowedReservedWord returns [String str]:
     | T_MAP
     | T_INT
     | T_BOOLEAN
-    | T_TEXT)
+    | T_TEXT
+    | T_LUCENE
+    | T_KEY)
     { $str = new String($ident.text); }
 ;
 

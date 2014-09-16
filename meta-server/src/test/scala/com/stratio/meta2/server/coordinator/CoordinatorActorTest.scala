@@ -17,35 +17,55 @@
  */
 
 
+import com.stratio.meta.common.logicalplan.LogicalWorkflow
+import com.stratio.meta2.common.data.CatalogName
+import org.apache.log4j.Logger
+
 import scala.concurrent.duration.DurationInt
 import org.scalatest.FunSuiteLike
-import com.stratio.meta.server.config.ActorReceiveUtils
-import com.stratio.meta2.server.actors.CoordinatorActor
-import akka.actor.actorRef2Scala
-import com.stratio.meta2.core.query.PlannedQuery
+import com.stratio.meta.server.config.{ServerConfig, ActorReceiveUtils}
+import com.stratio.meta2.server.actors.{ConnectorManagerActor, CoordinatorActor}
+import akka.actor.{ActorSystem, actorRef2Scala}
+import com.stratio.meta2.core.query._
 //import org.scalamock.scalatest.MockFactory
-import com.stratio.meta2.core.query.SelectPlannedQuery
 import org.scalatest.{Suite, BeforeAndAfterAll}
 import com.stratio.meta2.core.coordinator.Coordinator
 
-//class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory{
-class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike {
+//class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory  with ServerConfig{
+class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike  with ServerConfig{
     this:Suite =>
 
-		test("Basic Coordinator Mock test") {
+
+    override lazy val logger =Logger.getLogger(classOf[CoordinatorActorIntegrationTest])
+    lazy val system1 = ActorSystem(clusterName,config)
+
+    val connectorManagerActor=system1.actorOf(ConnectorManagerActor.props(null),"ConnectorManagerActor")
+    val coordinatorActor=system1.actorOf(CoordinatorActor.props(connectorManagerActor,new Coordinator),"CoordinatorActor")
+
+    val pq = new SelectPlannedQuery(
+        new ValidatedQuery(
+          new NormalizedQuery(
+            new SelectParsedQuery(
+              new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog") )
+              ,null)
+          )
+        ), new LogicalWorkflow(null)
+    )
+
+
+		test("Should return a KO message") {
 		  within(1000 millis){
 	  		val coordinatorActor=system.actorOf(CoordinatorActor.props(null,new Coordinator),"CoordinatorActor")
-        coordinatorActor! ""
+        coordinatorActor! "anything; this doesn't make any sense"
+        expectMsg("KO") // bounded to the remainder of the 1 second
         /*
         val pq= new SelectPlannedQuery(null,null)
 	  		expectMsg("Ok") // bounded to 1 second
-	  		//expectMsg("Hola") // bounded to the remainder of the 1 second
 
 	  		//val m = mock[IConnector]
 	  		//(m.getConnectorName _).expects().returning("My New Connector")
 	  		//assert(m.getConnectorName().equals("My New Connector"))
 	  		*/
-        assert(true)
 	  		}
 		}
 

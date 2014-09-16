@@ -18,35 +18,102 @@
 
 package com.stratio.meta2.core.validator.statements;
 
-import com.stratio.meta.core.validator.BasicValidatorTest;
+
+import com.stratio.meta.common.exceptions.IgnoreQueryException;
+import com.stratio.meta.common.exceptions.ValidationException;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.core.query.BaseQuery;
+import com.stratio.meta2.core.query.MetaDataParsedQuery;
+import com.stratio.meta2.core.query.ParsedQuery;
+import com.stratio.meta2.core.statements.AlterCatalogStatement;
+import com.stratio.meta2.core.statements.CreateCatalogStatement;
+import com.stratio.meta2.core.validator.BasicValidatorTest;
+import com.stratio.meta2.core.validator.Validator;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class CreateCatalogStatementTest extends BasicValidatorTest {
 
-	/*
+
   @Test
   public void createCatalogIfNotExists() {
-    String inputText = "CREATE CATALOG IF NOT EXISTS new_catalog;";
-    validateOk(inputText, "createCatalogIfNotExists");
+      String query = "CREATE CATALOG IF NOT EXISTS new_catalog;";
+      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement("demo2",true,"");
+      Validator validator=new Validator();
+
+      BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo2"));
+
+      ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,alterCatalogStatement);
+      try {
+          validator.validate(parsedQuery);
+          Assert.assertFalse(false);
+      } catch (ValidationException e) {
+          Assert.assertTrue(true);
+      } catch (IgnoreQueryException e) {
+          Assert.assertTrue(true);
+      }
+
   }
 
   @Test
   public void createCatalogIfNotExistsWithExistingCatalog() {
-    String inputText = "CREATE CATALOG IF NOT EXISTS demo;";
-    validateOk(inputText, "createCatalogIfNotExistsWithExistingCatalog");
+      String query = "CREATE CATALOG IF NOT EXISTS demo;";
+      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement("demo",true,"");
+      Validator validator=new Validator();
+
+      BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo"));
+
+      ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,alterCatalogStatement);
+      try {
+          validator.validate(parsedQuery);
+          Assert.assertFalse(false);
+      } catch (ValidationException e) {
+          Assert.assertTrue(true);
+      } catch (IgnoreQueryException e) {
+          Assert.assertTrue(true);
+      }
+
   }
 
   @Test
   public void createCatalogWithExistingCatalog() {
-    String inputText = "CREATE CATALOG demo;";
-    validateFail(inputText, "createCatalogWithExistingCatalog");
+      String query = "CREATE CATALOG demo;";
+      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement("demo",true,"");
+      Validator validator=new Validator();
+
+      BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo"));
+
+      ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,alterCatalogStatement);
+      try {
+          validator.validate(parsedQuery);
+          Assert.assertFalse(false);
+      } catch (ValidationException e) {
+          Assert.assertTrue(true);
+      } catch (IgnoreQueryException e) {
+          Assert.assertTrue(true);
+      }
+
   }
 
   @Test
   public void createCatalogWithOptions() {
-    String inputText = "CREATE CATALOG new_catalog WITH {\"comment\":\"This is a comment\"};";
-    validateOk(inputText, "createCatalogWithOptions");
+      String query = "CREATE CATALOG new_catalog WITH {\"comment\":\"This is a comment\"};";
+      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement("demo",true,"");
+      Validator validator=new Validator();
+
+      BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo"));
+
+      ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,alterCatalogStatement);
+      try {
+          validator.validate(parsedQuery);
+          Assert.assertFalse(false);
+      } catch (ValidationException e) {
+          Assert.assertTrue(true);
+      } catch (IgnoreQueryException e) {
+          Assert.assertTrue(true);
+      }
+
   }
-  */
+
 
 }
