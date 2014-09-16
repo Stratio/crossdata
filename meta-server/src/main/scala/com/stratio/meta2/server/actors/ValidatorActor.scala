@@ -16,15 +16,15 @@
  * under the License.
  */
 
-package com.stratio.meta.server.actors
+package com.stratio.meta2.server.actors
 
-import akka.actor.{Props, ActorRef, Actor}
+import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.meta.core.utils.MetaQuery
+import com.stratio.meta2.core.query.ParsedQuery
+import com.stratio.meta2.core.statements.MetaStatement
 import com.stratio.meta2.core.validator.Validator
 import org.apache.log4j.Logger
-import com.stratio.meta.common.result.Result
-import com.stratio.meta2.core.statements.MetaStatement
-import com.stratio.meta2.core.query.ParsedQuery
+import com.stratio.meta.server.actors.TimeTracker
 
 object ValidatorActor{
   def props(planner:ActorRef, validator:Validator): Props= Props(new ValidatorActor(planner,validator))
@@ -69,7 +69,7 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
     }
     case _ => {
       log.info("validator _")
-      sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
+      //sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
     }
   }
 }

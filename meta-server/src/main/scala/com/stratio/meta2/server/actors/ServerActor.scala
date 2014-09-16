@@ -40,7 +40,7 @@ object ServerActor{
 class ServerActor(engine:Engine) extends Actor {
   val log =Logger.getLogger(classOf[ServerActor])
 
-  val parserActorRef=context.actorOf(ParserActor.props(null,null,engine.getParser()),"ParserActor") 
+  val parserActorRef=context.actorOf(ParserActor.props(null,engine.getParser()),"ParserActor")
   val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()),"APIActor") 
   val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(),"ConnectorManagerActor") 
   val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef,engine.getCoordinator()),"CoordinatorActor") 
