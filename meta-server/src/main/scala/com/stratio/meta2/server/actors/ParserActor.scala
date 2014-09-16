@@ -19,11 +19,10 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.stratio.meta.server.actors.TimeTracker
+import com.stratio.meta.common.ask.Query
 import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta2.core.query.BaseQuery
-import com.stratio.meta.common.ask.Query
 import org.apache.log4j.Logger
 
 object ParserActor{
