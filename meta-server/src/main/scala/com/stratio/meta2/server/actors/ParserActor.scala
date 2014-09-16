@@ -16,15 +16,15 @@
  * under the License.
  */
 
-package com.stratio.meta.server.actors
+package com.stratio.meta2.server.actors
 
-import akka.actor.{Props, ActorRef, ActorLogging, Actor}
+import akka.actor.{Actor, ActorRef, Props}
+import com.stratio.meta.server.actors.TimeTracker
+import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.parser.Parser
-import com.stratio.meta.common.result.{QueryResult, Result}
+import com.stratio.meta2.core.query.BaseQuery
 import com.stratio.meta.common.ask.Query
 import org.apache.log4j.Logger
-import com.stratio.meta2.core.query.{SelectParsedQuery, StorageParsedQuery, MetaDataParsedQuery, BaseQuery}
-import com.stratio.meta2.common.data.CatalogName
 
 object ParserActor{
   def props(validator:ActorRef, parser:Parser): Props= Props(new ParserActor(validator, parser))
@@ -37,8 +37,7 @@ class ParserActor(validator: ActorRef, parser:Parser) extends Actor with TimeTra
 
   def receive = {
     case Query(queryId, catalog, statement, user) => {
-      log.info("Init Parser Task {}{}{}{}",queryId, catalog, statement, user)
-      /*
+      log.info("\nInit Parser Task {}{}{}{}",queryId, catalog, statement, user)
       val timer=initTimer()
       //val stmt = parser.parseStatement(queryId, catalog, statement)
       //val stmt = parser.parseStatement(catalog, statement)
@@ -48,7 +47,12 @@ class ParserActor(validator: ActorRef, parser:Parser) extends Actor with TimeTra
       //if(!stmt.hasError){
       //stmt.setSessionCatalog(catalog)
       //}
+      val parsedquery=parser.parse(baseQuery)
+      log.info("\forwarding parsedquery to the validator "+parsedquery)
+      //sender ! "Ok"
+      validator forward parsedquery
 
+      /*
       if(stmt.isInstanceOf[SelectParsedQuery]){
         normalizer forward stmt
       } else if(stmt.isInstanceOf[StorageParsedQuery] || stmt.isInstanceOf[MetaDataParsedQuery] ){
@@ -63,7 +67,8 @@ class ParserActor(validator: ActorRef, parser:Parser) extends Actor with TimeTra
       */
     }
     case _ => {
-      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
+      //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
+      sender ! "KO"
     }
   }
 
