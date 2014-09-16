@@ -19,15 +19,15 @@
 package com.stratio.meta.driver;
 
 import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta2.common.api.ManifestException;
 import com.stratio.meta2.common.api.generated.datastore.ClusterType;
+import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
 import com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType;
 import com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType;
-import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeClass;
@@ -95,11 +95,7 @@ public class ConnectTest extends DriverParentTest {
 
     // Create Manifest
     DataStoreType manifest = new DataStoreType();
-    try {
-      manifest.setName("string_name");
-    } catch (ManifestException e) {
-      logger.info("Manifest name doesn't match LETTER (LETTER | DIGIT | '_')*", e);
-    }
+    manifest.setName("string_name");
     manifest.setVersion("0.0.1");
     RequiredPropertiesType rp = new RequiredPropertiesType();
     ClusterType ct = new ClusterType();
@@ -110,7 +106,12 @@ public class ConnectTest extends DriverParentTest {
     manifest.setOptionalProperties(op);
 
     // API Call
-    metaResult = driver.addManifest(manifest);
+    try {
+      metaResult = driver.addManifest(manifest);
+    } catch (ManifestException e) {
+      logger.error("Manifest name doesn't match LETTER (LETTER | DIGIT | '_')*", e);
+      fail("Manifest name doesn't match LETTER (LETTER | DIGIT | '_')*", e);
+    }
 
     // Process result
     assertFalse(metaResult.hasError());

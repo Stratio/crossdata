@@ -24,7 +24,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 public class EngineConfig {
@@ -42,12 +41,12 @@ public class EngineConfig {
   /**
    * Jars to exclude. Prefixes.
    */
-  private static final String [] FORBIDDEN_JARS = {"akka"};
+  private static final String[] FORBIDDEN_JARS = {"akka"};
 
   /**
    * Cassandra hosts.
    */
-  private String [] cassandraHosts;
+  private String[] cassandraHosts;
 
   /**
    * Cassandra port.
@@ -55,29 +54,34 @@ public class EngineConfig {
   private int cassandraPort;
 
   /**
-   * Hazelcast hosts addresses.
+   * The Grid listen address.
    */
-  private String[] hazelcastHosts;
+  private String gridListenAddress;
 
   /**
-   * Hazelcast port.
+   * Grid hosts contact addresses.
    */
-  private int hazelcastPort;
+  private String[] gridContactHosts;
 
   /**
-   * Hazelcast map name.
+   * Cgrid port.
    */
-  private String hazelcastMapName;
+  private int gridPort;
 
   /**
-   * Hazelcast map number of backups.
+   * Grid initial members.
    */
-  private int hazelcastMapBackups;
+  private int gridMinInitialMembers;
 
   /**
-   * Hazelcast map max number of entities per node.
+   * Grid join timeout.
    */
-  private int hazelcastMapSize;
+  private long gridJoinTimeout;
+
+  /**
+   * Grid files persistence path.
+   */
+  private String gridPersistencePath;
 
   /**
    * Spark Master spark://HOST:PORT/.
@@ -134,44 +138,52 @@ public class EngineConfig {
     this.cassandraPort = cassandraPort;
   }
 
-  public String[] getHazelcastHosts() {
-    return hazelcastHosts.clone();
+  public String getGridListenAddress() {
+    return gridListenAddress;
   }
 
-  public void setHazelcastHosts(String[] hazelcastHosts) {
-    this.hazelcastHosts = Arrays.copyOf(hazelcastHosts, hazelcastHosts.length);;
+  public void setGridListenAddress(String gridListenAddress) {
+    this.gridListenAddress = gridListenAddress;
   }
 
-  public int getHazelcastPort() {
-    return hazelcastPort;
+  public String[] getGridContactHosts() {
+    return gridContactHosts.clone();
   }
 
-  public void setHazelcastPort(int hazelcastPort) {
-    this.hazelcastPort = hazelcastPort;
+  public void setGridContactHosts(String[] gridContactHosts) {
+    this.gridContactHosts = Arrays.copyOf(gridContactHosts, gridContactHosts.length);
   }
 
-  public String getHazelcastMapName() {
-    return hazelcastMapName;
+  public int getGridPort() {
+    return gridPort;
   }
 
-  public void setHazelcastMapName(String hazelcastMapName) {
-    this.hazelcastMapName = hazelcastMapName;
+  public void setGridPort(int gridPort) {
+    this.gridPort = gridPort;
   }
 
-  public int getHazelcastMapBackups() {
-    return hazelcastMapBackups;
+  public int getGridMinInitialMembers() {
+    return gridMinInitialMembers;
   }
 
-  public void setHazelcastMapBackups(int hazelcastMapBackups) {
-    this.hazelcastMapBackups = hazelcastMapBackups;
+  public void setGridMinInitialMembers(int gridMinInitialMembers) {
+    this.gridMinInitialMembers = gridMinInitialMembers;
   }
 
-  public int getHazelcastMapSize() {
-    return hazelcastMapSize;
+  public long getGridJoinTimeout() {
+    return gridJoinTimeout;
   }
 
-  public void setHazelcastMapSize(int hazelcastMapSize) {
-    this.hazelcastMapSize = hazelcastMapSize;
+  public void setGridJoinTimeout(long gridJoinTimeout) {
+    this.gridJoinTimeout = gridJoinTimeout;
+  }
+
+  public String getGridPersistencePath() {
+    return gridPersistencePath;
+  }
+
+  public void setGridPersistencePath(String gridPersistencePath) {
+    this.gridPersistencePath = gridPersistencePath;
   }
 
   /**
@@ -179,7 +191,7 @@ public class EngineConfig {
    *
    * @return Spark Master URL in a String.
    */
-  public String getSparkMaster(){
+  public String getSparkMaster() {
     return sparkMaster;
   }
 
@@ -188,8 +200,8 @@ public class EngineConfig {
    *
    * @param sparkMaster Spark Master URL spark://HOST:PORT/
    */
-  public void setSparkMaster(String sparkMaster){
-    this.sparkMaster=sparkMaster;
+  public void setSparkMaster(String sparkMaster) {
+    this.sparkMaster = sparkMaster;
   }
 
   /**
@@ -197,7 +209,7 @@ public class EngineConfig {
    *
    * @return the job name.
    */
-  public String getJobName(){
+  public String getJobName() {
     return JOBNAME;
   }
 
@@ -207,7 +219,7 @@ public class EngineConfig {
    *
    * @return random cassandra host.
    */
-  public String getRandomCassandraHost(){
+  public String getRandomCassandraHost() {
     Random rand = new Random();
     return cassandraHosts[rand.nextInt(cassandraHosts.length)];
   }
@@ -217,7 +229,7 @@ public class EngineConfig {
    *
    * @param jars List of paths.
    */
-  public void setJars(List<String> jars){
+  public void setJars(List<String> jars) {
     this.jars = jars;
   }
 
@@ -226,7 +238,7 @@ public class EngineConfig {
    *
    * @return list of paths, each point to one jar
    */
-  public List<String> getJars(){
+  public List<String> getJars() {
     return jars;
   }
 
@@ -235,17 +247,18 @@ public class EngineConfig {
    *
    * @param path Path to classpath
    */
-  public void setClasspathJars(String path){
+  public void setClasspathJars(String path) {
     jars = new ArrayList<>();
     File file = new File(path);
-    if(file.exists() && !sparkMaster.toLowerCase().startsWith("local") && file.listFiles() != null) {
+    if (file.exists() && !sparkMaster.toLowerCase().startsWith("local")
+        && file.listFiles() != null) {
       File[] files = file.listFiles();
       for (File f : files) {
         if (filterJars(f.getName())) {
           jars.add(path + f.getName());
         }
       }
-    }else if(!sparkMaster.toLowerCase().startsWith("local")){
+    } else if (!sparkMaster.toLowerCase().startsWith("local")) {
       LOG.error("Spark classpath null or incorrect directory.");
     }
   }
@@ -256,7 +269,7 @@ public class EngineConfig {
    * @param jar .jar to check
    * @return {@code true} if is not forbidden.
    */
-  private boolean filterJars(String jar){
+  private boolean filterJars(String jar) {
     for (String forbiddenJar : FORBIDDEN_JARS) {
       if (jar.startsWith(forbiddenJar)) {
         return false;
@@ -311,5 +324,28 @@ public class EngineConfig {
 
   public void setStreamingGroupId(String streamingGroupId) {
     this.streamingGroupId = streamingGroupId;
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("EngineConfig{");
+    sb.append("cassandraHosts=").append(Arrays.toString(cassandraHosts));
+    sb.append(", cassandraPort=").append(cassandraPort);
+    sb.append(", gridListenAddress='").append(gridListenAddress).append('\'');
+    sb.append(", gridContactHosts=").append(Arrays.toString(gridContactHosts));
+    sb.append(", gridPort=").append(gridPort);
+    sb.append(", gridMinInitialMembers=").append(gridMinInitialMembers);
+    sb.append(", gridJoinTimeout=").append(gridJoinTimeout);
+    sb.append(", gridPersistencePath='").append(gridPersistencePath).append('\'');
+    sb.append(", sparkMaster='").append(sparkMaster).append('\'');
+    sb.append(", jars=").append(jars);
+    sb.append(", kafkaServer='").append(kafkaServer).append('\'');
+    sb.append(", kafkaPort=").append(kafkaPort);
+    sb.append(", zookeeperServer='").append(zookeeperServer).append('\'');
+    sb.append(", zookeeperPort=").append(zookeeperPort);
+    sb.append(", streamingDuration=").append(streamingDuration);
+    sb.append(", streamingGroupId='").append(streamingGroupId).append('\'');
+    sb.append('}');
+    return sb.toString();
   }
 }

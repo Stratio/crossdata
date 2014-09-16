@@ -16,8 +16,11 @@
  * under the License.
  */
 
-package com.stratio.meta2.common.api;
+package com.stratio.meta.common.exceptions;
 
-public class ManifestException extends Exception {
+public class ApiException extends Exception {
 
+  public ApiException(Throwable cause) {
+    super(cause);
+  }
 }

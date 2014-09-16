@@ -42,10 +42,10 @@ import java.util.Map;
 
 public class CoreUtils {
 
-  public static final List<String> supportedTypes = Arrays.asList("bigint", "boolean", "counter",
-                                                                  "double", "float", "int",
-                                                                  "integer", "varchar");
-  // SOON: "date", "uuid", "timeuuid"
+  public static final List<String> supportedTypes = Arrays.asList("bigint", "boolean",
+                                                                  "double", "float",
+                                                                  "int", "varchar", "text");
+  // SOON: "counter", "date", "uuid", "timeuuid"
 
   /**
    * Map of methods required to transform a {@link com.datastax.driver.core.DataType} into the

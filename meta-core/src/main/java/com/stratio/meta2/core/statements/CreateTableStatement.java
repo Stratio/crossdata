@@ -21,6 +21,7 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.data.ClusterName;
@@ -56,7 +57,7 @@ public class CreateTableStatement extends MetaDataStatement implements ITableSta
   /**
    * A map with the name of the columns in the table and the associated data type.
    */
-  private Map<ColumnName, String> columnsWithType;
+  private Map<ColumnName, ColumnType> columnsWithType;
 
   /**
    * The list of columns that are part of the primary key.
@@ -121,7 +122,7 @@ public class CreateTableStatement extends MetaDataStatement implements ITableSta
    *        only used if the type of primary key is {@code 1}.
    */
   public CreateTableStatement(TableName tableName, ClusterName clusterName,
-                              Map<ColumnName, String> columns,
+                              Map<ColumnName, ColumnType> columns,
                               List<ColumnName> primaryKey, List<ColumnName> clusterKey,
                               int primaryKeyType, int columnNumberPK) {
     this.command = false;
@@ -134,7 +135,7 @@ public class CreateTableStatement extends MetaDataStatement implements ITableSta
     this.columnNumberPK = columnNumberPK;
   }
 
-  public Map<ColumnName, String> getColumnsWithTypes() {
+  public Map<ColumnName, ColumnType> getColumnsWithTypes() {
     return columnsWithType;
   }
 
@@ -183,7 +184,7 @@ public class CreateTableStatement extends MetaDataStatement implements ITableSta
     int i = 0;
     for (Iterator<ColumnName> it = keySet.iterator(); it.hasNext();) {
       ColumnName key = it.next();
-      String vp = columnsWithType.get(key);
+      ColumnType vp = columnsWithType.get(key);
       sb.append(key).append(" ").append(vp);
       if (i == columnNumberPK) {
         sb.append(" PRIMARY KEY");
@@ -237,7 +238,7 @@ public class CreateTableStatement extends MetaDataStatement implements ITableSta
       Set<ColumnName> keySet = columnsWithType.keySet();
       sb.append(" (");
       for (ColumnName key : keySet) {
-        String vp = columnsWithType.get(key);
+        ColumnType vp = columnsWithType.get(key);
         sb.append(key).append(" ").append(vp).append(", ");
       }
       sb.append(getCompositePKString());
@@ -338,7 +339,7 @@ public class CreateTableStatement extends MetaDataStatement implements ITableSta
     String [] supported = {"BIGINT", "BOOLEAN", "COUNTER", "DOUBLE", "FLOAT", "INT", "VARCHAR"};
     Set<String> supportedColumns = new HashSet<>(Arrays.asList(supported));
     for(ColumnName c : columnsWithType.keySet()){
-      if(!supportedColumns.contains(columnsWithType.get(c).toUpperCase()) || c.getName().toLowerCase().startsWith("stratio")){
+      if(!supportedColumns.contains(columnsWithType.get(c).toString().toUpperCase()) || c.getName().toLowerCase().startsWith("stratio")){
         result= Result.createValidationErrorResult("Column " + c + " with datatype " + columnsWithType.get(c) + " not supported.");
       }
     }
