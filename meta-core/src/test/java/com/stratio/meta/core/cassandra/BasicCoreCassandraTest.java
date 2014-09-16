@@ -18,6 +18,8 @@
 
 package com.stratio.meta.core.cassandra;
 
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
 import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.test.CCMHandler;
@@ -52,7 +54,7 @@ public class BasicCoreCassandraTest {
   /**
    * Session to launch queries on C*.
    */
-  //protected static Session _session = null;
+  protected static Session _session = null;
 
   /**
    * Class logger.
@@ -81,9 +83,9 @@ public class BasicCoreCassandraTest {
    */
   protected static boolean connect(String host) {
     boolean result = false;
-    /*Cluster c = Cluster.builder().addContactPoint(host).build();
+    Cluster c = Cluster.builder().addContactPoint(host).build();
     _session = c.connect();
-    result = null == _session.getLoggedKeyspace();*/
+    result = null == _session.getLoggedKeyspace();
     return result;
   }
 
