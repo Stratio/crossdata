@@ -4,13 +4,14 @@ import akka.actor.{Actor, ActorLogging, ActorSelection, Props, ReceiveTimeout, R
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
+import com.stratio.meta2.core.connector.ConnectorManager
 import com.stratio.meta2.core.query._
 
 object ConnectorManagerActor {
-  def props(): Props = Props(new ConnectorManagerActor)
+  def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))
 }
 
-class ConnectorManagerActor extends Actor with ActorLogging {
+class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor with ActorLogging {
 
   log.info("Lifting connector actor")
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")

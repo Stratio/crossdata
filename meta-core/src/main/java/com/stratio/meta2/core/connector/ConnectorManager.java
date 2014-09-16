@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,28 +16,8 @@
  * under the License.
  */
 
-package com.stratio.meta2.server
+package com.stratio.meta2.core.connector;
 
-import scala.annotation.tailrec
+public class ConnectorManager {
 
-
-object MetaApplication extends App {
-  val metaServer:MetaServer =new MetaServer
-  @tailrec
-  private def commandLoop(): Unit = {
-    Console.readLine() match {
-      case "quit" | "exit" => return
-      case _ =>
-    }
-    commandLoop()
-  }
-
-
-  metaServer.init(null)
-  metaServer.start()
-  commandLoop()
-  metaServer.stop()
-  metaServer.destroy()
 }
-
-

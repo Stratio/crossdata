@@ -19,8 +19,7 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.stratio.meta.core.planner.Planner
-import com.stratio.meta.server.actors.TimeTracker
+import com.stratio.meta2.core.planner.Planner
 import com.stratio.meta2.core.query.ValidatedQuery
 import org.apache.log4j.Logger
 
@@ -28,12 +27,15 @@ object PlannerActor{
   def props(executor:ActorRef, planner:Planner): Props =Props(new PlannerActor(executor,planner))
 }
 
-class PlannerActor(executor:ActorRef, planner:Planner) extends Actor with TimeTracker {
+class PlannerActor(coordinator:ActorRef, planner:Planner) extends Actor with TimeTracker {
   val log =Logger.getLogger(classOf[PlannerActor])
   override lazy val timerName= this.getClass.getName
   def receive = {
     case query: ValidatedQuery => {
       log.info("Planner Actor received ValidatedQuery")
+      log.info("ValidatedQuery ="+query)
+      coordinator forward planner.planQuery(query)
+      sender ! "Ok"
     }
       /*
     case query:MetaQuery if !query.hasError=> {
@@ -54,7 +56,7 @@ class PlannerActor(executor:ActorRef, planner:Planner) extends Actor with TimeTr
     */
     case _ => {
       //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
-      sender ! "wtf"
+      sender ! "KO"
     }
   }
 

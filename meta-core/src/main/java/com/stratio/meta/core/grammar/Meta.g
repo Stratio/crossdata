@@ -714,11 +714,11 @@ truncateStatement returns [TruncateStatement trst]:
 	}
 ;
 
-metaStatement returns [MetaStatement st]
-    @init{
-        boolean hasCatalog = false;
-    }:
-    (T_START_BRACKET (inputCatalog=T_IDENT {hasCatalog=true;} )? T_END_BRACKET T_COMMA {if(hasCatalog) sessionCatalog = $inputCatalog.text;})?
+metaStatement returns [MetaStatement st]:
+    (T_START_BRACKET
+        ( allowedReservedWord=getAllowedReservedWord { sessionCatalog = allowedReservedWord; }
+        | inputCatalog=T_IDENT { sessionCatalog = $inputCatalog.text; } )?
+    T_END_BRACKET T_COMMA)?
     (st_nsnt   = insertIntoStatement { $st = st_nsnt;}
     | st_slct = selectStatement { $st = st_slct;}
     | st_crta = createTableStatement { $st = st_crta;}

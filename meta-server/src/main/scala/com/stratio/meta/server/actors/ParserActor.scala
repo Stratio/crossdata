@@ -27,10 +27,11 @@ import com.stratio.meta2.core.query.{SelectParsedQuery, StorageParsedQuery, Meta
 import com.stratio.meta2.common.data.CatalogName
 
 object ParserActor{
-  def props(validator:ActorRef, normalizer: ActorRef, parser:Parser): Props= Props(new ParserActor(validator, normalizer, parser))
+  def props(validator:ActorRef, parser:Parser): Props= Props(new ParserActor(validator, parser))
 }
 
-class ParserActor(validator: ActorRef, normalizer: ActorRef, parser:Parser) extends Actor with TimeTracker {
+//class ParserActor(validator: ActorRef, normalizer: ActorRef, parser:Parser) extends Actor with TimeTracker {
+class ParserActor(validator: ActorRef, parser:Parser) extends Actor with TimeTracker {
   val log =Logger.getLogger(classOf[ParserActor])
   override lazy val timerName= this.getClass.getName
 

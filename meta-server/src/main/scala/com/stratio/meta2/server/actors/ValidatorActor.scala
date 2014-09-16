@@ -19,8 +19,12 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
+import com.stratio.meta.core.utils.MetaQuery
+import com.stratio.meta2.core.query.ParsedQuery
+import com.stratio.meta2.core.statements.MetaStatement
 import com.stratio.meta2.core.validator.Validator
 import org.apache.log4j.Logger
+import com.stratio.meta.server.actors.TimeTracker
 
 object ValidatorActor{
   def props(planner:ActorRef, validator:Validator): Props= Props(new ValidatorActor(planner,validator))
@@ -45,13 +49,18 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
 
   override def receive: Receive = {
     case query: ParsedQuery => {
-      log.info("Validator Actor received ParsedQuery")
+      log.info("Validator Actor received ParsedQuery ")
+      val validatedquery=validator.validate(query)
+      log.info("Validator Actor sends validated query to planner ")
+      log.info("Validatedquery= "+validatedquery)
+      planner forward validatedquery
+      sender ! "Ok"
     }
     case query: MetaQuery if !query.hasError=> {
       log.info("validator query without errors")
       val timer=initTimer()
 
-      planner forward validator.validateQuery(query)
+      //planner forward validator.validateQuery(query)
       finishTimer(timer)
       log.info("Finish Validator Task")
     }
@@ -65,7 +74,8 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
     }
     case _ => {
       log.info("validator _")
-      sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
+      sender ! "KO"
+      //sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
     }
   }
 }
