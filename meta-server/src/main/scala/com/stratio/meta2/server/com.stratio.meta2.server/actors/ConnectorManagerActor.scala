@@ -1,11 +1,10 @@
 package com.stratio.meta2.server.actors
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props, ReceiveTimeout, RootActorPath}
+import akka.actor.{Actor, ActorLogging, ActorSelection, Props, ReceiveTimeout, RootActorPath}
+import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
 import com.stratio.meta2.core.query._
-import akka.cluster.Cluster
-import akka.actor.ActorSelection
 
 object ConnectorManagerActor {
   def props(): Props = Props(new ConnectorManagerActor)

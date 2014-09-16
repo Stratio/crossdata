@@ -19,39 +19,36 @@
 package com.stratio.meta2.server.actors
 
 import java.util.UUID
+
 import akka.actor.{Actor, Props, ReceiveTimeout}
-import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
+import akka.routing.RoundRobinRouter
 import com.stratio.meta.common.ask.{Command, Connect, Query}
 import com.stratio.meta.common.result._
 import com.stratio.meta.communication.Disconnect
 import com.stratio.meta2.core.engine.Engine
+import com.stratio.meta2.server.config.NumberActorConfig
 import org.apache.log4j.Logger
-import com.stratio.meta.server.actors.ParserActor
-import com.stratio.meta.server.actors.APIActor
-import com.stratio.meta.server.actors.ValidatorActor
-import com.stratio.meta.server.actors.PlannerActor
-import com.stratio.meta2.core.parser.Parser
 
 object ServerActor{
   def props(engine: Engine): Props = Props(new ServerActor(engine))
 }
 
-class ServerActor(engine:Engine) extends Actor {
+class ServerActor(engine:Engine) extends Actor  with NumberActorConfig{
   val log =Logger.getLogger(classOf[ServerActor])
 
-  val parserActorRef=context.actorOf(ParserActor.props(null,null,engine.getParser()),"ParserActor") 
-  val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()),"APIActor") 
-  val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(),"ConnectorManagerActor") 
-  val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef,engine.getCoordinator()),"CoordinatorActor") 
+  val parserActorRef=context.actorOf(ParserActor.props(null,null,engine.getParser()).withRouter(RoundRobinRouter(nrOfInstances=num_parser_actor)),"ParserActor")
+  val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()).withRouter(RoundRobinRouter(nrOfInstances=num_api_actor)),"APIActor")
+  val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props().withRouter(RoundRobinRouter(nrOfInstances=num_connector_manag_actor)),"ConnectorManagerActor")
+  val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef,engine.getCoordinator()).withRouter(RoundRobinRouter(nrOfInstances=num_coordinator_actor)),"CoordinatorActor")
+
+  val normalizerActorRef=context.actorOf(NormalizerActor.props(engine).withRouter(RoundRobinRouter(nrOfInstances=num_normalizer_actor)),"NormalizerActor")
   
-  //val normalizerActorRef=context.actorOf(NormalizerActor.props(engine),"NormalizerActor") 
-  
-  //val plannerActorRef=context.actorOf(PlannerActor.props(null,null))
-  //val validatorActorRef=context.actorOf(ValidatorActor.props(plannerActorRef,null))
+  val plannerActorRef=context.actorOf(PlannerActor.props(null,null).withRouter(RoundRobinRouter(nrOfInstances=num_planner_actor)),"PlannerActor")
+  val validatorActorRef=context.actorOf(ValidatorActor.props(plannerActorRef,null).withRouter(RoundRobinRouter(nrOfInstances=num_validator_actor)),"ValidatorActor")
 
 
-  //val queryActorRef= context.actorOf(QueryActor.props(engine,connectorActorRef),"QueryActor")
+  val queryActorRef= context.actorOf(QueryActor.props(engine,connectorManagerActorRef).withRouter(RoundRobinRouter(nrOfInstances=num_query_actor)),"QueryActor")
 
 
   /*
