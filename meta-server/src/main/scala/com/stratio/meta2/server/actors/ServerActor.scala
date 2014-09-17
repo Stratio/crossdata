@@ -38,14 +38,14 @@ object ServerActor{
 class ServerActor(engine:Engine) extends Actor  with NumberActorConfig{
   val log =Logger.getLogger(classOf[ServerActor])
 
-
-  val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(null).withRouter(RoundRobinRouter(nrOfInstances=num_connector_manag_actor)).withRouter(RoundRobinRouter(nrOfInstances=num_coordinator_actor)),"ConnectorManagerActor")
-  val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef,engine.getCoordinator()),"CoordinatorActor")
+  val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(engine.getConnectorManager()).withRouter(RoundRobinRouter(nrOfInstances=num_connector_manag_actor)).withRouter(RoundRobinRouter(nrOfInstances=num_coordinator_actor)),"ConnectorManagerActor")
+  val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef,engine.getCoordinator()).withRouter(RoundRobinRouter(nrOfInstances=num_coordinator_actor)),"CoordinatorActor")
   val plannerActorRef=context.actorOf(PlannerActor.props(coordinatorActorRef,engine.getPlanner).withRouter(RoundRobinRouter(nrOfInstances=num_planner_actor)),"PlannerActor")
   val validatorActorRef=context.actorOf(ValidatorActor.props(plannerActorRef,engine.getValidator).withRouter(RoundRobinRouter(nrOfInstances=num_validator_actor)),"ValidatorActor")
   val parserActorRef=context.actorOf(ParserActor.props(validatorActorRef,engine.getParser()).withRouter(RoundRobinRouter(nrOfInstances=num_parser_actor)),"ParserActor")
   val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()).withRouter(RoundRobinRouter(nrOfInstances=num_api_actor)),"APIActor")
 
+  //val queryActorRef= context.actorOf(QueryActor.props(engine,connectorActorRef),"QueryActor")
 
 
   /*

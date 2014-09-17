@@ -22,8 +22,8 @@ import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta2.common.data.ClusterName;
 
 public class SelectInProgressQuery extends InProgressQuery {
-  
-  
+
+
   public SelectInProgressQuery(PlannedQuery validatedQuery) {
     super(validatedQuery);
   }

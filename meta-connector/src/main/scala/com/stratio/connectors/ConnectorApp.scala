@@ -1,6 +1,7 @@
 package com.stratio.connector
 
 import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.routing.RoundRobinRouter
 import com.stratio.connectors.config.ConnectConfig
 import com.stratio.meta.common.connector.IConnector
 import com.typesafe.config.ConfigFactory
@@ -67,11 +68,15 @@ class ConnectorApp  extends ConnectConfig {
       // Override the configuration of the port
       val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
 
+
       // Create an Akka system
 
       // Create an actor that handles cluster domain events
-      actorClusterNode=system.actorOf(Props[ClusterListener], name = actorName)
-      actorClusterNode ! "I'm in!!!"
+      //actorClusterNode=system.actorOf(Props[ClusterListener], name = actorName)
+      actorClusterNode=system.actorOf(ClusterListener.props(connectorName)withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
+
+
+        actorClusterNode ! "I'm in!!!"
     }
     actorClusterNode
   }
