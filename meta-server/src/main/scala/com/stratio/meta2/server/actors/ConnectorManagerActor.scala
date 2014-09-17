@@ -104,6 +104,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
     case response: Response =>
       //connectorsMap += (response.msg -> sender)
+    case query: InProgressQuery=>
+      log.info("ConnectorManager receives InProgressQuery")
 
     case query: SelectPlannedQuery => {
       log.info("ConnectorManagerActor received SelectPlannedQuery")
