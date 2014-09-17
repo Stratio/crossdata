@@ -40,6 +40,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
     	    	val id=java.util.UUID.randomUUID.toString()
     	    	connectorsMap.put(mu.member.toString, connectorActorRef)
+    	    	mu.member.address
     	    	//connectorActorRef ! "hola"
     	  }
     	  log.info("has role: {}" + rol)
@@ -51,6 +52,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
     case query: StorageInProgressQuery=>
       log.info("storage in progress query")
+      connectorsMap(query.getConnectorName()) ! query
+
     case query: SelectInProgressQuery=>
       log.info("select in progress query")
     case query: MetadataInProgressQuery=>
@@ -81,17 +84,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     case _: DisconnectFromConnector=>
       println("disconnecting from connector")
 
-      /*
-    case ex:Execute=>
-      println("Executing workflow "+ex.workflow.toString())
-      println("initial steps->"+ex.workflow.getInitialSteps())
-     */
-    //case _: Request=>
-    //case _: Response=>
-    //case _: MetadataStruct=>
-    //case _: StorageQueryStruct=>
-    //case _: WorkflowStruct=>
-
+    /*
     case toConnector: MetadataStruct =>
       connectorsMap(toConnector.connectorName) ! toConnector
 
@@ -103,13 +96,12 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
     case response: Response =>
       //connectorsMap += (response.msg -> sender)
-    case query: InProgressQuery=>
-      log.info("ConnectorManager receives InProgressQuery")
 
     case query: SelectPlannedQuery => {
       log.info("ConnectorManagerActor received SelectPlannedQuery")
       sender ! "Ok"
     }
+    */
 
     case other =>
       println("connector actor receives event")

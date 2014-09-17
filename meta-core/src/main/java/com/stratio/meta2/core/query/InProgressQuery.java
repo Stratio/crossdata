@@ -21,6 +21,8 @@ package com.stratio.meta2.core.query;
 import com.stratio.meta.common.result.QueryStatus;
 
 public class InProgressQuery extends PlannedQuery {
+
+  private String connectorName=null;
   public InProgressQuery(PlannedQuery plannedQuery){
     super(plannedQuery);
   }
@@ -31,4 +33,12 @@ public class InProgressQuery extends PlannedQuery {
   public QueryStatus getStatus() {
     return QueryStatus.IN_PROGRESS;
   }
+
+    public String getConnectorName() {
+        return connectorName;
+    }
+
+    public void setConnectorName(String connectorName) {
+        this.connectorName = connectorName;
+    }
 }
