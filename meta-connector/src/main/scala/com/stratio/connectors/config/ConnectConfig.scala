@@ -15,6 +15,8 @@ object ConnectConfig{
   val CONNECTOR_ACTOR_NAME_KEY="config.cluster.actor"
   val CONNECTOR_USER_CONFIG_FILE="external.config.filename"
   val CONNECTOR_USER_CONFIG_RESOURCE = "external.config.resource"
+  val CONNECTOR_NAME = "config.connector.name"
+  val CONNECTOR_ACTOR_NUM = "config.akka.number.connector-actor"
 }
 
 trait ConnectConfig {
@@ -58,4 +60,9 @@ trait ConnectConfig {
   lazy val clusterName =  config.getString(ConnectConfig.CONNECTOR_CLUSTER_NAME_KEY)
 
   lazy val actorName =  config.getString(ConnectConfig.CONNECTOR_ACTOR_NAME_KEY)
+
+  lazy val connectorName =  config.getString(ConnectConfig.CONNECTOR_NAME)
+
+  lazy val num_connector_actor:Int = config.getString(ConnectConfig.CONNECTOR_ACTOR_NUM).toInt
+
 }

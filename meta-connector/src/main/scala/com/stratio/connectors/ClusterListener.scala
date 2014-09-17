@@ -1,16 +1,16 @@
 package com.stratio.connector
 
+import akka.actor.{Actor, ActorLogging, Props}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
-import akka.actor.ActorLogging
-import akka.actor.Actor
-import akka.actor.RootActorPath
-import com.stratio.meta.communication._
+import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
 
 
+object ClusterListener{
+  def props (connectorName:String):Props = Props (new ClusterListener(connectorName) )
+}
 
-
-class ClusterListener extends Actor with ActorLogging {
+class ClusterListener(connectorName:String) extends Actor with ActorLogging {
   
 
   val cluster = Cluster(context.system)
@@ -54,7 +54,12 @@ class ClusterListener extends Actor with ActorLogging {
       log.info("->"+"Receiving MetadataRequest")
       * 
       */
-      
+
+    case msg:getConnectorName=>
+    {
+      sender ! replyConnectorName(connectorName)
+    }
+
     case s:String=>
       println("->"+"Receiving String: {}"+s)
       log.info("->"+"Receiving String: {}",s)

@@ -1,6 +1,6 @@
 package com.stratio.meta2.server.actors
 
-import akka.actor.{Actor, ActorLogging, ActorSelection, Props, ReceiveTimeout, RootActorPath}
+import akka.actor._
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
@@ -18,7 +18,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
   //coordinatorActorRef ! "hola"
 
   //var connectorsMap:scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String,ActorRef]()
-  var connectorsMap:scala.collection.mutable.Map[String, ActorSelection] = scala.collection.mutable.Map[String,ActorSelection]()
+  //var connectorsMap:scala.collection.mutable.Map[String, ActorSelection] = scala.collection.mutable.Map[String,ActorSelection]()
+  var connectorsMap:scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String,ActorRef]()
 
   override def preStart(): Unit = {
     //#subscribe
@@ -39,8 +40,12 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     	    case "connector"=>
     	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
     	    	val id=java.util.UUID.randomUUID.toString()
-    	    	connectorsMap.put(mu.member.address.toString, connectorActorRef)
-    	    	connectorActorRef ! "hola"
+    	    	//connectorsMap.put(mu.member.toString, connectorActorRef)
+    	    	mu.member.address
+
+            connectorActorRef ! getConnectorName
+
+    	    	//connectorActorRef ! "hola"
     	  }
     	  log.info("has role: {}" + rol)
       }
@@ -48,6 +53,12 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       //memberActorRef ! "hola pichi, estás metaregistrado"
     }
 
+
+    case msg:replyConnectorName=>{
+
+      connectorsMap.put(msg.msg,sender)
+
+    }
 
     case query: StorageInProgressQuery=>
       log.info("storage in progress query")
