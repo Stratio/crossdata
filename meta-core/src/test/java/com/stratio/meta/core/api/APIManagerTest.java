@@ -36,7 +36,7 @@ public class APIManagerTest {
 
   @Test
   public void testProcessRequest() throws Exception {
-    APIManager apiMangager = new APIManager();
+    APIManager apiMangager = new APIManager(null);
     List params = new ArrayList<DataStoreType>();
     params.add(new DataStoreType());
     Command cmd = new Command(APICommand.ADD_MANIFEST(), params);

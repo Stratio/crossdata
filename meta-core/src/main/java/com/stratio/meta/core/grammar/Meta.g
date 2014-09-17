@@ -1031,8 +1031,13 @@ getAllowedReservedWord returns [String str]:
 ;
 
 getTableName returns [TableName tablename]:
-    (ident1=T_IDENT {tablename = normalizeTableName($ident1.text);}
+    (ident1=getPartialTableName {tablename = normalizeTableName(ident1);}
     | ident2=T_KS_AND_TN {tablename = normalizeTableName($ident2.text);})
+;
+
+getPartialTableName returns [String str]:
+    allowedReservedWord=getAllowedReservedWord { $str = allowedReservedWord; }
+    | ident=T_IDENT { $str = $ident.text; }
 ;
 
 getFloat returns [String floating]:

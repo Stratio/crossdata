@@ -58,7 +58,6 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -79,8 +78,8 @@ public class NormalizerTest {
     DataStoreMetadata dsmd = new DataStoreMetadata(
         new DataStoreName("Cassandra"), //name
         "1.0.0", //version
-        new HashSet<String>(), //requiredProperties
-        new HashSet<String>() //othersProperties
+        null, //requiredProperties
+        null //othersProperties
         );
     md.put(new DataStoreName("Cassandra"), dsmd);
     MockMetadataManager.MANAGER.init(md, new ReentrantLock());

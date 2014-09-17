@@ -24,7 +24,6 @@ import com.stratio.meta2.core.query.ParsedQuery
 import com.stratio.meta2.core.statements.MetaStatement
 import com.stratio.meta2.core.validator.Validator
 import org.apache.log4j.Logger
-import com.stratio.meta.server.actors.TimeTracker
 
 object ValidatorActor{
   def props(planner:ActorRef, validator:Validator): Props= Props(new ValidatorActor(planner,validator))
@@ -33,7 +32,7 @@ object ValidatorActor{
 /**
  * Actor in charge of the validation of sentences.
  * @param planner The associated planner actor.
- * @param validator The associated {@link com.stratio.meta.core.validator.Validator}.
+ * @param validator The associated com.stratio.meta.core.validator.Validator}.
  */
 class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with TimeTracker{
 

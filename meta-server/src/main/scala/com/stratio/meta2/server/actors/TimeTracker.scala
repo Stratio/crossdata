@@ -16,34 +16,37 @@
  * under the License.
  */
 
-package com.stratio.meta2.common.metadata;
+package com.stratio.meta2.server.actors
 
-import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.ConnectorName;
+import com.codahale.metrics.Timer
+import com.stratio.meta.common.utils.Metrics
 
-import java.util.Map;
+/**
+ * Trait to be able to time the operations inside an actor.
+ */
+trait TimeTracker {
 
-public class ConnectorAttachedMetadata {
-  private final ConnectorName connectorRef;
-  private final ClusterName clusterRef;
-  private final Map<String, String> properties;
+  /**
+   * Name of the timer.
+   */
+  lazy val timerName:String = ???
 
-  public ConnectorAttachedMetadata(ConnectorName connectorRef, ClusterName clusterRef,
-      Map<String, String> properties) {
-    this.connectorRef = connectorRef;
-    this.clusterRef = clusterRef;
-    this.properties = properties;
-  }
+  /**
+   * Timer gauge.
+   */
+  lazy val timerMetrics:Timer = Metrics.getRegistry.timer(timerName)
 
-  public ConnectorName getConnectorRef() {
-    return connectorRef;
-  }
+  /**
+   * Initialize the timer.
+   */
+  def initTimer():Timer.Context= timerMetrics.time()
 
-  public ClusterName getClusterRef() {
-    return clusterRef;
-  }
-
-  public Map<String, String> getProperties() {
-    return properties;
+  /**
+   * Stop the timer.
+   * @param context The timing context.
+   * @return Whether it has stop.
+   */
+  def finishTimer(context:Timer.Context)={
+    context.stop()
   }
 }

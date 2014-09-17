@@ -18,16 +18,11 @@
 
 package com.stratio.meta2.server.actors
 
-import akka.actor.{ActorRef, Props, Actor, ActorLogging}
-import com.stratio.meta.core.utils.{Tree, MetaPath, MetaQuery}
+import akka.actor.{Actor, ActorRef, Props}
+import com.stratio.meta.common.actor.ActorResultListener
+import com.stratio.meta.common.result.Result
 import com.stratio.meta2.core.executor.Executor
 import org.apache.log4j.Logger
-import com.stratio.meta.common.result.{Result, QueryResult}
-import java.util
-import scala.util
-import com.stratio.meta.common.actor.ActorResultListener
-import java.util.concurrent.{ExecutorService, Executors}
-import com.stratio.meta.server.actors.TimeTracker
 
 object ExecutorActor{
   def props(connectorActor:ActorRef,executor:Executor): Props = Props(new ExecutorActor(connectorActor,executor))
