@@ -73,7 +73,7 @@ class ConnectorApp  extends ConnectConfig {
 
       // Create an actor that handles cluster domain events
       //actorClusterNode=system.actorOf(Props[ClusterListener], name = actorName)
-      actorClusterNode=system.actorOf(ClusterListener.props(connector.getConnectorName).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
+      actorClusterNode=system.actorOf(ClusterListener.props(connector.getConnectorName, connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
 
 
         actorClusterNode ! "I'm in!!!"
@@ -84,7 +84,7 @@ class ConnectorApp  extends ConnectConfig {
       // Create an Akka system
 
       // Create an actor that handles cluster domain events
-   val  actorClusterNode=system.actorOf(ClusterListener.props(connector.getConnectorName).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
+   val  actorClusterNode=system.actorOf(ClusterListener.props(connector.getConnectorName, connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
     actorClusterNode ! "I'm in!!!"
      actorClusterNode
 
