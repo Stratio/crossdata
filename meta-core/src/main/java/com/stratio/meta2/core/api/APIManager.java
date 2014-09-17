@@ -62,13 +62,10 @@ public class APIManager {
    */
   //private final AbstractMetadataHelper helper;
 
-  private final MetadataManager metadataManager;
-
   /**
    * Class constructor.
    */
-  public APIManager(MetadataManager metadataManager){
-    this.metadataManager = metadataManager;
+  public APIManager(){
     //metadata = new MetadataManager(session, stratioStreamingAPI);
     //metadata = new MetadataManager();
     //metadata.loadMetadata();
@@ -130,7 +127,7 @@ public class APIManager {
     com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType requiredProperties = dataStoreType.getRequiredProperties();
     OptionalPropertiesType optionalProperties = dataStoreType.getOptionalProperties();
     DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(name, version, requiredProperties, optionalProperties);
-    metadataManager.createDataStore(dataStoreMetadata);
+    MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
   }
 
   private void persistConnector(ConnectorType connectorType){
@@ -146,7 +143,7 @@ public class APIManager {
         optionalProperties = connectorType.getOptionalProperties();
     SupportedOperationsType supportedOperations = connectorType.getSupportedOperations();
     ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs, requiredProperties, optionalProperties, supportedOperations);
-    metadataManager.createConnector(connectorMetadata);
+    MetadataManager.MANAGER.createConnector(connectorMetadata);
   }
 
 }

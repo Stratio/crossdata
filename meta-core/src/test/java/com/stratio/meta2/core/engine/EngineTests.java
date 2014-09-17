@@ -27,6 +27,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Random;
 
 
@@ -76,18 +77,16 @@ public class EngineTests extends BasicCoreCassandraTest {
   }
   */
 
-    /*
   @Test(enabled = false)
   public void testGrid() {
     Engine engine = new Engine(engineConfig);
     Grid grid = engine.getGrid();
-    Store store = grid.store("test");
+    Map<Object, Object> store = grid.map("test");
     store.put("k1", "v1");
     Assert.assertEquals("v1", store.get("k1"));
     store.remove("k1");
     Assert.assertNull(store.get("k1"));
     engine.shutdown();
   }
-  */
 
 }
