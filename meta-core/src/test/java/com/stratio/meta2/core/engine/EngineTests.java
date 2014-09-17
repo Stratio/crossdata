@@ -20,7 +20,7 @@ package com.stratio.meta2.core.engine;
 
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta2.core.grid.Grid;
-import com.stratio.meta2.core.grid.Store;
+//import com.stratio.meta2.core.grid.Store;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -76,6 +76,7 @@ public class EngineTests extends BasicCoreCassandraTest {
   }
   */
 
+    /*
   @Test(enabled = false)
   public void testGrid() {
     Engine engine = new Engine(engineConfig);
@@ -87,5 +88,6 @@ public class EngineTests extends BasicCoreCassandraTest {
     Assert.assertNull(store.get("k1"));
     engine.shutdown();
   }
+  */
 
 }
