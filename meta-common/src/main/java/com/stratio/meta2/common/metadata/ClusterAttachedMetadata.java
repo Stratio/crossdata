@@ -26,11 +26,11 @@ import java.util.Map;
 public class ClusterAttachedMetadata {
   private final ClusterName clusterRef;
   private final DataStoreName dataStoreRef;
-  private final Map<String, String> properties;
+  private final Map<String, Object> properties;
 
   public ClusterAttachedMetadata(ClusterName clusterRef,
                                  DataStoreName dataStoreRef,
-                                 Map<String, String> properties) {
+                                 Map<String, Object> properties) {
     this.clusterRef = clusterRef;
     this.dataStoreRef = dataStoreRef;
     this.properties = properties;
@@ -44,7 +44,7 @@ public class ClusterAttachedMetadata {
     return dataStoreRef;
   }
 
-  public Map<String, String> getProperties() {
+  public Map<String, Object> getProperties() {
     return properties;
   }
 }

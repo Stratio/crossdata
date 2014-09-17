@@ -114,6 +114,10 @@ public class Engine {
       throw new RuntimeException("Unable to start grid: " + config, e);
     }
 
+    Map<FirstLevelName, IMetadata> metadataMap = grid.map("meta");
+
+    MetadataManager.MANAGER.init(metadataMap, grid.lock("meta"));
+
     //this.session=initializeDB(config);
 
     //hazelcast = initializeHazelcast(config);
@@ -125,7 +129,7 @@ public class Engine {
     //validator = new Validator(session, stratioStreamingAPI, config);
     validator = new Validator();
     //manager = new APIManager(session, stratioStreamingAPI);
-    manager = new APIManager(null);
+    manager = new APIManager();
     //planner = new Planner(session, stratioStreamingAPI);
     planner = new Planner();
     //executor = new Executor(session, stratioStreamingAPI, deepContext, config);
@@ -133,10 +137,6 @@ public class Engine {
     coordinator = new Coordinator();
     setNormalizer(new Normalizer());
     connectorManager = new ConnectorManager();
-
-    Map<FirstLevelName, IMetadata> metadataMap = grid.map("meta");
-
-    MetadataManager.MANAGER.init(metadataMap, grid.lock("meta"));
   }
 
   /**

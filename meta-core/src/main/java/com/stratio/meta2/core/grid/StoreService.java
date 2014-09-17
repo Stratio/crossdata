@@ -41,10 +41,10 @@ import java.util.concurrent.TimeUnit;
 import javax.transaction.TransactionManager;
 
 /**
- * A {@link Store} factory/manager. The created {@link Store}s are based in an Infinispan cache
+ * A {@link java.util.Map} factory/manager. The created {@link java.util.Map}s are based in an Infinispan cache
  * without eviction in REPL_SYNC mode and persisted in local files.
  *
- * It must be closed ({@link #close()}) when its created {@link Store}s are not needed anymore.
+ * It must be closed ({@link #close()}) when its created {@link java.util.Map}s are not needed anymore.
  */
 public class StoreService implements Closeable {
 
@@ -128,7 +128,7 @@ public class StoreService implements Closeable {
   }
 
   /**
-   * Closes this and all the created {@link Store}s.
+   * Closes this and all the created {@link java.util.Map}s.
    */
   @Override
   public void close() {

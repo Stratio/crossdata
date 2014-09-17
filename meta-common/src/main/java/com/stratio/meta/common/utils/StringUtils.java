@@ -80,6 +80,28 @@ public class StringUtils {
     return options;
   }
 
+  public static Map<String, Object> convertJsonToMap(String json){
+    Map<String, Object> options = new LinkedHashMap<>();
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+    JsonFactory factory = mapper.getJsonFactory();
+    JsonParser jp;
+    try {
+      jp = factory.createJsonParser(json);
+      JsonNode root = mapper.readTree(jp);
+      Iterator<Map.Entry<String, JsonNode>> iter = root.getFields();
+      while(iter.hasNext()){
+        Map.Entry<String, JsonNode> entry = iter.next();
+        Object obj = convertJsonNodeToJavaType(entry.getValue());
+        options.put(entry.getKey(), obj);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return options;
+  }
+
   private static Selector convertJsonNodeToMetaParserType(JsonNode jsonNode) {
     Selector selector;
     if (jsonNode.isBigDecimal() || jsonNode.isDouble()){
@@ -92,6 +114,20 @@ public class StringUtils {
       selector = new StringSelector(jsonNode.getTextValue());
     }
     return selector;
+  }
+
+  private static Object convertJsonNodeToJavaType(JsonNode jsonNode) {
+    Object obj;
+    if (jsonNode.isBigDecimal() || jsonNode.isDouble()){
+      obj = jsonNode.getDoubleValue();
+    } else if (jsonNode.isBoolean()){
+      obj = jsonNode.getBooleanValue();
+    } else if (jsonNode.isInt() || jsonNode.isBigInteger() || jsonNode.isLong()){
+      obj = jsonNode.getIntValue();
+    } else {
+      obj = jsonNode.getTextValue();
+    }
+    return obj;
   }
 
   public static String getStringFromOptions(Map<Selector, Selector> options){
