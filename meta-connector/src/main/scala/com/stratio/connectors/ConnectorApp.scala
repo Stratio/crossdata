@@ -1,11 +1,11 @@
 package com.stratio.connector
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem}
 import akka.routing.RoundRobinRouter
 import com.stratio.connectors.config.ConnectConfig
 import com.stratio.meta.common.connector.IConnector
 import com.typesafe.config.ConfigFactory
-import org.apache.log4j.{BasicConfigurator}
+import org.apache.log4j.BasicConfigurator
 
 //import com.stratio.connector.cassandra.CassandraConnector
 
@@ -73,7 +73,7 @@ class ConnectorApp  extends ConnectConfig {
 
       // Create an actor that handles cluster domain events
       //actorClusterNode=system.actorOf(Props[ClusterListener], name = actorName)
-      actorClusterNode=system.actorOf(ClusterListener.props(connectorName)withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
+      actorClusterNode=system.actorOf(ClusterListener.props(connector.getConnectorName).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
 
 
         actorClusterNode ! "I'm in!!!"
@@ -84,8 +84,8 @@ class ConnectorApp  extends ConnectConfig {
       // Create an Akka system
 
       // Create an actor that handles cluster domain events
-     val actorClusterNode=system.actorOf(Props[ClusterListener], name = actorName)
-     actorClusterNode ! "I'm in!!!"
+   val  actorClusterNode=system.actorOf(ClusterListener.props(connector.getConnectorName).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
+    actorClusterNode ! "I'm in!!!"
      actorClusterNode
 
   }

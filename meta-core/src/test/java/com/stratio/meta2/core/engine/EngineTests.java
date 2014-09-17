@@ -20,6 +20,7 @@ package com.stratio.meta2.core.engine;
 
 import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta2.core.grid.Grid;
+//import com.stratio.meta2.core.grid.Store;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
