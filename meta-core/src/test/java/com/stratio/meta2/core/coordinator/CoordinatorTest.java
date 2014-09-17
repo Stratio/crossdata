@@ -23,41 +23,69 @@ import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.core.grid.Grid;
 import com.stratio.meta2.core.grid.GridInitializer;
 import com.stratio.meta2.core.metadata.MetadataManager;
+import com.stratio.meta2.core.statements.AttachClusterStatement;
 
+import org.apache.commons.io.FileUtils;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.File;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class CoordinatorTest {
 
-  private Grid initializeGrid() {
+  private String path = "";
+
+  Map<FirstLevelName, IMetadata> metadataMap =  new HashMap<>();
+
+  private void initializeGrid() {
     GridInitializer gridInitializer = Grid.initializer();
     gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
-    return gridInitializer.withPort(7800)
+    path = "/tmp/metadata-store-" + UUID.randomUUID();
+    gridInitializer.withPort(7800)
         .withListenAddress("127.0.0.1")
         .withMinInitialMembers(1)
         .withJoinTimeoutInMs(3000)
-        .withPersistencePath("/tmp/metadata-store-" + UUID.randomUUID()).init();
+        .withPersistencePath(path).init();
   }
 
   @BeforeMethod
   public void setUp() throws Exception {
-    Grid grid = initializeGrid();
-    Map<FirstLevelName, IMetadata> metadataMap = grid.map("meta-test");
-    MetadataManager.MANAGER.init(metadataMap, grid.lock("meta-test"));
+    initializeGrid();
+    Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("meta-test");
+    MetadataManager.MANAGER.init(metadataMap, Grid.getInstance().lock("meta-test"));
+  }
+
+  @Test
+  public void testAttachCluster() throws Exception {
+
+    // TODO: Create DataStore "datastoreTest"
+
+    Coordinator coordinator = new Coordinator();
+    Method
+        attachClusterMethod =
+        coordinator.getClass().getDeclaredMethod("attachCluster", AttachClusterStatement.class);
+    attachClusterMethod.setAccessible(true);
+    String clusterName = "catalogTest";
+    boolean ifNotExists = false;
+    String datastoreName = "datastoreTest";
+    String options = "";
+    AttachClusterStatement attachClusterStatement = new AttachClusterStatement(clusterName, ifNotExists, datastoreName, options);
+    attachClusterMethod.invoke(attachClusterStatement);
+
+    // TODO: Check that changes persisted in the MetadataManager ("datastoreTest" metadata)
+
   }
 
   @AfterMethod
   public void tearDown() throws Exception {
-    // TODO: Something with the MetadataManager or MetadataMap?
-    GridInitializer gridInitializer = null;
+    metadataMap.clear();
+    Grid.getInstance().close();
+    FileUtils.deleteDirectory(new File(path));
   }
 
-  @Test
-  public void testCoordinate() throws Exception {
-
-  }
 }
