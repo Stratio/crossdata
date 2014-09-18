@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta2.core.statements.MetaStatement;
+
 import com.stratio.meta2.core.statements.StorageStatement;
 
 public class StorageParsedQuery extends ParsedQuery {
@@ -31,7 +31,10 @@ public class StorageParsedQuery extends ParsedQuery {
     super(parsedQuery);
   }
 
-  public StorageStatement getStatement(){
-    return (StorageStatement)statement;
-  }
+    @Override
+    public StorageStatement getStatement() {
+        return (StorageStatement)statement;
+    }
+
+
 }

@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
@@ -71,5 +72,18 @@ public class SelectValidatedQuery extends ValidatedQuery {
   public void setTables(List<TableName> tables) {
     this.tables = tables;
   }
+
+  public SelectValidatedQuery(SelectParsedQuery parsedQuery) {
+    super(parsedQuery);
+  }
+
+  SelectValidatedQuery(NormalizedQuery normalizedQuery) {
+    super(normalizedQuery);
+  }
+
+  public QueryStatus getStatus() {
+    return QueryStatus.VALIDATED;
+  }
+
 }
 

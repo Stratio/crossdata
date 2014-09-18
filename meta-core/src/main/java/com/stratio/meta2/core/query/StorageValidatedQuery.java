@@ -18,6 +18,9 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.StorageStatement;
+
 public class StorageValidatedQuery extends ValidatedQuery {
 
   public StorageValidatedQuery(ParsedQuery parsedQuery) {
@@ -26,5 +29,14 @@ public class StorageValidatedQuery extends ValidatedQuery {
 
   StorageValidatedQuery(ValidatedQuery validatedQuery) {
     super((ParsedQuery) validatedQuery);
+  }
+
+  public StorageValidatedQuery(BaseQuery baseQuery,
+                               MetaStatement statement) {
+    super(baseQuery, statement);
+  }
+
+  public StorageStatement getStatement(){
+    return (StorageStatement) statement;
   }
 }

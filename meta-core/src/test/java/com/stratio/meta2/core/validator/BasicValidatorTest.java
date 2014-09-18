@@ -22,6 +22,7 @@ package com.stratio.meta2.core.validator;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.core.grammar.ParsingTest;
 
+import com.stratio.meta2.core.statements.MetaStatement;
 import org.testng.annotations.BeforeClass;
 
 public class BasicValidatorTest extends BasicCoreCassandraTest {
@@ -38,9 +39,9 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
     metadataManager.loadMetadata();
   }
 
-  /*
+/*
   public void validateOk(String inputText, String expectedText, String methodName) {
-    MetaStatement stmt = pt.testRegularStatement(inputText, expectedText, methodName);
+
     Result result = stmt.validate(metadataManager, null);
     assertNotNull(result, "Sentence validation not supported - " + methodName);
     assertFalse(result.hasError(),
@@ -70,6 +71,6 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
     assertTrue(result.hasError(),
                "Cannot validate sentence - " + methodName + ": " + getErrorMessage(result));
   }
-  */
+*/
 
 }

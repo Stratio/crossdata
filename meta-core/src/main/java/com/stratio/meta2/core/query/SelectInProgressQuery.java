@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta2.core.statements.SelectStatement;
+
 public class SelectInProgressQuery extends InProgressQuery {
 
 
@@ -27,5 +29,10 @@ public class SelectInProgressQuery extends InProgressQuery {
 
   SelectInProgressQuery(SelectInProgressQuery plannedQuery){
     this((PlannedQuery)plannedQuery);
+  }
+
+  @Override
+  public SelectStatement getStatement() {
+    return (SelectStatement) statement;
   }
 }

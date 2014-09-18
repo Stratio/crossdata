@@ -16,29 +16,12 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.query;
+package com.stratio.meta.common.exceptions.validation;
 
-import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta.common.exceptions.ValidationException;
 
-public abstract class InProgressQuery extends PlannedQuery {
-
-  private String connectorName=null;
-  public InProgressQuery(PlannedQuery plannedQuery){
-    super(plannedQuery);
+public class YodaConditionException extends ValidationException {
+  public YodaConditionException() {
+    super("Your condition order correct not is. May the Force be with you. <(-_-)>");
   }
-
-  InProgressQuery(InProgressQuery inProgressQuery){
-    this((PlannedQuery)inProgressQuery);
-  }
-  public QueryStatus getStatus() {
-    return QueryStatus.IN_PROGRESS;
-  }
-
-    public String getConnectorName() {
-        return connectorName;
-    }
-
-    public void setConnectorName(String connectorName) {
-        this.connectorName = connectorName;
-    }
 }

@@ -19,6 +19,8 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta2.core.statements.MetaDataStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
+
 
 public class MetaDataParsedQuery extends ParsedQuery {
   public MetaDataParsedQuery(BaseQuery baseQuery,
@@ -30,7 +32,10 @@ public class MetaDataParsedQuery extends ParsedQuery {
     super(parsedQuery);
   }
 
-  public MetaDataStatement getStatement(){
-    return (MetaDataStatement)statement;
-  }
+
+
+    @Override
+    public MetaDataStatement getStatement() {
+        return (MetaDataStatement)statement;
+    }
 }

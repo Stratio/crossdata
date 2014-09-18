@@ -22,7 +22,7 @@ import akka.actor.ActorSystem
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.engine.Engine
-import com.stratio.meta2.core.query.{BaseQuery, SelectParsedQuery, NormalizedQuery, ValidatedQuery}
+import com.stratio.meta2.core.query._
 import com.stratio.meta2.core.statements.SelectStatement
 import com.stratio.meta2.server.actors._
 import com.stratio.meta2.server.utilities.createEngine
@@ -55,14 +55,12 @@ class PlannerActorIntegrationTest  extends ActorReceiveUtils with FunSuiteLike w
 
     test("Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
       within(5000 millis){
-        var tablename=new com.stratio.meta2.common.data.TableName("catalog","table")
-        val validatedQuery=new ValidatedQuery(
-          new NormalizedQuery(
-            new SelectParsedQuery(
-              new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog") )
+        val tablename=new com.stratio.meta2.common.data.TableName("catalog","table")
+        val validatedQuery=new SelectValidatedQuery(
+          new SelectParsedQuery(
+              new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
               ,new SelectStatement(tablename)
             )
-          )
         )
         plannerActor ! validatedQuery
         expectMsg("Ok") // bounded to 1 second

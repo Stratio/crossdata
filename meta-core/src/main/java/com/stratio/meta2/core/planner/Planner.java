@@ -15,10 +15,7 @@
 package com.stratio.meta2.core.planner;
 
 import com.stratio.meta.common.connector.Operations;
-import com.stratio.meta.common.logicalplan.Filter;
-import com.stratio.meta.common.logicalplan.LogicalStep;
-import com.stratio.meta.common.logicalplan.LogicalWorkflow;
-import com.stratio.meta.common.logicalplan.Project;
+import com.stratio.meta.common.logicalplan.*;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta2.common.data.ColumnName;
@@ -27,9 +24,12 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
+
 import com.stratio.meta2.core.query.NormalizedQuery;
 import com.stratio.meta2.core.query.SelectPlannedQuery;
-import com.stratio.meta2.core.query.SelectValidatedQuery;
+
+import com.stratio.meta2.core.query.*;
+
 
 import org.apache.log4j.Logger;
 
@@ -59,9 +59,9 @@ public class Planner {
    * @param query A {@link com.stratio.meta2.core.query.NormalizedQuery}.
    * @return A {@link com.stratio.meta2.core.query.PlannedQuery}.
    */
-  public SelectPlannedQuery planQuery(SelectValidatedQuery query) {
+  public SelectPlannedQuery planQuery(ValidatedQuery query) {
     //Build the workflow.
-    LogicalWorkflow workflow = buildWorkflow(query);
+    LogicalWorkflow workflow = buildWorkflow((SelectValidatedQuery)query);
 
     //Plan the workflow execution into different connectors.
 
@@ -69,6 +69,18 @@ public class Planner {
     SelectPlannedQuery pq = new SelectPlannedQuery(query, workflow);
     return pq;
   }
+
+    protected LogicalWorkflow buildWorkflow(ValidatedQuery query) {
+        LogicalWorkflow result=null;
+        if(query instanceof SelectValidatedQuery){
+            result=buildWorkflow((SelectValidatedQuery) query);
+        }else if(query instanceof StorageValidatedQuery){
+            result=buildWorkflow((StorageValidatedQuery) query);
+        }else if(query instanceof MetadataValidatedQuery){
+            result=buildWorkflow((MetadataValidatedQuery) query);
+        }
+        return result;
+    }
 
   /**
    * Build a workflow with the {@link com.stratio.meta.common.logicalplan.LogicalStep} required to
@@ -97,6 +109,14 @@ public class Planner {
     LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
     return workflow;
   }
+    protected LogicalWorkflow buildWorkflow(StorageValidatedQuery query) {
+
+        throw new UnsupportedOperationException();
+    }
+    protected LogicalWorkflow buildWorkflow(MetadataValidatedQuery query) {
+
+        throw new UnsupportedOperationException();
+    }
 
 
   /**
@@ -170,8 +190,6 @@ public class Planner {
     }
     return lastSteps;
   }
-
-
 
   /**
    * Add Filter operations after the Project.

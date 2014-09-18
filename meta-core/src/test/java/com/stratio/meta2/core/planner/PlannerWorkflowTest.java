@@ -34,6 +34,7 @@ import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.query.SelectValidatedQuery;
+
 import com.stratio.meta2.core.statements.SelectStatement;
 
 import org.testng.annotations.Test;
@@ -53,13 +54,14 @@ public class PlannerWorkflowTest {
 
   Planner planner = new Planner();
 
-  public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
 
+  public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
     private SelectStatement stmt = null;
 
     private List<TableMetadata> tableMetadataList = new ArrayList<>();
 
     public SelectValidatedQueryWrapper(SelectStatement stmt, SelectParsedQuery parsedQuery){
+
       super(parsedQuery);
       this.stmt = stmt;
     }
@@ -142,9 +144,11 @@ public class PlannerWorkflowTest {
   public LogicalWorkflow getWorkflow(String statement, String methodName) {
     ParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
     SelectStatement ss = SelectStatement.class.cast(stmt);
+
     SelectValidatedQueryWrapper nq = new SelectValidatedQueryWrapper(
             SelectStatement.class.cast(stmt), new SelectParsedQuery(new BaseQuery("42", statement, null), ss));
     SelectValidatedQueryWrapper.class.cast(nq).addTableMetadata(getTestTableMetadata());
+
     return planner.buildWorkflow(nq);
   }
 
