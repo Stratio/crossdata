@@ -41,9 +41,9 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
     	    	val id=java.util.UUID.randomUUID.toString()
     	    	//connectorsMap.put(mu.member.toString, connectorActorRef)
-    	    	mu.member.address
+    	    	//mu.member.address
 
-            connectorActorRef ! getConnectorName
+            connectorActorRef ! getConnectorName()
 
     	    	//connectorActorRef ! "hola"
     	  }
