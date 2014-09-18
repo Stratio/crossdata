@@ -20,6 +20,7 @@ package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.core.statements.StorageStatement;
 
 public class StorageInProgressQuery extends InProgressQuery {
   
@@ -43,4 +44,9 @@ public class StorageInProgressQuery extends InProgressQuery {
   public TableMetadata getTableMetaData() {
     return tableMetaData;
   }
+
+    @Override
+    public StorageStatement getStatement() {
+        return (StorageStatement)statement;
+    }
 }

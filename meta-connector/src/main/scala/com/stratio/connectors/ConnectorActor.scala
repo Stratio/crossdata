@@ -5,7 +5,8 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
-import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
+import com.stratio.meta2.core.query.{StorageInProgressQuery, MetadataInProgressQuery, SelectInProgressQuery}
+import com.stratio.meta2.core.statements.{MetaDataStatement, SelectStatement}
 ;
 
 object ConnectorActor{
@@ -22,23 +23,36 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
 
   def receive = {
 
-    case inProgressQuery:MetadataInProgressQuery=>
+    case inProgressQuery:MetadataInProgressQuery=>{
       log.info("->"+"Receiving MetadataInProgressQuery")
       //val statement:MetaDataStatement=null
       val statement=inProgressQuery.getStatement()
       statement match{
-        //case ms:MetaDataStatement =>
-          //log.info("->receiving MetadataStatement")
+        case ms:MetaDataStatement =>
+          log.info("->receiving MetadataStatement")
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")
       }
-      //connector.getMetadataEngine().
+    }
+
+     case inProgressQuery:SelectInProgressQuery=>{
+      log.info("->"+"Receiving SelectInProgressQuery")
+      //val statement:MetaDataStatement=null
+      val statement=inProgressQuery.getStatement()
+      statement match{
+        case ms:SelectStatement =>
+          log.info("->receiving SelectStatement")
+          //val catalogs=inProgressQuery.getCatalogs()
+          //connector.getQueryEngine().execute()
+        case _ =>
+          log.info("->receiving a statement of a type it shouldn't")
+      }
+     }
 
     case inProgressQuery:StorageInProgressQuery=>
-      log.info("->"+"Receiving MetadataInProgressQuery")
+      log.info("->"+"Receiving StorageInProgressQuery")
 
-    case inProgressQuery:SelectInProgressQuery=>
-      log.info("->"+"Receiving MetadataInProgressQuery")
+
 
     /*
     case metadataEngineRequest:MetadataEngineRequest=>

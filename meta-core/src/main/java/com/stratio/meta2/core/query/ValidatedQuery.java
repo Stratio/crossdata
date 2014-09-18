@@ -15,17 +15,19 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.core.statements.MetaStatement;
 
-public class ValidatedQuery extends NormalizedQuery {
-  public ValidatedQuery(NormalizedQuery parsedQuery) {
-    super(parsedQuery);
-  }
+public abstract class ValidatedQuery extends ParsedQuery {
 
-  ValidatedQuery(ValidatedQuery validatedQuery) {
-    this((NormalizedQuery) validatedQuery);
-  }
+    public ValidatedQuery(BaseQuery baseQuery, MetaStatement statement) {
+        super(baseQuery, statement);
+    }
 
-  public QueryStatus getStatus() {
+    ValidatedQuery(ParsedQuery parsedQuery) {
+        super(parsedQuery);
+    }
+
+    public QueryStatus getStatus() {
     return QueryStatus.VALIDATED;
   }
 }
