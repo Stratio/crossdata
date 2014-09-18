@@ -41,8 +41,7 @@ class ConnectorTest extends FunSuite with MockFactory{
 		  val myReference=c.startup(m, port, config)
       var steps:util.ArrayList[LogicalStep]=new util.ArrayList[LogicalStep]()
       val pq = new SelectPlannedQuery(
-        new ValidatedQuery(
-          new NormalizedQuery(
+        new SelectValidatedQuery(
             new SelectParsedQuery(
               new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog") )
               ,new SelectStatement(new TableName("myCatalog","myTable")))
@@ -101,5 +100,9 @@ class ConnectorTest extends FunSuite with MockFactory{
 
   //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE
 
+<<<<<<< Updated upstream
 
 }
+=======
+}
+>>>>>>> Stashed changes
