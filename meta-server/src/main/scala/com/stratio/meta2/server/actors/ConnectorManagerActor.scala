@@ -40,12 +40,11 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     	    case "connector"=>
     	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
     	    	val id=java.util.UUID.randomUUID.toString()
-    	    	//connectorsMap.put(mu.member.toString, connectorActorRef)
-    	    	//mu.member.address
 
             connectorActorRef ! getConnectorName()
 
-    	    	//connectorActorRef ! "hola"
+    	    	//connectorsMap.put(mu.member.address.toString, connectorActorRef)
+            //connectorActorRef ! "hola"
     	  }
     	  log.info("has role: {}" + rol)
       }
@@ -53,11 +52,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       //memberActorRef ! "hola pichi, estás metaregistrado"
     }
 
-
     case msg:replyConnectorName=>{
-
-      connectorsMap.put(msg.msg,sender)
-
+      connectorsMap.put(msg.name,sender)
     }
 
     case query: StorageInProgressQuery=>

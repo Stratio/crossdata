@@ -25,6 +25,9 @@ public class Coordinator {
   }
 
   private void attachCluster(AttachClusterStatement attachClusterStatement){
+
+    // TODO: Create DataStore
+
     DataStoreMetadata
         datastoreMetadata =
         MetadataManager.MANAGER

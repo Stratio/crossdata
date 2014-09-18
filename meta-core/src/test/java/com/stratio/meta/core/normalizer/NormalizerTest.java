@@ -68,6 +68,8 @@ import static org.testng.Assert.fail;
 
 public class NormalizerTest {
 
+  // TODO: Update with 'real' MetadataManager
+
   // TODO: SetUpBeforeClass for mocking MetaDataManager
 
   @BeforeMethod

@@ -15,9 +15,22 @@
 package com.stratio.meta2.core.metadata;
 
 
-import com.stratio.meta.core.structures.IndexType;
-import com.stratio.meta2.common.data.*;
-import com.stratio.meta2.common.metadata.*;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.ConnectorName;
+import com.stratio.meta2.common.data.DataStoreName;
+import com.stratio.meta2.common.data.FirstLevelName;
+import com.stratio.meta2.common.data.IndexName;
+import com.stratio.meta2.common.data.Name;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
+import com.stratio.meta2.common.metadata.ConnectorMetadata;
+import com.stratio.meta2.common.metadata.DataStoreMetadata;
+import com.stratio.meta2.common.metadata.IMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
 
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -25,6 +38,7 @@ import java.util.concurrent.locks.Lock;
 public enum MetadataManager {
   MANAGER;
 
+  //TODO: add transaction manager
   private boolean isInit = false;
 
   private Map<FirstLevelName, IMetadata> metadata;

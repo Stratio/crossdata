@@ -3,22 +3,36 @@ package com.stratio.connector
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
+import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
-
+import com.stratio.meta2.core.query.{SelectInProgressQuery, StorageInProgressQuery, MetadataInProgressQuery}
 
 object ClusterListener{
-  def props (connectorName:String):Props = Props (new ClusterListener(connectorName) )
+  def props (connectorName:String,connector:IConnector):Props = Props (new ClusterListener(connectorName,connector) )
 }
 
-class ClusterListener(connectorName:String) extends Actor with ActorLogging {
-  
+class ClusterListener(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
+
+  val connector=conn //TODO: test if it works with one thread and multiple threads
 
   val cluster = Cluster(context.system)
 
   // subscribe to cluster changes, re-subscribe when restart 
 
   def receive = {
-    
+
+    case inProgressQuery:MetadataInProgressQuery=>
+      log.info("->"+"Receiving MetadataInProgressQuery")
+      val statement=inProgressQuery.getStatement()
+      statement.getCatalog
+      //connector.getMetadataEngine().
+
+    case inProgressQuery:StorageInProgressQuery=>
+      log.info("->"+"Receiving MetadataInProgressQuery")
+
+    case inProgressQuery:SelectInProgressQuery=>
+      log.info("->"+"Receiving MetadataInProgressQuery")
+
     /*
     case metadataEngineRequest:MetadataEngineRequest=>
       //getMetadataEngine()
