@@ -15,10 +15,7 @@
 package com.stratio.meta.core.normalizer;
 
 import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta.common.exceptions.validation.AmbiguousNameException;
-import com.stratio.meta.common.exceptions.validation.BadFormatException;
-import com.stratio.meta.common.exceptions.validation.NotExistNameException;
-import com.stratio.meta.common.exceptions.validation.NotValidColumnException;
+import com.stratio.meta.common.exceptions.validation.*;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.InnerJoin;
@@ -77,23 +74,25 @@ public class Normalizator {
 
   public void normalizeJoins()
       throws NotExistNameException, BadFormatException, AmbiguousNameException,
-             NotValidColumnException {
+      NotValidColumnException, YodaConditionException {
     InnerJoin innerJoin = parsedQuery.getStatement().getJoin();
     if(innerJoin!=null){
       normalizeJoins(innerJoin);
-      checkJoinRelations(innerJoin.getRelations());
     }
   }
 
-  public void normalizeJoins(InnerJoin innerJoin) throws NotExistNameException {
+  public void normalizeJoins(InnerJoin innerJoin)
+      throws NotExistNameException, BadFormatException, AmbiguousNameException,
+      NotValidColumnException, YodaConditionException {
     TableName joinTable = innerJoin.getTablename();
     checkTable(joinTable);
     fields.getTableNames().add(joinTable);
+    checkJoinRelations(innerJoin.getRelations());
   }
 
   private void normalizeWhere()
       throws BadFormatException, AmbiguousNameException, NotValidColumnException,
-             NotExistNameException {
+      NotExistNameException, YodaConditionException {
     List<Relation> where = parsedQuery.getStatement().getWhere();
     if(where!=null && !where.isEmpty()){
       normalizeWhere(where);
@@ -102,7 +101,7 @@ public class Normalizator {
 
   private void normalizeWhere(List<Relation> where)
       throws BadFormatException, AmbiguousNameException, NotValidColumnException,
-             NotExistNameException {
+      NotExistNameException, YodaConditionException {
     checkWhereRelations(where);
   }
 
@@ -195,7 +194,8 @@ public class Normalizator {
   }
 
   public void checkJoinRelations(List<Relation> relations) throws BadFormatException,
-                                                                  AmbiguousNameException, NotExistNameException, NotValidColumnException {
+      AmbiguousNameException, NotExistNameException, NotValidColumnException,
+      YodaConditionException {
     for (Relation relation: relations) {
       checkRelation(relation);
       switch (relation.getOperator()) {
@@ -219,7 +219,8 @@ public class Normalizator {
   }
 
   public void checkWhereRelations(List<Relation> relations) throws BadFormatException,
-                                                                  AmbiguousNameException, NotExistNameException, NotValidColumnException {
+      AmbiguousNameException, NotExistNameException, NotValidColumnException,
+      YodaConditionException {
     for (Relation relation: relations) {
       checkRelation(relation);
     }
@@ -227,7 +228,7 @@ public class Normalizator {
 
   public void checkRelation(Relation relation)
       throws NotValidColumnException, NotExistNameException, AmbiguousNameException,
-             BadFormatException {
+      BadFormatException, YodaConditionException {
     switch (relation.getLeftTerm().getType()) {
       case FUNCTION:
         checkFunctionSelector((FunctionSelector) relation.getLeftTerm());
@@ -237,7 +238,24 @@ public class Normalizator {
         break;
       case ASTERISK:
         throw new BadFormatException("Asterisk not supported in relations.");
+      case STRING:
+      case FLOATING_POINT:
+      case BOOLEAN:
+      case INTEGER:
+        throw new YodaConditionException();
+
     }
+    switch (relation.getRightTerm().getType()) {
+      case FUNCTION:
+        checkFunctionSelector((FunctionSelector) relation.getLeftTerm());
+        break;
+      case COLUMN:
+        checkColumnSelector((ColumnSelector) relation.getLeftTerm());
+        break;
+      case ASTERISK:
+        throw new BadFormatException("Asterisk not supported in relations.");
+    }
+
   }
 
   public void checkTable(TableName tableName) throws NotExistNameException {

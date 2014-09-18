@@ -5,13 +5,14 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
-import com.stratio.meta2.core.query.{SelectInProgressQuery, StorageInProgressQuery, MetadataInProgressQuery}
+import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
+;
 
-object ClusterListener{
-  def props (connectorName:String,connector:IConnector):Props = Props (new ClusterListener(connectorName,connector) )
+object ConnectorActor{
+  def props (connectorName:String,connector:IConnector):Props = Props (new ConnectorActor(connectorName,connector) )
 }
 
-class ClusterListener(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
+class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
 
   val connector=conn //TODO: test if it works with one thread and multiple threads
 
@@ -23,8 +24,14 @@ class ClusterListener(connectorName:String,conn:IConnector) extends Actor with A
 
     case inProgressQuery:MetadataInProgressQuery=>
       log.info("->"+"Receiving MetadataInProgressQuery")
+      //val statement:MetaDataStatement=null
       val statement=inProgressQuery.getStatement()
-      statement.getCatalog
+      statement match{
+        //case ms:MetaDataStatement =>
+          //log.info("->receiving MetadataStatement")
+        case _ =>
+          log.info("->receiving a statement of a type it shouldn't")
+      }
       //connector.getMetadataEngine().
 
     case inProgressQuery:StorageInProgressQuery=>
@@ -81,7 +88,7 @@ class ClusterListener(connectorName:String,conn:IConnector) extends Actor with A
     case MemberUp(member) =>
       println("member up")
       log.info("*******Member is Up: {} {}!!!!!", member.toString ,member.getRoles)
-      //val actorRefe=context.actorSelection(RootActorPath(member.address) / "user" / "clusterListener" )
+      //val actorRefe=context.actorSelection(RootActorPath(member.address) / "user" / "connectoractor" )
       //actorRefe ! "hola "+member.address+ "  "+RootActorPath(member.address) 
       
     case state: CurrentClusterState =>

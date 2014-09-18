@@ -45,26 +45,6 @@ public class NormalizedFields {
   public NormalizedFields() {
   }
 
-  public NormalizedFields(Set<ColumnName> columnNames,
-                          Set<TableName> tableNames,
-                          Set<CatalogName> catalogNames,
-                          List<Selector> selectors,
-                          boolean distinctSelect,
-                          List<Relation> relations,
-                          List<Relation> where,
-                          GroupBy groupBy,
-                          OrderBy orderBy) {
-    this.columnNames = columnNames;
-    this.tableNames = tableNames;
-    this.catalogNames = catalogNames;
-    this.selectors = selectors;
-    this.relations = relations;
-    this.where = where;
-    this.groupBy = groupBy;
-    this.orderBy = orderBy;
-    this.distinctSelect = distinctSelect;
-  }
-
   public Set<ColumnName> getColumnNames() {
     return columnNames;
   }
