@@ -26,7 +26,7 @@ import java.util.Map;
 public class ConnectorAttachedMetadata {
   private final ConnectorName connectorRef;
   private final ClusterName clusterRef;
-  private final Map<String,String> properties;
+  private final Map<String, String> properties;
 
   public ConnectorAttachedMetadata(ConnectorName connectorRef, ClusterName clusterRef,
       Map<String, String> properties) {

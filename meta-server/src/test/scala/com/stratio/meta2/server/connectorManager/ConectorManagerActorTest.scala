@@ -1,3 +1,5 @@
+package com.stratio.meta2.server.connectorManager
+
 /*
  * Licensed to STRATIO (C) under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for additional information
@@ -16,30 +18,30 @@
  * under the License.
  */
 
-import com.stratio.meta.common.logicalplan.LogicalWorkflow
-import com.stratio.meta2.common.data.CatalogName
-import scala.concurrent.duration.DurationInt
-import org.scalatest.FunSuiteLike
-import com.stratio.meta.server.config.{ServerConfig, ActorReceiveUtils}
-import com.stratio.meta2.server.actors.{ServerActor, CoordinatorActor, ConnectorManagerActor}
-import akka.actor.{ActorSystem, actorRef2Scala}
-import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.coordinator.Coordinator
-import org.scalatest.{Suite, BeforeAndAfterAll}
-import org.apache.log4j.Logger
 
-//class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig{
-class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig{
+import akka.actor.ActorSystem
+import com.stratio.meta.common.logicalplan.LogicalWorkflow
+import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
+import com.stratio.meta2.common.data.CatalogName
+import com.stratio.meta2.core.query._
+import com.stratio.meta2.server.actors.ConnectorManagerActor
+import org.scalatest.FunSuiteLike
+//import org.scalamock.scalatest.MockFactory
+import org.scalatest.Suite
+import org.apache.log4j.Logger
+import scala.concurrent.duration.DurationInt
+
+//class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory  with ServerConfig{
+class ConnectorManagerActorTest extends ActorReceiveUtils with FunSuiteLike  with ServerConfig{
     this:Suite =>
 
-    override lazy val logger =Logger.getLogger(classOf[CoordinatorActorIntegrationTest])
+
+    override lazy val logger =Logger.getLogger(classOf[ConnectorManagerActorTest])
     lazy val system1 = ActorSystem(clusterName,config)
 
     val connectorManagerActor=system1.actorOf(ConnectorManagerActor.props(null),"ConnectorManagerActor")
-    val coordinatorActor=system1.actorOf(CoordinatorActor.props(connectorManagerActor,new Coordinator),"CoordinatorActor")
 
-    val pq=new InProgressQuery(
-      new SelectPlannedQuery(
+    val pq = new SelectPlannedQuery(
         new ValidatedQuery(
           new NormalizedQuery(
             new SelectParsedQuery(
@@ -47,21 +49,19 @@ class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLik
               ,null)
           )
         ), new LogicalWorkflow(null)
-      )
     )
 
 
-		test("Basic Coordinator-ConnectorManager test") {
-		  within(5000 millis){
-        //val pq=mock[PlannedQuery]
-	  		coordinatorActor! pq
+		test("Should return a KO message") {
+		  within(1000 millis){
+        /*
+        val pq= new SelectPlannedQuery(null,null)
 	  		expectMsg("Ok") // bounded to 1 second
-	  		//expectMsg("Hola") // bounded to the remainder of the 1 second
 
 	  		//val m = mock[IConnector]
 	  		//(m.getConnectorName _).expects().returning("My New Connector")
 	  		//assert(m.getConnectorName().equals("My New Connector"))
-        assert(true)
+	  		*/
 	  		}
 		}
 

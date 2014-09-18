@@ -1,12 +1,11 @@
 package com.stratio.meta2.server.actors
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props, ReceiveTimeout, RootActorPath}
+import akka.actor._
+import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
-import com.stratio.meta2.core.query._
-import akka.cluster.Cluster
-import akka.actor.ActorSelection
 import com.stratio.meta2.core.connector.ConnectorManager
+import com.stratio.meta2.core.query._
 
 object ConnectorManagerActor {
   def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))
@@ -19,7 +18,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
   //coordinatorActorRef ! "hola"
 
   //var connectorsMap:scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String,ActorRef]()
-  var connectorsMap:scala.collection.mutable.Map[String, ActorSelection] = scala.collection.mutable.Map[String,ActorSelection]()
+  //var connectorsMap:scala.collection.mutable.Map[String, ActorSelection] = scala.collection.mutable.Map[String,ActorSelection]()
+  var connectorsMap:scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String,ActorRef]()
 
   override def preStart(): Unit = {
     //#subscribe
@@ -40,8 +40,11 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     	    case "connector"=>
     	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
     	    	val id=java.util.UUID.randomUUID.toString()
-    	    	connectorsMap.put(mu.member.toString, connectorActorRef)
-    	    	//connectorActorRef ! "hola"
+
+            connectorActorRef ! getConnectorName()
+
+    	    	//connectorsMap.put(mu.member.address.toString, connectorActorRef)
+            //connectorActorRef ! "hola"
     	  }
     	  log.info("has role: {}" + rol)
       }
@@ -49,14 +52,23 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       //memberActorRef ! "hola pichi, estás metaregistrado"
     }
 
+    case msg:replyConnectorName=>{
+      connectorsMap.put(msg.name,sender)
+    }
 
-    case query: StorageInProgressQuery=>
+    case query: StorageInProgressQuery=> {
       log.info("storage in progress query")
-    case query: SelectInProgressQuery=>
+      connectorsMap(query.getConnectorName()) ! query
+    }
+    case query: SelectInProgressQuery=> {
       log.info("select in progress query")
-    case query: MetadataInProgressQuery=>
-      log.info("metadata in progress query")
+      connectorsMap(query.getConnectorName()) ! query
+    }
+    case query: MetadataInProgressQuery=> {
 
+      log.info("metadata in progress query")
+      connectorsMap(query.getConnectorName()) ! query
+    }
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))
 
@@ -82,17 +94,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     case _: DisconnectFromConnector=>
       println("disconnecting from connector")
 
-      /*
-    case ex:Execute=>
-      println("Executing workflow "+ex.workflow.toString())
-      println("initial steps->"+ex.workflow.getInitialSteps())
-     */
-    //case _: Request=>
-    //case _: Response=>
-    //case _: MetadataStruct=>
-    //case _: StorageQueryStruct=>
-    //case _: WorkflowStruct=>
-
+    /*
     case toConnector: MetadataStruct =>
       connectorsMap(toConnector.connectorName) ! toConnector
 
@@ -109,6 +111,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       log.info("ConnectorManagerActor received SelectPlannedQuery")
       sender ! "Ok"
     }
+    */
 
     case other =>
       println("connector actor receives event")

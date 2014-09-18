@@ -20,7 +20,6 @@ package com.stratio.meta.communication
 
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta.common.result.QueryStatus
-import com.stratio.meta2.common.metadata.DataStoreMetadata
 
 case class ACK(queryId: String, status: QueryStatus)
 case class Connect(msg: String)
@@ -36,4 +35,5 @@ case class Response(msg:String)
 case class MetadataStruct(clusterName:String, connectorName:String, metaData:String)
 case class StorageQueryStruct(clusterName:String, connectorName:String, storageQuery:String)
 case class WorkflowStruct(clusterName:String, connectorName:String, workFlow:LogicalWorkflow)
-
+case class replyConnectorName(name:String)
+case class getConnectorName()

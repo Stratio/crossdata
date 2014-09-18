@@ -20,7 +20,6 @@ package com.stratio.meta2.core.grid;
 
 import org.jgroups.stack.IpAddress;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,12 +29,13 @@ import java.util.List;
 public class ChannelServiceBuilder {
 
   public static final String DEFAULT_LISTEN_HOST = "localhost";
-  public static final int DEFAULT_LISTEN_PORT = 7800;
+  public static final int DEFAULT_PORT = 7800;
   public static final int DEFAULT_INITIAL_HOSTS = 1;
   public static final long DEFAULT_TIMEOUT = 3000;
 
-  private IpAddress listenAddress;
-  private List<IpAddress> contactPoints = new ArrayList<>();
+  private int port = DEFAULT_PORT;
+  private String listenAddress = DEFAULT_LISTEN_HOST;
+  private List<String> contactPoints = new ArrayList<>();
   private int minInitialMembers = DEFAULT_INITIAL_HOSTS;
   private long timeout = DEFAULT_TIMEOUT;
 
@@ -43,11 +43,10 @@ public class ChannelServiceBuilder {
    * Returns a {@link ChannelServiceBuilder} using the specified listen address.
    *
    * @param address the listen address
-   * @param port    the listen port
    * @return a {@link ChannelServiceBuilder} using the specified listen address
    */
-  public ChannelServiceBuilder withListenAddress(String address, int port) {
-    listenAddress = ip(address, port);
+  public ChannelServiceBuilder withListenAddress(String address) {
+    listenAddress = address;
     return this;
   }
 
@@ -56,11 +55,27 @@ public class ChannelServiceBuilder {
    * ones.
    *
    * @param address the contact point address
-   * @param port    the contact point port
    * @return a {@link ChannelServiceBuilder} using the specified contact point
    */
-  public ChannelServiceBuilder withContactPoint(String address, int port) {
-    contactPoints.add(ip(address, port));
+  public ChannelServiceBuilder withContactPoint(String address) {
+    contactPoints.add(address);
+    return this;
+  }
+
+  /**
+   * Returns a {@link ChannelServiceBuilder} using the specified contact points added to the
+   * existing ones.
+   *
+   * @param addresses the contact points
+   * @return a {@link ChannelServiceBuilder} using the specified contact point
+   */
+  public ChannelServiceBuilder withContactPoints(List<String> addresses) {
+    contactPoints.addAll(addresses);
+    return this;
+  }
+
+  public ChannelServiceBuilder withPort(int port) {
+    this.port = port;
     return this;
   }
 
@@ -76,7 +91,8 @@ public class ChannelServiceBuilder {
   }
 
   /**
-   *  Returns a {@link ChannelServiceBuilder} using the specified cluster join timeout.
+   * Returns a {@link ChannelServiceBuilder} using the specified cluster join timeout.
+   *
    * @param timeout the specified cluster join timeout in milliseconds
    * @return a {@link ChannelServiceBuilder} using the specified cluster join timeout
    */
@@ -87,37 +103,24 @@ public class ChannelServiceBuilder {
 
   /**
    * Returns a new {@link com.stratio.meta2.core.grid.ChannelService}.
+   *
    * @return a new {@link com.stratio.meta2.core.grid.ChannelService}
    */
   public ChannelService build() {
     try {
-      if (listenAddress == null) {
-        listenAddress = new IpAddress(DEFAULT_LISTEN_HOST, DEFAULT_LISTEN_PORT);
+      IpAddress listenIp = new IpAddress(listenAddress, port);
+      List<IpAddress> contactIps = new ArrayList<>(contactPoints.size());
+      for (String contactPoint : contactPoints) {
+        contactIps.add(new IpAddress(contactPoint, port));
       }
 
-      List<IpAddress> initialHosts = new ArrayList<>(contactPoints);
-      if (!initialHosts.contains(listenAddress)) {
-        initialHosts.add(listenAddress);
+      if (!contactIps.contains(listenIp)) {
+        contactIps.add(listenIp);
       }
 
-      return new ChannelService(listenAddress, initialHosts, minInitialMembers, timeout);
+      return new ChannelService(listenIp, contactIps, minInitialMembers, timeout);
     } catch (Exception e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Returns a new {@link org.jgroups.stack.IpAddress} composed by the specified host name and port.
-   * @param host the host name
-   * @param port the host port
-   * @return a new {@link org.jgroups.stack.IpAddress} composed by {@code host} and {@code port}
-   */
-  static IpAddress ip(String host, int port) {
-    try {
-      return new IpAddress(host, port);
-    } catch (UnknownHostException e) {
-      String msg = String.format("Unable to build IpAddress from %s-%d", host, port);
-      throw new GridException(msg, e);
     }
   }
 

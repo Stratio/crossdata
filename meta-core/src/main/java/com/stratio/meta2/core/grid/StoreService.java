@@ -26,7 +26,6 @@ import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.TransactionMode;
@@ -35,21 +34,27 @@ import org.infinispan.util.concurrent.IsolationLevel;
 import org.jgroups.JChannel;
 
 import java.io.Closeable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.transaction.TransactionManager;
+
 /**
- * A {@link Store} factory/manager. The created {@link Store}s are based in an Infinispan cache
+ * A {@link java.util.Map} factory/manager. The created {@link java.util.Map}s are based in an Infinispan cache
  * without eviction in REPL_SYNC mode and persisted in local files.
  *
- * It must be closed ({@link #close()}) when its created {@link Store}s are not needed anymore.
+ * It must be closed ({@link #close()}) when its created {@link java.util.Map}s are not needed anymore.
  */
 public class StoreService implements Closeable {
 
   private final JChannel channel;
   private final GlobalConfiguration gc;
   private final Configuration config;
-  private final EmbeddedCacheManager manager;
+  private final DefaultCacheManager manager;
   private final JGroupsTransport transport;
+
+  private Map<String, Cache<String, String>> caches = new HashMap<>();
 
   /**
    * Builds a new {@link com.stratio.meta2.core.grid.StoreService}.
@@ -65,7 +70,7 @@ public class StoreService implements Closeable {
         .transport(transport)
         .clusterName(clusterName)
         .globalJmxStatistics()
-        .allowDuplicateDomains(true).disable()
+            //.allowDuplicateDomains(true).disable()
         .build();
     config = new ConfigurationBuilder().transaction()
         .transactionManagerLookup(new GenericTransactionManagerLookup())
@@ -74,10 +79,10 @@ public class StoreService implements Closeable {
         .useSynchronization(true)
         .syncCommitPhase(true)
         .syncRollbackPhase(true)
-        .cacheStopTimeout(1, TimeUnit.MINUTES)
+        .cacheStopTimeout(10, TimeUnit.SECONDS)
         .lockingMode(LockingMode.OPTIMISTIC)
         .locking()
-        .lockAcquisitionTimeout(1, TimeUnit.MINUTES)
+        .lockAcquisitionTimeout(10, TimeUnit.SECONDS)
         .useLockStriping(false)
         .concurrencyLevel(500)
         .writeSkewCheck(false)
@@ -97,27 +102,39 @@ public class StoreService implements Closeable {
   }
 
   /**
-   * Returns a {@link Store} associated to the specified name. It returns the existent instance (if
-   * any).
+   * Returns a distributed {@link java.util.Map} associated to the specified name. It returns the
+   * existent instance (if any).
    *
-   * @param name the name of the {@link Store} to be returned.
-   * @return the {@link Store} associated to the specified name.
+   * @param name the name of the {@link java.util.Map}
+   * @param <K>  the class of the map's keys
+   * @param <V>  the class of the map's values
+   * @return a distributed {@link java.util.Map} associated to the specified name
    */
-  public Store build(String name) {
-
+  public <K, V> Map<K, V> map(String name) {
     manager.defineConfiguration(name, config);
-
-    Cache<String, String> cache = manager.getCache(name);
-    return new Store(cache.getAdvancedCache());
+    return manager.getCache(name);
   }
 
   /**
-   * Closes this and all the created {@link Store}s.
+   * Returns a {@link javax.transaction.TransactionManager} for the {@link java.util.Map} associated
+   * to the specified name.
+   *
+   * @param name the name of the {@link java.util.Map}
+   * @return a {@link javax.transaction.TransactionManager}
+   */
+  public TransactionManager transactionManager(String name) {
+    manager.defineConfiguration(name, config);
+    return manager.getCache(name).getAdvancedCache().getTransactionManager();
+  }
+
+  /**
+   * Closes this and all the created {@link java.util.Map}s.
    */
   @Override
   public void close() {
-    manager.stop();
-    transport.stop();
-    channel.disconnect();
+    for (Cache<String, String> cache : caches.values()) {
+      cache.stop();
+    }
+    gc.shutdown();
   }
 }

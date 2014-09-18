@@ -11,6 +11,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.locks.Lock;
 
@@ -19,11 +20,8 @@ import javax.transaction.TransactionManager;
 /**
  * Tests {@link Grid}.
  */
-
 @Test(testName = "GridTest")
 public class GridTest {
-
-  private Grid grid;
 
   private String syncMessage;
   private String asyncMessage;
@@ -34,7 +32,7 @@ public class GridTest {
   @BeforeClass
   public void setUp() {
     String path = "/tmp/meta-test-" + new Random().nextInt(100000);
-    grid = new GridBuilder().withListenAddress("localhost", 7810).withPersistencePath(path).build();
+    Grid.initializer().withPort(7810).withListenAddress("localhost").withPersistencePath(path).init();
   }
 
   /**
@@ -42,31 +40,31 @@ public class GridTest {
    */
   @AfterClass
   public void tearDown() {
-    grid.close();
+    Grid.getInstance().close();
   }
 
   /**
    * Tests {@link Grid} distributed storing.
    */
-  @Test(testName = "testGridStore")
+  @Test
   public void testGridStore() throws Exception {
-    Store store = grid.store("test");
-    TransactionManager tm = store.transactionManager();
+    Map<String, String> map = Grid.getInstance().map("testGridStore");
+    TransactionManager tm = Grid.getInstance().transactionManager("testGridStore");
     tm.begin();
-    Assert.assertNotNull(store);
-    store.put("k1", "v1");
-    Assert.assertEquals(store.get("k1"), "v1");
-    store.remove("k1");
-    Assert.assertNull(store.get("k1"));
+    Assert.assertNotNull(map);
+    map.put("k1", "v1");
+    Assert.assertEquals(map.get("k1"), "v1");
+    map.remove("k1");
+    Assert.assertNull(map.get("k1"));
     tm.commit();
   }
 
   /**
    * Tests {@link Grid} distributed locking.
    */
-  @Test(testName = "testGridLock")
+  @Test
   public void testGridLock() throws Exception {
-    Lock lock = grid.lock("test");
+    Lock lock = Grid.getInstance().lock("testGridLock");
     lock.lock();
     lock.unlock();
   }
@@ -74,9 +72,9 @@ public class GridTest {
   /**
    * Tests {@link Grid} distributed synchronous channeling.
    */
-  @Test(testName = "testGridSyncChannel")
+  @Test
   public void testGridSyncChannel() throws Exception {
-    JChannel syncChannel = grid.channel("test");
+    JChannel syncChannel = Grid.getInstance().channel("testGridSyncChannel");
     MessageDispatcher
         dispatcher =
         new MessageDispatcher(syncChannel, null, null, new RequestHandler() {
@@ -87,16 +85,16 @@ public class GridTest {
           }
         });
     syncChannel.connect("test");
-    dispatcher.castMessage(null, new Message(null, new String("hello")), RequestOptions.SYNC());
+    dispatcher.castMessage(null, new Message(null, "hello"), RequestOptions.SYNC());
     Assert.assertEquals(syncMessage, "hello");
   }
 
   /**
    * Tests {@link Grid} distributed asynchronous channeling.
    */
-  @Test(testName = "testGridAsyncChannel")
+  @Test
   public void testGridAsyncChannel() throws Exception {
-    JChannel asyncChannel = grid.channel("test_async");
+    JChannel asyncChannel = Grid.getInstance().channel("testGridAsyncChannel");
     asyncChannel.setReceiver(new ReceiverAdapter() {
       public void receive(Message msg) {
         asyncMessage = msg.getObject().toString();

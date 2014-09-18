@@ -16,29 +16,37 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.query;
+package com.stratio.meta2.server.actors
 
-import com.stratio.meta.common.result.QueryStatus;
+import com.codahale.metrics.Timer
+import com.stratio.meta.common.utils.Metrics
 
-public class InProgressQuery extends PlannedQuery {
+/**
+ * Trait to be able to time the operations inside an actor.
+ */
+trait TimeTracker {
 
-  private String connectorName=null;
-  public InProgressQuery(PlannedQuery plannedQuery){
-    super(plannedQuery);
+  /**
+   * Name of the timer.
+   */
+  lazy val timerName:String = ???
+
+  /**
+   * Timer gauge.
+   */
+  lazy val timerMetrics:Timer = Metrics.getRegistry.timer(timerName)
+
+  /**
+   * Initialize the timer.
+   */
+  def initTimer():Timer.Context= timerMetrics.time()
+
+  /**
+   * Stop the timer.
+   * @param context The timing context.
+   * @return Whether it has stop.
+   */
+  def finishTimer(context:Timer.Context)={
+    context.stop()
   }
-
-  InProgressQuery(InProgressQuery inProgressQuery){
-    this((PlannedQuery)inProgressQuery);
-  }
-  public QueryStatus getStatus() {
-    return QueryStatus.IN_PROGRESS;
-  }
-
-    public String getConnectorName() {
-        return connectorName;
-    }
-
-    public void setConnectorName(String connectorName) {
-        this.connectorName = connectorName;
-    }
 }
