@@ -20,7 +20,7 @@ package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
 
-public class InProgressQuery extends PlannedQuery {
+public abstract class InProgressQuery extends PlannedQuery {
 
   private String connectorName=null;
   public InProgressQuery(PlannedQuery plannedQuery){

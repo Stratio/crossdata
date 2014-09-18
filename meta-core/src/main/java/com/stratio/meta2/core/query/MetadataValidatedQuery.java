@@ -15,20 +15,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta2.core.statements.StorageStatement;
 
-public abstract class StorageParsedQuery extends ParsedQuery {
-  public StorageParsedQuery(BaseQuery baseQuery,
-      StorageStatement statement) {
-    super(baseQuery, statement);
-  }
+import com.stratio.meta2.core.statements.MetaStatement;
 
-  StorageParsedQuery(StorageParsedQuery parsedQuery) {
-    super(parsedQuery);
-  }
+/**
+ * Created by jjlopez on 18/09/14.
+ */
+public abstract class MetadataValidatedQuery extends ValidatedQuery{
+    public MetadataValidatedQuery(BaseQuery baseQuery,
+        MetaStatement statement) {
+        super(baseQuery, statement);
+    }
+
+    MetadataValidatedQuery(ParsedQuery parsedQuery) {
+        super(parsedQuery);
+    }
 
 
 }

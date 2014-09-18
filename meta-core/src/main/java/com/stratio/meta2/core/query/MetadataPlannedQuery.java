@@ -19,7 +19,7 @@
 package com.stratio.meta2.core.query;
 
 
-public class MetadataPlannedQuery extends PlannedQuery {
+public abstract class MetadataPlannedQuery extends PlannedQuery {
   
   public MetadataPlannedQuery(ValidatedQuery validatedQuery) {
     super(validatedQuery);

@@ -18,14 +18,8 @@
 
 package com.stratio.meta2.core.metadata;
 
-import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.FirstLevelName;
-import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
-import com.stratio.meta2.common.metadata.ClusterMetadata;
-import com.stratio.meta2.common.metadata.IMetadata;
-import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.data.*;
+import com.stratio.meta2.common.metadata.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,62 +27,120 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public enum MockMetadataManager {
-  MANAGER;
+    MANAGER;
 
-  private List<ClusterMetadata> clusterMetadataList = new ArrayList<>();
-  private List<CatalogMetadata> catalogMetadataList = new ArrayList<>();
+    private List<ClusterMetadata> clusterMetadataList = new ArrayList<>();
+    private List<CatalogMetadata> catalogMetadataList = new ArrayList<>();
+    private List<IndexMetadata> indexMetadataList = new ArrayList<>();
 
-  public void init(Map<FirstLevelName, IMetadata> md, ReentrantLock reentrantLock) {
+    public void init(Map<FirstLevelName, IMetadata> md, ReentrantLock reentrantLock) {
 
-  }
-
-  public void createCluster(ClusterMetadata clusterMetadata) {
-    clusterMetadataList.add(clusterMetadata);
-  }
-
-  public void createCatalog(CatalogMetadata catalogMetadata) {
-    catalogMetadataList.add(catalogMetadata);
-  }
-
-  public boolean exists(TableName tableName) {
-    CatalogName catalogName = tableName.getCatalogName();
-    for(CatalogMetadata catalogMetadata: catalogMetadataList){
-      if(catalogMetadata.getName().equals(catalogName)){
-        return true;
-      }
     }
-    return false;
-  }
 
-  public boolean exists(ColumnName columnName) {
-    for(CatalogMetadata catalogMetadata: catalogMetadataList){
-      if(catalogMetadata.getName().equals(columnName.getTableName().getCatalogName())){
-        for(TableName tableName: catalogMetadata.getTables().keySet()){
-          if(tableName.equals(columnName.getTableName())){
-            TableMetadata tableMetadata = catalogMetadata.getTables().get(tableName);
-            for(ColumnName colName: tableMetadata.getColumns().keySet()){
-              if(colName.equals(columnName)){
+
+    public boolean exists(Name name) {
+        boolean result = false;
+        switch (name.getType()) {
+            case Catalog:
+                result = exists((CatalogName) name);
+                break;
+            case Cluster:
+                result = exists((ClusterName) name);
+                break;
+            case Column:
+                result = exists((ColumnName) name);
+                break;
+            case Connector:
+                result = exists((ConnectorName) name);
+                break;
+            case DataStore:
+                result = exists((DataStoreName) name);
+                break;
+            case Table:
+                result = exists((TableName) name);
+                break;
+            case Index:
+                result = exists((IndexName) name);
+                break;
+        }
+        return result;
+    }
+
+    public void createCluster(ClusterMetadata clusterMetadata) {
+        clusterMetadataList.add(clusterMetadata);
+    }
+
+    public void createCatalog(CatalogMetadata catalogMetadata) {
+        catalogMetadataList.add(catalogMetadata);
+    }
+
+    public void createIndex(IndexMetadata indexMetadata) {
+        indexMetadataList.add(indexMetadata);
+    }
+
+    public boolean exists(CatalogName catalogName) {
+        for (CatalogMetadata catalogMetadata : catalogMetadataList) {
+            if (catalogMetadata.getName().equals(catalogName)) {
                 return true;
-              }
             }
-          }
         }
-      }
+        return false;
     }
-    return false;
-  }
 
-  public TableMetadata getTable(TableName table) {
-    for(CatalogMetadata catalogMetadata: catalogMetadataList){
-      if(catalogMetadata.getName().equals(table.getCatalogName())){
-        for(TableName tableName: catalogMetadata.getTables().keySet()){
-          if(tableName.equals(table)){
-            return catalogMetadata.getTables().get(tableName);
-          }
+    public boolean exists(TableName tableName) {
+        CatalogName catalogName = tableName.getCatalogName();
+        for (CatalogMetadata catalogMetadata : catalogMetadataList) {
+            if (catalogMetadata.getName().equals(catalogName)) {
+                return true;
+            }
         }
-      }
+        return false;
     }
-    return null;
-  }
+
+    public boolean exists(IndexName indexName) {
+        for (CatalogMetadata catalogMetadata : catalogMetadataList) {
+            for (TableMetadata tableMetadata : catalogMetadata.getTables().values()) {
+                for (IndexMetadata index : tableMetadata.getIndexes().values()) {
+                    if (index.getName() == indexName) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean exists(ColumnName columnName) {
+        for (CatalogMetadata catalogMetadata : catalogMetadataList) {
+            if (catalogMetadata.getName().equals(columnName.getTableName().getCatalogName())) {
+                for (TableName tableName : catalogMetadata.getTables().keySet()) {
+                    if (tableName.equals(columnName.getTableName())) {
+                        TableMetadata tableMetadata = catalogMetadata.getTables().get(tableName);
+                        for (ColumnName colName : tableMetadata.getColumns().keySet()) {
+                            if (colName.equals(columnName)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public TableMetadata getTable(TableName table) {
+        for (CatalogMetadata catalogMetadata : catalogMetadataList) {
+            if (catalogMetadata.getName().equals(table.getCatalogName())) {
+                for (TableName tableName : catalogMetadata.getTables().keySet()) {
+                    if (tableName.equals(table)) {
+                        return catalogMetadata.getTables().get(tableName);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
 
 }
