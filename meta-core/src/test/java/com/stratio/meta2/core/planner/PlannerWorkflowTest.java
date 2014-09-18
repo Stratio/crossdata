@@ -30,10 +30,7 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.grammar.ParsingTest;
-import com.stratio.meta2.core.query.BaseQuery;
-import com.stratio.meta2.core.query.NormalizedQuery;
-import com.stratio.meta2.core.query.ParsedQuery;
-import com.stratio.meta2.core.query.SelectParsedQuery;
+import com.stratio.meta2.core.query.*;
 import com.stratio.meta2.core.statements.SelectStatement;
 
 import org.testng.annotations.Test;
@@ -53,13 +50,13 @@ public class PlannerWorkflowTest {
 
   Planner planner = new Planner();
 
-  public class NormalizedQueryWrapper extends NormalizedQuery{
+  public class ValidatedWrapperQuery extends SelectValidatedQuery{
 
     private SelectStatement stmt = null;
 
     private List<TableMetadata> tableMetadataList = new ArrayList<>();
 
-    public NormalizedQueryWrapper(SelectStatement stmt, SelectParsedQuery parsedQuery){
+    public ValidatedWrapperQuery(SelectStatement stmt, SelectParsedQuery parsedQuery){
       super(parsedQuery);
       this.stmt = stmt;
     }
@@ -142,9 +139,9 @@ public class PlannerWorkflowTest {
   public LogicalWorkflow getWorkflow(String statement, String methodName) {
     ParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
     SelectStatement ss = SelectStatement.class.cast(stmt);
-    NormalizedQuery nq = new NormalizedQueryWrapper(
+    ValidatedQuery nq = new ValidatedWrapperQuery(
             SelectStatement.class.cast(stmt), new SelectParsedQuery(new BaseQuery("42", statement, null), ss));
-    NormalizedQueryWrapper.class.cast(nq).addTableMetadata(getTestTableMetadata());
+    ValidatedWrapperQuery.class.cast(nq).addTableMetadata(getTestTableMetadata());
     return planner.buildWorkflow(nq);
   }
 

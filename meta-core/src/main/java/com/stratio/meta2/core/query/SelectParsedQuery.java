@@ -18,9 +18,10 @@
 
 package com.stratio.meta2.core.query;
 
+
 import com.stratio.meta2.core.statements.SelectStatement;
 
-public abstract class SelectParsedQuery extends ParsedQuery {
+public class SelectParsedQuery extends ParsedQuery {
   public SelectParsedQuery(BaseQuery baseQuery,
       SelectStatement statement) {
     super(baseQuery, statement);
@@ -30,4 +31,8 @@ public abstract class SelectParsedQuery extends ParsedQuery {
     super(parsedQuery);
   }
 
+    @Override
+    public SelectStatement getStatement() {
+        return (SelectStatement)statement;
+    }
 }

@@ -27,7 +27,7 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 
 import java.util.List;
 
-public class NormalizedQuery extends SelectParsedQuery {
+public abstract class NormalizedQuery extends SelectParsedQuery {
   public NormalizedQuery(SelectParsedQuery parsedQuery){
     super(parsedQuery);
   }

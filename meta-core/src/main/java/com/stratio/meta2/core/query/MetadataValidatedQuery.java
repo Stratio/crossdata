@@ -18,12 +18,13 @@
 package com.stratio.meta2.core.query;
 
 
+import com.stratio.meta2.core.statements.MetaDataStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 /**
  * Created by jjlopez on 18/09/14.
  */
-public abstract class MetadataValidatedQuery extends ValidatedQuery{
+public class MetadataValidatedQuery extends ValidatedQuery{
     public MetadataValidatedQuery(BaseQuery baseQuery,
         MetaStatement statement) {
         super(baseQuery, statement);
@@ -33,5 +34,9 @@ public abstract class MetadataValidatedQuery extends ValidatedQuery{
         super(parsedQuery);
     }
 
+    @Override
+    public MetaDataStatement getStatement() {
+        return (MetaDataStatement)statement;
+    }
 
 }

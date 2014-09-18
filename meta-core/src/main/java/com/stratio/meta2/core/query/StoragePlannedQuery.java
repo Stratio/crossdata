@@ -19,7 +19,9 @@
 package com.stratio.meta2.core.query;
 
 
-public abstract class StoragePlannedQuery extends PlannedQuery {
+import com.stratio.meta2.core.statements.StorageStatement;
+
+public  class StoragePlannedQuery extends PlannedQuery {
   
   public StoragePlannedQuery(ValidatedQuery validatedQuery) {
     super(validatedQuery);
@@ -28,4 +30,9 @@ public abstract class StoragePlannedQuery extends PlannedQuery {
   StoragePlannedQuery(StoragePlannedQuery plannedQuery){
     this((ValidatedQuery)plannedQuery);
   }
+
+    @Override
+    public StorageStatement getStatement() {
+        return (StorageStatement)statement;
+    }
 }

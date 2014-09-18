@@ -18,9 +18,10 @@
 
 package com.stratio.meta2.core.query;
 
+
 import com.stratio.meta2.core.statements.StorageStatement;
 
-public abstract class StorageParsedQuery extends ParsedQuery {
+public class StorageParsedQuery extends ParsedQuery {
   public StorageParsedQuery(BaseQuery baseQuery,
       StorageStatement statement) {
     super(baseQuery, statement);
@@ -29,6 +30,11 @@ public abstract class StorageParsedQuery extends ParsedQuery {
   StorageParsedQuery(StorageParsedQuery parsedQuery) {
     super(parsedQuery);
   }
+
+    @Override
+    public StorageStatement getStatement() {
+        return (StorageStatement)statement;
+    }
 
 
 }

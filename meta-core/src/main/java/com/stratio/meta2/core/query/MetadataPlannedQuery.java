@@ -19,7 +19,9 @@
 package com.stratio.meta2.core.query;
 
 
-public abstract class MetadataPlannedQuery extends PlannedQuery {
+import com.stratio.meta2.core.statements.MetaDataStatement;
+
+public class MetadataPlannedQuery extends PlannedQuery {
   
   public MetadataPlannedQuery(ValidatedQuery validatedQuery) {
     super(validatedQuery);
@@ -28,4 +30,9 @@ public abstract class MetadataPlannedQuery extends PlannedQuery {
   MetadataPlannedQuery(MetadataPlannedQuery plannedQuery){
     this((ValidatedQuery)plannedQuery);
   }
+
+    @Override
+    public MetaDataStatement getStatement() {
+        return (MetaDataStatement)statement;
+    }
 }

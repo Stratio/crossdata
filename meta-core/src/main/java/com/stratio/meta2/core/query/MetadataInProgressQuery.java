@@ -21,6 +21,7 @@ package com.stratio.meta2.core.query;
 import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.core.statements.MetaDataStatement;
 
 public class MetadataInProgressQuery extends InProgressQuery {
   
@@ -47,4 +48,9 @@ public class MetadataInProgressQuery extends InProgressQuery {
   public CatalogMetadata getCatalogMetadata() {
     return catalogMetadata;
   }
+
+    @Override
+    public MetaDataStatement getStatement() {
+        return (MetaDataStatement)statement;
+    }
 }
