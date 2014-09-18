@@ -6,6 +6,7 @@ import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.InProgressQuery;
+import com.stratio.meta2.core.query.MetadataPlannedQuery;
 import com.stratio.meta2.core.query.PlannedQuery;
 import com.stratio.meta2.core.statements.AttachClusterStatement;
 
@@ -21,12 +22,18 @@ public class Coordinator {
   private static final Logger LOG = Logger.getLogger(Coordinator.class);
   
   public InProgressQuery coordinate(PlannedQuery plannedQuery) {
-    return new InProgressQuery(null);
+    if(plannedQuery instanceof MetadataPlannedQuery){
+      MetadataPlannedQuery metadataPlannedQuery = (MetadataPlannedQuery) plannedQuery;
+      if(metadataPlannedQuery.getStatement() instanceof AttachClusterStatement){
+        AttachClusterStatement attachClusterStatement =
+            (AttachClusterStatement) metadataPlannedQuery.getStatement();
+        attachCluster(attachClusterStatement);
+      }
+    }
+    return new InProgressQuery(plannedQuery);
   }
 
   private void attachCluster(AttachClusterStatement attachClusterStatement){
-
-    // TODO: Create DataStore
 
     DataStoreMetadata
         datastoreMetadata =
@@ -43,6 +50,9 @@ public class Coordinator {
     Map<String, Object> properties =  attachClusterStatement.getOptions();
     ClusterAttachedMetadata value = new ClusterAttachedMetadata(clusterRef, dataStoreRef, properties);
     clusterAttachedRefs.put(key, value);
+    datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
+
+    MetadataManager.MANAGER.createDataStore(datastoreMetadata);
   }
 
 }

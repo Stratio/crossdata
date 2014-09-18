@@ -22,7 +22,9 @@ import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 public abstract class ParsedQuery extends BaseQuery {
+
   final MetaStatement statement;
+
   public ParsedQuery(BaseQuery baseQuery, MetaStatement statement){
     super(baseQuery);
     this.statement=statement;
@@ -32,7 +34,9 @@ public abstract class ParsedQuery extends BaseQuery {
     this(parsedQuery, parsedQuery.getStatement());
   }
 
-  public abstract MetaStatement getStatement();
+  public MetaStatement getStatement(){
+    return this.statement;
+  }
 
   public QueryStatus getStatus() {
     return QueryStatus.PARSED;

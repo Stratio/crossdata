@@ -18,14 +18,15 @@
 
 package com.stratio.meta.rest.models;
 
+import com.stratio.meta.common.data.Cell;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
+import com.stratio.meta2.common.metadata.ColumnType;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-
-import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.ColumnType;
 
 public class JsonMetaResultSet implements Serializable {
 
@@ -40,7 +41,7 @@ public class JsonMetaResultSet implements Serializable {
   private List<JsonRow> rows;
 
   /**
-   * List of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata}.
+   * List of {@link ColumnMetadata}.
    */
   private List<ColumnMetadata> columnMetadata;
 
@@ -56,7 +57,8 @@ public class JsonMetaResultSet implements Serializable {
     rows = new ArrayList<>();
     rows.add(new JsonRow("Result", new Cell(uniqueCell)));
     columnMetadata = new ArrayList<>();
-    columnMetadata.add(new ColumnMetadata("Result", "Result", ColumnType.VARCHAR));
+    columnMetadata.add(new ColumnMetadata(new ColumnName("Result", "Result", "Result"),
+                                          new String[]{"Result"}, ColumnType.VARCHAR));
   }
 
   /**

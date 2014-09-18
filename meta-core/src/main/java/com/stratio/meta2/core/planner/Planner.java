@@ -28,9 +28,8 @@ import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
 import com.stratio.meta2.core.query.NormalizedQuery;
-import com.stratio.meta2.core.query.PlannedQuery;
 import com.stratio.meta2.core.query.SelectPlannedQuery;
-import com.stratio.meta2.core.query.ValidatedQuery;
+import com.stratio.meta2.core.query.SelectValidatedQuery;
 
 import org.apache.log4j.Logger;
 
@@ -60,7 +59,7 @@ public class Planner {
    * @param query A {@link com.stratio.meta2.core.query.NormalizedQuery}.
    * @return A {@link com.stratio.meta2.core.query.PlannedQuery}.
    */
-  public SelectPlannedQuery planQuery(ValidatedQuery query) {
+  public SelectPlannedQuery planQuery(SelectValidatedQuery query) {
     //Build the workflow.
     LogicalWorkflow workflow = buildWorkflow(query);
 
@@ -79,7 +78,7 @@ public class Planner {
    * @param query The query to be planned.
    * @return A Logical workflow.
    */
-  protected LogicalWorkflow buildWorkflow(NormalizedQuery query) {
+  protected LogicalWorkflow buildWorkflow(SelectValidatedQuery query) {
     //Define the list of projects
     Map<String, Project> projectSteps = getProjects(query);
     addProjectedColumns(projectSteps, query);
@@ -106,7 +105,7 @@ public class Planner {
    * @param projectSteps The map associating table names to Project steps.
    * @param query        The query to be planned.
    */
-  private void addProjectedColumns(Map<String, Project> projectSteps, NormalizedQuery query) {
+  private void addProjectedColumns(Map<String, Project> projectSteps, SelectValidatedQuery query) {
     for (ColumnName cn : query.getColumns()) {
       projectSteps.get(cn.getTableName().getQualifiedName()).addColumn(cn);
     }
@@ -142,7 +141,7 @@ public class Planner {
    */
   private Map<String, LogicalStep> addFilter(Map<String, Project> projectMap,
                                              Map<String, TableMetadata> tableMetadataMap,
-                                             NormalizedQuery query) {
+                                             SelectValidatedQuery query) {
     Map<String, LogicalStep> lastSteps = new HashMap<>();
     for (Map.Entry<String, Project> e : projectMap.entrySet()) {
       lastSteps.put(e.getKey(), e.getValue());
@@ -187,7 +186,7 @@ public class Planner {
    * @param query The query to be planned.
    * @return A map with the projections.
    */
-  protected Map<String, Project> getProjects(NormalizedQuery query) {
+  protected Map<String, Project> getProjects(SelectValidatedQuery query) {
     Map<String, Project> projects = new HashMap<>();
     for (TableName tn : query.getTables()) {
       Project p = new Project(Operations.PROJECT, tn);

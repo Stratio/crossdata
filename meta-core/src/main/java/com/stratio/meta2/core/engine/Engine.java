@@ -39,6 +39,9 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+
+import javax.transaction.TransactionManager;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
@@ -115,8 +118,10 @@ public class Engine {
     }
 
     Map<FirstLevelName, IMetadata> metadataMap = grid.map("meta");
+    Lock lock = grid.lock("meta");
+    TransactionManager tm = grid.transactionManager("meta");
 
-    MetadataManager.MANAGER.init(metadataMap, grid.lock("meta"));
+    MetadataManager.MANAGER.init(metadataMap, lock, tm);
 
     //this.session=initializeDB(config);
 

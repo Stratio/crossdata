@@ -18,9 +18,9 @@
 
 package com.stratio.meta2.common.data;
 
+import java.io.Serializable;
 
-
-public abstract class Name  {
+public abstract class Name implements Serializable {
 
   final String UNKNOWN_NAME="<UNKNOWN_NAME>";
 
