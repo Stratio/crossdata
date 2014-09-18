@@ -50,7 +50,7 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
      }
 
     case inProgressQuery:StorageInProgressQuery=>
-      log.info("->"+"Receiving MetadataInProgressQuery")
+      log.info("->"+"Receiving StorageInProgressQuery")
 
 
 
