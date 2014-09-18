@@ -10,6 +10,7 @@ import com.stratio.meta2.core.statements.SelectStatement
 import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
+import utils.BeanUtils
 
 class ConnectorTest extends FunSuite with MockFactory {
 
@@ -105,3 +106,9 @@ class ConnectorTest extends FunSuite with MockFactory {
   //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE
 }
 
+<<<<<<< Updated upstream
+
+}
+=======
+}
+>>>>>>> Stashed changes

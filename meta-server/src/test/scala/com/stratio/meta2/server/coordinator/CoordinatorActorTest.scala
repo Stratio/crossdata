@@ -43,13 +43,12 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike  with Ser
     val coordinatorActor=system1.actorOf(CoordinatorActor.props(connectorManagerActor,new Coordinator),"CoordinatorActor")
 
     val pq = new SelectPlannedQuery(
-        new ValidatedQuery(
-          new NormalizedQuery(
-            new SelectParsedQuery(
-              new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog") )
+        new SelectValidatedQuery(
+          new SelectParsedQuery(
+              new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
               ,null)
           )
-        ), new LogicalWorkflow(null)
+        , new LogicalWorkflow(null)
     )
 
 
