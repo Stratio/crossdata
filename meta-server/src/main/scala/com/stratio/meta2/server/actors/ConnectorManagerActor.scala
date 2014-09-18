@@ -56,15 +56,19 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       connectorsMap.put(msg.name,sender)
     }
 
-    case query: StorageInProgressQuery=>
+    case query: StorageInProgressQuery=> {
       log.info("storage in progress query")
       connectorsMap(query.getConnectorName()) ! query
-
-    case query: SelectInProgressQuery=>
+    }
+    case query: SelectInProgressQuery=> {
       log.info("select in progress query")
-    case query: MetadataInProgressQuery=>
-      log.info("metadata in progress query")
+      connectorsMap(query.getConnectorName()) ! query
+    }
+    case query: MetadataInProgressQuery=> {
 
+      log.info("metadata in progress query")
+      connectorsMap(query.getConnectorName()) ! query
+    }
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))
 
