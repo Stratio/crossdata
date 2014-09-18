@@ -40,9 +40,11 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     	    case "connector"=>
     	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
     	    	val id=java.util.UUID.randomUUID.toString()
+
+            connectorActorRef ! getConnectorName()
+
     	    	//connectorsMap.put(mu.member.address.toString, connectorActorRef)
-            connectorActorRef ! getConnectorName
-    	    	//connectorActorRef ! "hola"
+            //connectorActorRef ! "hola"
     	  }
     	  log.info("has role: {}" + rol)
       }
@@ -54,15 +56,19 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       connectorsMap.put(msg.name,sender)
     }
 
-    case query: StorageInProgressQuery=>
+    case query: StorageInProgressQuery=> {
       log.info("storage in progress query")
       connectorsMap(query.getConnectorName()) ! query
-
-    case query: SelectInProgressQuery=>
+    }
+    case query: SelectInProgressQuery=> {
       log.info("select in progress query")
-    case query: MetadataInProgressQuery=>
-      log.info("metadata in progress query")
+      connectorsMap(query.getConnectorName()) ! query
+    }
+    case query: MetadataInProgressQuery=> {
 
+      log.info("metadata in progress query")
+      connectorsMap(query.getConnectorName()) ! query
+    }
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))
 

@@ -69,6 +69,8 @@ class ConnectorApp  extends ConnectConfig {
     ports foreach { port =>
       // Override the configuration of the port
       val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
+
+
       // Create an Akka system
 
       // Create an actor that handles cluster domain events

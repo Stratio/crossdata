@@ -25,7 +25,6 @@ import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetaDataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
-import com.stratio.meta2.core.statements.AlterCatalogStatement;
 import com.stratio.meta2.core.statements.CreateCatalogStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
