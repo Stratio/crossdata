@@ -10,7 +10,7 @@ import com.stratio.meta2.core.statements.SelectStatement
 import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
-import utils.BeanUtils
+
 
 class ConnectorTest extends FunSuite with MockFactory{
 
@@ -39,20 +39,18 @@ class ConnectorTest extends FunSuite with MockFactory{
       val config = ConfigFactory.parseString("akka.remote.netty.tcp.port="+port).withFallback(ConfigFactory.load())
 		  val c = new ConnectorApp()
 		  val myReference=c.startup(m, port, config)
-      var steps:util.ArrayList[LogicalStep]=new util.ArrayList[LogicalStep]()
+
       val pq = new SelectPlannedQuery(
         new SelectValidatedQuery(
             new SelectParsedQuery(
               new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog") )
-              ,new SelectStatement(new TableName("myCatalog","myTable")))
+              ,new SelectStatement(new TableName("myCatalog","myTable"))
           )
-        ), new LogicalWorkflow(steps)
+        ), null
       )
       val selectQ:SelectInProgressQuery=new SelectInProgressQuery(pq)
-      val beanMap:util.Map[String, String] = BeanUtils.recursiveDescribe(selectQ);
-      for(s <- beanMap.keySet().toArray()){
-        println(s);
-      }
+
+
       myReference ! selectQ
       c.shutdown()
   }
@@ -65,16 +63,15 @@ class ConnectorTest extends FunSuite with MockFactory{
 		  val c = new ConnectorApp()
 		  val myReference=c.startup(m, port, config)
 
-      var steps:util.ArrayList[LogicalStep]=new util.ArrayList[LogicalStep]()
-      steps.add(null)
+
+      //steps.add(null)
       val pq = new SelectPlannedQuery(
-        new ValidatedQuery(
-          new NormalizedQuery(
-            new SelectParsedQuery(
+        new SelectValidatedQuery(
+           new SelectParsedQuery(
               new BaseQuery("query_id-2384234-1341234-23434", "select * from myTable;", new CatalogName("myCatalog") )
-              ,new SelectStatement(new TableName("myCatalog","myTable")))
+              ,new SelectStatement(new TableName("myCatalog","myTable"))
           )
-        ), new LogicalWorkflow(steps)
+        ), null
       )
 
       val metadataQ:MetadataInProgressQuery=new MetadataInProgressQuery(pq)
@@ -100,9 +97,6 @@ class ConnectorTest extends FunSuite with MockFactory{
 
   //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE
 
-<<<<<<< Updated upstream
+
 
 }
-=======
-}
->>>>>>> Stashed changes

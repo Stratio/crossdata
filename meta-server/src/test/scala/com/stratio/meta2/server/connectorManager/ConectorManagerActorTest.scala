@@ -42,13 +42,11 @@ class ConnectorManagerActorTest extends ActorReceiveUtils with FunSuiteLike  wit
     val connectorManagerActor=system1.actorOf(ConnectorManagerActor.props(null),"ConnectorManagerActor")
 
     val pq = new SelectPlannedQuery(
-        new ValidatedQuery(
-          new NormalizedQuery(
-            new SelectParsedQuery(
-              new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog") )
-              ,null)
-          )
-        ), new LogicalWorkflow(null)
+        new SelectValidatedQuery(
+          new SelectParsedQuery(
+              new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
+          ,null))
+        , new LogicalWorkflow(null)
     )
 
 
