@@ -20,16 +20,17 @@ package com.stratio.meta2.common.metadata;
 
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 import java.util.Map;
 
 public class ConnectorAttachedMetadata {
   private final ConnectorName connectorRef;
   private final ClusterName clusterRef;
-  private final Map<String, String> properties;
+  private final Map<Selector, Selector> properties;
 
   public ConnectorAttachedMetadata(ConnectorName connectorRef, ClusterName clusterRef,
-      Map<String, String> properties) {
+      Map<Selector, Selector> properties) {
     this.connectorRef = connectorRef;
     this.clusterRef = clusterRef;
     this.properties = properties;
@@ -43,7 +44,7 @@ public class ConnectorAttachedMetadata {
     return clusterRef;
   }
 
-  public Map<String, String> getProperties() {
+  public Map<Selector, Selector> getProperties() {
     return properties;
   }
 }

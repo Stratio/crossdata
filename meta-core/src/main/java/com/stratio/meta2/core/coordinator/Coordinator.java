@@ -1,9 +1,13 @@
 package com.stratio.meta2.core.coordinator;
 
 import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
+import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.InProgressQuery;
 import com.stratio.meta2.core.query.MetadataInProgressQuery;
@@ -79,7 +83,7 @@ public class Coordinator {
     ClusterName key = new ClusterName(attachClusterStatement.getClusterName());
     ClusterName clusterRef = new ClusterName(attachClusterStatement.getClusterName());
     DataStoreName dataStoreRef = new DataStoreName(attachClusterStatement.getDatastoreName());
-    Map<String, Object> properties =  attachClusterStatement.getOptions();
+    Map<Selector, Selector> properties =  attachClusterStatement.getOptions();
     ClusterAttachedMetadata value = new ClusterAttachedMetadata(clusterRef, dataStoreRef, properties);
     clusterAttachedRefs.put(key, value);
     datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
@@ -88,7 +92,24 @@ public class Coordinator {
   }
 
   private void attachConnector(AttachConnectorStatement attachConnectorStatement) {
+    ClusterMetadata
+        clusterMetadata =
+        MetadataManager.MANAGER
+            .getCluster(new ClusterName(attachConnectorStatement.getClusterName()));
 
+    Map<ConnectorName, ConnectorAttachedMetadata>
+        connectorAttachedRefs =
+        clusterMetadata.getConnectorAttachedRefs();
+
+    ConnectorName key = new ConnectorName(attachConnectorStatement.getConnectorName());
+    ConnectorName connectorRef = new ConnectorName(attachConnectorStatement.getConnectorName());
+    ClusterName clusterRef = new ClusterName(attachConnectorStatement.getClusterName());
+    Map<Selector, Selector> properties =  attachConnectorStatement.getOptions();
+    ConnectorAttachedMetadata value = new ConnectorAttachedMetadata(connectorRef, clusterRef, properties);
+    connectorAttachedRefs.put(key, value);
+    clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
+
+    MetadataManager.MANAGER.createCluster(clusterMetadata, false);
   }
 
 }
