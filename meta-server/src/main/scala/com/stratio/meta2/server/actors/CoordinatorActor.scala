@@ -42,13 +42,6 @@ class CoordinatorActor(connector: ActorRef, coordinator: Coordinator) extends Ac
       println() // doesn't print log.info if this statement is not written
       connector forward coordinator.coordinate(query)
     }
-      /*
-    case query: PlannedQuery => {
-      log.info("CoordinatorActor received PlannedQuery")
-      println("CoordinatorActor received PlannedQuery")
-      connector forward query
-    }
-    */
 
     case _ =>
       sender ! "KO"
