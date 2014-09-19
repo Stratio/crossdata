@@ -274,11 +274,13 @@ public enum MetadataManager {
     return (DataStoreMetadata) metadata.get(name);
   }
 
-  public void createConnector(ConnectorMetadata connectorMetadata) {
+  public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
     shouldBeInit();
     try {
       writeLock.lock();
-      shouldBeUnique(connectorMetadata.getName());
+      if(unique){
+        shouldBeUnique(connectorMetadata.getName());
+      }
       beginTransaction();
       metadata.put(connectorMetadata.getName(), connectorMetadata);
       commitTransaction();
@@ -289,6 +291,10 @@ public enum MetadataManager {
     } finally {
       writeLock.unlock();
     }
+  }
+
+  public void createConnector(ConnectorMetadata connectorMetadata) {
+    createConnector(connectorMetadata, true);
   }
 
   public ConnectorMetadata getConnector(ConnectorName name) {

@@ -54,7 +54,6 @@ public class Coordinator {
 
 
   public InProgressQuery coordinate(PlannedQuery plannedQuery) {
-
     switch (getStatement(plannedQuery)) {
       //METADATA
       case ATTACH_CLUSTER:
@@ -94,7 +93,7 @@ public class Coordinator {
     //METADATA
     if (plannedQuery instanceof MetadataPlannedQuery) {
       MetaStatement statement = ((MetadataPlannedQuery) plannedQuery).getStatement();
-      
+
       if (statement instanceof AttachClusterStatement) {
         queryStatement = StatementEnum.ATTACH_CLUSTER; 
       }
@@ -121,7 +120,7 @@ public class Coordinator {
       }
 
     }
-    return null;
+    return queryStatement;
   }
 
 

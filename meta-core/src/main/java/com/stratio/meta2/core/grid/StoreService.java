@@ -70,7 +70,7 @@ public class StoreService implements Closeable {
         .transport(transport)
         .clusterName(clusterName)
         .globalJmxStatistics()
-            //.allowDuplicateDomains(true).disable()
+        .allowDuplicateDomains(true)//.disable()
         .build();
     config = new ConfigurationBuilder().transaction()
         .transactionManagerLookup(new GenericTransactionManagerLookup())
