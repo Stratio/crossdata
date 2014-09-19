@@ -47,9 +47,9 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
           validator.validate(parsedQuery);
           Assert.assertFalse(false);
       } catch (ValidationException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true,e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true, e.getMessage());
       }
 
   }
@@ -67,9 +67,9 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
           validator.validate(parsedQuery);
           Assert.assertFalse(false);
       } catch (ValidationException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true, e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true, e.getMessage());
       }
 
   }
@@ -87,9 +87,9 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
           validator.validate(parsedQuery);
           Assert.assertFalse(false);
       } catch (ValidationException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true,e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true, e.getMessage());
       }
 
   }
@@ -107,9 +107,9 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
           validator.validate(parsedQuery);
           Assert.assertFalse(false);
       } catch (ValidationException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true, e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true, e.getMessage());
       }
 
   }
