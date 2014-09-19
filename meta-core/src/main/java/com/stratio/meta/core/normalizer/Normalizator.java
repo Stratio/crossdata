@@ -27,7 +27,7 @@ import com.stratio.meta2.common.statements.structures.selectors.FunctionSelector
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
-import com.stratio.meta2.core.metadata.MockMetadataManager;
+import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.structures.OrderBy;
 
@@ -262,7 +262,7 @@ public class Normalizator {
     if (!tableName.isCompletedName()) {
       tableName.setCatalogName(parsedQuery.getDefaultCatalog());
     }
-    if (!MockMetadataManager.MANAGER.exists(tableName)) {
+    if (!MetadataManager.MANAGER.exists(tableName)) {
       throw new NotExistNameException(tableName);
     }
   }
@@ -286,7 +286,7 @@ public class Normalizator {
     TableName selectTableName = null;
     for (TableName tableName: fields.getTableNames()) {
       columnName.setTableName(tableName);
-      if (MockMetadataManager.MANAGER.exists(columnName)) {
+      if (MetadataManager.MANAGER.exists(columnName)) {
         if (selectTableName == null) {
           selectTableName = tableName;
         } else {
@@ -304,7 +304,7 @@ public class Normalizator {
   public List<ColumnSelector> checkAsteriskSelector() {
     List<ColumnSelector> columnSelectors = new ArrayList<>();
     for (TableName table: fields.getTableNames()) {
-      TableMetadata tableMetadata = MockMetadataManager.MANAGER.getTable(table);
+      TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(table);
       for (ColumnName columnName: tableMetadata.getColumns().keySet()) {
         ColumnSelector selector = new ColumnSelector(columnName);
         columnSelectors.add(selector);

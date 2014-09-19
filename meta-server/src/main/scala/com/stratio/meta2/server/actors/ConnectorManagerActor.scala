@@ -6,6 +6,7 @@ import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
 import com.stratio.meta2.core.connector.ConnectorManager
 import com.stratio.meta2.core.query._
+import com.stratio.meta2.common.data.ConnectorName
 
 object ConnectorManagerActor {
   def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))
@@ -19,7 +20,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
   //var connectorsMap:scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String,ActorRef]()
   //var connectorsMap:scala.collection.mutable.Map[String, ActorSelection] = scala.collection.mutable.Map[String,ActorSelection]()
-  var connectorsMap:scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String,ActorRef]()
+  var connectorsMap:scala.collection.mutable.Map[ConnectorName, ActorRef] = scala.collection.mutable.Map[ConnectorName, ActorRef]()
 
   override def preStart(): Unit = {
     //#subscribe
@@ -53,7 +54,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     }
 
     case msg:replyConnectorName=>{
-      connectorsMap.put(msg.name,sender)
+      connectorsMap.put(new ConnectorName(msg.name), sender)
     }
 
     case query: StorageInProgressQuery=> {

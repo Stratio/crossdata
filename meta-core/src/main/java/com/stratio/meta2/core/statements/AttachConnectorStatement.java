@@ -34,6 +34,14 @@ public class AttachConnectorStatement extends MetaDataStatement {
         .add(Validation.VALID_CONNECTOR_OPTIONS);
   }
 
+  public String getConnectorName() {
+    return connectorName;
+  }
+
+  public String getClusterName() {
+    return clusterName;
+  }
+
   public Map<Selector, Selector> getOptions() {
     return options;
   }

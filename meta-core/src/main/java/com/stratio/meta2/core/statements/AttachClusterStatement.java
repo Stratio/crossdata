@@ -19,6 +19,7 @@
 package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -52,7 +53,7 @@ public class AttachClusterStatement extends MetaDataStatement {
   /**
    * A JSON with the options of the cluster.
    */
-  private final Map<String, Object> options;
+  private final Map<Selector, Selector> options;
 
   /**
    * Create new cluster on the system.
@@ -66,7 +67,7 @@ public class AttachClusterStatement extends MetaDataStatement {
     this.clusterName = clusterName;
     this.ifNotExists = ifNotExists;
     this.datastoreName = datastoreName;
-    this.options = StringUtils.convertJsonToMap(options);
+    this.options = StringUtils.convertJsonToOptions(options);
   }
 
   @Override
@@ -87,7 +88,7 @@ public class AttachClusterStatement extends MetaDataStatement {
         .add(Validation.VALID_CLUSTER_OPTIONS);
   }
 
-  public Map<String, Object> getOptions() {
+  public Map<Selector, Selector> getOptions() {
     return options;
   }
 

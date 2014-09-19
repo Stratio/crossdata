@@ -211,12 +211,14 @@ public enum MetadataManager {
     return catalogMetadata.getTables().get(name);
   }
 
-  public void createCluster(ClusterMetadata clusterMetadata) {
+  public void createCluster(ClusterMetadata clusterMetadata, boolean unique) {
     shouldBeInit();
     try {
       writeLock.lock();
       shouldExist(clusterMetadata.getDataStoreRef());
-      shouldBeUnique(clusterMetadata.getName());
+      if(unique){
+        shouldBeUnique(clusterMetadata.getName());
+      }
       for (ConnectorAttachedMetadata connectorRef : clusterMetadata.getConnectorAttachedRefs()
           .values()) {
         shouldExist(connectorRef.getConnectorRef());
@@ -231,6 +233,10 @@ public enum MetadataManager {
     } finally {
       writeLock.unlock();
     }
+  }
+
+  public void createCluster(ClusterMetadata clusterMetadata) {
+    createCluster(clusterMetadata, true);
   }
 
   public ClusterMetadata getCluster(ClusterName name) {
