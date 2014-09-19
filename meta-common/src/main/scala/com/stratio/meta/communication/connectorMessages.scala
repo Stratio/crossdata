@@ -18,22 +18,5 @@
 
 package com.stratio.meta.communication
 
-import com.stratio.meta.common.logicalplan.LogicalWorkflow
-import com.stratio.meta.common.result.QueryStatus
-
-case class ACK(queryId: String, status: QueryStatus)
-case class Connect(msg: String)
-case class Reply(msg: String)
-case class Disconnect(userId: String)
-
 //Connector messages
-case class ConnectToConnector(msg: String)
-case class Execute(workflow: LogicalWorkflow)
-case class DisconnectFromConnector(msg: String)
-case class Request(msg:String)
-case class Response(msg:String)
-case class MetadataStruct(clusterName:String, connectorName:String, metaData:String)
-case class StorageQueryStruct(clusterName:String, connectorName:String, storageQuery:String)
-case class WorkflowStruct(clusterName:String, connectorName:String, workFlow:LogicalWorkflow)
-case class replyConnectorName(name:String)
-case class getConnectorName()
+case class HeartbeatSig()

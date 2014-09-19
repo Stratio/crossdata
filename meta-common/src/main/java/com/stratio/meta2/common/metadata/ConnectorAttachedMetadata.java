@@ -22,9 +22,10 @@ import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class ConnectorAttachedMetadata {
+public class ConnectorAttachedMetadata implements Serializable {
   private final ConnectorName connectorRef;
   private final ClusterName clusterRef;
   private final Map<Selector, Selector> properties;

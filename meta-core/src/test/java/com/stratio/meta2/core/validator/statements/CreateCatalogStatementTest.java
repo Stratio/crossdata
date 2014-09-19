@@ -47,9 +47,9 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
           validator.validate(parsedQuery);
           Assert.assertFalse(false);
       } catch (ValidationException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true,e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true, e.getMessage());
       }
 
   }
@@ -57,19 +57,19 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
   @Test
   public void createCatalogIfNotExistsWithExistingCatalog() {
       String query = "CREATE CATALOG IF NOT EXISTS demo;";
-      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement("demo",true,"");
+      CreateCatalogStatement createCatalogStatement=new CreateCatalogStatement("demo",true,"");
       Validator validator=new Validator();
 
       BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo"));
 
-      ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,alterCatalogStatement);
+      ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,createCatalogStatement);
       try {
           validator.validate(parsedQuery);
           Assert.assertFalse(false);
       } catch (ValidationException e) {
-          Assert.assertTrue(true);
+          Assert.fail(e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true, e.getMessage());
       }
 
   }
@@ -77,7 +77,7 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
   @Test
   public void createCatalogWithExistingCatalog() {
       String query = "CREATE CATALOG demo;";
-      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement("demo",true,"");
+      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement("demo",false,"");
       Validator validator=new Validator();
 
       BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo"));
@@ -87,9 +87,9 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
           validator.validate(parsedQuery);
           Assert.assertFalse(false);
       } catch (ValidationException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true,e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true, e.getMessage());
       }
 
   }
@@ -107,9 +107,9 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
           validator.validate(parsedQuery);
           Assert.assertFalse(false);
       } catch (ValidationException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true, e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
+          Assert.assertTrue(true, e.getMessage());
       }
 
   }

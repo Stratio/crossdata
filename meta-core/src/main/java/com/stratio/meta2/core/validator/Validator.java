@@ -18,6 +18,9 @@
 
 package com.stratio.meta2.core.validator;
 
+import java.util.List;
+import java.util.Map;
+
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.exceptions.validation.ExistNameException;
@@ -31,12 +34,7 @@ import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.query.MetaDataParsedQuery;
-import com.stratio.meta2.core.query.MetadataValidatedQuery;
-import com.stratio.meta2.core.query.ParsedQuery;
-import com.stratio.meta2.core.query.StorageParsedQuery;
-import com.stratio.meta2.core.query.StorageValidatedQuery;
-import com.stratio.meta2.core.query.ValidatedQuery;
+import com.stratio.meta2.core.query.*;
 import com.stratio.meta2.core.statements.AlterCatalogStatement;
 import com.stratio.meta2.core.statements.AttachClusterStatement;
 import com.stratio.meta2.core.statements.AttachConnectorStatement;
@@ -150,10 +148,11 @@ public class Validator {
           }
       }
       if (parsedQuery instanceof MetaDataParsedQuery) {
-          validatedQuery = (MetadataValidatedQuery) parsedQuery;
-      }
-      if (parsedQuery instanceof StorageParsedQuery) {
-          validatedQuery = (StorageValidatedQuery) parsedQuery;
+          validatedQuery = new MetadataValidatedQuery(parsedQuery, parsedQuery.getStatement());
+      }else if(parsedQuery instanceof StorageParsedQuery) {
+          validatedQuery = new StorageValidatedQuery(parsedQuery, parsedQuery.getStatement());
+      }else if(parsedQuery instanceof SelectParsedQuery) {
+          validatedQuery = new SelectValidatedQuery(parsedQuery);
       }
 
       return validatedQuery;
