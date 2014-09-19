@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.DataStoreName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.core.metadata.MetadataManager;
@@ -13,6 +14,7 @@ import com.stratio.meta2.core.query.InProgressQuery;
 import com.stratio.meta2.core.query.MetadataInProgressQuery;
 import com.stratio.meta2.core.query.MetadataPlannedQuery;
 import com.stratio.meta2.core.query.PlannedQuery;
+import com.stratio.meta2.core.query.SelectInProgressQuery;
 import com.stratio.meta2.core.query.SelectPlannedQuery;
 import com.stratio.meta2.core.query.StoragePlannedQuery;
 import com.stratio.meta2.core.statements.AttachClusterStatement;
@@ -20,9 +22,11 @@ import com.stratio.meta2.core.statements.AttachConnectorStatement;
 import com.stratio.meta2.core.statements.CreateCatalogStatement;
 import com.stratio.meta2.core.statements.CreateIndexStatement;
 import com.stratio.meta2.core.statements.CreateTableStatement;
+import com.stratio.meta2.core.statements.DeleteStatement;
 import com.stratio.meta2.core.statements.DropCatalogStatement;
 import com.stratio.meta2.core.statements.DropIndexStatement;
 import com.stratio.meta2.core.statements.DropTableStatement;
+import com.stratio.meta2.core.statements.InsertIntoStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 import java.util.Map;
@@ -33,39 +37,78 @@ public class Coordinator {
    * Class logger.
    */
   private static final Logger LOG = Logger.getLogger(Coordinator.class);
-  
-  private StatementEnum queryStatement = null;
+
 
   enum StatementEnum {
-    ATTACH_CLUSTER,
-    ATTACH_CONNECTOR,
-    CREATE_CATALOG,
-    CREATE_INDEX,
-    CREATE_TABLE,
-    DESCRIBE,
-    DETACH_CLUSTER,
-    DETACH_CONNECTOR,
-    DROP_CATALOG,
-    DROP_INDEX,
-    DROP_TABLE
+    ATTACH_CLUSTER, ATTACH_CONNECTOR, CREATE_CATALOG, CREATE_INDEX, CREATE_TABLE, DESCRIBE, DETACH_CLUSTER, DETACH_CONNECTOR, DROP_CATALOG, DROP_INDEX, DROP_TABLE, SELECT, INSERT_INTO, DELETE
   }
 
 
   public InProgressQuery coordinate(PlannedQuery plannedQuery) {
 
     switch (getStatement(plannedQuery)) {
-      //METADATA
+    // METADATA
       case ATTACH_CLUSTER:
-        attachCluster((AttachClusterStatement) plannedQuery.getStatement());
+        persist(plannedQuery);
         break;
       case ATTACH_CONNECTOR:
-        attachConnector((AttachConnectorStatement) plannedQuery.getStatement());
+        persist(plannedQuery);
         break;
       case CREATE_CATALOG:
+        return new MetadataInProgressQuery(plannedQuery);
+      case CREATE_INDEX:
+        return new MetadataInProgressQuery(plannedQuery);
+      case CREATE_TABLE:
+        return new MetadataInProgressQuery(plannedQuery);
+      case DESCRIBE:
+        break;
+      case DETACH_CLUSTER:
+        persist(plannedQuery);
+        break;
+      case DETACH_CONNECTOR:
+        persist(plannedQuery);
+        break;
+      case DROP_CATALOG:
+        return new MetadataInProgressQuery(plannedQuery);
+      case DROP_INDEX:
+        return new MetadataInProgressQuery(plannedQuery);
+      case DROP_TABLE:
+        return new MetadataInProgressQuery(plannedQuery);
+        // SELECT
+      case SELECT:
+        return coordinateSelect((SelectPlannedQuery) plannedQuery);
+        // STORAGE
+      case INSERT_INTO:
+        break;
+      case DELETE:
+        break;
+
+
+      default:
+        break;
+    }
+
+    return null;
+
+  }
+
+  public void persist(PlannedQuery plannedQuery) {
+
+    switch (getStatement(plannedQuery)) {
+    // METADATA
+      case ATTACH_CLUSTER:
+        persistAttachCluster((AttachClusterStatement) plannedQuery.getStatement());
+        break;
+      case ATTACH_CONNECTOR:
+        persistAttachConnector((AttachConnectorStatement) plannedQuery.getStatement());
+        break;
+      case CREATE_CATALOG:
+        persistCreateCatalog((CreateCatalogStatement)plannedQuery.getStatement());
         break;
       case CREATE_INDEX:
         break;
       case CREATE_TABLE:
+        persistCreateTable((CreateTableStatement) plannedQuery.getStatement());
         break;
       case DESCRIBE:
         break;
@@ -79,65 +122,83 @@ public class Coordinator {
         break;
       case DROP_TABLE:
         break;
-      //OTHERS
+      // STORAGE
+      case INSERT_INTO:
+        break;
+      case DELETE:
+        break;
+
       default:
         break;
     }
-    
-    return new MetadataInProgressQuery(plannedQuery);
 
   }
 
+
   private StatementEnum getStatement(PlannedQuery plannedQuery) {
-    //METADATA
+
+    // METADATA
     if (plannedQuery instanceof MetadataPlannedQuery) {
       MetaStatement statement = ((MetadataPlannedQuery) plannedQuery).getStatement();
-      
       if (statement instanceof AttachClusterStatement) {
-        queryStatement = StatementEnum.ATTACH_CLUSTER; 
+        return StatementEnum.ATTACH_CLUSTER;
       }
       if (statement instanceof AttachConnectorStatement) {
-        queryStatement = StatementEnum.ATTACH_CONNECTOR; 
+        return StatementEnum.ATTACH_CONNECTOR;
       }
       if (statement instanceof CreateCatalogStatement) {
-        queryStatement = StatementEnum.CREATE_CATALOG; 
+        return StatementEnum.CREATE_CATALOG;
       }
       if (statement instanceof CreateIndexStatement) {
-        queryStatement = StatementEnum.CREATE_INDEX; 
+        return StatementEnum.CREATE_INDEX;
       }
       if (statement instanceof CreateTableStatement) {
-        queryStatement = StatementEnum.CREATE_TABLE; 
+        return StatementEnum.CREATE_TABLE;
       }
       if (statement instanceof DropCatalogStatement) {
-        queryStatement = StatementEnum.DROP_CATALOG; 
+        return StatementEnum.DROP_CATALOG;
       }
       if (statement instanceof DropIndexStatement) {
-        queryStatement = StatementEnum.DROP_INDEX; 
+        return StatementEnum.DROP_INDEX;
       }
       if (statement instanceof DropTableStatement) {
-        queryStatement = StatementEnum.DROP_TABLE; 
+        return StatementEnum.DROP_TABLE;
       }
 
+    }
+
+    // SELECT
+    if (plannedQuery instanceof SelectPlannedQuery) {
+      return StatementEnum.SELECT;
+    }
+
+    // STORAGE
+    if (plannedQuery instanceof StoragePlannedQuery) {
+      MetaStatement statement = ((StoragePlannedQuery) plannedQuery).getStatement();
+      if (statement instanceof InsertIntoStatement) {
+        return StatementEnum.INSERT_INTO;
+      }
+      if (statement instanceof DeleteStatement) {
+        return StatementEnum.DELETE;
+      }
     }
     return null;
   }
 
+  private SelectInProgressQuery coordinateSelect(SelectPlannedQuery selectPlannedQuery) {
+    SelectInProgressQuery inProgressQuery = new SelectInProgressQuery(selectPlannedQuery);
+    return inProgressQuery;
+  }
 
   private InProgressQuery coordinateStorage(StoragePlannedQuery storagePlannedQuery) {
     InProgressQuery inProgressQuery = null;
     return inProgressQuery;
   }
 
-  private InProgressQuery coordinateSelect(SelectPlannedQuery selectPlannedQuery) {
-    InProgressQuery inProgressQuery = null;
-    return inProgressQuery;
-  }
-    
-  private void attachCluster(AttachClusterStatement attachClusterStatement){
-    DataStoreMetadata
-        datastoreMetadata =
-        MetadataManager.MANAGER
-            .getDataStore(new DataStoreName(attachClusterStatement.getDatastoreName()));
+  private void persistAttachCluster(AttachClusterStatement attachClusterStatement) {
+    DataStoreMetadata datastoreMetadata =
+        MetadataManager.MANAGER.getDataStore(new DataStoreName(attachClusterStatement
+            .getDatastoreName()));
 
     Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs =
         datastoreMetadata.getClusterAttachedRefs();
@@ -154,8 +215,17 @@ public class Coordinator {
     MetadataManager.MANAGER.createDataStore(datastoreMetadata, false);
   }
 
-  private void attachConnector(AttachConnectorStatement attachConnectorStatement) {
+  private void persistAttachConnector(AttachConnectorStatement attachConnectorStatement) {
 
+  }
+
+  private void persistCreateCatalog(CreateCatalogStatement createCatalogStatement) {
+    MetadataManager.MANAGER.createCatalog(new CatalogMetadata(createCatalogStatement
+        .getCatalogName(), createCatalogStatement.getOptions(), null));
+  }
+
+  private void persistCreateTable(CreateTableStatement createTableStatement) {
+    MetadataManager.MANAGER.createTable(createTableStatement.getTableMetadata());
   }
 
 }

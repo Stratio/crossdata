@@ -18,12 +18,17 @@
 
 package com.stratio.meta2.core.statements;
 
+import java.util.Map;
+
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta2.core.engine.EngineConfig;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -42,7 +47,7 @@ public class CreateCatalogStatement extends MetaDataStatement {
   /**
    * A JSON with the options specified by the user.
    */
-  private final String options;
+  private final Map<Selector,Selector> options;
 
   /**
    * Class constructor.
@@ -56,7 +61,7 @@ public class CreateCatalogStatement extends MetaDataStatement {
     this.catalogInc = true;
     this.command = false;
     this.ifNotExists = ifNotExists;
-    this.options = options;
+    this.options = StringUtils.convertJsonToOptions(options);
   }
 
   @Override
@@ -98,6 +103,14 @@ public class CreateCatalogStatement extends MetaDataStatement {
   public ValidationRequirements getValidationRequirements(){
     return new ValidationRequirements().add(Validation.MUST_NOT_EXIST_CATALOG);
   }
+  public CatalogName getCatalogName(){
+    return new CatalogName(this.catalog);
+  }
+
+  public Map<Selector, Selector> getOptions() {
+    return options;
+  }
+  
 
 }
 

@@ -160,7 +160,7 @@ public class NormalizerTest {
 
     CatalogMetadata catalogMetadata = new CatalogMetadata(
         new CatalogName("demo"), // name
-        new HashMap<String, Object>(), // options
+        new HashMap<Selector, Selector>(), // options
         tables // tables
     );
 
@@ -217,7 +217,7 @@ public class NormalizerTest {
 
     catalogMetadata = new CatalogMetadata(
         new CatalogName("myCatalog"), // name
-        new HashMap<String, Object>(), // options
+        new HashMap<Selector, Selector>(), // options
         tables // tables
     );
 
