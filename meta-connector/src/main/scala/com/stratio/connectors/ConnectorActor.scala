@@ -4,6 +4,7 @@ import akka.actor.{Actor, ActorLogging, Props}
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
+import com.stratio.meta2.common.data.ClusterName
 import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
 import com.stratio.meta2.core.statements.{MetaDataStatement, SelectStatement}
 
@@ -24,6 +25,10 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
   // subscribe to cluster changes, re-subscribe when restart
 
   def receive = {
+
+    case stop=>{
+      connector.close(new ClusterName(""))
+    }
 
     case inProgressQuery:MetadataInProgressQuery=>{
       log.info("->"+"Receiving MetadataInProgressQuery")

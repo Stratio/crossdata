@@ -20,6 +20,7 @@ package com.stratio.meta.communication
 
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta.common.result.QueryStatus
+import com.stratio.meta2.common.data.ClusterName
 
 case class ACK(queryId: String, status: QueryStatus)
 case class Connect(msg: String)
@@ -28,7 +29,7 @@ case class Disconnect(userId: String)
 
 //Connector messages
 case class ConnectToConnector(msg: String)
-case class Execute(workflow: LogicalWorkflow)
+case class Execute(clustername:ClusterName,workflow: LogicalWorkflow)
 case class DisconnectFromConnector(msg: String)
 case class Request(msg:String)
 case class Response(msg:String)
