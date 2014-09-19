@@ -115,6 +115,7 @@ public enum MetadataManager {
   private boolean exists(FirstLevelName name) {
     return metadata.containsKey(name);
   }
+
   public boolean exists(TableName name) {
     boolean result = false;
     if (exists(name.getCatalogName())) {
@@ -238,11 +239,13 @@ public enum MetadataManager {
     return (ClusterMetadata) metadata.get(name);
   }
 
-  public void createDataStore(DataStoreMetadata dataStoreMetadata) {
+  public void createDataStore(DataStoreMetadata dataStoreMetadata, boolean unique) {
     shouldBeInit();
     try {
       writeLock.lock();
-      shouldBeUnique(dataStoreMetadata.getName());
+      if(unique){
+        shouldBeUnique(dataStoreMetadata.getName());
+      }
       beginTransaction();
       metadata.put(dataStoreMetadata.getName(), dataStoreMetadata);
       commitTransaction();
@@ -253,6 +256,10 @@ public enum MetadataManager {
     } finally {
       writeLock.unlock();
     }
+  }
+
+  public void createDataStore(DataStoreMetadata dataStoreMetadata) {
+    createDataStore(dataStoreMetadata, true);
   }
 
   public DataStoreMetadata getDataStore(DataStoreName name) {

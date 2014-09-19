@@ -21,9 +21,10 @@ package com.stratio.meta2.common.metadata;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.DataStoreName;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class ClusterAttachedMetadata {
+public class ClusterAttachedMetadata implements Serializable {
   private final ClusterName clusterRef;
   private final DataStoreName dataStoreRef;
   private final Map<String, Object> properties;
