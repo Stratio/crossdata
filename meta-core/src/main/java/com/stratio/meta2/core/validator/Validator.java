@@ -26,15 +26,29 @@ import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.exceptions.validation.ExistNameException;
 import com.stratio.meta.common.exceptions.validation.NotExistNameException;
 import com.stratio.meta2.common.api.Manifest;
-import com.stratio.meta2.common.data.*;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.IndexName;
+import com.stratio.meta2.common.data.Name;
 import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.query.*;
-import com.stratio.meta2.core.statements.*;
+import com.stratio.meta2.core.query.MetaDataParsedQuery;
+import com.stratio.meta2.core.query.MetadataValidatedQuery;
+import com.stratio.meta2.core.query.ParsedQuery;
+import com.stratio.meta2.core.query.StorageParsedQuery;
+import com.stratio.meta2.core.query.StorageValidatedQuery;
+import com.stratio.meta2.core.query.ValidatedQuery;
+import com.stratio.meta2.core.statements.AlterCatalogStatement;
+import com.stratio.meta2.core.statements.AttachClusterStatement;
+import com.stratio.meta2.core.statements.AttachConnectorStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
+
 import org.apache.log4j.Logger;
 
+import java.util.List;
+import java.util.Map;
 
 public class Validator {
   /**

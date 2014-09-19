@@ -29,7 +29,7 @@ public class ClusterMetadata implements IMetadata {
   private final ClusterName name;
   private final DataStoreName dataStoreRef;
   private final Map<String, Object> options;
-  private final Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs;
+  private Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs;
 
   public ClusterMetadata(ClusterName name, DataStoreName dataStoreRef, Map<String, Object> options,
       Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) {
@@ -55,4 +55,8 @@ public class ClusterMetadata implements IMetadata {
     return connectorAttachedRefs;
   }
 
+  public void setConnectorAttachedRefs(
+      Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) {
+    this.connectorAttachedRefs = connectorAttachedRefs;
+  }
 }

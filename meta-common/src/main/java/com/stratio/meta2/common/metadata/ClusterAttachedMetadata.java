@@ -20,6 +20,7 @@ package com.stratio.meta2.common.metadata;
 
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.DataStoreName;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -27,11 +28,11 @@ import java.util.Map;
 public class ClusterAttachedMetadata implements Serializable {
   private final ClusterName clusterRef;
   private final DataStoreName dataStoreRef;
-  private final Map<String, Object> properties;
+  private final Map<Selector, Selector> properties;
 
   public ClusterAttachedMetadata(ClusterName clusterRef,
                                  DataStoreName dataStoreRef,
-                                 Map<String, Object> properties) {
+                                 Map<Selector, Selector> properties) {
     this.clusterRef = clusterRef;
     this.dataStoreRef = dataStoreRef;
     this.properties = properties;
@@ -45,7 +46,7 @@ public class ClusterAttachedMetadata implements Serializable {
     return dataStoreRef;
   }
 
-  public Map<String, Object> getProperties() {
+  public Map<Selector, Selector> getProperties() {
     return properties;
   }
 }
