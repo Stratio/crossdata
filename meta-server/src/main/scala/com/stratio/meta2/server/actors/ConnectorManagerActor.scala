@@ -37,7 +37,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       log.info("Member is Up: {}" + mu.toString+mu.member.getRoles)
       val it=mu.member.getRoles.iterator()
       while(it.hasNext()){
-    	  var rol=it.next()
+        val rol = it.next()
     	  rol match{
     	    case "connector"=>
     	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
