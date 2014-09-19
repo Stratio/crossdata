@@ -32,9 +32,8 @@ import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.query.MetaDataParsedQuery;
-import com.stratio.meta2.core.query.ParsedQuery;
-import com.stratio.meta2.core.query.ValidatedQuery;
+import com.stratio.meta2.core.metadata.MockMetadataManager;
+import com.stratio.meta2.core.query.*;
 import com.stratio.meta2.core.statements.*;
 import org.apache.log4j.Logger;
 
@@ -141,14 +140,20 @@ public class Validator {
 
           }
       }
-      //validatedQuery=(ValidatedQuery)parsedQuery;
+      if (parsedQuery instanceof MetaDataParsedQuery) {
+          validatedQuery = (MetadataValidatedQuery) parsedQuery;
+      }
+      if (parsedQuery instanceof StorageParsedQuery) {
+          validatedQuery = (StorageValidatedQuery) parsedQuery;
+      }
+
       return validatedQuery;
   }
 
 
     private void validateExistColumn(TableMetadata tableMetadata) throws NotExistNameException {
         for (ColumnName columnName:tableMetadata.getColumns().keySet()){
-            if(!MetadataManager.MANAGER.exists(columnName)){
+            if(!MockMetadataManager.MANAGER.exists(columnName)){
                 throw new NotExistNameException(columnName);
             }
         }
@@ -157,7 +162,7 @@ public class Validator {
     private void validateNotExistColumn(TableMetadata tableMetadata)
         throws ExistNameException {
         for (ColumnName columnName:tableMetadata.getColumns().keySet()){
-            if(MetadataManager.MANAGER.exists(columnName)){
+            if(MockMetadataManager.MANAGER.exists(columnName)){
                 throw new ExistNameException(columnName);
             }
         }
@@ -183,7 +188,7 @@ public class Validator {
 
   private void validateExist(Name name, boolean hasIfExists)
       throws NotExistNameException, IgnoreQueryException {
-    if(!MetadataManager.MANAGER.exists(name)){
+    if(!MockMetadataManager.MANAGER.exists(name)){
       if(hasIfExists) {
         throw new IgnoreQueryException("["+ name + "] doesn't exist");
       }else{
@@ -194,7 +199,7 @@ public class Validator {
 
   private void validateNotExist(Name name, boolean hasIfExists)
       throws ExistNameException, IgnoreQueryException {
-    if(MetadataManager.MANAGER.exists(name)){
+    if(MockMetadataManager.MANAGER.exists(name)){
       if(hasIfExists) {
          throw new IgnoreQueryException("["+ name + "] doesn't exist");
       }else{
@@ -213,7 +218,7 @@ public class Validator {
 
   private void validateNotExistCatalog(Name name, boolean onlyIfNotExist)
       throws ExistNameException, IgnoreQueryException {
-    if(MetadataManager.MANAGER.exists(name)){
+    if(MockMetadataManager.MANAGER.exists(name)){
       if(onlyIfNotExist) {
         throw new IgnoreQueryException("["+ name + "] exists");
       }else{
@@ -249,7 +254,7 @@ public class Validator {
   private void validateIndexExist(Map<IndexName, IndexMetadata> indexes, boolean hasIfExists)
       throws IgnoreQueryException, ExistNameException {
       for (IndexName indexName:indexes.keySet()) {
-          if (MetadataManager.MANAGER.exists(indexName)) {
+          if (MockMetadataManager.MANAGER.exists(indexName)) {
               if (hasIfExists) {
                   throw new IgnoreQueryException("[" + indexName + "] exists");
               } else {
@@ -263,7 +268,7 @@ public class Validator {
   private void validateNotIndexExist(Map<IndexName, IndexMetadata> indexes, boolean hasIfExists)
       throws IgnoreQueryException, NotExistNameException {
       for (IndexName indexName:indexes.keySet()) {
-          if (!MetadataManager.MANAGER.exists(indexName)) {
+          if (!MockMetadataManager.MANAGER.exists(indexName)) {
               if (hasIfExists) {
                   throw new IgnoreQueryException("[" + indexName + "]  not exists");
               } else {
@@ -271,7 +276,7 @@ public class Validator {
               }
           }
           for(ColumnMetadata columnMetadata:indexes.get(indexName).getColumns()) {
-              if (!MetadataManager.MANAGER.exists(columnMetadata.getName())) {
+              if (!MockMetadataManager.MANAGER.exists(columnMetadata.getName())) {
                   if (hasIfExists) {
                       throw new IgnoreQueryException("[" + columnMetadata.getName() + "]  not exists to create the index [" + indexName +"]");
                   } else {

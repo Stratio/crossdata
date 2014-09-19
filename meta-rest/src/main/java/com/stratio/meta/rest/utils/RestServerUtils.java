@@ -18,20 +18,20 @@
 
 package com.stratio.meta.rest.utils;
 
-import java.io.ObjectOutputStream;
-import org.apache.commons.codec.binary.Base64;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.GZIPOutputStream;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
-import com.stratio.meta.common.data.MetaResultSet;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.rest.models.JsonMetaResultSet;
 import com.stratio.meta.rest.models.JsonQueryResult;
 import com.stratio.meta.rest.models.JsonRow;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 public class RestServerUtils {
   private static Base64 base64 = new Base64();
@@ -39,14 +39,16 @@ public class RestServerUtils {
   public static JsonQueryResult toJsonQueryResult(QueryResult qr) {
     JsonMetaResultSet jrs = new JsonMetaResultSet();
     List<JsonRow> jrows = new ArrayList<JsonRow>();
-    if(((MetaResultSet) qr.getResultSet()).getRows().size()>0){
-    List<Row> rows = ((MetaResultSet) qr.getResultSet()).getRows();
-    for (Row r : rows) {
+    if(qr.getResultSet().size()>0){
+    Iterator<Row> rows = qr.getResultSet().iterator();
+    while (rows.hasNext()) {
+      Row r = rows.next();
       JsonRow jr = new JsonRow();
       jr.setCells(r.getCells());
       jrows.add(jr);
     }
-    jrs.setColumnMetadata(((MetaResultSet) qr.getResultSet()).getColumnMetadata());
+    // TODO: Update this with new structures
+    //jrs.setColumnMetadata(((MetaResultSet) qr.getResultSet()).getColumnMetadata());
     jrs.setRows(jrows);
     }
     JsonQueryResult jqr =

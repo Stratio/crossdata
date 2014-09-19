@@ -10,8 +10,11 @@ import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.InProgressQuery;
+import com.stratio.meta2.core.query.MetadataInProgressQuery;
 import com.stratio.meta2.core.query.MetadataPlannedQuery;
 import com.stratio.meta2.core.query.PlannedQuery;
+import com.stratio.meta2.core.query.SelectPlannedQuery;
+import com.stratio.meta2.core.query.StoragePlannedQuery;
 import com.stratio.meta2.core.statements.AttachClusterStatement;
 import com.stratio.meta2.core.statements.AttachConnectorStatement;
 import com.stratio.meta2.core.statements.CreateCatalogStatement;
@@ -21,6 +24,8 @@ import com.stratio.meta2.core.statements.DropCatalogStatement;
 import com.stratio.meta2.core.statements.DropIndexStatement;
 import com.stratio.meta2.core.statements.DropTableStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
+
+import java.util.Map;
 
 public class Coordinator {
 
@@ -49,13 +54,38 @@ public class Coordinator {
   public InProgressQuery coordinate(PlannedQuery plannedQuery) {
 
     switch (getStatement(plannedQuery)) {
+      //METADATA
       case ATTACH_CLUSTER:
-
+        attachCluster((AttachClusterStatement) plannedQuery.getStatement());
+        break;
+      case ATTACH_CONNECTOR:
+        attachConnector((AttachConnectorStatement) plannedQuery.getStatement());
+        break;
+      case CREATE_CATALOG:
+        break;
+      case CREATE_INDEX:
+        break;
+      case CREATE_TABLE:
+        break;
+      case DESCRIBE:
+        break;
+      case DETACH_CLUSTER:
+        break;
+      case DETACH_CONNECTOR:
+        break;
+      case DROP_CATALOG:
+        break;
+      case DROP_INDEX:
+        break;
+      case DROP_TABLE:
+        break;
+      //OTHERS
+      default:
+        break;
     }
+    
+    return new MetadataInProgressQuery(plannedQuery);
 
-
-
-    return new InProgressQuery(null);
   }
 
   private StatementEnum getStatement(PlannedQuery plannedQuery) {
@@ -92,13 +122,22 @@ public class Coordinator {
     return null;
   }
 
-  private void attachCluster(AttachClusterStatement attachClusterStatement) {
 
-    // TODO: Create DataStore
+  private InProgressQuery coordinateStorage(StoragePlannedQuery storagePlannedQuery) {
+    InProgressQuery inProgressQuery = null;
+    return inProgressQuery;
+  }
 
-    DataStoreMetadata datastoreMetadata =
-        MetadataManager.MANAGER.getDataStore(new DataStoreName(attachClusterStatement
-            .getDatastoreName()));
+  private InProgressQuery coordinateSelect(SelectPlannedQuery selectPlannedQuery) {
+    InProgressQuery inProgressQuery = null;
+    return inProgressQuery;
+  }
+    
+  private void attachCluster(AttachClusterStatement attachClusterStatement){
+    DataStoreMetadata
+        datastoreMetadata =
+        MetadataManager.MANAGER
+            .getDataStore(new DataStoreName(attachClusterStatement.getDatastoreName()));
 
     Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs =
         datastoreMetadata.getClusterAttachedRefs();
@@ -110,6 +149,13 @@ public class Coordinator {
     ClusterAttachedMetadata value =
         new ClusterAttachedMetadata(clusterRef, dataStoreRef, properties);
     clusterAttachedRefs.put(key, value);
+    datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
+
+    MetadataManager.MANAGER.createDataStore(datastoreMetadata, false);
+  }
+
+  private void attachConnector(AttachConnectorStatement attachConnectorStatement) {
+
   }
 
 }

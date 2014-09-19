@@ -19,7 +19,9 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
-import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.SelectStatement;
+
 
 public class SelectPlannedQuery extends PlannedQuery {
   private final LogicalWorkflow logicalWorkflow;
@@ -37,4 +39,7 @@ public class SelectPlannedQuery extends PlannedQuery {
     return logicalWorkflow;
   }
 
+    @Override public MetaStatement getStatement() {
+        return (SelectStatement)statement;
+    }
 }

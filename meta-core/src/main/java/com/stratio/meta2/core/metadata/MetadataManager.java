@@ -35,6 +35,13 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+
 public enum MetadataManager {
   MANAGER;
 
@@ -43,6 +50,7 @@ public enum MetadataManager {
 
   private Map<FirstLevelName, IMetadata> metadata;
   private Lock writeLock;
+  private TransactionManager tm;
 
   private void shouldBeInit() {
     if (!isInit) {
@@ -90,9 +98,24 @@ public enum MetadataManager {
     }
   }
 
+  private void beginTransaction() throws SystemException, NotSupportedException {
+    if(tm!=null){
+     tm.begin();
+    }
+  }
+
+  private void commitTransaction()
+      throws HeuristicRollbackException, RollbackException, HeuristicMixedException,
+             SystemException {
+    if(tm!=null){
+      tm.commit();
+    }
+  }
+
   private boolean exists(FirstLevelName name) {
     return metadata.containsKey(name);
   }
+
   public boolean exists(TableName name) {
     boolean result = false;
     if (exists(name.getCatalogName())) {
@@ -120,10 +143,11 @@ public enum MetadataManager {
    return result;
   }
 
-  public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock) {
+  public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock, TransactionManager tm) {
     if (metadata != null && writeLock != null) {
       this.metadata = metadata;
       this.writeLock = writeLock;
+      this.tm = tm;
       this.isInit = true;
     } else {
       throw new NullPointerException("Any parameter can't be NULL");
@@ -135,7 +159,9 @@ public enum MetadataManager {
     try {
       writeLock.lock();
       shouldBeUnique(catalogMetadata.getName());
+      beginTransaction();
       metadata.put(catalogMetadata.getName(), catalogMetadata);
+      commitTransaction();
     } catch (MetadataManagerException mex) {
       throw mex;
     } catch (Exception ex) {
@@ -168,7 +194,9 @@ public enum MetadataManager {
       }
 
       catalogMetadata.getTables().put(tableMetadata.getName(), tableMetadata);
+      beginTransaction();
       metadata.put(tableMetadata.getName().getCatalogName(), catalogMetadata);
+      commitTransaction();
     } catch (Exception ex) {
       throw new MetadataManagerException(ex.getMessage(), ex.getCause());
     } finally {
@@ -193,7 +221,9 @@ public enum MetadataManager {
           .values()) {
         shouldExist(connectorRef.getConnectorRef());
       }
+      beginTransaction();
       metadata.put(clusterMetadata.getName(),clusterMetadata);
+      commitTransaction();
     } catch (MetadataManagerException mex) {
       throw mex;
     } catch (Exception ex) {
@@ -209,12 +239,16 @@ public enum MetadataManager {
     return (ClusterMetadata) metadata.get(name);
   }
 
-  public void createDataStore(DataStoreMetadata dataStoreMetadata) {
+  public void createDataStore(DataStoreMetadata dataStoreMetadata, boolean unique) {
     shouldBeInit();
     try {
       writeLock.lock();
-      shouldBeUnique(dataStoreMetadata.getName());
+      if(unique){
+        shouldBeUnique(dataStoreMetadata.getName());
+      }
+      beginTransaction();
       metadata.put(dataStoreMetadata.getName(), dataStoreMetadata);
+      commitTransaction();
     } catch (MetadataManagerException mex) {
       throw mex;
     } catch (Exception ex) {
@@ -222,6 +256,10 @@ public enum MetadataManager {
     } finally {
       writeLock.unlock();
     }
+  }
+
+  public void createDataStore(DataStoreMetadata dataStoreMetadata) {
+    createDataStore(dataStoreMetadata, true);
   }
 
   public DataStoreMetadata getDataStore(DataStoreName name) {
@@ -235,7 +273,9 @@ public enum MetadataManager {
     try {
       writeLock.lock();
       shouldBeUnique(connectorMetadata.getName());
+      beginTransaction();
       metadata.put(connectorMetadata.getName(), connectorMetadata);
+      commitTransaction();
     } catch (MetadataManagerException mex) {
       throw mex;
     } catch (Exception ex) {

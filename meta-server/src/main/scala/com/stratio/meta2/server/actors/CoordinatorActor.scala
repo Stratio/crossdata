@@ -2,7 +2,7 @@ package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.stratio.meta2.core.coordinator.Coordinator
-import com.stratio.meta2.core.query.{PlannedQuery, SelectPlannedQuery}
+import com.stratio.meta2.core.query.{StoragePlannedQuery, MetadataPlannedQuery, PlannedQuery, SelectPlannedQuery}
 
 object CoordinatorActor {
   def props(connector: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor(connector, coordinator))
@@ -19,12 +19,27 @@ class CoordinatorActor(connector: ActorRef, coordinator: Coordinator) extends Ac
     case query: SelectPlannedQuery => {
       log.info("CoordinatorActor Received SelectPlannedQuery")
       println() // doesn't print log.info if this statement is not written
-      connector forward query
+      //connector forward query
+      connector ! coordinator.coordinate(query)
     }
+
+    case query: MetadataPlannedQuery => {
+      log.info("CoordinatorActor Received MetadataPlannedQuery")
+      println() // doesn't print log.info if this statement is not written
+      //connector forward query
+      connector ! coordinator.coordinate(query)
+    }
+
+    case query: StoragePlannedQuery => {
+      log.info("CoordinatorActor Received StoragePlannedQuery")
+      println() // doesn't print log.info if this statement is not written
+      //connector forward query
+      connector ! coordinator.coordinate(query)
+    }
+
     case query: PlannedQuery => {
       log.info("CoordinatorActor Received PlannedQuery")
       println() // doesn't print log.info if this statement is not written
-
       connector forward coordinator.coordinate(query)
     }
       /*

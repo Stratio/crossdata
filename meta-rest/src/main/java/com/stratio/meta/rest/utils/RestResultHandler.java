@@ -18,14 +18,13 @@
 
 package com.stratio.meta.rest.utils;
 
-import java.util.HashMap;
-
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.data.MetaResultSet;
+
+import java.util.HashMap;
 
 public class RestResultHandler implements IResultHandler {
 
@@ -61,8 +60,8 @@ public class RestResultHandler implements IResultHandler {
         lastResults.put(queryId, r);
       } else {
         if (last.getResultPage() != r.getResultPage()) { // result es nuevo
-          ((MetaResultSet) last.getResultSet()).getRows().addAll(
-              ((MetaResultSet) r.getResultSet()).getRows());// concatena con los resultados anteriores
+          // TODO: Update with new structure
+          //((MetaResultSet) last.getResultSet()).getRows().addAll(((MetaResultSet) r.getResultSet()).getRows());// concatena con los resultados anteriores
           // lastResults.put(queryId, r); // actualizamos el anterior result con el actual
           // queryResult.getResultSet.asInstanceOf[MetaResultSet].getRows.addAll(
           // r.getResultSet.asInstanceOf[MetaResultSet].getRows)

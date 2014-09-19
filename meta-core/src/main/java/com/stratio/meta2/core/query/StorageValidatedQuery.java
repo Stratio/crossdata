@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,27 +18,25 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.core.statements.StorageStatement;
 
-public abstract class InProgressQuery extends PlannedQuery {
+public class StorageValidatedQuery extends ValidatedQuery {
 
-  private String connectorName=null;
-  public InProgressQuery(PlannedQuery plannedQuery){
-    super(plannedQuery);
+  public StorageValidatedQuery(ParsedQuery parsedQuery) {
+    super(parsedQuery);
   }
 
-  InProgressQuery(InProgressQuery inProgressQuery){
-    this((PlannedQuery)inProgressQuery);
-  }
-  public QueryStatus getStatus() {
-    return QueryStatus.IN_PROGRESS;
+  StorageValidatedQuery(ValidatedQuery validatedQuery) {
+    super((ParsedQuery) validatedQuery);
   }
 
-    public String getConnectorName() {
-        return connectorName;
-    }
+  public StorageValidatedQuery(BaseQuery baseQuery,
+                               MetaStatement statement) {
+    super(baseQuery, statement);
+  }
 
-    public void setConnectorName(String connectorName) {
-        this.connectorName = connectorName;
-    }
+  public StorageStatement getStatement(){
+    return (StorageStatement) statement;
+  }
 }

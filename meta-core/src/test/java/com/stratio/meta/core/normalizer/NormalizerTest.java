@@ -48,6 +48,7 @@ import com.stratio.meta2.core.metadata.MockMetadataManager;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.NormalizedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
+import com.stratio.meta2.core.query.SelectValidatedQuery;
 import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta2.core.structures.OrderBy;
 
@@ -234,7 +235,7 @@ public class NormalizerTest {
   public void testSelectedParserQuery(SelectParsedQuery selectParsedQuery, String expectedText, String methodName){
     Normalizer normalizer = new Normalizer();
 
-    NormalizedQuery result = null;
+    SelectValidatedQuery result = null;
     try {
       result = normalizer.normalize(selectParsedQuery);
     } catch (ValidationException e) {

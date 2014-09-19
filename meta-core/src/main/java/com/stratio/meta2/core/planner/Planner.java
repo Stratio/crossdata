@@ -15,10 +15,7 @@
 package com.stratio.meta2.core.planner;
 
 import com.stratio.meta.common.connector.Operations;
-import com.stratio.meta.common.logicalplan.Filter;
-import com.stratio.meta.common.logicalplan.LogicalStep;
-import com.stratio.meta.common.logicalplan.LogicalWorkflow;
-import com.stratio.meta.common.logicalplan.Project;
+import com.stratio.meta.common.logicalplan.*;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta2.common.data.ColumnName;
@@ -27,10 +24,12 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
+
 import com.stratio.meta2.core.query.NormalizedQuery;
-import com.stratio.meta2.core.query.PlannedQuery;
 import com.stratio.meta2.core.query.SelectPlannedQuery;
-import com.stratio.meta2.core.query.ValidatedQuery;
+
+import com.stratio.meta2.core.query.*;
+
 
 import org.apache.log4j.Logger;
 
@@ -62,7 +61,7 @@ public class Planner {
    */
   public SelectPlannedQuery planQuery(ValidatedQuery query) {
     //Build the workflow.
-    LogicalWorkflow workflow = buildWorkflow(query);
+    LogicalWorkflow workflow = buildWorkflow((SelectValidatedQuery)query);
 
     //Plan the workflow execution into different connectors.
 
@@ -70,6 +69,18 @@ public class Planner {
     SelectPlannedQuery pq = new SelectPlannedQuery(query, workflow);
     return pq;
   }
+
+    protected LogicalWorkflow buildWorkflow(ValidatedQuery query) {
+        LogicalWorkflow result=null;
+        if(query instanceof SelectValidatedQuery){
+            result=buildWorkflow((SelectValidatedQuery) query);
+        }else if(query instanceof StorageValidatedQuery){
+            result=buildWorkflow((StorageValidatedQuery) query);
+        }else if(query instanceof MetadataValidatedQuery){
+            result=buildWorkflow((MetadataValidatedQuery) query);
+        }
+        return result;
+    }
 
   /**
    * Build a workflow with the {@link com.stratio.meta.common.logicalplan.LogicalStep} required to
@@ -79,7 +90,7 @@ public class Planner {
    * @param query The query to be planned.
    * @return A Logical workflow.
    */
-  protected LogicalWorkflow buildWorkflow(NormalizedQuery query) {
+  protected LogicalWorkflow buildWorkflow(SelectValidatedQuery query) {
     //Define the list of projects
     Map<String, Project> projectSteps = getProjects(query);
     addProjectedColumns(projectSteps, query);
@@ -98,6 +109,14 @@ public class Planner {
     LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
     return workflow;
   }
+    protected LogicalWorkflow buildWorkflow(StorageValidatedQuery query) {
+
+        throw new UnsupportedOperationException();
+    }
+    protected LogicalWorkflow buildWorkflow(MetadataValidatedQuery query) {
+
+        throw new UnsupportedOperationException();
+    }
 
 
   /**
@@ -106,7 +125,7 @@ public class Planner {
    * @param projectSteps The map associating table names to Project steps.
    * @param query        The query to be planned.
    */
-  private void addProjectedColumns(Map<String, Project> projectSteps, NormalizedQuery query) {
+  private void addProjectedColumns(Map<String, Project> projectSteps, SelectValidatedQuery query) {
     for (ColumnName cn : query.getColumns()) {
       projectSteps.get(cn.getTableName().getQualifiedName()).addColumn(cn);
     }
@@ -142,7 +161,7 @@ public class Planner {
    */
   private Map<String, LogicalStep> addFilter(Map<String, Project> projectMap,
                                              Map<String, TableMetadata> tableMetadataMap,
-                                             NormalizedQuery query) {
+                                             SelectValidatedQuery query) {
     Map<String, LogicalStep> lastSteps = new HashMap<>();
     for (Map.Entry<String, Project> e : projectMap.entrySet()) {
       lastSteps.put(e.getKey(), e.getValue());
@@ -172,8 +191,6 @@ public class Planner {
     return lastSteps;
   }
 
-
-
   /**
    * Add Filter operations after the Project.
    */
@@ -187,7 +204,7 @@ public class Planner {
    * @param query The query to be planned.
    * @return A map with the projections.
    */
-  protected Map<String, Project> getProjects(NormalizedQuery query) {
+  protected Map<String, Project> getProjects(SelectValidatedQuery query) {
     Map<String, Project> projects = new HashMap<>();
     for (TableName tn : query.getTables()) {
       Project p = new Project(Operations.PROJECT, tn);

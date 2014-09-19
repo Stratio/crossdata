@@ -15,30 +15,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.result.QueryStatus;
 
-public abstract class InProgressQuery extends PlannedQuery {
+import com.stratio.meta2.core.statements.MetaDataStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
 
-  private String connectorName=null;
-  public InProgressQuery(PlannedQuery plannedQuery){
-    super(plannedQuery);
-  }
-
-  InProgressQuery(InProgressQuery inProgressQuery){
-    this((PlannedQuery)inProgressQuery);
-  }
-  public QueryStatus getStatus() {
-    return QueryStatus.IN_PROGRESS;
-  }
-
-    public String getConnectorName() {
-        return connectorName;
+/**
+ * Created by jjlopez on 18/09/14.
+ */
+public class MetadataValidatedQuery extends ValidatedQuery{
+    public MetadataValidatedQuery(BaseQuery baseQuery,
+        MetaStatement statement) {
+        super(baseQuery, statement);
     }
 
-    public void setConnectorName(String connectorName) {
-        this.connectorName = connectorName;
+    MetadataValidatedQuery(ParsedQuery parsedQuery) {
+        super(parsedQuery);
     }
+
+    @Override
+    public MetaDataStatement getStatement() {
+        return (MetaDataStatement)statement;
+    }
+
 }

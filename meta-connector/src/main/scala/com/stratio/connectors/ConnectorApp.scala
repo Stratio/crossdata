@@ -26,8 +26,10 @@ object ConnectorApp extends ConnectorApp{
 
 class ConnectorApp  extends ConnectConfig {
 
+    private var connector=null
+
     val usage = """Usage: 
-      connectorApp [--port <port number>] [--connectortype <connector type name>] 
+      connectorApp [--port <port number>] [--connector-type <connector type name>]
     """
     lazy val system = ActorSystem(clusterName, config)
 
@@ -72,21 +74,29 @@ class ConnectorApp  extends ConnectConfig {
       // Create an Akka system
 
       // Create an actor that handles cluster domain events
-      //actorClusterNode=system.actorOf(Props[ClusterListener], name = actorName)
-      actorClusterNode=system.actorOf(ClusterListener.props(connector.getConnectorName, connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
-
-
-        actorClusterNode ! "I'm in!!!"
+      //actorClusterNode=system.actorOf(Props[ConnectorActor], name = actorName)
+      actorClusterNode=system.actorOf(ConnectorActor.props(connector.getConnectorName,connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
+      actorClusterNode ! "I'm in!!!"
     }
     actorClusterNode
   }
+
+  def shutdown()= {
+    system.shutdown()
+  }
+
+
   def startup(connector:IConnector):ActorRef={
       // Create an Akka system
 
       // Create an actor that handles cluster domain events
-   val  actorClusterNode=system.actorOf(ClusterListener.props(connector.getConnectorName, connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
+   val  actorClusterNode=system.actorOf(ConnectorActor.props(connector.getConnectorName,connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
     actorClusterNode ! "I'm in!!!"
      actorClusterNode
+
+  }
+  def startup(connector:IConnector, port:String):ActorRef={
+    startup(connector,Array(port),config)
 
   }
 
