@@ -44,48 +44,70 @@ import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
-import com.stratio.meta2.core.metadata.MockMetadataManager;
+import com.stratio.meta2.core.grid.Grid;
+import com.stratio.meta2.core.grid.GridInitializer;
+import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.BaseQuery;
-import com.stratio.meta2.core.query.NormalizedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.query.SelectValidatedQuery;
 import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta2.core.structures.OrderBy;
 
+import org.apache.commons.io.FileUtils;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Lock;
+
+import javax.transaction.TransactionManager;
 
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 public class NormalizerTest {
 
-  // TODO: Update with 'real' MetadataManager
+  private String path = "";
 
-  // TODO: SetUpBeforeClass for mocking MetaDataManager
+  Map<FirstLevelName, IMetadata> metadataMap =  new HashMap<>();
+  private void initializeGrid() {
+    GridInitializer gridInitializer = Grid.initializer();
+    gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
+    path = "/tmp/metadata-store-" + UUID.randomUUID();
+    gridInitializer.withPort(7800)
+        .withListenAddress("127.0.0.1")
+        .withMinInitialMembers(1)
+        .withJoinTimeoutInMs(3000)
+        .withPersistencePath(path).init();
+  }
 
   @BeforeMethod
   public void setUp() throws Exception {
 
-    // METADATAMANAGER
-    Map<FirstLevelName, IMetadata> md = new HashMap<>();
+
+
+    initializeGrid();
+    Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("meta-test");
+    Lock lock = Grid.getInstance().lock("meta-test");
+    TransactionManager tm = Grid.getInstance().transactionManager("meta-test");
+    MetadataManager.MANAGER.init(metadataMap, lock, tm);
+
+
+    // DATASTORE
     DataStoreMetadata dsmd = new DataStoreMetadata(
         new DataStoreName("Cassandra"), //name
         "1.0.0", //version
         null, //requiredProperties
         null //othersProperties
         );
-    md.put(new DataStoreName("Cassandra"), dsmd);
-    MockMetadataManager.MANAGER.init(md, new ReentrantLock());
+    MetadataManager.MANAGER.createDataStore(dsmd);
 
     // CLUSTER
     ClusterName clusterName = new ClusterName("testing");
@@ -95,7 +117,7 @@ public class NormalizerTest {
 
     ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreRef, clusterOptions, connectorAttachedRefs);
 
-    MockMetadataManager.MANAGER.createCluster(clusterMetadata);
+    MetadataManager.MANAGER.createCluster(clusterMetadata);
 
     // CATALOG 1
     HashMap<TableName, TableMetadata> tables = new HashMap<>();
@@ -164,7 +186,7 @@ public class NormalizerTest {
         tables // tables
     );
 
-    MockMetadataManager.MANAGER.createCatalog(catalogMetadata);
+    MetadataManager.MANAGER.createCatalog(catalogMetadata);
 
     // CATALOG 2
     tables = new HashMap<>();
@@ -221,15 +243,7 @@ public class NormalizerTest {
         tables // tables
     );
 
-    MockMetadataManager.MANAGER.createCatalog(catalogMetadata);
-
-  }
-
-  @AfterMethod
-  public void tearDown() throws Exception {
-    // TODO: Drop DataStore
-    // TODO: Drop Cluster
-    // TODO: Drop Catalog
+    MetadataManager.MANAGER.createCatalog(catalogMetadata);
   }
 
   public void testSelectedParserQuery(SelectParsedQuery selectParsedQuery, String expectedText, String methodName){
@@ -360,6 +374,13 @@ public class NormalizerTest {
 
     testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
 
+  }
+
+  @AfterMethod
+  public void tearDown() throws Exception {
+    metadataMap.clear();
+    Grid.getInstance().close();
+    FileUtils.deleteDirectory(new File(path));
   }
 
 }
