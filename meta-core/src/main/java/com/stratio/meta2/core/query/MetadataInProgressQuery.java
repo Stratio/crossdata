@@ -23,10 +23,7 @@ import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 
 public class MetadataInProgressQuery extends InProgressQuery {
-  
-  private ClusterName cluster;
-  private TableMetadata tableMetaData;
-  private CatalogMetadata catalogMetadata;
+  private ClusterName clusterName;
   
   public MetadataInProgressQuery(PlannedQuery validatedQuery) {
     super(validatedQuery);
@@ -34,17 +31,5 @@ public class MetadataInProgressQuery extends InProgressQuery {
 
   MetadataInProgressQuery(MetadataInProgressQuery plannedQuery){
     this((PlannedQuery)plannedQuery);
-  }
-  
-  public ClusterName getCluster() {
-    return cluster;
-  }
-  
-  public TableMetadata getTableMetaData() {
-    return tableMetaData;
-  }
-
-  public CatalogMetadata getCatalogMetadata() {
-    return catalogMetadata;
   }
 }

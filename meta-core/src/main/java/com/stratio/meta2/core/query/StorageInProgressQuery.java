@@ -23,24 +23,11 @@ import com.stratio.meta2.common.data.ClusterName;
 
 public class StorageInProgressQuery extends InProgressQuery {
   
-  private ClusterName cluster;
-
-  private TableMetadata tableMetaData;
-
-  
   public StorageInProgressQuery(PlannedQuery validatedQuery) {
     super(validatedQuery);
   }
 
   StorageInProgressQuery(StorageInProgressQuery plannedQuery){
     this((PlannedQuery)plannedQuery);
-  }
-  
-  public ClusterName getCluster() {
-    return cluster;
-  }
-  
-  public TableMetadata getTableMetaData() {
-    return tableMetaData;
   }
 }
