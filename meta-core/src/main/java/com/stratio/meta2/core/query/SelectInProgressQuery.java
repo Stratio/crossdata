@@ -18,8 +18,6 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.metadata.structures.TableMetadata;
-import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.core.statements.SelectStatement;
 
 public class SelectInProgressQuery extends InProgressQuery {
@@ -33,8 +31,8 @@ public class SelectInProgressQuery extends InProgressQuery {
     this((PlannedQuery)plannedQuery);
   }
 
-    @Override
-    public SelectStatement getStatement() {
-        return (SelectStatement)statement;
-    }
+  @Override
+  public SelectStatement getStatement() {
+    return (SelectStatement) statement;
+  }
 }

@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,32 +18,13 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta2.core.statements.MetaStatement;
+public class MetaDataPlannedQuery extends PlannedQuery {
 
-public abstract class ParsedQuery extends BaseQuery {
-
-  final MetaStatement statement;
-
-  public ParsedQuery(BaseQuery baseQuery, MetaStatement statement){
-    super(baseQuery);
-    this.statement=statement;
+  public MetaDataPlannedQuery(ValidatedQuery validatedQuery) {
+    super(validatedQuery);
   }
 
-  ParsedQuery(ParsedQuery parsedQuery){
-    this(parsedQuery, parsedQuery.getStatement());
-  }
-
-  public MetaStatement getStatement(){
-    return this.statement;
-  }
-
-  public QueryStatus getStatus() {
-    return QueryStatus.PARSED;
-  }
-
-  @Override
-  public String toString() {
-    return statement.toString();
+  MetaDataPlannedQuery(PlannedQuery plannedQuery) {
+    this((ValidatedQuery) plannedQuery);
   }
 }

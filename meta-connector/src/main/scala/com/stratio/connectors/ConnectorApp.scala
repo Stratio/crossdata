@@ -80,11 +80,12 @@ class ConnectorApp  extends ConnectConfig {
     }
     actorClusterNode
   }
+
   def shutdown()= {
     system.shutdown()
   }
 
-  /*
+
   def startup(connector:IConnector):ActorRef={
       // Create an Akka system
 
@@ -94,6 +95,9 @@ class ConnectorApp  extends ConnectConfig {
      actorClusterNode
 
   }
-  */
+  def startup(connector:IConnector, port:String):ActorRef={
+    startup(connector,Array(port),config)
+
+  }
 
 }

@@ -24,7 +24,12 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
+
+import com.stratio.meta2.core.query.NormalizedQuery;
+import com.stratio.meta2.core.query.SelectPlannedQuery;
+
 import com.stratio.meta2.core.query.*;
+
 
 import org.apache.log4j.Logger;
 
@@ -185,8 +190,6 @@ public class Planner {
     }
     return lastSteps;
   }
-
-
 
   /**
    * Add Filter operations after the Project.

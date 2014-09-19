@@ -1,62 +1,89 @@
+/*
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.core.statements.SelectStatement;
 
 import java.util.List;
 
-/**
- * Created by jjlopez on 18/09/14.
- */
-public  class SelectValidatedQuery extends ValidatedQuery {
-    public SelectValidatedQuery(ParsedQuery parsedQuery) {
-        super(parsedQuery);
-    }
+public class SelectValidatedQuery extends ValidatedQuery {
 
-    SelectValidatedQuery(NormalizedQuery normalizedQuery) {
-        super(normalizedQuery);
-    }
+  private List<TableMetadata> tableMetadata;
+  private List<ColumnName> columns;
+  private List<Relation> relationships;
+  private List<TableName> tables;
 
+  public SelectValidatedQuery(ParsedQuery parsedQuery) {
+    super(parsedQuery);
+  }
 
-    public QueryStatus getStatus() {
-        return QueryStatus.VALIDATED;
-    }
+  SelectValidatedQuery(ValidatedQuery validatedQuery) {
+    super((ParsedQuery) validatedQuery);
+  }
 
-    //IStatement Methods move to MetaStatement
-    public List<CatalogName> getCatalogs(){
-        throw new UnsupportedOperationException();
-    }
+  public List<TableMetadata> getTableMetadata() {
+    return tableMetadata;
+  }
 
+  public void setTableMetadata(List<TableMetadata> tableMetadata) {
+    this.tableMetadata = tableMetadata;
+  }
 
-    public List<TableName> getTables(){
-        throw new UnsupportedOperationException();
-    }
+  public List<ColumnName> getColumns() {
+    return columns;
+  }
 
+  public void setColumns(List<ColumnName> columns) {
+    this.columns = columns;
+  }
 
-    public List<ColumnName> getColumns(){
-        throw new UnsupportedOperationException();
-    }
+  public List<Relation> getRelationships() {
+    return relationships;
+  }
 
+  public void setRelationships(List<Relation> relationships) {
+    this.relationships = relationships;
+  }
 
-    public List<Relation> getAssignations(){
-        throw new UnsupportedOperationException();
-    }
+  public List<TableName> getTables() {
+    return tables;
+  }
 
-    public List<Relation> getRelationships(){
-        throw new UnsupportedOperationException();
-    }
+  public void setTables(List<TableName> tables) {
+    this.tables = tables;
+  }
 
-    public List<TableMetadata> getTableMetadata(){
-        throw new UnsupportedOperationException();
-    }
+  public SelectValidatedQuery(SelectParsedQuery parsedQuery) {
+    super(parsedQuery);
+  }
 
-    @Override
-    public SelectStatement getStatement() {
-        return (SelectStatement)statement;
-    }
+  SelectValidatedQuery(NormalizedQuery normalizedQuery) {
+    super(normalizedQuery);
+  }
+
+  public QueryStatus getStatus() {
+    return QueryStatus.VALIDATED;
+  }
+
 }
+

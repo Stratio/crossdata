@@ -30,7 +30,6 @@ public abstract class PlannedQuery extends ValidatedQuery {
     this((ValidatedQuery)plannedQuery);
   }
 
-  
   public QueryStatus getStatus() {
     return QueryStatus.PLANNED;
   }

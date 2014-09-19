@@ -31,7 +31,7 @@ public class DataStoreMetadata implements IMetadata {
   private final String version;
   private final RequiredPropertiesType requiredProperties;
   private final OptionalPropertiesType othersProperties;
-  private final Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs;
+  private Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs;
 
   public DataStoreMetadata(DataStoreName name, String version, RequiredPropertiesType requiredProperties,
                            OptionalPropertiesType othersProperties) {
@@ -60,5 +60,10 @@ public class DataStoreMetadata implements IMetadata {
 
   public Map<ClusterName, ClusterAttachedMetadata> getClusterAttachedRefs() {
     return clusterAttachedRefs;
+  }
+
+  public void setClusterAttachedRefs(
+      Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs) {
+    this.clusterAttachedRefs = clusterAttachedRefs;
   }
 }

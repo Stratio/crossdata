@@ -87,6 +87,7 @@
         <module>meta-sh</module>
         <module>meta-dist</module>
         <module>meta-connector</module>
+        <module>meta-rest</module>
     </modules>
     <properties>
         <akka.version>2.2.4</akka.version>
