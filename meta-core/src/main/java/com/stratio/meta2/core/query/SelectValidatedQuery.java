@@ -14,7 +14,7 @@ import java.util.List;
  * Created by jjlopez on 18/09/14.
  */
 public  class SelectValidatedQuery extends ValidatedQuery {
-    public SelectValidatedQuery(SelectParsedQuery parsedQuery) {
+    public SelectValidatedQuery(ParsedQuery parsedQuery) {
         super(parsedQuery);
     }
 

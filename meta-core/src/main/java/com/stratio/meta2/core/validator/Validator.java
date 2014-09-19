@@ -141,10 +141,11 @@ public class Validator {
           }
       }
       if (parsedQuery instanceof MetaDataParsedQuery) {
-          validatedQuery = (MetadataValidatedQuery) parsedQuery;
-      }
-      if (parsedQuery instanceof StorageParsedQuery) {
-          validatedQuery = (StorageValidatedQuery) parsedQuery;
+          validatedQuery = new MetadataValidatedQuery(parsedQuery, parsedQuery.getStatement());
+      }else if(parsedQuery instanceof StorageParsedQuery) {
+          validatedQuery = new StorageValidatedQuery(parsedQuery, parsedQuery.getStatement());
+      }else if(parsedQuery instanceof SelectParsedQuery) {
+          validatedQuery = new SelectValidatedQuery(parsedQuery);
       }
 
       return validatedQuery;
