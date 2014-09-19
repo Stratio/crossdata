@@ -50,7 +50,7 @@ import java.util.concurrent.locks.Lock;
 import javax.transaction.TransactionManager;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
+import static org.testng.Assert.assertTrue;
 
 public class CoordinatorTest {
 
@@ -81,7 +81,7 @@ public class CoordinatorTest {
   @Test
   public void testAttachCluster() throws Exception {
 
-    // Create and add a fake datastore information to the metadatamanager
+    // Create and add a test datastore information to the metadatamanager
     DataStoreName name = new DataStoreName("datastoreTest");
     String version = "0.1.0";
     RequiredPropertiesType requiredProperties = null;
@@ -120,14 +120,16 @@ public class CoordinatorTest {
     // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
     datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
     Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest = datastoreTest.getClusterAttachedRefs();
+    boolean found = false;
     for(ClusterName clusterNameTest: clusterAttachedRefsTest.keySet()){
       ClusterAttachedMetadata clusterAttachedMetadata = clusterAttachedRefsTest.get(clusterNameTest);
       if(clusterAttachedMetadata.getClusterRef().equals(new ClusterName("clusterTest"))){
         assertEquals(clusterAttachedMetadata.getDataStoreRef(), new DataStoreName("datastoreTest"), "Wrong attachment for clusterTest");
+        found = true;
         break;
       }
     }
-    fail("Attachment not found");
+    assertTrue(found, "Attachment not found");
   }
 
   @AfterMethod
