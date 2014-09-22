@@ -21,8 +21,6 @@ package com.stratio.meta2.common.data;
 public class ConnectorName extends FirstLevelName {
   private final String name;
 
-
-
   public ConnectorName(String connectorName){
     super();
     this.name = connectorName;
