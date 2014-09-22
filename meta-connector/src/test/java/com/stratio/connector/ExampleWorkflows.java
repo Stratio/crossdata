@@ -150,7 +150,7 @@ public class ExampleWorkflows {
     String [] outputNames = {"users.id", "users.name", "users.age"};
     LogicalStep project = getProject(id, name, age);
     LogicalStep filter = getFilter(Operations.FILTER_INDEXED_EQ,
-                                   name, Operator.COMPARE, new StringSelector("'user1'"));
+                                   name, Operator.EQ, new StringSelector("'user1'"));
     project.setNextStep(filter);
     LogicalStep select = getSelect(outputNames, name, age);
     filter.setNextStep(select);
@@ -170,7 +170,7 @@ public class ExampleWorkflows {
     String [] outputNames = {"users.id", "users.name", "users.age"};
     LogicalStep project = getProject(id, name, age);
     LogicalStep filter = getFilter(Operations.FILTER_NON_INDEXED_EQ,
-                                   name, Operator.COMPARE, new IntegerSelector(42));
+                                   name, Operator.EQ, new IntegerSelector(42));
     project.setNextStep(filter);
     LogicalStep select = getSelect(outputNames, name, age);
     filter.setNextStep(select);
@@ -190,10 +190,10 @@ public class ExampleWorkflows {
     String [] outputNames = {"users.id", "users.name", "users.age"};
     LogicalStep project = getProject(id, name, age);
     LogicalStep filterName = getFilter(Operations.FILTER_INDEXED_EQ,
-                                   name, Operator.COMPARE, new StringSelector("'user1'"));
+                                   name, Operator.EQ, new StringSelector("'user1'"));
     project.setNextStep(filterName);
     LogicalStep filterAge = getFilter(Operations.FILTER_NON_INDEXED_EQ,
-                                   name, Operator.COMPARE, new IntegerSelector(42));
+                                   name, Operator.EQ, new IntegerSelector(42));
     filterName.setNextStep(filterAge);
     LogicalStep select = getSelect(outputNames, name, age);
     filterAge.setNextStep(select);

@@ -20,6 +20,8 @@ package com.stratio.meta.common.logicalplan;
 
 import com.stratio.meta.common.connector.Operations;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -29,7 +31,7 @@ import java.util.List;
  */
 public class UnionStep extends LogicalStep{
 
-  private List<LogicalStep> previousSteps;
+  private List<LogicalStep> previousSteps = new ArrayList<>();
 
   /**
    * Class constructor.
@@ -41,6 +43,10 @@ public class UnionStep extends LogicalStep{
 
   public void setPreviousSteps(List<LogicalStep> previousSteps) {
     this.previousSteps = previousSteps;
+  }
+
+  public void addPreviousSteps(LogicalStep ... previous){
+    this.previousSteps.addAll(Arrays.asList(previous));
   }
 
   @Override
