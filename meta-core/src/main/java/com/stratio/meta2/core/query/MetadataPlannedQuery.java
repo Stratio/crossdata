@@ -19,7 +19,7 @@
 package com.stratio.meta2.core.query;
 
 
-import com.stratio.meta2.core.statements.MetaDataStatement;
+import com.stratio.meta2.core.statements.MetadataStatement;
 
 public class MetadataPlannedQuery extends PlannedQuery {
   
@@ -32,7 +32,7 @@ public class MetadataPlannedQuery extends PlannedQuery {
   }
 
     @Override
-    public MetaDataStatement getStatement() {
-        return (MetaDataStatement)statement;
+    public MetadataStatement getStatement() {
+        return (MetadataStatement)statement;
     }
 }

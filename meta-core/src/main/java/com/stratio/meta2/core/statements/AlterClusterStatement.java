@@ -21,7 +21,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 /**
  * Class that models a {@code ALTER CLUSTER} statement from the META language.
  */
-public class AlterClusterStatement extends MetaDataStatement {
+public class AlterClusterStatement extends MetadataStatement {
 
   /**
    * Cluster name given by the user.

@@ -28,7 +28,6 @@ import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
-import com.stratio.meta2.common.data.FirstLevelName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
@@ -37,68 +36,42 @@ import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
-import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
-import com.stratio.meta2.core.grid.Grid;
-import com.stratio.meta2.core.grid.GridInitializer;
 import com.stratio.meta2.core.metadata.MetadataManager;
+import com.stratio.meta2.core.metadata.MetadataManagerTests;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.query.SelectValidatedQuery;
 import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta2.core.structures.OrderBy;
 
-import org.apache.commons.io.FileUtils;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.locks.Lock;
-
-import javax.transaction.TransactionManager;
 
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-public class NormalizerTest {
+public class NormalizerTest extends MetadataManagerTests {
 
-  private String path = "";
+  /**
+   * Class logger.
+   */
+  private static final Logger LOG = Logger.getLogger(MetadataManagerTests.class);
 
-  Map<FirstLevelName, IMetadata> metadataMap =  new HashMap<>();
-  private void initializeGrid() {
-    GridInitializer gridInitializer = Grid.initializer();
-    gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
-    path = "/tmp/metadata-store-" + UUID.randomUUID();
-    gridInitializer.withPort(7800)
-        .withListenAddress("127.0.0.1")
-        .withMinInitialMembers(1)
-        .withJoinTimeoutInMs(3000)
-        .withPersistencePath(path).init();
-  }
-
-  @BeforeMethod
-  public void setUp() throws Exception {
-
-
-
-    initializeGrid();
-    Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("meta-test");
-    Lock lock = Grid.getInstance().lock("meta-test");
-    TransactionManager tm = Grid.getInstance().transactionManager("meta-test");
-    MetadataManager.MANAGER.init(metadataMap, lock, tm);
-
+  @Test(groups = "putData")
+  public void putData() throws Exception {
 
     // DATASTORE
     DataStoreMetadata dsmd = new DataStoreMetadata(
@@ -123,7 +96,7 @@ public class NormalizerTest {
     HashMap<TableName, TableMetadata> tables = new HashMap<>();
 
     TableName tableName = new TableName("demo", "tableClients");
-    Map<String, Object> options = new HashMap<>();
+    Map<Selector, Selector> options = new HashMap<>();
 
     Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
 
@@ -182,7 +155,7 @@ public class NormalizerTest {
 
     CatalogMetadata catalogMetadata = new CatalogMetadata(
         new CatalogName("demo"), // name
-        new HashMap<String, Object>(), // options
+        new HashMap<Selector, Selector>(), // options
         tables // tables
     );
 
@@ -239,11 +212,13 @@ public class NormalizerTest {
 
     catalogMetadata = new CatalogMetadata(
         new CatalogName("myCatalog"), // name
-        new HashMap<String, Object>(), // options
+        new HashMap<Selector, Selector>(), // options
         tables // tables
     );
 
     MetadataManager.MANAGER.createCatalog(catalogMetadata);
+
+    LOG.info("Data inserted in the MetadataManager for the NormalizedTest");
   }
 
   public void testSelectedParserQuery(SelectParsedQuery selectParsedQuery, String expectedText, String methodName){
@@ -262,7 +237,7 @@ public class NormalizerTest {
                "Expected: " + expectedText);
   }
 
-  @Test
+  @Test(dependsOnGroups = "putData")
   public void testNormalizeWhereOrderGroup() throws Exception {
 
     String methodName = "testNormalizeWhereOrderGroup";
@@ -312,7 +287,7 @@ public class NormalizerTest {
     testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
   }
 
-  @Test
+  @Test(dependsOnGroups = "putData")
   public void testNormalizeInnerJoin() throws Exception {
 
     String methodName = "testNormalizeInnerJoin";
@@ -374,13 +349,6 @@ public class NormalizerTest {
 
     testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
 
-  }
-
-  @AfterMethod
-  public void tearDown() throws Exception {
-    metadataMap.clear();
-    Grid.getInstance().close();
-    FileUtils.deleteDirectory(new File(path));
   }
 
 }

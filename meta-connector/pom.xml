@@ -221,7 +221,7 @@
                     </descriptors>
                     <archive>
                         <manifest>
-                            <mainClass>com.stratio.connector.ConnectorApp</mainClass>
+                            <mainClass>com.stratio.connectors.ConnectorApp</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

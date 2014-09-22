@@ -18,19 +18,20 @@
 
 package com.stratio.meta2.common.metadata;
 
+import java.util.Map;
+
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
-
-import java.util.Map;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class CatalogMetadata implements IMetadata {
   private final CatalogName name;
 
-  private final Map<String, Object> options;
+  private final Map<Selector, Selector> options;
 
   private final Map<TableName, TableMetadata> tables;
 
-  public CatalogMetadata(CatalogName name, Map<String, Object> options,
+  public CatalogMetadata(CatalogName name, Map<Selector, Selector> options,
       Map<TableName, TableMetadata> tables) {
     this.name = name;
     this.options = options;
@@ -41,7 +42,7 @@ public class CatalogMetadata implements IMetadata {
     return name;
   }
 
-  public Map<String, Object> getOptions() {
+  public Map<Selector, Selector> getOptions() {
     return options;
   }
 

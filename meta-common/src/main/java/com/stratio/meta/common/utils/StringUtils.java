@@ -59,6 +59,9 @@ public class StringUtils {
   }
 
   public static Map<Selector, Selector> convertJsonToOptions(String json){
+    if((json == null) || (json.isEmpty())){
+      return null;
+    }
     Map<Selector, Selector> options = new LinkedHashMap<>();
     ObjectMapper mapper = new ObjectMapper();
     mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);

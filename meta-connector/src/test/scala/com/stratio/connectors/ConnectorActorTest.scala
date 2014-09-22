@@ -1,17 +1,20 @@
-package com.stratio.connector
+package com.stratio.connectors
 
-import java.util
-
+import akka.util.Timeout
 import com.stratio.meta.common.connector.IConnector
-import com.stratio.meta.common.logicalplan.{LogicalStep, LogicalWorkflow}
-import com.stratio.meta2.common.data.{CatalogName, TableName}
-import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.SelectStatement
-import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Suite}
 
-class ConnectorTest extends FunSuite with MockFactory {
+import scala.concurrent.duration._
+
+
+//class ConnectorActorTest extends FunSuite with MockFactory with ServerConfig{
+class ConnectorActorTest extends FunSuite with MockFactory {
+   this:Suite =>
+
+
+  implicit val timeout = Timeout(5 seconds) // needed for `?` below
+  //lazy val logger =Logger.getLogger(classOf[ConnectorActorTest])
 
   test("Basic Connector Mock") {
     val m = mock[IConnector]
@@ -19,13 +22,15 @@ class ConnectorTest extends FunSuite with MockFactory {
     assert(m.getConnectorName().equals("My New Connector"))
   }
 
+  /*
   test("Basic Connector App listening on a given port does not break") {
     val port = "2558"
     val m = mock[IConnector]
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
-    val myReference = c.startup(m, port, config)
+    //val myReference = c.startup(m, port, config)
+    val myReference = c.startup(m, port)
     myReference ! "Hello World"
     assert("Hello World" == "Hello World")
     c.shutdown()
@@ -34,11 +39,16 @@ class ConnectorTest extends FunSuite with MockFactory {
   test("Send SelectInProgressQuery to Connector") {
     val port = "2559"
     val m = mock[IConnector]
+    val qe = mock[IQueryEngine]
+    //(qe.execute _).expects(*,*).returning(QueryResult.createSuccessQueryResult())
+    //(m.getQueryEngine _).expects().returning(qe)
     (m.getConnectorName _).expects().returning("My New Connector")
+
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
-    val myReference = c.startup(m, port, config)
-    var steps: util.ArrayList[LogicalStep] = new util.ArrayList[LogicalStep]()
+    //val myReference = c.startup(m, port, config)
+    val myReference = c.startup(m, port)
+    var steps: java.util.ArrayList[LogicalStep] = new java.util.ArrayList[LogicalStep]()
     val pq = new SelectPlannedQuery(
         new SelectValidatedQuery(
             new SelectParsedQuery(
@@ -48,14 +58,15 @@ class ConnectorTest extends FunSuite with MockFactory {
         ), new LogicalWorkflow(steps)
     )
     val selectQ: SelectInProgressQuery = new SelectInProgressQuery(pq)
-    /*
-    val beanMap: util.Map[String, String] = BeanUtils.recursiveDescribe(selectQ);
-    for (s <- beanMap.keySet().toArray()) {
-      println(s);
-    }
-    */
+    //val beanMap: util.Map[String, String] = BeanUtils.recursiveDescribe(selectQ);
+    //for (s <- beanMap.keySet().toArray()) { println(s); }
     myReference ! selectQ
-    c.shutdown()
+    //val future=ask(myReference , selectQ)
+    //val result = Await.result(future, timeout.duration).asInstanceOf[String]
+    //println(result)
+
+    //expectMsg(42)
+    c.stop()
   }
 
   test("Send MetadataInProgressQuery to Connector") {
@@ -64,7 +75,8 @@ class ConnectorTest extends FunSuite with MockFactory {
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
-    val myReference = c.startup(m, port, config)
+    //val myReference = c.startup(m, port, config)
+    val myReference = c.startup(m, port)
 
     var steps: util.ArrayList[LogicalStep] = new util.ArrayList[LogicalStep]()
     steps.add(null)
@@ -89,12 +101,15 @@ class ConnectorTest extends FunSuite with MockFactory {
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
-    val myReference = c.startup(m, port, config)
+    //val myReference = c.startup(m, port, config)
+    val myReference = c.startup(m, port)
 
     var steps: util.ArrayList[LogicalStep] = new util.ArrayList[LogicalStep]()
     steps.add(null)
-    //val pq = new StorageInProgressQuery( new StorageValidatedQuery( null, null ) )
-    val pq = new StorageInProgressQuery( null ) //TODO: create object
+    val pq = new StorageInProgressQuery(
+      new StoragePlannedQuery( null)
+    )
+    //TODO: create object
     val storageQ: StorageInProgressQuery = new StorageInProgressQuery(pq)
     val mystatement_before_sending_message = storageQ.getStatement()
     //myReference ! ConnectToConnector("cassandra connector")
@@ -103,5 +118,7 @@ class ConnectorTest extends FunSuite with MockFactory {
   }
 
   //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE
+  */
+
 }
 

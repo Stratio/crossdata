@@ -22,28 +22,29 @@ package com.stratio.meta2.core.validator.statements;
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
-import com.stratio.meta2.core.statements.DropTableStatement;
+import com.stratio.meta2.core.statements.DropConnectorStatement;
+import com.stratio.meta2.core.statements.DropDataStoreStatement;
+import com.stratio.meta2.core.statements.DropIndexStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class DropTableStatementTest extends BasicValidatorTest {
+public class DropConnectorStatementTest extends BasicValidatorTest {
 
 
     @Test
     public void validateOk(){
-        String query = "DROP TABLE demo.users;";
-        DropTableStatement dropTableStatement=new DropTableStatement(new TableName("demo","users"),true);
+        String query = "DROP Connector CassandraConnector;";
+        DropConnectorStatement dropConnectorStatement=new DropConnectorStatement("CassandraConnector");
         Validator validator=new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropTableid",query, new CatalogName("demo"));
+        BaseQuery baseQuery=new BaseQuery("dropIndexId",query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropTableStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -56,42 +57,22 @@ public class DropTableStatementTest extends BasicValidatorTest {
 
     @Test
     public void validateIfNotExists(){
-        String query = "DROP TABLE IF EXISTS unknown;";
-        DropTableStatement dropTableStatement=new DropTableStatement(new TableName("demo","unknown"),true);
+        String query = "DROP Connector CassandrorConnector;";
+        DropConnectorStatement dropConnectorStatement=new DropConnectorStatement("CassandrorConnector");
+
         Validator validator=new Validator();
+        BaseQuery baseQuery=new BaseQuery("dropIndexId",query, new CatalogName("system"));
 
-        BaseQuery baseQuery=new BaseQuery("dropTableid",query, new CatalogName("demo"));
-
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropTableStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertTrue(true);
-        } catch (ValidationException e) {
-            Assert.fail(e.getMessage());
-        } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void validateNotExistsTable(){
-        String query = "DROP TABLE IF EXISTS unknown;";
-        DropTableStatement dropTableStatement=new DropTableStatement(new TableName("demo","unknown"),false);
-        Validator validator=new Validator();
-
-        BaseQuery baseQuery=new BaseQuery("dropTableid",query, new CatalogName("demo"));
-
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropTableStatement);
-        try {
-            validator.validate(parsedQuery);
-            Assert.fail("Table must exist");
+            Assert.fail("Connector must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
             Assert.assertTrue(true);
         }
     }
-
 
 
 }

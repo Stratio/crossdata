@@ -25,67 +25,31 @@ import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
-import com.stratio.meta2.common.data.FirstLevelName;
 import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
 import com.stratio.meta2.common.metadata.ClusterMetadata;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
-import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.core.grid.Grid;
-import com.stratio.meta2.core.grid.GridInitializer;
 import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.query.BaseQuery;
-import com.stratio.meta2.core.query.MetaDataParsedQuery;
-import com.stratio.meta2.core.query.MetaDataValidatedQuery;
-import com.stratio.meta2.core.query.MetadataPlannedQuery;
+import com.stratio.meta2.core.metadata.MetadataManagerTests;
+import com.stratio.meta2.core.query.*;
+
 import com.stratio.meta2.core.statements.AttachClusterStatement;
 import com.stratio.meta2.core.statements.AttachConnectorStatement;
 
-import org.apache.commons.io.FileUtils;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.locks.Lock;
-
-import javax.transaction.TransactionManager;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-public class CoordinatorTest {
-
-  private String path = "";
-
-  Map<FirstLevelName, IMetadata> metadataMap =  new HashMap<>();
-
-  private void initializeGrid() {
-    GridInitializer gridInitializer = Grid.initializer();
-    gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
-    path = "/tmp/metadata-store-" + UUID.randomUUID();
-    gridInitializer.withPort(7800)
-        .withListenAddress("127.0.0.1")
-        .withMinInitialMembers(1)
-        .withJoinTimeoutInMs(3000)
-        .withPersistencePath(path).init();
-  }
-
-  @BeforeMethod
-  public void setUp() throws Exception {
-    initializeGrid();
-    Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("meta-test");
-    Lock lock = Grid.getInstance().lock("meta-test");
-    TransactionManager tm = Grid.getInstance().transactionManager("meta-test");
-    MetadataManager.MANAGER.init(metadataMap, lock, tm);
-  }
+public class CoordinatorTest extends MetadataManagerTests {
 
   @Test
   public void testAttachCluster() throws Exception {
@@ -96,7 +60,7 @@ public class CoordinatorTest {
     RequiredPropertiesType requiredProperties = null;
     OptionalPropertiesType othersProperties = null;
     DataStoreMetadata datastoreTest = new DataStoreMetadata(name, version, requiredProperties, othersProperties);
-    MetadataManager.MANAGER.createDataStore(datastoreTest);
+    MetadataManager.MANAGER.createDataStore(datastoreTest, false);
 
     // Add information about the cluster attachment to the metadatamanager
     BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), "ATTACH CLUSTER cassandra_prod ON DATASTORE cassandra WITH OPTIONS {}", new CatalogName("test"));
@@ -104,9 +68,10 @@ public class CoordinatorTest {
     AttachClusterStatement
         attachClusterStatement = new AttachClusterStatement("clusterTest", false, "datastoreTest", "{}");
 
-    MetaDataParsedQuery metadataParsedQuery = new MetaDataParsedQuery(baseQuery, attachClusterStatement);
+    MetadataParsedQuery
+        metadataParsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
 
-    MetaDataValidatedQuery metadataValidatedQuery = new MetaDataValidatedQuery(metadataParsedQuery);
+    MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
     MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery);
 
@@ -137,7 +102,7 @@ public class CoordinatorTest {
     RequiredPropertiesType requiredProperties = null;
     OptionalPropertiesType othersProperties = null;
     DataStoreMetadata datastoreTest = new DataStoreMetadata(dataStoreName, dataStoreVersion, requiredProperties, othersProperties);
-    MetadataManager.MANAGER.createDataStore(datastoreTest);
+    MetadataManager.MANAGER.createDataStore(datastoreTest, false);
 
     // Create and add a test cluster metadata to the metadatamanager
     ClusterName clusterName = new ClusterName("clusterTest");
@@ -147,7 +112,7 @@ public class CoordinatorTest {
     ClusterMetadata
         clusterTest = new ClusterMetadata(clusterName, dataStoreRef, options,
                                           connectorAttachedRefs);
-    MetadataManager.MANAGER.createCluster(clusterTest);
+    MetadataManager.MANAGER.createCluster(clusterTest, false);
 
     // Create and add a test connector metadata to the metadatamanager
     ConnectorName connectorName = new ConnectorName("connectorTest");
@@ -160,7 +125,7 @@ public class CoordinatorTest {
     SupportedOperationsType supportedOperations = null;
     ConnectorMetadata
         connectorTest = new ConnectorMetadata(connectorName, connectorVersion, dataStoreRefs, connectorRequiredProperties, connectorOptionalProperties, supportedOperations);
-    MetadataManager.MANAGER.createConnector(connectorTest);
+    MetadataManager.MANAGER.createConnector(connectorTest, false);
 
     // Add information about the connector attachment to the metadatamanager
     BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), "ATTACH CONNECTOR cassandra_connector TO cassandra_prod WITH OPTIONS {}", new CatalogName("test"));
@@ -173,9 +138,10 @@ public class CoordinatorTest {
     AttachConnectorStatement
         attachConnectorStatement = new AttachConnectorStatement("connectorTest", "clusterTest", "{}");
 
-    MetaDataParsedQuery metadataParsedQuery = new MetaDataParsedQuery(baseQuery, attachConnectorStatement);
+    MetadataParsedQuery
+        metadataParsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
 
-    MetaDataValidatedQuery metadataValidatedQuery = new MetaDataValidatedQuery(metadataParsedQuery);
+    MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
     MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery);
 
@@ -200,13 +166,6 @@ public class CoordinatorTest {
       }
     }
     assertTrue(found, "Attachment not found");
-  }
-
-  @AfterMethod
-  public void tearDown() throws Exception {
-    metadataMap.clear();
-    Grid.getInstance().close();
-    FileUtils.deleteDirectory(new File(path));
   }
 
 }

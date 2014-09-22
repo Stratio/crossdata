@@ -17,25 +17,23 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta2.common.metadata.ColumnType;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
-import com.stratio.meta2.core.structures.Property;
-import com.stratio.meta2.core.structures.PropertyNameValue;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 
 /**
  * Class that models an {@code ALTER TABLE} statement from the META language.
  */
-public class AlterTableStatement extends MetaDataStatement implements ITableStatement {
+public class AlterTableStatement extends MetadataStatement implements ITableStatement {
 
   /**
    * The target table.
@@ -66,7 +64,7 @@ public class AlterTableStatement extends MetaDataStatement implements ITableStat
   /**
    * The list of {@link com.stratio.meta2.core.structures.Property} of the table.
    */
-  private List<Property> properties = null;
+  private Map<Selector, Selector> properties = null;
 
   /**
    * Class constructor.
@@ -78,12 +76,12 @@ public class AlterTableStatement extends MetaDataStatement implements ITableStat
    * @param option The map of options.
    */
   public AlterTableStatement(TableName tableName, ColumnName column, ColumnType type,
-                             List<Property> properties, int option) {
+                             String properties, int option) {
     this.command = false;
     this.tableName = tableName;
     this.column = column;
     this.type = type;
-    this.properties = properties;
+    this.properties = StringUtils.convertJsonToOptions(properties);
     this.option = option;
   }
 
@@ -109,7 +107,7 @@ public class AlterTableStatement extends MetaDataStatement implements ITableStat
         sb.append(column.getQualifiedName());
         break;
       case 4:
-        sb.append(" WITH ").append(StringUtils.stringList(properties, " AND "));
+        sb.append(" WITH ").append(properties);
         break;
       default:
         sb.append("BAD OPTION");
@@ -203,13 +201,13 @@ public class AlterTableStatement extends MetaDataStatement implements ITableStat
 
   private Result validateProperties(TableMetadata tableMetadata) {
     Result result = QueryResult.createSuccessQueryResult();
-    Iterator<Property> props = properties.iterator();
+    /*Iterator<Property> props = properties.iterator();
     boolean exit = false;
     while(!exit && props.hasNext()){
       Property property = props.next();
       if(property.getType() == Property.TYPE_NAME_VALUE){
         PropertyNameValue propertyNameValue = (PropertyNameValue) property;
-        /*if("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
+        if("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
            && propertyNameValue.getVp().getTermClass() != Boolean.class){
           // If property ephemeral is present, it must be a boolean type
           result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
@@ -225,9 +223,9 @@ public class AlterTableStatement extends MetaDataStatement implements ITableStat
           result= Result.createValidationErrorResult(
               "Property 'ephemeral_persist_on' must be a string");
           exit = true;
-        }*/
+        }
       }
-    }
+    }*/
     return result;
   }
 

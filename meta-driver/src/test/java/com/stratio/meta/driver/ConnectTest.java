@@ -46,13 +46,15 @@ public class ConnectTest extends DriverParentTest {
   public void executeDropTestBefore() {
 
     try {
-      driver.executeQuery("ks_demo", "drop table demo ;");
+      driver.setCurrentCatalog("ks_demo");
+      driver.executeQuery("drop table demo ;");
     } catch (Exception e) {
       logger.info("Not removing table demo as it does not exists.");
     }
 
     try {
-      driver.executeQuery("ks_demo", "drop keyspace ks_demo ;");
+      driver.setCurrentCatalog("ks_demo");
+      driver.executeQuery("drop keyspace ks_demo ;");
     } catch (Exception e) {
       logger.info("Not removing ks_demo as it does not exists.");
     }
@@ -60,7 +62,8 @@ public class ConnectTest extends DriverParentTest {
     String msg =
         "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};";
     try {
-      driver.executeQuery( "ks_demo", msg);
+      driver.setCurrentCatalog("ks_demo");
+      driver.executeQuery(msg);
     } catch (Exception e) {
       System.err.println("Cannot create test keyspace.");
     }
@@ -124,7 +127,8 @@ public class ConnectTest extends DriverParentTest {
     String msg = "create KEYSPAC ks_demo WITH replication = "
                  + "{class: SimpleStrategy, replication_factor: 1};";
     try {
-      driver.executeQuery("ks_demo", msg);
+      driver.setCurrentCatalog("ks_demo");
+      driver.executeQuery(msg);
       fail("Expecting ParsingException");
     } catch (Exception e){
       e.printStackTrace();
@@ -137,7 +141,8 @@ public class ConnectTest extends DriverParentTest {
     String msg = "use ks_demo ;";
     Result metaResult = null;
     try {
-      metaResult = driver.executeQuery("ks_demo", msg);
+      driver.setCurrentCatalog("ks_demo");
+      metaResult = driver.executeQuery(msg);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception not expected");
@@ -153,7 +158,8 @@ public class ConnectTest extends DriverParentTest {
     String msg = "create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);";
     Result metaResult = null;
     try {
-      metaResult = driver.executeQuery("ks_demo", msg);
+      driver.setCurrentCatalog("ks_demo");
+      metaResult = driver.executeQuery(msg);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception not expected");
@@ -167,7 +173,8 @@ public class ConnectTest extends DriverParentTest {
     String msg = "insert into demo (field1, field2) values ('test1','text2');";
     Result metaResult = null;
     try {
-      metaResult = driver.executeQuery("ks_demo", msg);
+      driver.setCurrentCatalog("ks_demo");
+      metaResult = driver.executeQuery(msg);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception not expected");

@@ -20,24 +20,46 @@ package com.stratio.meta2.core.validator;
 
 
 import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
-import com.stratio.meta2.common.data.*;
-import com.stratio.meta2.common.metadata.*;
-import com.stratio.meta2.core.metadata.MetadataManager;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.ConnectorName;
+import com.stratio.meta2.common.data.DataStoreName;
+import com.stratio.meta2.common.data.FirstLevelName;
+import com.stratio.meta2.common.data.IndexName;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
+import com.stratio.meta2.common.metadata.ColumnType;
+import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
+import com.stratio.meta2.common.metadata.ConnectorMetadata;
+import com.stratio.meta2.common.metadata.DataStoreMetadata;
+import com.stratio.meta2.common.metadata.IMetadata;
+import com.stratio.meta2.common.metadata.IndexMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.grammar.ParsingTest;
-
 import com.stratio.meta2.core.grid.Grid;
 import com.stratio.meta2.core.grid.GridInitializer;
+import com.stratio.meta2.core.metadata.MetadataManager;
 
 import org.apache.commons.io.FileUtils;
-
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
-import javax.transaction.TransactionManager;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.locks.Lock;
+
+import javax.transaction.TransactionManager;
 
 public class BasicValidatorTest extends BasicCoreCassandraTest {
 
@@ -91,7 +113,7 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
     private static CatalogMetadata generateCatalogsMetadata(){
         CatalogMetadata catalogMetadata;
         CatalogName catalogName=new CatalogName("demo");
-        Map<String, Object> options=new HashMap<>();
+        Map<Selector, Selector> options=new HashMap<>();
         Map<TableName, TableMetadata> tables=new HashMap<>();
         catalogMetadata=new CatalogMetadata(catalogName,options,tables);
         return catalogMetadata;
@@ -100,7 +122,7 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
     private static TableMetadata createTable() {
         TableMetadata tableMetadata;
         TableName targetTable=new TableName("demo", "users");
-        Map<String, Object> options=new HashMap<>();
+        Map<Selector, Selector> options=new HashMap<>();
         Map<ColumnName, ColumnMetadata> columns=new HashMap<>();
         ClusterName clusterRef=new ClusterName("cluster");
         List<ColumnName> partitionKey=new ArrayList<>();

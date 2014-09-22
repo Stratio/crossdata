@@ -18,11 +18,6 @@
 
 package com.stratio.meta.rest.utils;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.exceptions.ConnectionException;
@@ -34,6 +29,11 @@ import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class DriverHelper {
   private static DriverHelper instance = null;
@@ -66,14 +66,16 @@ public class DriverHelper {
   public void executeSyncQuery(String query, String targetKeyspace) throws UnsupportedException,
       ParsingException, ValidationException, ExecutionException, ConnectionException {
     queryResult = null;
-    queryResult = metaDriver.executeQuery(targetKeyspace, query);
+    metaDriver.setCurrentCatalog(targetKeyspace);
+    queryResult = metaDriver.executeQuery(query);
 
   }
 
   public void executeAsyncQuery(String query, String targetCatalog, IResultHandler callback)
       throws UnsupportedException, ParsingException, ValidationException, ExecutionException,
       ConnectionException {
-    asyncQueryResult = metaDriver.asyncExecuteQuery(targetCatalog, query, callback);
+    metaDriver.setCurrentCatalog(targetCatalog);
+    asyncQueryResult = metaDriver.asyncExecuteQuery(query, callback);
 
   }
 

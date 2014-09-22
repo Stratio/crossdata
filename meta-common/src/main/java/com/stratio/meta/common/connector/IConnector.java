@@ -19,6 +19,7 @@
 package com.stratio.meta.common.connector;
 
 import com.stratio.meta.common.exceptions.ConnectionException;
+import com.stratio.meta.common.exceptions.ExecutionException;
 import com.stratio.meta.common.exceptions.InitializationException;
 import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta.common.security.ICredentials;
@@ -69,6 +70,13 @@ public interface IConnector {
    * @throws ConnectionException If the close operation cannot be performed.
    */
   public void close(ClusterName name) throws ConnectionException;
+
+  /**
+   * Shutdown send a sing to terminate all operations of the connector and then close all clusters connection.
+   *
+   * @throws ExecutionException If the shutdown operation cannot be performed.
+   */
+  public void shutdown() throws ExecutionException;
 
   /**
    * Retrieve the connectivity status with the datastore.

@@ -22,6 +22,7 @@ import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.Map;
 public class TableMetadata implements IMetadata {
   private final TableName name;
 
-  private final Map<String, Object> options;
+  private final Map<Selector, Selector> options;
 
   private final Map<ColumnName, ColumnMetadata> columns;
 
@@ -42,7 +43,7 @@ public class TableMetadata implements IMetadata {
   private final List<ColumnName> clusterKey;
 
 
-  public TableMetadata(TableName name, Map<String, Object> options,
+  public TableMetadata(TableName name, Map<Selector, Selector> options,
       Map<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
       ClusterName clusterRef,
       List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
@@ -62,7 +63,7 @@ public class TableMetadata implements IMetadata {
   }
 
 
-  public Map<String, Object> getOptions() {
+  public Map<Selector, Selector> getOptions() {
     return options;
   }
 

@@ -7,7 +7,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.Map;
 
-public class AttachConnectorStatement extends MetaDataStatement {
+public class AttachConnectorStatement extends MetadataStatement {
 
   private String connectorName;
   private String clusterName;
@@ -30,7 +30,7 @@ public class AttachConnectorStatement extends MetaDataStatement {
 
   public ValidationRequirements getValidationRequirements() {
     return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER)
-        .add(Validation.MUST_EXIST_CONNECTOR)
+        .add(Validation.MUST_NOT_EXIST_CONNECTOR)
         .add(Validation.VALID_CONNECTOR_OPTIONS);
   }
 

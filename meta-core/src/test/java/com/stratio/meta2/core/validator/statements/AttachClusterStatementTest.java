@@ -4,55 +4,30 @@ import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.common.data.*;
 import com.stratio.meta2.core.query.BaseQuery;
-import com.stratio.meta2.core.query.MetaDataParsedQuery;
+import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.AttachClusterStatement;
 import com.stratio.meta2.core.validator.Validator;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-
-
-/**
- * Created by jjlopez on 17/09/14.
- */
 public class AttachClusterStatementTest {
 
     @Test
-    public void attachCluster() {
-        String query = "ATTACH CLUSTER myCluster on DATASTORE cassandra";
+    public void attachClusterNoOptions() {
+        String query = "ATTACH CLUSTER myCluster on DATASTORE Cassandra";
 
 
-        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "cassandra", null);
+        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "Cassandra", "");
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,attachClusterStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,attachClusterStatement);
+
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
-        } catch (ValidationException e) {
-            Assert.assertTrue(true);
-        } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
-        }
-    }
-
-    @Test
-    public void attachClusterUnknown() {
-        String query = "ATTACH CLUSTER unknown on DATASTORE cassadra";
-
-
-        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("unknownr",true, "cassandra", null);
-        Validator validator=new Validator();
-
-        BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
-
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,attachClusterStatement);
-        try {
-            validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.fail("Options are required for ATTACH CLUSTER statement");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -66,15 +41,15 @@ public class AttachClusterStatementTest {
         String query = "ATTACH CLUSTER myCluster on DATASTORE unknown";
 
 
-        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "unknown", null);
+        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "unknown", "");
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,attachClusterStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,attachClusterStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.fail("Datastore must exists before ATTACH CLUSTER statement");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -84,22 +59,22 @@ public class AttachClusterStatementTest {
 
     @Test
     public void attachClusterWithOptions() {
-        String query = "ATTACH CLUSTER myCluster on DATASTORE unknown with options {'comment':'attach cluster'}";
+        String query = "ATTACH CLUSTER myCluster on DATASTORE Cassandra with options {'comment':'attach cluster'}";
 
 
-        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "unknown", "{'comment':'attach cluster'}");
+        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "Cassandra", "{'comment':'attach cluster'}");
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,attachClusterStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,attachClusterStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         }
     }
 
