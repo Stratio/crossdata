@@ -18,8 +18,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import java.util.Map;
-
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
@@ -32,12 +30,14 @@ import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
+import java.util.Map;
+
 /**
  * Class that models a {@code CREATE CATALOG} statement from the META language. Catalog
  * information will be stored internally as part of the existing metadata. Catalog creation
  * in the underlying datastore is done when a table is created in a catalog.
  */
-public class CreateCatalogStatement extends MetaDataStatement {
+public class CreateCatalogStatement extends MetadataStatement {
 
   /**
    * Whether the Catalog should be created only if it not exists.
@@ -47,7 +47,7 @@ public class CreateCatalogStatement extends MetaDataStatement {
   /**
    * A JSON with the options specified by the user.
    */
-  private final Map<Selector,Selector> options;
+  private final Map<Selector, Selector> options;
 
   /**
    * Class constructor.

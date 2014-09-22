@@ -24,12 +24,9 @@ import com.stratio.meta.core.grammar.generated.MetaLexer;
 import com.stratio.meta.core.grammar.generated.MetaParser;
 import com.stratio.meta.core.utils.AntlrError;
 import com.stratio.meta.core.utils.ErrorsHelper;
-import com.stratio.meta2.core.query.BaseQuery;
-import com.stratio.meta2.core.query.MetaDataParsedQuery;
-import com.stratio.meta2.core.query.ParsedQuery;
-import com.stratio.meta2.core.query.SelectParsedQuery;
-import com.stratio.meta2.core.query.StorageParsedQuery;
-import com.stratio.meta2.core.statements.MetaDataStatement;
+import com.stratio.meta2.core.query.*;
+import com.stratio.meta2.core.query.MetadataParsedQuery;
+import com.stratio.meta2.core.statements.MetadataStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta2.core.statements.StorageStatement;
@@ -52,8 +49,8 @@ public class Parser {
       result = new SelectParsedQuery(baseQuery, (SelectStatement) metaStatement);
     } else if (metaStatement instanceof StorageStatement){
       result = new StorageParsedQuery(baseQuery, (StorageStatement)metaStatement);
-    } else if (metaStatement instanceof MetaDataStatement) {
-      result = new MetaDataParsedQuery(baseQuery, (MetaDataStatement)metaStatement);
+    } else if (metaStatement instanceof MetadataStatement) {
+      result = new MetadataParsedQuery(baseQuery, (MetadataStatement)metaStatement);
     }
     return result;
   }

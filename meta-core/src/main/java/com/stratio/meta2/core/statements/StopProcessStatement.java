@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 
 import java.util.List;
 
-public class StopProcessStatement extends MetaDataStatement {
+public class StopProcessStatement extends MetadataStatement {
 
   private String queryId;
   private static final Logger LOG = Logger.getLogger(StopProcessStatement.class);

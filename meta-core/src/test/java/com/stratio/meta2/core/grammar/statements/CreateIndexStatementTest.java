@@ -56,7 +56,7 @@ public class CreateIndexStatementTest extends ParsingTest {
     String inputText = "CREATE LUCENE INDEX demo_banks ON banks"
                        + " (day, entry_id, latitude, longitude, name, address, tags)"
                        + " USING 'org.apache.cassandra.db.index.stratio.RowIndex'"
-                       + " WITH OPTIONS = {'schema': "
+                       + " WITH {'schema': "
                        + "'{default_analyzer: \"org.apache.lucene.analysis.standard.StandardAnalyzer\","
                        + "fields: "
                        + "{day: {type: \"date\", pattern: \"yyyy-MM-dd\"},"
@@ -66,7 +66,7 @@ public class CreateIndexStatementTest extends ParsingTest {
     String expectedText = "CREATE LUCENE INDEX stratio_lucene_demo_banks ON demo.banks"
                           + " (demo.banks.day, demo.banks.entry_id, demo.banks.latitude, demo.banks.longitude, demo.banks.name, demo.banks.address, demo.banks.tags)"
                           + " USING 'org.apache.cassandra.db.index.stratio.RowIndex'"
-                          + " WITH OPTIONS = {schema: "
+                          + " WITH {schema="
                           + "{default_analyzer: \"org.apache.lucene.analysis.standard.StandardAnalyzer\","
                           + "fields: "
                           + "{day: {type: \"date\", pattern: \"yyyy-MM-dd\"},"
@@ -78,22 +78,22 @@ public class CreateIndexStatementTest extends ParsingTest {
 
   @Test
   public void createIndexDefaultAll() {
-    String inputText =    "[demo], CREATE DEFAULT INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING 'com.company.Index.class' WITH OPTIONS = {'key1': 'val1'};";
-    String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH OPTIONS = {key1: val1};";
+    String inputText =    "[demo], CREATE DEFAULT INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING 'com.company.Index.class' WITH {'key1': 'val1'};";
+    String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH {key1=val1};";
     testRegularStatement(inputText, expectedText, "createIndexDefaultAll");
   }
 
   @Test
   public void createDefaultIndexWithOptions2() {
-    String inputText =    "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (field1, field2) USING 'com.company.Index.class' WITH OPTIONS = {'key1': 'val1', 'key2': 'val2'};";
-    String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH OPTIONS = {key1: val1, key2: val2};";
+    String inputText =    "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (field1, field2) USING 'com.company.Index.class' WITH {'key1': 'val1', 'key2': 'val2'};";
+    String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH {key1=val1, key2=val2};";
     testRegularStatement(inputText, expectedText, "createIndexWithOptions2");
   }
 
   @Test
   public void createLuceneIndexWithOptions2() {
-    String inputText =    "CREATE LUCENE INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING 'com.company.Index.class' WITH OPTIONS = {'key1': 'val1', 'key2': 'val2'};";
-    String expectedText = "CREATE LUCENE INDEX IF NOT EXISTS stratio_lucene_index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH OPTIONS = {key1: val1, key2: val2};";
+    String inputText =    "CREATE LUCENE INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING 'com.company.Index.class' WITH {'key1': 'val1', 'key2': 'val2'};";
+    String expectedText = "CREATE LUCENE INDEX IF NOT EXISTS stratio_lucene_index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH {key1=val1, key2=val2};";
     testRegularStatementSession("demo", inputText, expectedText, "createIndexWithOptions2");
   }
 

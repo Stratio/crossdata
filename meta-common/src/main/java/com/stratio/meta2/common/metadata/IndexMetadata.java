@@ -18,6 +18,9 @@
 
 package com.stratio.meta2.common.metadata;
 
+import com.stratio.meta2.common.data.IndexName;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+
 import java.util.List;
 import java.util.Map;
 

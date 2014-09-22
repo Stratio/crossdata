@@ -19,5 +19,6 @@
 package com.stratio.meta.communication
 
 //Connector messages
+case class Shutdown()
 case class HeartbeatSig()
 case class Stop()

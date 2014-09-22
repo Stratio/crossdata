@@ -2,15 +2,12 @@ package com.stratio.connectors
 
 import java.util.concurrent.{Executors, TimeUnit}
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.Actor
 import com.stratio.meta.communication.HeartbeatSig
 
 
-object HeartbeatActor {
-   def props ():Props = Props (new HeartbeatActor() )
- }
 
-class HeartbeatActor() extends Actor with ActorLogging {
+trait HeartbeatActor extends Actor {
 
    private val scheduler = Executors.newSingleThreadScheduledExecutor()
 
@@ -20,14 +17,14 @@ class HeartbeatActor() extends Actor with ActorLogging {
 
    scheduler.scheduleAtFixedRate(callback, 0, 500, TimeUnit.MILLISECONDS)
 
-   override def receive: Receive = {
-     case hearbeat:HeartbeatSig=>{
-       println("HeartbeatActor receives a heartbeat message")
-
+   def receive: Receive = {
+     case heartbeat:HeartbeatSig=>{
+        handleHeartbeat(heartbeat)
      }
-     case _ =>{
-       println("HeartbeatActor receives anything else")
-     }
-
    }
+   def handleHeartbeat(heartbeat:HeartbeatSig)={
+     println("HeartbeatActor receives a heartbeat message")
+   }
+
+
  }

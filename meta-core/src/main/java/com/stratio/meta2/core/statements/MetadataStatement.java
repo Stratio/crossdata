@@ -22,7 +22,7 @@ import com.stratio.meta2.common.metadata.*;
 
 import java.util.Map;
 
-public abstract class MetaDataStatement extends MetaStatement {
+public abstract class MetadataStatement extends MetaStatement {
 
     protected ClusterMetadata clusterMetadata=null;
 
@@ -35,7 +35,7 @@ public abstract class MetaDataStatement extends MetaStatement {
     protected ColumnMetadata columnMetadata=null;
 
 
-    public MetaDataStatement(){
+    public MetadataStatement(){
         super();
     }
 

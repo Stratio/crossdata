@@ -44,7 +44,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  * ON {@literal <tableName>} ( {@literal <identifier> , ..., <identifier>}) <br>
  * ( USING {@literal <index_class>} )? ( WITH OPTIONS ( key_1=value_1 AND ... AND key_n=value_n) )?;
  */
-public class CreateIndexStatement extends MetaDataStatement {
+public class CreateIndexStatement extends MetadataStatement {
 
   /**
    * The {@link com.stratio.meta.core.structures.IndexType} to be created.
@@ -88,11 +88,9 @@ public class CreateIndexStatement extends MetaDataStatement {
   private Map<Selector, Selector> options = null;
 
   /**
-   * Map of lucene types associated with Cassandra data types.
+   * Map of lucene types associated with Database data types.
    */
   private static Map<String, String> luceneTypes = new HashMap<>();
-
-  private String optionsJson = "";
 
   /**
    * Table metadata cached on the validate function.
@@ -322,8 +320,9 @@ public class CreateIndexStatement extends MetaDataStatement {
       sb.append(usingClass);
     }
     if (!options.isEmpty()) {
-      sb.append(" WITH OPTIONS = ");
-      sb.append(StringUtils.getStringFromOptions(options));
+      sb.append(" WITH ");
+      //sb.append(StringUtils.getStringFromOptions(options));
+      sb.append(options);
     }
 
     return sb.toString();

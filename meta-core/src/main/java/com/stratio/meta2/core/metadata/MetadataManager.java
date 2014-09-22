@@ -133,17 +133,16 @@ public enum MetadataManager {
     return result;
   }
 
-  public boolean exists(IndexName name) {
-    boolean result = false;
-    if (exists(name.getTableName())) {
-      TableMetadata tableMetadata = this.getTable(name.getTableName());
-      result = tableMetadata.getIndexes().containsKey(name);
-    }
-    return result;
+  public boolean exists(IndexName name){
+   boolean result = false;
+   if (exists(name.getTableName())) {
+     TableMetadata tableMetadata = this.getTable(name.getTableName());
+     result = tableMetadata.getIndexes().containsKey(name);
+   }
+   return result;
   }
 
-  public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock,
-      TransactionManager tm) {
+  public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock, TransactionManager tm) {
     if (metadata != null && writeLock != null) {
       this.metadata = metadata;
       this.writeLock = writeLock;
@@ -283,7 +282,7 @@ public enum MetadataManager {
     shouldBeInit();
     try {
       writeLock.lock();
-      if (unique) {
+      if(unique){
         shouldBeUnique(connectorMetadata.getName());
       }
       beginTransaction();
