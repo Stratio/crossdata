@@ -46,11 +46,11 @@ public class DropIndexStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropIndexStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         }
     }
 
@@ -68,14 +68,36 @@ public class DropIndexStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropIndexStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+
+    @Test
+    public void validateNotExistsIndex(){
+        String query = "DROP INDEX unknown;";
+        DropIndexStatement dropIndexStatement=new DropIndexStatement();
+        dropIndexStatement.setName("unknown");
+        dropIndexStatement.setDropIfExists();
+
+        Validator validator=new Validator();
+
+        BaseQuery baseQuery=new BaseQuery("dropIndexId",query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropIndexStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("Index must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
             Assert.assertTrue(true);
         }
     }
-
 
 
 }

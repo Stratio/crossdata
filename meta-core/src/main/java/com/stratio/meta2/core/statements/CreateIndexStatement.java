@@ -480,7 +480,7 @@ public class CreateIndexStatement extends MetadataStatement {
 
   @Override
   public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements().add(Validation.MUST_NOT_EXIST_INDEX).add(Validation.MUST_EXIST_TABLE);
+    return new ValidationRequirements().add(Validation.MUST_NOT_EXIST_INDEX).add(Validation.MUST_EXIST_TABLE).add(Validation.MUST_EXIST_COLUMN);
   }
 
 }

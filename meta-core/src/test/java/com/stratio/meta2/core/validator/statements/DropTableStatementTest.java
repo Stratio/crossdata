@@ -46,18 +46,18 @@ public class DropTableStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropTableStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         }
     }
 
     @Test
     public void validateIfNotExists(){
         String query = "DROP TABLE IF EXISTS unknown;";
-        DropTableStatement dropTableStatement=new DropTableStatement(new TableName("demo","users"),true);
+        DropTableStatement dropTableStatement=new DropTableStatement(new TableName("demo","unknown"),true);
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("dropTableid",query, new CatalogName("demo"));
@@ -65,7 +65,26 @@ public class DropTableStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropTableStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void validateNotExistsTable(){
+        String query = "DROP TABLE IF EXISTS unknown;";
+        DropTableStatement dropTableStatement=new DropTableStatement(new TableName("demo","unknown"),false);
+        Validator validator=new Validator();
+
+        BaseQuery baseQuery=new BaseQuery("dropTableid",query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropTableStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("Table must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

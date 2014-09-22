@@ -18,10 +18,8 @@ public class DetachConnectorStatementTest {
 
     @Test
     public void detachConnector() {
-        String query = "DETACH CONNECTOR myConnector FROM myCluster";
-
-
-        DetachConnectorStatement detachConnectorStatement=new DetachConnectorStatement(new ConnectorName("myConnector"),new ClusterName("myCluster"));
+        String query = "DETACH CONNECTOR CassandraConnector FROM Cassandra";
+        DetachConnectorStatement detachConnectorStatement=new DetachConnectorStatement(new ConnectorName("CassandraConnector"),new ClusterName("Cassandra"));
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("detachConnectorId",query, new CatalogName("system"));
@@ -39,10 +37,8 @@ public class DetachConnectorStatementTest {
 
     @Test
     public void detachUnknownConnector() {
-        String query = "DETACH CONNECTOR Unknown FROM myCluster";
-
-
-        DetachConnectorStatement detachConnectorStatement=new DetachConnectorStatement(new ConnectorName("Unknown"),new ClusterName("myCluster"));
+        String query = "DETACH CONNECTOR Unknown FROM Cassandra";
+        DetachConnectorStatement detachConnectorStatement=new DetachConnectorStatement(new ConnectorName("Unknown"),new ClusterName("Cassandra"));
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("detachConnectorId",query, new CatalogName("system"));
@@ -50,7 +46,7 @@ public class DetachConnectorStatementTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,detachConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.fail("Connector must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -60,10 +56,10 @@ public class DetachConnectorStatementTest {
 
     @Test
     public void detachConnectorUnknownCluster() {
-        String query = "DETACH CONNECTOR myConnectorName FROM Unknown";
+        String query = "DETACH CONNECTOR CassandraConnector FROM Unknown";
 
 
-        DetachConnectorStatement detachConnectorStatement=new DetachConnectorStatement(new ConnectorName("myConnector"),new ClusterName("Unknown"));
+        DetachConnectorStatement detachConnectorStatement=new DetachConnectorStatement(new ConnectorName("CassandraConnector"),new ClusterName("Unknown"));
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("detachConnectorId",query, new CatalogName("system"));
@@ -71,7 +67,7 @@ public class DetachConnectorStatementTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,detachConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.fail("Datastore must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
