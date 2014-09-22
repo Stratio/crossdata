@@ -25,7 +25,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 /**
  * Class that models a {@code DROP TABLE} statement from the META language.
  */
-public class DropTableStatement extends MetaDataStatement {
+public class DropTableStatement extends MetadataStatement {
 
   /**
    * The name of the target table.

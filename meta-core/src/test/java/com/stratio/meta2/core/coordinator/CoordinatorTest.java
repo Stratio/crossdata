@@ -33,10 +33,8 @@ import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.metadata.MetadataManagerTests;
-import com.stratio.meta2.core.query.BaseQuery;
-import com.stratio.meta2.core.query.MetaDataParsedQuery;
-import com.stratio.meta2.core.query.MetaDataValidatedQuery;
-import com.stratio.meta2.core.query.MetadataPlannedQuery;
+import com.stratio.meta2.core.query.*;
+
 import com.stratio.meta2.core.statements.AttachClusterStatement;
 import com.stratio.meta2.core.statements.AttachConnectorStatement;
 
@@ -70,9 +68,10 @@ public class CoordinatorTest extends MetadataManagerTests {
     AttachClusterStatement
         attachClusterStatement = new AttachClusterStatement("clusterTest", false, "datastoreTest", "{}");
 
-    MetaDataParsedQuery metadataParsedQuery = new MetaDataParsedQuery(baseQuery, attachClusterStatement);
+    MetadataParsedQuery
+        metadataParsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
 
-    MetaDataValidatedQuery metadataValidatedQuery = new MetaDataValidatedQuery(metadataParsedQuery);
+    MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
     MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery);
 
@@ -139,9 +138,10 @@ public class CoordinatorTest extends MetadataManagerTests {
     AttachConnectorStatement
         attachConnectorStatement = new AttachConnectorStatement("connectorTest", "clusterTest", "{}");
 
-    MetaDataParsedQuery metadataParsedQuery = new MetaDataParsedQuery(baseQuery, attachConnectorStatement);
+    MetadataParsedQuery
+        metadataParsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
 
-    MetaDataValidatedQuery metadataValidatedQuery = new MetaDataValidatedQuery(metadataParsedQuery);
+    MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
     MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery);
 

@@ -4,16 +4,14 @@ import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.core.query.BaseQuery;
-import com.stratio.meta2.core.query.MetaDataParsedQuery;
+import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.AttachConnectorStatement;
 import com.stratio.meta2.core.validator.Validator;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-/**
- * Created by jjlopez on 17/09/14.
- */
+
 public class AttachConnectorStatementTest {
 
     @Test
@@ -26,7 +24,7 @@ public class AttachConnectorStatementTest {
 
         BaseQuery baseQuery=new BaseQuery("attachConnectorID",query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,attachConnectorStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertFalse(false);
@@ -47,7 +45,7 @@ public class AttachConnectorStatementTest {
 
         BaseQuery baseQuery=new BaseQuery("attachConnectorID",query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,attachConnectorStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertFalse(false);
@@ -69,7 +67,7 @@ public class AttachConnectorStatementTest {
 
         BaseQuery baseQuery=new BaseQuery("attachConnectorID",query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,attachConnectorStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertFalse(false);
@@ -90,7 +88,7 @@ public class AttachConnectorStatementTest {
 
         BaseQuery baseQuery=new BaseQuery("attachConnectorID",query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,attachConnectorStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertFalse(false);

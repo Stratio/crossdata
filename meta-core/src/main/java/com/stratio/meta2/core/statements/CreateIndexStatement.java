@@ -43,7 +43,7 @@ import java.util.Map;
  * ON {@literal <tableName>} ( {@literal <identifier> , ..., <identifier>}) <br>
  * ( USING {@literal <index_class>} )? ( WITH OPTIONS ( key_1=value_1 AND ... AND key_n=value_n) )?;
  */
-public class CreateIndexStatement extends MetaDataStatement {
+public class CreateIndexStatement extends MetadataStatement {
 
   /**
    * The {@link com.stratio.meta.core.structures.IndexType} to be created.

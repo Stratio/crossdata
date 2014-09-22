@@ -33,6 +33,7 @@ class ConnectorApp  extends ConnectConfig {
   """
   lazy val system = ActorSystem(clusterName, config)
   override lazy val logger =Logger.getLogger(classOf[ConnectorApp])
+  var actorClusterNode:ActorRef=null
 
   def getConnector(connectortype:String):IConnector={
     connectortype match {
@@ -66,23 +67,26 @@ class ConnectorApp  extends ConnectConfig {
   }
 
   def startup(connector:IConnector,ports: Seq[String],config:com.typesafe.config.Config): ActorRef= {
-    var actorClusterNode:ActorRef=null
     ports foreach { port =>
       val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
-      actorClusterNode=system.actorOf(ConnectorActor.props(connector.getConnectorName,connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
-      actorClusterNode=system.actorOf(HeartbeatActor.props(),"HeartbeatActor")
+      actorClusterNode=system.actorOf(ConnectorActor.props(connector.getConnectorName,connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"ConnectorActor")
       actorClusterNode ! "I'm in!!!"
     }
     actorClusterNode
   }
 
   def shutdown()= {
+  }
+
+  def stop()= {
+    actorClusterNode ! shutdown()
+    shutdown() //will be implemented by the concrete connector
     system.shutdown()
   }
 
 
   def startup(connector:IConnector):ActorRef={
-    val  actorClusterNode=system.actorOf(ConnectorActor.props(connector.getConnectorName,connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
+    actorClusterNode=system.actorOf(ConnectorActor.props(connector.getConnectorName,connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"ConnectororActor")
     actorClusterNode ! "I'm in!!!"
     actorClusterNode
 

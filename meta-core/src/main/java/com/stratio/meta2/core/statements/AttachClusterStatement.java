@@ -23,6 +23,7 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -32,7 +33,7 @@ import java.util.Map;
  * storage, the user must specify the hosts and ports where the datastore is available in the JSON
  * options.
  */
-public class AttachClusterStatement extends MetaDataStatement {
+public class AttachClusterStatement extends MetadataStatement {
 
   /**
    * Cluster name given by the user. This name will be used to refer to the cluster when creating
@@ -67,7 +68,13 @@ public class AttachClusterStatement extends MetaDataStatement {
     this.clusterName = clusterName;
     this.ifNotExists = ifNotExists;
     this.datastoreName = datastoreName;
-    this.options = StringUtils.convertJsonToOptions(options);
+
+      if (options.isEmpty()) {
+          this.options = new HashMap<>();
+      } else {
+          this.options = StringUtils.convertJsonToOptions(options);
+      }
+
   }
 
   @Override

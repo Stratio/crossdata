@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
  */
-public class DescribeStatement extends MetaDataStatement implements ITableStatement {
+public class DescribeStatement extends MetadataStatement implements ITableStatement {
 
   /**
    * Type of description required: {@code CATALOG} or {@code TABLE}.

@@ -3,7 +3,7 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-public class DropConnectorStatement extends MetaDataStatement {
+public class DropConnectorStatement extends MetadataStatement {
 
   private String name;
 
