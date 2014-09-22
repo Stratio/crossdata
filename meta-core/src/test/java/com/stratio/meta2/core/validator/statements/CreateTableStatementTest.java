@@ -56,14 +56,11 @@ public class CreateTableStatementTest extends BasicValidatorTest {
     columns.put(new ColumnName(new TableName("demo","users2"),"age"), ColumnType.INT);
 
     List<ColumnName> clusterKey=null;
-    int primaryKeyType=1;
     CreateTableStatement createTableStatement=new CreateTableStatement(new TableName("demo","users2"),
                                                                        new ClusterName("cluster"),
                                                                        columns,
                                                                        primaryKey,
-                                                                       clusterKey,
-                                                                       primaryKeyType,
-                                                                       1);
+                                                                       clusterKey);
     Validator validator=new Validator();
 
     BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
@@ -92,16 +89,11 @@ public class CreateTableStatementTest extends BasicValidatorTest {
     columns.put(new ColumnName(new TableName("demo","users2"),"age"), ColumnType.INT);
 
     List<ColumnName> clusterKey=null;
-    int primaryKeyType=1;
     CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("demo","users2"),
                                                                          new ClusterName("cluster"),
                                                                          columns,
                                                                          primaryKey,
-                                                                         clusterKey,
-                                                                         primaryKeyType,
-                                                                         1);
-    createTableStatement.setWithProperties(true);
-
+                                                                         clusterKey);
 
     createTableStatement.setProperties("{'comment': 'Users2 table'}");
     Validator validator=new Validator();

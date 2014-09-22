@@ -40,7 +40,7 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
     }
     case inProgressQuery:MetadataInProgressQuery=>{
       log.info("->"+"Receiving MetadataInProgressQuery")
-      //val statement:MetaDataStatement=null
+      //val statement:MetadataStatement=null
       val statement=inProgressQuery.getStatement()
       statement match{
         case ms:MetadataStatement =>
@@ -52,7 +52,7 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
 
      case inProgressQuery:SelectInProgressQuery=>{
       log.info("->"+"Receiving SelectInProgressQuery")
-      //val statement:MetaDataStatement=null
+      //val statement:MetadataStatement=null
       val statement=inProgressQuery.getStatement()
       statement match{
         case ms:SelectStatement =>
