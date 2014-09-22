@@ -12,11 +12,6 @@ import com.stratio.meta2.core.validator.Validator;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-
-
-/**
- * Created by jjlopez on 17/09/14.
- */
 public class AttachClusterStatementTest {
 
     @Test

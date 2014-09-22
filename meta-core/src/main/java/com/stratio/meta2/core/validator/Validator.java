@@ -42,8 +42,6 @@ import com.stratio.meta2.core.statements.MetaStatement;
 
 import org.apache.log4j.Logger;
 
-import java.util.List;
-import java.util.Map;
 
 public class Validator {
   /**
