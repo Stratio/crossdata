@@ -45,7 +45,6 @@ import javax.transaction.TransactionManager;
 public enum MetadataManager {
   MANAGER;
 
-  //TODO: add transaction manager
   private boolean isInit = false;
 
   private Map<FirstLevelName, IMetadata> metadata;

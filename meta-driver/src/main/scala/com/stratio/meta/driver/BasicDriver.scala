@@ -60,7 +60,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
 
   lazy val queries: java.util.Map[String, IResultHandler] = new java.util.HashMap[String, IResultHandler]
 
-  lazy val system = ActorSystem("MetaDriverSystem",BasicDriver.config)
+  lazy val system = ActorSystem("MetaDriverSystem", BasicDriver.config)
   //For Futures
   implicit val context = system.dispatcher
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact=> system.actorSelection(contact)).toSet
@@ -74,7 +74,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     basicDriverConfig.serverSection.clusterHosts.toList.map(host=>"akka.tcp://" + basicDriverConfig.serverSection.clusterName + "@" + host + "/user/receptionist")
   }
 
-  var userId: String = null
+  /**
+   * Default user to connect to the meta server.
+   */
+  private final val DEFAULT_USER: String = "META_USER"
+  var userId: String = ""
+  var userName: String = ""
+  var currentCatalog: String = ""
 
   def this() {
     this(BasicDriver.getBasicDriverConfigFromFile)
@@ -119,57 +125,22 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
 
   /**
    * Execute a query in the Meta server asynchronously.
-   * @param user The user login.
-   * @param targetCatalog The target catalog.
-   * @param query The query.
-   * @param callback The callback object.
-   * @deprecated  As of release 0.0.5, replaced by asyncExecuteQuery(targetCatalog, query, callback)}
-   */
-  @deprecated(message = "You should use asyncExecuteQuery(targetCatalog, query, callback)", since = "0.0.5")
-  @throws(classOf[ConnectionException])
-  def asyncExecuteQuery(user:String, targetCatalog: String, query: String, callback: IResultHandler) : String = {
-    logger.warn("You use a deprecated method. User parameter (" + user + ") will be ignored")
-    asyncExecuteQuery(targetCatalog, query, callback)
-  }
-
-  /**
-   * Execute a query in the Meta server asynchronously.
-   * @param targetCatalog The target catalog.
    * @param query The query.
    * @param callback The callback object.
    */
   @throws(classOf[ConnectionException])
-  def asyncExecuteQuery(targetCatalog: String, query: String, callback: IResultHandler) : String = {
+  def asyncExecuteQuery(query: String, callback: IResultHandler) : String = {
     if(userId==null){
       throw new ConnectionException("You must connect to cluster")
     }
     val queryId = UUID.randomUUID()
     queries.put(queryId.toString, callback)
-    sendQuery(new Query(queryId.toString, targetCatalog, query, userId))
+    sendQuery(new Query(queryId.toString, currentCatalog, query, userId))
     queryId.toString
   }
 
   /**
    * Launch query in Meta Server
-   * @param user Login the user (Audit only)
-   * @param targetKs Target keyspace
-   * @param query Launched query
-   * @return QueryResult
-   * @deprecated  As of release 0.0.5, replaced by asyncExecuteQuery(targetCatalog, query, callback)}
-   */
-  @throws(classOf[ConnectionException])
-  @throws(classOf[ParsingException])
-  @throws(classOf[ValidationException])
-  @throws(classOf[ExecutionException])
-  @throws(classOf[UnsupportedException])
-  @deprecated(message = "You should use executeQuery(targetKs, query)", since = "0.0.5")
-  def executeQuery(user: String, targetKs: String, query: String): Result = {
-    logger.warn("You use a deprecated method. User parameter (" + user + ") will be ignored")
-    executeQuery(targetKs, query)
-  }
-  /**
-   * Launch query in Meta Server
-   * @param targetKs Target keyspace
    * @param query Launched query
    * @return QueryResult
    */
@@ -178,14 +149,14 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   @throws(classOf[ValidationException])
   @throws(classOf[ExecutionException])
   @throws(classOf[UnsupportedException])
-  def executeQuery(targetKs: String, query: String): Result = {
+  def executeQuery(query: String): Result = {
     if(userId==null){
       throw new ConnectionException("You must connect to cluster")
     }
     val queryId = UUID.randomUUID()
     val callback = new SyncResultHandler
     queries.put(queryId.toString, callback)
-    sendQuery(new Query(queryId.toString, targetKs, query, userId))
+    sendQuery(new Query(queryId.toString, currentCatalog, query, userId))
     val r = callback.waitForResult()
     queries.remove(queryId.toString)
     r
@@ -267,4 +238,22 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     system.shutdown()
   }
 
+  def setUserName(userName: String) {
+    this.userName = userName
+    if (userName == null) {
+      this.userName = DEFAULT_USER
+    }
+  }
+
+  def getUserName: String = {
+    return userName
+  }
+
+  def getCurrentCatalog: String = {
+    return currentCatalog
+  }
+
+  def setCurrentCatalog(catalog: String) {
+    this.currentCatalog = catalog
+  }
 }

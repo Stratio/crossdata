@@ -19,6 +19,7 @@
 package com.stratio.meta2.common.metadata;
 
 import com.stratio.meta2.common.data.IndexName;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 import java.util.List;
 import java.util.Map;
@@ -27,10 +28,10 @@ public class IndexMetadata implements IMetadata {
   private final IndexName name;
   private final List<ColumnMetadata> columns;
   private final IndexType type;
-  private final Map<String, Object> options;
+  private final Map<Selector, Selector> options;
 
   public IndexMetadata(IndexName name, List<ColumnMetadata> columns, IndexType type,
-      Map<String, Object> options) {
+      Map<Selector, Selector> options) {
     this.name = name;
     this.columns = columns;
     this.type = type;
@@ -49,7 +50,7 @@ public class IndexMetadata implements IMetadata {
     return type;
   }
 
-  public Map<String, Object> getOptions() {
+  public Map<Selector, Selector> getOptions() {
     return options;
   }
 
