@@ -115,5 +115,9 @@ public class TableMetadata implements IMetadata {
     }
     return false;
   }
+  
+  public void addIndex(IndexName name ,IndexMetadata data){
+    indexes.put(name, data);
+  }
 
 }

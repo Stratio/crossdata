@@ -1,13 +1,23 @@
 package com.stratio.meta2.core.coordinator;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
 import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
 import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
+import com.stratio.meta2.common.metadata.IndexMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.InProgressQuery;
@@ -28,10 +38,6 @@ import com.stratio.meta2.core.statements.DropIndexStatement;
 import com.stratio.meta2.core.statements.DropTableStatement;
 import com.stratio.meta2.core.statements.InsertIntoStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
-
-import org.apache.log4j.Logger;
-
-import java.util.Map;
 
 public class Coordinator {
 
@@ -107,6 +113,7 @@ public class Coordinator {
         persistCreateCatalog((CreateCatalogStatement) plannedQuery.getStatement());
         break;
       case CREATE_INDEX:
+        persistCreateIndex((CreateIndexStatement) plannedQuery.getStatement());
         break;
       case CREATE_TABLE:
         persistCreateTable((CreateTableStatement) plannedQuery.getStatement());
@@ -226,6 +233,24 @@ public class Coordinator {
 
   private void persistCreateTable(CreateTableStatement createTableStatement) {
     MetadataManager.MANAGER.createTable(createTableStatement.getTableMetadata());
+  }
+
+  private void persistCreateIndex(CreateIndexStatement createIndexStatement) {
+    TableMetadata table = MetadataManager.MANAGER.getTable(createIndexStatement.getTableName());
+
+    List<ColumnName> targetColumnsNames = createIndexStatement.getTargetColumns();
+    List<ColumnMetadata> targetColumnsMetadata = new ArrayList<>();
+    for (ColumnName c : targetColumnsNames) {
+      targetColumnsMetadata.add(table.getColumns().get(c));
+    }
+
+    IndexMetadata index =
+        new IndexMetadata(createIndexStatement.getName(), targetColumnsMetadata,
+            createIndexStatement.getType(), createIndexStatement.getOptions());
+    table.addIndex(createIndexStatement.getName(), index);
+    
+    MetadataManager.MANAGER.createTable(table, false);
+
   }
 
   private void persistAttachConnector(AttachConnectorStatement attachConnectorStatement) {

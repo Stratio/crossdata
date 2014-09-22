@@ -14,26 +14,27 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
-import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta2.core.engine.EngineConfig;
-import com.stratio.meta.core.metadata.CustomIndexMetadata;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.structures.IndexType;
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
-import com.stratio.meta2.core.validator.Validation;
-import com.stratio.meta2.core.validator.ValidationRequirements;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta.core.metadata.CustomIndexMetadata;
+import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.IndexName;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.IndexType;
+import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
+import com.stratio.meta2.core.engine.EngineConfig;
+import com.stratio.meta2.core.validator.Validation;
+import com.stratio.meta2.core.validator.ValidationRequirements;
 
 /**
  * Class that models a {@code CREATE INDEX} statement of the META language. This class recognizes
@@ -185,8 +186,35 @@ public class CreateIndexStatement extends MetaDataStatement {
    *
    * @return The name.
    */
-  public String getName() {
-    return name;
+  public IndexName getName() {
+    return new IndexName(tableName.getCatalogName().getName(), tableName.getName(), name);
+  }
+
+  /**
+   * Get the table name.
+   *
+   * @return The TableName.
+   */
+  public TableName getTableName() {
+    return tableName;
+  }
+
+  /**
+   * Get the index type name.
+   *
+   * @return The IndexType.
+   */
+  public IndexType getType() {
+    return type;
+  }
+
+  /**
+   * Get the targeted columns in a List<ColumnName>.
+   *
+   * @return List<ColumnName> with the columns targeted by the index.
+   */
+  public List<ColumnName> getTargetColumns() {
+    return targetColumns;
   }
 
   /**
@@ -250,7 +278,7 @@ public class CreateIndexStatement extends MetaDataStatement {
     String result;
     if (name == null) {
       StringBuilder sb = new StringBuilder();
-      if (IndexType.LUCENE.equals(type)) {
+      if (IndexType.FULL_TEXT.equals(type)) {
         sb.append("stratio_lucene_");
         sb.append(tableName);
       } else {
@@ -264,7 +292,7 @@ public class CreateIndexStatement extends MetaDataStatement {
       result = sb.toString();
     } else {
       result = name;
-      if (IndexType.LUCENE.equals(type)) {
+      if (IndexType.FULL_TEXT.equals(type)) {
         result = "stratio_lucene_" + name;
       }
     }
@@ -336,7 +364,7 @@ public class CreateIndexStatement extends MetaDataStatement {
     }
 
     // If the syntax is valid and we are dealing with a Lucene index, complete the missing fields.
-    if (!result.hasError() && IndexType.LUCENE.equals(type)
+    if (!result.hasError() && IndexType.FULL_TEXT.equals(type)
         && (options.isEmpty() || usingClass == null)) {
       options.clear();
       options.putAll(generateLuceneOptions());

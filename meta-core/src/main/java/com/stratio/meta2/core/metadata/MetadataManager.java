@@ -45,7 +45,7 @@ import javax.transaction.TransactionManager;
 public enum MetadataManager {
   MANAGER;
 
-  //TODO: add transaction manager
+  // TODO: add transaction manager
   private boolean isInit = false;
 
   private Map<FirstLevelName, IMetadata> metadata;
@@ -58,29 +58,29 @@ public enum MetadataManager {
     }
   }
 
-  public boolean exists(Name name){
-    boolean result=false;
-    switch(name.getType()){
+  public boolean exists(Name name) {
+    boolean result = false;
+    switch (name.getType()) {
       case Catalog:
-        result=exists((CatalogName)name);
+        result = exists((CatalogName) name);
         break;
       case Cluster:
-        result=exists((ClusterName)name);
+        result = exists((ClusterName) name);
         break;
       case Column:
-        result=exists((ColumnName)name);
+        result = exists((ColumnName) name);
         break;
       case Connector:
-        result=exists((ConnectorName)name);
+        result = exists((ConnectorName) name);
         break;
       case DataStore:
-        result=exists((DataStoreName)name);
+        result = exists((DataStoreName) name);
         break;
       case Table:
-        result=exists((TableName)name);
+        result = exists((TableName) name);
         break;
       case Index:
-        result=exists((IndexName)name);
+        result = exists((IndexName) name);
         break;
     }
     return result;
@@ -99,15 +99,14 @@ public enum MetadataManager {
   }
 
   private void beginTransaction() throws SystemException, NotSupportedException {
-    if(tm!=null){
-     tm.begin();
+    if (tm != null) {
+      tm.begin();
     }
   }
 
-  private void commitTransaction()
-      throws HeuristicRollbackException, RollbackException, HeuristicMixedException,
-             SystemException {
-    if(tm!=null){
+  private void commitTransaction() throws HeuristicRollbackException, RollbackException,
+      HeuristicMixedException, SystemException {
+    if (tm != null) {
       tm.commit();
     }
   }
@@ -125,7 +124,7 @@ public enum MetadataManager {
     return result;
   }
 
-  public boolean exists(ColumnName name){
+  public boolean exists(ColumnName name) {
     boolean result = false;
     if (exists(name.getTableName())) {
       TableMetadata catalogMetadata = this.getTable(name.getTableName());
@@ -134,16 +133,17 @@ public enum MetadataManager {
     return result;
   }
 
-  public boolean exists(IndexName name){
-   boolean result = false;
-   if (exists(name.getTableName())) {
-     TableMetadata tableMetadata = this.getTable(name.getTableName());
-     result = tableMetadata.getIndexes().containsKey(name);
-   }
-   return result;
+  public boolean exists(IndexName name) {
+    boolean result = false;
+    if (exists(name.getTableName())) {
+      TableMetadata tableMetadata = this.getTable(name.getTableName());
+      result = tableMetadata.getIndexes().containsKey(name);
+    }
+    return result;
   }
 
-  public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock, TransactionManager tm) {
+  public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock,
+      TransactionManager tm) {
     if (metadata != null && writeLock != null) {
       this.metadata = metadata;
       this.writeLock = writeLock;
@@ -178,19 +178,20 @@ public enum MetadataManager {
   }
 
 
-  public void createTable(TableMetadata tableMetadata) {
+  public void createTable(TableMetadata tableMetadata, boolean unique) {
     shouldBeInit();
     try {
       writeLock.lock();
       shouldExist(tableMetadata.getName().getCatalogName());
       shouldExist(tableMetadata.getClusterRef());
-      shouldBeUnique(tableMetadata.getName());
+      if (unique) {
+        shouldBeUnique(tableMetadata.getName());
+      }
       CatalogMetadata catalogMetadata =
           ((CatalogMetadata) metadata.get(tableMetadata.getName().getCatalogName()));
 
       if (catalogMetadata.getTables().containsKey(tableMetadata.getName())) {
-        throw new MetadataManagerException("Table [" + tableMetadata.getName()
-            + "] already exists");
+        throw new MetadataManagerException("Table [" + tableMetadata.getName() + "] already exists");
       }
 
       catalogMetadata.getTables().put(tableMetadata.getName(), tableMetadata);
@@ -202,6 +203,10 @@ public enum MetadataManager {
     } finally {
       writeLock.unlock();
     }
+  }
+
+  public void createTable(TableMetadata tableMetadata) {
+    createTable(tableMetadata, true);
   }
 
   public TableMetadata getTable(TableName name) {
@@ -216,7 +221,7 @@ public enum MetadataManager {
     try {
       writeLock.lock();
       shouldExist(clusterMetadata.getDataStoreRef());
-      if(unique){
+      if (unique) {
         shouldBeUnique(clusterMetadata.getName());
       }
       for (ConnectorAttachedMetadata connectorRef : clusterMetadata.getConnectorAttachedRefs()
@@ -224,7 +229,7 @@ public enum MetadataManager {
         shouldExist(connectorRef.getConnectorRef());
       }
       beginTransaction();
-      metadata.put(clusterMetadata.getName(),clusterMetadata);
+      metadata.put(clusterMetadata.getName(), clusterMetadata);
       commitTransaction();
     } catch (MetadataManagerException mex) {
       throw mex;
@@ -249,7 +254,7 @@ public enum MetadataManager {
     shouldBeInit();
     try {
       writeLock.lock();
-      if(unique){
+      if (unique) {
         shouldBeUnique(dataStoreMetadata.getName());
       }
       beginTransaction();
@@ -278,7 +283,7 @@ public enum MetadataManager {
     shouldBeInit();
     try {
       writeLock.lock();
-      if(unique){
+      if (unique) {
         shouldBeUnique(connectorMetadata.getName());
       }
       beginTransaction();
