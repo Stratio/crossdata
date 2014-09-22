@@ -20,15 +20,16 @@ package com.stratio.meta2.core.validator.statements;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.data.*;
 import com.stratio.meta2.common.metadata.ColumnType;
+import com.stratio.meta2.common.metadata.IndexMetadata;
+import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.CreateTableStatement;
+import com.stratio.meta2.core.structures.Property;
+import com.stratio.meta2.core.structures.PropertyNameValue;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
 
@@ -102,7 +103,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         Property prop=new PropertyNameValue(new StringSelector("comment"),new StringSelector("Users2 table"));
         properties.add(prop);
 
-        createTableStatement.setProperties(properties);
+        createTableStatement.setProperties(properties.toString());
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
@@ -145,7 +146,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         Property prop=new PropertyNameValue(new StringSelector("comment"),new StringSelector("Users2 table"));
         properties.add(prop);
 
-        createTableStatement.setProperties(properties);
+        createTableStatement.setProperties(properties.toString());
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("unknown"));
