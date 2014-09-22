@@ -13,6 +13,7 @@ import java.util.*;
 
 /**
  * Created by carlos on 18/09/14.
+ * Copied from http://stackoverflow.com/questions/6133660/recursive-beanutils-describe
  */
 
 public class BeanUtils {

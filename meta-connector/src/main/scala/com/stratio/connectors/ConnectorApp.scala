@@ -1,11 +1,11 @@
-package com.stratio.connector
+package com.stratio.connectors
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.routing.RoundRobinRouter
 import com.stratio.connectors.config.ConnectConfig
 import com.stratio.meta.common.connector.IConnector
 import com.typesafe.config.ConfigFactory
-import org.apache.log4j.BasicConfigurator
+import org.apache.log4j.{Logger, BasicConfigurator}
 
 //import com.stratio.connector.cassandra.CassandraConnector
 
@@ -26,12 +26,13 @@ object ConnectorApp extends ConnectorApp{
 
 class ConnectorApp  extends ConnectConfig {
 
-    private var connector=null
+  private var connector=null
 
-    val usage = """Usage: 
+  val usage = """Usage:
       connectorApp [--port <port number>] [--connector-type <connector type name>]
-    """
-    lazy val system = ActorSystem(clusterName, config)
+  """
+  lazy val system = ActorSystem(clusterName, config)
+  override lazy val logger =Logger.getLogger(classOf[ConnectorApp])
 
   def getConnector(connectortype:String):IConnector={
     connectortype match {
@@ -67,15 +68,9 @@ class ConnectorApp  extends ConnectConfig {
   def startup(connector:IConnector,ports: Seq[String],config:com.typesafe.config.Config): ActorRef= {
     var actorClusterNode:ActorRef=null
     ports foreach { port =>
-      // Override the configuration of the port
       val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
-
-
-      // Create an Akka system
-
-      // Create an actor that handles cluster domain events
-      //actorClusterNode=system.actorOf(Props[ConnectorActor], name = actorName)
       actorClusterNode=system.actorOf(ConnectorActor.props(connector.getConnectorName,connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
+      actorClusterNode=system.actorOf(HeartbeatActor.props(),"HeartbeatActor")
       actorClusterNode ! "I'm in!!!"
     }
     actorClusterNode
@@ -87,17 +82,13 @@ class ConnectorApp  extends ConnectConfig {
 
 
   def startup(connector:IConnector):ActorRef={
-      // Create an Akka system
-
-      // Create an actor that handles cluster domain events
-   val  actorClusterNode=system.actorOf(ConnectorActor.props(connector.getConnectorName,connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
+    val  actorClusterNode=system.actorOf(ConnectorActor.props(connector.getConnectorName,connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
     actorClusterNode ! "I'm in!!!"
-     actorClusterNode
+    actorClusterNode
 
   }
   def startup(connector:IConnector, port:String):ActorRef={
     startup(connector,Array(port),config)
-
   }
 
 }

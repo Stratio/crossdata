@@ -1,8 +1,12 @@
 package com.stratio.meta2.server.actors
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.actor.{ Actor, ActorLogging, ActorRef, Props }
 import com.stratio.meta2.core.coordinator.Coordinator
-import com.stratio.meta2.core.query.{StoragePlannedQuery, MetadataPlannedQuery, PlannedQuery, SelectPlannedQuery}
+import com.stratio.meta2.core.query.{ StoragePlannedQuery, MetadataPlannedQuery, PlannedQuery, SelectPlannedQuery }
+import com.stratio.meta2.core.query.MetadataInProgressQuery
+import com.stratio.meta2.core.query.InProgressQuery
+import com.stratio.meta.communication.ACK
+import com.stratio.meta.common.result.QueryStatus
 
 object CoordinatorActor {
   def props(connector: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor(connector, coordinator))
@@ -12,7 +16,8 @@ class CoordinatorActor(connector: ActorRef, coordinator: Coordinator) extends Ac
 
   log.info("Lifting coordinator actor")
 
-  var coordinatorsMap: Map[String, ActorRef] = Map()
+  var coordinators: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map()
+  var queriesToPersist: scala.collection.mutable.Map[String, PlannedQuery] = scala.collection.mutable.Map()
 
   def receive = {
 
@@ -22,27 +27,36 @@ class CoordinatorActor(connector: ActorRef, coordinator: Coordinator) extends Ac
       //connector forward query
       connector ! coordinator.coordinate(query)
     }
-
+    /*
+     * Puts the query into a map if it's required to persist metadata 
+     */
     case query: MetadataPlannedQuery => {
       log.info("CoordinatorActor Received MetadataPlannedQuery")
       println() // doesn't print log.info if this statement is not written
       //connector forward query
-      connector ! coordinator.coordinate(query)
+      val inProgress: InProgressQuery = coordinator.coordinate(query)
+      if (inProgress != null) {
+        queriesToPersist.put(inProgress.getQueryId(), inProgress)
+        connector ! coordinator.coordinate(query)
+      }
     }
-
     case query: StoragePlannedQuery => {
       log.info("CoordinatorActor Received StoragePlannedQuery")
       println() // doesn't print log.info if this statement is not written
       //connector forward query
       connector ! coordinator.coordinate(query)
     }
-
-    case query: PlannedQuery => {
-      log.info("CoordinatorActor Received PlannedQuery")
-      println() // doesn't print log.info if this statement is not written
-      connector forward coordinator.coordinate(query)
+    /*
+     * When Connector answers Coordinator with ACK message with EXECUTED status, coordinator persists the metadata through MDManager
+     * and removes the query from the map
+     */
+    case connectorAck: ACK => {
+      if (connectorAck.status == QueryStatus.EXECUTED) {
+        log.info(connectorAck.queryId + " executed")
+        coordinator.persist(queriesToPersist(connectorAck.queryId))
+        queriesToPersist.remove(connectorAck.queryId)
+      }
     }
-
     case _ =>
       sender ! "KO"
       log.info("coordinator actor receives something it doesn't understand ")

@@ -6,7 +6,8 @@ import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
 import com.stratio.meta2.core.connector.ConnectorManager
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.common.data.ConnectorName
+import com.stratio.meta2.common.data.{ClusterName, ConnectorName}
+import com.stratio.meta2.core.statements.{CreateTableStatement, CreateCatalogStatement}
 
 object ConnectorManagerActor {
   def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))
@@ -36,7 +37,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       log.info("Member is Up: {}" + mu.toString+mu.member.getRoles)
       val it=mu.member.getRoles.iterator()
       while(it.hasNext()){
-    	  var rol=it.next()
+        val rol = it.next()
     	  rol match{
     	    case "connector"=>
     	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
@@ -61,11 +62,31 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       log.info("storage in progress query")
       connectorsMap(query.getConnectorName()) ! query
     }
+
     case query: SelectInProgressQuery=> {
+      val clustername=new ClusterName("//TODO:") //TODO: the query should give me the cluster's name
+      val workflow=query.getLogicalWorkFlow
       log.info("select in progress query")
-      connectorsMap(query.getConnectorName()) ! query
+      connectorsMap(query.getConnectorName()) ! Execute(clustername,workflow)
     }
+
     case query: MetadataInProgressQuery=> {
+
+      val statement=query.getStatement()
+      val messagesender=connectorsMap(query.getConnectorName())
+
+      statement match {
+        case createCatalogStatement:CreateCatalogStatement => {
+          println("Createcatalog statement")
+          //messagesender ! CreateCatalog(query.getClusterName,query.getDefaultCatalog)
+          //createCatalogStatement
+        }
+        case createTableStatement:CreateTableStatement => {
+          println("CreateTableStatement")
+        }
+        case _ =>
+          println("Unidentified MetadataInProgressQuery Received")
+      }
 
       log.info("metadata in progress query")
       connectorsMap(query.getConnectorName()) ! query

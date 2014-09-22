@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.connector;
+package com.stratio.connectors;
 
 import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.logicalplan.Filter;

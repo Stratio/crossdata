@@ -1,13 +1,13 @@
-package com.stratio.connector
+package com.stratio.connectors
 
 import akka.actor.{Actor, ActorLogging, Props}
-import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
-import com.stratio.meta2.core.query.{StorageInProgressQuery, MetadataInProgressQuery, SelectInProgressQuery}
+import com.stratio.meta2.common.data.ClusterName
+import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
 import com.stratio.meta2.core.statements.{MetaDataStatement, SelectStatement}
-;
+
 
 object ConnectorActor{
   def props (connectorName:String,connector:IConnector):Props = Props (new ConnectorActor(connectorName,connector) )
@@ -17,11 +17,18 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
 
   val connector=conn //TODO: test if it works with one thread and multiple threads
 
-  val cluster = Cluster(context.system)
+  //val cluster = Cluster(context.system)
+  //import cluster.{ scheduler }
+  //val heartbeatTask = scheduler.schedule(PeriodicTasksInitialDelay max HeartbeatInterval, HeartbeatInterval, self, HeartbeatTick)
 
-  // subscribe to cluster changes, re-subscribe when restart 
+
+  // subscribe to cluster changes, re-subscribe when restart
 
   def receive = {
+
+    case stop=>{
+      connector.close(new ClusterName(""))
+    }
 
     case inProgressQuery:MetadataInProgressQuery=>{
       log.info("->"+"Receiving MetadataInProgressQuery")

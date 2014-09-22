@@ -16,22 +16,8 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.query;
+package com.stratio.meta.communication
 
-import com.stratio.meta2.core.statements.MetaDataStatement;
-
-public class MetaDataParsedQuery extends ParsedQuery {
-  public MetaDataParsedQuery(BaseQuery baseQuery,
-                             MetaDataStatement statement) {
-    super(baseQuery, statement);
-  }
-
-  MetaDataParsedQuery(MetaDataParsedQuery parsedQuery) {
-    super(parsedQuery);
-  }
-
-  @Override
-  public MetaDataStatement getStatement() {
-    return (MetaDataStatement)statement;
-  }
-}
+//Connector messages
+case class HeartbeatSig()
+case class Stop()
