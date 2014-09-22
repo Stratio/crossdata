@@ -1,6 +1,7 @@
 package com.stratio.meta2.core.coordinator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
 import com.stratio.meta2.common.metadata.ClusterMetadata;
@@ -228,7 +230,7 @@ public class Coordinator {
 
   private void persistCreateCatalog(CreateCatalogStatement createCatalogStatement) {
     MetadataManager.MANAGER.createCatalog(new CatalogMetadata(createCatalogStatement
-        .getCatalogName(), createCatalogStatement.getOptions(), null));
+        .getCatalogName(), createCatalogStatement.getOptions(), new HashMap<TableName, TableMetadata>()));
   }
 
   private void persistCreateTable(CreateTableStatement createTableStatement) {

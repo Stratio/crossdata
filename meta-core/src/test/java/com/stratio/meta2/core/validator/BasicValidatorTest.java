@@ -122,7 +122,7 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
     private static TableMetadata createTable() {
         TableMetadata tableMetadata;
         TableName targetTable=new TableName("demo", "users");
-        Map<String, Object> options=new HashMap<>();
+        Map<Selector, Selector> options=new HashMap<>();
         Map<ColumnName, ColumnMetadata> columns=new HashMap<>();
         ClusterName clusterRef=new ClusterName("cluster");
         List<ColumnName> partitionKey=new ArrayList<>();
