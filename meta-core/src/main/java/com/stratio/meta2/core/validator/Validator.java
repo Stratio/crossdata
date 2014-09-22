@@ -244,13 +244,13 @@ public class Validator {
       if (stmt instanceof AttachClusterStatement) {
           AttachClusterStatement myStmt = (AttachClusterStatement) stmt;
           if (myStmt.getOptions().isEmpty()){
-              throw new ValidationException("AttachClusteStatemet options can't be empty");
+              throw new ValidationException("AttachClusteStatement options can't be empty");
           }
       }else {
           if (stmt instanceof AttachConnectorStatement) {
               AttachConnectorStatement myStmt = (AttachConnectorStatement) stmt;
               if (myStmt.getOptions().isEmpty()){
-                  throw new ValidationException("AttachConnectorStatemet options can't be empty");
+                  throw new ValidationException("AttachConnectorStatement options can't be empty");
               }
           }
       }
