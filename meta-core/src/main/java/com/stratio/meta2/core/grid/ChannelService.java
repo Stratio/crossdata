@@ -29,7 +29,6 @@ import org.jgroups.protocols.MERGE2;
 import org.jgroups.protocols.MFC;
 import org.jgroups.protocols.TCP;
 import org.jgroups.protocols.TCPPING;
-import org.jgroups.protocols.UFC;
 import org.jgroups.protocols.UNICAST2;
 import org.jgroups.protocols.VERIFY_SUSPECT;
 import org.jgroups.protocols.pbcast.GMS;
@@ -45,7 +44,7 @@ import java.util.List;
  * A distributed JGroups {@link org.jgroups.JChannel} factory/manager. The provided channels are
  * useful for broadcast communications between cluster members.
  *
- * It must be closed ({@link #close()}) when its created {@link Store}s are not needed anymore.
+ * It must be closed ({@link #close()}) when its created {@link com.stratio.meta2.core.grid.StoreService}s are not needed anymore.
  */
 public class ChannelService implements Closeable {
 

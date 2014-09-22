@@ -23,17 +23,14 @@ import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.core.statements.AlterTableStatement;
-import com.stratio.meta2.core.structures.Property;
 
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
 
 public class AlterTableStatementTest extends BasicPlannerTest {
     @Test
     public void testPlanForAlter(){
         String inputText = "ALTER TABLE table1 ADD column1 INT;";
-        stmt = new AlterTableStatement(new TableName("demo", "table1"), new ColumnName("demo", "table1", "column1"), ColumnType.INT, new ArrayList<Property>(), 1);
+        stmt = new AlterTableStatement(new TableName("demo", "table1"), new ColumnName("demo", "table1", "column1"), ColumnType.INT, null, 1);
         validateCassandraPath("testPlanForAlter");
     }
 }
