@@ -23,6 +23,7 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -67,7 +68,13 @@ public class AttachClusterStatement extends MetaDataStatement {
     this.clusterName = clusterName;
     this.ifNotExists = ifNotExists;
     this.datastoreName = datastoreName;
-    this.options = StringUtils.convertJsonToOptions(options);
+
+      if (options.isEmpty()) {
+          this.options = new HashMap<>();
+      } else {
+          this.options = StringUtils.convertJsonToOptions(options);
+      }
+
   }
 
   @Override

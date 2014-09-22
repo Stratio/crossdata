@@ -7,31 +7,28 @@ import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetaDataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.AttachClusterStatement;
+import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.validator.Validator;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-
-
-/**
- * Created by jjlopez on 17/09/14.
- */
 public class AttachClusterStatementTest {
 
     @Test
-    public void attachCluster() {
-        String query = "ATTACH CLUSTER myCluster on DATASTORE cassandra";
+    public void attachClusterNoOptions() {
+        String query = "ATTACH CLUSTER myCluster on DATASTORE Cassandra";
 
 
-        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "cassandra", null);
+        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "Cassandra", "");
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
 
         ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,attachClusterStatement);
+
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.fail("Options are required for ATTACH CLUSTER statement");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -44,7 +41,7 @@ public class AttachClusterStatementTest {
         String query = "ATTACH CLUSTER unknown on DATASTORE cassadra";
 
 
-        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("unknownr",true, "cassandra", null);
+        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("unknownr",true, "cassandra", "");
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
@@ -66,7 +63,7 @@ public class AttachClusterStatementTest {
         String query = "ATTACH CLUSTER myCluster on DATASTORE unknown";
 
 
-        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "unknown", null);
+        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "unknown", "");
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
