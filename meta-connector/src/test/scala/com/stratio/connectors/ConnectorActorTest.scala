@@ -44,9 +44,9 @@ class ConnectorActorTest extends FunSuite with MockFactory {
     val port = "2559"
     val m = mock[IConnector]
     val qe = mock[IQueryEngine]
-    //(qe.execute _).expects().returning(new QueryResult())
+    //(qe.execute _).expects(*,*).returning(QueryResult.createSuccessQueryResult())
+    //(m.getQueryEngine _).expects().returning(qe)
     (m.getConnectorName _).expects().returning("My New Connector")
-    (m.getQueryEngine _).expects().returning(qe)
 
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
