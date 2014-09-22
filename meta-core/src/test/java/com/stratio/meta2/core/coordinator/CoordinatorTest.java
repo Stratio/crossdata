@@ -249,38 +249,6 @@ public class CoordinatorTest extends MetadataManagerTests {
         "notSameName"));
   }
 
-  // @Test
-  // public void testCreateCatalogCheckObject() throws Exception {
-  // // Create and add test catalog to the metadatamanager
-  // CatalogName catalogName = new CatalogName("testCatalog3");
-  // CatalogMetadata catalog =
-  // new CatalogMetadata(catalogName, new HashMap<Selector, Selector>(),
-  // new HashMap<TableName, TableMetadata>());
-  // BaseQuery baseQuery =
-  // new BaseQuery(UUID.randomUUID().toString(), "CREATE CATALOG testCatalog3", catalogName);
-  //
-  // CreateCatalogStatement createCatalogStatement =
-  // new CreateCatalogStatement(catalogName.getName(), false, "{}");
-  //
-  // MetaDataParsedQuery metadataParsedQuery =
-  // new MetaDataParsedQuery(baseQuery, createCatalogStatement);
-  //
-  // MetaDataValidatedQuery metadataValidatedQuery = new
-  // MetaDataValidatedQuery(metadataParsedQuery);
-  //
-  // MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery);
-  //
-  //
-  // Coordinator coordinator = new Coordinator();
-  // if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
-  // assertTrue(true);
-  // coordinator.persist(plannedQuery);
-  // } else
-  // fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
-  // CatalogMetadata result = MetadataManager.MANAGER.getCatalog(catalogName);
-  // assertEquals(result, catalog);
-  // }
-
   // CREATE TABLE
   @Test
   public void testCreateTable() throws Exception {
@@ -369,7 +337,7 @@ public class CoordinatorTest extends MetadataManagerTests {
     MetadataManager.MANAGER.createCluster(clusterTest, false);
 
     // Create and add test catalog to the metadatamanager
-    CatalogName catalogName = new CatalogName("testCatalog4");
+    CatalogName catalogName = new CatalogName("testCatalog5");
     CatalogMetadata catalog =
         new CatalogMetadata(catalogName, new HashMap<Selector, Selector>(),
             new HashMap<TableName, TableMetadata>());
@@ -386,11 +354,13 @@ public class CoordinatorTest extends MetadataManagerTests {
     for (Entry<ColumnName, ColumnMetadata> c : table.getColumns().entrySet()) {
       columns.put(c.getKey(), c.getValue().getColumnType());
     }
-
+    MetadataManager.MANAGER.createTable(table);
+    
     BaseQuery baseQuery =
-        new BaseQuery(UUID.randomUUID().toString(), "CREATE INDEX testIndex", catalogName);
+        new BaseQuery(UUID.randomUUID().toString(), "CREATE INDEX testIndex ON testTable", catalogName);
 
     CreateIndexStatement createIndexStatement = new CreateIndexStatement();
+    createIndexStatement.setTableName(tableName);
     new MetadataParsedQuery(baseQuery, createIndexStatement);
 
     MetadataParsedQuery metadataParsedQuery =

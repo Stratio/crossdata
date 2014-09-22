@@ -189,7 +189,7 @@ public enum MetadataManager {
       CatalogMetadata catalogMetadata =
           ((CatalogMetadata) metadata.get(tableMetadata.getName().getCatalogName()));
 
-      if (catalogMetadata.getTables().containsKey(tableMetadata.getName())) {
+      if (catalogMetadata.getTables().containsKey(tableMetadata.getName())&& unique) {
         throw new MetadataManagerException("Table [" + tableMetadata.getName() + "] already exists");
       }
 
