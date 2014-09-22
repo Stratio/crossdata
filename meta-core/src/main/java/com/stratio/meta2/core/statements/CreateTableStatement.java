@@ -21,23 +21,22 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta2.common.metadata.ColumnType;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.core.structures.Property;
-import com.stratio.meta2.core.structures.PropertyNameValue;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,7 +71,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
   /**
    * The list of {@link com.stratio.meta2.core.structures.Property} of the table.
    */
-  private List<Property> properties = new LinkedList<>();
+  private Map<Selector, Selector> properties = new LinkedHashMap<>();
 
   /**
    * The type of primary key. Accepted values are:
@@ -161,8 +160,8 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
    *
    * @param properties The list.
    */
-  public void setProperties(List<Property> properties) {
-    this.properties = properties;
+  public void setProperties(String properties) {
+    this.properties = StringUtils.convertJsonToOptions(properties);
     if ((properties == null) || properties.isEmpty()) {
       withProperties = false;
     } else {
@@ -245,7 +244,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     }
 
     if (withProperties) {
-      sb.append(" WITH ").append(StringUtils.stringList(properties, " AND "));
+      sb.append(" WITH ").append(properties);
     }
     return sb.toString();
   }
@@ -354,13 +353,14 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
    */
   private Result validateProperties() {
     Result result = QueryResult.createSuccessQueryResult();
+    /*
     Iterator<Property> props = properties.iterator();
     boolean exit = false;
     while (!exit && props.hasNext()) {
       Property property = props.next();
       if (property.getType() == Property.TYPE_NAME_VALUE) {
         PropertyNameValue propertyNameValue = (PropertyNameValue) property;
-        /*if ("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
+        if ("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
             && propertyNameValue.getVp().getTermClass() != Boolean.class) {
           // If property ephemeral is present, it must be a boolean type
           result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
@@ -375,9 +375,9 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
           // If property ephemeral_persist_on is present, it must be a string type
           result= Result.createValidationErrorResult("Property 'ephemeral_persist_on' must be a string");
           exit = true;
-        }*/
+        }
       }
-    }
+    }*/
     return result;
   }
 

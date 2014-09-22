@@ -23,19 +23,14 @@ import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.ColumnType;
-import com.stratio.meta2.common.statements.structures.selectors.BooleanSelector;
-import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.statements.CreateTableStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
-import com.stratio.meta2.core.structures.Property;
-import com.stratio.meta2.core.structures.PropertyNameValue;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,9 +79,7 @@ public class CreateTableStatementTest extends BasicPlannerTest {
             Arrays.asList(new ColumnName("demo", "table_temporal", "name")), 1, 1);
     stmt.setSessionCatalog("demo");
 
-    Property prop = new PropertyNameValue(new StringSelector("ephemeral"), new BooleanSelector("true"));
-
-    ((CreateTableStatement) stmt).setProperties(Collections.singletonList(prop));
+    ((CreateTableStatement) stmt).setProperties("{'ephemeral': true}");
 
     try {
       Class<? extends MetaStatement> clazz = stmt.getClass();

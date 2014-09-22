@@ -4,6 +4,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.routing.RoundRobinRouter
 import com.stratio.connectors.config.ConnectConfig
 import com.stratio.meta.common.connector.IConnector
+import com.stratio.meta.communication.Shutdown
 import com.typesafe.config.ConfigFactory
 import org.apache.log4j.{Logger, BasicConfigurator}
 
@@ -69,7 +70,7 @@ class ConnectorApp  extends ConnectConfig {
   def startup(connector:IConnector,ports: Seq[String],config:com.typesafe.config.Config): ActorRef= {
     ports foreach { port =>
       val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
-      actorClusterNode=system.actorOf(ConnectorActor.props(connector.getConnectorName,connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"ConnectorActor")
+      actorClusterNode=system.actorOf(ConnectorActor.props(connector.getConnectorName(),connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"ConnectorActor")
       actorClusterNode ! "I'm in!!!"
     }
     actorClusterNode
@@ -79,8 +80,7 @@ class ConnectorApp  extends ConnectConfig {
   }
 
   def stop()= {
-    actorClusterNode ! shutdown()
-    //connector.shutdown()
+    actorClusterNode ! Shutdown()
     system.shutdown()
   }
 

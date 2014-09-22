@@ -87,11 +87,9 @@ public class CreateIndexStatement extends MetadataStatement {
   private Map<Selector, Selector> options = null;
 
   /**
-   * Map of lucene types associated with Cassandra data types.
+   * Map of lucene types associated with Database data types.
    */
   private static Map<String, String> luceneTypes = new HashMap<>();
-
-  private String optionsJson = "";
 
   /**
    * Table metadata cached on the validate function.
@@ -294,8 +292,9 @@ public class CreateIndexStatement extends MetadataStatement {
       sb.append(usingClass);
     }
     if (!options.isEmpty()) {
-      sb.append(" WITH OPTIONS = ");
-      sb.append(StringUtils.getStringFromOptions(options));
+      sb.append(" WITH ");
+      //sb.append(StringUtils.getStringFromOptions(options));
+      sb.append(options);
     }
 
     return sb.toString();

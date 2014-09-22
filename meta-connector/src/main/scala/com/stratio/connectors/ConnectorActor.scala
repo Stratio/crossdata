@@ -1,9 +1,9 @@
 package com.stratio.connectors
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.{ActorLogging, Props}
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
-import com.stratio.meta.communication.{HeartbeatSig, getConnectorName, replyConnectorName}
+import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
 import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
 import com.stratio.meta2.core.statements.{MetadataStatement, SelectStatement}
 
@@ -12,7 +12,8 @@ object ConnectorActor{
   def props (connectorName:String,connector:IConnector):Props = Props (new ConnectorActor(connectorName,connector) )
 }
 
-class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging with HeartbeatActor{
+class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActor with ActorLogging {
+//class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
 
   val connector=conn //TODO: test if it works with one thread and multiple threads
 
@@ -23,9 +24,11 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
 
   // subscribe to cluster changes, re-subscribe when restart
 
+  /*
   override def handleHeartbeat(heartbeat:HeartbeatSig)={
     println("ConnectorActor receives a heartbeat message")
   }
+  */
 
   def shutdown()={
     println("ConnectorActor is shutting down")
@@ -33,14 +36,15 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
     connector.shutdown()
   }
 
-  override def receive = super.receive orElse{
+  //override def receive = super.receive orElse{
+  override def receive = {
 
-    case shutdown=>{
+    case _:com.stratio.meta.communication.Shutdown=>{
+      log.info("->"+"Receiving Shutdown")
       this.shutdown()
     }
     case inProgressQuery:MetadataInProgressQuery=>{
       log.info("->"+"Receiving MetadataInProgressQuery")
-      //val statement:MetaDataStatement=null
       val statement=inProgressQuery.getStatement()
       statement match{
         case ms:MetadataStatement =>
@@ -52,7 +56,7 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
 
      case inProgressQuery:SelectInProgressQuery=>{
       log.info("->"+"Receiving SelectInProgressQuery")
-      //val statement:MetaDataStatement=null
+      println("->"+"Receiving SelectInProgressQuery")
       val statement=inProgressQuery.getStatement()
       statement match{
         case ms:SelectStatement =>
@@ -60,6 +64,7 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
           val clustername=inProgressQuery.getClusterName()
           val logicalworkflow=inProgressQuery.getLogicalWorkFlow()
           connector.getQueryEngine().execute(clustername,logicalworkflow)
+          sender ! "ok"
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")
       }
