@@ -70,7 +70,6 @@ class ConnectorApp  extends ConnectConfig {
     ports foreach { port =>
       val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
       actorClusterNode=system.actorOf(ConnectorActor.props(connector.getConnectorName,connector).withRouter(RoundRobinRouter(nrOfInstances=num_connector_actor)),"CoordinatorActor")
-      actorClusterNode=system.actorOf(HeartbeatActor.props(),"HeartbeatActor")
       actorClusterNode ! "I'm in!!!"
     }
     actorClusterNode

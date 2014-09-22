@@ -3,7 +3,7 @@ package com.stratio.connectors
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
-import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
+import com.stratio.meta.communication.{HeartbeatSig, getConnectorName, replyConnectorName}
 import com.stratio.meta2.common.data.ClusterName
 import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
 import com.stratio.meta2.core.statements.{MetaDataStatement, SelectStatement}
@@ -13,7 +13,7 @@ object ConnectorActor{
   def props (connectorName:String,connector:IConnector):Props = Props (new ConnectorActor(connectorName,connector) )
 }
 
-class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
+class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging with HeartbeatActor{
 
   val connector=conn //TODO: test if it works with one thread and multiple threads
 
@@ -24,12 +24,15 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
 
   // subscribe to cluster changes, re-subscribe when restart
 
-  def receive = {
+  override def handleHeartbeat(heartbeat:HeartbeatSig)={
+    println("ConnectorActor receives a heartbeat message")
+  }
+
+  override def receive = super.receive orElse{
 
     case stop=>{
       connector.close(new ClusterName(""))
     }
-
     case inProgressQuery:MetadataInProgressQuery=>{
       log.info("->"+"Receiving MetadataInProgressQuery")
       //val statement:MetaDataStatement=null
@@ -49,8 +52,9 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
       statement match{
         case ms:SelectStatement =>
           log.info("->receiving SelectStatement")
+          //val catalog=ms.g
           //val catalogs=inProgressQuery.getCatalogs()
-          //connector.getQueryEngine().execute()
+          connector.getQueryEngine().execute()
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")
       }

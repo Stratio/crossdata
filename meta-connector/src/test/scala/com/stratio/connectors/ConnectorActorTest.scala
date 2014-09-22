@@ -15,11 +15,11 @@ import org.scalatest.{FunSuite, Suite}
 
 
 //class ConnectorTest extends FunSuite with MockFactory with ServerConfig{
-class ConnectorTest extends FunSuite with MockFactory {
+class ConnectorActorTest extends FunSuite with MockFactory {
    this:Suite =>
 
 
-  lazy val logger =Logger.getLogger(classOf[ConnectorTest])
+  lazy val logger =Logger.getLogger(classOf[ConnectorActorTest])
 
   test("Basic Connector Mock") {
     val m = mock[IConnector]
