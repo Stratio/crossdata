@@ -57,9 +57,9 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
       statement match{
         case ms:SelectStatement =>
           log.info("->receiving SelectStatement")
-          //val catalog=ms.g
-          //val catalogs=inProgressQuery.getCatalogs()
-          //connector.getQueryEngine().execute()
+          val clustername=inProgressQuery.getClusterName()
+          val logicalworkflow=inProgressQuery.getLogicalWorkFlow()
+          connector.getQueryEngine().execute(clustername,logicalworkflow)
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")
       }
