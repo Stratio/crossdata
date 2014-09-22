@@ -26,7 +26,7 @@ import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.query.BaseQuery;
-import com.stratio.meta2.core.query.MetaDataParsedQuery;
+import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 
 import com.stratio.meta2.core.statements.AlterTableStatement;
@@ -53,7 +53,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
       BaseQuery baseQuery=new BaseQuery("alterTableId",query, new CatalogName("demo"));
 
-      ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,alterTableStatement);
+      ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
       try {
           validator.validate(parsedQuery);
           Assert.assertFalse(false);
@@ -74,7 +74,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery=new BaseQuery("alterTableId",query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,alterTableStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertFalse(false);
@@ -97,7 +97,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery=new BaseQuery("alterTableId",query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,alterTableStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertFalse(false);
@@ -118,7 +118,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery=new BaseQuery("alterTableId",query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,alterTableStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertFalse(false);

@@ -5,27 +5,16 @@ target/
 nbproject/
 build.xml
 nbactions.xml
+nb-configuration.xml
 .idea
 *.iml
 meta-core/src/main/java/com/stratio/meta/core/grammar/generated
 src/main/resources/history.txt
-meta-core/nb-configuration.xml
-meta-deep/nb-configuration.xml
-meta-common/nb-configuration.xml
-meta-driver/nb-configuration.xml
-meta-server/nb-configuration.xml
-meta-sh/nb-configuration.xml
-nb-configuration.xml
 *.orig
 */.cache
 meta-core/test-output/*
-<<<<<<< HEAD
-meta-driver/.cache
-meta-server/src/main/resources/server-reference.conf
-=======
 sonar-project.properties
 */.sonar
 */test-output
->>>>>>> d719f0d906e64b7415a40cc0fe3ec2e6c34db63e
 .gitignore
 *.log

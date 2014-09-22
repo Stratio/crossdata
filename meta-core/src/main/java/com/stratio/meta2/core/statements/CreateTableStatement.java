@@ -45,7 +45,7 @@ import java.util.Set;
 /**
  * Class that models a {@code CREATE TABLE} statement of the META language.
  */
-public class CreateTableStatement extends MetaDataStatement implements ITableStatement {
+public class CreateTableStatement extends MetadataStatement implements ITableStatement {
 
   /**
    * The name of the target table.

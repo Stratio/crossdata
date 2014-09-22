@@ -6,9 +6,8 @@ import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.core.query.BaseQuery;
-import com.stratio.meta2.core.query.MetaDataParsedQuery;
+import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
-import com.stratio.meta2.core.statements.DetachClusterStatement;
 import com.stratio.meta2.core.statements.DetachConnectorStatement;
 import com.stratio.meta2.core.validator.Validator;
 import org.testng.Assert;
@@ -27,7 +26,7 @@ public class DetachConnectorStatementTest {
 
         BaseQuery baseQuery=new BaseQuery("detachConnectorId",query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,detachConnectorStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,detachConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertFalse(false);
@@ -48,7 +47,7 @@ public class DetachConnectorStatementTest {
 
         BaseQuery baseQuery=new BaseQuery("detachConnectorId",query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,detachConnectorStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,detachConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertFalse(false);
@@ -69,7 +68,7 @@ public class DetachConnectorStatementTest {
 
         BaseQuery baseQuery=new BaseQuery("detachConnectorId",query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,detachConnectorStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,detachConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertFalse(false);

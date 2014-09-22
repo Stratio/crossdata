@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * Class that models an {@code ALTER Catalog} statement from the META language.
  */
-public class AlterCatalogStatement extends MetaDataStatement {
+public class AlterCatalogStatement extends MetadataStatement {
 
   /**
    * A JSON with the options specified by the user.

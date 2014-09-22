@@ -35,8 +35,9 @@ public class AsyncDriverTest extends DriverParentTest {
   public void basicSelect(){
     String query = "select * from system.schema_columns;";
     ResultHandlerWrapper rhw = new ResultHandlerWrapper();
+    driver.setCurrentCatalog("");
       try {
-          driver.asyncExecuteQuery("", query, rhw);
+          driver.asyncExecuteQuery(query, rhw);
       } catch (ConnectionException e) {
           fail("Connect problem");
           e.printStackTrace();

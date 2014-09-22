@@ -16,7 +16,7 @@ package com.stratio.meta2.core.statements;
 
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-public class RemoveUDFStatement extends MetaDataStatement {
+public class RemoveUDFStatement extends MetadataStatement {
 
   /**
    * The target jar name.

@@ -23,7 +23,7 @@ import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta.common.result.{QueryResult, Result}
 import com.stratio.meta.common.ask.Query
 import org.apache.log4j.Logger
-import com.stratio.meta2.core.query.{SelectParsedQuery, StorageParsedQuery, MetaDataParsedQuery, BaseQuery}
+import com.stratio.meta2.core.query.{SelectParsedQuery, StorageParsedQuery, MetadataParsedQuery, BaseQuery}
 import com.stratio.meta2.common.data.CatalogName
 
 object ParserActor{

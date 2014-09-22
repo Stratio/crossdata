@@ -96,7 +96,7 @@ public class NormalizerTest extends MetadataManagerTests {
     HashMap<TableName, TableMetadata> tables = new HashMap<>();
 
     TableName tableName = new TableName("demo", "tableClients");
-    Map<String, Object> options = new HashMap<>();
+    Map<Selector, Selector> options = new HashMap<>();
 
     Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
 

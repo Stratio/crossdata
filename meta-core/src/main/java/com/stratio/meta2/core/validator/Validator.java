@@ -52,7 +52,7 @@ public class Validator {
   public ValidatedQuery validate(ParsedQuery parsedQuery)
       throws ValidationException, IgnoreQueryException {
       ValidatedQuery validatedQuery=null;
-      MetaDataParsedQuery metaDataParsedQuery=null;
+      MetadataParsedQuery metadataParsedQuery =null;
 
       for (Validation val:parsedQuery.getStatement().getValidationRequirements().getValidations()) {
           switch (val) {
@@ -70,31 +70,32 @@ public class Validator {
                   validateNotExist(parsedQuery.getStatement().getFromTables(),true);
                   break;
               case MUST_NOT_EXIST_CLUSTER:
-                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
+                  metadataParsedQuery =(MetadataParsedQuery)parsedQuery;
                   validateNotExist(
-                      metaDataParsedQuery.getStatement().getClusterMetadata().getName(), true);
+                      metadataParsedQuery.getStatement().getClusterMetadata().getName(), true);
                   break;
               case MUST_EXIST_CLUSTER:
-                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
-                  validateExist(metaDataParsedQuery.getStatement().getClusterMetadata().getName(),
+                  metadataParsedQuery =(MetadataParsedQuery)parsedQuery;
+                  validateExist(metadataParsedQuery.getStatement().getClusterMetadata().getName(),
                       true);
                   break;
               case MUST_EXIST_CONNECTOR:
-                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
-                  validateExist(metaDataParsedQuery.getStatement().getConnectorMetadata().getName(),true);
+                  metadataParsedQuery =(MetadataParsedQuery)parsedQuery;
+                  validateExist(metadataParsedQuery.getStatement().getConnectorMetadata().getName(),true);
                   break;
               case MUST_NOT_EXIST_CONNECTOR:
-                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
-                  validateNotExist(metaDataParsedQuery.getStatement().getConnectorMetadata().getName(),true);
+                  metadataParsedQuery =(MetadataParsedQuery)parsedQuery;
+                  validateNotExist(
+                      metadataParsedQuery.getStatement().getConnectorMetadata().getName(),true);
                   break;
               case MUST_EXIST_DATASTORE:
-                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
-                  validateExist(metaDataParsedQuery.getStatement().getDataStoreMetadata().getName(),true);
+                  metadataParsedQuery =(MetadataParsedQuery)parsedQuery;
+                  validateExist(metadataParsedQuery.getStatement().getDataStoreMetadata().getName(),true);
                   break;
               case MUST_NOT_EXIST_DATASTORE:
-                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
+                  metadataParsedQuery =(MetadataParsedQuery)parsedQuery;
                   validateNotExist(
-                      metaDataParsedQuery.getStatement().getDataStoreMetadata().getName(), true);
+                      metadataParsedQuery.getStatement().getDataStoreMetadata().getName(), true);
                   break;
               case VALID_DATASTORE_MANIFEST:
                   //TODO Manifest is an API call with a previous validation
@@ -121,23 +122,26 @@ public class Validator {
                   }
                   break;
               case MUST_NOT_EXIST_INDEX:
-                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
-                  Map<IndexName, IndexMetadata> indexes=metaDataParsedQuery.getStatement().getTableMetadata().getIndexes();
+                  metadataParsedQuery =(MetadataParsedQuery)parsedQuery;
+                  Map<IndexName, IndexMetadata> indexes=
+                      metadataParsedQuery.getStatement().getTableMetadata().getIndexes();
                   validateNotIndexExist(indexes, true);
                   break;
               case MUST_EXIST_INDEX:
-                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
-                  Map<IndexName, IndexMetadata> indexExists=metaDataParsedQuery.getStatement().getTableMetadata().getIndexes();
+                  metadataParsedQuery =(MetadataParsedQuery)parsedQuery;
+                  Map<IndexName, IndexMetadata> indexExists=
+                      metadataParsedQuery.getStatement().getTableMetadata().getIndexes();
                   validateIndexExist(indexExists, true);
                   break;
               case MUST_EXIST_COLUMN:
-                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
-                  TableMetadata tableMetadata=metaDataParsedQuery.getStatement().getTableMetadata();
+                  metadataParsedQuery =(MetadataParsedQuery)parsedQuery;
+                  TableMetadata tableMetadata= metadataParsedQuery.getStatement().getTableMetadata();
                   validateExistColumn(tableMetadata);
                   break;
               case MUST_NOT_EXIST_COLUMN:
-                  metaDataParsedQuery=(MetaDataParsedQuery)parsedQuery;
-                  TableMetadata tableMetadataNotExist=metaDataParsedQuery.getStatement().getTableMetadata();
+                  metadataParsedQuery =(MetadataParsedQuery)parsedQuery;
+                  TableMetadata tableMetadataNotExist=
+                      metadataParsedQuery.getStatement().getTableMetadata();
                   validateNotExistColumn(tableMetadataNotExist);
                   break;
               default:
@@ -145,7 +149,7 @@ public class Validator {
 
           }
       }
-      if (parsedQuery instanceof MetaDataParsedQuery) {
+      if (parsedQuery instanceof MetadataParsedQuery) {
           validatedQuery = new MetadataValidatedQuery(parsedQuery, parsedQuery.getStatement());
       }else if(parsedQuery instanceof StorageParsedQuery) {
           validatedQuery = new StorageValidatedQuery(parsedQuery, parsedQuery.getStatement());

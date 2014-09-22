@@ -37,7 +37,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  * information will be stored internally as part of the existing metadata. Catalog creation
  * in the underlying datastore is done when a table is created in a catalog.
  */
-public class CreateCatalogStatement extends MetaDataStatement {
+public class CreateCatalogStatement extends MetadataStatement {
 
   /**
    * Whether the Catalog should be created only if it not exists.
