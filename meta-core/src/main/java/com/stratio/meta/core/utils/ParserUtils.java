@@ -179,7 +179,8 @@ public class ParserUtils {
     // Get best suggestion words for the incorrect token
     Set<String> bestMatches = getBestMatches(errorWord, statementTokens, 2);
 
-    StringBuilder sb = new StringBuilder("Did you mean: ");
+    //TODO: Update "Did you mean" mechanism
+    /*StringBuilder sb = new StringBuilder("Did you mean: ");
     sb.append(createSuggestion(bestMatches, antlrError, charPosition, suggestionFromToken, errorWord));
 
     // No suggestion was found
@@ -187,7 +188,8 @@ public class ParserUtils {
       return "";
     }
 
-    return sb.substring(0, sb.length()).replace(", ?", "?");
+    return sb.substring(0, sb.length()).replace(", ?", "?");*/
+    return "";
   }
 
   public static String translateToken(String message) {

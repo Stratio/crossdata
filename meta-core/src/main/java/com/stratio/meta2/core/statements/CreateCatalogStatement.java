@@ -18,8 +18,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import java.util.Map;
-
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
@@ -31,6 +29,8 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
+
+import java.util.Map;
 
 /**
  * Class that models a {@code CREATE CATALOG} statement from the META language. Catalog
@@ -47,7 +47,7 @@ public class CreateCatalogStatement extends MetadataStatement {
   /**
    * A JSON with the options specified by the user.
    */
-  private final Map<Selector,Selector> options;
+  private final Map<Selector, Selector> options;
 
   /**
    * Class constructor.

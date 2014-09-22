@@ -478,7 +478,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	)*
 	T_END_PARENTHESIS
 	(T_USING usingClass=QUOTED_LITERAL {$cis.setUsingClass($usingClass.text);})?
-	(T_WITH T_OPTIONS T_EQUAL optionsJson=getJson {$cis.setOptionsJson(optionsJson);})?
+	(T_WITH j=getJson {$cis.setOptionsJson(j);} )?
 ;
 
 getField returns [String newField]:
@@ -581,12 +581,11 @@ createTableStatement returns [CreateTableStatement crtast]
                 )
             )*
         )
-    T_END_PARENTHESIS (T_WITH {withProperties=true;} properties=getMetaProperties[tablename])?
+    T_END_PARENTHESIS (T_WITH j=getJson)?
     {
         $crtast = new CreateTableStatement(tablename, new ClusterName($clusterID.text), columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
-        $crtast.setProperties(properties);
+        $crtast.setProperties(j);
         $crtast.setIfNotExists(ifNotExists);
-        $crtast.setWithProperties(withProperties);
     }
 ;
 
@@ -596,11 +595,11 @@ alterTableStatement returns [AlterTableStatement altast]
     }:
     T_ALTER T_TABLE tablename=getTableName
     (T_ALTER column=getColumnName[tablename] T_TYPE dataType=getDataType {option=1;}
-        |T_ADD column=getColumnName[tablename] type=T_IDENT {option=2;}
+        |T_ADD column=getColumnName[tablename] dataType=getDataType {option=2;}
         |T_DROP column=getColumnName[tablename] {option=3;}
-        |(T_WITH {option=4;} props=getMetaProperties[tablename])?
+        |(T_WITH {option=4;} j=getJson)?
     )
-    {$altast = new AlterTableStatement(tablename, column, dataType, props, option);  }
+    {$altast = new AlterTableStatement(tablename, column, dataType, j, option);  }
 ;
 
 selectStatement returns [SelectStatement slctst]
@@ -754,31 +753,12 @@ query returns [MetaStatement st]:
 	}
 ;
 
-
 //FUNCTIONS
 getIndexType returns [String indexType]:
     ( idxType=T_DEFAULT
     | idxType=T_LUCENE
     | idxType=T_CUSTOM)
     {$indexType=$idxType.text;}
-;
-
-getMetaProperties[TableName tablename] returns [LinkedList<Property> props]
-    @init{
-        $props = new LinkedList<>();
-    }:
-    firstProp=getMetaProperty[tablename] {$props.add(firstProp);}
-    (T_AND newProp=getMetaProperty[tablename] {$props.add(newProp);})*
-;
-
-getMetaProperty[TableName tablename] returns [Property mp]
-    @init{
-        BooleanSelector boolProp = new BooleanSelector("true");
-    }:
-    (identProp=getSelector[tablename] T_EQUAL valueProp=getSelector[tablename] {$mp = new PropertyNameValue(identProp, new StringSelector(valueProp.toString()));}
-    | T_COMPACT T_STORAGE {$mp = new PropertyCompactStorage();}
-    | T_CLUSTERING T_ORDER T_BY T_START_PARENTHESIS ordering=getOrdering[tablename] {$mp = new PropertyClusteringOrder(ordering);} T_END_PARENTHESIS)
-    | T_EPHEMERAL ( | T_EQUAL (T_FALSE { boolProp = new BooleanSelector("false");} | T_TRUE )) {$mp = new PropertyNameValue(new StringSelector("ephemeral"), boolProp);}
 ;
 
 getDataType returns [ColumnType dataType]:
@@ -794,6 +774,7 @@ getBasicType returns [ColumnType dataType]:
     | T_DOUBLE { $dataType=ColumnType.DOUBLE; }
     | T_FLOAT { $dataType=ColumnType.FLOAT; }
     | T_INT { $dataType=ColumnType.INT; }
+    | T_INTEGER { $dataType=ColumnType.INT; }
     | T_TEXT { $dataType=ColumnType.TEXT; }
     | T_VARCHAR { $dataType=ColumnType.VARCHAR; }
 ;

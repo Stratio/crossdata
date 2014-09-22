@@ -28,7 +28,7 @@ import java.util.concurrent.locks.Lock;
  *
  * The created {@link java.util.concurrent.locks.Lock}s are based in a JGroups channel.
  *
- * It must be closed ({@link #close()}) when its created {@link Store}s are not needed anymore.
+ * It must be closed ({@link #close()}) when its created {@link com.stratio.meta2.core.grid.StoreService}s are not needed anymore.
  */
 public class LockService implements Closeable {
 

@@ -20,6 +20,7 @@ package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
@@ -37,13 +38,7 @@ public class AlterCatalogStatement extends MetadataStatement {
   /**
    * A JSON with the options specified by the user.
    */
-  private final String options;
-
-  /**
-   * The map of properties of the Catalog. The different options accepted by a Catalog are
-   * determined by the selected replication.
-   */
-  private Map<Selector, Selector> properties;
+  private Map<Selector, Selector> options;
 
   /**
    * Class constructor.
@@ -55,7 +50,7 @@ public class AlterCatalogStatement extends MetadataStatement {
     this.command = false;
     this.catalog = catalogName;
     this.catalogInc = true;
-    this.options = options;
+    this.options = StringUtils.convertJsonToOptions(options);
   }
 
   @Override
@@ -80,8 +75,8 @@ public class AlterCatalogStatement extends MetadataStatement {
       result = Result.createValidationErrorResult("Empty catalog name found.");
     }
 
-    if (properties.isEmpty() || (!properties.containsKey("replication")
-                                 & !properties.containsKey("durable_writes"))) {
+    if (options.isEmpty() || (!options.containsKey("replication")
+                                 & !options.containsKey("durable_writes"))) {
       result =
           Result.createValidationErrorResult(
               "At least one property must be included: 'replication' or 'durable_writes'.");
@@ -95,7 +90,7 @@ public class AlterCatalogStatement extends MetadataStatement {
     return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_PROPERTIES);
   }
 
-  public String getOptions() {
+  public Map<Selector, Selector> getOptions() {
     return options;
   }
 }
