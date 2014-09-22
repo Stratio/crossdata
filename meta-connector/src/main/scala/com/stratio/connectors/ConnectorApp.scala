@@ -75,7 +75,7 @@ class ConnectorApp  extends ConnectConfig {
     actorClusterNode
   }
 
-  abstract def shutdown()= {
+  def shutdown()= {
   }
 
   def stop()= {
