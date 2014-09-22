@@ -89,7 +89,7 @@ options {
     }
 
     public void throwParsingException(String message) {
-        throw new ParsingException(message);
+        throw new RuntimeException(message);
     }
 
     @Override
@@ -923,7 +923,7 @@ getListTypes returns [String listType]:
 ;
 
 getAssignment[TableName tablename] returns [Relation assign]:
-    firstTerm=getSelector[tablename] T_EQUAL value=getSelector[tablename] {$assign = new Relation(firstTerm, Operator.COMPARE, value);}
+    firstTerm=getSelector[tablename] T_EQUAL value=getSelector[tablename] {$assign = new Relation(firstTerm, Operator.EQ, value);}
     ( moreOperations=getOperations[tablename, $assign] { $assign = moreOperations; } )?
     //TODO: Support index for collections (Example: cities[2] = 'Madrid')
 ;
@@ -946,7 +946,7 @@ getOperator returns [Operator op]:
 ;
 
 getComparator returns [Operator op]:
-    T_EQUAL {$op = Operator.COMPARE;}
+    T_EQUAL {$op = Operator.EQ;}
     | T_GT {$op = Operator.GT;}
     | T_LT {$op = Operator.LT;}
     | T_GTE {$op = Operator.GET;}

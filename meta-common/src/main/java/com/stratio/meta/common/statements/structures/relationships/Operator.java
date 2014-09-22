@@ -67,7 +67,7 @@ public enum Operator {
   /**
    * Constant to define compare relationships (e.g., >, <, =, etc.).
    */
-  COMPARE{
+  EQ{
     @Override
     public String toString() {
       return "=";

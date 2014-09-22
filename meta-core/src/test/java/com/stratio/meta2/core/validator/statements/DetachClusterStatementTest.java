@@ -15,9 +15,26 @@ public class DetachClusterStatementTest {
 
     @Test
     public void detachCluster() {
+        String query = "DROP CLUSTER Cassandra";
+        DetachClusterStatement detachClusterStatement=new DetachClusterStatement("Cassandra");
+        Validator validator=new Validator();
+
+        BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,detachClusterStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void detachNotExistingCluster() {
         String query = "DROP CLUSTER myCluster";
-
-
         DetachClusterStatement detachClusterStatement=new DetachClusterStatement("myCluster");
         Validator validator=new Validator();
 
@@ -26,7 +43,7 @@ public class DetachClusterStatementTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,detachClusterStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.fail("Cluster must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

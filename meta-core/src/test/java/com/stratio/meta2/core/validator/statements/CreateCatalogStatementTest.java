@@ -45,11 +45,11 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
       ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterCatalogStatement);
       try {
           validator.validate(parsedQuery);
-          Assert.assertFalse(false);
+          Assert.assertTrue(true);
       } catch (ValidationException e) {
-          Assert.assertTrue(true,e.getMessage());
+          Assert.fail(e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true, e.getMessage());
+          Assert.fail(e.getMessage());
       }
 
   }
@@ -65,11 +65,11 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
       ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,createCatalogStatement);
       try {
           validator.validate(parsedQuery);
-          Assert.assertFalse(false);
+          Assert.assertTrue(true);
       } catch (ValidationException e) {
           Assert.fail(e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true, e.getMessage());
+          Assert.fail(e.getMessage());
       }
 
   }
@@ -85,11 +85,11 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
       ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterCatalogStatement);
       try {
           validator.validate(parsedQuery);
-          Assert.assertFalse(false);
+          Assert.fail("The catalog exists");
       } catch (ValidationException e) {
-          Assert.assertTrue(true,e.getMessage());
+          Assert.assertTrue(true);
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true, e.getMessage());
+          Assert.assertTrue(true);
       }
 
   }
@@ -105,11 +105,11 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
       ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterCatalogStatement);
       try {
           validator.validate(parsedQuery);
-          Assert.assertFalse(false);
+          Assert.assertTrue(true);
       } catch (ValidationException e) {
-          Assert.assertTrue(true, e.getMessage());
+          Assert.fail(e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true, e.getMessage());
+          Assert.fail(e.getMessage());
       }
 
   }

@@ -24,6 +24,9 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.meta2.common.data.IndexName;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+
 public class IndexMetadata implements IMetadata {
   private final IndexName name;
   private final List<ColumnMetadata> columns;

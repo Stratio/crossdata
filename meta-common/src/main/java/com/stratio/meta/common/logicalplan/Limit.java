@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -19,44 +19,33 @@
 package com.stratio.meta.common.logicalplan;
 
 import com.stratio.meta.common.connector.Operations;
-import com.stratio.meta.common.statements.structures.relationships.Operator;
-import com.stratio.meta.common.statements.structures.relationships.Relation;
 
 /**
- * Filter the results retrieved through a Project operation.
+ * Limit the number of results in a query.
  */
-public class Filter extends TransformationStep{
-
-
-  /**
-   * Relationship.
-   */
-  private final Relation relation;
+public class Limit extends TransformationStep{
 
   /**
-   * Create filter operation to be executed over a existing dataset.
-   * @param operation The operation to be executed.
-   * @param relation The relationship.
+   * The number of tuples to be returned.
    */
-  public Filter(Operations operation, Relation relation) {
+  private final int limit;
+
+  /**
+   * Class constructor.
+   *
+   * @param operation The operation to be applied.
+   */
+  public Limit(Operations operation, int limit) {
     super(operation);
-    this.relation = relation;
+    this.limit = limit;
   }
 
-
-
-  /**
-   * Get the relationship.
-   * @return A {@link com.stratio.meta.common.statements.structures.relationships.Relation}
-   */
-  public Relation getRelation() {
-    return relation;
+  public int getLimit() {
+    return limit;
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("FILTER - ");
-    sb.append(getOperation()).append(" - ").append(relation);
-    return sb.toString();
+    return "LIMIT "+limit + " rows";
   }
 }

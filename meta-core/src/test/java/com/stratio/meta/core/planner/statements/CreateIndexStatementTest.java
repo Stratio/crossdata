@@ -18,18 +18,19 @@
 
 package com.stratio.meta.core.planner.statements;
 
-import com.stratio.meta.core.planner.BasicPlannerTest;
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.core.statements.CreateIndexStatement;
-import com.stratio.meta.core.structures.IndexType;
-import com.stratio.meta.core.utils.MetaPath;
-import com.stratio.meta.core.utils.Tree;
-import org.testng.annotations.Test;
+import static org.testng.Assert.assertTrue;
 
 import java.util.List;
 
-import static org.testng.Assert.assertTrue;
+import org.testng.annotations.Test;
+
+import com.stratio.meta.core.planner.BasicPlannerTest;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.IndexType;
+import com.stratio.meta2.core.statements.CreateIndexStatement;
 
 public class CreateIndexStatementTest extends BasicPlannerTest {
 
@@ -49,7 +50,7 @@ public class CreateIndexStatementTest extends BasicPlannerTest {
   public void testPlanLuceneIndex(){
     String inputText = "CREATE LUCENE INDEX new_index ON demo.types (varchar_column, boolean_column);";
     stmt = new CreateIndexStatement();
-    ((CreateIndexStatement)stmt).setType(IndexType.LUCENE);
+    ((CreateIndexStatement)stmt).setType(IndexType.FULL_TEXT);
     ((CreateIndexStatement)stmt).setName("new_index");
     TableName tablename = new TableName("demo", "types");
     ((CreateIndexStatement)stmt).setTableName(tablename);

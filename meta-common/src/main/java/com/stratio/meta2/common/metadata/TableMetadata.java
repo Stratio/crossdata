@@ -18,15 +18,15 @@
 
 package com.stratio.meta2.common.metadata;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class TableMetadata implements IMetadata {
   private final TableName name;
@@ -115,6 +115,10 @@ public class TableMetadata implements IMetadata {
       }
     }
     return false;
+  }
+  
+  public void addIndex(IndexName name ,IndexMetadata data){
+    indexes.put(name, data);
   }
 
 }

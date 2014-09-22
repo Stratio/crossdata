@@ -18,8 +18,10 @@
 
 package com.stratio.meta.common.logicalplan;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Workflow defining the steps to be executed to retrieve the requested data.
@@ -76,5 +78,40 @@ public class LogicalWorkflow {
       }
     }
     return lastStep;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("LogicalWorkflow").append(System.lineSeparator());
+
+    Set<LogicalStep> pending = new HashSet<>();
+    LogicalStep step = null;
+    //Print initial PROJECT paths
+    for(LogicalStep initial : initialSteps){
+      step = initial;
+      sb.append(step).append(System.lineSeparator());
+      step = step.getNextStep();
+      while(step != null){
+        if(UnionStep.class.isInstance(step)){
+          pending.add(step);
+        }else {
+          sb.append("\t").append(step).append(System.lineSeparator());
+        }
+        step = step.getNextStep();
+      }
+
+    }
+
+    //Print union paths.
+    for(LogicalStep union : pending){
+      step = union;
+      sb.append(step).append(System.lineSeparator());
+      while(step.getNextStep() != null){
+        sb.append("\t").append(step).append(System.lineSeparator());
+        step = step.getNextStep();
+      }
+    }
+
+    return sb.toString();
   }
 }

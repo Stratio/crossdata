@@ -47,7 +47,31 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,createIndexStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+
+    @Test
+    public void createIndexUnknownTable() {
+        String query = "CREATE INDEX gender_idx ON unknown (gender); ";
+
+        CreateIndexStatement createIndexStatement=new CreateIndexStatement();
+        createIndexStatement.setIndexType("DEFAULT");
+        createIndexStatement.addColumn(new ColumnName("demo","unknown","gender"));
+
+        Validator validator=new Validator();
+
+        BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,createIndexStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("Table must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -55,7 +79,28 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
         }
     }
 
+    @Test
+    public void createIndexUnknownColumns() {
+        String query = "CREATE INDEX gender_idx ON users (unknown); ";
 
+        CreateIndexStatement createIndexStatement=new CreateIndexStatement();
+        createIndexStatement.setIndexType("DEFAULT");
+        createIndexStatement.addColumn(new ColumnName("demo","users","unknown"));
+
+        Validator validator=new Validator();
+
+        BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,createIndexStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("Column must exists");
+        } catch (ValidationException e) {
+            Assert.assertTrue(true);
+        } catch (IgnoreQueryException e) {
+            Assert.assertTrue(true);
+        }
+    }
 
 
 }

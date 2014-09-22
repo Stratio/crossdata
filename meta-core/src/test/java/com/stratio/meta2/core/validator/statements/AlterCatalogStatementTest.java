@@ -44,7 +44,7 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
       ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterCatalogStatement);
       try {
           validator.validate(parsedQuery);
-          Assert.assertFalse(false);
+          Assert.fail("Catalog options must exist");
       } catch (ValidationException e) {
           Assert.assertTrue(true);
       } catch (IgnoreQueryException e) {
@@ -55,15 +55,15 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
   @Test
   public void alterCatalogNotFound() {
     String query = "ALTER CATALOG unknown WITH {};";
-      AlterCatalogStatement alterCatalogStatement=new AlterCatalogStatement("demo","");
+      AlterCatalogStatement alterCatalogStatement=new AlterCatalogStatement("unknown","");
       Validator validator=new Validator();
 
-      BaseQuery baseQuery=new BaseQuery("alterCatalogid",query, new CatalogName("demo"));
+      BaseQuery baseQuery=new BaseQuery("alterCatalogid",query, new CatalogName("unknown"));
 
       ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterCatalogStatement);
       try {
           validator.validate(parsedQuery);
-          Assert.assertFalse(false);
+          Assert.fail("Catalog must exist");
       } catch (ValidationException e) {
           Assert.assertTrue(true);
       } catch (IgnoreQueryException e) {
@@ -82,11 +82,11 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
       ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterCatalogStatement);
       try {
           validator.validate(parsedQuery);
-          Assert.assertFalse(false);
+          Assert.assertTrue(true);
       } catch (ValidationException e) {
-          Assert.assertTrue(true);
+          Assert.fail(e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
+          Assert.fail(e.getMessage());
       }
   }
 

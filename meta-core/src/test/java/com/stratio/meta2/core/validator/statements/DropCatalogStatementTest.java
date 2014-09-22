@@ -45,30 +45,30 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropCatalogStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         }
     }
 
     @Test
     public void validateIfNotExists(){
         String query = "DROP CATALOG IF EXISTS unknown;";
-        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement("demo",true);
+        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement("unknown",true);
         Validator validator=new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropCatalogid",query, new CatalogName("demo"));
+        BaseQuery baseQuery=new BaseQuery("dropCatalogid",query, new CatalogName("unknown"));
 
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropCatalogStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         }
 
     }
@@ -76,15 +76,15 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
     @Test
     public void validateNotExists(){
         String query = "DROP CATALOG unknown;";
-        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement("demo",true);
+        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement("unknown",true);
         Validator validator=new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropCatalogid",query, new CatalogName("demo"));
+        BaseQuery baseQuery=new BaseQuery("dropCatalogid",query, new CatalogName("unknown"));
 
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropCatalogStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.fail("Catalog must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

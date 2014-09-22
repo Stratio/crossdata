@@ -16,9 +16,13 @@
  * under the License.
  */
 
-package com.stratio.meta.communication
+package com.stratio.meta2.core.validator.statements;
 
-//Connector messages
-case class Shutdown()
-case class HeartbeatSig()
-case class Stop()
+import com.stratio.meta2.core.validator.BasicValidatorTest;
+
+public class UpdateTableStatementTest extends BasicValidatorTest {
+
+
+    
+
+}
