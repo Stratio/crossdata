@@ -63,7 +63,7 @@ public class Metash {
   /**
    * Default user to connect to the meta server.
    */
-  private static final String DEFAULT_USER = "META_USER";
+  //private static final String DEFAULT_USER = "META_USER";
 
   /**
    * Help content to be shown when the internal command {@code help} is used.
@@ -83,12 +83,12 @@ public class Metash {
   /**
    * Current active user in the system.
    */
-  private String currentUser = null;
+  //private String currentUser = null;
 
   /**
-   * Current keyspace from the point of view of the user session.
+   * Current catalog from the point of view of the user session.
    */
-  private String currentCatalog = "";
+  //private String currentCatalog = "";
 
   /**
    * Asynchronous result handler.
@@ -125,12 +125,10 @@ public class Metash {
    * Initialize the console settings.
    */
   private void initialize() {
+    metaDriver = new BasicDriver();
     // Take the username from the system.
-    currentUser = System.getProperty("user.name");
-    if (currentUser == null) {
-      currentUser = DEFAULT_USER;
-    }
-    LOG.debug("Connecting with user: " + currentUser);
+    metaDriver.setUserName(System.getProperty("user.name"));
+    LOG.debug("Connecting with user: " + metaDriver.getUserName());
 
     try {
       console = new ConsoleReader();
@@ -178,9 +176,9 @@ public class Metash {
   private void setPrompt(String currentKeyspace) {
     StringBuilder sb = new StringBuilder("metash-sh:");
     if (currentKeyspace == null) {
-      sb.append(currentUser);
+      sb.append(metaDriver.getUserName());
     } else {
-      sb.append(currentUser);
+      sb.append(metaDriver.getUserName());
       sb.append(":");
       sb.append(currentKeyspace);
     }
@@ -241,7 +239,7 @@ public class Metash {
     long queryEnd = queryStart;
     Result metaResult;
     try {
-      metaResult = metaDriver.executeQuery(currentCatalog, cmd);
+      metaResult = metaDriver.executeQuery(cmd);
       queryEnd = System.currentTimeMillis();
       updatePrompt(metaResult);
       println("Result: " + ConsoleUtils.stringResult(metaResult));
@@ -266,7 +264,7 @@ public class Metash {
   private void executeAsyncQuery(String cmd){
     String queryId;
     try {
-      queryId = metaDriver.asyncExecuteQuery(currentCatalog, cmd, resultHandler);
+      queryId = metaDriver.asyncExecuteQuery(cmd, resultHandler);
       LOG.debug("Async command: " + cmd + " id: " + queryId);
       println("QID: " + queryId);
       println("");
@@ -287,8 +285,9 @@ public class Metash {
     if (QueryResult.class.isInstance(result)) {
       QueryResult qr = QueryResult.class.cast(result);
       if (qr.isCatalogChanged()) {
-        currentCatalog = qr.getCurrentCatalog();
+        String currentCatalog = qr.getCurrentCatalog();
         if (!currentCatalog.isEmpty()) {
+          metaDriver.setCurrentCatalog(currentCatalog);
           setPrompt(currentCatalog);
         }
       }
@@ -302,9 +301,8 @@ public class Metash {
    */
   public boolean connect() {
     boolean result = true;
-    metaDriver = new BasicDriver();
     try {
-      Result connectionResult = metaDriver.connect(currentUser);
+      Result connectionResult = metaDriver.connect(metaDriver.getUserName());
       LOG.info("Driver connections established");
       LOG.info(ConsoleUtils.stringResult(connectionResult));
     } catch (ConnectionException ce) {
@@ -354,6 +352,9 @@ public class Metash {
           } else if (toExecute.toLowerCase().startsWith("add connector") || toExecute.toLowerCase().startsWith("add datastore")){
             sendManifest(toExecute);
             println("");
+          } else if(toExecute.toLowerCase().startsWith("use ")){
+            updateCatalog(toExecute);
+            println("");
           } else {
             executeQuery(toExecute);
             println("");
@@ -377,6 +378,14 @@ public class Metash {
     } catch (Exception e) {
       LOG.error("Cannot read from console.", e);
     }
+  }
+
+  private String updateCatalog(String toExecute) {
+    String newCatalog = toExecute.replace("use ", "").replace(";", "");
+    metaDriver.setCurrentCatalog(newCatalog);
+    String currentCatalog = metaDriver.getCurrentCatalog();
+    setPrompt(currentCatalog);
+    return currentCatalog;
   }
 
   public String sendManifest(String sentence) {
