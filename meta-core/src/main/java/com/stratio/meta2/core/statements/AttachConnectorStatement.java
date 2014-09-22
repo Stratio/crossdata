@@ -7,7 +7,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.Map;
 
-public class AttachConnectorStatement extends MetaDataStatement {
+public class AttachConnectorStatement extends MetadataStatement {
 
   private String connectorName;
   private String clusterName;

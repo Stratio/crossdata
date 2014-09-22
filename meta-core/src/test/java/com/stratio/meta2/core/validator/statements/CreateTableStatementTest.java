@@ -21,12 +21,11 @@ package com.stratio.meta2.core.validator.statements;
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.common.data.*;
-import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.query.BaseQuery;
-import com.stratio.meta2.core.query.MetaDataParsedQuery;
+import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.CreateTableStatement;
 import com.stratio.meta2.core.structures.Property;
@@ -70,7 +69,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,createTableStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,createTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertFalse(false);
@@ -111,7 +110,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetaDataParsedQuery(baseQuery,createTableStatement);
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,createTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertFalse(false);

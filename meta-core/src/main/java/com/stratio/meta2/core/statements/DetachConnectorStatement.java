@@ -5,7 +5,7 @@ import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-public class DetachConnectorStatement extends MetaDataStatement {
+public class DetachConnectorStatement extends MetadataStatement {
 
   private ConnectorName connectorName;
   private ClusterName clusterName;

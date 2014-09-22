@@ -5,7 +5,7 @@ import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.communication.{HeartbeatSig, getConnectorName, replyConnectorName}
 import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
-import com.stratio.meta2.core.statements.{MetaDataStatement, SelectStatement}
+import com.stratio.meta2.core.statements.{MetadataStatement, SelectStatement}
 
 
 object ConnectorActor{
@@ -43,7 +43,7 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
       //val statement:MetaDataStatement=null
       val statement=inProgressQuery.getStatement()
       statement match{
-        case ms:MetaDataStatement =>
+        case ms:MetadataStatement =>
           log.info("->receiving MetadataStatement")
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")

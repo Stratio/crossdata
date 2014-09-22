@@ -29,7 +29,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 /**
  * Class that models a {@code DROP KEYSPACE} statement from the META language.
  */
-public class DropCatalogStatement extends MetaDataStatement {
+public class DropCatalogStatement extends MetadataStatement {
 
   /**
    * Whether the catalog should be removed only if exists.

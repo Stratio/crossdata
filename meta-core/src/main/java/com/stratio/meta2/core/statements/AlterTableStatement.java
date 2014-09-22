@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Class that models an {@code ALTER TABLE} statement from the META language.
  */
-public class AlterTableStatement extends MetaDataStatement implements ITableStatement {
+public class AlterTableStatement extends MetadataStatement implements ITableStatement {
 
   /**
    * The target table.

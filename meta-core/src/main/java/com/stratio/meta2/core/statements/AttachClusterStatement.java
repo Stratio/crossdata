@@ -33,7 +33,7 @@ import java.util.Map;
  * storage, the user must specify the hosts and ports where the datastore is available in the JSON
  * options.
  */
-public class AttachClusterStatement extends MetaDataStatement {
+public class AttachClusterStatement extends MetadataStatement {
 
   /**
    * Cluster name given by the user. This name will be used to refer to the cluster when creating

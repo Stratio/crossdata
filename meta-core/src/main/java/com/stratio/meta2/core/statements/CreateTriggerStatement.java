@@ -19,7 +19,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 /**
  * Class that models a {@code CREATE TRIGGER} statement from the META language.
  */
-public class CreateTriggerStatement extends MetaDataStatement {
+public class CreateTriggerStatement extends MetadataStatement {
 
   /**
    * The name of the trigger.
