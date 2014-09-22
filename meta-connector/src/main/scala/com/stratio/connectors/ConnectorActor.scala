@@ -4,7 +4,6 @@ import akka.actor.{Actor, ActorLogging, Props}
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.communication.{HeartbeatSig, getConnectorName, replyConnectorName}
-import com.stratio.meta2.common.data.ClusterName
 import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
 import com.stratio.meta2.core.statements.{MetaDataStatement, SelectStatement}
 
@@ -28,10 +27,16 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
     println("ConnectorActor receives a heartbeat message")
   }
 
+  def shutdown()={
+    println("ConnectorActor is shutting down")
+    //connector.close(new ClusterName(""))
+    //connector.shutdown(new ClusterName(""))
+  }
+
   override def receive = super.receive orElse{
 
-    case stop=>{
-      connector.close(new ClusterName(""))
+    case shutdown=>{
+      this.shutdown()
     }
     case inProgressQuery:MetadataInProgressQuery=>{
       log.info("->"+"Receiving MetadataInProgressQuery")
@@ -54,7 +59,7 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
           log.info("->receiving SelectStatement")
           //val catalog=ms.g
           //val catalogs=inProgressQuery.getCatalogs()
-          connector.getQueryEngine().execute()
+          //connector.getQueryEngine().execute()
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")
       }
