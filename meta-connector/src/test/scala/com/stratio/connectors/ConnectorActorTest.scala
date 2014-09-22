@@ -2,7 +2,7 @@ package com.stratio.connectors
 
 import java.util
 
-import com.stratio.meta.common.connector.IConnector
+import com.stratio.meta.common.connector.{IConnector, IQueryEngine}
 import com.stratio.meta.common.logicalplan.{LogicalStep, LogicalWorkflow}
 import com.stratio.meta2.common.data.{CatalogName, TableName}
 import com.stratio.meta2.core.query._
@@ -43,7 +43,11 @@ class ConnectorActorTest extends FunSuite with MockFactory {
   test("Send SelectInProgressQuery to Connector") {
     val port = "2559"
     val m = mock[IConnector]
+    val qe = mock[IQueryEngine]
+    //(qe.execute _).expects().returning(new QueryResult())
     (m.getConnectorName _).expects().returning("My New Connector")
+    (m.getQueryEngine _).expects().returning(qe)
+
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
     //val myReference = c.startup(m, port, config)
