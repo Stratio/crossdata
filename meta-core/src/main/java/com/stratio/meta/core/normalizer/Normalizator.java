@@ -199,7 +199,7 @@ public class Normalizator {
     for (Relation relation: relations) {
       checkRelation(relation);
       switch (relation.getOperator()) {
-        case COMPARE:
+        case EQ:
           if (relation.getRightTerm().getType() == SelectorType.COLUMN) {
             checkColumnSelector((ColumnSelector) relation.getRightTerm());
           } else {

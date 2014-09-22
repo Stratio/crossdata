@@ -30,7 +30,7 @@ public class AttachConnectorStatement extends MetadataStatement {
 
   public ValidationRequirements getValidationRequirements() {
     return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER)
-        .add(Validation.MUST_EXIST_CONNECTOR)
+        .add(Validation.MUST_NOT_EXIST_CONNECTOR)
         .add(Validation.VALID_CONNECTOR_OPTIONS);
   }
 

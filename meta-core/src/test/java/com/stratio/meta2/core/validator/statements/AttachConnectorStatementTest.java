@@ -15,11 +15,10 @@ import org.testng.annotations.Test;
 public class AttachConnectorStatementTest {
 
     @Test
-    public void attachConnector() {
-        String query = "ATTACH Connector myConnector TO myCluster WITH OPTIONS {'comment':'a comment'}";
+    public void attachExistingConnector() {
+        String query = "ATTACH Connector CassandraConnector TO Cassandra WITH OPTIONS {'comment':'a comment'}";
 
-
-        AttachConnectorStatement attachConnectorStatement=new AttachConnectorStatement("myConnector","myCluster","{'comment':'a comment'}");
+        AttachConnectorStatement attachConnectorStatement=new AttachConnectorStatement("CassandraConnector","Cassandra","{'comment':'a comment'}");
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("attachConnectorID",query, new CatalogName("system"));
@@ -27,7 +26,7 @@ public class AttachConnectorStatementTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.fail("The Connector must not exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -48,21 +47,21 @@ public class AttachConnectorStatementTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         }
     }
 
 
     @Test
     public void attachConnectorUnknownCluster() {
-        String query = "ATTACH Connector myConnector TO unknown WITH OPTIONS {'comment':'a comment'}";
+        String query = "ATTACH Connector newConnector TO unknown WITH OPTIONS {'comment':'a comment'}";
 
 
-        AttachConnectorStatement attachConnectorStatement=new AttachConnectorStatement("myConnector","unknown","{'comment':'a comment'}");
+        AttachConnectorStatement attachConnectorStatement=new AttachConnectorStatement("CassandraConnector","unknown","{'comment':'a comment'}");
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("attachConnectorID",query, new CatalogName("demo"));
@@ -70,20 +69,20 @@ public class AttachConnectorStatementTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         }
     }
 
     @Test
     public void attachConnectorEmptyOptions() {
-        String query = "ATTACH Connector myConnector TO myCluster WITH OPTIONS";
+        String query = "ATTACH Connector CassandraConnector TO Cassandra WITH OPTIONS";
 
 
-        AttachConnectorStatement attachConnectorStatement=new AttachConnectorStatement("myConnector", "myCluster", "");
+        AttachConnectorStatement attachConnectorStatement=new AttachConnectorStatement("CassandraConnector", "Cassandra", "");
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("attachConnectorID",query, new CatalogName("demo"));
@@ -91,7 +90,7 @@ public class AttachConnectorStatementTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.fail("The options cannot be empty");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

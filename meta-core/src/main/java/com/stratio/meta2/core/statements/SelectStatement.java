@@ -238,6 +238,10 @@ public class SelectStatement extends MetaStatement {
     return orderInc;
   }
 
+  public boolean isLimitInc(){
+    return limitInc;
+  }
+
   /**
    * Set the {@link com.stratio.meta.core.structures.GroupBy} clause.
    * 

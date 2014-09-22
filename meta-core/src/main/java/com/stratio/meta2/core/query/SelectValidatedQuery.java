@@ -18,8 +18,10 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta.common.logicalplan.Join;
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
@@ -32,6 +34,7 @@ public class SelectValidatedQuery extends ValidatedQuery {
   private List<ColumnName> columns;
   private List<Relation> relationships;
   private List<TableName> tables;
+  private InnerJoin join;
 
   public SelectValidatedQuery(ParsedQuery parsedQuery) {
     super(parsedQuery);
@@ -71,6 +74,14 @@ public class SelectValidatedQuery extends ValidatedQuery {
 
   public void setTables(List<TableName> tables) {
     this.tables = tables;
+  }
+
+  public InnerJoin getJoin() {
+    return join;
+  }
+
+  public void setJoin(InnerJoin join) {
+    this.join = join;
   }
 
   public SelectValidatedQuery(SelectParsedQuery parsedQuery) {

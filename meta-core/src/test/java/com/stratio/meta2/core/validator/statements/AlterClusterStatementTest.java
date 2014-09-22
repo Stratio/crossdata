@@ -15,39 +15,60 @@ import org.testng.annotations.Test;
 public class AlterClusterStatementTest {
     @Test
     public void alterCluster() {
-        String query = "ALTER CLUSTER IF EXISTS myCluster WITH OPTIONS {'comment':'my coments'}";
+        String query = "ALTER CLUSTER IF EXISTS Cassandra WITH OPTIONS {'comment':'my coments'}";
 
 
-        AlterClusterStatement alterClusterStatement=new AlterClusterStatement("myCluster",true, "{'comment':'my coments'}");
+        AlterClusterStatement alterClusterStatement=new AlterClusterStatement("Cassandra",true, "{'comment':'my coments'}");
         Validator validator=new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("alterClusterId",query, new CatalogName("demo"));
+        BaseQuery baseQuery=new BaseQuery("alterClusterId",query, new CatalogName("system"));
 
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterClusterStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         }
     }
 
     @Test
-    public void alterNonExistCluster() {
+    public void alterIfExistsClusterNotExists() {
         String query = "ALTER CLUSTER IF EXISTS unknown WITH OPTIONS {'comment':'my coments'}";
 
 
         AlterClusterStatement alterClusterStatement=new AlterClusterStatement("unknown",true, "{'comment':'my coments'}");
         Validator validator=new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("alterClusterId",query, new CatalogName("demo"));
+        BaseQuery baseQuery=new BaseQuery("alterClusterId",query, new CatalogName("system"));
 
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterClusterStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void alterClusterEmptyOptions() {
+        String query = "ALTER CLUSTER demo WITH OPTIONS {}";
+
+
+        AlterClusterStatement alterClusterStatement=new AlterClusterStatement("demo",false, "{}");
+        Validator validator=new Validator();
+
+        BaseQuery baseQuery=new BaseQuery("alterClusterId",query, new CatalogName("system"));
+
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterClusterStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("Cluster options must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -56,19 +77,19 @@ public class AlterClusterStatementTest {
     }
 
     @Test
-    public void alterClusterEmptyOptions() {
-        String query = "ALTER CLUSTER unknown WITH OPTIONS {}";
+    public void alterNotExistCluster() {
+        String query = "ALTER CLUSTER unknown";
 
 
         AlterClusterStatement alterClusterStatement=new AlterClusterStatement("unknown",false, "{}");
         Validator validator=new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("alterClusterId",query, new CatalogName("demo"));
+        BaseQuery baseQuery=new BaseQuery("alterClusterId",query, new CatalogName("system"));
 
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterClusterStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.fail("Cluster must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

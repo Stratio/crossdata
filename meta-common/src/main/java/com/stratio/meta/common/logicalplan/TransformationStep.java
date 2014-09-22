@@ -49,6 +49,10 @@ public class TransformationStep extends LogicalStep{
 
   @Override
   public LogicalStep getFirstPrevious() {
-    return null;
+    return previous;
+  }
+
+  public void setPrevious(LogicalStep previous){
+    this.previous = previous;
   }
 }

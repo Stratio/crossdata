@@ -23,6 +23,7 @@ import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -94,4 +95,19 @@ public class Project extends TransformationStep{
     return columnList;
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("PROJECT ");
+    sb.append(tableName.getQualifiedName());
+    sb.append(" (");
+    Iterator<ColumnName> it = columnList.iterator();
+    while(it.hasNext()){
+      sb.append(it.next().getQualifiedName());
+      if(it.hasNext()){
+        sb.append(", ");
+      }
+    }
+    sb.append(")");
+    return sb.toString();
+  }
 }
