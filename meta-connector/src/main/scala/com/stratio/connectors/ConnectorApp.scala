@@ -80,7 +80,7 @@ class ConnectorApp  extends ConnectConfig {
 
   def stop()= {
     actorClusterNode ! shutdown()
-    shutdown() //will be implemented by the concrete connector
+    //connector.shutdown()
     system.shutdown()
   }
 

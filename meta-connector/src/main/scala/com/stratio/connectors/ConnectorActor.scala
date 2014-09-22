@@ -30,7 +30,7 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with Ac
   def shutdown()={
     println("ConnectorActor is shutting down")
     //connector.close(new ClusterName(""))
-    //connector.shutdown(new ClusterName(""))
+    connector.shutdown()
   }
 
   override def receive = super.receive orElse{
