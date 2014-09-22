@@ -23,7 +23,7 @@ public class AttachClusterStatementTest {
         String query = "ATTACH CLUSTER myCluster on DATASTORE cassandra";
 
 
-        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "cassandra", null);
+        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "cassandra", "");
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
@@ -44,7 +44,7 @@ public class AttachClusterStatementTest {
         String query = "ATTACH CLUSTER unknown on DATASTORE cassadra";
 
 
-        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("unknownr",true, "cassandra", null);
+        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("unknownr",true, "cassandra", "");
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
@@ -66,7 +66,7 @@ public class AttachClusterStatementTest {
         String query = "ATTACH CLUSTER myCluster on DATASTORE unknown";
 
 
-        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "unknown", null);
+        AttachClusterStatement attachClusterStatement=new AttachClusterStatement("myCluster",true, "unknown", "");
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
