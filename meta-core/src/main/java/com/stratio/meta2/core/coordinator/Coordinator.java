@@ -28,6 +28,7 @@ import com.stratio.meta2.core.query.MetadataPlannedQuery;
 import com.stratio.meta2.core.query.PlannedQuery;
 import com.stratio.meta2.core.query.SelectInProgressQuery;
 import com.stratio.meta2.core.query.SelectPlannedQuery;
+import com.stratio.meta2.core.query.StorageInProgressQuery;
 import com.stratio.meta2.core.query.StoragePlannedQuery;
 import com.stratio.meta2.core.statements.AttachClusterStatement;
 import com.stratio.meta2.core.statements.AttachConnectorStatement;
@@ -88,13 +89,12 @@ public class Coordinator {
         return coordinateSelect((SelectPlannedQuery) plannedQuery);
         // STORAGE
       case INSERT_INTO:
-        break;
+        return new StorageInProgressQuery(plannedQuery);
       case DELETE:
-        break;
-
+        return new StorageInProgressQuery(plannedQuery);
 
       default:
-        break;
+        LOG.info("not known statement detected");
     }
 
     return null;
@@ -132,13 +132,21 @@ public class Coordinator {
         break;
       case DROP_TABLE:
         break;
+      // SELECT
+      case SELECT:
+        LOG.info("select statement");
+        break;
       // STORAGE
       case INSERT_INTO:
+        LOG.info("insert into statement");
         break;
       case DELETE:
+        LOG.info("delete statement");
         break;
 
+
       default:
+        LOG.info("not known statement detected");
         break;
     }
 
@@ -230,7 +238,8 @@ public class Coordinator {
 
   private void persistCreateCatalog(CreateCatalogStatement createCatalogStatement) {
     MetadataManager.MANAGER.createCatalog(new CatalogMetadata(createCatalogStatement
-        .getCatalogName(), createCatalogStatement.getOptions(), new HashMap<TableName, TableMetadata>()));
+        .getCatalogName(), createCatalogStatement.getOptions(),
+        new HashMap<TableName, TableMetadata>()));
   }
 
   private void persistCreateTable(CreateTableStatement createTableStatement) {
@@ -250,7 +259,7 @@ public class Coordinator {
         new IndexMetadata(createIndexStatement.getName(), targetColumnsMetadata,
             createIndexStatement.getType(), createIndexStatement.getOptions());
     table.addIndex(createIndexStatement.getName(), index);
-    
+
     MetadataManager.MANAGER.createTable(table, false);
 
   }
