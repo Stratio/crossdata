@@ -7,6 +7,7 @@ import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.communication.{HeartbeatSig, getConnectorName, replyConnectorName}
 import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
 import com.stratio.meta2.core.statements.{CreateTableStatement, SelectStatement}
+import akka.actor.ActorRef
 
 object State extends Enumeration {
       type state= Value
