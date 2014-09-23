@@ -1,13 +1,13 @@
 package com.stratio.connectors
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, _}
 import akka.pattern.ask
 import akka.testkit.TestKit
 import akka.util.Timeout
-import com.stratio.meta.common.connector.{IMetadataEngine, IConnector, IQueryEngine}
+import com.stratio.meta.common.connector.{IConnector, IMetadataEngine, IQueryEngine}
 import com.stratio.meta.common.logicalplan.{LogicalStep, LogicalWorkflow}
 import com.stratio.meta.common.result.QueryResult
-import com.stratio.meta2.common.data.{ColumnName, ClusterName, CatalogName, TableName}
+import com.stratio.meta2.common.data.{CatalogName, ClusterName, ColumnName, TableName}
 import com.stratio.meta2.common.metadata.ColumnType
 import com.stratio.meta2.core.query._
 import com.stratio.meta2.core.statements.{CreateTableStatement, SelectStatement}
@@ -49,7 +49,6 @@ class ConnectorActorTest extends TestKit(ActorSystem()) with FunSuiteLike with M
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
-    //val myReference = c.startup(m, port, config)
     val myReference = c.startup(m, port)
     myReference ! "Hello World"
     assert("Hello World" == "Hello World")
