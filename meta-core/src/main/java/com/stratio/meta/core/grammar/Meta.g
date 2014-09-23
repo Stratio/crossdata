@@ -40,6 +40,7 @@ options {
     import java.util.Set;
     import java.util.HashSet;
     import org.apache.commons.lang3.tuple.MutablePair;
+    import com.stratio.meta.common.exceptions.*;
 }
 
 @members {
@@ -85,6 +86,10 @@ options {
 
     public ErrorsHelper getFoundErrors(){
         return foundErrors;
+    }
+
+    public void throwParsingException(String message) {
+        throw new RuntimeException(message);
     }
 
     @Override
@@ -552,18 +557,26 @@ createTriggerStatement returns [CreateTriggerStatement crtrst]:
 createTableStatement returns [CreateTableStatement crtast]
     @init{
         LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
-        ArrayList<ColumnName> primaryKey = new ArrayList<>();
-        ArrayList<ColumnName> clusterKey = new ArrayList<>();
-        int primaryKeyType = 0;
-        int columnNumberPK= 0;
-        int columnNumberPK_inter= 0;
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
         boolean ifNotExists = false;
-        boolean withProperties = false;
     }:
     T_CREATE T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})? tablename=getTableName T_ON T_CLUSTER clusterID=T_IDENT
-    T_START_PARENTHESIS (
-        //id1=getColumnName[tablename] type1=getDataType (T_PRIMARY T_KEY { primaryKey.add(); } )?
-        ident_column1=getField type1=getDataType (T_PRIMARY T_KEY)? {columns.put(new ColumnName(tablename, ident_column1), type1); primaryKeyType=1;}
+    T_START_PARENTHESIS
+        id1=getColumnName[tablename] type1=getDataType (T_PRIMARY T_KEY { partitionKey.add(id1); } )? { columns.put(id1, type1);}
+        (T_COMMA idN=getColumnName[tablename] typeN=getDataType { columns.put(idN, typeN);} )*
+        (T_PRMIMARY T_KEY T_START_PARENTHESIS
+                (idPk1=getColumnName[tablename] { if(!partitionKey.isEmpty()) throwParsingException("Partition key was previously defined");
+                                                 partitionKey.add(idPk1); }
+                | T_START_PARENTHESIS
+                    idParK1=getColumnName[tablename] { if(!partitionKey.isEmpty()) throwParsingException("Partition key was previously defined");
+                                                       partitionKey.add(idParK1); }
+                    (T_COMMA idParKN=getColumnName[tablename] { partitionKey.add(idParKN); }
+                    )*
+                T_END_PARENTHESIS)
+                (T_COMMA idPkN=getColumnName[tablename] { clusterKey.add(idPkN); })*
+        T_END_PARENTHESIS)?
+        /*ident_column1=getField type1=getDataType (T_PRIMARY T_KEY)? {columns.put(new ColumnName(tablename, ident_column1), type1); primaryKeyType=1;}
             (
                 (T_COMMA ident_columN=getField typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put(new ColumnName(tablename, ident_columN), typeN); columnNumberPK_inter+=1;})
                 |(T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS
@@ -580,10 +593,10 @@ createTableStatement returns [CreateTableStatement crtast]
                     T_END_PARENTHESIS
                 )
             )*
-        )
+        )*/
     T_END_PARENTHESIS (T_WITH j=getJson)?
     {
-        $crtast = new CreateTableStatement(tablename, new ClusterName($clusterID.text), columns, primaryKey, clusterKey, primaryKeyType, columnNumberPK);
+        $crtast = new CreateTableStatement(tablename, new ClusterName($clusterID.text), columns, partitionKey, clusterKey);
         $crtast.setProperties(j);
         $crtast.setIfNotExists(ifNotExists);
     }
@@ -910,7 +923,7 @@ getListTypes returns [String listType]:
 ;
 
 getAssignment[TableName tablename] returns [Relation assign]:
-    firstTerm=getSelector[tablename] T_EQUAL value=getSelector[tablename] {$assign = new Relation(firstTerm, Operator.COMPARE, value);}
+    firstTerm=getSelector[tablename] T_EQUAL value=getSelector[tablename] {$assign = new Relation(firstTerm, Operator.EQ, value);}
     ( moreOperations=getOperations[tablename, $assign] { $assign = moreOperations; } )?
     //TODO: Support index for collections (Example: cities[2] = 'Madrid')
 ;
@@ -933,7 +946,7 @@ getOperator returns [Operator op]:
 ;
 
 getComparator returns [Operator op]:
-    T_EQUAL {$op = Operator.COMPARE;}
+    T_EQUAL {$op = Operator.EQ;}
     | T_GT {$op = Operator.GT;}
     | T_LT {$op = Operator.LT;}
     | T_GTE {$op = Operator.GET;}

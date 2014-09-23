@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,33 +16,36 @@
  * under the License.
  */
 
-package com.stratio.meta.common.exceptions;
+package com.stratio.meta.common.logicalplan;
 
-import java.util.List;
+import com.stratio.meta.common.connector.Operations;
 
 /**
- * Parsing exception thrown by the Driver if the statement could not be parsed.
+ * Limit the number of results in a query.
  */
-public class ParsingException extends Exception {
+public class Limit extends TransformationStep{
 
   /**
-   * Serial version UID in order to be {@link java.io.Serializable}.
+   * The number of tuples to be returned.
    */
-  private static final long serialVersionUID = -1125608075378630223L;
+  private final int limit;
 
-  private final List<String> errors;
-
-  public ParsingException(String message){
-    super(message);
-    this.errors=null;
-  }
-  public ParsingException(String message, List<String> errors){
-    super(message);
-    this.errors=errors;
-  }
-
-  public List<String> getErrors(){
-    return this.errors;
+  /**
+   * Class constructor.
+   *
+   * @param operation The operation to be applied.
+   */
+  public Limit(Operations operation, int limit) {
+    super(operation);
+    this.limit = limit;
   }
 
+  public int getLimit() {
+    return limit;
+  }
+
+  @Override
+  public String toString() {
+    return "LIMIT "+limit + " rows";
+  }
 }

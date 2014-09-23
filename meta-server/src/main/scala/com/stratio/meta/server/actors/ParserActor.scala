@@ -51,7 +51,7 @@ class ParserActor(validator: ActorRef, parser:Parser) extends Actor with TimeTra
 
       if(stmt.isInstanceOf[SelectParsedQuery]){
         normalizer forward stmt
-      } else if(stmt.isInstanceOf[StorageParsedQuery] || stmt.isInstanceOf[MetaDataParsedQuery] ){
+      } else if(stmt.isInstanceOf[StorageParsedQuery] || stmt.isInstanceOf[MetadataParsedQuery] ){
         validator forward stmt
       } else {
         sender ! Result.createUnsupportedOperationErrorResult("Unexpected result from Parser")

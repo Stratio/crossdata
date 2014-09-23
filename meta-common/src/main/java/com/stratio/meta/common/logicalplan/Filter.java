@@ -53,4 +53,10 @@ public class Filter extends TransformationStep{
     return relation;
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("FILTER - ");
+    sb.append(getOperation()).append(" - ").append(relation);
+    return sb.toString();
+  }
 }

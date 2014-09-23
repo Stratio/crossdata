@@ -51,7 +51,7 @@ public class CreateTableStatementTest extends BasicPlannerTest {
     columns.put(new ColumnName("demo", "new_table", "check"), ColumnType.BOOLEAN);
     stmt =
         new CreateTableStatement(new TableName("demo", "new_table"), new ClusterName("clusterDemo"), columns, Arrays.asList(new ColumnName("demo", "new_table", "id")),
-            Arrays.asList(new ColumnName("demo", "new_table", "name")), 1, 1);
+            Arrays.asList(new ColumnName("demo", "new_table", "name")));
     stmt.setSessionCatalog("demo");
 
     try {
@@ -76,7 +76,7 @@ public class CreateTableStatementTest extends BasicPlannerTest {
     columns.put(new ColumnName("demo", "table_temporal", "check"), ColumnType.BOOLEAN);
     stmt =
         new CreateTableStatement(new TableName("demo", "new_table"), new ClusterName("clusterDemo"), columns, Arrays.asList(new ColumnName("demo", "table_temporal", "id")),
-            Arrays.asList(new ColumnName("demo", "table_temporal", "name")), 1, 1);
+            Arrays.asList(new ColumnName("demo", "table_temporal", "name")));
     stmt.setSessionCatalog("demo");
 
     ((CreateTableStatement) stmt).setProperties("{'ephemeral': true}");

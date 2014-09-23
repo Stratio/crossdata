@@ -23,8 +23,11 @@ import com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType;
 import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
+import com.stratio.meta2.common.data.Status;
 
 import java.util.Set;
+
+import akka.actor.ActorRef;
 
 public class ConnectorMetadata implements IMetadata {
 
@@ -34,6 +37,8 @@ public class ConnectorMetadata implements IMetadata {
   private final RequiredPropertiesType requiredProperties;
   private final OptionalPropertiesType optionalProperties;
   private final SupportedOperationsType supportedOperations;
+  private Status status;
+  private ActorRef actorRef;
 
   public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
                            RequiredPropertiesType requiredProperties, OptionalPropertiesType optionalProperties,
@@ -44,6 +49,7 @@ public class ConnectorMetadata implements IMetadata {
     this.requiredProperties = requiredProperties;
     this.optionalProperties = optionalProperties;
     this.supportedOperations = supportedOperations;
+    this.status = Status.OFFLINE;
   }
 
   public ConnectorName getName() {
@@ -68,5 +74,22 @@ public class ConnectorMetadata implements IMetadata {
 
   public SupportedOperationsType getSupportedOperations() {
     return supportedOperations;
+  }
+
+  public Status getStatus() {
+    return status;
+  }
+
+  public void setStatus(Status status) {
+    this.status = status;
+  }
+
+  public void setActorRef(akka.actor.ActorRef actorRef) {
+    this.status = Status.ONLINE;
+    this.actorRef = actorRef;
+  }
+
+  public ActorRef getActorRef() {
+    return actorRef;
   }
 }

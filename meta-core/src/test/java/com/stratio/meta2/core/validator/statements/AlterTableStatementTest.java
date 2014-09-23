@@ -50,11 +50,11 @@ public class AlterTableStatementTest extends BasicValidatorTest {
       ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
       try {
           validator.validate(parsedQuery);
-          Assert.assertFalse(false);
+          Assert.assertTrue(true);
       } catch (ValidationException e) {
-          Assert.assertTrue(true);
+          Assert.fail(e.getMessage());
       } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
+          Assert.fail(e.getMessage());
       }
   }
 
@@ -71,11 +71,11 @@ public class AlterTableStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         }
     }
 
@@ -91,11 +91,11 @@ public class AlterTableStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            Assert.fail(e.getMessage());
         }
     }
 
@@ -112,13 +112,58 @@ public class AlterTableStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertFalse(false);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void alterUnknownTableColumns() {
+        String query = "ALTER TABLE unknown DROP demo.users.age;";
+
+        AlterTableStatement alterTableStatement=new AlterTableStatement(new TableName("demo","unknown"),new ColumnName("demo","unknown","age"),
+            ColumnType.BIGINT,null,3);
+        Validator validator=new Validator();
+
+        BaseQuery baseQuery=new BaseQuery("alterTableId",query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("Table specified must not exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
             Assert.assertTrue(true);
         }
     }
+
+    @Test
+    public void alterTableUnknownColumns() {
+        String query = "ALTER TABLE demo.users DROP unknown;";
+
+        AlterTableStatement alterTableStatement=new AlterTableStatement(new TableName("demo","users"),new ColumnName("demo","users","unknown"),
+            ColumnType.BIGINT,null,3);
+        Validator validator=new Validator();
+
+        BaseQuery baseQuery=new BaseQuery("alterTableId",query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("Columns specified must not exists and then fail the test");
+        } catch (ValidationException e) {
+            Assert.assertTrue(true);
+        } catch (IgnoreQueryException e) {
+            Assert.assertTrue(true);
+        }
+    }
+
+
+
 
 
 

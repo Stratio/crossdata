@@ -45,6 +45,7 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
     }
     case inProgressQuery:MetadataInProgressQuery=>{
       log.info("->"+"Receiving MetadataInProgressQuery")
+
       val statement=inProgressQuery.getStatement()
       statement match{
         case ms:MetadataStatement =>

@@ -18,6 +18,7 @@ import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.logicalplan.*;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
@@ -29,6 +30,7 @@ import com.stratio.meta2.core.query.NormalizedQuery;
 import com.stratio.meta2.core.query.SelectPlannedQuery;
 
 import com.stratio.meta2.core.query.*;
+import com.stratio.meta2.core.statements.SelectStatement;
 
 
 import org.apache.log4j.Logger;
@@ -92,21 +94,60 @@ public class Planner {
    */
   protected LogicalWorkflow buildWorkflow(SelectValidatedQuery query) {
     //Define the list of projects
-    Map<String, Project> projectSteps = getProjects(query);
-    addProjectedColumns(projectSteps, query);
+    Map<String, LogicalStep> processed = getProjects(query);
+    addProjectedColumns(processed, query);
     Map<String, TableMetadata> tableMetadataMap = new HashMap<>();
     for (TableMetadata tm : query.getTableMetadata()) {
       tableMetadataMap.put(tm.getName().getQualifiedName(), tm);
     }
 
-    Map<String, LogicalStep> filtered = addFilter(projectSteps, tableMetadataMap, query);
+    //TODO determine which is the correct target table if the order fails.
+    String selectTable = query.getTables().get(0).getQualifiedName();
+
+    //Add filters
+    if(query.getRelationships() != null) {
+      processed = addFilter(processed, tableMetadataMap, query);
+    }
+
+    //Add join
+    if(query.getJoin() != null) {
+      processed = addJoin(processed, selectTable, query);
+    }
 
     //Prepare the result.
     List<LogicalStep> initialSteps = new ArrayList<>();
-    for (LogicalStep ls : filtered.values()) {
-      initialSteps.add(ls);
+    LogicalStep initial = null;
+    for (LogicalStep ls : processed.values()) {
+      if(!UnionStep.class.isInstance(ls)) {
+        initial = ls;
+        //Go to the first element of the workflow
+        while (initial.getFirstPrevious() != null) {
+          initial = initial.getFirstPrevious();
+        }
+        if (Project.class.isInstance(initial)) {
+          initialSteps.add(initial);
+        }
+      }
     }
+
+    //Find the last element
+    LogicalStep last = initial;
+    while(last.getNextStep() != null){
+      last = last.getNextStep();
+    }
+
+    //Add LIMIT clause
+    SelectStatement ss = SelectStatement.class.cast(query.getStatement());
+    if(ss.isLimitInc()){
+      Limit l = new Limit(Operations.SELECT_LIMIT, ss.getLimit());
+      last.setNextStep(l);
+      l.setPrevious(last);
+      last = l;
+    }
+
     LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
+    workflow.setLastStep(last);
+
     return workflow;
   }
     protected LogicalWorkflow buildWorkflow(StorageValidatedQuery query) {
@@ -125,12 +166,19 @@ public class Planner {
    * @param projectSteps The map associating table names to Project steps.
    * @param query        The query to be planned.
    */
-  private void addProjectedColumns(Map<String, Project> projectSteps, SelectValidatedQuery query) {
+  private void addProjectedColumns(Map<String, LogicalStep> projectSteps, SelectValidatedQuery query) {
     for (ColumnName cn : query.getColumns()) {
-      projectSteps.get(cn.getTableName().getQualifiedName()).addColumn(cn);
+      Project.class.cast(projectSteps.get(cn.getTableName().getQualifiedName())).addColumn(cn);
     }
   }
 
+  /**
+   * Get the filter operation depending on the type of column and the selector.
+   * @param tableName The table metadata.
+   * @param selector The relationship selector.
+   * @param operator The relationship operator.
+   * @return An {@link com.stratio.meta.common.connector.Operations} object.
+   */
   protected Operations getFilterOperation(final TableMetadata tableName,
                                           final Selector selector,
                                           final Operator operator){
@@ -155,26 +203,18 @@ public class Planner {
    * Add Filter operations after the Project. The Filter operations to be applied are associated
    * with the where clause found.
    *
-   * @param projectMap       The map associating table names to Project steps.
+   * @param lastSteps       The map associating table names to Project steps.
    * @param tableMetadataMap A map with the table metadata indexed by table name.
    * @param query            The query to be planned.
    */
-  private Map<String, LogicalStep> addFilter(Map<String, Project> projectMap,
+  private Map<String, LogicalStep> addFilter(Map<String, LogicalStep> lastSteps,
                                              Map<String, TableMetadata> tableMetadataMap,
                                              SelectValidatedQuery query) {
-    Map<String, LogicalStep> lastSteps = new HashMap<>();
-    for (Map.Entry<String, Project> e : projectMap.entrySet()) {
-      lastSteps.put(e.getKey(), e.getValue());
-    }
-
-    //Add filter from where.
     LogicalStep previous = null;
     TableMetadata tm = null;
     Selector s = null;
     for (Relation r : query.getRelationships()) {
-
       s = r.getLeftTerm();
-
       //TODO Support left-side functions that contain columns of several tables.
       tm = tableMetadataMap.get(s.getSelectorTablesAsString());
       if(tm != null){
@@ -182,9 +222,10 @@ public class Planner {
         Filter f = new Filter(op, r);
         previous = lastSteps.get(s.getSelectorTablesAsString());
         previous.setNextStep(f);
+        f.setPrevious(previous);
         lastSteps.put(s.getSelectorTablesAsString(), f);
       }else{
-        LOG.error("Cannot determine Filter for relation " + r.toString());
+        LOG.error("Cannot determine Filter for relation " + r.toString() + " on table " + s.getSelectorTablesAsString());
       }
 
     }
@@ -192,10 +233,30 @@ public class Planner {
   }
 
   /**
-   * Add Filter operations after the Project.
+   * Add the join logical steps.
+   * @param stepMap The map of last steps after adding filters.
+   * @param targetTable The target table of the join.
+   * @param query The query.
+   * @return The resulting map of logical steps.
    */
-  private void addJoin(Map<String, Project> projectMap, NormalizedQuery query) {
-    //Add filter from Join
+  private Map<String, LogicalStep> addJoin(Map<String, LogicalStep> stepMap, String targetTable, SelectValidatedQuery query) {
+    InnerJoin queryJoin = query.getJoin();
+    Join j = new Join(Operations.SELECT_INNER_JOIN);
+    j.addSourceIdentifier(targetTable);
+    j.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
+    j.addJoinRelations(queryJoin.getRelations());
+    StringBuilder sb = new StringBuilder(targetTable)
+        .append("$").append(queryJoin.getTablename().getQualifiedName());
+    //Attach to input tables path
+    LogicalStep t1 = stepMap.get(targetTable);
+    LogicalStep t2 = stepMap.get(queryJoin.getTablename().getQualifiedName());
+    t1.setNextStep(j);
+    t2.setNextStep(j);
+    j.addPreviousSteps(t1, t2);
+    j.addSourceIdentifier(targetTable);
+    j.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
+    stepMap.put(sb.toString(), j);
+    return stepMap;
   }
 
   /**
@@ -204,8 +265,8 @@ public class Planner {
    * @param query The query to be planned.
    * @return A map with the projections.
    */
-  protected Map<String, Project> getProjects(SelectValidatedQuery query) {
-    Map<String, Project> projects = new HashMap<>();
+  protected Map<String, LogicalStep> getProjects(SelectValidatedQuery query) {
+    Map<String, LogicalStep> projects = new HashMap<>();
     for (TableName tn : query.getTables()) {
       Project p = new Project(Operations.PROJECT, tn);
       projects.put(tn.getQualifiedName(), p);

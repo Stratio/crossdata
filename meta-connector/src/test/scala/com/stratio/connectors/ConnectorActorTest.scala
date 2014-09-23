@@ -102,7 +102,7 @@ class ConnectorActorTest extends TestKit(ActorSystem()) with FunSuiteLike with M
     steps.add(null)
     val pq = new MetadataPlannedQuery(
       new MetadataValidatedQuery(
-        new MetaDataParsedQuery(
+        new MetadataParsedQuery(
           new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog") )
           ,null
       ), null

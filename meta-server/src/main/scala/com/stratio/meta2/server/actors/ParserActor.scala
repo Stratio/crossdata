@@ -47,14 +47,14 @@ class ParserActor(validator: ActorRef, parser:Parser) extends Actor with TimeTra
       //stmt.setSessionCatalog(catalog)
       //}
       val parsedquery=parser.parse(baseQuery)
-      log.info("\forwarding parsedquery to the validator "+parsedquery)
+      log.info("\nforwarding parsedquery to the validator "+parsedquery)
       //sender ! "Ok"
       validator forward parsedquery
 
       /*
       if(stmt.isInstanceOf[SelectParsedQuery]){
         normalizer forward stmt
-      } else if(stmt.isInstanceOf[StorageParsedQuery] || stmt.isInstanceOf[MetaDataParsedQuery] ){
+      } else if(stmt.isInstanceOf[StorageParsedQuery] || stmt.isInstanceOf[MetadataParsedQuery] ){
         validator forward stmt
       } else {
         sender ! Result.createUnsupportedOperationErrorResult("Unexpected result from Parser")

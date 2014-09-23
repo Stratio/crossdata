@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,33 +16,12 @@
  * under the License.
  */
 
-package com.stratio.meta.common.exceptions;
-
-import java.util.List;
+package com.stratio.meta.common.executionplan;
 
 /**
- * Parsing exception thrown by the Driver if the statement could not be parsed.
+ * Types of execution supported by the coordinator actor.
  */
-public class ParsingException extends Exception {
-
-  /**
-   * Serial version UID in order to be {@link java.io.Serializable}.
-   */
-  private static final long serialVersionUID = -1125608075378630223L;
-
-  private final List<String> errors;
-
-  public ParsingException(String message){
-    super(message);
-    this.errors=null;
-  }
-  public ParsingException(String message, List<String> errors){
-    super(message);
-    this.errors=errors;
-  }
-
-  public List<String> getErrors(){
-    return this.errors;
-  }
-
+public enum ExecutionType {
+  RESULTS,
+  TRIGGER_EXECUTION
 }

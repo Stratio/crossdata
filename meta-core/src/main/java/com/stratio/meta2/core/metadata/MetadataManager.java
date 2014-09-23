@@ -23,6 +23,7 @@ import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.FirstLevelName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.Name;
+import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ClusterMetadata;
@@ -42,6 +43,8 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
+import akka.actor.ActorRef;
+
 public enum MetadataManager {
   MANAGER;
 
@@ -57,29 +60,29 @@ public enum MetadataManager {
     }
   }
 
-  public boolean exists(Name name){
-    boolean result=false;
-    switch(name.getType()){
+  public boolean exists(Name name) {
+    boolean result = false;
+    switch (name.getType()) {
       case Catalog:
-        result=exists((CatalogName)name);
+        result = exists((CatalogName) name);
         break;
       case Cluster:
-        result=exists((ClusterName)name);
+        result = exists((ClusterName) name);
         break;
       case Column:
-        result=exists((ColumnName)name);
+        result = exists((ColumnName) name);
         break;
       case Connector:
-        result=exists((ConnectorName)name);
+        result = exists((ConnectorName) name);
         break;
       case DataStore:
-        result=exists((DataStoreName)name);
+        result = exists((DataStoreName) name);
         break;
       case Table:
-        result=exists((TableName)name);
+        result = exists((TableName) name);
         break;
       case Index:
-        result=exists((IndexName)name);
+        result = exists((IndexName) name);
         break;
     }
     return result;
@@ -98,15 +101,14 @@ public enum MetadataManager {
   }
 
   private void beginTransaction() throws SystemException, NotSupportedException {
-    if(tm!=null){
-     tm.begin();
+    if (tm != null) {
+      tm.begin();
     }
   }
 
-  private void commitTransaction()
-      throws HeuristicRollbackException, RollbackException, HeuristicMixedException,
-             SystemException {
-    if(tm!=null){
+  private void commitTransaction() throws HeuristicRollbackException, RollbackException,
+      HeuristicMixedException, SystemException {
+    if (tm != null) {
       tm.commit();
     }
   }
@@ -124,7 +126,7 @@ public enum MetadataManager {
     return result;
   }
 
-  public boolean exists(ColumnName name){
+  public boolean exists(ColumnName name) {
     boolean result = false;
     if (exists(name.getTableName())) {
       TableMetadata catalogMetadata = this.getTable(name.getTableName());
@@ -177,19 +179,20 @@ public enum MetadataManager {
   }
 
 
-  public void createTable(TableMetadata tableMetadata) {
+  public void createTable(TableMetadata tableMetadata, boolean unique) {
     shouldBeInit();
     try {
       writeLock.lock();
       shouldExist(tableMetadata.getName().getCatalogName());
       shouldExist(tableMetadata.getClusterRef());
-      shouldBeUnique(tableMetadata.getName());
+      if (unique) {
+        shouldBeUnique(tableMetadata.getName());
+      }
       CatalogMetadata catalogMetadata =
           ((CatalogMetadata) metadata.get(tableMetadata.getName().getCatalogName()));
 
-      if (catalogMetadata.getTables().containsKey(tableMetadata.getName())) {
-        throw new MetadataManagerException("Table [" + tableMetadata.getName()
-            + "] already exists");
+      if (catalogMetadata.getTables().containsKey(tableMetadata.getName())&& unique) {
+        throw new MetadataManagerException("Table [" + tableMetadata.getName() + "] already exists");
       }
 
       catalogMetadata.getTables().put(tableMetadata.getName(), tableMetadata);
@@ -201,6 +204,10 @@ public enum MetadataManager {
     } finally {
       writeLock.unlock();
     }
+  }
+
+  public void createTable(TableMetadata tableMetadata) {
+    createTable(tableMetadata, true);
   }
 
   public TableMetadata getTable(TableName name) {
@@ -215,7 +222,7 @@ public enum MetadataManager {
     try {
       writeLock.lock();
       shouldExist(clusterMetadata.getDataStoreRef());
-      if(unique){
+      if (unique) {
         shouldBeUnique(clusterMetadata.getName());
       }
       for (ConnectorAttachedMetadata connectorRef : clusterMetadata.getConnectorAttachedRefs()
@@ -223,7 +230,7 @@ public enum MetadataManager {
         shouldExist(connectorRef.getConnectorRef());
       }
       beginTransaction();
-      metadata.put(clusterMetadata.getName(),clusterMetadata);
+      metadata.put(clusterMetadata.getName(), clusterMetadata);
       commitTransaction();
     } catch (MetadataManagerException mex) {
       throw mex;
@@ -248,7 +255,7 @@ public enum MetadataManager {
     shouldBeInit();
     try {
       writeLock.lock();
-      if(unique){
+      if (unique) {
         shouldBeUnique(dataStoreMetadata.getName());
       }
       beginTransaction();
@@ -300,6 +307,12 @@ public enum MetadataManager {
     shouldBeInit();
     shouldExist(name);
     return (ConnectorMetadata) metadata.get(name);
+  }
+
+  public void addConnectorRef(ConnectorName name, ActorRef actorRef){
+    ConnectorMetadata connectorMetadata = getConnector(name);
+    connectorMetadata.setActorRef(actorRef);
+    createConnector(connectorMetadata, false);
   }
 
 }

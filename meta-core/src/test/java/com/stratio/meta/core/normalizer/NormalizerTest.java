@@ -267,7 +267,7 @@ public class NormalizerTest extends MetadataManagerTests {
 
     // WHERE CLAUSES
     List<Relation> where = new ArrayList<>();
-    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colPlace")), Operator.COMPARE, new StringSelector("Madrid")));
+    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colPlace")), Operator.EQ, new StringSelector("Madrid")));
     selectStatement.setWhere(where);
 
     // ORDER BY
@@ -322,7 +322,7 @@ public class NormalizerTest extends MetadataManagerTests {
     List<Relation> joinRelations = new ArrayList<>();
     Relation relation = new Relation(
         new ColumnSelector(new ColumnName(null, "assistantId")),
-        Operator.COMPARE,
+        Operator.EQ,
         new ColumnSelector(new ColumnName(null, "clientId")));
     joinRelations.add(relation);
     InnerJoin innerJoin = new InnerJoin(new TableName("myCatalog", "tableCostumers"), joinRelations);
@@ -330,7 +330,7 @@ public class NormalizerTest extends MetadataManagerTests {
 
     // WHERE CLAUSES
     List<Relation> where = new ArrayList<>();
-    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colCity")), Operator.COMPARE, new StringSelector("Madrid")));
+    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colCity")), Operator.EQ, new StringSelector("Madrid")));
     selectStatement.setWhere(where);
 
     // ORDER BY

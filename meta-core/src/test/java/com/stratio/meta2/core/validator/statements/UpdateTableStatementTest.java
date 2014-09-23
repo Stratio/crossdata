@@ -16,33 +16,13 @@
  * under the License.
  */
 
-package com.stratio.meta.common.exceptions;
+package com.stratio.meta2.core.validator.statements;
 
-import java.util.List;
+import com.stratio.meta2.core.validator.BasicValidatorTest;
 
-/**
- * Parsing exception thrown by the Driver if the statement could not be parsed.
- */
-public class ParsingException extends Exception {
+public class UpdateTableStatementTest extends BasicValidatorTest {
 
-  /**
-   * Serial version UID in order to be {@link java.io.Serializable}.
-   */
-  private static final long serialVersionUID = -1125608075378630223L;
 
-  private final List<String> errors;
-
-  public ParsingException(String message){
-    super(message);
-    this.errors=null;
-  }
-  public ParsingException(String message, List<String> errors){
-    super(message);
-    this.errors=errors;
-  }
-
-  public List<String> getErrors(){
-    return this.errors;
-  }
+    
 
 }

@@ -35,7 +35,6 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +63,11 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
   private List<ColumnName> primaryKey;
 
   /**
+   * The list of columns that are part of the partition key.
+   */
+  private List<ColumnName> partitionKey;
+
+  /**
    * The list of columns that are part of the clustering key.
    */
   private List<ColumnName> clusterKey;
@@ -72,21 +76,6 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
    * The list of {@link com.stratio.meta2.core.structures.Property} of the table.
    */
   private Map<Selector, Selector> properties = new LinkedHashMap<>();
-
-  /**
-   * The type of primary key. Accepted values are:
-   * <ul>
-   * <li>1: If the primary key contains a single column.</li>
-   * <li>2: If the primary key is composed of several columns but it does not contain a clustering
-   * key.</li>
-   * <li>3: If both the primary key and clustering key are specified.</li>
-   * </ul>
-   */
-  private int primaryKeyType;
-
-  private static final int PRIMARY_SINGLE = 1;
-  private static final int PRIMARY_COMPOSED = 2;
-  private static final int PRIMARY_AND_CLUSTERING_SPECIFIED = 3;
 
   /**
    * Whether the table should be created only if not exists.
@@ -99,39 +88,24 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
   private boolean createTable = false;
 
   /**
-   * The number of the column associated with the primary key. This value is only used if the type
-   * of primary key is {@code 1}.
-   */
-  private int columnNumberPK;
-
-  /**
-   * Whether the table should be created with a set of properties.
-   */
-  private boolean withProperties = false;
-
-  /**
    * Class constructor.
    *
    * @param tableName The name of the table.
    * @param columns A map with the name of the columns in the table and the associated data type.
-   * @param primaryKey The list of columns that are part of the primary key.
+   * @param partitionKey The list of columns that are part of the primary key.
    * @param clusterKey The list of columns that are part of the clustering key.
-   * @param primaryKeyType The type of primary key.
-   * @param columnNumberPK The number of the column associated with the primary key. This value is
-   *        only used if the type of primary key is {@code 1}.
    */
   public CreateTableStatement(TableName tableName, ClusterName clusterName,
                               Map<ColumnName, ColumnType> columns,
-                              List<ColumnName> primaryKey, List<ColumnName> clusterKey,
-                              int primaryKeyType, int columnNumberPK) {
+                              List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
     this.command = false;
     this.tableName = tableName;
     this.clusterName = clusterName;
     this.columnsWithType = columns;
-    this.primaryKey = primaryKey;
+    this.partitionKey = partitionKey;
     this.clusterKey = clusterKey;
-    this.primaryKeyType = primaryKeyType;
-    this.columnNumberPK = columnNumberPK;
+    this.primaryKey.addAll(partitionKey);
+    this.primaryKey.addAll(clusterKey);
   }
 
   public Map<ColumnName, ColumnType> getColumnsWithTypes() {
@@ -162,65 +136,10 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
    */
   public void setProperties(String properties) {
     this.properties = StringUtils.convertJsonToOptions(properties);
-    if ((properties == null) || properties.isEmpty()) {
-      withProperties = false;
-    } else {
-      withProperties = true;
-    }
   }
 
   public void setIfNotExists(boolean ifNotExists) {
     this.ifNotExists = ifNotExists;
-  }
-
-  public void setWithProperties(boolean withProperties) {
-    this.withProperties = withProperties;
-  }
-
-  public String getSinglePKString() {
-    StringBuilder sb = new StringBuilder(" (");
-    Set<ColumnName> keySet = columnsWithType.keySet();
-    int i = 0;
-    for (Iterator<ColumnName> it = keySet.iterator(); it.hasNext();) {
-      ColumnName key = it.next();
-      ColumnType vp = columnsWithType.get(key);
-      sb.append(key).append(" ").append(vp);
-      if (i == columnNumberPK) {
-        sb.append(" PRIMARY KEY");
-      }
-      i++;
-      if (it.hasNext()) {
-        sb.append(", ");
-      } else {
-        sb.append(")");
-      }
-    }
-    return sb.toString();
-  }
-
-  public String getCompositePKString() {
-    StringBuilder sb = new StringBuilder("PRIMARY KEY (");
-    if (primaryKeyType == PRIMARY_AND_CLUSTERING_SPECIFIED) {
-      sb.append("(");
-    }
-
-    Iterator<ColumnName> pks = primaryKey.iterator();
-    while (pks.hasNext()) {
-      sb.append(pks.next());
-      if (pks.hasNext()) {
-        sb.append(", ");
-      }
-    }
-
-    if (primaryKeyType == PRIMARY_AND_CLUSTERING_SPECIFIED) {
-      sb.append(")");
-      for (ColumnName key : clusterKey) {
-        sb.append(", ").append(key);
-      }
-    }
-
-    sb.append("))");
-    return sb.toString();
   }
 
   @Override
@@ -231,22 +150,20 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     }
     sb.append(tableName.getQualifiedName());
     sb.append(" ON CLUSTER ").append(clusterName);
-    if (primaryKeyType == PRIMARY_SINGLE) {
-      sb.append(getSinglePKString());
-    } else {
-      Set<ColumnName> keySet = columnsWithType.keySet();
-      sb.append(" (");
-      for (ColumnName key : keySet) {
-        ColumnType vp = columnsWithType.get(key);
-        sb.append(key).append(" ").append(vp).append(", ");
-      }
-      sb.append(getCompositePKString());
-    }
 
-    if (withProperties) {
+    sb.append("(");
+    sb.append(columnsWithType);
+    sb.append(", PRIMARY KEY ((").append(partitionKey).append("), ").append(clusterKey).append(")");
+    sb.append(")");
+
+    if (hasProperties()) {
       sb.append(" WITH ").append(properties);
     }
     return sb.toString();
+  }
+
+  private boolean hasProperties() {
+    return ((properties != null) && (!properties.isEmpty()));
   }
 
   /** {@inheritDoc} */
@@ -261,7 +178,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     if(!result.hasError()){
       result = validateColumns();
     }
-    if (!result.hasError() && withProperties) {
+    if (!result.hasError() && hasProperties()) {
       result = validateProperties();
     }
     return result;
