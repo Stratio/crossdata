@@ -90,6 +90,19 @@ public class SelectStatementTest extends ParsingTest {
   }
 
   @Test
+  public void singleColumnWithAliasWithReservedWord() {
+    String inputText = "SELECT newtb.lucene AS limit FROM newks.newtb;";
+    String expectedText = "SELECT newks.newtb.lucene AS limit FROM newks.newtb;";
+    testRegularStatementSession("newks", inputText, expectedText, "singleColumnWithAliasWithReservedWord");
+  }
+
+  @Test
+  public void selectWithDistinctPlusAsterisk() {
+    String inputText = "SELECT DISTINCT * FROM newks.newtb;";
+    testParserFails("newks", inputText, "selectWithDistinctPlusAsterisk");
+  }
+
+  @Test
   public void innerJoinWithTableAliases() {
     String inputText = "SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID;";
     String expectedText = "SELECT <unknown_name>.<unknown_name>.field1, <unknown_name>.<unknown_name>.field2 FROM demo.clients AS table1 INNER JOIN demo.sales AS table2 ON <unknown_name>.<unknown_name>.identifier = <unknown_name>.<unknown_name>.codeID;";
@@ -339,12 +352,19 @@ public class SelectStatementTest extends ParsingTest {
     testParserFails(inputText, "selectWrongLikeWord");
   }
 */
+
   @Test
   public void selectSelectors() {
-    for (String c : new String[] {"COUNT(*)", "myUDF(c.table0.field0)", "c.table0.field0"}) {
+    for (String c: new String[] {"COUNT(*)", "myUDF(c.table0.field0)", "c.table0.field0", "COUNT(1)"}) {
       String inputText = "SELECT " + c + " from c.table0;";
       testRegularStatement(inputText, "selectSelectors");
     }
+  }
+
+  @Test
+  public void selectSelectorsWrongCount() {
+    String inputText = "SELECT COUNT(col25) from c.table0;";
+    testParserFails("demo", inputText, "selectSelectorsWrongCount");
   }
 
   /*

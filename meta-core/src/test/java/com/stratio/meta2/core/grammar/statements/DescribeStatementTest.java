@@ -18,9 +18,9 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import org.testng.annotations.Test;
-
 import com.stratio.meta2.core.grammar.ParsingTest;
+
+import org.testng.annotations.Test;
 
 public class DescribeStatementTest extends ParsingTest {
 
@@ -31,9 +31,9 @@ public class DescribeStatementTest extends ParsingTest {
   }
 
   @Test
-  public void describeCurrentCatalogBasic() {
+  public void describeMissingCatalog() {
     String inputText = "DESCRIBE CATALOG;";
-    testRegularStatement(inputText, "describeCurrentCatalogBasic");
+    testParserFails(inputText, "describeMissingCatalog");
   }
 
   @Test
@@ -55,8 +55,42 @@ public class DescribeStatementTest extends ParsingTest {
   }
 
   @Test
-  public void describeTablesBasic() {
-    String inputText = "DESCRIBE TABLES;";
-    testRegularStatement(inputText, "describeTablesBasic");
+  public void describeClustersBasic() {
+    String inputText = "DESCRIBE CLUSTERS;";
+    testRegularStatement(inputText, "describeClustersBasic");
   }
+
+  @Test
+  public void describeClusterBasic() {
+    String inputText = "DESCRIBE CLUSTER myCluster;";
+    String expectedText = "DESCRIBE CLUSTER cluster.myCluster;";
+    testRegularStatement(inputText, expectedText, "describeClusterBasic");
+  }
+
+  @Test
+  public void describeDataStoresBasic() {
+    String inputText = "DESCRIBE DATASTORES;";
+    testRegularStatement(inputText, "describeDataStoresBasic");
+  }
+
+  @Test
+  public void describeDataStoreBasic() {
+    String inputText = "DESCRIBE DATASTORE myDatastore;";
+    String expectedText = "DESCRIBE DATASTORE datastore.myDatastore;";
+        testRegularStatement(inputText, expectedText, "describeDataStoreBasic");
+  }
+
+  @Test
+  public void describeConnectorsBasic() {
+    String inputText = "DESCRIBE CONNECTORS;";
+    testRegularStatement(inputText, "describeConnectorsBasic");
+  }
+
+  @Test
+  public void describeConnectorBasic() {
+    String inputText = "DESCRIBE CONNECTOR myConnector;";
+    String expectedText = "DESCRIBE CONNECTOR connector.myConnector;";
+    testRegularStatement(inputText, expectedText, "describeConnectorBasic");
+  }
+
 }

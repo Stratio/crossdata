@@ -19,6 +19,7 @@ import com.stratio.meta.common.statements.structures.window.Window;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.structures.GroupBy;
 import com.stratio.meta.core.structures.InnerJoin;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
 import com.stratio.meta2.core.structures.OrderBy;
@@ -148,7 +149,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @return The catalog or null if not specified.
    */
-  public String getCatalog() {
+  public CatalogName getCatalog() {
     return catalog;
   }
 
@@ -157,7 +158,7 @@ public class SelectStatement extends MetaStatement {
    * 
    * @param catalog The name of the catalog.
    */
-  public void setCatalog(String catalog) {
+  public void setCatalog(CatalogName catalog) {
     this.catalogInc = true;
     this.catalog = catalog;
   }

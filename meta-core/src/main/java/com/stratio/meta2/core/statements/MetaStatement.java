@@ -18,14 +18,13 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 import java.util.List;
@@ -50,12 +49,12 @@ public abstract class MetaStatement implements IStatement {
   /**
    * Catalog specified in the user provided statement.
    */
-  protected String catalog = null;
+  protected CatalogName catalog = null;
 
   /**
    * The current catalog in the user session.
    */
-  protected String sessionCatalog = null;
+  protected CatalogName sessionCatalog = null;
 
   /**
    * The type of statement to be executed.
@@ -120,18 +119,19 @@ public abstract class MetaStatement implements IStatement {
    * @param targetCatalog The target catalog where the query will be executed.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  protected Result validateCatalogAndTable(MetadataManager metadata, String targetCatalog,
-      boolean catalogInc, String stmtCatalog, TableName tableName) {
+  protected Result validateCatalogAndTable(MetadataManager metadata, CatalogName targetCatalog,
+      boolean catalogInc, CatalogName stmtCatalog, TableName tableName) {
     Result result = QueryResult.createSuccessQueryResult();
     // Get the effective catalog based on the user specification during the create
     // sentence, or taking the catalog in use in the user session.
-    String effectiveCatalog = targetCatalog;
+    CatalogName effectiveCatalog = targetCatalog;
     if (catalogInc) {
       effectiveCatalog = stmtCatalog;
     }
 
     // Check that the catalog and table exists.
-    if (effectiveCatalog == null || effectiveCatalog.length() == 0) {
+    /*
+    if (effectiveCatalog == null) {
       result =
           Result
               .createValidationErrorResult("Target catalog missing or no catalog has been selected.");
@@ -155,6 +155,7 @@ public abstract class MetaStatement implements IStatement {
         }
       }
     }
+    */
     return result;
   }
 
@@ -162,7 +163,7 @@ public abstract class MetaStatement implements IStatement {
    * Get the effective catalog to execute the statement.
    * @return The catalog specified in the statement or the session catalog otherwise.
    */
-  public String getEffectiveCatalog() {
+  public CatalogName getEffectiveCatalog() {
     return catalogInc? catalog: sessionCatalog;
   }
 
@@ -171,7 +172,7 @@ public abstract class MetaStatement implements IStatement {
    *
    * @param catalog The name.
    */
-  public void setCatalog(String catalog) {
+  public void setCatalog(CatalogName catalog) {
     this.catalog = catalog;
     catalogInc = true;
   }
@@ -180,7 +181,7 @@ public abstract class MetaStatement implements IStatement {
    * Set the session catalog.
    * @param targetCatalog The target catalog for executing the statement.
    */
-  public void setSessionCatalog(String targetCatalog) {
+  public void setSessionCatalog(CatalogName targetCatalog) {
     sessionCatalog = targetCatalog;
   }
 

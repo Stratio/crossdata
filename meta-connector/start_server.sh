@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-command="mvn -pl . exec:java -Dexec.mainClass=com.stratio.connector.ConnectorApp -Dexec.args=\"$@\""
+command="mvn -pl . exec:java -Dexec.mainClass=com.stratio.connectors.ConnectorApp -Dexec.args=\"$@\""
 echo $command
 eval $command
 

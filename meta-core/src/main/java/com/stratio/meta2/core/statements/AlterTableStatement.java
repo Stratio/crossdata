@@ -19,6 +19,7 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.CoreUtils;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.ColumnType;
@@ -132,11 +133,11 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
     Result result = validateCatalogAndTable(
         metadata,
         sessionCatalog,
-        tableName.isCompletedName(), tableName.getCatalogName().getName(), tableName);
+        tableName.isCompletedName(), tableName.getCatalogName(), tableName);
     if(!result.hasError()) {
-      String effectiveCatalog = getEffectiveCatalog();
+      CatalogName effectiveCatalog = getEffectiveCatalog();
       System.out.println("validating: " + effectiveCatalog + " table: " + tableName.getName());
-      TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
+      /*TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
       switch (option) {
         case 1:
           result = validateAlter(tableMetadata);
@@ -151,7 +152,7 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
           result = validateProperties(tableMetadata);
           break;
         default:
-      }
+      }*/
     }
     return result;
   }
@@ -260,10 +261,10 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
   }
 
   @Override
-  public String getEffectiveCatalog() {
-    String effective;
+  public CatalogName getEffectiveCatalog() {
+    CatalogName effective;
     if(tableName != null){
-      effective = tableName.getCatalogName().getName();
+      effective = tableName.getCatalogName();
     }else{
       effective = catalog;
     }

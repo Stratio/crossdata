@@ -115,7 +115,7 @@ public class ManifestTest {
 
     // SUPPORTED OPERATIONS
     sb.append("Supported operations: ").append(System.lineSeparator());
-    sb.append("\t").append("Operation: ").append("string").append(System.lineSeparator());
+    sb.append("\t").append("Operation: ").append("CREATE_CATALOG").append(System.lineSeparator());
 
     // ERROR MESSAGE
     StringBuilder sbError = new StringBuilder(System.lineSeparator());

@@ -18,11 +18,10 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
-import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -156,14 +155,15 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
    * @param targetCatalog The target catalog where the query will be executed.
    * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
    */
-  private Result validateCatalogAndTable(MetadataManager metadata, String targetCatalog) {
+  private Result validateCatalogAndTable(MetadataManager metadata, CatalogName targetCatalog) {
     Result result = QueryResult.createSuccessQueryResult();
     // Get the effective catalog based on the user specification during the create
     // sentence, or taking the catalog in use in the user session.
-    String effectiveCatalog = getEffectiveCatalog();
+    CatalogName effectiveCatalog = getEffectiveCatalog();
 
     // Check that the catalog and table exists.
-    if (effectiveCatalog == null || effectiveCatalog.length() == 0) {
+    /*
+    if (effectiveCatalog == null) {
       result =
           Result
               .createValidationErrorResult(
@@ -181,6 +181,7 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
       }
 
     }
+    */
     return result;
   }
 
@@ -194,10 +195,10 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
   }
 
   @Override
-  public String getEffectiveCatalog() {
-    String effective;
+  public CatalogName getEffectiveCatalog() {
+    CatalogName effective;
     if(tableName != null){
-      effective = tableName.getCatalogName().getName();
+      effective = tableName.getCatalogName();
     }else{
       effective = catalog;
     }

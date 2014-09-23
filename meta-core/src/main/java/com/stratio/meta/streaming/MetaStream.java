@@ -29,6 +29,7 @@ import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.statements.SelectStatement;
@@ -176,7 +177,7 @@ public class MetaStream {
                                   boolean isRoot){
     callbackActors.put(queryId, callbackActor);
 
-    String ks = ss.getEffectiveCatalog();
+    CatalogName ks = ss.getEffectiveCatalog();
     String streamName = ks+"_"+ss.getTableName();
     try {
       String outgoing = streamName+"_"+ queryId.replace("-", "_");
@@ -205,7 +206,7 @@ public class MetaStream {
       StreamingConsumer consumer = new StreamingConsumer(outgoing, config.getZookeeperServer(), config.getJobName(), results);
       consumer.start();
 
-      StreamListener listener = new StreamListener(results, dsc, callbackActor, queryId, ks, isRoot);
+      StreamListener listener = new StreamListener(results, dsc, callbackActor, queryId, ks.getName(), isRoot);
       listener.start();
 
       //Thread.sleep(2000);

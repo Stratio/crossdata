@@ -37,7 +37,7 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
     @Test
     public void validateOk(){
         String query = "DROP CATALOG demo;";
-        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement("demo",true);
+        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement(new CatalogName("demo"), true);
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("dropCatalogid",query, new CatalogName("demo"));
@@ -56,7 +56,7 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
     @Test
     public void validateIfNotExists(){
         String query = "DROP CATALOG IF EXISTS unknown;";
-        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement("unknown",true);
+        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement(new CatalogName("unknown"), true);
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("dropCatalogid",query, new CatalogName("unknown"));
@@ -76,7 +76,7 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
     @Test
     public void validateNotExists(){
         String query = "DROP CATALOG unknown;";
-        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement("unknown",true);
+        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement(new CatalogName("unknown"), true);
         Validator validator=new Validator();
 
         BaseQuery baseQuery=new BaseQuery("dropCatalogid",query, new CatalogName("unknown"));

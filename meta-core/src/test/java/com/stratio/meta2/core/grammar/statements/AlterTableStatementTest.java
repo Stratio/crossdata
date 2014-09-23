@@ -45,6 +45,12 @@ public class AlterTableStatementTest extends ParsingTest{
   }
 
   @Test
+  public void alterTableCatalogWithWrongColumnType() {
+    String inputText = "ALTER TABLE demo.myTable ALTER column1 TYPE date;";
+    testParserFails("clients", inputText, "alterTableCatalogWithWrongColumnType");
+  }
+
+  @Test
   public void alterTableCatalogWithSession2() {
     String inputText = "ALTER TABLE myTable ALTER column1 TYPE int;";
     String expectedText = "ALTER TABLE clients.myTable ALTER clients.myTable.column1 TYPE int;";

@@ -41,5 +41,11 @@ public enum DescribeType {
   /**
    * Describe all tables in the current keyspace.
    */
-  TABLES
+  TABLES,
+  CLUSTER,
+  CLUSTERS,
+  DATASTORE,
+  DATASTORES,
+  CONNECTOR,
+  CONNECTORS
 }

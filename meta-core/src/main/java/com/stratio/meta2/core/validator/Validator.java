@@ -18,15 +18,11 @@
 
 package com.stratio.meta2.core.validator;
 
-import java.util.List;
-import java.util.Map;
-
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.exceptions.validation.ExistNameException;
 import com.stratio.meta.common.exceptions.validation.NotExistNameException;
 import com.stratio.meta2.common.api.Manifest;
-import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.Name;
@@ -34,13 +30,23 @@ import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.query.*;
+import com.stratio.meta2.core.query.MetadataParsedQuery;
+import com.stratio.meta2.core.query.MetadataValidatedQuery;
+import com.stratio.meta2.core.query.ParsedQuery;
+import com.stratio.meta2.core.query.SelectParsedQuery;
+import com.stratio.meta2.core.query.SelectValidatedQuery;
+import com.stratio.meta2.core.query.StorageParsedQuery;
+import com.stratio.meta2.core.query.StorageValidatedQuery;
+import com.stratio.meta2.core.query.ValidatedQuery;
 import com.stratio.meta2.core.statements.AlterCatalogStatement;
 import com.stratio.meta2.core.statements.AttachClusterStatement;
 import com.stratio.meta2.core.statements.AttachConnectorStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 import org.apache.log4j.Logger;
+
+import java.util.List;
+import java.util.Map;
 
 
 public class Validator {
@@ -57,11 +63,10 @@ public class Validator {
       for (Validation val:parsedQuery.getStatement().getValidationRequirements().getValidations()) {
           switch (val) {
               case MUST_NOT_EXIST_CATALOG:
-                  validateNotExistCatalog(
-                      new CatalogName(parsedQuery.getStatement().getEffectiveCatalog()), true);
+                  validateNotExistCatalog(parsedQuery.getStatement().getEffectiveCatalog(), true);
                   break;
               case MUST_EXIST_CATALOG:
-                  validateExist(new CatalogName(parsedQuery.getStatement().getEffectiveCatalog()),true);
+                  validateExist(parsedQuery.getStatement().getEffectiveCatalog(), true);
                   break;
               case MUST_EXIST_TABLE:
                    validateExist(parsedQuery.getStatement().getFromTables(),true);
