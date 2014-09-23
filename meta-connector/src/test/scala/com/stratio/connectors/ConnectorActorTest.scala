@@ -50,8 +50,7 @@ class ConnectorActorTest extends TestKit(ActorSystem()) with FunSuiteLike with M
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
     //val myReference = c.startup(m, port, config)
-    val myReference = c.startup(m, port)
-    myReference ! "Hello World"
+    c.startup(m, port)
     assert("Hello World" == "Hello World")
     c.shutdown()
   }
