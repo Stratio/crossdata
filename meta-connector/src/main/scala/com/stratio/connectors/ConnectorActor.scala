@@ -56,7 +56,6 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
 
      case inProgressQuery:SelectInProgressQuery=>{
       log.info("->"+"Receiving SelectInProgressQuery")
-      println("->"+"Receiving SelectInProgressQuery")
       val statement=inProgressQuery.getStatement()
       statement match{
         case ms:SelectStatement =>
@@ -65,6 +64,7 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
           val logicalworkflow=inProgressQuery.getLogicalWorkFlow()
           connector.getQueryEngine().execute(clustername,logicalworkflow)
           sender ! "ok"
+          //"ok"
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")
       }
