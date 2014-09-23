@@ -103,6 +103,12 @@ public class SelectStatementTest extends ParsingTest {
   }
 
   @Test
+  public void selectAliasWithoutColumn() {
+    String inputText = "SELECT tab2.col1 AS myAlis, AS aliasCol FROM table1;";
+    testParserFails("newks", inputText, "selectAliasWithoutColumn");
+  }
+
+  @Test
   public void innerJoinWithTableAliases() {
     String inputText = "SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID;";
     String expectedText = "SELECT <unknown_name>.<unknown_name>.field1, <unknown_name>.<unknown_name>.field2 FROM demo.clients AS table1 INNER JOIN demo.sales AS table2 ON <unknown_name>.<unknown_name>.identifier = <unknown_name>.<unknown_name>.codeID;";

@@ -878,12 +878,12 @@ getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
     (
         T_ASTERISK { if(distinct) throwParsingException("Selector DISTINCT doesn't accept '*'");
                      s = new AsteriskSelector(); selectors.add(s);}
-        | s=getSelector[null]
+        | s=getSelector[null] { if(s == null) throwParsingException("Column name not found");}
                 (T_AS alias1=getGenericID {
                     s.setAlias(alias1);
                     fieldsAliasesMap.put(alias1, s.toString());}
                 )? {selectors.add(s);}
-            (T_COMMA s=getSelector[null]
+            (T_COMMA s=getSelector[null] { if(s == null) throwParsingException("Column name not found");}
                     (T_AS aliasN=getGenericID {
                         s.setAlias(aliasN);
                         fieldsAliasesMap.put(aliasN, s.toString());}
