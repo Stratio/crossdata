@@ -57,17 +57,22 @@
             <artifactId>meta-common</artifactId>
             <version>${meta.version}</version>
    </dependency>
+      <dependency>
+          <groupId>com.stratio.meta</groupId>
+          <artifactId>meta-server</artifactId>
+          <version>${meta.version}</version>
+      </dependency>
 
    <dependency>
 	<groupId>org.scalamock</groupId>
 	<artifactId>scalamock-core_2.10</artifactId>
-	<version>3.0</version>
+	<version>3.1.RC1</version>
   	<scope>test</scope>
    </dependency>
    <dependency>
 	<groupId>org.scalamock</groupId>
 	<artifactId>scalamock-scalatest-support_2.10</artifactId>
-	<version>3.0</version>
+	<version>3.1.RC1</version>
    </dependency>
    <dependency>
      <groupId>org.scalatest</groupId>

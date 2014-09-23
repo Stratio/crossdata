@@ -172,6 +172,13 @@ public class Planner {
     }
   }
 
+  /**
+   * Get the filter operation depending on the type of column and the selector.
+   * @param tableName The table metadata.
+   * @param selector The relationship selector.
+   * @param operator The relationship operator.
+   * @return An {@link com.stratio.meta.common.connector.Operations} object.
+   */
   protected Operations getFilterOperation(final TableMetadata tableName,
                                           final Selector selector,
                                           final Operator operator){
@@ -226,7 +233,11 @@ public class Planner {
   }
 
   /**
-   * Add Join operation.
+   * Add the join logical steps.
+   * @param stepMap The map of last steps after adding filters.
+   * @param targetTable The target table of the join.
+   * @param query The query.
+   * @return The resulting map of logical steps.
    */
   private Map<String, LogicalStep> addJoin(Map<String, LogicalStep> stepMap, String targetTable, SelectValidatedQuery query) {
     InnerJoin queryJoin = query.getJoin();
