@@ -18,6 +18,7 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
@@ -170,8 +171,10 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
     }
     sb.append(" ").append("SET ");
     sb.append(StringUtils.stringList(assignations, ", "));
-    sb.append(" ").append("WHERE ");
-    sb.append(StringUtils.stringList(whereClauses, " AND "));
+    if((whereClauses != null) && (!whereClauses.isEmpty())){
+      sb.append(" ").append("WHERE ");
+      sb.append(StringUtils.stringList(whereClauses, " AND "));
+    }
     if (condsInc) {
       sb.append(" ").append("IF ");
       sb.append(ParserUtils.stringMap(conditions, " = ", " AND "));
@@ -192,7 +195,7 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result =
         validateCatalogAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
-    if (!result.hasError()) {
+    /*if (!result.hasError()) {
       TableMetadata tableMetadata = metadata.getTableMetadata(getEffectiveCatalog(), tableName);
 
       if (optsInc) {
@@ -204,15 +207,13 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
       }
 
       if (!result.hasError()) {
-        /*
-         * result = validateWhereClauses(tableMetadata);
-         */
+        //result = validateWhereClauses(tableMetadata);
       }
 
       if ((!result.hasError()) && condsInc) {
         result = validateConds(tableMetadata);
       }
-    }
+    }*/
     return result;
   }
 
@@ -337,10 +338,10 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
   }
 
   @Override
-  public String getEffectiveCatalog() {
-    String effective;
+  public CatalogName getEffectiveCatalog() {
+    CatalogName effective;
     if(tableName != null){
-      effective = tableName.getCatalogName().getName();
+      effective = tableName.getCatalogName();
     }else{
       effective = catalog;
     }

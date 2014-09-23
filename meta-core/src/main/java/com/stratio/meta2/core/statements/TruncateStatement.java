@@ -16,11 +16,10 @@ package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
-import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -41,11 +40,11 @@ public class TruncateStatement extends StorageStatement {
     this.catalogInc = catalogInc;
   }
 
-  public String getCatalog() {
+  public CatalogName getCatalog() {
     return catalog;
   }
 
-  public void setCatalog(String catalog) {
+  public void setCatalog(CatalogName catalog) {
     this.catalog = catalog;
   }
 
@@ -71,18 +70,18 @@ public class TruncateStatement extends StorageStatement {
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();
 
-    String effectiveCatalog = getEffectiveCatalog();
+    CatalogName effectiveCatalog = getEffectiveCatalog();
     if (catalogInc) {
       effectiveCatalog = catalog;
     }
 
     // Check that the catalog and table exists.
-    if (effectiveCatalog == null || effectiveCatalog.length() == 0) {
+    if (effectiveCatalog == null) {
       result =
           Result
               .createValidationErrorResult("Target catalog missing or no catalog has been selected.");
     } else {
-      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
+      /*CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
       if (ksMetadata == null) {
         result =
             Result.createValidationErrorResult("Catalog " + effectiveCatalog + " does not exist.");
@@ -91,7 +90,7 @@ public class TruncateStatement extends StorageStatement {
         if (tableMetadata == null) {
           result = Result.createValidationErrorResult("Table " + tablename + " does not exist.");
         }
-      }
+      }*/
     }
     return result;
 

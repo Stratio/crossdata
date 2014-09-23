@@ -204,7 +204,7 @@ public class CoordinatorTest extends MetadataManagerTests {
         new BaseQuery(UUID.randomUUID().toString(), "CREATE CATALOG testCatalog", catalogName);
 
     CreateCatalogStatement createCatalogStatement =
-        new CreateCatalogStatement(catalogName.getName(), false, "{}");
+        new CreateCatalogStatement(catalogName, false, "{}");
 
     MetadataParsedQuery metadataParsedQuery =
         new MetadataParsedQuery(baseQuery, createCatalogStatement);
@@ -232,7 +232,7 @@ public class CoordinatorTest extends MetadataManagerTests {
         new BaseQuery(UUID.randomUUID().toString(), "CREATE CATALOG testCatalog2", catalogName);
 
     CreateCatalogStatement createCatalogStatement =
-        new CreateCatalogStatement(catalogName.getName(), false, "{}");
+        new CreateCatalogStatement(catalogName, false, "{}");
 
     MetadataParsedQuery metadataParsedQuery =
         new MetadataParsedQuery(baseQuery, createCatalogStatement);

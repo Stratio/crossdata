@@ -20,6 +20,7 @@ package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
@@ -79,7 +80,7 @@ public class DropIndexStatement extends MetadataStatement {
     this.name = name;
     if (name.contains(".")) {
       String[] ksAndName = name.split("\\.");
-      catalog = ksAndName[0];
+      catalog = new CatalogName(ksAndName[0]);
       this.name = ksAndName[1];
       catalogInc = true;
     }
@@ -104,13 +105,14 @@ public class DropIndexStatement extends MetadataStatement {
     Result result = null;
     //Get the effective catalog based on the user specification during the create
     //sentence, or taking the catalog in use in the user session.
-    String effectiveCatalog = getEffectiveCatalog();
+    CatalogName effectiveCatalog = getEffectiveCatalog();
     if(catalogInc){
       effectiveCatalog = catalog;
     }
 
     //Check that the catalog and table exists.
-    if(effectiveCatalog == null || effectiveCatalog.length() == 0){
+    /*
+    if(effectiveCatalog == null){
       result= Result.createValidationErrorResult(
           "Target catalog missing or no catalog has been selected.");
     }else{
@@ -122,6 +124,7 @@ public class DropIndexStatement extends MetadataStatement {
         result = validateIndexName(ksMetadata);
       }
     }
+    */
     return result;
   }
 

@@ -14,17 +14,12 @@
 
 package com.stratio.meta2.core.statements;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.metadata.CustomIndexMetadata;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.TableName;
@@ -35,6 +30,12 @@ import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class that models a {@code CREATE INDEX} statement of the META language. This class recognizes
@@ -171,7 +172,7 @@ public class CreateIndexStatement extends MetadataStatement {
   public void setName(String name) {
     if (name.contains(".")) {
       String[] ksAndTablename = name.split("\\.");
-      catalog = ksAndTablename[0];
+      catalog = new CatalogName(ksAndTablename[0]);
       this.name = ksAndTablename[1];
       catalogInc = true;
     } else {
@@ -335,13 +336,13 @@ public class CreateIndexStatement extends MetadataStatement {
     // Validate target table
     Result result =
         validateCatalogAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
-    String effectiveCatalog = getEffectiveCatalog();
+    CatalogName effectiveCatalog = getEffectiveCatalog();
 
     TableMetadata tableMetadata = null;
     if (!result.hasError()) {
-      tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
+      /*tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
       this.metadata = tableMetadata;
-      result = validateOptions(effectiveCatalog, tableMetadata);
+      result = validateOptions(effectiveCatalog, tableMetadata);*/
     }
 
     // Validate index name if not exists

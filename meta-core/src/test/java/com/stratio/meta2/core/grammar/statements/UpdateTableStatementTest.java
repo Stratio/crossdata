@@ -31,6 +31,13 @@ public class UpdateTableStatementTest extends ParsingTest {
   }
 
   @Test
+  public void updateBasicWithoutWhere() {
+    String inputText = "UPDATE demo.table1 SET field1 = 'value1';";
+    String expectedText = "UPDATE demo.table1 SET demo.table1.field1 = 'value1';";
+    testRegularStatement(inputText, expectedText, "updateBasicWithoutWhere");
+  }
+
+  @Test
   public void updateTablename() {
     String inputText = "[demo], UPDATE myTable USING 'prop1' = 342 SET ident1 = 'term1', ident2 = 'term2'"
                        + " WHERE ident3 > 25 IF 'replication' = 2;";

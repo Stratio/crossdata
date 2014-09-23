@@ -38,14 +38,12 @@ public class CreateTableStatementTest extends ParsingTest {
   @Test
   public void createTableBasic2() {
     String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int PRIMARY KEY, something3 boolean);";
-    //String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley (demo.myTable.something=text, demo.myTable.something2=int PRIMARY KEY, demo.myTable.something3=boolean);";
     testParserFails("demo", inputText, "createTableBasic2");
   }
 
   @Test
   public void createTableBasic3() {
     String inputText = "CREATE TABLE business.myTable ON CLUSTER siliconValley (something text, something2 int, something3 boolean PRIMARY KEY);";
-    //String expectedText = "CREATE TABLE business.myTable ON CLUSTER cluster.siliconValley (business.myTable.something=text, business.myTable.something2=int, business.myTable.something3=boolean PRIMARY KEY);";
     testParserFails("demo", inputText, "createTableBasic3");
   }
 
@@ -155,6 +153,12 @@ public class CreateTableStatementTest extends ParsingTest {
   public void createTableMissingPrimaryKey(){
     String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, id varchar, number int);";
     testParserFails(inputText, "createTableMissingPrimaryKey");
+  }
+
+  @Test
+  public void createTableWrongColumnType(){
+    String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something uuid PRIMARY KEY, id varchar, number int);";
+    testParserFails(inputText, "createTableWrongColumnType");
   }
 
   @Test
