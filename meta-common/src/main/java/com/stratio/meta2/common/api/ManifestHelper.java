@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.common.api;
 
+import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta2.common.api.generated.connector.ConnectorType;
 import com.stratio.meta2.common.api.generated.datastore.ClusterType;
 import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
@@ -26,6 +27,7 @@ import com.stratio.meta2.common.api.generated.datastore.PropertyType;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 public class ManifestHelper implements Serializable {
 
@@ -110,8 +112,8 @@ public class ManifestHelper implements Serializable {
 
     // SUPPORTED OPERATIONS
     sb.append("Supported operations: ").append(System.lineSeparator());
-    List<String> operationsList = connectorType.getSupportedOperations().getOperation();
-    for(String operation: operationsList){
+    Set<Operations> operationsList = connectorType.getSupportedOperations().getOperation();
+    for(Operations operation: operationsList){
       sb.append("\t").append("Operation: ").append(operation).append(System.lineSeparator());
     }
 
