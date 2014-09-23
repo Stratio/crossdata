@@ -235,6 +235,7 @@ T_SINGLE_QUOTE: '\'';
 T_DEFAULT: D E F A U L T;
 T_LUCENE: L U C E N E;
 T_CUSTOM: C U S T O M;
+T_FULL_TEXT: F U L L '_' T E X T;
 T_START_BRACKET: '[';
 T_END_BRACKET: ']';
 T_PLUS: '+';
@@ -273,6 +274,7 @@ T_TO: T O;
 T_DOUBLE: D O U B L E;
 T_MAP: M A P;
 T_INT: I N T;
+T_INTEGER: I N T E G E R;
 T_BOOLEAN: B O O L E A N;
 T_VARCHAR: V A R C H A R;
 T_TEXT: T E X T;
@@ -486,6 +488,14 @@ createIndexStatement returns [CreateIndexStatement cis]
 	(T_WITH j=getJson {$cis.setOptionsJson(j);} )?
 ;
 
+//FUNCTIONS
+getIndexType returns [String indexType]:
+    ( idxType=T_DEFAULT
+    | idxType=T_FULL_TEXT
+    | idxType=T_CUSTOM)
+    {$indexType=$idxType.text;}
+;
+
 getField returns [String newField]:
     (unitField=getUnits {$newField = unitField;}
     |fieldToken=(T_IDENT | T_LUCENE | T_KEY) {$newField = $fieldToken.text;})
@@ -564,8 +574,8 @@ createTableStatement returns [CreateTableStatement crtast]
     T_CREATE T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})? tablename=getTableName T_ON T_CLUSTER clusterID=T_IDENT
     T_START_PARENTHESIS
         id1=getColumnName[tablename] type1=getDataType (T_PRIMARY T_KEY { partitionKey.add(id1); } )? { columns.put(id1, type1);}
-        (T_COMMA idN=getColumnName[tablename] typeN=getDataType { columns.put(idN, typeN);} )*
-        (T_PRMIMARY T_KEY T_START_PARENTHESIS
+        (T_COMMA idN=getColumnName[tablename] typeN=getDataType { columns.put(idN, typeN); } )*
+        (T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS
                 (idPk1=getColumnName[tablename] { if(!partitionKey.isEmpty()) throwParsingException("Partition key was previously defined");
                                                  partitionKey.add(idPk1); }
                 | T_START_PARENTHESIS
@@ -576,26 +586,9 @@ createTableStatement returns [CreateTableStatement crtast]
                 T_END_PARENTHESIS)
                 (T_COMMA idPkN=getColumnName[tablename] { clusterKey.add(idPkN); })*
         T_END_PARENTHESIS)?
-        /*ident_column1=getField type1=getDataType (T_PRIMARY T_KEY)? {columns.put(new ColumnName(tablename, ident_column1), type1); primaryKeyType=1;}
-            (
-                (T_COMMA ident_columN=getField typeN=getDataType (T_PRIMARY T_KEY {primaryKeyType=1;columnNumberPK=columnNumberPK_inter +1;})? {columns.put(new ColumnName(tablename, ident_columN), typeN); columnNumberPK_inter+=1;})
-                |(T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS
-                    (
-                        (primaryK=getField {primaryKey.add(new ColumnName(tablename, primaryK)); primaryKeyType=2;}
-                            (T_COMMA partitionKN=getField {primaryKey.add(new ColumnName(tablename, partitionKN));})*
-                        )
-                        |(T_START_PARENTHESIS partitionK=getField {primaryKey.add(new ColumnName(tablename, partitionK)); primaryKeyType=3;}
-                            (T_COMMA partitionKN=getField {primaryKey.add(new ColumnName(tablename, partitionKN));})*
-                            T_END_PARENTHESIS
-                            (T_COMMA clusterKN=getField {clusterKey.add(new ColumnName(tablename, clusterKN));})*
-                        )
-                    )
-                    T_END_PARENTHESIS
-                )
-            )*
-        )*/
     T_END_PARENTHESIS (T_WITH j=getJson)?
     {
+        if(partitionKey.isEmpty()) throwParsingException("Primary Key definition missing");
         $crtast = new CreateTableStatement(tablename, new ClusterName($clusterID.text), columns, partitionKey, clusterKey);
         $crtast.setProperties(j);
         $crtast.setIfNotExists(ifNotExists);
@@ -764,14 +757,6 @@ query returns [MetaStatement st]:
 	mtst=metaStatement (T_SEMICOLON)+ EOF {
 		$st = mtst;
 	}
-;
-
-//FUNCTIONS
-getIndexType returns [String indexType]:
-    ( idxType=T_DEFAULT
-    | idxType=T_LUCENE
-    | idxType=T_CUSTOM)
-    {$indexType=$idxType.text;}
 ;
 
 getDataType returns [ColumnType dataType]:

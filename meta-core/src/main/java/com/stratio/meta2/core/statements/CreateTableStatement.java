@@ -36,6 +36,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,22 +56,22 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
   /**
    * A map with the name of the columns in the table and the associated data type.
    */
-  private Map<ColumnName, ColumnType> columnsWithType;
+  private Map<ColumnName, ColumnType> columnsWithType = new LinkedHashMap<>();
 
   /**
    * The list of columns that are part of the primary key.
    */
-  private List<ColumnName> primaryKey;
+  private List<ColumnName> primaryKey = new LinkedList<>();
 
   /**
    * The list of columns that are part of the partition key.
    */
-  private List<ColumnName> partitionKey;
+  private List<ColumnName> partitionKey = new LinkedList<>();
 
   /**
    * The list of columns that are part of the clustering key.
    */
-  private List<ColumnName> clusterKey;
+  private List<ColumnName> clusterKey = new LinkedList<>();
 
   /**
    * The list of {@link com.stratio.meta2.core.structures.Property} of the table.
@@ -152,9 +153,12 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     sb.append(" ON CLUSTER ").append(clusterName);
 
     sb.append("(");
-    sb.append(columnsWithType);
-    sb.append(", PRIMARY KEY ((").append(partitionKey).append("), ").append(clusterKey).append(")");
-    sb.append(")");
+    sb.append(columnsWithType.toString().replace("{", "").replace("}", ""));
+    sb.append(", PRIMARY KEY((").append(partitionKey.toString().replace("[", "").replace("]", "")).append(")");
+    if(!clusterKey.isEmpty()){
+      sb.append(", ").append(clusterKey.toString().replace("[", "").replace("]", ""));
+    }
+    sb.append("))");
 
     if (hasProperties()) {
       sb.append(" WITH ").append(properties);

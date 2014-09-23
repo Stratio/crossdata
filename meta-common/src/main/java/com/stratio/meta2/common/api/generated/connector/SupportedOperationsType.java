@@ -26,9 +26,11 @@
 
 package com.stratio.meta2.common.api.generated.connector;
 
+import com.stratio.meta.common.connector.Operations;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -61,7 +63,7 @@ import javax.xml.bind.annotation.XmlType;
 public class SupportedOperationsType implements Serializable {
 
   private static final long serialVersionUID = 7393543114588196401L;
-  protected List<String> operation;
+  protected Set<Operations> operation;
 
   /**
    * Gets the value of the operation property.
@@ -85,9 +87,9 @@ public class SupportedOperationsType implements Serializable {
    *
    *
    */
-  public List<String> getOperation() {
+  public Set<Operations> getOperation() {
     if (operation == null) {
-      operation = new ArrayList<String>();
+      operation = new HashSet<>();
     }
     return this.operation;
   }
