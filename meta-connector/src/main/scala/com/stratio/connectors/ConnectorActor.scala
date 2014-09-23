@@ -3,9 +3,10 @@ package com.stratio.connectors
 import akka.actor.{ActorLogging, Props}
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
-import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
+import com.stratio.meta.communication.{HeartbeatSig, getConnectorName, replyConnectorName}
 import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
 import com.stratio.meta2.core.statements.{CreateTableStatement, SelectStatement}
+//import akka.actor._
 
 object State extends Enumeration {
       type state= Value
@@ -16,11 +17,13 @@ object ConnectorActor{
   def props (connectorName:String,connector:IConnector):Props = Props (new ConnectorActor(connectorName,connector) )
 }
 
+
 class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActor with ActorLogging {
 //class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
 
   val connector=conn //TODO: test if it works with one thread and multiple threads
   var state=State.Stopped
+  //val coordinatorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "coordinatorActor")
 
 
   //val cluster = Cluster(context.system)
@@ -30,11 +33,9 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
 
   // subscribe to cluster changes, re-subscribe when restart
 
-  /*
   override def handleHeartbeat(heartbeat:HeartbeatSig)={
     println("ConnectorActor receives a heartbeat message")
   }
-  */
 
   def shutdown()={
     println("ConnectorActor is shutting down")
@@ -78,7 +79,6 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
           val logicalworkflow=inProgressQuery.getLogicalWorkFlow()
           connector.getQueryEngine().execute(clustername,logicalworkflow)
           sender ! "ok"
-          //"ok"
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")
       }
@@ -88,6 +88,11 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
       log.info("->"+"Receiving StorageInProgressQuery")
 
 
+    case connectRequest:com.stratio.meta.communication.Connect=>
+      log.info("->"+"Receiving MetadataRequest")
+      connector.connect(connectRequest.credentials,connectRequest.connectorClusterConfig)
+      this.state=State.Started //if it doesn't connect, an exception will be thrown and we won't get here
+      sender ! "ok"
 
     /*
     case metadataEngineRequest:MetadataEngineRequest=>
@@ -102,10 +107,7 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
       //init(IConfiguration)
       log.info("->"+"Receiving MetadataRequest")
       
-    case connectRequest:com.stratio.meta.communication.ConnectRequest=>
-      //connect(ICredentials, ConnectorClusterConfig)
-      log.info("->"+"Receiving MetadataRequest")
-      
+
     case closeRequest:com.stratio.meta.communication.CloseRequest=>
       //close(ClusterName)
       log.info("->"+"Receiving MetadataRequest")
