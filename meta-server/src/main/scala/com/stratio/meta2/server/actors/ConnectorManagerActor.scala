@@ -4,10 +4,12 @@ import akka.actor._
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
-import com.stratio.meta2.core.connector.ConnectorManager
-import com.stratio.meta2.core.query._
 import com.stratio.meta2.common.data.{ClusterName, ConnectorName}
-import com.stratio.meta2.core.statements.{CreateTableStatement, CreateCatalogStatement}
+import com.stratio.meta2.core.connector.ConnectorManager
+import com.stratio.meta2.core.metadata.MetadataManager
+import com.stratio.meta2.core.query._
+import com.stratio.meta2.core.statements.{CreateCatalogStatement, CreateTableStatement}
+
 
 object ConnectorManagerActor {
   def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))
@@ -18,10 +20,6 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
   log.info("Lifting connector actor")
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
   //coordinatorActorRef ! "hola"
-
-  //var connectorsMap:scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String,ActorRef]()
-  //var connectorsMap:scala.collection.mutable.Map[String, ActorSelection] = scala.collection.mutable.Map[String,ActorSelection]()
-  var connectorsMap:scala.collection.mutable.Map[ConnectorName, ActorRef] = scala.collection.mutable.Map[ConnectorName, ActorRef]()
 
   override def preStart(): Unit = {
     //#subscribe
@@ -55,25 +53,29 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     }
 
     case msg:replyConnectorName=>{
-      connectorsMap.put(new ConnectorName(msg.name), sender)
+      //connectorsMap.put(new ConnectorName(msg.name), sender)
+      MetadataManager.MANAGER.addConnectorRef(new ConnectorName(msg.name),sender)
     }
 
     case query: StorageInProgressQuery=> {
       log.info("storage in progress query")
-      connectorsMap(query.getConnectorName()) ! query
+      //connectorsMap(query.getConnectorName()) ! query
+      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName) ! query
     }
 
     case query: SelectInProgressQuery=> {
       val clustername=new ClusterName("//TODO:") //TODO: the query should give me the cluster's name
       val workflow=query.getLogicalWorkFlow
       log.info("select in progress query")
-      connectorsMap(query.getConnectorName()) ! Execute(clustername,workflow)
+      //connectorsMap(query.getConnectorName()) ! Execute(clustername,workflow)
+      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName) ! Execute(clustername,workflow)
     }
 
     case query: MetadataInProgressQuery=> {
 
       val statement=query.getStatement()
-      val messagesender=connectorsMap(query.getConnectorName())
+      //val messagesender=connectorsMap(query.getConnectorName())
+      val messagesender=MetadataManager.MANAGER.getConnectorRef(query.getConnectorName())
 
       statement match {
         case createCatalogStatement:CreateCatalogStatement => {
@@ -89,7 +91,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       }
 
       log.info("metadata in progress query")
-      connectorsMap(query.getConnectorName()) ! query
+      //connectorsMap(query.getConnectorName()) ! query
+      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName) ! query
     }
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))

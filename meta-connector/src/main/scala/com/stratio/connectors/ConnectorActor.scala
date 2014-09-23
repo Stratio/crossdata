@@ -7,6 +7,10 @@ import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
 import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
 import com.stratio.meta2.core.statements.{CreateTableStatement, SelectStatement}
 
+object State extends Enumeration {
+      type state= Value
+      val Started, Stopping, Stopped= Value
+}
 
 object ConnectorActor{
   def props (connectorName:String,connector:IConnector):Props = Props (new ConnectorActor(connectorName,connector) )
@@ -16,6 +20,8 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
 //class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
 
   val connector=conn //TODO: test if it works with one thread and multiple threads
+  var state=State.Stopped
+
 
   //val cluster = Cluster(context.system)
   //import cluster.{ scheduler }
@@ -33,7 +39,9 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
   def shutdown()={
     println("ConnectorActor is shutting down")
     //connector.close(new ClusterName(""))
+    this.state=State.Stopping
     connector.shutdown()
+    this.state=State.Stopped
   }
 
   //override def receive = super.receive orElse{
