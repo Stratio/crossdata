@@ -5,7 +5,7 @@ import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
 import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
-import com.stratio.meta2.core.statements.{MetadataStatement, SelectStatement}
+import com.stratio.meta2.core.statements.{CreateTableStatement, SelectStatement}
 
 
 object ConnectorActor{
@@ -39,17 +39,22 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
   //override def receive = super.receive orElse{
   override def receive = {
 
-    case _:com.stratio.meta.communication.Shutdown=>{
-      log.info("->"+"Receiving Shutdown")
+    case _:com.stratio.meta.communication.Shutdown=> {
+      log.info("->" + "Receiving Shutdown")
       this.shutdown()
     }
+
     case inProgressQuery:MetadataInProgressQuery=>{
       log.info("->"+"Receiving MetadataInProgressQuery")
 
       val statement=inProgressQuery.getStatement()
       statement match{
-        case ms:MetadataStatement =>
-          log.info("->receiving MetadataStatement")
+        //case ms:MetadataStatement =>
+        case ms:CreateTableStatement =>
+          log.info("->receiving CreateTableStatement")
+          val clustername=inProgressQuery.getClusterName()
+          sender ! "ok"
+
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")
       }

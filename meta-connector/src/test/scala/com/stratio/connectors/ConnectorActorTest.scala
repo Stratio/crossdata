@@ -1,20 +1,21 @@
 package com.stratio.connectors
 
 import akka.actor.ActorSystem
+import akka.pattern.ask
 import akka.testkit.TestKit
 import akka.util.Timeout
 import com.stratio.meta.common.connector.{IConnector, IQueryEngine}
 import com.stratio.meta.common.logicalplan.{LogicalStep, LogicalWorkflow}
 import com.stratio.meta.common.result.QueryResult
-import com.stratio.meta2.common.data.{CatalogName, TableName}
+import com.stratio.meta2.common.data.{ColumnName, ClusterName, CatalogName, TableName}
+import com.stratio.meta2.common.metadata.ColumnType
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.SelectStatement
+import com.stratio.meta2.core.statements.{CreateTableStatement, SelectStatement}
 import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 
 import scala.concurrent.Await
-import akka.pattern.ask
 
 //import com.stratio.meta2.server.config.{ServerConfig, ActorReceiveUtils}
 //import com.stratio.meta2.server.actors.{ConnectorManagerActor, CoordinatorActor}
@@ -70,6 +71,7 @@ class ConnectorActorTest extends TestKit(ActorSystem()) with FunSuiteLike with M
     //val myReference = c.startup(m, port, config)
     val myReference = c.startup(m, port)
     var steps: java.util.ArrayList[LogicalStep] = new java.util.ArrayList[LogicalStep]()
+    steps.add(null)
     val pq = new SelectPlannedQuery(
         new SelectValidatedQuery(
             new SelectParsedQuery(
@@ -83,12 +85,11 @@ class ConnectorActorTest extends TestKit(ActorSystem()) with FunSuiteLike with M
     //for (s <- beanMap.keySet().toArray()) { println(s); }
 
     val future=ask(myReference , selectQ)
-    val result = Await.result(future, timeout.duration).asInstanceOf[String]
+    val result = Await.result(future, 3 seconds).asInstanceOf[String]
     println("receiving->"+result+" after sending select query")
     c.stop()
   }
 
-  /*
   test("Send MetadataInProgressQuery to Connector") {
     val port = "2560"
     val m = mock[IConnector]
@@ -98,23 +99,35 @@ class ConnectorActorTest extends TestKit(ActorSystem()) with FunSuiteLike with M
     //val myReference = c.startup(m, port, config)
     val myReference = c.startup(m, port)
 
-    var steps: util.ArrayList[LogicalStep] = new util.ArrayList[LogicalStep]()
+    var steps: java.util.ArrayList[LogicalStep] = new java.util.ArrayList[LogicalStep]()
     steps.add(null)
+    val partitionkey= new java.util.ArrayList[ColumnName]()
+    partitionkey.add(new ColumnName(new TableName("Catalog","Table"),"partitionColumn"))
+    val clusterkey= new java.util.ArrayList[ColumnName]()
+    partitionkey.add(new ColumnName(new TableName("Catalog","Table"), "clusterColumn"))
+    val columns=new java.util.HashMap[ColumnName, ColumnType]()
     val pq = new MetadataPlannedQuery(
       new MetadataValidatedQuery(
         new MetadataParsedQuery(
           new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog") )
-          ,null
-      ), null
+          ,new CreateTableStatement(new TableName("myCatalog","tableName"),new ClusterName("clusterName"),
+                              columns,
+                              partitionkey,
+                              clusterkey )
+          )
       )
     )
     val metadataQ: MetadataInProgressQuery = new MetadataInProgressQuery(pq)
     val mystatement_before_sending_message = metadataQ.getStatement()
     //myReference ! ConnectToConnector("cassandra connector")
-    myReference ! metadataQ
+    //myReference ! metadataQ
+    val future=ask(myReference , metadataQ)
+    val result = Await.result(future, 3 seconds).asInstanceOf[String]
+    println("receiving->"+result+" after sending select query")
     c.shutdown()
   }
 
+  /*
   test("Send StorageInProgressQuery to Connector") {
     val port = "2561"
     val m = mock[IConnector]
