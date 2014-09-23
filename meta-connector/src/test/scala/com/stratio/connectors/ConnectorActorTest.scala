@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.testkit.TestKit
 import akka.util.Timeout
-import com.stratio.meta.common.connector.{IConnector, IQueryEngine}
+import com.stratio.meta.common.connector.{IMetadataEngine, IConnector, IQueryEngine}
 import com.stratio.meta.common.logicalplan.{LogicalStep, LogicalWorkflow}
 import com.stratio.meta.common.result.QueryResult
 import com.stratio.meta2.common.data.{ColumnName, ClusterName, CatalogName, TableName}
@@ -93,6 +93,9 @@ class ConnectorActorTest extends TestKit(ActorSystem()) with FunSuiteLike with M
   test("Send MetadataInProgressQuery to Connector") {
     val port = "2560"
     val m = mock[IConnector]
+    val me = mock[IMetadataEngine]
+    (me.createTable _).expects(*,*).returning(QueryResult.createSuccessQueryResult())
+    (m.getMetadataEngine _).expects().returning(me)
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()

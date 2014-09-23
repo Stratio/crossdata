@@ -53,8 +53,8 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
         case ms:CreateTableStatement =>
           log.info("->receiving CreateTableStatement")
           val clustername=inProgressQuery.getClusterName()
+          connector.getMetadataEngine().createTable(clustername,  ms.getTableMetadata() )
           sender ! "ok"
-
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")
       }
