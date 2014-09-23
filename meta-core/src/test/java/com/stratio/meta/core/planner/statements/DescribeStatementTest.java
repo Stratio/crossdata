@@ -20,6 +20,7 @@ package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
 import com.stratio.meta.core.structures.DescribeType;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.statements.DescribeStatement;
 
@@ -31,7 +32,7 @@ public class DescribeStatementTest extends BasicPlannerTest {
   public void testPlanForDescribeCatalog() {
     String input = "DESCRIBE CATALOG demo;";
     stmt = new DescribeStatement(DescribeType.CATALOG);
-    stmt.setCatalog("demo");
+    stmt.setCatalog(new CatalogName("demo"));
     validateCommandPath("testPlanForDescribeCatalog");
   }
 
@@ -39,7 +40,7 @@ public class DescribeStatementTest extends BasicPlannerTest {
   public void testPlanForDescribeCurrentCatalog() {
     String input = "DESCRIBE CATALOG;";
     stmt = new DescribeStatement(DescribeType.CATALOG);
-    stmt.setCatalog("demo");
+    stmt.setCatalog(new CatalogName("demo"));
     validateCommandPath("testPlanForDescribeCatalog");
   }
 

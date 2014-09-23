@@ -20,9 +20,9 @@ package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -41,7 +41,7 @@ public class DropCatalogStatement extends MetadataStatement {
    * @param catalog The name of the catalog.
    * @param ifExists Whether it should be removed only if exists.
    */
-  public DropCatalogStatement(String catalog, boolean ifExists) {
+  public DropCatalogStatement(CatalogName catalog, boolean ifExists) {
     this.command = false;
     this.catalog = catalog;
     this.catalogInc = true;
@@ -61,10 +61,10 @@ public class DropCatalogStatement extends MetadataStatement {
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();
-    CatalogMetadata ksMetadata = metadata.getCatalogMetadata(catalog);
+    /*CatalogMetadata ksMetadata = metadata.getCatalogMetadata(catalog);
     if(ksMetadata == null && !ifExists){
       result = Result.createValidationErrorResult("Catalog " + catalog + " does not exist.");
-    }
+    }*/
     return result;
   }
 

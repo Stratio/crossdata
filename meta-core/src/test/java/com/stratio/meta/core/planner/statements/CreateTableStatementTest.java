@@ -19,6 +19,7 @@
 package com.stratio.meta.core.planner.statements;
 
 import com.stratio.meta.core.planner.BasicPlannerTest;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
@@ -52,7 +53,7 @@ public class CreateTableStatementTest extends BasicPlannerTest {
     stmt =
         new CreateTableStatement(new TableName("demo", "new_table"), new ClusterName("clusterDemo"), columns, Arrays.asList(new ColumnName("demo", "new_table", "id")),
             Arrays.asList(new ColumnName("demo", "new_table", "name")));
-    stmt.setSessionCatalog("demo");
+    stmt.setSessionCatalog(new CatalogName("demo"));
 
     try {
       Class<? extends MetaStatement> clazz = stmt.getClass();
@@ -77,7 +78,7 @@ public class CreateTableStatementTest extends BasicPlannerTest {
     stmt =
         new CreateTableStatement(new TableName("demo", "new_table"), new ClusterName("clusterDemo"), columns, Arrays.asList(new ColumnName("demo", "table_temporal", "id")),
             Arrays.asList(new ColumnName("demo", "table_temporal", "name")));
-    stmt.setSessionCatalog("demo");
+    stmt.setSessionCatalog(new CatalogName("demo"));
 
     ((CreateTableStatement) stmt).setProperties("{'ephemeral': true}");
 

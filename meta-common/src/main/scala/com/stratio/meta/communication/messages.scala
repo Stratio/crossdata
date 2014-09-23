@@ -18,12 +18,15 @@
 
 package com.stratio.meta.communication
 
+import com.stratio.meta.common.connector.ConnectorClusterConfig
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta.common.result.QueryStatus
+import com.stratio.meta.common.security.ICredentials
 import com.stratio.meta2.common.data.ClusterName
 
 case class ACK(queryId: String, status: QueryStatus)
-case class Connect(msg: String)
+case class Connect(credentials: ICredentials,connectorClusterConfig:ConnectorClusterConfig)
+
 case class Reply(msg: String)
 case class Disconnect(userId: String)
 

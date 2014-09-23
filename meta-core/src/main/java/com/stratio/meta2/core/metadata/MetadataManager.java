@@ -315,4 +315,8 @@ public enum MetadataManager {
     createConnector(connectorMetadata, false);
   }
 
+  public ActorRef getConnectorRef(ConnectorName name){
+      return getConnector(name).getActorRef();
+  }
+
 }

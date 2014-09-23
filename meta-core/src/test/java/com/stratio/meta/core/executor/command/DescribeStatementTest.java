@@ -25,6 +25,7 @@ import com.stratio.meta.core.utils.MetaPath;
 import com.stratio.meta.core.utils.MetaQuery;
 import com.stratio.meta.core.utils.MetaStep;
 import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.statements.DescribeStatement;
 
@@ -38,7 +39,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     MetaQuery metaQuery = new MetaQuery("DESCRIBE KEYSPACE demo;");
 
     DescribeStatement stmt = new DescribeStatement(DescribeType.CATALOG);
-    stmt.setCatalog("demo");
+    stmt.setCatalog(new CatalogName("demo"));
 
     stmt.validate(metadataManager, null);
 
@@ -56,7 +57,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     MetaQuery metaQuery = new MetaQuery("DESCRIBE CATALOG;");
 
     DescribeStatement stmt = new DescribeStatement(DescribeType.CATALOG);
-    stmt.setSessionCatalog("demo");
+    stmt.setSessionCatalog(new CatalogName("demo"));
 
     stmt.validate(metadataManager, null);
 
@@ -91,7 +92,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     MetaQuery metaQuery = new MetaQuery("DESCRIBE TABLE users;");
 
     DescribeStatement stmt = new DescribeStatement(DescribeType.TABLE);
-    stmt.setSessionCatalog("demo");
+    stmt.setSessionCatalog(new CatalogName("demo"));
     stmt.setTableName(new TableName(null, "users"));
 
     stmt.validate(metadataManager, null);
@@ -110,7 +111,7 @@ public class DescribeStatementTest extends BasicExecutorTest {
     MetaQuery metaQuery = new MetaQuery("DESCRIBE TABLES;");
 
     DescribeStatement stmt = new DescribeStatement(DescribeType.TABLES);
-    stmt.setSessionCatalog("demo");
+    stmt.setSessionCatalog(new CatalogName("demo"));
 
     stmt.validate(metadataManager, null);
 

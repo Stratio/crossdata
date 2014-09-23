@@ -191,6 +191,7 @@ T_INTO: I N T O;
 T_COMPACT: C O M P A C T;
 T_STORAGE: S T O R A G E;
 T_CLUSTER: C L U S T E R;
+T_CLUSTERS: C L U S T E R S;
 T_CLUSTERING: C L U S T E R I N G;
 T_ORDER: O R D E R;
 T_SELECT: S E L E C T;
@@ -220,7 +221,9 @@ T_AT: '@';
 T_CATALOG: C A T A L O G;
 T_CATALOGS: C A T A L O G S;
 T_DATASTORE: D A T A S T O R E;
+T_DATASTORES: D A T A S T O R E S;
 T_CONNECTOR: C O N N E C T O R;
+T_CONNECTORS: C O N N E C T O R S;
 
 T_SEMICOLON: ';';
 T_EQUAL: '=';
@@ -376,7 +379,7 @@ createCatalogStatement returns [CreateCatalogStatement crctst]
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     catalogName=T_IDENT
     (T_WITH j=getJson)?
-    { $crctst = new CreateCatalogStatement($catalogName.text, ifNotExists, j); }
+    { $crctst = new CreateCatalogStatement(new CatalogName($catalogName.text), ifNotExists, j); }
 ;
 
 dropCatalogStatement returns [DropCatalogStatement drcrst]
@@ -386,14 +389,14 @@ dropCatalogStatement returns [DropCatalogStatement drcrst]
     T_DROP T_CATALOG
     (T_IF T_EXISTS {ifExists = true;})?
     catalogName=T_IDENT
-    { $drcrst = new DropCatalogStatement($catalogName.text, ifExists);}
+    { $drcrst = new DropCatalogStatement(new CatalogName($catalogName.text), ifExists);}
 ;
 
 alterCatalogStatement returns [AlterCatalogStatement alctst]:
     T_ALTER T_CATALOG
     catalogName=T_IDENT
     T_WITH j=getJson
-    { $alctst = new AlterCatalogStatement($catalogName.text, j); }
+    { $alctst = new AlterCatalogStatement(new CatalogName($catalogName.text), j); }
 ;
 
 // ========================================================
@@ -405,10 +408,16 @@ alterCatalogStatement returns [AlterCatalogStatement alctst]:
 
 describeStatement returns [DescribeStatement descs]:
     T_DESCRIBE (
-        T_CATALOG {$descs = new DescribeStatement(DescribeType.CATALOG);} (catalog=T_IDENT { $descs.setCatalog($catalog.text);})?
+        T_CATALOG genericID=getGenericID {$descs = new DescribeStatement(DescribeType.CATALOG); $descs.setCatalog(new CatalogName(genericID));}
     	| T_CATALOGS {$descs = new DescribeStatement(DescribeType.CATALOGS);}
-        | T_TABLE tablename=getTable { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
+        | T_TABLE tablename=getTableName { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
         | T_TABLES {$descs = new DescribeStatement(DescribeType.TABLES);}
+        | T_CLUSTER genericID=getGenericID {$descs = new DescribeStatement(DescribeType.CLUSTER); $descs.setClusterName(new ClusterName(genericID));}
+        | T_CLUSTERS {$descs = new DescribeStatement(DescribeType.CLUSTERS); }
+        | T_DATASTORE genericID=getGenericID {$descs = new DescribeStatement(DescribeType.DATASTORE); $descs.setDataStoreName(new DataStoreName(genericID));}
+        | T_DATASTORES {$descs = new DescribeStatement(DescribeType.DATASTORES);}
+        | T_CONNECTOR genericID=getGenericID {$descs = new DescribeStatement(DescribeType.CONNECTOR); $descs.setConnectorName(new ConnectorName(genericID));}
+        | T_CONNECTORS {$descs = new DescribeStatement(DescribeType.CONNECTORS);}
     )
 ;
 
@@ -653,12 +662,12 @@ selectStatement returns [SelectStatement slctst]
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
     @init{
-        ArrayList<ColumnName> ids = new ArrayList<>();
+        LinkedList<ColumnName> ids = new LinkedList<>();
         boolean ifNotExists = false;
         int typeValues = InsertIntoStatement.TYPE_VALUES_CLAUSE;
-        ArrayList<Selector> cellValues = new ArrayList<>();
+        LinkedList<Selector> cellValues = new LinkedList<>();
         boolean optsInc = false;
-        ArrayList<Option> options = new ArrayList<>();
+        LinkedList<Option> options = new LinkedList<>();
     }:
     T_INSERT T_INTO tablename=getTableName
     T_START_PARENTHESIS
@@ -682,6 +691,7 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
         (T_AND optN=getOption[tablename] {options.add(optN);})*
     )?
     {
+        if((!ids.isEmpty()) && (!cellValues.isEmpty()) && (ids.size() != cellValues.size())) throwParsingException("Number of columns and number of values differ");
         if(typeValues==InsertIntoStatement.TYPE_SELECT_CLAUSE)
             if(optsInc)
                 $nsntst = new InsertIntoStatement(tablename, ids, selectStmnt, ifNotExists, options);
@@ -721,8 +731,15 @@ truncateStatement returns [TruncateStatement trst]:
 
 metaStatement returns [MetaStatement st]:
     (T_START_BRACKET
-        ( allowedReservedWord=getAllowedReservedWord { sessionCatalog = allowedReservedWord; }
-        | inputCatalog=T_IDENT { sessionCatalog = $inputCatalog.text; } )?
+        ( gID=getGenericID { sessionCatalog = gID;}
+
+
+        /*allowedReservedWord=getAllowedReservedWord { sessionCatalog = allowedReservedWord; }
+        | inputCatalog=T_IDENT { sessionCatalog = $inputCatalog.text; }*/
+
+
+
+        )?
     T_END_BRACKET T_COMMA)?
     (st_nsnt   = insertIntoStatement { $st = st_nsnt;}
     | st_slct = selectStatement { $st = st_slct;}
@@ -859,16 +876,17 @@ getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
     }:
     (T_DISTINCT {distinct = true;})?
     (
-        T_ASTERISK { s = new AsteriskSelector(); selectors.add(s);}
-        | s=getSelector[null]
-                (T_AS alias1=T_IDENT {
-                    s.setAlias($alias1.text);
-                    fieldsAliasesMap.put($alias1.text, s.toString());}
+        T_ASTERISK { if(distinct) throwParsingException("Selector DISTINCT doesn't accept '*'");
+                     s = new AsteriskSelector(); selectors.add(s);}
+        | s=getSelector[null] { if(s == null) throwParsingException("Column name not found");}
+                (T_AS alias1=getGenericID {
+                    s.setAlias(alias1);
+                    fieldsAliasesMap.put(alias1, s.toString());}
                 )? {selectors.add(s);}
-            (T_COMMA s=getSelector[null]
-                    (T_AS aliasN=T_IDENT {
-                        s.setAlias($aliasN.text);
-                        fieldsAliasesMap.put($aliasN.text, s.toString());}
+            (T_COMMA s=getSelector[null] { if(s == null) throwParsingException("Column name not found");}
+                    (T_AS aliasN=getGenericID {
+                        s.setAlias(aliasN);
+                        fieldsAliasesMap.put(aliasN, s.toString());}
                     )? {selectors.add(s);})*
     )
 ;
@@ -890,7 +908,9 @@ getSelector[TableName tablename] returns [Selector s]
             (select1=getSelector[tablename] {params.add(select1);}
             | T_ASTERISK {params.add(new AsteriskSelector());}
             )?
-        T_END_PARENTHESIS {s = new FunctionSelector($functionName.text, params);}
+        T_END_PARENTHESIS { String functionStr = $functionName.text;
+                            if(functionStr.equalsIgnoreCase("count") && (!params.toString().equalsIgnoreCase("[*]")) && (!params.toString().equalsIgnoreCase("[1]"))) throwParsingException("COUNT function only accepts '*' or '1'");
+                            s = new FunctionSelector(functionStr, params);}
         |
         (
             columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);}
@@ -1009,15 +1029,20 @@ getAllowedReservedWord returns [String str]:
     { $str = new String($ident.text); }
 ;
 
+getGenericID returns [String str]:
+    arw=getAllowedReservedWord { $str = arw; }
+    | ident=T_IDENT { $str = $ident.text; }
+;
+
 getTableName returns [TableName tablename]:
-    (ident1=getPartialTableName {tablename = normalizeTableName(ident1);}
+    (ident1=getGenericID {tablename = normalizeTableName(ident1);}
     | ident2=T_KS_AND_TN {tablename = normalizeTableName($ident2.text);})
 ;
 
-getPartialTableName returns [String str]:
+/*getPartialTableName returns [String str]:
     allowedReservedWord=getAllowedReservedWord { $str = allowedReservedWord; }
     | ident=T_IDENT { $str = $ident.text; }
-;
+;*/
 
 getFloat returns [String floating]:
     termToken=T_TERM {$floating=$termToken.text;}

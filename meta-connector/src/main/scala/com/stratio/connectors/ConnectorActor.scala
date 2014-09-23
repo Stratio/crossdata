@@ -1,21 +1,30 @@
 package com.stratio.connectors
 
 import akka.actor.{ActorLogging, Props}
+import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
-import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
+import com.stratio.meta.communication.{HeartbeatSig, getConnectorName, replyConnectorName}
 import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
 import com.stratio.meta2.core.statements.{CreateTableStatement, SelectStatement}
 
+object State extends Enumeration {
+      type state= Value
+      val Started, Stopping, Stopped= Value
+}
 
 object ConnectorActor{
   def props (connectorName:String,connector:IConnector):Props = Props (new ConnectorActor(connectorName,connector) )
 }
 
+
 class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActor with ActorLogging {
 //class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
 
   val connector=conn //TODO: test if it works with one thread and multiple threads
+  var state=State.Stopped
+  var supervisorActorRef:ActorRef = null
+
 
   //val cluster = Cluster(context.system)
   //import cluster.{ scheduler }
@@ -24,20 +33,39 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
 
   // subscribe to cluster changes, re-subscribe when restart
 
-  /*
   override def handleHeartbeat(heartbeat:HeartbeatSig)={
     println("ConnectorActor receives a heartbeat message")
   }
-  */
+
+  override def preStart(): Unit = {
+    //#subscribe
+    Cluster(context.system).subscribe(self, classOf[MemberEvent])
+    //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
+  }
 
   def shutdown()={
     println("ConnectorActor is shutting down")
     //connector.close(new ClusterName(""))
+    this.state=State.Stopping
     connector.shutdown()
+    this.state=State.Stopped
   }
 
   //override def receive = super.receive orElse{
   override def receive = {
+
+
+    case _:com.stratio.meta.communication.Start=> {
+      //context.actorSelection(RootActorPath(mu.member.address) / "user" / "coordinatorActor")
+      supervisorActorRef=sender
+    }
+
+    case connectRequest:com.stratio.meta.communication.Connect=>{
+      log.info("->"+"Receiving MetadataRequest")
+      //connector.connect(connectRequest.credentials,connectRequest.connectorClusterConfig)
+      this.state=State.Started //if it doesn't connect, an exception will be thrown and we won't get here
+      sender ! "ok"
+    }
 
     case _:com.stratio.meta.communication.Shutdown=> {
       log.info("->" + "Receiving Shutdown")
@@ -70,7 +98,6 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
           val logicalworkflow=inProgressQuery.getLogicalWorkFlow()
           connector.getQueryEngine().execute(clustername,logicalworkflow)
           sender ! "ok"
-          //"ok"
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")
       }
@@ -79,43 +106,6 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
     case inProgressQuery:StorageInProgressQuery=>
       log.info("->"+"Receiving StorageInProgressQuery")
 
-
-
-    /*
-    case metadataEngineRequest:MetadataEngineRequest=>
-      //getMetadataEngine()
-      log.info("->"+"Receiving MetadataRequest")
-
-    case dataStoreNameRequest:DataStoreNameRequest=>
-      //getDatastoreName()
-      log.info("->"+"Receiving MetadataRequest")
-      
-    case initRequest:com.stratio.meta.communication.InitRequest=>
-      //init(IConfiguration)
-      log.info("->"+"Receiving MetadataRequest")
-      
-    case connectRequest:com.stratio.meta.communication.ConnectRequest=>
-      //connect(ICredentials, ConnectorClusterConfig)
-      log.info("->"+"Receiving MetadataRequest")
-      
-    case closeRequest:com.stratio.meta.communication.CloseRequest=>
-      //close(ClusterName)
-      log.info("->"+"Receiving MetadataRequest")
-      
-    case isConnectedRequest:com.stratio.meta.communication.IsConnectedRequest=>
-      //isConnected(ClusterName)
-      log.info("->"+"Receiving MetadataRequest")
-      
-      
-    case storageEngineRequest:com.stratio.meta.communication.StorageEngineRequest=>
-      //getStorageEngine()
-      log.info("->"+"Receiving MetadataRequest")
-
-    case queryEngineRequest:com.stratio.meta.communication.QueryEngineRequest=>
-      //getQueryEngine()d
-      log.info("->"+"Receiving MetadataRequest")
-      * 
-      */
 
     case msg:getConnectorName=>
     {
