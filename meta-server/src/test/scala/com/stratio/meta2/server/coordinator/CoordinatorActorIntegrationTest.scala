@@ -16,6 +16,7 @@
  * under the License.
  */
 
+import com.stratio.meta.common.executionplan.ExecutionStep
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta2.common.data.CatalogName
 import scala.concurrent.duration.DurationInt
@@ -45,7 +46,7 @@ class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLik
               new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
               ,null)
           )
-        , new LogicalWorkflow(null)
+        , new ExecutionStep(null, null, null)
       )
     )
 

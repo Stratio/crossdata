@@ -15,6 +15,7 @@
 package com.stratio.meta2.core.planner;
 
 import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta.common.executionplan.ExecutionStep;
 import com.stratio.meta.common.logicalplan.*;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
@@ -27,7 +28,6 @@ import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
 
-import com.stratio.meta2.core.query.NormalizedQuery;
 import com.stratio.meta2.core.query.SelectPlannedQuery;
 
 import com.stratio.meta2.core.query.*;
@@ -67,9 +67,10 @@ public class Planner {
     LogicalWorkflow workflow = buildWorkflow((SelectValidatedQuery)query);
 
     //Plan the workflow execution into different connectors.
+    ExecutionStep executionWorkflow = null;
 
     //Return the planned query.
-    SelectPlannedQuery pq = new SelectPlannedQuery(query, workflow);
+    SelectPlannedQuery pq = new SelectPlannedQuery(query, executionWorkflow);
     return pq;
   }
 
@@ -94,13 +95,13 @@ public class Planner {
    * @return A Logical workflow.
    */
   protected LogicalWorkflow buildWorkflow(SelectValidatedQuery query) {
-    //Define the list of projects
-    Map<String, LogicalStep> processed = getProjects(query);
-    addProjectedColumns(processed, query);
     Map<String, TableMetadata> tableMetadataMap = new HashMap<>();
     for (TableMetadata tm : query.getTableMetadata()) {
       tableMetadataMap.put(tm.getName().getQualifiedName(), tm);
     }
+    //Define the list of projects
+    Map<String, LogicalStep> processed = getProjects(query, tableMetadataMap);
+    addProjectedColumns(processed, query);
 
     //TODO determine which is the correct target table if the order fails.
     String selectTable = query.getTables().get(0).getQualifiedName();
@@ -270,12 +271,13 @@ public class Planner {
    * Get a Map associating fully qualified table names with their Project logical step.
    *
    * @param query The query to be planned.
+   * @param tableMetadataMap Map of table metadata.
    * @return A map with the projections.
    */
-  protected Map<String, LogicalStep> getProjects(SelectValidatedQuery query) {
+  protected Map<String, LogicalStep> getProjects(SelectValidatedQuery query, Map<String, TableMetadata> tableMetadataMap) {
     Map<String, LogicalStep> projects = new HashMap<>();
     for (TableName tn : query.getTables()) {
-      Project p = new Project(Operations.PROJECT, tn);
+      Project p = new Project(Operations.PROJECT, tn, tableMetadataMap.get(tn.getQualifiedName()).getClusterRef());
       projects.put(tn.getQualifiedName(), p);
     }
     return projects;

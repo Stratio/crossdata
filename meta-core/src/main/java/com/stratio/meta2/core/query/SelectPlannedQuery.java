@@ -18,25 +18,26 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta.common.executionplan.ExecutionStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.statements.SelectStatement;
 
 
 public class SelectPlannedQuery extends PlannedQuery {
-  private final LogicalWorkflow logicalWorkflow;
+  private final ExecutionStep executionStep;
 
-  public SelectPlannedQuery(ValidatedQuery validatedQuery, LogicalWorkflow logicalWorkflow) {
+  public SelectPlannedQuery(ValidatedQuery validatedQuery, ExecutionStep executionStep) {
     super(validatedQuery);
-    this.logicalWorkflow = logicalWorkflow;
+    this.executionStep = executionStep;
   }
 
   SelectPlannedQuery(SelectPlannedQuery plannedQuery){
-    this(plannedQuery,plannedQuery.getLogicalWorkflow());
+    this(plannedQuery,plannedQuery.getExecutionStep());
   }
 
-  public LogicalWorkflow getLogicalWorkflow() {
-    return logicalWorkflow;
+  public ExecutionStep getExecutionStep() {
+    return executionStep;
   }
 
     @Override public MetaStatement getStatement() {
