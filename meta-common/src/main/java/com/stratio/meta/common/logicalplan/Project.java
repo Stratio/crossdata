@@ -19,6 +19,7 @@
 package com.stratio.meta.common.logicalplan;
 
 import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 
@@ -30,6 +31,11 @@ import java.util.List;
  * Project operation to retrieve a list of columns from the datastore.
  */
 public class Project extends TransformationStep{
+
+  /**
+   * Cluster name.
+   */
+  private final ClusterName clusterName;
 
   /**
    * Table name.
@@ -45,21 +51,25 @@ public class Project extends TransformationStep{
    * Create a projection.
    * @param operation The operation to be applied.
    * @param tableName The table name.
+   * @param clusterName The cluster name.
    */
-  public Project(Operations operation, TableName tableName){
+  public Project(Operations operation, TableName tableName, ClusterName clusterName){
     super(operation);
     this.tableName = tableName;
+    this.clusterName = clusterName;
   }
 
   /**
    * Create a projection.
    * @param operation The operation to be applied.
    * @param tableName Table name.
+   * @param clusterName The cluster name.
    * @param columnList List of columns.
    */
-  public Project(Operations operation, TableName tableName, List<ColumnName> columnList) {
+  public Project(Operations operation, TableName tableName, ClusterName clusterName, List<ColumnName> columnList) {
     super(operation);
     this.tableName = tableName;
+    this.clusterName = clusterName;
     this.columnList.addAll(columnList);
   }
 
@@ -99,6 +109,7 @@ public class Project extends TransformationStep{
   public String toString() {
     StringBuilder sb = new StringBuilder("PROJECT ");
     sb.append(tableName.getQualifiedName());
+    sb.append(" ON ").append(clusterName);
     sb.append(" (");
     Iterator<ColumnName> it = columnList.iterator();
     while(it.hasNext()){

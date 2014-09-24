@@ -26,6 +26,8 @@ import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.query._
 import com.stratio.meta2.server.actors.ConnectorManagerActor
 import org.scalatest.FunSuiteLike
+import com.stratio.meta.common.executionplan.ExecutionStep
+
 //import org.scalamock.scalatest.MockFactory
 import org.scalatest.Suite
 import org.apache.log4j.Logger
@@ -46,7 +48,7 @@ class ConnectorManagerActorTest extends ActorReceiveUtils with FunSuiteLike  wit
           new SelectParsedQuery(
               new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
           ,null))
-        , new LogicalWorkflow(null)
+        , new ExecutionStep(null, null, null)
     )
 
 

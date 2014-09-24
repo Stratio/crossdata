@@ -16,7 +16,7 @@ import scala.concurrent.Await
 
 
 import scala.concurrent.duration.DurationInt
-
+import com.stratio.meta.common.executionplan.{ExecutionType, ExecutionStep}
 
 class ConnectorActorTest extends FunSuite with MockFactory {
 
@@ -61,13 +61,15 @@ class ConnectorActorTest extends FunSuite with MockFactory {
     val myReference = c.startup(m, port)
     var steps: java.util.ArrayList[LogicalStep] = new java.util.ArrayList[LogicalStep]()
     steps.add(null)
+    var workflow = new LogicalWorkflow(steps)
+    var executionStep = new ExecutionStep(myReference, workflow, ExecutionType.RESULTS)
     val pq = new SelectPlannedQuery(
         new SelectValidatedQuery(
             new SelectParsedQuery(
               new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog") )
               ,new SelectStatement(new TableName("myCatalog","myTable"))
           )
-        ), new LogicalWorkflow(steps)
+        ), executionStep
     )
     val selectQ: SelectInProgressQuery = new SelectInProgressQuery(pq)
     //val beanMap: util.Map[String, String] = BeanUtils.recursiveDescribe(selectQ);
