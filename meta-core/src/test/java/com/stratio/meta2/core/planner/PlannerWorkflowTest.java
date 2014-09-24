@@ -19,11 +19,7 @@
 package com.stratio.meta2.core.planner;
 
 import com.stratio.meta.common.connector.Operations;
-import com.stratio.meta.common.logicalplan.Filter;
-import com.stratio.meta.common.logicalplan.Join;
-import com.stratio.meta.common.logicalplan.LogicalStep;
-import com.stratio.meta.common.logicalplan.LogicalWorkflow;
-import com.stratio.meta.common.logicalplan.Project;
+import com.stratio.meta.common.logicalplan.*;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ClusterName;
@@ -35,25 +31,15 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.grammar.ParsingTest;
-import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.query.SelectValidatedQuery;
-
 import com.stratio.meta2.core.statements.SelectStatement;
-
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 public class PlannerWorkflowTest {
 
@@ -164,8 +150,9 @@ public class PlannerWorkflowTest {
     for(TableMetadata tm : tableMetadataList) {
       SelectValidatedQueryWrapper.class.cast(svqw).addTableMetadata(tm);
     }
-
-    return planner.buildWorkflow(svqw);
+    LogicalWorkflow workflow = planner.buildWorkflow(svqw);
+    System.out.println(workflow.toString());
+    return workflow;
   }
 
   public void assertNumberInitialSteps(LogicalWorkflow workflow, int expected) {
@@ -240,6 +227,10 @@ public class PlannerWorkflowTest {
 
   }
 
+  public void assertSelect(LogicalWorkflow workflow){
+    assertTrue(Select.class.isInstance(workflow.getLastStep()), "Select step not found.");
+  }
+
 
   @Test
   public void selectSingleColumn() {
@@ -248,6 +239,7 @@ public class PlannerWorkflowTest {
     LogicalWorkflow workflow = getWorkflow(inputText, "selectSingleColumn");
     assertNumberInitialSteps(workflow, 1);
     assertColumnsInProject(workflow, "c.t", expectedColumns);
+    assertSelect(workflow);
   }
 
   @Test
@@ -256,6 +248,7 @@ public class PlannerWorkflowTest {
     String [] expectedColumns = {"c.t.a", "c.t.b", "c.t.c"};
     LogicalWorkflow workflow = getWorkflow(inputText, "selectSingleColumn");
     assertColumnsInProject(workflow, "c.t", expectedColumns);
+    assertSelect(workflow);
   }
 
   @Test
@@ -271,6 +264,7 @@ public class PlannerWorkflowTest {
     assertColumnsInProject(workflow, "c.t2", expectedColumnsT2);
 
     assertJoin(workflow, "c.t1", "c.t2", "c.t1.aa = \"aa\"");
+    assertSelect(workflow);
   }
 
   @Test
@@ -295,15 +289,20 @@ public class PlannerWorkflowTest {
     assertFilterInPath(project1, Operations.FILTER_NON_INDEXED_GT);
     assertFilterInPath(project2, Operations.FILTER_NON_INDEXED_LT);
 
-    System.out.println(workflow.toString());
+    assertSelect(workflow);
+
+
   }
 
   @Test
   public void selectBasicWhere() {
     String inputText = "SELECT c.t.a, c.t.b, c.t.c FROM c.t WHERE c.t.a = 3;";
+    String [] columnsT = {"a", "b", "c"};
+    TableMetadata t = getTestTableMetadata("t", columnsT);
     String [] expectedColumns = {"c.t.a", "c.t.b", "c.t.c"};
-    LogicalWorkflow workflow = getWorkflow(inputText, "selectBasicWhere");
+    LogicalWorkflow workflow = getWorkflow(inputText, "selectBasicWhere", t);
     assertColumnsInProject(workflow, "c.t", expectedColumns);
+    assertSelect(workflow);
   }
 
 }

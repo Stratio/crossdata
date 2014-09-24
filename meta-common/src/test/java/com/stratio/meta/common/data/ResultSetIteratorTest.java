@@ -19,7 +19,8 @@
 package com.stratio.meta.common.data;
 
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.ColumnType;
+import com.stratio.meta2.common.metadata.ColumnType;
+
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -29,7 +30,7 @@ import java.util.*;
 public class ResultSetIteratorTest {
 
     private Random rand;
-    CassandraResultSet rSet;
+    ResultSet rSet;
 
     @BeforeClass
     public void setUp(){
@@ -58,8 +59,8 @@ public class ResultSetIteratorTest {
     }
 
 
-    private CassandraResultSet buildRandomResultSet(){
-        CassandraResultSet rSet = new CassandraResultSet();
+    private ResultSet buildRandomResultSet(){
+        ResultSet rSet = new ResultSet();
 
         Cell cellStr = new Cell(new String("comment" + rand.nextInt(100)));
         Cell cellInt = new Cell(new Integer(rand.nextInt(50)));

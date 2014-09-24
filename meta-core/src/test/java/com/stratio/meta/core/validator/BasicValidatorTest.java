@@ -18,30 +18,15 @@
 
 package com.stratio.meta.core.validator;
 
-import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
-import com.stratio.meta2.core.grammar.ParsingTest;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta2.core.statements.MetaStatement;
-
 import org.testng.annotations.BeforeClass;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+public class BasicValidatorTest {
 
-public class BasicValidatorTest extends BasicCoreCassandraTest {
 
-  protected static MetadataManager metadataManager = null;
-
-  protected static final ParsingTest pt = new ParsingTest();
 
   @BeforeClass
   public static void setUpBeforeClass() {
-    BasicCoreCassandraTest.setUpBeforeClass();
-    BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-    metadataManager = new MetadataManager();
-    metadataManager.loadMetadata();
+
   }
 
   /*

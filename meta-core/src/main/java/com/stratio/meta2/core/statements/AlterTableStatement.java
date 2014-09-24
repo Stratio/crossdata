@@ -14,18 +14,12 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.CoreUtils;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.ColumnType;
-import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -88,9 +82,6 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
 
   @Override
   public String toString() {
-    ColumnType columnType =  null;
-    columnType = ColumnType.BIGINT;
-    columnType.setInnerType(ColumnType.BIGINT);
     StringBuilder sb = new StringBuilder("ALTER TABLE ");
     sb.append(tableName.getQualifiedName());
     switch(option){
@@ -114,121 +105,10 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
         sb.append("BAD OPTION");
         break;
     }
-    System.out.println("To execute: " + sb.toString());
+
     return sb.toString();
   }
 
-  /**
-   * Validate the semantics of the current statement. This method checks the
-   * existing metadata to determine that all referenced entities exists in the
-   * {@code targetCatalog} and the types are compatible with the assignations
-   * or comparisons.
-   *
-   * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides
-   *                 the required information.
-   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
-   */
-  @Override
-  public Result validate(MetadataManager metadata, EngineConfig config) {
-    Result result = validateCatalogAndTable(
-        metadata,
-        sessionCatalog,
-        tableName.isCompletedName(), tableName.getCatalogName(), tableName);
-    if(!result.hasError()) {
-      CatalogName effectiveCatalog = getEffectiveCatalog();
-      System.out.println("validating: " + effectiveCatalog + " table: " + tableName.getName());
-      /*TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
-      switch (option) {
-        case 1:
-          result = validateAlter(tableMetadata);
-          break;
-        case 2:
-          result = validateAdd(tableMetadata);
-          break;
-        case 3:
-          result = validateDrop(tableMetadata);
-          break;
-        case 4:
-          result = validateProperties(tableMetadata);
-          break;
-        default:
-      }*/
-    }
-    return result;
-  }
-
-  private boolean existsColumn(TableMetadata tableMetadata){
-    return tableMetadata.getColumns().get(column) != null;
-  }
-
-
-  private boolean existsType(TableMetadata tableMetadata) {
-    return CoreUtils.supportedTypes.contains(type.toString().toLowerCase());
-  }
-
-  private Result validateAlter(TableMetadata tableMetadata) {
-    Result result = QueryResult.createSuccessQueryResult();
-    //Validate target column name
-    if(!existsColumn(tableMetadata)){
-      result = Result.createValidationErrorResult("Column '"+this.column+"' not found.");
-    } else if(!existsType(tableMetadata)){ //Validate type
-      result = Result.createValidationErrorResult("Type '"+this.type+"' not found.");
-    }
-    // TODO: validate that conversion is compatible as for current type and target type
-    return result;
-  }
-
-  private Result validateAdd(TableMetadata tableMetadata) {
-    Result result = QueryResult.createSuccessQueryResult();
-    //Validate target column name
-    if(existsColumn(tableMetadata)){
-      result = Result.createValidationErrorResult("Column '"+this.column+"' already exists.");
-    } else if(!existsType(tableMetadata)){ //Validate type
-      result = Result.createValidationErrorResult("Type '"+this.type+"' not found.");
-    }
-    return result;
-  }
-
-  private Result validateDrop(TableMetadata tableMetadata) {
-    Result result = QueryResult.createSuccessQueryResult();
-    // Validate target column name
-    if (existsColumn(tableMetadata)) {
-      result = Result.createValidationErrorResult("Column '" + this.column + "' already exists.");
-    } else if (!existsType(tableMetadata)) { // Validate type
-      result = Result.createValidationErrorResult("Type '" + this.type + "' not found.");
-    }
-    return result;
-  }
-
-  private Result validateProperties(TableMetadata tableMetadata) {
-    Result result = QueryResult.createSuccessQueryResult();
-    /*Iterator<Property> props = properties.iterator();
-    boolean exit = false;
-    while(!exit && props.hasNext()){
-      Property property = props.next();
-      if(property.getType() == Property.TYPE_NAME_VALUE){
-        PropertyNameValue propertyNameValue = (PropertyNameValue) property;
-        if("ephemeral".equalsIgnoreCase(propertyNameValue.getName())
-           && propertyNameValue.getVp().getTermClass() != Boolean.class){
-          // If property ephemeral is present, it must be a boolean type
-          result = Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
-          exit = true;
-        } else if("ephemeral_tuples".equalsIgnoreCase(propertyNameValue.getName())
-                  && propertyNameValue.getVp().getTermClass() != Boolean.class){
-          // If property ephemeral_tuples is present, it must be a integer type
-          result= Result.createValidationErrorResult("Property 'ephemeral' must be a boolean");
-          exit = true;
-        } else if("ephemeral_persist_on".equalsIgnoreCase(propertyNameValue.getName())
-                  && propertyNameValue.getVp().getTermClass() != Boolean.class){
-          // If property ephemeral_persist_on is present, it must be a string type
-          result= Result.createValidationErrorResult(
-              "Property 'ephemeral_persist_on' must be a string");
-          exit = true;
-        }
-      }
-    }*/
-    return result;
-  }
 
   @Override
   public ValidationRequirements getValidationRequirements() {

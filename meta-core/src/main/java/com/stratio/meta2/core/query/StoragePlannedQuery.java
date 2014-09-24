@@ -18,33 +18,25 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta.common.executionplan.ExecutionStep;
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.ConnectorName;
 
 public  class StoragePlannedQuery extends StorageValidatedQuery implements PlannedQuery {
 
-  private final ClusterName clusterName;
-  private final ConnectorName connectorName;
+  private final ExecutionStep executionStep;
 
-  public StoragePlannedQuery(StorageValidatedQuery storageValidatedQuery, ClusterName clusterName, ConnectorName connectorName) {
+  public StoragePlannedQuery(StorageValidatedQuery storageValidatedQuery, ExecutionStep executionStep) {
     super(storageValidatedQuery);
     setQueryStatus(QueryStatus.PLANNED);
-    this.clusterName = clusterName;
-    this.connectorName = connectorName;
+    this.executionStep = executionStep;
   }
 
   public StoragePlannedQuery(StoragePlannedQuery storagePlannedQuery){
-    this(storagePlannedQuery, storagePlannedQuery.getClusterName(), storagePlannedQuery.getConnectorName());
+    this(storagePlannedQuery, storagePlannedQuery.getExecutionStep());
   }
 
   @Override
-  public ClusterName getClusterName() {
-    return clusterName;
-  }
-
-  @Override
-  public ConnectorName getConnectorName() {
-    return connectorName;
+  public ExecutionStep getExecutionStep() {
+    return executionStep;
   }
 }

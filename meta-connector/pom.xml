@@ -26,10 +26,9 @@
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-  <artifactId>meta-connector</artifactId>
-  <groupId>com.stratio.meta</groupId>
-  <name>Stratio META connector</name>
-  <version>1.0</version>
+    <artifactId>meta-connector</artifactId>
+    <name>Stratio META connector</name>
+    <version>1.0</version>
     <url>https://github.com/Stratio/stratio-meta/</url>
 
 
@@ -41,107 +40,133 @@
     </licenses>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <akka.version>2.2.4</akka.version>
+        <scala.version>2.10.4</scala.version>
         <meta.version>0.1.0-SNAPSHOT</meta.version>
     </properties>
-  
-  <dependencies>
-  
-   <!-- CONNECTOR INTERFACE AND ALL THE CONNECTORS -->
-   <dependency>
-       <groupId>com.stratio.meta</groupId>
-       <artifactId>meta-core</artifactId>
-       <version>${meta.version}</version>
-   </dependency>
-   <dependency>
+
+    <dependencies>
+
+        <!-- CONNECTOR INTERFACE AND ALL THE CONNECTORS -->
+        <dependency>
+            <groupId>com.stratio.meta</groupId>
+            <artifactId>meta-core</artifactId>
+            <version>${meta.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-common</artifactId>
             <version>${meta.version}</version>
-   </dependency>
-      <dependency>
-          <groupId>com.stratio.meta</groupId>
-          <artifactId>meta-server</artifactId>
-          <version>${meta.version}</version>
-      </dependency>
+        </dependency>
 
-   <dependency>
-	<groupId>org.scalamock</groupId>
-	<artifactId>scalamock-core_2.10</artifactId>
-	<version>3.1.RC1</version>
-  	<scope>test</scope>
-   </dependency>
-   <dependency>
-	<groupId>org.scalamock</groupId>
-	<artifactId>scalamock-scalatest-support_2.10</artifactId>
-	<version>3.1.RC1</version>
-   </dependency>
-   <dependency>
-     <groupId>org.scalatest</groupId>
-     <artifactId>scalatest_2.10</artifactId>
-     <version>2.1.0</version>
-     <scope>test</scope>
-   </dependency>
+        <dependency>
+            <groupId>org.scalamock</groupId>
+            <artifactId>scalamock-core_2.10</artifactId>
+            <version>3.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>scala-library</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>scala-reflect</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.scalamock</groupId>
+            <artifactId>scalamock-scalatest-support_2.10</artifactId>
+            <version>3.0</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>scala-library</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.10</artifactId>
+            <version>2.1.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>scala-library</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>scala-reflect</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-compiler</artifactId>
+            <version>${scala.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>scala-reflect</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-contrib_2.10</artifactId>
+            <version>${akka.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>scala-library</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-cluster_2.10</artifactId>
+            <version>${akka.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>scala-library</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-testkit_2.10</artifactId>
+            <version>${akka.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>config</artifactId>
+                    <groupId>com.typesafe</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>scala-library</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+            <version>${config.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
 
-   <!--dependency>
-	<groupId>com.stratio.connector</groupId>
-    <artifactId>connector-cassandra-core</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
-   </dependency-->
-
-
-
-      <!-- SCALA AND AKKA -->
-      <dependency>
-          <groupId>org.scala-lang</groupId>
-          <artifactId>scala-compiler</artifactId>
-          <version>${scala.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>com.typesafe.akka</groupId>
-          <artifactId>akka-osgi_${scala.dep.version}</artifactId>
-          <version>${akka.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>com.typesafe.akka</groupId>
-          <artifactId>akka-contrib_2.10</artifactId>
-          <version>${akka.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>com.typesafe.akka</groupId>
-          <artifactId>akka-cluster_${scala.dep.version}</artifactId>
-          <version>${akka.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>com.typesafe.akka</groupId>
-          <artifactId>akka-remote_${scala.dep.version}</artifactId>
-          <version>${akka.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>com.typesafe.akka</groupId>
-          <artifactId>akka-slf4j_${scala.dep.version}</artifactId>
-          <version>${akka.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>com.typesafe.akka</groupId>
-          <artifactId>akka-testkit_2.10</artifactId>
-          <version>${akka.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>com.typesafe.akka</groupId>
-          <artifactId>akka-agent_2.10</artifactId>
-          <version>${akka.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>com.typesafe</groupId>
-          <artifactId>config</artifactId>
-          <version>1.2.0</version>
-      </dependency>
-
-  </dependencies>
+    </dependencies>
     <build>
- 
- 
-         <pluginManagement>
+
+
+        <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.scala-tools</groupId>
@@ -196,24 +221,24 @@
                 </executions>
             </plugin>
 
-<plugin>
-  <groupId>org.scalatest</groupId>
-  <artifactId>scalatest-maven-plugin</artifactId>
-  <version>1.0</version>
-  <configuration>
-    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-    <junitxml>.</junitxml>
-    <filereports>WDF TestSuite.txt</filereports>
-  </configuration>
-  <executions>
-    <execution>
-      <id>test</id>
-      <goals>
-        <goal>test</goal>
-      </goals>
-    </execution>
-  </executions>
-</plugin>
+            <plugin>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest-maven-plugin</artifactId>
+                <version>1.0</version>
+                <configuration>
+                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                    <junitxml>.</junitxml>
+                    <filereports>WDF TestSuite.txt</filereports>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.4</version>
@@ -229,23 +254,21 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- bind to the packaging phase -->
+                        <id>make-assembly</id>
+                        <!-- this is used for inheritance merges -->
+                        <phase>package</phase>
+                        <!-- bind to the packaging phase -->
                         <goals>
                             <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
-            
-</plugins>
- 
- 
- 
- 
- 
- 
- </build>
+
+        </plugins>
+
+
+    </build>
 
 </project>
 

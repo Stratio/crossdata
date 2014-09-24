@@ -19,7 +19,6 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.stratio.meta.core.utils.MetaQuery
 import com.stratio.meta2.core.query.ParsedQuery
 import com.stratio.meta2.core.statements.MetaStatement
 import com.stratio.meta2.core.validator.Validator
@@ -54,18 +53,6 @@ class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with T
       log.info("Validatedquery= "+validatedquery)
       planner forward validatedquery
       sender ! "Ok"
-    }
-    case query: MetaQuery if !query.hasError=> {
-      log.info("validator query without errors")
-      val timer=initTimer()
-
-      //planner forward validator.validateQuery(query)
-      finishTimer(timer)
-      log.info("Finish Validator Task")
-    }
-    case query: MetaQuery if query.hasError=>{
-      log.info("validator query with errors")
-      sender ! query.getResult
     }
     case statement: MetaStatement=> {
       

@@ -19,7 +19,6 @@
 package com.stratio.meta.server.config
 
 import org.scalatest.{Suite, BeforeAndAfterAll}
-import com.stratio.meta.test.CCMHandler
 import org.testng.Assert._
 import org.apache.log4j.Logger
 import java.net.URL
@@ -156,7 +155,6 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
 
   override def beforeAll(): Unit = {
     beforeCassandraStart()
-    CCMHandler.startCCM()
     afterCassandraStart()
   }
 

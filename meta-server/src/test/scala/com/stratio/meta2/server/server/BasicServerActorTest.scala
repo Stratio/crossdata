@@ -18,18 +18,17 @@
 
 package com.stratio.meta2.server.server
 
-import akka.actor.{Props}
-import org.scalatest.FunSuiteLike
-import com.stratio.meta.server.actors._
-import scala.concurrent.duration._
-import com.stratio.meta2.core.engine.Engine
-import org.testng.Assert._
-import com.stratio.meta.server.utilities._
-import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
+import akka.actor.Props
+import com.stratio.meta.common.ask.{Connect, Query}
 import com.stratio.meta.common.result._
-import com.stratio.meta.common.ask.Connect
-import com.stratio.meta.common.ask.Query
+import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
+import com.stratio.meta.server.utilities._
+import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.server.actors.ServerActor
+import org.scalatest.FunSuiteLike
+import org.testng.Assert._
+
+import scala.concurrent.duration._
 
 /**
  * Server Actor tests.

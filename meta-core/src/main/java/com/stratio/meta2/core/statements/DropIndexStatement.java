@@ -18,18 +18,9 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
 import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.core.engine.EngineConfig;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
-import com.stratio.meta2.common.metadata.ColumnMetadata;
-import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
-
-import java.util.Iterator;
 
 /**
  * Class that models a {@code DROP INDEX} statement from the META language.
@@ -42,19 +33,10 @@ public class DropIndexStatement extends MetadataStatement {
   private boolean dropIfExists = false;
 
   /**
-   * Whether the index will be dropped.
-   */
-  private boolean dropIndex = false;
-
-  /**
    * The name of the index.
    */
   private String name = null;
 
-  /**
-   * Target column associated with the index.
-   */
-  private ColumnMetadata targetColumn = null;
 
   /**
    * Class constructor.
@@ -99,67 +81,6 @@ public class DropIndexStatement extends MetadataStatement {
     return sb.toString();
   }
 
-  @Override
-  public Result validate(MetadataManager metadata, EngineConfig config) {
-
-    Result result = null;
-    //Get the effective catalog based on the user specification during the create
-    //sentence, or taking the catalog in use in the user session.
-    CatalogName effectiveCatalog = getEffectiveCatalog();
-    if(catalogInc){
-      effectiveCatalog = catalog;
-    }
-
-    //Check that the catalog and table exists.
-    /*
-    if(effectiveCatalog == null){
-      result= Result.createValidationErrorResult(
-          "Target catalog missing or no catalog has been selected.");
-    }else{
-      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
-      if(ksMetadata == null){
-        result= Result.createValidationErrorResult(
-            "Catalog " + effectiveCatalog + " does not exist.");
-      }else{
-        result = validateIndexName(ksMetadata);
-      }
-    }
-    */
-    return result;
-  }
-
-  /**
-   * Validate the existence of the index in the selected catalog.
-   * @param ksMetadata The catalog metadata.
-   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
-   */
-  public Result validateIndexName(CatalogMetadata ksMetadata){
-    Result result = QueryResult.createSuccessQueryResult();
-    boolean found = false;
-    Iterator<TableMetadata> tables = ksMetadata.getTables().values().iterator();
-
-    while(tables.hasNext() && !found){
-      TableMetadata tableMetadata = tables.next();
-      Iterator<ColumnMetadata> columns = tableMetadata.getColumns().values().iterator();
-      while(columns.hasNext() && !found){
-        ColumnMetadata column = columns.next();
-        if(column.getIndex() != null
-           && (column.getIndex().equals(name)
-               || column.getIndex().equals("stratio_lucene_" + name))){
-          found = true;
-          targetColumn = column;
-        }
-      }
-    }
-
-    if(!dropIfExists && !found){
-      result = Result.createValidationErrorResult("Index " + name + " not found in catalog " + ksMetadata.getName());
-    }else{
-      dropIndex = true;
-    }
-
-    return result;
-  }
 
   @Override
   public ValidationRequirements getValidationRequirements() {

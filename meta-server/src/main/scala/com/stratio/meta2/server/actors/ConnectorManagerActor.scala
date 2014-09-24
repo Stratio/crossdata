@@ -60,22 +60,22 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     case query: StorageInProgressQuery=> {
       log.info("storage in progress query")
       //connectorsMap(query.getConnectorName()) ! query
-      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName) ! query
+      query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! query
     }
 
     case query: SelectInProgressQuery=> {
       val clustername=new ClusterName("//TODO:") //TODO: the query should give me the cluster's name
-      val workflow=query.getLogicalWorkflow
+      val executionStep = query.getExecutionStep
       log.info("select in progress query")
       //connectorsMap(query.getConnectorName()) ! Execute(clustername,workflow)
-      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName) ! Execute(clustername,workflow)
+      query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! Execute(null, executionStep)
     }
 
     case query: MetadataInProgressQuery=> {
 
       val statement=query.getStatement()
       //val messagesender=connectorsMap(query.getConnectorName())
-      val messagesender=MetadataManager.MANAGER.getConnectorRef(query.getConnectorName())
+      val messagesender = query.getExecutionStep.getActorRef
 
       statement match {
         case createCatalogStatement:CreateCatalogStatement => {
@@ -92,7 +92,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
       log.info("metadata in progress query")
       //connectorsMap(query.getConnectorName()) ! query
-      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName) ! query
+      query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! query
     }
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))

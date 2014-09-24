@@ -28,54 +28,120 @@ public enum ColumnType {
   SET("SET"){
     @Override
     public String toString() {
-      return "SET<"+getInnerType()+">";
+      return "SET<"+getDBInnerType()+">";
     }
   },
   LIST("LIST"){
     @Override
     public String toString() {
-      return "LIST<"+getInnerType()+">";
+      return "LIST<"+getDBInnerType()+">";
     }
   },
   MAP("MAP"){
     @Override
     public String toString() {
-      return "MAP<"+getInnerType()+", "+getValueType()+">";
+      return "MAP<"+getDBInnerType()+", "+getDBInnerValueType()+">";
     }
   }
   ;
 
-  private final String standardType;
-  private ColumnType innerType;
-  private ColumnType valueType;
+  /**
+   * ODBC type equivalent.
+   */
+  private String odbcType;
 
-  ColumnType(String standardType) {
-    this.standardType = standardType;
+  /**
+   * The database type.
+   */
+  private String dbType;
+
+  /**
+   * The underlying class.
+   */
+  private Class<?> dbClass;
+
+  /**
+   * The underlying database type for collections.
+   */
+  private ColumnType dbInnerType;
+
+  /**
+   * The underlying database value type for map-like collections.
+   */
+  private ColumnType dbInnerValueType;
+
+  /**
+   * Build a new column type.
+   *
+   * @param odbcType The ODBC equivalent type.
+   */
+  ColumnType(String odbcType) {
+    this.odbcType = odbcType;
   }
 
-  public String getStandardType() {
-    return standardType;
+  /**
+   * Set the database implementation mapping.
+   *
+   * @param dbType The String representation of the database equivalent type.
+   * @param dbClass The underlying class implementation.
+   */
+  public void setDBMapping(String dbType, Class<?> dbClass) {
+    this.dbType = dbType;
+    this.dbClass = dbClass;
   }
 
-  public ColumnType getInnerType() {
-    return innerType;
+  /**
+   * Get the database type.
+   *
+   * @return The type.
+   */
+  public String getDbType() {
+    return dbType;
   }
 
-  public void setInnerType(ColumnType innerType) {
-    this.innerType = innerType;
+  /**
+   * Get the database class.
+   *
+   * @return The class.
+   */
+  public Class<?> getDbClass() {
+    return dbClass;
   }
 
-  public ColumnType getValueType() {
-    return valueType;
+  /**
+   * Set the ODBCType. This method should only be used with NATIVE column types.
+   *
+   * @param odbcType The ODBC equivalent type.
+   */
+  public void setODBCType(String odbcType) {
+    this.odbcType = odbcType;
   }
 
-  public void setValueType(ColumnType valueType) {
-    this.valueType = valueType;
+  /**
+   * Get the ODBC SQL type associated with the META data type. For NATIVE types, use the appropriate
+   * AbstractMetadataHelper to retrieve the ODBC equivalent.
+   *
+   * @return The ODBC equivalence or null if NATIVE type is being used.
+   */
+  public String getODBCType() {
+    return odbcType;
   }
 
-  public void setTypes(ColumnType innerType, ColumnType valueType){
-    this.innerType = innerType;
-    this.valueType = valueType;
+  public void setDBCollectionType(ColumnType dbInnerType){
+    this.dbInnerType = dbInnerType;
+  }
+
+  public void setDBMapType(ColumnType keyType, ColumnType valueType) {
+    this.dbInnerType = keyType;
+    this.dbInnerValueType = valueType;
+  }
+
+  public ColumnType getDBInnerType() {
+    return dbInnerType;
+  }
+
+  public ColumnType getDBInnerValueType() {
+    return dbInnerValueType;
   }
 
 }

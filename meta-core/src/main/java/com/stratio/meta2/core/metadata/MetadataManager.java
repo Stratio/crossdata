@@ -23,7 +23,6 @@ import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.FirstLevelName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.Name;
-import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ClusterMetadata;
@@ -33,6 +32,7 @@ import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
@@ -43,7 +43,6 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
-import akka.actor.ActorRef;
 
 public enum MetadataManager {
   MANAGER;
@@ -309,13 +308,13 @@ public enum MetadataManager {
     return (ConnectorMetadata) metadata.get(name);
   }
 
-  public void addConnectorRef(ConnectorName name, ActorRef actorRef){
+  public void addConnectorRef(ConnectorName name, Serializable actorRef){
     ConnectorMetadata connectorMetadata = getConnector(name);
     connectorMetadata.setActorRef(actorRef);
     createConnector(connectorMetadata, false);
   }
 
-  public ActorRef getConnectorRef(ConnectorName name){
+  public Serializable getConnectorRef(ConnectorName name){
       return getConnector(name).getActorRef();
   }
 

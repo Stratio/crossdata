@@ -18,26 +18,9 @@
 
 package com.stratio.meta.server.validator
 
-import com.stratio.meta2.core.engine.Engine
-import akka.actor.ActorSystem
-import com.stratio.meta.server.actors.{ValidatorActor, PlannerActor, ExecutorActor}
-import akka.testkit._
-import org.scalatest.FunSuiteLike
-import com.stratio.meta.common.result._
-import scala.concurrent.duration._
-import scala.concurrent.Await
-import akka.pattern.ask
-import org.testng.Assert._
-import scala.util.Success
-import com.stratio.meta.server.utilities._
+
 import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
-import com.typesafe.config.ConfigFactory
-import scala.collection.mutable
-import com.stratio.meta.common.ask.Query
-import com.stratio.meta.communication.ACK
-import scala.util.Success
-import java.util.UUID
-import com.stratio.meta2.server.actors.ConnectorManagerActor
+import org.scalatest.FunSuiteLike
 
 /**
  * Validator actor tests.

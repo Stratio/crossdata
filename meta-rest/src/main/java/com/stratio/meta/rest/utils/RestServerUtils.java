@@ -24,7 +24,6 @@ import com.stratio.meta.rest.models.JsonMetaResultSet;
 import com.stratio.meta.rest.models.JsonQueryResult;
 import com.stratio.meta.rest.models.JsonRow;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.ObjectOutputStream;
@@ -34,7 +33,6 @@ import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 public class RestServerUtils {
-  private static Base64 base64 = new Base64();
 
   public static JsonQueryResult toJsonQueryResult(QueryResult qr) {
     JsonMetaResultSet jrs = new JsonMetaResultSet();
@@ -71,8 +69,9 @@ public class RestServerUtils {
     gzipOutputStream.close();
     arrayOutputStream.close();
     objectOutputStream.close();
-    String objectString = new String(base64.encode(arrayOutputStream.toByteArray()));
+    //TODO: Review api rest result
+    //String objectString = new String(base64.encode(arrayOutputStream.toByteArray()));
 
-    return objectString;
+    return null;
   }
 }

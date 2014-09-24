@@ -97,7 +97,7 @@ public class CoordinatorTest extends MetadataManagerTests {
 
     MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
-    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null, null);
+    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
 
     Coordinator coordinator = new Coordinator();
     coordinator.coordinate(plannedQuery);
@@ -175,7 +175,7 @@ public class CoordinatorTest extends MetadataManagerTests {
 
     MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
-    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null, null);
+    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
 
     Coordinator coordinator = new Coordinator();
     coordinator.coordinate(plannedQuery);
@@ -217,7 +217,7 @@ public class CoordinatorTest extends MetadataManagerTests {
 
     MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
-    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null, null);
+    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
 
 
     Coordinator coordinator = new Coordinator();
@@ -245,7 +245,7 @@ public class CoordinatorTest extends MetadataManagerTests {
 
     MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
-    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null, null);
+    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
 
 
     Coordinator coordinator = new Coordinator();
@@ -299,7 +299,7 @@ public class CoordinatorTest extends MetadataManagerTests {
 
     MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
-    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null, null);
+    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
 
     Coordinator coordinator = new Coordinator();
     if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
@@ -340,7 +340,7 @@ public class CoordinatorTest extends MetadataManagerTests {
 
     MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
-    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null, null);
+    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
 
     Coordinator coordinator = new Coordinator();
     if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
@@ -367,7 +367,7 @@ public class CoordinatorTest extends MetadataManagerTests {
 
     StorageValidatedQuery metadataValidatedQuery = new StorageValidatedQuery(metadataParsedQuery);
 
-    StoragePlannedQuery plannedQuery = new StoragePlannedQuery(metadataValidatedQuery, null, null);
+    StoragePlannedQuery plannedQuery = new StoragePlannedQuery(metadataValidatedQuery, null);
 
     Coordinator coordinator = new Coordinator();
     if (coordinator.coordinate(plannedQuery) instanceof StorageInProgressQuery) {

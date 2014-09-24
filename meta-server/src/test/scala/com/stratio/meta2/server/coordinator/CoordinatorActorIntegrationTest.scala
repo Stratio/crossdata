@@ -16,6 +16,7 @@
  * under the License.
  */
 
+import com.stratio.meta.common.executionplan.ExecutionStep
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta2.common.data.CatalogName
 import scala.concurrent.duration.DurationInt
@@ -38,16 +39,16 @@ class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLik
   val connectorManagerActor=system1.actorOf(ConnectorManagerActor.props(null),"ConnectorManagerActor")
   val coordinatorActor=system1.actorOf(CoordinatorActor.props(connectorManagerActor,new Coordinator),"CoordinatorActor")
 
-
-  val selectPlannedQuery = new SelectPlannedQuery(
-    new SelectValidatedQuery(
-      new SelectParsedQuery(
-        new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
-        ,null)
-    ), null, null, new LogicalWorkflow(null)
-
-  )
-  val pq=new SelectInProgressQuery(selectPlannedQuery)
+    val pq=new SelectInProgressQuery(
+      new SelectPlannedQuery(
+        new SelectValidatedQuery(
+          new SelectParsedQuery(
+              new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
+              ,null)
+          )
+        , new ExecutionStep(null, null, null)
+      )
+    )
 
   test("Basic Coordinator-ConnectorManager test") {
                                                     within(5000 millis){

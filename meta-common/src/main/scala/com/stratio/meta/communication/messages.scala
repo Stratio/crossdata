@@ -22,6 +22,7 @@ import com.stratio.meta.common.connector.ConnectorClusterConfig
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta.common.security.ICredentials
+import com.stratio.meta.common.executionplan.ExecutionStep
 import com.stratio.meta2.common.data.ClusterName
 
 case class ACK(queryId: String, status: QueryStatus)
@@ -32,7 +33,7 @@ case class Disconnect(userId: String)
 
 //Connector messages
 case class ConnectToConnector(msg: String)
-case class Execute(clustername:ClusterName,workflow: LogicalWorkflow)
+case class Execute(clustername: ClusterName, executionStep: ExecutionStep)
 case class DisconnectFromConnector(msg: String)
 case class Request(msg:String)
 case class Response(msg:String)

@@ -14,20 +14,10 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
-import com.stratio.meta2.core.engine.EngineConfig;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.streaming.MetaStream;
 import com.stratio.meta2.core.validator.ValidationRequirements;
-import com.stratio.streaming.api.IStratioStreamingAPI;
-import com.stratio.streaming.api.StratioStreamingAPIFactory;
-import com.stratio.streaming.commons.messages.StreamQuery;
-import com.stratio.streaming.commons.streams.StratioStream;
+
 
 import org.apache.log4j.Logger;
-
-import java.util.List;
 
 public class StopProcessStatement extends MetadataStatement {
 
@@ -43,26 +33,6 @@ public class StopProcessStatement extends MetadataStatement {
     return queryId;
   }
 
-  public String getStream() {
-    String StreamName = "";
-    try {
-      IStratioStreamingAPI stratioStreamingAPI = StratioStreamingAPIFactory.create().initialize();
-      List<StratioStream> streamsList = stratioStreamingAPI.listStreams();
-      for (StratioStream stream : streamsList) {
-        if (stream.getQueries().size() > 0) {
-          for (StreamQuery query : stream.getQueries()) {
-            if (queryId.contentEquals(query.getQueryId())) {
-              StreamName = stream.getStreamName();
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-      LOG.error(e);
-    }
-    return StreamName;
-  }
-
   public void setQueryId(String queryId) {
     this.queryId = queryId;
   }
@@ -74,20 +44,6 @@ public class StopProcessStatement extends MetadataStatement {
     return sb.toString();
   }
 
-  @Override
-  public Result validate(MetadataManager metadata, EngineConfig config) {
-    // TODO: Check user query identifier.
-    // Result result= Result.createValidationErrorResult("UDF and TRIGGER not supported yet");
-
-    // StratioStream stream = metadata.checkQuery(queryId);
-    // if ( stream != null) result = QueryResult.createSuccessQueryResult();
-
-    return QueryResult.createSuccessQueryResult();
-  }
-
-  public Result execute() {
-    return MetaStream.removeStreamingQuery(this.getQueryId(), null);
-  }
 
   @Override
   public ValidationRequirements getValidationRequirements() {

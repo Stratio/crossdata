@@ -14,12 +14,8 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -66,35 +62,6 @@ public class TruncateStatement extends StorageStatement {
     return sb.toString();
   }
 
-  @Override
-  public Result validate(MetadataManager metadata, EngineConfig config) {
-    Result result = QueryResult.createSuccessQueryResult();
-
-    CatalogName effectiveCatalog = getEffectiveCatalog();
-    if (catalogInc) {
-      effectiveCatalog = catalog;
-    }
-
-    // Check that the catalog and table exists.
-    if (effectiveCatalog == null) {
-      result =
-          Result
-              .createValidationErrorResult("Target catalog missing or no catalog has been selected.");
-    } else {
-      /*CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
-      if (ksMetadata == null) {
-        result =
-            Result.createValidationErrorResult("Catalog " + effectiveCatalog + " does not exist.");
-      } else {
-        TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tablename);
-        if (tableMetadata == null) {
-          result = Result.createValidationErrorResult("Table " + tablename + " does not exist.");
-        }
-      }*/
-    }
-    return result;
-
-  }
 
   @Override
   public ValidationRequirements getValidationRequirements() {
