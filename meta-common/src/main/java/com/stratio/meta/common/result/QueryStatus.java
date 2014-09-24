@@ -27,5 +27,6 @@ public enum QueryStatus {
   VALIDATED,
   PLANNED,
   IN_PROGRESS,
-  NORMALIZED, EXECUTED
+  NORMALIZED,
+  EXECUTED
 }

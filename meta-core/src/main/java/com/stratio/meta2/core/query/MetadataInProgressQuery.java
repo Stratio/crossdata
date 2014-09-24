@@ -14,20 +14,33 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta2.core.statements.MetadataStatement;
+import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ConnectorName;
 
-public class MetadataInProgressQuery extends InProgressQuery {
+public class MetadataInProgressQuery extends MetadataPlannedQuery implements InProgressQuery {
 
-  public MetadataInProgressQuery(PlannedQuery validatedQuery) {
-    super(validatedQuery);
+  private ClusterName clusterName = null;
+  private ConnectorName connectorName = null;
+
+  public MetadataInProgressQuery(MetadataPlannedQuery metadataPlannedQuery, ClusterName clusterName, ConnectorName connectorName) {
+    super(metadataPlannedQuery);
+    setQueryStatus(QueryStatus.IN_PROGRESS);
+    this.clusterName = clusterName;
+    this.connectorName = connectorName;
   }
 
-  MetadataInProgressQuery(MetadataInProgressQuery plannedQuery) {
-    this((PlannedQuery) plannedQuery);
+  public MetadataInProgressQuery(MetadataInProgressQuery metadataInProgressQuery) {
+    this(metadataInProgressQuery, metadataInProgressQuery.clusterName, metadataInProgressQuery.connectorName);
   }
 
   @Override
-  public MetadataStatement getStatement() {
-    return (MetadataStatement) statement;
+  public ClusterName getClusterName() {
+    return clusterName;
+  }
+
+  @Override
+  public ConnectorName getConnectorName() {
+    return connectorName;
   }
 }

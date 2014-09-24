@@ -116,7 +116,7 @@ public class CassandraResultSet extends ResultSet implements Serializable {
 
   @Override
   public Iterator<Row> iterator() {
-    return new CResultSetIterator(this);
+    return new ResultSetIterator(this);
   }
 
 }

@@ -26,7 +26,7 @@ import org.testng.annotations.Test;
 
 import java.util.*;
 
-public class CResultSetIteratorTest {
+public class ResultSetIteratorTest {
 
     private Random rand;
     CassandraResultSet rSet;
@@ -39,19 +39,19 @@ public class CResultSetIteratorTest {
 
     @Test
     public void testConstructor(){
-        CResultSetIterator rSetIt = new CResultSetIterator(rSet);
+        ResultSetIterator rSetIt = new ResultSetIterator(rSet);
         Assert.assertNotNull(rSetIt);
     }
 
     @Test
     public void testHasNext(){
-        CResultSetIterator rSetIt = new CResultSetIterator(rSet);
+        ResultSetIterator rSetIt = new ResultSetIterator(rSet);
         Assert.assertTrue(rSetIt.hasNext());
     }
 
     @Test
     public void testNext(){
-        CResultSetIterator rSetIt = new CResultSetIterator(rSet);
+        ResultSetIterator rSetIt = new ResultSetIterator(rSet);
         Row nextRow = rSetIt.next();
         Assert.assertNotNull(nextRow);
         Assert.assertTrue(((String)nextRow.getCell("str").getValue()).startsWith("comment"));

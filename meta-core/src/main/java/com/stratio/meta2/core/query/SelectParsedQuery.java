@@ -18,21 +18,28 @@
 
 package com.stratio.meta2.core.query;
 
-
+import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.statements.SelectStatement;
 
-public class SelectParsedQuery extends ParsedQuery {
+public class SelectParsedQuery extends BaseQuery implements ParsedQuery {
+
+  private MetaStatement statement;
+
   public SelectParsedQuery(BaseQuery baseQuery,
-      SelectStatement statement) {
-    super(baseQuery, statement);
+                           SelectStatement statement) {
+    super(baseQuery);
+    this.statement = statement;
+    setQueryStatus(QueryStatus.PARSED);
   }
 
-  SelectParsedQuery(SelectParsedQuery parsedQuery) {
-    super(parsedQuery);
+  public SelectParsedQuery(SelectParsedQuery parsedQuery) {
+    this(parsedQuery, parsedQuery.getStatement());
   }
 
-    @Override
-    public SelectStatement getStatement() {
-        return (SelectStatement)statement;
-    }
+  @Override
+  public SelectStatement getStatement() {
+    return (SelectStatement) statement;
+  }
+
 }

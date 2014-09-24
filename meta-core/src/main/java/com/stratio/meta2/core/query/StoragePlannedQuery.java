@@ -18,21 +18,17 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta.common.result.QueryStatus;
 
-import com.stratio.meta2.core.statements.StorageStatement;
+public  class StoragePlannedQuery extends StorageValidatedQuery implements PlannedQuery {
 
-public  class StoragePlannedQuery extends PlannedQuery {
-  
-  public StoragePlannedQuery(ValidatedQuery validatedQuery) {
-    super(validatedQuery);
+  public StoragePlannedQuery(StorageValidatedQuery storageValidatedQuery) {
+    super(storageValidatedQuery);
+    setQueryStatus(QueryStatus.PLANNED);
   }
 
-  StoragePlannedQuery(StoragePlannedQuery plannedQuery){
-    this((ValidatedQuery)plannedQuery);
+  public StoragePlannedQuery(StoragePlannedQuery storagePlannedQuery){
+    this((StorageValidatedQuery) storagePlannedQuery);
   }
 
-    @Override
-    public StorageStatement getStatement() {
-        return (StorageStatement)statement;
-    }
 }

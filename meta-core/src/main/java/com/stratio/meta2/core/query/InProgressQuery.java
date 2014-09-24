@@ -14,17 +14,14 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
+import com.stratio.meta2.core.statements.MetaStatement;
 
 
-public abstract class InProgressQuery extends PlannedQuery {
+public interface InProgressQuery {
 
-  private ClusterName clusterName;
-  private ConnectorName connectorName;
-
-  public InProgressQuery(PlannedQuery plannedQuery) {
+  /*public InProgressQuery(PlannedQuery plannedQuery) {
     super(plannedQuery);
   }
 
@@ -50,5 +47,12 @@ public abstract class InProgressQuery extends PlannedQuery {
 
   public void setClusterName(ClusterName clusterName) {
     this.clusterName = clusterName;
-  }
+  }*/
+
+  public ClusterName getClusterName();
+
+  public ConnectorName getConnectorName();
+
+  public MetaStatement getStatement();
+
 }

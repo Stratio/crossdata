@@ -15,7 +15,13 @@
 package com.stratio.meta2.core.planner;
 
 import com.stratio.meta.common.connector.Operations;
-import com.stratio.meta.common.logicalplan.*;
+import com.stratio.meta.common.logicalplan.Filter;
+import com.stratio.meta.common.logicalplan.Join;
+import com.stratio.meta.common.logicalplan.Limit;
+import com.stratio.meta.common.logicalplan.LogicalStep;
+import com.stratio.meta.common.logicalplan.LogicalWorkflow;
+import com.stratio.meta.common.logicalplan.Project;
+import com.stratio.meta.common.logicalplan.UnionStep;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.InnerJoin;
@@ -25,13 +31,12 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
-
-import com.stratio.meta2.core.query.NormalizedQuery;
+import com.stratio.meta2.core.query.MetadataValidatedQuery;
 import com.stratio.meta2.core.query.SelectPlannedQuery;
-
-import com.stratio.meta2.core.query.*;
+import com.stratio.meta2.core.query.SelectValidatedQuery;
+import com.stratio.meta2.core.query.StorageValidatedQuery;
+import com.stratio.meta2.core.query.ValidatedQuery;
 import com.stratio.meta2.core.statements.SelectStatement;
-
 
 import org.apache.log4j.Logger;
 
@@ -68,7 +73,7 @@ public class Planner {
     //Plan the workflow execution into different connectors.
 
     //Return the planned query.
-    SelectPlannedQuery pq = new SelectPlannedQuery(query, workflow);
+    SelectPlannedQuery pq = new SelectPlannedQuery((SelectValidatedQuery) query, workflow);
     return pq;
   }
 

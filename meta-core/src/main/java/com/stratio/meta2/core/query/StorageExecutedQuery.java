@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,18 +18,17 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta.common.result.QueryStatus;
 
-public interface ExecutedQuery {
+public class StorageExecutedQuery extends StorageInProgressQuery implements ExecutedQuery {
 
-  /*public ExecutedQuery(InProgressQuery inProgressQuery){
-    super(inProgressQuery);
+  public StorageExecutedQuery(StorageInProgressQuery storageInProgressQuery) {
+    super(storageInProgressQuery);
+    setQueryStatus(QueryStatus.EXECUTED);
   }
 
-  ExecutedQuery(ExecutedQuery executedQuery){
-    this((InProgressQuery)executedQuery);
-  }*/
-
-  public MetaStatement getStatement();
+  public StorageExecutedQuery(StorageExecutedQuery storageExecutedQuery) {
+    this((StorageInProgressQuery) storageExecutedQuery);
+  }
 
 }

@@ -15,23 +15,25 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
-import com.stratio.meta2.core.statements.SelectStatement;
+import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ConnectorName;
 
-public class SelectInProgressQuery extends InProgressQuery {
+public class SelectInProgressQuery extends SelectPlannedQuery implements InProgressQuery {
 
-  private LogicalWorkflow logicalWorkFlow;
+  private ClusterName clusterName = null;
+  private ConnectorName connectorName = null;
+  private LogicalWorkflow logicalWorkFlow = null;
 
-  public SelectInProgressQuery(PlannedQuery validatedQuery) {
-    super(validatedQuery);
+  public SelectInProgressQuery(SelectPlannedQuery selectPlannedQuery, ClusterName clusterName, ConnectorName connectorName) {
+    super(selectPlannedQuery);
+    setQueryStatus(QueryStatus.IN_PROGRESS);
+    this.clusterName = clusterName;
+    this.connectorName = connectorName;
   }
 
-  SelectInProgressQuery(SelectInProgressQuery plannedQuery) {
-    this((PlannedQuery) plannedQuery);
-  }
-
-  @Override
-  public SelectStatement getStatement() {
-    return (SelectStatement) statement;
+  public SelectInProgressQuery(SelectInProgressQuery selectInProgressQuery) {
+    this(selectInProgressQuery, selectInProgressQuery.clusterName, selectInProgressQuery.connectorName);
   }
 
   public LogicalWorkflow getLogicalWorkFlow() {
@@ -40,5 +42,15 @@ public class SelectInProgressQuery extends InProgressQuery {
 
   public void setLogicalWorkFlow(LogicalWorkflow logicalWorkFlow) {
     this.logicalWorkFlow = logicalWorkFlow;
+  }
+
+  @Override
+  public ClusterName getClusterName() {
+    return clusterName;
+  }
+
+  @Override
+  public ConnectorName getConnectorName() {
+    return connectorName;
   }
 }

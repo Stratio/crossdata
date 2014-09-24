@@ -19,20 +19,17 @@
 package com.stratio.meta2.core.query;
 
 
-import com.stratio.meta2.core.statements.MetadataStatement;
+import com.stratio.meta.common.result.QueryStatus;
 
-public class MetadataPlannedQuery extends PlannedQuery {
-  
-  public MetadataPlannedQuery(ValidatedQuery validatedQuery) {
-    super(validatedQuery);
+public class MetadataPlannedQuery extends MetadataValidatedQuery implements PlannedQuery {
+
+  public MetadataPlannedQuery(MetadataValidatedQuery metadataValidatedQuery) {
+    super(metadataValidatedQuery);
+    setQueryStatus(QueryStatus.PLANNED);
   }
 
-  MetadataPlannedQuery(MetadataPlannedQuery plannedQuery){
-    this((ValidatedQuery)plannedQuery);
+  public MetadataPlannedQuery(MetadataPlannedQuery metadataPlannedQuery){
+    this((MetadataValidatedQuery) metadataPlannedQuery);
   }
 
-    @Override
-    public MetadataStatement getStatement() {
-        return (MetadataStatement)statement;
-    }
 }

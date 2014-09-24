@@ -18,25 +18,17 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta2.core.statements.MetaStatement;
-import com.stratio.meta2.core.statements.StorageStatement;
+import com.stratio.meta.common.result.QueryStatus;
 
-public class StorageValidatedQuery extends ValidatedQuery {
+public class StorageValidatedQuery extends StorageParsedQuery implements ValidatedQuery {
 
-  public StorageValidatedQuery(ParsedQuery parsedQuery) {
-    super(parsedQuery);
+  public StorageValidatedQuery(StorageParsedQuery storageParsedQuery) {
+    super(storageParsedQuery);
+    setQueryStatus(QueryStatus.VALIDATED);
   }
 
-  StorageValidatedQuery(ValidatedQuery validatedQuery) {
-    super((ParsedQuery) validatedQuery);
+  public StorageValidatedQuery(StorageValidatedQuery storageValidatedQuery) {
+    this((StorageParsedQuery) storageValidatedQuery);
   }
 
-  public StorageValidatedQuery(BaseQuery baseQuery,
-                               MetaStatement statement) {
-    super(baseQuery, statement);
-  }
-
-  public StorageStatement getStatement(){
-    return (StorageStatement) statement;
-  }
 }

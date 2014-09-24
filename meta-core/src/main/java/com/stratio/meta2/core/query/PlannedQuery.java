@@ -18,11 +18,11 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.core.statements.MetaStatement;
 
-public abstract class PlannedQuery extends ValidatedQuery {
+public interface PlannedQuery {
 
-  public PlannedQuery(ValidatedQuery validatedQuery) {
+  /*public PlannedQuery(ValidatedQuery validatedQuery) {
     super(validatedQuery);
   }
 
@@ -32,5 +32,8 @@ public abstract class PlannedQuery extends ValidatedQuery {
 
   public QueryStatus getStatus() {
     return QueryStatus.PLANNED;
-  }
+  }*/
+
+  public MetaStatement getStatement();
+
 }

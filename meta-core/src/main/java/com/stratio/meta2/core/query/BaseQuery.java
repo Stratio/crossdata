@@ -34,10 +34,13 @@ public class BaseQuery {
 
   private final CatalogName defaultCatalog;
 
+  private QueryStatus queryStatus;
+
   public BaseQuery(String queryId, String query, CatalogName defaultCatalog) {
     this.queryId = queryId;
     this.query = query;
     this.defaultCatalog = defaultCatalog;
+    this.queryStatus = QueryStatus.NONE;
   }
 
   BaseQuery(BaseQuery baseQuery) {
@@ -53,10 +56,14 @@ public class BaseQuery {
   }
 
   public QueryStatus getStatus() {
-    return QueryStatus.NONE;
+    return queryStatus;
   }
 
   public CatalogName getDefaultCatalog() {
     return defaultCatalog;
+  }
+
+  public void setQueryStatus(QueryStatus queryStatus) {
+    this.queryStatus = queryStatus;
   }
 }

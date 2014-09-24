@@ -1,12 +1,5 @@
 package com.stratio.meta2.core.coordinator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.ConnectorName;
@@ -42,6 +35,13 @@ import com.stratio.meta2.core.statements.DropTableStatement;
 import com.stratio.meta2.core.statements.InsertIntoStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
 
+import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class Coordinator {
 
   /**
@@ -49,11 +49,9 @@ public class Coordinator {
    */
   private static final Logger LOG = Logger.getLogger(Coordinator.class);
 
-
   enum StatementEnum {
     ATTACH_CLUSTER, ATTACH_CONNECTOR, CREATE_CATALOG, CREATE_INDEX, CREATE_TABLE, DESCRIBE, DETACH_CLUSTER, DETACH_CONNECTOR, DROP_CATALOG, DROP_INDEX, DROP_TABLE, SELECT, INSERT_INTO, DELETE
   }
-
 
   public InProgressQuery coordinate(PlannedQuery plannedQuery) {
     switch (getStatement(plannedQuery)) {
@@ -65,11 +63,11 @@ public class Coordinator {
         persist(plannedQuery);
         break;
       case CREATE_CATALOG:
-        return new MetadataInProgressQuery(plannedQuery);
+        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery, null, null);
       case CREATE_INDEX:
-        return new MetadataInProgressQuery(plannedQuery);
+        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery, null, null);
       case CREATE_TABLE:
-        return new MetadataInProgressQuery(plannedQuery);
+        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery, null, null);
       case DESCRIBE:
         break;
       case DETACH_CLUSTER:
@@ -79,26 +77,24 @@ public class Coordinator {
         persist(plannedQuery);
         break;
       case DROP_CATALOG:
-        return new MetadataInProgressQuery(plannedQuery);
+        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery, null, null);
       case DROP_INDEX:
-        return new MetadataInProgressQuery(plannedQuery);
+        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery, null, null);
       case DROP_TABLE:
-        return new MetadataInProgressQuery(plannedQuery);
+        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery, null, null);
         // SELECT
       case SELECT:
         return coordinateSelect((SelectPlannedQuery) plannedQuery);
         // STORAGE
       case INSERT_INTO:
-        return new StorageInProgressQuery(plannedQuery);
+        return new StorageInProgressQuery((StoragePlannedQuery) plannedQuery, null, null);
       case DELETE:
-        return new StorageInProgressQuery(plannedQuery);
+        return new StorageInProgressQuery((StoragePlannedQuery) plannedQuery, null, null);
 
       default:
         LOG.info("not known statement detected");
     }
-
     return null;
-
   }
 
   public void persist(PlannedQuery plannedQuery) {
@@ -143,22 +139,17 @@ public class Coordinator {
       case DELETE:
         LOG.info("delete statement");
         break;
-
-
       default:
         LOG.info("not known statement detected");
         break;
     }
-
   }
 
 
   private StatementEnum getStatement(PlannedQuery plannedQuery) {
-
     // METADATA
     if (plannedQuery instanceof MetadataPlannedQuery) {
       MetaStatement statement = ((MetadataPlannedQuery) plannedQuery).getStatement();
-
       if (statement instanceof AttachClusterStatement) {
         return StatementEnum.ATTACH_CLUSTER;
       }
@@ -183,7 +174,6 @@ public class Coordinator {
       if (statement instanceof DropTableStatement) {
         return StatementEnum.DROP_TABLE;
       }
-
     }
 
     // SELECT
@@ -205,7 +195,7 @@ public class Coordinator {
   }
 
   private SelectInProgressQuery coordinateSelect(SelectPlannedQuery selectPlannedQuery) {
-    SelectInProgressQuery inProgressQuery = new SelectInProgressQuery(selectPlannedQuery);
+    SelectInProgressQuery inProgressQuery = new SelectInProgressQuery(selectPlannedQuery, null, null);
     return inProgressQuery;
   }
 

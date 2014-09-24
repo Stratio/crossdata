@@ -18,7 +18,6 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.logicalplan.Join;
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.InnerJoin;
@@ -28,7 +27,7 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 
 import java.util.List;
 
-public class SelectValidatedQuery extends ValidatedQuery {
+public class SelectValidatedQuery extends SelectParsedQuery implements ValidatedQuery {
 
   private List<TableMetadata> tableMetadata;
   private List<ColumnName> columns;
@@ -36,12 +35,13 @@ public class SelectValidatedQuery extends ValidatedQuery {
   private List<TableName> tables;
   private InnerJoin join;
 
-  public SelectValidatedQuery(ParsedQuery parsedQuery) {
-    super(parsedQuery);
+  public SelectValidatedQuery(SelectParsedQuery selectParsedQuery) {
+    super(selectParsedQuery);
+    setQueryStatus(QueryStatus.VALIDATED);
   }
 
-  SelectValidatedQuery(ValidatedQuery validatedQuery) {
-    super((ParsedQuery) validatedQuery);
+  public SelectValidatedQuery(SelectValidatedQuery selectValidatedQuery) {
+    this((SelectParsedQuery) selectValidatedQuery);
   }
 
   public List<TableMetadata> getTableMetadata() {
@@ -82,18 +82,6 @@ public class SelectValidatedQuery extends ValidatedQuery {
 
   public void setJoin(InnerJoin join) {
     this.join = join;
-  }
-
-  public SelectValidatedQuery(SelectParsedQuery parsedQuery) {
-    super(parsedQuery);
-  }
-
-  SelectValidatedQuery(NormalizedQuery normalizedQuery) {
-    super(normalizedQuery);
-  }
-
-  public QueryStatus getStatus() {
-    return QueryStatus.VALIDATED;
   }
 
 }
