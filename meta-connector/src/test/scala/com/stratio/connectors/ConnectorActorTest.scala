@@ -1,20 +1,31 @@
 package com.stratio.connectors
 
-import akka.actor.ActorSystem
-import akka.testkit.TestKit
+import akka.pattern.ask
+import akka.util.Timeout
+import com.stratio.meta.common.connector.{IConnector, IQueryEngine}
+import com.stratio.meta.common.logicalplan.{LogicalStep, LogicalWorkflow}
+import com.stratio.meta.common.result.QueryResult
+import com.stratio.meta2.common.data.{CatalogName, TableName}
+import com.stratio.meta2.core.query._
+import com.stratio.meta2.core.statements.SelectStatement
+import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 
+import scala.concurrent.Await
 
-class ConnectorActorTest /*extends TestKit(ActorSystem()) with FunSuiteLike with MockFactory*/ {
+
+import scala.concurrent.duration.DurationInt
 
 
-  //TODO: REVIEW!!!
-/*
+class ConnectorActorTest extends FunSuite with MockFactory {
+
+
+
   implicit val timeout = Timeout(3 seconds) // needed for `?` below
-
   //lazy val logger =Logger.getLogger(classOf[ConnectorActorTest])
 
+  /*
   test("Basic Connector Mock") {
     val m = mock[IConnector]
     (m.getConnectorName _).expects().returning("My New Connector")
@@ -32,6 +43,7 @@ class ConnectorActorTest /*extends TestKit(ActorSystem()) with FunSuiteLike with
     assert("Hello World" == "Hello World")
     c.shutdown()
   }
+  */
 
 
 
@@ -67,6 +79,7 @@ class ConnectorActorTest /*extends TestKit(ActorSystem()) with FunSuiteLike with
     c.stop()
   }
 
+  /*
   test("Send MetadataInProgressQuery to Connector") {
     val port = "2560"
     val m = mock[IConnector]
@@ -107,7 +120,6 @@ class ConnectorActorTest /*extends TestKit(ActorSystem()) with FunSuiteLike with
     c.shutdown()
   }
 
-  /*
   test("Send StorageInProgressQuery to Connector") {
     val port = "2561"
     val m = mock[IConnector]
@@ -133,6 +145,5 @@ class ConnectorActorTest /*extends TestKit(ActorSystem()) with FunSuiteLike with
   //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE
   */
 
-*/
 }
 
