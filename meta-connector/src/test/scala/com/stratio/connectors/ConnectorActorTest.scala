@@ -9,21 +9,22 @@ import com.stratio.meta2.common.data.{CatalogName, TableName}
 import com.stratio.meta2.core.query._
 import com.stratio.meta2.core.statements.SelectStatement
 import com.typesafe.config.ConfigFactory
+import org.apache.log4j.Logger
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 
 import scala.concurrent.Await
-
-
 import scala.concurrent.duration.DurationInt
 import com.stratio.meta.common.executionplan.{ExecutionType, ExecutionStep}
 
+
 class ConnectorActorTest extends FunSuite with MockFactory {
+//class ConnectorActorTest extends TestKit(ActorSystem()) with FunSuiteLike with MockFactory {
 
 
 
   implicit val timeout = Timeout(3 seconds) // needed for `?` below
-  //lazy val logger =Logger.getLogger(classOf[ConnectorActorTest])
+  lazy val logger =Logger.getLogger(classOf[ConnectorActorTest])
 
   /*
   test("Basic Connector Mock") {
