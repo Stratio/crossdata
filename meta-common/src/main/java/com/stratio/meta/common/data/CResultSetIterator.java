@@ -24,9 +24,9 @@ import java.util.NoSuchElementException;
 public class CResultSetIterator implements Iterator<com.stratio.meta.common.data.Row> {
 
     /**
-     * Set representing a result from Cassandra.
+     * Set representing a result.
      */
-    private final CassandraResultSet cResultSet;
+    private final ResultSet cResultSet;
 
     /**
      * Pointer to the current element.
@@ -34,10 +34,10 @@ public class CResultSetIterator implements Iterator<com.stratio.meta.common.data
     private int current;
 
     /**
-     * Build a {@link com.stratio.meta.common.data.CResultSetIterator} from a {@link com.stratio.meta.common.data.CassandraResultSet}.
-     * @param cResultSet Cassandra Result Set.
+     * Build a {@link com.stratio.meta.common.data.CResultSetIterator} from a {@link com.stratio.meta.common.data.ResultSet}.
+     * @param cResultSet Result Set.
      */
-    public CResultSetIterator(CassandraResultSet cResultSet) {
+    public CResultSetIterator(ResultSet cResultSet) {
         this.cResultSet = cResultSet;
         this.current = 0;
     }

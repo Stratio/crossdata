@@ -28,6 +28,7 @@ public class QueryResult extends Result {
   /**
    * Serial version UID in order to be {@link java.io.Serializable}.
    */
+  private static final long serialVersionUID = -4934701384106071347L;
 
   /**
    * Set of tuples returned by the server after successfully executing the query.
