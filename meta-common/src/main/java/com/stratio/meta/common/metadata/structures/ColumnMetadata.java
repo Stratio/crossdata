@@ -18,6 +18,8 @@
 
 package com.stratio.meta.common.metadata.structures;
 
+import com.stratio.meta2.common.metadata.ColumnType;
+
 import java.io.Serializable;
 
 
@@ -89,7 +91,7 @@ public class ColumnMetadata implements Serializable {
   /**
    * Get the column type.
    * 
-   * @return A {@link com.stratio.meta.common.metadata.structures.ColumnType}.
+   * @return A {@link com.stratio.meta2.common.metadata.ColumnType}.
    */
   public ColumnType getType() {
     return type;

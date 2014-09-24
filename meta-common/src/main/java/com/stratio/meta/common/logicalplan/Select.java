@@ -19,6 +19,7 @@
 package com.stratio.meta.common.logicalplan;
 
 import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta2.common.metadata.ColumnType;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -37,19 +38,30 @@ public class Select extends TransformationStep{
   private final Map<String, String> columnMap;
 
   /**
+   * Map of {@link com.stratio.meta2.common.metadata.ColumnType} associated with each column.
+   */
+  private final Map<String, ColumnType> typeMap;
+
+  /**
    * Class constructor.
    *
    * @param operation The operation to be applied.
    * @param columnMap Map of columns associating the name given in the Project
    *                  logical steps with the name expected in the result.
+   * @param typeMap The mapping of column types.
    */
-  public Select(Operations operation, Map<String, String> columnMap) {
+  public Select(Operations operation, Map<String, String> columnMap, Map<String, ColumnType> typeMap) {
     super(operation);
     this.columnMap = columnMap;
+    this.typeMap = typeMap;
   }
 
   public Map<String, String> getColumnMap() {
     return columnMap;
+  }
+
+  public Map<String, ColumnType> getTypeMap() {
+    return typeMap;
   }
 
   @Override

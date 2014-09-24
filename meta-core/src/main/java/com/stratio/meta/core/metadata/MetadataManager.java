@@ -18,11 +18,11 @@
 
 package com.stratio.meta.core.metadata;
 
-import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.core.structures.IndexType;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.TableMetadata;
 
 import org.apache.log4j.Logger;

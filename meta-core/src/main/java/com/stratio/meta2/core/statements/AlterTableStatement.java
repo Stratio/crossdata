@@ -88,9 +88,6 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
 
   @Override
   public String toString() {
-    ColumnType columnType =  null;
-    columnType = ColumnType.BIGINT;
-    columnType.setInnerType(ColumnType.BIGINT);
     StringBuilder sb = new StringBuilder("ALTER TABLE ");
     sb.append(tableName.getQualifiedName());
     switch(option){
@@ -114,7 +111,7 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
         sb.append("BAD OPTION");
         break;
     }
-    System.out.println("To execute: " + sb.toString());
+
     return sb.toString();
   }
 

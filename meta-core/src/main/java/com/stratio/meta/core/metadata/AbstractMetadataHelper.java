@@ -20,10 +20,10 @@ package com.stratio.meta.core.metadata;
 
 import com.stratio.deep.entity.Cell;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.common.metadata.structures.TableMetadata;
 import com.stratio.meta.common.metadata.structures.TableType;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.ColumnType;
 
 import java.util.HashMap;
 import java.util.HashSet;

@@ -75,6 +75,10 @@ public class Join extends UnionStep{
     return sourceIdentifiers;
   }
 
+  public String getId() {
+    return id;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("JOIN (");

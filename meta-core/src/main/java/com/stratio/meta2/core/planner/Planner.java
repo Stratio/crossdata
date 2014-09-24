@@ -21,6 +21,7 @@ import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
@@ -146,7 +147,7 @@ public class Planner {
     }
 
     //Add SELECT operator
-    Select finalSelect = generateSelect(ss);
+    Select finalSelect = generateSelect(ss, tableMetadataMap);
     last.setNextStep(finalSelect);
     finalSelect.setPrevious(last);
 
@@ -280,16 +281,21 @@ public class Planner {
     return projects;
   }
 
-  protected Select generateSelect(SelectStatement selectStatement){
+  protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap){
     Map<String,String> aliasMap = new HashMap<>();
+    Map<String,ColumnType> typeMap = new HashMap<>();
     for(Selector s: selectStatement.getSelectExpression().getSelectorList()){
       if(s.getAlias() != null) {
         aliasMap.put(s.toString(), s.getAlias());
+
+        typeMap.put(s.toString(),
+                    tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
+                        .get(ColumnSelector.class.cast(s).getName()).getColumnType());
       }else{
         aliasMap.put(s.toString(), s.toString());
       }
     }
-    Select result = new Select(Operations.SELECT_OPERATOR, aliasMap);
+    Select result = new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap);
     return result;
   }
 

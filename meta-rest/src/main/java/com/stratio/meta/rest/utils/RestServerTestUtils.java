@@ -26,8 +26,8 @@ import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.ColumnDefinition;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.rest.models.ResultSet;
+import com.stratio.meta2.common.metadata.ColumnType;
 
 public class RestServerTestUtils {
 

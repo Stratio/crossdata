@@ -25,9 +25,9 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
-import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
+import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 import org.apache.log4j.Logger;
@@ -132,7 +132,7 @@ public class CoreUtils {
       columnMetadata =
           new com.stratio.meta.common.metadata.structures.ColumnMetadata(def.getTable(),
                                                                          def.getName());
-      ColumnType type = helper.toColumnType(def.getType().getName().toString());
+      ColumnType type = null;
       columnMetadata.setType(type);
       columnList.add(columnMetadata);
     }

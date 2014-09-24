@@ -24,16 +24,14 @@ import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.ColumnType;
-import com.stratio.meta.common.statements.structures.selectors.GroupByFunction;
 import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
 import com.stratio.meta.core.metadata.AbstractMetadataHelper;
 import com.stratio.meta.core.metadata.CassandraMetadataHelper;
+import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta.core.structures.Selection;
-import com.stratio.meta.core.structures.SelectionList;
 import com.stratio.meta.core.structures.SelectionSelectors;
 
 import org.apache.log4j.Logger;

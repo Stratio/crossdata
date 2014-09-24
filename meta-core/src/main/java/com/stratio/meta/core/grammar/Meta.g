@@ -792,8 +792,8 @@ query returns [MetaStatement st]:
 
 getDataType returns [ColumnType dataType]:
     ( ident1=getBasicType
-    | ident1=getCollectionType T_LT ident2=getBasicType T_GT { ident1.setInnerType(ident2); }
-    | ident1=getMapType T_LT ident2=getBasicType T_COMMA ident3=getBasicType T_GT { ident1.setTypes(ident2, ident3); }
+    | ident1=getCollectionType T_LT ident2=getBasicType T_GT { ident1.setDBCollectionType(ident2); }
+    | ident1=getMapType T_LT ident2=getBasicType T_COMMA ident3=getBasicType T_GT { ident1.setDBMapType(ident2, ident3); }
     ) { $dataType = ident1; }
 ;
 

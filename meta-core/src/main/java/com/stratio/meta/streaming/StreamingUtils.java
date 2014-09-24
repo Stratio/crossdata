@@ -131,20 +131,8 @@ public class StreamingUtils {
     }
   }
 
-  public static com.stratio.meta.common.metadata.structures.ColumnType streamingToMetaType(String type) {
-    com.stratio.meta.common.metadata.structures.ColumnType metaType = com.stratio.meta.common.metadata.structures.ColumnType.VARCHAR;
-    if(type.equalsIgnoreCase(ColumnType.BOOLEAN.getValue())){
-      metaType = com.stratio.meta.common.metadata.structures.ColumnType.BOOLEAN;
-    } else if(type.equalsIgnoreCase(ColumnType.DOUBLE.getValue())){
-      metaType = com.stratio.meta.common.metadata.structures.ColumnType.DOUBLE;
-    } else if(type.equalsIgnoreCase(ColumnType.FLOAT.getValue())){
-      metaType = com.stratio.meta.common.metadata.structures.ColumnType.FLOAT;
-    } else if(type.equalsIgnoreCase(ColumnType.INTEGER.getValue())){
-      metaType = com.stratio.meta.common.metadata.structures.ColumnType.INT;
-    } else if(type.equalsIgnoreCase(ColumnType.LONG.getValue())){
-      metaType = com.stratio.meta.common.metadata.structures.ColumnType.BIGINT;
-    }
-    return metaType;
+  public static com.stratio.meta2.common.metadata.ColumnType streamingToMetaType(String type) {
+    return null;
   }
 
   public static Object convertStreamingToJava(String value, String streamingType){

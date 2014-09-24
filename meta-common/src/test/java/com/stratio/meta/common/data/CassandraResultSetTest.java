@@ -19,7 +19,8 @@
 package com.stratio.meta.common.data;
 
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.ColumnType;
+import com.stratio.meta2.common.metadata.ColumnType;
+
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -29,7 +30,7 @@ import java.util.*;
 public class CassandraResultSetTest {
 
     private Random rand;
-    CassandraResultSet rSet;
+    ResultSet rSet;
 
     @BeforeClass
     public void setUp(){
@@ -38,13 +39,13 @@ public class CassandraResultSetTest {
 
     @Test
     public void testConstructor(){
-        rSet = new CassandraResultSet();
+        rSet = new ResultSet();
         Assert.assertNotNull(rSet);
     }
 
     @Test
     public void testGetRows(){
-        rSet = new CassandraResultSet();
+        rSet = new ResultSet();
         rSet.add(new Row("str",new Cell(new String("comment" + rand.nextInt(100)))));
         rSet.add(new Row("int", new Cell(new Integer(rand.nextInt(50)))));
         Assert.assertEquals(rSet.getRows().size(), 2);
@@ -52,7 +53,7 @@ public class CassandraResultSetTest {
 
     @Test
     public void testColDefs(){
-        rSet = new CassandraResultSet();
+        rSet = new ResultSet();
         rSet.setColumnMetadata(buildColumnDefinitions());
 
         Assert.assertEquals(rSet.getColumnMetadata().get(0).getColumnName(), "str", "Invalid column name");
