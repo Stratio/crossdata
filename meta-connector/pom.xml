@@ -51,6 +51,16 @@
        <groupId>com.stratio.meta</groupId>
        <artifactId>meta-core</artifactId>
        <version>${meta.version}</version>
+       <exclusions>
+           <exclusion>
+               <groupId>io.netty</groupId>
+               <artifactId>netty</artifactId>
+           </exclusion>
+           <exclusion>
+               <groupId>com.stratio.streaming</groupId>
+               <artifactId>streaming-api</artifactId>
+           </exclusion>
+       </exclusions>
    </dependency>
    <dependency>
             <groupId>com.stratio.meta</groupId>
@@ -139,8 +149,6 @@
 
   </dependencies>
     <build>
- 
- 
          <pluginManagement>
             <plugins>
                 <plugin>
