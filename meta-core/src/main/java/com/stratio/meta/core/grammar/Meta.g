@@ -92,6 +92,18 @@ options {
         throw new RuntimeException(message);
     }
 
+    public boolean checkWhereClauses(List<Relation> whereClauses){
+        if((whereClauses == null) || (whereClauses.isEmpty())){
+            return true;
+        }
+        for(Relation relation: whereClauses){
+            if(!(relation.getLeftTerm() instanceof ColumnSelector)){
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public void displayRecognitionError(String[] tokenNames, RecognitionException e){        
         String hdr = getErrorHeader(e);
@@ -427,7 +439,7 @@ deleteStatement returns [DeleteStatement ds]
 		$ds = new DeleteStatement(tablename, whereClauses);
 	}:
 	T_DELETE T_FROM tablename=getTableName
-	T_WHERE whereClauses=getWhereClauses[tablename]
+	T_WHERE whereClauses=getWhereClauses[tablename] { if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name"); }
 ;
 
 //ADD \"index_path\";
@@ -539,6 +551,7 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
     (T_IF id1=getSelector[tablename] T_EQUAL term1=getSelector[tablename] {condsInc = true; conditions.put(id1, term1);}
                     (T_AND idN=getSelector[tablename] T_EQUAL termN=getSelector[tablename] {conditions.put(idN, termN);})*)?
     {
+        if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name");
         if(optsInc)
             if(condsInc)
                 $pdtbst = new UpdateTableStatement(tablename, options, assignations, whereClauses, conditions);
@@ -641,6 +654,7 @@ selectStatement returns [SelectStatement slctst]
     (T_GROUP T_BY {groupInc = true;} groupBy=getGroupBy[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
+        if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name");
         $slctst = new SelectStatement(selClause, tablename);
         if(windowInc)
             $slctst.setWindow(window);

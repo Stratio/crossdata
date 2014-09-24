@@ -549,4 +549,10 @@ public class SelectStatementTest extends ParsingTest {
     testRegularStatement(inputText, expectedText, "selectComplex");
   }
 
+  @Test
+  public void selectWithWrongLeftTermTypeInWhere() {
+    String inputText = "SELECT * FROM demo.emp WHERE myUDF(comment) < 10;";
+    testParserFails("demo", inputText, "selectWithWrongLeftTermTypeInWhere");
+  }
+
 }
