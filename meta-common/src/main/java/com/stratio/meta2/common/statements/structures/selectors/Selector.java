@@ -42,6 +42,14 @@ public abstract class Selector {
   }
 
   /**
+   * Get the column alias.
+   * @return The alias.
+   */
+  public String getAlias() {
+    return alias;
+  }
+
+  /**
    * Get the selector type.
    * @return A {@link com.stratio.meta2.common.statements.structures.selectors.SelectorType}.
    */

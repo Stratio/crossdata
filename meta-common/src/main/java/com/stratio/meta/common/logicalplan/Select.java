@@ -20,6 +20,7 @@ package com.stratio.meta.common.logicalplan;
 
 import com.stratio.meta.common.connector.Operations;
 
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -49,5 +50,21 @@ public class Select extends TransformationStep{
 
   public Map<String, String> getColumnMap() {
     return columnMap;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("SELECT (");
+    Iterator<Map.Entry<String, String>> it = columnMap.entrySet().iterator();
+    Map.Entry<String, String> entry = null;
+    while(it.hasNext()){
+      entry = it.next();
+      sb.append(entry.getKey()).append(" AS ").append(entry.getValue());
+      if(it.hasNext()){
+        sb.append(", ");
+      }
+    }
+    sb.append(")");
+    return sb.toString();
   }
 }

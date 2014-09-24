@@ -30,6 +30,11 @@ import java.util.List;
 public class Join extends UnionStep{
 
   /**
+   * Join identifier.
+   */
+  private final String id;
+
+  /**
    * List of logical step identifiers involved in the join.
    */
   private final List<String> sourceIdentifiers = new ArrayList<>();
@@ -43,9 +48,11 @@ public class Join extends UnionStep{
    * Class constructor.
    *
    * @param operation The operation to be applied.
+   * @param id The join identifier.
    */
-  public Join(Operations operation) {
+  public Join(Operations operation, String id) {
     super(operation);
+    this.id = id;
   }
 
   public void addJoinRelation(Relation r){
