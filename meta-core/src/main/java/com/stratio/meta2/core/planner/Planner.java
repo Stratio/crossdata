@@ -21,6 +21,7 @@ import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
@@ -145,8 +146,13 @@ public class Planner {
       last = l;
     }
 
+    //Add SELECT operator
+    Select finalSelect = generateSelect(ss, tableMetadataMap);
+    last.setNextStep(finalSelect);
+    finalSelect.setPrevious(last);
+
     LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
-    workflow.setLastStep(last);
+    workflow.setLastStep(finalSelect);
 
     return workflow;
   }
@@ -241,7 +247,8 @@ public class Planner {
    */
   private Map<String, LogicalStep> addJoin(Map<String, LogicalStep> stepMap, String targetTable, SelectValidatedQuery query) {
     InnerJoin queryJoin = query.getJoin();
-    Join j = new Join(Operations.SELECT_INNER_JOIN);
+    String id = new StringBuilder(targetTable).append("$").append(queryJoin.getTablename().getQualifiedName()).toString();
+    Join j = new Join(Operations.SELECT_INNER_JOIN, id);
     j.addSourceIdentifier(targetTable);
     j.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
     j.addJoinRelations(queryJoin.getRelations());
@@ -272,6 +279,24 @@ public class Planner {
       projects.put(tn.getQualifiedName(), p);
     }
     return projects;
+  }
+
+  protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap){
+    Map<String,String> aliasMap = new HashMap<>();
+    Map<String,ColumnType> typeMap = new HashMap<>();
+    for(Selector s: selectStatement.getSelectExpression().getSelectorList()){
+      if(s.getAlias() != null) {
+        aliasMap.put(s.toString(), s.getAlias());
+
+        typeMap.put(s.toString(),
+                    tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
+                        .get(ColumnSelector.class.cast(s).getName()).getColumnType());
+      }else{
+        aliasMap.put(s.toString(), s.toString());
+      }
+    }
+    Select result = new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap);
+    return result;
   }
 
 }

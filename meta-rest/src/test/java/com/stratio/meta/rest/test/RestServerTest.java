@@ -43,13 +43,13 @@ import org.junit.Test;
 import com.google.gson.Gson;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.ColumnType;
 import com.stratio.meta.rest.Main;
 import com.stratio.meta.rest.models.Result;
 import com.stratio.meta.rest.models.ResultSet;
 import com.stratio.meta.rest.utils.CassandraHandler;
 import com.stratio.meta.rest.utils.DriverHelper;
 import com.stratio.meta.rest.utils.RestServerTestUtils;
+import com.stratio.meta2.common.metadata.ColumnType;
 
 public class RestServerTest {
 

@@ -19,7 +19,9 @@
 package com.stratio.meta.common.logicalplan;
 
 import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta2.common.metadata.ColumnType;
 
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -36,18 +38,45 @@ public class Select extends TransformationStep{
   private final Map<String, String> columnMap;
 
   /**
+   * Map of {@link com.stratio.meta2.common.metadata.ColumnType} associated with each column.
+   */
+  private final Map<String, ColumnType> typeMap;
+
+  /**
    * Class constructor.
    *
    * @param operation The operation to be applied.
    * @param columnMap Map of columns associating the name given in the Project
    *                  logical steps with the name expected in the result.
+   * @param typeMap The mapping of column types.
    */
-  public Select(Operations operation, Map<String, String> columnMap) {
+  public Select(Operations operation, Map<String, String> columnMap, Map<String, ColumnType> typeMap) {
     super(operation);
     this.columnMap = columnMap;
+    this.typeMap = typeMap;
   }
 
   public Map<String, String> getColumnMap() {
     return columnMap;
+  }
+
+  public Map<String, ColumnType> getTypeMap() {
+    return typeMap;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("SELECT (");
+    Iterator<Map.Entry<String, String>> it = columnMap.entrySet().iterator();
+    Map.Entry<String, String> entry = null;
+    while(it.hasNext()){
+      entry = it.next();
+      sb.append(entry.getKey()).append(" AS ").append(entry.getValue());
+      if(it.hasNext()){
+        sb.append(", ");
+      }
+    }
+    sb.append(")");
+    return sb.toString();
   }
 }
