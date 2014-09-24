@@ -61,7 +61,7 @@ import java.util.concurrent.locks.Lock;
 
 import javax.transaction.TransactionManager;
 
-public class BasicValidatorTest extends BasicCoreCassandraTest {
+public class BasicValidatorTest {
 
   static Map<FirstLevelName, IMetadata> metadataMap;
 
@@ -71,33 +71,6 @@ public class BasicValidatorTest extends BasicCoreCassandraTest {
 
     private static String path = "";
 
-
-    @BeforeClass
-    public static void setUpBeforeClass() {
-        BasicCoreCassandraTest.setUpBeforeClass();
-        BasicCoreCassandraTest.loadTestData("demo", "demoKeyspace.cql");
-        //initializeGrid();
-
-        GridInitializer gridInitializer = Grid.initializer();
-        gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
-        path = "/tmp/metadata-store-" + UUID.randomUUID();
-        gridInitializer.withPort(7800)
-            .withListenAddress("127.0.0.1")
-            .withMinInitialMembers(1)
-            .withJoinTimeoutInMs(3000)
-            .withPersistencePath(path).init();
-
-        metadataMap = Grid.getInstance().map("meta-test");
-        Lock lock = Grid.getInstance().lock("meta-test");
-        TransactionManager tm = Grid.getInstance().transactionManager("meta-test");
-        MetadataManager.MANAGER.init(metadataMap, lock, tm);
-        MetadataManager.MANAGER.createDataStore(createDataStoreMetadata());
-        MetadataManager.MANAGER.createConnector(createConnectorMetadata());
-        MetadataManager.MANAGER.createCluster(createClusterMetadata());
-        MetadataManager.MANAGER.createCatalog(generateCatalogsMetadata());
-        MetadataManager.MANAGER.createTable(createTable());
-
-    }
 
 
     @BeforeMethod

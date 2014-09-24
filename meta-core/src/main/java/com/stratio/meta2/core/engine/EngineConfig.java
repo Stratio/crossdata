@@ -102,42 +102,6 @@ public class EngineConfig {
   private String streamingGroupId;
 
 
-  /**
-   * Get Cassandra hosts.
-   *
-   * @return an array of hosts
-   */
-  public String[] getCassandraHosts() {
-    return cassandraHosts.clone();
-  }
-
-  /**
-   * Set cassandra hosts.
-   *
-   * @param cassandraHosts an array of String containing cassandra hosts.
-   */
-  public void setCassandraHosts(String[] cassandraHosts) {
-    this.cassandraHosts = Arrays.copyOf(cassandraHosts, cassandraHosts.length);
-  }
-
-  /**
-   * Get cassandra port.
-   *
-   * @return current cassandra port.
-   */
-  public int getCassandraPort() {
-    return cassandraPort;
-  }
-
-  /**
-   * Set cassandra port.
-   *
-   * @param cassandraPort Port of cassandra (CQL).
-   */
-  public void setCassandraPort(int cassandraPort) {
-    this.cassandraPort = cassandraPort;
-  }
-
   public String getGridListenAddress() {
     return gridListenAddress;
   }
@@ -213,34 +177,6 @@ public class EngineConfig {
     return JOBNAME;
   }
 
-
-  /**
-   * Get cassandra host randomly.
-   *
-   * @return random cassandra host.
-   */
-  public String getRandomCassandraHost() {
-    Random rand = new Random();
-    return cassandraHosts[rand.nextInt(cassandraHosts.length)];
-  }
-
-  /**
-   * Set List of paths to jars.
-   *
-   * @param jars List of paths.
-   */
-  public void setJars(List<String> jars) {
-    this.jars = jars;
-  }
-
-  /**
-   * Get List of jars.
-   *
-   * @return list of paths, each point to one jar
-   */
-  public List<String> getJars() {
-    return jars;
-  }
 
   /**
    * Set path which cointains spark classpath.

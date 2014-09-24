@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 
-public class DriverParentTest extends ParentCassandraTest {
+public class DriverParentTest  {
 
   private static final long SLEEP_TIME = 5000;
 

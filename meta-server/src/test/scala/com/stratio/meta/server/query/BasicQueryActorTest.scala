@@ -18,21 +18,17 @@
 
 package com.stratio.meta2.server.query
 
-import akka.testkit.{ImplicitSender, DefaultTimeout, TestKit}
-import akka.actor.{Props, ActorSystem}
-import com.typesafe.config.ConfigFactory
-import org.scalatest.FunSuiteLike
-import com.stratio.meta.server.actors._
-import scala.concurrent.duration._
-import com.stratio.meta2.core.engine.Engine
-import com.stratio.meta.server.utilities._
-import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
+import akka.actor.Props
 import com.stratio.meta.common.ask.Query
-import akka.pattern.ask
-import org.testng.Assert._
-import com.stratio.meta.common.result.{Result, ErrorResult, QueryResult}
-import com.stratio.meta.communication.ACK
+import com.stratio.meta.common.result.{ErrorResult, QueryResult, Result}
+import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
+import com.stratio.meta.server.utilities._
+import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.server.actors.QueryActor
+import org.scalatest.FunSuiteLike
+import org.testng.Assert._
+
+import scala.concurrent.duration._
 
 class BasicQueryActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 

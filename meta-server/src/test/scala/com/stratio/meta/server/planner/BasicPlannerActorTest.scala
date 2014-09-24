@@ -18,27 +18,10 @@
 
 package com.stratio.meta.server.planner
 
-import com.stratio.meta2.core.engine.Engine
-import akka.actor.ActorSystem
-import com.stratio.meta.server.actors.{PlannerActor,  ExecutorActor}
-import akka.testkit._
-import com.typesafe.config.ConfigFactory
-import org.scalatest.FunSuiteLike
-import com.stratio.meta.common.result._
-import scala.concurrent.duration._
-import scala.concurrent.Await
-import akka.pattern.ask
-import org.testng.Assert._
-import scala.util.Success
-import com.stratio.meta.server.utilities._
-import scala.collection.mutable
 import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
-import com.stratio.meta.communication.ACK
-import com.stratio.meta.communication.ACK
-import scala.util.Success
-import com.stratio.meta.common.ask.Query
-import java.util.UUID
-import com.stratio.meta2.server.actors.ConnectorManagerActor
+import com.stratio.meta.server.utilities._
+import com.stratio.meta2.core.engine.Engine
+import org.scalatest.FunSuiteLike
 
 /**
  * Planner actor tests.

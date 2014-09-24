@@ -29,12 +29,6 @@ object createEngine {
   def create():Engine={
   val engineConfig: EngineConfig = {
     val result=new EngineConfig
-    result.setCassandraHosts(Array[String]("127.0.0.1"))
-    result.setCassandraPort(9042)
-    //result.setKafkaServer("127.0.0.1")
-    //result.setKafkaPort(9092)
-    //result.setZookeeperServer("127.0.0.1")
-    //result.setZookeeperPort(2181)
     result.setSparkMaster("local[2]")
     result.setGridListenAddress("localhost")
     result.setGridContactHosts(Array[String]())

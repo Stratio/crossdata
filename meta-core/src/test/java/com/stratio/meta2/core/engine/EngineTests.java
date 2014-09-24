@@ -18,9 +18,7 @@
 
 package com.stratio.meta2.core.engine;
 
-import com.stratio.meta.core.cassandra.BasicCoreCassandraTest;
 import com.stratio.meta2.core.grid.Grid;
-//import com.stratio.meta2.core.grid.Store;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -31,19 +29,16 @@ import java.util.Map;
 import java.util.Random;
 
 
-public class EngineTests extends BasicCoreCassandraTest {
+public class EngineTests {
   private EngineConfig engineConfig;
 
   @BeforeClass
   public void setUp() {
 
     engineConfig = new EngineConfig();
-    String[] cassandraHosts = {"127.0.0.1"};
-    engineConfig.setCassandraHosts(cassandraHosts);
-    engineConfig.setCassandraPort(9042);
+
     engineConfig.setSparkMaster("local");
     engineConfig.setClasspathJars("/");
-    engineConfig.setJars(Arrays.asList("akka-1.0.jar", "deep-0.2.0.jar"));
     engineConfig.setGridListenAddress("localhost");
     engineConfig.setGridContactHosts(new String[]{});
     engineConfig.setGridMinInitialMembers(1);
@@ -51,31 +46,6 @@ public class EngineTests extends BasicCoreCassandraTest {
     engineConfig.setGridJoinTimeout(3000);
     engineConfig.setGridPersistencePath("/tmp/meta-test-" + new Random().nextInt(100000));
   }
-
-  /*
-  @Test
-  public void testCreateEngine() {
-    Engine engine = new Engine(engineConfig);
-    Assert.assertNotNull(engine);
-    engine.shutdown();
-  }
-
-  @Test
-  public void testHazelcastMap() {
-    Engine engine = new Engine(engineConfig);
-    Map<String, byte[]> map = engine.getHazelcastMap();
-    Assert.assertNotNull(map);
-    Assert.assertEquals(0, map.size());
-    map.put("key_1", "value_1".getBytes());
-    Assert.assertEquals(1, map.size());
-    Assert.assertTrue(map.containsKey("key_1"));
-    Assert.assertEquals(map.get("key_1").length, "value_1".getBytes().length);
-    map.remove("key_1");
-    Assert.assertEquals(0, map.size());
-    Assert.assertFalse(map.containsKey("key_1"));
-    engine.shutdown();
-  }
-  */
 
   @Test(enabled = false)
   public void testGrid() {
