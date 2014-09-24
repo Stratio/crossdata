@@ -60,7 +60,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     case query: StorageInProgressQuery=> {
       log.info("storage in progress query")
       //connectorsMap(query.getConnectorName()) ! query
-      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName) ! query
+      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName).asInstanceOf[ActorRef] ! query
     }
 
     case query: SelectInProgressQuery=> {
@@ -68,7 +68,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       val workflow=query.getLogicalWorkFlow
       log.info("select in progress query")
       //connectorsMap(query.getConnectorName()) ! Execute(clustername,workflow)
-      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName) ! Execute(clustername,workflow)
+      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName).asInstanceOf[ActorRef] ! Execute(clustername,workflow)
     }
 
     case query: MetadataInProgressQuery=> {
@@ -92,7 +92,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
       log.info("metadata in progress query")
       //connectorsMap(query.getConnectorName()) ! query
-      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName) ! query
+      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName).asInstanceOf[ActorRef] ! query
     }
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))

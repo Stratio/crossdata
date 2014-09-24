@@ -14,9 +14,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.Result;
-import com.stratio.meta2.core.engine.EngineConfig;
-import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 /**
@@ -48,20 +45,6 @@ public class ExplainPlanStatement extends MetadataStatement {
     StringBuilder sb = new StringBuilder("Explain plan for ");
     sb.append(metaStatement.toString());
     return sb.toString();
-  }
-
-  /**
-   * Validate the semantics of the current statement. This method checks the existing metadata to
-   * determine that all referenced entities exists in the {@code targetKeyspace} and the types are
-   * compatible with the assignations or comparisons.
-   *
-   * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
-   *        required information.
-   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
-   */
-  @Override
-  public Result validate(MetadataManager metadata, EngineConfig config) {
-    return metaStatement.validate(metadata, config);
   }
 
   @Override

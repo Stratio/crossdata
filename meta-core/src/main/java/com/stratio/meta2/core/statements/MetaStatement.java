@@ -20,7 +20,7 @@ package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
@@ -98,66 +98,6 @@ public abstract class MetaStatement implements IStatement {
   @Override
   public abstract String toString();
 
-  /**
-   * Validate the semantics of the current statement. This method checks the existing metadata to
-   * determine that all referenced entities exists in the {@code targetCatalog} and the types are
-   * compatible with the assignations or comparisons.
-   * 
-   * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
-   *        required information.
-   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
-   */
-  public Result validate(MetadataManager metadata, EngineConfig config) {
-    return Result.createValidationErrorResult("Statement not supported");
-  }
-
-  /**
-   * Validate that a valid catalog and table is present.
-   * 
-   * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
-   *        required information.
-   * @param targetCatalog The target catalog where the query will be executed.
-   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
-   */
-  protected Result validateCatalogAndTable(MetadataManager metadata, CatalogName targetCatalog,
-      boolean catalogInc, CatalogName stmtCatalog, TableName tableName) {
-    Result result = QueryResult.createSuccessQueryResult();
-    // Get the effective catalog based on the user specification during the create
-    // sentence, or taking the catalog in use in the user session.
-    CatalogName effectiveCatalog = targetCatalog;
-    if (catalogInc) {
-      effectiveCatalog = stmtCatalog;
-    }
-
-    // Check that the catalog and table exists.
-    /*
-    if (effectiveCatalog == null) {
-      result =
-          Result
-              .createValidationErrorResult("Target catalog missing or no catalog has been selected.");
-    } else {
-      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
-      if (ksMetadata == null) {
-        result =
-            Result
-                .createValidationErrorResult("Catalog " + effectiveCatalog + " does not exist.");
-      } else {
-        com.stratio.meta.common.metadata.structures.TableMetadata tableMetadata =
-            metadata.getTableGenericMetadata(effectiveCatalog, tableName);
-        if (tableMetadata == null) {
-          if (!metadata.checkStream(effectiveCatalog + "_" + tableName)) {
-            result =
-                Result.createValidationErrorResult("Table " + tableName + " does not exist in "
-                    + effectiveCatalog + ".");
-          } else {
-            result = CommandResult.createCommandResult("streaming");
-          }
-        }
-      }
-    }
-    */
-    return result;
-  }
 
   /**
    * Get the effective catalog to execute the statement.

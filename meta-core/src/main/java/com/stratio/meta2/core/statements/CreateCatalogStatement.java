@@ -18,14 +18,9 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta.core.metadata.MetadataManager;
-import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -74,29 +69,6 @@ public class CreateCatalogStatement extends MetadataStatement {
       sb.append(" WITH ").append(options);
     }
     return sb.toString();
-  }
-
-  @Override
-  public Result validate(MetadataManager metadata, EngineConfig config) {
-    Result result = QueryResult.createSuccessQueryResult();
-    if(catalog!= null) {
-      /*CatalogMetadata ksMetadata = metadata.getCatalogMetadata(catalog);
-      if(ksMetadata != null && !ifNotExists){
-        result = Result.createValidationErrorResult("Catalog " + catalog + " already exists.");
-      }*/
-    }else{
-      result = Result.createValidationErrorResult("Empty catalog name found.");
-    }
-
-    //if(properties.isEmpty() || !properties.containsKey("replication")){
-    //  result = Result.createValidationErrorResult("Missing mandatory replication property.");
-    //}
-
-    return result;
-  }
-
-  public Tree getPlan(MetadataManager metadataManager, String targetCatalog) {
-    return null;
   }
 
   public ValidationRequirements getValidationRequirements(){

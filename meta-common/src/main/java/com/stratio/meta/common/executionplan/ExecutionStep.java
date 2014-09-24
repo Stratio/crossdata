@@ -21,7 +21,8 @@ package com.stratio.meta.common.executionplan;
 import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 
-import akka.actor.ActorRef;
+
+import java.io.Serializable;
 
 /**
  * Execution step abstraction. This class contains all the information
@@ -33,7 +34,7 @@ public class ExecutionStep {
   /**
    * The target actor reference associated with the connector.
    */
-  private final ActorRef actorRef;
+  private final Serializable actorRef;
 
   /**
    * Workflow to be executed.
@@ -63,13 +64,13 @@ public class ExecutionStep {
    * @param workflow Workflow to be executed.
    * @param type Type of execution.
    */
-  public ExecutionStep(ActorRef actorRef, LogicalWorkflow workflow, ExecutionType type) {
+  public ExecutionStep(Serializable actorRef, LogicalWorkflow workflow, ExecutionType type) {
     this.actorRef = actorRef;
     this.workflow = workflow;
     this.type = type;
   }
 
-  public ActorRef getActorRef() {
+  public Serializable getActorRef() {
     return actorRef;
   }
 

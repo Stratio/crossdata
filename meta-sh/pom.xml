@@ -78,7 +78,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<antlr.version>3.5.1</antlr.version>
+		<antlr.version>3.5.2</antlr.version>
 	</properties>
 
     <dependencies>
@@ -92,12 +92,6 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>2.3</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -136,7 +130,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.3.1</version>
+            <version>${commons-lang3.version}</version>
         </dependency>
     </dependencies>
 	<build>

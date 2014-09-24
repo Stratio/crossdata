@@ -25,9 +25,9 @@ import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.Status;
 
+import java.io.Serializable;
 import java.util.Set;
 
-import akka.actor.ActorRef;
 
 public class ConnectorMetadata implements IMetadata {
 
@@ -38,7 +38,7 @@ public class ConnectorMetadata implements IMetadata {
   private final OptionalPropertiesType optionalProperties;
   private final SupportedOperationsType supportedOperations;
   private Status status;
-  private ActorRef actorRef;
+  private Serializable actorRef;
 
   public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
                            RequiredPropertiesType requiredProperties, OptionalPropertiesType optionalProperties,
@@ -84,12 +84,12 @@ public class ConnectorMetadata implements IMetadata {
     this.status = status;
   }
 
-  public void setActorRef(akka.actor.ActorRef actorRef) {
+  public void setActorRef(Serializable actorRef) {
     this.status = Status.ONLINE;
     this.actorRef = actorRef;
   }
 
-  public ActorRef getActorRef() {
+  public Serializable getActorRef() {
     return actorRef;
   }
 }

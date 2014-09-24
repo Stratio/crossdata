@@ -14,19 +14,14 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
+
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.core.engine.EngineConfig;
-import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta.core.utils.ParserUtils;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -93,15 +88,6 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
     this.optsInc = optsInc;
 
     this.options = options;
-
-    // this.options = options;
-    /*if (optsInc) {
-      this.options = new ArrayList<>();
-      for (Option opt : options) {
-        opt.setNameProperty(opt.getNameProperty().toLowerCase());
-        this.options.add(opt);
-      }
-    }*/
 
     this.assignations = assignations;
     this.whereClauses = whereClauses;
@@ -180,148 +166,6 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
       sb.append(ParserUtils.stringMap(conditions, " = ", " AND "));
     }
     return sb.toString();
-  }
-
-  /**
-   * Validate the semantics of the current statement. This method checks the existing metadata to
-   * determine that all referenced entities exists in the {@code targetCatalog} and the types are
-   * compatible with the assignations or comparisons.
-   * 
-   * @param metadata The {@link com.stratio.meta.core.metadata.MetadataManager} that provides the
-   *        required information.
-   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
-   */
-  @Override
-  public Result validate(MetadataManager metadata, EngineConfig config) {
-    Result result =
-        validateCatalogAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
-    /*if (!result.hasError()) {
-      TableMetadata tableMetadata = metadata.getTableMetadata(getEffectiveCatalog(), tableName);
-
-      if (optsInc) {
-        result = validateOptions();
-      }
-
-      if (!result.hasError()) {
-        result = validateAssignations(tableMetadata);
-      }
-
-      if (!result.hasError()) {
-        //result = validateWhereClauses(tableMetadata);
-      }
-
-      if ((!result.hasError()) && condsInc) {
-        result = validateConds(tableMetadata);
-      }
-    }*/
-    return result;
-  }
-
-  private Result validateConds(TableMetadata tableMetadata) {
-    throw new UnsupportedOperationException();
-    /*updateTermClassesInConditions(tableMetadata);
-    Result result = QueryResult.createSuccessQueryResult();
-    for (String key : conditions.keySet()) {
-      ColumnMetadata cm = tableMetadata.getColumns().get(key);
-      if (cm != null) {
-        if (!(cm.getColumnType() == conditions.get(key).getTermClass())) {
-          result =
-              Result.createValidationErrorResult("Column " + key + " should be type "
-                  + cm.getColumnType().asJavaClass().getSimpleName());
-        }
-      } else {
-        result =
-            Result.createValidationErrorResult("Column " + key + " was not found in table "
-                + tableName);
-      }
-    }
-    return result;*/
-  }
-
-  private Result validateOptions() {
-    Result result = QueryResult.createSuccessQueryResult();
-    for (Option opt : options) {
-      if (!("ttl".equalsIgnoreCase(((StringSelector) opt.getNameProperty()).getValue()) || "timestamp".equalsIgnoreCase(((StringSelector) opt.getNameProperty()).getValue()))) {
-        result =
-            Result.createValidationErrorResult("TIMESTAMP and TTL are the only accepted options.");
-      }
-    }
-    /*for (Option opt : options) {
-      if (opt.getProperties().getType() != GenericTerm.SIMPLE_TERM) {
-        result =
-            Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
-      } else {
-        Term simpleTerm = (Term) opt.getProperties();
-        if (!simpleTerm.isConstant()) {
-          result =
-              Result.createValidationErrorResult("TIMESTAMP and TTL must have a constant value.");
-        }
-      }
-    }*/
-    return result;
-  }
-
-  /**
-   * Check that the specified columns exist on the target table
-   * 
-   * @param tableMetadata Table metadata associated with the target table.
-   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
-   */
-  private Result validateAssignations(TableMetadata tableMetadata) {
-    throw new UnsupportedOperationException();
-    /*updateTermClassesInAssignations(tableMetadata);
-    Result result = QueryResult.createSuccessQueryResult();
-    for (int index = 0; index < assignations.size(); index++) {
-      Assignation assignment = assignations.get(index);
-
-      ColumnName targetCol = assignment.getTargetColumn();
-
-      // Check if identifier exists
-      String colId = targetCol.getName();
-      ColumnMetadata cm = tableMetadata.getColumns().get(colId);
-      if (cm == null) {
-        result =
-            Result.createValidationErrorResult("Column " + colId + " not found in "
-                + tableMetadata.getName() + ".");
-        break;
-      }
-
-      // Check if column data type of the identifier is one of the supported types
-      Class<?> idClazz = cm.getColumnType().asJavaClass();
-      if (!result.hasError()) {
-        if (!CoreUtils.supportedTypes.contains(idClazz.getSimpleName().toLowerCase())) {
-          result =
-              Result.createValidationErrorResult("Column " + colId + " is of type "
-                  + cm.getType().asJavaClass().getSimpleName() + ", which is not supported yet.");
-        }
-      }
-
-      // Check if identifier is simple, otherwise it refers to a collection, which are not supported
-      // yet
-      if (!result.hasError()) {
-        if (cm.getColumnType().isCollection()) {
-          result = Result.createValidationErrorResult("Collections are not supported yet.");
-        }
-      }
-
-      if (!result.hasError()) {
-        GenericTerm valueAssign = assignment.getValue();
-        if (valueAssign.getType() == GenericTerm.SIMPLE_TERM) {
-          Term<?> valueTerm = (Term<?>) valueAssign;
-          // Check data type between column of the identifier and term type of the statement
-          Class<?> valueClazz = valueTerm.getTermClass();
-          String valueClass = valueClazz.getSimpleName();
-          if (!idClazz.getSimpleName().equalsIgnoreCase(valueClass)) {
-            result =
-                Result.createValidationErrorResult(cm.getName() + " and "
-                    + valueTerm.getTermValue() + " are not compatible type.");
-          }
-        } else {
-          result = Result.createValidationErrorResult("Collections are not supported yet.");
-        }
-      }
-    }
-    return result;*/
   }
 
   @Override

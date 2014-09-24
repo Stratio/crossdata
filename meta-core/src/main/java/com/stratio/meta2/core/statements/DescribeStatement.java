@@ -14,16 +14,12 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
-import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -116,71 +112,7 @@ public class DescribeStatement extends MetadataStatement implements ITableStatem
     return sb.toString();
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public Result validate(MetadataManager metadata, EngineConfig config) {
 
-    Result result = QueryResult.createSuccessQueryResult();
-    /*
-    if (this.catalog != null) {
-      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(this.catalog);
-      if (ksMetadata == null) {
-        result = Result.createValidationErrorResult("Catalog " + this.catalog + " does not exist.");
-      }
-    }
-
-    if (this.tableName != null) {
-      result =
-          validateCatalogAndTable(metadata, sessionCatalog, tableName.isCompletedName(), tableName
-              .getCatalogName().getName(), tableName);
-    }
-    */
-    return result;
-  }
-
-  /**
-   * Execute the describe command.
-   *
-   * @return A {@link com.stratio.meta.common.result.Result}.
-   */
-  public Result execute() {
-    MetadataManager mm = new MetadataManager();
-    mm.loadMetadata();
-    Result result = null;
-    /*
-    if (type == DescribeType.CATALOG) {
-
-      CatalogMetadata ksInfo = mm.getCatalogMetadata(getEffectiveCatalog());
-      if (ksInfo == null) {
-        result = Result.createExecutionErrorResult("KEYSPACE " + catalog + " was not found");
-      } else {
-        result = CommandResult.createCommandResult(ksInfo.toString());
-      }
-    } else if (type == DescribeType.CATALOGS) {
-      List<String> catalogsNames = mm.getCatalogsNames();
-      if (catalogsNames == null) {
-        result = Result.createExecutionErrorResult("No catalogs found");
-      } else {
-        result = CommandResult.createCommandResult(catalogsNames.toString());
-      }
-    } else if (type == DescribeType.TABLE) {
-      com.stratio.meta.common.metadata.structures.TableMetadata tableInfo =
-          mm.getTableGenericMetadata(getEffectiveCatalog(), tableName);
-      if (tableInfo == null) {
-        result = Result.createExecutionErrorResult("TABLE " + tableName + " was not found");
-      } else {
-        result = CommandResult.createCommandResult(tableInfo.exportAsString());
-      }
-    } else {
-      List<String> tablesNames = mm.getTablesNames(this.getEffectiveCatalog());
-      if (tablesNames == null) {
-        result = Result.createExecutionErrorResult("No tables found");
-      } else {
-        result = CommandResult.createCommandResult(tablesNames.toString());
-      }
-    }*/
-    return result;
-  }
 
   public List<CatalogName> getCatalogs() {
     List<CatalogName> result = new ArrayList<>();

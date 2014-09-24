@@ -14,15 +14,10 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.core.engine.EngineConfig;
-import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
@@ -202,141 +197,6 @@ public class InsertIntoStatement extends StorageStatement {
     }
     return sb.toString();
   }
-
-  @Override
-  public Result validate(MetadataManager metadata, EngineConfig config) {
-    Result result =
-        validateCatalogAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
-    if (!result.hasError()) {
-      CatalogName effectiveCatalog = getEffectiveCatalog();
-
-      /*TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
-
-      if (typeValues == TYPE_SELECT_CLAUSE) {
-        result = Result.createValidationErrorResult("INSERT INTO with subqueries not supported.");
-      } else {
-        result = validateColumns(tableMetadata);
-      }*/
-    }
-    return result;
-  }
-
-  public void updateTermClass(TableMetadata tableMetadata) {
-    throw new UnsupportedOperationException();
-    /*for (int i = 0; i < ids.size(); i++) {
-      Class<? extends Comparable<?>> dataType =
-          (Class<? extends Comparable<?>>) tableMetadata.getColumns().get(ids.get(i)).getColumnType()
-              .asJavaClass();
-      if (cellValues.get(i) instanceof Term) {
-        Term<?> term = (Term<?>) cellValues.get(i);
-        if (dataType == Integer.class && term.getTermClass() == Long.class) {
-          cellValues.set(i, new IntegerTerm((Term<Long>) term));
-        } else if (dataType == Float.class && term.getTermClass() == Double.class) {
-          cellValues.set(i, new FloatTerm((Term<Double>) term));
-        }
-      }
-    }*/
-  }
-
-  /**
-   * Check that the specified columns exist on the target table and that the semantics of the
-   * assigned values match.
-   *
-   * @param tableMetadata Table metadata associated with the target table.
-   * @return A {@link com.stratio.meta.common.result.Result} with the validation result.
-   */
-  private Result validateColumns(TableMetadata tableMetadata) {
-    throw new UnsupportedOperationException();
-    /*Result result = QueryResult.createSuccessQueryResult();
-
-    // Validate target column names
-    for (String c : ids) {
-      if (c.toLowerCase().startsWith("stratio")) {
-        result =
-            Result.createValidationErrorResult("Cannot insert data into column " + c
-                + " reserved for internal use.");
-      }
-    }
-    if (!result.hasError()) {
-      ColumnMetadata cm = null;
-      if (cellValues.size() == ids.size()) {
-        updateTermClass(tableMetadata);
-        for (int index = 0; index < cellValues.size(); index++) {
-          cm = tableMetadata.getColumns().get(ids.get(index));
-          if (cm != null) {
-            Term<?> t = Term.class.cast(cellValues.get(index));
-            if (!cm.getColumnType().asJavaClass().equals(t.getTermClass())) {
-              result =
-                  Result.createValidationErrorResult("Column " + ids.get(index) + " of type "
-                      + cm.getColumnType().asJavaClass() + " does not accept " + t.getTermClass()
-                      + " values (" + cellValues.get(index) + ")");
-            }
-          } else {
-            result =
-                Result.createValidationErrorResult("Column " + ids.get(index) + " not found in "
-                    + tableMetadata.getName());
-          }
-        }
-      } else {
-        result = Result.createValidationErrorResult("Number of columns and values does not match.");
-      }
-    }
-    return result;*/
-  }
-
-  /**
-   * Iterate over InsertIntoStatement#cellValues and add
-   * values to Insert object to be translated in CQL.
-   *
-   * @param insertStmt
-   */
-  /*private void iterateValuesAndInsertThem(Insert insertStmt) {
-    Iterator<Selector> it = this.cellValues.iterator();
-    for (ColumnName id: this.ids) {
-      Selector genericTerm = it.next();
-      if (genericTerm.toString().matches("[0123456789.]+")) {
-        insertStmt = insertStmt.value(id.getName(), Integer.parseInt(genericTerm.toString()));
-      } else if (genericTerm.toString().contains("-")) {
-        insertStmt = insertStmt.value(id.getName(), UUID.fromString(genericTerm.toString()));
-      } else if ("true".equalsIgnoreCase(genericTerm.toString())
-                 || "false".equalsIgnoreCase(genericTerm.toString())) {
-        insertStmt = insertStmt.value(id.getName(), Boolean.valueOf(genericTerm.toString()));
-      } else {
-        insertStmt = insertStmt.value(id.getName(), genericTerm.toString());
-      }
-    }
-  }*/
-
-  /**
-   * Check the options for InsertIntoStatement.
-   *
-   * //@param insertStmt a Insert where insert the
-   *        options.
-   * //@return a Options
-   */
-  /*private Insert.Options checkOptions(Insert insertStmt) {
-    Insert.Options optionsStmt = null;
-
-    if (this.optsInc) {
-      for (Option option : this.options) {
-        if (option.getFixedOption() == Option.OPTION_PROPERTY) {
-          if ("ttl".equalsIgnoreCase(((StringSelector) option.getNameProperty()).getValue())) {
-            optionsStmt =
-                insertStmt.using(QueryBuilder.ttl(Integer.parseInt(option.getProperties()
-                                                                       .toString())));
-          } else if ("timestamp".equalsIgnoreCase(((StringSelector) option.getNameProperty()).getValue())) {
-            optionsStmt =
-                insertStmt.using(QueryBuilder.timestamp(Integer.parseInt(option.getProperties()
-                                                                             .toString())));
-          } else {
-            LOG.warn("Unsupported option: " + option.getNameProperty());
-          }
-        }
-      }
-    }
-
-    return optionsStmt;
-  }*/
 
   @Override
   public ValidationRequirements getValidationRequirements() {
