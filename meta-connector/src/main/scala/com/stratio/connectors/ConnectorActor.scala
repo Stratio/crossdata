@@ -1,11 +1,13 @@
 package com.stratio.connectors
 
-import akka.actor.{ActorLogging, Props, _}
+import akka.actor.{ActorLogging, Props}
+import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.communication.{HeartbeatSig, getConnectorName, replyConnectorName}
 import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
 import com.stratio.meta2.core.statements.{CreateTableStatement, SelectStatement}
+import akka.actor.ActorRef
 
 object State extends Enumeration {
       type state= Value
@@ -34,6 +36,12 @@ class ConnectorActor(connectorName:String,conn:IConnector) extends HeartbeatActo
 
   override def handleHeartbeat(heartbeat:HeartbeatSig)={
     println("ConnectorActor receives a heartbeat message")
+  }
+
+  override def preStart(): Unit = {
+    //#subscribe
+    Cluster(context.system).subscribe(self, classOf[MemberEvent])
+    //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
 
   def shutdown()={

@@ -22,9 +22,14 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.core.executor.BasicExecutorTest;
+import com.stratio.meta.core.utils.MetaPath;
+import com.stratio.meta.core.utils.MetaQuery;
+import com.stratio.meta.core.utils.MetaStep;
+import com.stratio.meta.core.utils.Tree;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.core.statements.DropCatalogStatement;
 import com.stratio.meta2.core.statements.ExplainPlanStatement;
-import com.stratio.meta.core.utils.*;
+
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
@@ -36,7 +41,7 @@ public class ExplainPlanStatementTest extends BasicExecutorTest {
 
         MetaQuery metaQuery = new MetaQuery("EXPLAIN PLAN FOR DROP KEYSPACE demo;");
 
-        DropCatalogStatement dropStmt = new DropCatalogStatement("demo", false);
+        DropCatalogStatement dropStmt = new DropCatalogStatement(new CatalogName("demo"), false);
 
         ExplainPlanStatement stmt = new ExplainPlanStatement(dropStmt);
 

@@ -14,15 +14,16 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ConnectorName;
+import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -44,6 +45,10 @@ public class DescribeStatement extends MetadataStatement implements ITableStatem
    */
   private TableName tableName;
 
+  private ClusterName clusterName;
+  private DataStoreName dataStoreName;
+  private ConnectorName connectorName;
+
   /**
    * Class constructor.
    * 
@@ -63,6 +68,34 @@ public class DescribeStatement extends MetadataStatement implements ITableStatem
     return type;
   }
 
+  public void setType(DescribeType type) {
+    this.type = type;
+  }
+
+  public ClusterName getClusterName() {
+    return clusterName;
+  }
+
+  public void setClusterName(ClusterName clusterName) {
+    this.clusterName = clusterName;
+  }
+
+  public DataStoreName getDataStoreName() {
+    return dataStoreName;
+  }
+
+  public void setDataStoreName(DataStoreName dataStoreName) {
+    this.dataStoreName = dataStoreName;
+  }
+
+  public ConnectorName getConnectorName() {
+    return connectorName;
+  }
+
+  public void setConnectorName(ConnectorName connectorName) {
+    this.connectorName = connectorName;
+  }
+
   @Override
   public String toString() {
 
@@ -73,8 +106,13 @@ public class DescribeStatement extends MetadataStatement implements ITableStatem
       sb.append(" ").append(catalog);
     } else if (type == DescribeType.TABLE) {
       sb.append(" ").append(tableName);
+    } else if (type == DescribeType.CLUSTER && clusterName != null){
+      sb.append(" ").append(clusterName);
+    } else if (type == DescribeType.CONNECTOR && connectorName != null){
+      sb.append(" ").append(connectorName);
+    } else if (type == DescribeType.DATASTORE && dataStoreName !=  null){
+      sb.append(" ").append(dataStoreName);
     }
-
     return sb.toString();
   }
 
@@ -83,7 +121,7 @@ public class DescribeStatement extends MetadataStatement implements ITableStatem
   public Result validate(MetadataManager metadata, EngineConfig config) {
 
     Result result = QueryResult.createSuccessQueryResult();
-
+    /*
     if (this.catalog != null) {
       CatalogMetadata ksMetadata = metadata.getCatalogMetadata(this.catalog);
       if (ksMetadata == null) {
@@ -96,7 +134,7 @@ public class DescribeStatement extends MetadataStatement implements ITableStatem
           validateCatalogAndTable(metadata, sessionCatalog, tableName.isCompletedName(), tableName
               .getCatalogName().getName(), tableName);
     }
-
+    */
     return result;
   }
 
@@ -109,6 +147,7 @@ public class DescribeStatement extends MetadataStatement implements ITableStatem
     MetadataManager mm = new MetadataManager();
     mm.loadMetadata();
     Result result = null;
+    /*
     if (type == DescribeType.CATALOG) {
 
       CatalogMetadata ksInfo = mm.getCatalogMetadata(getEffectiveCatalog());
@@ -139,14 +178,14 @@ public class DescribeStatement extends MetadataStatement implements ITableStatem
       } else {
         result = CommandResult.createCommandResult(tablesNames.toString());
       }
-    }
+    }*/
     return result;
   }
 
   public List<CatalogName> getCatalogs() {
     List<CatalogName> result = new ArrayList<>();
     if (DescribeType.CATALOG.equals(type)) {
-      result.add(new CatalogName(getEffectiveCatalog()));
+      result.add(getEffectiveCatalog());
     }
     return result;
   }
@@ -180,10 +219,10 @@ public class DescribeStatement extends MetadataStatement implements ITableStatem
   }
 
   @Override
-  public String getEffectiveCatalog() {
-    String effective;
+  public CatalogName getEffectiveCatalog() {
+    CatalogName effective;
     if(tableName != null){
-      effective = tableName.getCatalogName().getName();
+      effective = tableName.getCatalogName();
     }else{
       effective = catalog;
     }

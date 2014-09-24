@@ -37,7 +37,7 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
   @Test
   public void createCatalogIfNotExists() {
       String query = "CREATE CATALOG IF NOT EXISTS new_catalog;";
-      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement("demo2",true,"");
+      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement(new CatalogName("demo2"), true,"");
       Validator validator=new Validator();
 
       BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo2"));
@@ -57,7 +57,7 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
   @Test
   public void createCatalogIfNotExistsWithExistingCatalog() {
       String query = "CREATE CATALOG IF NOT EXISTS demo;";
-      CreateCatalogStatement createCatalogStatement=new CreateCatalogStatement("demo",true,"");
+      CreateCatalogStatement createCatalogStatement=new CreateCatalogStatement(new CatalogName("demo"), true,"");
       Validator validator=new Validator();
 
       BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo"));
@@ -77,7 +77,7 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
   @Test
   public void createCatalogWithExistingCatalog() {
       String query = "CREATE CATALOG demo;";
-      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement("demo",false,"");
+      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement(new CatalogName("demo"), false, "");
       Validator validator=new Validator();
 
       BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo"));
@@ -97,7 +97,7 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
   @Test
   public void createCatalogWithOptions() {
       String query = "CREATE CATALOG new_catalog WITH {\"comment\":\"This is a comment\"};";
-      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement("demo",true,"");
+      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement(new CatalogName("demo"), true, "");
       Validator validator=new Validator();
 
       BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo"));

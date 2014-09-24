@@ -36,7 +36,7 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
   @Test
   public void alterCatalogInvalidOptions() {
       String query = "ALTER CATALOG demo WITH {};";
-      AlterCatalogStatement alterCatalogStatement=new AlterCatalogStatement("demo","");
+      AlterCatalogStatement alterCatalogStatement=new AlterCatalogStatement(new CatalogName("demo"), "");
       Validator validator=new Validator();
 
       BaseQuery baseQuery=new BaseQuery("alterCatalogid",query, new CatalogName("demo"));
@@ -55,7 +55,7 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
   @Test
   public void alterCatalogNotFound() {
     String query = "ALTER CATALOG unknown WITH {};";
-      AlterCatalogStatement alterCatalogStatement=new AlterCatalogStatement("unknown","");
+      AlterCatalogStatement alterCatalogStatement=new AlterCatalogStatement(new CatalogName("unknown"), "");
       Validator validator=new Validator();
 
       BaseQuery baseQuery=new BaseQuery("alterCatalogid",query, new CatalogName("unknown"));
@@ -74,7 +74,7 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
   @Test
   public void alterCatalogValid() {
       String query = "ALTER CATALOG key_space1 WITH {\"comment\":\"This is a comment\"};";
-      AlterCatalogStatement alterCatalogStatement=new AlterCatalogStatement("demo","{\"comment\":\"This is a comment\"}");
+      AlterCatalogStatement alterCatalogStatement=new AlterCatalogStatement(new CatalogName("demo"), "{\"comment\":\"This is a comment\"}");
       Validator validator=new Validator();
 
       BaseQuery baseQuery=new BaseQuery("alterCatalogid",query, new CatalogName("demo"));

@@ -22,12 +22,11 @@ import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.metadata.MetadataManager;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
-import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
@@ -126,7 +125,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
    *
    * @param catalog The name of the catalog.
    */
-  public void setCatalog(String catalog) {
+  public void setCatalog(CatalogName catalog) {
     this.catalog = catalog;
   }
 
@@ -209,13 +208,13 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     Result result = QueryResult.createSuccessQueryResult();
     //Get the effective catalog based on the user specification during the create
     //sentence, or taking the catalog in use in the user session.
-    String effectiveCatalog = getEffectiveCatalog();
+    CatalogName effectiveCatalog = getEffectiveCatalog();
 
     //Check that the catalog exists, and that the table does not exits.
-    if(effectiveCatalog == null || effectiveCatalog.length() == 0){
+    if(effectiveCatalog == null){
       result = Result.createValidationErrorResult("Target catalog missing or no catalog has been selected.");
     }else{
-      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
+      /*CatalogMetadata ksMetadata = metadata.getCatalogMetadata(effectiveCatalog);
       if(ksMetadata == null){
         result = Result.createValidationErrorResult("Catalog " + effectiveCatalog + " does not exist.");
       }else {
@@ -226,7 +225,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         } else if (tableMetadata == null){
           createTable = true;
         }
-      }
+      }*/
     }
     return result;
   }
@@ -337,10 +336,10 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
   }
 
   @Override
-  public String getEffectiveCatalog() {
-    String effective;
+  public CatalogName getEffectiveCatalog() {
+    CatalogName effective;
     if(tableName != null){
-      effective = tableName.getCatalogName().getName();
+      effective = tableName.getCatalogName();
     }else{
       effective = catalog;
     }

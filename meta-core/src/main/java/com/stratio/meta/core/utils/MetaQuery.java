@@ -22,6 +22,7 @@ import com.stratio.meta.common.result.ErrorType;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 /**
@@ -69,7 +70,7 @@ public class MetaQuery {
   /**
    * The catalog on the user session launching the query.
    */
-  private String sessionCatalog;
+  private CatalogName sessionCatalog;
 
   /**
    * Class constructor.
@@ -223,7 +224,7 @@ public class MetaQuery {
    *
    * @return The catalog.
    */
-  public String getSessionCatalog() {
+  public CatalogName getSessionCatalog() {
     return sessionCatalog;
   }
 
@@ -232,7 +233,7 @@ public class MetaQuery {
    *
    * @param sessionCatalog The catalog.
    */
-  public void setSessionCatalog(String sessionCatalog) {
+  public void setSessionCatalog(CatalogName sessionCatalog) {
     this.sessionCatalog = sessionCatalog;
     statement.setSessionCatalog(sessionCatalog);
   }

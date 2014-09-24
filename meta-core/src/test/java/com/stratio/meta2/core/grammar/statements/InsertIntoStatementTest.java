@@ -87,6 +87,21 @@ public class InsertIntoStatementTest extends ParsingTest {
   }
 
   @Test
+  public void insertIntoWrongNumberOfValues() {
+    String inputText =
+        "INSERT INTO mykeyspace.tablename (ident1, ident2, ident3) VALUES ('term1', 'term2', 55, false);";
+    testParserFails(inputText, "insertIntoWrongNumberOfValues");
+  }
+
+  @Test
+  public void insertIntoWithDecimalNumber() {
+    String inputText =
+        "INSERT INTO mykeyspace.tablename (ident1, ident2, ident3) VALUES ('term1', true, -55.);";
+    String expectedText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2, mykeyspace.tablename.ident3) VALUES ('term1', true, -55.0);";
+    testRegularStatementSession("demo", inputText, expectedText, "insertIntoWithDecimalNumber");
+  }
+
+  @Test
   public void insertIntoSelect() {
     String inputText =
         "INSERT INTO tablename (ident1, ident2) SELECT c.a, c.b from c "

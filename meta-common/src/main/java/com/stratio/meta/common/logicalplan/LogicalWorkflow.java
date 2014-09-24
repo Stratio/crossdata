@@ -94,10 +94,12 @@ public class LogicalWorkflow {
       while(step != null){
         if(UnionStep.class.isInstance(step)){
           pending.add(step);
+          step = null;
         }else {
           sb.append("\t").append(step).append(System.lineSeparator());
+          step = step.getNextStep();
         }
-        step = step.getNextStep();
+
       }
 
     }
@@ -106,7 +108,8 @@ public class LogicalWorkflow {
     for(LogicalStep union : pending){
       step = union;
       sb.append(step).append(System.lineSeparator());
-      while(step.getNextStep() != null){
+      step = step.getNextStep();
+      while(step != null){
         sb.append("\t").append(step).append(System.lineSeparator());
         step = step.getNextStep();
       }

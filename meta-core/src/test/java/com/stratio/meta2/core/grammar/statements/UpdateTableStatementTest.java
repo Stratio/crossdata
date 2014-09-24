@@ -31,12 +31,19 @@ public class UpdateTableStatementTest extends ParsingTest {
   }
 
   @Test
-  public void updateTablename() {
+  public void updateBasicWithoutWhere() {
+    String inputText = "UPDATE demo.table1 SET field1 = 'value1';";
+    String expectedText = "UPDATE demo.table1 SET demo.table1.field1 = 'value1';";
+    testRegularStatement(inputText, expectedText, "updateBasicWithoutWhere");
+  }
+
+  @Test
+  public void updateTableName() {
     String inputText = "[demo], UPDATE myTable USING 'prop1' = 342 SET ident1 = 'term1', ident2 = 'term2'"
                        + " WHERE ident3 > 25 IF 'replication' = 2;";
     String expectedText = "UPDATE demo.myTable USING 'prop1' = 342 SET demo.myTable.ident1 = 'term1', demo.myTable.ident2 = 'term2'"
                           + " WHERE demo.myTable.ident3 > 25 IF 'replication' = 2;";
-    testRegularStatement(inputText, expectedText, "updateTablename");
+    testRegularStatement(inputText, expectedText, "updateTableName");
   }
 
   @Test
@@ -109,21 +116,57 @@ public class UpdateTableStatementTest extends ParsingTest {
   }*/
 
   @Test
-  public void updateTablenameIfAnd1() {
+  public void updateTableNameIfAnd1() {
     String inputText = "UPDATE myTable SET ident1 = 'term1', ident2 = 'term2'"
                        + " WHERE ident3 = 34 IF field3 = 86 AND field2 = 25;";
     String expectedText = "UPDATE demo.myTable SET demo.myTable.ident1 = 'term1', demo.myTable.ident2 = 'term2'"
                           + " WHERE demo.myTable.ident3 = 34 IF demo.myTable.field3 = 86 AND demo.myTable.field2 = 25;";
-    testRegularStatementSession("demo", inputText, expectedText, "updateTablenameIfAnd1");
+    testRegularStatementSession("demo", inputText, expectedText, "updateTableNameIfAnd1");
   }
 
   @Test
-  public void updateTablenameIfAnd2() {
+  public void updateTableNameIfAnd2() {
     String inputText = "UPDATE tester.myTable USING 'prop1' = 342 SET ident1 = 'term1', ident2 = 'term2'"
                        + " WHERE ident3 = 'Big Data' IF field3 = 86 AND field2 = 25;";
     String expectedText = "UPDATE tester.myTable USING 'prop1' = 342 SET tester.myTable.ident1 = 'term1', tester.myTable.ident2 = 'term2'"
                           + " WHERE tester.myTable.ident3 = 'Big Data' IF tester.myTable.field3 = 86 AND tester.myTable.field2 = 25;";
-    testRegularStatementSession("demo", inputText, expectedText, "updateTablenameIfAnd2");
+    testRegularStatementSession("demo", inputText, expectedText, "updateTableNameIfAnd2");
+  }
+
+  @Test
+  public void updateTableNameWrongLeftTermTypeInWhere1() {
+    String inputText = "UPDATE myTable SET ident1 = 'term1' WHERE 'string' = 34;";
+    testParserFails("demo", inputText, "updateTableNameWrongLeftTermTypeInWhere1");
+  }
+
+  @Test
+  public void updateTableNameWrongLeftTermTypeInWhere2() {
+    String inputText = "UPDATE myTable SET ident1 = 'term1' WHERE true = 34;";
+    testParserFails("demo", inputText, "updateTableNameWrongLeftTermTypeInWhere2");
+  }
+
+  @Test
+  public void updateTableNameWrongLeftTermTypeInWhere3() {
+    String inputText = "UPDATE myTable SET ident1 = 'term1' WHERE 54 > 34;";
+    testParserFails("demo", inputText, "updateTableNameWrongLeftTermTypeInWhere3");
+  }
+
+  @Test
+  public void updateTableNameWrongLeftTermTypeInWhere4() {
+    String inputText = "UPDATE myTable SET ident1 = 'term1' WHERE * = 34;";
+    testParserFails("demo", inputText, "updateTableNameWrongLeftTermTypeInWhere4");
+  }
+
+  @Test
+  public void updateTableNameWrongLeftTermTypeInWhere5() {
+    String inputText = "UPDATE myTable SET ident1 = 'term1' WHERE 54.9 > 34;";
+    testParserFails("demo", inputText, "updateTableNameWrongLeftTermTypeInWhere5");
+  }
+
+  @Test
+  public void updateTableNameWrongLeftTermTypeInWhere6() {
+    String inputText = "UPDATE myTable SET ident1 = 'term1' WHERE myFunction(ident2) > 34;";
+    testParserFails("demo", inputText, "updateTableNameWrongLeftTermTypeInWhere6");
   }
 
 }

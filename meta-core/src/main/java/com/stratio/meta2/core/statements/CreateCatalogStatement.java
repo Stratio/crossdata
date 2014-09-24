@@ -24,7 +24,6 @@ import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.utils.Tree;
 import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
@@ -55,7 +54,7 @@ public class CreateCatalogStatement extends MetadataStatement {
    * @param ifNotExists Whether it should be created only if it not exists.
    * @param options A JSON with the storage options.
    */
-  public CreateCatalogStatement(String catalogName, boolean ifNotExists,
+  public CreateCatalogStatement(CatalogName catalogName, boolean ifNotExists,
                                 String options) {
     this.catalog = catalogName;
     this.catalogInc = true;
@@ -80,11 +79,11 @@ public class CreateCatalogStatement extends MetadataStatement {
   @Override
   public Result validate(MetadataManager metadata, EngineConfig config) {
     Result result = QueryResult.createSuccessQueryResult();
-    if(catalog!= null && catalog.length() > 0) {
-      CatalogMetadata ksMetadata = metadata.getCatalogMetadata(catalog);
+    if(catalog!= null) {
+      /*CatalogMetadata ksMetadata = metadata.getCatalogMetadata(catalog);
       if(ksMetadata != null && !ifNotExists){
         result = Result.createValidationErrorResult("Catalog " + catalog + " already exists.");
-      }
+      }*/
     }else{
       result = Result.createValidationErrorResult("Empty catalog name found.");
     }
@@ -104,7 +103,7 @@ public class CreateCatalogStatement extends MetadataStatement {
     return new ValidationRequirements().add(Validation.MUST_NOT_EXIST_CATALOG);
   }
   public CatalogName getCatalogName(){
-    return new CatalogName(this.catalog);
+    return catalog;
   }
 
   public Map<Selector, Selector> getOptions() {

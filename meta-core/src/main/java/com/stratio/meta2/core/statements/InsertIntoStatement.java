@@ -16,6 +16,7 @@ package com.stratio.meta2.core.statements;
 
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta.core.metadata.MetadataManager;
 import com.stratio.meta.core.structures.Option;
@@ -207,15 +208,15 @@ public class InsertIntoStatement extends StorageStatement {
     Result result =
         validateCatalogAndTable(metadata, sessionCatalog, catalogInc, catalog, tableName);
     if (!result.hasError()) {
-      String effectiveCatalog = getEffectiveCatalog();
+      CatalogName effectiveCatalog = getEffectiveCatalog();
 
-      TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
+      /*TableMetadata tableMetadata = metadata.getTableMetadata(effectiveCatalog, tableName);
 
       if (typeValues == TYPE_SELECT_CLAUSE) {
         result = Result.createValidationErrorResult("INSERT INTO with subqueries not supported.");
       } else {
         result = validateColumns(tableMetadata);
-      }
+      }*/
     }
     return result;
   }

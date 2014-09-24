@@ -14,6 +14,21 @@
 
 package com.stratio.meta2.core.coordinator;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+
+import org.testng.annotations.Test;
+
 import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
 import com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType;
 import com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType;
@@ -42,26 +57,17 @@ import com.stratio.meta2.core.query.MetadataInProgressQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.MetadataPlannedQuery;
 import com.stratio.meta2.core.query.MetadataValidatedQuery;
+import com.stratio.meta2.core.query.StorageInProgressQuery;
+import com.stratio.meta2.core.query.StorageParsedQuery;
+import com.stratio.meta2.core.query.StoragePlannedQuery;
+import com.stratio.meta2.core.query.StorageValidatedQuery;
 import com.stratio.meta2.core.statements.AttachClusterStatement;
 import com.stratio.meta2.core.statements.AttachConnectorStatement;
 import com.stratio.meta2.core.statements.CreateCatalogStatement;
 import com.stratio.meta2.core.statements.CreateIndexStatement;
 import com.stratio.meta2.core.statements.CreateTableStatement;
-
-import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotEquals;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
+import com.stratio.meta2.core.statements.InsertIntoStatement;
+import com.stratio.meta2.core.statements.SelectStatement;
 
 public class CoordinatorTest extends MetadataManagerTests {
 
@@ -204,7 +210,7 @@ public class CoordinatorTest extends MetadataManagerTests {
         new BaseQuery(UUID.randomUUID().toString(), "CREATE CATALOG testCatalog", catalogName);
 
     CreateCatalogStatement createCatalogStatement =
-        new CreateCatalogStatement(catalogName.getName(), false, "{}");
+        new CreateCatalogStatement(catalogName, false, "{}");
 
     MetadataParsedQuery metadataParsedQuery =
         new MetadataParsedQuery(baseQuery, createCatalogStatement);
@@ -232,7 +238,7 @@ public class CoordinatorTest extends MetadataManagerTests {
         new BaseQuery(UUID.randomUUID().toString(), "CREATE CATALOG testCatalog2", catalogName);
 
     CreateCatalogStatement createCatalogStatement =
-        new CreateCatalogStatement(catalogName.getName(), false, "{}");
+        new CreateCatalogStatement(catalogName, false, "{}");
 
     MetadataParsedQuery metadataParsedQuery =
         new MetadataParsedQuery(baseQuery, createCatalogStatement);
@@ -343,6 +349,34 @@ public class CoordinatorTest extends MetadataManagerTests {
     } else
       fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
   }
+  
+  //INSERT INTO
+  @Test
+  public void testInsertInto() throws Exception {
+    String catalog = "catalogTest6";
+    String table = "tableTest";
+    
+    BaseQuery baseQuery =
+        new BaseQuery(UUID.randomUUID().toString(), "INSERT INTO catalogTest6.tableTest ('col1', 'col2') VALUES (1, 2)",
+            new CatalogName(catalog));
+
+    InsertIntoStatement insert = new InsertIntoStatement(new TableName(catalog,  table), new ArrayList<ColumnName>(), new SelectStatement(new TableName(catalog, table)), false);
+
+    StorageParsedQuery metadataParsedQuery =
+        new StorageParsedQuery(baseQuery, insert);
+
+    StorageValidatedQuery metadataValidatedQuery = new StorageValidatedQuery(metadataParsedQuery);
+
+    StoragePlannedQuery plannedQuery = new StoragePlannedQuery(metadataValidatedQuery);
+
+    Coordinator coordinator = new Coordinator();
+    if (coordinator.coordinate(plannedQuery) instanceof StorageInProgressQuery) {
+      assertTrue(true);
+      coordinator.persist(plannedQuery);
+    } else
+      fail("Coordinator.coordinate not creating new StorageInProgressQuery");
+  }
+  
 
   private void createTestDatastoreAndPersist(String name, String version) {
     // Create and add a test datastore metadata to the metadatamanager
