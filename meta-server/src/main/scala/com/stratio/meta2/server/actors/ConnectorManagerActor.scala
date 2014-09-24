@@ -42,6 +42,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     	    	val id=java.util.UUID.randomUUID.toString()
 
             connectorActorRef ! getConnectorName()
+            connectorActorRef ! Start()
 
     	    	//connectorsMap.put(mu.member.address.toString, connectorActorRef)
             //connectorActorRef ! "hola"
