@@ -30,39 +30,37 @@ import org.apache.log4j.Logger
 
 //class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig{
 class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig{
-    this:Suite =>
+  this:Suite =>
 
-    override lazy val logger =Logger.getLogger(classOf[CoordinatorActorIntegrationTest])
-    lazy val system1 = ActorSystem(clusterName,config)
+  override lazy val logger =Logger.getLogger(classOf[CoordinatorActorIntegrationTest])
+  lazy val system1 = ActorSystem(clusterName,config)
 
-    val connectorManagerActor=system1.actorOf(ConnectorManagerActor.props(null),"ConnectorManagerActor")
-    val coordinatorActor=system1.actorOf(CoordinatorActor.props(connectorManagerActor,new Coordinator),"CoordinatorActor")
-
-    val pq=new SelectInProgressQuery(
-      new SelectPlannedQuery(
-        new SelectValidatedQuery(
-          new SelectParsedQuery(
-              new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
-              ,null)
-          )
-        , new LogicalWorkflow(null)
-      )
-    )
+  val connectorManagerActor=system1.actorOf(ConnectorManagerActor.props(null),"ConnectorManagerActor")
+  val coordinatorActor=system1.actorOf(CoordinatorActor.props(connectorManagerActor,new Coordinator),"CoordinatorActor")
 
 
+  val selectPlannedQuery = new SelectPlannedQuery(
+    new SelectValidatedQuery(
+      new SelectParsedQuery(
+        new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
+        ,null)
+    ), null, null, new LogicalWorkflow(null)
 
-		test("Basic Coordinator-ConnectorManager test") {
-		  within(5000 millis){
-        //val pq=mock[PlannedQuery]
-	  		coordinatorActor! pq
-	  		expectMsg("Ok") // bounded to 1 second
-	  		//expectMsg("Hola") // bounded to the remainder of the 1 second
+  )
+  val pq=new SelectInProgressQuery(selectPlannedQuery)
 
-	  		//val m = mock[IConnector]
-	  		//(m.getConnectorName _).expects().returning("My New Connector")
-	  		//assert(m.getConnectorName().equals("My New Connector"))
-        assert(true)
-	  		}
-		}
+  test("Basic Coordinator-ConnectorManager test") {
+                                                    within(5000 millis){
+                                                                         //val pq=mock[PlannedQuery]
+                                                                         coordinatorActor! pq
+                                                                         expectMsg("Ok") // bounded to 1 second
+                                                                         //expectMsg("Hola") // bounded to the remainder of the 1 second
+
+                                                                         //val m = mock[IConnector]
+                                                                         //(m.getConnectorName _).expects().returning("My New Connector")
+                                                                         //assert(m.getConnectorName().equals("My New Connector"))
+                                                                         assert(true)
+                                                                       }
+                                                  }
 
 }

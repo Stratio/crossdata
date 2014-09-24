@@ -73,21 +73,21 @@ public class Planner {
     //Plan the workflow execution into different connectors.
 
     //Return the planned query.
-    SelectPlannedQuery pq = new SelectPlannedQuery((SelectValidatedQuery) query, workflow);
+    SelectPlannedQuery pq = new SelectPlannedQuery((SelectValidatedQuery) query, null, null, workflow);
     return pq;
   }
 
-    protected LogicalWorkflow buildWorkflow(ValidatedQuery query) {
-        LogicalWorkflow result=null;
-        if(query instanceof SelectValidatedQuery){
-            result=buildWorkflow((SelectValidatedQuery) query);
-        }else if(query instanceof StorageValidatedQuery){
-            result=buildWorkflow((StorageValidatedQuery) query);
-        }else if(query instanceof MetadataValidatedQuery){
-            result=buildWorkflow((MetadataValidatedQuery) query);
-        }
-        return result;
+  protected LogicalWorkflow buildWorkflow(ValidatedQuery query) {
+    LogicalWorkflow result=null;
+    if(query instanceof SelectValidatedQuery){
+      result=buildWorkflow((SelectValidatedQuery) query);
+    }else if(query instanceof StorageValidatedQuery){
+      result=buildWorkflow((StorageValidatedQuery) query);
+    }else if(query instanceof MetadataValidatedQuery){
+      result=buildWorkflow((MetadataValidatedQuery) query);
     }
+    return result;
+  }
 
   /**
    * Build a workflow with the {@link com.stratio.meta.common.logicalplan.LogicalStep} required to
@@ -155,14 +155,14 @@ public class Planner {
 
     return workflow;
   }
-    protected LogicalWorkflow buildWorkflow(StorageValidatedQuery query) {
+  protected LogicalWorkflow buildWorkflow(StorageValidatedQuery query) {
 
-        throw new UnsupportedOperationException();
-    }
-    protected LogicalWorkflow buildWorkflow(MetadataValidatedQuery query) {
+    throw new UnsupportedOperationException();
+  }
+  protected LogicalWorkflow buildWorkflow(MetadataValidatedQuery query) {
 
-        throw new UnsupportedOperationException();
-    }
+    throw new UnsupportedOperationException();
+  }
 
 
   /**

@@ -18,9 +18,10 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta2.core.statements.MetaStatement;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ConnectorName;
 
-public interface PlannedQuery {
+public interface PlannedQuery extends ValidatedQuery {
 
   /*public PlannedQuery(ValidatedQuery validatedQuery) {
     super(validatedQuery);
@@ -34,6 +35,8 @@ public interface PlannedQuery {
     return QueryStatus.PLANNED;
   }*/
 
-  public MetaStatement getStatement();
+  public ClusterName getClusterName();
+
+  public ConnectorName getConnectorName();
 
 }

@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.core.statements.MetaStatement;
 
 public interface ParsedQuery {
@@ -43,6 +45,14 @@ public interface ParsedQuery {
   public String toString() {
     return statement.toString();
   }*/
+
+  public String getQuery();
+
+  public String getQueryId();
+
+  public QueryStatus getStatus();
+
+  public CatalogName getDefaultCatalog();
 
   public MetaStatement getStatement();
 

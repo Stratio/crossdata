@@ -15,32 +15,16 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.ConnectorName;
 
 public class StorageInProgressQuery extends StoragePlannedQuery implements InProgressQuery {
 
-  private ClusterName clusterName = null;
-  private ConnectorName connectorName = null;
-
-  public StorageInProgressQuery(StoragePlannedQuery storagePlannedQuery, ClusterName clusterName, ConnectorName connectorName) {
+  public StorageInProgressQuery(StoragePlannedQuery storagePlannedQuery) {
     super(storagePlannedQuery);
     setQueryStatus(QueryStatus.IN_PROGRESS);
-    this.clusterName = clusterName;
-    this.connectorName = connectorName;
   }
 
   public StorageInProgressQuery(StorageInProgressQuery storageInProgressQuery) {
-    this(storageInProgressQuery, storageInProgressQuery.clusterName, storageInProgressQuery.connectorName);
+    this((StoragePlannedQuery) storageInProgressQuery);
   }
 
-  @Override
-  public ClusterName getClusterName() {
-    return clusterName;
-  }
-
-  @Override
-  public ConnectorName getConnectorName() {
-    return connectorName;
-  }
 }

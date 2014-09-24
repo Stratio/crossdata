@@ -20,16 +20,32 @@ package com.stratio.meta2.core.query;
 
 
 import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ConnectorName;
 
 public class MetadataPlannedQuery extends MetadataValidatedQuery implements PlannedQuery {
 
-  public MetadataPlannedQuery(MetadataValidatedQuery metadataValidatedQuery) {
+  private final ClusterName clusterName;
+  private final ConnectorName connectorName;
+
+  public MetadataPlannedQuery(MetadataValidatedQuery metadataValidatedQuery, ClusterName clusterName, ConnectorName connectorName) {
     super(metadataValidatedQuery);
     setQueryStatus(QueryStatus.PLANNED);
+    this.clusterName = clusterName;
+    this.connectorName = connectorName;
   }
 
   public MetadataPlannedQuery(MetadataPlannedQuery metadataPlannedQuery){
-    this((MetadataValidatedQuery) metadataPlannedQuery);
+    this(metadataPlannedQuery, metadataPlannedQuery.clusterName, metadataPlannedQuery.getConnectorName());
   }
 
+  @Override
+  public ClusterName getClusterName() {
+    return clusterName;
+  }
+
+  @Override
+  public ConnectorName getConnectorName() {
+    return connectorName;
+  }
 }

@@ -14,9 +14,7 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta2.core.statements.MetaStatement;
-
-public interface ValidatedQuery {
+public interface ValidatedQuery extends ParsedQuery {
 
   /*public ValidatedQuery(BaseQuery baseQuery, MetaStatement statement) {
     super(baseQuery, statement);
@@ -30,6 +28,5 @@ public interface ValidatedQuery {
     return QueryStatus.VALIDATED;
   }*/
 
-  public MetaStatement getStatement();
 
 }

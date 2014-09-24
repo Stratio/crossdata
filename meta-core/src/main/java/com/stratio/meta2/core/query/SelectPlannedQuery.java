@@ -20,23 +20,38 @@ package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ConnectorName;
 
 public class SelectPlannedQuery extends SelectValidatedQuery implements PlannedQuery {
 
-  private LogicalWorkflow logicalWorkflow;
+  private final ClusterName clusterName;
+  private final ConnectorName connectorName;
+  private final LogicalWorkflow logicalWorkflow;
 
-  public SelectPlannedQuery(SelectValidatedQuery selectValidatedQuery, LogicalWorkflow logicalWorkflow) {
+  public SelectPlannedQuery(SelectValidatedQuery selectValidatedQuery, ClusterName clusterName, ConnectorName connectorName, LogicalWorkflow logicalWorkflow) {
     super(selectValidatedQuery);
     setQueryStatus(QueryStatus.PLANNED);
+    this.clusterName = clusterName;
+    this.connectorName = connectorName;
     this.logicalWorkflow = logicalWorkflow;
   }
 
   public SelectPlannedQuery(SelectPlannedQuery plannedQuery){
-    this(plannedQuery, plannedQuery.getLogicalWorkflow());
+    this(plannedQuery, plannedQuery.clusterName, plannedQuery.getConnectorName(), plannedQuery.getLogicalWorkflow());
   }
 
   public LogicalWorkflow getLogicalWorkflow() {
     return logicalWorkflow;
   }
 
+  @Override
+  public ClusterName getClusterName() {
+    return clusterName;
+  }
+
+  @Override
+  public ConnectorName getConnectorName() {
+    return connectorName;
+  }
 }

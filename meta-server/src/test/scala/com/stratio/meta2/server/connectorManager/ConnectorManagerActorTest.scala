@@ -33,34 +33,30 @@ import scala.concurrent.duration.DurationInt
 
 //class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory  with ServerConfig{
 class ConnectorManagerActorTest extends ActorReceiveUtils with FunSuiteLike  with ServerConfig{
-    this:Suite =>
+  this:Suite =>
 
 
-    override lazy val logger =Logger.getLogger(classOf[ConnectorManagerActorTest])
-    lazy val system1 = ActorSystem(clusterName,config)
+  override lazy val logger =Logger.getLogger(classOf[ConnectorManagerActorTest])
+  lazy val system1 = ActorSystem(clusterName,config)
 
-    val connectorManagerActor=system1.actorOf(ConnectorManagerActor.props(null),"ConnectorManagerActor")
+  val connectorManagerActor=system1.actorOf(ConnectorManagerActor.props(null),"ConnectorManagerActor")
 
-    val pq = new SelectPlannedQuery(
-        new SelectValidatedQuery(
-          new SelectParsedQuery(
-              new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
-          ,null))
-        , new LogicalWorkflow(null)
-    )
+  val baseQuery = new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
+  val selectedQuery = new SelectParsedQuery(baseQuery, null)
+  val selectValidatedQuery = new SelectValidatedQuery(selectedQuery)
+  val pq = new SelectPlannedQuery(selectValidatedQuery, null, null, new LogicalWorkflow(null))
 
+  test("Should return a KO message") {
+                                       within(1000 millis){
+                                                            /*
+                                                            val pq= new SelectPlannedQuery(null,null)
+                                                            expectMsg("Ok") // bounded to 1 second
 
-		test("Should return a KO message") {
-		  within(1000 millis){
-        /*
-        val pq= new SelectPlannedQuery(null,null)
-	  		expectMsg("Ok") // bounded to 1 second
-
-	  		//val m = mock[IConnector]
-	  		//(m.getConnectorName _).expects().returning("My New Connector")
-	  		//assert(m.getConnectorName().equals("My New Connector"))
-	  		*/
-	  		}
-		}
+                                                            //val m = mock[IConnector]
+                                                            //(m.getConnectorName _).expects().returning("My New Connector")
+                                                            //assert(m.getConnectorName().equals("My New Connector"))
+                                                            */
+                                                          }
+                                     }
 
 }

@@ -65,7 +65,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
     case query: SelectInProgressQuery=> {
       val clustername=new ClusterName("//TODO:") //TODO: the query should give me the cluster's name
-      val workflow=query.getLogicalWorkFlow
+      val workflow=query.getLogicalWorkflow
       log.info("select in progress query")
       //connectorsMap(query.getConnectorName()) ! Execute(clustername,workflow)
       MetadataManager.MANAGER.getConnectorRef(query.getConnectorName) ! Execute(clustername,workflow)

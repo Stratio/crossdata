@@ -63,11 +63,11 @@ public class Coordinator {
         persist(plannedQuery);
         break;
       case CREATE_CATALOG:
-        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery, null, null);
+        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery);
       case CREATE_INDEX:
-        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery, null, null);
+        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery);
       case CREATE_TABLE:
-        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery, null, null);
+        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery);
       case DESCRIBE:
         break;
       case DETACH_CLUSTER:
@@ -77,19 +77,19 @@ public class Coordinator {
         persist(plannedQuery);
         break;
       case DROP_CATALOG:
-        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery, null, null);
+        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery);
       case DROP_INDEX:
-        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery, null, null);
+        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery);
       case DROP_TABLE:
-        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery, null, null);
+        return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery);
         // SELECT
       case SELECT:
         return coordinateSelect((SelectPlannedQuery) plannedQuery);
         // STORAGE
       case INSERT_INTO:
-        return new StorageInProgressQuery((StoragePlannedQuery) plannedQuery, null, null);
+        return new StorageInProgressQuery((StoragePlannedQuery) plannedQuery);
       case DELETE:
-        return new StorageInProgressQuery((StoragePlannedQuery) plannedQuery, null, null);
+        return new StorageInProgressQuery((StoragePlannedQuery) plannedQuery);
 
       default:
         LOG.info("not known statement detected");
@@ -195,7 +195,7 @@ public class Coordinator {
   }
 
   private SelectInProgressQuery coordinateSelect(SelectPlannedQuery selectPlannedQuery) {
-    SelectInProgressQuery inProgressQuery = new SelectInProgressQuery(selectPlannedQuery, null, null);
+    SelectInProgressQuery inProgressQuery = new SelectInProgressQuery(selectPlannedQuery);
     return inProgressQuery;
   }
 

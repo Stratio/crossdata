@@ -18,9 +18,7 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta2.core.statements.MetaStatement;
-
-public interface ExecutedQuery {
+public interface ExecutedQuery extends InProgressQuery {
 
   /*public ExecutedQuery(InProgressQuery inProgressQuery){
     super(inProgressQuery);
@@ -29,7 +27,5 @@ public interface ExecutedQuery {
   ExecutedQuery(ExecutedQuery executedQuery){
     this((InProgressQuery)executedQuery);
   }*/
-
-  public MetaStatement getStatement();
 
 }
