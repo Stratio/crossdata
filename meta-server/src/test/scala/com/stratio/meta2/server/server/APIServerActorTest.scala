@@ -109,7 +109,7 @@ with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCas
     var retrieved = ListBuffer[String]()
     val it = result.getTableList.iterator
     while (it.hasNext) {
-      retrieved += it.next().getTableName
+      retrieved += it.next().getName.getQualifiedName
     }
 
     val toCheck = List("users", "users_info")

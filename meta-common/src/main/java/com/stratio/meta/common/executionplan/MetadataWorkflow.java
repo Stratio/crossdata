@@ -18,28 +18,22 @@
 
 package com.stratio.meta.common.executionplan;
 
+import java.io.Serializable;
+
 /**
- * Operations to be executed on the ConnectorActor.
+ * Execute a {@link com.stratio.meta.common.connector.IMetadataEngine} operation.
  */
-public enum ExecutionType {
+public class MetadataWorkflow extends ExecutionWorkflow {
 
-    //IMetadata
-    CREATE_CATALOG,
-    DROP_CATALOG,
-    CREATE_TABLE,
-    DROP_TABLE,
-    CREATE_INDEX,
-    DROP_INDEX,
 
-    //IStorage
-    INSERT,
-    INSERT_BATCH,
 
-    //IQuery
-    SELECT,
-
-    //Connector operations
-    ATTACH,
-    DETACH
-
+    /**
+     * Class constructor.
+     *
+     * @param actorRef Target actor reference.
+     * @param type     Type of execution.
+     */
+    public MetadataWorkflow(Serializable actorRef, ResultType type) {
+        super(actorRef, type);
+    }
 }

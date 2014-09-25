@@ -29,6 +29,7 @@ import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class TableMetadata implements IMetadata {
+    private static final long serialVersionUID = 937637791215246279L;
     private final TableName name;
 
     private final Map<Selector, Selector> options;

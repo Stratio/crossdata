@@ -9,6 +9,7 @@ import com.stratio.meta2.core.connector.ConnectorManager
 import com.stratio.meta2.core.metadata.MetadataManager
 import com.stratio.meta2.core.query._
 import com.stratio.meta2.core.statements.{CreateCatalogStatement, CreateTableStatement}
+import org.apache.log4j.Logger
 
 
 object ConnectorManagerActor {
@@ -17,6 +18,7 @@ object ConnectorManagerActor {
 
 class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor with ActorLogging {
 
+  lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   log.info("Lifting connector actor")
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
   //coordinatorActorRef ! "hola"
@@ -32,8 +34,11 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
   def receive = {
 
+    /**
+     * A new actor connects to the cluster. If the new actor is a connector, we requests its name.
+     */
     case mu: MemberUp => {
-      log.info("Member is Up: {}" + mu.toString + mu.member.getRoles)
+      log.info("Member is Up: " + mu.toString + mu.member.getRoles)
       val it = mu.member.getRoles.iterator()
       while (it.hasNext()) {
         val rol = it.next()
@@ -45,20 +50,19 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
             connectorActorRef ! getConnectorName()
             connectorActorRef ! Start()
 
-          //connectorsMap.put(mu.member.address.toString, connectorActorRef)
-          //connectorActorRef ! "hola"
         }
-        log.info("has role: {}" + rol)
       }
-      // connectorsMap += (member.toString -> memberActorRef)
-      //memberActorRef ! "hola pichi, estás metaregistrado"
     }
 
+    /**
+     * Connector answers its name.
+     */
     case msg: replyConnectorName => {
-      //connectorsMap.put(new ConnectorName(msg.name), sender)
-      MetadataManager.MANAGER.addConnectorRef(new ConnectorName(msg.name), sender)
+      val connectorRef = sender;
+      MetadataManager.MANAGER.addConnectorRef(new ConnectorName(msg.name), connectorRef)
     }
 
+      /*
     case query: StorageInProgressQuery => {
       log.info("storage in progress query")
       //connectorsMap(query.getConnectorName()) ! query
@@ -96,30 +100,33 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       //connectorsMap(query.getConnectorName()) ! query
       query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! query
     }
-    case state: CurrentClusterState =>
-      log.info("Current members: {}", state.members.mkString(", "))
+    */
 
-    case UnreachableMember(member) =>
-      log.info("Member detected as unreachable: {}", member)
-
-    case MemberRemoved(member, previousStatus) =>
-      log.info("Member is Removed: {} after {}",
-        member.address, previousStatus)
-
-    case _: MemberEvent =>
-      log.info("Receiving anything else")
-
-    case _: ClusterDomainEvent =>
-      println("ClusterDomainEvent")
-
-    case ReceiveTimeout =>
-      println("ReceiveTimeout")
-
-    case _: ConnectToConnector =>
-      println("connecting to connector ")
-
-    case _: DisconnectFromConnector =>
-      println("disconnecting from connector")
+    //pass the message to the connectorActor to extract the member in the cluster
+    case state: CurrentClusterState => {
+      logger.info("Current members: " + state.members.mkString(", "))
+      //TODO Process CurrentClusterState
+    }
+    case member: UnreachableMember => {
+      logger.info("Member detected as unreachable: " + member)
+      //TODO Process UnreachableMember
+    }
+    case member: MemberRemoved => {
+      logger.info("Member is Removed: " + member.member.address)
+      //TODO Process MemberRemoved
+    }
+    case _: MemberEvent => {
+      logger.info("Receiving anything else")
+      //TODO Process MemberEvent
+    }
+    case _: ClusterDomainEvent => {
+      logger.debug("ClusterDomainEvent")
+      //TODO Process ClusterDomainEvent
+    }
+    case ReceiveTimeout => {
+      logger.warn("ReceiveTimeout")
+      //TODO Process ReceiveTimeout
+    }
 
     /*
     case toConnector: MetadataStruct =>

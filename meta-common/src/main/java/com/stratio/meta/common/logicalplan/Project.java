@@ -103,6 +103,15 @@ public class Project extends TransformationStep {
     }
 
     /**
+     * Get the cluster name.
+     *
+     * @return The name.
+     */
+    public ClusterName getClusterName() {
+        return clusterName;
+    }
+
+    /**
      * Get the list of columns to be retrieved.
      *
      * @return A list of {@link com.stratio.meta2.common.data.ColumnName}.

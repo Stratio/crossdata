@@ -18,28 +18,34 @@
 
 package com.stratio.meta.common.executionplan;
 
+import java.io.Serializable;
+
+import com.stratio.meta.common.logicalplan.LogicalWorkflow;
+
 /**
- * Operations to be executed on the ConnectorActor.
+ * Execution step for query operations.
  */
-public enum ExecutionType {
+public class QueryWorkflow extends ExecutionWorkflow {
 
-    //IMetadata
-    CREATE_CATALOG,
-    DROP_CATALOG,
-    CREATE_TABLE,
-    DROP_TABLE,
-    CREATE_INDEX,
-    DROP_INDEX,
+    /**
+     * Workflow to be executed.
+     */
+    private final LogicalWorkflow workflow;
 
-    //IStorage
-    INSERT,
-    INSERT_BATCH,
+    /**
+     * Class constructor.
+     *
+     * @param actorRef Target actor reference.
+     * @param workflow Workflow to be executed.
+     * @param type     Type of execution.
+     */
+    public QueryWorkflow(Serializable actorRef, LogicalWorkflow workflow, ResultType type) {
+        super(actorRef, type);
+        this.workflow = workflow;
+    }
 
-    //IQuery
-    SELECT,
-
-    //Connector operations
-    ATTACH,
-    DETACH
+    public LogicalWorkflow getWorkflow() {
+        return workflow;
+    }
 
 }

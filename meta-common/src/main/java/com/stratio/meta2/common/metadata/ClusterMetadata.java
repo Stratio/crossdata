@@ -26,6 +26,11 @@ import com.stratio.meta2.common.data.DataStoreName;
 
 public class ClusterMetadata implements IMetadata {
 
+    /**
+     * Serial version UID.
+     */
+    private static final long serialVersionUID = -418489079432003461L;
+
     private final ClusterName name;
     private final DataStoreName dataStoreRef;
     private final Map<String, Object> options;
@@ -59,4 +64,5 @@ public class ClusterMetadata implements IMetadata {
             Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) {
         this.connectorAttachedRefs = connectorAttachedRefs;
     }
+
 }

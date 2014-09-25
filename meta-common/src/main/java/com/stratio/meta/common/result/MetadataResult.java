@@ -21,7 +21,7 @@ package com.stratio.meta.common.result;
 import java.util.List;
 
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.TableMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
 
 public class MetadataResult extends Result {
 
