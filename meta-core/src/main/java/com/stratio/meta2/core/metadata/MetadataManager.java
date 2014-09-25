@@ -43,7 +43,6 @@ import com.stratio.meta2.common.metadata.ClusterMetadata;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
-import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 
 public enum MetadataManager {
@@ -51,7 +50,7 @@ public enum MetadataManager {
 
     private boolean isInit = false;
 
-    private Map<FirstLevelName, IMetadata> metadata;
+    private Map<FirstLevelName, Serializable> metadata;
     private Lock writeLock;
     private TransactionManager tm;
 
@@ -145,7 +144,7 @@ public enum MetadataManager {
         return result;
     }
 
-    public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock, TransactionManager tm) {
+    public synchronized void init(Map<FirstLevelName, Serializable> metadata, Lock writeLock, TransactionManager tm) {
         if (metadata != null && writeLock != null) {
             this.metadata = metadata;
             this.writeLock = writeLock;
@@ -319,27 +318,29 @@ public enum MetadataManager {
         return getConnector(name).getActorRef();
     }
 
-  /**
-   * Get the connectors that are attached to the clusters that store the requested tables.
-   * @param connectorStatus The status of the connector.
-   * @param tables The list of table names.
-   * @return A map associating table names with a list of the available connectors.
-   */
-  public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus,
-          List<TableName> tables){
-    Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
+    /**
+     * Get the connectors that are attached to the clusters that store the requested tables.
+     * @param connectorStatus The status of the connector.
+     * @param tables The list of table names.
+     * @return A map associating table names with a list of the available connectors.
+     */
+    public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus,
+            List<TableName> tables){
+
+        Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
+
+        List<ConnectorMetadata> connectors = null;
+        for(TableName table: tables) {
 
 
-    List<ConnectorMetadata> connectors = null;
-    for(TableName table : tables) {
 
-      connectors = new ArrayList<>();
-      //connectors.addAll(getCluster(getTable(table).getClusterRef()).getConnectorAttachedRefs());
-      //result.put(table, );
+            connectors = new ArrayList<>();
+            //connectors.addAll(getCluster(getTable(table).getClusterRef()).getConnectorAttachedRefs());
+            //result.put(table, );
+        }
+
+
+        return result;
     }
-
-
-    return result;
-  }
 
 }

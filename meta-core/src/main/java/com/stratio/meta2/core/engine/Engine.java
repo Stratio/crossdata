@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.core.engine;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
@@ -27,7 +28,6 @@ import org.apache.log4j.Logger;
 
 import com.stratio.meta.core.normalizer.Normalizer;
 import com.stratio.meta2.common.data.FirstLevelName;
-import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.core.api.APIManager;
 import com.stratio.meta2.core.connector.ConnectorManager;
 import com.stratio.meta2.core.coordinator.Coordinator;
@@ -85,7 +85,7 @@ public class Engine {
             throw new RuntimeException("Unable to start grid: " + config, e);
         }
 
-        Map<FirstLevelName, IMetadata> metadataMap = grid.map("meta");
+        Map<FirstLevelName, Serializable> metadataMap = grid.map("meta");
         Lock lock = grid.lock("meta");
         TransactionManager tm = grid.transactionManager("meta");
 
@@ -107,7 +107,6 @@ public class Engine {
      * @return a new {@link com.stratio.meta2.core.grid.Grid}.
      */
     private Grid initializeGrid(EngineConfig config) {
-        int port = config.getGridPort();
         GridInitializer gridInitializer = Grid.initializer();
         for (String host : config.getGridContactHosts()) {
             gridInitializer = gridInitializer.withContactPoint(host);

@@ -19,6 +19,7 @@
 package com.stratio.meta2.core.metadata;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -31,13 +32,12 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import com.stratio.meta2.common.data.FirstLevelName;
-import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.core.grid.Grid;
 import com.stratio.meta2.core.grid.GridInitializer;
 
 public class MetadataManagerTests {
 
-    Map<FirstLevelName, IMetadata> metadataMap = new HashMap<>();
+    Map<FirstLevelName, Serializable> metadataMap = new HashMap<>();
     private String path = "";
 
     private void initializeGrid() {
@@ -54,7 +54,7 @@ public class MetadataManagerTests {
     @BeforeClass
     public void setUp() throws Exception {
         initializeGrid();
-        Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("meta-test");
+        Map<FirstLevelName, Serializable> metadataMap = Grid.getInstance().map("meta-test");
         Lock lock = Grid.getInstance().lock("meta-test");
         TransactionManager tm = Grid.getInstance().transactionManager("meta-test");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);

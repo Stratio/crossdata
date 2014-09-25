@@ -33,9 +33,7 @@ public class ManifestTest {
     @Test
     public void testDataStoreManifest() {
 
-        Manifest
-                manifest =
-                null;
+        Manifest manifest = null;
         try {
             manifest = ConsoleUtils.parseFromXmlToManifest(Manifest.TYPE_DATASTORE,
                     "meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xml");
