@@ -25,6 +25,6 @@ public enum SelectorType {
     BOOLEAN,
     STRING,
     INTEGER,
-    FLOATING_POINT
-
+    FLOATING_POINT,
+    RELATION
 }

@@ -26,6 +26,8 @@ import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class ConnectorAttachedMetadata implements Serializable {
+
+    private static final long serialVersionUID = -2629286778891668361L;
     private final ConnectorName connectorRef;
     private final ClusterName clusterRef;
     private final Map<Selector, Selector> properties;

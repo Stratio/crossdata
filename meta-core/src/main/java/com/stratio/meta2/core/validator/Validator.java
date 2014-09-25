@@ -28,6 +28,7 @@ import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.exceptions.validation.ExistNameException;
 import com.stratio.meta.common.exceptions.validation.NotExistNameException;
 import com.stratio.meta2.common.api.Manifest;
+import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.Name;
@@ -44,6 +45,7 @@ import com.stratio.meta2.core.query.StorageParsedQuery;
 import com.stratio.meta2.core.query.StorageValidatedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
 import com.stratio.meta2.core.statements.AlterCatalogStatement;
+import com.stratio.meta2.core.statements.AlterClusterStatement;
 import com.stratio.meta2.core.statements.AttachClusterStatement;
 import com.stratio.meta2.core.statements.AttachConnectorStatement;
 import com.stratio.meta2.core.statements.MetaStatement;
@@ -79,9 +81,12 @@ public class Validator {
                         metadataParsedQuery.getStatement().getClusterMetadata().getName(), true);
                 break;
             case MUST_EXIST_CLUSTER:
-                metadataParsedQuery = (MetadataParsedQuery) parsedQuery;
-                validateExist(metadataParsedQuery.getStatement().getClusterMetadata().getName(),
-                        true);
+                if (parsedQuery.getStatement() instanceof AlterClusterStatement) {
+                    AlterClusterStatement alterClusterStatement = (AlterClusterStatement) parsedQuery.getStatement();
+                    validateExist(new ClusterName(alterClusterStatement.getClusterName()),
+                            alterClusterStatement.isIfExists());
+                }
+
                 break;
             case MUST_EXIST_CONNECTOR:
                 metadataParsedQuery = (MetadataParsedQuery) parsedQuery;
@@ -120,10 +125,9 @@ public class Validator {
             case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
                 break;
             case MUST_EXIST_PROPERTIES:
-                if (parsedQuery.getStatement() instanceof AlterCatalogStatement) {
-                    AlterCatalogStatement stmt = (AlterCatalogStatement) parsedQuery.getStatement();
-                    validateExistsAlterCatalogProperties(stmt);
-                }
+
+                validateExistsProperties(parsedQuery.getStatement());
+
                 break;
             case MUST_NOT_EXIST_INDEX:
                 metadataParsedQuery = (MetadataParsedQuery) parsedQuery;
@@ -181,9 +185,20 @@ public class Validator {
         }
     }
 
-    private void validateExistsAlterCatalogProperties(AlterCatalogStatement stmt) throws ValidationException {
-        if (stmt.getOptions().isEmpty()) {
-            throw new ValidationException("AlterCatalog options can't be empty");
+    private void validateExistsProperties(MetaStatement stmt) throws ValidationException {
+
+        if (stmt instanceof AlterCatalogStatement) {
+            AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
+            if (alterCatalogStatement.getOptions() == null || alterCatalogStatement.getOptions().isEmpty()) {
+                throw new ValidationException("AlterCatalog options can't be empty");
+            }
+
+        }
+        if (stmt instanceof AlterClusterStatement) {
+            AlterClusterStatement alterClusterStatement = (AlterClusterStatement) stmt;
+            if (alterClusterStatement.getOptions() == null || alterClusterStatement.getOptions().isEmpty()) {
+                throw new ValidationException("AlterCluster options can't be empty");
+            }
         }
 
     }

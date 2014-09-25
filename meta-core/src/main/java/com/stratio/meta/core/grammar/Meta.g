@@ -941,20 +941,26 @@ getListTypes returns [String listType]:
 	tablename=(T_PROCESS | T_UDF | T_TRIGGER) {$listType = new String($tablename.text);}
 ;
 
-getAssignment[TableName tablename] returns [Relation assign]:
-    firstTerm=getSelector[tablename] T_EQUAL value=getSelector[tablename] {$assign = new Relation(firstTerm, Operator.EQ, value);}
-    ( moreOperations=getOperations[tablename, $assign] { $assign = moreOperations; } )?
-    //TODO: Support index for collections (Example: cities[2] = 'Madrid')
+getAssignment[TableName tablename] returns [Relation assign]
+    @after{
+        $assign = new Relation(leftTerm, Operator.EQ, rightTerm);
+    }:
+    leftTerm=getSelector[tablename] T_EQUAL rightTerm=getRightTermInAssignment[tablename]
 ;
 
-getOperations[TableName tablename, Relation relation] returns [ComplexRelation complexRelation]
+
+getRightTermInAssignment[TableName tablename] returns [Selector leftSelector]
     @init{
-        ComplexRelation cr = new ComplexRelation(relation);
+        boolean relationSelector = false;
     }
     @after{
-        $complexRelation = cr;
+        if(relationSelector)
+            $leftSelector = new RelationSelector(new Relation(firstSel, operator, secondSel));
+        else
+            $leftSelector = firstSel;
     }:
-    (operator=getOperator termN=getSelector[tablename] { cr.addRelation(operator, termN); } )+
+    firstSel=getSelector[tablename] (operator=getOperator secondSel=getRightTermInAssignment[tablename] { relationSelector = true; })?
+    //TODO: Support index for collections (Example: cities[2] = 'Madrid')
 ;
 
 getOperator returns [Operator op]:

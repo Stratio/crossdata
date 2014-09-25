@@ -25,12 +25,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 
 import javax.transaction.TransactionManager;
 
 import org.apache.commons.io.FileUtils;
+import org.jgroups.util.UUID;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeClass;
 
 import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
 import com.stratio.meta2.common.data.CatalogName;
@@ -54,6 +56,7 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.grammar.ParsingTest;
 import com.stratio.meta2.core.grid.Grid;
+import com.stratio.meta2.core.grid.GridInitializer;
 import com.stratio.meta2.core.metadata.MetadataManager;
 
 public class BasicValidatorTest {
@@ -129,13 +132,26 @@ public class BasicValidatorTest {
         return clusterMetadata;
     }
 
-    @BeforeMethod
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void setUpBeforeClass() {
+        GridInitializer gridInitializer = Grid.initializer();
+        gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
+        path = "/tmp/metadatastore" + UUID.randomUUID();
+        gridInitializer.withPort(7800)
+                .withListenAddress("127.0.0.1")
+                .withMinInitialMembers(1)
+                .withJoinTimeoutInMs(3000)
+                .withPersistencePath(path).init();
 
-    }
-
-    private void initializeGrid() {
-
+        metadataMap = Grid.getInstance().map("metatest");
+        Lock lock = Grid.getInstance().lock("metatest");
+        TransactionManager tm = Grid.getInstance().transactionManager("metatest");
+        MetadataManager.MANAGER.init(metadataMap, lock, tm);
+        MetadataManager.MANAGER.createDataStore(createDataStoreMetadata());
+        MetadataManager.MANAGER.createConnector(createConnectorMetadata());
+        MetadataManager.MANAGER.createCluster(createClusterMetadata());
+        MetadataManager.MANAGER.createCatalog(generateCatalogsMetadata());
+        MetadataManager.MANAGER.createTable(createTable());
     }
 
     @AfterClass

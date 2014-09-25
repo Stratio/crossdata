@@ -28,6 +28,7 @@ public abstract class Manifest implements Serializable {
    * - update ManifestHelper if necessary
    * - the rest of created classes must implement Serializable
    * - Use of ManifestHelper.checkName(name);
+   * - In SupportedOperationsType, we should substitute "List<String> operation" by "Set<Operations> operation;"
    */
 
     public static final int TYPE_DATASTORE = 1;

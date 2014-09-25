@@ -59,8 +59,6 @@ public class ParsingTest {
             fail(sb.toString(), e);
         }
 
-        System.out.println(">>>>>>>>>> TRACE: st.toString="+st.toString());
-
         assertTrue(inputText.equalsIgnoreCase(st.toString() + ";"),
                 "Cannot parse " + methodName
                         + ": " + System.lineSeparator() + " expecting" + System.lineSeparator() + "'" + inputText

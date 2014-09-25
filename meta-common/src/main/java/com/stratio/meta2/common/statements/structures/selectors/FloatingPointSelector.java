@@ -18,10 +18,6 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import java.util.Set;
-
-import com.stratio.meta2.common.data.TableName;
-
 /**
  * A floating point selector.
  */
@@ -48,11 +44,6 @@ public class FloatingPointSelector extends Selector {
     @Override
     public SelectorType getType() {
         return SelectorType.FLOATING_POINT;
-    }
-
-    @Override
-    public Set<TableName> getSelectorTables() {
-        return null;
     }
 
     @Override

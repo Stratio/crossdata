@@ -91,10 +91,21 @@ public class UpdateTableStatementTest extends ParsingTest {
     }
 
     @Test
-    public void updateSetWithSeveralOperators() {
-        String inputText = "[demo], UPDATE table1 SET count = count * 2 / expenses, estimation = true  WHERE field3 = 'value3';";
-        String expectedText = "UPDATE demo.table1 SET demo.table1.count = demo.table1.count * 2 / demo.table1.expenses, demo.table1.estimation = true WHERE demo.table1.field3 = 'value3';";
-        testRegularStatement(inputText, expectedText, "updateSetWithSeveralOperators");
+    public void updateSetWithSeveralOperators1() {
+        String inputText = "[demo], UPDATE table1 SET count = count * 2 + expenses, " +
+                "estimation = true  WHERE field3 = 'value3';";
+        String expectedText = "UPDATE demo.table1 SET demo.table1.count = demo.table1.count * 2 + demo.table1" +
+                ".expenses, demo.table1.estimation = true WHERE demo.table1.field3 = 'value3';";
+        testRegularStatement(inputText, expectedText, "updateSetWithSeveralOperators1");
+    }
+
+    @Test
+    public void updateSetWithSeveralOperators2() {
+        String inputText = "[demo], UPDATE table1 SET count = count * 2 / expenses, " +
+                "estimation = true WHERE field3 = 'value3';";
+        String expectedText = "UPDATE demo.table1 SET demo.table1.count = demo.table1.count * 2 / demo.table1" +
+                ".expenses, demo.table1.estimation = true WHERE demo.table1.field3 = 'value3';";
+        testRegularStatement(inputText, expectedText, "updateSetWithSeveralOperators2");
     }
 
   /*@Test
