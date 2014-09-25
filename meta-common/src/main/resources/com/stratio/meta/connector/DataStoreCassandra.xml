@@ -17,17 +17,17 @@
   -->
 
 <DataStore>
-  <Name>string</Name>
-  <Version>string</Version>
-  <RequiredProperties>
-    <cluster>
-      <name>cassandra_prod</name>
-      <hosts>
-        <host>127.0.0.1</host>
-        <port>9042</port>
-      </hosts>
-    </cluster>
-  </RequiredProperties>
-  <OptionalProperties>
-  </OptionalProperties>
+    <Name>string</Name>
+    <Version>string</Version>
+    <RequiredProperties>
+        <cluster>
+            <name>cassandra_prod</name>
+            <hosts>
+                <host>127.0.0.1</host>
+                <port>9042</port>
+            </hosts>
+        </cluster>
+    </RequiredProperties>
+    <OptionalProperties>
+    </OptionalProperties>
 </DataStore>

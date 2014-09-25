@@ -22,32 +22,32 @@ import com.stratio.meta2.common.data.TableName;
 
 public class SelectionAsterisk extends Selection {
 
-  /**
-   * Class constructor.
-   */
-  public SelectionAsterisk() {
-    this.type = TYPE_ASTERISK;
-  }
+    /**
+     * Class constructor.
+     */
+    public SelectionAsterisk() {
+        this.type = TYPE_ASTERISK;
+    }
 
-  @Override
-  public String toString() {
-    return "*";
-  }
+    @Override
+    public String toString() {
+        return "*";
+    }
 
-  @Override
-  public void addTablename(TableName tablename) {
+    @Override
+    public void addTablename(TableName tablename) {
 
-  }
+    }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.stratio.meta.core.structures.Selection#containsFunctions()
-   */
-  @Override
-  public boolean containsFunctions() {
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.stratio.meta.core.structures.Selection#containsFunctions()
+     */
+    @Override
+    public boolean containsFunctions() {
 
-    return false;
-  }
+        return false;
+    }
 
 }

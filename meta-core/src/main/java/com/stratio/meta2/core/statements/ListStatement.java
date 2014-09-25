@@ -21,33 +21,33 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta.core.structures.ListType;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-
 /**
  * Class that models a {@code LIST} statement from the META language.
  */
 public class ListStatement extends MetadataStatement {
 
-  /**
-   * The {@link com.stratio.meta.core.structures.ListType} to be executed.
-   */
-  private ListType type = null;
+    /**
+     * The {@link com.stratio.meta.core.structures.ListType} to be executed.
+     */
+    private ListType type = null;
 
-  /**
-   * Class constructor.
-   * @param type The {@link com.stratio.meta.core.structures.ListType} to be executed.
-   */
-  public ListStatement(String type){
-    this.command = true;
-    this.type = ListType.valueOf(type.toUpperCase());
-  }
+    /**
+     * Class constructor.
+     *
+     * @param type The {@link com.stratio.meta.core.structures.ListType} to be executed.
+     */
+    public ListStatement(String type) {
+        this.command = true;
+        this.type = ListType.valueOf(type.toUpperCase());
+    }
 
-  @Override
-  public String toString() {
-    return "LIST " + type;
-  }
+    @Override
+    public String toString() {
+        return "LIST " + type;
+    }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
-  }
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements();
+    }
 }

@@ -14,20 +14,17 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta2.core.statements.MetadataStatement;
+import com.stratio.meta.common.result.QueryStatus;
 
-public class MetadataInProgressQuery extends InProgressQuery {
+public class MetadataInProgressQuery extends MetadataPlannedQuery implements InProgressQuery {
 
-  public MetadataInProgressQuery(PlannedQuery validatedQuery) {
-    super(validatedQuery);
-  }
+    public MetadataInProgressQuery(MetadataPlannedQuery metadataPlannedQuery) {
+        super(metadataPlannedQuery);
+        setQueryStatus(QueryStatus.IN_PROGRESS);
+    }
 
-  MetadataInProgressQuery(MetadataInProgressQuery plannedQuery) {
-    this((PlannedQuery) plannedQuery);
-  }
+    public MetadataInProgressQuery(MetadataInProgressQuery metadataInProgressQuery) {
+        this((MetadataPlannedQuery) metadataInProgressQuery);
+    }
 
-  @Override
-  public MetadataStatement getStatement() {
-    return (MetadataStatement) statement;
-  }
 }

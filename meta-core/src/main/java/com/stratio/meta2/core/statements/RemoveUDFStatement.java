@@ -18,29 +18,29 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 
 public class RemoveUDFStatement extends MetadataStatement {
 
-  /**
-   * The target jar name.
-   */
-  private String jarName = null;
+    /**
+     * The target jar name.
+     */
+    private String jarName = null;
 
-  /**
-   * Class constructor.
-   * 
-   * @param jarName The name of the target jar.
-   */
-  public RemoveUDFStatement(String jarName) {
-    this.command = true;
-    this.jarName = jarName;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param jarName The name of the target jar.
+     */
+    public RemoveUDFStatement(String jarName) {
+        this.command = true;
+        this.jarName = jarName;
+    }
 
-  @Override
-  public String toString() {
-    return "REMOVE UDF " + jarName;
-  }
+    @Override
+    public String toString() {
+        return "REMOVE UDF " + jarName;
+    }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
-  }
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements();
+    }
 
 }

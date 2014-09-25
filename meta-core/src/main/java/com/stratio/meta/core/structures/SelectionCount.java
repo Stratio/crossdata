@@ -18,108 +18,108 @@
 
 package com.stratio.meta.core.structures;
 
-import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
-import com.stratio.meta2.common.data.TableName;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
+import com.stratio.meta2.common.data.TableName;
+
 public class SelectionCount extends SelectionClause {
 
-  /**
-   * The selection symbol.
-   */
-  private char symbol;
-  private boolean identInc;
-  private String identifier;
+    /**
+     * The selection symbol.
+     */
+    private char symbol;
+    private boolean identInc;
+    private String identifier;
 
-  /**
-   * Class constructor.
-   */
-  public SelectionCount() {
-    this.type = TYPE_COUNT;
-  }
-
-  public SelectionCount(char symbol, boolean identInc, String identifier) {
-    this.type = TYPE_COUNT;
-    this.symbol = symbol;
-    this.identInc = identInc;
-    this.identifier = identifier;
-  }
-
-  public SelectionCount(char symbol) {
-    this(symbol, false, null);
-  }
-
-  public char getSymbol() {
-    return symbol;
-  }
-
-  public void setSymbol(char symbol) {
-    this.symbol = symbol;
-  }
-
-  public boolean isIdentInc() {
-    return identInc;
-  }
-
-  public void setIdentInc(boolean identInc) {
-    this.identInc = identInc;
-  }
-
-  public String getIdentifier() {
-    return identifier;
-  }
-
-  public void setIdentifier(String identifier) {
-    this.identifier = identifier;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("COUNT(");
-    sb.append(symbol).append(")");
-    if (identInc) {
-      sb.append(" AS ").append(identifier);
+    /**
+     * Class constructor.
+     */
+    public SelectionCount() {
+        this.type = TYPE_COUNT;
     }
-    return sb.toString();
-  }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.stratio.meta.core.structures.SelectionClause#getIds()
-   */
-  @Override
-  public List<String> getIds() {
+    public SelectionCount(char symbol, boolean identInc, String identifier) {
+        this.type = TYPE_COUNT;
+        this.symbol = symbol;
+        this.identInc = identInc;
+        this.identifier = identifier;
+    }
 
-    return new ArrayList<>();
-  }
+    public SelectionCount(char symbol) {
+        this(symbol, false, null);
+    }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.stratio.meta.core.structures.SelectionClause#getSelectorsGroupBy()
-   */
-  @Override
-  public List<SelectorGroupBy> getSelectorsGroupBy() {
+    public char getSymbol() {
+        return symbol;
+    }
 
-    return new ArrayList<>();
-  }
+    public void setSymbol(char symbol) {
+        this.symbol = symbol;
+    }
 
-  @Override
-  public void addTablename(TableName tablename) {
+    public boolean isIdentInc() {
+        return identInc;
+    }
 
-  }
+    public void setIdentInc(boolean identInc) {
+        this.identInc = identInc;
+    }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.stratio.meta.core.structures.SelectionClause#containsFunctions()
-   */
-  @Override
-  public boolean containsFunctions() {
+    public String getIdentifier() {
+        return identifier;
+    }
 
-    return false;
-  }
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("COUNT(");
+        sb.append(symbol).append(")");
+        if (identInc) {
+            sb.append(" AS ").append(identifier);
+        }
+        return sb.toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.stratio.meta.core.structures.SelectionClause#getIds()
+     */
+    @Override
+    public List<String> getIds() {
+
+        return new ArrayList<>();
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.stratio.meta.core.structures.SelectionClause#getSelectorsGroupBy()
+     */
+    @Override
+    public List<SelectorGroupBy> getSelectorsGroupBy() {
+
+        return new ArrayList<>();
+    }
+
+    @Override
+    public void addTablename(TableName tablename) {
+
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.stratio.meta.core.structures.SelectionClause#containsFunctions()
+     */
+    @Override
+    public boolean containsFunctions() {
+
+        return false;
+    }
 }

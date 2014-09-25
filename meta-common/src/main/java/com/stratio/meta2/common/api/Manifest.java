@@ -30,22 +30,22 @@ public abstract class Manifest implements Serializable {
    * - Use of ManifestHelper.checkName(name);
    */
 
-  public static final int TYPE_DATASTORE = 1;
-  public static final int TYPE_CONNECTOR = 2;
-  private static final long serialVersionUID = -614600537779801491L;
+    public static final int TYPE_DATASTORE = 1;
+    public static final int TYPE_CONNECTOR = 2;
+    private static final long serialVersionUID = -614600537779801491L;
 
-  protected int manifestType;
+    protected int manifestType;
 
-  protected Manifest(int manifestType) {
-    this.manifestType = manifestType;
-  }
+    protected Manifest(int manifestType) {
+        this.manifestType = manifestType;
+    }
 
-  public int getManifestType() {
-    return manifestType;
-  }
+    public int getManifestType() {
+        return manifestType;
+    }
 
-  @Override
-  public String toString() {
-    return ManifestHelper.manifestToString(this);
-  }
+    @Override
+    public String toString() {
+        return ManifestHelper.manifestToString(this);
+    }
 }

@@ -14,6 +14,8 @@
 
 package com.stratio.meta2.core.statements;
 
+import java.util.Map;
+
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -23,135 +25,136 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-import java.util.Map;
-
 /**
  * Class that models an {@code ALTER TABLE} statement from the META language.
  */
 public class AlterTableStatement extends MetadataStatement implements ITableStatement {
 
-  /**
-   * The target table.
-   */
-  private TableName tableName;
+    /**
+     * The target table.
+     */
+    private TableName tableName;
 
-  /**
-   * Type of alter. Accepted values are:
-   * <ul>
-   *     <li>1: Alter a column data type using {@code ALTER}.</li>
-   *     <li>2: Add a new column using {@code ADD}.</li>
-   *     <li>3: Drop a column using {@code DROP}.</li>
-   *     <li>4: Establish a set of options using {@code WITH}.</li>
-   * </ul>
-   */
-  private int option;
+    /**
+     * Type of alter. Accepted values are:
+     * <ul>
+     * <li>1: Alter a column data type using {@code ALTER}.</li>
+     * <li>2: Add a new column using {@code ADD}.</li>
+     * <li>3: Drop a column using {@code DROP}.</li>
+     * <li>4: Establish a set of options using {@code WITH}.</li>
+     * </ul>
+     */
+    private int option;
 
-  /**
-   * Target column name.
-   */
-  private ColumnName column;
+    /**
+     * Target column name.
+     */
+    private ColumnName column;
 
-  /**
-   * Target column datatype used with {@code ALTER} or {@code ADD}.
-   */
-  private ColumnType type;
+    /**
+     * Target column datatype used with {@code ALTER} or {@code ADD}.
+     */
+    private ColumnType type;
 
-  /**
-   * The list of {@link com.stratio.meta2.core.structures.Property} of the table.
-   */
-  private Map<Selector, Selector> properties = null;
+    /**
+     * The list of {@link com.stratio.meta2.core.structures.Property} of the table.
+     */
+    private Map<Selector, Selector> properties = null;
 
-  /**
-   * Class constructor.
-   *
-   * @param tableName The name of the table.
-   * @param column The name of the column.
-   * @param type The data type of the column.
-   * @param properties The type of modification.
-   * @param option The map of options.
-   */
-  public AlterTableStatement(TableName tableName, ColumnName column, ColumnType type,
-                             String properties, int option) {
-    this.command = false;
-    this.tableName = tableName;
-    this.column = column;
-    this.type = type;
-    this.properties = StringUtils.convertJsonToOptions(properties);
-    this.option = option;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("ALTER TABLE ");
-    sb.append(tableName.getQualifiedName());
-    switch(option){
-      case 1:
-        sb.append(" ALTER ").append(column.getQualifiedName());
-        sb.append(" TYPE ").append(type);
-        break;
-      case 2:
-        sb.append(" ADD ");
-        sb.append(column.getQualifiedName()).append(" ");
-        sb.append(type);
-        break;
-      case 3:
-        sb.append(" DROP ");
-        sb.append(column.getQualifiedName());
-        break;
-      case 4:
-        sb.append(" WITH ").append(properties);
-        break;
-      default:
-        sb.append("BAD OPTION");
-        break;
+    /**
+     * Class constructor.
+     *
+     * @param tableName  The name of the table.
+     * @param column     The name of the column.
+     * @param type       The data type of the column.
+     * @param properties The type of modification.
+     * @param option     The map of options.
+     */
+    public AlterTableStatement(TableName tableName, ColumnName column, ColumnType type,
+            String properties, int option) {
+        this.command = false;
+        this.tableName = tableName;
+        this.column = column;
+        this.type = type;
+        this.properties = StringUtils.convertJsonToOptions(properties);
+        this.option = option;
     }
 
-    return sb.toString();
-  }
-
-
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    ValidationRequirements validationRequirements;
-    switch (option) {
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ALTER TABLE ");
+        sb.append(tableName.getQualifiedName());
+        switch (option) {
         case 1:
-            validationRequirements=new ValidationRequirements().add(Validation.MUST_EXIST_TABLE).add(Validation.MUST_EXIST_COLUMN);
+            sb.append(" ALTER ").append(column.getQualifiedName());
+            sb.append(" TYPE ").append(type);
             break;
         case 2:
-            validationRequirements=new ValidationRequirements().add(Validation.MUST_EXIST_TABLE).add(Validation.MUST_NOT_EXIST_COLUMN);
+            sb.append(" ADD ");
+            sb.append(column.getQualifiedName()).append(" ");
+            sb.append(type);
             break;
         case 3:
-            validationRequirements=new ValidationRequirements().add(Validation.MUST_EXIST_TABLE).add(Validation.MUST_EXIST_COLUMN);
+            sb.append(" DROP ");
+            sb.append(column.getQualifiedName());
             break;
         case 4:
-            validationRequirements=new ValidationRequirements().add(Validation.MUST_EXIST_TABLE).add(Validation.MUST_EXIST_PROPERTIES);
+            sb.append(" WITH ").append(properties);
             break;
         default:
-            validationRequirements=new ValidationRequirements();
-    }
-    return validationRequirements;
-  }
+            sb.append("BAD OPTION");
+            break;
+        }
 
-  public TableName getTableName() {
-    return tableName;
-  }
-
-  public void setTableName(TableName tableName) {
-    this.tableName = tableName;
-  }
-
-  @Override
-  public CatalogName getEffectiveCatalog() {
-    CatalogName effective;
-    if(tableName != null){
-      effective = tableName.getCatalogName();
-    }else{
-      effective = catalog;
+        return sb.toString();
     }
-    if(sessionCatalog != null){
-      effective = sessionCatalog;
+
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        ValidationRequirements validationRequirements;
+        switch (option) {
+        case 1:
+            validationRequirements = new ValidationRequirements().add(Validation.MUST_EXIST_TABLE)
+                    .add(Validation.MUST_EXIST_COLUMN);
+            break;
+        case 2:
+            validationRequirements = new ValidationRequirements().add(Validation.MUST_EXIST_TABLE)
+                    .add(Validation.MUST_NOT_EXIST_COLUMN);
+            break;
+        case 3:
+            validationRequirements = new ValidationRequirements().add(Validation.MUST_EXIST_TABLE)
+                    .add(Validation.MUST_EXIST_COLUMN);
+            break;
+        case 4:
+            validationRequirements = new ValidationRequirements().add(Validation.MUST_EXIST_TABLE)
+                    .add(Validation.MUST_EXIST_PROPERTIES);
+            break;
+        default:
+            validationRequirements = new ValidationRequirements();
+        }
+        return validationRequirements;
     }
-    return effective;
-  }
+
+    public TableName getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(TableName tableName) {
+        this.tableName = tableName;
+    }
+
+    @Override
+    public CatalogName getEffectiveCatalog() {
+        CatalogName effective;
+        if (tableName != null) {
+            effective = tableName.getCatalogName();
+        } else {
+            effective = catalog;
+        }
+        if (sessionCatalog != null) {
+            effective = sessionCatalog;
+        }
+        return effective;
+    }
 
 }

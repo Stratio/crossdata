@@ -18,12 +18,12 @@
 
 package com.stratio.meta2.core.metadata;
 
-
 public class MetadataManagerException extends RuntimeException {
-  public MetadataManagerException(String message){
-    super(message);
-  }
-  public MetadataManagerException(String message,Throwable cause){
-    super(message,cause);
-  }
+    public MetadataManagerException(String message) {
+        super(message);
+    }
+
+    public MetadataManagerException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

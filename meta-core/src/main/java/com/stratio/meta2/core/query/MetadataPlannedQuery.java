@@ -18,21 +18,25 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta.common.executionplan.ExecutionWorkflow;
+import com.stratio.meta.common.result.QueryStatus;
 
-import com.stratio.meta2.core.statements.MetadataStatement;
+public class MetadataPlannedQuery extends MetadataValidatedQuery implements PlannedQuery {
 
-public class MetadataPlannedQuery extends PlannedQuery {
-  
-  public MetadataPlannedQuery(ValidatedQuery validatedQuery) {
-    super(validatedQuery);
-  }
+    private final ExecutionWorkflow executionWorkflow;
 
-  MetadataPlannedQuery(MetadataPlannedQuery plannedQuery){
-    this((ValidatedQuery)plannedQuery);
-  }
+    public MetadataPlannedQuery(MetadataValidatedQuery metadataValidatedQuery, ExecutionWorkflow executionWorkflow) {
+        super(metadataValidatedQuery);
+        setQueryStatus(QueryStatus.PLANNED);
+        this.executionWorkflow = executionWorkflow;
+    }
+
+    public MetadataPlannedQuery(MetadataPlannedQuery metadataPlannedQuery) {
+        this(metadataPlannedQuery, metadataPlannedQuery.getExecutionWorkflow());
+    }
 
     @Override
-    public MetadataStatement getStatement() {
-        return (MetadataStatement)statement;
+    public ExecutionWorkflow getExecutionWorkflow() {
+        return executionWorkflow;
     }
 }

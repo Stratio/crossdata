@@ -25,24 +25,25 @@ import java.util.List;
  */
 public class ParsingException extends Exception {
 
-  /**
-   * Serial version UID in order to be {@link java.io.Serializable}.
-   */
-  private static final long serialVersionUID = -1125608075378630223L;
+    /**
+     * Serial version UID in order to be {@link java.io.Serializable}.
+     */
+    private static final long serialVersionUID = -1125608075378630223L;
 
-  private final List<String> errors;
+    private final List<String> errors;
 
-  public ParsingException(String message){
-    super(message);
-    this.errors=null;
-  }
-  public ParsingException(String message, List<String> errors){
-    super(message);
-    this.errors=errors;
-  }
+    public ParsingException(String message) {
+        super(message);
+        this.errors = null;
+    }
 
-  public List<String> getErrors(){
-    return this.errors;
-  }
+    public ParsingException(String message, List<String> errors) {
+        super(message);
+        this.errors = errors;
+    }
+
+    public List<String> getErrors() {
+        return this.errors;
+    }
 
 }

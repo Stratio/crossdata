@@ -18,29 +18,30 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class TruncateStatementTest extends ParsingTest {
 
-  @Test
-  public void truncateTable1() {
-    String inputText = "TRUNCATE usersTable;";
-    String expectedText = "TRUNCATE <unknown_name>.usersTable;";
-    testRegularStatement(inputText, expectedText, "truncateTable1");
-  }
+    @Test
+    public void truncateTable1() {
+        String inputText = "TRUNCATE usersTable;";
+        String expectedText = "TRUNCATE <unknown_name>.usersTable;";
+        testRegularStatement(inputText, expectedText, "truncateTable1");
+    }
 
-  @Test
-  public void truncateTable2() {
-    String inputText = "[demo], TRUNCATE usersTable;";
-    String expectedText = "TRUNCATE demo.usersTable;";
-    testRegularStatement(inputText, expectedText, "truncateTable2");
-  }
+    @Test
+    public void truncateTable2() {
+        String inputText = "[demo], TRUNCATE usersTable;";
+        String expectedText = "TRUNCATE demo.usersTable;";
+        testRegularStatement(inputText, expectedText, "truncateTable2");
+    }
 
-  @Test
-  public void truncateWrongIdentifier(){
-    String inputText = "TRUNCATE companyKS..usersTable;";
-    testParserFails(inputText, "truncateWrongIdentifier");
-  }
+    @Test
+    public void truncateWrongIdentifier() {
+        String inputText = "TRUNCATE companyKS..usersTable;";
+        testParserFails(inputText, "truncateWrongIdentifier");
+    }
 
 }

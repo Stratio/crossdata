@@ -19,44 +19,42 @@
 package com.stratio.meta.common.logicalplan;
 
 import com.stratio.meta.common.connector.Operations;
-import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 
 /**
  * Filter the results retrieved through a Project operation.
  */
-public class Filter extends TransformationStep{
+public class Filter extends TransformationStep {
 
+    /**
+     * Relationship.
+     */
+    private final Relation relation;
 
-  /**
-   * Relationship.
-   */
-  private final Relation relation;
+    /**
+     * Create filter operation to be executed over a existing dataset.
+     *
+     * @param operation The operation to be executed.
+     * @param relation  The relationship.
+     */
+    public Filter(Operations operation, Relation relation) {
+        super(operation);
+        this.relation = relation;
+    }
 
-  /**
-   * Create filter operation to be executed over a existing dataset.
-   * @param operation The operation to be executed.
-   * @param relation The relationship.
-   */
-  public Filter(Operations operation, Relation relation) {
-    super(operation);
-    this.relation = relation;
-  }
+    /**
+     * Get the relationship.
+     *
+     * @return A {@link com.stratio.meta.common.statements.structures.relationships.Relation}
+     */
+    public Relation getRelation() {
+        return relation;
+    }
 
-
-
-  /**
-   * Get the relationship.
-   * @return A {@link com.stratio.meta.common.statements.structures.relationships.Relation}
-   */
-  public Relation getRelation() {
-    return relation;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("FILTER - ");
-    sb.append(getOperation()).append(" - ").append(relation);
-    return sb.toString();
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("FILTER - ");
+        sb.append(getOperation()).append(" - ").append(relation);
+        return sb.toString();
+    }
 }

@@ -23,37 +23,38 @@ import com.stratio.meta2.core.planner.Planner
 import com.stratio.meta2.core.query.ValidatedQuery
 import org.apache.log4j.Logger
 
-object PlannerActor{
-  def props(executor:ActorRef, planner:Planner): Props =Props(new PlannerActor(executor,planner))
+object PlannerActor {
+  def props(executor: ActorRef, planner: Planner): Props = Props(new PlannerActor(executor, planner))
 }
 
-class PlannerActor(coordinator:ActorRef, planner:Planner) extends Actor with TimeTracker {
-  val log =Logger.getLogger(classOf[PlannerActor])
-  override lazy val timerName= this.getClass.getName
+class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with TimeTracker {
+  override lazy val timerName = this.getClass.getName
+  val log = Logger.getLogger(classOf[PlannerActor])
+
   def receive = {
     case query: ValidatedQuery => {
       log.info("Planner Actor received ValidatedQuery")
-      log.info("ValidatedQuery ="+query)
+      log.info("ValidatedQuery =" + query)
       coordinator forward planner.planQuery(query)
       sender ! "Ok"
     }
-      /*
-    case query:MetaQuery if !query.hasError=> {
-      log.info("Init Planner Task")
-      val timer=initTimer()
+    /*
+  case query:MetaQuery if !query.hasError=> {
+    log.info("Init Planner Task")
+    val timer=initTimer()
 
-      val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
-      //println("Sending ack: " + ack)
-      sender ! ack
-      //println("Execute the plan");
-      executor forward planner.planQuery(query)
-      finishTimer(timer)
-      log.info("Finish Planner Task")
-    }
-    case query:MetaQuery if query.hasError=>{
-      sender ! query.getResult
-    }
-    */
+    val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
+    //println("Sending ack: " + ack)
+    sender ! ack
+    //println("Execute the plan");
+    executor forward planner.planQuery(query)
+    finishTimer(timer)
+    log.info("Finish Planner Task")
+  }
+  case query:MetaQuery if query.hasError=>{
+    sender ! query.getResult
+  }
+  */
     case _ => {
       //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
       sender ! "KO"

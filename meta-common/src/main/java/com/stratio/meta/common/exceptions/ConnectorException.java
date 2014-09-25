@@ -21,16 +21,16 @@ package com.stratio.meta.common.exceptions;
 /**
  * Exception thrown by a connector operation.
  */
-public class ConnectorException extends Exception{
+public class ConnectorException extends Exception {
 
-  private static final long serialVersionUID = -847420817619537147L;
+    private static final long serialVersionUID = -847420817619537147L;
 
-  public ConnectorException(String msg){
-    super(msg);
-  }
+    public ConnectorException(String msg) {
+        super(msg);
+    }
 
-  public ConnectorException(String msg, Throwable cause){
-    super(msg, cause);
-  }
+    public ConnectorException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 
 }

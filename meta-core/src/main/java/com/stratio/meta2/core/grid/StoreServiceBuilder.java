@@ -25,50 +25,50 @@ import org.jgroups.JChannel;
  */
 public class StoreServiceBuilder {
 
-  private JChannel channel;
-  private String name;
-  private String path;
+    private JChannel channel;
+    private String name;
+    private String path;
 
-  /**
-   * Returns a {@link StoreServiceBuilder} using the specified JGroups channel.
-   *
-   * @param channel the JGroups channel to be used
-   * @return a {@link StoreServiceBuilder} using the specified JGroups channel
-   */
-  public StoreServiceBuilder setChannel(JChannel channel) {
-    this.channel = channel;
-    return this;
-  }
+    /**
+     * Returns a {@link StoreServiceBuilder} using the specified JGroups channel.
+     *
+     * @param channel the JGroups channel to be used
+     * @return a {@link StoreServiceBuilder} using the specified JGroups channel
+     */
+    public StoreServiceBuilder setChannel(JChannel channel) {
+        this.channel = channel;
+        return this;
+    }
 
-  /**
-   * Returns a {@link StoreServiceBuilder} using the specified cluster name.
-   *
-   * @param name the cluster name
-   * @return a {@link StoreServiceBuilder} using the specified cluster name.
-   */
-  public StoreServiceBuilder setName(String name) {
-    this.name = name;
-    return this;
-  }
+    /**
+     * Returns a {@link StoreServiceBuilder} using the specified cluster name.
+     *
+     * @param name the cluster name
+     * @return a {@link StoreServiceBuilder} using the specified cluster name.
+     */
+    public StoreServiceBuilder setName(String name) {
+        this.name = name;
+        return this;
+    }
 
-  /**
-   * Returns a {@link StoreServiceBuilder} using the specified files persistence path.
-   *
-   * @param path the files persistence path
-   * @return a {@link StoreServiceBuilder} using the specified files persistence path
-   */
-  public StoreServiceBuilder setPath(String path) {
-    this.path = path;
-    return this;
-  }
+    /**
+     * Returns a {@link StoreServiceBuilder} using the specified files persistence path.
+     *
+     * @param path the files persistence path
+     * @return a {@link StoreServiceBuilder} using the specified files persistence path
+     */
+    public StoreServiceBuilder setPath(String path) {
+        this.path = path;
+        return this;
+    }
 
-  /**
-   * Returns the new {@link StoreService} defined by this.
-   *
-   * @return a new {@link StoreService} defined by this
-   */
-  public StoreService build() {
-    return new StoreService(channel, name, path);
-  }
+    /**
+     * Returns the new {@link StoreService} defined by this.
+     *
+     * @return a new {@link StoreService} defined by this
+     */
+    public StoreService build() {
+        return new StoreService(channel, name, path);
+    }
 
 }

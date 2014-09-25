@@ -18,43 +18,41 @@
 
 package com.stratio.meta2.server.parser
 
-import com.stratio.meta2.server.utilities.createEngine
-import org.scalatest.{FunSuiteLike, fixture, Suite,BeforeAndAfterAll}
-import com.stratio.meta.server.config.{ServerConfig, ActorReceiveUtils}
-import com.stratio.meta2.core.engine.Engine
-import scala.concurrent.duration.DurationInt
-import com.stratio.meta.server.config.{ServerConfig, ActorReceiveUtils}
-import com.stratio.meta2.server.actors.{ParserActor,ValidatorActor,PlannerActor, ServerActor, CoordinatorActor, ConnectorManagerActor}
 import akka.actor.{ActorSystem, actorRef2Scala}
-import org.apache.log4j.Logger
+import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
+import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.core.parser.Parser
+import com.stratio.meta2.server.actors.{ParserActor, PlannerActor, ValidatorActor}
+import com.stratio.meta2.server.utilities.createEngine
+import org.apache.log4j.Logger
+import org.scalatest.{FunSuiteLike, Suite}
 
-class ParserActorTest  extends ActorReceiveUtils with FunSuiteLike with ServerConfig{
-    this:Suite =>
+import scala.concurrent.duration.DurationInt
 
-    val engine:Engine =  createEngine.create()
+class ParserActorTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig {
+  this: Suite =>
 
-    override lazy val logger =Logger.getLogger(classOf[ParserActorTest])
-    lazy val system1 = ActorSystem(clusterName,config)
+  override lazy val logger = Logger.getLogger(classOf[ParserActorTest])
+  lazy val system1 = ActorSystem(clusterName, config)
+  val engine: Engine = createEngine.create()
 
-    //val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()),"APIActor")
-    //val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(),"ConnectorManagerActor")
-    //val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef,engine.getCoordinator()),"CoordinatorActor")
+  //val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()),"APIActor")
+  //val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(),"ConnectorManagerActor")
+  //val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef,engine.getCoordinator()),"CoordinatorActor")
+  val plannerRef = system.actorOf(PlannerActor.props(null, null), "TestPlannerActor")
+  val validatorRef = system.actorOf(ValidatorActor.props(null, engine.getValidator()), "TestValidatorActor")
+  val parserActor = {
+    system1.actorOf(ParserActor.props(validatorRef, new Parser()), "TestParserActor")
+  }
 
-    val plannerRef = system.actorOf(PlannerActor.props(null,null),"TestPlannerActor")
-    val validatorRef = system.actorOf(ValidatorActor.props(null,engine.getValidator()),"TestValidatorActor")
-    val parserActor= {
-      system1.actorOf(ParserActor.props(validatorRef,new Parser()), "TestParserActor")
+
+  test("Should return a KO message") {
+    within(1000 millis) {
+      parserActor ! "non-sense making message"
+      expectMsg("KO") // bounded to 1 second
+      assert(true)
     }
-
-
-    test("Should return a KO message") {
-		  within(1000 millis){
-	  		parserActor! "non-sense making message"
-	  		expectMsg("KO") // bounded to 1 second
-        assert(true)
-	  		}
-		}
+  }
 
 }
 

@@ -18,22 +18,23 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
 
-public class AlterCatalogStatementTest extends ParsingTest{
+import com.stratio.meta2.core.grammar.ParsingTest;
 
-  @Test
-  public void alterCatalogIfNotExistsWithEmptyOptions() {
-    String inputText = "ALTER CATALOG catalog1 WITH {};";
-    testRegularStatement(inputText, "createCatalogIfNotExistsWithEmptyOptions");
-  }
+public class AlterCatalogStatementTest extends ParsingTest {
 
-  @Test
-  public void alterCatalogWithOptions() {
-    String inputText = "ALTER CATALOG catalog1 WITH {\"comment\": \"This is a comment\"};";
-    String expectedText = "ALTER CATALOG catalog1 WITH {comment=This is a comment};";
-    testRegularStatement(inputText, expectedText, "createCatalogWithOptions");
-  }
+    @Test
+    public void alterCatalogIfNotExistsWithEmptyOptions() {
+        String inputText = "ALTER CATALOG catalog1 WITH {};";
+        testRegularStatement(inputText, "createCatalogIfNotExistsWithEmptyOptions");
+    }
+
+    @Test
+    public void alterCatalogWithOptions() {
+        String inputText = "ALTER CATALOG catalog1 WITH {\"comment\": \"This is a comment\"};";
+        String expectedText = "ALTER CATALOG catalog1 WITH {comment=This is a comment};";
+        testRegularStatement(inputText, expectedText, "createCatalogWithOptions");
+    }
 
 }

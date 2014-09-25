@@ -19,12 +19,12 @@
 package com.stratio.meta2.core.structures;
 
 public enum OrderDirection {
-  /**
-   * Ascending order.
-   */
-  ASC,
-  /**
-   * Descending order.
-   */
-  DESC
+    /**
+     * Ascending order.
+     */
+    ASC,
+    /**
+     * Descending order.
+     */
+    DESC
 }

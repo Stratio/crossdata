@@ -18,22 +18,22 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class DropDataStoreStatementTest extends ParsingTest {
 
-  @Test
-  public void dropDatastoreSimple() {
-    String inputText = "DROP DATASTORE myDatastore;";
-    testRegularStatement(inputText, "dropDatastoreSimple");
-  }
+    @Test
+    public void dropDatastoreSimple() {
+        String inputText = "DROP DATASTORE myDatastore;";
+        testRegularStatement(inputText, "dropDatastoreSimple");
+    }
 
-  @Test
-  public void dropDatastoreError() {
-    String inputText = "DROP DATASTORE _myDatastore";
-    testParserFails(inputText, "dropDatastoreError");
-  }
+    @Test
+    public void dropDatastoreError() {
+        String inputText = "DROP DATASTORE _myDatastore";
+        testParserFails(inputText, "dropDatastoreError");
+    }
 
 }

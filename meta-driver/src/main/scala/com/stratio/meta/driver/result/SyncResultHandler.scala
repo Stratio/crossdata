@@ -18,26 +18,26 @@
 
 package com.stratio.meta.driver.result
 
+import com.stratio.meta.common.data.CassandraResultSet
+import com.stratio.meta.common.exceptions.{ExecutionException, ParsingException, UnsupportedException, ValidationException}
 import com.stratio.meta.common.result._
-import com.stratio.meta.common.exceptions.{ExecutionException, ValidationException, UnsupportedException, ParsingException}
-import com.stratio.meta.common.data.{ResultSet, CassandraResultSet}
 
 /**
  * Synchronous result handler.
  */
-class SyncResultHandler extends IResultHandler{
+class SyncResultHandler extends IResultHandler {
 
-  var errorFound : Boolean = false
+  var errorFound: Boolean = false
 
-  var exception : Exception = null
+  var exception: Exception = null
 
-  var allResults : Boolean = false
+  var allResults: Boolean = false
 
-  var lastStatus : QueryStatus = QueryStatus.NONE
+  var lastStatus: QueryStatus = QueryStatus.NONE
 
-  var queryResult : QueryResult = null
+  var queryResult: QueryResult = null
 
-  var nonQueryResult : Result = null
+  var nonQueryResult: Result = null
 
   override def processAck(queryId: String, status: QueryStatus): Unit = {
     lastStatus = status
@@ -65,15 +65,15 @@ class SyncResultHandler extends IResultHandler{
   override def processError(errorResult: Result): Unit = synchronized {
     val e = errorResult.asInstanceOf[ErrorResult]
 
-    if(ErrorType.PARSING.equals(e.getType)){
+    if (ErrorType.PARSING.equals(e.getType)) {
       exception = new ParsingException(e.getErrorMessage)
-    }else if(ErrorType.VALIDATION.equals(e.getType)){
+    } else if (ErrorType.VALIDATION.equals(e.getType)) {
       exception = new ValidationException(e.getErrorMessage)
-    }else if(ErrorType.EXECUTION.equals(e.getType)){
+    } else if (ErrorType.EXECUTION.equals(e.getType)) {
       exception = new ExecutionException(e.getErrorMessage)
-    }else if(ErrorType.NOT_SUPPORTED.equals(e.getType)){
+    } else if (ErrorType.NOT_SUPPORTED.equals(e.getType)) {
       exception = new UnsupportedException(e.getErrorMessage)
-    }else{
+    } else {
       exception = new UnsupportedException(e.getErrorMessage)
     }
 
@@ -85,16 +85,16 @@ class SyncResultHandler extends IResultHandler{
   @throws(classOf[ValidationException])
   @throws(classOf[ExecutionException])
   @throws(classOf[UnsupportedException])
-  def waitForResult() : Result = synchronized {
-    while(!errorFound && !allResults){
+  def waitForResult(): Result = synchronized {
+    while (!errorFound && !allResults) {
       //println("Waiting for results, errorFound: " + errorFound + " allResults: " + allResults)
       wait()
     }
-    if(errorFound){
+    if (errorFound) {
       throw exception
     }
 
-    if(queryResult != null){
+    if (queryResult != null) {
       //println("QueryResult ksChanged: " + queryResult.isKsChanged)
       return queryResult
     }

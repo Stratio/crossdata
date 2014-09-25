@@ -18,46 +18,46 @@
 
 package com.stratio.meta.common.statements.structures.selectors;
 
+import java.util.List;
+
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta2.common.data.TableName;
 
-import java.util.List;
-
 public class SelectorFunction extends SelectorMeta {
 
-  private TableName name;
-  private List<SelectorMeta> params;
+    private TableName name;
+    private List<SelectorMeta> params;
 
-  public SelectorFunction(TableName name, List<SelectorMeta> params) {
-    this.type = TYPE_FUNCTION;
-    this.name = name;
-    this.params = params;
-  }
-
-  public TableName getName() {
-    return name;
-  }
-
-  public void setName(TableName name) {
-    this.name = name;
-  }
-
-  public List<SelectorMeta> getParams() {
-    return params;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder(name.getName());
-    sb.append("(").append(StringUtils.stringList(params, ", ")).append(")");
-    return sb.toString();
-  }
-
-  @Override
-  public void addTablename(TableName tablename) {
-    for(SelectorMeta param: params){
-      param.addTablename(tablename);
+    public SelectorFunction(TableName name, List<SelectorMeta> params) {
+        this.type = TYPE_FUNCTION;
+        this.name = name;
+        this.params = params;
     }
-  }
+
+    public TableName getName() {
+        return name;
+    }
+
+    public void setName(TableName name) {
+        this.name = name;
+    }
+
+    public List<SelectorMeta> getParams() {
+        return params;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(name.getName());
+        sb.append("(").append(StringUtils.stringList(params, ", ")).append(")");
+        return sb.toString();
+    }
+
+    @Override
+    public void addTablename(TableName tablename) {
+        for (SelectorMeta param : params) {
+            param.addTablename(tablename);
+        }
+    }
 
 }

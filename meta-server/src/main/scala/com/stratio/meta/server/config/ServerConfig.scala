@@ -18,65 +18,29 @@
 
 package com.stratio.meta.server.config
 
-import com.stratio.meta2.core.engine.EngineConfig
-import com.typesafe.config.{ConfigFactory, Config}
 import java.io.File
+
+import com.stratio.meta2.core.engine.EngineConfig
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 
-object ServerConfig{
+object ServerConfig {
   val SERVER_BASIC_CONFIG = "server-reference.conf"
-  val PARENT_CONFIG_NAME= "meta-server"
+  val PARENT_CONFIG_NAME = "meta-server"
 
 
-  val SERVER_CLUSTER_NAME_KEY="config.cluster.name"
-  val SERVER_ACTOR_NAME_KEY="config.cluster.actor"
-  val SERVER_USER_CONFIG_FILE="external.config.filename"
+  val SERVER_CLUSTER_NAME_KEY = "config.cluster.name"
+  val SERVER_ACTOR_NAME_KEY = "config.cluster.actor"
+  val SERVER_USER_CONFIG_FILE = "external.config.filename"
   val SERVER_USER_CONFIG_RESOURCE = "external.config.resource"
 }
 
 //trait ServerConfig extends CassandraConfig with SparkConfig with StreamingConfig with HazelcastConfig {
 trait ServerConfig extends SparkConfig with StreamingConfig with GridConfig {
 
-  lazy val logger:Logger = ???
-
-  override val config: Config ={
-
-    var defaultConfig= ConfigFactory.load(ServerConfig.SERVER_BASIC_CONFIG).getConfig(ServerConfig.PARENT_CONFIG_NAME)
-    val configFile= defaultConfig.getString(ServerConfig.SERVER_USER_CONFIG_FILE)
-    val configResource= defaultConfig.getString(ServerConfig.SERVER_USER_CONFIG_RESOURCE)
-
-    if(configResource != ""){
-      val resource = ServerConfig.getClass.getClassLoader.getResource(configResource)
-      if(resource !=null) {
-        val userConfig = ConfigFactory.parseResources(configResource).getConfig(ServerConfig.PARENT_CONFIG_NAME)
-        defaultConfig = userConfig.withFallback(defaultConfig)
-      }else{
-        logger.warn("User resource (" + configResource + ") haven't been found")
-        val file=new File(configResource)
-        if(file.exists()) {
-          val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.PARENT_CONFIG_NAME)
-          defaultConfig = userConfig.withFallback(defaultConfig)
-        }else{
-          logger.warn("User file (" + configResource + ") haven't been found in classpath")
-        }
-      }
-    }
-
-    if(configFile!="" ){
-      val file=new File(configFile)
-      if(file.exists()) {
-        val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.PARENT_CONFIG_NAME)
-        defaultConfig = userConfig.withFallback(defaultConfig)
-      }else{
-        logger.warn("User file (" + configFile + ") haven't been found")
-      }
-    }
-
-    ConfigFactory.load(defaultConfig)
-  }
-
-  lazy val engineConfig:EngineConfig = {
-    val result= new EngineConfig()
+  lazy val logger: Logger = ???
+  lazy val engineConfig: EngineConfig = {
+    val result = new EngineConfig()
     //result.setCassandraHosts(cassandraHosts)
     //result.setCassandraPort(cassandraPort)
     result.setSparkMaster(sparkMaster)
@@ -95,10 +59,43 @@ trait ServerConfig extends SparkConfig with StreamingConfig with GridConfig {
     result.setGridPersistencePath(gridPersistencePath)
     result
   }
+  lazy val clusterName = config.getString(ServerConfig.SERVER_CLUSTER_NAME_KEY)
+  lazy val actorName = config.getString(ServerConfig.SERVER_ACTOR_NAME_KEY)
+  override val config: Config = {
 
-  lazy val clusterName =  config.getString(ServerConfig.SERVER_CLUSTER_NAME_KEY)
-  
-  lazy val actorName =  config.getString(ServerConfig.SERVER_ACTOR_NAME_KEY)
+    var defaultConfig = ConfigFactory.load(ServerConfig.SERVER_BASIC_CONFIG).getConfig(ServerConfig.PARENT_CONFIG_NAME)
+    val configFile = defaultConfig.getString(ServerConfig.SERVER_USER_CONFIG_FILE)
+    val configResource = defaultConfig.getString(ServerConfig.SERVER_USER_CONFIG_RESOURCE)
+
+    if (configResource != "") {
+      val resource = ServerConfig.getClass.getClassLoader.getResource(configResource)
+      if (resource != null) {
+        val userConfig = ConfigFactory.parseResources(configResource).getConfig(ServerConfig.PARENT_CONFIG_NAME)
+        defaultConfig = userConfig.withFallback(defaultConfig)
+      } else {
+        logger.warn("User resource (" + configResource + ") haven't been found")
+        val file = new File(configResource)
+        if (file.exists()) {
+          val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.PARENT_CONFIG_NAME)
+          defaultConfig = userConfig.withFallback(defaultConfig)
+        } else {
+          logger.warn("User file (" + configResource + ") haven't been found in classpath")
+        }
+      }
+    }
+
+    if (configFile != "") {
+      val file = new File(configFile)
+      if (file.exists()) {
+        val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.PARENT_CONFIG_NAME)
+        defaultConfig = userConfig.withFallback(defaultConfig)
+      } else {
+        logger.warn("User file (" + configFile + ") haven't been found")
+      }
+    }
+
+    ConfigFactory.load(defaultConfig)
+  }
 
 }
 

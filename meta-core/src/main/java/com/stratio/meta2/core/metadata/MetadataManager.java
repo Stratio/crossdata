@@ -14,6 +14,19 @@
 
 package com.stratio.meta2.core.metadata;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.Lock;
+
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
 
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
@@ -33,294 +46,278 @@ import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.locks.Lock;
-
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
-
-
 public enum MetadataManager {
-  MANAGER;
+    MANAGER;
 
-  private boolean isInit = false;
+    private boolean isInit = false;
 
-  private Map<FirstLevelName, IMetadata> metadata;
-  private Lock writeLock;
-  private TransactionManager tm;
+    private Map<FirstLevelName, IMetadata> metadata;
+    private Lock writeLock;
+    private TransactionManager tm;
 
-  private void shouldBeInit() {
-    if (!isInit) {
-      throw new MetadataManagerException("Metadata is not initialized yet.");
+    private void shouldBeInit() {
+        if (!isInit) {
+            throw new MetadataManagerException("Metadata is not initialized yet.");
+        }
     }
-  }
 
-  public boolean exists(Name name) {
-    boolean result = false;
-    switch (name.getType()) {
-      case Catalog:
-        result = exists((CatalogName) name);
-        break;
-      case Cluster:
-        result = exists((ClusterName) name);
-        break;
-      case Column:
-        result = exists((ColumnName) name);
-        break;
-      case Connector:
-        result = exists((ConnectorName) name);
-        break;
-      case DataStore:
-        result = exists((DataStoreName) name);
-        break;
-      case Table:
-        result = exists((TableName) name);
-        break;
-      case Index:
-        result = exists((IndexName) name);
-        break;
+    public boolean exists(Name name) {
+        boolean result = false;
+        switch (name.getType()) {
+        case Catalog:
+            result = exists((CatalogName) name);
+            break;
+        case Cluster:
+            result = exists((ClusterName) name);
+            break;
+        case Column:
+            result = exists((ColumnName) name);
+            break;
+        case Connector:
+            result = exists((ConnectorName) name);
+            break;
+        case DataStore:
+            result = exists((DataStoreName) name);
+            break;
+        case Table:
+            result = exists((TableName) name);
+            break;
+        case Index:
+            result = exists((IndexName) name);
+            break;
+        }
+        return result;
     }
-    return result;
-  }
 
-  private void shouldBeUnique(Name name) {
-    if (exists(name)) {
-      throw new MetadataManagerException("[" + name + "] already exists");
+    private void shouldBeUnique(Name name) {
+        if (exists(name)) {
+            throw new MetadataManagerException("[" + name + "] already exists");
+        }
     }
-  }
 
-  private void shouldExist(Name name) {
-    if (!exists(name)) {
-      throw new MetadataManagerException("[" + name + "] doesn't exist yet");
+    private void shouldExist(Name name) {
+        if (!exists(name)) {
+            throw new MetadataManagerException("[" + name + "] doesn't exist yet");
+        }
     }
-  }
 
-  private void beginTransaction() throws SystemException, NotSupportedException {
-    if (tm != null) {
-      tm.begin();
+    private void beginTransaction() throws SystemException, NotSupportedException {
+        if (tm != null) {
+            tm.begin();
+        }
     }
-  }
 
-  private void commitTransaction() throws HeuristicRollbackException, RollbackException,
-      HeuristicMixedException, SystemException {
-    if (tm != null) {
-      tm.commit();
+    private void commitTransaction() throws HeuristicRollbackException, RollbackException,
+            HeuristicMixedException, SystemException {
+        if (tm != null) {
+            tm.commit();
+        }
     }
-  }
 
-  private boolean exists(FirstLevelName name) {
-    return metadata.containsKey(name);
-  }
-
-  public boolean exists(TableName name) {
-    boolean result = false;
-    if (exists(name.getCatalogName())) {
-      CatalogMetadata catalogMetadata = this.getCatalog(name.getCatalogName());
-      result = catalogMetadata.getTables().containsKey(name);
+    private boolean exists(FirstLevelName name) {
+        return metadata.containsKey(name);
     }
-    return result;
-  }
 
-  public boolean exists(ColumnName name) {
-    boolean result = false;
-    if (exists(name.getTableName())) {
-      TableMetadata catalogMetadata = this.getTable(name.getTableName());
-      result = catalogMetadata.getColumns().containsKey(name);
+    public boolean exists(TableName name) {
+        boolean result = false;
+        if (exists(name.getCatalogName())) {
+            CatalogMetadata catalogMetadata = this.getCatalog(name.getCatalogName());
+            result = catalogMetadata.getTables().containsKey(name);
+        }
+        return result;
     }
-    return result;
-  }
 
-  public boolean exists(IndexName name){
-   boolean result = false;
-   if (exists(name.getTableName())) {
-     TableMetadata tableMetadata = this.getTable(name.getTableName());
-     result = tableMetadata.getIndexes().containsKey(name);
-   }
-   return result;
-  }
-
-  public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock, TransactionManager tm) {
-    if (metadata != null && writeLock != null) {
-      this.metadata = metadata;
-      this.writeLock = writeLock;
-      this.tm = tm;
-      this.isInit = true;
-    } else {
-      throw new NullPointerException("Any parameter can't be NULL");
+    public boolean exists(ColumnName name) {
+        boolean result = false;
+        if (exists(name.getTableName())) {
+            TableMetadata catalogMetadata = this.getTable(name.getTableName());
+            result = catalogMetadata.getColumns().containsKey(name);
+        }
+        return result;
     }
-  }
 
-  public void createCatalog(CatalogMetadata catalogMetadata) {
-    shouldBeInit();
-    try {
-      writeLock.lock();
-      shouldBeUnique(catalogMetadata.getName());
-      beginTransaction();
-      metadata.put(catalogMetadata.getName(), catalogMetadata);
-      commitTransaction();
-    } catch (MetadataManagerException mex) {
-      throw mex;
-    } catch (Exception ex) {
-      throw new MetadataManagerException(ex.getMessage(), ex.getCause());
-    } finally {
-      writeLock.unlock();
+    public boolean exists(IndexName name) {
+        boolean result = false;
+        if (exists(name.getTableName())) {
+            TableMetadata tableMetadata = this.getTable(name.getTableName());
+            result = tableMetadata.getIndexes().containsKey(name);
+        }
+        return result;
     }
-  }
 
-  public CatalogMetadata getCatalog(CatalogName name) {
-    shouldBeInit();
-    shouldExist(name);
-    return (CatalogMetadata) metadata.get(name);
-  }
-
-
-  public void createTable(TableMetadata tableMetadata, boolean unique) {
-    shouldBeInit();
-    try {
-      writeLock.lock();
-      shouldExist(tableMetadata.getName().getCatalogName());
-      shouldExist(tableMetadata.getClusterRef());
-      if (unique) {
-        shouldBeUnique(tableMetadata.getName());
-      }
-      CatalogMetadata catalogMetadata =
-          ((CatalogMetadata) metadata.get(tableMetadata.getName().getCatalogName()));
-
-      if (catalogMetadata.getTables().containsKey(tableMetadata.getName())&& unique) {
-        throw new MetadataManagerException("Table [" + tableMetadata.getName() + "] already exists");
-      }
-
-      catalogMetadata.getTables().put(tableMetadata.getName(), tableMetadata);
-      beginTransaction();
-      metadata.put(tableMetadata.getName().getCatalogName(), catalogMetadata);
-      commitTransaction();
-    } catch (Exception ex) {
-      throw new MetadataManagerException(ex.getMessage(), ex.getCause());
-    } finally {
-      writeLock.unlock();
+    public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock, TransactionManager tm) {
+        if (metadata != null && writeLock != null) {
+            this.metadata = metadata;
+            this.writeLock = writeLock;
+            this.tm = tm;
+            this.isInit = true;
+        } else {
+            throw new NullPointerException("Any parameter can't be NULL");
+        }
     }
-  }
 
-  public void createTable(TableMetadata tableMetadata) {
-    createTable(tableMetadata, true);
-  }
-
-  public TableMetadata getTable(TableName name) {
-    shouldBeInit();
-    shouldExist(name);
-    CatalogMetadata catalogMetadata = this.getCatalog(name.getCatalogName());
-    return catalogMetadata.getTables().get(name);
-  }
-
-  public void createCluster(ClusterMetadata clusterMetadata, boolean unique) {
-    shouldBeInit();
-    try {
-      writeLock.lock();
-      shouldExist(clusterMetadata.getDataStoreRef());
-      if (unique) {
-        shouldBeUnique(clusterMetadata.getName());
-      }
-      for (ConnectorAttachedMetadata connectorRef : clusterMetadata.getConnectorAttachedRefs()
-          .values()) {
-        shouldExist(connectorRef.getConnectorRef());
-      }
-      beginTransaction();
-      metadata.put(clusterMetadata.getName(), clusterMetadata);
-      commitTransaction();
-    } catch (MetadataManagerException mex) {
-      throw mex;
-    } catch (Exception ex) {
-      throw new MetadataManagerException(ex.getMessage(), ex.getCause());
-    } finally {
-      writeLock.unlock();
+    public void createCatalog(CatalogMetadata catalogMetadata) {
+        shouldBeInit();
+        try {
+            writeLock.lock();
+            shouldBeUnique(catalogMetadata.getName());
+            beginTransaction();
+            metadata.put(catalogMetadata.getName(), catalogMetadata);
+            commitTransaction();
+        } catch (MetadataManagerException mex) {
+            throw mex;
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+        } finally {
+            writeLock.unlock();
+        }
     }
-  }
 
-  public void createCluster(ClusterMetadata clusterMetadata) {
-    createCluster(clusterMetadata, true);
-  }
-
-  public ClusterMetadata getCluster(ClusterName name) {
-    shouldBeInit();
-    shouldExist(name);
-    return (ClusterMetadata) metadata.get(name);
-  }
-
-  public void createDataStore(DataStoreMetadata dataStoreMetadata, boolean unique) {
-    shouldBeInit();
-    try {
-      writeLock.lock();
-      if (unique) {
-        shouldBeUnique(dataStoreMetadata.getName());
-      }
-      beginTransaction();
-      metadata.put(dataStoreMetadata.getName(), dataStoreMetadata);
-      commitTransaction();
-    } catch (MetadataManagerException mex) {
-      throw mex;
-    } catch (Exception ex) {
-      throw new MetadataManagerException(ex.getMessage(), ex.getCause());
-    } finally {
-      writeLock.unlock();
+    public CatalogMetadata getCatalog(CatalogName name) {
+        shouldBeInit();
+        shouldExist(name);
+        return (CatalogMetadata) metadata.get(name);
     }
-  }
 
-  public void createDataStore(DataStoreMetadata dataStoreMetadata) {
-    createDataStore(dataStoreMetadata, true);
-  }
+    public void createTable(TableMetadata tableMetadata, boolean unique) {
+        shouldBeInit();
+        try {
+            writeLock.lock();
+            shouldExist(tableMetadata.getName().getCatalogName());
+            shouldExist(tableMetadata.getClusterRef());
+            if (unique) {
+                shouldBeUnique(tableMetadata.getName());
+            }
+            CatalogMetadata catalogMetadata =
+                    ((CatalogMetadata) metadata.get(tableMetadata.getName().getCatalogName()));
 
-  public DataStoreMetadata getDataStore(DataStoreName name) {
-    shouldBeInit();
-    shouldExist(name);
-    return (DataStoreMetadata) metadata.get(name);
-  }
+            if (catalogMetadata.getTables().containsKey(tableMetadata.getName()) && unique) {
+                throw new MetadataManagerException("Table [" + tableMetadata.getName() + "] already exists");
+            }
 
-  public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
-    shouldBeInit();
-    try {
-      writeLock.lock();
-      if(unique){
-        shouldBeUnique(connectorMetadata.getName());
-      }
-      beginTransaction();
-      metadata.put(connectorMetadata.getName(), connectorMetadata);
-      commitTransaction();
-    } catch (MetadataManagerException mex) {
-      throw mex;
-    } catch (Exception ex) {
-      throw new MetadataManagerException(ex.getMessage(), ex.getCause());
-    } finally {
-      writeLock.unlock();
+            catalogMetadata.getTables().put(tableMetadata.getName(), tableMetadata);
+            beginTransaction();
+            metadata.put(tableMetadata.getName().getCatalogName(), catalogMetadata);
+            commitTransaction();
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+        } finally {
+            writeLock.unlock();
+        }
     }
-  }
 
-  public void createConnector(ConnectorMetadata connectorMetadata) {
-    createConnector(connectorMetadata, true);
-  }
+    public void createTable(TableMetadata tableMetadata) {
+        createTable(tableMetadata, true);
+    }
 
-  public ConnectorMetadata getConnector(ConnectorName name) {
-    shouldBeInit();
-    shouldExist(name);
-    return (ConnectorMetadata) metadata.get(name);
-  }
+    public TableMetadata getTable(TableName name) {
+        shouldBeInit();
+        shouldExist(name);
+        CatalogMetadata catalogMetadata = this.getCatalog(name.getCatalogName());
+        return catalogMetadata.getTables().get(name);
+    }
 
-  public void addConnectorRef(ConnectorName name, Serializable actorRef){
-    ConnectorMetadata connectorMetadata = getConnector(name);
-    connectorMetadata.setActorRef(actorRef);
-    createConnector(connectorMetadata, false);
-  }
+    public void createCluster(ClusterMetadata clusterMetadata, boolean unique) {
+        shouldBeInit();
+        try {
+            writeLock.lock();
+            shouldExist(clusterMetadata.getDataStoreRef());
+            if (unique) {
+                shouldBeUnique(clusterMetadata.getName());
+            }
+            for (ConnectorAttachedMetadata connectorRef : clusterMetadata.getConnectorAttachedRefs()
+                    .values()) {
+                shouldExist(connectorRef.getConnectorRef());
+            }
+            beginTransaction();
+            metadata.put(clusterMetadata.getName(), clusterMetadata);
+            commitTransaction();
+        } catch (MetadataManagerException mex) {
+            throw mex;
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+        } finally {
+            writeLock.unlock();
+        }
+    }
 
-  public Serializable getConnectorRef(ConnectorName name){
-      return getConnector(name).getActorRef();
-  }
+    public void createCluster(ClusterMetadata clusterMetadata) {
+        createCluster(clusterMetadata, true);
+    }
+
+    public ClusterMetadata getCluster(ClusterName name) {
+        shouldBeInit();
+        shouldExist(name);
+        return (ClusterMetadata) metadata.get(name);
+    }
+
+    public void createDataStore(DataStoreMetadata dataStoreMetadata, boolean unique) {
+        shouldBeInit();
+        try {
+            writeLock.lock();
+            if (unique) {
+                shouldBeUnique(dataStoreMetadata.getName());
+            }
+            beginTransaction();
+            metadata.put(dataStoreMetadata.getName(), dataStoreMetadata);
+            commitTransaction();
+        } catch (MetadataManagerException mex) {
+            throw mex;
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public void createDataStore(DataStoreMetadata dataStoreMetadata) {
+        createDataStore(dataStoreMetadata, true);
+    }
+
+    public DataStoreMetadata getDataStore(DataStoreName name) {
+        shouldBeInit();
+        shouldExist(name);
+        return (DataStoreMetadata) metadata.get(name);
+    }
+
+    public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
+        shouldBeInit();
+        try {
+            writeLock.lock();
+            if (unique) {
+                shouldBeUnique(connectorMetadata.getName());
+            }
+            beginTransaction();
+            metadata.put(connectorMetadata.getName(), connectorMetadata);
+            commitTransaction();
+        } catch (MetadataManagerException mex) {
+            throw mex;
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public void createConnector(ConnectorMetadata connectorMetadata) {
+        createConnector(connectorMetadata, true);
+    }
+
+    public ConnectorMetadata getConnector(ConnectorName name) {
+        shouldBeInit();
+        shouldExist(name);
+        return (ConnectorMetadata) metadata.get(name);
+    }
+
+    public void addConnectorRef(ConnectorName name, Serializable actorRef) {
+        ConnectorMetadata connectorMetadata = getConnector(name);
+        connectorMetadata.setActorRef(actorRef);
+        createConnector(connectorMetadata, false);
+    }
+
+    public Serializable getConnectorRef(ConnectorName name) {
+        return getConnector(name).getActorRef();
+    }
 
   /**
    * Get the connectors that are attached to the clusters that store the requested tables.
@@ -328,7 +325,8 @@ public enum MetadataManager {
    * @param tables The list of table names.
    * @return A map associating table names with a list of the available connectors.
    */
-  public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus, TableName ... tables){
+  public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus,
+          List<TableName> tables){
     Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
 
 

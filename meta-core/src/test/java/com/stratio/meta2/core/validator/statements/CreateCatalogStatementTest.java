@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.validator.statements;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
@@ -28,91 +30,87 @@ import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.CreateCatalogStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class CreateCatalogStatementTest extends BasicValidatorTest {
 
+    @Test
+    public void createCatalogIfNotExists() {
+        String query = "CREATE CATALOG IF NOT EXISTS new_catalog;";
+        CreateCatalogStatement alterCatalogStatement = new CreateCatalogStatement(new CatalogName("demo2"), true, "");
+        Validator validator = new Validator();
 
-  @Test
-  public void createCatalogIfNotExists() {
-      String query = "CREATE CATALOG IF NOT EXISTS new_catalog;";
-      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement(new CatalogName("demo2"), true,"");
-      Validator validator=new Validator();
+        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo2"));
 
-      BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo2"));
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
 
-      ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterCatalogStatement);
-      try {
-          validator.validate(parsedQuery);
-          Assert.assertTrue(true);
-      } catch (ValidationException e) {
-          Assert.fail(e.getMessage());
-      } catch (IgnoreQueryException e) {
-          Assert.fail(e.getMessage());
-      }
+    }
 
-  }
+    @Test
+    public void createCatalogIfNotExistsWithExistingCatalog() {
+        String query = "CREATE CATALOG IF NOT EXISTS demo;";
+        CreateCatalogStatement createCatalogStatement = new CreateCatalogStatement(new CatalogName("demo"), true, "");
+        Validator validator = new Validator();
 
-  @Test
-  public void createCatalogIfNotExistsWithExistingCatalog() {
-      String query = "CREATE CATALOG IF NOT EXISTS demo;";
-      CreateCatalogStatement createCatalogStatement=new CreateCatalogStatement(new CatalogName("demo"), true,"");
-      Validator validator=new Validator();
+        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo"));
 
-      BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo"));
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createCatalogStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
 
-      ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,createCatalogStatement);
-      try {
-          validator.validate(parsedQuery);
-          Assert.assertTrue(true);
-      } catch (ValidationException e) {
-          Assert.fail(e.getMessage());
-      } catch (IgnoreQueryException e) {
-          Assert.fail(e.getMessage());
-      }
+    }
 
-  }
+    @Test
+    public void createCatalogWithExistingCatalog() {
+        String query = "CREATE CATALOG demo;";
+        CreateCatalogStatement alterCatalogStatement = new CreateCatalogStatement(new CatalogName("demo"), false, "");
+        Validator validator = new Validator();
 
-  @Test
-  public void createCatalogWithExistingCatalog() {
-      String query = "CREATE CATALOG demo;";
-      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement(new CatalogName("demo"), false, "");
-      Validator validator=new Validator();
+        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo"));
 
-      BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo"));
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("The catalog exists");
+        } catch (ValidationException e) {
+            Assert.assertTrue(true);
+        } catch (IgnoreQueryException e) {
+            Assert.assertTrue(true);
+        }
 
-      ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterCatalogStatement);
-      try {
-          validator.validate(parsedQuery);
-          Assert.fail("The catalog exists");
-      } catch (ValidationException e) {
-          Assert.assertTrue(true);
-      } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
-      }
+    }
 
-  }
+    @Test
+    public void createCatalogWithOptions() {
+        String query = "CREATE CATALOG new_catalog WITH {\"comment\":\"This is a comment\"};";
+        CreateCatalogStatement alterCatalogStatement = new CreateCatalogStatement(new CatalogName("demo"), true, "");
+        Validator validator = new Validator();
 
-  @Test
-  public void createCatalogWithOptions() {
-      String query = "CREATE CATALOG new_catalog WITH {\"comment\":\"This is a comment\"};";
-      CreateCatalogStatement alterCatalogStatement=new CreateCatalogStatement(new CatalogName("demo"), true, "");
-      Validator validator=new Validator();
+        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo"));
 
-      BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo"));
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
 
-      ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterCatalogStatement);
-      try {
-          validator.validate(parsedQuery);
-          Assert.assertTrue(true);
-      } catch (ValidationException e) {
-          Assert.fail(e.getMessage());
-      } catch (IgnoreQueryException e) {
-          Assert.fail(e.getMessage());
-      }
-
-  }
-
+    }
 
 }

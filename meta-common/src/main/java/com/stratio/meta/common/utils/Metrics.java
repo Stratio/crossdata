@@ -26,32 +26,32 @@ import com.codahale.metrics.MetricRegistry;
  */
 public class Metrics {
 
-  /**
-   * Metrics registry.
-   */
-  private static final MetricRegistry REGISTRY = new MetricRegistry();
+    /**
+     * Metrics registry.
+     */
+    private static final MetricRegistry REGISTRY = new MetricRegistry();
 
-  /**
-   * Report the measurements using JMX.
-   */
-  private static JmxReporter reporter = null;
+    /**
+     * Report the measurements using JMX.
+     */
+    private static JmxReporter reporter = null;
 
-  /**
-   * Private class constructor as all methods are static.
-   */
-  private Metrics() {
-  }
-
-  /**
-   * Get the metrics registry.
-   *
-   * @return A {@link com.codahale.metrics.MetricRegistry}.
-   */
-  public static MetricRegistry getRegistry() {
-    if (reporter == null) {
-      reporter = JmxReporter.forRegistry(REGISTRY).build();
-      reporter.start();
+    /**
+     * Private class constructor as all methods are static.
+     */
+    private Metrics() {
     }
-    return REGISTRY;
-  }
+
+    /**
+     * Get the metrics registry.
+     *
+     * @return A {@link com.codahale.metrics.MetricRegistry}.
+     */
+    public static MetricRegistry getRegistry() {
+        if (reporter == null) {
+            reporter = JmxReporter.forRegistry(REGISTRY).build();
+            reporter.start();
+        }
+        return REGISTRY;
+    }
 }

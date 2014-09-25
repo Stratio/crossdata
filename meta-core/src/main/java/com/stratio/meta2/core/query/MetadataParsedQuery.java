@@ -18,20 +18,28 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.statements.MetadataStatement;
 
-public class MetadataParsedQuery extends ParsedQuery {
-  public MetadataParsedQuery(BaseQuery baseQuery,
-      MetadataStatement statement) {
-    super(baseQuery, statement);
-  }
+public class MetadataParsedQuery extends BaseQuery implements ParsedQuery {
 
-  MetadataParsedQuery(MetadataParsedQuery parsedQuery) {
-    super(parsedQuery);
-  }
+    private MetaStatement statement;
 
-  @Override
-  public MetadataStatement getStatement() {
-    return (MetadataStatement)statement;
-  }
+    public MetadataParsedQuery(BaseQuery baseQuery,
+            MetadataStatement statement) {
+        super(baseQuery);
+        this.statement = statement;
+        setQueryStatus(QueryStatus.PARSED);
+    }
+
+    public MetadataParsedQuery(MetadataParsedQuery parsedQuery) {
+        this(parsedQuery, parsedQuery.getStatement());
+    }
+
+    @Override
+    public MetadataStatement getStatement() {
+        return (MetadataStatement) statement;
+    }
+
 }

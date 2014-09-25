@@ -18,21 +18,21 @@
 
 package com.stratio.meta.driver.config
 
-import com.typesafe.config.{ ConfigFactory, Config}
-import com.stratio.meta.driver.utils.RetryPolitics
-import akka.util.Timeout
 import java.io.File
+
+import akka.util.Timeout
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 
-object DriverConfig{
+object DriverConfig {
   /**
    * Reference configuration name
    */
-  val BASIC_DRIVER_CONFIG= "driver-reference.conf"
+  val BASIC_DRIVER_CONFIG = "driver-reference.conf"
   /**
    * Root config name
    */
-  val PARENT_CONFIG_NAME= "meta-driver"
+  val PARENT_CONFIG_NAME = "meta-driver"
   /**
    * Key to retry times
    */
@@ -40,54 +40,52 @@ object DriverConfig{
   /**
    * Key to duration limit
    */
-  val DRIVER_RETRY_SECONDS_KEY="config.retry.duration"
+  val DRIVER_RETRY_SECONDS_KEY = "config.retry.duration"
   /**
    *
    */
-  val DRIVER_CONFIG_FILE="external.config.filename"
+  val DRIVER_CONFIG_FILE = "external.config.filename"
   val DRIVER_CONFIG_RESOURCE = "external.config.resource"
 }
 
-trait DriverConfig extends MetaServerConfig{
-  lazy val logger:Logger = ???
+trait DriverConfig extends MetaServerConfig {
+  lazy val logger: Logger = ???
+  lazy val retryTimes: Int = config.getInt(DriverConfig.DRIVER_RETRY_TIMES_KEY)
+  lazy val retryDuration: Timeout = new Timeout(config.getMilliseconds(DriverConfig.DRIVER_RETRY_SECONDS_KEY))
+  override val config: Config = {
+    var defaultConfig = ConfigFactory.load(DriverConfig.BASIC_DRIVER_CONFIG).getConfig(DriverConfig.PARENT_CONFIG_NAME)
+    val configFile = defaultConfig.getString(DriverConfig.DRIVER_CONFIG_FILE)
+    val configResource = defaultConfig.getString(DriverConfig.DRIVER_CONFIG_RESOURCE)
 
-  override val config: Config ={
-    var defaultConfig= ConfigFactory.load(DriverConfig.BASIC_DRIVER_CONFIG).getConfig(DriverConfig.PARENT_CONFIG_NAME)
-    val configFile= defaultConfig.getString(DriverConfig.DRIVER_CONFIG_FILE)
-    val configResource= defaultConfig.getString(DriverConfig.DRIVER_CONFIG_RESOURCE)
-
-    if(configResource != ""){
+    if (configResource != "") {
       val resource = DriverConfig.getClass.getClassLoader.getResource(configResource)
-      if(resource !=null) {
+      if (resource != null) {
         val userConfig = ConfigFactory.parseResources(configResource).getConfig(DriverConfig.PARENT_CONFIG_NAME)
         defaultConfig = userConfig.withFallback(defaultConfig)
-      }else{
+      } else {
         logger.warn("User resource (" + configResource + ") haven't been found")
-        val file=new File(configResource)
-        if(file.exists()) {
+        val file = new File(configResource)
+        if (file.exists()) {
           val userConfig = ConfigFactory.parseFile(file).getConfig(DriverConfig.PARENT_CONFIG_NAME)
           defaultConfig = userConfig.withFallback(defaultConfig)
-        }else{
+        } else {
           logger.warn("User file (" + configResource + ") haven't been found in classpath")
         }
       }
     }
 
-    if(configFile!="" ){
-      val file=new File(configFile)
-      if(file.exists()) {
+    if (configFile != "") {
+      val file = new File(configFile)
+      if (file.exists()) {
         val userConfig = ConfigFactory.parseFile(file).getConfig(DriverConfig.PARENT_CONFIG_NAME)
         defaultConfig = userConfig.withFallback(defaultConfig)
-      }else{
+      } else {
         logger.warn("User file (" + configFile + ") haven't been found")
       }
     }
 
     ConfigFactory.load(defaultConfig)
   }
-
-  lazy val retryTimes: Int= config.getInt(DriverConfig.DRIVER_RETRY_TIMES_KEY)
-  lazy val retryDuration: Timeout= new Timeout(config.getMilliseconds(DriverConfig.DRIVER_RETRY_SECONDS_KEY))
 
 
 }

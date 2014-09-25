@@ -14,31 +14,17 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.logicalplan.LogicalWorkflow;
-import com.stratio.meta2.core.statements.SelectStatement;
+import com.stratio.meta.common.result.QueryStatus;
 
-public class SelectInProgressQuery extends InProgressQuery {
+public class SelectInProgressQuery extends SelectPlannedQuery implements InProgressQuery {
 
-  private LogicalWorkflow logicalWorkFlow;
+    public SelectInProgressQuery(SelectPlannedQuery selectPlannedQuery) {
+        super(selectPlannedQuery);
+        setQueryStatus(QueryStatus.IN_PROGRESS);
+    }
 
-  public SelectInProgressQuery(PlannedQuery validatedQuery) {
-    super(validatedQuery);
-  }
+    public SelectInProgressQuery(SelectInProgressQuery selectInProgressQuery) {
+        this((SelectPlannedQuery) selectInProgressQuery);
+    }
 
-  SelectInProgressQuery(SelectInProgressQuery plannedQuery) {
-    this((PlannedQuery) plannedQuery);
-  }
-
-  @Override
-  public SelectStatement getStatement() {
-    return (SelectStatement) statement;
-  }
-
-  public LogicalWorkflow getLogicalWorkFlow() {
-    return logicalWorkFlow;
-  }
-
-  public void setLogicalWorkFlow(LogicalWorkflow logicalWorkFlow) {
-    this.logicalWorkFlow = logicalWorkFlow;
-  }
 }

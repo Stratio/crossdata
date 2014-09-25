@@ -18,26 +18,26 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import com.stratio.meta2.common.data.TableName;
-
 import java.util.Set;
+
+import com.stratio.meta2.common.data.TableName;
 
 /**
  * Asterisk selector.
  */
-public class AsteriskSelector extends Selector{
+public class AsteriskSelector extends Selector {
 
-  @Override
-  public String toString() {
-    return "*";
-  }
+    @Override
+    public String toString() {
+        return "*";
+    }
 
-  @Override public SelectorType getType() {
-    return SelectorType.ASTERISK;
-  }
+    @Override public SelectorType getType() {
+        return SelectorType.ASTERISK;
+    }
 
-  @Override
-  public Set<TableName> getSelectorTables() {
-    return null;
-  }
+    @Override
+    public Set<TableName> getSelectorTables() {
+        return null;
+    }
 }

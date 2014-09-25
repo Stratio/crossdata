@@ -22,28 +22,28 @@ import com.stratio.meta2.common.data.TableName;
 
 public abstract class Selection {
 
-  public static final int TYPE_SELECTOR = 1;
-  public static final int TYPE_ASTERISK = 2;
+    public static final int TYPE_SELECTOR = 1;
+    public static final int TYPE_ASTERISK = 2;
 
-  protected int type;
+    protected int type;
 
-  public int getType() {
-    return type;
-  }
+    public int getType() {
+        return type;
+    }
 
-  public void setType(int type) {
-    this.type = type;
-  }
+    public void setType(int type) {
+        this.type = type;
+    }
 
-  @Override
-  public abstract String toString();
+    @Override
+    public abstract String toString();
 
-  public abstract void addTablename(TableName tablename);
+    public abstract void addTablename(TableName tablename);
 
-  /**
-   * Checks whether the selection clause contains some function or not
-   * 
-   * @return true, if functions are used; false, otherwise.
-   */
-  public abstract boolean containsFunctions();
+    /**
+     * Checks whether the selection clause contains some function or not
+     *
+     * @return true, if functions are used; false, otherwise.
+     */
+    public abstract boolean containsFunctions();
 }

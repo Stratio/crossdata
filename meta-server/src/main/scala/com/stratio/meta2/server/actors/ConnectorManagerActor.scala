@@ -9,6 +9,7 @@ import com.stratio.meta2.core.connector.ConnectorManager
 import com.stratio.meta2.core.metadata.MetadataManager
 import com.stratio.meta2.core.query._
 import com.stratio.meta2.core.statements.{CreateCatalogStatement, CreateTableStatement}
+import org.apache.log4j.Logger
 
 
 object ConnectorManagerActor {
@@ -17,6 +18,7 @@ object ConnectorManagerActor {
 
 class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor with ActorLogging {
 
+  lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   log.info("Lifting connector actor")
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
   //coordinatorActorRef ! "hola"
@@ -26,64 +28,68 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     Cluster(context.system).subscribe(self, classOf[MemberEvent])
     //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
+
   override def postStop(): Unit =
     Cluster(context.system).unsubscribe(self)
 
   def receive = {
 
+    /**
+     * A new actor connects to the cluster. If the new actor is a connector, we requests its name.
+     */
     case mu: MemberUp => {
-      log.info("Member is Up: {}" + mu.toString+mu.member.getRoles)
-      val it=mu.member.getRoles.iterator()
-      while(it.hasNext()){
+      log.info("Member is Up: " + mu.toString + mu.member.getRoles)
+      val it = mu.member.getRoles.iterator()
+      while (it.hasNext()) {
         val rol = it.next()
-    	  rol match{
-    	    case "connector"=>
-    	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
-    	    	val id=java.util.UUID.randomUUID.toString()
+        rol match {
+          case "connector" =>
+            val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
+            val id = java.util.UUID.randomUUID.toString()
 
             connectorActorRef ! getConnectorName()
+            connectorActorRef ! Start()
 
-    	    	//connectorsMap.put(mu.member.address.toString, connectorActorRef)
-            //connectorActorRef ! "hola"
-    	  }
-    	  log.info("has role: {}" + rol)
+        }
       }
-      // connectorsMap += (member.toString -> memberActorRef)
-      //memberActorRef ! "hola pichi, estás metaregistrado"
     }
 
-    case msg:replyConnectorName=>{
-      //connectorsMap.put(new ConnectorName(msg.name), sender)
-      MetadataManager.MANAGER.addConnectorRef(new ConnectorName(msg.name),sender)
+    /**
+     * Connector answers its name.
+     */
+    case msg: replyConnectorName => {
+      val connectorRef = sender;
+      MetadataManager.MANAGER.addConnectorRef(new ConnectorName(msg.name), connectorRef)
     }
 
-    case query: StorageInProgressQuery=> {
+      /*
+    case query: StorageInProgressQuery => {
       log.info("storage in progress query")
       //connectorsMap(query.getConnectorName()) ! query
-      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName).asInstanceOf[ActorRef] ! query
+      query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! query
     }
 
-    case query: SelectInProgressQuery=> {
-      val clustername=new ClusterName("//TODO:") //TODO: the query should give me the cluster's name
-      val workflow=query.getLogicalWorkFlow
+    case query: SelectInProgressQuery => {
+      val clustername = new ClusterName("//TODO:") //TODO: the query should give me the cluster's name
+      val executionStep = query.getExecutionStep
       log.info("select in progress query")
       //connectorsMap(query.getConnectorName()) ! Execute(clustername,workflow)
-      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName).asInstanceOf[ActorRef] ! Execute(clustername,workflow)
+      query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! Execute(null, executionStep)
     }
 
-    case query: MetadataInProgressQuery=> {
+    case query: MetadataInProgressQuery => {
 
-      val statement=query.getStatement()
+      val statement = query.getStatement()
       //val messagesender=connectorsMap(query.getConnectorName())
-      val messagesender=MetadataManager.MANAGER.getConnectorRef(query.getConnectorName())
+      val messagesender = query.getExecutionStep.getActorRef
 
       statement match {
-        case createCatalogStatement:CreateCatalogStatement => {
+        case createCatalogStatement: CreateCatalogStatement => {
           println("Createcatalog statement")
           //messagesender ! CreateCatalog(query.getClusterName,query.getDefaultCatalog)
           //createCatalogStatement
         }
-        case createTableStatement:CreateTableStatement => {
+        case createTableStatement: CreateTableStatement => {
           println("CreateTableStatement")
         }
         case _ =>
@@ -92,32 +98,35 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
       log.info("metadata in progress query")
       //connectorsMap(query.getConnectorName()) ! query
-      MetadataManager.MANAGER.getConnectorRef(query.getConnectorName).asInstanceOf[ActorRef] ! query
+      query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! query
     }
-    case state: CurrentClusterState =>
-      log.info("Current members: {}", state.members.mkString(", "))
+    */
 
-    case UnreachableMember(member) =>
-      log.info("Member detected as unreachable: {}", member)
-
-    case MemberRemoved(member, previousStatus) =>
-      log.info("Member is Removed: {} after {}",
-        member.address, previousStatus)
-
-    case _: MemberEvent =>
-      log.info("Receiving anything else")
-
-    case _: ClusterDomainEvent =>
-      println("ClusterDomainEvent")
-
-    case ReceiveTimeout =>
-      println("ReceiveTimeout")
-      
-    case _:ConnectToConnector=>
-      println("connecting to connector ")
-
-    case _: DisconnectFromConnector=>
-      println("disconnecting from connector")
+    //pass the message to the connectorActor to extract the member in the cluster
+    case state: CurrentClusterState => {
+      logger.info("Current members: " + state.members.mkString(", "))
+      //TODO Process CurrentClusterState
+    }
+    case member: UnreachableMember => {
+      logger.info("Member detected as unreachable: " + member)
+      //TODO Process UnreachableMember
+    }
+    case member: MemberRemoved => {
+      logger.info("Member is Removed: " + member.member.address)
+      //TODO Process MemberRemoved
+    }
+    case _: MemberEvent => {
+      logger.info("Receiving anything else")
+      //TODO Process MemberEvent
+    }
+    case _: ClusterDomainEvent => {
+      logger.debug("ClusterDomainEvent")
+      //TODO Process ClusterDomainEvent
+    }
+    case ReceiveTimeout => {
+      logger.warn("ReceiveTimeout")
+      //TODO Process ReceiveTimeout
+    }
 
     /*
     case toConnector: MetadataStruct =>

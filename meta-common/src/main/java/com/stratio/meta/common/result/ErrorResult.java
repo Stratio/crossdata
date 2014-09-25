@@ -21,40 +21,40 @@ package com.stratio.meta.common.result;
 /**
  * Error result of a given type.
  * <ul>
- *   <li>Parsing</li>
- *   <li>Validation</li>
- *   <li>Execution</li>
- *   <li>Not supported</li>
+ * <li>Parsing</li>
+ * <li>Validation</li>
+ * <li>Execution</li>
+ * <li>Not supported</li>
  * </ul>
  */
-public class ErrorResult extends Result{
+public class ErrorResult extends Result {
 
-  /**
-   * Type of error.
-   */
-  private final ErrorType type;
+    /**
+     * Type of error.
+     */
+    private final ErrorType type;
 
-  /**
-   * The associated error message in case of {@code error}.
-   */
-  private final String errorMessage;
+    /**
+     * The associated error message in case of {@code error}.
+     */
+    private final String errorMessage;
 
-  public ErrorResult(ErrorType type, String errorMessage){
-    this.type = type;
-    this.errorMessage = errorMessage;
-    this.error = true;
-  }
+    public ErrorResult(ErrorType type, String errorMessage) {
+        this.type = type;
+        this.errorMessage = errorMessage;
+        this.error = true;
+    }
 
-  /**
-   * Get the error message.
-   *
-   * @return The message or null if no error occurred.
-   */
-  public String getErrorMessage() {
-    return errorMessage;
-  }
+    /**
+     * Get the error message.
+     *
+     * @return The message or null if no error occurred.
+     */
+    public String getErrorMessage() {
+        return errorMessage;
+    }
 
-  public ErrorType getType() {
-    return type;
-  }
+    public ErrorType getType() {
+        return type;
+    }
 }

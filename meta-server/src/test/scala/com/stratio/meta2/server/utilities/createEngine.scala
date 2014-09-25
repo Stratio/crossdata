@@ -26,18 +26,18 @@ import com.stratio.meta2.core.engine.{Engine, EngineConfig}
  * To generate unit test of proxy actor
  */
 object createEngine {
-  def create():Engine={
-  val engineConfig: EngineConfig = {
-    val result=new EngineConfig
-    result.setSparkMaster("local[2]")
-    result.setGridListenAddress("localhost")
-    result.setGridContactHosts(Array[String]())
-    result.setGridMinInitialMembers(1)
-    result.setGridPort(5900)
-    result.setGridJoinTimeout(3000)
-    result.setGridPersistencePath("/tmp/meta-test-" + new Random().nextInt(100000))
-    result
-  }
-  new Engine(engineConfig)
+  def create(): Engine = {
+    val engineConfig: EngineConfig = {
+      val result = new EngineConfig
+      result.setSparkMaster("local[2]")
+      result.setGridListenAddress("localhost")
+      result.setGridContactHosts(Array[String]())
+      result.setGridMinInitialMembers(1)
+      result.setGridPort(5900)
+      result.setGridJoinTimeout(3000)
+      result.setGridPersistencePath("/tmp/meta-test-" + new Random().nextInt(100000))
+      result
+    }
+    new Engine(engineConfig)
   }
 }

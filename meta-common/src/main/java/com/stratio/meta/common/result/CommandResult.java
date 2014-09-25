@@ -23,41 +23,41 @@ package com.stratio.meta.common.result;
  */
 public class CommandResult extends Result {
 
-  /**
-   * Serial version UID in order to be {@link java.io.Serializable}.
-   */
+    /**
+     * Serial version UID in order to be {@link java.io.Serializable}.
+     */
 
-  /**
-   * Execution result.
-   */
-  private final String result;
+    /**
+     * Execution result.
+     */
+    private final String result;
 
-  /**
-   * Private class constructor of the factory.
-   *
-   * @param result          The execution result.
-   */
-  private CommandResult(String result) {
-    this.result = result;
-  }
+    /**
+     * Private class constructor of the factory.
+     *
+     * @param result The execution result.
+     */
+    private CommandResult(String result) {
+        this.result = result;
+    }
 
-  /**
-   * Get the execution result.
-   *
-   * @return The result or null if an error occurred.
-   */
-  public Object getResult() {
-    return result;
-  }
+    /**
+     * Create a successful command result.
+     *
+     * @param result The execution result.
+     * @return A {@link com.stratio.meta.common.result.CommandResult}.
+     */
+    public static CommandResult createCommandResult(String result) {
+        return new CommandResult(result);
+    }
 
-  /**
-   * Create a successful command result.
-   *
-   * @param result The execution result.
-   * @return A {@link com.stratio.meta.common.result.CommandResult}.
-   */
-  public static CommandResult createCommandResult(String result) {
-    return new CommandResult(result);
-  }
+    /**
+     * Get the execution result.
+     *
+     * @return The result or null if an error occurred.
+     */
+    public Object getResult() {
+        return result;
+    }
 
 }

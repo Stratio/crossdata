@@ -18,64 +18,64 @@
 
 package com.stratio.meta.core.structures;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.stratio.meta.common.statements.structures.selectors.SelectorGroupBy;
 import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
 import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
 import com.stratio.meta2.common.data.TableName;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public abstract class SelectionClause {
 
-  public static final int TYPE_SELECTION = 1;
-  public static final int TYPE_COUNT = 2;
+    public static final int TYPE_SELECTION = 1;
+    public static final int TYPE_COUNT = 2;
 
-  protected int type;
+    protected int type;
 
-  public int getType() {
-    return type;
-  }
-
-  public void setType(int type) {
-    this.type = type;
-  }
-
-  public abstract List<SelectorGroupBy> getSelectorsGroupBy();
-
-  public abstract void addTablename(TableName tablename);
-
-  public abstract List<String> getIds();
-
-  @Override
-  public abstract String toString();
-
-  public List<String> getFields() {
-    List<String> ids = new ArrayList<>();
-    if (type == TYPE_COUNT) {
-      return ids;
+    public int getType() {
+        return type;
     }
-    SelectionList sList = (SelectionList) this;
-    Selection selection = sList.getSelection();
-    if (selection.getType() == Selection.TYPE_ASTERISK) {
-      ids.add("*");
-      return ids;
-    }
-    SelectionSelectors sSelectors = (SelectionSelectors) selection;
-    for (SelectionSelector sSelector : sSelectors.getSelectors()) {
-      SelectorMeta selector = sSelector.getSelector();
-      if (selector.getType() == SelectorMeta.TYPE_IDENT) {
-        SelectorIdentifier selectorId = (SelectorIdentifier) selector;
-        ids.add(selectorId.getField());
-      }
-    }
-    return ids;
-  }
 
-  /**
-   * Checks whether the selection clause contains some function or not
-   * 
-   * @return true, if functions are used; false, otherwise.
-   */
-  public abstract boolean containsFunctions();
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public abstract List<SelectorGroupBy> getSelectorsGroupBy();
+
+    public abstract void addTablename(TableName tablename);
+
+    public abstract List<String> getIds();
+
+    @Override
+    public abstract String toString();
+
+    public List<String> getFields() {
+        List<String> ids = new ArrayList<>();
+        if (type == TYPE_COUNT) {
+            return ids;
+        }
+        SelectionList sList = (SelectionList) this;
+        Selection selection = sList.getSelection();
+        if (selection.getType() == Selection.TYPE_ASTERISK) {
+            ids.add("*");
+            return ids;
+        }
+        SelectionSelectors sSelectors = (SelectionSelectors) selection;
+        for (SelectionSelector sSelector : sSelectors.getSelectors()) {
+            SelectorMeta selector = sSelector.getSelector();
+            if (selector.getType() == SelectorMeta.TYPE_IDENT) {
+                SelectorIdentifier selectorId = (SelectorIdentifier) selector;
+                ids.add(selectorId.getField());
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * Checks whether the selection clause contains some function or not
+     *
+     * @return true, if functions are used; false, otherwise.
+     */
+    public abstract boolean containsFunctions();
 }

@@ -20,13 +20,13 @@ package com.stratio.meta.common.exceptions;
 
 public class ManifestException extends ApiException {
 
-  public ManifestException(Throwable cause) {
-    super(cause);
-  }
+    public ManifestException(Throwable cause) {
+        super(cause);
+    }
 
-  @Override
-  public String toString(){
-    return "Error parsing manifest: " + System.lineSeparator() + super.toString();
-  }
+    @Override
+    public String toString() {
+        return "Error parsing manifest: " + System.lineSeparator() + super.toString();
+    }
 
 }

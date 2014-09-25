@@ -71,360 +71,359 @@ import com.stratio.meta2.core.statements.SelectStatement;
 
 public class CoordinatorTest extends MetadataManagerTests {
 
-  @Test
-  public void testAttachCluster() throws Exception {
+    @Test
+    public void testAttachCluster() throws Exception {
 
-    // Create and add a test datastore metadata to the metadatamanager
-    DataStoreName name = new DataStoreName("datastoreTest");
-    String version = "0.1.0";
-    RequiredPropertiesType requiredProperties = null;
-    OptionalPropertiesType othersProperties = null;
-    DataStoreMetadata datastoreTest =
-        new DataStoreMetadata(name, version, requiredProperties, othersProperties);
-    MetadataManager.MANAGER.createDataStore(datastoreTest, false);
+        // Create and add a test datastore metadata to the metadatamanager
+        DataStoreName name = new DataStoreName("datastoreTest");
+        String version = "0.1.0";
+        RequiredPropertiesType requiredProperties = null;
+        OptionalPropertiesType othersProperties = null;
+        DataStoreMetadata datastoreTest =
+                new DataStoreMetadata(name, version, requiredProperties, othersProperties);
+        MetadataManager.MANAGER.createDataStore(datastoreTest, false);
 
-    // Add information about the cluster attachment to the metadatamanager
-    BaseQuery baseQuery =
-        new BaseQuery(UUID.randomUUID().toString(),
-            "ATTACH CLUSTER cassandra_prod ON DATASTORE cassandra WITH OPTIONS {}",
-            new CatalogName("test"));
+        // Add information about the cluster attachment to the metadatamanager
+        BaseQuery baseQuery =
+                new BaseQuery(UUID.randomUUID().toString(),
+                        "ATTACH CLUSTER cassandra_prod ON DATASTORE cassandra WITH OPTIONS {}",
+                        new CatalogName("test"));
 
-    AttachClusterStatement attachClusterStatement =
-        new AttachClusterStatement("clusterTest", false, "datastoreTest", "{}");
+        AttachClusterStatement attachClusterStatement =
+                new AttachClusterStatement("clusterTest", false, "datastoreTest", "{}");
 
-    MetadataParsedQuery metadataParsedQuery =
-        new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        MetadataParsedQuery metadataParsedQuery =
+                new MetadataParsedQuery(baseQuery, attachClusterStatement);
 
-    MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
-    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery);
+        MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
 
-    Coordinator coordinator = new Coordinator();
-    coordinator.coordinate(plannedQuery);
+        Coordinator coordinator = new Coordinator();
+        coordinator.coordinate(plannedQuery);
 
-    // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
-    datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
-    Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest =
-        datastoreTest.getClusterAttachedRefs();
-    boolean found = false;
-    for (ClusterName clusterNameTest : clusterAttachedRefsTest.keySet()) {
-      ClusterAttachedMetadata clusterAttachedMetadata =
-          clusterAttachedRefsTest.get(clusterNameTest);
-      if (clusterAttachedMetadata.getClusterRef().equals(new ClusterName("clusterTest"))) {
-        assertEquals(clusterAttachedMetadata.getDataStoreRef(), new DataStoreName("datastoreTest"),
-            "Wrong attachment for clusterTest");
-        found = true;
-        break;
-      }
-    }
-    assertTrue(found, "Attachment not found");
-  }
-
-  @Test
-  public void testAttachConnector() throws Exception {
-
-    // Create and add a test datastore metadata to the metadatamanager
-    DataStoreName dataStoreName = new DataStoreName("datastoreTest");
-    String dataStoreVersion = "0.1.0";
-    RequiredPropertiesType requiredProperties = null;
-    OptionalPropertiesType othersProperties = null;
-    DataStoreMetadata datastoreTest =
-        new DataStoreMetadata(dataStoreName, dataStoreVersion, requiredProperties, othersProperties);
-    MetadataManager.MANAGER.createDataStore(datastoreTest, false);
-
-    // Create and add a test cluster metadata to the metadatamanager
-    ClusterName clusterName = new ClusterName("clusterTest");
-    DataStoreName dataStoreRef = new DataStoreName("dataStoreTest");
-    Map<String, Object> options = new HashMap<>();
-    Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
-    ClusterMetadata clusterTest =
-        new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
-    MetadataManager.MANAGER.createCluster(clusterTest, false);
-
-    // Create and add a test connector metadata to the metadatamanager
-    ConnectorName connectorName = new ConnectorName("connectorTest");
-    String connectorVersion = "0.1.0";
-    Set<DataStoreName> dataStoreRefs = new HashSet<>();
-    com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType connectorRequiredProperties =
-        null;
-    com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType connectorOptionalProperties =
-        null;
-    SupportedOperationsType supportedOperations = null;
-    ConnectorMetadata connectorTest =
-        new ConnectorMetadata(connectorName, connectorVersion, dataStoreRefs,
-            connectorRequiredProperties, connectorOptionalProperties, supportedOperations);
-    MetadataManager.MANAGER.createConnector(connectorTest, false);
-
-    // Add information about the connector attachment to the metadatamanager
-    BaseQuery baseQuery =
-        new BaseQuery(UUID.randomUUID().toString(),
-            "ATTACH CONNECTOR cassandra_connector TO cassandra_prod WITH OPTIONS {}",
-            new CatalogName("test"));
-
-    ConnectorName connectorRef = new ConnectorName("connectorTest");
-    ClusterName clusterRef = new ClusterName("clusterTest");
-    Map<Selector, Selector> properties = new HashMap<>();
-    ConnectorAttachedMetadata connectorAttachedMetadata =
-        new ConnectorAttachedMetadata(connectorRef, clusterRef, properties);
-
-    AttachConnectorStatement attachConnectorStatement =
-        new AttachConnectorStatement("connectorTest", "clusterTest", "{}");
-
-    MetadataParsedQuery metadataParsedQuery =
-        new MetadataParsedQuery(baseQuery, attachConnectorStatement);
-
-    MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
-
-    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery);
-
-    Coordinator coordinator = new Coordinator();
-    coordinator.coordinate(plannedQuery);
-
-    // Check that changes persisted in the MetadataManager ("clusterTest" cluster)
-    clusterTest = MetadataManager.MANAGER.getCluster(new ClusterName("clusterTest"));
-
-    Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefsTest =
-        clusterTest.getConnectorAttachedRefs();
-
-    boolean found = false;
-
-    for (ConnectorName connectorNameTest : connectorAttachedRefsTest.keySet()) {
-      ConnectorAttachedMetadata connectorAttachedMetadataTest =
-          connectorAttachedRefsTest.get(connectorNameTest);
-      if (connectorAttachedMetadataTest.getClusterRef().equals(new ClusterName("clusterTest"))) {
-        assertEquals(connectorAttachedMetadata.getClusterRef(), new ClusterName("clusterTest"),
-            "Wrong attachment for connectorTest");
-        found = true;
-        break;
-      }
-    }
-    assertTrue(found, "Attachment not found");
-  }
-
-  // CREATE CATALOG
-  @Test
-  public void testCreateCatalogCheckName() throws Exception {
-    CatalogName catalogName = new CatalogName("testCatalog");
-
-    BaseQuery baseQuery =
-        new BaseQuery(UUID.randomUUID().toString(), "CREATE CATALOG testCatalog", catalogName);
-
-    CreateCatalogStatement createCatalogStatement =
-        new CreateCatalogStatement(catalogName, false, "{}");
-
-    MetadataParsedQuery metadataParsedQuery =
-        new MetadataParsedQuery(baseQuery, createCatalogStatement);
-
-    MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
-
-    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery);
-
-
-    Coordinator coordinator = new Coordinator();
-    if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
-      assertTrue(true);
-      coordinator.persist(plannedQuery);
-    } else
-      fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
-
-    assertEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), catalogName);
-  }
-
-  @Test
-  public void testCreateCatalogCheckNameNotEquals() throws Exception {
-    CatalogName catalogName = new CatalogName("testCatalog2");
-
-    BaseQuery baseQuery =
-        new BaseQuery(UUID.randomUUID().toString(), "CREATE CATALOG testCatalog2", catalogName);
-
-    CreateCatalogStatement createCatalogStatement =
-        new CreateCatalogStatement(catalogName, false, "{}");
-
-    MetadataParsedQuery metadataParsedQuery =
-        new MetadataParsedQuery(baseQuery, createCatalogStatement);
-
-    MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
-
-    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery);
-
-
-    Coordinator coordinator = new Coordinator();
-    if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
-      assertTrue(true);
-      coordinator.persist(plannedQuery);
-    } else
-      fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
-
-    assertNotEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), new CatalogName(
-        "notSameName"));
-  }
-
-  // CREATE TABLE
-  @Test
-  public void testCreateTable() throws Exception {
-
-    String datastore = "datastoreTest";
-    String cluster = "clusterTest";
-    String catalog = "catalogTest4";
-    String tableString = "tableTest";
-
-
-    createTestDatastoreAndPersist(datastore, "0.1.0");
-    createTestClusterAndPersist(cluster, datastore);
-    createTestsCatalogAndPersist(catalog);
-
-    // Create and add test table to the metadatamanager
-    TableName tableName = new TableName(catalog, tableString);
-    TableMetadata table =
-        new TableMetadata(tableName, new HashMap<Selector, Selector>(),
-            new HashMap<ColumnName, ColumnMetadata>(), new HashMap<IndexName, IndexMetadata>(),
-            new ClusterName(cluster), new ArrayList<ColumnName>(), new ArrayList<ColumnName>());
-
-    BaseQuery baseQuery =
-        new BaseQuery(UUID.randomUUID().toString(), "CREATE TABLE testTable", new CatalogName(
-            catalog));
-
-    Map<ColumnName, ColumnType> columns = new HashMap<ColumnName, ColumnType>();
-    for (Entry<ColumnName, ColumnMetadata> c : table.getColumns().entrySet()) {
-      columns.put(c.getKey(), c.getValue().getColumnType());
+        // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
+        datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
+        Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest =
+                datastoreTest.getClusterAttachedRefs();
+        boolean found = false;
+        for (ClusterName clusterNameTest : clusterAttachedRefsTest.keySet()) {
+            ClusterAttachedMetadata clusterAttachedMetadata =
+                    clusterAttachedRefsTest.get(clusterNameTest);
+            if (clusterAttachedMetadata.getClusterRef().equals(new ClusterName("clusterTest"))) {
+                assertEquals(clusterAttachedMetadata.getDataStoreRef(), new DataStoreName("datastoreTest"),
+                        "Wrong attachment for clusterTest");
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found, "Attachment not found");
     }
 
-    CreateTableStatement createTableStatement =
-        new CreateTableStatement(tableName, table.getClusterRef(), columns, table.getPrimaryKey(),
-            table.getPartitionKey());
-    createTableStatement.setTableMetadata(table);
+    @Test
+    public void testAttachConnector() throws Exception {
 
-    MetadataParsedQuery metadataParsedQuery =
-        new MetadataParsedQuery(baseQuery, createTableStatement);
+        // Create and add a test datastore metadata to the metadatamanager
+        DataStoreName dataStoreName = new DataStoreName("datastoreTest");
+        String dataStoreVersion = "0.1.0";
+        RequiredPropertiesType requiredProperties = null;
+        OptionalPropertiesType othersProperties = null;
+        DataStoreMetadata datastoreTest =
+                new DataStoreMetadata(dataStoreName, dataStoreVersion, requiredProperties, othersProperties);
+        MetadataManager.MANAGER.createDataStore(datastoreTest, false);
 
-    MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
+        // Create and add a test cluster metadata to the metadatamanager
+        ClusterName clusterName = new ClusterName("clusterTest");
+        DataStoreName dataStoreRef = new DataStoreName("dataStoreTest");
+        Map<String, Object> options = new HashMap<>();
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
+        ClusterMetadata clusterTest =
+                new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
+        MetadataManager.MANAGER.createCluster(clusterTest, false);
 
-    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery);
+        // Create and add a test connector metadata to the metadatamanager
+        ConnectorName connectorName = new ConnectorName("connectorTest");
+        String connectorVersion = "0.1.0";
+        Set<DataStoreName> dataStoreRefs = new HashSet<>();
+        com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType connectorRequiredProperties =
+                null;
+        com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType connectorOptionalProperties =
+                null;
+        SupportedOperationsType supportedOperations = null;
+        ConnectorMetadata connectorTest =
+                new ConnectorMetadata(connectorName, connectorVersion, dataStoreRefs,
+                        connectorRequiredProperties, connectorOptionalProperties, supportedOperations);
+        MetadataManager.MANAGER.createConnector(connectorTest, false);
 
-    Coordinator coordinator = new Coordinator();
-    if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
-      assertTrue(true);
-      coordinator.persist(plannedQuery);
-    } else
-      fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
+        // Add information about the connector attachment to the metadatamanager
+        BaseQuery baseQuery =
+                new BaseQuery(UUID.randomUUID().toString(),
+                        "ATTACH CONNECTOR cassandra_connector TO cassandra_prod WITH OPTIONS {}",
+                        new CatalogName("test"));
 
+        ConnectorName connectorRef = new ConnectorName("connectorTest");
+        ClusterName clusterRef = new ClusterName("clusterTest");
+        Map<Selector, Selector> properties = new HashMap<>();
+        ConnectorAttachedMetadata connectorAttachedMetadata =
+                new ConnectorAttachedMetadata(connectorRef, clusterRef, properties);
 
-    assertEquals(MetadataManager.MANAGER.getTable(tableName), table);
-  }
-  
-  //CREATE INDEX
-  @Test
-  public void testCreateIndex() throws Exception {
+        AttachConnectorStatement attachConnectorStatement =
+                new AttachConnectorStatement("connectorTest", "clusterTest", "{}");
 
-    String datastore = "datastoreTest";
-    String cluster = "clusterTest";
-    String catalog = "catalogTest5";
-    String table = "tableTest";
+        MetadataParsedQuery metadataParsedQuery =
+                new MetadataParsedQuery(baseQuery, attachConnectorStatement);
 
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
-    createTestDatastoreAndPersist(datastore, "0.1.0");
-    createTestClusterAndPersist(cluster, datastore);
-    createTestsCatalogAndPersist(catalog);
-    createTestTableAndPersist(cluster, catalog, table);
+        MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
 
-    BaseQuery baseQuery =
-        new BaseQuery(UUID.randomUUID().toString(), "CREATE INDEX testIndex ON testTable",
-            new CatalogName(catalog));
+        Coordinator coordinator = new Coordinator();
+        coordinator.coordinate(plannedQuery);
 
-    CreateIndexStatement createIndexStatement = new CreateIndexStatement();
-    createIndexStatement.setTableName(new TableName("catalogTest5", "tableTest"));
-    new MetadataParsedQuery(baseQuery, createIndexStatement);
+        // Check that changes persisted in the MetadataManager ("clusterTest" cluster)
+        clusterTest = MetadataManager.MANAGER.getCluster(new ClusterName("clusterTest"));
 
-    MetadataParsedQuery metadataParsedQuery =
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefsTest =
+                clusterTest.getConnectorAttachedRefs();
+
+        boolean found = false;
+
+        for (ConnectorName connectorNameTest : connectorAttachedRefsTest.keySet()) {
+            ConnectorAttachedMetadata connectorAttachedMetadataTest =
+                    connectorAttachedRefsTest.get(connectorNameTest);
+            if (connectorAttachedMetadataTest.getClusterRef().equals(new ClusterName("clusterTest"))) {
+                assertEquals(connectorAttachedMetadata.getClusterRef(), new ClusterName("clusterTest"),
+                        "Wrong attachment for connectorTest");
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found, "Attachment not found");
+    }
+
+    // CREATE CATALOG
+    @Test
+    public void testCreateCatalogCheckName() throws Exception {
+        CatalogName catalogName = new CatalogName("testCatalog");
+
+        BaseQuery baseQuery =
+                new BaseQuery(UUID.randomUUID().toString(), "CREATE CATALOG testCatalog", catalogName);
+
+        CreateCatalogStatement createCatalogStatement =
+                new CreateCatalogStatement(catalogName, false, "{}");
+
+        MetadataParsedQuery metadataParsedQuery =
+                new MetadataParsedQuery(baseQuery, createCatalogStatement);
+
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
+
+        MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
+
+        Coordinator coordinator = new Coordinator();
+        if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
+            assertTrue(true);
+            coordinator.persist(plannedQuery);
+        } else {
+            fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
+        }
+
+        assertEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), catalogName);
+    }
+
+    @Test
+    public void testCreateCatalogCheckNameNotEquals() throws Exception {
+        CatalogName catalogName = new CatalogName("testCatalog2");
+
+        BaseQuery baseQuery =
+                new BaseQuery(UUID.randomUUID().toString(), "CREATE CATALOG testCatalog2", catalogName);
+
+        CreateCatalogStatement createCatalogStatement =
+                new CreateCatalogStatement(catalogName, false, "{}");
+
+        MetadataParsedQuery metadataParsedQuery =
+                new MetadataParsedQuery(baseQuery, createCatalogStatement);
+
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
+
+        MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
+
+        Coordinator coordinator = new Coordinator();
+        if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
+            assertTrue(true);
+            coordinator.persist(plannedQuery);
+        } else {
+            fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
+        }
+
+        assertNotEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), new CatalogName(
+                "notSameName"));
+    }
+
+    // CREATE TABLE
+    @Test
+    public void testCreateTable() throws Exception {
+
+        String datastore = "datastoreTest";
+        String cluster = "clusterTest";
+        String catalog = "catalogTest4";
+        String tableString = "tableTest";
+
+        createTestDatastoreAndPersist(datastore, "0.1.0");
+        createTestClusterAndPersist(cluster, datastore);
+        createTestsCatalogAndPersist(catalog);
+
+        // Create and add test table to the metadatamanager
+        TableName tableName = new TableName(catalog, tableString);
+        TableMetadata table =
+                new TableMetadata(tableName, new HashMap<Selector, Selector>(),
+                        new HashMap<ColumnName, ColumnMetadata>(), new HashMap<IndexName, IndexMetadata>(),
+                        new ClusterName(cluster), new ArrayList<ColumnName>(), new ArrayList<ColumnName>());
+
+        BaseQuery baseQuery =
+                new BaseQuery(UUID.randomUUID().toString(), "CREATE TABLE testTable", new CatalogName(
+                        catalog));
+
+        Map<ColumnName, ColumnType> columns = new HashMap<ColumnName, ColumnType>();
+        for (Entry<ColumnName, ColumnMetadata> c : table.getColumns().entrySet()) {
+            columns.put(c.getKey(), c.getValue().getColumnType());
+        }
+
+        CreateTableStatement createTableStatement =
+                new CreateTableStatement(tableName, table.getClusterRef(), columns, table.getPrimaryKey(),
+                        table.getPartitionKey());
+        createTableStatement.setTableMetadata(table);
+
+        MetadataParsedQuery metadataParsedQuery =
+                new MetadataParsedQuery(baseQuery, createTableStatement);
+
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
+
+        MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
+
+        Coordinator coordinator = new Coordinator();
+        if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
+            assertTrue(true);
+            coordinator.persist(plannedQuery);
+        } else {
+            fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
+        }
+
+        assertEquals(MetadataManager.MANAGER.getTable(tableName), table);
+    }
+
+    //CREATE INDEX
+    @Test
+    public void testCreateIndex() throws Exception {
+
+        String datastore = "datastoreTest";
+        String cluster = "clusterTest";
+        String catalog = "catalogTest5";
+        String table = "tableTest";
+
+        createTestDatastoreAndPersist(datastore, "0.1.0");
+        createTestClusterAndPersist(cluster, datastore);
+        createTestsCatalogAndPersist(catalog);
+        createTestTableAndPersist(cluster, catalog, table);
+
+        BaseQuery baseQuery =
+                new BaseQuery(UUID.randomUUID().toString(), "CREATE INDEX testIndex ON testTable",
+                        new CatalogName(catalog));
+
+        CreateIndexStatement createIndexStatement = new CreateIndexStatement();
+        createIndexStatement.setTableName(new TableName("catalogTest5", "tableTest"));
         new MetadataParsedQuery(baseQuery, createIndexStatement);
 
-    MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
+        MetadataParsedQuery metadataParsedQuery =
+                new MetadataParsedQuery(baseQuery, createIndexStatement);
 
-    MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery);
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
-    Coordinator coordinator = new Coordinator();
-    if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
-      assertTrue(true);
-      coordinator.persist(plannedQuery);
-    } else
-      fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
-  }
-  
-  //INSERT INTO
-  @Test
-  public void testInsertInto() throws Exception {
-    String catalog = "catalogTest6";
-    String table = "tableTest";
-    
-    BaseQuery baseQuery =
-        new BaseQuery(UUID.randomUUID().toString(), "INSERT INTO catalogTest6.tableTest ('col1', 'col2') VALUES (1, 2)",
-            new CatalogName(catalog));
+        MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
 
-    InsertIntoStatement insert = new InsertIntoStatement(new TableName(catalog,  table), new ArrayList<ColumnName>(), new SelectStatement(new TableName(catalog, table)), false);
-
-    StorageParsedQuery metadataParsedQuery =
-        new StorageParsedQuery(baseQuery, insert);
-
-    StorageValidatedQuery metadataValidatedQuery = new StorageValidatedQuery(metadataParsedQuery);
-
-    StoragePlannedQuery plannedQuery = new StoragePlannedQuery(metadataValidatedQuery);
-
-    Coordinator coordinator = new Coordinator();
-    if (coordinator.coordinate(plannedQuery) instanceof StorageInProgressQuery) {
-      assertTrue(true);
-      coordinator.persist(plannedQuery);
-    } else
-      fail("Coordinator.coordinate not creating new StorageInProgressQuery");
-  }
-  
-
-  private void createTestDatastoreAndPersist(String name, String version) {
-    // Create and add a test datastore metadata to the metadatamanager
-    DataStoreName dataStoreName = new DataStoreName(name);
-    String dataStoreVersion = version;
-    RequiredPropertiesType requiredProperties = null;
-    OptionalPropertiesType othersProperties = null;
-    DataStoreMetadata datastoreTest =
-        new DataStoreMetadata(dataStoreName, dataStoreVersion, requiredProperties, othersProperties);
-    MetadataManager.MANAGER.createDataStore(datastoreTest, false);
-  }
-
-  private void createTestClusterAndPersist(String cluster, String datastore) {
-    // Create and add a test cluster metadata to the metadatamanager
-    ClusterName clusterName = new ClusterName(cluster);
-    DataStoreName dataStoreRef = new DataStoreName(datastore);
-    Map<String, Object> options = new HashMap<>();
-    Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
-    ClusterMetadata clusterTest =
-        new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
-    MetadataManager.MANAGER.createCluster(clusterTest, false);
-  }
-
-  private void createTestsCatalogAndPersist(String catalog) {
-    // Create and add test catalog to the metadatamanager
-    CatalogName catalogName = new CatalogName(catalog);
-    CatalogMetadata catalogMetadata =
-        new CatalogMetadata(catalogName, new HashMap<Selector, Selector>(),
-            new HashMap<TableName, TableMetadata>());
-    MetadataManager.MANAGER.createCatalog(catalogMetadata);
-  }
-
-  private void createTestTableAndPersist(String clusterName, String catalogName,
-      String tableNameString) {
-    // Create and add test table to the metadatamanager
-    TableName tableName = new TableName(catalogName, tableNameString);
-    TableMetadata table =
-        new TableMetadata(tableName, new HashMap<Selector, Selector>(),
-            new HashMap<ColumnName, ColumnMetadata>(), new HashMap<IndexName, IndexMetadata>(),
-            new ClusterName(clusterName), new ArrayList<ColumnName>(), new ArrayList<ColumnName>());
-
-    Map<ColumnName, ColumnType> columns = new HashMap<ColumnName, ColumnType>();
-    for (Entry<ColumnName, ColumnMetadata> c : table.getColumns().entrySet()) {
-      columns.put(c.getKey(), c.getValue().getColumnType());
+        Coordinator coordinator = new Coordinator();
+        if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
+            assertTrue(true);
+            coordinator.persist(plannedQuery);
+        } else {
+            fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
+        }
     }
-    MetadataManager.MANAGER.createTable(table);
-  }
 
+    //INSERT INTO
+    @Test
+    public void testInsertInto() throws Exception {
+        String catalog = "catalogTest6";
+        String table = "tableTest";
 
+        BaseQuery baseQuery =
+                new BaseQuery(UUID.randomUUID().toString(),
+                        "INSERT INTO catalogTest6.tableTest ('col1', 'col2') VALUES (1, 2)",
+                        new CatalogName(catalog));
+
+        InsertIntoStatement insert = new InsertIntoStatement(new TableName(catalog, table), new ArrayList<ColumnName>(),
+                new SelectStatement(new TableName(catalog, table)), false);
+
+        StorageParsedQuery metadataParsedQuery =
+                new StorageParsedQuery(baseQuery, insert);
+
+        StorageValidatedQuery metadataValidatedQuery = new StorageValidatedQuery(metadataParsedQuery);
+
+        StoragePlannedQuery plannedQuery = new StoragePlannedQuery(metadataValidatedQuery, null);
+
+        Coordinator coordinator = new Coordinator();
+        if (coordinator.coordinate(plannedQuery) instanceof StorageInProgressQuery) {
+            assertTrue(true);
+            coordinator.persist(plannedQuery);
+        } else {
+            fail("Coordinator.coordinate not creating new StorageInProgressQuery");
+        }
+    }
+
+    private void createTestDatastoreAndPersist(String name, String version) {
+        // Create and add a test datastore metadata to the metadatamanager
+        DataStoreName dataStoreName = new DataStoreName(name);
+        String dataStoreVersion = version;
+        RequiredPropertiesType requiredProperties = null;
+        OptionalPropertiesType othersProperties = null;
+        DataStoreMetadata datastoreTest =
+                new DataStoreMetadata(dataStoreName, dataStoreVersion, requiredProperties, othersProperties);
+        MetadataManager.MANAGER.createDataStore(datastoreTest, false);
+    }
+
+    private void createTestClusterAndPersist(String cluster, String datastore) {
+        // Create and add a test cluster metadata to the metadatamanager
+        ClusterName clusterName = new ClusterName(cluster);
+        DataStoreName dataStoreRef = new DataStoreName(datastore);
+        Map<String, Object> options = new HashMap<>();
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
+        ClusterMetadata clusterTest =
+                new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
+        MetadataManager.MANAGER.createCluster(clusterTest, false);
+    }
+
+    private void createTestsCatalogAndPersist(String catalog) {
+        // Create and add test catalog to the metadatamanager
+        CatalogName catalogName = new CatalogName(catalog);
+        CatalogMetadata catalogMetadata =
+                new CatalogMetadata(catalogName, new HashMap<Selector, Selector>(),
+                        new HashMap<TableName, TableMetadata>());
+        MetadataManager.MANAGER.createCatalog(catalogMetadata);
+    }
+
+    private void createTestTableAndPersist(String clusterName, String catalogName,
+            String tableNameString) {
+        // Create and add test table to the metadatamanager
+        TableName tableName = new TableName(catalogName, tableNameString);
+        TableMetadata table =
+                new TableMetadata(tableName, new HashMap<Selector, Selector>(),
+                        new HashMap<ColumnName, ColumnMetadata>(), new HashMap<IndexName, IndexMetadata>(),
+                        new ClusterName(clusterName), new ArrayList<ColumnName>(), new ArrayList<ColumnName>());
+
+        Map<ColumnName, ColumnType> columns = new HashMap<ColumnName, ColumnType>();
+        for (Entry<ColumnName, ColumnMetadata> c : table.getColumns().entrySet()) {
+            columns.put(c.getKey(), c.getValue().getColumnType());
+        }
+        MetadataManager.MANAGER.createTable(table);
+    }
 
 }

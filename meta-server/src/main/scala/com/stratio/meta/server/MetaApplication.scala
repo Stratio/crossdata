@@ -18,16 +18,12 @@
 
 package com.stratio.meta.server
 
-import akka.actor.{ Props, ActorSystem}
-import akka.contrib.pattern.ClusterReceptionistExtension
-import com.stratio.meta2.core.engine.Engine
-import com.stratio.meta.server.config.ServerConfig
 import scala.annotation.tailrec
-import org.apache.log4j.Logger
 
 
 object MetaApplication extends App {
-  val metaServer:MetaServer =new MetaServer
+  val metaServer: MetaServer = new MetaServer
+
   @tailrec
   private def commandLoop(): Unit = {
     Console.readLine() match {

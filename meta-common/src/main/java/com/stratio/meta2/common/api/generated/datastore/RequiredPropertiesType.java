@@ -23,7 +23,6 @@
 // Generated on: 2014.09.03 at 12:15:47 AM CEST 
 //
 
-
 package com.stratio.meta2.common.api.generated.datastore;
 
 import java.io.Serializable;
@@ -33,12 +32,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
  * <p>Java class for RequiredPropertiesType complex type.
- *
+ * <p/>
  * <p>The following schema fragment specifies the expected content contained within this class.
- *
+ * <p/>
  * <pre>
  * &lt;complexType name="RequiredPropertiesType">
  *   &lt;complexContent>
@@ -50,41 +48,35 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- *
- *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RequiredPropertiesType", propOrder = {
-    "cluster"
+        "cluster"
 })
 public class RequiredPropertiesType implements Serializable {
 
-  private static final long serialVersionUID = 5870841654968577693L;
-  @XmlElement(required = true)
-  protected ClusterType cluster;
+    private static final long serialVersionUID = 5870841654968577693L;
+    @XmlElement(required = true)
+    protected ClusterType cluster;
 
-  /**
-   * Gets the value of the cluster property.
-   *
-   * @return
-   *     possible object is
-   *     {@link ClusterType }
-   *
-   */
-  public ClusterType getCluster() {
-    return cluster;
-  }
+    /**
+     * Gets the value of the cluster property.
+     *
+     * @return possible object is
+     * {@link ClusterType }
+     */
+    public ClusterType getCluster() {
+        return cluster;
+    }
 
-  /**
-   * Sets the value of the cluster property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link ClusterType }
-   *
-   */
-  public void setCluster(ClusterType value) {
-    this.cluster = value;
-  }
+    /**
+     * Sets the value of the cluster property.
+     *
+     * @param value allowed object is
+     *              {@link ClusterType }
+     */
+    public void setCluster(ClusterType value) {
+        this.cluster = value;
+    }
 
 }

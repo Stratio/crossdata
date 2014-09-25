@@ -22,41 +22,48 @@ import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta2.common.data.CatalogName;
 
 public class BaseQuery {
-  /**
-   * The query introduced by the user.
-   */
-  private final String query;
+    /**
+     * The query introduced by the user.
+     */
+    private final String query;
 
-  /**
-   * Unique query identifier.
-   */
-  private final String queryId;
+    /**
+     * Unique query identifier.
+     */
+    private final String queryId;
 
-  private final CatalogName defaultCatalog;
+    private final CatalogName defaultCatalog;
 
-  public BaseQuery(String queryId, String query, CatalogName defaultCatalog) {
-    this.queryId = queryId;
-    this.query = query;
-    this.defaultCatalog = defaultCatalog;
-  }
+    private QueryStatus queryStatus;
 
-  BaseQuery(BaseQuery baseQuery) {
-    this(baseQuery.getQueryId(), baseQuery.getQuery(), baseQuery.getDefaultCatalog());
-  }
+    public BaseQuery(String queryId, String query, CatalogName defaultCatalog) {
+        this.queryId = queryId;
+        this.query = query;
+        this.defaultCatalog = defaultCatalog;
+        this.queryStatus = QueryStatus.NONE;
+    }
 
-  public String getQuery() {
-    return query;
-  }
+    BaseQuery(BaseQuery baseQuery) {
+        this(baseQuery.getQueryId(), baseQuery.getQuery(), baseQuery.getDefaultCatalog());
+    }
 
-  public String getQueryId() {
-    return queryId;
-  }
+    public String getQuery() {
+        return query;
+    }
 
-  public QueryStatus getStatus() {
-    return QueryStatus.NONE;
-  }
+    public String getQueryId() {
+        return queryId;
+    }
 
-  public CatalogName getDefaultCatalog() {
-    return defaultCatalog;
-  }
+    public QueryStatus getStatus() {
+        return queryStatus;
+    }
+
+    public CatalogName getDefaultCatalog() {
+        return defaultCatalog;
+    }
+
+    public void setQueryStatus(QueryStatus queryStatus) {
+        this.queryStatus = queryStatus;
+    }
 }

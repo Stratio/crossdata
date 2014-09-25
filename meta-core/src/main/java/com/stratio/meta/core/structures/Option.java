@@ -22,71 +22,71 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class Option {
 
-  public static final int OPTION_PROPERTY = 1;
-  public static final int OPTION_COMPACT = 2;
-  public static final int OPTION_CLUSTERING = 3;
+    public static final int OPTION_PROPERTY = 1;
+    public static final int OPTION_COMPACT = 2;
+    public static final int OPTION_CLUSTERING = 3;
 
-  private int fixedOption;
-  private Selector nameProperty;
-  private Selector valueProperty;
+    private int fixedOption;
+    private Selector nameProperty;
+    private Selector valueProperty;
 
-  public Option(int fixedOption, Selector nameProperty, Selector properties) {
-    this.fixedOption = fixedOption;
-    this.nameProperty = nameProperty;
-    this.valueProperty = properties;
-  }
-
-  public Option(int fixedOption) {
-    this(fixedOption, null, null);
-  }
-
-  public Option(Selector nameProperty, Selector properties) {
-    this.fixedOption = OPTION_PROPERTY;
-    this.nameProperty = nameProperty;
-    this.valueProperty = properties;
-  }
-
-  public int getFixedOption() {
-    return fixedOption;
-  }
-
-  public void setFixedOption(int fixedOption) {
-    this.fixedOption = fixedOption;
-  }
-
-  public Selector getNameProperty() {
-    return nameProperty;
-  }
-
-  public void setNameProperty(Selector nameProperty) {
-    this.nameProperty = nameProperty;
-  }
-
-  public Selector getProperties() {
-    return valueProperty;
-  }
-
-  public void setProperties(Selector properties) {
-    this.valueProperty = properties;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    switch(fixedOption){
-      case OPTION_PROPERTY:
-        sb.append(nameProperty).append(" = ").append(valueProperty.toString());
-        break;
-      case OPTION_COMPACT:
-        sb.append("COMPACT STORAGE");
-        break;
-      case OPTION_CLUSTERING:
-        sb.append("CLUSTERING ORDER");
-        break;
-      default:
-        break;
+    public Option(int fixedOption, Selector nameProperty, Selector properties) {
+        this.fixedOption = fixedOption;
+        this.nameProperty = nameProperty;
+        this.valueProperty = properties;
     }
-    return sb.toString();
-  }
+
+    public Option(int fixedOption) {
+        this(fixedOption, null, null);
+    }
+
+    public Option(Selector nameProperty, Selector properties) {
+        this.fixedOption = OPTION_PROPERTY;
+        this.nameProperty = nameProperty;
+        this.valueProperty = properties;
+    }
+
+    public int getFixedOption() {
+        return fixedOption;
+    }
+
+    public void setFixedOption(int fixedOption) {
+        this.fixedOption = fixedOption;
+    }
+
+    public Selector getNameProperty() {
+        return nameProperty;
+    }
+
+    public void setNameProperty(Selector nameProperty) {
+        this.nameProperty = nameProperty;
+    }
+
+    public Selector getProperties() {
+        return valueProperty;
+    }
+
+    public void setProperties(Selector properties) {
+        this.valueProperty = properties;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        switch (fixedOption) {
+        case OPTION_PROPERTY:
+            sb.append(nameProperty).append(" = ").append(valueProperty.toString());
+            break;
+        case OPTION_COMPACT:
+            sb.append("COMPACT STORAGE");
+            break;
+        case OPTION_CLUSTERING:
+            sb.append("CLUSTERING ORDER");
+            break;
+        default:
+            break;
+        }
+        return sb.toString();
+    }
 
 }

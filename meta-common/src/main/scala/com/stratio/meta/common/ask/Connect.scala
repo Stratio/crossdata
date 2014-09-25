@@ -18,4 +18,4 @@
 
 package com.stratio.meta.common.ask
 
-case class Connect (user: String)
+case class Connect(user: String)

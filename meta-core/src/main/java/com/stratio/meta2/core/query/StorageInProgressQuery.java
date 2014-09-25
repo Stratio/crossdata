@@ -14,22 +14,17 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.metadata.structures.TableMetadata;
-import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.core.statements.StorageStatement;
+import com.stratio.meta.common.result.QueryStatus;
 
-public class StorageInProgressQuery extends InProgressQuery {
+public class StorageInProgressQuery extends StoragePlannedQuery implements InProgressQuery {
 
-  public StorageInProgressQuery(PlannedQuery validatedQuery) {
-    super(validatedQuery);
-  }
+    public StorageInProgressQuery(StoragePlannedQuery storagePlannedQuery) {
+        super(storagePlannedQuery);
+        setQueryStatus(QueryStatus.IN_PROGRESS);
+    }
 
-  StorageInProgressQuery(StorageInProgressQuery plannedQuery) {
-    this((PlannedQuery) plannedQuery);
-  }
+    public StorageInProgressQuery(StorageInProgressQuery storageInProgressQuery) {
+        this((StoragePlannedQuery) storageInProgressQuery);
+    }
 
-  @Override
-  public StorageStatement getStatement() {
-    return (StorageStatement) statement;
-  }
 }

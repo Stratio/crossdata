@@ -22,18 +22,18 @@ package com.stratio.meta.common.exceptions;
  * Exception thrown when the operation is not currently supported
  * by the meta server.
  */
-public class UnsupportedException extends Exception{
+public class UnsupportedException extends Exception {
 
-  /**
-   * Serial version UID in order to be {@link java.io.Serializable}.
-   */
-  private static final long serialVersionUID = 5194419221361563613L;
+    /**
+     * Serial version UID in order to be {@link java.io.Serializable}.
+     */
+    private static final long serialVersionUID = 5194419221361563613L;
 
-  public UnsupportedException(String message){
-    super(message);
-  }
+    public UnsupportedException(String message) {
+        super(message);
+    }
 
-  public UnsupportedException(String msg, Throwable cause){
-    super(msg, cause);
-  }
+    public UnsupportedException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 }

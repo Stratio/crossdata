@@ -17,23 +17,17 @@
  */
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta.common.result.QueryStatus;
 
-import com.stratio.meta2.core.statements.MetadataStatement;
-import com.stratio.meta2.core.statements.MetaStatement;
+public class MetadataValidatedQuery extends MetadataParsedQuery implements ValidatedQuery {
 
-public class MetadataValidatedQuery extends ValidatedQuery{
-    public MetadataValidatedQuery(BaseQuery baseQuery,
-        MetaStatement statement) {
-        super(baseQuery, statement);
+    public MetadataValidatedQuery(MetadataParsedQuery metadataParsedQuery) {
+        super(metadataParsedQuery);
+        setQueryStatus(QueryStatus.VALIDATED);
     }
 
-    public MetadataValidatedQuery(ParsedQuery parsedQuery) {
-        super(parsedQuery);
-    }
-
-    @Override
-    public MetadataStatement getStatement() {
-        return (MetadataStatement)statement;
+    public MetadataValidatedQuery(MetadataValidatedQuery metadataValidatedQuery) {
+        this((MetadataParsedQuery) metadataValidatedQuery);
     }
 
 }

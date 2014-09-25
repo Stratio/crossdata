@@ -18,21 +18,25 @@
 
 package com.stratio.meta2.core.query;
 
+import com.stratio.meta.common.executionplan.ExecutionWorkflow;
+import com.stratio.meta.common.result.QueryStatus;
 
-import com.stratio.meta2.core.statements.StorageStatement;
+public class StoragePlannedQuery extends StorageValidatedQuery implements PlannedQuery {
 
-public  class StoragePlannedQuery extends PlannedQuery {
-  
-  public StoragePlannedQuery(ValidatedQuery validatedQuery) {
-    super(validatedQuery);
-  }
+    private final ExecutionWorkflow executionWorkflow;
 
-  StoragePlannedQuery(StoragePlannedQuery plannedQuery){
-    this((ValidatedQuery)plannedQuery);
-  }
+    public StoragePlannedQuery(StorageValidatedQuery storageValidatedQuery, ExecutionWorkflow executionWorkflow) {
+        super(storageValidatedQuery);
+        setQueryStatus(QueryStatus.PLANNED);
+        this.executionWorkflow = executionWorkflow;
+    }
+
+    public StoragePlannedQuery(StoragePlannedQuery storagePlannedQuery) {
+        this(storagePlannedQuery, storagePlannedQuery.getExecutionWorkflow());
+    }
 
     @Override
-    public StorageStatement getStatement() {
-        return (StorageStatement)statement;
+    public ExecutionWorkflow getExecutionWorkflow() {
+        return executionWorkflow;
     }
 }

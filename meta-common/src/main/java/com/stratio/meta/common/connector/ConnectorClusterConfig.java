@@ -18,50 +18,53 @@
 
 package com.stratio.meta.common.connector;
 
-import com.stratio.meta2.common.data.ClusterName;
-
 import java.util.Map;
+
+import com.stratio.meta2.common.data.ClusterName;
 
 /**
  * Configuration used by a connector to establish a connection to a specific cluster.
  */
 public class ConnectorClusterConfig {
 
-  /**
-   * Name of the target cluster.
-   */
-  private final ClusterName name;
+    /**
+     * Name of the target cluster.
+     */
+    private final ClusterName name;
 
-  /**
-   * Map of options required by a connector in order to be able to establish a connection
-   * to an existing datastore cluster.
-   */
-  private final Map<String, String> options;
+    /**
+     * Map of options required by a connector in order to be able to establish a connection
+     * to an existing datastore cluster.
+     */
+    private final Map<String, String> options;
 
-  /**
-   * Class constructor.
-   * @param name Name of the target cluster.
-   * @param options Map of options.
-   */
-  public ConnectorClusterConfig(ClusterName name, Map<String, String> options) {
-    this.name = name;
-    this.options = options;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param name    Name of the target cluster.
+     * @param options Map of options.
+     */
+    public ConnectorClusterConfig(ClusterName name, Map<String, String> options) {
+        this.name = name;
+        this.options = options;
+    }
 
-  /**
-   * Get the cluster options.
-   * @return A map of options.
-   */
-  public Map<String, String> getOptions() {
-    return options;
-  }
+    /**
+     * Get the cluster options.
+     *
+     * @return A map of options.
+     */
+    public Map<String, String> getOptions() {
+        return options;
+    }
 
-  /**
-   * Get the name of the target cluster.
-   * @return A {@link com.stratio.meta2.common.data.ClusterName}.
-   */
-  public ClusterName getName() {
-    return name;
-  }
+    /**
+     * Get the name of the target cluster.
+     *
+     * @return A {@link com.stratio.meta2.common.data.ClusterName}.
+     */
+    public ClusterName getName() {
+        return name;
+    }
 
 }

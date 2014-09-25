@@ -18,15 +18,6 @@
 
 package com.stratio.meta2.core.metadata;
 
-import com.stratio.meta2.common.data.FirstLevelName;
-import com.stratio.meta2.common.metadata.IMetadata;
-import com.stratio.meta2.core.grid.Grid;
-import com.stratio.meta2.core.grid.GridInitializer;
-
-import org.apache.commons.io.FileUtils;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,37 +26,45 @@ import java.util.concurrent.locks.Lock;
 
 import javax.transaction.TransactionManager;
 
+import org.apache.commons.io.FileUtils;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+
+import com.stratio.meta2.common.data.FirstLevelName;
+import com.stratio.meta2.common.metadata.IMetadata;
+import com.stratio.meta2.core.grid.Grid;
+import com.stratio.meta2.core.grid.GridInitializer;
+
 public class MetadataManagerTests {
 
-  private String path = "";
+    Map<FirstLevelName, IMetadata> metadataMap = new HashMap<>();
+    private String path = "";
 
-  Map<FirstLevelName, IMetadata> metadataMap =  new HashMap<>();
+    private void initializeGrid() {
+        GridInitializer gridInitializer = Grid.initializer();
+        gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
+        path = "/tmp/metadata-store-" + UUID.randomUUID();
+        gridInitializer.withPort(7800)
+                .withListenAddress("127.0.0.1")
+                .withMinInitialMembers(1)
+                .withJoinTimeoutInMs(3000)
+                .withPersistencePath(path).init();
+    }
 
-  private void initializeGrid() {
-    GridInitializer gridInitializer = Grid.initializer();
-    gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
-    path = "/tmp/metadata-store-" + UUID.randomUUID();
-    gridInitializer.withPort(7800)
-        .withListenAddress("127.0.0.1")
-        .withMinInitialMembers(1)
-        .withJoinTimeoutInMs(3000)
-        .withPersistencePath(path).init();
-  }
+    @BeforeClass
+    public void setUp() throws Exception {
+        initializeGrid();
+        Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("meta-test");
+        Lock lock = Grid.getInstance().lock("meta-test");
+        TransactionManager tm = Grid.getInstance().transactionManager("meta-test");
+        MetadataManager.MANAGER.init(metadataMap, lock, tm);
+    }
 
-  @BeforeClass
-  public void setUp() throws Exception {
-    initializeGrid();
-    Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("meta-test");
-    Lock lock = Grid.getInstance().lock("meta-test");
-    TransactionManager tm = Grid.getInstance().transactionManager("meta-test");
-    MetadataManager.MANAGER.init(metadataMap, lock, tm);
-  }
-
-  @AfterClass
-  public void tearDown() throws Exception {
-    metadataMap.clear();
-    Grid.getInstance().close();
-    FileUtils.deleteDirectory(new File(path));
-  }
+    @AfterClass
+    public void tearDown() throws Exception {
+        metadataMap.clear();
+        Grid.getInstance().close();
+        FileUtils.deleteDirectory(new File(path));
+    }
 
 }

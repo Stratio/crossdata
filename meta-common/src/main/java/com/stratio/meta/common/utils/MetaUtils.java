@@ -18,12 +18,12 @@
 
 package com.stratio.meta.common.utils;
 
-import com.google.common.collect.Sets;
-
 import java.util.Set;
 
-public class MetaUtils {        
-    
+import com.google.common.collect.Sets;
+
+public class MetaUtils {
+
     public static final Set<String> INITIALS = Sets.newHashSet(
             "CREATE",
             "ALTER",
@@ -43,8 +43,8 @@ public class MetaUtils {
             "EXIT",
             "HELP",
             "QUIT",
-            "DESCRIBE");    
-    
+            "DESCRIBE");
+
     public static final Set<String> NON_INITIALS = Sets.newHashSet(
             "KEYSPACE",
             "NOT",
@@ -104,7 +104,7 @@ public class MetaUtils {
             "ASC",
             "DESC",
             "LIKE",
-            "HASH", 
+            "HASH",
             "FULLTEXT",
             "CUSTOM",
             "GROUP",
@@ -124,18 +124,18 @@ public class MetaUtils {
     /**
      * Private class constructor as all methods are static.
      */
-    private MetaUtils(){
+    private MetaUtils() {
 
     }
 
     public static String getInitialsStatements() {
         String str = INITIALS.toString();
-        return str.substring(1, str.length()-1);
+        return str.substring(1, str.length() - 1);
     }
-    
+
     public static String getNoInitialsStatements() {
         String str = NON_INITIALS.toString();
-        return str.substring(1, str.length()-1);
+        return str.substring(1, str.length() - 1);
     }
-    
+
 }

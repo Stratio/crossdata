@@ -18,10 +18,11 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
 
-public class AddStatementTest extends ParsingTest{
+import com.stratio.meta2.core.grammar.ParsingTest;
+
+public class AddStatementTest extends ParsingTest {
 
     @Test
     public void addBasic() {
@@ -42,22 +43,21 @@ public class AddStatementTest extends ParsingTest{
     }
 
     @Test
-    public void addStartingQuoteMissing1(){
+    public void addStartingQuoteMissing1() {
         String inputText = "ADD /dir/jar_name-v1.0.jar;\"";
         testParserFails(inputText, "addStartingQuoteMissing1");
     }
 
     @Test
-    public void addEndingQuoteMissing2(){
+    public void addEndingQuoteMissing2() {
         String inputText = "ADD \"/dir/jar_name-v1.0.jar;";
-      testParserFails(inputText, "addEndingQuoteMissing2");
+        testParserFails(inputText, "addEndingQuoteMissing2");
     }
 
     @Test
-    public void addInvalidPath(){
+    public void addInvalidPath() {
         String inputText = "ADD \"@jar_name-v1.0.jar;\"";
         testParserFails(inputText, "addInvalidPath");
     }
-
 
 }

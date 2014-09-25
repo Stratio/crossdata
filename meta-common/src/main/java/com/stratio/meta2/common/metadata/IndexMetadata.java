@@ -18,9 +18,6 @@
 
 package com.stratio.meta2.common.metadata;
 
-import com.stratio.meta2.common.data.IndexName;
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
-
 import java.util.List;
 import java.util.Map;
 
@@ -28,33 +25,33 @@ import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class IndexMetadata implements IMetadata {
-  private final IndexName name;
-  private final List<ColumnMetadata> columns;
-  private final IndexType type;
-  private final Map<Selector, Selector> options;
+    private final IndexName name;
+    private final List<ColumnMetadata> columns;
+    private final IndexType type;
+    private final Map<Selector, Selector> options;
 
-  public IndexMetadata(IndexName name, List<ColumnMetadata> columns, IndexType type,
-      Map<Selector, Selector> options) {
-    this.name = name;
-    this.columns = columns;
-    this.type = type;
-    this.options = options;
-  }
+    public IndexMetadata(IndexName name, List<ColumnMetadata> columns, IndexType type,
+            Map<Selector, Selector> options) {
+        this.name = name;
+        this.columns = columns;
+        this.type = type;
+        this.options = options;
+    }
 
-  public IndexName getName() {
-    return name;
-  }
+    public IndexName getName() {
+        return name;
+    }
 
-  public List<ColumnMetadata> getColumns() {
-    return columns;
-  }
+    public List<ColumnMetadata> getColumns() {
+        return columns;
+    }
 
-  public IndexType getType() {
-    return type;
-  }
+    public IndexType getType() {
+        return type;
+    }
 
-  public Map<Selector, Selector> getOptions() {
-    return options;
-  }
+    public Map<Selector, Selector> getOptions() {
+        return options;
+    }
 
 }

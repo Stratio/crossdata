@@ -23,7 +23,6 @@
 // Generated on: 2014.09.03 at 12:12:40 AM CEST 
 //
 
-
 package com.stratio.meta2.common.api.generated.connector;
 
 import java.io.Serializable;
@@ -33,89 +32,79 @@ import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
 import javax.xml.namespace.QName;
 
-
 /**
- * This object contains factory methods for each 
- * Java content interface and Java element interface 
- * generated in the generated package. 
- * <p>An ObjectFactory allows you to programatically 
- * construct new instances of the Java representation 
- * for XML content. The Java representation of XML 
- * content can consist of schema derived interfaces 
- * and classes representing the binding of schema 
- * type definitions, element declarations and model 
- * groups.  Factory methods for each of these are 
+ * This object contains factory methods for each
+ * Java content interface and Java element interface
+ * generated in the generated package.
+ * <p>An ObjectFactory allows you to programatically
+ * construct new instances of the Java representation
+ * for XML content. The Java representation of XML
+ * content can consist of schema derived interfaces
+ * and classes representing the binding of schema
+ * type definitions, element declarations and model
+ * groups.  Factory methods for each of these are
  * provided in this class.
- *
  */
 @XmlRegistry
 public class ConnectorFactory implements Serializable {
 
-  private final static QName _Connector_QNAME = new QName("", "Connector");
-  private static final long serialVersionUID = 4399986588512302541L;
+    private final static QName _Connector_QNAME = new QName("", "Connector");
+    private static final long serialVersionUID = 4399986588512302541L;
 
-  /**
-   * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: generated
-   *
-   */
-  public ConnectorFactory() {
-  }
+    /**
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: generated
+     */
+    public ConnectorFactory() {
+    }
 
-  /**
-   * Create an instance of {@link ConnectorType }
-   *
-   */
-  public ConnectorType createConnectorType() {
-    return new ConnectorType();
-  }
+    /**
+     * Create an instance of {@link ConnectorType }
+     */
+    public ConnectorType createConnectorType() {
+        return new ConnectorType();
+    }
 
-  /**
-   * Create an instance of {@link OptionalPropertiesType }
-   *
-   */
-  public OptionalPropertiesType createOptionalPropertiesType() {
-    return new OptionalPropertiesType();
-  }
+    /**
+     * Create an instance of {@link OptionalPropertiesType }
+     */
+    public OptionalPropertiesType createOptionalPropertiesType() {
+        return new OptionalPropertiesType();
+    }
 
-  /**
-   * Create an instance of {@link PropertyType }
-   *
-   */
-  public PropertyType createPropertyType() {
-    return new PropertyType();
-  }
+    /**
+     * Create an instance of {@link PropertyType }
+     */
+    public PropertyType createPropertyType() {
+        return new PropertyType();
+    }
 
-  /**
-   * Create an instance of {@link RequiredPropertiesType }
-   *
-   */
-  public RequiredPropertiesType createRequiredPropertiesType() {
-    return new RequiredPropertiesType();
-  }
+    /**
+     * Create an instance of {@link RequiredPropertiesType }
+     */
+    public RequiredPropertiesType createRequiredPropertiesType() {
+        return new RequiredPropertiesType();
+    }
 
-  /**
-   * Create an instance of {@link DataStoresNameType }
-   *
-   */
-  public DataStoresNameType createDataStoresNameType() {
-    return new DataStoresNameType();
-  }
+    /**
+     * Create an instance of {@link DataStoresNameType }
+     */
+    public DataStoresNameType createDataStoresNameType() {
+        return new DataStoresNameType();
+    }
 
-  /**
-   * Create an instance of {@link SupportedOperationsType }
-   *
-   */
-  public SupportedOperationsType createSupportedOperationsType() {
-    return new SupportedOperationsType();
-  }
+    /**
+     * Create an instance of {@link SupportedOperationsType }
+     */
+    public SupportedOperationsType createSupportedOperationsType() {
+        return new SupportedOperationsType();
+    }
 
-  /**
-   * Create an instance of {@link javax.xml.bind.JAXBElement }{@code <}{@link ConnectorType }{@code >}}
-   *
-   */
-  @XmlElementDecl(namespace = "", name = "Connector")
-  public JAXBElement<ConnectorType> createConnector(ConnectorType value) {
-    return new JAXBElement<ConnectorType>(_Connector_QNAME, ConnectorType.class, null, value);
-  }
+    /**
+     * Create an instance of {@link javax.xml.bind.JAXBElement }{@code <}{@link ConnectorType }{@code >}}
+     */
+    @XmlElementDecl(namespace = "", name = "Connector")
+    public JAXBElement<ConnectorType> createConnector(ConnectorType value) {
+        return new JAXBElement<ConnectorType>(_Connector_QNAME, ConnectorType.class, null, value);
+    }
 
 }

@@ -22,18 +22,18 @@ package com.stratio.meta.common.exceptions;
  * Exception thrown if the connection cannot be established with
  * a remote meta server.
  */
-public class ConnectionException extends Exception{
+public class ConnectionException extends Exception {
 
-  /**
-   * Serial version UID in order to be {@link java.io.Serializable}.
-   */
-  private static final long serialVersionUID = 5733609562968522778L;
+    /**
+     * Serial version UID in order to be {@link java.io.Serializable}.
+     */
+    private static final long serialVersionUID = 5733609562968522778L;
 
-  public ConnectionException(String message){
-    super(message);
-  }
+    public ConnectionException(String message) {
+        super(message);
+    }
 
-  public ConnectionException(String msg, Throwable cause){
-    super(msg, cause);
-  }
+    public ConnectionException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 }

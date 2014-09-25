@@ -27,81 +27,48 @@ import com.stratio.meta.common.ask.{Command, Connect, Query}
 import com.stratio.meta.common.result._
 import com.stratio.meta.communication.Disconnect
 import com.stratio.meta2.core.engine.Engine
-import com.stratio.meta2.server.config.{ServerConfig, NumberActorConfig}
+import com.stratio.meta2.server.config.ServerConfig
 import org.apache.log4j.Logger
 
 
-object ServerActor{
+object ServerActor {
   def props(engine: Engine): Props = Props(new ServerActor(engine))
 }
 
-class ServerActor(engine:Engine) extends Actor  with ServerConfig{
-  override lazy val logger =Logger.getLogger(classOf[ServerActor])
+class ServerActor(engine: Engine) extends Actor with ServerConfig {
+  override lazy val logger = Logger.getLogger(classOf[ServerActor])
 
-  val connectorManagerActorRef=context.actorOf(ConnectorManagerActor.props(engine.getConnectorManager()).withRouter(RoundRobinRouter(nrOfInstances=num_connector_manag_actor)),"ConnectorManagerActor")
-  val coordinatorActorRef=context.actorOf(CoordinatorActor.props(connectorManagerActorRef,engine.getCoordinator()).withRouter(RoundRobinRouter(nrOfInstances=num_coordinator_actor)),"CoordinatorActor")
-  val plannerActorRef=context.actorOf(PlannerActor.props(coordinatorActorRef,engine.getPlanner).withRouter(RoundRobinRouter(nrOfInstances=num_planner_actor)),"PlannerActor")
-  val validatorActorRef=context.actorOf(ValidatorActor.props(plannerActorRef,engine.getValidator).withRouter(RoundRobinRouter(nrOfInstances=num_validator_actor)),"ValidatorActor")
-  val parserActorRef=context.actorOf(ParserActor.props(validatorActorRef,engine.getParser()).withRouter(RoundRobinRouter(nrOfInstances=num_parser_actor)),"ParserActor")
-  val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()).withRouter(RoundRobinRouter(nrOfInstances=num_api_actor)),"APIActor")
-
-  //val queryActorRef= context.actorOf(QueryActor.props(engine,connectorActorRef),"QueryActor")
-
-
-  /*
-  override def preStart(): Unit = {
-    //#subscribe
-    Cluster(context.system).subscribe(self, classOf[MemberEvent])
-    //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
-  }
-  override def postStop(): Unit =
-    Cluster(context.system).unsubscribe(self)
-  * 
-  */
+  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props(engine.getConnectorManager()).withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
+  val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).withRouter(RoundRobinRouter(nrOfInstances = num_coordinator_actor)), "CoordinatorActor")
+  val plannerActorRef = context.actorOf(PlannerActor.props(coordinatorActorRef, engine.getPlanner).withRouter(RoundRobinRouter(nrOfInstances = num_planner_actor)), "PlannerActor")
+  val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef, engine.getValidator).withRouter(RoundRobinRouter(nrOfInstances = num_validator_actor)), "ValidatorActor")
+  val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef, engine.getParser()).withRouter(RoundRobinRouter(nrOfInstances = num_parser_actor)), "ParserActor")
+  val APIActorRef = context.actorOf(APIActor.props(engine.getAPIManager()).withRouter(RoundRobinRouter(nrOfInstances = num_api_actor)), "APIActor")
 
   def receive = {
-    case query:Query => {
+    case query: Query => {
       println("query: " + query)
       parserActorRef forward query
     }
-    case Connect(user)=> {
-      logger.info("Welcome " + user +"!")
-      //println("Welcome " + user +"!")
+    case Connect(user) => {
+      logger.info("Welcome " + user + "!")
       sender ! ConnectResult.createConnectResult(UUID.randomUUID().toString)
     }
-    case Disconnect(user)=> {
-      logger.info("Goodbye " + user +".")
+    case Disconnect(user) => {
+      logger.info("Goodbye " + user + ".")
       //sender ! DisconnectResult.createDisconnectResult(user)
     }
     case cmd: Command => {
       logger.info("API Command call " + cmd.commandType)
       APIActorRef forward cmd
     }
-    //pass the message to the connectorActor to extract the member in the cluster
-    case state: CurrentClusterState => {
-      logger.info("Current members: {}"+ state.members.mkString(", "))
-      //connectorActorRef ! state
-    }
-    //case UnreachableMember(member) => {
-    case member: UnreachableMember => {
-      logger.info("Member detected as unreachable: {}"+ member)
-      //connectorActorRef ! member
-    }
-    case member: MemberRemoved=>{
-      logger.info("Member is Removed: {} after {}");//, member.address, previousStatus)
-      //connectorActorRef ! member
-    }
-    case _: MemberEvent =>{
-      logger.info("Receiving anything else")
-    }
-    case _: ClusterDomainEvent =>{
-      println("ClusterDomainEvent")
-    }
-    case ReceiveTimeout =>{
-      println("ReceiveTimeout")
+
+    case ReceiveTimeout => {
+      logger.warn("ReceiveTimeout")
+      //TODO Process ReceiveTimeout
     }
     case _ => {
-      println("Unknown!!!!");
+      logger.error("Unknown message received by ServerActor");
       sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
     }
   }

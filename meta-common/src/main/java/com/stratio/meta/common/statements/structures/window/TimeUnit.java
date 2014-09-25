@@ -21,28 +21,28 @@ package com.stratio.meta.common.statements.structures.window;
 /**
  * Time units accepted in streaming queries.
  * <li>
- *   <ul>SECONDS</ul> <ul>HOURS</ul> <ul>MINUTES</ul> <ul>DAYS</ul>
+ * <ul>SECONDS</ul> <ul>HOURS</ul> <ul>MINUTES</ul> <ul>DAYS</ul>
  * </li>
  */
 public enum TimeUnit {
 
-  /**
-   * Seconds.
-   */
-  SECONDS,
+    /**
+     * Seconds.
+     */
+    SECONDS,
 
-  /**
-   * Minutes.
-   */
-  MINUTES,
+    /**
+     * Minutes.
+     */
+    MINUTES,
 
-  /**
-   * Hours.
-   */
-  HOURS,
+    /**
+     * Hours.
+     */
+    HOURS,
 
-  /**
-   * Days.
-   */
-  DAYS
+    /**
+     * Days.
+     */
+    DAYS
 }

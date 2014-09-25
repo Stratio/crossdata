@@ -21,12 +21,12 @@ package com.stratio.meta.common.data;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class CResultSetIterator implements Iterator<com.stratio.meta.common.data.Row> {
+public class ResultSetIterator implements Iterator<com.stratio.meta.common.data.Row> {
 
     /**
      * Set representing a result.
      */
-    private final ResultSet cResultSet;
+    private final ResultSet resultSet;
 
     /**
      * Pointer to the current element.
@@ -34,26 +34,27 @@ public class CResultSetIterator implements Iterator<com.stratio.meta.common.data
     private int current;
 
     /**
-     * Build a {@link com.stratio.meta.common.data.CResultSetIterator} from a {@link com.stratio.meta.common.data.ResultSet}.
-     * @param cResultSet Result Set.
+     * Build a {@link ResultSetIterator} from a {@link com.stratio.meta.common.data.ResultSet}.
+     *
+     * @param resultSet Result Set.
      */
-    public CResultSetIterator(ResultSet cResultSet) {
-        this.cResultSet = cResultSet;
+    public ResultSetIterator(ResultSet resultSet) {
+        this.resultSet = resultSet;
         this.current = 0;
     }
 
     @Override
     public boolean hasNext() {
-        return current < cResultSet.getRows().size();
+        return current < resultSet.getRows().size();
     }
 
     @Override
-    public com.stratio.meta.common.data.Row next() throws NoSuchElementException{
-        return cResultSet.getRows().get(current++);
+    public com.stratio.meta.common.data.Row next() throws NoSuchElementException {
+        return resultSet.getRows().get(current++);
     }
 
     @Override
-    public void remove() throws UnsupportedOperationException, IllegalStateException{
-        cResultSet.remove(current);
+    public void remove() throws UnsupportedOperationException, IllegalStateException {
+        resultSet.remove(current);
     }
 }

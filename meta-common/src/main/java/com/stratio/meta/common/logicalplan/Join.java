@@ -18,72 +18,72 @@
 
 package com.stratio.meta.common.logicalplan;
 
-import com.stratio.meta.common.connector.Operations;
-import com.stratio.meta.common.statements.structures.relationships.Relation;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta.common.statements.structures.relationships.Relation;
 
 /**
  * Join operator.
  */
-public class Join extends UnionStep{
+public class Join extends UnionStep {
 
-  /**
-   * Join identifier.
-   */
-  private final String id;
+    /**
+     * Join identifier.
+     */
+    private final String id;
 
-  /**
-   * List of logical step identifiers involved in the join.
-   */
-  private final List<String> sourceIdentifiers = new ArrayList<>();
+    /**
+     * List of logical step identifiers involved in the join.
+     */
+    private final List<String> sourceIdentifiers = new ArrayList<>();
 
-  /**
-   * List of join relations.
-   */
-  private final List<Relation> joinRelations = new ArrayList<>();
+    /**
+     * List of join relations.
+     */
+    private final List<Relation> joinRelations = new ArrayList<>();
 
-  /**
-   * Class constructor.
-   *
-   * @param operation The operation to be applied.
-   * @param id The join identifier.
-   */
-  public Join(Operations operation, String id) {
-    super(operation);
-    this.id = id;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param operation The operation to be applied.
+     * @param id        The join identifier.
+     */
+    public Join(Operations operation, String id) {
+        super(operation);
+        this.id = id;
+    }
 
-  public void addJoinRelation(Relation r){
-    joinRelations.add(r);
-  }
+    public void addJoinRelation(Relation r) {
+        joinRelations.add(r);
+    }
 
-  public void addJoinRelations(List<Relation> list){
-    joinRelations.addAll(list);
-  }
+    public void addJoinRelations(List<Relation> list) {
+        joinRelations.addAll(list);
+    }
 
-  public List<Relation> getJoinRelations() {
-    return joinRelations;
-  }
+    public List<Relation> getJoinRelations() {
+        return joinRelations;
+    }
 
-  public void addSourceIdentifier(String id){
-    sourceIdentifiers.add(id);
-  }
+    public void addSourceIdentifier(String id) {
+        sourceIdentifiers.add(id);
+    }
 
-  public List<String> getSourceIdentifiers() {
-    return sourceIdentifiers;
-  }
+    public List<String> getSourceIdentifiers() {
+        return sourceIdentifiers;
+    }
 
-  public String getId() {
-    return id;
-  }
+    public String getId() {
+        return id;
+    }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("JOIN (");
-    sb.append(sourceIdentifiers.toString());
-    sb.append(") ON ").append(joinRelations.toString());
-    return sb.toString();
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("JOIN (");
+        sb.append(sourceIdentifiers.toString());
+        sb.append(") ON ").append(joinRelations.toString());
+        return sb.toString();
+    }
 }

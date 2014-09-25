@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.query;
 
+import java.util.List;
+
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta2.common.data.CatalogName;
@@ -25,51 +27,47 @@ import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 
-import java.util.List;
-
 public abstract class NormalizedQuery extends SelectParsedQuery {
-  public NormalizedQuery(SelectParsedQuery parsedQuery){
-    super(parsedQuery);
-  }
+    public NormalizedQuery(SelectParsedQuery parsedQuery) {
+        super(parsedQuery);
+    }
 
-  NormalizedQuery(NormalizedQuery normalizedQuery){
-    this((SelectParsedQuery)normalizedQuery);
-  }
-  public QueryStatus getStatus() {
-    return QueryStatus.NORMALIZED;
-  }
+    NormalizedQuery(NormalizedQuery normalizedQuery) {
+        this((SelectParsedQuery) normalizedQuery);
+    }
 
-  //IStatement Methods move to MetaStatement
-  public List<CatalogName> getCatalogs(){
-    throw new UnsupportedOperationException();
-  }
+    public QueryStatus getStatus() {
+        return QueryStatus.NORMALIZED;
+    }
 
+    //IStatement Methods move to MetaStatement
+    public List<CatalogName> getCatalogs() {
+        throw new UnsupportedOperationException();
+    }
 
-  public List<TableName> getTables(){
-    throw new UnsupportedOperationException();
-  }
+    public List<TableName> getTables() {
+        throw new UnsupportedOperationException();
+    }
 
+    public List<ColumnName> getColumns() {
+        throw new UnsupportedOperationException();
+    }
 
-  public List<ColumnName> getColumns(){
-    throw new UnsupportedOperationException();
-  }
+    public List<Relation> getAssignations() {
+        throw new UnsupportedOperationException();
+    }
 
+    public List<Relation> getRelationships() {
+        throw new UnsupportedOperationException();
+    }
 
-  public List<Relation> getAssignations(){
-    throw new UnsupportedOperationException();
-  }
+    public List<TableMetadata> getTableMetadata() {
+        throw new UnsupportedOperationException();
+    }
 
-  public List<Relation> getRelationships(){
-    throw new UnsupportedOperationException();
-  }
+    //public List<OrderBy> getOrderByColumns();
+    //OrderBy-> List<Columns> order (ASC, DESC)
 
-  public List<TableMetadata> getTableMetadata(){
-    throw new UnsupportedOperationException();
-  }
-
-  //public List<OrderBy> getOrderByColumns();
-  //OrderBy-> List<Columns> order (ASC, DESC)
-
-  //public List<Selector> groupBy, getJoin, ....
+    //public List<Selector> groupBy, getJoin, ....
 
 }

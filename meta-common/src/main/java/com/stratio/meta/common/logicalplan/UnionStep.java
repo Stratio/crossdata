@@ -18,48 +18,49 @@
 
 package com.stratio.meta.common.logicalplan;
 
-import com.stratio.meta.common.connector.Operations;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import com.stratio.meta.common.connector.Operations;
 
 /**
  * Class definition for {@link com.stratio.meta.common.logicalplan.LogicalStep} that need
  * to work with the results of several previous logical steps. Examples of this type of
  * operators are Join and Union.
  */
-public class UnionStep extends LogicalStep{
+public class UnionStep extends LogicalStep {
 
-  private List<LogicalStep> previousSteps = new ArrayList<>();
+    private List<LogicalStep> previousSteps = new ArrayList<>();
 
-  /**
-   * Class constructor.
-   * @param operation The operation to be applied.
-   */
-  public UnionStep(Operations operation) {
-    super(operation);
-  }
-
-  public void setPreviousSteps(List<LogicalStep> previousSteps) {
-    this.previousSteps = previousSteps;
-  }
-
-  public void addPreviousSteps(LogicalStep ... previous){
-    this.previousSteps.addAll(Arrays.asList(previous));
-  }
-
-  @Override
-  public List<LogicalStep> getPreviousSteps() {
-    return previousSteps;
-  }
-
-  @Override
-  public LogicalStep getFirstPrevious() {
-    LogicalStep result = null;
-    if(previousSteps!=null){
-      result = previousSteps.get(0);
+    /**
+     * Class constructor.
+     *
+     * @param operation The operation to be applied.
+     */
+    public UnionStep(Operations operation) {
+        super(operation);
     }
-    return result;
-  }
+
+    public void addPreviousSteps(LogicalStep... previous) {
+        this.previousSteps.addAll(Arrays.asList(previous));
+    }
+
+    @Override
+    public List<LogicalStep> getPreviousSteps() {
+        return previousSteps;
+    }
+
+    public void setPreviousSteps(List<LogicalStep> previousSteps) {
+        this.previousSteps = previousSteps;
+    }
+
+    @Override
+    public LogicalStep getFirstPrevious() {
+        LogicalStep result = null;
+        if (previousSteps != null) {
+            result = previousSteps.get(0);
+        }
+        return result;
+    }
 }

@@ -18,23 +18,19 @@
 
 package com.stratio.meta.common.data;
 
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Class to be removed in the near future.
+ *
  * @deprecated Use ResultSet instead.
  */
 @Deprecated
 public class CassandraResultSet extends ResultSet implements Serializable {
 
-  /**
-   * Serial version UID in order to be Serializable.
-   */
-  private static final long serialVersionUID = -5989403621101496698L;
+    /**
+     * Serial version UID in order to be Serializable.
+     */
+    private static final long serialVersionUID = -5989403621101496698L;
 
 }

@@ -22,28 +22,28 @@ package com.stratio.meta.common.result;
  * Types of errors reported by META when a query is processed.
  */
 public enum ErrorType {
-  /**
-   * Parsing error.
-   */
-  PARSING,
+    /**
+     * Parsing error.
+     */
+    PARSING,
 
-  /**
-   * Validation error.
-   */
-  VALIDATION,
+    /**
+     * Validation error.
+     */
+    VALIDATION,
 
-  /**
-   * Execution error.
-   */
-  EXECUTION,
+    /**
+     * Execution error.
+     */
+    EXECUTION,
 
-  /**
-   * Connection error.
-   */
-  CONNECTION,
+    /**
+     * Connection error.
+     */
+    CONNECTION,
 
-  /**
-   * Operation not supported error.
-   */
-  NOT_SUPPORTED
+    /**
+     * Operation not supported error.
+     */
+    NOT_SUPPORTED
 }

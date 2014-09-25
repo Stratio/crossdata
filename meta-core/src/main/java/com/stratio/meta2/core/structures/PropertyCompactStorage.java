@@ -20,16 +20,16 @@ package com.stratio.meta2.core.structures;
 
 public class PropertyCompactStorage extends Property {
 
-  /**
-   * Class constructor.
-   */
-  public PropertyCompactStorage() {
-    super(TYPE_COMPACT_STORAGE);
-  }
+    /**
+     * Class constructor.
+     */
+    public PropertyCompactStorage() {
+        super(TYPE_COMPACT_STORAGE);
+    }
 
-  @Override
-  public String toString() {
-    return "COMPACT STORAGE";
-  }
+    @Override
+    public String toString() {
+        return "COMPACT STORAGE";
+    }
 
 }

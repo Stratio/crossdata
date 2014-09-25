@@ -18,40 +18,41 @@
 
 package com.stratio.meta.driver.actor
 
-import akka.actor.{Actor, Props, ActorRef}
-import com.stratio.meta.common.ask.{Command, Query, Connect}
-import com.stratio.meta.common.result.{ErrorResult, Result}
-import com.stratio.meta.communication.{Disconnect, ACK}
-import scala.concurrent.duration._
-import akka.util.Timeout
+import akka.actor.{Actor, ActorRef, Props}
 import akka.contrib.pattern.ClusterClient
+import akka.util.Timeout
+import com.stratio.meta.common.ask.{Command, Connect, Query}
+import com.stratio.meta.common.result.{ErrorResult, Result}
+import com.stratio.meta.communication.{ACK, Disconnect}
 import com.stratio.meta.driver.BasicDriver
 import org.apache.log4j.Logger
+
+import scala.concurrent.duration._
 
 /**
  * Companion object.
  */
-object ProxyActor{
+object ProxyActor {
+  /**
+   * Initial path for actor's indentify.
+   */
+  val INIT_PATH = "/user/"
+
   /**
    * Config prop in ProxyActor.
    * @param clusterClientActor ActorRef to ClusterClientActor pattern.
    * @param remoteActor Remote actor's name.
    * @return Actor's props.
    */
-  def props(clusterClientActor: ActorRef, remoteActor: String, driver: BasicDriver): Props= Props(new ProxyActor(clusterClientActor,
+  def props(clusterClientActor: ActorRef, remoteActor: String, driver: BasicDriver): Props = Props(new ProxyActor(clusterClientActor,
     remoteActor, driver))
-
-  /**
-   * Initial path for actor's indentify.
-   */
-  val INIT_PATH= "/user/"
 
   /**
    * Create path with actor's name.
    * @param remoteActor Remote actor's name.
    * @return Complete path.
    */
-  def remotePath(remoteActor: String)= INIT_PATH + remoteActor
+  def remotePath(remoteActor: String) = INIT_PATH + remoteActor
 }
 
 /**
@@ -59,7 +60,7 @@ object ProxyActor{
  * @param clusterClientActor ActorRef to ClusterClientActor pattern.
  * @param remoteActor Remote actor's name.
  */
-class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicDriver) extends Actor{
+class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: BasicDriver) extends Actor {
 
   /**
    * Class logger.
@@ -71,45 +72,45 @@ class ProxyActor(clusterClientActor:ActorRef, remoteActor:String, driver: BasicD
   override def receive: Actor.Receive = {
 
     /* The driver sends the connect message. */
-    case c : Connect => {
+    case c: Connect => {
       clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = true)
     }
 
-    case c : Disconnect => {
+    case c: Disconnect => {
       //println("Send connect " + c)
       clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = true)
     }
 
     /* API Command */
-    case cmd : Command => {
+    case cmd: Command => {
       println("Send command: " + cmd);
       clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), cmd, localAffinity = true)
     }
 
     /* ACK received */
-    case ack : ACK => {
+    case ack: ACK => {
       val handler = driver.getResultHandler(ack.queryId)
-      if(handler != null){
+      if (handler != null) {
         handler.processAck(ack.queryId, ack.status)
-      }else{
+      } else {
         logger.warn("ACK not expected received: " + ack)
       }
     }
 
     /* Send a query to the remote meta-server infrastructure. */
-    case message:Query => {
+    case message: Query => {
       clusterClientActor ! ClusterClient.Send(ProxyActor.remotePath(remoteActor), message, localAffinity = true)
     }
-    case result:Result => {
+    case result: Result => {
 
       val handler = driver.getResultHandler(result.getQueryId)
-      if(handler != null){
-        if(!result.isInstanceOf[ErrorResult]) {
+      if (handler != null) {
+        if (!result.isInstanceOf[ErrorResult]) {
           handler.processResult(result)
-        }else{
+        } else {
           handler.processError(result)
         }
-      }else{
+      } else {
         logger.warn("Result not expected received: " + result.getQueryId)
       }
 

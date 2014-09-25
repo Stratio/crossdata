@@ -18,46 +18,46 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.TableName;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.TableName;
+
 /**
  * Single column selector.
  */
-public class ColumnSelector extends Selector{
+public class ColumnSelector extends Selector {
 
-  /**
-   * Name of the selected column.
-   */
-  private ColumnName name;
+    /**
+     * Name of the selected column.
+     */
+    private ColumnName name;
 
-  public ColumnSelector(ColumnName name){
-    this.name = name;
-  }
-
-  public ColumnName getName() {
-    return name;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder(name.toString());
-    if(this.alias != null){
-      sb.append(" AS ").append(alias);
+    public ColumnSelector(ColumnName name) {
+        this.name = name;
     }
-    return sb.toString();
-  }
 
-  @Override public SelectorType getType() {
-    return SelectorType.COLUMN;
-  }
+    public ColumnName getName() {
+        return name;
+    }
 
-  @Override
-  public Set<TableName> getSelectorTables() {
-    return new HashSet(Arrays.asList(this.name.getTableName()));
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(name.toString());
+        if (this.alias != null) {
+            sb.append(" AS ").append(alias);
+        }
+        return sb.toString();
+    }
+
+    @Override public SelectorType getType() {
+        return SelectorType.COLUMN;
+    }
+
+    @Override
+    public Set<TableName> getSelectorTables() {
+        return new HashSet(Arrays.asList(this.name.getTableName()));
+    }
 }

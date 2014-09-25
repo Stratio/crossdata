@@ -18,31 +18,31 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 /**
  * Drop cluster parsing tests.
  */
 public class DetachClusterStatementTest extends ParsingTest {
 
-  @Test
-  public void detachClusterBasic() {
-    String inputText = "DETACH CLUSTER dev_environment1;";
-    testRegularStatement(inputText, "detachClusterBasic");
-  }
+    @Test
+    public void detachClusterBasic() {
+        String inputText = "DETACH CLUSTER dev_environment1;";
+        testRegularStatement(inputText, "detachClusterBasic");
+    }
 
-  @Test
-  public void detachClusterSimple() {
-    String inputText = "DETACH CLUSTER myCluster;";
-    testRegularStatement(inputText, "detachClusterSimple");
-  }
+    @Test
+    public void detachClusterSimple() {
+        String inputText = "DETACH CLUSTER myCluster;";
+        testRegularStatement(inputText, "detachClusterSimple");
+    }
 
-  @Test
-  public void detachClusterError() {
-    String inputText = "DETACH CLUSTER *myCluster";
-    testParserFails(inputText, "detachClusterError");
-  }
+    @Test
+    public void detachClusterError() {
+        String inputText = "DETACH CLUSTER *myCluster";
+        testParserFails(inputText, "detachClusterError");
+    }
 
 }

@@ -25,9 +25,10 @@ import com.stratio.meta.common.result.Result;
  */
 public interface ActorResultListener {
 
-  /**
-   * Process an incoming result.
-   * @param result The results.
-   */
-  public void processResults(Result result);
+    /**
+     * Process an incoming result.
+     *
+     * @param result The results.
+     */
+    public void processResults(Result result);
 }

@@ -18,77 +18,78 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
 
-public class AlterTableStatementTest extends ParsingTest{
+import com.stratio.meta2.core.grammar.ParsingTest;
 
-  @Test
-  public void alterTableBasic() {
-    String inputText = "ALTER TABLE demo.myTable ALTER column1 TYPE int;";
-    String expectedText = "ALTER TABLE demo.myTable ALTER demo.myTable.column1 TYPE int;";
-    testRegularStatement(inputText, expectedText, "alterTableBasic");
-  }
+public class AlterTableStatementTest extends ParsingTest {
 
-  @Test
-  public void alterTableCatalog() {
-    String inputText = "ALTER TABLE demo.myTable ALTER column1 TYPE int;";
-    String expectedText = "ALTER TABLE demo.myTable ALTER demo.myTable.column1 TYPE int;";
-    testRegularStatement(inputText, expectedText, "alterTableCatalog");
-  }
+    @Test
+    public void alterTableBasic() {
+        String inputText = "ALTER TABLE demo.myTable ALTER column1 TYPE int;";
+        String expectedText = "ALTER TABLE demo.myTable ALTER demo.myTable.column1 TYPE int;";
+        testRegularStatement(inputText, expectedText, "alterTableBasic");
+    }
 
-  @Test
-  public void alterTableCatalogWithSession1() {
-    String inputText = "ALTER TABLE demo.myTable ALTER column1 TYPE int;";
-    String expectedText = "ALTER TABLE demo.myTable ALTER demo.myTable.column1 TYPE int;";
-    testRegularStatementSession("clients", inputText, expectedText, "alterTableCatalogWithSession1");
-  }
+    @Test
+    public void alterTableCatalog() {
+        String inputText = "ALTER TABLE demo.myTable ALTER column1 TYPE int;";
+        String expectedText = "ALTER TABLE demo.myTable ALTER demo.myTable.column1 TYPE int;";
+        testRegularStatement(inputText, expectedText, "alterTableCatalog");
+    }
 
-  @Test
-  public void alterTableCatalogWithWrongColumnType() {
-    String inputText = "ALTER TABLE demo.myTable ALTER column1 TYPE date;";
-    testParserFails("clients", inputText, "alterTableCatalogWithWrongColumnType");
-  }
+    @Test
+    public void alterTableCatalogWithSession1() {
+        String inputText = "ALTER TABLE demo.myTable ALTER column1 TYPE int;";
+        String expectedText = "ALTER TABLE demo.myTable ALTER demo.myTable.column1 TYPE int;";
+        testRegularStatementSession("clients", inputText, expectedText, "alterTableCatalogWithSession1");
+    }
 
-  @Test
-  public void alterTableCatalogWithSession2() {
-    String inputText = "ALTER TABLE myTable ALTER column1 TYPE int;";
-    String expectedText = "ALTER TABLE clients.myTable ALTER clients.myTable.column1 TYPE int;";
-    testRegularStatementSession("clients", inputText, expectedText, "alterTableCatalogWithSession2");
-  }
+    @Test
+    public void alterTableCatalogWithWrongColumnType() {
+        String inputText = "ALTER TABLE demo.myTable ALTER column1 TYPE date;";
+        testParserFails("clients", inputText, "alterTableCatalogWithWrongColumnType");
+    }
 
-  @Test
-  public void alterTableCatalogWithSession3() {
-    String inputText = "ALTER TABLE myTable ALTER myTable.column1 TYPE int;";
-    String expectedText = "ALTER TABLE clients.myTable ALTER clients.myTable.column1 TYPE int;";
-    testRegularStatementSession("clients", inputText, expectedText, "alterTableCatalogWithSession3");
-  }
+    @Test
+    public void alterTableCatalogWithSession2() {
+        String inputText = "ALTER TABLE myTable ALTER column1 TYPE int;";
+        String expectedText = "ALTER TABLE clients.myTable ALTER clients.myTable.column1 TYPE int;";
+        testRegularStatementSession("clients", inputText, expectedText, "alterTableCatalogWithSession2");
+    }
 
-  @Test
-  public void alterTableBasic1() {
-    String inputText = "ALTER TABLE demo.myTable ADD column1 int;";
-    String expectedText = "ALTER TABLE demo.myTable ADD demo.myTable.column1 int;";
-    testRegularStatement(inputText, expectedText, "alterTableBasic1");
-  }
+    @Test
+    public void alterTableCatalogWithSession3() {
+        String inputText = "ALTER TABLE myTable ALTER myTable.column1 TYPE int;";
+        String expectedText = "ALTER TABLE clients.myTable ALTER clients.myTable.column1 TYPE int;";
+        testRegularStatementSession("clients", inputText, expectedText, "alterTableCatalogWithSession3");
+    }
 
-  @Test
-  public void alterTableBasic2() {
-    String inputText = "ALTER TABLE demo.myTable DROP column1;";
-    String expectedText = "ALTER TABLE demo.myTable DROP demo.myTable.column1;";
-    testRegularStatement(inputText, expectedText, "alterTableBasic2");
-  }
+    @Test
+    public void alterTableBasic1() {
+        String inputText = "ALTER TABLE demo.myTable ADD column1 int;";
+        String expectedText = "ALTER TABLE demo.myTable ADD demo.myTable.column1 int;";
+        testRegularStatement(inputText, expectedText, "alterTableBasic1");
+    }
 
-  @Test
-  public void alterTableBasic3() {
-    String inputText = "ALTER TABLE demo.myTable WITH {'property1': 'value1', 'property2': 2, 'property3': 3.0};";
-    String expectedText = "ALTER TABLE demo.myTable WITH {property1=value1, property2=2, property3=3.0};";
-    testRegularStatement(inputText, expectedText, "alterTableBasic3");
-  }
+    @Test
+    public void alterTableBasic2() {
+        String inputText = "ALTER TABLE demo.myTable DROP column1;";
+        String expectedText = "ALTER TABLE demo.myTable DROP demo.myTable.column1;";
+        testRegularStatement(inputText, expectedText, "alterTableBasic2");
+    }
 
-  @Test
-  public void alterWrongPropertyIdentifier(){
-    String inputText = "ALTER TABLE demo.myTable WITH {2property1: 'value1'};";
-    testParserFails(inputText, "alterWrongPropertyIdentifier");
-  }
+    @Test
+    public void alterTableBasic3() {
+        String inputText = "ALTER TABLE demo.myTable WITH {'property1': 'value1', 'property2': 2, 'property3': 3.0};";
+        String expectedText = "ALTER TABLE demo.myTable WITH {property1=value1, property2=2, property3=3.0};";
+        testRegularStatement(inputText, expectedText, "alterTableBasic3");
+    }
+
+    @Test
+    public void alterWrongPropertyIdentifier() {
+        String inputText = "ALTER TABLE demo.myTable WITH {2property1: 'value1'};";
+        testParserFails(inputText, "alterWrongPropertyIdentifier");
+    }
 
 }

@@ -22,7 +22,7 @@ public class AntlrError {
 
     private final String header;
     private final String message;
-    
+
     public AntlrError(String header, String message) {
         this.header = header;
         this.message = message;
@@ -35,19 +35,19 @@ public class AntlrError {
     public String getMessage() {
         return message;
     }
-    
+
     @Override
-    public String toString(){
-        StringBuilder sb = new StringBuilder("\tError recognized: ");        
+    public String toString() {
+        StringBuilder sb = new StringBuilder("\tError recognized: ");
         sb.append(header).append(": ").append(message);
-        return sb.toString();        
+        return sb.toString();
     }
-    
-    public String toStringWithTokenTranslation(){
-        StringBuilder sb = new StringBuilder("\tError recognized: ");        
+
+    public String toStringWithTokenTranslation() {
+        StringBuilder sb = new StringBuilder("\tError recognized: ");
         sb.append(header).append(": ");
         sb.append(ParserUtils.translateToken(message));
-        return sb.toString();        
+        return sb.toString();
     }
-    
+
 }

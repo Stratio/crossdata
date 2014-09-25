@@ -18,27 +18,27 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta2.common.metadata.*;
-
-import java.util.Map;
+import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
+import com.stratio.meta2.common.metadata.ConnectorMetadata;
+import com.stratio.meta2.common.metadata.DataStoreMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
 
 public abstract class MetadataStatement extends MetaStatement {
 
-    protected ClusterMetadata clusterMetadata=null;
+    protected ClusterMetadata clusterMetadata = null;
 
-    protected ConnectorMetadata connectorMetadata=null;
+    protected ConnectorMetadata connectorMetadata = null;
 
-    protected DataStoreMetadata dataStoreMetadata=null;
+    protected DataStoreMetadata dataStoreMetadata = null;
 
-    protected TableMetadata tableMetadata=null;
+    protected TableMetadata tableMetadata = null;
 
-    protected ColumnMetadata columnMetadata=null;
+    protected ColumnMetadata columnMetadata = null;
 
-
-    public MetadataStatement(){
+    public MetadataStatement() {
         super();
     }
-
 
     public ClusterMetadata getClusterMetadata() {
         return clusterMetadata;
@@ -79,6 +79,5 @@ public abstract class MetadataStatement extends MetaStatement {
     public void setColumnMetadata(ColumnMetadata columnMetadata) {
         this.columnMetadata = columnMetadata;
     }
-
 
 }

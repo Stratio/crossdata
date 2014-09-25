@@ -22,33 +22,33 @@ import java.io.Serializable;
 
 public class ColumnDefinition implements Serializable {
 
-  private static final long serialVersionUID = 4958734787690152927L;
+    private static final long serialVersionUID = 4958734787690152927L;
 
-  private Class<?> datatype;
+    private Class<?> datatype;
 
-  public ColumnDefinition() {
-    this.datatype = null;
-  }
+    public ColumnDefinition() {
+        this.datatype = null;
+    }
 
-  /**
-   * Constructor
-   * 
-   * @param datatype Class of the value
-   */
-  public ColumnDefinition(Class<?> datatype) {
-    this.datatype = datatype;
-  }
+    /**
+     * Constructor
+     *
+     * @param datatype Class of the value
+     */
+    public ColumnDefinition(Class<?> datatype) {
+        this.datatype = datatype;
+    }
 
-  /**
-   * Get the datatype of the cell.
-   * 
-   * @return Datatype of the cell.
-   */
-  public Class<?> getDatatype() {
-    return datatype;
-  }
+    /**
+     * Get the datatype of the cell.
+     *
+     * @return Datatype of the cell.
+     */
+    public Class<?> getDatatype() {
+        return datatype;
+    }
 
-  public void setDatatype(Class<?> datatype) {
-    this.datatype = datatype;
-  }
+    public void setDatatype(Class<?> datatype) {
+        this.datatype = datatype;
+    }
 }

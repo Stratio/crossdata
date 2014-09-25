@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.validator.statements;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
@@ -28,21 +30,18 @@ import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.DropCatalogStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class DropCatalogStatementTest extends BasicValidatorTest {
 
-
     @Test
-    public void validateOk(){
+    public void validateOk() {
         String query = "DROP CATALOG demo;";
-        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement(new CatalogName("demo"), true);
-        Validator validator=new Validator();
+        DropCatalogStatement dropCatalogStatement = new DropCatalogStatement(new CatalogName("demo"), true);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropCatalogid",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropCatalogid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropCatalogStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropCatalogStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -54,14 +53,14 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void validateIfNotExists(){
+    public void validateIfNotExists() {
         String query = "DROP CATALOG IF EXISTS unknown;";
-        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement(new CatalogName("unknown"), true);
-        Validator validator=new Validator();
+        DropCatalogStatement dropCatalogStatement = new DropCatalogStatement(new CatalogName("unknown"), true);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropCatalogid",query, new CatalogName("unknown"));
+        BaseQuery baseQuery = new BaseQuery("dropCatalogid", query, new CatalogName("unknown"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropCatalogStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropCatalogStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -74,14 +73,14 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void validateNotExists(){
+    public void validateNotExists() {
         String query = "DROP CATALOG unknown;";
-        DropCatalogStatement dropCatalogStatement=new DropCatalogStatement(new CatalogName("unknown"), true);
-        Validator validator=new Validator();
+        DropCatalogStatement dropCatalogStatement = new DropCatalogStatement(new CatalogName("unknown"), true);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropCatalogid",query, new CatalogName("unknown"));
+        BaseQuery baseQuery = new BaseQuery("dropCatalogid", query, new CatalogName("unknown"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropCatalogStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropCatalogStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("Catalog must exist");

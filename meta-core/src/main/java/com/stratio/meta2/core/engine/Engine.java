@@ -18,9 +18,14 @@
 
 package com.stratio.meta2.core.engine;
 
+import java.util.Map;
+import java.util.concurrent.locks.Lock;
+
+import javax.transaction.TransactionManager;
+
+import org.apache.log4j.Logger;
 
 import com.stratio.meta.core.normalizer.Normalizer;
-import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.FirstLevelName;
 import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.core.api.APIManager;
@@ -32,170 +37,149 @@ import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.parser.Parser;
 import com.stratio.meta2.core.planner.Planner;
 import com.stratio.meta2.core.validator.Validator;
-import org.apache.log4j.Logger;
-import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import javax.transaction.TransactionManager;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
- * {@link com.stratio.meta2.core.parser.Parser}, {@link com.stratio.meta.core.validator.Validator},
- * {@link com.stratio.meta.core.planner.Planner}, and {@link com.stratio.meta.core.executor.Executor}.
+ * {@link Parser}, {@link Validator} and {@link Planner}
  */
 public class Engine {
 
-  /**
-   * The {@link com.stratio.meta2.core.parser.Parser} responsible for parse.
-   */
-  private final Parser parser;
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(Engine.class.getName());
+    /**
+     * The {@link com.stratio.meta2.core.parser.Parser} responsible for parse.
+     */
+    private final Parser parser;
+    /**
+     * The {@link Validator} responsible for validation.
+     */
+    private final Validator validator;
+    /**
+     * The {@link Planner} responsible for planification.
+     */
+    private final Planner planner;
+    /**
+     * The {@link com.stratio.meta2.core.api.APIManager} responsible for API calls.
+     */
+    private final APIManager manager;
+    private final Coordinator coordinator;
 
-  /**
-   * The {@link com.stratio.meta.core.validator.Validator} responsible for validation.
-   */
-  private final Validator validator;
+    private final ConnectorManager connectorManager;
 
-  /**
-   * The {@link com.stratio.meta.core.planner.Planner} responsible for planification.
-   */
-  private final Planner planner;
+    private final Grid grid;
+    private Normalizer normalizer;
 
+    /**
+     * Class constructor.
+     *
+     * @param config The {@link com.stratio.meta2.core.engine.EngineConfig}.
+     */
+    public Engine(EngineConfig config) {
 
-  /**
-   * The {@link com.stratio.meta2.core.api.APIManager} responsible for API calls.
-   */
-  private final APIManager manager;
+        try {
+            this.grid = initializeGrid(config);
+        } catch (Exception e) {
+            LOG.error("Unable to start grid", e);
+            throw new RuntimeException("Unable to start grid: " + config, e);
+        }
 
+        Map<FirstLevelName, IMetadata> metadataMap = grid.map("meta");
+        Lock lock = grid.lock("meta");
+        TransactionManager tm = grid.transactionManager("meta");
 
-  private Normalizer normalizer;
-  
-  private final Coordinator coordinator;
+        MetadataManager.MANAGER.init(metadataMap, lock, tm);
 
-  private final ConnectorManager connectorManager;
-
-
-  private final Grid grid;
-
-  /**
-   * Class logger.
-   */
-  private static final Logger LOG = Logger.getLogger(Engine.class.getName());
-
-  /**
-   * Class constructor.
-   *
-   * @param config The {@link com.stratio.meta2.core.engine.EngineConfig}.
-   */
-  public Engine(EngineConfig config) {
-
-
-    try {
-      this.grid = initializeGrid(config);
-    } catch (Exception e) {
-      LOG.error("Unable to start grid", e);
-      throw new RuntimeException("Unable to start grid: " + config, e);
+        parser = new Parser();
+        validator = new Validator();
+        manager = new APIManager();
+        planner = new Planner();
+        coordinator = new Coordinator();
+        setNormalizer(new Normalizer());
+        connectorManager = new ConnectorManager();
     }
 
-    Map<FirstLevelName, IMetadata> metadataMap = grid.map("meta");
-    Lock lock = grid.lock("meta");
-    TransactionManager tm = grid.transactionManager("meta");
-
-    MetadataManager.MANAGER.init(metadataMap, lock, tm);
-
-    parser = new Parser();
-    validator = new Validator();
-    manager = new APIManager();
-    planner = new Planner();
-    coordinator = new Coordinator();
-    setNormalizer(new Normalizer());
-    connectorManager = new ConnectorManager();
-  }
-
-
-
-
-
-  /**
-   * Initializes the {@link com.stratio.meta2.core.grid.Grid} to be used using {@code config}.
-   * @param config An {@link com.stratio.meta2.core.engine.EngineConfig}.
-   * @return a new {@link com.stratio.meta2.core.grid.Grid}.
-   */
-  private Grid initializeGrid(EngineConfig config) {
-    int port = config.getGridPort();
-    GridInitializer gridInitializer = Grid.initializer();
-    for (String host : config.getGridContactHosts()) {
-      gridInitializer = gridInitializer.withContactPoint(host);
+    /**
+     * Initializes the {@link com.stratio.meta2.core.grid.Grid} to be used using {@code config}.
+     *
+     * @param config An {@link com.stratio.meta2.core.engine.EngineConfig}.
+     * @return a new {@link com.stratio.meta2.core.grid.Grid}.
+     */
+    private Grid initializeGrid(EngineConfig config) {
+        int port = config.getGridPort();
+        GridInitializer gridInitializer = Grid.initializer();
+        for (String host : config.getGridContactHosts()) {
+            gridInitializer = gridInitializer.withContactPoint(host);
+        }
+        return gridInitializer.withPort(config.getGridPort())
+                .withListenAddress(config.getGridListenAddress())
+                .withMinInitialMembers(config.getGridMinInitialMembers())
+                .withJoinTimeoutInMs(config.getGridJoinTimeout())
+                .withPersistencePath(config.getGridPersistencePath()).init();
     }
-    return gridInitializer.withPort(config.getGridPort())
-                          .withListenAddress(config.getGridListenAddress())
-                          .withMinInitialMembers(config.getGridMinInitialMembers())
-                          .withJoinTimeoutInMs(config.getGridJoinTimeout())
-                          .withPersistencePath(config.getGridPersistencePath()).init();
-  }
 
+    public Grid getGrid() {
+        return grid;
+    }
 
-  public Grid getGrid() {
-    return grid;
-  }
+    /**
+     * Get the parser.
+     *
+     * @return a {@link com.stratio.meta2.core.parser.Parser}
+     */
+    public Parser getParser() {
+        return parser;
+    }
 
-  /**
-   * Get the parser.
-   *
-   * @return a {@link com.stratio.meta2.core.parser.Parser}
-   */
-  public Parser getParser() {
-    return parser;
-  }
+    /**
+     * Get the validator.
+     *
+     * @return a {@link Validator}
+     */
+    public Validator getValidator() {
+        return validator;
+    }
 
-  /**
-   * Get the validator.
-   *
-   * @return a {@link com.stratio.meta.core.validator.Validator}
-   */
-  public Validator getValidator() {
-    return validator;
-  }
+    /**
+     * Get the planner.
+     *
+     * @return a {@link Planner}
+     */
+    public Planner getPlanner() {
+        return planner;
+    }
 
-  /**
-   * Get the planner.
-   *
-   * @return a {@link com.stratio.meta.core.planner.Planner}
-   */
-  public Planner getPlanner() {
-    return planner;
-  }
+    public Coordinator getCoordinator() {
+        return coordinator;
+    }
 
+    public ConnectorManager getConnectorManager() {
+        return connectorManager;
+    }
 
-  public Coordinator getCoordinator() {
-    return coordinator;
-  }
+    /**
+     * Get the API manager.
+     *
+     * @return A {@link com.stratio.meta2.core.api.APIManager}.
+     */
+    public APIManager getAPIManager() {
+        return manager;
+    }
 
-  public ConnectorManager getConnectorManager() {
-    return connectorManager;
-  }
+    /**
+     * Close open connections.
+     */
+    public void shutdown() {
+        grid.close();
+    }
 
-  /**
-   * Get the API manager.
-   * @return A {@link com.stratio.meta2.core.api.APIManager}.
-   */
-  public APIManager getAPIManager(){
-    return manager;
-  }
+    public Normalizer getNormalizer() {
+        return normalizer;
+    }
 
-
-
-  /**
-   * Close open connections.
-   */
-  public void shutdown(){
-    grid.close();
-  }
-
-  public Normalizer getNormalizer() {
-    return normalizer;
-  }
-
-  public void setNormalizer(Normalizer normalizer) {
-    this.normalizer = normalizer;
-  }
+    public void setNormalizer(Normalizer normalizer) {
+        this.normalizer = normalizer;
+    }
 
 }

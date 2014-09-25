@@ -18,58 +18,58 @@
 
 package com.stratio.meta.common.statements.structures.relationships;
 
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
-
 import java.util.LinkedList;
 import java.util.List;
 
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+
 public class ComplexRelation extends Relation {
 
-  private List<Operator> moreOperators;
+    private List<Operator> moreOperators;
 
-  private List<Selector> moreTerms;
+    private List<Selector> moreTerms;
 
-  /**
-   * Class constructor.
-   *
-   * @param selector  The Selector found in the left-part of the relationship.
-   * @param operator  The operator to be applied.
-   * @param rightTerm The Selector found in the right-part of the relationship.
-   */
-  public ComplexRelation(Selector selector,
-                         Operator operator,
-                         Selector rightTerm) {
-    super(selector, operator, rightTerm);
-    moreOperators = new LinkedList<>();
-    moreTerms = new LinkedList<>();
-  }
-
-  public ComplexRelation(Relation relation) {
-    super(relation.getLeftTerm(), relation.getOperator(), relation.rightTerm);
-    moreOperators = new LinkedList<>();
-    moreTerms = new LinkedList<>();
-  }
-
-  public List<Operator> getMoreOperators() {
-    return moreOperators;
-  }
-
-  public List<Selector> getMoreTerms() {
-    return moreTerms;
-  }
-
-  public void addRelation(Operator op, Selector term){
-    moreOperators.add(op);
-    moreTerms.add(term);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder(super.toString());
-    for(int i=0; i < moreOperators.size(); i++){
-      sb.append(" ").append(moreOperators.get(i)).append(" ");
-      sb.append(moreTerms.get(i));
+    /**
+     * Class constructor.
+     *
+     * @param selector  The Selector found in the left-part of the relationship.
+     * @param operator  The operator to be applied.
+     * @param rightTerm The Selector found in the right-part of the relationship.
+     */
+    public ComplexRelation(Selector selector,
+            Operator operator,
+            Selector rightTerm) {
+        super(selector, operator, rightTerm);
+        moreOperators = new LinkedList<>();
+        moreTerms = new LinkedList<>();
     }
-    return sb.toString();
-  }
+
+    public ComplexRelation(Relation relation) {
+        super(relation.getLeftTerm(), relation.getOperator(), relation.rightTerm);
+        moreOperators = new LinkedList<>();
+        moreTerms = new LinkedList<>();
+    }
+
+    public List<Operator> getMoreOperators() {
+        return moreOperators;
+    }
+
+    public List<Selector> getMoreTerms() {
+        return moreTerms;
+    }
+
+    public void addRelation(Operator op, Selector term) {
+        moreOperators.add(op);
+        moreTerms.add(term);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(super.toString());
+        for (int i = 0; i < moreOperators.size(); i++) {
+            sb.append(" ").append(moreOperators.get(i)).append(" ");
+            sb.append(moreTerms.get(i));
+        }
+        return sb.toString();
+    }
 }

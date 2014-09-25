@@ -18,34 +18,34 @@
 
 package com.stratio.meta2.common.metadata;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
-import java.io.Serializable;
-import java.util.Map;
-
 public class ConnectorAttachedMetadata implements Serializable {
-  private final ConnectorName connectorRef;
-  private final ClusterName clusterRef;
-  private final Map<Selector, Selector> properties;
+    private final ConnectorName connectorRef;
+    private final ClusterName clusterRef;
+    private final Map<Selector, Selector> properties;
 
-  public ConnectorAttachedMetadata(ConnectorName connectorRef, ClusterName clusterRef,
-      Map<Selector, Selector> properties) {
-    this.connectorRef = connectorRef;
-    this.clusterRef = clusterRef;
-    this.properties = properties;
-  }
+    public ConnectorAttachedMetadata(ConnectorName connectorRef, ClusterName clusterRef,
+            Map<Selector, Selector> properties) {
+        this.connectorRef = connectorRef;
+        this.clusterRef = clusterRef;
+        this.properties = properties;
+    }
 
-  public ConnectorName getConnectorRef() {
-    return connectorRef;
-  }
+    public ConnectorName getConnectorRef() {
+        return connectorRef;
+    }
 
-  public ClusterName getClusterRef() {
-    return clusterRef;
-  }
+    public ClusterName getClusterRef() {
+        return clusterRef;
+    }
 
-  public Map<Selector, Selector> getProperties() {
-    return properties;
-  }
+    public Map<Selector, Selector> getProperties() {
+        return properties;
+    }
 }

@@ -18,31 +18,31 @@
 
 package com.stratio.meta2.server.server
 
-import com.stratio.meta.common.ask.{APICommand, Command}
-import com.stratio.meta.common.result.{Result, MetadataResult}
-import akka.testkit.{ImplicitSender, DefaultTimeout, TestKit}
-import akka.actor.{Props, ActorSystem}
-import com.typesafe.config.ConfigFactory
-import com.stratio.meta.server.utilities.{createEngine, TestKitUsageSpec}
-import org.scalatest.FunSuiteLike
-import com.stratio.meta.server.config.BeforeAndAfterCassandra
-import com.stratio.meta2.core.engine.Engine
-import org.testng.Assert._
-import scala.concurrent.{Await, Future}
+import akka.actor.{ActorSystem, Props}
 import akka.pattern.ask
-import scala.concurrent.duration._
-import scala.collection.mutable.ListBuffer
+import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
+import com.stratio.meta.common.ask.{APICommand, Command}
+import com.stratio.meta.common.result.{MetadataResult, Result}
+import com.stratio.meta.server.config.BeforeAndAfterCassandra
+import com.stratio.meta.server.utilities.{TestKitUsageSpec, createEngine}
+import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.server.actors.ServerActor
+import com.typesafe.config.ConfigFactory
+import org.scalatest.FunSuiteLike
+import org.testng.Assert._
+
+import scala.collection.mutable.ListBuffer
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 /**
  * To generate unit test of query actor
  */
-class APIServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-                                 with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra{
+class APIServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec", ConfigFactory.parseString(TestKitUsageSpec.config)))
+with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterCassandra {
 
-  val engine:Engine =  createEngine.create()
-
-  lazy val serverRef = system.actorOf(Props(classOf[ServerActor],engine),"api-commands-actor")
+  lazy val serverRef = system.actorOf(Props(classOf[ServerActor], engine), "api-commands-actor")
+  val engine: Engine = createEngine.create()
 
   override def beforeCassandraFinish() {
     shutdown(system)
@@ -58,37 +58,37 @@ class APIServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFa
     engine.shutdown()
   }
 
-  def executeAPICommand(cmd: Command, shouldExecute: Boolean) : MetadataResult = {
+  def executeAPICommand(cmd: Command, shouldExecute: Boolean): MetadataResult = {
 
-    val futureExecutorResponse:Future[Any]= {
+    val futureExecutorResponse: Future[Any] = {
       serverRef.ask(cmd)(3 second)
     }
 
-    var result : MetadataResult = null
-    var returned : Any = null
-    try{
+    var result: MetadataResult = null
+    var returned: Any = null
+    try {
       returned = Await.result(futureExecutorResponse, 3 seconds)
-    }catch{
-      case ex:Exception =>
+    } catch {
+      case ex: Exception =>
         fail("Cannot execute API command: " + cmd.toString + " Exception: " + ex.getMessage)
     }
 
-    if(shouldExecute) {
+    if (shouldExecute) {
       assertFalse(returned.asInstanceOf[Result].hasError,
         "API execution failed for:\n" + cmd.toString
-        + "\n error: " + getErrorMessage(returned.asInstanceOf[Result]))
+          + "\n error: " + getErrorMessage(returned.asInstanceOf[Result]))
       result = returned.asInstanceOf[MetadataResult]
-    }else{
+    } else {
       assertTrue(returned.asInstanceOf[Result].hasError, "API execution should report an error")
     }
 
     result
   }
 
-  test ("API List catalogs"){
+  test("API List catalogs") {
     val cmd: Command = new Command(APICommand.LIST_CATALOGS, null)
-    var result : MetadataResult = null
-    within(5000 millis){
+    var result: MetadataResult = null
+    within(5000 millis) {
       result = executeAPICommand(cmd, true)
     }
     //Check that demo_server exists
@@ -96,20 +96,20 @@ class APIServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFa
     assertTrue(result.getCatalogList.contains("demo_server"), "Cannot find demo_server")
   }
 
-  test ("API List tables"){
+  test("API List tables") {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add("demo_server")
     val cmd: Command = new Command(APICommand.LIST_TABLES, params)
-    var result : MetadataResult = null
-    within(5000 millis){
+    var result: MetadataResult = null
+    within(5000 millis) {
       result = executeAPICommand(cmd, true)
     }
     //Check that table demo_server exists
     assertNotNull(result.getTableList, "Cannot obtain table list")
     var retrieved = ListBuffer[String]()
     val it = result.getTableList.iterator
-    while(it.hasNext){
-      retrieved += it.next().getTableName
+    while (it.hasNext) {
+      retrieved += it.next().getName.getQualifiedName
     }
 
     val toCheck = List("users", "users_info")
@@ -118,12 +118,12 @@ class APIServerActorTest extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFa
 
   }
 
-  test ("API List tables from unknown catalog"){
-    val params : java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+  test("API List tables from unknown catalog") {
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add("unknown")
     val cmd: Command = new Command(APICommand.LIST_TABLES, params)
-    var result : MetadataResult = null
-    within(5000 millis){
+    var result: MetadataResult = null
+    within(5000 millis) {
       result = executeAPICommand(cmd, false)
     }
   }

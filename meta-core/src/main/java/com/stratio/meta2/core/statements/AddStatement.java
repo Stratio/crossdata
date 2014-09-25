@@ -21,28 +21,28 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  */
 public class AddStatement extends MetadataStatement {
 
-  /**
-   * The path to load the jar file.
-   */
-  private String jarPath = null;
+    /**
+     * The path to load the jar file.
+     */
+    private String jarPath = null;
 
-  /**
-   * Class constructor.
-   * 
-   * @param path The path of the jar file.
-   */
-  public AddStatement(String path) {
-    this.command = true;
-    jarPath = path;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param path The path of the jar file.
+     */
+    public AddStatement(String path) {
+        this.command = true;
+        jarPath = path;
+    }
 
-  @Override
-  public String toString() {
-    return "ADD " + jarPath;
-  }
+    @Override
+    public String toString() {
+        return "ADD " + jarPath;
+    }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
-  }
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements();
+    }
 }

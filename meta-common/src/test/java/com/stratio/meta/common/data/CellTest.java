@@ -24,24 +24,25 @@ import org.testng.annotations.Test;
 
 public class CellTest {
 
-  @BeforeClass
-  public void setUp() {}
+    @BeforeClass
+    public void setUp() {
+    }
 
-  @Test
-  public void testConstructor() {
-    Cell cellStr = new Cell(new String("comment1"));
-    Assert.assertNotNull(cellStr);
-  }
+    @Test
+    public void testConstructor() {
+        Cell cellStr = new Cell(new String("comment1"));
+        Assert.assertNotNull(cellStr);
+    }
 
-  @Test
-  public void testDataype() {
-    Cell cellStr = new Cell(new String("comment1"));
-    Assert.assertEquals(cellStr.getValue().getClass(), String.class);
-  }
+    @Test
+    public void testDataype() {
+        Cell cellStr = new Cell(new String("comment1"));
+        Assert.assertEquals(cellStr.getValue().getClass(), String.class);
+    }
 
-  @Test
-  public void testGetValue() {
-    Cell cellStr = new Cell(new String("comment1"));
-    Assert.assertTrue("comment1".equals((String) cellStr.getValue()));
-  }
+    @Test
+    public void testGetValue() {
+        Cell cellStr = new Cell(new String("comment1"));
+        Assert.assertTrue("comment1".equals((String) cellStr.getValue()));
+    }
 }

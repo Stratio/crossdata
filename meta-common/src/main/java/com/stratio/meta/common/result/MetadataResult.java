@@ -21,78 +21,78 @@ package com.stratio.meta.common.result;
 import java.util.List;
 
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta.common.metadata.structures.TableMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
 
 public class MetadataResult extends Result {
 
-  private static final long serialVersionUID = 7257573696937869953L;
+    private static final long serialVersionUID = 7257573696937869953L;
 
-  /**
-   * List of catalogs in the database.
-   */
-  private List<String> catalogList = null;
+    /**
+     * List of catalogs in the database.
+     */
+    private List<String> catalogList = null;
 
-  /**
-   * List of tables in a catalog.
-   */
-  private List<TableMetadata> tableList = null;
+    /**
+     * List of tables in a catalog.
+     */
+    private List<TableMetadata> tableList = null;
 
-  /**
-   * Map of columns in a table.
-   */
-  private List<ColumnMetadata> columnList = null;
+    /**
+     * Map of columns in a table.
+     */
+    private List<ColumnMetadata> columnList = null;
 
-  /**
-   * Private constructor of the factory.
-   */
-  private MetadataResult() {
-  }
+    /**
+     * Private constructor of the factory.
+     */
+    private MetadataResult() {
+    }
 
-  /**
-   * Set the catalog list.
-   * 
-   * @param catalogList The list.
-   */
-  public void setCatalogList(List<String> catalogList) {
-    this.catalogList = catalogList;
-  }
+    /**
+     * Create a successful query.
+     *
+     * @return A {@link com.stratio.meta.common.result.MetadataResult}.
+     */
+    public static MetadataResult createSuccessMetadataResult() {
+        return new MetadataResult();
+    }
 
-  /**
-   * Set the table list.
-   * 
-   * @param tableList The list.
-   */
-  public void setTableList(List<TableMetadata> tableList) {
-    this.tableList = tableList;
-  }
+    public List<String> getCatalogList() {
+        return catalogList;
+    }
 
-  /**
-   * Set the column list.
-   * 
-   * @param columnList The list.
-   */
-  public void setColumnList(List<ColumnMetadata> columnList) {
-    this.columnList = columnList;
-  }
+    /**
+     * Set the catalog list.
+     *
+     * @param catalogList The list.
+     */
+    public void setCatalogList(List<String> catalogList) {
+        this.catalogList = catalogList;
+    }
 
-  /**
-   * Create a successful query.
-   * 
-   * @return A {@link com.stratio.meta.common.result.MetadataResult}.
-   */
-  public static MetadataResult createSuccessMetadataResult() {
-    return new MetadataResult();
-  }
+    public List<TableMetadata> getTableList() {
+        return tableList;
+    }
 
-  public List<String> getCatalogList() {
-    return catalogList;
-  }
+    /**
+     * Set the table list.
+     *
+     * @param tableList The list.
+     */
+    public void setTableList(List<TableMetadata> tableList) {
+        this.tableList = tableList;
+    }
 
-  public List<TableMetadata> getTableList() {
-    return tableList;
-  }
+    public List<ColumnMetadata> getColumnList() {
+        return columnList;
+    }
 
-  public List<ColumnMetadata> getColumnList() {
-    return columnList;
-  }
+    /**
+     * Set the column list.
+     *
+     * @param columnList The list.
+     */
+    public void setColumnList(List<ColumnMetadata> columnList) {
+        this.columnList = columnList;
+    }
 }

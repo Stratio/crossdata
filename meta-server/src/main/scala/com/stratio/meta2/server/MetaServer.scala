@@ -18,21 +18,21 @@
 
 package com.stratio.meta2.server
 
-import akka.routing.RoundRobinRouter
-import org.apache.commons.daemon.{DaemonContext, Daemon}
-import org.apache.log4j.Logger
-import com.stratio.meta2.core.engine.Engine
 import akka.actor.ActorSystem
 import akka.contrib.pattern.ClusterReceptionistExtension
-import com.stratio.meta2.server.config.ServerConfig
+import akka.routing.RoundRobinRouter
+import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.server.actors.ServerActor
+import com.stratio.meta2.server.config.ServerConfig
+import org.apache.commons.daemon.{Daemon, DaemonContext}
+import org.apache.log4j.Logger
 
-class MetaServer extends Daemon with ServerConfig{
+class MetaServer extends Daemon with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[MetaServer])
 
   lazy val engine = new Engine(engineConfig)
   // Create an Akka system
-  lazy val system = ActorSystem(clusterName,config)
+  lazy val system = ActorSystem(clusterName, config)
 
   override def destroy(): Unit = {
 
@@ -50,7 +50,7 @@ class MetaServer extends Daemon with ServerConfig{
 
   override def init(p1: DaemonContext): Unit = {
     logger.info("Init Meta Server --- v0.0.5")
-    val serverActor = system.actorOf(ServerActor.props(engine).withRouter(RoundRobinRouter(nrOfInstances=num_server_actor)), actorName)
+    val serverActor = system.actorOf(ServerActor.props(engine).withRouter(RoundRobinRouter(nrOfInstances = num_server_actor)), actorName)
     ClusterReceptionistExtension(system).registerService(serverActor)
   }
 }

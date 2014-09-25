@@ -23,41 +23,41 @@ package com.stratio.meta.common.result;
  */
 public class ConnectResult extends Result {
 
-  /**
-   * Serial version UID in order to be {@link java.io.Serializable}.
-   */
+    /**
+     * Serial version UID in order to be {@link java.io.Serializable}.
+     */
 
-  /**
-   * Session identifier.
-   */
-  private String sessionId;
+    /**
+     * Session identifier.
+     */
+    private String sessionId;
 
-  /**
-   * Private class constructor of the factory.
-   *
-   * @param sessionId       The associated session identifier.
-   */
-  private ConnectResult(String sessionId) {
-    this.sessionId = sessionId;
-  }
+    /**
+     * Private class constructor of the factory.
+     *
+     * @param sessionId The associated session identifier.
+     */
+    private ConnectResult(String sessionId) {
+        this.sessionId = sessionId;
+    }
 
-  /**
-   * Get the user session identifier.
-   *
-   * @return The identifier or -1 if an error occurred.
-   */
-  public String getSessionId() {
-    return sessionId;
-  }
+    /**
+     * Create a successful connection result.
+     *
+     * @param sessionId The user session identifier.
+     * @return A {@link com.stratio.meta.common.result.ConnectResult}.
+     */
+    public static ConnectResult createConnectResult(String sessionId) {
+        return new ConnectResult(sessionId);
+    }
 
-  /**
-   * Create a successful connection result.
-   *
-   * @param sessionId The user session identifier.
-   * @return A {@link com.stratio.meta.common.result.ConnectResult}.
-   */
-  public static ConnectResult createConnectResult(String sessionId) {
-    return new ConnectResult(sessionId);
-  }
+    /**
+     * Get the user session identifier.
+     *
+     * @return The identifier or -1 if an error occurred.
+     */
+    public String getSessionId() {
+        return sessionId;
+    }
 
 }

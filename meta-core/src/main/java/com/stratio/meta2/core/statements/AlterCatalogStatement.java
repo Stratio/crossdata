@@ -18,54 +18,51 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
+import java.util.Map;
+
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
-
-import java.util.Map;
 
 /**
  * Class that models an {@code ALTER Catalog} statement from the META language.
  */
 public class AlterCatalogStatement extends MetadataStatement {
 
-  /**
-   * A JSON with the options specified by the user.
-   */
-  private Map<Selector, Selector> options;
+    /**
+     * A JSON with the options specified by the user.
+     */
+    private Map<Selector, Selector> options;
 
-  /**
-   * Class constructor.
-   *
-   * @param catalogName The name of the catalog.
-   * @param options     A JSON with the storage options.
-   */
-  public AlterCatalogStatement(CatalogName catalogName, String options) {
-    this.command = false;
-    this.catalog = catalogName;
-    this.catalogInc = true;
-    this.options = StringUtils.convertJsonToOptions(options);
-  }
+    /**
+     * Class constructor.
+     *
+     * @param catalogName The name of the catalog.
+     * @param options     A JSON with the storage options.
+     */
+    public AlterCatalogStatement(CatalogName catalogName, String options) {
+        this.command = false;
+        this.catalog = catalogName;
+        this.catalogInc = true;
+        this.options = StringUtils.convertJsonToOptions(options);
+    }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("ALTER CATALOG ");
-    sb.append(catalog);
-    sb.append(" WITH ").append(this.options);
-    return sb.toString();
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ALTER CATALOG ");
+        sb.append(catalog);
+        sb.append(" WITH ").append(this.options);
+        return sb.toString();
+    }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_PROPERTIES);
-  }
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_PROPERTIES);
+    }
 
-  public Map<Selector, Selector> getOptions() {
-    return options;
-  }
+    public Map<Selector, Selector> getOptions() {
+        return options;
+    }
 }

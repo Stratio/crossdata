@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.validator.statements;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
@@ -29,21 +31,18 @@ import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.DropTableStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class DropTableStatementTest extends BasicValidatorTest {
 
-
     @Test
-    public void validateOk(){
+    public void validateOk() {
         String query = "DROP TABLE demo.users;";
-        DropTableStatement dropTableStatement=new DropTableStatement(new TableName("demo","users"),true);
-        Validator validator=new Validator();
+        DropTableStatement dropTableStatement = new DropTableStatement(new TableName("demo", "users"), true);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropTableid",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropTableid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropTableStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -55,14 +54,14 @@ public class DropTableStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void validateIfNotExists(){
+    public void validateIfNotExists() {
         String query = "DROP TABLE IF EXISTS unknown;";
-        DropTableStatement dropTableStatement=new DropTableStatement(new TableName("demo","unknown"),true);
-        Validator validator=new Validator();
+        DropTableStatement dropTableStatement = new DropTableStatement(new TableName("demo", "unknown"), true);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropTableid",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropTableid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropTableStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -74,14 +73,14 @@ public class DropTableStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void validateNotExistsTable(){
+    public void validateNotExistsTable() {
         String query = "DROP TABLE IF EXISTS unknown;";
-        DropTableStatement dropTableStatement=new DropTableStatement(new TableName("demo","unknown"),false);
-        Validator validator=new Validator();
+        DropTableStatement dropTableStatement = new DropTableStatement(new TableName("demo", "unknown"), false);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropTableid",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropTableid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropTableStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("Table must exist");
@@ -91,7 +90,5 @@ public class DropTableStatementTest extends BasicValidatorTest {
             Assert.assertTrue(true);
         }
     }
-
-
 
 }

@@ -18,6 +18,13 @@
 
 package com.stratio.meta.core.api;
 
+import static org.testng.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.testng.annotations.Test;
+
 import com.stratio.meta.common.ask.APICommand;
 import com.stratio.meta.common.ask.Command;
 import com.stratio.meta.common.result.CommandResult;
@@ -25,25 +32,18 @@ import com.stratio.meta.common.result.Result;
 import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
 import com.stratio.meta2.core.api.APIManager;
 
-import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.testng.Assert.assertTrue;
-
 public class APIManagerTest {
 
-  @Test
-  public void testProcessRequest() throws Exception {
-    APIManager apiMangager = new APIManager();
-    List params = new ArrayList<DataStoreType>();
-    params.add(new DataStoreType());
-    Command cmd = new Command(APICommand.ADD_MANIFEST(), params);
-    Result result = apiMangager.processRequest(cmd);
-    assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
-    CommandResult cmdR = (CommandResult) result;
-    String resultStr = (String) cmdR.getResult();
-    assertTrue(resultStr.equals("OK"), "testProcessRequest should return a 'OK'");
-  }
+    @Test
+    public void testProcessRequest() throws Exception {
+        APIManager apiMangager = new APIManager();
+        List params = new ArrayList<DataStoreType>();
+        params.add(new DataStoreType());
+        Command cmd = new Command(APICommand.ADD_MANIFEST(), params);
+        Result result = apiMangager.processRequest(cmd);
+        assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
+        CommandResult cmdR = (CommandResult) result;
+        String resultStr = (String) cmdR.getResult();
+        assertTrue(resultStr.equals("OK"), "testProcessRequest should return a 'OK'");
+    }
 }

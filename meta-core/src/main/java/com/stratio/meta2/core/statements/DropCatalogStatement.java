@@ -18,10 +18,7 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
 import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.core.engine.EngineConfig;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -30,34 +27,35 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  */
 public class DropCatalogStatement extends MetadataStatement {
 
-  /**
-   * Whether the catalog should be removed only if exists.
-   */
-  private boolean ifExists;
+    /**
+     * Whether the catalog should be removed only if exists.
+     */
+    private boolean ifExists;
 
-  /**
-   * Class constructor.
-   * @param catalog The name of the catalog.
-   * @param ifExists Whether it should be removed only if exists.
-   */
-  public DropCatalogStatement(CatalogName catalog, boolean ifExists) {
-    this.command = false;
-    this.catalog = catalog;
-    this.catalogInc = true;
-    this.ifExists = ifExists;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("DROP CATALOG ");
-    if(ifExists){
-      sb.append("IF EXISTS ");
+    /**
+     * Class constructor.
+     *
+     * @param catalog  The name of the catalog.
+     * @param ifExists Whether it should be removed only if exists.
+     */
+    public DropCatalogStatement(CatalogName catalog, boolean ifExists) {
+        this.command = false;
+        this.catalog = catalog;
+        this.catalogInc = true;
+        this.ifExists = ifExists;
     }
-    sb.append(catalog);
-    return sb.toString();
-  }
 
-  public ValidationRequirements getValidationRequirements(){
-    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG);
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("DROP CATALOG ");
+        if (ifExists) {
+            sb.append("IF EXISTS ");
+        }
+        sb.append(catalog);
+        return sb.toString();
+    }
+
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG);
+    }
 }

@@ -32,19 +32,10 @@ public class DisconnectResult extends Result {
     /**
      * Private class constructor of the factory.
      *
-     * @param sessionId       The associated session identifier.
+     * @param sessionId The associated session identifier.
      */
     private DisconnectResult(String sessionId) {
         this.sessionId = sessionId;
-    }
-
-    /**
-     * Get the user session identifier.
-     *
-     * @return The identifier or -1 if an error occurred.
-     */
-    public String getSessionId() {
-        return sessionId;
     }
 
     /**
@@ -55,6 +46,15 @@ public class DisconnectResult extends Result {
      */
     public static DisconnectResult createDisconnectResult(String sessionId) {
         return new DisconnectResult(sessionId);
+    }
+
+    /**
+     * Get the user session identifier.
+     *
+     * @return The identifier or -1 if an error occurred.
+     */
+    public String getSessionId() {
+        return sessionId;
     }
 
 }

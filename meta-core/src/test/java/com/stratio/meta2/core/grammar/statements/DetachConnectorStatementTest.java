@@ -18,36 +18,36 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class DetachConnectorStatementTest extends ParsingTest {
 
-  @Test
-  public void detachConnectorSimple() {
-    String inputText = "DETACH CONNECTOR myConnector FROM myCluster;";
-    String expectedText = "DETACH CONNECTOR connector.myConnector FROM cluster.myCluster;";
-    testRegularStatement(inputText, expectedText, "detachConnectorSimple");
-  }
+    @Test
+    public void detachConnectorSimple() {
+        String inputText = "DETACH CONNECTOR myConnector FROM myCluster;";
+        String expectedText = "DETACH CONNECTOR connector.myConnector FROM cluster.myCluster;";
+        testRegularStatement(inputText, expectedText, "detachConnectorSimple");
+    }
 
-  @Test
-  public void detachConnectorWrongConnector() {
-    String inputText = "DETACH CONNECTOR $myConnector FROM myCLuster;";
-    testParserFails(inputText, "detachConnectorWrongConnector");
-  }
+    @Test
+    public void detachConnectorWrongConnector() {
+        String inputText = "DETACH CONNECTOR $myConnector FROM myCLuster;";
+        testParserFails(inputText, "detachConnectorWrongConnector");
+    }
 
-  @Test
-  public void detachConnectorWrongCluster() {
-    String inputText = "DETACH CONNECTOR myConnector FROM =myCluster;";
-    testParserFails(inputText, "detachConnectorWrongCluster");
-  }
+    @Test
+    public void detachConnectorWrongCluster() {
+        String inputText = "DETACH CONNECTOR myConnector FROM =myCluster;";
+        testParserFails(inputText, "detachConnectorWrongCluster");
+    }
 
-  @Test
-  public void detachConnectorMissingCluster() {
-    String inputText = "DETACH CONNECTOR myConnector;";
-    testParserFails(inputText, "detachConnectorMissingCluster");
-  }
+    @Test
+    public void detachConnectorMissingCluster() {
+        String inputText = "DETACH CONNECTOR myConnector;";
+        testParserFails(inputText, "detachConnectorMissingCluster");
+    }
 
 }
 

@@ -18,24 +18,14 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta2.core.statements.MetaStatement;
+public interface ExecutedQuery extends InProgressQuery {
 
-public class ExecutedQuery extends InProgressQuery {
-  public ExecutedQuery(InProgressQuery inProgressQuery){
+  /*public ExecutedQuery(InProgressQuery inProgressQuery){
     super(inProgressQuery);
   }
 
   ExecutedQuery(ExecutedQuery executedQuery){
     this((InProgressQuery)executedQuery);
-  }
+  }*/
 
-
-    public QueryStatus getStatus() {
-    return QueryStatus.EXECUTED;
-  }
-
-    @Override public MetaStatement getStatement() {
-        return statement;
-    }
 }
