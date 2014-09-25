@@ -340,7 +340,10 @@ public class Metash {
       String toExecute;
       while (!cmd.trim().toLowerCase().startsWith("exit")
              && !cmd.trim().toLowerCase().startsWith("quit")) {
+        System.out.println(">>>>>>>> TRACE: Before console.readLine()");
         cmd = console.readLine();
+        System.out.println(">>>>>>>> TRACE: After console.readLine()");
+        //cmd = "DELETE FROM demo.myTable WHERE demo.myTable.colId != '0';";
         sb.append(cmd).append(" ");
         toExecute = sb.toString().trim();
         if (toExecute.endsWith(";")) {

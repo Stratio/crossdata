@@ -33,4 +33,11 @@ public class MetashTest {
             "ADD DATASTORE 'meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xml'");
     assertTrue(result != null, "testSendManifest returns a empty String");
   }
+
+  @Test
+  public void testConsole(){
+    Metash sh = new Metash(true);
+    sh.loop();
+  }
+
 }

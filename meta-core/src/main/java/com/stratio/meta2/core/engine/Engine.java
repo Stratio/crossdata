@@ -111,10 +111,6 @@ public class Engine {
     connectorManager = new ConnectorManager();
   }
 
-
-
-
-
   /**
    * Initializes the {@link com.stratio.meta2.core.grid.Grid} to be used using {@code config}.
    * @param config An {@link com.stratio.meta2.core.engine.EngineConfig}.
