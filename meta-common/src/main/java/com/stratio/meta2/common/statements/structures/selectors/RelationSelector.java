@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,42 +18,30 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-/**
- * String selector. This type of Selector will be used for enquoted strings.
- */
-public class StringSelector extends Selector {
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+
+public class RelationSelector extends Selector {
 
     /**
-     * The string value.
-     */
-    private final String value;
-
-    /**
-     * Class constructor.
      *
-     * @param value The string value.
      */
-    public StringSelector(String value) {
-        this.value = value;
+    private final Relation relation;
+
+    public RelationSelector(Relation relation) {
+        this.relation = relation;
     }
 
-    /**
-     * Get the value.
-     *
-     * @return The string value.
-     */
-    public String getValue() {
-        return value;
+    public Relation getRelation() {
+        return relation;
     }
 
-    @Override
-    public SelectorType getType() {
-        return SelectorType.STRING;
+    @Override public SelectorType getType() {
+        return SelectorType.RELATION;
     }
 
     @Override
     public String toString() {
-        return value;
+        return relation.toString();
     }
 
     @Override
@@ -65,12 +53,12 @@ public class StringSelector extends Selector {
             return false;
         }
 
-        StringSelector that = (StringSelector) o;
+        RelationSelector that = (RelationSelector) o;
 
         if (!alias.equals(that.alias)) {
             return false;
         }
-        if (!value.equals(that.value)) {
+        if (!relation.equals(that.relation)) {
             return false;
         }
 
@@ -83,7 +71,7 @@ public class StringSelector extends Selector {
         if (alias != null){
             result = alias.hashCode();
         }
-        result = 31 * result + value.hashCode();
+        result = 31 * result + relation.hashCode();
         return result;
     }
 }

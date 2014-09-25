@@ -18,10 +18,6 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import java.util.Set;
-
-import com.stratio.meta2.common.data.TableName;
-
 /**
  * Asterisk selector.
  */
@@ -34,11 +30,6 @@ public class AsteriskSelector extends Selector {
 
     @Override public SelectorType getType() {
         return SelectorType.ASTERISK;
-    }
-
-    @Override
-    public Set<TableName> getSelectorTables() {
-        return null;
     }
 
     @Override

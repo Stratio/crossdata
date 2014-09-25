@@ -18,10 +18,6 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import java.util.Set;
-
-import com.stratio.meta2.common.data.TableName;
-
 /**
  * Boolean selector.
  */
@@ -57,11 +53,6 @@ public class BooleanSelector extends Selector {
     @Override
     public SelectorType getType() {
         return SelectorType.BOOLEAN;
-    }
-
-    @Override
-    public Set<TableName> getSelectorTables() {
-        return null;
     }
 
     @Override

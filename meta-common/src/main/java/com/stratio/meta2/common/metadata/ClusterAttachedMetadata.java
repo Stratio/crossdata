@@ -26,6 +26,8 @@ import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class ClusterAttachedMetadata implements Serializable {
+
+    private static final long serialVersionUID = -6881113312602801635L;
     private final ClusterName clusterRef;
     private final DataStoreName dataStoreRef;
     private final Map<Selector, Selector> properties;

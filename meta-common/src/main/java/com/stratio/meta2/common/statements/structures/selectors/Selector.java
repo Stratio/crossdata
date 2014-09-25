@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -63,7 +64,9 @@ public abstract class Selector {
      *
      * @return A set of {@link com.stratio.meta2.common.data.TableName}.
      */
-    public abstract Set<TableName> getSelectorTables();
+    public Set<TableName> getSelectorTables(){
+        return new HashSet<>();
+    }
 
     public String getSelectorTablesAsString() {
         StringBuilder sb = new StringBuilder();
