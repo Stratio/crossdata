@@ -59,7 +59,18 @@ public class AlterClusterStatement extends MetadataStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER);
+        return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER).add(Validation.MUST_EXIST_PROPERTIES);
     }
 
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public boolean isIfExists() {
+        return ifExists;
+    }
+
+    public String getOptions() {
+        return options;
+    }
 }

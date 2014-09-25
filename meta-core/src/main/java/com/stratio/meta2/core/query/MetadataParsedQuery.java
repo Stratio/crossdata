@@ -19,6 +19,7 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.core.statements.MetaStatement;
 import com.stratio.meta2.core.statements.MetadataStatement;
 
@@ -41,5 +42,4 @@ public class MetadataParsedQuery extends BaseQuery implements ParsedQuery {
     public MetadataStatement getStatement() {
         return (MetadataStatement) statement;
     }
-
 }
