@@ -22,6 +22,9 @@ import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.meta2.core.planner.Planner
 import com.stratio.meta2.core.query.ValidatedQuery
 import org.apache.log4j.Logger
+import com.stratio.meta.communication.ACK
+import com.stratio.meta.common.result.QueryStatus
+import com.stratio.meta.common.result.Result
 
 object PlannerActor {
   def props(executor: ActorRef, planner: Planner): Props = Props(new PlannerActor(executor, planner))
@@ -35,29 +38,17 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
     case query: ValidatedQuery => {
       log.info("Planner Actor received ValidatedQuery")
       log.info("ValidatedQuery =" + query)
-      coordinator forward planner.planQuery(query)
-      sender ! "Ok"
-    }
-    /*
-  case query:MetaQuery if !query.hasError=> {
-    log.info("Init Planner Task")
-    val timer=initTimer()
 
-    val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
-    //println("Sending ack: " + ack)
-    sender ! ack
-    //println("Execute the plan");
-    executor forward planner.planQuery(query)
-    finishTimer(timer)
-    log.info("Finish Planner Task")
-  }
-  case query:MetaQuery if query.hasError=>{
-    sender ! query.getResult
-  }
-  */
+      val timer = initTimer()
+      coordinator forward planner.planQuery(query)
+      finishTimer(timer)
+
+      val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
+      sender ! ack
+    }
+
     case _ => {
-      //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
-      sender ! "KO"
+      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
     }
   }
 

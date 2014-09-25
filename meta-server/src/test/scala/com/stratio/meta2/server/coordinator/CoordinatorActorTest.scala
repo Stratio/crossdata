@@ -49,7 +49,7 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Serv
         new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
         , null)
     )
-    , new ExecutionWorkflow(null, null)
+    , new ExecutionWorkflow(null, null, null, null)
   )
 
 

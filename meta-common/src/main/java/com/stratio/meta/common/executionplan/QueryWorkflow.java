@@ -35,12 +35,15 @@ public class QueryWorkflow extends ExecutionWorkflow {
     /**
      * Class constructor.
      *
-     * @param actorRef Target actor reference.
-     * @param workflow Workflow to be executed.
-     * @param type     Type of execution.
+     * @param queryId Query identifer.
+     * @param actorRef      Target actor reference.
+     * @param executionType Type of execution.
+     * @param type          Type of results.
+     * @param workflow      The logical workflow.
      */
-    public QueryWorkflow(Serializable actorRef, LogicalWorkflow workflow, ResultType type) {
-        super(actorRef, type);
+    public QueryWorkflow(String queryId, Serializable actorRef, ExecutionType executionType,
+            ResultType type, LogicalWorkflow workflow) {
+        super(queryId, actorRef, executionType, type);
         this.workflow = workflow;
     }
 

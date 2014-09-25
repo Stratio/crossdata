@@ -30,14 +30,24 @@ import com.stratio.meta.common.logicalplan.LogicalStep;
 public class ExecutionWorkflow {
 
     /**
+     * Query identifier.
+     */
+    private final String queryId;
+
+    /**
      * The target actor reference associated with the connector.
      */
     private final Serializable actorRef;
 
     /**
+     * The type of operation to be executed.
+     */
+    protected final ExecutionType executionType;
+
+    /**
      * Type of execution.
      */
-    private final ResultType type;
+    private final ResultType resultType;
 
     /**
      * If the previous execution step triggers another execution step, this variable contains
@@ -53,21 +63,28 @@ public class ExecutionWorkflow {
 
     /**
      * Class constructor.
-     *
+     * @param queryId Query identifer.
      * @param actorRef Target actor reference.
-     * @param type     Type of execution.
+     * @param executionType Type of execution.
+     * @param type     Type of results.
      */
-    public ExecutionWorkflow(Serializable actorRef, ResultType type) {
+    public ExecutionWorkflow(String queryId, Serializable actorRef, ExecutionType executionType, ResultType type) {
+        this.queryId = queryId;
         this.actorRef = actorRef;
-        this.type = type;
+        this.executionType = executionType;
+        this.resultType = type;
     }
 
     public Serializable getActorRef() {
         return actorRef;
     }
 
-    public ResultType getType() {
-        return type;
+    public String getQueryId() {
+        return queryId;
+    }
+
+    public ResultType getResultType() {
+        return resultType;
     }
 
     public LogicalStep getTriggerStep() {
