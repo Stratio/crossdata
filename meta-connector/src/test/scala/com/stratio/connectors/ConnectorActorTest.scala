@@ -3,7 +3,7 @@ package com.stratio.connectors
 import akka.pattern.ask
 import akka.util.Timeout
 import com.stratio.meta.common.connector.{IConnector, IQueryEngine}
-import com.stratio.meta.common.executionplan.{ExecutionStep, ExecutionType}
+import com.stratio.meta.common.executionplan.{ExecutionWorkflow, ResultType}
 import com.stratio.meta.common.logicalplan.{LogicalStep, LogicalWorkflow}
 import com.stratio.meta.common.result.QueryResult
 import com.stratio.meta2.common.data.{CatalogName, TableName}
@@ -52,9 +52,10 @@ class ConnectorActorTest extends FunSuite with MockFactory {
     val port = "2559"
     val m = mock[IConnector]
     val qe = mock[IQueryEngine]
-    (qe.execute _).expects(*, *).returning(QueryResult.createSuccessQueryResult())
-    (m.getQueryEngine _).expects().returning(qe)
-    (m.getConnectorName _).expects().returning("My New Connector")
+    fail("TODO")
+    //(qe.execute _).expects(*, *).returning(QueryResult.createSuccessQueryResult())
+    //(m.getQueryEngine _).expects().returning(qe)
+    //(m.getConnectorName _).expects().returning("My New Connector")
 
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
@@ -63,7 +64,7 @@ class ConnectorActorTest extends FunSuite with MockFactory {
     var steps: java.util.ArrayList[LogicalStep] = new java.util.ArrayList[LogicalStep]()
     steps.add(null)
     var workflow = new LogicalWorkflow(steps)
-    var executionStep = new ExecutionStep(myReference, workflow, ExecutionType.RESULTS)
+    var executionStep = null//new ExecutionWorkflow(myReference, workflow, ResultType.RESULTS)
     val pq = new SelectPlannedQuery(
       new SelectValidatedQuery(
         new SelectParsedQuery(

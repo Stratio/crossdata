@@ -68,4 +68,35 @@ public class IntegerSelector extends Selector {
     public String toString() {
         return Long.toString(value);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        IntegerSelector that = (IntegerSelector) o;
+
+        if (value != that.value) {
+            return false;
+        }
+        if (!alias.equals(that.alias)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        if (alias != null){
+            result = alias.hashCode();
+        }
+        result = 31 * result + (int) (value ^ (value >>> 32));
+        return result;
+    }
 }

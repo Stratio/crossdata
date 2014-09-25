@@ -19,11 +19,14 @@
 package com.stratio.meta.communication
 
 import com.stratio.meta.common.connector.ConnectorClusterConfig
-import com.stratio.meta.common.executionplan.ExecutionStep
+import com.stratio.meta.common.executionplan.ExecutionWorkflow
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta.common.security.ICredentials
 import com.stratio.meta2.common.data.ClusterName
+import com.stratio.meta2.common.metadata.{IndexMetadata, CatalogMetadata, TableMetadata}
+import com.stratio.meta.common.data.Row
+import java.util
 
 case class ACK(queryId: String, status: QueryStatus)
 
@@ -35,8 +38,6 @@ case class Disconnect(userId: String)
 
 //Connector messages
 case class ConnectToConnector(msg: String)
-
-case class Execute(clustername: ClusterName, executionStep: ExecutionStep)
 
 case class DisconnectFromConnector(msg: String)
 
@@ -53,3 +54,24 @@ case class WorkflowStruct(clusterName: String, connectorName: String, workFlow: 
 case class replyConnectorName(name: String)
 
 case class getConnectorName()
+
+//IStorageEngine
+case class Insert(targetCluster: ClusterName, targetTable: TableMetadata, row: Row)
+
+case class InsertBatch(targetCluster: ClusterName, targetTable: TableMetadata, rows: util.Collection[Row])
+
+//IQueryEngine
+case class Execute(workflow: LogicalWorkflow)
+
+//IMetadataEngine
+case class CreateCatalog(targetCluster: ClusterName, catalogMetadata: CatalogMetadata)
+
+case class CreateTable(targetCluster: ClusterName, tableMetadata: TableMetadata)
+
+case class DropCatalog(targetCluster: ClusterName, catalogName: String)
+
+case class CreateIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata)
+
+case class DropIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata)
+
+

@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.core.query;
 
-import com.stratio.meta.common.executionplan.ExecutionStep;
+import com.stratio.meta.common.executionplan.ExecutionWorkflow;
 
 public interface PlannedQuery extends ValidatedQuery {
 
@@ -34,6 +34,6 @@ public interface PlannedQuery extends ValidatedQuery {
     return QueryStatus.PLANNED;
   }*/
 
-    public ExecutionStep getExecutionStep();
+    public ExecutionWorkflow getExecutionWorkflow();
 
 }

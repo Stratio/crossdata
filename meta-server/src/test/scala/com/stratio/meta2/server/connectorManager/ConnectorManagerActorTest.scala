@@ -20,7 +20,7 @@ package com.stratio.meta2.server.connectorManager
 
 
 import akka.actor.ActorSystem
-import com.stratio.meta.common.executionplan.ExecutionStep
+import com.stratio.meta.common.executionplan.ExecutionWorkflow
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.query._
@@ -47,7 +47,7 @@ class ConnectorManagerActorTest extends ActorReceiveUtils with FunSuiteLike with
   val baseQuery = new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
   val selectedQuery = new SelectParsedQuery(baseQuery, null)
   val selectValidatedQuery = new SelectValidatedQuery(selectedQuery)
-  val pq = new SelectPlannedQuery(selectValidatedQuery, new ExecutionStep(null, null, null))
+  val pq = new SelectPlannedQuery(selectValidatedQuery, new ExecutionWorkflow(null, null))
 
   test("Should return a KO message") {
     within(1000 millis) {

@@ -77,4 +77,10 @@ public abstract class Selector {
         return sb.toString();
     }
 
+    @Override
+    public abstract boolean equals(Object o);
+
+    @Override
+    public abstract int hashCode();
+
 }

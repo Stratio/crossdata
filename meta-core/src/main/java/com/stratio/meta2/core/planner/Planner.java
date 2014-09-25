@@ -22,7 +22,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.connector.Operations;
-import com.stratio.meta.common.executionplan.ExecutionStep;
+import com.stratio.meta.common.executionplan.ExecutionWorkflow;
 import com.stratio.meta.common.logicalplan.Filter;
 import com.stratio.meta.common.logicalplan.Join;
 import com.stratio.meta.common.logicalplan.Limit;
@@ -35,12 +35,15 @@ import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.ColumnType;
+import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
+import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.MetadataValidatedQuery;
 import com.stratio.meta2.core.query.SelectPlannedQuery;
 import com.stratio.meta2.core.query.SelectValidatedQuery;
@@ -74,7 +77,7 @@ public class Planner {
         LogicalWorkflow workflow = buildWorkflow((SelectValidatedQuery) query);
 
         //Plan the workflow execution into different connectors.
-        ExecutionStep executionWorkflow = null;
+        ExecutionWorkflow executionWorkflow = null;
 
         //Return the planned query.
 
@@ -93,6 +96,22 @@ public class Planner {
             result = buildWorkflow((MetadataValidatedQuery) query);
         }
         return result;
+    }
+
+    protected ExecutionWorkflow buildExecutionWorkflow(LogicalWorkflow workflow) {
+
+        List<TableName> tables = new ArrayList<>(workflow.getInitialSteps().size());
+        for(LogicalStep ls : workflow.getInitialSteps()){
+            tables.add(Project.class.cast(ls).getTableName());
+        }
+
+        //Get the list of connector attached to the clusters that contain the required tables.
+        Map<TableName, List<ConnectorMetadata>> initialConnectors = MetadataManager.MANAGER.getAttachedConnectors(
+                Status.ONLINE, tables);
+
+        //Refine the list of available connectors and determine which connector to be used.
+
+        return null;
     }
 
     /**
@@ -168,12 +187,10 @@ public class Planner {
     }
 
     protected LogicalWorkflow buildWorkflow(StorageValidatedQuery query) {
-
         throw new UnsupportedOperationException();
     }
 
     protected LogicalWorkflow buildWorkflow(MetadataValidatedQuery query) {
-
         throw new UnsupportedOperationException();
     }
 

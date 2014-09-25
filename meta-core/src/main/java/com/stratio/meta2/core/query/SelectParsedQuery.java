@@ -42,4 +42,8 @@ public class SelectParsedQuery extends BaseQuery implements ParsedQuery {
         return (SelectStatement) statement;
     }
 
+    @Override public String toString() {
+        return statement.toString();
+    }
+
 }

@@ -45,20 +45,6 @@ class ServerActor(engine: Engine) extends Actor with ServerConfig {
   val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef, engine.getParser()).withRouter(RoundRobinRouter(nrOfInstances = num_parser_actor)), "ParserActor")
   val APIActorRef = context.actorOf(APIActor.props(engine.getAPIManager()).withRouter(RoundRobinRouter(nrOfInstances = num_api_actor)), "APIActor")
 
-  //val queryActorRef= context.actorOf(QueryActor.props(engine,connectorActorRef),"QueryActor")
-
-
-  /*
-  override def preStart(): Unit = {
-    //#subscribe
-    Cluster(context.system).subscribe(self, classOf[MemberEvent])
-    //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
-  }
-  override def postStop(): Unit =
-    Cluster(context.system).unsubscribe(self)
-  * 
-  */
-
   def receive = {
     case query: Query => {
       println("query: " + query)
@@ -66,7 +52,6 @@ class ServerActor(engine: Engine) extends Actor with ServerConfig {
     }
     case Connect(user) => {
       logger.info("Welcome " + user + "!")
-      //println("Welcome " + user +"!")
       sender ! ConnectResult.createConnectResult(UUID.randomUUID().toString)
     }
     case Disconnect(user) => {
@@ -77,31 +62,13 @@ class ServerActor(engine: Engine) extends Actor with ServerConfig {
       logger.info("API Command call " + cmd.commandType)
       APIActorRef forward cmd
     }
-    //pass the message to the connectorActor to extract the member in the cluster
-    case state: CurrentClusterState => {
-      logger.info("Current members: {}" + state.members.mkString(", "))
-      //connectorActorRef ! state
-    }
-    //case UnreachableMember(member) => {
-    case member: UnreachableMember => {
-      logger.info("Member detected as unreachable: {}" + member)
-      //connectorActorRef ! member
-    }
-    case member: MemberRemoved => {
-      logger.info("Member is Removed: {} after {}"); //, member.address, previousStatus)
-      //connectorActorRef ! member
-    }
-    case _: MemberEvent => {
-      logger.info("Receiving anything else")
-    }
-    case _: ClusterDomainEvent => {
-      println("ClusterDomainEvent")
-    }
+
     case ReceiveTimeout => {
-      println("ReceiveTimeout")
+      logger.warn("ReceiveTimeout")
+      //TODO Process ReceiveTimeout
     }
     case _ => {
-      println("Unknown!!!!");
+      logger.error("Unknown message received by ServerActor");
       sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
     }
   }

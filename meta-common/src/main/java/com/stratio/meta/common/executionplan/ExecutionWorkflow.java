@@ -21,14 +21,13 @@ package com.stratio.meta.common.executionplan;
 import java.io.Serializable;
 
 import com.stratio.meta.common.logicalplan.LogicalStep;
-import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 
 /**
  * Execution step abstraction. This class contains all the information
  * required in order to execute a LogicalWorkflow in a specific connector.
  * Notice that a ExecutionStep may trigger further workflow execution.
  */
-public class ExecutionStep {
+public class ExecutionWorkflow {
 
     /**
      * The target actor reference associated with the connector.
@@ -36,14 +35,9 @@ public class ExecutionStep {
     private final Serializable actorRef;
 
     /**
-     * Workflow to be executed.
-     */
-    private final LogicalWorkflow workflow;
-
-    /**
      * Type of execution.
      */
-    private final ExecutionType type;
+    private final ResultType type;
 
     /**
      * If the previous execution step triggers another execution step, this variable contains
@@ -55,18 +49,16 @@ public class ExecutionStep {
      * Variable that defines the next execution step to be launched if the execution type
      * is {@code TRIGGER_EXECUTION}.
      */
-    private ExecutionStep nextExecutionStep;
+    private ExecutionWorkflow nextExecutionWorkflow;
 
     /**
      * Class constructor.
      *
      * @param actorRef Target actor reference.
-     * @param workflow Workflow to be executed.
      * @param type     Type of execution.
      */
-    public ExecutionStep(Serializable actorRef, LogicalWorkflow workflow, ExecutionType type) {
+    public ExecutionWorkflow(Serializable actorRef, ResultType type) {
         this.actorRef = actorRef;
-        this.workflow = workflow;
         this.type = type;
     }
 
@@ -74,11 +66,7 @@ public class ExecutionStep {
         return actorRef;
     }
 
-    public LogicalWorkflow getWorkflow() {
-        return workflow;
-    }
-
-    public ExecutionType getType() {
+    public ResultType getType() {
         return type;
     }
 
@@ -90,11 +78,11 @@ public class ExecutionStep {
         this.triggerStep = triggerStep;
     }
 
-    public ExecutionStep getNextExecutionStep() {
-        return nextExecutionStep;
+    public ExecutionWorkflow getNextExecutionWorkflow() {
+        return nextExecutionWorkflow;
     }
 
-    public void setNextExecutionStep(ExecutionStep nextExecutionStep) {
-        this.nextExecutionStep = nextExecutionStep;
+    public void setNextExecutionWorkflow(ExecutionWorkflow nextExecutionWorkflow) {
+        this.nextExecutionWorkflow = nextExecutionWorkflow;
     }
 }

@@ -42,4 +42,8 @@ public class MetadataParsedQuery extends BaseQuery implements ParsedQuery {
     public MetadataStatement getStatement() {
         return (MetadataStatement) statement;
     }
+
+    @Override public String toString() {
+        return statement.toString();
+    }
 }
