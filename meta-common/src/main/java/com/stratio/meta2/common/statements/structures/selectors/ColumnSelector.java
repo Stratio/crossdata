@@ -60,4 +60,32 @@ public class ColumnSelector extends Selector {
     public Set<TableName> getSelectorTables() {
         return new HashSet(Arrays.asList(this.name.getTableName()));
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ColumnSelector that = (ColumnSelector) o;
+
+        if (!alias.equals(that.alias)) {
+            return false;
+        }
+        if (!name.equals(that.name)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = alias.hashCode();
+        result = 31 * result + name.hashCode();
+        return result;
+    }
 }

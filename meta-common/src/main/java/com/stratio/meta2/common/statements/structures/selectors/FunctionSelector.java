@@ -101,4 +101,36 @@ public class FunctionSelector extends Selector {
         }
         return result;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        FunctionSelector that = (FunctionSelector) o;
+
+        if (!alias.equals(that.alias)) {
+            return false;
+        }
+        if (!functionColumns.equals(that.functionColumns)) {
+            return false;
+        }
+        if (!functionName.equals(that.functionName)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = alias.hashCode();
+        result = 31 * result + functionName.hashCode();
+        result = 31 * result + functionColumns.hashCode();
+        return result;
+    }
 }

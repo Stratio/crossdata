@@ -40,4 +40,27 @@ public class AsteriskSelector extends Selector {
     public Set<TableName> getSelectorTables() {
         return null;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        AsteriskSelector that = (AsteriskSelector) o;
+
+        if (!alias.equals(that.alias)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return alias.hashCode();
+    }
 }

@@ -68,4 +68,32 @@ public class BooleanSelector extends Selector {
     public String toString() {
         return Boolean.toString(value);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        BooleanSelector that = (BooleanSelector) o;
+
+        if (value != that.value) {
+            return false;
+        }
+        if (!alias.equals(that.alias)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = alias.hashCode();
+        result = 31 * result + (value ? 1 : 0);
+        return result;
+    }
 }
