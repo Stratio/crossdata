@@ -22,25 +22,25 @@ package com.stratio.meta.common.statements.structures.relationships;
  * Operators supported in an {@link com.stratio.meta.common.statements.structures.relationships.Relation}.
  */
 public enum Operator {
-    ADD {
+    ADD(Group.ARITHMETIC) {
         @Override
         public String toString() {
             return "+";
         }
     },
-    SUBTRACT {
+    SUBTRACT(Group.ARITHMETIC) {
         @Override
         public String toString() {
             return "-";
         }
     },
-    DIVISION {
+    DIVISION(Group.ARITHMETIC) {
         @Override
         public String toString() {
             return "/";
         }
     },
-    MULTIPLICATION {
+    MULTIPLICATION(Group.ARITHMETIC) {
         @Override
         public String toString() {
             return "*";
@@ -49,7 +49,7 @@ public enum Operator {
     /**
      * Constant to define inclusion relationships.
      */
-    IN {
+    IN(Group.COMPARATOR) {
         @Override
         public String toString() {
             return "IN";
@@ -58,7 +58,7 @@ public enum Operator {
     /**
      * Constant to define range comparisons.
      */
-    BETWEEN {
+    BETWEEN(Group.COMPARATOR) {
         @Override
         public String toString() {
             return "BETWEEN";
@@ -67,7 +67,7 @@ public enum Operator {
     /**
      * Constant to define compare relationships (e.g., >, <, =, etc.).
      */
-    EQ {
+    EQ(Group.COMPARATOR) {
         @Override
         public String toString() {
             return "=";
@@ -76,45 +76,60 @@ public enum Operator {
     /**
      * Assign relationship for update-like statements.
      */
-    ASSIGN {
+    ASSIGN(Group.ARITHMETIC) {
         public String toString() {
             return "=";
         }
     },
-    MATCH {
+    MATCH(Group.COMPARATOR) {
         public String toString() {
             return "MATCH";
         }
     },
-    GT {
+    GT(Group.COMPARATOR) {
         public String toString() {
             return ">";
         }
     },
-    LT {
+    LT(Group.COMPARATOR) {
         public String toString() {
             return "<";
         }
     },
-    GET {
+    GET(Group.COMPARATOR) {
         public String toString() {
             return ">=";
         }
     },
-    LET {
+    LET(Group.COMPARATOR) {
         public String toString() {
             return "<=";
         }
     },
-    DISTINCT {
+    DISTINCT(Group.COMPARATOR) {
         public String toString() {
             return "<>";
         }
     },
-    LIKE {
+    LIKE(Group.COMPARATOR) {
         public String toString() {
             return "LIKE";
         }
     };
+
+    public enum Group {
+        COMPARATOR,
+        ARITHMETIC;
+    }
+
+    private Group group;
+
+    Operator(Group group) {
+        this.group = group;
+    }
+
+    public boolean isInGroup(Group group) {
+        return this.group == group;
+    }
 
 }
