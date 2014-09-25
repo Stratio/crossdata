@@ -27,17 +27,8 @@ public class MetashTest {
     @Test
     public void testSendManifest() throws Exception {
         Metash metash = new Metash(false);
-        String
-                result =
-                metash.sendManifest(
-                        "ADD DATASTORE 'meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xml'");
+        String result = metash.sendManifest("ADD DATASTORE 'meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xml'");
         assertTrue(result != null, "testSendManifest returns a empty String");
-    }
-
-    @Test
-    public void testConsole(){
-        Metash sh = new Metash(true);
-        sh.loop();
     }
 
 }
