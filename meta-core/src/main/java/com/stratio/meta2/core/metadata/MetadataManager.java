@@ -23,6 +23,7 @@ import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.FirstLevelName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.Name;
+import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ClusterMetadata;
@@ -33,6 +34,9 @@ import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
@@ -316,6 +320,28 @@ public enum MetadataManager {
 
   public Serializable getConnectorRef(ConnectorName name){
       return getConnector(name).getActorRef();
+  }
+
+  /**
+   * Get the connectors that are attached to the clusters that store the requested tables.
+   * @param connectorStatus The status of the connector.
+   * @param tables The list of table names.
+   * @return A map associating table names with a list of the available connectors.
+   */
+  public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus, TableName ... tables){
+    Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
+
+
+    List<ConnectorMetadata> connectors = null;
+    for(TableName table : tables) {
+
+      connectors = new ArrayList<>();
+      //connectors.addAll(getCluster(getTable(table).getClusterRef()).getConnectorAttachedRefs());
+      //result.put(table, );
+    }
+
+
+    return result;
   }
 
 }

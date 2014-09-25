@@ -23,11 +23,13 @@ import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.ColumnType;
+import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
 
+import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.SelectPlannedQuery;
 
 import com.stratio.meta2.core.query.*;
@@ -64,7 +66,7 @@ public class Planner {
    */
   public SelectPlannedQuery planQuery(ValidatedQuery query) {
     //Build the workflow.
-    LogicalWorkflow workflow = buildWorkflow((SelectValidatedQuery)query);
+    LogicalWorkflow workflow = buildWorkflow((SelectValidatedQuery) query);
 
     //Plan the workflow execution into different connectors.
     ExecutionStep executionWorkflow = null;
@@ -74,17 +76,27 @@ public class Planner {
     return pq;
   }
 
-    protected LogicalWorkflow buildWorkflow(ValidatedQuery query) {
-        LogicalWorkflow result=null;
-        if(query instanceof SelectValidatedQuery){
-            result=buildWorkflow((SelectValidatedQuery) query);
-        }else if(query instanceof StorageValidatedQuery){
-            result=buildWorkflow((StorageValidatedQuery) query);
-        }else if(query instanceof MetadataValidatedQuery){
-            result=buildWorkflow((MetadataValidatedQuery) query);
-        }
-        return result;
+  protected LogicalWorkflow buildWorkflow(ValidatedQuery query) {
+    LogicalWorkflow result = null;
+    if (query instanceof SelectValidatedQuery) {
+      result = buildWorkflow((SelectValidatedQuery) query);
+    } else if (query instanceof StorageValidatedQuery) {
+      result = buildWorkflow((StorageValidatedQuery) query);
+    } else if (query instanceof MetadataValidatedQuery) {
+      result = buildWorkflow((MetadataValidatedQuery) query);
     }
+    return result;
+  }
+
+
+
+  protected ExecutionStep buildExecutionWorkflow(LogicalWorkflow workflow){
+
+    //Get the list of connector attached to the clusters that contain the required tables.
+    Map<String, ConnectorMetadata> initialConnectors = MetadataManager.MANAGER.getAttachedConnectors();
+
+    return null;
+  }
 
   /**
    * Build a workflow with the {@link com.stratio.meta.common.logicalplan.LogicalStep} required to
@@ -107,12 +119,12 @@ public class Planner {
     String selectTable = query.getTables().get(0).getQualifiedName();
 
     //Add filters
-    if(query.getRelationships() != null) {
+    if (query.getRelationships() != null) {
       processed = addFilter(processed, tableMetadataMap, query);
     }
 
     //Add join
-    if(query.getJoin() != null) {
+    if (query.getJoin() != null) {
       processed = addJoin(processed, selectTable, query);
     }
 
@@ -120,7 +132,7 @@ public class Planner {
     List<LogicalStep> initialSteps = new ArrayList<>();
     LogicalStep initial = null;
     for (LogicalStep ls : processed.values()) {
-      if(!UnionStep.class.isInstance(ls)) {
+      if (!UnionStep.class.isInstance(ls)) {
         initial = ls;
         //Go to the first element of the workflow
         while (initial.getFirstPrevious() != null) {
@@ -134,13 +146,13 @@ public class Planner {
 
     //Find the last element
     LogicalStep last = initial;
-    while(last.getNextStep() != null){
+    while (last.getNextStep() != null) {
       last = last.getNextStep();
     }
 
     //Add LIMIT clause
     SelectStatement ss = SelectStatement.class.cast(query.getStatement());
-    if(ss.isLimitInc()){
+    if (ss.isLimitInc()) {
       Limit l = new Limit(Operations.SELECT_LIMIT, ss.getLimit());
       last.setNextStep(l);
       l.setPrevious(last);
@@ -157,14 +169,16 @@ public class Planner {
 
     return workflow;
   }
-    protected LogicalWorkflow buildWorkflow(StorageValidatedQuery query) {
 
-        throw new UnsupportedOperationException();
-    }
-    protected LogicalWorkflow buildWorkflow(MetadataValidatedQuery query) {
+  protected LogicalWorkflow buildWorkflow(StorageValidatedQuery query) {
 
-        throw new UnsupportedOperationException();
-    }
+    throw new UnsupportedOperationException();
+  }
+
+  protected LogicalWorkflow buildWorkflow(MetadataValidatedQuery query) {
+
+    throw new UnsupportedOperationException();
+  }
 
 
   /**
@@ -173,7 +187,8 @@ public class Planner {
    * @param projectSteps The map associating table names to Project steps.
    * @param query        The query to be planned.
    */
-  private void addProjectedColumns(Map<String, LogicalStep> projectSteps, SelectValidatedQuery query) {
+  private void addProjectedColumns(Map<String, LogicalStep> projectSteps,
+                                   SelectValidatedQuery query) {
     for (ColumnName cn : query.getColumns()) {
       Project.class.cast(projectSteps.get(cn.getTableName().getQualifiedName())).addColumn(cn);
     }
@@ -181,24 +196,25 @@ public class Planner {
 
   /**
    * Get the filter operation depending on the type of column and the selector.
+   *
    * @param tableName The table metadata.
-   * @param selector The relationship selector.
-   * @param operator The relationship operator.
+   * @param selector  The relationship selector.
+   * @param operator  The relationship operator.
    * @return An {@link com.stratio.meta.common.connector.Operations} object.
    */
   protected Operations getFilterOperation(final TableMetadata tableName,
                                           final Selector selector,
-                                          final Operator operator){
+                                          final Operator operator) {
     StringBuilder sb = new StringBuilder("FILTER_");
-    if(SelectorType.FUNCTION.equals(selector.getType())){
+    if (SelectorType.FUNCTION.equals(selector.getType())) {
       sb.append("FUNCTION_");
-    }else{
+    } else {
       ColumnSelector cs = ColumnSelector.class.cast(selector);
-      if(tableName.isPK(cs.getName())){
+      if (tableName.isPK(cs.getName())) {
         sb.append("PK_");
-      }else if(tableName.isIndexed(cs.getName())){
+      } else if (tableName.isIndexed(cs.getName())) {
         sb.append("INDEXED_");
-      }else{
+      } else {
         sb.append("NON_INDEXED_");
       }
     }
@@ -210,7 +226,7 @@ public class Planner {
    * Add Filter operations after the Project. The Filter operations to be applied are associated
    * with the where clause found.
    *
-   * @param lastSteps       The map associating table names to Project steps.
+   * @param lastSteps        The map associating table names to Project steps.
    * @param tableMetadataMap A map with the table metadata indexed by table name.
    * @param query            The query to be planned.
    */
@@ -224,15 +240,16 @@ public class Planner {
       s = r.getLeftTerm();
       //TODO Support left-side functions that contain columns of several tables.
       tm = tableMetadataMap.get(s.getSelectorTablesAsString());
-      if(tm != null){
+      if (tm != null) {
         Operations op = getFilterOperation(tm, s, r.getOperator());
         Filter f = new Filter(op, r);
         previous = lastSteps.get(s.getSelectorTablesAsString());
         previous.setNextStep(f);
         f.setPrevious(previous);
         lastSteps.put(s.getSelectorTablesAsString(), f);
-      }else{
-        LOG.error("Cannot determine Filter for relation " + r.toString() + " on table " + s.getSelectorTablesAsString());
+      } else {
+        LOG.error("Cannot determine Filter for relation " + r.toString() + " on table " + s
+            .getSelectorTablesAsString());
       }
 
     }
@@ -241,14 +258,19 @@ public class Planner {
 
   /**
    * Add the join logical steps.
-   * @param stepMap The map of last steps after adding filters.
+   *
+   * @param stepMap     The map of last steps after adding filters.
    * @param targetTable The target table of the join.
-   * @param query The query.
+   * @param query       The query.
    * @return The resulting map of logical steps.
    */
-  private Map<String, LogicalStep> addJoin(Map<String, LogicalStep> stepMap, String targetTable, SelectValidatedQuery query) {
+  private Map<String, LogicalStep> addJoin(Map<String, LogicalStep> stepMap, String targetTable,
+                                           SelectValidatedQuery query) {
     InnerJoin queryJoin = query.getJoin();
-    String id = new StringBuilder(targetTable).append("$").append(queryJoin.getTablename().getQualifiedName()).toString();
+    String
+        id =
+        new StringBuilder(targetTable).append("$")
+            .append(queryJoin.getTablename().getQualifiedName()).toString();
     Join j = new Join(Operations.SELECT_INNER_JOIN, id);
     j.addSourceIdentifier(targetTable);
     j.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
@@ -270,30 +292,36 @@ public class Planner {
   /**
    * Get a Map associating fully qualified table names with their Project logical step.
    *
-   * @param query The query to be planned.
+   * @param query            The query to be planned.
    * @param tableMetadataMap Map of table metadata.
    * @return A map with the projections.
    */
-  protected Map<String, LogicalStep> getProjects(SelectValidatedQuery query, Map<String, TableMetadata> tableMetadataMap) {
+  protected Map<String, LogicalStep> getProjects(SelectValidatedQuery query,
+                                                 Map<String, TableMetadata> tableMetadataMap) {
     Map<String, LogicalStep> projects = new HashMap<>();
     for (TableName tn : query.getTables()) {
-      Project p = new Project(Operations.PROJECT, tn, tableMetadataMap.get(tn.getQualifiedName()).getClusterRef());
+      Project
+          p =
+          new Project(Operations.PROJECT, tn,
+                      tableMetadataMap.get(tn.getQualifiedName()).getClusterRef());
       projects.put(tn.getQualifiedName(), p);
     }
     return projects;
   }
 
-  protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap){
-    Map<String,String> aliasMap = new HashMap<>();
-    Map<String,ColumnType> typeMap = new HashMap<>();
-    for(Selector s: selectStatement.getSelectExpression().getSelectorList()){
-      if(s.getAlias() != null) {
+  protected Select generateSelect(SelectStatement selectStatement,
+                                  Map<String, TableMetadata> tableMetadataMap) {
+    Map<String, String> aliasMap = new HashMap<>();
+    Map<String, ColumnType> typeMap = new HashMap<>();
+    for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
+      if (s.getAlias() != null) {
         aliasMap.put(s.toString(), s.getAlias());
 
         typeMap.put(s.toString(),
                     tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
-                        .get(ColumnSelector.class.cast(s).getName()).getColumnType());
-      }else{
+                        .get(ColumnSelector.class.cast(s).getName()).getColumnType()
+        );
+      } else {
         aliasMap.put(s.toString(), s.toString());
       }
     }

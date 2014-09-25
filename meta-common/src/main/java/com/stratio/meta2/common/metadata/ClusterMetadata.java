@@ -26,6 +26,11 @@ import java.util.Map;
 
 public class ClusterMetadata implements IMetadata {
 
+  /**
+   * Serial version UID.
+   */
+  private static final long serialVersionUID = -418489079432003461L;
+
   private final ClusterName name;
   private final DataStoreName dataStoreRef;
   private final Map<String, Object> options;
