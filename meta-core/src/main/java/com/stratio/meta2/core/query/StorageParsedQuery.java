@@ -42,4 +42,8 @@ public class StorageParsedQuery extends BaseQuery implements ParsedQuery {
         return (StorageStatement) statement;
     }
 
+    @Override public String toString() {
+        return statement.toString();
+    }
+
 }

@@ -164,6 +164,7 @@ public class Metash {
 
         try {
             console = new ConsoleReader();
+            console.setExpandEvents(false);
             setPrompt(null);
             historyFile = ConsoleUtils.retrieveHistory(console, dateFormat);
 

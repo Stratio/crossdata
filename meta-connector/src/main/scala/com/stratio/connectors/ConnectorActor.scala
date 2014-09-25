@@ -75,6 +75,9 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
           log.info("->receiving CreateTableStatement")
           //val clustername = inProgressQuery.getClusterName()
           //connector.getMetadataEngine().createTable(clustername, ms.getTableMetadata())
+
+          connector.getMetadataEngine().createTable(null, ms.getTableMetadata())
+
           sender ! "ok"
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")
@@ -90,6 +93,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
           //val clustername = inProgressQuery.getClusterName()
           //val logicalworkflow = inProgressQuery.getLogicalWorkFlow()
           //connector.getQueryEngine().execute(clustername, logicalworkflow)
+
           sender ! "ok"
         case _ =>
           log.info("->receiving a statement of a type it shouldn't")

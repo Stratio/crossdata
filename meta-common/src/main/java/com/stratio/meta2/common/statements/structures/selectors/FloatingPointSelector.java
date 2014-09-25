@@ -59,4 +59,37 @@ public class FloatingPointSelector extends Selector {
     public String toString() {
         return Double.toString(value);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        FloatingPointSelector that = (FloatingPointSelector) o;
+
+        if (Double.compare(that.value, value) != 0) {
+            return false;
+        }
+        if (!alias.equals(that.alias)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        long temp;
+        int result = 1;
+        if (alias != null){
+            result = alias.hashCode();
+        }
+        temp = Double.doubleToLongBits(value);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
 }
