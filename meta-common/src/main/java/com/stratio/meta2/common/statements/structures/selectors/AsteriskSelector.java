@@ -61,6 +61,10 @@ public class AsteriskSelector extends Selector {
 
     @Override
     public int hashCode() {
-        return alias.hashCode();
+        int result = 1;
+        if (alias != null){
+            result = alias.hashCode();
+        }
+        return result;
     }
 }

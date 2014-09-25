@@ -92,7 +92,10 @@ public class IntegerSelector extends Selector {
 
     @Override
     public int hashCode() {
-        int result = alias.hashCode();
+        int result = 1;
+        if (alias != null){
+            result = alias.hashCode();
+        }
         result = 31 * result + (int) (value ^ (value >>> 32));
         return result;
     }

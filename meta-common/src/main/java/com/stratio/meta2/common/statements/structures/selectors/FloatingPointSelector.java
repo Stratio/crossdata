@@ -83,9 +83,11 @@ public class FloatingPointSelector extends Selector {
 
     @Override
     public int hashCode() {
-        int result;
         long temp;
-        result = alias.hashCode();
+        int result = 1;
+        if (alias != null){
+            result = alias.hashCode();
+        }
         temp = Double.doubleToLongBits(value);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;

@@ -84,7 +84,10 @@ public class ColumnSelector extends Selector {
 
     @Override
     public int hashCode() {
-        int result = alias.hashCode();
+        int result = 1;
+        if (alias != null){
+            result = alias.hashCode();
+        }
         result = 31 * result + name.hashCode();
         return result;
     }
