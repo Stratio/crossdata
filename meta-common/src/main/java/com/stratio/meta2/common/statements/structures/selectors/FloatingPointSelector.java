@@ -18,45 +18,45 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import com.stratio.meta2.common.data.TableName;
-
 import java.util.Set;
+
+import com.stratio.meta2.common.data.TableName;
 
 /**
  * A floating point selector.
  */
-public class FloatingPointSelector extends Selector{
+public class FloatingPointSelector extends Selector {
 
-  /**
-   * Double precision value.
-   */
-  private final double value;
+    /**
+     * Double precision value.
+     */
+    private final double value;
 
-  /**
-   * Class constructor.
-   * @param value A double value.
-   */
-  public FloatingPointSelector(String value) {
-    this.value = Double.valueOf(value);
-  }
+    /**
+     * Class constructor.
+     *
+     * @param value A double value.
+     */
+    public FloatingPointSelector(String value) {
+        this.value = Double.valueOf(value);
+    }
 
-  public FloatingPointSelector(double value) {
-    this.value = value;
-  }
+    public FloatingPointSelector(double value) {
+        this.value = value;
+    }
 
+    @Override
+    public SelectorType getType() {
+        return SelectorType.FLOATING_POINT;
+    }
 
-  @Override
-  public SelectorType getType() {
-    return SelectorType.FLOATING_POINT;
-  }
+    @Override
+    public Set<TableName> getSelectorTables() {
+        return null;
+    }
 
-  @Override
-  public Set<TableName> getSelectorTables() {
-    return null;
-  }
-
-  @Override
-  public String toString() {
-    return Double.toString(value);
-  }
+    @Override
+    public String toString() {
+        return Double.toString(value);
+    }
 }

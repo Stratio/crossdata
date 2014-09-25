@@ -18,21 +18,22 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class StopProcessStatementTest extends ParsingTest {
 
-  @Test
-  public void stopProcess() {
-    String inputText = "STOP process process1;";
-    testRegularStatement(inputText, "stopProcess");
-  }
+    @Test
+    public void stopProcess() {
+        String inputText = "STOP process process1;";
+        testRegularStatement(inputText, "stopProcess");
+    }
 
-  @Test
-  public void stopWrongProcessIdentifier(){
-    String inputText = "STOP process kstest]process1;";
-    testParserFails(inputText, "stopWrongProcessIdentifier");
-  }
+    @Test
+    public void stopWrongProcessIdentifier() {
+        String inputText = "STOP process kstest]process1;";
+        testParserFails(inputText, "stopWrongProcessIdentifier");
+    }
 
 }

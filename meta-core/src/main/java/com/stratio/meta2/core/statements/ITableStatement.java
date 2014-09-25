@@ -28,21 +28,21 @@ import com.stratio.meta2.common.data.TableName;
  */
 public interface ITableStatement {
 
-  /**
-   * The target table.
-   */
-  //protected TableName tableName;
+    /**
+     * The target table.
+     */
+    //protected TableName tableName;
 
-  /**
-   * Get the table to be described.
-   *
-   * @return The name or null if not set.
-   */
-  public TableName getTableName();
+    /**
+     * Get the table to be described.
+     *
+     * @return The name or null if not set.
+     */
+    public TableName getTableName();
 
-  public void setTableName(TableName tableName);
+    public void setTableName(TableName tableName);
 
-  public CatalogName getEffectiveCatalog();
+    public CatalogName getEffectiveCatalog();
 
   /*
   public TableName getTableName() {

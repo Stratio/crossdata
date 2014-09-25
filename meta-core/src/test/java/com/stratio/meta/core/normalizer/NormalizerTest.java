@@ -18,6 +18,19 @@
 
 package com.stratio.meta.core.normalizer;
 
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.apache.log4j.Logger;
+import org.testng.annotations.Test;
+
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
@@ -50,305 +63,295 @@ import com.stratio.meta2.core.query.SelectValidatedQuery;
 import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta2.core.structures.OrderBy;
 
-import org.apache.log4j.Logger;
-import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
-
 public class NormalizerTest extends MetadataManagerTests {
 
-  /**
-   * Class logger.
-   */
-  private static final Logger LOG = Logger.getLogger(MetadataManagerTests.class);
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(MetadataManagerTests.class);
 
-  @Test(groups = "putData")
-  public void putData() throws Exception {
+    @Test(groups = "putData")
+    public void putData() throws Exception {
 
-    // DATASTORE
-    DataStoreMetadata dsmd = new DataStoreMetadata(
-        new DataStoreName("Cassandra"), //name
-        "1.0.0", //version
-        null, //requiredProperties
-        null //othersProperties
+        // DATASTORE
+        DataStoreMetadata dsmd = new DataStoreMetadata(
+                new DataStoreName("Cassandra"), //name
+                "1.0.0", //version
+                null, //requiredProperties
+                null //othersProperties
         );
-    MetadataManager.MANAGER.createDataStore(dsmd);
+        MetadataManager.MANAGER.createDataStore(dsmd);
 
-    // CLUSTER
-    ClusterName clusterName = new ClusterName("testing");
-    DataStoreName dataStoreRef = new DataStoreName("Cassandra");
-    Map<String, Object> clusterOptions = new HashMap<>();
-    Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
+        // CLUSTER
+        ClusterName clusterName = new ClusterName("testing");
+        DataStoreName dataStoreRef = new DataStoreName("Cassandra");
+        Map<String, Object> clusterOptions = new HashMap<>();
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
 
-    ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreRef, clusterOptions, connectorAttachedRefs);
+        ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreRef, clusterOptions,
+                connectorAttachedRefs);
 
-    MetadataManager.MANAGER.createCluster(clusterMetadata);
+        MetadataManager.MANAGER.createCluster(clusterMetadata);
 
-    // CATALOG 1
-    HashMap<TableName, TableMetadata> tables = new HashMap<>();
+        // CATALOG 1
+        HashMap<TableName, TableMetadata> tables = new HashMap<>();
 
-    TableName tableName = new TableName("demo", "tableClients");
-    Map<Selector, Selector> options = new HashMap<>();
+        TableName tableName = new TableName("demo", "tableClients");
+        Map<Selector, Selector> options = new HashMap<>();
 
-    Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
 
-    ColumnMetadata columnMetadata = new ColumnMetadata(
-        new ColumnName(tableName, "clientId"),
-        new Object[]{},
-        ColumnType.TEXT);
-    columns.put(new ColumnName(tableName, "clientId"), columnMetadata);
+        ColumnMetadata columnMetadata = new ColumnMetadata(
+                new ColumnName(tableName, "clientId"),
+                new Object[] { },
+                ColumnType.TEXT);
+        columns.put(new ColumnName(tableName, "clientId"), columnMetadata);
 
-    columnMetadata = new ColumnMetadata(
-        new ColumnName(tableName, "colSales"),
-        new Object[]{},
-        ColumnType.INT);
-    columns.put(new ColumnName(tableName, "colSales"), columnMetadata);
+        columnMetadata = new ColumnMetadata(
+                new ColumnName(tableName, "colSales"),
+                new Object[] { },
+                ColumnType.INT);
+        columns.put(new ColumnName(tableName, "colSales"), columnMetadata);
 
-    columnMetadata = new ColumnMetadata(
-        new ColumnName(tableName, "gender"),
-        new Object[]{},
-        ColumnType.TEXT);
-    columns.put(new ColumnName(tableName, "gender"), columnMetadata);
+        columnMetadata = new ColumnMetadata(
+                new ColumnName(tableName, "gender"),
+                new Object[] { },
+                ColumnType.TEXT);
+        columns.put(new ColumnName(tableName, "gender"), columnMetadata);
 
-    columnMetadata = new ColumnMetadata(
-        new ColumnName(tableName, "colExpenses"),
-        new Object[]{},
-        ColumnType.INT);
-    columns.put(new ColumnName(tableName, "colExpenses"), columnMetadata);
+        columnMetadata = new ColumnMetadata(
+                new ColumnName(tableName, "colExpenses"),
+                new Object[] { },
+                ColumnType.INT);
+        columns.put(new ColumnName(tableName, "colExpenses"), columnMetadata);
 
-    columnMetadata = new ColumnMetadata(
-        new ColumnName(tableName, "year"),
-        new Object[]{},
-        ColumnType.INT);
-    columns.put(new ColumnName(tableName, "year"), columnMetadata);
+        columnMetadata = new ColumnMetadata(
+                new ColumnName(tableName, "year"),
+                new Object[] { },
+                ColumnType.INT);
+        columns.put(new ColumnName(tableName, "year"), columnMetadata);
 
-    columnMetadata = new ColumnMetadata(
-        new ColumnName(tableName, "colPlace"),
-        new Object[]{},
-        ColumnType.TEXT);
-    columns.put(new ColumnName(tableName, "colPlace"), columnMetadata);
+        columnMetadata = new ColumnMetadata(
+                new ColumnName(tableName, "colPlace"),
+                new Object[] { },
+                ColumnType.TEXT);
+        columns.put(new ColumnName(tableName, "colPlace"), columnMetadata);
 
-    Map<IndexName, IndexMetadata > indexes = new HashMap<>();
-    ClusterName clusterRef = new ClusterName("testing");
-    List<ColumnName> partitionKey = Collections.singletonList(new ColumnName("demo", "tableClients", "clientId"));
-    List<ColumnName> clusterKey = new ArrayList<>();
+        Map<IndexName, IndexMetadata> indexes = new HashMap<>();
+        ClusterName clusterRef = new ClusterName("testing");
+        List<ColumnName> partitionKey = Collections.singletonList(new ColumnName("demo", "tableClients", "clientId"));
+        List<ColumnName> clusterKey = new ArrayList<>();
 
-    TableMetadata tableMetadata = new TableMetadata(
-        tableName,
-        options,
-        columns,
-        indexes,
-        clusterRef,
-        partitionKey,
-        clusterKey
-    );
+        TableMetadata tableMetadata = new TableMetadata(
+                tableName,
+                options,
+                columns,
+                indexes,
+                clusterRef,
+                partitionKey,
+                clusterKey
+        );
 
-    tables.put(new TableName("demo", "tableClients"), tableMetadata);
+        tables.put(new TableName("demo", "tableClients"), tableMetadata);
 
-    CatalogMetadata catalogMetadata = new CatalogMetadata(
-        new CatalogName("demo"), // name
-        new HashMap<Selector, Selector>(), // options
-        tables // tables
-    );
+        CatalogMetadata catalogMetadata = new CatalogMetadata(
+                new CatalogName("demo"), // name
+                new HashMap<Selector, Selector>(), // options
+                tables // tables
+        );
 
-    MetadataManager.MANAGER.createCatalog(catalogMetadata);
+        MetadataManager.MANAGER.createCatalog(catalogMetadata);
 
-    // CATALOG 2
-    tables = new HashMap<>();
+        // CATALOG 2
+        tables = new HashMap<>();
 
-    tableName = new TableName("myCatalog", "tableCostumers");
-    options = new HashMap<>();
+        tableName = new TableName("myCatalog", "tableCostumers");
+        options = new HashMap<>();
 
-    columns = new HashMap<>();
+        columns = new HashMap<>();
 
-    columnMetadata = new ColumnMetadata(
-        new ColumnName(tableName, "assistantId"),
-        new Object[]{},
-        ColumnType.TEXT);
-    columns.put(new ColumnName(tableName, "assistantId"), columnMetadata);
+        columnMetadata = new ColumnMetadata(
+                new ColumnName(tableName, "assistantId"),
+                new Object[] { },
+                ColumnType.TEXT);
+        columns.put(new ColumnName(tableName, "assistantId"), columnMetadata);
 
-    columnMetadata = new ColumnMetadata(
-        new ColumnName(tableName, "age"),
-        new Object[]{},
-        ColumnType.INT);
-    columns.put(new ColumnName(tableName, "age"), columnMetadata);
+        columnMetadata = new ColumnMetadata(
+                new ColumnName(tableName, "age"),
+                new Object[] { },
+                ColumnType.INT);
+        columns.put(new ColumnName(tableName, "age"), columnMetadata);
 
-    columnMetadata = new ColumnMetadata(
-        new ColumnName(tableName, "colFee"),
-        new Object[]{},
-        ColumnType.INT);
-    columns.put(new ColumnName(tableName, "colFee"), columnMetadata);
+        columnMetadata = new ColumnMetadata(
+                new ColumnName(tableName, "colFee"),
+                new Object[] { },
+                ColumnType.INT);
+        columns.put(new ColumnName(tableName, "colFee"), columnMetadata);
 
-    columnMetadata = new ColumnMetadata(
-        new ColumnName(tableName, "colCity"),
-        new Object[]{},
-        ColumnType.TEXT);
-    columns.put(new ColumnName(tableName, "colCity"), columnMetadata);
+        columnMetadata = new ColumnMetadata(
+                new ColumnName(tableName, "colCity"),
+                new Object[] { },
+                ColumnType.TEXT);
+        columns.put(new ColumnName(tableName, "colCity"), columnMetadata);
 
-    indexes = new HashMap<>();
-    clusterRef = new ClusterName("myCluster");
-    partitionKey = Collections.singletonList(new ColumnName("myCatalog", "tableCostumers", "assistantId"));
-    clusterKey = new ArrayList<>();
+        indexes = new HashMap<>();
+        clusterRef = new ClusterName("myCluster");
+        partitionKey = Collections.singletonList(new ColumnName("myCatalog", "tableCostumers", "assistantId"));
+        clusterKey = new ArrayList<>();
 
-    tableMetadata = new TableMetadata(
-        tableName,
-        options,
-        columns,
-        indexes,
-        clusterRef,
-        partitionKey,
-        clusterKey
-    );
+        tableMetadata = new TableMetadata(
+                tableName,
+                options,
+                columns,
+                indexes,
+                clusterRef,
+                partitionKey,
+                clusterKey
+        );
 
-    tables.put(new TableName("myCatalog", "tableCostumers"), tableMetadata);
+        tables.put(new TableName("myCatalog", "tableCostumers"), tableMetadata);
 
-    catalogMetadata = new CatalogMetadata(
-        new CatalogName("myCatalog"), // name
-        new HashMap<Selector, Selector>(), // options
-        tables // tables
-    );
+        catalogMetadata = new CatalogMetadata(
+                new CatalogName("myCatalog"), // name
+                new HashMap<Selector, Selector>(), // options
+                tables // tables
+        );
 
-    MetadataManager.MANAGER.createCatalog(catalogMetadata);
+        MetadataManager.MANAGER.createCatalog(catalogMetadata);
 
-    LOG.info("Data inserted in the MetadataManager for the NormalizedTest");
-  }
-
-  public void testSelectedParserQuery(SelectParsedQuery selectParsedQuery, String expectedText, String methodName){
-    Normalizer normalizer = new Normalizer();
-
-    SelectValidatedQuery result = null;
-    try {
-      result = normalizer.normalize(selectParsedQuery);
-    } catch (ValidationException e) {
-      fail("Test failed: " + methodName + System.lineSeparator(), e);
+        LOG.info("Data inserted in the MetadataManager for the NormalizedTest");
     }
 
-    assertTrue(result.toString().equalsIgnoreCase(expectedText),
-               "Test failed: "+ methodName + System.lineSeparator() +
-               "Result:   " + result.toString() + System.lineSeparator() +
-               "Expected: " + expectedText);
-  }
+    public void testSelectedParserQuery(SelectParsedQuery selectParsedQuery, String expectedText, String methodName) {
+        Normalizer normalizer = new Normalizer();
 
-  @Test(dependsOnGroups = "putData")
-  public void testNormalizeWhereOrderGroup() throws Exception {
+        SelectValidatedQuery result = null;
+        try {
+            result = normalizer.normalize(selectParsedQuery);
+        } catch (ValidationException e) {
+            fail("Test failed: " + methodName + System.lineSeparator(), e);
+        }
 
-    String methodName = "testNormalizeWhereOrderGroup";
+        assertTrue(result.toString().equalsIgnoreCase(expectedText),
+                "Test failed: " + methodName + System.lineSeparator() +
+                        "Result:   " + result.toString() + System.lineSeparator() +
+                        "Expected: " + expectedText);
+    }
 
-    String inputText = "SELECT colSales, colExpenses FROM tableClients "
-                       + "WHERE colCity = 'Madrid' "
-                       + "ORDER BY age "
-                       + "GROUP BY colSales, colExpenses;";
+    @Test(dependsOnGroups = "putData")
+    public void testNormalizeWhereOrderGroup() throws Exception {
 
-    String expectedText = "SELECT demo.tableClients.colSales, demo.tableClients.colExpenses FROM demo.tableClients "
-                          + "WHERE demo.tableClients.colPlace = Madrid "
-                          + "ORDER BY demo.tableClients.year "
-                          + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses";
+        String methodName = "testNormalizeWhereOrderGroup";
 
-    // BASE QUERY
-    BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+        String inputText = "SELECT colSales, colExpenses FROM tableClients "
+                + "WHERE colCity = 'Madrid' "
+                + "ORDER BY age "
+                + "GROUP BY colSales, colExpenses;";
 
-    // SELECTORS
-    List<Selector> selectorList = new ArrayList<>();
-    selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
-    selectorList.add(new ColumnSelector(new ColumnName(null, "colExpenses")));
+        String expectedText = "SELECT demo.tableClients.colSales, demo.tableClients.colExpenses FROM demo.tableClients "
+                + "WHERE demo.tableClients.colPlace = Madrid "
+                + "ORDER BY demo.tableClients.year "
+                + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses";
 
-    SelectExpression selectExpression = new SelectExpression(selectorList);
+        // BASE QUERY
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
 
-    // SELECT STATEMENT
-    SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
+        // SELECTORS
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
+        selectorList.add(new ColumnSelector(new ColumnName(null, "colExpenses")));
 
-    // WHERE CLAUSES
-    List<Relation> where = new ArrayList<>();
-    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colPlace")), Operator.EQ, new StringSelector("Madrid")));
-    selectStatement.setWhere(where);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
 
-    // ORDER BY
-    List<Selector> selectorListOrder = new ArrayList<>();
-    selectorListOrder.add(new ColumnSelector(new ColumnName(null, "year")));
-    OrderBy orderBy = new OrderBy(selectorListOrder);
-    selectStatement.setOrderBy(orderBy);
+        // SELECT STATEMENT
+        SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
 
-    // GROUP BY
-    List<Selector> groupBy = new ArrayList<>();
-    groupBy.add(new ColumnSelector(new ColumnName(null, "colSales")));
-    groupBy.add(new ColumnSelector(new ColumnName(null, "colExpenses")));
-    selectStatement.setGroupBy(new GroupBy(groupBy));
+        // WHERE CLAUSES
+        List<Relation> where = new ArrayList<>();
+        where.add(new Relation(new ColumnSelector(new ColumnName(null, "colPlace")), Operator.EQ,
+                new StringSelector("Madrid")));
+        selectStatement.setWhere(where);
 
-    SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+        // ORDER BY
+        List<Selector> selectorListOrder = new ArrayList<>();
+        selectorListOrder.add(new ColumnSelector(new ColumnName(null, "year")));
+        OrderBy orderBy = new OrderBy(selectorListOrder);
+        selectStatement.setOrderBy(orderBy);
 
-    testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
-  }
+        // GROUP BY
+        List<Selector> groupBy = new ArrayList<>();
+        groupBy.add(new ColumnSelector(new ColumnName(null, "colSales")));
+        groupBy.add(new ColumnSelector(new ColumnName(null, "colExpenses")));
+        selectStatement.setGroupBy(new GroupBy(groupBy));
 
-  @Test(dependsOnGroups = "putData")
-  public void testNormalizeInnerJoin() throws Exception {
+        SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
-    String methodName = "testNormalizeInnerJoin";
+        testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
+    }
 
-    String inputText =
-        "SELECT colSales, colFee FROM tableClients "
-        + "INNER JOIN tableCostumers ON assistantId = clientId "
-        + "WHERE colCity = 'Madrid' "
-        + "ORDER BY age "
-        + "GROUP BY colSales, colFee;";
+    @Test(dependsOnGroups = "putData")
+    public void testNormalizeInnerJoin() throws Exception {
 
-    String expectedText = "SELECT demo.tableClients.colSales, myCatalog.tableCostumers.colFee FROM demo.tableClients "
-                          + "INNER JOIN myCatalog.tableCostumers ON myCatalog.tableCostumers.assistantId = demo.tableClients.clientId "
-                          + "WHERE myCatalog.tableCostumers.colCity = Madrid "
-                          + "ORDER BY myCatalog.tableCostumers.age "
-                          + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee";
+        String methodName = "testNormalizeInnerJoin";
 
+        String inputText =
+                "SELECT colSales, colFee FROM tableClients "
+                        + "INNER JOIN tableCostumers ON assistantId = clientId "
+                        + "WHERE colCity = 'Madrid' "
+                        + "ORDER BY age "
+                        + "GROUP BY colSales, colFee;";
 
-    // BASE QUERY
-    BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+        String expectedText =
+                "SELECT demo.tableClients.colSales, myCatalog.tableCostumers.colFee FROM demo.tableClients "
+                        + "INNER JOIN myCatalog.tableCostumers ON myCatalog.tableCostumers.assistantId = demo.tableClients.clientId "
+                        + "WHERE myCatalog.tableCostumers.colCity = Madrid "
+                        + "ORDER BY myCatalog.tableCostumers.age "
+                        + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee";
 
-    // SELECTORS
-    List<Selector> selectorList = new ArrayList<>();
-    selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
-    selectorList.add(new ColumnSelector(new ColumnName(null, "colFee")));
+        // BASE QUERY
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
 
-    SelectExpression selectExpression = new SelectExpression(selectorList);
+        // SELECTORS
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
+        selectorList.add(new ColumnSelector(new ColumnName(null, "colFee")));
 
-    // SELECT STATEMENT
-    SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
+        SelectExpression selectExpression = new SelectExpression(selectorList);
 
-    List<Relation> joinRelations = new ArrayList<>();
-    Relation relation = new Relation(
-        new ColumnSelector(new ColumnName(null, "assistantId")),
-        Operator.EQ,
-        new ColumnSelector(new ColumnName(null, "clientId")));
-    joinRelations.add(relation);
-    InnerJoin innerJoin = new InnerJoin(new TableName("myCatalog", "tableCostumers"), joinRelations);
-    selectStatement.setJoin(innerJoin);
+        // SELECT STATEMENT
+        SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
 
-    // WHERE CLAUSES
-    List<Relation> where = new ArrayList<>();
-    where.add(new Relation(new ColumnSelector(new ColumnName(null, "colCity")), Operator.EQ, new StringSelector("Madrid")));
-    selectStatement.setWhere(where);
+        List<Relation> joinRelations = new ArrayList<>();
+        Relation relation = new Relation(
+                new ColumnSelector(new ColumnName(null, "assistantId")),
+                Operator.EQ,
+                new ColumnSelector(new ColumnName(null, "clientId")));
+        joinRelations.add(relation);
+        InnerJoin innerJoin = new InnerJoin(new TableName("myCatalog", "tableCostumers"), joinRelations);
+        selectStatement.setJoin(innerJoin);
 
-    // ORDER BY
-    List<Selector> selectorListOrder = new ArrayList<>();
-    selectorListOrder.add(new ColumnSelector(new ColumnName(null, "age")));
-    OrderBy orderBy = new OrderBy(selectorListOrder);
-    selectStatement.setOrderBy(orderBy);
+        // WHERE CLAUSES
+        List<Relation> where = new ArrayList<>();
+        where.add(new Relation(new ColumnSelector(new ColumnName(null, "colCity")), Operator.EQ,
+                new StringSelector("Madrid")));
+        selectStatement.setWhere(where);
 
-    // GROUP BY
-    List<Selector> groupBy = new ArrayList<>();
-    groupBy.add(new ColumnSelector(new ColumnName(null, "colSales")));
-    groupBy.add(new ColumnSelector(new ColumnName(null, "colFee")));
-    selectStatement.setGroupBy(new GroupBy(groupBy));
+        // ORDER BY
+        List<Selector> selectorListOrder = new ArrayList<>();
+        selectorListOrder.add(new ColumnSelector(new ColumnName(null, "age")));
+        OrderBy orderBy = new OrderBy(selectorListOrder);
+        selectStatement.setOrderBy(orderBy);
 
-    SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+        // GROUP BY
+        List<Selector> groupBy = new ArrayList<>();
+        groupBy.add(new ColumnSelector(new ColumnName(null, "colSales")));
+        groupBy.add(new ColumnSelector(new ColumnName(null, "colFee")));
+        selectStatement.setGroupBy(new GroupBy(groupBy));
 
-    testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
+        SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
-  }
+        testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
+
+    }
 
 }

@@ -18,13 +18,13 @@ import com.stratio.meta.common.result.QueryStatus;
 
 public class SelectInProgressQuery extends SelectPlannedQuery implements InProgressQuery {
 
-  public SelectInProgressQuery(SelectPlannedQuery selectPlannedQuery) {
-    super(selectPlannedQuery);
-    setQueryStatus(QueryStatus.IN_PROGRESS);
-  }
+    public SelectInProgressQuery(SelectPlannedQuery selectPlannedQuery) {
+        super(selectPlannedQuery);
+        setQueryStatus(QueryStatus.IN_PROGRESS);
+    }
 
-  public SelectInProgressQuery(SelectInProgressQuery selectInProgressQuery) {
-    this((SelectPlannedQuery) selectInProgressQuery);
-  }
+    public SelectInProgressQuery(SelectInProgressQuery selectInProgressQuery) {
+        this((SelectPlannedQuery) selectInProgressQuery);
+    }
 
 }

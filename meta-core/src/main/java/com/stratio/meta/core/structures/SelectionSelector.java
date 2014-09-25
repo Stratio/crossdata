@@ -22,7 +22,7 @@ import com.stratio.meta.common.statements.structures.selectors.SelectorMeta;
 import com.stratio.meta2.common.data.TableName;
 
 public class SelectionSelector {
-    
+
     SelectorMeta selector;
     boolean aliasInc;
     String alias;
@@ -32,11 +32,11 @@ public class SelectionSelector {
         this.aliasInc = aliasInc;
         this.alias = alias;
     }
-    
+
     public SelectionSelector(SelectorMeta selector) {
         this(selector, false, null);
     }
-    
+
     public SelectorMeta getSelector() {
         return selector;
     }
@@ -60,18 +60,18 @@ public class SelectionSelector {
     public void setAlias(String alias) {
         this.aliasInc = true;
         this.alias = alias;
-    }        
-        
+    }
+
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder sb = new StringBuilder(selector.toString());
-        if(aliasInc){
+        if (aliasInc) {
             sb.append(" AS ").append(alias);
         }
         return sb.toString();
     }
 
-  public void addTablename(TableName tablename) {
-    selector.addTablename(tablename);
-  }
+    public void addTablename(TableName tablename) {
+        selector.addTablename(tablename);
+    }
 }

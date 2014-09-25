@@ -18,26 +18,26 @@
 
 package com.stratio.meta.sh;
 
-import org.testng.annotations.Test;
-
 import static org.testng.Assert.assertTrue;
+
+import org.testng.annotations.Test;
 
 public class MetashTest {
 
-  @Test
-  public void testSendManifest() throws Exception {
-    Metash metash = new Metash(false);
-    String
-        result =
-        metash.sendManifest(
-            "ADD DATASTORE 'meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xml'");
-    assertTrue(result != null, "testSendManifest returns a empty String");
-  }
+    @Test
+    public void testSendManifest() throws Exception {
+        Metash metash = new Metash(false);
+        String
+                result =
+                metash.sendManifest(
+                        "ADD DATASTORE 'meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xml'");
+        assertTrue(result != null, "testSendManifest returns a empty String");
+    }
 
-  @Test
-  public void testConsole(){
-    Metash sh = new Metash(true);
-    sh.loop();
-  }
+    @Test
+    public void testConsole(){
+        Metash sh = new Metash(true);
+        sh.loop();
+    }
 
 }

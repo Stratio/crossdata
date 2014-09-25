@@ -25,33 +25,33 @@ import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class CatalogMetadata implements IMetadata {
-  private final CatalogName name;
+    private final CatalogName name;
 
-  private final Map<Selector, Selector> options;
+    private final Map<Selector, Selector> options;
 
-  private final Map<TableName, TableMetadata> tables;
+    private final Map<TableName, TableMetadata> tables;
 
-  public CatalogMetadata(CatalogName name, Map<Selector, Selector> options,
-      Map<TableName, TableMetadata> tables) {
-    this.name = name;
-    this.options = options;
-    this.tables = tables;
-  }
+    public CatalogMetadata(CatalogName name, Map<Selector, Selector> options,
+            Map<TableName, TableMetadata> tables) {
+        this.name = name;
+        this.options = options;
+        this.tables = tables;
+    }
 
-  public final CatalogName getName() {
-    return name;
-  }
+    public final CatalogName getName() {
+        return name;
+    }
 
-  public Map<Selector, Selector> getOptions() {
-    return options;
-  }
+    public Map<Selector, Selector> getOptions() {
+        return options;
+    }
 
-  public Map<TableName, TableMetadata> getTables() {
-    return tables;
-  }
+    public Map<TableName, TableMetadata> getTables() {
+        return tables;
+    }
 
-  @Override
-  public String toString() {
-    throw new UnsupportedOperationException();
-  }
+    @Override
+    public String toString() {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -1,20 +1,20 @@
 <DataStore>
-  <Name>string</Name>
-  <Version>string</Version>
-  <RequiredProperties>
-    <cluster>
-      <name>string</name>
-      <!--Zero or more repetitions:-->
-      <hosts>
-        <host>string</host>
-        <port>string</port>
-      </hosts>
-    </cluster>
-  </RequiredProperties>
-  <OptionalProperties>
-    <!--Zero or more repetitions:-->
-    <Property>
-      <Name>string</Name>
-    </Property>
-  </OptionalProperties>
+    <Name>string</Name>
+    <Version>string</Version>
+    <RequiredProperties>
+        <cluster>
+            <name>string</name>
+            <!--Zero or more repetitions:-->
+            <hosts>
+                <host>string</host>
+                <port>string</port>
+            </hosts>
+        </cluster>
+    </RequiredProperties>
+    <OptionalProperties>
+        <!--Zero or more repetitions:-->
+        <Property>
+            <Name>string</Name>
+        </Property>
+    </OptionalProperties>
 </DataStore>

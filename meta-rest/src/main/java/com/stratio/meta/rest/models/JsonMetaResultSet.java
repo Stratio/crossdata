@@ -18,124 +18,121 @@
 
 package com.stratio.meta.rest.models;
 
-import com.stratio.meta.common.data.Cell;
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.metadata.ColumnMetadata;
-import com.stratio.meta2.common.metadata.ColumnType;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.stratio.meta.common.data.Cell;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
+import com.stratio.meta2.common.metadata.ColumnType;
+
 public class JsonMetaResultSet implements Serializable {
 
-  /**
-   * Serial version UID in order to be Serializable.
-   */
-  private static final long serialVersionUID = -5989403621101496698L;
+    /**
+     * Serial version UID in order to be Serializable.
+     */
+    private static final long serialVersionUID = -5989403621101496698L;
 
-  /**
-   * List of {@link com.stratio.meta.common.data.Row}.
-   */
-  private List<JsonRow> rows;
+    /**
+     * List of {@link com.stratio.meta.common.data.Row}.
+     */
+    private List<JsonRow> rows;
 
-  /**
-   * List of {@link ColumnMetadata}.
-   */
-  private List<ColumnMetadata> columnMetadata;
+    /**
+     * List of {@link ColumnMetadata}.
+     */
+    private List<ColumnMetadata> columnMetadata;
 
-  /**
-   * MetaResultSet default constructor.
-   */
-  public JsonMetaResultSet() {
-    rows = new ArrayList<>();
-    columnMetadata = new ArrayList<>();
-  }
-
-  public JsonMetaResultSet(String uniqueCell) {
-    rows = new ArrayList<>();
-    rows.add(new JsonRow("Result", new Cell(uniqueCell)));
-    columnMetadata = new ArrayList<>();
-    columnMetadata.add(new ColumnMetadata(new ColumnName("Result", "Result", "Result"),
-                                          new String[]{"Result"}, ColumnType.VARCHAR));
-  }
-
-  /**
-   * Set the list of rows.
-   * 
-   * @param rows The list.
-   */
-  public void setRows(List<JsonRow> rows) {
-    this.rows = rows;
-  }
-
-  public String getRows() {
-    String result = "[";
-    for (JsonRow r : rows) {
-      String rowResult = "{";
-      for (Entry<String, Cell> c : r.getCells().entrySet()) {
-        String value = "";
-        value += c.getValue().getValue().toString();
-        rowResult +="'" + c.getKey() +"'"+ ": '" + value + "', ";
-      }
-      rowResult = rowResult.substring(0, rowResult.length() - 2); // removes last comma
-      rowResult += "}";
-
-      result += rowResult+" , ";
+    /**
+     * MetaResultSet default constructor.
+     */
+    public JsonMetaResultSet() {
+        rows = new ArrayList<>();
+        columnMetadata = new ArrayList<>();
     }
-    result = result.substring(0, result.length() - 2); // removes last comma
-    result += "]";
-    return result.trim();
-  }
 
+    public JsonMetaResultSet(String uniqueCell) {
+        rows = new ArrayList<>();
+        rows.add(new JsonRow("Result", new Cell(uniqueCell)));
+        columnMetadata = new ArrayList<>();
+        columnMetadata.add(new ColumnMetadata(new ColumnName("Result", "Result", "Result"),
+                new String[] { "Result" }, ColumnType.VARCHAR));
+    }
 
-  /**
-   * Set the list of column metadata.
-   * 
-   * @param columnMetadata A list of
-   *        {@link com.stratio.meta.common.metadata.structures.ColumnMetadata} in order.
-   */
-  public void setColumnMetadata(List<ColumnMetadata> columnMetadata) {
-    this.columnMetadata = columnMetadata;
-  }
+    public String getRows() {
+        String result = "[";
+        for (JsonRow r : rows) {
+            String rowResult = "{";
+            for (Entry<String, Cell> c : r.getCells().entrySet()) {
+                String value = "";
+                value += c.getValue().getValue().toString();
+                rowResult += "'" + c.getKey() + "'" + ": '" + value + "', ";
+            }
+            rowResult = rowResult.substring(0, rowResult.length() - 2); // removes last comma
+            rowResult += "}";
 
-  /**
-   * Get the column metadata in order.
-   * 
-   * @return A list of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata}.
-   */
-  public List<ColumnMetadata> getColumnMetadata() {
-    return columnMetadata;
-  }
+            result += rowResult + " , ";
+        }
+        result = result.substring(0, result.length() - 2); // removes last comma
+        result += "]";
+        return result.trim();
+    }
 
-  /**
-   * Add a row to the Result Set.
-   * 
-   * @param row {@link com.stratio.meta.common.data.Row} to add
-   */
-  public void add(JsonRow row) {
-    rows.add(row);
-  }
+    /**
+     * Set the list of rows.
+     *
+     * @param rows The list.
+     */
+    public void setRows(List<JsonRow> rows) {
+        this.rows = rows;
+    }
 
-  /**
-   * Remove a row.
-   * 
-   * @param index Index of the row to remove
-   */
-  public void remove(int index) {
-    rows.remove(index);
-  }
+    /**
+     * Get the column metadata in order.
+     *
+     * @return A list of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata}.
+     */
+    public List<ColumnMetadata> getColumnMetadata() {
+        return columnMetadata;
+    }
 
-  /**
-   * Get the size of the Result Set.
-   * 
-   * @return Size.
-   */
-  public int size() {
-    return rows.size();
-  }
+    /**
+     * Set the list of column metadata.
+     *
+     * @param columnMetadata A list of
+     *                       {@link com.stratio.meta.common.metadata.structures.ColumnMetadata} in order.
+     */
+    public void setColumnMetadata(List<ColumnMetadata> columnMetadata) {
+        this.columnMetadata = columnMetadata;
+    }
 
+    /**
+     * Add a row to the Result Set.
+     *
+     * @param row {@link com.stratio.meta.common.data.Row} to add
+     */
+    public void add(JsonRow row) {
+        rows.add(row);
+    }
 
+    /**
+     * Remove a row.
+     *
+     * @param index Index of the row to remove
+     */
+    public void remove(int index) {
+        rows.remove(index);
+    }
+
+    /**
+     * Get the size of the Result Set.
+     *
+     * @return Size.
+     */
+    public int size() {
+        return rows.size();
+    }
 
 }

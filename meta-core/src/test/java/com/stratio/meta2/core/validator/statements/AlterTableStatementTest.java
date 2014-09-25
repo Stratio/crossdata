@@ -18,6 +18,9 @@
 
 package com.stratio.meta2.core.validator.statements;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.common.data.CatalogName;
@@ -31,44 +34,42 @@ import com.stratio.meta2.core.statements.AlterTableStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
 
-import org.testng.Assert;
-import org.testng.annotations.Test;
-
 public class AlterTableStatementTest extends BasicValidatorTest {
 
+    @Test
+    public void alterTableAlterColumns() {
+        String query = "ALTER TABLE demo.users ALTER demo.users.age TYPE BIGINT;";
 
-  @Test
-  public void alterTableAlterColumns() {
-      String query = "ALTER TABLE demo.users ALTER demo.users.age TYPE BIGINT;";
+        AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"),
+                new ColumnName("demo", "users", "age"),
+                ColumnType.BIGINT, null, 1);
+        Validator validator = new Validator();
 
-      AlterTableStatement alterTableStatement=new AlterTableStatement(new TableName("demo","users"),new ColumnName("demo","users","age"),
-          ColumnType.BIGINT,null,1);
-      Validator validator=new Validator();
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
 
-      BaseQuery baseQuery=new BaseQuery("alterTableId",query, new CatalogName("demo"));
-
-      ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
-      try {
-          validator.validate(parsedQuery);
-          Assert.assertTrue(true);
-      } catch (ValidationException e) {
-          Assert.fail(e.getMessage());
-      } catch (IgnoreQueryException e) {
-          Assert.fail(e.getMessage());
-      }
-  }
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
 
     @Test
     public void alterTableAddColumns() {
         String query = "ALTER TABLE demo.users ADD demo.users.new TYPE TEXT ;";
 
-        AlterTableStatement alterTableStatement=new AlterTableStatement(new TableName("demo","users"),new ColumnName("demo","users","new"),
-            ColumnType.VARCHAR,null,2);
-        Validator validator=new Validator();
+        AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"),
+                new ColumnName("demo", "users", "new"),
+                ColumnType.VARCHAR, null, 2);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("alterTableId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -82,13 +83,14 @@ public class AlterTableStatementTest extends BasicValidatorTest {
     @Test
     public void alterTableWithOptions() {
         String query = "ALTER TABLE demo.users WITH comment='Users table to maintain users';";
-        AlterTableStatement alterTableStatement=new AlterTableStatement(new TableName("demo","users"), null , null, "{'comment': 'Users table to maintain users'}", 4);
+        AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"), null, null,
+                "{'comment': 'Users table to maintain users'}", 4);
 
-        Validator validator=new Validator();
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("alterTableId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -103,13 +105,14 @@ public class AlterTableStatementTest extends BasicValidatorTest {
     public void alterTableDropColumns() {
         String query = "ALTER TABLE demo.users DROP demo.users.age;";
 
-        AlterTableStatement alterTableStatement=new AlterTableStatement(new TableName("demo","users"),new ColumnName("demo","users","age"),
-            ColumnType.BIGINT,null,3);
-        Validator validator=new Validator();
+        AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"),
+                new ColumnName("demo", "users", "age"),
+                ColumnType.BIGINT, null, 3);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("alterTableId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -124,13 +127,14 @@ public class AlterTableStatementTest extends BasicValidatorTest {
     public void alterUnknownTableColumns() {
         String query = "ALTER TABLE unknown DROP demo.users.age;";
 
-        AlterTableStatement alterTableStatement=new AlterTableStatement(new TableName("demo","unknown"),new ColumnName("demo","unknown","age"),
-            ColumnType.BIGINT,null,3);
-        Validator validator=new Validator();
+        AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "unknown"),
+                new ColumnName("demo", "unknown", "age"),
+                ColumnType.BIGINT, null, 3);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("alterTableId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("Table specified must not exists");
@@ -145,13 +149,14 @@ public class AlterTableStatementTest extends BasicValidatorTest {
     public void alterTableUnknownColumns() {
         String query = "ALTER TABLE demo.users DROP unknown;";
 
-        AlterTableStatement alterTableStatement=new AlterTableStatement(new TableName("demo","users"),new ColumnName("demo","users","unknown"),
-            ColumnType.BIGINT,null,3);
-        Validator validator=new Validator();
+        AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"),
+                new ColumnName("demo", "users", "unknown"),
+                ColumnType.BIGINT, null, 3);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("alterTableId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterTableStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("Columns specified must not exists and then fail the test");
@@ -161,15 +166,5 @@ public class AlterTableStatementTest extends BasicValidatorTest {
             Assert.assertTrue(true);
         }
     }
-
-
-
-
-
-
-
-
-
-
 
 }

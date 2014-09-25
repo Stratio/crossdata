@@ -18,13 +18,13 @@ import com.stratio.meta.common.result.QueryStatus;
 
 public class StorageInProgressQuery extends StoragePlannedQuery implements InProgressQuery {
 
-  public StorageInProgressQuery(StoragePlannedQuery storagePlannedQuery) {
-    super(storagePlannedQuery);
-    setQueryStatus(QueryStatus.IN_PROGRESS);
-  }
+    public StorageInProgressQuery(StoragePlannedQuery storagePlannedQuery) {
+        super(storagePlannedQuery);
+        setQueryStatus(QueryStatus.IN_PROGRESS);
+    }
 
-  public StorageInProgressQuery(StorageInProgressQuery storageInProgressQuery) {
-    this((StoragePlannedQuery) storageInProgressQuery);
-  }
+    public StorageInProgressQuery(StorageInProgressQuery storageInProgressQuery) {
+        this((StoragePlannedQuery) storageInProgressQuery);
+    }
 
 }

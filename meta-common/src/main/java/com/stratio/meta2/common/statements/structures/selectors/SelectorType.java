@@ -19,12 +19,12 @@
 package com.stratio.meta2.common.statements.structures.selectors;
 
 public enum SelectorType {
-  FUNCTION,
-  COLUMN,
-  ASTERISK,
-  BOOLEAN,
-  STRING,
-  INTEGER,
-  FLOATING_POINT
+    FUNCTION,
+    COLUMN,
+    ASTERISK,
+    BOOLEAN,
+    STRING,
+    INTEGER,
+    FLOATING_POINT
 
 }

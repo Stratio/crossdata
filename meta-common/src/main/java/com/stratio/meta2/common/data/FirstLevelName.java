@@ -19,5 +19,7 @@
 package com.stratio.meta2.common.data;
 
 public abstract class FirstLevelName extends Name {
-  public boolean isCompletedName(){ return true; }
+    public boolean isCompletedName() {
+        return true;
+    }
 }

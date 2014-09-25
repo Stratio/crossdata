@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.validator.statements;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
@@ -28,22 +30,19 @@ import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.DropIndexStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class DropIndexStatementTest extends BasicValidatorTest {
 
-
     @Test
-    public void validateOk(){
+    public void validateOk() {
         String query = "DROP INDEX gender_idx;";
-        DropIndexStatement dropIndexStatement=new DropIndexStatement();
+        DropIndexStatement dropIndexStatement = new DropIndexStatement();
         dropIndexStatement.setName("gender_idx");
-        Validator validator=new Validator();
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropIndexId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropIndexStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -55,17 +54,17 @@ public class DropIndexStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void validateIfNotExists(){
+    public void validateIfNotExists() {
         String query = "DROP INDEX IF EXISTS unknown;";
-        DropIndexStatement dropIndexStatement=new DropIndexStatement();
+        DropIndexStatement dropIndexStatement = new DropIndexStatement();
         dropIndexStatement.setName("unknown");
         dropIndexStatement.setDropIfExists();
 
-        Validator validator=new Validator();
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropIndexId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropIndexStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -76,19 +75,18 @@ public class DropIndexStatementTest extends BasicValidatorTest {
         }
     }
 
-
     @Test
-    public void validateNotExistsIndex(){
+    public void validateNotExistsIndex() {
         String query = "DROP INDEX unknown;";
-        DropIndexStatement dropIndexStatement=new DropIndexStatement();
+        DropIndexStatement dropIndexStatement = new DropIndexStatement();
         dropIndexStatement.setName("unknown");
         dropIndexStatement.setDropIfExists();
 
-        Validator validator=new Validator();
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropIndexId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropIndexStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("Index must exist");
@@ -98,6 +96,5 @@ public class DropIndexStatementTest extends BasicValidatorTest {
             Assert.assertTrue(true);
         }
     }
-
 
 }

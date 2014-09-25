@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.query;
 
+import java.util.List;
+
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.InnerJoin;
@@ -25,64 +27,62 @@ import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 
-import java.util.List;
-
 public class SelectValidatedQuery extends SelectParsedQuery implements ValidatedQuery {
 
-  private List<TableMetadata> tableMetadata;
-  private List<ColumnName> columns;
-  private List<Relation> relationships;
-  private List<TableName> tables;
-  private InnerJoin join;
+    private List<TableMetadata> tableMetadata;
+    private List<ColumnName> columns;
+    private List<Relation> relationships;
+    private List<TableName> tables;
+    private InnerJoin join;
 
-  public SelectValidatedQuery(SelectParsedQuery selectParsedQuery) {
-    super(selectParsedQuery);
-    setQueryStatus(QueryStatus.VALIDATED);
-  }
+    public SelectValidatedQuery(SelectParsedQuery selectParsedQuery) {
+        super(selectParsedQuery);
+        setQueryStatus(QueryStatus.VALIDATED);
+    }
 
-  public SelectValidatedQuery(SelectValidatedQuery selectValidatedQuery) {
-    this((SelectParsedQuery) selectValidatedQuery);
-  }
+    public SelectValidatedQuery(SelectValidatedQuery selectValidatedQuery) {
+        this((SelectParsedQuery) selectValidatedQuery);
+    }
 
-  public List<TableMetadata> getTableMetadata() {
-    return tableMetadata;
-  }
+    public List<TableMetadata> getTableMetadata() {
+        return tableMetadata;
+    }
 
-  public void setTableMetadata(List<TableMetadata> tableMetadata) {
-    this.tableMetadata = tableMetadata;
-  }
+    public void setTableMetadata(List<TableMetadata> tableMetadata) {
+        this.tableMetadata = tableMetadata;
+    }
 
-  public List<ColumnName> getColumns() {
-    return columns;
-  }
+    public List<ColumnName> getColumns() {
+        return columns;
+    }
 
-  public void setColumns(List<ColumnName> columns) {
-    this.columns = columns;
-  }
+    public void setColumns(List<ColumnName> columns) {
+        this.columns = columns;
+    }
 
-  public List<Relation> getRelationships() {
-    return relationships;
-  }
+    public List<Relation> getRelationships() {
+        return relationships;
+    }
 
-  public void setRelationships(List<Relation> relationships) {
-    this.relationships = relationships;
-  }
+    public void setRelationships(List<Relation> relationships) {
+        this.relationships = relationships;
+    }
 
-  public List<TableName> getTables() {
-    return tables;
-  }
+    public List<TableName> getTables() {
+        return tables;
+    }
 
-  public void setTables(List<TableName> tables) {
-    this.tables = tables;
-  }
+    public void setTables(List<TableName> tables) {
+        this.tables = tables;
+    }
 
-  public InnerJoin getJoin() {
-    return join;
-  }
+    public InnerJoin getJoin() {
+        return join;
+    }
 
-  public void setJoin(InnerJoin join) {
-    this.join = join;
-  }
+    public void setJoin(InnerJoin join) {
+        this.join = join;
+    }
 
 }
 

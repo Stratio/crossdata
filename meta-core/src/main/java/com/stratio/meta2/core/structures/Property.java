@@ -20,24 +20,24 @@ package com.stratio.meta2.core.structures;
 
 public abstract class Property {
 
-  public static final int TYPE_NAME_VALUE = 1;
-  public static final int TYPE_COMPACT_STORAGE = 2;
-  public static final int TYPE_CLUSTERING_ORDER = 3;
+    public static final int TYPE_NAME_VALUE = 1;
+    public static final int TYPE_COMPACT_STORAGE = 2;
+    public static final int TYPE_CLUSTERING_ORDER = 3;
 
-  protected int type;
+    protected int type;
 
-  public Property(int type) {
-    this.type = type;
-  }
+    public Property(int type) {
+        this.type = type;
+    }
 
-  public int getType() {
-    return type;
-  }
+    public int getType() {
+        return type;
+    }
 
-  public void setType(int type) {
-    this.type = type;
-  }
+    public void setType(int type) {
+        this.type = type;
+    }
 
-  @Override
-  public abstract String toString();
+    @Override
+    public abstract String toString();
 }

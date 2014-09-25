@@ -22,13 +22,13 @@ import com.stratio.meta.common.result.QueryStatus;
 
 public class StorageExecutedQuery extends StorageInProgressQuery implements ExecutedQuery {
 
-  public StorageExecutedQuery(StorageInProgressQuery storageInProgressQuery) {
-    super(storageInProgressQuery);
-    setQueryStatus(QueryStatus.EXECUTED);
-  }
+    public StorageExecutedQuery(StorageInProgressQuery storageInProgressQuery) {
+        super(storageInProgressQuery);
+        setQueryStatus(QueryStatus.EXECUTED);
+    }
 
-  public StorageExecutedQuery(StorageExecutedQuery storageExecutedQuery) {
-    this((StorageInProgressQuery) storageExecutedQuery);
-  }
+    public StorageExecutedQuery(StorageExecutedQuery storageExecutedQuery) {
+        this((StorageInProgressQuery) storageExecutedQuery);
+    }
 
 }

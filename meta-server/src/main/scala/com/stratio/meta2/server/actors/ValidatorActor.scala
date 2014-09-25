@@ -24,8 +24,8 @@ import com.stratio.meta2.core.statements.MetaStatement
 import com.stratio.meta2.core.validator.Validator
 import org.apache.log4j.Logger
 
-object ValidatorActor{
-  def props(planner:ActorRef, validator:Validator): Props= Props(new ValidatorActor(planner,validator))
+object ValidatorActor {
+  def props(planner: ActorRef, validator: Validator): Props = Props(new ValidatorActor(planner, validator))
 }
 
 /**
@@ -33,29 +33,28 @@ object ValidatorActor{
  * @param planner The associated planner actor.
  * @param validator The associated com.stratio.meta.core.validator.Validator}.
  */
-class ValidatorActor(planner:ActorRef, validator:Validator) extends Actor with TimeTracker{
-
-  /**
-   * Class logger.
-   */
-  val log= Logger.getLogger(classOf[ValidatorActor])
+class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with TimeTracker {
 
   /**
    * Name of the timer published through JMX.
    */
-  override lazy val timerName= this.getClass.getName
+  override lazy val timerName = this.getClass.getName
+  /**
+   * Class logger.
+   */
+  val log = Logger.getLogger(classOf[ValidatorActor])
 
   override def receive: Receive = {
     case query: ParsedQuery => {
       log.info("Validator Actor received ParsedQuery ")
-      val validatedquery=validator.validate(query)
+      val validatedquery = validator.validate(query)
       log.info("Validator Actor sends validated query to planner ")
-      log.info("Validatedquery= "+validatedquery)
+      log.info("Validatedquery= " + validatedquery)
       planner forward validatedquery
       sender ! "Ok"
     }
-    case statement: MetaStatement=> {
-      
+    case statement: MetaStatement => {
+
       log.info("validator metaStatement")
     }
     case _ => {

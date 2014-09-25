@@ -21,35 +21,35 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-
 /**
  * Class that models a {@code DROP CLUSTER} statement from the META language. In order to remove
  * an active cluster from the system, the user is required to delete first the existing tables.
  */
 public class DetachClusterStatement extends MetadataStatement {
 
-  /**
-   * Cluster name given by the user.
-   */
-  private final String clusterName;
+    /**
+     * Cluster name given by the user.
+     */
+    private final String clusterName;
 
-  /**
-   * Default constructor.
-   * @param clusterName The name of the cluster to be removed.
-   */
-  public DetachClusterStatement(String clusterName){
-    this.clusterName = clusterName;
-  }
+    /**
+     * Default constructor.
+     *
+     * @param clusterName The name of the cluster to be removed.
+     */
+    public DetachClusterStatement(String clusterName) {
+        this.clusterName = clusterName;
+    }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("DETACH CLUSTER ");
-    sb.append(clusterName);
-    return sb.toString();
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("DETACH CLUSTER ");
+        sb.append(clusterName);
+        return sb.toString();
+    }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER);
-  }
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER);
+    }
 }

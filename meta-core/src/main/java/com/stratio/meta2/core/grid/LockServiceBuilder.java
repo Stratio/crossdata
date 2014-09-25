@@ -25,26 +25,26 @@ import org.jgroups.JChannel;
  */
 public class LockServiceBuilder {
 
-  private JChannel channel;
+    private JChannel channel;
 
-  /**
-   * Sets the JGroups channel to be used.
-   *
-   * @param channel the JGroups channel to be used.
-   * @return this.
-   */
-  public LockServiceBuilder setChannel(JChannel channel) {
-    this.channel = channel;
-    return this;
-  }
+    /**
+     * Sets the JGroups channel to be used.
+     *
+     * @param channel the JGroups channel to be used.
+     * @return this.
+     */
+    public LockServiceBuilder setChannel(JChannel channel) {
+        this.channel = channel;
+        return this;
+    }
 
-  /**
-   * Returns a new {@link com.stratio.meta2.core.grid.LockService}.
-   *
-   * @return a new {@link com.stratio.meta2.core.grid.LockService}.
-   */
-  public LockService build() {
-    return new LockService(channel);
-  }
+    /**
+     * Returns a new {@link com.stratio.meta2.core.grid.LockService}.
+     *
+     * @return a new {@link com.stratio.meta2.core.grid.LockService}.
+     */
+    public LockService build() {
+        return new LockService(channel);
+    }
 
 }

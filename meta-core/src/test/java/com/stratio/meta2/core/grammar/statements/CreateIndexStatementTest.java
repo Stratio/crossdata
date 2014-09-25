@@ -18,109 +18,109 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class CreateIndexStatementTest extends ParsingTest {
 
-  // CREATE <type_index>? INDEX (IF NOT EXISTS)? <identifier>? ON <tablename> '(' <identifier> (',' <identifier>)* ')'
-  // ( USING <string> )? WITH OPTIONS? (<maps> AND <maps>...) ';'
-  //DEFAULT → Usual inverted index, Hash index. (By default).
-  //LUCENE → Full text index.
-  //CUSTOM → custom index. (new feature for release 2)
+    // CREATE <type_index>? INDEX (IF NOT EXISTS)? <identifier>? ON <tablename> '(' <identifier> (',' <identifier>)* ')'
+    // ( USING <string> )? WITH OPTIONS? (<maps> AND <maps>...) ';'
+    //DEFAULT → Usual inverted index, Hash index. (By default).
+    //LUCENE → Full text index.
+    //CUSTOM → custom index. (new feature for release 2)
 
-  @Test
-  public void createIndexDefaultBasic() {
-    String inputText = "[demo], CREATE DEFAULT INDEX index1 ON table1 (field1, field2);";
-    String expectedText = "CREATE DEFAULT INDEX index1 ON demo.table1 (demo.table1.field1, demo.table1.field2);";
-    testRegularStatement(inputText, expectedText, "createIndexDefaultBasic");
-  }
+    @Test
+    public void createIndexDefaultBasic() {
+        String inputText = "[demo], CREATE DEFAULT INDEX index1 ON table1 (field1, field2);";
+        String expectedText = "CREATE DEFAULT INDEX index1 ON demo.table1 (demo.table1.field1, demo.table1.field2);";
+        testRegularStatement(inputText, expectedText, "createIndexDefaultBasic");
+    }
 
-  @Test
-  public void createIndexDefaultIfNotExist() {
-    String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON tester.table1 (field1, field2);";
-    String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON tester.table1 (tester.table1.field1, tester.table1.field2);";
-    testRegularStatementSession("demo", inputText, expectedText, "createIndexDefaultIfNotExist");
-  }
+    @Test
+    public void createIndexDefaultIfNotExist() {
+        String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON tester.table1 (field1, field2);";
+        String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON tester.table1 (tester.table1.field1, tester.table1.field2);";
+        testRegularStatementSession("demo", inputText, expectedText, "createIndexDefaultIfNotExist");
+    }
 
-  @Test
-  public void createIndexDefaultUsing() {
-    String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1, field2) USING \"com.company.Index.class\";";
-    String expectedText = "CREATE DEFAULT INDEX index1 ON <unknown_name>.table1 (<unknown_name>.table1.field1, <unknown_name>.table1.field2) USING \"com.company.Index.class\";";
-    testRegularStatement(inputText, expectedText, "createIndexDefaultUsing");
-  }
+    @Test
+    public void createIndexDefaultUsing() {
+        String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1, field2) USING \"com.company.Index.class\";";
+        String expectedText = "CREATE DEFAULT INDEX index1 ON <unknown_name>.table1 (<unknown_name>.table1.field1, <unknown_name>.table1.field2) USING \"com.company.Index.class\";";
+        testRegularStatement(inputText, expectedText, "createIndexDefaultUsing");
+    }
 
-  @Test
-  public void createIndexLucene() {
-    String inputText = "CREATE FULL_TEXT INDEX demo_banks ON banks"
-                       + " (day, entry_id, latitude, longitude, name, address, tags)"
-                       + " USING 'org.apache.cassandra.db.index.stratio.RowIndex'"
-                       + " WITH {'schema': "
-                       + "'{default_analyzer: \"org.apache.lucene.analysis.standard.StandardAnalyzer\","
-                       + "fields: "
-                       + "{day: {type: \"date\", pattern: \"yyyy-MM-dd\"},"
-                       + " entry_id: {type: \"uuid\"}, latitude: {type: \"double\"},"
-                       + " longitude: {type: \"double\"}, name: {type: \"text\"},"
-                       + " address: {type: \"string\"}, tags: {type: \"boolean\"}}}'};";
-    String expectedText = "CREATE FULL_TEXT INDEX stratio_lucene_demo_banks ON demo.banks"
-                          + " (demo.banks.day, demo.banks.entry_id, demo.banks.latitude, demo.banks.longitude, demo.banks.name, demo.banks.address, demo.banks.tags)"
-                          + " USING 'org.apache.cassandra.db.index.stratio.RowIndex'"
-                          + " WITH {schema="
-                          + "{default_analyzer: \"org.apache.lucene.analysis.standard.StandardAnalyzer\","
-                          + "fields: "
-                          + "{day: {type: \"date\", pattern: \"yyyy-MM-dd\"},"
-                          + " entry_id: {type: \"uuid\"}, latitude: {type: \"double\"},"
-                          + " longitude: {type: \"double\"}, name: {type: \"text\"},"
-                          + " address: {type: \"string\"}, tags: {type: \"boolean\"}}}};";
-    testRegularStatementSession("demo", inputText, expectedText, "createIndexLucene");
-  }
+    @Test
+    public void createIndexLucene() {
+        String inputText = "CREATE FULL_TEXT INDEX demo_banks ON banks"
+                + " (day, entry_id, latitude, longitude, name, address, tags)"
+                + " USING 'org.apache.cassandra.db.index.stratio.RowIndex'"
+                + " WITH {'schema': "
+                + "'{default_analyzer: \"org.apache.lucene.analysis.standard.StandardAnalyzer\","
+                + "fields: "
+                + "{day: {type: \"date\", pattern: \"yyyy-MM-dd\"},"
+                + " entry_id: {type: \"uuid\"}, latitude: {type: \"double\"},"
+                + " longitude: {type: \"double\"}, name: {type: \"text\"},"
+                + " address: {type: \"string\"}, tags: {type: \"boolean\"}}}'};";
+        String expectedText = "CREATE FULL_TEXT INDEX stratio_lucene_demo_banks ON demo.banks"
+                + " (demo.banks.day, demo.banks.entry_id, demo.banks.latitude, demo.banks.longitude, demo.banks.name, demo.banks.address, demo.banks.tags)"
+                + " USING 'org.apache.cassandra.db.index.stratio.RowIndex'"
+                + " WITH {schema="
+                + "{default_analyzer: \"org.apache.lucene.analysis.standard.StandardAnalyzer\","
+                + "fields: "
+                + "{day: {type: \"date\", pattern: \"yyyy-MM-dd\"},"
+                + " entry_id: {type: \"uuid\"}, latitude: {type: \"double\"},"
+                + " longitude: {type: \"double\"}, name: {type: \"text\"},"
+                + " address: {type: \"string\"}, tags: {type: \"boolean\"}}}};";
+        testRegularStatementSession("demo", inputText, expectedText, "createIndexLucene");
+    }
 
-  @Test
-  public void createIndexDefaultAll() {
-    String inputText =    "[demo], CREATE DEFAULT INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING 'com.company.Index.class' WITH {'key1': 'val1'};";
-    String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH {key1=val1};";
-    testRegularStatement(inputText, expectedText, "createIndexDefaultAll");
-  }
+    @Test
+    public void createIndexDefaultAll() {
+        String inputText = "[demo], CREATE DEFAULT INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING 'com.company.Index.class' WITH {'key1': 'val1'};";
+        String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH {key1=val1};";
+        testRegularStatement(inputText, expectedText, "createIndexDefaultAll");
+    }
 
-  @Test
-  public void createDefaultIndexWithOptions2() {
-    String inputText =    "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (field1, field2) USING 'com.company.Index.class' WITH {'key1': 'val1', 'key2': 'val2'};";
-    String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH {key1=val1, key2=val2};";
-    testRegularStatement(inputText, expectedText, "createIndexWithOptions2");
-  }
+    @Test
+    public void createDefaultIndexWithOptions2() {
+        String inputText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (field1, field2) USING 'com.company.Index.class' WITH {'key1': 'val1', 'key2': 'val2'};";
+        String expectedText = "CREATE DEFAULT INDEX IF NOT EXISTS index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH {key1=val1, key2=val2};";
+        testRegularStatement(inputText, expectedText, "createIndexWithOptions2");
+    }
 
-  @Test
-  public void createLuceneIndexWithOptions2() {
-    String inputText =    "CREATE FULL_TEXT INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING 'com.company.Index.class' WITH {'key1': 'val1', 'key2': 'val2'};";
-    String expectedText = "CREATE FULL_TEXT INDEX IF NOT EXISTS stratio_lucene_index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH {key1=val1, key2=val2};";
-    testRegularStatementSession("demo", inputText, expectedText, "createIndexWithOptions2");
-  }
+    @Test
+    public void createLuceneIndexWithOptions2() {
+        String inputText = "CREATE FULL_TEXT INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING 'com.company.Index.class' WITH {'key1': 'val1', 'key2': 'val2'};";
+        String expectedText = "CREATE FULL_TEXT INDEX IF NOT EXISTS stratio_lucene_index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH {key1=val1, key2=val2};";
+        testRegularStatementSession("demo", inputText, expectedText, "createIndexWithOptions2");
+    }
 
-  @Test
-  public void createIndexWrongOptionAssignment(){
-    String inputText = "CREATE LUCENE INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1:val1;";
-    testParserFails(inputText, "createIndexWrongOptionAssignment");
-  }
+    @Test
+    public void createIndexWrongOptionAssignment() {
+        String inputText = "CREATE LUCENE INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1:val1;";
+        testParserFails(inputText, "createIndexWrongOptionAssignment");
+    }
 
-  @Test
-  public void createIndexDefaultBasicWithSpaceBeforeSemicolon() {
-    String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1; field2);";
-    testParserFails(inputText, "createIndexDefaultBasicWithSpaceBeforeSemicolon");
-  }
+    @Test
+    public void createIndexDefaultBasicWithSpaceBeforeSemicolon() {
+        String inputText = "CREATE DEFAULT INDEX index1 ON table1 (field1; field2);";
+        testParserFails(inputText, "createIndexDefaultBasicWithSpaceBeforeSemicolon");
+    }
 
-  @Test
-  public void createDefaultIndexLowercase() {
-    String inputText = "create default INDEX index1 ON table1 (field1, field2);";
-    String expectedText = "CREATE DEFAULT INDEX index1 ON <unknown_name>.table1 (<unknown_name>.table1.field1, <unknown_name>.table1.field2);";
-    testRegularStatement(inputText, expectedText, "createDefaultIndexLowercase");
-  }
+    @Test
+    public void createDefaultIndexLowercase() {
+        String inputText = "create default INDEX index1 ON table1 (field1, field2);";
+        String expectedText = "CREATE DEFAULT INDEX index1 ON <unknown_name>.table1 (<unknown_name>.table1.field1, <unknown_name>.table1.field2);";
+        testRegularStatement(inputText, expectedText, "createDefaultIndexLowercase");
+    }
 
-  @Test
-  public void createLuceneIndexLowercase() {
-    String inputText = "[DEMO], create full_text index index1 on table1 (field1, field2);";
-    String expectedText = "create full_text index stratio_lucene_index1 on demo.table1 (demo.table1.field1, demo.table1.field2);";
-    testRegularStatement(inputText, expectedText, "createLuceneIndexLowercase");
-  }
+    @Test
+    public void createLuceneIndexLowercase() {
+        String inputText = "[DEMO], create full_text index index1 on table1 (field1, field2);";
+        String expectedText = "create full_text index stratio_lucene_index1 on demo.table1 (demo.table1.field1, demo.table1.field2);";
+        testRegularStatement(inputText, expectedText, "createLuceneIndexLowercase");
+    }
 
 }

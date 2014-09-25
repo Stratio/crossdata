@@ -29,24 +29,24 @@ trait TimeTracker {
   /**
    * Name of the timer.
    */
-  lazy val timerName:String = ???
+  lazy val timerName: String = ???
 
   /**
    * Timer gauge.
    */
-  lazy val timerMetrics:Timer = Metrics.getRegistry.timer(timerName)
+  lazy val timerMetrics: Timer = Metrics.getRegistry.timer(timerName)
 
   /**
    * Initialize the timer.
    */
-  def initTimer():Timer.Context= timerMetrics.time()
+  def initTimer(): Timer.Context = timerMetrics.time()
 
   /**
    * Stop the timer.
    * @param context The timing context.
    * @return Whether it has stop.
    */
-  def finishTimer(context:Timer.Context)={
+  def finishTimer(context: Timer.Context) = {
     context.stop()
   }
 }

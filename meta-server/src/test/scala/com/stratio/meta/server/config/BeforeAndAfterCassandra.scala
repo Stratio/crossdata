@@ -18,14 +18,15 @@
 
 package com.stratio.meta.server.config
 
-import org.scalatest.{Suite, BeforeAndAfterAll}
-import org.testng.Assert._
-import org.apache.log4j.Logger
 import java.net.URL
-import com.stratio.meta.common.result.{Result, ErrorResult}
+
+import com.stratio.meta.common.result.{ErrorResult, Result}
+import org.apache.log4j.Logger
+import org.scalatest.{BeforeAndAfterAll, Suite}
+import org.testng.Assert._
 
 trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
-  this:Suite =>
+  this: Suite =>
 
   /**
    * Default Cassandra HOST using 127.0.0.1.
@@ -42,24 +43,6 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
    * Class logger.
    */
   private final val logger: Logger = Logger.getLogger(classOf[BeforeAndAfterCassandra])
-
-  /**
-   * Establish the connection with Cassandra in order to be able to retrieve
-   * metadata from the system columns.
-   * @param host The target host.
-   * @return Whether the connection has been established or not.
-   */
-  protected def connect(host: String): Boolean = {
-    var result: Boolean = false
-    /*val c: Cluster = Cluster.builder.addContactPoint(host).build
-    _session = c.connect
-    result = null == _session.getLoggedKeyspace*/
-    return result
-  }
-
-  private def getHost: String = {
-    return System.getProperty("cassandraTestHost", DEFAULT_HOST)
-  }
 
   /**
    * Drop a keyspace if it exists in the database.
@@ -149,26 +132,44 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
     return result
   }
 
+  override def beforeAll(): Unit = {
+    beforeCassandraStart()
+    afterCassandraStart()
+  }
+
   def beforeCassandraStart(): Unit = {
     assertTrue(connect(getHost), "Cannot connect to cassandra")
   }
 
-  override def beforeAll(): Unit = {
-    beforeCassandraStart()
-    afterCassandraStart()
+  /**
+   * Establish the connection with Cassandra in order to be able to retrieve
+   * metadata from the system columns.
+   * @param host The target host.
+   * @return Whether the connection has been established or not.
+   */
+  protected def connect(host: String): Boolean = {
+    var result: Boolean = false
+    /*val c: Cluster = Cluster.builder.addContactPoint(host).build
+    _session = c.connect
+    result = null == _session.getLoggedKeyspace*/
+    return result
+  }
+
+  private def getHost: String = {
+    return System.getProperty("cassandraTestHost", DEFAULT_HOST)
   }
 
   def afterCassandraStart(): Unit = {
 
   }
 
-  def beforeCassandraFinish(): Unit = {
-
-  }
-
   override def afterAll(): Unit = {
     beforeCassandraFinish()
     afterCassandraFinish()
+  }
+
+  def beforeCassandraFinish(): Unit = {
+
   }
 
   def afterCassandraFinish(): Unit = {

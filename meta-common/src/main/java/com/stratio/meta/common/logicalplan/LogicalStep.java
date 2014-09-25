@@ -18,67 +18,73 @@
 
 package com.stratio.meta.common.logicalplan;
 
-import com.stratio.meta.common.connector.Operations;
-
 import java.util.List;
+
+import com.stratio.meta.common.connector.Operations;
 
 /**
  * A step of a Logical plan.
  */
 public abstract class LogicalStep {
 
-  /**
-   * Type of operation to be executed.
-   */
-  private final Operations operation;
+    /**
+     * Type of operation to be executed.
+     */
+    private final Operations operation;
 
-  /**
-   * Next step to be executed.
-   */
-  private LogicalStep nextStep;
+    /**
+     * Next step to be executed.
+     */
+    private LogicalStep nextStep;
 
-  /**
-   * Class constructor.
-   * @param operation The operation to be applied.
-   */
-  protected LogicalStep(Operations operation) {
-    this.operation = operation;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param operation The operation to be applied.
+     */
+    protected LogicalStep(Operations operation) {
+        this.operation = operation;
+    }
 
-  /**
-   * Get the type of operation associated with this filter.
-   * @return A {@link com.stratio.meta.common.connector.Operations}.
-   */
-  public Operations getOperation(){
-    return operation;
-  }
+    /**
+     * Get the type of operation associated with this filter.
+     *
+     * @return A {@link com.stratio.meta.common.connector.Operations}.
+     */
+    public Operations getOperation() {
+        return operation;
+    }
 
-  /**
-   * Get the next {@link com.stratio.meta.common.logicalplan.LogicalStep} to be executed.
-   * @return The next step or null if not set.
-   */
-  public LogicalStep getNextStep() {
-    return nextStep;
-  }
+    /**
+     * Get the next {@link com.stratio.meta.common.logicalplan.LogicalStep} to be executed.
+     *
+     * @return The next step or null if not set.
+     */
+    public LogicalStep getNextStep() {
+        return nextStep;
+    }
 
-  /**
-   * Set the next step to be executed.
-   * @param nextStep A {@link com.stratio.meta.common.logicalplan.LogicalStep}.
-   */
-  public void setNextStep(LogicalStep nextStep) {
-    this.nextStep = nextStep;
-  }
+    /**
+     * Set the next step to be executed.
+     *
+     * @param nextStep A {@link com.stratio.meta.common.logicalplan.LogicalStep}.
+     */
+    public void setNextStep(LogicalStep nextStep) {
+        this.nextStep = nextStep;
+    }
 
-  /**
-   * Get the list of previous steps.
-   * @return A list of {@link com.stratio.meta.common.logicalplan.LogicalStep}.
-   */
-  public abstract List<LogicalStep> getPreviousSteps();
+    /**
+     * Get the list of previous steps.
+     *
+     * @return A list of {@link com.stratio.meta.common.logicalplan.LogicalStep}.
+     */
+    public abstract List<LogicalStep> getPreviousSteps();
 
-  /**
-   * Get the first previous step.
-   * @return A {@link com.stratio.meta.common.logicalplan.LogicalStep}.
-   */
-  public abstract LogicalStep getFirstPrevious();
+    /**
+     * Get the first previous step.
+     *
+     * @return A {@link com.stratio.meta.common.logicalplan.LogicalStep}.
+     */
+    public abstract LogicalStep getFirstPrevious();
 
 }

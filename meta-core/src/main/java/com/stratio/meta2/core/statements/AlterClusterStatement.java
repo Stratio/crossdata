@@ -17,50 +17,49 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
-
 /**
  * Class that models a {@code ALTER CLUSTER} statement from the META language.
  */
 public class AlterClusterStatement extends MetadataStatement {
 
-  /**
-   * Cluster name given by the user.
-   */
-  private final String clusterName;
+    /**
+     * Cluster name given by the user.
+     */
+    private final String clusterName;
 
-  private final boolean ifExists;
+    private final boolean ifExists;
 
-  /**
-   * A JSON with the options specified by the user.
-   */
-  private final String options;
+    /**
+     * A JSON with the options specified by the user.
+     */
+    private final String options;
 
-  /**
-   * Alter an existing cluster configuration.
-   * 
-   * @param clusterName The name of the cluster.
-   * @param options A JSON with the cluster options.
-   */
-  public AlterClusterStatement(String clusterName, boolean ifExists, String options) {
-    this.clusterName = clusterName;
-    this.ifExists = ifExists;
-    this.options = options;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("ALTER CLUSTER ");
-    if(ifExists){
-      sb.append("IF EXISTS ");
+    /**
+     * Alter an existing cluster configuration.
+     *
+     * @param clusterName The name of the cluster.
+     * @param options     A JSON with the cluster options.
+     */
+    public AlterClusterStatement(String clusterName, boolean ifExists, String options) {
+        this.clusterName = clusterName;
+        this.ifExists = ifExists;
+        this.options = options;
     }
-    sb.append(clusterName);
-    sb.append(" WITH OPTIONS ").append(options);
-    return sb.toString();
-  }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER);
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ALTER CLUSTER ");
+        if (ifExists) {
+            sb.append("IF EXISTS ");
+        }
+        sb.append(clusterName);
+        sb.append(" WITH OPTIONS ").append(options);
+        return sb.toString();
+    }
+
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER);
+    }
 
 }

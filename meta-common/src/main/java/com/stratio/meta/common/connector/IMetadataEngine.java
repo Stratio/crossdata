@@ -20,12 +20,12 @@ package com.stratio.meta.common.connector;
 
 import com.stratio.meta.common.exceptions.ExecutionException;
 import com.stratio.meta.common.exceptions.UnsupportedException;
-import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.common.data.TableName;
 
 /**
  * Interface provided by a connector to access metadata related operations such as creating new
@@ -33,75 +33,74 @@ import com.stratio.meta2.common.data.TableName;
  */
 public interface IMetadataEngine {
 
-  /**
-   * Create a catalog in the underlying datastore.
-   *
-   * @param targetCluster   Target cluster.
-   * @param catalogMetadata Catalog metadata.
-   * @throws UnsupportedException If the operation is not supported.
-   * @throws ExecutionException   If the execution fails.
-   */
-  public void createCatalog(ClusterName targetCluster, CatalogMetadata catalogMetadata)
-      throws UnsupportedException,
-             ExecutionException;
+    /**
+     * Create a catalog in the underlying datastore.
+     *
+     * @param targetCluster   Target cluster.
+     * @param catalogMetadata Catalog metadata.
+     * @throws UnsupportedException If the operation is not supported.
+     * @throws ExecutionException   If the execution fails.
+     */
+    public void createCatalog(ClusterName targetCluster, CatalogMetadata catalogMetadata)
+            throws UnsupportedException,
+            ExecutionException;
 
-  /**
-   * Create a table in the underlying datastore.
-   *
-   * @param targetCluster Target cluster.
-   * @param tableMetadata Table metadata.
-   * @throws UnsupportedException If the operation is not supported.
-   * @throws ExecutionException   If the execution fails.
-   */
-  public void createTable(ClusterName targetCluster, TableMetadata tableMetadata)
-      throws UnsupportedException,
-             ExecutionException;
+    /**
+     * Create a table in the underlying datastore.
+     *
+     * @param targetCluster Target cluster.
+     * @param tableMetadata Table metadata.
+     * @throws UnsupportedException If the operation is not supported.
+     * @throws ExecutionException   If the execution fails.
+     */
+    public void createTable(ClusterName targetCluster, TableMetadata tableMetadata)
+            throws UnsupportedException,
+            ExecutionException;
 
-  /**
-   * Drop an existing catalog.
-   *
-   * @param targetCluster Target cluster.
-   * @param name          The name of the catalog.
-   * @throws UnsupportedException If the operation is not supported.
-   * @throws ExecutionException   If the execution fails.
-   */
-  public void dropCatalog(ClusterName targetCluster, CatalogName name) throws UnsupportedException,
-                                                                              ExecutionException;
+    /**
+     * Drop an existing catalog.
+     *
+     * @param targetCluster Target cluster.
+     * @param name          The name of the catalog.
+     * @throws UnsupportedException If the operation is not supported.
+     * @throws ExecutionException   If the execution fails.
+     */
+    public void dropCatalog(ClusterName targetCluster, CatalogName name) throws UnsupportedException,
+            ExecutionException;
 
-  /**
-   * Drop an existing table.
-   *
-   * @param targetCluster Target cluster.
-   * @param name          The name of the table.
-   * @throws UnsupportedException If the operation is not supported.
-   * @throws ExecutionException   If the execution fails.
-   */
-  public void dropTable(ClusterName targetCluster, TableName name) throws UnsupportedException,
-                                                                          ExecutionException;
+    /**
+     * Drop an existing table.
+     *
+     * @param targetCluster Target cluster.
+     * @param name          The name of the table.
+     * @throws UnsupportedException If the operation is not supported.
+     * @throws ExecutionException   If the execution fails.
+     */
+    public void dropTable(ClusterName targetCluster, TableName name) throws UnsupportedException,
+            ExecutionException;
 
-  /**
-   * Create an Index in the underlying datastore.
-   *
-   * @param targetCluster Target cluster.
-   * @param indexMetadata The index.
-   * @throws UnsupportedException If the operation is not supported.
-   * @throws ExecutionException   If the execution fails.
-   */
+    /**
+     * Create an Index in the underlying datastore.
+     *
+     * @param targetCluster Target cluster.
+     * @param indexMetadata The index.
+     * @throws UnsupportedException If the operation is not supported.
+     * @throws ExecutionException   If the execution fails.
+     */
     public void createIndex(ClusterName targetCluster, IndexMetadata indexMetadata)
-        throws UnsupportedException,
-               ExecutionException;
+            throws UnsupportedException,
+            ExecutionException;
 
-
-   /**
+    /**
      * Drop an existing index.
      *
      * @param targetCluster Target cluster.
-     * @param indexMetadata          The name of the table.
+     * @param indexMetadata The name of the table.
      * @throws UnsupportedException If the operation is not supported.
      * @throws ExecutionException   If the execution fails.
      */
     public void dropIndex(ClusterName targetCluster, IndexMetadata indexMetadata)
-        throws UnsupportedException,
-               ExecutionException;
+            throws UnsupportedException,
+            ExecutionException;
 
 }

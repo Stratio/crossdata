@@ -25,49 +25,49 @@ import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 
 public class ResultSet {
 
-  private ArrayList<Row> rows;
-  
-  private ArrayList<ColumnMetadata> columnMetadata;
-  
-  private boolean empty;
-  
-  private int size;
+    private ArrayList<Row> rows;
 
-  public ArrayList<Row> getRows() {
-    return rows;
-  }
+    private ArrayList<ColumnMetadata> columnMetadata;
 
-  public void setRows(ArrayList<Row> rows) {
-    this.rows = rows;
-  }
+    private boolean empty;
 
-  public ArrayList<ColumnMetadata> getColumnMetadata() {
-    return columnMetadata;
-  }
+    private int size;
 
-  public void setColumnMetadata(ArrayList<ColumnMetadata> columnMetadata) {
-    this.columnMetadata = columnMetadata;
-  }
+    public ArrayList<Row> getRows() {
+        return rows;
+    }
 
-  public boolean isEmpty() {
-    return empty;
-  }
+    public void setRows(ArrayList<Row> rows) {
+        this.rows = rows;
+    }
 
-  public void setEmpty(boolean empty) {
-    this.empty = empty;
-  }
+    public ArrayList<ColumnMetadata> getColumnMetadata() {
+        return columnMetadata;
+    }
 
-  public int getSize() {
-    return size;
-  }
+    public void setColumnMetadata(ArrayList<ColumnMetadata> columnMetadata) {
+        this.columnMetadata = columnMetadata;
+    }
 
-  public void setSize(int size) {
-    this.size = size;
-  }
+    public boolean isEmpty() {
+        return empty;
+    }
 
-  public String toStringCustom() {
-    return "ResultSet [Rows=" + rows + ", columnMetadata=" + columnMetadata + ", empty=" + empty
-        + ", size=" + size + "]";
-  }
-  
+    public void setEmpty(boolean empty) {
+        this.empty = empty;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    public String toStringCustom() {
+        return "ResultSet [Rows=" + rows + ", columnMetadata=" + columnMetadata + ", empty=" + empty
+                + ", size=" + size + "]";
+    }
+
 }

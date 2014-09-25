@@ -3,6 +3,7 @@ package com.stratio.connectors
 import akka.pattern.ask
 import akka.util.Timeout
 import com.stratio.meta.common.connector.{IConnector, IQueryEngine}
+import com.stratio.meta.common.executionplan.{ExecutionStep, ExecutionType}
 import com.stratio.meta.common.logicalplan.{LogicalStep, LogicalWorkflow}
 import com.stratio.meta.common.result.QueryResult
 import com.stratio.meta2.common.data.{CatalogName, TableName}
@@ -15,16 +16,15 @@ import org.scalatest._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import com.stratio.meta.common.executionplan.{ExecutionType, ExecutionStep}
 
 
 class ConnectorActorTest extends FunSuite with MockFactory {
-//class ConnectorActorTest extends TestKit(ActorSystem()) with FunSuiteLike with MockFactory {
+  //class ConnectorActorTest extends TestKit(ActorSystem()) with FunSuiteLike with MockFactory {
 
 
-
-  implicit val timeout = Timeout(3 seconds) // needed for `?` below
-  lazy val logger =Logger.getLogger(classOf[ConnectorActorTest])
+  // needed for `?` below
+  lazy val logger = Logger.getLogger(classOf[ConnectorActorTest])
+  implicit val timeout = Timeout(3 seconds)
 
   /*
   test("Basic Connector Mock") {
@@ -52,7 +52,7 @@ class ConnectorActorTest extends FunSuite with MockFactory {
     val port = "2559"
     val m = mock[IConnector]
     val qe = mock[IQueryEngine]
-    (qe.execute _).expects(*,*).returning(QueryResult.createSuccessQueryResult())
+    (qe.execute _).expects(*, *).returning(QueryResult.createSuccessQueryResult())
     (m.getQueryEngine _).expects().returning(qe)
     (m.getConnectorName _).expects().returning("My New Connector")
 
@@ -65,20 +65,20 @@ class ConnectorActorTest extends FunSuite with MockFactory {
     var workflow = new LogicalWorkflow(steps)
     var executionStep = new ExecutionStep(myReference, workflow, ExecutionType.RESULTS)
     val pq = new SelectPlannedQuery(
-        new SelectValidatedQuery(
-            new SelectParsedQuery(
-              new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog") )
-              ,new SelectStatement(new TableName("myCatalog","myTable"))
-          )
-        ), executionStep
+      new SelectValidatedQuery(
+        new SelectParsedQuery(
+          new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
+          , new SelectStatement(new TableName("myCatalog", "myTable"))
+        )
+      ), executionStep
     )
     val selectQ: SelectInProgressQuery = new SelectInProgressQuery(pq)
     //val beanMap: util.Map[String, String] = BeanUtils.recursiveDescribe(selectQ);
     //for (s <- beanMap.keySet().toArray()) { println(s); }
 
-    val future=ask(myReference , selectQ)
+    val future = ask(myReference, selectQ)
     val result = Await.result(future, 3 seconds).asInstanceOf[String]
-    println("receiving->"+result+" after sending select query")
+    println("receiving->" + result + " after sending select query")
     c.stop()
   }
 

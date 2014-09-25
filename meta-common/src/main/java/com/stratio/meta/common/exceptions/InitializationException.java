@@ -23,16 +23,16 @@ package com.stratio.meta.common.exceptions;
  * phase. The error may be related to the configuration, the connectivity or any other
  * problem the connector may encounter during the initialization.
  */
-public class InitializationException extends Exception{
+public class InitializationException extends Exception {
 
-  private static final long serialVersionUID = -3453090024561154440L;
+    private static final long serialVersionUID = -3453090024561154440L;
 
-  public InitializationException(String msg){
-    super(msg);
-  }
+    public InitializationException(String msg) {
+        super(msg);
+    }
 
-  public InitializationException(String msg, Throwable cause){
-    super(msg, cause);
-  }
+    public InitializationException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 
 }

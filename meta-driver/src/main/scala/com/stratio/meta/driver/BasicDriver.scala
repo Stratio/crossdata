@@ -18,24 +18,23 @@
 
 package com.stratio.meta.driver
 
-import akka.actor.{ ActorSelection, ActorSystem}
-import com.stratio.meta.driver.config.{DriverSectionConfig, ServerSectionConfig, BasicDriverConfig, DriverConfig}
-import akka.contrib.pattern.ClusterClient
-import com.stratio.meta.driver.actor.ProxyActor
-import com.stratio.meta.common.result._
-import com.stratio.meta.common.ask.APICommand
-import org.apache.log4j.Logger
-import  scala.concurrent.duration._
 import java.util.UUID
+
+import akka.actor.{ActorSelection, ActorSystem}
+import akka.contrib.pattern.ClusterClient
 import akka.pattern.ask
-import com.stratio.meta.driver.result.SyncResultHandler
+import com.stratio.meta.common.ask.{APICommand, Command, Connect, Query}
 import com.stratio.meta.common.exceptions._
-import com.stratio.meta.common.ask.Connect
-import com.stratio.meta.common.ask.Command
-import com.stratio.meta.common.ask.Query
+import com.stratio.meta.common.result._
 import com.stratio.meta.communication.Disconnect
+import com.stratio.meta.driver.actor.ProxyActor
+import com.stratio.meta.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
+import com.stratio.meta.driver.result.SyncResultHandler
 import com.stratio.meta.driver.utils.RetryPolitics
 import com.stratio.meta2.common.api.Manifest
+import org.apache.log4j.Logger
+
+import scala.concurrent.duration._
 
 object BasicDriver extends DriverConfig {
   /**
@@ -43,41 +42,38 @@ object BasicDriver extends DriverConfig {
    */
   override lazy val logger = Logger.getLogger(getClass)
 
-  def getBasicDriverConfigFromFile ={
+  def getBasicDriverConfigFromFile = {
     logger.debug("RetryTimes    --> " + retryTimes)
     logger.debug("RetryDuration --> " + retryDuration.duration.toMillis.toString)
     logger.debug("ClusterName   --> " + clusterName)
     logger.debug("ClusterName   --> " + clusterActor)
     logger.debug("ClusterHosts  --> " + clusterHosts.map(_.toString).toArray.toString)
     new BasicDriverConfig(new DriverSectionConfig(retryTimes, retryDuration.duration.toMillis),
-                          new ServerSectionConfig(clusterName, clusterActor, clusterHosts.map(_.toString).toArray))
+      new ServerSectionConfig(clusterName, clusterActor, clusterHosts.map(_.toString).toArray))
   }
 }
 
 class BasicDriver(basicDriverConfig: BasicDriverConfig) {
 
-  lazy val logger= BasicDriver.logger
-
-  lazy val queries: java.util.Map[String, IResultHandler] = new java.util.HashMap[String, IResultHandler]
-
-  lazy val system = ActorSystem("MetaDriverSystem", BasicDriver.config)
-  //For Futures
-  implicit val context = system.dispatcher
-  lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact=> system.actorSelection(contact)).toSet
-  lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts),"remote-client")
-  lazy val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor,basicDriverConfig.serverSection.clusterActor, this), "proxy-actor")
-
-  lazy val retryPolitics: RetryPolitics = {
-    new RetryPolitics(basicDriverConfig.driverSection.retryTimes, basicDriverConfig.driverSection.retryDuration.millis)
-  }
-  lazy val contactPoints: List[String]= {
-    basicDriverConfig.serverSection.clusterHosts.toList.map(host=>"akka.tcp://" + basicDriverConfig.serverSection.clusterName + "@" + host + "/user/receptionist")
-  }
-
   /**
    * Default user to connect to the meta server.
    */
   private final val DEFAULT_USER: String = "META_USER"
+  lazy val logger = BasicDriver.logger
+  lazy val queries: java.util.Map[String, IResultHandler] = new java.util.HashMap[String, IResultHandler]
+  lazy val system = ActorSystem("MetaDriverSystem", BasicDriver.config)
+  lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
+  lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
+  lazy val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor, basicDriverConfig.serverSection.clusterActor, this), "proxy-actor")
+
+  lazy val retryPolitics: RetryPolitics = {
+    new RetryPolitics(basicDriverConfig.driverSection.retryTimes, basicDriverConfig.driverSection.retryDuration.millis)
+  }
+  lazy val contactPoints: List[String] = {
+    basicDriverConfig.serverSection.clusterHosts.toList.map(host => "akka.tcp://" + basicDriverConfig.serverSection.clusterName + "@" + host + "/user/receptionist")
+  }
+  //For Futures
+  implicit val context = system.dispatcher
   var userId: String = ""
   var userName: String = ""
   var currentCatalog: String = ""
@@ -92,9 +88,9 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @return ConnectResult
    */
   @throws(classOf[ConnectionException])
-  def connect(user:String): Result = {
+  def connect(user: String): Result = {
     logger.info("Establishing connection with user: " + user + " to " + contactPoints)
-    val result = retryPolitics.askRetry(proxyActor,new Connect(user),5 second)
+    val result = retryPolitics.askRetry(proxyActor, new Connect(user), 5 second)
     result match {
       case errorResult: ErrorResult => {
         throw new ConnectionException(errorResult.getErrorMessage)
@@ -129,14 +125,18 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @param callback The callback object.
    */
   @throws(classOf[ConnectionException])
-  def asyncExecuteQuery(query: String, callback: IResultHandler) : String = {
-    if(userId==null){
+  def asyncExecuteQuery(query: String, callback: IResultHandler): String = {
+    if (userId == null) {
       throw new ConnectionException("You must connect to cluster")
     }
     val queryId = UUID.randomUUID()
     queries.put(queryId.toString, callback)
     sendQuery(new Query(queryId.toString, currentCatalog, query, userId))
     queryId.toString
+  }
+
+  def sendQuery(message: AnyRef) {
+    proxyActor.ask(message)(5 second)
   }
 
   /**
@@ -150,7 +150,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   @throws(classOf[ExecutionException])
   @throws(classOf[UnsupportedException])
   def executeQuery(query: String): Result = {
-    if(userId==null){
+    if (userId == null) {
       throw new ConnectionException("You must connect to cluster")
     }
     val queryId = UUID.randomUUID()
@@ -209,10 +209,6 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     result.asInstanceOf[CommandResult]
   }
 
-  def sendQuery(message: AnyRef){
-    proxyActor.ask(message)(5 second)
-  }
-
   /**
    * Get the IResultHandler associated with a query identifier.
    * @param queryId Query identifier.
@@ -227,7 +223,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @param queryId The query identifier associated with the callback.
    * @return Whether the callback has been removed.
    */
-  def removeResultHandler(queryId: String) : Boolean = {
+  def removeResultHandler(queryId: String): Boolean = {
     queries.remove(queryId) != null
   }
 
@@ -238,15 +234,15 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     system.shutdown()
   }
 
+  def getUserName: String = {
+    return userName
+  }
+
   def setUserName(userName: String) {
     this.userName = userName
     if (userName == null) {
       this.userName = DEFAULT_USER
     }
-  }
-
-  def getUserName: String = {
-    return userName
   }
 
   def getCurrentCatalog: String = {

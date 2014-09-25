@@ -1,23 +1,23 @@
 <Connector>
-  <ConnectorName>string</ConnectorName>
-  <DataStoresName>
-    <Datastore>string</Datastore>
-  </DataStoresName>
-  <Version>string</Version>
-  <RequiredProperties>
-    <!--Zero or more repetitions:-->
-    <Property>
-      <Name>string</Name>
-    </Property>
-  </RequiredProperties>
-  <OptionalProperties>
-    <!--Zero or more repetitions:-->
-    <Property>
-      <Name>string</Name>
-    </Property>
-  </OptionalProperties>
-  <SupportedOperations>
-    <!--Zero or more repetitions:-->
-    <operation>CREATE_CATALOG</operation>
-  </SupportedOperations>
+    <ConnectorName>string</ConnectorName>
+    <DataStoresName>
+        <Datastore>string</Datastore>
+    </DataStoresName>
+    <Version>string</Version>
+    <RequiredProperties>
+        <!--Zero or more repetitions:-->
+        <Property>
+            <Name>string</Name>
+        </Property>
+    </RequiredProperties>
+    <OptionalProperties>
+        <!--Zero or more repetitions:-->
+        <Property>
+            <Name>string</Name>
+        </Property>
+    </OptionalProperties>
+    <SupportedOperations>
+        <!--Zero or more repetitions:-->
+        <operation>CREATE_CATALOG</operation>
+    </SupportedOperations>
 </Connector>

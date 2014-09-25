@@ -18,27 +18,24 @@
 
 package com.stratio.meta2.common.data;
 
-public class ClusterName extends FirstLevelName{
-  private final String name;
+public class ClusterName extends FirstLevelName {
+    private final String name;
 
+    public ClusterName(String clusterName) {
+        super();
+        this.name = clusterName;
+    }
 
+    public String getName() {
+        return name;
+    }
 
-  public ClusterName(String clusterName){
-    super();
-    this.name = clusterName;
-  }
+    public String getQualifiedName() {
+        return QualifiedNames.getClusterQualifiedName(getName());
+    }
 
-  public String getName() {
-    return name;
-  }
-
-  public String getQualifiedName(){
-    return QualifiedNames.getClusterQualifiedName(getName());
-  }
-
-  @Override public NameType getType() {
-    return NameType.Cluster;
-  }
-
+    @Override public NameType getType() {
+        return NameType.Cluster;
+    }
 
 }

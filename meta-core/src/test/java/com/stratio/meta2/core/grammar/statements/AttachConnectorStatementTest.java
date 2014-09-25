@@ -18,42 +18,42 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class AttachConnectorStatementTest extends ParsingTest {
 
-  @Test
-  public void attachConnectorSimple1() {
-    String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {\"ConsistencyLevel\": \"Quorum\", 'DefaultLimit': 999};";
-    String expectedText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {ConsistencyLevel: Quorum, DefaultLimit: 999};";
-    testRegularStatement(inputText, expectedText, "attachConnectorSimple1");
-  }
+    @Test
+    public void attachConnectorSimple1() {
+        String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {\"ConsistencyLevel\": \"Quorum\", 'DefaultLimit': 999};";
+        String expectedText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {ConsistencyLevel: Quorum, DefaultLimit: 999};";
+        testRegularStatement(inputText, expectedText, "attachConnectorSimple1");
+    }
 
-  @Test
-  public void attachConnectorSimple2() {
-    String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {'ConsistencyLevel': 'Quorum', \"DefaultLimit\": 999};";
-    String expectedText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {ConsistencyLevel: Quorum, DefaultLimit: 999};";
-    testRegularStatement(inputText, expectedText, "attachConnectorSimple2");
-  }
+    @Test
+    public void attachConnectorSimple2() {
+        String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {'ConsistencyLevel': 'Quorum', \"DefaultLimit\": 999};";
+        String expectedText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {ConsistencyLevel: Quorum, DefaultLimit: 999};";
+        testRegularStatement(inputText, expectedText, "attachConnectorSimple2");
+    }
 
-  @Test
-  public void attachConnectorWrongConnectorName() {
-    String inputText = "ATTACH CONNECTOR ^cass_con_native TO cassandraCluster WITH OPTIONS {'ConsistencyLevel': Quorum};";
-    testParserFails(inputText, "attachConnectorWrongName");
-  }
+    @Test
+    public void attachConnectorWrongConnectorName() {
+        String inputText = "ATTACH CONNECTOR ^cass_con_native TO cassandraCluster WITH OPTIONS {'ConsistencyLevel': Quorum};";
+        testParserFails(inputText, "attachConnectorWrongName");
+    }
 
-  @Test
-  public void attachConnectorWrongClusterName() {
-    String inputText = "ATTACH CONNECTOR cass_con_native TO :cassandraCluster WITH OPTIONS {DefaultLimit: 999};";
-    testParserFails(inputText, "attachConnectorWrongDataStore");
-  }
+    @Test
+    public void attachConnectorWrongClusterName() {
+        String inputText = "ATTACH CONNECTOR cass_con_native TO :cassandraCluster WITH OPTIONS {DefaultLimit: 999};";
+        testParserFails(inputText, "attachConnectorWrongDataStore");
+    }
 
-  @Test
-  public void attachConnectorWrongJson() {
-    String inputText = "ATTACH CONNECTOR productionMadrid ON DATASTORE cassandra WITH OPTIONS {connector.path: /home/stratio/connector/cass_con_native.xml};";
-    testParserFails(inputText, "attachConnectorWrongJson");
-  }
+    @Test
+    public void attachConnectorWrongJson() {
+        String inputText = "ATTACH CONNECTOR productionMadrid ON DATASTORE cassandra WITH OPTIONS {connector.path: /home/stratio/connector/cass_con_native.xml};";
+        testParserFails(inputText, "attachConnectorWrongJson");
+    }
 
 }

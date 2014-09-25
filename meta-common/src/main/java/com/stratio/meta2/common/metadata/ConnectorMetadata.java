@@ -18,6 +18,9 @@
 
 package com.stratio.meta2.common.metadata;
 
+import java.io.Serializable;
+import java.util.Set;
+
 import com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType;
 import com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType;
 import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
@@ -25,71 +28,67 @@ import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.Status;
 
-import java.io.Serializable;
-import java.util.Set;
-
-
 public class ConnectorMetadata implements IMetadata {
 
-  private final ConnectorName name;
-  private final String version;
-  private final Set<DataStoreName> dataStoreRefs;
-  private final RequiredPropertiesType requiredProperties;
-  private final OptionalPropertiesType optionalProperties;
-  private final SupportedOperationsType supportedOperations;
-  private Status status;
-  private Serializable actorRef;
+    private final ConnectorName name;
+    private final String version;
+    private final Set<DataStoreName> dataStoreRefs;
+    private final RequiredPropertiesType requiredProperties;
+    private final OptionalPropertiesType optionalProperties;
+    private final SupportedOperationsType supportedOperations;
+    private Status status;
+    private Serializable actorRef;
 
-  public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
-                           RequiredPropertiesType requiredProperties, OptionalPropertiesType optionalProperties,
-                           SupportedOperationsType supportedOperations) {
-    this.name = name;
-    this.version = version;
-    this.dataStoreRefs = dataStoreRefs;
-    this.requiredProperties = requiredProperties;
-    this.optionalProperties = optionalProperties;
-    this.supportedOperations = supportedOperations;
-    this.status = Status.OFFLINE;
-  }
+    public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
+            RequiredPropertiesType requiredProperties, OptionalPropertiesType optionalProperties,
+            SupportedOperationsType supportedOperations) {
+        this.name = name;
+        this.version = version;
+        this.dataStoreRefs = dataStoreRefs;
+        this.requiredProperties = requiredProperties;
+        this.optionalProperties = optionalProperties;
+        this.supportedOperations = supportedOperations;
+        this.status = Status.OFFLINE;
+    }
 
-  public ConnectorName getName() {
-    return name;
-  }
+    public ConnectorName getName() {
+        return name;
+    }
 
-  public String getVersion() {
-    return version;
-  }
+    public String getVersion() {
+        return version;
+    }
 
-  public Set<DataStoreName> getDataStoreRefs() {
-    return dataStoreRefs;
-  }
+    public Set<DataStoreName> getDataStoreRefs() {
+        return dataStoreRefs;
+    }
 
-  public RequiredPropertiesType getRequiredProperties() {
-    return requiredProperties;
-  }
+    public RequiredPropertiesType getRequiredProperties() {
+        return requiredProperties;
+    }
 
-  public OptionalPropertiesType getOptionalProperties() {
-    return optionalProperties;
-  }
+    public OptionalPropertiesType getOptionalProperties() {
+        return optionalProperties;
+    }
 
-  public SupportedOperationsType getSupportedOperations() {
-    return supportedOperations;
-  }
+    public SupportedOperationsType getSupportedOperations() {
+        return supportedOperations;
+    }
 
-  public Status getStatus() {
-    return status;
-  }
+    public Status getStatus() {
+        return status;
+    }
 
-  public void setStatus(Status status) {
-    this.status = status;
-  }
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
-  public void setActorRef(Serializable actorRef) {
-    this.status = Status.ONLINE;
-    this.actorRef = actorRef;
-  }
+    public Serializable getActorRef() {
+        return actorRef;
+    }
 
-  public Serializable getActorRef() {
-    return actorRef;
-  }
+    public void setActorRef(Serializable actorRef) {
+        this.status = Status.ONLINE;
+        this.actorRef = actorRef;
+    }
 }

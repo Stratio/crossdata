@@ -22,35 +22,35 @@ import com.stratio.meta.common.utils.StringUtils;
 
 public class PropertyClusteringOrder extends Property {
 
-  private OrderBy orderBy;
+    private OrderBy orderBy;
 
-  public PropertyClusteringOrder() {
-    super(TYPE_CLUSTERING_ORDER);
-  }
-
-  public PropertyClusteringOrder(OrderBy orderBy) {
-    super(TYPE_CLUSTERING_ORDER);
-    this.orderBy = orderBy;
-  }
-
-  public OrderBy getOrder() {
-    return orderBy;
-  }
-
-  public void setOrder(OrderBy orderBy) {
-    this.orderBy = orderBy;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("CLUSTERING ORDER BY ");
-    sb.append("(");
-    sb.append(StringUtils.stringList(orderBy.getSelectorList(), ","));
-    if(orderBy.getDirection() == OrderDirection.DESC){
-      sb.append(" DESC");
+    public PropertyClusteringOrder() {
+        super(TYPE_CLUSTERING_ORDER);
     }
-    sb.append(")");
-    return sb.toString();
-  }
+
+    public PropertyClusteringOrder(OrderBy orderBy) {
+        super(TYPE_CLUSTERING_ORDER);
+        this.orderBy = orderBy;
+    }
+
+    public OrderBy getOrder() {
+        return orderBy;
+    }
+
+    public void setOrder(OrderBy orderBy) {
+        this.orderBy = orderBy;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("CLUSTERING ORDER BY ");
+        sb.append("(");
+        sb.append(StringUtils.stringList(orderBy.getSelectorList(), ","));
+        if (orderBy.getDirection() == OrderDirection.DESC) {
+            sb.append(" DESC");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
 
 }

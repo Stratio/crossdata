@@ -46,72 +46,72 @@ import com.stratio.meta.rest.utils.RestServerUtils;
  */
 @Path("")
 public class RestServer {
-  private DriverHelper driver = DriverHelper.getInstance();
-  private RestResultHandler callback = new RestResultHandler();
+    private DriverHelper driver = DriverHelper.getInstance();
+    private RestResultHandler callback = new RestResultHandler();
 
-
-  @GET
-  @Produces(MediaType.TEXT_HTML)
-  public String getIt() {
-    return "META REST Server up!";
-  }
-
-  /**
-   * Method handling HTTP POST requests. The returned object will be sent to the client as
-   * "text/plain" media type.
-   * 
-   * @return String that will be returned as a text/plain response.
-   * @throws IOException
-   * @throws JsonMappingException
-   * @throws JsonGenerationException
-   */
-  @POST
-  @Path("api")
-  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  @Produces(MediaType.TEXT_PLAIN)
-  public String postQuery(@FormParam("catalog") String catalog, @FormParam("query") String query) {
-    String queryId = "";
-    try {
-      System.out.println("[MetaRestServer] query: " + query + " catalog " + catalog);
-      driver.executeAsyncQuery(query, catalog, callback);
-    } catch (UnsupportedException | ParsingException | ValidationException | ExecutionException
-        | ConnectionException e) {
-      return e.getMessage();
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public String getIt() {
+        return "META REST Server up!";
     }
-    queryId = driver.getAsyncResult();
-    return queryId;
-  }
 
-  @GET
-  @Path("api/query/{queryId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public String getQuery(@PathParam("queryId") String queryId) throws JsonGenerationException,
-      JsonMappingException, IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    callback = (RestResultHandler) driver.getCallback(queryId);
-    Result callbackResult = callback.getResult(queryId);
-    if (callbackResult != null) {
-      if (callbackResult instanceof QueryResult) {
-        QueryResult qr = (QueryResult) callbackResult;
-        if (qr.getResultSet().isEmpty())
-          return mapper.writeValueAsString(callbackResult);
-        JsonQueryResult jqr = RestServerUtils.toJsonQueryResult(qr);
-        String result = "";
+    /**
+     * Method handling HTTP POST requests. The returned object will be sent to the client as
+     * "text/plain" media type.
+     *
+     * @return String that will be returned as a text/plain response.
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonGenerationException
+     */
+    @POST
+    @Path("api")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String postQuery(@FormParam("catalog") String catalog, @FormParam("query") String query) {
+        String queryId = "";
         try {
-          result = mapper.writeValueAsString(jqr);
-        } catch (IOException e) {
-          result = mapper.writeValueAsString(e.toString());
+            System.out.println("[MetaRestServer] query: " + query + " catalog " + catalog);
+            driver.executeAsyncQuery(query, catalog, callback);
+        } catch (UnsupportedException | ParsingException | ValidationException | ExecutionException
+                | ConnectionException e) {
+            return e.getMessage();
         }
-        return result;
-      } else {
-        return mapper.writeValueAsString(callbackResult);
-      }
-    } else {
-      if (callback.getErrorResult() != null) {
-        return mapper.writeValueAsString(callback.getErrorResult());
-      } else {
-        return mapper.writeValueAsString(callback);
-      }
+        queryId = driver.getAsyncResult();
+        return queryId;
     }
-  }
+
+    @GET
+    @Path("api/query/{queryId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getQuery(@PathParam("queryId") String queryId) throws JsonGenerationException,
+            JsonMappingException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        callback = (RestResultHandler) driver.getCallback(queryId);
+        Result callbackResult = callback.getResult(queryId);
+        if (callbackResult != null) {
+            if (callbackResult instanceof QueryResult) {
+                QueryResult qr = (QueryResult) callbackResult;
+                if (qr.getResultSet().isEmpty()) {
+                    return mapper.writeValueAsString(callbackResult);
+                }
+                JsonQueryResult jqr = RestServerUtils.toJsonQueryResult(qr);
+                String result = "";
+                try {
+                    result = mapper.writeValueAsString(jqr);
+                } catch (IOException e) {
+                    result = mapper.writeValueAsString(e.toString());
+                }
+                return result;
+            } else {
+                return mapper.writeValueAsString(callbackResult);
+            }
+        } else {
+            if (callback.getErrorResult() != null) {
+                return mapper.writeValueAsString(callback.getErrorResult());
+            } else {
+                return mapper.writeValueAsString(callback);
+            }
+        }
+    }
 }

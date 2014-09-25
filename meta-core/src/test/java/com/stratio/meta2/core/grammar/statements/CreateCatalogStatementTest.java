@@ -18,37 +18,36 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class CreateCatalogStatementTest extends ParsingTest {
 
-  @Test
-  public void createCatalogIfNotExists() {
-    String inputText = "CREATE CATALOG IF NOT EXISTS catalog1;";
-    testRegularStatement(inputText, "createCatalogIfNotExists");
-  }
+    @Test
+    public void createCatalogIfNotExists() {
+        String inputText = "CREATE CATALOG IF NOT EXISTS catalog1;";
+        testRegularStatement(inputText, "createCatalogIfNotExists");
+    }
 
-  @Test
-  public void createCatalogIfNotExistsWithEmptyOptions() {
-    String inputText = "CREATE CATALOG IF NOT EXISTS catalog1 WITH {};";
-    String expectedText = "CREATE CATALOG IF NOT EXISTS catalog1;";
-    testRegularStatement(inputText, expectedText, "createCatalogIfNotExistsWithEmptyOptions");
-  }
+    @Test
+    public void createCatalogIfNotExistsWithEmptyOptions() {
+        String inputText = "CREATE CATALOG IF NOT EXISTS catalog1 WITH {};";
+        String expectedText = "CREATE CATALOG IF NOT EXISTS catalog1;";
+        testRegularStatement(inputText, expectedText, "createCatalogIfNotExistsWithEmptyOptions");
+    }
 
-  @Test
-  public void createCatalogWithOptions() {
-    String inputText = "CREATE CATALOG catalog1 WITH {\"comment\": \"This is a comment\"};";
-    String expectedText = "CREATE CATALOG catalog1 WITH {comment=This is a comment};";
-    testRegularStatement(inputText, expectedText, "createCatalogWithOptions");
-  }
+    @Test
+    public void createCatalogWithOptions() {
+        String inputText = "CREATE CATALOG catalog1 WITH {\"comment\": \"This is a comment\"};";
+        String expectedText = "CREATE CATALOG catalog1 WITH {comment=This is a comment};";
+        testRegularStatement(inputText, expectedText, "createCatalogWithOptions");
+    }
 
-  @Test
-  public void createCatalogWrongName() {
-    String inputText = "CREATE CATALOG remove.name;";
-    testParserFails(inputText, "createCatalogWrongName");
-  }
-
+    @Test
+    public void createCatalogWrongName() {
+        String inputText = "CREATE CATALOG remove.name;";
+        testParserFails(inputText, "createCatalogWrongName");
+    }
 
 }

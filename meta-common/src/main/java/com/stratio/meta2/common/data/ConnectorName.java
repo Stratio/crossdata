@@ -19,23 +19,23 @@
 package com.stratio.meta2.common.data;
 
 public class ConnectorName extends FirstLevelName {
-  private final String name;
+    private final String name;
 
-  public ConnectorName(String connectorName){
-    super();
-    this.name = connectorName;
-  }
+    public ConnectorName(String connectorName) {
+        super();
+        this.name = connectorName;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public String getQualifiedName(){
-    return QualifiedNames.getConnectorQualifiedName(getName());
-  }
+    public String getQualifiedName() {
+        return QualifiedNames.getConnectorQualifiedName(getName());
+    }
 
-  @Override public NameType getType() {
-    return NameType.Connector;
-  }
+    @Override public NameType getType() {
+        return NameType.Connector;
+    }
 
 }

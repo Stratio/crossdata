@@ -18,6 +18,9 @@
 
 package com.stratio.meta2.core.validator.statements;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.common.data.CatalogName;
@@ -27,68 +30,65 @@ import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.AlterCatalogStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class AlterCatalogStatementTest extends BasicValidatorTest {
 
+    @Test
+    public void alterCatalogInvalidOptions() {
+        String query = "ALTER CATALOG demo WITH {};";
+        AlterCatalogStatement alterCatalogStatement = new AlterCatalogStatement(new CatalogName("demo"), "");
+        Validator validator = new Validator();
 
-  @Test
-  public void alterCatalogInvalidOptions() {
-      String query = "ALTER CATALOG demo WITH {};";
-      AlterCatalogStatement alterCatalogStatement=new AlterCatalogStatement(new CatalogName("demo"), "");
-      Validator validator=new Validator();
+        BaseQuery baseQuery = new BaseQuery("alterCatalogid", query, new CatalogName("demo"));
 
-      BaseQuery baseQuery=new BaseQuery("alterCatalogid",query, new CatalogName("demo"));
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("Catalog options must exist");
+        } catch (ValidationException e) {
+            Assert.assertTrue(true);
+        } catch (IgnoreQueryException e) {
+            Assert.assertTrue(true);
+        }
+    }
 
-      ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterCatalogStatement);
-      try {
-          validator.validate(parsedQuery);
-          Assert.fail("Catalog options must exist");
-      } catch (ValidationException e) {
-          Assert.assertTrue(true);
-      } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
-      }
-  }
+    @Test
+    public void alterCatalogNotFound() {
+        String query = "ALTER CATALOG unknown WITH {};";
+        AlterCatalogStatement alterCatalogStatement = new AlterCatalogStatement(new CatalogName("unknown"), "");
+        Validator validator = new Validator();
 
-  @Test
-  public void alterCatalogNotFound() {
-    String query = "ALTER CATALOG unknown WITH {};";
-      AlterCatalogStatement alterCatalogStatement=new AlterCatalogStatement(new CatalogName("unknown"), "");
-      Validator validator=new Validator();
+        BaseQuery baseQuery = new BaseQuery("alterCatalogid", query, new CatalogName("unknown"));
 
-      BaseQuery baseQuery=new BaseQuery("alterCatalogid",query, new CatalogName("unknown"));
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("Catalog must exist");
+        } catch (ValidationException e) {
+            Assert.assertTrue(true);
+        } catch (IgnoreQueryException e) {
+            Assert.assertTrue(true);
+        }
+    }
 
-      ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterCatalogStatement);
-      try {
-          validator.validate(parsedQuery);
-          Assert.fail("Catalog must exist");
-      } catch (ValidationException e) {
-          Assert.assertTrue(true);
-      } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
-      }
-  }
+    @Test
+    public void alterCatalogValid() {
+        String query = "ALTER CATALOG key_space1 WITH {\"comment\":\"This is a comment\"};";
+        AlterCatalogStatement alterCatalogStatement = new AlterCatalogStatement(new CatalogName("demo"),
+                "{\"comment\":\"This is a comment\"}");
+        Validator validator = new Validator();
 
-  @Test
-  public void alterCatalogValid() {
-      String query = "ALTER CATALOG key_space1 WITH {\"comment\":\"This is a comment\"};";
-      AlterCatalogStatement alterCatalogStatement=new AlterCatalogStatement(new CatalogName("demo"), "{\"comment\":\"This is a comment\"}");
-      Validator validator=new Validator();
+        BaseQuery baseQuery = new BaseQuery("alterCatalogid", query, new CatalogName("demo"));
 
-      BaseQuery baseQuery=new BaseQuery("alterCatalogid",query, new CatalogName("demo"));
-
-      ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,alterCatalogStatement);
-      try {
-          validator.validate(parsedQuery);
-          Assert.assertTrue(true);
-      } catch (ValidationException e) {
-          Assert.fail(e.getMessage());
-      } catch (IgnoreQueryException e) {
-          Assert.fail(e.getMessage());
-      }
-  }
-
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
 
 }

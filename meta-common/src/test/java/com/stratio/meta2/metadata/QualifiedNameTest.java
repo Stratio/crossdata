@@ -18,44 +18,46 @@
 
 package com.stratio.meta2.metadata;
 
-import com.stratio.meta2.common.data.QualifiedNames;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.stratio.meta2.common.data.QualifiedNames;
+
 public class QualifiedNameTest {
-  @Test
-  public void testCatalogQualifiedName(){
-    String name= QualifiedNames.getCatalogQualifiedName("test");
-    Assert.assertEquals(name,"catalog.test");
-  }
+    @Test
+    public void testCatalogQualifiedName() {
+        String name = QualifiedNames.getCatalogQualifiedName("test");
+        Assert.assertEquals(name, "catalog.test");
+    }
 
-  @Test
-  public void testTableQualifiedName(){
-    String name= QualifiedNames.getTableQualifiedName("test","taBle");
-    Assert.assertEquals(name,"catalog.test.table");
-  }
+    @Test
+    public void testTableQualifiedName() {
+        String name = QualifiedNames.getTableQualifiedName("test", "taBle");
+        Assert.assertEquals(name, "catalog.test.table");
+    }
 
-  @Test
-  public void testColumnQualifiedName(){
-    String name= QualifiedNames.getColumnQualifiedName("test","taBle","column");
-    Assert.assertEquals(name,"catalog.test.table.column");
-  }
-  @Test
-  public void testClusterQualifiedName(){
-    String name= QualifiedNames.getClusterQualifiedName("test");
-    Assert.assertEquals(name,"cluster.test");
-  }
+    @Test
+    public void testColumnQualifiedName() {
+        String name = QualifiedNames.getColumnQualifiedName("test", "taBle", "column");
+        Assert.assertEquals(name, "catalog.test.table.column");
+    }
 
-  @Test
-  public void testConnectorQualifiedName(){
-    String name= QualifiedNames.getConnectorQualifiedName("test");
-    Assert.assertEquals(name,"connector.test");
-  }
+    @Test
+    public void testClusterQualifiedName() {
+        String name = QualifiedNames.getClusterQualifiedName("test");
+        Assert.assertEquals(name, "cluster.test");
+    }
 
-  @Test
-  public void testDataStoreQualifiedName(){
-    String name= QualifiedNames.getDataStoreQualifiedName("test");
-    Assert.assertEquals(name,"datastore.test");
-  }
+    @Test
+    public void testConnectorQualifiedName() {
+        String name = QualifiedNames.getConnectorQualifiedName("test");
+        Assert.assertEquals(name, "connector.test");
+    }
+
+    @Test
+    public void testDataStoreQualifiedName() {
+        String name = QualifiedNames.getDataStoreQualifiedName("test");
+        Assert.assertEquals(name, "datastore.test");
+    }
 
 }

@@ -56,19 +56,20 @@ public class HelpContent {
     /**
      * Load the mapped view of the help contents.
      */
-    public void loadMap(){
+    public void loadMap() {
         help = new HashMap<>();
-        for(HelpEntry e : content){
+        for (HelpEntry e : content) {
             help.put(HelpType.valueOf(e.getEntry()), e.getHelp());
         }
     }
 
     /**
      * Retrieve the help associated with {@link HelpType}.
+     *
      * @param type The requested {@link HelpType}
      * @return The help string or null if the help is not available.
      */
-    public String searchHelp(HelpType type){
+    public String searchHelp(HelpType type) {
         return help.get(type);
     }
 }

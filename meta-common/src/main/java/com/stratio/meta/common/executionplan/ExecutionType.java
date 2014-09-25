@@ -22,6 +22,6 @@ package com.stratio.meta.common.executionplan;
  * Types of execution supported by the coordinator actor.
  */
 public enum ExecutionType {
-  RESULTS,
-  TRIGGER_EXECUTION
+    RESULTS,
+    TRIGGER_EXECUTION
 }

@@ -14,39 +14,37 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta2.core.validator.ValidationRequirements;
-
-
 import org.apache.log4j.Logger;
+
+import com.stratio.meta2.core.validator.ValidationRequirements;
 
 public class StopProcessStatement extends MetadataStatement {
 
-  private String queryId;
-  private static final Logger LOG = Logger.getLogger(StopProcessStatement.class);
+    private static final Logger LOG = Logger.getLogger(StopProcessStatement.class);
+    private String queryId;
 
-  public StopProcessStatement(String queryId) {
-    this.command = true;
-    this.queryId = queryId;
-  }
+    public StopProcessStatement(String queryId) {
+        this.command = true;
+        this.queryId = queryId;
+    }
 
-  public String getQueryId() {
-    return queryId;
-  }
+    public String getQueryId() {
+        return queryId;
+    }
 
-  public void setQueryId(String queryId) {
-    this.queryId = queryId;
-  }
+    public void setQueryId(String queryId) {
+        this.queryId = queryId;
+    }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("Stop process ");
-    sb.append(queryId);
-    return sb.toString();
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Stop process ");
+        sb.append(queryId);
+        return sb.toString();
+    }
 
-
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
-  }
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements();
+    }
 }

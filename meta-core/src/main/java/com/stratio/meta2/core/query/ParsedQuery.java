@@ -46,14 +46,14 @@ public interface ParsedQuery {
     return statement.toString();
   }*/
 
-  public String getQuery();
+    public String getQuery();
 
-  public String getQueryId();
+    public String getQueryId();
 
-  public QueryStatus getStatus();
+    public QueryStatus getStatus();
 
-  public CatalogName getDefaultCatalog();
+    public CatalogName getDefaultCatalog();
 
-  public MetaStatement getStatement();
+    public MetaStatement getStatement();
 
 }

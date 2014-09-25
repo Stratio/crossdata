@@ -1,12 +1,10 @@
 package com.stratio.meta2.server.actors
 
-import akka.actor.{ Actor, ActorLogging, ActorRef, Props }
-import com.stratio.meta2.core.coordinator.Coordinator
-import com.stratio.meta2.core.query.{ StoragePlannedQuery, MetadataPlannedQuery, PlannedQuery, SelectPlannedQuery }
-import com.stratio.meta2.core.query.MetadataInProgressQuery
-import com.stratio.meta2.core.query.InProgressQuery
-import com.stratio.meta.communication.ACK
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.stratio.meta.common.result.QueryStatus
+import com.stratio.meta.communication.ACK
+import com.stratio.meta2.core.coordinator.Coordinator
+import com.stratio.meta2.core.query.{InProgressQuery, MetadataPlannedQuery, PlannedQuery, SelectPlannedQuery, StoragePlannedQuery}
 
 object CoordinatorActor {
   def props(connector: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor(connector, coordinator))

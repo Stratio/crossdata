@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.validator.statements;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
@@ -26,66 +28,61 @@ import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
-import com.stratio.meta2.core.statements.CreateCatalogStatement;
 import com.stratio.meta2.core.statements.DescribeStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class DescribeStatementTest extends BasicValidatorTest {
 
+    @Test
+    public void describeCatalogIfNotExists() {
+        String query = "DESCRIBE CATALOG demo;";
+        DescribeStatement describeStatement = new DescribeStatement(DescribeType.CATALOG);
+        Validator validator = new Validator();
 
-  @Test
-  public void describeCatalogIfNotExists() {
-      String query = "DESCRIBE CATALOG demo;";
-      DescribeStatement describeStatement=new DescribeStatement(DescribeType.CATALOG);
-      Validator validator=new Validator();
+        BaseQuery baseQuery = new BaseQuery("describeid", query, new CatalogName("demo"));
 
-      BaseQuery baseQuery=new BaseQuery("describeid",query, new CatalogName("demo"));
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
 
-      ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,describeStatement);
-      try {
-          validator.validate(parsedQuery);
-          Assert.assertTrue(true);
-      } catch (ValidationException e) {
-          Assert.fail(e.getMessage());
-      } catch (IgnoreQueryException e) {
-          Assert.fail(e.getMessage());
-      }
+    }
 
-  }
+    @Test
+    public void describeNotExistingCatalog() {
+        String query = "DECRIBE CATALOG myCatalog;";
+        DescribeStatement describeStatement = new DescribeStatement(DescribeType.CATALOG);
+        Validator validator = new Validator();
 
-  @Test
-  public void describeNotExistingCatalog() {
-      String query = "DECRIBE CATALOG myCatalog;";
-      DescribeStatement describeStatement=new DescribeStatement(DescribeType.CATALOG);
-      Validator validator=new Validator();
+        BaseQuery baseQuery = new BaseQuery("describeid", query, new CatalogName("myCatalog"));
 
-      BaseQuery baseQuery=new BaseQuery("describeid",query, new CatalogName("myCatalog"));
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("Catalog must exist");
+        } catch (ValidationException e) {
+            Assert.assertTrue(true);
+        } catch (IgnoreQueryException e) {
+            Assert.assertTrue(true);
+        }
 
-      ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,describeStatement);
-      try {
-          validator.validate(parsedQuery);
-          Assert.fail("Catalog must exist");
-      } catch (ValidationException e) {
-          Assert.assertTrue(true);
-      } catch (IgnoreQueryException e) {
-          Assert.assertTrue(true);
-      }
-
-  }
-
+    }
 
     @Test
     public void describeTable() {
         String query = "Describe Table demo.users;";
-        DescribeStatement describeStatement=new DescribeStatement(DescribeType.TABLE);
-        Validator validator=new Validator();
+        DescribeStatement describeStatement = new DescribeStatement(DescribeType.TABLE);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("describeid",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("describeid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,describeStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -100,12 +97,12 @@ public class DescribeStatementTest extends BasicValidatorTest {
     @Test
     public void describeNotExistingTable() {
         String query = "Describe table myCatalog;";
-        DescribeStatement describeStatement=new DescribeStatement(DescribeType.TABLE);
-        Validator validator=new Validator();
+        DescribeStatement describeStatement = new DescribeStatement(DescribeType.TABLE);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("describeid",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("describeid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,describeStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("Table must exist");
@@ -117,35 +114,15 @@ public class DescribeStatementTest extends BasicValidatorTest {
 
     }
 
-  @Test
-  public void describeTables() {
-      String query = "DESCRIBE TABLES;";
-      DescribeStatement describeStatement=new DescribeStatement(DescribeType.TABLES);
-      Validator validator=new Validator();
-
-      BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("demo"));
-
-      ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,describeStatement);
-      try {
-          validator.validate(parsedQuery);
-          Assert.assertTrue(true);
-      } catch (ValidationException e) {
-          Assert.fail(e.getMessage());
-      } catch (IgnoreQueryException e) {
-          Assert.fail(e.getMessage());
-      }
-
-  }
-
     @Test
-    public void describeCatalogs() {
-        String query = "DESCRIBE Catalogs;";
-        DescribeStatement describeStatement=new DescribeStatement(DescribeType.CATALOGS);
-        Validator validator=new Validator();
+    public void describeTables() {
+        String query = "DESCRIBE TABLES;";
+        DescribeStatement describeStatement = new DescribeStatement(DescribeType.TABLES);
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("createCatalogid",query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,describeStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -157,5 +134,24 @@ public class DescribeStatementTest extends BasicValidatorTest {
 
     }
 
+    @Test
+    public void describeCatalogs() {
+        String query = "DESCRIBE Catalogs;";
+        DescribeStatement describeStatement = new DescribeStatement(DescribeType.CATALOGS);
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("system"));
+
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+
+    }
 
 }

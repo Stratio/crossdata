@@ -20,28 +20,29 @@ package com.stratio.meta2.server.connectorManager
 
 
 import akka.actor.ActorSystem
-import com.stratio.meta.common.logicalplan.LogicalWorkflow
+import com.stratio.meta.common.executionplan.ExecutionStep
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.query._
 import com.stratio.meta2.server.actors.ConnectorManagerActor
 import org.scalatest.FunSuiteLike
-import com.stratio.meta.common.executionplan.ExecutionStep
 
 //import org.scalamock.scalatest.MockFactory
-import org.scalatest.Suite
+
 import org.apache.log4j.Logger
+import org.scalatest.Suite
+
 import scala.concurrent.duration.DurationInt
 
 //class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory  with ServerConfig{
-class ConnectorManagerActorTest extends ActorReceiveUtils with FunSuiteLike  with ServerConfig{
-  this:Suite =>
+class ConnectorManagerActorTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig {
+  this: Suite =>
 
 
-  override lazy val logger =Logger.getLogger(classOf[ConnectorManagerActorTest])
-  lazy val system1 = ActorSystem(clusterName,config)
+  override lazy val logger = Logger.getLogger(classOf[ConnectorManagerActorTest])
+  lazy val system1 = ActorSystem(clusterName, config)
 
-  val connectorManagerActor=system1.actorOf(ConnectorManagerActor.props(null),"ConnectorManagerActor")
+  val connectorManagerActor = system1.actorOf(ConnectorManagerActor.props(null), "ConnectorManagerActor")
 
   val baseQuery = new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
   val selectedQuery = new SelectParsedQuery(baseQuery, null)
@@ -49,16 +50,16 @@ class ConnectorManagerActorTest extends ActorReceiveUtils with FunSuiteLike  wit
   val pq = new SelectPlannedQuery(selectValidatedQuery, new ExecutionStep(null, null, null))
 
   test("Should return a KO message") {
-                                       within(1000 millis){
-                                                            /*
-                                                            val pq= new SelectPlannedQuery(null,null)
-                                                            expectMsg("Ok") // bounded to 1 second
+    within(1000 millis) {
+      /*
+      val pq= new SelectPlannedQuery(null,null)
+      expectMsg("Ok") // bounded to 1 second
 
-                                                            //val m = mock[IConnector]
-                                                            //(m.getConnectorName _).expects().returning("My New Connector")
-                                                            //assert(m.getConnectorName().equals("My New Connector"))
-                                                            */
-                                                          }
-                                     }
+      //val m = mock[IConnector]
+      //(m.getConnectorName _).expects().returning("My New Connector")
+      //assert(m.getConnectorName().equals("My New Connector"))
+      */
+    }
+  }
 
 }

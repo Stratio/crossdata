@@ -21,6 +21,7 @@ package com.stratio.meta2.server.config
 import java.util.concurrent.TimeUnit
 
 import com.typesafe.config.Config
+
 import scala.collection.JavaConversions._
 
 object GridConfig {
@@ -36,34 +37,29 @@ object GridConfig {
 
 trait GridConfig {
 
-  def config: Config = ???
-
   lazy val gridListenAddress: String = config.getString(GridConfig.GRID_LISTEN_ADDRESS_KEY)
-
   /**
    * The addresses of the hosts running grid
    */
   lazy val gridContactHosts: Array[String] = config.getStringList(GridConfig.GRID_CONTACT_HOSTS_KEY).toList.toArray
-
   /**
    * The port used by the grid
    */
   lazy val gridPort: Int = config.getInt(GridConfig.GRID_PORT_KEY)
-
   /**
    * The minimum number of grid members to be contacted
    */
   lazy val gridMinInitialMembers: Int = config.getInt(GridConfig.GRID_MIN_INITIAL_MEMBERS_KEY)
-
   /**
    * The timeout for connecting to other grid nodes
    */
   lazy val gridJoinTimeout: Long = config.getDuration(GridConfig.GRID_JOIN_TIMEOUT_KEY, TimeUnit.MILLISECONDS)
-
   /**
    * The grid files persistence path
    */
   lazy val gridPersistencePath: String = config.getString(GridConfig.GRID_PERSISTENCE_PATH_KEY)
+
+  def config: Config = ???
 
 
 }

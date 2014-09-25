@@ -18,37 +18,37 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class DropTableStatementTest extends ParsingTest {
 
-  @Test
-  public void dropTable() {
-    String inputText = "DROP TABLE IF EXISTS lastTable;";
-    String expectedText = "DROP TABLE IF EXISTS demo.lastTable;";
-    testRegularStatementSession("demo", inputText, expectedText, "dropTable");
-  }
+    @Test
+    public void dropTable() {
+        String inputText = "DROP TABLE IF EXISTS lastTable;";
+        String expectedText = "DROP TABLE IF EXISTS demo.lastTable;";
+        testRegularStatementSession("demo", inputText, expectedText, "dropTable");
+    }
 
-  @Test
-  public void dropNotMissing(){
-    String inputText = "DROP TABLE IF EXISTS _lastTable;";
-    testParserFails(inputText, "dropNotMissing");
-  }
+    @Test
+    public void dropNotMissing() {
+        String inputText = "DROP TABLE IF EXISTS _lastTable;";
+        testParserFails(inputText, "dropNotMissing");
+    }
 
-  @Test
-  public void dropTableWithCatalog() {
-    String inputText = "[ oldcatalog ], DROP TABLE lastTable;";
-    String expectedText = "DROP TABLE oldcatalog.lastTable;";
-    testRegularStatement(inputText, expectedText, "dropTableWithCatalog");
-  }
+    @Test
+    public void dropTableWithCatalog() {
+        String inputText = "[ oldcatalog ], DROP TABLE lastTable;";
+        String expectedText = "DROP TABLE oldcatalog.lastTable;";
+        testRegularStatement(inputText, expectedText, "dropTableWithCatalog");
+    }
 
-  @Test
-  public void dropTableWithEmptyCatalog() {
-    String inputText = "[ ], DROP TABLE lastTable;";
-    String expectedText = "DROP TABLE <unknown_name>.lastTable;";
-    testRegularStatement(inputText, expectedText, "dropTableWithEmptyCatalog");
-  }
+    @Test
+    public void dropTableWithEmptyCatalog() {
+        String inputText = "[ ], DROP TABLE lastTable;";
+        String expectedText = "DROP TABLE <unknown_name>.lastTable;";
+        testRegularStatement(inputText, expectedText, "dropTableWithEmptyCatalog");
+    }
 
 }

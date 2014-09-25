@@ -21,40 +21,40 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  */
 public class DropTriggerStatement extends MetadataStatement {
 
-  /**
-   * The name of the trigger.
-   */
-  private String triggerName;
+    /**
+     * The name of the trigger.
+     */
+    private String triggerName;
 
-  /**
-   * The name of the table.
-   */
-  private String tableName;
+    /**
+     * The name of the table.
+     */
+    private String tableName;
 
-  /**
-   * Class constructor.
-   * 
-   * @param triggerName
-   * @param tableName
-   */
-  public DropTriggerStatement(String triggerName, String tableName) {
-    this.command = true;
-    this.triggerName = triggerName;
-    this.tableName = tableName;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param triggerName
+     * @param tableName
+     */
+    public DropTriggerStatement(String triggerName, String tableName) {
+        this.command = true;
+        this.triggerName = triggerName;
+        this.tableName = tableName;
+    }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("Drop trigger ");
-    sb.append(triggerName);
-    sb.append(" on ");
-    sb.append(tableName);
-    return sb.toString();
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Drop trigger ");
+        sb.append(triggerName);
+        sb.append(" on ");
+        sb.append(tableName);
+        return sb.toString();
+    }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
-  }
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements();
+    }
 
 }

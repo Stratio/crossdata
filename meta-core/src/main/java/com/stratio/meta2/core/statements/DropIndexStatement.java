@@ -27,64 +27,62 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  */
 public class DropIndexStatement extends MetadataStatement {
 
-  /**
-   * Whether the index should be dropped only if exists.
-   */
-  private boolean dropIfExists = false;
+    /**
+     * Whether the index should be dropped only if exists.
+     */
+    private boolean dropIfExists = false;
 
-  /**
-   * The name of the index.
-   */
-  private String name = null;
+    /**
+     * The name of the index.
+     */
+    private String name = null;
 
-
-  /**
-   * Class constructor.
-   */
-  public DropIndexStatement() {
-    this.command = false;
-  }
-
-  /**
-   * Set the option to drop the index only if exists.
-   */
-  public void setDropIfExists() {
-    dropIfExists = true;
-  }
-
-  /**
-   * Set the index name.
-   * 
-   * @param name The name of the index. The name may contain the name of the catalog where the
-   *        index is active.
-   */
-  public void setName(String name) {
-    this.name = name;
-    if (name.contains(".")) {
-      String[] ksAndName = name.split("\\.");
-      catalog = new CatalogName(ksAndName[0]);
-      this.name = ksAndName[1];
-      catalogInc = true;
+    /**
+     * Class constructor.
+     */
+    public DropIndexStatement() {
+        this.command = false;
     }
-  }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("DROP INDEX ");
-    if (dropIfExists) {
-      sb.append("IF EXISTS ");
+    /**
+     * Set the option to drop the index only if exists.
+     */
+    public void setDropIfExists() {
+        dropIfExists = true;
     }
-    if (catalogInc) {
-      sb.append(catalog).append(".");
+
+    /**
+     * Set the index name.
+     *
+     * @param name The name of the index. The name may contain the name of the catalog where the
+     *             index is active.
+     */
+    public void setName(String name) {
+        this.name = name;
+        if (name.contains(".")) {
+            String[] ksAndName = name.split("\\.");
+            catalog = new CatalogName(ksAndName[0]);
+            this.name = ksAndName[1];
+            catalogInc = true;
+        }
     }
-    sb.append(name);
-    return sb.toString();
-  }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("DROP INDEX ");
+        if (dropIfExists) {
+            sb.append("IF EXISTS ");
+        }
+        if (catalogInc) {
+            sb.append(catalog).append(".");
+        }
+        sb.append(name);
+        return sb.toString();
+    }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements().add(Validation.MUST_EXIST_INDEX);
-  }
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements().add(Validation.MUST_EXIST_INDEX);
+    }
 
 }

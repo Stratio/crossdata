@@ -26,65 +26,66 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     Cluster(context.system).subscribe(self, classOf[MemberEvent])
     //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
+
   override def postStop(): Unit =
     Cluster(context.system).unsubscribe(self)
 
   def receive = {
 
     case mu: MemberUp => {
-      log.info("Member is Up: {}" + mu.toString+mu.member.getRoles)
-      val it=mu.member.getRoles.iterator()
-      while(it.hasNext()){
+      log.info("Member is Up: {}" + mu.toString + mu.member.getRoles)
+      val it = mu.member.getRoles.iterator()
+      while (it.hasNext()) {
         val rol = it.next()
-    	  rol match{
-    	    case "connector"=>
-    	    	val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
-    	    	val id=java.util.UUID.randomUUID.toString()
+        rol match {
+          case "connector" =>
+            val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
+            val id = java.util.UUID.randomUUID.toString()
 
             connectorActorRef ! getConnectorName()
             connectorActorRef ! Start()
 
-    	    	//connectorsMap.put(mu.member.address.toString, connectorActorRef)
-            //connectorActorRef ! "hola"
-    	  }
-    	  log.info("has role: {}" + rol)
+          //connectorsMap.put(mu.member.address.toString, connectorActorRef)
+          //connectorActorRef ! "hola"
+        }
+        log.info("has role: {}" + rol)
       }
       // connectorsMap += (member.toString -> memberActorRef)
       //memberActorRef ! "hola pichi, estás metaregistrado"
     }
 
-    case msg:replyConnectorName=>{
+    case msg: replyConnectorName => {
       //connectorsMap.put(new ConnectorName(msg.name), sender)
-      MetadataManager.MANAGER.addConnectorRef(new ConnectorName(msg.name),sender)
+      MetadataManager.MANAGER.addConnectorRef(new ConnectorName(msg.name), sender)
     }
 
-    case query: StorageInProgressQuery=> {
+    case query: StorageInProgressQuery => {
       log.info("storage in progress query")
       //connectorsMap(query.getConnectorName()) ! query
       query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! query
     }
 
-    case query: SelectInProgressQuery=> {
-      val clustername=new ClusterName("//TODO:") //TODO: the query should give me the cluster's name
+    case query: SelectInProgressQuery => {
+      val clustername = new ClusterName("//TODO:") //TODO: the query should give me the cluster's name
       val executionStep = query.getExecutionStep
       log.info("select in progress query")
       //connectorsMap(query.getConnectorName()) ! Execute(clustername,workflow)
       query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! Execute(null, executionStep)
     }
 
-    case query: MetadataInProgressQuery=> {
+    case query: MetadataInProgressQuery => {
 
-      val statement=query.getStatement()
+      val statement = query.getStatement()
       //val messagesender=connectorsMap(query.getConnectorName())
       val messagesender = query.getExecutionStep.getActorRef
 
       statement match {
-        case createCatalogStatement:CreateCatalogStatement => {
+        case createCatalogStatement: CreateCatalogStatement => {
           println("Createcatalog statement")
           //messagesender ! CreateCatalog(query.getClusterName,query.getDefaultCatalog)
           //createCatalogStatement
         }
-        case createTableStatement:CreateTableStatement => {
+        case createTableStatement: CreateTableStatement => {
           println("CreateTableStatement")
         }
         case _ =>
@@ -113,11 +114,11 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
     case ReceiveTimeout =>
       println("ReceiveTimeout")
-      
-    case _:ConnectToConnector=>
+
+    case _: ConnectToConnector =>
       println("connecting to connector ")
 
-    case _: DisconnectFromConnector=>
+    case _: DisconnectFromConnector =>
       println("disconnecting from connector")
 
     /*

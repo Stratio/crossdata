@@ -18,38 +18,38 @@
 
 package com.stratio.meta.driver;
 
-import com.stratio.meta.common.exceptions.ConnectionException;
-
-import org.testng.annotations.Test;
-
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
+
+import org.testng.annotations.Test;
+
+import com.stratio.meta.common.exceptions.ConnectionException;
 
 /**
  * Asynchronous interface tests.
  */
 public class AsyncDriverTest extends DriverParentTest {
 
-  @Test
-  public void basicSelect(){
-    String query = "select * from system.schema_columns;";
-    ResultHandlerWrapper rhw = new ResultHandlerWrapper();
-    driver.setCurrentCatalog("");
-      try {
-          driver.asyncExecuteQuery(query, rhw);
-      } catch (ConnectionException e) {
-          fail("Connect problem");
-          e.printStackTrace();
-      }
-      try {
-      Thread.sleep(5000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
+    @Test
+    public void basicSelect() {
+        String query = "select * from system.schema_columns;";
+        ResultHandlerWrapper rhw = new ResultHandlerWrapper();
+        driver.setCurrentCatalog("");
+        try {
+            driver.asyncExecuteQuery(query, rhw);
+        } catch (ConnectionException e) {
+            fail("Connect problem");
+            e.printStackTrace();
+        }
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //waitForAnswer();
+        assertTrue(rhw.isAckReceived(), "ACK has not been received.");
+        assertFalse(rhw.isErrorReceived(), "No error expected.");
+        assertTrue(rhw.isResultReceived(), "Result has not been received.");
     }
-    //waitForAnswer();
-    assertTrue(rhw.isAckReceived(), "ACK has not been received.");
-    assertFalse(rhw.isErrorReceived(), "No error expected.");
-    assertTrue(rhw.isResultReceived(), "Result has not been received.");
-  }
 }

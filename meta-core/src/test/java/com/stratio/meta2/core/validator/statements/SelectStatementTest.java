@@ -20,8 +20,6 @@ package com.stratio.meta2.core.validator.statements;
 
 import com.stratio.meta.core.validator.BasicValidatorTest;
 
-import org.testng.annotations.Test;
-
 public class SelectStatementTest extends BasicValidatorTest {
 /*
   @Test

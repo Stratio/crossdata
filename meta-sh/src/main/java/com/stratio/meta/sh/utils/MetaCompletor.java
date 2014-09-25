@@ -18,14 +18,15 @@
 
 package com.stratio.meta.sh.utils;
 
-import com.stratio.meta.common.utils.MetaUtils;
-import jline.console.completer.Completer;
+import static jline.internal.Preconditions.checkNotNull;
 
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import static jline.internal.Preconditions.checkNotNull;
+import com.stratio.meta.common.utils.MetaUtils;
+
+import jline.console.completer.Completer;
 
 public class MetaCompletor implements Completer {
 
@@ -39,30 +40,30 @@ public class MetaCompletor implements Completer {
      */
     public MetaCompletor() {
     }
-    
+
     @Override
     public int complete(final String buffer, final int cursor, final List<CharSequence> candidates) {
         checkNotNull(candidates);
-        if ((buffer == null) || (buffer.length()<1)) {            
+        if ((buffer == null) || (buffer.length() < 1)) {
             candidates.addAll(MetaUtils.INITIALS);
-        } else {                       
+        } else {
             // Last char is a space ==> NO completion implemented yet
-            if(buffer.charAt(buffer.length()-1) == ' '){ 
+            if (buffer.charAt(buffer.length() - 1) == ' ') {
                 return -1;
-            }  
-            strings.clear(); 
+            }
+            strings.clear();
             String[] partialTokens = buffer.split(" ");
             String partialQuery = buffer.trim().toUpperCase();
-            if(partialTokens.length == 1) {
+            if (partialTokens.length == 1) {
                 // First token
                 strings.addAll(MetaUtils.INITIALS);
             } else {
                 // NO first token and new token initiated
                 strings.addAll(MetaUtils.NON_INITIALS);
-                partialQuery = partialTokens[partialTokens.length-1].trim().toUpperCase();
-            }            
+                partialQuery = partialTokens[partialTokens.length - 1].trim().toUpperCase();
+            }
 
-            for (String match: strings.tailSet(partialQuery)) {
+            for (String match : strings.tailSet(partialQuery)) {
                 if (!match.startsWith(partialQuery)) {
                     break;
                 }
@@ -73,7 +74,7 @@ public class MetaCompletor implements Completer {
         if (candidates.size() == 1) {
             candidates.set(0, candidates.get(0) + " ");
         }
-        return candidates.isEmpty()? -1 : 0;
+        return candidates.isEmpty() ? -1 : 0;
     }
-    
+
 }

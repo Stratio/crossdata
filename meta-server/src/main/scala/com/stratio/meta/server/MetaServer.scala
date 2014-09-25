@@ -18,20 +18,20 @@
 
 package com.stratio.meta.server
 
-import org.apache.commons.daemon.{DaemonContext, Daemon}
-import org.apache.log4j.Logger
-import com.stratio.meta2.core.engine.Engine
 import akka.actor.ActorSystem
 import akka.contrib.pattern.ClusterReceptionistExtension
 import com.stratio.meta.server.config.ServerConfig
+import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.server.actors.ServerActor
+import org.apache.commons.daemon.{Daemon, DaemonContext}
+import org.apache.log4j.Logger
 
-class MetaServer extends Daemon with ServerConfig{
+class MetaServer extends Daemon with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[MetaServer])
 
   lazy val engine = new Engine(engineConfig)
   // Create an Akka system
-  lazy val system = ActorSystem(clusterName,config)
+  lazy val system = ActorSystem(clusterName, config)
 
   override def destroy(): Unit = {
 

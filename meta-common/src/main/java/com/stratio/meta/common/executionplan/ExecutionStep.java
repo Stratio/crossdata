@@ -18,11 +18,10 @@
 
 package com.stratio.meta.common.executionplan;
 
+import java.io.Serializable;
+
 import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
-
-
-import java.io.Serializable;
 
 /**
  * Execution step abstraction. This class contains all the information
@@ -31,70 +30,71 @@ import java.io.Serializable;
  */
 public class ExecutionStep {
 
-  /**
-   * The target actor reference associated with the connector.
-   */
-  private final Serializable actorRef;
+    /**
+     * The target actor reference associated with the connector.
+     */
+    private final Serializable actorRef;
 
-  /**
-   * Workflow to be executed.
-   */
-  private final LogicalWorkflow workflow;
+    /**
+     * Workflow to be executed.
+     */
+    private final LogicalWorkflow workflow;
 
-  /**
-   * Type of execution.
-   */
-  private final ExecutionType type;
+    /**
+     * Type of execution.
+     */
+    private final ExecutionType type;
 
-  /**
-   * If the previous execution step triggers another execution step, this variable contains
-   * the logical step where previous results should be stored.
-   */
-  private LogicalStep triggerStep;
+    /**
+     * If the previous execution step triggers another execution step, this variable contains
+     * the logical step where previous results should be stored.
+     */
+    private LogicalStep triggerStep;
 
-  /**
-   * Variable that defines the next execution step to be launched if the execution type
-   * is {@code TRIGGER_EXECUTION}.
-   */
-  private ExecutionStep nextExecutionStep;
+    /**
+     * Variable that defines the next execution step to be launched if the execution type
+     * is {@code TRIGGER_EXECUTION}.
+     */
+    private ExecutionStep nextExecutionStep;
 
-  /**
-   * Class constructor.
-   * @param actorRef Target actor reference.
-   * @param workflow Workflow to be executed.
-   * @param type Type of execution.
-   */
-  public ExecutionStep(Serializable actorRef, LogicalWorkflow workflow, ExecutionType type) {
-    this.actorRef = actorRef;
-    this.workflow = workflow;
-    this.type = type;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param actorRef Target actor reference.
+     * @param workflow Workflow to be executed.
+     * @param type     Type of execution.
+     */
+    public ExecutionStep(Serializable actorRef, LogicalWorkflow workflow, ExecutionType type) {
+        this.actorRef = actorRef;
+        this.workflow = workflow;
+        this.type = type;
+    }
 
-  public Serializable getActorRef() {
-    return actorRef;
-  }
+    public Serializable getActorRef() {
+        return actorRef;
+    }
 
-  public LogicalWorkflow getWorkflow() {
-    return workflow;
-  }
+    public LogicalWorkflow getWorkflow() {
+        return workflow;
+    }
 
-  public ExecutionType getType() {
-    return type;
-  }
+    public ExecutionType getType() {
+        return type;
+    }
 
-  public void setTriggerStep(LogicalStep triggerStep) {
-    this.triggerStep = triggerStep;
-  }
+    public LogicalStep getTriggerStep() {
+        return triggerStep;
+    }
 
-  public LogicalStep getTriggerStep() {
-    return triggerStep;
-  }
+    public void setTriggerStep(LogicalStep triggerStep) {
+        this.triggerStep = triggerStep;
+    }
 
-  public void setNextExecutionStep(ExecutionStep nextExecutionStep) {
-    this.nextExecutionStep = nextExecutionStep;
-  }
+    public ExecutionStep getNextExecutionStep() {
+        return nextExecutionStep;
+    }
 
-  public ExecutionStep getNextExecutionStep() {
-    return nextExecutionStep;
-  }
+    public void setNextExecutionStep(ExecutionStep nextExecutionStep) {
+        this.nextExecutionStep = nextExecutionStep;
+    }
 }

@@ -21,67 +21,67 @@ package com.stratio.meta2.common.data;
 /**
  * Table name recognized by the parser. The name may contain:
  * <ul>
- *   <li>catalog.table</li>
- *   <li>table</li>
+ * <li>catalog.table</li>
+ * <li>table</li>
  * </ul>
  */
 public class TableName extends Name {
 
-  private final String name;
+    private final String name;
 
-  private CatalogName catalogName;
+    private CatalogName catalogName;
 
-  private String alias = null;
+    private String alias = null;
 
-  public TableName(String catalogName, String tableName){
-    if(catalogName == null || catalogName.isEmpty()){
-      this.catalogName=null;
-    }else{
-      this.catalogName=new CatalogName(catalogName);
+    public TableName(String catalogName, String tableName) {
+        if (catalogName == null || catalogName.isEmpty()) {
+            this.catalogName = null;
+        } else {
+            this.catalogName = new CatalogName(catalogName);
+        }
+
+        this.name = tableName;
     }
 
-    this.name = tableName;
-  }
-
-  public CatalogName getCatalogName() {
-    return catalogName;
-  }
-
-  public void setCatalogName(CatalogName catalogName) {
-    this.catalogName=catalogName;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getAlias() {
-    return alias;
-  }
-
-  public void setAlias(String alias) {
-    this.alias = alias;
-  }
-
-  @Override public boolean isCompletedName() {
-    return catalogName!=null;
-  }
-
-  public String getQualifiedName() {
-    String result;
-    if(isCompletedName()){
-      result= QualifiedNames.getTableQualifiedName(this.getCatalogName().getName(), getName());
-    } else{
-      result= QualifiedNames.getTableQualifiedName(UNKNOWN_NAME,getName());
+    public CatalogName getCatalogName() {
+        return catalogName;
     }
-    if(alias != null){
-      result = result + " AS " + alias;
-    }
-    return result;
-  }
 
-  @Override public NameType getType() {
-    return NameType.Table;
-  }
+    public void setCatalogName(CatalogName catalogName) {
+        this.catalogName = catalogName;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    @Override public boolean isCompletedName() {
+        return catalogName != null;
+    }
+
+    public String getQualifiedName() {
+        String result;
+        if (isCompletedName()) {
+            result = QualifiedNames.getTableQualifiedName(this.getCatalogName().getName(), getName());
+        } else {
+            result = QualifiedNames.getTableQualifiedName(UNKNOWN_NAME, getName());
+        }
+        if (alias != null) {
+            result = result + " AS " + alias;
+        }
+        return result;
+    }
+
+    @Override public NameType getType() {
+        return NameType.Table;
+    }
 
 }

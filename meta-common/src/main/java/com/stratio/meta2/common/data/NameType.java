@@ -19,15 +19,15 @@
 package com.stratio.meta2.common.data;
 
 public enum NameType {
-  Catalog,
-  Cluster,
-  Column,
-  Connector,
-  DataStore,
-  Table,
-  Index;
+    Catalog,
+    Cluster,
+    Column,
+    Connector,
+    DataStore,
+    Table,
+    Index;
 
-  public String toString(){
-    return name();
-  }
+    public String toString() {
+        return name();
+    }
 }

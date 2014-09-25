@@ -28,9 +28,9 @@ object SparkConfig {
 }
 
 trait SparkConfig {
-  def config: Config = ???
-
   lazy val sparkMaster: String = config.getString(SparkConfig.SPARK_MASTER)
   lazy val sparkClasspath: String = config.getString(SparkConfig.SPARK_CLASSPATH)
+
+  def config: Config = ???
 
 }

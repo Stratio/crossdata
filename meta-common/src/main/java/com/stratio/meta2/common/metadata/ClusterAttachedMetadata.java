@@ -18,35 +18,35 @@
 
 package com.stratio.meta2.common.metadata;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
-import java.io.Serializable;
-import java.util.Map;
-
 public class ClusterAttachedMetadata implements Serializable {
-  private final ClusterName clusterRef;
-  private final DataStoreName dataStoreRef;
-  private final Map<Selector, Selector> properties;
+    private final ClusterName clusterRef;
+    private final DataStoreName dataStoreRef;
+    private final Map<Selector, Selector> properties;
 
-  public ClusterAttachedMetadata(ClusterName clusterRef,
-                                 DataStoreName dataStoreRef,
-                                 Map<Selector, Selector> properties) {
-    this.clusterRef = clusterRef;
-    this.dataStoreRef = dataStoreRef;
-    this.properties = properties;
-  }
+    public ClusterAttachedMetadata(ClusterName clusterRef,
+            DataStoreName dataStoreRef,
+            Map<Selector, Selector> properties) {
+        this.clusterRef = clusterRef;
+        this.dataStoreRef = dataStoreRef;
+        this.properties = properties;
+    }
 
-  public ClusterName getClusterRef() {
-    return clusterRef;
-  }
+    public ClusterName getClusterRef() {
+        return clusterRef;
+    }
 
-  public DataStoreName getDataStoreRef() {
-    return dataStoreRef;
-  }
+    public DataStoreName getDataStoreRef() {
+        return dataStoreRef;
+    }
 
-  public Map<Selector, Selector> getProperties() {
-    return properties;
-  }
+    public Map<Selector, Selector> getProperties() {
+        return properties;
+    }
 }

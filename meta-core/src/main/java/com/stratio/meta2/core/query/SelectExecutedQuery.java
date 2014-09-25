@@ -22,13 +22,13 @@ import com.stratio.meta.common.result.QueryStatus;
 
 public class SelectExecutedQuery extends SelectInProgressQuery implements ExecutedQuery {
 
-  public SelectExecutedQuery(SelectInProgressQuery selectInProgressQuery) {
-    super(selectInProgressQuery);
-    setQueryStatus(QueryStatus.EXECUTED);
-  }
+    public SelectExecutedQuery(SelectInProgressQuery selectInProgressQuery) {
+        super(selectInProgressQuery);
+        setQueryStatus(QueryStatus.EXECUTED);
+    }
 
-  public SelectExecutedQuery(SelectExecutedQuery selectExecutedQuery) {
-    this((SelectInProgressQuery) selectExecutedQuery);
-  }
+    public SelectExecutedQuery(SelectExecutedQuery selectExecutedQuery) {
+        this((SelectInProgressQuery) selectExecutedQuery);
+    }
 
 }

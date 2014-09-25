@@ -22,99 +22,99 @@ package com.stratio.meta.common.statements.structures.relationships;
  * Operators supported in an {@link com.stratio.meta.common.statements.structures.relationships.Relation}.
  */
 public enum Operator {
-  ADD{
-    @Override
-    public String toString() {
-      return "+";
-    }
-  },
-  SUBTRACT{
-    @Override
-    public String toString() {
-      return "-";
-    }
-  },
-  DIVISION{
-    @Override
-    public String toString() {
-      return "/";
-    }
-  },
-  MULTIPLICATION{
-    @Override
-    public String toString() {
-      return "*";
-    }
-  },
-  /**
-   * Constant to define inclusion relationships.
-   */
-  IN{
-    @Override
-    public String toString() {
-      return "IN";
-    }
-  },
-  /**
-   * Constant to define range comparisons.
-   */
-  BETWEEN{
-    @Override
-    public String toString() {
-      return "BETWEEN";
-    }
-  },
-  /**
-   * Constant to define compare relationships (e.g., >, <, =, etc.).
-   */
-  EQ{
-    @Override
-    public String toString() {
-      return "=";
-    }
-  },
-  /**
-   * Assign relationship for update-like statements.
-   */
-  ASSIGN{
-    public String toString() {
-      return "=";
-    }
-  },
-  MATCH{
-    public String toString() {
-      return "MATCH";
-    }
-  },
-  GT{
-    public String toString() {
-      return ">";
-    }
-  },
-  LT{
-    public String toString() {
-      return "<";
-    }
-  },
-  GET{
-    public String toString() {
-      return ">=";
-    }
-  },
-  LET{
-    public String toString() {
-      return "<=";
-    }
-  },
-  DISTINCT{
-    public String toString() {
-      return "<>";
-    }
-  },
-  LIKE{
-    public String toString() {
-      return "LIKE";
-    }
-  };
+    ADD {
+        @Override
+        public String toString() {
+            return "+";
+        }
+    },
+    SUBTRACT {
+        @Override
+        public String toString() {
+            return "-";
+        }
+    },
+    DIVISION {
+        @Override
+        public String toString() {
+            return "/";
+        }
+    },
+    MULTIPLICATION {
+        @Override
+        public String toString() {
+            return "*";
+        }
+    },
+    /**
+     * Constant to define inclusion relationships.
+     */
+    IN {
+        @Override
+        public String toString() {
+            return "IN";
+        }
+    },
+    /**
+     * Constant to define range comparisons.
+     */
+    BETWEEN {
+        @Override
+        public String toString() {
+            return "BETWEEN";
+        }
+    },
+    /**
+     * Constant to define compare relationships (e.g., >, <, =, etc.).
+     */
+    EQ {
+        @Override
+        public String toString() {
+            return "=";
+        }
+    },
+    /**
+     * Assign relationship for update-like statements.
+     */
+    ASSIGN {
+        public String toString() {
+            return "=";
+        }
+    },
+    MATCH {
+        public String toString() {
+            return "MATCH";
+        }
+    },
+    GT {
+        public String toString() {
+            return ">";
+        }
+    },
+    LT {
+        public String toString() {
+            return "<";
+        }
+    },
+    GET {
+        public String toString() {
+            return ">=";
+        }
+    },
+    LET {
+        public String toString() {
+            return "<=";
+        }
+    },
+    DISTINCT {
+        public String toString() {
+            return "<>";
+        }
+    },
+    LIKE {
+        public String toString() {
+            return "LIKE";
+        }
+    };
 
 }

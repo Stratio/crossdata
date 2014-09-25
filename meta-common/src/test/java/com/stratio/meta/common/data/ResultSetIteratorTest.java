@@ -18,48 +18,49 @@
 
 package com.stratio.meta.common.data;
 
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta2.common.metadata.ColumnType;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta2.common.metadata.ColumnType;
 
 public class ResultSetIteratorTest {
 
-    private Random rand;
     ResultSet rSet;
+    private Random rand;
 
     @BeforeClass
-    public void setUp(){
+    public void setUp() {
         rand = new Random();
         rSet = buildRandomResultSet();
     }
 
     @Test
-    public void testConstructor(){
+    public void testConstructor() {
         ResultSetIterator rSetIt = new ResultSetIterator(rSet);
         Assert.assertNotNull(rSetIt);
     }
 
     @Test
-    public void testHasNext(){
+    public void testHasNext() {
         ResultSetIterator rSetIt = new ResultSetIterator(rSet);
         Assert.assertTrue(rSetIt.hasNext());
     }
 
     @Test
-    public void testNext(){
+    public void testNext() {
         ResultSetIterator rSetIt = new ResultSetIterator(rSet);
         Row nextRow = rSetIt.next();
         Assert.assertNotNull(nextRow);
-        Assert.assertTrue(((String)nextRow.getCell("str").getValue()).startsWith("comment"));
+        Assert.assertTrue(((String) nextRow.getCell("str").getValue()).startsWith("comment"));
     }
 
-
-    private ResultSet buildRandomResultSet(){
+    private ResultSet buildRandomResultSet() {
         ResultSet rSet = new ResultSet();
 
         Cell cellStr = new Cell(new String("comment" + rand.nextInt(100)));

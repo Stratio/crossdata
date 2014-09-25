@@ -16,8 +16,8 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>meta-parent</artifactId>
@@ -76,10 +76,10 @@
         </developer>
     </developers>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<antlr.version>3.5.2</antlr.version>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <antlr.version>3.5.2</antlr.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -100,18 +100,18 @@
             <version>6.8.8</version>
             <scope>test</scope>
         </dependency>
-		<dependency>
-			<groupId>org.antlr</groupId>
-			<artifactId>antlr</artifactId>
-			<version>${antlr.version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.antlr</groupId>
-			<artifactId>antlr-runtime</artifactId>
-			<version>${antlr.version}</version>
-		</dependency>		
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr</artifactId>
+            <version>${antlr.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr-runtime</artifactId>
+            <version>${antlr.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-driver</artifactId>
@@ -133,32 +133,32 @@
             <version>${commons-lang3.version}</version>
         </dependency>
     </dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.antlr</groupId>
-				<artifactId>antlr3-maven-plugin</artifactId>
-				<version>${antlr.version}</version>
-				<executions>
-					<execution>
-						<id>run antlr3 help</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>antlr</goal>
-						</goals>
-						<configuration>
-							<sourceDirectory>src/main/java/com/stratio/meta/sh/help</sourceDirectory>
-							<listener>true</listener>
-							<visitor>true</visitor>
-							<outputDirectory>src/main/java/com/stratio/meta/sh/help/generated</outputDirectory>
-							<arguments>
-								<argument>-package</argument>
-								<argument>com.stratio.meta.sh.help.generated</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr3-maven-plugin</artifactId>
+                <version>${antlr.version}</version>
+                <executions>
+                    <execution>
+                        <id>run antlr3 help</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>antlr</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>src/main/java/com/stratio/meta/sh/help</sourceDirectory>
+                            <listener>true</listener>
+                            <visitor>true</visitor>
+                            <outputDirectory>src/main/java/com/stratio/meta/sh/help/generated</outputDirectory>
+                            <arguments>
+                                <argument>-package</argument>
+                                <argument>com.stratio.meta.sh.help.generated</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -174,8 +174,8 @@
                     <mainClass>com.stratio.meta.sh.Metash</mainClass>
                 </configuration>
             </plugin>
-		</plugins>
-	</build>
+        </plugins>
+    </build>
 
 
 </project>

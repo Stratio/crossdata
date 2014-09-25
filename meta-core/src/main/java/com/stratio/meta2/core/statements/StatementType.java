@@ -23,23 +23,23 @@ package com.stratio.meta2.core.statements;
  */
 public enum StatementType {
 
-  /**
-   * Statements that are executed by IQueryEngines.
-   */
-  QUERY,
+    /**
+     * Statements that are executed by IQueryEngines.
+     */
+    QUERY,
 
-  /**
-   * Statements that are executed as internal META commands.
-   */
-  COMMAND,
+    /**
+     * Statements that are executed as internal META commands.
+     */
+    COMMAND,
 
-  /**
-   * Statements that are executed by IStorageEngines.
-   */
-  STORAGE,
+    /**
+     * Statements that are executed by IStorageEngines.
+     */
+    STORAGE,
 
-  /**
-   * Statements that are executed by IMetadataProviders.
-   */
-  METADATA
+    /**
+     * Statements that are executed by IMetadataProviders.
+     */
+    METADATA
 }

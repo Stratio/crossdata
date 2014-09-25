@@ -20,19 +20,19 @@ package com.stratio.meta.common.metadata.structures;
 
 /**
  * Enumeration of the types of tables returned in metadata requests.
- *
+ * <p/>
  * <ul>
- *   <li>DATABASE: Persistent table.</li>
- *   <li>STREAMING: Ephemeral table supported by Stratio Streaming.</li>
+ * <li>DATABASE: Persistent table.</li>
+ * <li>STREAMING: Ephemeral table supported by Stratio Streaming.</li>
  * </ul>
  */
 public enum TableType {
-  /**
-   * A table that is persisted in a database.
-   */
-  DATABASE,
-  /**
-   * An ephemeral table supported by Stratio Streaming.
-   */
-  EPHEMERAL
+    /**
+     * A table that is persisted in a database.
+     */
+    DATABASE,
+    /**
+     * An ephemeral table supported by Stratio Streaming.
+     */
+    EPHEMERAL
 }

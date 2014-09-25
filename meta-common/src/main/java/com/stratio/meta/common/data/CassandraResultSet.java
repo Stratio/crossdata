@@ -22,14 +22,15 @@ import java.io.Serializable;
 
 /**
  * Class to be removed in the near future.
+ *
  * @deprecated Use ResultSet instead.
  */
 @Deprecated
 public class CassandraResultSet extends ResultSet implements Serializable {
 
-  /**
-   * Serial version UID in order to be Serializable.
-   */
-  private static final long serialVersionUID = -5989403621101496698L;
+    /**
+     * Serial version UID in order to be Serializable.
+     */
+    private static final long serialVersionUID = -5989403621101496698L;
 
 }

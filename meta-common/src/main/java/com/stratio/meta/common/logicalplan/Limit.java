@@ -23,29 +23,29 @@ import com.stratio.meta.common.connector.Operations;
 /**
  * Limit the number of results in a query.
  */
-public class Limit extends TransformationStep{
+public class Limit extends TransformationStep {
 
-  /**
-   * The number of tuples to be returned.
-   */
-  private final int limit;
+    /**
+     * The number of tuples to be returned.
+     */
+    private final int limit;
 
-  /**
-   * Class constructor.
-   *
-   * @param operation The operation to be applied.
-   */
-  public Limit(Operations operation, int limit) {
-    super(operation);
-    this.limit = limit;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param operation The operation to be applied.
+     */
+    public Limit(Operations operation, int limit) {
+        super(operation);
+        this.limit = limit;
+    }
 
-  public int getLimit() {
-    return limit;
-  }
+    public int getLimit() {
+        return limit;
+    }
 
-  @Override
-  public String toString() {
-    return "LIMIT "+limit + " rows";
-  }
+    @Override
+    public String toString() {
+        return "LIMIT " + limit + " rows";
+    }
 }

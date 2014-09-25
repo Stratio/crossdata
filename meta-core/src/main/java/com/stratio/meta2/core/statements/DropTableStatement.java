@@ -27,57 +27,57 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  */
 public class DropTableStatement extends MetadataStatement {
 
-  /**
-   * The name of the target table.
-   */
-  private TableName tableName;
+    /**
+     * The name of the target table.
+     */
+    private TableName tableName;
 
-  /**
-   * Whether the table should be dropped only if exists.
-   */
-  private boolean ifExists;
+    /**
+     * Whether the table should be dropped only if exists.
+     */
+    private boolean ifExists;
 
-  /**
-   * Class constructor.
-   *
-   * @param tableName The name of the table.
-   * @param ifExists Whether it should be dropped only if exists.
-   */
-  public DropTableStatement(TableName tableName, boolean ifExists) {
-    this.tableName = tableName;
-    this.ifExists = ifExists;
-  }
-
-  /**
-   * Get the name of the table.
-   * 
-   * @return The name.
-   */
-  public TableName getTableName() {
-    return tableName;
-  }
-
-  /**
-   * Set the name of the table.
-   * 
-   * @param tableName The name of the table.
-   */
-  public void setTableName(TableName tableName) {
-    this.tableName = tableName;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("DROP TABLE ");
-    if (ifExists) {
-      sb.append("IF EXISTS ");
+    /**
+     * Class constructor.
+     *
+     * @param tableName The name of the table.
+     * @param ifExists  Whether it should be dropped only if exists.
+     */
+    public DropTableStatement(TableName tableName, boolean ifExists) {
+        this.tableName = tableName;
+        this.ifExists = ifExists;
     }
-    sb.append(tableName.getQualifiedName());
-    return sb.toString();
-  }
 
-  public ValidationRequirements getValidationRequirements(){
-    return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE);
-  }
+    /**
+     * Get the name of the table.
+     *
+     * @return The name.
+     */
+    public TableName getTableName() {
+        return tableName;
+    }
+
+    /**
+     * Set the name of the table.
+     *
+     * @param tableName The name of the table.
+     */
+    public void setTableName(TableName tableName) {
+        this.tableName = tableName;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("DROP TABLE ");
+        if (ifExists) {
+            sb.append("IF EXISTS ");
+        }
+        sb.append(tableName.getQualifiedName());
+        return sb.toString();
+    }
+
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE);
+    }
 
 }

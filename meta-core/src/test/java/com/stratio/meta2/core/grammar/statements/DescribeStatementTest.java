@@ -18,79 +18,79 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class DescribeStatementTest extends ParsingTest {
 
-  @Test
-  public void describeCatalogBasic() {
-    String inputText = "DESCRIBE CATALOG catalog1;";
-    testRegularStatement(inputText, "describeCatalogBasic");
-  }
+    @Test
+    public void describeCatalogBasic() {
+        String inputText = "DESCRIBE CATALOG catalog1;";
+        testRegularStatement(inputText, "describeCatalogBasic");
+    }
 
-  @Test
-  public void describeMissingCatalog() {
-    String inputText = "DESCRIBE CATALOG;";
-    testParserFails(inputText, "describeMissingCatalog");
-  }
+    @Test
+    public void describeMissingCatalog() {
+        String inputText = "DESCRIBE CATALOG;";
+        testParserFails(inputText, "describeMissingCatalog");
+    }
 
-  @Test
-  public void describeTableBasic() {
-    String inputText = "DESCRIBE TABLE catalog1.table1;";
-    testRegularStatement(inputText, "describeTableBasic");
-  }
+    @Test
+    public void describeTableBasic() {
+        String inputText = "DESCRIBE TABLE catalog1.table1;";
+        testRegularStatement(inputText, "describeTableBasic");
+    }
 
-  @Test
-  public void describeTableFail() {
-    String inputText = "DESCRIBE UNKNOWN catalog1.table1;";
-    testParserFails(inputText, "describeTableFail");
-  }
+    @Test
+    public void describeTableFail() {
+        String inputText = "DESCRIBE UNKNOWN catalog1.table1;";
+        testParserFails(inputText, "describeTableFail");
+    }
 
-  @Test
-  public void describeCatalogsBasic() {
-    String inputText = "DESCRIBE CATALOGS;";
-    testRegularStatement(inputText, "describeCatalogsBasic");
-  }
+    @Test
+    public void describeCatalogsBasic() {
+        String inputText = "DESCRIBE CATALOGS;";
+        testRegularStatement(inputText, "describeCatalogsBasic");
+    }
 
-  @Test
-  public void describeClustersBasic() {
-    String inputText = "DESCRIBE CLUSTERS;";
-    testRegularStatement(inputText, "describeClustersBasic");
-  }
+    @Test
+    public void describeClustersBasic() {
+        String inputText = "DESCRIBE CLUSTERS;";
+        testRegularStatement(inputText, "describeClustersBasic");
+    }
 
-  @Test
-  public void describeClusterBasic() {
-    String inputText = "DESCRIBE CLUSTER myCluster;";
-    String expectedText = "DESCRIBE CLUSTER cluster.myCluster;";
-    testRegularStatement(inputText, expectedText, "describeClusterBasic");
-  }
+    @Test
+    public void describeClusterBasic() {
+        String inputText = "DESCRIBE CLUSTER myCluster;";
+        String expectedText = "DESCRIBE CLUSTER cluster.myCluster;";
+        testRegularStatement(inputText, expectedText, "describeClusterBasic");
+    }
 
-  @Test
-  public void describeDataStoresBasic() {
-    String inputText = "DESCRIBE DATASTORES;";
-    testRegularStatement(inputText, "describeDataStoresBasic");
-  }
+    @Test
+    public void describeDataStoresBasic() {
+        String inputText = "DESCRIBE DATASTORES;";
+        testRegularStatement(inputText, "describeDataStoresBasic");
+    }
 
-  @Test
-  public void describeDataStoreBasic() {
-    String inputText = "DESCRIBE DATASTORE myDatastore;";
-    String expectedText = "DESCRIBE DATASTORE datastore.myDatastore;";
+    @Test
+    public void describeDataStoreBasic() {
+        String inputText = "DESCRIBE DATASTORE myDatastore;";
+        String expectedText = "DESCRIBE DATASTORE datastore.myDatastore;";
         testRegularStatement(inputText, expectedText, "describeDataStoreBasic");
-  }
+    }
 
-  @Test
-  public void describeConnectorsBasic() {
-    String inputText = "DESCRIBE CONNECTORS;";
-    testRegularStatement(inputText, "describeConnectorsBasic");
-  }
+    @Test
+    public void describeConnectorsBasic() {
+        String inputText = "DESCRIBE CONNECTORS;";
+        testRegularStatement(inputText, "describeConnectorsBasic");
+    }
 
-  @Test
-  public void describeConnectorBasic() {
-    String inputText = "DESCRIBE CONNECTOR myConnector;";
-    String expectedText = "DESCRIBE CONNECTOR connector.myConnector;";
-    testRegularStatement(inputText, expectedText, "describeConnectorBasic");
-  }
+    @Test
+    public void describeConnectorBasic() {
+        String inputText = "DESCRIBE CONNECTOR myConnector;";
+        String expectedText = "DESCRIBE CONNECTOR connector.myConnector;";
+        testRegularStatement(inputText, expectedText, "describeConnectorBasic");
+    }
 
 }

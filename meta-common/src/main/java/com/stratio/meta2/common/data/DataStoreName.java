@@ -19,22 +19,22 @@
 package com.stratio.meta2.common.data;
 
 public class DataStoreName extends FirstLevelName {
-  private final String name;
+    private final String name;
 
-  public DataStoreName(String dataStoreName){
-    super();
-    this.name = dataStoreName;
-  }
+    public DataStoreName(String dataStoreName) {
+        super();
+        this.name = dataStoreName;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public String getQualifiedName(){
-    return QualifiedNames.getDataStoreQualifiedName(getName());
-  }
+    public String getQualifiedName() {
+        return QualifiedNames.getDataStoreQualifiedName(getName());
+    }
 
-  @Override public NameType getType() {
-    return NameType.DataStore;
-  }
+    @Override public NameType getType() {
+        return NameType.DataStore;
+    }
 }

@@ -18,45 +18,45 @@
 
 package com.stratio.meta2.common.metadata;
 
+import java.util.Map;
+
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 
-import java.util.Map;
-
 public class ClusterMetadata implements IMetadata {
 
-  private final ClusterName name;
-  private final DataStoreName dataStoreRef;
-  private final Map<String, Object> options;
-  private Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs;
+    private final ClusterName name;
+    private final DataStoreName dataStoreRef;
+    private final Map<String, Object> options;
+    private Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs;
 
-  public ClusterMetadata(ClusterName name, DataStoreName dataStoreRef, Map<String, Object> options,
-      Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) {
-    this.name = name;
-    this.options = options;
-    this.dataStoreRef = dataStoreRef;
-    this.connectorAttachedRefs = connectorAttachedRefs;
-  }
+    public ClusterMetadata(ClusterName name, DataStoreName dataStoreRef, Map<String, Object> options,
+            Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) {
+        this.name = name;
+        this.options = options;
+        this.dataStoreRef = dataStoreRef;
+        this.connectorAttachedRefs = connectorAttachedRefs;
+    }
 
-  public ClusterName getName() {
-    return name;
-  }
+    public ClusterName getName() {
+        return name;
+    }
 
-  public Map<String, Object> getOptions() {
-    return options;
-  }
+    public Map<String, Object> getOptions() {
+        return options;
+    }
 
-  public DataStoreName getDataStoreRef() {
-    return dataStoreRef;
-  }
+    public DataStoreName getDataStoreRef() {
+        return dataStoreRef;
+    }
 
-  public Map<ConnectorName, ConnectorAttachedMetadata> getConnectorAttachedRefs() {
-    return connectorAttachedRefs;
-  }
+    public Map<ConnectorName, ConnectorAttachedMetadata> getConnectorAttachedRefs() {
+        return connectorAttachedRefs;
+    }
 
-  public void setConnectorAttachedRefs(
-      Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) {
-    this.connectorAttachedRefs = connectorAttachedRefs;
-  }
+    public void setConnectorAttachedRefs(
+            Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) {
+        this.connectorAttachedRefs = connectorAttachedRefs;
+    }
 }

@@ -21,19 +21,19 @@ package com.stratio.meta.common.exceptions;
 /**
  * Planning exception thrown by the Driver if the statement could not be planned.
  */
-public class PlanningException extends Exception{
+public class PlanningException extends Exception {
 
-  /**
-   * Serial version UID in order to be {@link java.io.Serializable}.
-   */
-  private static final long serialVersionUID = 1878003904827417242L;
+    /**
+     * Serial version UID in order to be {@link java.io.Serializable}.
+     */
+    private static final long serialVersionUID = 1878003904827417242L;
 
-  public PlanningException(String message){
-    super(message);
-  }
+    public PlanningException(String message) {
+        super(message);
+    }
 
-  public PlanningException(String msg, Throwable cause){
-    super(msg, cause);
-  }
+    public PlanningException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 
 }

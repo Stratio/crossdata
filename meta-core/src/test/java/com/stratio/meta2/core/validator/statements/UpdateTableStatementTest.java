@@ -22,7 +22,4 @@ import com.stratio.meta2.core.validator.BasicValidatorTest;
 
 public class UpdateTableStatementTest extends BasicValidatorTest {
 
-
-    
-
 }

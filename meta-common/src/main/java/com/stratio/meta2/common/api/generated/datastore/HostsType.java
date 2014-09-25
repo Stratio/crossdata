@@ -23,7 +23,6 @@
 // Generated on: 2014.09.03 at 12:15:47 AM CEST 
 //
 
-
 package com.stratio.meta2.common.api.generated.datastore;
 
 import java.io.Serializable;
@@ -33,12 +32,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
  * <p>Java class for hostsType complex type.
- *
+ * <p/>
  * <p>The following schema fragment specifies the expected content contained within this class.
- *
+ * <p/>
  * <pre>
  * &lt;complexType name="hostsType">
  *   &lt;complexContent>
@@ -51,68 +49,58 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- *
- *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "hostsType", propOrder = {
-    "host",
-    "port"
+        "host",
+        "port"
 })
 public class HostsType implements Serializable {
 
-  private static final long serialVersionUID = -8613188904974145458L;
-  @XmlElement(required = true)
-  protected String host;
-  @XmlElement(required = true)
-  protected String port;
+    private static final long serialVersionUID = -8613188904974145458L;
+    @XmlElement(required = true)
+    protected String host;
+    @XmlElement(required = true)
+    protected String port;
 
-  /**
-   * Gets the value of the host property.
-   *
-   * @return
-   *     possible object is
-   *     {@link String }
-   *
-   */
-  public String getHost() {
-    return host;
-  }
+    /**
+     * Gets the value of the host property.
+     *
+     * @return possible object is
+     * {@link String }
+     */
+    public String getHost() {
+        return host;
+    }
 
-  /**
-   * Sets the value of the host property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link String }
-   *
-   */
-  public void setHost(String value) {
-    this.host = value;
-  }
+    /**
+     * Sets the value of the host property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setHost(String value) {
+        this.host = value;
+    }
 
-  /**
-   * Gets the value of the port property.
-   *
-   * @return
-   *     possible object is
-   *     {@link String }
-   *
-   */
-  public String getPort() {
-    return port;
-  }
+    /**
+     * Gets the value of the port property.
+     *
+     * @return possible object is
+     * {@link String }
+     */
+    public String getPort() {
+        return port;
+    }
 
-  /**
-   * Sets the value of the port property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link String }
-   *
-   */
-  public void setPort(String value) {
-    this.port = value;
-  }
+    /**
+     * Sets the value of the port property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setPort(String value) {
+        this.port = value;
+    }
 
 }

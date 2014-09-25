@@ -30,20 +30,20 @@ import com.stratio.meta2.common.data.ClusterName;
  */
 public interface IQueryEngine {
 
-  /**
-   * Execute a workflow to retrieve a subset of data.
-   *
-   * @param targetCluster Target cluster.
-   * @param workflow      The {@link com.stratio.meta.common.logicalplan.LogicalWorkflow} that
-   *                      contains the {@link com.stratio.meta.common.logicalplan.LogicalStep} to be
-   *                      executed.
-   * @return A {@link com.stratio.meta.common.result.QueryResult}.
-   * @throws UnsupportedException If the required set of operations are not supported by the
-   *                              connector.
-   * @throws ExecutionException   If the execution of the required steps fails.
-   */
-  public QueryResult execute(ClusterName targetCluster, LogicalWorkflow workflow)
-      throws UnsupportedException,
-             ExecutionException;
+    /**
+     * Execute a workflow to retrieve a subset of data.
+     *
+     * @param targetCluster Target cluster.
+     * @param workflow      The {@link com.stratio.meta.common.logicalplan.LogicalWorkflow} that
+     *                      contains the {@link com.stratio.meta.common.logicalplan.LogicalStep} to be
+     *                      executed.
+     * @return A {@link com.stratio.meta.common.result.QueryResult}.
+     * @throws UnsupportedException If the required set of operations are not supported by the
+     *                              connector.
+     * @throws ExecutionException   If the execution of the required steps fails.
+     */
+    public QueryResult execute(ClusterName targetCluster, LogicalWorkflow workflow)
+            throws UnsupportedException,
+            ExecutionException;
 
 }

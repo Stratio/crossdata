@@ -15,47 +15,45 @@
 package com.stratio.meta2.common.data;
 
 public class QualifiedNames {
-  public static String getCatalogQualifiedName(String name) {
-    return normalize(name);
-  }
-
-  public static CatalogName getCatalogNameFromQualifiedName(String qualifiedName) {
-    CatalogName catalogName = null;
-    String[] arrNames = qualifiedName.split("\\.");
-    if (arrNames.length == 2) {
-      catalogName = new CatalogName(arrNames[1]);
+    public static String getCatalogQualifiedName(String name) {
+        return normalize(name);
     }
-    return catalogName;
-  }
 
+    public static CatalogName getCatalogNameFromQualifiedName(String qualifiedName) {
+        CatalogName catalogName = null;
+        String[] arrNames = qualifiedName.split("\\.");
+        if (arrNames.length == 2) {
+            catalogName = new CatalogName(arrNames[1]);
+        }
+        return catalogName;
+    }
 
-  public static String getTableQualifiedName(String catalog, String name) {
-    return normalize(getCatalogQualifiedName(catalog) + "." + name);
-  }
+    public static String getTableQualifiedName(String catalog, String name) {
+        return normalize(getCatalogQualifiedName(catalog) + "." + name);
+    }
 
+    public static String getColumnQualifiedName(String catalog, String table, String name) {
+        return normalize(getTableQualifiedName(catalog, table) + "." + name);
+    }
 
-  public static String getColumnQualifiedName(String catalog, String table, String name) {
-    return normalize(getTableQualifiedName(catalog, table) + "." + name);
-  }
+    public static String getClusterQualifiedName(String name) {
+        return normalize("cluster." + name);
+    }
 
-  public static String getClusterQualifiedName(String name) {
-    return normalize("cluster." + name);
-  }
+    public static String getConnectorQualifiedName(String name) {
+        return normalize("connector." + name);
+    }
 
-  public static String getConnectorQualifiedName(String name) {
-    return normalize("connector." + name);
-  }
+    public static String getDataStoreQualifiedName(String name) {
+        return normalize("datastore." + name);
+    }
 
-  public static String getDataStoreQualifiedName(String name) {
-    return normalize("datastore." + name);
-  }
+    public static String getIndexQualifiedName(String catalog, String table,
+            String name) {
+        return normalize(getTableQualifiedName(catalog, table) + ".INDEX[" + name + "]");
+    }
 
-  public static String getIndexQualifiedName(String catalog, String table,
-      String name) {
-    return normalize(getTableQualifiedName(catalog,table) + ".INDEX["+  name +"]");
-  }
-
-  private static String normalize(String qName) {
-    return qName.toLowerCase();
-  }
+    private static String normalize(String qName) {
+        return qName.toLowerCase();
+    }
 }

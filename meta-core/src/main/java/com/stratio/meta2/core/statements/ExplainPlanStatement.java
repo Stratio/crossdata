@@ -21,34 +21,34 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  */
 public class ExplainPlanStatement extends MetadataStatement {
 
-  /**
-   * The {@link com.stratio.meta2.core.statements.MetaStatement} to be analyzed.
-   */
-  private MetaStatement metaStatement;
+    /**
+     * The {@link com.stratio.meta2.core.statements.MetaStatement} to be analyzed.
+     */
+    private MetaStatement metaStatement;
 
-  /**
-   * Class constructor.
-   * 
-   * @param metaStatement The {@link com.stratio.meta2.core.statements.MetaStatement} to be analyzed.
-   */
-  public ExplainPlanStatement(MetaStatement metaStatement) {
-    this.command = true;
-    this.metaStatement = metaStatement;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param metaStatement The {@link com.stratio.meta2.core.statements.MetaStatement} to be analyzed.
+     */
+    public ExplainPlanStatement(MetaStatement metaStatement) {
+        this.command = true;
+        this.metaStatement = metaStatement;
+    }
 
-  public MetaStatement getMetaStatement() {
-    return metaStatement;
-  }
+    public MetaStatement getMetaStatement() {
+        return metaStatement;
+    }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("Explain plan for ");
-    sb.append(metaStatement.toString());
-    return sb.toString();
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Explain plan for ");
+        sb.append(metaStatement.toString());
+        return sb.toString();
+    }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
-  }
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements();
+    }
 }

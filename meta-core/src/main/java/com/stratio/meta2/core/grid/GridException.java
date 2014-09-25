@@ -23,34 +23,34 @@ package com.stratio.meta2.core.grid;
  */
 public class GridException extends RuntimeException {
 
-  static final long serialVersionUID = -3562363467456756734L;
+    static final long serialVersionUID = -3562363467456756734L;
 
-  /**
-   * @see RuntimeException#RuntimeException()
-   */
-  public GridException() {
-    super();
-  }
+    /**
+     * @see RuntimeException#RuntimeException()
+     */
+    public GridException() {
+        super();
+    }
 
-  /**
-   * @see RuntimeException#RuntimeException(String message)
-   */
-  public GridException(String message) {
-    super(message);
-  }
+    /**
+     * @see RuntimeException#RuntimeException(String message)
+     */
+    public GridException(String message) {
+        super(message);
+    }
 
-  /**
-   * @see RuntimeException#RuntimeException(String message, Throwable cause)
-   */
-  public GridException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    /**
+     * @see RuntimeException#RuntimeException(String message, Throwable cause)
+     */
+    public GridException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-  /**
-   * @see RuntimeException#RuntimeException(Throwable cause)
-   */
-  public GridException(Throwable cause) {
-    super(cause);
-  }
+    /**
+     * @see RuntimeException#RuntimeException(Throwable cause)
+     */
+    public GridException(Throwable cause) {
+        super(cause);
+    }
 
 }

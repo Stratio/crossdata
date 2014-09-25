@@ -21,10 +21,10 @@ package com.stratio.meta.common.ask
 /**
  * Types of supported API operations.
  */
-object APICommand extends Enumeration{
+object APICommand extends Enumeration {
   type APICommand = Value
   val LIST_CATALOGS = Value("LIST_CATALOGS")
-  val LIST_TABLES   = Value("LIST_TABLES")
-  val LIST_COLUMNS  = Value("LIST_COLUMNS")
-  val ADD_MANIFEST  = Value("ADD_MANIFEST")
+  val LIST_TABLES = Value("LIST_TABLES")
+  val LIST_COLUMNS = Value("LIST_COLUMNS")
+  val ADD_MANIFEST = Value("ADD_MANIFEST")
 }

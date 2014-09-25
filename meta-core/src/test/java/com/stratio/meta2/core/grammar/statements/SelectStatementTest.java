@@ -18,259 +18,261 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class SelectStatementTest extends ParsingTest {
 
-  //
-  // Basic tests without WHERE clauses
-  //
+    //
+    // Basic tests without WHERE clauses
+    //
 
-  @Test
-  public void basicSelectAsterisk(){
-    String inputText = "SELECT * FROM table1;";
-    String expectedText = "SELECT * FROM <unknown_name>.table1;";
-    testRegularStatement(inputText, expectedText, "basicSelectAsterisk");
-  }
-
-  @Test
-  public void basicSelectAsteriskWithLimit(){
-    String inputText = "SELECT * FROM table1 LIMIT 1;";
-    String expectedText = "SELECT * FROM <unknown_name>.table1 LIMIT 1;";
-    testRegularStatement(inputText, expectedText, "basicSelectAsterisk");
-  }
-
-  @Test
-  public void basicSelectAsteriskWithCatalog(){
-    String inputText = "SELECT * FROM catalog1.table1;";
-    testRegularStatement(inputText, "basicSelectAsteriskWithCatalog");
-  }
-
-  @Test
-  public void singleColumn() {
-    String inputText = "SELECT newtb.lucene FROM newks.newtb;";
-    String expectedText = "SELECT <unknown_name>.newtb.lucene FROM newks.newtb;";
-    testRegularStatement(inputText, expectedText, "singleColumn");
-  }
-
-  @Test
-  public void singleColumnWithCatalog() {
-    String inputText = "SELECT newks.newtb.lucene FROM newks.newtb;";
-    testRegularStatement(inputText, "singleColumnWithCatalog");
-  }
-
-  @Test
-  public void functionSingleColumn() {
-    String inputText = "SELECT sum(newtb.lucene) FROM newks.newtb;";
-    String expectedText = "SELECT sum(<unknown_name>.newtb.lucene) FROM newks.newtb;";
-    testRegularStatement(inputText, expectedText, "functionSingleColumn");
-  }
-
-  @Test
-  public void function2SingleColumn() {
-    String inputText = "SELECT myfunction(newtb.lucene) FROM newks.newtb;";
-    String expectedText = "SELECT myfunction(<unknown_name>.newtb.lucene) FROM newks.newtb;";
-    testRegularStatement(inputText, expectedText, "function2SingleColumn");
-  }
-
-  @Test
-  public void singleColumnWithSessionCatalog() {
-    String inputText = "SELECT newtb.lucene FROM newks.newtb;";
-    String expectedText = "SELECT newks.newtb.lucene FROM newks.newtb;";
-    testRegularStatementSession("newks", inputText, expectedText, "singleColumnWithSessionCatalog");
-  }
-
-  @Test
-  public void singleColumnWithAliasWithSessionCatalog() {
-    String inputText = "SELECT newtb.lucene AS c FROM newks.newtb;";
-    String expectedText = "SELECT newks.newtb.lucene AS c FROM newks.newtb;";
-    testRegularStatementSession("newks", inputText, expectedText, "singleColumnWithSessionCatalog");
-  }
-
-  @Test
-  public void singleColumnWithAliasWithReservedWord() {
-    String inputText = "SELECT newtb.lucene AS limit FROM newks.newtb;";
-    String expectedText = "SELECT newks.newtb.lucene AS limit FROM newks.newtb;";
-    testRegularStatementSession("newks", inputText, expectedText, "singleColumnWithAliasWithReservedWord");
-  }
-
-  @Test
-  public void selectWithDistinctPlusAsterisk() {
-    String inputText = "SELECT DISTINCT * FROM newks.newtb;";
-    testParserFails("newks", inputText, "selectWithDistinctPlusAsterisk");
-  }
-
-  @Test
-  public void selectAliasWithoutColumn() {
-    String inputText = "SELECT tab2.col1 AS myAlis, AS aliasCol FROM table1;";
-    testParserFails("newks", inputText, "selectAliasWithoutColumn");
-  }
-
-  @Test
-  public void innerJoinWithTableAliases() {
-    String inputText = "SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID;";
-    String expectedText = "SELECT <unknown_name>.<unknown_name>.field1, <unknown_name>.<unknown_name>.field2 FROM demo.clients AS table1 INNER JOIN demo.sales AS table2 ON <unknown_name>.<unknown_name>.identifier = <unknown_name>.<unknown_name>.codeID;";
-    testRegularStatementSession("demo", inputText, expectedText, "innerJoinWithTableAliases");
-  }
-
-  @Test
-  public void testSimpleQueryWithAliasesOk() {
-    String inputText = "SELECT demo.users.gender as genero FROM demo.users;";
-    testRegularStatement(inputText, "testSimpleGroupQueryWithAliasesOk");
-  }
-
-  @Test
-  public void basicSelectIntColumn(){
-    String inputText = "SELECT 1 FROM table1;";
-    String expectedText = "SELECT 1 FROM <unknown_name>.table1;";
-    testRegularStatement(inputText, expectedText, "basicSelectIntColumn");
-  }
-
-  @Test
-  public void basicSelectNegativeIntColumn(){
-    String inputText = "SELECT -99 FROM table1;";
-    String expectedText = "SELECT -99 FROM <unknown_name>.table1;";
-    testRegularStatement(inputText, expectedText, "basicSelectNegativeIntColumn");
-  }
-
-  @Test
-  public void basicSelectDoubleColumn(){
-    String inputText = "SELECT 1.1234 FROM table1;";
-    String expectedText = "SELECT 1.1234 FROM <unknown_name>.table1;";
-    testRegularStatement(inputText, expectedText, "basicSelectDoubleColumn");
-  }
-
-  @Test
-  public void basicSelectNegativeDoubleColumn(){
-    String inputText = "SELECT -9.9876 FROM table1;";
-    String expectedText = "SELECT -9.9876 FROM <unknown_name>.table1;";
-    testRegularStatement(inputText, expectedText, "basicSelectNegativeDoubleColumn");
-  }
-
-  @Test
-  public void basicSelectBooleanColumn(){
-    String inputText = "SELECT true FROM table1;";
-    String expectedText = "SELECT true FROM <unknown_name>.table1;";
-    testRegularStatement(inputText, expectedText, "basicSelectBooleanColumn");
-  }
-
-  @Test
-  public void basicSelectQuotedLiteralColumn(){
-    String inputText = "SELECT \"literal\" FROM table1;";
-    String expectedText = "SELECT \"literal\" FROM <unknown_name>.table1;";
-    testRegularStatement(inputText, expectedText, "basicSelectBooleanColumn");
-  }
-
-  //
-  // Select with where clauses
-  //
-
-  @Test
-  public void selectWithCompareRelationships() {
-    String [] relationships = {"=", ">", "<", ">=", "<=", "MATCH"};
-    for(String r : relationships) {
-      String inputText = "SELECT * FROM demo.emp WHERE a " + r + " 5;";
-      String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a " + r + " 5;";
-      testRegularStatement(inputText, expectedText, "selectWithMatch");
-    }
-  }
-
-  @Test
-  public void selectWith2CompareRelationships() {
-    String [] relationships = {"=", ">", "<", ">=", "<=", "MATCH"};
-    for(String r : relationships) {
-      String inputText = "SELECT * FROM demo.emp WHERE a " + r + " 5 AND b " + r + " 10;";
-      String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a " + r + " 5 AND <unknown_name>.<unknown_name>.b " + r + " 10;";
-      testRegularStatement(inputText, expectedText, "selectWithMatch");
-    }
-  }
-
-  @Test
-  public void selectWithParenthesisInWhere() {
-    String inputText = "SELECT * FROM demo.emp WHERE a = 10 AND ( b = 20 AND ( c = 30 AND d = 40));";
-    String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a = 10 AND <unknown_name>.<unknown_name>.b = 20 AND <unknown_name>.<unknown_name>.c = 30 AND <unknown_name>.<unknown_name>.d = 40;";
-    testRegularStatement(inputText, expectedText, "selectWithParenthesisInWhere");
-  }
-
-  @Test
-  public void selectWithParenthesisInWhere2() {
-    String inputText = "SELECT * FROM demo.emp WHERE (a = 10 AND b = 20) AND (c = 30 AND (d = 40 AND e = 50));";
-    String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a = 10 AND <unknown_name>.<unknown_name>.b = 20 AND <unknown_name>.<unknown_name>.c = 30 AND <unknown_name>.<unknown_name>.d = 40 AND <unknown_name>.<unknown_name>.e = 50;";
-    testRegularStatement(inputText, expectedText, "selectWithParenthesisInWhere2");
-  }
-
-  //
-  // Select with window
-  //
-
-  @Test
-  public void selectWithTimeWindow() {
-    String inputText =
-        "SELECT table1.column1 FROM table1 WITH WINDOW 5 SECONDS WHERE table1.column2 = 3;";
-    String expectedText =
-        "SELECT <unknown_name>.table1.column1 FROM <unknown_name>.table1 WITH WINDOW 5 SECONDS WHERE <unknown_name>.table1.column2 = 3;";
-    testRegularStatement(inputText, expectedText, "selectWithTimeWindow");
-  }
-
-  @Test
-  public void selectWithTimeWindow2() {
-    String inputText =
-        "SELECT table1.column1 FROM table1 WITH WINDOW 1 min WHERE table1.column2 = 3;";
-    String expectedText =
-        "SELECT <unknown_name>.table1.column1 FROM <unknown_name>.table1 WITH WINDOW 1 MINUTES WHERE <unknown_name>.table1.column2 = 3;";
-    testRegularStatement(inputText, expectedText, "selectWithTimeWindow2");
-  }
-
-  @Test
-  public void selectStatementWindows() {
-    for (String w : new String[] {"5 ROWS", "LAST", "5 SECONDS"}) {
-      String inputText =
-          "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + w
-              + " WHERE newks.newtb.ident1 LIKE \"whatever\";";
-      testRegularStatement(inputText, "selectStatementWindows");
+    @Test
+    public void basicSelectAsterisk() {
+        String inputText = "SELECT * FROM table1;";
+        String expectedText = "SELECT * FROM <unknown_name>.table1;";
+        testRegularStatement(inputText, expectedText, "basicSelectAsterisk");
     }
 
-    // TODO: add "S","M","H","D","s","m","h" and "d"
-    // for(String t:new String[]{"S","M","H","D","s","m","h","d"}){
-    for (String t : new String[] {"SECONDS", "MINUTES", "HOURS", "DAYS"}) {
-      for (int i = 10; i-- > 2;) {
+    @Test
+    public void basicSelectAsteriskWithLimit() {
+        String inputText = "SELECT * FROM table1 LIMIT 1;";
+        String expectedText = "SELECT * FROM <unknown_name>.table1 LIMIT 1;";
+        testRegularStatement(inputText, expectedText, "basicSelectAsterisk");
+    }
+
+    @Test
+    public void basicSelectAsteriskWithCatalog() {
+        String inputText = "SELECT * FROM catalog1.table1;";
+        testRegularStatement(inputText, "basicSelectAsteriskWithCatalog");
+    }
+
+    @Test
+    public void singleColumn() {
+        String inputText = "SELECT newtb.lucene FROM newks.newtb;";
+        String expectedText = "SELECT <unknown_name>.newtb.lucene FROM newks.newtb;";
+        testRegularStatement(inputText, expectedText, "singleColumn");
+    }
+
+    @Test
+    public void singleColumnWithCatalog() {
+        String inputText = "SELECT newks.newtb.lucene FROM newks.newtb;";
+        testRegularStatement(inputText, "singleColumnWithCatalog");
+    }
+
+    @Test
+    public void functionSingleColumn() {
+        String inputText = "SELECT sum(newtb.lucene) FROM newks.newtb;";
+        String expectedText = "SELECT sum(<unknown_name>.newtb.lucene) FROM newks.newtb;";
+        testRegularStatement(inputText, expectedText, "functionSingleColumn");
+    }
+
+    @Test
+    public void function2SingleColumn() {
+        String inputText = "SELECT myfunction(newtb.lucene) FROM newks.newtb;";
+        String expectedText = "SELECT myfunction(<unknown_name>.newtb.lucene) FROM newks.newtb;";
+        testRegularStatement(inputText, expectedText, "function2SingleColumn");
+    }
+
+    @Test
+    public void singleColumnWithSessionCatalog() {
+        String inputText = "SELECT newtb.lucene FROM newks.newtb;";
+        String expectedText = "SELECT newks.newtb.lucene FROM newks.newtb;";
+        testRegularStatementSession("newks", inputText, expectedText, "singleColumnWithSessionCatalog");
+    }
+
+    @Test
+    public void singleColumnWithAliasWithSessionCatalog() {
+        String inputText = "SELECT newtb.lucene AS c FROM newks.newtb;";
+        String expectedText = "SELECT newks.newtb.lucene AS c FROM newks.newtb;";
+        testRegularStatementSession("newks", inputText, expectedText, "singleColumnWithSessionCatalog");
+    }
+
+    @Test
+    public void singleColumnWithAliasWithReservedWord() {
+        String inputText = "SELECT newtb.lucene AS limit FROM newks.newtb;";
+        String expectedText = "SELECT newks.newtb.lucene AS limit FROM newks.newtb;";
+        testRegularStatementSession("newks", inputText, expectedText, "singleColumnWithAliasWithReservedWord");
+    }
+
+    @Test
+    public void selectWithDistinctPlusAsterisk() {
+        String inputText = "SELECT DISTINCT * FROM newks.newtb;";
+        testParserFails("newks", inputText, "selectWithDistinctPlusAsterisk");
+    }
+
+    @Test
+    public void selectAliasWithoutColumn() {
+        String inputText = "SELECT tab2.col1 AS myAlis, AS aliasCol FROM table1;";
+        testParserFails("newks", inputText, "selectAliasWithoutColumn");
+    }
+
+    @Test
+    public void innerJoinWithTableAliases() {
+        String inputText = "SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID;";
+        String expectedText = "SELECT <unknown_name>.<unknown_name>.field1, <unknown_name>.<unknown_name>.field2 FROM demo.clients AS table1 INNER JOIN demo.sales AS table2 ON <unknown_name>.<unknown_name>.identifier = <unknown_name>.<unknown_name>.codeID;";
+        testRegularStatementSession("demo", inputText, expectedText, "innerJoinWithTableAliases");
+    }
+
+    @Test
+    public void testSimpleQueryWithAliasesOk() {
+        String inputText = "SELECT demo.users.gender as genero FROM demo.users;";
+        testRegularStatement(inputText, "testSimpleGroupQueryWithAliasesOk");
+    }
+
+    @Test
+    public void basicSelectIntColumn() {
+        String inputText = "SELECT 1 FROM table1;";
+        String expectedText = "SELECT 1 FROM <unknown_name>.table1;";
+        testRegularStatement(inputText, expectedText, "basicSelectIntColumn");
+    }
+
+    @Test
+    public void basicSelectNegativeIntColumn() {
+        String inputText = "SELECT -99 FROM table1;";
+        String expectedText = "SELECT -99 FROM <unknown_name>.table1;";
+        testRegularStatement(inputText, expectedText, "basicSelectNegativeIntColumn");
+    }
+
+    @Test
+    public void basicSelectDoubleColumn() {
+        String inputText = "SELECT 1.1234 FROM table1;";
+        String expectedText = "SELECT 1.1234 FROM <unknown_name>.table1;";
+        testRegularStatement(inputText, expectedText, "basicSelectDoubleColumn");
+    }
+
+    @Test
+    public void basicSelectNegativeDoubleColumn() {
+        String inputText = "SELECT -9.9876 FROM table1;";
+        String expectedText = "SELECT -9.9876 FROM <unknown_name>.table1;";
+        testRegularStatement(inputText, expectedText, "basicSelectNegativeDoubleColumn");
+    }
+
+    @Test
+    public void basicSelectBooleanColumn() {
+        String inputText = "SELECT true FROM table1;";
+        String expectedText = "SELECT true FROM <unknown_name>.table1;";
+        testRegularStatement(inputText, expectedText, "basicSelectBooleanColumn");
+    }
+
+    @Test
+    public void basicSelectQuotedLiteralColumn() {
+        String inputText = "SELECT \"literal\" FROM table1;";
+        String expectedText = "SELECT \"literal\" FROM <unknown_name>.table1;";
+        testRegularStatement(inputText, expectedText, "basicSelectBooleanColumn");
+    }
+
+    //
+    // Select with where clauses
+    //
+
+    @Test
+    public void selectWithCompareRelationships() {
+        String[] relationships = { "=", ">", "<", ">=", "<=", "MATCH" };
+        for (String r : relationships) {
+            String inputText = "SELECT * FROM demo.emp WHERE a " + r + " 5;";
+            String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a " + r + " 5;";
+            testRegularStatement(inputText, expectedText, "selectWithMatch");
+        }
+    }
+
+    @Test
+    public void selectWith2CompareRelationships() {
+        String[] relationships = { "=", ">", "<", ">=", "<=", "MATCH" };
+        for (String r : relationships) {
+            String inputText = "SELECT * FROM demo.emp WHERE a " + r + " 5 AND b " + r + " 10;";
+            String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a " + r
+                    + " 5 AND <unknown_name>.<unknown_name>.b " + r + " 10;";
+            testRegularStatement(inputText, expectedText, "selectWithMatch");
+        }
+    }
+
+    @Test
+    public void selectWithParenthesisInWhere() {
+        String inputText = "SELECT * FROM demo.emp WHERE a = 10 AND ( b = 20 AND ( c = 30 AND d = 40));";
+        String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a = 10 AND <unknown_name>.<unknown_name>.b = 20 AND <unknown_name>.<unknown_name>.c = 30 AND <unknown_name>.<unknown_name>.d = 40;";
+        testRegularStatement(inputText, expectedText, "selectWithParenthesisInWhere");
+    }
+
+    @Test
+    public void selectWithParenthesisInWhere2() {
+        String inputText = "SELECT * FROM demo.emp WHERE (a = 10 AND b = 20) AND (c = 30 AND (d = 40 AND e = 50));";
+        String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a = 10 AND <unknown_name>.<unknown_name>.b = 20 AND <unknown_name>.<unknown_name>.c = 30 AND <unknown_name>.<unknown_name>.d = 40 AND <unknown_name>.<unknown_name>.e = 50;";
+        testRegularStatement(inputText, expectedText, "selectWithParenthesisInWhere2");
+    }
+
+    //
+    // Select with window
+    //
+
+    @Test
+    public void selectWithTimeWindow() {
         String inputText =
-            "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + i + " " + t
-                + " WHERE newks.newtb.ident1 LIKE \"whatever\";";
-        testRegularStatement(inputText, "selectStatementWindows");
-      }
-
+                "SELECT table1.column1 FROM table1 WITH WINDOW 5 SECONDS WHERE table1.column2 = 3;";
+        String expectedText =
+                "SELECT <unknown_name>.table1.column1 FROM <unknown_name>.table1 WITH WINDOW 5 SECONDS WHERE <unknown_name>.table1.column2 = 3;";
+        testRegularStatement(inputText, expectedText, "selectWithTimeWindow");
     }
-  }
 
-  //
-  // Select with JOIN
-  //
+    @Test
+    public void selectWithTimeWindow2() {
+        String inputText =
+                "SELECT table1.column1 FROM table1 WITH WINDOW 1 min WHERE table1.column2 = 3;";
+        String expectedText =
+                "SELECT <unknown_name>.table1.column1 FROM <unknown_name>.table1 WITH WINDOW 1 MINUTES WHERE <unknown_name>.table1.column2 = 3;";
+        testRegularStatement(inputText, expectedText, "selectWithTimeWindow2");
+    }
 
-  @Test
-  public void selectStatementJoins() {
-    String inputText =
-        "SELECT c.t1.a, c.t2.b FROM c.t1 INNER JOIN c.t2 ON c.t1.a = c.t2.aa WHERE c.t1.a = \"y\";";
-    testRegularStatement(inputText, "selectStatementJoins");
-  }
+    @Test
+    public void selectStatementWindows() {
+        for (String w : new String[] { "5 ROWS", "LAST", "5 SECONDS" }) {
+            String inputText =
+                    "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + w
+                            + " WHERE newks.newtb.ident1 LIKE \"whatever\";";
+            testRegularStatement(inputText, "selectStatementWindows");
+        }
 
-  @Test
-  public void selectStatementJoinComplex() {
-    String inputText =
-        "SELECT colSales, colRevenues FROM tableClients "
-        + "INNER JOIN tableCostumers ON AssistantId = clientId "
-        + "WHERE colCity = 'Madrid' "
-        + "ORDER BY age "
-        + "GROUP BY gender;";
-    String expectedText = "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM <unknown_name>.tableClients "
-                          + "INNER JOIN <unknown_name>.tableCostumers ON <unknown_name>.<unknown_name>.AssistantId = <unknown_name>.<unknown_name>.clientId "
-                          + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
-                          + "ORDER BY <unknown_name>.<unknown_name>.age "
-                          + "GROUP BY <unknown_name>.<unknown_name>.gender;";
-    testRegularStatement(inputText, expectedText, "selectStatementJoinComplex");
-  }
+        // TODO: add "S","M","H","D","s","m","h" and "d"
+        // for(String t:new String[]{"S","M","H","D","s","m","h","d"}){
+        for (String t : new String[] { "SECONDS", "MINUTES", "HOURS", "DAYS" }) {
+            for (int i = 10; i-- > 2; ) {
+                String inputText =
+                        "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + i + " " + t
+                                + " WHERE newks.newtb.ident1 LIKE \"whatever\";";
+                testRegularStatement(inputText, "selectStatementWindows");
+            }
+
+        }
+    }
+
+    //
+    // Select with JOIN
+    //
+
+    @Test
+    public void selectStatementJoins() {
+        String inputText =
+                "SELECT c.t1.a, c.t2.b FROM c.t1 INNER JOIN c.t2 ON c.t1.a = c.t2.aa WHERE c.t1.a = \"y\";";
+        testRegularStatement(inputText, "selectStatementJoins");
+    }
+
+    @Test
+    public void selectStatementJoinComplex() {
+        String inputText =
+                "SELECT colSales, colRevenues FROM tableClients "
+                        + "INNER JOIN tableCostumers ON AssistantId = clientId "
+                        + "WHERE colCity = 'Madrid' "
+                        + "ORDER BY age "
+                        + "GROUP BY gender;";
+        String expectedText =
+                "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM <unknown_name>.tableClients "
+                        + "INNER JOIN <unknown_name>.tableCostumers ON <unknown_name>.<unknown_name>.AssistantId = <unknown_name>.<unknown_name>.clientId "
+                        + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
+                        + "ORDER BY <unknown_name>.<unknown_name>.age "
+                        + "GROUP BY <unknown_name>.<unknown_name>.gender;";
+        testRegularStatement(inputText, expectedText, "selectStatementJoinComplex");
+    }
 
   /*
   @Test
@@ -335,9 +337,9 @@ public class SelectStatementTest extends ParsingTest {
 
   }
 */
-  //
-  // Select with order by
-  //
+    //
+    // Select with order by
+    //
 
   /*
   @Test
@@ -359,19 +361,19 @@ public class SelectStatementTest extends ParsingTest {
   }
 */
 
-  @Test
-  public void selectSelectors() {
-    for (String c: new String[] {"COUNT(*)", "myUDF(c.table0.field0)", "c.table0.field0", "COUNT(1)"}) {
-      String inputText = "SELECT " + c + " from c.table0;";
-      testRegularStatement(inputText, "selectSelectors");
+    @Test
+    public void selectSelectors() {
+        for (String c : new String[] { "COUNT(*)", "myUDF(c.table0.field0)", "c.table0.field0", "COUNT(1)" }) {
+            String inputText = "SELECT " + c + " from c.table0;";
+            testRegularStatement(inputText, "selectSelectors");
+        }
     }
-  }
 
-  @Test
-  public void selectSelectorsWrongCount() {
-    String inputText = "SELECT COUNT(col25) from c.table0;";
-    testParserFails("demo", inputText, "selectSelectorsWrongCount");
-  }
+    @Test
+    public void selectSelectorsWrongCount() {
+        String inputText = "SELECT COUNT(col25) from c.table0;";
+        testParserFails("demo", inputText, "selectSelectorsWrongCount");
+    }
 
   /*
   @Test
@@ -519,9 +521,9 @@ public class SelectStatementTest extends ParsingTest {
   }
   */
 
-  //
-  // Complex cases
-  //
+    //
+    // Complex cases
+    //
 
   /*
   @Test
@@ -534,25 +536,25 @@ public class SelectStatementTest extends ParsingTest {
   }
   */
 
+    @Test
+    public void selectComplex() {
+        String inputText =
+                "SELECT colSales, colRevenues FROM tableClients "
+                        + "WHERE colCity = 'Madrid' "
+                        + "ORDER BY age "
+                        + "GROUP BY gender;";
+        String expectedText =
+                "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM <unknown_name>.tableClients "
+                        + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
+                        + "ORDER BY <unknown_name>.<unknown_name>.age "
+                        + "GROUP BY <unknown_name>.<unknown_name>.gender;";
+        testRegularStatement(inputText, expectedText, "selectComplex");
+    }
 
-  @Test
-  public void selectComplex() {
-    String inputText =
-        "SELECT colSales, colRevenues FROM tableClients "
-        + "WHERE colCity = 'Madrid' "
-        + "ORDER BY age "
-        + "GROUP BY gender;";
-    String expectedText = "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM <unknown_name>.tableClients "
-                          + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
-                          + "ORDER BY <unknown_name>.<unknown_name>.age "
-                          + "GROUP BY <unknown_name>.<unknown_name>.gender;";
-    testRegularStatement(inputText, expectedText, "selectComplex");
-  }
-
-  @Test
-  public void selectWithWrongLeftTermTypeInWhere() {
-    String inputText = "SELECT * FROM demo.emp WHERE myUDF(comment) < 10;";
-    testParserFails("demo", inputText, "selectWithWrongLeftTermTypeInWhere");
-  }
+    @Test
+    public void selectWithWrongLeftTermTypeInWhere() {
+        String inputText = "SELECT * FROM demo.emp WHERE myUDF(comment) < 10;";
+        testParserFails("demo", inputText, "selectWithWrongLeftTermTypeInWhere");
+    }
 
 }

@@ -20,7 +20,7 @@ package com.stratio.meta.common.exceptions;
 
 public class ApiException extends Exception {
 
-  public ApiException(Throwable cause) {
-    super(cause);
-  }
+    public ApiException(Throwable cause) {
+        super(cause);
+    }
 }

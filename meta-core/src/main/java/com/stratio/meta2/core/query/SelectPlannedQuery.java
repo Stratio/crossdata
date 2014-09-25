@@ -19,27 +19,24 @@
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.executionplan.ExecutionStep;
-import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.ConnectorName;
 
 public class SelectPlannedQuery extends SelectValidatedQuery implements PlannedQuery {
 
-  private final ExecutionStep executionStep;
+    private final ExecutionStep executionStep;
 
-  public SelectPlannedQuery(SelectValidatedQuery selectValidatedQuery, ExecutionStep executionStep) {
-    super(selectValidatedQuery);
-    setQueryStatus(QueryStatus.PLANNED);
-    this.executionStep = executionStep;
-  }
+    public SelectPlannedQuery(SelectValidatedQuery selectValidatedQuery, ExecutionStep executionStep) {
+        super(selectValidatedQuery);
+        setQueryStatus(QueryStatus.PLANNED);
+        this.executionStep = executionStep;
+    }
 
-  public SelectPlannedQuery(SelectPlannedQuery plannedQuery){
-    this(plannedQuery, plannedQuery.getExecutionStep());
-  }
+    public SelectPlannedQuery(SelectPlannedQuery plannedQuery) {
+        this(plannedQuery, plannedQuery.getExecutionStep());
+    }
 
-  @Override
-  public ExecutionStep getExecutionStep() {
-    return executionStep;
-  }
+    @Override
+    public ExecutionStep getExecutionStep() {
+        return executionStep;
+    }
 }

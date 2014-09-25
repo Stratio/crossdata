@@ -29,54 +29,51 @@ import com.stratio.meta.common.result.Result;
  */
 public class ResultHandlerWrapper implements IResultHandler {
 
-  private final static Logger logger = Logger.getLogger(ResultHandlerWrapper.class);
+    private final static Logger logger = Logger.getLogger(ResultHandlerWrapper.class);
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(ResultHandlerWrapper.class);
+    private boolean ackReceived = false;
+    private boolean errorReceived = false;
+    private boolean resultReceived = false;
+    private QueryStatus status = null;
 
-  private boolean ackReceived = false;
-  private boolean errorReceived = false;
-  private boolean resultReceived = false;
+    @Override
+    public synchronized void processAck(String queryId, QueryStatus status) {
+        LOG.info("Query: " + queryId + " status: " + status);
+        logger.info("Query: " + queryId + " status: " + status);
+        ackReceived = true;
+        this.status = status;
+    }
 
-  private QueryStatus status = null;
+    @Override
+    public synchronized void processError(Result errorResult) {
+        LOG.error("Error reported: " + errorResult);
+        logger.info("Error reported: " + errorResult);
+        errorReceived = true;
+    }
 
-  /**
-   * Class logger.
-   */
-  private static final Logger LOG = Logger.getLogger(ResultHandlerWrapper.class);
+    @Override
+    public synchronized void processResult(Result result) {
+        LOG.info("Result: " + result);
+        logger.info("Result: " + result);
+        resultReceived = true;
+    }
 
-  @Override
-  public synchronized void processAck(String queryId, QueryStatus status) {
-    LOG.info("Query: " + queryId + " status: " + status);
-    logger.info("Query: " + queryId + " status: " + status);
-    ackReceived = true;
-    this.status = status;
-  }
+    public boolean isAckReceived() {
+        return ackReceived;
+    }
 
-  @Override
-  public synchronized void processError(Result errorResult) {
-    LOG.error("Error reported: " + errorResult);
-    logger.info("Error reported: " + errorResult);
-    errorReceived = true;
-  }
+    public boolean isErrorReceived() {
+        return errorReceived;
+    }
 
-  @Override
-  public synchronized void processResult(Result result) {
-    LOG.info("Result: " + result);
-    logger.info("Result: " + result);
-    resultReceived = true;
-  }
+    public boolean isResultReceived() {
+        return resultReceived;
+    }
 
-  public boolean isAckReceived() {
-    return ackReceived;
-  }
-
-  public boolean isErrorReceived() {
-    return errorReceived;
-  }
-
-  public boolean isResultReceived() {
-    return resultReceived;
-  }
-
-  public QueryStatus getStatus() {
-    return status;
-  }
+    public QueryStatus getStatus() {
+        return status;
+    }
 }

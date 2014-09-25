@@ -21,7 +21,7 @@ package com.stratio.meta.common.exceptions.validation;
 import com.stratio.meta.common.exceptions.ValidationException;
 
 public class YodaConditionException extends ValidationException {
-  public YodaConditionException() {
-    super("Your condition order correct not is. May the Force be with you. <(-_-)>");
-  }
+    public YodaConditionException() {
+        super("Your condition order correct not is. May the Force be with you. <(-_-)>");
+    }
 }

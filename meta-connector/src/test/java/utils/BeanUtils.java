@@ -18,7 +18,6 @@
 
 package utils;
 
-
 public class BeanUtils {
     /*
     public static Map<String, String> recursiveDescribe(Object object) {
