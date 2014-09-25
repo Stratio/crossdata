@@ -23,7 +23,7 @@ import com.stratio.meta.common.executionplan.ExecutionWorkflow
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta.common.security.ICredentials
-import com.stratio.meta2.common.data.ClusterName
+import com.stratio.meta2.common.data.{TableName, CatalogName, ClusterName}
 import com.stratio.meta2.common.metadata.{IndexMetadata, CatalogMetadata, TableMetadata}
 import com.stratio.meta.common.data.Row
 import java.util
@@ -35,6 +35,8 @@ case class Connect(credentials: ICredentials, connectorClusterConfig: ConnectorC
 case class Reply(msg: String)
 
 case class Disconnect(userId: String)
+
+case class ExecutionError(queryId: String, exception: Exception)
 
 //Connector messages
 case class ConnectToConnector(msg: String)
@@ -56,22 +58,30 @@ case class replyConnectorName(name: String)
 case class getConnectorName()
 
 //IStorageEngine
-case class Insert(targetCluster: ClusterName, targetTable: TableMetadata, row: Row)
 
-case class InsertBatch(targetCluster: ClusterName, targetTable: TableMetadata, rows: util.Collection[Row])
+sealed abstract class StorageOperation
+
+case class Insert(targetCluster: ClusterName, targetTable: TableMetadata, row: Row) extends StorageOperation
+
+case class InsertBatch(targetCluster: ClusterName, targetTable: TableMetadata, rows: util.Collection[Row]) extends StorageOperation
 
 //IQueryEngine
 case class Execute(workflow: LogicalWorkflow)
 
 //IMetadataEngine
-case class CreateCatalog(targetCluster: ClusterName, catalogMetadata: CatalogMetadata)
 
-case class CreateTable(targetCluster: ClusterName, tableMetadata: TableMetadata)
+sealed abstract class MetadataOperation
 
-case class DropCatalog(targetCluster: ClusterName, catalogName: String)
+case class CreateCatalog(targetCluster: ClusterName, catalogMetadata: CatalogMetadata) extends MetadataOperation
 
-case class CreateIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata)
+case class DropCatalog(targetCluster: ClusterName, catalogName: CatalogName) extends MetadataOperation
 
-case class DropIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata)
+case class CreateTable(targetCluster: ClusterName, tableMetadata: TableMetadata) extends MetadataOperation
+
+case class DropTable(targetCluster: ClusterName, tableName: TableName) extends MetadataOperation
+
+case class CreateIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata) extends MetadataOperation
+
+case class DropIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata) extends MetadataOperation
 
 

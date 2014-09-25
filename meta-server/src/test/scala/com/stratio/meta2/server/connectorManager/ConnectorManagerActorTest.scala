@@ -47,7 +47,7 @@ class ConnectorManagerActorTest extends ActorReceiveUtils with FunSuiteLike with
   val baseQuery = new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
   val selectedQuery = new SelectParsedQuery(baseQuery, null)
   val selectValidatedQuery = new SelectValidatedQuery(selectedQuery)
-  val pq = new SelectPlannedQuery(selectValidatedQuery, new ExecutionWorkflow(null, null))
+  val pq = new SelectPlannedQuery(selectValidatedQuery, new ExecutionWorkflow(null, null, null, null))
 
   test("Should return a KO message") {
     within(1000 millis) {

@@ -2,9 +2,13 @@ package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.stratio.meta.common.result.QueryStatus
-import com.stratio.meta.communication.{DisconnectFromConnector, ConnectToConnector, ACK}
+import com.stratio.meta.communication._
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.query.{InProgressQuery, MetadataPlannedQuery, PlannedQuery, SelectPlannedQuery, StoragePlannedQuery}
+import com.stratio.meta.common.executionplan.{ExecutionWorkflow, StorageWorkflow, MetadataWorkflow}
+import com.stratio.meta.communication.ConnectToConnector
+import com.stratio.meta.communication.DisconnectFromConnector
+import com.stratio.meta.communication.ACK
 
 object CoordinatorActor {
   def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor(connectorMgr, coordinator))
@@ -14,10 +18,23 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
   log.info("Lifting coordinator actor")
 
+  //TODO Move this to infinispan
+  val inProgress: scala.collection.mutable.Map[String, ExecutionWorkflow] = scala.collection.mutable.Map()
+
   val coordinators: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map()
   val queriesToPersist: scala.collection.mutable.Map[String, PlannedQuery] = scala.collection.mutable.Map()
 
   def receive = {
+
+    case workflow: MetadataWorkflow => {
+      inProgress.put(workflow.getQueryId, workflow)
+      workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getMetadataOperation
+    }
+
+    case workflow: StorageWorkflow => {
+      inProgress.put(workflow.getQueryId, workflow)
+      workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getStorageOperation
+    }
 
     case query: SelectPlannedQuery => {
       log.info("CoordinatorActor Received SelectPlannedQuery")
@@ -51,6 +68,10 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         coordinator.persist(queriesToPersist(connectorAck.queryId))
         queriesToPersist.remove(connectorAck.queryId)
       }
+    }
+
+    case error: ExecutionError => {
+      //TODO Check how this elements are removed in case of failure
     }
 
     case _: ConnectToConnector =>

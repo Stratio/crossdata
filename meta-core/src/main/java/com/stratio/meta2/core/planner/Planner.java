@@ -76,6 +76,9 @@ public class Planner {
         //Build the workflow.
         LogicalWorkflow workflow = buildWorkflow((SelectValidatedQuery) query);
 
+
+        //TODO set queryID for Execution query.getQueryId()
+
         //Plan the workflow execution into different connectors.
         ExecutionWorkflow executionWorkflow = null;
 
