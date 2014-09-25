@@ -21,9 +21,10 @@ package com.stratio.meta2.core.statements;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 public interface IStatement {
-  /**
-   * Get the validations requirements for the statement
-   * @return ValidationRequirements is a validation option list
-   */
-  public ValidationRequirements getValidationRequirements();
+    /**
+     * Get the validations requirements for the statement
+     *
+     * @return ValidationRequirements is a validation option list
+     */
+    public ValidationRequirements getValidationRequirements();
 }

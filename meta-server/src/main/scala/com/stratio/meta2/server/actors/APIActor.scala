@@ -24,17 +24,17 @@ import com.stratio.meta.common.result.Result
 import com.stratio.meta2.core.api.APIManager
 import org.apache.log4j.Logger
 
-object APIActor{
+object APIActor {
   def props(metadata: APIManager): Props = Props(new APIActor(metadata))
 }
 
 class APIActor(metadata: APIManager) extends Actor with TimeTracker {
-  val log =Logger.getLogger(classOf[APIActor])
-  override lazy val timerName= this.getClass.getName
+  override lazy val timerName = this.getClass.getName
+  val log = Logger.getLogger(classOf[APIActor])
 
   def receive = {
-    case cmd:Command => {
-      log.info("command received "+cmd.toString)
+    case cmd: Command => {
+      log.info("command received " + cmd.toString)
       //val timer = initTimer()
       //sender ! metadata.processRequest(cmd)
       //finishTimer(timer)

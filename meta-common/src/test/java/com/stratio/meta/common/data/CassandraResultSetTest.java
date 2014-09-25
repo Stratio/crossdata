@@ -18,46 +18,49 @@
 
 package com.stratio.meta.common.data;
 
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-import com.stratio.meta2.common.metadata.ColumnType;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+import com.stratio.meta2.common.metadata.ColumnType;
 
 public class CassandraResultSetTest {
 
-    private Random rand;
     ResultSet rSet;
+    private Random rand;
 
     @BeforeClass
-    public void setUp(){
+    public void setUp() {
         rand = new Random();
     }
 
     @Test
-    public void testConstructor(){
+    public void testConstructor() {
         rSet = new ResultSet();
         Assert.assertNotNull(rSet);
     }
 
     @Test
-    public void testGetRows(){
+    public void testGetRows() {
         rSet = new ResultSet();
-        rSet.add(new Row("str",new Cell(new String("comment" + rand.nextInt(100)))));
+        rSet.add(new Row("str", new Cell(new String("comment" + rand.nextInt(100)))));
         rSet.add(new Row("int", new Cell(new Integer(rand.nextInt(50)))));
         Assert.assertEquals(rSet.getRows().size(), 2);
     }
 
     @Test
-    public void testColDefs(){
+    public void testColDefs() {
         rSet = new ResultSet();
         rSet.setColumnMetadata(buildColumnDefinitions());
 
         Assert.assertEquals(rSet.getColumnMetadata().get(0).getColumnName(), "str", "Invalid column name");
-        Assert.assertEquals(rSet.getColumnMetadata().get(0).getType().getDbClass(), String.class, "Invalid column class");
+        Assert.assertEquals(rSet.getColumnMetadata().get(0).getType().getDbClass(), String.class,
+                "Invalid column class");
     }
 
     private List<ColumnMetadata> buildColumnDefinitions() {

@@ -18,50 +18,50 @@
 
 package com.stratio.meta.common.statements.structures.selectors;
 
-import com.stratio.meta2.common.data.TableName;
-
 import java.io.Serializable;
+
+import com.stratio.meta2.common.data.TableName;
 
 public class SelectorGroupBy extends SelectorMeta implements Serializable {
 
-  private static final long serialVersionUID = 7595223293190216610L;
+    private static final long serialVersionUID = 7595223293190216610L;
 
-  private GroupByFunction gbFunction;
+    private GroupByFunction gbFunction;
 
-  private SelectorMeta param;
+    private SelectorMeta param;
 
-  public SelectorGroupBy(GroupByFunction gbFunction, SelectorMeta param) {
-    this.type = SelectorMeta.TYPE_GROUPBY;
-    this.gbFunction = gbFunction;
-    this.param = param;
-  }
+    public SelectorGroupBy(GroupByFunction gbFunction, SelectorMeta param) {
+        this.type = SelectorMeta.TYPE_GROUPBY;
+        this.gbFunction = gbFunction;
+        this.param = param;
+    }
 
-  public GroupByFunction getGbFunction() {
-    return gbFunction;
-  }
+    public GroupByFunction getGbFunction() {
+        return gbFunction;
+    }
 
-  public void setGbFunction(GroupByFunction gbFunction) {
-    this.gbFunction = gbFunction;
-  }
+    public void setGbFunction(GroupByFunction gbFunction) {
+        this.gbFunction = gbFunction;
+    }
 
-  public SelectorMeta getParam() {
-    return param;
-  }
+    public SelectorMeta getParam() {
+        return param;
+    }
 
-  public void setParam(SelectorMeta param) {
-    this.param = param;
-  }
+    public void setParam(SelectorMeta param) {
+        this.param = param;
+    }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder(gbFunction.name());
-    sb.append("(").append(param).append(")");
-    return sb.toString();
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(gbFunction.name());
+        sb.append("(").append(param).append(")");
+        return sb.toString();
+    }
 
-  @Override
-  public void addTablename(TableName tablename) {
-    param.addTablename(tablename);
-  }
+    @Override
+    public void addTablename(TableName tablename) {
+        param.addTablename(tablename);
+    }
 
 }

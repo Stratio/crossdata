@@ -23,23 +23,22 @@
 // Generated on: 2014.09.03 at 12:15:47 AM CEST 
 //
 
-
 package com.stratio.meta2.common.api.generated.datastore;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
  * <p>Java class for clusterType complex type.
- *
+ * <p/>
  * <p>The following schema fragment specifies the expected content contained within this class.
- *
+ * <p/>
  * <pre>
  * &lt;complexType name="clusterType">
  *   &lt;complexContent>
@@ -52,72 +51,64 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- *
- *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "clusterType", propOrder = {
-    "name",
-    "hosts"
+        "name",
+        "hosts"
 })
 public class ClusterType implements Serializable {
 
-  private static final long serialVersionUID = 1018394430895642796L;
-  @XmlElement(required = true)
-  protected String name;
-  protected List<HostsType> hosts;
+    private static final long serialVersionUID = 1018394430895642796L;
+    @XmlElement(required = true)
+    protected String name;
+    protected List<HostsType> hosts;
 
-  /**
-   * Gets the value of the name property.
-   *
-   * @return
-   *     possible object is
-   *     {@link String }
-   *
-   */
-  public String getName() {
-    return name;
-  }
-
-  /**
-   * Sets the value of the name property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link String }
-   *
-   */
-  public void setName(String value) {
-    this.name = value;
-  }
-
-  /**
-   * Gets the value of the hosts property.
-   *
-   * <p>
-   * This accessor method returns a reference to the live list,
-   * not a snapshot. Therefore any modification you make to the
-   * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the hosts property.
-   *
-   * <p>
-   * For example, to add a new item, do as follows:
-   * <pre>
-   *    getHosts().add(newItem);
-   * </pre>
-   *
-   *
-   * <p>
-   * Objects of the following type(s) are allowed in the list
-   * {@link HostsType }
-   *
-   *
-   */
-  public List<HostsType> getHosts() {
-    if (hosts == null) {
-      hosts = new ArrayList<HostsType>();
+    /**
+     * Gets the value of the name property.
+     *
+     * @return possible object is
+     * {@link String }
+     */
+    public String getName() {
+        return name;
     }
-    return this.hosts;
-  }
+
+    /**
+     * Sets the value of the name property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setName(String value) {
+        this.name = value;
+    }
+
+    /**
+     * Gets the value of the hosts property.
+     * <p/>
+     * <p/>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the hosts property.
+     * <p/>
+     * <p/>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getHosts().add(newItem);
+     * </pre>
+     * <p/>
+     * <p/>
+     * <p/>
+     * Objects of the following type(s) are allowed in the list
+     * {@link HostsType }
+     */
+    public List<HostsType> getHosts() {
+        if (hosts == null) {
+            hosts = new ArrayList<HostsType>();
+        }
+        return this.hosts;
+    }
 
 }

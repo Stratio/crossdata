@@ -18,14 +18,13 @@
 
 package com.stratio.meta2.core.statements;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
-
-import java.util.HashMap;
-import java.util.Map;
-
 
 /**
  * Class that models a {@code ATTACH CLUSTER} statement from the META language. A cluster represents
@@ -35,79 +34,80 @@ import java.util.Map;
  */
 public class AttachClusterStatement extends MetadataStatement {
 
-  /**
-   * Cluster name given by the user. This name will be used to refer to the cluster when creating
-   * new tables.
-   */
-  private final String clusterName;
+    /**
+     * Cluster name given by the user. This name will be used to refer to the cluster when creating
+     * new tables.
+     */
+    private final String clusterName;
 
-  /**
-   * Whether the storage should be created only if not exists.
-   */
-  private final boolean ifNotExists;
+    /**
+     * Whether the storage should be created only if not exists.
+     */
+    private final boolean ifNotExists;
 
-  /**
-   * Name of the datastore associated with the storage and the connectors.
-   */
-  private final String datastoreName;
+    /**
+     * Name of the datastore associated with the storage and the connectors.
+     */
+    private final String datastoreName;
 
-  /**
-   * A JSON with the options of the cluster.
-   */
-  private final Map<Selector, Selector> options;
+    /**
+     * A JSON with the options of the cluster.
+     */
+    private final Map<Selector, Selector> options;
 
-  /**
-   * Create new cluster on the system.
-   * @param clusterName The name of the cluster.
-   * @param ifNotExists Whether it should be created only if not exists.
-   * @param datastoreName The name of the datastore.
-   * @param options A JSON with the options.
-   */
-  public AttachClusterStatement(String clusterName, boolean ifNotExists, String datastoreName,
-                                String options) {
-    this.clusterName = clusterName;
-    this.ifNotExists = ifNotExists;
-    this.datastoreName = datastoreName;
+    /**
+     * Create new cluster on the system.
+     *
+     * @param clusterName   The name of the cluster.
+     * @param ifNotExists   Whether it should be created only if not exists.
+     * @param datastoreName The name of the datastore.
+     * @param options       A JSON with the options.
+     */
+    public AttachClusterStatement(String clusterName, boolean ifNotExists, String datastoreName,
+            String options) {
+        this.clusterName = clusterName;
+        this.ifNotExists = ifNotExists;
+        this.datastoreName = datastoreName;
 
-      if (options.isEmpty()) {
-          this.options = new HashMap<>();
-      } else {
-          this.options = StringUtils.convertJsonToOptions(options);
-      }
+        if (options.isEmpty()) {
+            this.options = new HashMap<>();
+        } else {
+            this.options = StringUtils.convertJsonToOptions(options);
+        }
 
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("ATTACH CLUSTER ");
-    if(ifNotExists){
-      sb.append("IF NOT EXISTS ");
     }
-    sb.append(clusterName);
-    sb.append(" ON DATASTORE ").append(datastoreName);
-    sb.append(" WITH OPTIONS ").append(options);
-    return sb.toString();
-  }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements().add(Validation.MUST_EXIST_DATASTORE)
-        .add(Validation.VALID_CLUSTER_OPTIONS);
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ATTACH CLUSTER ");
+        if (ifNotExists) {
+            sb.append("IF NOT EXISTS ");
+        }
+        sb.append(clusterName);
+        sb.append(" ON DATASTORE ").append(datastoreName);
+        sb.append(" WITH OPTIONS ").append(options);
+        return sb.toString();
+    }
 
-  public Map<Selector, Selector> getOptions() {
-    return options;
-  }
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements().add(Validation.MUST_EXIST_DATASTORE)
+                .add(Validation.VALID_CLUSTER_OPTIONS);
+    }
 
-  public String getClusterName() {
-    return clusterName;
-  }
+    public Map<Selector, Selector> getOptions() {
+        return options;
+    }
 
-  public boolean isIfNotExists() {
-    return ifNotExists;
-  }
+    public String getClusterName() {
+        return clusterName;
+    }
 
-  public String getDatastoreName() {
-    return datastoreName;
-  }
+    public boolean isIfNotExists() {
+        return ifNotExists;
+    }
+
+    public String getDatastoreName() {
+        return datastoreName;
+    }
 }

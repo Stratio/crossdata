@@ -23,18 +23,18 @@ package com.stratio.meta.common.statements.structures.window;
  */
 public enum WindowType {
 
-  /**
-   * Window based on a number of tuples to be received.
-   */
-  NUM_ROWS,
+    /**
+     * Window based on a number of tuples to be received.
+     */
+    NUM_ROWS,
 
-  /**
-   * Window to process results as soon as the become available.
-   */
-  LAST,
+    /**
+     * Window to process results as soon as the become available.
+     */
+    LAST,
 
-  /**
-   * Gather results in a time window.
-   */
-  TEMPORAL
+    /**
+     * Gather results in a time window.
+     */
+    TEMPORAL
 }

@@ -21,51 +21,50 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 
 public class TruncateStatement extends StorageStatement {
 
-  private TableName tablename;
+    private TableName tablename;
 
-  public TruncateStatement(TableName tablename) {
-    this.command = false;
-    this.tablename = tablename;
-  }
-
-  public boolean isCatalogInc() {
-    return catalogInc;
-  }
-
-  public void setCatalogInc(boolean catalogInc) {
-    this.catalogInc = catalogInc;
-  }
-
-  public CatalogName getCatalog() {
-    return catalog;
-  }
-
-  public void setCatalog(CatalogName catalog) {
-    this.catalog = catalog;
-  }
-
-  public TableName getTablename() {
-    return tablename;
-  }
-
-  public void setTablename(TableName tablename) {
-    this.tablename = tablename;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("TRUNCATE ");
-    if (catalogInc) {
-      sb.append(catalog).append(".");
+    public TruncateStatement(TableName tablename) {
+        this.command = false;
+        this.tablename = tablename;
     }
-    sb.append(tablename);
-    return sb.toString();
-  }
 
+    public boolean isCatalogInc() {
+        return catalogInc;
+    }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements().add(Validation.MUST_EXIST_TABLE).add(Validation.MUST_EXIST_CATALOG);
-  }
+    public void setCatalogInc(boolean catalogInc) {
+        this.catalogInc = catalogInc;
+    }
+
+    public CatalogName getCatalog() {
+        return catalog;
+    }
+
+    public void setCatalog(CatalogName catalog) {
+        this.catalog = catalog;
+    }
+
+    public TableName getTablename() {
+        return tablename;
+    }
+
+    public void setTablename(TableName tablename) {
+        this.tablename = tablename;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("TRUNCATE ");
+        if (catalogInc) {
+            sb.append(catalog).append(".");
+        }
+        sb.append(tablename);
+        return sb.toString();
+    }
+
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements().add(Validation.MUST_EXIST_TABLE).add(Validation.MUST_EXIST_CATALOG);
+    }
 
 }

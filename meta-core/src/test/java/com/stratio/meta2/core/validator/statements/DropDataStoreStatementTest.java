@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.validator.statements;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
@@ -26,24 +28,20 @@ import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.DropDataStoreStatement;
-import com.stratio.meta2.core.statements.DropIndexStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class DropDataStoreStatementTest extends BasicValidatorTest {
 
-
     @Test
-    public void validateOk(){
+    public void validateOk() {
         String query = "DROP DATASTORE Cassandra;";
-        DropDataStoreStatement dropDataStoreStatement=new DropDataStoreStatement("Cassandra");
-        Validator validator=new Validator();
+        DropDataStoreStatement dropDataStoreStatement = new DropDataStoreStatement("Cassandra");
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropIndexId",query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropDataStoreStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropDataStoreStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -55,14 +53,14 @@ public class DropDataStoreStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void validateIfNotExists(){
+    public void validateIfNotExists() {
         String query = "DROP DATASTORE Cassandror;";
-        DropDataStoreStatement dropDataStoreStatement=new DropDataStoreStatement("Cassandror");
+        DropDataStoreStatement dropDataStoreStatement = new DropDataStoreStatement("Cassandror");
 
-        Validator validator=new Validator();
-        BaseQuery baseQuery=new BaseQuery("dropIndexId",query, new CatalogName("demo"));
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropDataStoreStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropDataStoreStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("DATASOTRE must exist");
@@ -72,8 +70,5 @@ public class DropDataStoreStatementTest extends BasicValidatorTest {
             Assert.assertTrue(true);
         }
     }
-
-
-
 
 }

@@ -22,11 +22,11 @@ public class HelpStatement {
 
     private final HelpType type;
 
-    public HelpStatement(HelpType type){
+    public HelpStatement(HelpType type) {
         this.type = type;
     }
 
-    public HelpType getType(){
+    public HelpType getType() {
         return type;
     }
 

@@ -22,27 +22,27 @@ import java.io.Serializable;
 
 public abstract class Name implements Serializable {
 
-  final String UNKNOWN_NAME="<UNKNOWN_NAME>";
+    final String UNKNOWN_NAME = "<UNKNOWN_NAME>";
 
-  public abstract boolean isCompletedName();
+    public abstract boolean isCompletedName();
 
-  public abstract String getQualifiedName();
+    public abstract String getQualifiedName();
 
-  public abstract NameType getType();
+    public abstract NameType getType();
 
-  @Override
-  public String toString() {
-    return this.getQualifiedName();
-  }
+    @Override
+    public String toString() {
+        return this.getQualifiedName();
+    }
 
-  @Override
-  public int hashCode(){
-    String code= getType() + getQualifiedName();
-    return code.hashCode();
-  }
+    @Override
+    public int hashCode() {
+        String code = getType() + getQualifiedName();
+        return code.hashCode();
+    }
 
-  @Override
-  public boolean equals(Object o){
-    return (this == o) || ((o instanceof Name) && (this.hashCode() == o.hashCode()));
-  }
+    @Override
+    public boolean equals(Object o) {
+        return (this == o) || ((o instanceof Name) && (this.hashCode() == o.hashCode()));
+    }
 }

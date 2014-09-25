@@ -18,62 +18,62 @@
 
 package com.stratio.meta2.core.structures;
 
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+
 public class OrderBy {
-  private List<Selector> selectorList = new ArrayList<>();
-  private OrderDirection direction= OrderDirection.ASC;
+    private List<Selector> selectorList = new ArrayList<>();
+    private OrderDirection direction = OrderDirection.ASC;
 
-  public OrderBy() {
-  }
-
-  public OrderBy(OrderDirection direction,
-                 List<Selector> selectorList) {
-    this.direction = direction;
-    this.selectorList = selectorList;
-  }
-
-  public OrderBy(List<Selector> selectorList) {
-    this.selectorList = selectorList;
-  }
-
-  public void setSelectorList(List<Selector> selectorList){
-    this.selectorList = selectorList;
-  }
-
-  public List<Selector> getSelectorList() {
-    return selectorList;
-  }
-
-  public void setDirection(OrderDirection direction) {
-    this.direction = direction;
-  }
-
-  public OrderDirection getDirection() {
-    return direction;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-
-    Iterator<Selector> iter = selectorList.iterator();
-
-    while(iter.hasNext()){
-      sb.append(iter.next());
-      if(iter.hasNext()){
-        sb.append(", ");
-      }
+    public OrderBy() {
     }
 
-    if(direction == OrderDirection.DESC){
-      sb.append(" DESC");
+    public OrderBy(OrderDirection direction,
+            List<Selector> selectorList) {
+        this.direction = direction;
+        this.selectorList = selectorList;
     }
 
-    return sb.toString();
-  }
+    public OrderBy(List<Selector> selectorList) {
+        this.selectorList = selectorList;
+    }
+
+    public List<Selector> getSelectorList() {
+        return selectorList;
+    }
+
+    public void setSelectorList(List<Selector> selectorList) {
+        this.selectorList = selectorList;
+    }
+
+    public OrderDirection getDirection() {
+        return direction;
+    }
+
+    public void setDirection(OrderDirection direction) {
+        this.direction = direction;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        Iterator<Selector> iter = selectorList.iterator();
+
+        while (iter.hasNext()) {
+            sb.append(iter.next());
+            if (iter.hasNext()) {
+                sb.append(", ");
+            }
+        }
+
+        if (direction == OrderDirection.DESC) {
+            sb.append(" DESC");
+        }
+
+        return sb.toString();
+    }
 }

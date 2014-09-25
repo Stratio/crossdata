@@ -18,80 +18,82 @@
 
 package com.stratio.meta.common.statements.structures.relationships;
 
+import java.util.Set;
+
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
-
-import java.util.Set;
 
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
  */
 public class Relation {
 
-  /**
-   * Identifier in the left part of the relationship.
-   */
-  protected Selector leftTerm;
+    /**
+     * Identifier in the left part of the relationship.
+     */
+    protected Selector leftTerm;
 
-  /**
-   * Operator to be applied to solve the relationship.
-   */
-  protected Operator operator;
+    /**
+     * Operator to be applied to solve the relationship.
+     */
+    protected Operator operator;
 
-  /**
-   * Right part of the relationship.
-   */
-  protected Selector rightTerm;
+    /**
+     * Right part of the relationship.
+     */
+    protected Selector rightTerm;
 
-  /**
-   * Class constructor.
-   * @param selector The Selector found in the left-part of the relationship.
-   * @param operator The operator to be applied.
-   * @param rightTerm The Selector found in the right-part of the relationship.
-   */
-  public Relation(Selector selector, Operator operator, Selector rightTerm){
-    this.leftTerm = selector;
-    this.operator = operator;
-    this.rightTerm = rightTerm;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param selector  The Selector found in the left-part of the relationship.
+     * @param operator  The operator to be applied.
+     * @param rightTerm The Selector found in the right-part of the relationship.
+     */
+    public Relation(Selector selector, Operator operator, Selector rightTerm) {
+        this.leftTerm = selector;
+        this.operator = operator;
+        this.rightTerm = rightTerm;
+    }
 
-  public Selector getLeftTerm() {
-    return leftTerm;
-  }
+    public Selector getLeftTerm() {
+        return leftTerm;
+    }
 
-  public Operator getOperator() {
-    return operator;
-  }
+    public Operator getOperator() {
+        return operator;
+    }
 
-  public void setOperator(Operator operator) {
-    this.operator = operator;
-  }
+    public void setOperator(Operator operator) {
+        this.operator = operator;
+    }
 
-  public Selector getRightTerm() {
-    return rightTerm;
-  }
+    public Selector getRightTerm() {
+        return rightTerm;
+    }
 
-  /**
-   * Get the tables queried on the selector.
-   * @return A set of {@link com.stratio.meta2.common.data.TableName}.
-   */
-  public Set<TableName> getSelectorTables(){
-    return leftTerm.getSelectorTables();
-  }
+    /**
+     * Get the tables queried on the selector.
+     *
+     * @return A set of {@link com.stratio.meta2.common.data.TableName}.
+     */
+    public Set<TableName> getSelectorTables() {
+        return leftTerm.getSelectorTables();
+    }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder(leftTerm.toString());
-    sb.append(" ").append(operator).append(" ");
-    sb.append(rightTerm);
-    return sb.toString();
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(leftTerm.toString());
+        sb.append(" ").append(operator).append(" ");
+        sb.append(rightTerm);
+        return sb.toString();
+    }
 
-  /**
-   * Gets the string values list for the terms
-   * 
-   * @return Terms string values
-   */
+    /**
+     * Gets the string values list for the terms
+     *
+     * @return Terms string values
+     */
   /*
   public List<String> getTermsStringValues() {
 

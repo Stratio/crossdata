@@ -21,19 +21,19 @@ package com.stratio.meta.common.exceptions;
 /**
  * Validation exception thrown by the Driver if the statement could not be validated.
  */
-public class ValidationException extends Exception{
+public class ValidationException extends Exception {
 
-  /**
-   * Serial version UID in order to be {@link java.io.Serializable}.
-   */
-  private static final long serialVersionUID = -1429028331466675420L;
+    /**
+     * Serial version UID in order to be {@link java.io.Serializable}.
+     */
+    private static final long serialVersionUID = -1429028331466675420L;
 
-  public ValidationException(String message){
-    super(message);
-  }
+    public ValidationException(String message) {
+        super(message);
+    }
 
-  public ValidationException(String msg, Throwable cause) {
-    super(msg, cause);
-  }
+    public ValidationException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 
 }

@@ -22,13 +22,13 @@ import com.stratio.meta.common.result.QueryStatus;
 
 public class StorageValidatedQuery extends StorageParsedQuery implements ValidatedQuery {
 
-  public StorageValidatedQuery(StorageParsedQuery storageParsedQuery) {
-    super(storageParsedQuery);
-    setQueryStatus(QueryStatus.VALIDATED);
-  }
+    public StorageValidatedQuery(StorageParsedQuery storageParsedQuery) {
+        super(storageParsedQuery);
+        setQueryStatus(QueryStatus.VALIDATED);
+    }
 
-  public StorageValidatedQuery(StorageValidatedQuery storageValidatedQuery) {
-    this((StorageParsedQuery) storageValidatedQuery);
-  }
+    public StorageValidatedQuery(StorageValidatedQuery storageValidatedQuery) {
+        this((StorageParsedQuery) storageValidatedQuery);
+    }
 
 }

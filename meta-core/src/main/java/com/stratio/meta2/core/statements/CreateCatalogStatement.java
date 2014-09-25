@@ -18,13 +18,13 @@
 
 package com.stratio.meta2.core.statements;
 
+import java.util.Map;
+
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
-
-import java.util.Map;
 
 /**
  * Class that models a {@code CREATE CATALOG} statement from the META language. Catalog
@@ -33,55 +33,56 @@ import java.util.Map;
  */
 public class CreateCatalogStatement extends MetadataStatement {
 
-  /**
-   * Whether the Catalog should be created only if it not exists.
-   */
-  private final boolean ifNotExists;
+    /**
+     * Whether the Catalog should be created only if it not exists.
+     */
+    private final boolean ifNotExists;
 
-  /**
-   * A JSON with the options specified by the user.
-   */
-  private final Map<Selector, Selector> options;
+    /**
+     * A JSON with the options specified by the user.
+     */
+    private final Map<Selector, Selector> options;
 
-  /**
-   * Class constructor.
-   * @param catalogName The name of the catalog.
-   * @param ifNotExists Whether it should be created only if it not exists.
-   * @param options A JSON with the storage options.
-   */
-  public CreateCatalogStatement(CatalogName catalogName, boolean ifNotExists,
-                                String options) {
-    this.catalog = catalogName;
-    this.catalogInc = true;
-    this.command = false;
-    this.ifNotExists = ifNotExists;
-    this.options = StringUtils.convertJsonToOptions(options);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("CREATE CATALOG ");
-    if(ifNotExists){
-      sb.append("IF NOT EXISTS ");
+    /**
+     * Class constructor.
+     *
+     * @param catalogName The name of the catalog.
+     * @param ifNotExists Whether it should be created only if it not exists.
+     * @param options     A JSON with the storage options.
+     */
+    public CreateCatalogStatement(CatalogName catalogName, boolean ifNotExists,
+            String options) {
+        this.catalog = catalogName;
+        this.catalogInc = true;
+        this.command = false;
+        this.ifNotExists = ifNotExists;
+        this.options = StringUtils.convertJsonToOptions(options);
     }
-    sb.append(catalog);
-    if((options != null) && (!options.isEmpty())) {
-      sb.append(" WITH ").append(options);
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("CREATE CATALOG ");
+        if (ifNotExists) {
+            sb.append("IF NOT EXISTS ");
+        }
+        sb.append(catalog);
+        if ((options != null) && (!options.isEmpty())) {
+            sb.append(" WITH ").append(options);
+        }
+        return sb.toString();
     }
-    return sb.toString();
-  }
 
-  public ValidationRequirements getValidationRequirements(){
-    return new ValidationRequirements().add(Validation.MUST_NOT_EXIST_CATALOG);
-  }
-  public CatalogName getCatalogName(){
-    return catalog;
-  }
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements().add(Validation.MUST_NOT_EXIST_CATALOG);
+    }
 
-  public Map<Selector, Selector> getOptions() {
-    return options;
-  }
-  
+    public CatalogName getCatalogName() {
+        return catalog;
+    }
+
+    public Map<Selector, Selector> getOptions() {
+        return options;
+    }
 
 }
 

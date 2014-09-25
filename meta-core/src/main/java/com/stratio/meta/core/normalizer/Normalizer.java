@@ -19,17 +19,16 @@
 package com.stratio.meta.core.normalizer;
 
 import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta2.core.query.NormalizedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.query.SelectValidatedQuery;
 
 public class Normalizer {
 
-  public SelectValidatedQuery normalize(SelectParsedQuery parsedQuery) throws ValidationException {
-    //NormalizedFields fields = new NormalizedFields();
-    Normalizator normalizator = new Normalizator(parsedQuery);
-    normalizator.execute();
-    return new SelectValidatedQuery(parsedQuery);
-  }
+    public SelectValidatedQuery normalize(SelectParsedQuery parsedQuery) throws ValidationException {
+        //NormalizedFields fields = new NormalizedFields();
+        Normalizator normalizator = new Normalizator(parsedQuery);
+        normalizator.execute();
+        return new SelectValidatedQuery(parsedQuery);
+    }
 
 }

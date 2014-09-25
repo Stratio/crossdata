@@ -18,7 +18,6 @@
 
 package com.stratio.meta.rest.models;
 
-
 import java.util.Iterator;
 
 public abstract class JsonResultSet implements Iterable<JsonRow> {
@@ -42,7 +41,7 @@ public abstract class JsonResultSet implements Iterable<JsonRow> {
      *
      * @return {@code true} if is empty
      */
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return size() < 1;
     }
 }

@@ -18,48 +18,50 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import com.stratio.meta2.common.data.TableName;
-
 import java.util.Set;
+
+import com.stratio.meta2.common.data.TableName;
 
 /**
  * String selector. This type of Selector will be used for enquoted strings.
  */
-public class StringSelector extends Selector{
+public class StringSelector extends Selector {
 
-  /**
-   * The string value.
-   */
-  private final String value;
+    /**
+     * The string value.
+     */
+    private final String value;
 
-  /**
-   * Class constructor.
-   * @param value The string value.
-   */
-  public StringSelector(String value) {
-    this.value = value;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param value The string value.
+     */
+    public StringSelector(String value) {
+        this.value = value;
+    }
 
-  /**
-   * Get the value.
-   * @return The string value.
-   */
-  public String getValue() {
-    return value;
-  }
+    /**
+     * Get the value.
+     *
+     * @return The string value.
+     */
+    public String getValue() {
+        return value;
+    }
 
-  @Override
-  public SelectorType getType() {
-    return SelectorType.STRING;
-  }
+    @Override
+    public SelectorType getType() {
+        return SelectorType.STRING;
+    }
 
-  @Override
-  public Set<TableName> getSelectorTables() {
-    return null;
-  }
+    @Override
+    public Set<TableName> getSelectorTables() {
+        return null;
+    }
 
-  @Override
-  public String toString() {
-    return value;
-  }
+    @Override
+    public String toString() {
+        return value;
+    }
 }

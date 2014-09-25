@@ -18,52 +18,52 @@
 
 package com.stratio.meta2.common.metadata;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType;
 import com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.DataStoreName;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class DataStoreMetadata implements IMetadata {
-  private final DataStoreName name;
-  private final String version;
-  private final RequiredPropertiesType requiredProperties;
-  private final OptionalPropertiesType othersProperties;
-  private Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs;
+    private final DataStoreName name;
+    private final String version;
+    private final RequiredPropertiesType requiredProperties;
+    private final OptionalPropertiesType othersProperties;
+    private Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs;
 
-  public DataStoreMetadata(DataStoreName name, String version, RequiredPropertiesType requiredProperties,
-                           OptionalPropertiesType othersProperties) {
-    this.name = name;
-    this.version = version;
-    this.requiredProperties = requiredProperties;
-    this.othersProperties = othersProperties;
-    this.clusterAttachedRefs = new HashMap<>();
-  }
+    public DataStoreMetadata(DataStoreName name, String version, RequiredPropertiesType requiredProperties,
+            OptionalPropertiesType othersProperties) {
+        this.name = name;
+        this.version = version;
+        this.requiredProperties = requiredProperties;
+        this.othersProperties = othersProperties;
+        this.clusterAttachedRefs = new HashMap<>();
+    }
 
-  public DataStoreName getName() {
-    return name;
-  }
+    public DataStoreName getName() {
+        return name;
+    }
 
-  public String getVersion() {
-    return version;
-  }
+    public String getVersion() {
+        return version;
+    }
 
-  public RequiredPropertiesType getRequiredProperties() {
-    return requiredProperties;
-  }
+    public RequiredPropertiesType getRequiredProperties() {
+        return requiredProperties;
+    }
 
-  public OptionalPropertiesType getOthersProperties() {
-    return othersProperties;
-  }
+    public OptionalPropertiesType getOthersProperties() {
+        return othersProperties;
+    }
 
-  public Map<ClusterName, ClusterAttachedMetadata> getClusterAttachedRefs() {
-    return clusterAttachedRefs;
-  }
+    public Map<ClusterName, ClusterAttachedMetadata> getClusterAttachedRefs() {
+        return clusterAttachedRefs;
+    }
 
-  public void setClusterAttachedRefs(
-      Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs) {
-    this.clusterAttachedRefs = clusterAttachedRefs;
-  }
+    public void setClusterAttachedRefs(
+            Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs) {
+        this.clusterAttachedRefs = clusterAttachedRefs;
+    }
 }

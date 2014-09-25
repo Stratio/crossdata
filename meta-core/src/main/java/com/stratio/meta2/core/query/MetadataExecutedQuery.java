@@ -22,13 +22,13 @@ import com.stratio.meta.common.result.QueryStatus;
 
 public class MetadataExecutedQuery extends MetadataInProgressQuery implements ExecutedQuery {
 
-  public MetadataExecutedQuery(MetadataInProgressQuery metadataInProgressQuery) {
-    super(metadataInProgressQuery);
-    setQueryStatus(QueryStatus.EXECUTED);
-  }
+    public MetadataExecutedQuery(MetadataInProgressQuery metadataInProgressQuery) {
+        super(metadataInProgressQuery);
+        setQueryStatus(QueryStatus.EXECUTED);
+    }
 
-  public MetadataExecutedQuery(MetadataExecutedQuery metadataExecutedQuery) {
-    this((MetadataInProgressQuery) metadataExecutedQuery);
-  }
+    public MetadataExecutedQuery(MetadataExecutedQuery metadataExecutedQuery) {
+        this((MetadataInProgressQuery) metadataExecutedQuery);
+    }
 
 }

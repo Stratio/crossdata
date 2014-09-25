@@ -1,5 +1,8 @@
 package com.stratio.meta2.core.validator.statements;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.common.data.CatalogName;
@@ -8,20 +11,18 @@ import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.DetachClusterStatement;
 import com.stratio.meta2.core.validator.Validator;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class DetachClusterStatementTest {
 
     @Test
     public void detachCluster() {
         String query = "DROP CLUSTER Cassandra";
-        DetachClusterStatement detachClusterStatement=new DetachClusterStatement("Cassandra");
-        Validator validator=new Validator();
+        DetachClusterStatement detachClusterStatement = new DetachClusterStatement("Cassandra");
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,detachClusterStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, detachClusterStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -35,12 +36,12 @@ public class DetachClusterStatementTest {
     @Test
     public void detachNotExistingCluster() {
         String query = "DROP CLUSTER myCluster";
-        DetachClusterStatement detachClusterStatement=new DetachClusterStatement("myCluster");
-        Validator validator=new Validator();
+        DetachClusterStatement detachClusterStatement = new DetachClusterStatement("myCluster");
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,detachClusterStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, detachClusterStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("Cluster must exists");

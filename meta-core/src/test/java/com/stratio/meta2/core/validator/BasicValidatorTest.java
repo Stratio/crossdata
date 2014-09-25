@@ -18,6 +18,19 @@
 
 package com.stratio.meta2.core.validator;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.transaction.TransactionManager;
+
+import org.apache.commons.io.FileUtils;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeMethod;
 
 import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
 import com.stratio.meta2.common.data.CatalogName;
@@ -41,99 +54,88 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.grammar.ParsingTest;
 import com.stratio.meta2.core.grid.Grid;
-import com.stratio.meta2.core.grid.GridInitializer;
 import com.stratio.meta2.core.metadata.MetadataManager;
-
-import org.apache.commons.io.FileUtils;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.locks.Lock;
-
-import javax.transaction.TransactionManager;
 
 public class BasicValidatorTest {
 
-  static Map<FirstLevelName, IMetadata> metadataMap;
-
-  protected static MetadataManager metadataManager = null;
-
-  protected static final ParsingTest pt = new ParsingTest();
-
+    protected static final ParsingTest pt = new ParsingTest();
+    protected static MetadataManager metadataManager = null;
+    static Map<FirstLevelName, IMetadata> metadataMap;
     private static String path = "";
 
+    private static CatalogMetadata generateCatalogsMetadata() {
+        CatalogMetadata catalogMetadata;
+        CatalogName catalogName = new CatalogName("demo");
+        Map<Selector, Selector> options = new HashMap<>();
+        Map<TableName, TableMetadata> tables = new HashMap<>();
+        catalogMetadata = new CatalogMetadata(catalogName, options, tables);
+        return catalogMetadata;
+    }
 
+    private static TableMetadata createTable() {
+        TableMetadata tableMetadata;
+        TableName targetTable = new TableName("demo", "users");
+        Map<Selector, Selector> options = new HashMap<>();
+        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        ClusterName clusterRef = new ClusterName("cluster");
+        List<ColumnName> partitionKey = new ArrayList<>();
+        List<ColumnName> clusterKey = new ArrayList<>();
+        Object[] parameters = null;
+        columns.put(new ColumnName(new TableName("demo", "users"), "name"),
+                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "name"), parameters,
+                        ColumnType.TEXT));
+        columns.put(new ColumnName(new TableName("demo", "users"), "gender"),
+                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "gender"), parameters,
+                        ColumnType.TEXT));
+        columns.put(new ColumnName(new TableName("demo", "users"), "age"),
+                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "age"), parameters, ColumnType.INT));
+        columns.put(new ColumnName(new TableName("demo", "users"), "bool"),
+                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "bool"), parameters,
+                        ColumnType.BOOLEAN));
+        columns.put(new ColumnName(new TableName("demo", "users"), "phrase"),
+                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "phrase"), parameters,
+                        ColumnType.TEXT));
+        columns.put(new ColumnName(new TableName("demo", "users"), "email"),
+                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "email"), parameters,
+                        ColumnType.TEXT));
+
+        Map<IndexName, IndexMetadata> indexes = new HashMap<>();
+        tableMetadata = new TableMetadata(targetTable, options, columns, indexes, clusterRef, partitionKey, clusterKey);
+
+        return tableMetadata;
+    }
+
+    private static ConnectorMetadata createConnectorMetadata() {
+        Set<DataStoreName> dataStoreRefs = new HashSet<>();
+        dataStoreRefs.add(new DataStoreName("Casssandra"));
+        SupportedOperationsType supportedOperations = new SupportedOperationsType();
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0",
+                dataStoreRefs, null, null, supportedOperations);
+        return connectorMetadata;
+    }
+
+    private static DataStoreMetadata createDataStoreMetadata() {
+        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(new DataStoreName("Cassandra"), "1.0", null, null);
+        return dataStoreMetadata;
+    }
+
+    private static ClusterMetadata createClusterMetadata() {
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
+        ConnectorAttachedMetadata connectorAttachedMetadata = new ConnectorAttachedMetadata(
+                new ConnectorName("CassandraConnector"), new ClusterName("cluster"), null);
+        connectorAttachedRefs.put(new ConnectorName("CassandraConnector"), connectorAttachedMetadata);
+        ClusterMetadata clusterMetadata = new ClusterMetadata(new ClusterName("cluster"),
+                new DataStoreName("Cassandra"), null, connectorAttachedRefs);
+        return clusterMetadata;
+    }
 
     @BeforeMethod
     public void setUp() throws Exception {
 
     }
 
-
     private void initializeGrid() {
 
-    }
-
-    private static CatalogMetadata generateCatalogsMetadata(){
-        CatalogMetadata catalogMetadata;
-        CatalogName catalogName=new CatalogName("demo");
-        Map<Selector, Selector> options=new HashMap<>();
-        Map<TableName, TableMetadata> tables=new HashMap<>();
-        catalogMetadata=new CatalogMetadata(catalogName,options,tables);
-        return catalogMetadata;
-    }
-
-    private static TableMetadata createTable() {
-        TableMetadata tableMetadata;
-        TableName targetTable=new TableName("demo", "users");
-        Map<Selector, Selector> options=new HashMap<>();
-        Map<ColumnName, ColumnMetadata> columns=new HashMap<>();
-        ClusterName clusterRef=new ClusterName("cluster");
-        List<ColumnName> partitionKey=new ArrayList<>();
-        List<ColumnName> clusterKey=new ArrayList<>();
-        Object[] parameters=null;
-        columns.put(new ColumnName(new TableName("demo","users"),"name"),new ColumnMetadata(new ColumnName(new TableName("demo","users"),"name"),parameters, ColumnType.TEXT));
-        columns.put(new ColumnName(new TableName("demo","users"),"gender"),new ColumnMetadata(new ColumnName(new TableName("demo","users"),"gender"),parameters, ColumnType.TEXT));
-        columns.put(new ColumnName(new TableName("demo","users"),"age"),new ColumnMetadata(new ColumnName(new TableName("demo","users"),"age"),parameters, ColumnType.INT));
-        columns.put(new ColumnName(new TableName("demo","users"),"bool"),new ColumnMetadata(new ColumnName(new TableName("demo","users"),"bool"),parameters, ColumnType.BOOLEAN));
-        columns.put(new ColumnName(new TableName("demo","users"),"phrase"),new ColumnMetadata(new ColumnName(new TableName("demo","users"),"phrase"),parameters, ColumnType.TEXT));
-        columns.put(new ColumnName(new TableName("demo","users"),"email"),new ColumnMetadata(new ColumnName(new TableName("demo","users"),"email"),parameters, ColumnType.TEXT));
-
-
-        Map<IndexName, IndexMetadata> indexes=new HashMap<>();
-        tableMetadata=new TableMetadata(targetTable,options,columns,indexes,clusterRef,partitionKey,clusterKey);
-
-        return tableMetadata;
-    }
-
-    private static ConnectorMetadata createConnectorMetadata() {
-        Set<DataStoreName> dataStoreRefs=new HashSet<>();
-        dataStoreRefs.add(new DataStoreName("Casssandra"));
-        SupportedOperationsType supportedOperations=new SupportedOperationsType();
-        ConnectorMetadata connectorMetadata=new ConnectorMetadata(new ConnectorName("CassandraConnector"),"1.0",dataStoreRefs,null,null,supportedOperations);
-        return connectorMetadata;
-    }
-
-    private static DataStoreMetadata createDataStoreMetadata() {
-        DataStoreMetadata dataStoreMetadata=new DataStoreMetadata(new DataStoreName("Cassandra"),"1.0",null,null);
-        return dataStoreMetadata;
-    }
-
-    private static ClusterMetadata createClusterMetadata() {
-        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs=new HashMap<>();
-        ConnectorAttachedMetadata connectorAttachedMetadata=new ConnectorAttachedMetadata(new ConnectorName("CassandraConnector"),new ClusterName("cluster"), null);
-        connectorAttachedRefs.put(new ConnectorName("CassandraConnector"),connectorAttachedMetadata);
-        ClusterMetadata clusterMetadata=new ClusterMetadata(new ClusterName("cluster"),new DataStoreName("Cassandra"),null,connectorAttachedRefs);
-        return clusterMetadata;
     }
 
     @AfterClass

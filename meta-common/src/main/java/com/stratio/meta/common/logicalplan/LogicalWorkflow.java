@@ -19,7 +19,6 @@
 package com.stratio.meta.common.logicalplan;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -31,90 +30,94 @@ import java.util.Set;
  */
 public class LogicalWorkflow {
 
-  /**
-   * List of initial steps. All initial steps MUST be Project operations.
-   */
-  private final List<LogicalStep> initialSteps;
+    /**
+     * List of initial steps. All initial steps MUST be Project operations.
+     */
+    private final List<LogicalStep> initialSteps;
 
-  /**
-   * Last logical step.
-   */
-  private LogicalStep lastStep = null;
+    /**
+     * Last logical step.
+     */
+    private LogicalStep lastStep = null;
 
-  /**
-   * Workflow constructor.
-   * @param initialSteps The list of initial steps.
-   */
-  public LogicalWorkflow(List<LogicalStep> initialSteps){
-    this.initialSteps = initialSteps;
-  }
-
-  /**
-   * Get the list of initial steps.
-   * @return The list of initial steps.
-   */
-  public List<LogicalStep> getInitialSteps() {
-    return initialSteps;
-  }
-
-  /**
-   * Set the last step of the workflow.
-   * @param lastStep The last logical step.
-   */
-  public void setLastStep(LogicalStep lastStep) {
-    this.lastStep = lastStep;
-  }
-
-  /**
-   * Get the last step of the workflow.
-   * @return A {@link com.stratio.meta.common.logicalplan.LogicalStep}.
-   */
-  public LogicalStep getLastStep() {
-    if(lastStep == null && initialSteps.size() > 0){
-      //Find last step.
-      LogicalStep last = initialSteps.get(0);
-      while(last.getNextStep() != null){
-        last = last.getNextStep();
-      }
+    /**
+     * Workflow constructor.
+     *
+     * @param initialSteps The list of initial steps.
+     */
+    public LogicalWorkflow(List<LogicalStep> initialSteps) {
+        this.initialSteps = initialSteps;
     }
-    return lastStep;
-  }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("LogicalWorkflow").append(System.lineSeparator());
+    /**
+     * Get the list of initial steps.
+     *
+     * @return The list of initial steps.
+     */
+    public List<LogicalStep> getInitialSteps() {
+        return initialSteps;
+    }
 
-    Set<LogicalStep> pending = new HashSet<>();
-    LogicalStep step = null;
-    //Print initial PROJECT paths
-    for(LogicalStep initial : initialSteps){
-      step = initial;
-      sb.append(step).append(System.lineSeparator());
-      step = step.getNextStep();
-      while(step != null){
-        if(UnionStep.class.isInstance(step)){
-          pending.add(step);
-          step = null;
-        }else {
-          sb.append("\t").append(step).append(System.lineSeparator());
-          step = step.getNextStep();
+    /**
+     * Get the last step of the workflow.
+     *
+     * @return A {@link com.stratio.meta.common.logicalplan.LogicalStep}.
+     */
+    public LogicalStep getLastStep() {
+        if (lastStep == null && initialSteps.size() > 0) {
+            //Find last step.
+            LogicalStep last = initialSteps.get(0);
+            while (last.getNextStep() != null) {
+                last = last.getNextStep();
+            }
+        }
+        return lastStep;
+    }
+
+    /**
+     * Set the last step of the workflow.
+     *
+     * @param lastStep The last logical step.
+     */
+    public void setLastStep(LogicalStep lastStep) {
+        this.lastStep = lastStep;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("LogicalWorkflow").append(System.lineSeparator());
+
+        Set<LogicalStep> pending = new HashSet<>();
+        LogicalStep step = null;
+        //Print initial PROJECT paths
+        for (LogicalStep initial : initialSteps) {
+            step = initial;
+            sb.append(step).append(System.lineSeparator());
+            step = step.getNextStep();
+            while (step != null) {
+                if (UnionStep.class.isInstance(step)) {
+                    pending.add(step);
+                    step = null;
+                } else {
+                    sb.append("\t").append(step).append(System.lineSeparator());
+                    step = step.getNextStep();
+                }
+
+            }
+
         }
 
-      }
+        //Print union paths.
+        for (LogicalStep union : pending) {
+            step = union;
+            sb.append(step).append(System.lineSeparator());
+            step = step.getNextStep();
+            while (step != null) {
+                sb.append("\t").append(step).append(System.lineSeparator());
+                step = step.getNextStep();
+            }
+        }
 
+        return sb.toString();
     }
-
-    //Print union paths.
-    for(LogicalStep union : pending){
-      step = union;
-      sb.append(step).append(System.lineSeparator());
-      step = step.getNextStep();
-      while(step != null){
-        sb.append("\t").append(step).append(System.lineSeparator());
-        step = step.getNextStep();
-      }
-    }
-
-    return sb.toString();
-  }
 }

@@ -18,22 +18,22 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class DropConnectorStatementTest extends ParsingTest {
 
-  @Test
-  public void dropConnectorSimple() {
-    String inputText = "DROP CONNECTOR myConnector;";
-    testRegularStatement(inputText, "dropConnectorSimple");
-  }
+    @Test
+    public void dropConnectorSimple() {
+        String inputText = "DROP CONNECTOR myConnector;";
+        testRegularStatement(inputText, "dropConnectorSimple");
+    }
 
-  @Test
-  public void dropConnectorError() {
-    String inputText = "DROP CONNECTOR *myConnector";
-    testParserFails(inputText, "dropConnectorError");
-  }
+    @Test
+    public void dropConnectorError() {
+        String inputText = "DROP CONNECTOR *myConnector";
+        testParserFails(inputText, "dropConnectorError");
+    }
 
 }

@@ -20,6 +20,7 @@ package com.stratio.meta.core.structures;
 
 /**
  * Consistency levels in Cassandra.
+ *
  * @see <a href="http://www.datastax.com/documentation/cassandra/2.0/cassandra/dml/dml_config_consistency_c.html">Cassandra documentation</a>
  */
 public enum Consistency {

@@ -18,16 +18,16 @@
 
 <groups>
     <define name="root">
-    <include name="before" />
-    <include name="create Ks" />
-    <include name="use" />
-    <include name="create Tb" />
-    <include name="insert" />
-    <include name="select" />
-    <include name="drop Tb" />
-    <include name="drop Ks" />
-</define>
-<run>
-<include name="root" />
-</run>
+        <include name="before"/>
+        <include name="create Ks"/>
+        <include name="use"/>
+        <include name="create Tb"/>
+        <include name="insert"/>
+        <include name="select"/>
+        <include name="drop Tb"/>
+        <include name="drop Ks"/>
+    </define>
+    <run>
+        <include name="root"/>
+    </run>
 </groups>

@@ -18,54 +18,55 @@
 
 package com.stratio.meta2.core.grid;
 
-import org.jgroups.JChannel;
-
 import java.io.Closeable;
 import java.util.concurrent.locks.Lock;
 
+import org.jgroups.JChannel;
+
 /**
  * A distributed {@link java.util.concurrent.locks.Lock} factory/manager.
- *
+ * <p/>
  * The created {@link java.util.concurrent.locks.Lock}s are based in a JGroups channel.
- *
+ * <p/>
  * It must be closed ({@link #close()}) when its created {@link com.stratio.meta2.core.grid.StoreService}s are not needed anymore.
  */
 public class LockService implements Closeable {
 
-  private final JChannel channel;
-  private final org.jgroups.blocks.locking.LockService lockService;
+    private final JChannel channel;
+    private final org.jgroups.blocks.locking.LockService lockService;
 
-  /**
-   * Builds a ne {@link com.stratio.meta2.core.grid.LockService} based on the specified JGroups
-   * channel.
-   *
-   * @param channel the JGroups channel to be used.
-   */
-  public LockService(JChannel channel) {
-    this.channel = channel;
-    try {
-      channel.connect("lock");
-    } catch (Exception e) {
-      throw new GridException(e);
+    /**
+     * Builds a ne {@link com.stratio.meta2.core.grid.LockService} based on the specified JGroups
+     * channel.
+     *
+     * @param channel the JGroups channel to be used.
+     */
+    public LockService(JChannel channel) {
+        this.channel = channel;
+        try {
+            channel.connect("lock");
+        } catch (Exception e) {
+            throw new GridException(e);
+        }
+        lockService = new org.jgroups.blocks.locking.LockService(channel);
     }
-    lockService = new org.jgroups.blocks.locking.LockService(channel);
-  }
 
-  /**
-   * Returns a new distributed {@link java.util.concurrent.locks.Lock} with the specified identifying name.
-   * @param name the  {@link java.util.concurrent.locks.Lock}'s identifying name.
-   * @return a new distributed {@link java.util.concurrent.locks.Lock}.
-   */
-  public Lock build(String name) {
-    return lockService.getLock(name);
-  }
+    /**
+     * Returns a new distributed {@link java.util.concurrent.locks.Lock} with the specified identifying name.
+     *
+     * @param name the  {@link java.util.concurrent.locks.Lock}'s identifying name.
+     * @return a new distributed {@link java.util.concurrent.locks.Lock}.
+     */
+    public Lock build(String name) {
+        return lockService.getLock(name);
+    }
 
-  /**
-   * Closes this service and all its created {@link java.util.concurrent.locks.Lock}s.
-   */
-  @Override
-  public void close() {
-    lockService.unlockAll();
-  }
+    /**
+     * Closes this service and all its created {@link java.util.concurrent.locks.Lock}s.
+     */
+    @Override
+    public void close() {
+        lockService.unlockAll();
+    }
 
 }

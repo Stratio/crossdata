@@ -21,7 +21,7 @@ package com.stratio.meta.common.exceptions.validation;
 import com.stratio.meta.common.exceptions.ValidationException;
 
 public class BadFormatException extends ValidationException {
-  public BadFormatException(String cause) {
-    super(cause);
-  }
+    public BadFormatException(String cause) {
+        super(cause);
+    }
 }

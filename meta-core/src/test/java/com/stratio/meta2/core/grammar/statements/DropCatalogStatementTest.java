@@ -18,40 +18,40 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class DropCatalogStatementTest extends ParsingTest {
 
-  @Test
-  public void dropCatalog() {
-    String inputText = "drop catalog IF EXISTS mycatalog;";
-    testRegularStatement(inputText, "dropCatalog");
-  }
+    @Test
+    public void dropCatalog() {
+        String inputText = "drop catalog IF EXISTS mycatalog;";
+        testRegularStatement(inputText, "dropCatalog");
+    }
 
-  @Test
-  public void dropCatalogSimple() {
-    String inputText = "DROP CATALOG myCatalog;";
-    testRegularStatement(inputText, "dropCatalogSimple");
-  }
+    @Test
+    public void dropCatalogSimple() {
+        String inputText = "DROP CATALOG myCatalog;";
+        testRegularStatement(inputText, "dropCatalogSimple");
+    }
 
-  @Test
-  public void dropCatalogIfExistsSimple() {
-    String inputText = "DROP CATALOG IF EXISTS myCatalog;";
-    testRegularStatement(inputText, "dropCatalogSimple");
-  }
+    @Test
+    public void dropCatalogIfExistsSimple() {
+        String inputText = "DROP CATALOG IF EXISTS myCatalog;";
+        testRegularStatement(inputText, "dropCatalogSimple");
+    }
 
-  @Test
-  public void dropCatalogError() {
-    String inputText = "DROP CATALOG _myCatalog";
-    testParserFails(inputText, "dropCatalogError");
-  }
+    @Test
+    public void dropCatalogError() {
+        String inputText = "DROP CATALOG _myCatalog";
+        testParserFails(inputText, "dropCatalogError");
+    }
 
-  @Test
-  public void dropWrongPlaceForIfExists(){
-    String inputText = "DROP CATALOG mycatalog IF EXISTS;";
-    testParserFails(inputText, "dropWrongPlaceForIfExists");
-  }
+    @Test
+    public void dropWrongPlaceForIfExists() {
+        String inputText = "DROP CATALOG mycatalog IF EXISTS;";
+        testParserFails(inputText, "dropWrongPlaceForIfExists");
+    }
 
 }

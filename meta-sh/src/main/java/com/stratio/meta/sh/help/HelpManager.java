@@ -18,12 +18,12 @@
 
 package com.stratio.meta.sh.help;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.apache.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 public class HelpManager {
 
@@ -39,6 +39,7 @@ public class HelpManager {
 
     /**
      * Load the help contents by reading the contents of {@code HELP_PATH}.
+     *
      * @return A {@link com.stratio.meta.sh.help.HelpContent} with the help.
      */
     public HelpContent loadHelpContent() {
@@ -49,9 +50,9 @@ public class HelpManager {
             Yaml yaml = new Yaml(constructor);
             result = yaml.loadAs(is, HelpContent.class);
             result.loadMap();
-        } catch(Exception e){
+        } catch (Exception e) {
             LOG.error("Cannot read help file", e);
-        }finally{
+        } finally {
             try {
                 is.close();
             } catch (IOException e) {

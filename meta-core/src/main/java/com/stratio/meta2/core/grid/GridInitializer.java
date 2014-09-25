@@ -18,117 +18,116 @@
 
 package com.stratio.meta2.core.grid;
 
-import org.jgroups.JChannel;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jgroups.JChannel;
 
 /**
  * Builder for creating a new {@link Grid}.
  */
 public class GridInitializer {
 
-  private static final String DEFAULT_LISTEN_HOST = "localhost";
-  private static final int DEFAULT_PORT = 7800;
+    private static final String DEFAULT_LISTEN_HOST = "localhost";
+    private String listenAddress = DEFAULT_LISTEN_HOST;
+    private static final int DEFAULT_PORT = 7800;
+    private int port = DEFAULT_PORT;
+    private List<String> contactPoints = new ArrayList<>();
+    private int minInitialMembers;
+    private long timeout;
+    private String path;
 
-  private int port = DEFAULT_PORT;
-  private String listenAddress = DEFAULT_LISTEN_HOST;
-  private List<String> contactPoints = new ArrayList<>();
-  private int minInitialMembers;
-  private long timeout;
-  private String path;
+    /**
+     * Package constructor
+     */
+    GridInitializer() {
+        System.out.println(" ---> CREATING GRID INITIALIZER");
+    }
 
-  /**
-   * Package constructor
-   */
-  GridInitializer() {
-    System.out.println(" ---> CREATING GRID INITIALIZER");
-  }
+    public GridInitializer withPort(int port) {
+        this.port = port;
+        return this;
+    }
 
-  public GridInitializer withPort(int port) {
-    this.port = port;
-    return this;
-  }
+    /**
+     * Returns a {@link GridInitializer} using the specified local listen address for the service.
+     *
+     * @param address the listen address host
+     * @return a {@link GridInitializer} using the specified local listen address for the service
+     */
+    public GridInitializer withListenAddress(String address) {
+        listenAddress = address;
+        return this;
+    }
 
-  /**
-   * Returns a {@link GridInitializer} using the specified local listen address for the service.
-   *
-   * @param address the listen address host
-   * @return a {@link GridInitializer} using the specified local listen address for the service
-   */
-  public GridInitializer withListenAddress(String address) {
-    listenAddress = address;
-    return this;
-  }
+    /**
+     * Returns a {@link GridInitializer} using the specified contact point in addition  to the
+     * existing ones.
+     *
+     * @param address the contact point host
+     * @return a {@link GridInitializer} using the specified contact point in addition  to the
+     * existing ones
+     */
+    public GridInitializer withContactPoint(String address) {
+        contactPoints.add(address);
+        return this;
+    }
 
-  /**
-   * Returns a {@link GridInitializer} using the specified contact point in addition  to the
-   * existing ones.
-   *
-   * @param address the contact point host
-   * @return a {@link GridInitializer} using the specified contact point in addition  to the
-   * existing ones
-   */
-  public GridInitializer withContactPoint(String address) {
-    contactPoints.add(address);
-    return this;
-  }
+    /**
+     * Returns a {@link GridInitializer} using the specified minimum number of initial members.
+     *
+     * @param minInitialMembers the minimum number of initial members
+     * @return a {@link GridInitializer} using the specified minimum number of initial members
+     */
+    public GridInitializer withMinInitialMembers(int minInitialMembers) {
+        this.minInitialMembers = minInitialMembers;
+        return this;
+    }
 
-  /**
-   * Returns a {@link GridInitializer} using the specified minimum number of initial members.
-   *
-   * @param minInitialMembers the minimum number of initial members
-   * @return a {@link GridInitializer} using the specified minimum number of initial members
-   */
-  public GridInitializer withMinInitialMembers(int minInitialMembers) {
-    this.minInitialMembers = minInitialMembers;
-    return this;
-  }
+    /**
+     * Returns a {@link GridInitializer} using the specified cluster join timeout.
+     *
+     * @param timeout the specified cluster join timeout in milliseconds
+     * @return a {@link GridInitializer} using the specified cluster join timeout
+     */
+    public GridInitializer withJoinTimeoutInMs(long timeout) {
+        this.timeout = timeout;
+        return this;
+    }
 
-  /**
-   * Returns a {@link GridInitializer} using the specified cluster join timeout.
-   *
-   * @param timeout the specified cluster join timeout in milliseconds
-   * @return a {@link GridInitializer} using the specified cluster join timeout
-   */
-  public GridInitializer withJoinTimeoutInMs(long timeout) {
-    this.timeout = timeout;
-    return this;
-  }
+    /**
+     * Returns a {@link GridInitializer} using the specified files persistence path.
+     *
+     * @param path the files persistence path
+     * @return a {@link GridInitializer} using the specified files persistence path
+     */
+    public GridInitializer withPersistencePath(String path) {
+        this.path = path;
+        return this;
+    }
 
-  /**
-   * Returns a {@link GridInitializer} using the specified files persistence path.
-   *
-   * @param path the files persistence path
-   * @return a {@link GridInitializer} using the specified files persistence path
-   */
-  public GridInitializer withPersistencePath(String path) {
-    this.path = path;
-    return this;
-  }
+    /**
+     * Returns the new {@link Grid} defined by this.
+     *
+     * @return the new {@link Grid} defined by this.
+     */
+    public Grid init() {
 
-  /**
-   * Returns the new {@link Grid} defined by this.
-   *
-   * @return the new {@link Grid} defined by this.
-   */
-  public Grid init() {
+        ChannelService channelService = new ChannelServiceBuilder()
+                .withPort(port)
+                .withContactPoint(listenAddress)
+                .withContactPoints(contactPoints)
+                .withMinInitialMembers(minInitialMembers)
+                .withJoinTimeoutInMs(timeout)
+                .build();
 
-    ChannelService channelService = new ChannelServiceBuilder()
-        .withPort(port)
-        .withContactPoint(listenAddress)
-        .withContactPoints(contactPoints)
-        .withMinInitialMembers(minInitialMembers)
-        .withJoinTimeoutInMs(timeout)
-        .build();
+        JChannel storeChannel = channelService.build("store");
+        JChannel lockChannel = channelService.build("lock");
 
-    JChannel storeChannel = channelService.build("store");
-    JChannel lockChannel = channelService.build("lock");
+        StoreService storeService = new StoreService(storeChannel, "store", path);
+        LockService lockService = new LockService(lockChannel);
 
-    StoreService storeService = new StoreService(storeChannel, "store", path);
-    LockService lockService = new LockService(lockChannel);
-
-    return Grid.init(channelService, lockService, storeService);
-  }
+        return Grid.init(channelService, lockService, storeService);
+    }
 
 }

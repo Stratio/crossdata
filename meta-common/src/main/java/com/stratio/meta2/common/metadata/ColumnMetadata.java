@@ -21,30 +21,30 @@ package com.stratio.meta2.common.metadata;
 import com.stratio.meta2.common.data.ColumnName;
 
 public class ColumnMetadata implements IMetadata {
-  private final ColumnName name;
-  private final Object[] parameters;
-  private final ColumnType columnType;
+    private final ColumnName name;
+    private final Object[] parameters;
+    private final ColumnType columnType;
 
-  public ColumnMetadata(ColumnName name, Object[] parameters,
-      ColumnType columnType) {
-    this.name = name;
-    this.parameters = parameters;
-    this.columnType = columnType;
-  }
+    public ColumnMetadata(ColumnName name, Object[] parameters,
+            ColumnType columnType) {
+        this.name = name;
+        this.parameters = parameters;
+        this.columnType = columnType;
+    }
 
-  public ColumnName getName() {
-    return name;
-  }
+    public ColumnName getName() {
+        return name;
+    }
 
-  public Object[] getParameters() {
-    return parameters;
-  }
+    public Object[] getParameters() {
+        return parameters;
+    }
 
-  public ColumnType getColumnType() {
-    return columnType;
-  }
+    public ColumnType getColumnType() {
+        return columnType;
+    }
 
-  public String getIndex() {
-    throw new UnsupportedOperationException();
-  }
+    public String getIndex() {
+        throw new UnsupportedOperationException();
+    }
 }

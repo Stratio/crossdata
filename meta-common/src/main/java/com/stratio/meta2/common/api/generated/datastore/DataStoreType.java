@@ -23,22 +23,20 @@
 // Generated on: 2014.09.03 at 12:15:47 AM CEST 
 //
 
-
 package com.stratio.meta2.common.api.generated.datastore;
-
-import com.stratio.meta2.common.api.Manifest;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import com.stratio.meta2.common.api.Manifest;
 
 /**
  * <p>Java class for DataStoreType complex type.
- *
+ * <p/>
  * <p>The following schema fragment specifies the expected content contained within this class.
- *
+ * <p/>
  * <pre>
  * &lt;complexType name="DataStoreType">
  *   &lt;complexContent>
@@ -53,125 +51,106 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- *
- *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "DataStoreType", propOrder = {
-    "name",
-    "version",
-    "requiredProperties",
-    "optionalProperties"
+        "name",
+        "version",
+        "requiredProperties",
+        "optionalProperties"
 })
 public class DataStoreType extends Manifest {
 
-  public DataStoreType() {
-    super(Manifest.TYPE_DATASTORE);
-  }
+    @XmlElement(name = "Name", required = true)
+    protected String name;
+    @XmlElement(name = "Version", required = true)
+    protected String version;
+    @XmlElement(name = "RequiredProperties", required = true)
+    protected RequiredPropertiesType requiredProperties;
+    @XmlElement(name = "OptionalProperties", required = true)
+    protected OptionalPropertiesType optionalProperties;
+    public DataStoreType() {
+        super(Manifest.TYPE_DATASTORE);
+    }
 
-  @XmlElement(name = "Name", required = true)
-  protected String name;
-  @XmlElement(name = "Version", required = true)
-  protected String version;
-  @XmlElement(name = "RequiredProperties", required = true)
-  protected RequiredPropertiesType requiredProperties;
-  @XmlElement(name = "OptionalProperties", required = true)
-  protected OptionalPropertiesType optionalProperties;
+    /**
+     * Gets the value of the name property.
+     *
+     * @return possible object is
+     * {@link String }
+     */
+    public String getName() {
+        return name;
+    }
 
-  /**
-   * Gets the value of the name property.
-   *
-   * @return
-   *     possible object is
-   *     {@link String }
-   *
-   */
-  public String getName() {
-    return name;
-  }
+    /**
+     * Sets the value of the name property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setName(String value) {
+        this.name = value;
+    }
 
-  /**
-   * Sets the value of the name property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link String }
-   *
-   */
-  public void setName(String value) {
-    this.name = value;
-  }
+    /**
+     * Gets the value of the version property.
+     *
+     * @return possible object is
+     * {@link String }
+     */
+    public String getVersion() {
+        return version;
+    }
 
-  /**
-   * Gets the value of the version property.
-   *
-   * @return
-   *     possible object is
-   *     {@link String }
-   *
-   */
-  public String getVersion() {
-    return version;
-  }
+    /**
+     * Sets the value of the version property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setVersion(String value) {
+        this.version = value;
+    }
 
-  /**
-   * Sets the value of the version property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link String }
-   *
-   */
-  public void setVersion(String value) {
-    this.version = value;
-  }
+    /**
+     * Gets the value of the requiredProperties property.
+     *
+     * @return possible object is
+     * {@link RequiredPropertiesType }
+     */
+    public RequiredPropertiesType getRequiredProperties() {
+        return requiredProperties;
+    }
 
-  /**
-   * Gets the value of the requiredProperties property.
-   *
-   * @return
-   *     possible object is
-   *     {@link RequiredPropertiesType }
-   *
-   */
-  public RequiredPropertiesType getRequiredProperties() {
-    return requiredProperties;
-  }
+    /**
+     * Sets the value of the requiredProperties property.
+     *
+     * @param value allowed object is
+     *              {@link RequiredPropertiesType }
+     */
+    public void setRequiredProperties(RequiredPropertiesType value) {
+        this.requiredProperties = value;
+    }
 
-  /**
-   * Sets the value of the requiredProperties property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link RequiredPropertiesType }
-   *
-   */
-  public void setRequiredProperties(RequiredPropertiesType value) {
-    this.requiredProperties = value;
-  }
+    /**
+     * Gets the value of the optionalProperties property.
+     *
+     * @return possible object is
+     * {@link OptionalPropertiesType }
+     */
+    public OptionalPropertiesType getOptionalProperties() {
+        return optionalProperties;
+    }
 
-  /**
-   * Gets the value of the optionalProperties property.
-   *
-   * @return
-   *     possible object is
-   *     {@link OptionalPropertiesType }
-   *
-   */
-  public OptionalPropertiesType getOptionalProperties() {
-    return optionalProperties;
-  }
-
-  /**
-   * Sets the value of the optionalProperties property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link OptionalPropertiesType }
-   *
-   */
-  public void setOptionalProperties(OptionalPropertiesType value) {
-    this.optionalProperties = value;
-  }
+    /**
+     * Sets the value of the optionalProperties property.
+     *
+     * @param value allowed object is
+     *              {@link OptionalPropertiesType }
+     */
+    public void setOptionalProperties(OptionalPropertiesType value) {
+        this.optionalProperties = value;
+    }
 
 }

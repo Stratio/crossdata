@@ -23,7 +23,6 @@
 // Generated on: 2014.09.03 at 12:12:40 AM CEST 
 //
 
-
 package com.stratio.meta2.common.api.generated.connector;
 
 import java.io.Serializable;
@@ -33,12 +32,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
  * <p>Java class for DataStoresNameType complex type.
- *
+ * <p/>
  * <p>The following schema fragment specifies the expected content contained within this class.
- *
+ * <p/>
  * <pre>
  * &lt;complexType name="DataStoresNameType">
  *   &lt;complexContent>
@@ -50,41 +48,35 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- *
- *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "DataStoresNameType", propOrder = {
-    "datastore"
+        "datastore"
 })
 public class DataStoresNameType implements Serializable {
 
-  private static final long serialVersionUID = 4720743468259910932L;
-  @XmlElement(name = "Datastore", required = true)
-  protected String datastore;
+    private static final long serialVersionUID = 4720743468259910932L;
+    @XmlElement(name = "Datastore", required = true)
+    protected String datastore;
 
-  /**
-   * Gets the value of the datastore property.
-   *
-   * @return
-   *     possible object is
-   *     {@link String }
-   *
-   */
-  public String getDatastore() {
-    return datastore;
-  }
+    /**
+     * Gets the value of the datastore property.
+     *
+     * @return possible object is
+     * {@link String }
+     */
+    public String getDatastore() {
+        return datastore;
+    }
 
-  /**
-   * Sets the value of the datastore property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link String }
-   *
-   */
-  public void setDatastore(String value) {
-    this.datastore = value;
-  }
+    /**
+     * Sets the value of the datastore property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setDatastore(String value) {
+        this.datastore = value;
+    }
 
 }

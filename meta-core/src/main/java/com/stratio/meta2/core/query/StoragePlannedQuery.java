@@ -21,22 +21,22 @@ package com.stratio.meta2.core.query;
 import com.stratio.meta.common.executionplan.ExecutionStep;
 import com.stratio.meta.common.result.QueryStatus;
 
-public  class StoragePlannedQuery extends StorageValidatedQuery implements PlannedQuery {
+public class StoragePlannedQuery extends StorageValidatedQuery implements PlannedQuery {
 
-  private final ExecutionStep executionStep;
+    private final ExecutionStep executionStep;
 
-  public StoragePlannedQuery(StorageValidatedQuery storageValidatedQuery, ExecutionStep executionStep) {
-    super(storageValidatedQuery);
-    setQueryStatus(QueryStatus.PLANNED);
-    this.executionStep = executionStep;
-  }
+    public StoragePlannedQuery(StorageValidatedQuery storageValidatedQuery, ExecutionStep executionStep) {
+        super(storageValidatedQuery);
+        setQueryStatus(QueryStatus.PLANNED);
+        this.executionStep = executionStep;
+    }
 
-  public StoragePlannedQuery(StoragePlannedQuery storagePlannedQuery){
-    this(storagePlannedQuery, storagePlannedQuery.getExecutionStep());
-  }
+    public StoragePlannedQuery(StoragePlannedQuery storagePlannedQuery) {
+        this(storagePlannedQuery, storagePlannedQuery.getExecutionStep());
+    }
 
-  @Override
-  public ExecutionStep getExecutionStep() {
-    return executionStep;
-  }
+    @Override
+    public ExecutionStep getExecutionStep() {
+        return executionStep;
+    }
 }

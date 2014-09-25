@@ -7,22 +7,22 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 
 public class DetachConnectorStatement extends MetadataStatement {
 
-  private ConnectorName connectorName;
-  private ClusterName clusterName;
+    private ConnectorName connectorName;
+    private ClusterName clusterName;
 
-  public DetachConnectorStatement(ConnectorName connectorName, ClusterName clusterName){
-    this.connectorName = connectorName;
-    this.clusterName = clusterName;
-  }
+    public DetachConnectorStatement(ConnectorName connectorName, ClusterName clusterName) {
+        this.connectorName = connectorName;
+        this.clusterName = clusterName;
+    }
 
-  @Override
-  public String toString() {
-    return "DETACH CONNECTOR " + connectorName.getQualifiedName() + " FROM " + clusterName.getQualifiedName();
-  }
+    @Override
+    public String toString() {
+        return "DETACH CONNECTOR " + connectorName.getQualifiedName() + " FROM " + clusterName.getQualifiedName();
+    }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER)
-        .add(Validation.MUST_EXIST_ATTACH_CONNECTOR_CLUSTER);
-  }
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER)
+                .add(Validation.MUST_EXIST_ATTACH_CONNECTOR_CLUSTER);
+    }
 }

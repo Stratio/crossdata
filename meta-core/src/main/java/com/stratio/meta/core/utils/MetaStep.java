@@ -23,18 +23,18 @@ import com.stratio.meta2.core.statements.MetaStatement;
 public class MetaStep {
     private MetaPath path;
     private String query;
-    private MetaStatement stmt;    
+    private MetaStatement stmt;
 
     public MetaStep(MetaPath path, String query) {
         this.path = path;
         this.query = query;
-    }   
+    }
 
     public MetaStep(MetaPath path, MetaStatement stmt) {
         this.path = path;
         this.stmt = stmt;
-    }        
-    
+    }
+
     public MetaPath getPath() {
         return path;
     }
@@ -46,17 +46,17 @@ public class MetaStep {
     public MetaStatement getStmt() {
         return stmt;
     }
-    
+
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("(").append(path.name()).append(") ");
-        if(stmt != null){
+        if (stmt != null) {
             sb.append(stmt.toString());
         } else {
             sb.append(query);
-        }            
+        }
         return sb.toString();
     }
- 
+
 }

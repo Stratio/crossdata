@@ -18,61 +18,61 @@
 
 package com.stratio.meta2.core.structures;
 
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
-
 import java.io.Serializable;
+
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 @Deprecated
 public class Ordering implements Serializable {
 
-  private static final long serialVersionUID = -5118851402738503002L;
+    private static final long serialVersionUID = -5118851402738503002L;
 
-  private Selector selector;
-  private boolean dirInc;
-  private OrderDirection orderDir;
+    private Selector selector;
+    private boolean dirInc;
+    private OrderDirection orderDir;
 
-  public Ordering(Selector selector, boolean dirInc, OrderDirection orderDir) {
-    this.selector = selector;
-    this.dirInc = dirInc;
-    this.orderDir = orderDir;
-  }
-
-  public Ordering(Selector selector) {
-    this(selector, false, null);
-  }
-
-  public Selector getSelector() {
-    return selector;
-  }
-
-  public void setSelector(Selector selector) {
-    this.selector = selector;
-  }
-
-  public boolean isDirInc() {
-    return dirInc;
-  }
-
-  public void setDirInc(boolean dirInc) {
-    this.dirInc = dirInc;
-  }
-
-  public OrderDirection getOrderDir() {
-    return orderDir;
-  }
-
-  public void setOrderDir(OrderDirection orderDir) {
-    this.dirInc = true;
-    this.orderDir = orderDir;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder(selector.toString());
-    if (dirInc) {
-      sb.append(" ").append(orderDir);
+    public Ordering(Selector selector, boolean dirInc, OrderDirection orderDir) {
+        this.selector = selector;
+        this.dirInc = dirInc;
+        this.orderDir = orderDir;
     }
-    return sb.toString();
-  }
+
+    public Ordering(Selector selector) {
+        this(selector, false, null);
+    }
+
+    public Selector getSelector() {
+        return selector;
+    }
+
+    public void setSelector(Selector selector) {
+        this.selector = selector;
+    }
+
+    public boolean isDirInc() {
+        return dirInc;
+    }
+
+    public void setDirInc(boolean dirInc) {
+        this.dirInc = dirInc;
+    }
+
+    public OrderDirection getOrderDir() {
+        return orderDir;
+    }
+
+    public void setOrderDir(OrderDirection orderDir) {
+        this.dirInc = true;
+        this.orderDir = orderDir;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(selector.toString());
+        if (dirInc) {
+            sb.append(" ").append(orderDir);
+        }
+        return sb.toString();
+    }
 
 }

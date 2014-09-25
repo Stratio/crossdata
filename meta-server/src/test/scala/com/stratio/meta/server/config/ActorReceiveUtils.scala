@@ -18,22 +18,30 @@
 
 package com.stratio.meta.server.config
 
+import akka.actor.{ActorRef, ActorSystem}
+import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
+import com.stratio.meta.common.ask.Query
 import com.stratio.meta.common.result.{ErrorResult, Result}
 import com.stratio.meta.communication.ACK
-import org.testng.Assert._
-import scala.concurrent.duration._
-import com.stratio.meta.communication.ACK
-import akka.testkit.{DefaultTimeout, TestKit, ImplicitSender}
-import akka.actor.{ActorRef, ActorSystem}
-import com.typesafe.config.ConfigFactory
 import com.stratio.meta.server.utilities.TestKitUsageSpec
-import com.stratio.meta.common.ask.Query
+import com.typesafe.config.ConfigFactory
+import org.testng.Assert._
+
+import scala.concurrent.duration._
 
 /**
  * Class with utility methods for testing actor communication.
  */
-class ActorReceiveUtils extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFactory.parseString(TestKitUsageSpec.config)))
-                        with ImplicitSender with DefaultTimeout{
+class ActorReceiveUtils extends TestKit(ActorSystem("TestKitUsageSpec", ConfigFactory.parseString(TestKitUsageSpec.config)))
+with ImplicitSender with DefaultTimeout {
+
+  /**
+   * Receive 2 messages without expecting an ACK.
+   * @return The result message.
+   */
+  def receiveWithoutACK(): Result = {
+    receiveActorMessages(false, false, false)
+  }
 
   /**
    * Try to receive 2 messages in the current Actor.
@@ -42,15 +50,15 @@ class ActorReceiveUtils extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
    * @param errorExpected Whether an error is expected.
    * @return The result message.
    */
-  def receiveActorMessages(ackExpected: Boolean, inOrder: Boolean, errorExpected: Boolean) : Result = {
+  def receiveActorMessages(ackExpected: Boolean, inOrder: Boolean, errorExpected: Boolean): Result = {
     val f = receiveOne(5 second)
     val s = receiveOne(5 second)
-    val r : Seq[AnyRef] = List(f, s)
+    val r: Seq[AnyRef] = List(f, s)
 
     val errors = r.filter(msg => msg.isInstanceOf[ErrorResult])
-    if(errorExpected){
+    if (errorExpected) {
       assertTrue(errors.size > 0, "Expecting error")
-    }else {
+    } else {
       if (errors.size > 0) {
         var errorMsg: StringBuilder = new StringBuilder
         val errorIt = errors.iterator
@@ -65,40 +73,48 @@ class ActorReceiveUtils extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
       }
     }
 
-    if(ackExpected) {
+    if (ackExpected) {
       val ackFound = r.filter(msg => msg.isInstanceOf[ACK]).size
       assertEquals(ackFound, 1, "ACK not received");
     }
-    val filteredResult = r.filter( msg => msg.isInstanceOf[Result])
+    val filteredResult = r.filter(msg => msg.isInstanceOf[Result])
     assertEquals(filteredResult.size, 1, "Result not received")
-    if(inOrder){
+    if (inOrder) {
       assertEquals(r.iterator.next().getClass, ACK.getClass, "ACK not received before Results")
     }
     filteredResult.iterator.next().asInstanceOf[Result]
   }
 
   /**
-   * Receive 2 messages expecting an ACK.
-   * @return The result message.
-   */
-  def receiveWithACK() : Result = {
-    receiveActorMessages(true, false, false)
-  }
-
-  /**
-   * Receive 2 messages without expecting an ACK.
-   * @return The result message.
-   */
-  def receiveWithoutACK() : Result = {
-    receiveActorMessages(false, false, false)
-  }
-
-  /**
    * Receive 1 non-ack message.
    * @return The result message.
    */
-  def receiveError() : Result = {
+  def receiveError(): Result = {
     receiveActorMessages(false, false, true)
+  }
+
+  /**
+   * Execute a query on a remote actor.
+   * @param targetActor Target actor.
+   * @param query The target query.
+   * @param catalog The target catalog.
+   * @return The result.
+   */
+  def executeQuery(targetActor: ActorRef, query: String, catalog: String): Result = {
+    val stmt = Query("create-index", catalog, query, "test_actor")
+    targetActor ! stmt
+    val result = receiveWithACK()
+    assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
+      + "\n error: " + getErrorMMessage(result))
+    result
+  }
+
+  /**
+   * Receive 2 messages expecting an ACK.
+   * @return The result message.
+   */
+  def receiveWithACK(): Result = {
+    receiveActorMessages(true, false, false)
   }
 
   /**
@@ -112,22 +128,6 @@ class ActorReceiveUtils extends TestKit(ActorSystem("TestKitUsageSpec",ConfigFac
       result = classOf[ErrorResult].cast(metaResult).getErrorMessage
     }
     return result
-  }
-
-  /**
-   * Execute a query on a remote actor.
-   * @param targetActor Target actor.
-   * @param query The target query.
-   * @param catalog The target catalog.
-   * @return The result.
-   */
-  def executeQuery(targetActor: ActorRef, query: String, catalog: String) : Result = {
-    val stmt = Query("create-index", catalog, query, "test_actor")
-    targetActor ! stmt
-    val result = receiveWithACK()
-    assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
-                                 + "\n error: " + getErrorMMessage(result))
-    result
   }
 
 }

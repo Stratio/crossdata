@@ -27,46 +27,47 @@ import com.stratio.meta.sh.utils.ConsoleUtils;
 /**
  * Results handler for the Meta shell when the asynchronous interface is used.
  */
-public class ShellResultHandler implements IResultHandler{
+public class ShellResultHandler implements IResultHandler {
 
-  /**
-   * Parent Meta shell.
-   */
-  private final Metash parent;
+    /**
+     * Parent Meta shell.
+     */
+    private final Metash parent;
 
-  /**
-   * Class constructor.
-   * @param parent Parent metashell that will be informed when results are available.
-   */
-  public ShellResultHandler(Metash parent){
-    this.parent = parent;
-  }
-
-  @Override
-  public void processAck(String queryId, QueryStatus status) {
-  }
-
-  @Override
-  public void processError(Result errorResult) {
-    parent.println("");
-    parent.println("Result: " + ConsoleUtils.stringResult(errorResult));
-    parent.flush();
-  }
-
-  @Override
-  public void processResult(Result result) {
-    parent.updatePrompt(result);
-    StringBuilder sb = new StringBuilder(System.lineSeparator());
-    sb.append("Result: QID: " + result.getQueryId() + System.lineSeparator() + ConsoleUtils.stringResult(result));
-    if(QueryResult.class.isInstance(result)){
-      QueryResult r = QueryResult.class.cast(result);
-      sb.append(System.lineSeparator()).append("Result page: " + r.getResultPage());
-      if(r.isLastResultSet()){
-        sb.append(System.lineSeparator()).append("Removing results handler for: " + result.getQueryId());
-        parent.removeResultsHandler(result.getQueryId());
-      }
+    /**
+     * Class constructor.
+     *
+     * @param parent Parent metashell that will be informed when results are available.
+     */
+    public ShellResultHandler(Metash parent) {
+        this.parent = parent;
     }
-    parent.println(sb.toString());
-    parent.flush();
-  }
+
+    @Override
+    public void processAck(String queryId, QueryStatus status) {
+    }
+
+    @Override
+    public void processError(Result errorResult) {
+        parent.println("");
+        parent.println("Result: " + ConsoleUtils.stringResult(errorResult));
+        parent.flush();
+    }
+
+    @Override
+    public void processResult(Result result) {
+        parent.updatePrompt(result);
+        StringBuilder sb = new StringBuilder(System.lineSeparator());
+        sb.append("Result: QID: " + result.getQueryId() + System.lineSeparator() + ConsoleUtils.stringResult(result));
+        if (QueryResult.class.isInstance(result)) {
+            QueryResult r = QueryResult.class.cast(result);
+            sb.append(System.lineSeparator()).append("Result page: " + r.getResultPage());
+            if (r.isLastResultSet()) {
+                sb.append(System.lineSeparator()).append("Removing results handler for: " + result.getQueryId());
+                parent.removeResultsHandler(result.getQueryId());
+            }
+        }
+        parent.println(sb.toString());
+        parent.flush();
+    }
 }

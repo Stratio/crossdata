@@ -18,40 +18,41 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class RemoveUDFStatementTest extends ParsingTest {
 
-  //REMOVE UDF
-  @Test
-  public void basic() {
-    String inputText = "REMOVE UDF \"jar.name\";";
-    testRegularStatement(inputText, "removeUDF");
-  }
+    //REMOVE UDF
+    @Test
+    public void basic() {
+        String inputText = "REMOVE UDF \"jar.name\";";
+        testRegularStatement(inputText, "removeUDF");
+    }
 
-  @Test
-  public void unexpectedWordFail() {
-    String inputText = "REMOVE UDF \"jar.name\" NOW;";
-    testParserFails(inputText, "unexpectedWordFail");
-  }
+    @Test
+    public void unexpectedWordFail() {
+        String inputText = "REMOVE UDF \"jar.name\" NOW;";
+        testParserFails(inputText, "unexpectedWordFail");
+    }
 
-  @Test
-  public void startingQuoteMissing1Fail(){
-    String inputText = "REMOVE UDF /dir/jar_name-v1.0.jar;\"";
-    testParserFails(inputText, "startingQuoteMissing1Fail");
-  }
+    @Test
+    public void startingQuoteMissing1Fail() {
+        String inputText = "REMOVE UDF /dir/jar_name-v1.0.jar;\"";
+        testParserFails(inputText, "startingQuoteMissing1Fail");
+    }
 
-  @Test
-  public void fatalErrorInParser(){
-    String inputText = "REMOVE UDF ;";
-    testParserFails(inputText, "fatalErrorInParser");
-  }
+    @Test
+    public void fatalErrorInParser() {
+        String inputText = "REMOVE UDF ;";
+        testParserFails(inputText, "fatalErrorInParser");
+    }
 
-  @Test
-  public void startingQuoteMissing2Fail(){
-    String inputText = "REMOVE UDF \"/dir/jar_name-v1.0.jar;";
-    testParserFails(inputText, "startingQuoteMissing2Fail");
-  }
+    @Test
+    public void startingQuoteMissing2Fail() {
+        String inputText = "REMOVE UDF \"/dir/jar_name-v1.0.jar;";
+        testParserFails(inputText, "startingQuoteMissing2Fail");
+    }
 
 }

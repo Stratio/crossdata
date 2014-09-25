@@ -18,12 +18,12 @@
 
 package com.stratio.meta.sh.utils;
 
+import java.io.IOException;
+import java.util.List;
+
 import jline.console.ConsoleReader;
 import jline.console.CursorBuffer;
 import jline.console.completer.CandidateListCompletionHandler;
-
-import java.io.IOException;
-import java.util.List;
 
 public class MetaCompletionHandler extends CandidateListCompletionHandler {
 
@@ -33,9 +33,10 @@ public class MetaCompletionHandler extends CandidateListCompletionHandler {
     public MetaCompletionHandler() {
         super();
     }
-    
+
     @Override
-    public boolean complete(final ConsoleReader reader, final List<CharSequence> candidates, final int pos) throws IOException{
+    public boolean complete(final ConsoleReader reader, final List<CharSequence> candidates, final int pos)
+            throws IOException {
         CursorBuffer buf = reader.getCursorBuffer();
 
         // if there is only one completion, then fill in the buffer
@@ -49,12 +50,12 @@ public class MetaCompletionHandler extends CandidateListCompletionHandler {
 
             String currentBuf = buf.toString();
             currentBuf = currentBuf.trim();
-            if(currentBuf.contains(" ")){
-                currentBuf = currentBuf.replaceAll(" \\S*$", " "+value.toString());
+            if (currentBuf.contains(" ")) {
+                currentBuf = currentBuf.replaceAll(" \\S*$", " " + value.toString());
             } else {
                 currentBuf = value.toString();
-            }            
-            
+            }
+
             setBuffer(reader, currentBuf, pos);
 
             return true;
@@ -69,5 +70,5 @@ public class MetaCompletionHandler extends CandidateListCompletionHandler {
 
         return true;
     }
-    
+
 }

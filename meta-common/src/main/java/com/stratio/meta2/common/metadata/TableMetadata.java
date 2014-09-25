@@ -29,96 +29,95 @@ import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class TableMetadata implements IMetadata {
-  private final TableName name;
+    private final TableName name;
 
-  private final Map<Selector, Selector> options;
+    private final Map<Selector, Selector> options;
 
-  private final Map<ColumnName, ColumnMetadata> columns;
+    private final Map<ColumnName, ColumnMetadata> columns;
 
-  private final Map<IndexName, IndexMetadata> indexes;
+    private final Map<IndexName, IndexMetadata> indexes;
 
-  private final ClusterName clusterRef;
+    private final ClusterName clusterRef;
 
-  private final List<ColumnName> partitionKey;
-  private final List<ColumnName> clusterKey;
+    private final List<ColumnName> partitionKey;
+    private final List<ColumnName> clusterKey;
 
+    public TableMetadata(TableName name, Map<Selector, Selector> options,
+            Map<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
+            ClusterName clusterRef,
+            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
+        this.name = name;
+        this.options = options;
+        this.columns = columns;
+        this.indexes = indexes;
+        this.clusterRef = clusterRef;
 
-  public TableMetadata(TableName name, Map<Selector, Selector> options,
-      Map<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
-      ClusterName clusterRef,
-      List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
-    this.name = name;
-    this.options = options;
-    this.columns = columns;
-    this.indexes = indexes;
-    this.clusterRef = clusterRef;
-
-    this.partitionKey = partitionKey;
-    this.clusterKey = clusterKey;
-  }
-
-
-  public TableName getName() {
-    return name;
-  }
-
-
-  public Map<Selector, Selector> getOptions() {
-    return options;
-  }
-
-  public Map<ColumnName, ColumnMetadata> getColumns() {
-    return columns;
-  }
-
-  public ClusterName getClusterRef() {
-    return clusterRef;
-  }
-
-  public List<ColumnName> getPartitionKey() {
-    return partitionKey;
-  }
-
-  public List<ColumnName> getClusterKey() {
-    return clusterKey;
-  }
-
-  public List<ColumnName> getPrimaryKey() {
-    List<ColumnName> result= new ArrayList<>();
-    result.addAll(partitionKey);
-    result.addAll(clusterKey);
-    return result;
-  }
-
-  public Map<IndexName, IndexMetadata> getIndexes() {
-    return indexes;
-  }
-
-  /**
-   * Determine whether the selected column is part of the primary key or not.
-   * @param columnName The column name.
-   * @return Whether is part of the primary key.
-   */
-  public boolean isPK(ColumnName columnName){
-    return partitionKey.contains(columnName) || clusterKey.contains(columnName);
-  }
-
-  /**
-   * Determine whether the selected column has an associated index.
-   * @param columnName The column name.
-   * @return Whether is indexed or not.
-   */
-  public boolean isIndexed(ColumnName columnName){
-    for(IndexMetadata indexMetadata:indexes.values()){
-      if(indexMetadata.getColumns().contains(columnName)){
-        return true;
-      }
+        this.partitionKey = partitionKey;
+        this.clusterKey = clusterKey;
     }
-    return false;
-  }
-  
-  public void addIndex(IndexName name ,IndexMetadata data){
-    indexes.put(name, data);
-  }
+
+    public TableName getName() {
+        return name;
+    }
+
+    public Map<Selector, Selector> getOptions() {
+        return options;
+    }
+
+    public Map<ColumnName, ColumnMetadata> getColumns() {
+        return columns;
+    }
+
+    public ClusterName getClusterRef() {
+        return clusterRef;
+    }
+
+    public List<ColumnName> getPartitionKey() {
+        return partitionKey;
+    }
+
+    public List<ColumnName> getClusterKey() {
+        return clusterKey;
+    }
+
+    public List<ColumnName> getPrimaryKey() {
+        List<ColumnName> result = new ArrayList<>();
+        result.addAll(partitionKey);
+        result.addAll(clusterKey);
+        return result;
+    }
+
+    public Map<IndexName, IndexMetadata> getIndexes() {
+        return indexes;
+    }
+
+    /**
+     * Determine whether the selected column is part of the primary key or not.
+     *
+     * @param columnName The column name.
+     * @return Whether is part of the primary key.
+     */
+    public boolean isPK(ColumnName columnName) {
+        return partitionKey.contains(columnName) || clusterKey.contains(columnName);
+    }
+
+    /**
+     * Determine whether the selected column has an associated index.
+     *
+     * @param columnName The column name.
+     * @return Whether is indexed or not.
+     */
+    public boolean isIndexed(ColumnName columnName) {
+        for (IndexMetadata indexMetadata : indexes.values()) {
+            if (indexMetadata.getColumns().contains(columnName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void addIndex(IndexName name, IndexMetadata data) {
+        indexes.put(name, data);
+    }
 
 }

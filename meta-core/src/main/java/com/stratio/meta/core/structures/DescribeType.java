@@ -23,29 +23,29 @@ package com.stratio.meta.core.structures;
  */
 public enum DescribeType {
 
-  /**
-   * Describe a catalog.
-   */
-  CATALOG,
+    /**
+     * Describe a catalog.
+     */
+    CATALOG,
 
-  /**
-   * Describe all catalogs.
-   */
-  CATALOGS,
+    /**
+     * Describe all catalogs.
+     */
+    CATALOGS,
 
-  /**
-   * Describe a table.
-   */
-  TABLE,
+    /**
+     * Describe a table.
+     */
+    TABLE,
 
-  /**
-   * Describe all tables in the current keyspace.
-   */
-  TABLES,
-  CLUSTER,
-  CLUSTERS,
-  DATASTORE,
-  DATASTORES,
-  CONNECTOR,
-  CONNECTORS
+    /**
+     * Describe all tables in the current keyspace.
+     */
+    TABLES,
+    CLUSTER,
+    CLUSTERS,
+    DATASTORE,
+    DATASTORES,
+    CONNECTOR,
+    CONNECTORS
 }

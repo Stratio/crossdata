@@ -31,81 +31,81 @@ import com.stratio.meta2.common.data.ClusterName;
  */
 public interface IConnector {
 
+    /**
+     * Get the name of the actor.
+     *
+     * @return A name.
+     */
+    public String getConnectorName();
 
-  /**
-   * Get the name of the actor.
-   * @return A name.
-   */
-  public String getConnectorName();
+    /**
+     * Get the names of the datastores required by the connector.
+     * Several connectors may declare the same datastore name.
+     *
+     * @return The names.
+     */
+    public String[] getDatastoreName();
 
-  /**
-   * Get the names of the datastores required by the connector.
-   * Several connectors may declare the same datastore name.
-   *
-   * @return The names.
-   */
-  public String [] getDatastoreName();
+    /**
+     * Initialize the connector service.
+     *
+     * @param configuration The configuration.
+     * @throws InitializationException If the connector initialization fails.
+     */
+    public void init(IConfiguration configuration) throws InitializationException;
 
-  /**
-   * Initialize the connector service.
-   *
-   * @param configuration The configuration.
-   * @throws InitializationException If the connector initialization fails.
-   */
-  public void init(IConfiguration configuration) throws InitializationException;
+    /**
+     * Connect to a datastore using a set of options.
+     *
+     * @param credentials The required credentials
+     * @param config      The cluster configuration.
+     * @throws ConnectionException If the connection could not be established.
+     */
+    public void connect(ICredentials credentials, ConnectorClusterConfig config)
+            throws ConnectionException;
 
-  /**
-   * Connect to a datastore using a set of options.
-   *
-   * @param credentials The required credentials
-   * @param config      The cluster configuration.
-   * @throws ConnectionException If the connection could not be established.
-   */
-  public void connect(ICredentials credentials, ConnectorClusterConfig config)
-      throws ConnectionException;
+    /**
+     * Close the connection with the underlying datastore.
+     *
+     * @throws ConnectionException If the close operation cannot be performed.
+     */
+    public void close(ClusterName name) throws ConnectionException;
 
-  /**
-   * Close the connection with the underlying datastore.
-   *
-   * @throws ConnectionException If the close operation cannot be performed.
-   */
-  public void close(ClusterName name) throws ConnectionException;
+    /**
+     * Shutdown send a sing to terminate all operations of the connector and then close all clusters connection.
+     *
+     * @throws ExecutionException If the shutdown operation cannot be performed.
+     */
+    public void shutdown() throws ExecutionException;
 
-  /**
-   * Shutdown send a sing to terminate all operations of the connector and then close all clusters connection.
-   *
-   * @throws ExecutionException If the shutdown operation cannot be performed.
-   */
-  public void shutdown() throws ExecutionException;
+    /**
+     * Retrieve the connectivity status with the datastore.
+     *
+     * @return Whether it is connected or not.
+     */
+    public boolean isConnected(ClusterName name);
 
-  /**
-   * Retrieve the connectivity status with the datastore.
-   *
-   * @return Whether it is connected or not.
-   */
-  public boolean isConnected(ClusterName name);
+    /**
+     * Get the storage engine.
+     *
+     * @return An implementation of {@link com.stratio.meta.common.connector.IStorageEngine}.
+     * @throws UnsupportedException If the connector does not provide this functionality.
+     */
+    public IStorageEngine getStorageEngine() throws UnsupportedException;
 
-  /**
-   * Get the storage engine.
-   *
-   * @return An implementation of {@link com.stratio.meta.common.connector.IStorageEngine}.
-   * @throws UnsupportedException If the connector does not provide this functionality.
-   */
-  public IStorageEngine getStorageEngine() throws UnsupportedException;
+    /**
+     * Get the query engine.
+     *
+     * @return An implementation of {@link com.stratio.meta.common.connector.IQueryEngine}.
+     * @throws UnsupportedException If the connector does not provide this functionality.
+     */
+    public IQueryEngine getQueryEngine() throws UnsupportedException;
 
-  /**
-   * Get the query engine.
-   *
-   * @return An implementation of {@link com.stratio.meta.common.connector.IQueryEngine}.
-   * @throws UnsupportedException If the connector does not provide this functionality.
-   */
-  public IQueryEngine getQueryEngine() throws UnsupportedException;
-
-  /**
-   * Get the metadata engine.
-   *
-   * @return An implementation of {@link com.stratio.meta.common.connector.IMetadataEngine}.
-   * @throws UnsupportedException If the connector does not provide this functionality.
-   */
-  public IMetadataEngine getMetadataEngine() throws UnsupportedException;
+    /**
+     * Get the metadata engine.
+     *
+     * @return An implementation of {@link com.stratio.meta.common.connector.IMetadataEngine}.
+     * @throws UnsupportedException If the connector does not provide this functionality.
+     */
+    public IMetadataEngine getMetadataEngine() throws UnsupportedException;
 }

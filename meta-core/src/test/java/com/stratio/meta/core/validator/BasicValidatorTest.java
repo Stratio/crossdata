@@ -22,12 +22,10 @@ import org.testng.annotations.BeforeClass;
 
 public class BasicValidatorTest {
 
+    @BeforeClass
+    public static void setUpBeforeClass() {
 
-
-  @BeforeClass
-  public static void setUpBeforeClass() {
-
-  }
+    }
 
   /*
   public void validateOk(String inputText, String expectedText, String methodName) {

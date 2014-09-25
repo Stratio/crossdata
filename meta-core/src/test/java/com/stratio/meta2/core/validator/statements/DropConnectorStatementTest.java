@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.validator.statements;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
@@ -26,25 +28,20 @@ import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.DropConnectorStatement;
-import com.stratio.meta2.core.statements.DropDataStoreStatement;
-import com.stratio.meta2.core.statements.DropIndexStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class DropConnectorStatementTest extends BasicValidatorTest {
 
-
     @Test
-    public void validateOk(){
+    public void validateOk() {
         String query = "DROP Connector CassandraConnector;";
-        DropConnectorStatement dropConnectorStatement=new DropConnectorStatement("CassandraConnector");
-        Validator validator=new Validator();
+        DropConnectorStatement dropConnectorStatement = new DropConnectorStatement("CassandraConnector");
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("dropIndexId",query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropConnectorStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -56,14 +53,14 @@ public class DropConnectorStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void validateIfNotExists(){
+    public void validateIfNotExists() {
         String query = "DROP Connector CassandrorConnector;";
-        DropConnectorStatement dropConnectorStatement=new DropConnectorStatement("CassandrorConnector");
+        DropConnectorStatement dropConnectorStatement = new DropConnectorStatement("CassandrorConnector");
 
-        Validator validator=new Validator();
-        BaseQuery baseQuery=new BaseQuery("dropIndexId",query, new CatalogName("system"));
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,dropConnectorStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("Connector must exist");
@@ -73,6 +70,5 @@ public class DropConnectorStatementTest extends BasicValidatorTest {
             Assert.assertTrue(true);
         }
     }
-
 
 }

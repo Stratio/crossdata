@@ -22,18 +22,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ValidationRequirements {
-  private final List<Validation> validations;
+    private final List<Validation> validations;
 
-  List<Validation> getValidations(){
-    return validations;
-  }
+    public ValidationRequirements() {
+        this.validations = new ArrayList<>();
+    }
 
-  public ValidationRequirements() {
-    this.validations = new ArrayList<>();
-  }
+    List<Validation> getValidations() {
+        return validations;
+    }
 
-  public ValidationRequirements add(Validation requirement){
-    this.validations.add(requirement);
-    return this;
-  }
+    public ValidationRequirements add(Validation requirement) {
+        this.validations.add(requirement);
+        return this;
+    }
 }

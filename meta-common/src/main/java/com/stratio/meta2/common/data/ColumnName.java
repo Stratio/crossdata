@@ -16,110 +16,110 @@ package com.stratio.meta2.common.data;
 
 public class ColumnName extends Name {
 
-  /**
-   * Name of the column.
-   */
-  private final String name;
+    /**
+     * Name of the column.
+     */
+    private final String name;
 
-  private TableName tableName;
+    private TableName tableName;
 
-  /**
-   * Default constructor.
-   *
-   * @param catalogName Name of the catalog.
-   * @param tableName Name of the table.
-   * @param columnName Name of the column.
-   */
-  public ColumnName(String catalogName, String tableName, String columnName) {
-    if(tableName != null && !tableName.isEmpty()){
-      this.tableName = new TableName(catalogName, tableName);
-    }else{
-      this.tableName = null;
-    }
-    this.name = columnName;
-  }
-
-  /**
-   * Constructor using existing TableName.
-   *
-   * @param tableName TableName.
-   * @param columnName Name of the column.
-   */
-  public ColumnName(TableName tableName, String columnName) {
-    this.tableName = tableName;
-    this.name = columnName;
-  }
-
-  public TableName getTableName() {
-    return tableName;
-  }
-
-  public void setTableName(TableName tableName) {
-    this.tableName = tableName;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public boolean isCompletedName() {
-    return tableName != null && tableName.isCompletedName();
-  }
-
-  public String getQualifiedName() {
-    String result;
-    if (isCompletedName()) {
-      result= QualifiedNames.getColumnQualifiedName(this.getTableName().getCatalogName().getName(),
-          getTableName().getName(), getName());
-    }else{
-      String catalogName = UNKNOWN_NAME;
-      String tableName = UNKNOWN_NAME;
-      if(this.getTableName() != null){
-        tableName = this.getTableName().getName();
-        if(this.getTableName().getCatalogName() != null){
-          catalogName = this.getTableName().getCatalogName().getName();
+    /**
+     * Default constructor.
+     *
+     * @param catalogName Name of the catalog.
+     * @param tableName   Name of the table.
+     * @param columnName  Name of the column.
+     */
+    public ColumnName(String catalogName, String tableName, String columnName) {
+        if (tableName != null && !tableName.isEmpty()) {
+            this.tableName = new TableName(catalogName, tableName);
+        } else {
+            this.tableName = null;
         }
-      }
-
-      result=QualifiedNames.getColumnQualifiedName(catalogName, tableName, getName());
-    }
-    return result;
-  }
-
-  @Override public NameType getType() {
-    return NameType.Column;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
+        this.name = columnName;
     }
 
-    ColumnName that = (ColumnName) o;
-
-    if (name != null ? !name.equals(that.name) : that.name != null) {
-      return false;
+    /**
+     * Constructor using existing TableName.
+     *
+     * @param tableName  TableName.
+     * @param columnName Name of the column.
+     */
+    public ColumnName(TableName tableName, String columnName) {
+        this.tableName = tableName;
+        this.name = columnName;
     }
-    if (tableName != null ? !tableName.equals(that.tableName) : that.tableName != null) {
-      return false;
+
+    public TableName getTableName() {
+        return tableName;
     }
 
-    return true;
-  }
+    public void setTableName(TableName tableName) {
+        this.tableName = tableName;
+    }
 
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (name != null ? name.hashCode() : 0);
-    result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
-    return result;
-  }
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean isCompletedName() {
+        return tableName != null && tableName.isCompletedName();
+    }
+
+    public String getQualifiedName() {
+        String result;
+        if (isCompletedName()) {
+            result = QualifiedNames.getColumnQualifiedName(this.getTableName().getCatalogName().getName(),
+                    getTableName().getName(), getName());
+        } else {
+            String catalogName = UNKNOWN_NAME;
+            String tableName = UNKNOWN_NAME;
+            if (this.getTableName() != null) {
+                tableName = this.getTableName().getName();
+                if (this.getTableName().getCatalogName() != null) {
+                    catalogName = this.getTableName().getCatalogName().getName();
+                }
+            }
+
+            result = QualifiedNames.getColumnQualifiedName(catalogName, tableName, getName());
+        }
+        return result;
+    }
+
+    @Override public NameType getType() {
+        return NameType.Column;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+
+        ColumnName that = (ColumnName) o;
+
+        if (name != null ? !name.equals(that.name) : that.name != null) {
+            return false;
+        }
+        if (tableName != null ? !tableName.equals(that.tableName) : that.tableName != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
+        return result;
+    }
 }

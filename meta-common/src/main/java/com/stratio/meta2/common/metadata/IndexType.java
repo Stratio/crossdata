@@ -19,7 +19,7 @@
 package com.stratio.meta2.common.metadata;
 
 public enum IndexType {
-  FULL_TEXT,
-  DEFAULT,
-  CUSTOM
+    FULL_TEXT,
+    DEFAULT,
+    CUSTOM
 }

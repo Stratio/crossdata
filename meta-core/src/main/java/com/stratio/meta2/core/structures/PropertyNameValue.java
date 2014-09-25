@@ -22,38 +22,38 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class PropertyNameValue extends Property {
 
-  private Selector name;
-  private Selector vp;
+    private Selector name;
+    private Selector vp;
 
-  public PropertyNameValue() {
-    super(TYPE_NAME_VALUE);
-  }
+    public PropertyNameValue() {
+        super(TYPE_NAME_VALUE);
+    }
 
-  public PropertyNameValue(Selector name, Selector vp) {
-    super(TYPE_NAME_VALUE);
-    this.name = name;
-    this.vp = vp;
-  }
+    public PropertyNameValue(Selector name, Selector vp) {
+        super(TYPE_NAME_VALUE);
+        this.name = name;
+        this.vp = vp;
+    }
 
-  public Selector getName() {
-    return name;
-  }
+    public Selector getName() {
+        return name;
+    }
 
-  public void setName(Selector name) {
-    this.name = name;
-  }
+    public void setName(Selector name) {
+        this.name = name;
+    }
 
-  public Selector getVp() {
-    return vp;
-  }
+    public Selector getVp() {
+        return vp;
+    }
 
-  public void setVp(Selector vp) {
-    this.vp = vp;
-  }
+    public void setVp(Selector vp) {
+        this.vp = vp;
+    }
 
-  @Override
-  public String toString() {
-    return name+"="+vp.toString();
-  }
+    @Override
+    public String toString() {
+        return name + "=" + vp.toString();
+    }
 
 }

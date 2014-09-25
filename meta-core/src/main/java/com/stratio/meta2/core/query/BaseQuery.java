@@ -22,48 +22,48 @@ import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta2.common.data.CatalogName;
 
 public class BaseQuery {
-  /**
-   * The query introduced by the user.
-   */
-  private final String query;
+    /**
+     * The query introduced by the user.
+     */
+    private final String query;
 
-  /**
-   * Unique query identifier.
-   */
-  private final String queryId;
+    /**
+     * Unique query identifier.
+     */
+    private final String queryId;
 
-  private final CatalogName defaultCatalog;
+    private final CatalogName defaultCatalog;
 
-  private QueryStatus queryStatus;
+    private QueryStatus queryStatus;
 
-  public BaseQuery(String queryId, String query, CatalogName defaultCatalog) {
-    this.queryId = queryId;
-    this.query = query;
-    this.defaultCatalog = defaultCatalog;
-    this.queryStatus = QueryStatus.NONE;
-  }
+    public BaseQuery(String queryId, String query, CatalogName defaultCatalog) {
+        this.queryId = queryId;
+        this.query = query;
+        this.defaultCatalog = defaultCatalog;
+        this.queryStatus = QueryStatus.NONE;
+    }
 
-  BaseQuery(BaseQuery baseQuery) {
-    this(baseQuery.getQueryId(), baseQuery.getQuery(), baseQuery.getDefaultCatalog());
-  }
+    BaseQuery(BaseQuery baseQuery) {
+        this(baseQuery.getQueryId(), baseQuery.getQuery(), baseQuery.getDefaultCatalog());
+    }
 
-  public String getQuery() {
-    return query;
-  }
+    public String getQuery() {
+        return query;
+    }
 
-  public String getQueryId() {
-    return queryId;
-  }
+    public String getQueryId() {
+        return queryId;
+    }
 
-  public QueryStatus getStatus() {
-    return queryStatus;
-  }
+    public QueryStatus getStatus() {
+        return queryStatus;
+    }
 
-  public CatalogName getDefaultCatalog() {
-    return defaultCatalog;
-  }
+    public CatalogName getDefaultCatalog() {
+        return defaultCatalog;
+    }
 
-  public void setQueryStatus(QueryStatus queryStatus) {
-    this.queryStatus = queryStatus;
-  }
+    public void setQueryStatus(QueryStatus queryStatus) {
+        this.queryStatus = queryStatus;
+    }
 }

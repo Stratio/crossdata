@@ -18,52 +18,54 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import com.stratio.meta2.common.data.TableName;
-
 import java.util.Set;
+
+import com.stratio.meta2.common.data.TableName;
 
 /**
  * Integer value selector.
  */
-public class IntegerSelector extends Selector{
+public class IntegerSelector extends Selector {
 
-  /**
-   * The integer value with long precision.
-   */
-  private final long value;
+    /**
+     * The integer value with long precision.
+     */
+    private final long value;
 
-  /**
-   * Class constructor.
-   * @param value The integer/long value.
-   */
-  public IntegerSelector(String value) {
-    this.value = Long.valueOf(value);
-  }
+    /**
+     * Class constructor.
+     *
+     * @param value The integer/long value.
+     */
+    public IntegerSelector(String value) {
+        this.value = Long.valueOf(value);
+    }
 
-  public IntegerSelector(int value) {
-    this.value = value;
-  }
+    public IntegerSelector(int value) {
+        this.value = value;
+    }
 
-  /**
-   * Get the long value.
-   * @return A long value.
-   */
-  public long getValue() {
-    return value;
-  }
+    /**
+     * Get the long value.
+     *
+     * @return A long value.
+     */
+    public long getValue() {
+        return value;
+    }
 
-  @Override
-  public SelectorType getType() {
-    return SelectorType.INTEGER;
-  }
+    @Override
+    public SelectorType getType() {
+        return SelectorType.INTEGER;
+    }
 
-  @Override
-  public Set<TableName> getSelectorTables() {
-    return null;
-  }
+    @Override
+    public Set<TableName> getSelectorTables() {
+        return null;
+    }
 
-  @Override
-  public String toString() {
-    return Long.toString(value);
-  }
+    @Override
+    public String toString() {
+        return Long.toString(value);
+    }
 }

@@ -19,21 +19,21 @@
 package com.stratio.meta.driver.config
 
 import com.typesafe.config.Config
+
 import scala.collection.JavaConversions._
 
-object MetaServerConfig{
-  val META_SERVER_HOSTS_KEY="config.cluster.hosts"
-  val META_SERVER_CLUSTER_NAME_KEY="config.cluster.name"
-  val META_SERVER_ACTOR_NAME_KEY="config.cluster.actor"
+object MetaServerConfig {
+  val META_SERVER_HOSTS_KEY = "config.cluster.hosts"
+  val META_SERVER_CLUSTER_NAME_KEY = "config.cluster.name"
+  val META_SERVER_ACTOR_NAME_KEY = "config.cluster.actor"
 }
 
 trait MetaServerConfig {
-  def config: Config = ???
-
   lazy val clusterHosts: List[String] = config.getStringList(MetaServerConfig.META_SERVER_HOSTS_KEY).toList
   lazy val clusterName: String = config.getString(MetaServerConfig.META_SERVER_CLUSTER_NAME_KEY)
   lazy val clusterActor: String = config.getString(MetaServerConfig.META_SERVER_ACTOR_NAME_KEY)
 
+  def config: Config = ???
 
 
 }

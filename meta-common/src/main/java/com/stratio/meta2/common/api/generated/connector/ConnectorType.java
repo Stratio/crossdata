@@ -23,22 +23,20 @@
 // Generated on: 2014.09.03 at 12:12:40 AM CEST 
 //
 
-
 package com.stratio.meta2.common.api.generated.connector;
-
-import com.stratio.meta2.common.api.Manifest;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import com.stratio.meta2.common.api.Manifest;
 
 /**
  * <p>Java class for ConnectorType complex type.
- *
+ * <p/>
  * <p>The following schema fragment specifies the expected content contained within this class.
- *
+ * <p/>
  * <pre>
  * &lt;complexType name="ConnectorType">
  *   &lt;complexContent>
@@ -55,179 +53,152 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- *
- *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ConnectorType", propOrder = {
-    "connectorName",
-    "dataStoresName",
-    "version",
-    "requiredProperties",
-    "optionalProperties",
-    "supportedOperations"
+        "connectorName",
+        "dataStoresName",
+        "version",
+        "requiredProperties",
+        "optionalProperties",
+        "supportedOperations"
 })
 public class ConnectorType extends Manifest {
 
-  public ConnectorType() {
-    super(Manifest.TYPE_CONNECTOR);
-  }
+    @XmlElement(name = "ConnectorName", required = true)
+    protected String connectorName;
+    @XmlElement(name = "DataStoresName", required = true)
+    protected DataStoresNameType dataStoresName;
+    @XmlElement(name = "Version", required = true)
+    protected String version;
+    @XmlElement(name = "RequiredProperties", required = true)
+    protected RequiredPropertiesType requiredProperties;
+    @XmlElement(name = "OptionalProperties", required = true)
+    protected OptionalPropertiesType optionalProperties;
+    @XmlElement(name = "SupportedOperations", required = true)
+    protected SupportedOperationsType supportedOperations;
+    public ConnectorType() {
+        super(Manifest.TYPE_CONNECTOR);
+    }
 
-  @XmlElement(name = "ConnectorName", required = true)
-  protected String connectorName;
-  @XmlElement(name = "DataStoresName", required = true)
-  protected DataStoresNameType dataStoresName;
-  @XmlElement(name = "Version", required = true)
-  protected String version;
-  @XmlElement(name = "RequiredProperties", required = true)
-  protected RequiredPropertiesType requiredProperties;
-  @XmlElement(name = "OptionalProperties", required = true)
-  protected OptionalPropertiesType optionalProperties;
-  @XmlElement(name = "SupportedOperations", required = true)
-  protected SupportedOperationsType supportedOperations;
+    /**
+     * Gets the value of the connectorName property.
+     *
+     * @return possible object is
+     * {@link String }
+     */
+    public String getConnectorName() {
+        return connectorName;
+    }
 
-  /**
-   * Gets the value of the connectorName property.
-   *
-   * @return
-   *     possible object is
-   *     {@link String }
-   *
-   */
-  public String getConnectorName() {
-    return connectorName;
-  }
+    /**
+     * Sets the value of the connectorName property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setConnectorName(String value) {
+        this.connectorName = value;
+    }
 
-  /**
-   * Sets the value of the connectorName property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link String }
-   *
-   */
-  public void setConnectorName(String value) {
-    this.connectorName = value;
-  }
+    /**
+     * Gets the value of the dataStoresName property.
+     *
+     * @return possible object is
+     * {@link com.stratio.meta2.common.api.generated.connector.DataStoresNameType }
+     */
+    public DataStoresNameType getDataStoresName() {
+        return dataStoresName;
+    }
 
-  /**
-   * Gets the value of the dataStoresName property.
-   *
-   * @return
-   *     possible object is
-   *     {@link com.stratio.meta2.common.api.generated.connector.DataStoresNameType }
-   *
-   */
-  public DataStoresNameType getDataStoresName() {
-    return dataStoresName;
-  }
+    /**
+     * Sets the value of the dataStoresName property.
+     *
+     * @param value allowed object is
+     *              {@link com.stratio.meta2.common.api.generated.connector.DataStoresNameType }
+     */
+    public void setDataStoresName(DataStoresNameType value) {
+        this.dataStoresName = value;
+    }
 
-  /**
-   * Sets the value of the dataStoresName property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link com.stratio.meta2.common.api.generated.connector.DataStoresNameType }
-   *
-   */
-  public void setDataStoresName(DataStoresNameType value) {
-    this.dataStoresName = value;
-  }
+    /**
+     * Gets the value of the version property.
+     *
+     * @return possible object is
+     * {@link String }
+     */
+    public String getVersion() {
+        return version;
+    }
 
-  /**
-   * Gets the value of the version property.
-   *
-   * @return
-   *     possible object is
-   *     {@link String }
-   *
-   */
-  public String getVersion() {
-    return version;
-  }
+    /**
+     * Sets the value of the version property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setVersion(String value) {
+        this.version = value;
+    }
 
-  /**
-   * Sets the value of the version property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link String }
-   *
-   */
-  public void setVersion(String value) {
-    this.version = value;
-  }
+    /**
+     * Gets the value of the requiredProperties property.
+     *
+     * @return possible object is
+     * {@link com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType }
+     */
+    public RequiredPropertiesType getRequiredProperties() {
+        return requiredProperties;
+    }
 
-  /**
-   * Gets the value of the requiredProperties property.
-   *
-   * @return
-   *     possible object is
-   *     {@link com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType }
-   *
-   */
-  public RequiredPropertiesType getRequiredProperties() {
-    return requiredProperties;
-  }
+    /**
+     * Sets the value of the requiredProperties property.
+     *
+     * @param value allowed object is
+     *              {@link com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType }
+     */
+    public void setRequiredProperties(RequiredPropertiesType value) {
+        this.requiredProperties = value;
+    }
 
-  /**
-   * Sets the value of the requiredProperties property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType }
-   *
-   */
-  public void setRequiredProperties(RequiredPropertiesType value) {
-    this.requiredProperties = value;
-  }
+    /**
+     * Gets the value of the optionalProperties property.
+     *
+     * @return possible object is
+     * {@link OptionalPropertiesType }
+     */
+    public OptionalPropertiesType getOptionalProperties() {
+        return optionalProperties;
+    }
 
-  /**
-   * Gets the value of the optionalProperties property.
-   *
-   * @return
-   *     possible object is
-   *     {@link OptionalPropertiesType }
-   *
-   */
-  public OptionalPropertiesType getOptionalProperties() {
-    return optionalProperties;
-  }
+    /**
+     * Sets the value of the optionalProperties property.
+     *
+     * @param value allowed object is
+     *              {@link OptionalPropertiesType }
+     */
+    public void setOptionalProperties(OptionalPropertiesType value) {
+        this.optionalProperties = value;
+    }
 
-  /**
-   * Sets the value of the optionalProperties property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link OptionalPropertiesType }
-   *
-   */
-  public void setOptionalProperties(OptionalPropertiesType value) {
-    this.optionalProperties = value;
-  }
+    /**
+     * Gets the value of the supportedOperations property.
+     *
+     * @return possible object is
+     * {@link SupportedOperationsType }
+     */
+    public SupportedOperationsType getSupportedOperations() {
+        return supportedOperations;
+    }
 
-  /**
-   * Gets the value of the supportedOperations property.
-   *
-   * @return
-   *     possible object is
-   *     {@link SupportedOperationsType }
-   *
-   */
-  public SupportedOperationsType getSupportedOperations() {
-    return supportedOperations;
-  }
-
-  /**
-   * Sets the value of the supportedOperations property.
-   *
-   * @param value
-   *     allowed object is
-   *     {@link SupportedOperationsType }
-   *
-   */
-  public void setSupportedOperations(SupportedOperationsType value) {
-    this.supportedOperations = value;
-  }
+    /**
+     * Sets the value of the supportedOperations property.
+     *
+     * @param value allowed object is
+     *              {@link SupportedOperationsType }
+     */
+    public void setSupportedOperations(SupportedOperationsType value) {
+        this.supportedOperations = value;
+    }
 
 }

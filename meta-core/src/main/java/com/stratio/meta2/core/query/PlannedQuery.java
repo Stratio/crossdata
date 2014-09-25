@@ -34,6 +34,6 @@ public interface PlannedQuery extends ValidatedQuery {
     return QueryStatus.PLANNED;
   }*/
 
-  public ExecutionStep getExecutionStep();
+    public ExecutionStep getExecutionStep();
 
 }

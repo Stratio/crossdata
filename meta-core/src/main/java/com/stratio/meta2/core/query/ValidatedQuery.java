@@ -28,5 +28,4 @@ public interface ValidatedQuery extends ParsedQuery {
     return QueryStatus.VALIDATED;
   }*/
 
-
 }

@@ -28,7 +28,7 @@ import org.scalatest.FunSuiteLike
  */
 class BasicPlannerActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
-  val engine:Engine =  createEngine.create()
+  val engine: Engine = createEngine.create()
 
   /*
   lazy val connectorTest= system.actorOf(ConnectorActor.props(),"ConnectorActorTest")

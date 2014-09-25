@@ -18,17 +18,19 @@
 
 package com.stratio.meta2.core.validator.statements;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta2.common.data.*;
+import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.CreateIndexStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class CreateIndexStatementTest extends BasicValidatorTest {
 
@@ -36,15 +38,15 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
     public void createIndex() {
         String query = "CREATE INDEX gender_idx ON users (gender); ";
 
-        CreateIndexStatement createIndexStatement=new CreateIndexStatement();
+        CreateIndexStatement createIndexStatement = new CreateIndexStatement();
         createIndexStatement.setIndexType("DEFAULT");
-        createIndexStatement.addColumn(new ColumnName("demo","users","gender"));
+        createIndexStatement.addColumn(new ColumnName("demo", "users", "gender"));
 
-        Validator validator=new Validator();
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,createIndexStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -55,20 +57,19 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
         }
     }
 
-
     @Test
     public void createIndexUnknownTable() {
         String query = "CREATE INDEX gender_idx ON unknown (gender); ";
 
-        CreateIndexStatement createIndexStatement=new CreateIndexStatement();
+        CreateIndexStatement createIndexStatement = new CreateIndexStatement();
         createIndexStatement.setIndexType("DEFAULT");
-        createIndexStatement.addColumn(new ColumnName("demo","unknown","gender"));
+        createIndexStatement.addColumn(new ColumnName("demo", "unknown", "gender"));
 
-        Validator validator=new Validator();
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,createIndexStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("Table must exists");
@@ -83,15 +84,15 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
     public void createIndexUnknownColumns() {
         String query = "CREATE INDEX gender_idx ON users (unknown); ";
 
-        CreateIndexStatement createIndexStatement=new CreateIndexStatement();
+        CreateIndexStatement createIndexStatement = new CreateIndexStatement();
         createIndexStatement.setIndexType("DEFAULT");
-        createIndexStatement.addColumn(new ColumnName("demo","users","unknown"));
+        createIndexStatement.addColumn(new ColumnName("demo", "users", "unknown"));
 
-        Validator validator=new Validator();
+        Validator validator = new Validator();
 
-        BaseQuery baseQuery=new BaseQuery("CreateTableId",query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery=new MetadataParsedQuery(baseQuery,createIndexStatement);
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("Column must exists");
@@ -101,6 +102,5 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
             Assert.assertTrue(true);
         }
     }
-
 
 }

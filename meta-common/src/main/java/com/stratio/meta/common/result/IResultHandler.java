@@ -23,25 +23,25 @@ package com.stratio.meta.common.result;
  */
 public interface IResultHandler {
 
-  /**
-   * Process an acknowledgement message for a specific query.
-   *
-   * @param queryId The query identifier.
-   * @param status  The query status.
-   */
-  public void processAck(String queryId, QueryStatus status);
+    /**
+     * Process an acknowledgement message for a specific query.
+     *
+     * @param queryId The query identifier.
+     * @param status  The query status.
+     */
+    public void processAck(String queryId, QueryStatus status);
 
-  /**
-   * Process an error result.
-   *
-   * @param errorResult The error.
-   */
-  public void processError(Result errorResult);
+    /**
+     * Process an error result.
+     *
+     * @param errorResult The error.
+     */
+    public void processError(Result errorResult);
 
-  /**
-   * Process a successful result.
-   *
-   * @param result The result.
-   */
-  public void processResult(Result result);
+    /**
+     * Process a successful result.
+     *
+     * @param result The result.
+     */
+    public void processResult(Result result);
 }

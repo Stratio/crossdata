@@ -18,21 +18,22 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class DropTriggerStatementTest extends ParsingTest {
 
-  @Test
-  public void dropTrigger() {
-    String inputText = "drop trigger trigger1 on table_name;";
-    testRegularStatement(inputText, "dropTrigger");
-  }
+    @Test
+    public void dropTrigger() {
+        String inputText = "drop trigger trigger1 on table_name;";
+        testRegularStatement(inputText, "dropTrigger");
+    }
 
-  @Test
-  public void dropTriggerWrongAssignment(){
-    String inputText = "drop trigger trigger1 on table_name = 20;";
-    testParserFails(inputText, "dropTriggerWrongAssignment");
-  }
+    @Test
+    public void dropTriggerWrongAssignment() {
+        String inputText = "drop trigger trigger1 on table_name = 20;";
+        testParserFails(inputText, "dropTriggerWrongAssignment");
+    }
 
 }

@@ -18,118 +18,116 @@
 
 package com.stratio.meta.common.data;
 
-import com.stratio.meta.common.metadata.structures.ColumnMetadata;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
+
 public class ResultSet implements Iterable<Row>, Serializable {
 
-  /**
-   * Serial version UID.
-   */
-  private static final long serialVersionUID = -1239158068912896730L;
+    /**
+     * Serial version UID.
+     */
+    private static final long serialVersionUID = -1239158068912896730L;
+    /**
+     * List of {@link com.stratio.meta.common.data.Row}.
+     */
+    private List<Row> rows;
+    /**
+     * List of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata}.
+     */
+    private List<ColumnMetadata> columnMetadata;
 
-  /**
-   * Check if ResultSet is empty.
-   *
-   * @return {@code true} if is empty
-   */
-  public boolean isEmpty() {
-    return size() < 1;
-  }
+    /**
+     * CassandraResultSet default constructor.
+     */
+    public ResultSet() {
+        rows = new ArrayList<>();
+        columnMetadata = new ArrayList<>();
+    }
 
-  /**
-   * List of {@link com.stratio.meta.common.data.Row}.
-   */
-  private List<Row> rows;
+    /**
+     * Check if ResultSet is empty.
+     *
+     * @return {@code true} if is empty
+     */
+    public boolean isEmpty() {
+        return size() < 1;
+    }
 
-  /**
-   * List of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata}.
-   */
-  private List<ColumnMetadata> columnMetadata;
+    /**
+     * Get the rows of the Result Set.
+     *
+     * @return A List of {@link com.stratio.meta.common.data.Row}
+     */
+    public List<Row> getRows() {
+        return rows;
+    }
 
-  /**
-   * CassandraResultSet default constructor.
-   */
-  public ResultSet() {
-    rows = new ArrayList<>();
-    columnMetadata = new ArrayList<>();
-  }
+    /**
+     * Set the list of rows.
+     *
+     * @param rows The list.
+     */
+    public void setRows(List<Row> rows) {
+        this.rows = rows;
+    }
 
-  /**
-   * Set the list of rows.
-   *
-   * @param rows The list.
-   */
-  public void setRows(List<Row> rows) {
-    this.rows = rows;
-  }
+    /**
+     * Get the column metadata in order.
+     *
+     * @return A list of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata}.
+     */
+    public List<ColumnMetadata> getColumnMetadata() {
+        return columnMetadata;
+    }
 
-  /**
-   * Get the rows of the Result Set.
-   *
-   * @return A List of {@link com.stratio.meta.common.data.Row}
-   */
-  public List<Row> getRows() {
-    return rows;
-  }
+    /**
+     * Set the list of column metadata.
+     *
+     * @param columnMetadata A list of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata}
+     *                       in order.
+     */
+    public void setColumnMetadata(List<ColumnMetadata> columnMetadata) {
+        this.columnMetadata = columnMetadata;
+    }
 
-  /**
-   * Set the list of column metadata.
-   *
-   * @param columnMetadata A list of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata}
-   *                       in order.
-   */
-  public void setColumnMetadata(List<ColumnMetadata> columnMetadata) {
-    this.columnMetadata = columnMetadata;
-  }
+    /**
+     * Add a row to the Result Set.
+     *
+     * @param row {@link com.stratio.meta.common.data.Row} to add
+     */
+    public void add(Row row) {
+        rows.add(row);
+    }
 
-  /**
-   * Get the column metadata in order.
-   *
-   * @return A list of {@link com.stratio.meta.common.metadata.structures.ColumnMetadata}.
-   */
-  public List<ColumnMetadata> getColumnMetadata() {
-    return columnMetadata;
-  }
+    /**
+     * Remove a row.
+     *
+     * @param index Index of the row to remove
+     */
+    public void remove(int index) {
+        rows.remove(index);
+    }
 
-  /**
-   * Add a row to the Result Set.
-   *
-   * @param row {@link com.stratio.meta.common.data.Row} to add
-   */
-  public void add(Row row) {
-    rows.add(row);
-  }
+    /**
+     * Get the size of ResultSet.
+     *
+     * @return the size of ResultSet
+     */
+    public int size() {
+        return rows.size();
+    }
 
-  /**
-   * Remove a row.
-   *
-   * @param index Index of the row to remove
-   */
-  public void remove(int index) {
-    rows.remove(index);
-  }
-
-  /**
-   * Get the size of ResultSet.
-   *
-   * @return the size of ResultSet
-   */
-  public int size() {
-    return rows.size();
-  }
-
-  /**
-   * Get a Iterator over the ResultSet.
-   *
-   * @return Iterator
-   */
-  public Iterator<Row> iterator() {
-    return new ResultSetIterator(this);
-  }
+    /**
+     * Get a Iterator over the ResultSet.
+     *
+     * @return Iterator
+     */
+    public Iterator<Row> iterator() {
+        return new ResultSetIterator(this);
+    }
 
 }

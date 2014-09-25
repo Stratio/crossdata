@@ -24,22 +24,22 @@ import com.stratio.meta2.core.statements.StorageStatement;
 
 public class StorageParsedQuery extends BaseQuery implements ParsedQuery {
 
-  private MetaStatement statement;
+    private MetaStatement statement;
 
-  public StorageParsedQuery(BaseQuery baseQuery,
-                            StorageStatement statement) {
-    super(baseQuery);
-    this.statement = statement;
-    setQueryStatus(QueryStatus.PARSED);
-  }
+    public StorageParsedQuery(BaseQuery baseQuery,
+            StorageStatement statement) {
+        super(baseQuery);
+        this.statement = statement;
+        setQueryStatus(QueryStatus.PARSED);
+    }
 
-  public StorageParsedQuery(StorageParsedQuery parsedQuery) {
-    this(parsedQuery, parsedQuery.getStatement());
-  }
+    public StorageParsedQuery(StorageParsedQuery parsedQuery) {
+        this(parsedQuery, parsedQuery.getStatement());
+    }
 
-  @Override
-  public StorageStatement getStatement() {
-    return (StorageStatement) statement;
-  }
+    @Override
+    public StorageStatement getStatement() {
+        return (StorageStatement) statement;
+    }
 
 }

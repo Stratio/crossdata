@@ -35,9 +35,8 @@ import scala.concurrent.duration._
  */
 class BasicServerActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
-  val engine:Engine = createEngine.create()
-
-  lazy val serverRef = system.actorOf(Props(classOf[ServerActor],engine),"test")
+  lazy val serverRef = system.actorOf(Props(classOf[ServerActor], engine), "test")
+  val engine: Engine = createEngine.create()
 
   override def beforeCassandraFinish() {
     shutdown(system)
@@ -53,32 +52,32 @@ class BasicServerActorTest extends ActorReceiveUtils with FunSuiteLike with Befo
     engine.shutdown()
   }
 
-  def executeStatement(query: String, keyspace: String, shouldExecute: Boolean) : Result = {
+  def executeStatement(query: String, keyspace: String, shouldExecute: Boolean): Result = {
     val stmt = Query("basic-server", keyspace, query, "test_actor")
 
     serverRef ! stmt
     val result = receiveActorMessages(shouldExecute, false, !shouldExecute)
 
-    if(shouldExecute) {
+    if (shouldExecute) {
       assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
-                                   + "\n error: " + getErrorMessage(result))
-    }else{
+        + "\n error: " + getErrorMessage(result))
+    } else {
       assertTrue(result.hasError, "Statement should report an error")
     }
 
     result
   }
 
-  test ("Unknown message"){
-    within(5000 millis){
+  test("Unknown message") {
+    within(5000 millis) {
       serverRef ! 1
       val result = expectMsgClass(classOf[ErrorResult])
       assertTrue(result.hasError, "Expecting error message")
     }
   }
 
-  test ("ServerActor Test connect without error"){
-    within(5000 millis){
+  test("ServerActor Test connect without error") {
+    within(5000 millis) {
       serverRef ! Connect("test-user")
       val result = expectMsgClass(classOf[ConnectResult])
       assertFalse(result.hasError, "Error not expected")
@@ -86,64 +85,64 @@ class BasicServerActorTest extends ActorReceiveUtils with FunSuiteLike with Befo
     }
   }
 
-  test ("Create KS"){
-    within(5000 millis){
+  test("Create KS") {
+    within(5000 millis) {
       val query = "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       executeStatement(query, "", true)
     }
   }
 
-  test ("Create existing KS"){
-    within(7000 millis){
+  test("Create existing KS") {
+    within(7000 millis) {
       val query = "create KEYSPACE ks_demo WITH replication = {class: SimpleStrategy, replication_factor: 1};"
       executeStatement(query, "", false)
     }
   }
 
-  test ("Use keyspace"){
-    within(5000 millis){
+  test("Use keyspace") {
+    within(5000 millis) {
       val query = "use ks_demo ;"
       executeStatement(query, "", true)
     }
   }
 
-  test ("Use non-existing keyspace"){
-    within(7000 millis){
+  test("Use non-existing keyspace") {
+    within(7000 millis) {
       val query = "use unknown ;"
       executeStatement(query, "", false)
     }
   }
 
-  test ("Insert into non-existing table"){
-    within(7000 millis){
+  test("Insert into non-existing table") {
+    within(7000 millis) {
       val query = "insert into demo (field1, field2) values ('test1','text2');"
       executeStatement(query, "ks_demo", false)
     }
   }
 
-  test ("Create table"){
-    within(5000 millis){
+  test("Create table") {
+    within(5000 millis) {
       val query = "create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
       executeStatement(query, "ks_demo", true)
     }
   }
 
-  test ("Create existing table"){
-    within(7000 millis){
+  test("Create existing table") {
+    within(7000 millis) {
       val query = "create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
       executeStatement(query, "ks_demo", false)
     }
   }
 
-  test ("Insert into table"){
-    within(5000 millis){
+  test("Insert into table") {
+    within(5000 millis) {
       val query = "insert into demo (field1, field2) values ('text1','text2');"
       executeStatement(query, "ks_demo", true)
     }
   }
 
-  test ("Select"){
-    within(5000 millis){
+  test("Select") {
+    within(5000 millis) {
       val query = "select * from demo ;"
       val result = executeStatement(query, "ks_demo", true)
       val r = result.asInstanceOf[QueryResult]
@@ -155,22 +154,22 @@ class BasicServerActorTest extends ActorReceiveUtils with FunSuiteLike with Befo
     }
   }
 
-  test ("Drop table"){
-    within(5000 millis){
+  test("Drop table") {
+    within(5000 millis) {
       val query = "drop table demo ;"
       executeStatement(query, "ks_demo", true)
     }
   }
 
-  test ("Drop keyspace"){
-    within(5000 millis){
+  test("Drop keyspace") {
+    within(5000 millis) {
       val query = "drop keyspace ks_demo ;"
       executeStatement(query, "ks_demo", true)
     }
   }
 
-  test ("Drop non-existing keyspace"){
-    within(7000 millis){
+  test("Drop non-existing keyspace") {
+    within(7000 millis) {
       val query = "drop keyspace ks_demo ;"
       executeStatement(query, "ks_demo", false)
     }

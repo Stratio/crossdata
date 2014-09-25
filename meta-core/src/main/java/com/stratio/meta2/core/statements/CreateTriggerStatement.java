@@ -21,49 +21,49 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  */
 public class CreateTriggerStatement extends MetadataStatement {
 
-  /**
-   * The name of the trigger.
-   */
-  private String triggerName;
+    /**
+     * The name of the trigger.
+     */
+    private String triggerName;
 
-  /**
-   * The name of the target table.
-   */
-  private String tableName;
+    /**
+     * The name of the target table.
+     */
+    private String tableName;
 
-  /**
-   * The qualified class name that implements the trigger.
-   */
-  private String className;
+    /**
+     * The qualified class name that implements the trigger.
+     */
+    private String className;
 
-  /**
-   * Class constructor.
-   * 
-   * @param triggerName The name of the trigger.
-   * @param tableName The name of the target table.
-   * @param className The name of the class.
-   */
-  public CreateTriggerStatement(String triggerName, String tableName, String className) {
-    this.command = true;
-    this.triggerName = triggerName;
-    this.tableName = tableName;
-    this.className = className;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param triggerName The name of the trigger.
+     * @param tableName   The name of the target table.
+     * @param className   The name of the class.
+     */
+    public CreateTriggerStatement(String triggerName, String tableName, String className) {
+        this.command = true;
+        this.triggerName = triggerName;
+        this.tableName = tableName;
+        this.className = className;
+    }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("Create trigger ");
-    sb.append(triggerName);
-    sb.append(" on ");
-    sb.append(tableName);
-    sb.append(" using ");
-    sb.append(className);
-    return sb.toString();
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Create trigger ");
+        sb.append(triggerName);
+        sb.append(" on ");
+        sb.append(tableName);
+        sb.append(" using ");
+        sb.append(className);
+        return sb.toString();
+    }
 
-  @Override
-  public ValidationRequirements getValidationRequirements() {
-    return new ValidationRequirements();
-  }
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements();
+    }
 
 }

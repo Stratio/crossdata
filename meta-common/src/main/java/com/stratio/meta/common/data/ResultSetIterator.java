@@ -23,38 +23,38 @@ import java.util.NoSuchElementException;
 
 public class ResultSetIterator implements Iterator<com.stratio.meta.common.data.Row> {
 
-  /**
-   * Set representing a result.
-   */
-  private final ResultSet resultSet;
+    /**
+     * Set representing a result.
+     */
+    private final ResultSet resultSet;
 
-  /**
-   * Pointer to the current element.
-   */
-  private int current;
+    /**
+     * Pointer to the current element.
+     */
+    private int current;
 
-  /**
+    /**
+     * Build a {@link ResultSetIterator} from a {@link com.stratio.meta.common.data.ResultSet}.
+     *
+     * @param resultSet Result Set.
+     */
+    public ResultSetIterator(ResultSet resultSet) {
+        this.resultSet = resultSet;
+        this.current = 0;
+    }
 
-   * Build a {@link ResultSetIterator} from a {@link com.stratio.meta.common.data.ResultSet}.
-   * @param resultSet Result Set.
-   */
-  public ResultSetIterator(ResultSet resultSet) {
-    this.resultSet = resultSet;
-    this.current = 0;
-  }
+    @Override
+    public boolean hasNext() {
+        return current < resultSet.getRows().size();
+    }
 
-  @Override
-  public boolean hasNext() {
-    return current < resultSet.getRows().size();
-  }
+    @Override
+    public com.stratio.meta.common.data.Row next() throws NoSuchElementException {
+        return resultSet.getRows().get(current++);
+    }
 
-  @Override
-  public com.stratio.meta.common.data.Row next() throws NoSuchElementException{
-    return resultSet.getRows().get(current++);
-  }
-
-  @Override
-  public void remove() throws UnsupportedOperationException, IllegalStateException{
-    resultSet.remove(current);
-  }
+    @Override
+    public void remove() throws UnsupportedOperationException, IllegalStateException {
+        resultSet.remove(current);
+    }
 }

@@ -23,125 +23,124 @@ package com.stratio.meta2.common.metadata;
  * NATIVE type has been added to map those types that are not generic and database dependant.
  */
 public enum ColumnType {
-  BIGINT("SQL_BIGINT"), BOOLEAN("BOOLEAN"), DOUBLE("SQL_DOUBLE"), FLOAT("SQL_FLOAT"),
-  INT("SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"), NATIVE(null),
-  SET("SET"){
-    @Override
-    public String toString() {
-      return "SET<"+getDBInnerType()+">";
+    BIGINT("SQL_BIGINT"), BOOLEAN("BOOLEAN"), DOUBLE("SQL_DOUBLE"), FLOAT("SQL_FLOAT"),
+    INT("SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"), NATIVE(null),
+    SET("SET") {
+        @Override
+        public String toString() {
+            return "SET<" + getDBInnerType() + ">";
+        }
+    },
+    LIST("LIST") {
+        @Override
+        public String toString() {
+            return "LIST<" + getDBInnerType() + ">";
+        }
+    },
+    MAP("MAP") {
+        @Override
+        public String toString() {
+            return "MAP<" + getDBInnerType() + ", " + getDBInnerValueType() + ">";
+        }
+    };
+
+    /**
+     * ODBC type equivalent.
+     */
+    private String odbcType;
+
+    /**
+     * The database type.
+     */
+    private String dbType;
+
+    /**
+     * The underlying class.
+     */
+    private Class<?> dbClass;
+
+    /**
+     * The underlying database type for collections.
+     */
+    private ColumnType dbInnerType;
+
+    /**
+     * The underlying database value type for map-like collections.
+     */
+    private ColumnType dbInnerValueType;
+
+    /**
+     * Build a new column type.
+     *
+     * @param odbcType The ODBC equivalent type.
+     */
+    ColumnType(String odbcType) {
+        this.odbcType = odbcType;
     }
-  },
-  LIST("LIST"){
-    @Override
-    public String toString() {
-      return "LIST<"+getDBInnerType()+">";
+
+    /**
+     * Set the database implementation mapping.
+     *
+     * @param dbType  The String representation of the database equivalent type.
+     * @param dbClass The underlying class implementation.
+     */
+    public void setDBMapping(String dbType, Class<?> dbClass) {
+        this.dbType = dbType;
+        this.dbClass = dbClass;
     }
-  },
-  MAP("MAP"){
-    @Override
-    public String toString() {
-      return "MAP<"+getDBInnerType()+", "+getDBInnerValueType()+">";
+
+    /**
+     * Get the database type.
+     *
+     * @return The type.
+     */
+    public String getDbType() {
+        return dbType;
     }
-  }
-  ;
 
-  /**
-   * ODBC type equivalent.
-   */
-  private String odbcType;
+    /**
+     * Get the database class.
+     *
+     * @return The class.
+     */
+    public Class<?> getDbClass() {
+        return dbClass;
+    }
 
-  /**
-   * The database type.
-   */
-  private String dbType;
+    /**
+     * Get the ODBC SQL type associated with the META data type. For NATIVE types, use the appropriate
+     * AbstractMetadataHelper to retrieve the ODBC equivalent.
+     *
+     * @return The ODBC equivalence or null if NATIVE type is being used.
+     */
+    public String getODBCType() {
+        return odbcType;
+    }
 
-  /**
-   * The underlying class.
-   */
-  private Class<?> dbClass;
+    /**
+     * Set the ODBCType. This method should only be used with NATIVE column types.
+     *
+     * @param odbcType The ODBC equivalent type.
+     */
+    public void setODBCType(String odbcType) {
+        this.odbcType = odbcType;
+    }
 
-  /**
-   * The underlying database type for collections.
-   */
-  private ColumnType dbInnerType;
+    public void setDBCollectionType(ColumnType dbInnerType) {
+        this.dbInnerType = dbInnerType;
+    }
 
-  /**
-   * The underlying database value type for map-like collections.
-   */
-  private ColumnType dbInnerValueType;
+    public void setDBMapType(ColumnType keyType, ColumnType valueType) {
+        this.dbInnerType = keyType;
+        this.dbInnerValueType = valueType;
+    }
 
-  /**
-   * Build a new column type.
-   *
-   * @param odbcType The ODBC equivalent type.
-   */
-  ColumnType(String odbcType) {
-    this.odbcType = odbcType;
-  }
+    public ColumnType getDBInnerType() {
+        return dbInnerType;
+    }
 
-  /**
-   * Set the database implementation mapping.
-   *
-   * @param dbType The String representation of the database equivalent type.
-   * @param dbClass The underlying class implementation.
-   */
-  public void setDBMapping(String dbType, Class<?> dbClass) {
-    this.dbType = dbType;
-    this.dbClass = dbClass;
-  }
-
-  /**
-   * Get the database type.
-   *
-   * @return The type.
-   */
-  public String getDbType() {
-    return dbType;
-  }
-
-  /**
-   * Get the database class.
-   *
-   * @return The class.
-   */
-  public Class<?> getDbClass() {
-    return dbClass;
-  }
-
-  /**
-   * Set the ODBCType. This method should only be used with NATIVE column types.
-   *
-   * @param odbcType The ODBC equivalent type.
-   */
-  public void setODBCType(String odbcType) {
-    this.odbcType = odbcType;
-  }
-
-  /**
-   * Get the ODBC SQL type associated with the META data type. For NATIVE types, use the appropriate
-   * AbstractMetadataHelper to retrieve the ODBC equivalent.
-   *
-   * @return The ODBC equivalence or null if NATIVE type is being used.
-   */
-  public String getODBCType() {
-    return odbcType;
-  }
-
-  public void setDBCollectionType(ColumnType dbInnerType){
-    this.dbInnerType = dbInnerType;
-  }
-
-  public void setDBMapType(ColumnType keyType, ColumnType valueType) {
-    this.dbInnerType = keyType;
-    this.dbInnerValueType = valueType;
-  }
-
-  public ColumnType getDBInnerType() {
-    return dbInnerType;
-  }
-
-  public ColumnType getDBInnerValueType() {
-    return dbInnerValueType;
-  }
+    public ColumnType getDBInnerValueType() {
+        return dbInnerValueType;
+    }
 
 }

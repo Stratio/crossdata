@@ -16,27 +16,28 @@
  * under the License.
  */
 
-package com.stratio.meta.server.config;
+package com.stratio.meta.server.config
+
+;
 
 import com.typesafe.config.Config
 
 object StreamingConfig {
   val KAFKA_SERVER = "config.kafka.server"
-  val KAFKA_PORT =  "config.kafka.port"
+  val KAFKA_PORT = "config.kafka.port"
   val ZOOKEEPER_SERVER = "config.zookeeper.server"
-  val ZOOKEEPER_PORT =  "config.zookeeper.port"
-  val STREAMING_DURATION =  "config.streaming.duration"
-  val STREAMING_GROUPID =  "config.streaming.groupId"
+  val ZOOKEEPER_PORT = "config.zookeeper.port"
+  val STREAMING_DURATION = "config.streaming.duration"
+  val STREAMING_GROUPID = "config.streaming.groupId"
 }
 
 trait StreamingConfig {
-  def config: Config = ???
-
   lazy val kafkaServer: String = config.getString(StreamingConfig.KAFKA_SERVER)
   lazy val kafkaPort: Int = config.getInt(StreamingConfig.KAFKA_PORT)
   lazy val zookeeperServer: String = config.getString(StreamingConfig.ZOOKEEPER_SERVER)
   lazy val zookeeperPort: Int = config.getInt(StreamingConfig.ZOOKEEPER_PORT)
-
   lazy val streamingDuration: Int = config.getInt(StreamingConfig.STREAMING_DURATION)
   lazy val streamingGroupId: String = config.getString(StreamingConfig.STREAMING_GROUPID)
+
+  def config: Config = ???
 }

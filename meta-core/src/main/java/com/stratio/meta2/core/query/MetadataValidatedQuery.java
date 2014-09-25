@@ -21,13 +21,13 @@ import com.stratio.meta.common.result.QueryStatus;
 
 public class MetadataValidatedQuery extends MetadataParsedQuery implements ValidatedQuery {
 
-  public MetadataValidatedQuery(MetadataParsedQuery metadataParsedQuery) {
-    super(metadataParsedQuery);
-    setQueryStatus(QueryStatus.VALIDATED);
-  }
+    public MetadataValidatedQuery(MetadataParsedQuery metadataParsedQuery) {
+        super(metadataParsedQuery);
+        setQueryStatus(QueryStatus.VALIDATED);
+    }
 
-  public MetadataValidatedQuery(MetadataValidatedQuery metadataValidatedQuery) {
-    this((MetadataParsedQuery) metadataValidatedQuery);
-  }
+    public MetadataValidatedQuery(MetadataValidatedQuery metadataValidatedQuery) {
+        this((MetadataParsedQuery) metadataValidatedQuery);
+    }
 
 }

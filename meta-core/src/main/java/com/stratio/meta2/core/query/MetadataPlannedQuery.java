@@ -18,26 +18,25 @@
 
 package com.stratio.meta2.core.query;
 
-
 import com.stratio.meta.common.executionplan.ExecutionStep;
 import com.stratio.meta.common.result.QueryStatus;
 
 public class MetadataPlannedQuery extends MetadataValidatedQuery implements PlannedQuery {
 
-  private final ExecutionStep executionStep;
+    private final ExecutionStep executionStep;
 
-  public MetadataPlannedQuery(MetadataValidatedQuery metadataValidatedQuery, ExecutionStep executionStep) {
-    super(metadataValidatedQuery);
-    setQueryStatus(QueryStatus.PLANNED);
-    this.executionStep = executionStep;
-  }
+    public MetadataPlannedQuery(MetadataValidatedQuery metadataValidatedQuery, ExecutionStep executionStep) {
+        super(metadataValidatedQuery);
+        setQueryStatus(QueryStatus.PLANNED);
+        this.executionStep = executionStep;
+    }
 
-  public MetadataPlannedQuery(MetadataPlannedQuery metadataPlannedQuery){
-    this(metadataPlannedQuery, metadataPlannedQuery.getExecutionStep());
-  }
+    public MetadataPlannedQuery(MetadataPlannedQuery metadataPlannedQuery) {
+        this(metadataPlannedQuery, metadataPlannedQuery.getExecutionStep());
+    }
 
-  @Override
-  public ExecutionStep getExecutionStep() {
-    return executionStep;
-  }
+    @Override
+    public ExecutionStep getExecutionStep() {
+        return executionStep;
+    }
 }

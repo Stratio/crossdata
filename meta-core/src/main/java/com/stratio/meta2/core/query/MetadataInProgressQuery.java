@@ -18,13 +18,13 @@ import com.stratio.meta.common.result.QueryStatus;
 
 public class MetadataInProgressQuery extends MetadataPlannedQuery implements InProgressQuery {
 
-  public MetadataInProgressQuery(MetadataPlannedQuery metadataPlannedQuery) {
-    super(metadataPlannedQuery);
-    setQueryStatus(QueryStatus.IN_PROGRESS);
-  }
+    public MetadataInProgressQuery(MetadataPlannedQuery metadataPlannedQuery) {
+        super(metadataPlannedQuery);
+        setQueryStatus(QueryStatus.IN_PROGRESS);
+    }
 
-  public MetadataInProgressQuery(MetadataInProgressQuery metadataInProgressQuery) {
-    this((MetadataPlannedQuery) metadataInProgressQuery);
-  }
+    public MetadataInProgressQuery(MetadataInProgressQuery metadataInProgressQuery) {
+        this((MetadataPlannedQuery) metadataInProgressQuery);
+    }
 
 }

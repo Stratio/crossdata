@@ -25,7 +25,7 @@ import org.scalatest.FunSuiteLike
 
 class BasicParserActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
 
-  val engine:Engine =  createEngine.create()
+  val engine: Engine = createEngine.create()
 
   /*
 

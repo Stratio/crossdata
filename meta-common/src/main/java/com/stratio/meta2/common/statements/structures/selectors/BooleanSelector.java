@@ -18,52 +18,54 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
-import com.stratio.meta2.common.data.TableName;
-
 import java.util.Set;
+
+import com.stratio.meta2.common.data.TableName;
 
 /**
  * Boolean selector.
  */
-public class BooleanSelector extends Selector{
+public class BooleanSelector extends Selector {
 
-  /**
-   * Boolean value.
-   */
-  private final boolean value;
+    /**
+     * Boolean value.
+     */
+    private final boolean value;
 
-  /**
-   * Class constructor.
-   * @param value The boolean value.
-   */
-  public BooleanSelector(boolean value) {
-    this.value = value;
-  }
+    /**
+     * Class constructor.
+     *
+     * @param value The boolean value.
+     */
+    public BooleanSelector(boolean value) {
+        this.value = value;
+    }
 
-  public BooleanSelector(String value) {
-    this.value = Boolean.valueOf(value);
-  }
+    public BooleanSelector(String value) {
+        this.value = Boolean.valueOf(value);
+    }
 
-  /**
-   * Get the value of this selector.
-   * @return A boolean value.
-   */
-  public boolean getValue(){
-    return value;
-  }
+    /**
+     * Get the value of this selector.
+     *
+     * @return A boolean value.
+     */
+    public boolean getValue() {
+        return value;
+    }
 
-  @Override
-  public SelectorType getType() {
-    return SelectorType.BOOLEAN;
-  }
+    @Override
+    public SelectorType getType() {
+        return SelectorType.BOOLEAN;
+    }
 
-  @Override
-  public Set<TableName> getSelectorTables() {
-    return null;
-  }
+    @Override
+    public Set<TableName> getSelectorTables() {
+        return null;
+    }
 
-  @Override
-  public String toString() {
-    return Boolean.toString(value);
-  }
+    @Override
+    public String toString() {
+        return Boolean.toString(value);
+    }
 }

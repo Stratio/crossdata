@@ -23,10 +23,7 @@
 // Generated on: 2014.09.03 at 12:12:40 AM CEST 
 //
 
-
 package com.stratio.meta2.common.api.generated.connector;
-
-import com.stratio.meta.common.connector.Operations;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -36,12 +33,13 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import com.stratio.meta.common.connector.Operations;
 
 /**
  * <p>Java class for SupportedOperationsType complex type.
- *
+ * <p/>
  * <p>The following schema fragment specifies the expected content contained within this class.
- *
+ * <p/>
  * <pre>
  * &lt;complexType name="SupportedOperationsType">
  *   &lt;complexContent>
@@ -53,45 +51,41 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- *
- *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SupportedOperationsType", propOrder = {
-    "operation"
+        "operation"
 })
 public class SupportedOperationsType implements Serializable {
 
-  private static final long serialVersionUID = 7393543114588196401L;
-  protected Set<Operations> operation;
+    private static final long serialVersionUID = 7393543114588196401L;
+    protected Set<Operations> operation;
 
-  /**
-   * Gets the value of the operation property.
-   *
-   * <p>
-   * This accessor method returns a reference to the live list,
-   * not a snapshot. Therefore any modification you make to the
-   * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the operation property.
-   *
-   * <p>
-   * For example, to add a new item, do as follows:
-   * <pre>
-   *    getOperation().add(newItem);
-   * </pre>
-   *
-   *
-   * <p>
-   * Objects of the following type(s) are allowed in the list
-   * {@link String }
-   *
-   *
-   */
-  public Set<Operations> getOperation() {
-    if (operation == null) {
-      operation = new HashSet<>();
+    /**
+     * Gets the value of the operation property.
+     * <p/>
+     * <p/>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the operation property.
+     * <p/>
+     * <p/>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getOperation().add(newItem);
+     * </pre>
+     * <p/>
+     * <p/>
+     * <p/>
+     * Objects of the following type(s) are allowed in the list
+     * {@link String }
+     */
+    public Set<Operations> getOperation() {
+        if (operation == null) {
+            operation = new HashSet<>();
+        }
+        return this.operation;
     }
-    return this.operation;
-  }
 
 }

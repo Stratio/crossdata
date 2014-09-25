@@ -22,11 +22,11 @@ package com.stratio.meta.common.result;
  * Possible status of a query.
  */
 public enum QueryStatus {
-  NONE,
-  PARSED,
-  VALIDATED,
-  PLANNED,
-  IN_PROGRESS,
-  NORMALIZED,
-  EXECUTED
+    NONE,
+    PARSED,
+    VALIDATED,
+    PLANNED,
+    IN_PROGRESS,
+    NORMALIZED,
+    EXECUTED
 }

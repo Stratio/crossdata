@@ -25,19 +25,19 @@ import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta2.core.query.BaseQuery
 import org.apache.log4j.Logger
 
-object ParserActor{
-  def props(validator:ActorRef, parser:Parser): Props= Props(new ParserActor(validator, parser))
+object ParserActor {
+  def props(validator: ActorRef, parser: Parser): Props = Props(new ParserActor(validator, parser))
 }
 
 //class ParserActor(validator: ActorRef, normalizer: ActorRef, parser:Parser) extends Actor with TimeTracker {
-class ParserActor(validator: ActorRef, parser:Parser) extends Actor with TimeTracker {
-  val log =Logger.getLogger(classOf[ParserActor])
-  override lazy val timerName= this.getClass.getName
+class ParserActor(validator: ActorRef, parser: Parser) extends Actor with TimeTracker {
+  override lazy val timerName = this.getClass.getName
+  val log = Logger.getLogger(classOf[ParserActor])
 
   def receive = {
     case Query(queryId, catalog, statement, user) => {
-      log.info("\nInit Parser Task {}{}{}{}",queryId, catalog, statement, user)
-      val timer=initTimer()
+      log.info("\nInit Parser Task {}{}{}{}", queryId, catalog, statement, user)
+      val timer = initTimer()
       //val stmt = parser.parseStatement(queryId, catalog, statement)
       //val stmt = parser.parseStatement(catalog, statement)
       val baseQuery = new BaseQuery(queryId, statement, new CatalogName(catalog))
@@ -46,8 +46,8 @@ class ParserActor(validator: ActorRef, parser:Parser) extends Actor with TimeTra
       //if(!stmt.hasError){
       //stmt.setSessionCatalog(catalog)
       //}
-      val parsedquery=parser.parse(baseQuery)
-      log.info("\nforwarding parsedquery to the validator "+parsedquery)
+      val parsedquery = parser.parse(baseQuery)
+      log.info("\nforwarding parsedquery to the validator " + parsedquery)
       //sender ! "Ok"
       validator forward parsedquery
 

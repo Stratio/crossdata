@@ -18,8 +18,9 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 public class CreateTriggerStatementTest extends ParsingTest {
 
@@ -30,10 +31,9 @@ public class CreateTriggerStatementTest extends ParsingTest {
     }
 
     @Test
-    public void createTriggerWrongAsWordUse(){
+    public void createTriggerWrongAsWordUse() {
         String inputText = "create trigger trigger1 on table_name USING triggerClassName AS ident1;";
         testParserFails(inputText, "createTriggerWrongAsWordUse");
     }
-
 
 }

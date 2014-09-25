@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CatalogMetadata implements Serializable{
+public class CatalogMetadata implements Serializable {
 
     /**
      * Serial version UID in order to be Serializable.
@@ -41,35 +41,39 @@ public class CatalogMetadata implements Serializable{
 
     /**
      * Class constructor.
+     *
      * @param catalogName Name of the catalog.
      */
-    public CatalogMetadata(String catalogName){
+    public CatalogMetadata(String catalogName) {
         this.catalogName = catalogName;
     }
 
     /**
      * Class constructor.
+     *
      * @param catalogName Name of the catalog.
-     * @param tables Set of tables that belong to the catalog.
+     * @param tables      Set of tables that belong to the catalog.
      */
-    public CatalogMetadata(String catalogName, Set<TableMetadata> tables){
+    public CatalogMetadata(String catalogName, Set<TableMetadata> tables) {
         this(catalogName);
         this.tables.addAll(tables);
     }
 
     /**
      * Get the name of the catalog.
+     *
      * @return The name.
      */
-    public String getCatalogName(){
+    public String getCatalogName() {
         return catalogName;
     }
 
     /**
      * Get the set of tables.
+     *
      * @return A {@link java.util.Set}.
      */
-    public Set<TableMetadata> getTables(){
+    public Set<TableMetadata> getTables() {
         return tables;
     }
 }

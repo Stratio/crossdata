@@ -24,13 +24,13 @@ import com.stratio.meta.common.result.Result
 import com.stratio.meta2.core.engine.Engine
 import org.apache.log4j.Logger
 
-object QueryActor{
-  def props(engine: Engine,connectorActorRef:ActorRef): Props = Props(new QueryActor(engine,connectorActorRef))
+object QueryActor {
+  def props(engine: Engine, connectorActorRef: ActorRef): Props = Props(new QueryActor(engine, connectorActorRef))
 
 }
 
-class QueryActor(engine: Engine,connectorActorRef:ActorRef) extends Actor{
-  val log =Logger.getLogger(classOf[QueryActor])
+class QueryActor(engine: Engine, connectorActorRef: ActorRef) extends Actor {
+  val log = Logger.getLogger(classOf[QueryActor])
   //val executorActorRef = context.actorOf(ExecutorActor.props(connectorActorRef,engine.getExecutor),"ExecutorActor")
   //val plannerActorRef = context.actorOf(PlannerActor.props(executorActorRef,engine.getPlanner),"PlanerActor")
   //val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef,engine.getValidator),"ValidatorActor")
@@ -40,7 +40,7 @@ class QueryActor(engine: Engine,connectorActorRef:ActorRef) extends Actor{
 
   override def receive: Receive = {
     case Query(queryId, catalog, statement, user) => {
-      log.info("User "+ user + " catalog: "+ catalog + " stmt: " + statement + " id: " + queryId)
+      log.info("User " + user + " catalog: " + catalog + " stmt: " + statement + " id: " + queryId)
       //querySender = sender
       //parserActorRef forward Query(queryId, catalog, statement, user)
       //parserActorRef ! Query(queryId, catalog, statement, user)
@@ -52,6 +52,6 @@ class QueryActor(engine: Engine,connectorActorRef:ActorRef) extends Actor{
     case _ => {
       println("Unknown message!")
       sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
-  }
+    }
   }
 }

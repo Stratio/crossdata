@@ -18,53 +18,53 @@
 
 package com.stratio.meta2.core.grammar.statements;
 
-import com.stratio.meta2.core.grammar.ParsingTest;
-
 import org.testng.annotations.Test;
+
+import com.stratio.meta2.core.grammar.ParsingTest;
 
 /**
  * Alter storage parsing tests.
  */
 public class AlterClusterStatementTest extends ParsingTest {
 
-  @Test
-  public void alterClusterEmptyJSON() {
-    String inputText = "ALTER CLUSTER dev_environment1 WITH OPTIONS {};";
-    testRegularStatement(inputText, "alterClusterEmptyJSON");
-  }
+    @Test
+    public void alterClusterEmptyJSON() {
+        String inputText = "ALTER CLUSTER dev_environment1 WITH OPTIONS {};";
+        testRegularStatement(inputText, "alterClusterEmptyJSON");
+    }
 
-  @Test
-  public void alterClusterBasic() {
-    String inputText = "ALTER CLUSTER dev_environment1 WITH OPTIONS {"
-                       + "\"hosts\": [\"127.0.0.1\", \"127.0.0.2\"], "
-                       + "\"port\": 1234};";
-    testRegularStatement(inputText, "alterClusterBasic");
-  }
+    @Test
+    public void alterClusterBasic() {
+        String inputText = "ALTER CLUSTER dev_environment1 WITH OPTIONS {"
+                + "\"hosts\": [\"127.0.0.1\", \"127.0.0.2\"], "
+                + "\"port\": 1234};";
+        testRegularStatement(inputText, "alterClusterBasic");
+    }
 
-  @Test
-  public void alterClusterSimple() {
-    String inputText = "ALTER CLUSTER production_madrid WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'mode': \"random\"};";
-    String expectedText = "ALTER CLUSTER production_madrid WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'mode': \"random\"};";
-    testRegularStatement(inputText, expectedText, "alterClusterSimple");
-  }
+    @Test
+    public void alterClusterSimple() {
+        String inputText = "ALTER CLUSTER production_madrid WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'mode': \"random\"};";
+        String expectedText = "ALTER CLUSTER production_madrid WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'mode': \"random\"};";
+        testRegularStatement(inputText, expectedText, "alterClusterSimple");
+    }
 
-  @Test
-  public void alterClusterIfExists() {
-    String inputText = "ALTER CLUSTER IF EXISTS productionMadrid WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, 'exhaustive': false};";
-    String expectedText = "ALTER CLUSTER IF EXISTS productionMadrid WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, 'exhaustive': false};";
-    testRegularStatement(inputText, expectedText, "alterClusterIfExists");
-  }
+    @Test
+    public void alterClusterIfExists() {
+        String inputText = "ALTER CLUSTER IF EXISTS productionMadrid WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, 'exhaustive': false};";
+        String expectedText = "ALTER CLUSTER IF EXISTS productionMadrid WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, 'exhaustive': false};";
+        testRegularStatement(inputText, expectedText, "alterClusterIfExists");
+    }
 
-  @Test
-  public void alterClusterWrongClusterName() {
-    String inputText = "ALTER CLUSTER ^productionMadrid WITH OPTIONS {'host': '127.0.0.1'};";
-    testParserFails(inputText, "alterClusterWrongName");
-  }
+    @Test
+    public void alterClusterWrongClusterName() {
+        String inputText = "ALTER CLUSTER ^productionMadrid WITH OPTIONS {'host': '127.0.0.1'};";
+        testParserFails(inputText, "alterClusterWrongName");
+    }
 
-  @Test
-  public void alterClusterWrongJson() {
-    String inputText = "ALTER CLUSTER productionMadrid WITH OPTIONS {25: com.stratio.35.executor};";
-    testParserFails(inputText, "alterClusterWrongJson");
-  }
+    @Test
+    public void alterClusterWrongJson() {
+        String inputText = "ALTER CLUSTER productionMadrid WITH OPTIONS {25: com.stratio.35.executor};";
+        testParserFails(inputText, "alterClusterWrongJson");
+    }
 
 }

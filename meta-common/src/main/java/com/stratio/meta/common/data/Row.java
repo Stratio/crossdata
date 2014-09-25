@@ -38,7 +38,7 @@ public class Row implements Serializable {
     /**
      * Row params constructor with a cell.
      *
-     * @param key Key of the cell
+     * @param key  Key of the cell
      * @param cell A {@link com.stratio.meta.common.data.Cell}
      */
     public Row(String key, Cell cell) {
@@ -51,7 +51,7 @@ public class Row implements Serializable {
      *
      * @return the size requested
      */
-    public int size(){
+    public int size() {
         return cells.size();
     }
 
@@ -65,14 +65,6 @@ public class Row implements Serializable {
     }
 
     /**
-     * Get the collection of cells.
-     * @return A collection of Cells.
-     */
-    public Collection<Cell> getCellList(){
-        return cells.values();
-    }
-
-    /**
      * Set the cells of the row.
      *
      * @param cells A map of cells
@@ -82,12 +74,21 @@ public class Row implements Serializable {
     }
 
     /**
+     * Get the collection of cells.
+     *
+     * @return A collection of Cells.
+     */
+    public Collection<Cell> getCellList() {
+        return cells.values();
+    }
+
+    /**
      * Add a Cell to the row.
      *
-     * @param key Key
+     * @param key  Key
      * @param cell Cell
      */
-    public void addCell(String key, Cell cell){
+    public void addCell(String key, Cell cell) {
         cells.put(key, cell);
         cells.values();
     }
@@ -98,7 +99,7 @@ public class Row implements Serializable {
      * @param key Key of the cell
      * @return Cell requested.
      */
-    public Cell getCell(String key){
+    public Cell getCell(String key) {
         return cells.get(key);
     }
 

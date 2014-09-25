@@ -18,50 +18,48 @@
 
 package com.stratio.meta.core.structures;
 
-
-import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.common.statements.structures.selectors.SelectorIdentifier;
-import com.stratio.meta2.common.data.TableName;
-
 import java.util.Iterator;
 import java.util.List;
 
+import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta2.common.data.TableName;
+
 public class InnerJoin {
 
-  private TableName tableName;
+    private TableName tableName;
 
-  private List<Relation> relations;
+    private List<Relation> relations;
 
-  private InnerJoin(TableName tableName) {
-    this.tableName = tableName;
-  }
-
-  public InnerJoin(TableName tableName, List<Relation> joinRelations) {
-    this(tableName);
-    this.relations = joinRelations;
-  }
-
-  public TableName getTablename() {
-    return tableName;
-  }
-
-  public List<Relation> getRelations() {
-    return relations;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(tableName);
-    sb.append(" ON ");
-    Iterator<Relation> it = relations.iterator();
-    while(it.hasNext()){
-      sb.append(it.next());
-      if(it.hasNext()){
-        sb.append(" AND ");
-      }
+    private InnerJoin(TableName tableName) {
+        this.tableName = tableName;
     }
-    return sb.toString();
-  }
+
+    public InnerJoin(TableName tableName, List<Relation> joinRelations) {
+        this(tableName);
+        this.relations = joinRelations;
+    }
+
+    public TableName getTablename() {
+        return tableName;
+    }
+
+    public List<Relation> getRelations() {
+        return relations;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(tableName);
+        sb.append(" ON ");
+        Iterator<Relation> it = relations.iterator();
+        while (it.hasNext()) {
+            sb.append(it.next());
+            if (it.hasNext()) {
+                sb.append(" AND ");
+            }
+        }
+        return sb.toString();
+    }
 
 }

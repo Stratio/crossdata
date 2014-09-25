@@ -18,45 +18,43 @@
 
 package com.stratio.meta2.core.engine;
 
-import com.stratio.meta2.core.grid.Grid;
+import java.util.Map;
+import java.util.Random;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Random;
-
+import com.stratio.meta2.core.grid.Grid;
 
 public class EngineTests {
-  private EngineConfig engineConfig;
+    private EngineConfig engineConfig;
 
-  @BeforeClass
-  public void setUp() {
+    @BeforeClass
+    public void setUp() {
 
-    engineConfig = new EngineConfig();
+        engineConfig = new EngineConfig();
 
-    engineConfig.setSparkMaster("local");
-    engineConfig.setClasspathJars("/");
-    engineConfig.setGridListenAddress("localhost");
-    engineConfig.setGridContactHosts(new String[]{});
-    engineConfig.setGridMinInitialMembers(1);
-    engineConfig.setGridPort(5900);
-    engineConfig.setGridJoinTimeout(3000);
-    engineConfig.setGridPersistencePath("/tmp/meta-test-" + new Random().nextInt(100000));
-  }
+        engineConfig.setSparkMaster("local");
+        engineConfig.setClasspathJars("/");
+        engineConfig.setGridListenAddress("localhost");
+        engineConfig.setGridContactHosts(new String[] { });
+        engineConfig.setGridMinInitialMembers(1);
+        engineConfig.setGridPort(5900);
+        engineConfig.setGridJoinTimeout(3000);
+        engineConfig.setGridPersistencePath("/tmp/meta-test-" + new Random().nextInt(100000));
+    }
 
-  @Test(enabled = false)
-  public void testGrid() {
-    Engine engine = new Engine(engineConfig);
-    Grid grid = engine.getGrid();
-    Map<Object, Object> store = grid.map("test");
-    store.put("k1", "v1");
-    Assert.assertEquals("v1", store.get("k1"));
-    store.remove("k1");
-    Assert.assertNull(store.get("k1"));
-    engine.shutdown();
-  }
+    @Test(enabled = false)
+    public void testGrid() {
+        Engine engine = new Engine(engineConfig);
+        Grid grid = engine.getGrid();
+        Map<Object, Object> store = grid.map("test");
+        store.put("k1", "v1");
+        Assert.assertEquals("v1", store.get("k1"));
+        store.remove("k1");
+        Assert.assertNull(store.get("k1"));
+        engine.shutdown();
+    }
 
 }

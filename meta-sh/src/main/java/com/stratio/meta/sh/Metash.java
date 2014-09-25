@@ -18,6 +18,20 @@
 
 package com.stratio.meta.sh;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
+
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
+
 import com.stratio.meta.common.exceptions.ConnectionException;
 import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.result.IResultHandler;
@@ -36,469 +50,455 @@ import com.stratio.meta2.common.api.Manifest;
 
 import jline.console.ConsoleReader;
 
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
-
 /**
  * Interactive META console.
  */
 public class Metash {
 
-  /**
-   * Class logger.
-   */
-  private static final Logger LOG = Logger.getLogger(Metash.class);
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(Metash.class);
 
-  /**
-   * Default user to connect to the meta server.
-   */
-  //private static final String DEFAULT_USER = "META_USER";
+    /**
+     * Default user to connect to the meta server.
+     */
+    //private static final String DEFAULT_USER = "META_USER";
 
-  /**
-   * Help content to be shown when the internal command {@code help} is used.
-   */
-  private final HelpContent help;
+    /**
+     * Help content to be shown when the internal command {@code help} is used.
+     */
+    private final HelpContent help;
+    /**
+     * Asynchronous result handler.
+     */
+    private final IResultHandler resultHandler;
+    /**
+     * Console reader.
+     */
+    private ConsoleReader console = null;
 
-  /**
-   * Console reader.
-   */
-  private ConsoleReader console = null;
+    /**
+     * Current active user in the system.
+     */
+    //private String currentUser = null;
 
-  /**
-   * History file.
-   */
-  private File historyFile = null;
+    /**
+     * Current catalog from the point of view of the user session.
+     */
+    //private String currentCatalog = "";
+    /**
+     * History file.
+     */
+    private File historyFile = null;
+    /**
+     * Driver that connects to the META servers.
+     */
+    private BasicDriver metaDriver = null;
 
-  /**
-   * Current active user in the system.
-   */
-  //private String currentUser = null;
+    /**
+     * History date format.
+     */
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
 
-  /**
-   * Current catalog from the point of view of the user session.
-   */
-  //private String currentCatalog = "";
+    /**
+     * Whether the asynchronous interface should be used.
+     */
+    private boolean useAsync = false;
 
-  /**
-   * Asynchronous result handler.
-   */
-  private final IResultHandler resultHandler;
-
-  /**
-   * Driver that connects to the META servers.
-   */
-  private BasicDriver metaDriver = null;
-
-  /**
-   * History date format.
-   */
-  private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
-
-  /**
-   * Whether the asynchronous interface should be used.
-   */
-  private boolean useAsync = false;
-
-  /**
-   * Class constructor.
-   */
-  public Metash(boolean useAsync) {
-    HelpManager hm = new HelpManager();
-    help = hm.loadHelpContent();
-    this.useAsync = useAsync;
-    initialize();
-    resultHandler = new ShellResultHandler(this);
-  }
-
-  /**
-   * Initialize the console settings.
-   */
-  private void initialize() {
-    metaDriver = new BasicDriver();
-    // Take the username from the system.
-    metaDriver.setUserName(System.getProperty("user.name"));
-    LOG.debug("Connecting with user: " + metaDriver.getUserName());
-
-    try {
-      console = new ConsoleReader();
-      setPrompt(null);
-      historyFile = ConsoleUtils.retrieveHistory(console, dateFormat);
-
-      console.setCompletionHandler(new MetaCompletionHandler());
-      console.addCompleter(new MetaCompletor());
-    } catch (IOException e) {
-      LOG.error("Cannot create a console.", e);
-    }
-  }
-
-  /**
-   * Print a message on the console.
-   * 
-   * @param msg The message.
-   */
-  public void println(String msg) {
-    try {
-      console.getOutput().write(msg + System.lineSeparator());
-    } catch (IOException e) {
-      LOG.error("Cannot print to console.", e);
-    }
-  }
-
-  /**
-   * Flush the console output and show the current prompt.
-   */
-  protected void flush(){
-    try {
-      console.getOutput().write(console.getPrompt());
-      console.flush();
-    } catch (IOException e) {
-      LOG.error("Cannot flush console.", e);
+    /**
+     * Class constructor.
+     */
+    public Metash(boolean useAsync) {
+        HelpManager hm = new HelpManager();
+        help = hm.loadHelpContent();
+        this.useAsync = useAsync;
+        initialize();
+        resultHandler = new ShellResultHandler(this);
     }
 
-  }
+    /**
+     * Launch the META server shell.
+     *
+     * @param args The list of arguments. Not supported at the moment.
+     */
+    public static void main(String[] args) {
+        boolean async = true;
+        String initScript = null;
 
-  /**
-   * Set the console prompt.
-   *
-   * @param currentKeyspace The currentCatalog.
-   */
-  private void setPrompt(String currentKeyspace) {
-    StringBuilder sb = new StringBuilder("metash-sh:");
-    if (currentKeyspace == null) {
-      sb.append(metaDriver.getUserName());
-    } else {
-      sb.append(metaDriver.getUserName());
-      sb.append(":");
-      sb.append(currentKeyspace);
-    }
-    sb.append("> ");
-    console.setPrompt(sb.toString());
-  }
-
-  /**
-   * Parse a input text and return the equivalent HelpStatement.
-   * 
-   * @param inputText The input text.
-   * @return A Statement or null if the process failed.
-   */
-  private HelpStatement parseHelp(String inputText) {
-    HelpStatement result = null;
-    ANTLRStringStream input = new ANTLRStringStream(inputText);
-    MetaHelpLexer lexer = new MetaHelpLexer(input);
-    CommonTokenStream tokens = new CommonTokenStream(lexer);
-    MetaHelpParser parser = new MetaHelpParser(tokens);
-    try {
-      result = parser.query();
-    } catch (RecognitionException e) {
-      LOG.error("Cannot parse statement", e);
-    }
-    return result;
-  }
-
-  /**
-   * Show the help associated with a query.
-   * 
-   * @param inputText The help query.
-   */
-  private void showHelp(String inputText) {
-    HelpStatement h = parseHelp(inputText);
-    println(help.searchHelp(h.getType()));
-  }
-
-  /**
-   * Execute a query on the remote META servers.
-   * 
-   * @param cmd The query.
-   */
-  private void executeQuery(String cmd){
-    if(this.useAsync){
-      executeAsyncQuery(cmd);
-    }else{
-      executeSyncQuery(cmd);
-    }
-  }
-
-  /**
-   * Execute a query using synchronous execution.
-   * @param cmd The query.
-   */
-  private void executeSyncQuery(String cmd) {
-    LOG.debug("Command: " + cmd);
-    long queryStart = System.currentTimeMillis();
-    long queryEnd = queryStart;
-    Result metaResult;
-    try {
-      metaResult = metaDriver.executeQuery(cmd);
-      queryEnd = System.currentTimeMillis();
-      updatePrompt(metaResult);
-      println("Result: " + ConsoleUtils.stringResult(metaResult));
-      println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
-    } catch (Exception e) {
-      println("Error: " + e.getMessage());
-    }
-  }
-
-  /**
-   * Remove the {@link com.stratio.meta.common.result.IResultHandler} associated with a query.
-   * @param queryId The query identifier.
-   */
-  protected void removeResultsHandler(String queryId){
-    metaDriver.removeResultHandler(queryId);
-  }
-
-  /**
-   * Execute a query asynchronously.
-   * @param cmd The query.
-   */
-  private void executeAsyncQuery(String cmd){
-    String queryId;
-    try {
-      queryId = metaDriver.asyncExecuteQuery(cmd, resultHandler);
-      LOG.debug("Async command: " + cmd + " id: " + queryId);
-      println("QID: " + queryId);
-      println("");
-    } catch (ConnectionException e) {
-      LOG.error(e.getMessage(), e);
-      println("ERROR: " + e.getMessage());
-    }
-
-  }
-
-  /**
-   * Update the current prompt if a {@link com.stratio.meta.common.result.QueryResult} is returned,
-   * and the current catalog has changed.
-   * 
-   * @param result The result returned by the driver.
-   */
-  protected void updatePrompt(Result result) {
-    if (QueryResult.class.isInstance(result)) {
-      QueryResult qr = QueryResult.class.cast(result);
-      if (qr.isCatalogChanged()) {
-        String currentCatalog = qr.getCurrentCatalog();
-        if (!currentCatalog.isEmpty()) {
-          metaDriver.setCurrentCatalog(currentCatalog);
-          setPrompt(currentCatalog);
+        int index = 0;
+        while (index < args.length) {
+            if ("--sync".equals(args[index])) {
+                async = false;
+                LOG.info("Using synchronous behaviour");
+            } else if ("--script".equals(args[index])) {
+                if (index + 1 < args.length) {
+                    LOG.info("Load script: " + args[index + 1]);
+                    initScript = args[index + 1];
+                    index++;
+                } else {
+                    LOG.error("Invalid --script syntax, file path missing");
+                }
+            }
+            index++;
         }
-      }
-    }
-  }
 
-  /**
-   * Establish the connection with the META servers.
-   * 
-   * @return Whether the connection has been successfully established.
-   */
-  public boolean connect() {
-    boolean result = true;
-    try {
-      Result connectionResult = metaDriver.connect(metaDriver.getUserName());
-      LOG.info("Driver connections established");
-      LOG.info(ConsoleUtils.stringResult(connectionResult));
-    } catch (ConnectionException ce) {
-      result = false;
-      LOG.error(ce.getMessage());
-    }
-    return result;
-  }
-
-
-  /**
-   * Close the underlying driver and save the user history.
-   */
-  public void closeConsole() {
-    try {
-      ConsoleUtils.saveHistory(console, historyFile, dateFormat);
-      LOG.debug("History saved");
-
-      metaDriver.close();
-      LOG.info("Driver connections closed");
-
-    } catch (IOException ex) {
-      LOG.error("Cannot save user history", ex);
-    }
-  }
-
-  /**
-   * Shell loop that receives user commands until a {@code exit} or {@code quit} command is
-   * introduced.
-   */
-  public void loop() {
-    try {
-      String cmd = "";
-      StringBuilder sb = new StringBuilder(cmd);
-      String toExecute;
-      while (!cmd.trim().toLowerCase().startsWith("exit")
-             && !cmd.trim().toLowerCase().startsWith("quit")) {
-        cmd = console.readLine();
-        sb.append(cmd).append(" ");
-        toExecute = sb.toString().trim();
-        if (toExecute.endsWith(";")) {
-          if (" ".equalsIgnoreCase(sb.toString())
-              || System.lineSeparator().equalsIgnoreCase(sb.toString())) {
-            println("");
-          } else if (toExecute.toLowerCase().startsWith("help")) {
-            showHelp(sb.toString());
-          } else if (toExecute.toLowerCase().startsWith("add connector") || toExecute.toLowerCase().startsWith("add datastore")){
-            sendManifest(toExecute);
-            println("");
-          } else if(toExecute.toLowerCase().startsWith("use ")){
-            updateCatalog(toExecute);
-            println("");
-          } else {
-            executeQuery(toExecute);
-            println("");
-          }
-          sb = new StringBuilder();
-        } else if (toExecute.toLowerCase().startsWith("help")) {
-          showHelp(sb.toString());
-          sb = new StringBuilder();
-        } else if (toExecute.toLowerCase().startsWith("script")) {
-          String [] params = toExecute.split(" ");
-          if(params.length == 2){
-            executeScript(params[1]);
-          }else {
-            showHelp(sb.toString());
-          }
-          sb = new StringBuilder();
+        Metash sh = new Metash(async);
+        if (sh.connect()) {
+            if (initScript != null) {
+                sh.executeScript(initScript);
+            }
+            sh.loop();
         }
-      }
-    } catch (IOException ex) {
-      LOG.error("Cannot read from console.", ex);
-    } catch (Exception e) {
-      LOG.error("Cannot read from console.", e);
-    }
-  }
-
-  private String updateCatalog(String toExecute) {
-    String newCatalog = toExecute.replace("use ", "").replace(";", "");
-    metaDriver.setCurrentCatalog(newCatalog);
-    String currentCatalog = metaDriver.getCurrentCatalog();
-    setPrompt(currentCatalog);
-    return currentCatalog;
-  }
-
-  public String sendManifest(String sentence) {
-    LOG.debug("Command: " + sentence);
-    // Get manifest type
-    sentence = sentence.substring(4);
-    int type_manifest = Manifest.TYPE_DATASTORE;
-    if(sentence.toLowerCase().startsWith("connector")) {
-      type_manifest = Manifest.TYPE_CONNECTOR;
+        sh.closeConsole();
     }
 
-    // Get path to the XML file
-    sentence = sentence.substring(11, sentence.length() - 1);
+    /**
+     * Initialize the console settings.
+     */
+    private void initialize() {
+        metaDriver = new BasicDriver();
+        // Take the username from the system.
+        metaDriver.setUserName(System.getProperty("user.name"));
+        LOG.debug("Connecting with user: " + metaDriver.getUserName());
 
-    // Create Manifest object from XML file
-    Manifest manifest = null;
-    try {
-      manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest, sentence);
-    } catch (ManifestException e) {
-      LOG.error("Manifest couldn't be parsed", e);
-      return null;
-    }
-
-    long queryStart = System.currentTimeMillis();
-    long queryEnd = queryStart;
-    Result metaResult;
-
-    try {
-      metaResult = metaDriver.addManifest(manifest);
-    } catch (ManifestException e) {
-      LOG.error("Manifest couldn't be parsed", e);
-      return null;
-    }
-    queryEnd = System.currentTimeMillis();
-    updatePrompt(metaResult);
-    println("Result: " + ConsoleUtils.stringResult(metaResult));
-    println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
-
-    return manifest.toString();
-  }
-
-  /**
-   * Execute the sentences found in a script. The file may contain empty lines and comment lines
-   * using the prefix #.
-   * @param scriptPath The script path.
-   */
-  public void executeScript(String scriptPath){
-    BufferedReader input = null;
-    String query;
-    int numberOps = 0;
-    try {
-      input =
-          new BufferedReader(new InputStreamReader(new FileInputStream(new File(scriptPath)), "UTF-8"));
-
-      while((query = input.readLine()) != null){
-        query = query.trim();
-        if(query.length() > 0 && !query.startsWith("#")){
-          executeQuery(query);
-          numberOps++;
-        }
-      }
-    } catch (UnsupportedEncodingException e) {
-      LOG.error("Invalid encoding on script: " + scriptPath, e);
-    } catch (FileNotFoundException e) {
-      LOG.error("Invalid path: " + scriptPath, e);
-    } catch (IOException e) {
-      LOG.error("Cannot read script: " + scriptPath, e);
-    } finally {
-      if (input != null) {
         try {
-          input.close();
+            console = new ConsoleReader();
+            setPrompt(null);
+            historyFile = ConsoleUtils.retrieveHistory(console, dateFormat);
+
+            console.setCompletionHandler(new MetaCompletionHandler());
+            console.addCompleter(new MetaCompletor());
         } catch (IOException e) {
-          e.printStackTrace();
+            LOG.error("Cannot create a console.", e);
         }
-      }
     }
-    println("Script " + scriptPath + " executed (" + numberOps + " sentences)");
-  }
 
-  /**
-   * Launch the META server shell.
-   * 
-   * @param args The list of arguments. Not supported at the moment.
-   */
-  public static void main(String[] args) {
-    boolean async = true;
-    String initScript = null;
-
-    int index = 0;
-    while(index < args.length){
-      if("--sync".equals(args[index])){
-        async = false;
-        LOG.info("Using synchronous behaviour");
-      }else if("--script".equals(args[index])){
-        if(index + 1 < args.length) {
-          LOG.info("Load script: " + args[index+1]);
-          initScript = args[index+1];
-          index++;
-        }else{
-          LOG.error("Invalid --script syntax, file path missing");
+    /**
+     * Print a message on the console.
+     *
+     * @param msg The message.
+     */
+    public void println(String msg) {
+        try {
+            console.getOutput().write(msg + System.lineSeparator());
+        } catch (IOException e) {
+            LOG.error("Cannot print to console.", e);
         }
-      }
-      index++;
     }
 
-    Metash sh = new Metash(async);
-    if (sh.connect()) {
-      if(initScript != null){
-        sh.executeScript(initScript);
-      }
-      sh.loop();
+    /**
+     * Flush the console output and show the current prompt.
+     */
+    protected void flush() {
+        try {
+            console.getOutput().write(console.getPrompt());
+            console.flush();
+        } catch (IOException e) {
+            LOG.error("Cannot flush console.", e);
+        }
+
     }
-    sh.closeConsole();
-  }
+
+    /**
+     * Set the console prompt.
+     *
+     * @param currentKeyspace The currentCatalog.
+     */
+    private void setPrompt(String currentKeyspace) {
+        StringBuilder sb = new StringBuilder("metash-sh:");
+        if (currentKeyspace == null) {
+            sb.append(metaDriver.getUserName());
+        } else {
+            sb.append(metaDriver.getUserName());
+            sb.append(":");
+            sb.append(currentKeyspace);
+        }
+        sb.append("> ");
+        console.setPrompt(sb.toString());
+    }
+
+    /**
+     * Parse a input text and return the equivalent HelpStatement.
+     *
+     * @param inputText The input text.
+     * @return A Statement or null if the process failed.
+     */
+    private HelpStatement parseHelp(String inputText) {
+        HelpStatement result = null;
+        ANTLRStringStream input = new ANTLRStringStream(inputText);
+        MetaHelpLexer lexer = new MetaHelpLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        MetaHelpParser parser = new MetaHelpParser(tokens);
+        try {
+            result = parser.query();
+        } catch (RecognitionException e) {
+            LOG.error("Cannot parse statement", e);
+        }
+        return result;
+    }
+
+    /**
+     * Show the help associated with a query.
+     *
+     * @param inputText The help query.
+     */
+    private void showHelp(String inputText) {
+        HelpStatement h = parseHelp(inputText);
+        println(help.searchHelp(h.getType()));
+    }
+
+    /**
+     * Execute a query on the remote META servers.
+     *
+     * @param cmd The query.
+     */
+    private void executeQuery(String cmd) {
+        if (this.useAsync) {
+            executeAsyncQuery(cmd);
+        } else {
+            executeSyncQuery(cmd);
+        }
+    }
+
+    /**
+     * Execute a query using synchronous execution.
+     *
+     * @param cmd The query.
+     */
+    private void executeSyncQuery(String cmd) {
+        LOG.debug("Command: " + cmd);
+        long queryStart = System.currentTimeMillis();
+        long queryEnd = queryStart;
+        Result metaResult;
+        try {
+            metaResult = metaDriver.executeQuery(cmd);
+            queryEnd = System.currentTimeMillis();
+            updatePrompt(metaResult);
+            println("Result: " + ConsoleUtils.stringResult(metaResult));
+            println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
+        } catch (Exception e) {
+            println("Error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Remove the {@link com.stratio.meta.common.result.IResultHandler} associated with a query.
+     *
+     * @param queryId The query identifier.
+     */
+    protected void removeResultsHandler(String queryId) {
+        metaDriver.removeResultHandler(queryId);
+    }
+
+    /**
+     * Execute a query asynchronously.
+     *
+     * @param cmd The query.
+     */
+    private void executeAsyncQuery(String cmd) {
+        String queryId;
+        try {
+            queryId = metaDriver.asyncExecuteQuery(cmd, resultHandler);
+            LOG.debug("Async command: " + cmd + " id: " + queryId);
+            println("QID: " + queryId);
+            println("");
+        } catch (ConnectionException e) {
+            LOG.error(e.getMessage(), e);
+            println("ERROR: " + e.getMessage());
+        }
+
+    }
+
+    /**
+     * Update the current prompt if a {@link com.stratio.meta.common.result.QueryResult} is returned,
+     * and the current catalog has changed.
+     *
+     * @param result The result returned by the driver.
+     */
+    protected void updatePrompt(Result result) {
+        if (QueryResult.class.isInstance(result)) {
+            QueryResult qr = QueryResult.class.cast(result);
+            if (qr.isCatalogChanged()) {
+                String currentCatalog = qr.getCurrentCatalog();
+                if (!currentCatalog.isEmpty()) {
+                    metaDriver.setCurrentCatalog(currentCatalog);
+                    setPrompt(currentCatalog);
+                }
+            }
+        }
+    }
+
+    /**
+     * Establish the connection with the META servers.
+     *
+     * @return Whether the connection has been successfully established.
+     */
+    public boolean connect() {
+        boolean result = true;
+        try {
+            Result connectionResult = metaDriver.connect(metaDriver.getUserName());
+            LOG.info("Driver connections established");
+            LOG.info(ConsoleUtils.stringResult(connectionResult));
+        } catch (ConnectionException ce) {
+            result = false;
+            LOG.error(ce.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * Close the underlying driver and save the user history.
+     */
+    public void closeConsole() {
+        try {
+            ConsoleUtils.saveHistory(console, historyFile, dateFormat);
+            LOG.debug("History saved");
+
+            metaDriver.close();
+            LOG.info("Driver connections closed");
+
+        } catch (IOException ex) {
+            LOG.error("Cannot save user history", ex);
+        }
+    }
+
+    /**
+     * Shell loop that receives user commands until a {@code exit} or {@code quit} command is
+     * introduced.
+     */
+    public void loop() {
+        try {
+            String cmd = "";
+            StringBuilder sb = new StringBuilder(cmd);
+            String toExecute;
+            while (!cmd.trim().toLowerCase().startsWith("exit")
+                    && !cmd.trim().toLowerCase().startsWith("quit")) {
+                cmd = console.readLine();
+                sb.append(cmd).append(" ");
+                toExecute = sb.toString().trim();
+                if (toExecute.endsWith(";")) {
+                    if (" ".equalsIgnoreCase(sb.toString())
+                            || System.lineSeparator().equalsIgnoreCase(sb.toString())) {
+                        println("");
+                    } else if (toExecute.toLowerCase().startsWith("help")) {
+                        showHelp(sb.toString());
+                    } else if (toExecute.toLowerCase().startsWith("add connector") || toExecute.toLowerCase()
+                            .startsWith("add datastore")) {
+                        sendManifest(toExecute);
+                        println("");
+                    } else if (toExecute.toLowerCase().startsWith("use ")) {
+                        updateCatalog(toExecute);
+                        println("");
+                    } else {
+                        executeQuery(toExecute);
+                        println("");
+                    }
+                    sb = new StringBuilder();
+                } else if (toExecute.toLowerCase().startsWith("help")) {
+                    showHelp(sb.toString());
+                    sb = new StringBuilder();
+                } else if (toExecute.toLowerCase().startsWith("script")) {
+                    String[] params = toExecute.split(" ");
+                    if (params.length == 2) {
+                        executeScript(params[1]);
+                    } else {
+                        showHelp(sb.toString());
+                    }
+                    sb = new StringBuilder();
+                }
+            }
+        } catch (IOException ex) {
+            LOG.error("Cannot read from console.", ex);
+        } catch (Exception e) {
+            LOG.error("Cannot read from console.", e);
+        }
+    }
+
+    private String updateCatalog(String toExecute) {
+        String newCatalog = toExecute.replace("use ", "").replace(";", "");
+        metaDriver.setCurrentCatalog(newCatalog);
+        String currentCatalog = metaDriver.getCurrentCatalog();
+        setPrompt(currentCatalog);
+        return currentCatalog;
+    }
+
+    public String sendManifest(String sentence) {
+        LOG.debug("Command: " + sentence);
+        // Get manifest type
+        sentence = sentence.substring(4);
+        int type_manifest = Manifest.TYPE_DATASTORE;
+        if (sentence.toLowerCase().startsWith("connector")) {
+            type_manifest = Manifest.TYPE_CONNECTOR;
+        }
+
+        // Get path to the XML file
+        sentence = sentence.substring(11, sentence.length() - 1);
+
+        // Create Manifest object from XML file
+        Manifest manifest = null;
+        try {
+            manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest, sentence);
+        } catch (ManifestException e) {
+            LOG.error("Manifest couldn't be parsed", e);
+            return null;
+        }
+
+        long queryStart = System.currentTimeMillis();
+        long queryEnd = queryStart;
+        Result metaResult;
+
+        try {
+            metaResult = metaDriver.addManifest(manifest);
+        } catch (ManifestException e) {
+            LOG.error("Manifest couldn't be parsed", e);
+            return null;
+        }
+        queryEnd = System.currentTimeMillis();
+        updatePrompt(metaResult);
+        println("Result: " + ConsoleUtils.stringResult(metaResult));
+        println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
+
+        return manifest.toString();
+    }
+
+    /**
+     * Execute the sentences found in a script. The file may contain empty lines and comment lines
+     * using the prefix #.
+     *
+     * @param scriptPath The script path.
+     */
+    public void executeScript(String scriptPath) {
+        BufferedReader input = null;
+        String query;
+        int numberOps = 0;
+        try {
+            input =
+                    new BufferedReader(new InputStreamReader(new FileInputStream(new File(scriptPath)), "UTF-8"));
+
+            while ((query = input.readLine()) != null) {
+                query = query.trim();
+                if (query.length() > 0 && !query.startsWith("#")) {
+                    executeQuery(query);
+                    numberOps++;
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            LOG.error("Invalid encoding on script: " + scriptPath, e);
+        } catch (FileNotFoundException e) {
+            LOG.error("Invalid path: " + scriptPath, e);
+        } catch (IOException e) {
+            LOG.error("Cannot read script: " + scriptPath, e);
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        println("Script " + scriptPath + " executed (" + numberOps + " sentences)");
+    }
 
 }
