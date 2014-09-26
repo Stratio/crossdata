@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
 import javax.transaction.HeuristicMixedException;
@@ -329,17 +330,24 @@ public enum MetadataManager {
 
         Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
 
-        List<ConnectorMetadata> connectors = null;
+        List<ConnectorMetadata> connectors;
         for(TableName table: tables) {
 
+            ClusterName clusterName = getTable(table).getClusterRef();
 
+            Set<ConnectorName> connectorNames = getCluster(clusterName)
+                    .getConnectorAttachedRefs().keySet();
 
             connectors = new ArrayList<>();
-            //connectors.addAll(getCluster(getTable(table).getClusterRef()).getConnectorAttachedRefs());
-            //result.put(table, );
+            for(ConnectorName connectorName: connectorNames){
+                ConnectorMetadata connectorMetadata = getConnector(connectorName);
+                if(connectorMetadata.getStatus() == connectorStatus){
+                    connectors.add(connectorMetadata);
+                }
+            }
+
+            result.put(table, connectors);
         }
-
-
         return result;
     }
 
