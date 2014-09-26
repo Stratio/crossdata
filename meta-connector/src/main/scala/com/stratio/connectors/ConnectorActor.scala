@@ -7,6 +7,7 @@ import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta.common.result.{CommandResult, QueryResult, MetadataResult}
 import com.stratio.meta.communication._
+import com.stratio.meta.common.result.Result
 
 object State extends Enumeration {
   type state = Value
@@ -65,43 +66,97 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       this.shutdown()
     }
 
-    case wf: LogicalWorkflow=> {
+    case wf: LogicalWorkflow => {
       try {
         connector.getQueryEngine().execute(wf)
-        val result = QueryResult.createSuccessQueryResult()
-        result.setQueryId("TODO: extract a real query ID from the logicalworkflow") //TODO
+        val result = QueryResult.createSuccessQueryResult() //TODO: ADD RESULTSET
+        result.setQueryId("TODO: extract a real query ID (it doesn't come in the logicalworkflow)") //TODO
         sender ! result
-      }catch{
-        case ex:Exception=>
-        case err:Error=>
+      } catch {
+        case ex: Exception => {
+          val result=Result.createExecutionErrorResult(ex.getStackTraceString)
+          sender ! result
+        }
+        case err: Error =>
+          log.error("error in ConnectorActor( receiving LogicalWorkflow )")
       }
     }
 
-    case metadataOp: MetadataOperation=> {
-      val eng=connector.getMetadataEngine()
-      metadataOp match{
-        case CreateCatalog(queryId, clustername,metadata)=>{ eng.createCatalog(clustername,metadata) }
-        case CreateIndex(queryId, clustername,metadata) =>{ eng.createIndex(clustername,metadata) }
-        case CreateTable(queryId, clustername,metadata) =>{ eng.createTable(clustername,metadata) }
-        case DropCatalog(queryId, clustername,metadata) =>{ eng.dropCatalog(clustername,metadata) }
-        case DropIndex(queryId, clustername,metadata) =>{ eng.dropIndex(clustername,metadata) }
-        case DropTable(queryId, clustername,metadata) =>{ eng.dropTable(clustername,metadata) }
+    case metadataOp: MetadataOperation => {
+      try {
+        val eng = connector.getMetadataEngine()
+        var qId:String=null
+        metadataOp match {
+          case CreateCatalog(queryId, clustername, metadata) => {
+            qId=queryId
+            eng.createCatalog(clustername, metadata)
+          }
+          case CreateIndex(queryId, clustername, metadata) => {
+            qId=queryId
+            eng.createIndex(clustername, metadata)
+          }
+          case CreateTable(queryId, clustername, metadata) => {
+            qId=queryId
+            eng.createTable(clustername, metadata)
+          }
+          case DropCatalog(queryId, clustername, metadata) => {
+            qId=queryId
+            eng.dropCatalog(clustername, metadata)
+          }
+          case DropIndex(queryId, clustername, metadata) => {
+            qId=queryId
+            eng.dropIndex(clustername, metadata)
+          }
+          case DropTable(queryId, clustername, metadata) => {
+            qId=queryId
+            eng.dropTable(clustername, metadata)
+          }
+        }
+        val result = MetadataResult.createSuccessMetadataResult()
+        result.setQueryId(qId)
+        sender ! result
+      } catch {
+        case ex: Exception => {
+          val result=com.stratio.meta.common.result.Result.createExecutionErrorResult(ex.getStackTraceString)
+          sender ! result
+        }
+        case err: Error =>
+          log.error("error in ConnectorActor( receiving MetaOperation)")
       }
-      val result=MetadataResult.createSuccessMetadataResult()
-      result.setQueryId("TODO: extract a real query ID from the metadataop") //TODO
-      sender ! result
     }
 
-    case storageOp: StorageOperation=> {
-      val eng=connector.getStorageEngine()
-      storageOp match{
-        case Insert(queryId, clustername,table,row)=>{ eng.insert(clustername,table,row) }
-        case InsertBatch(queryId, clustername,table,rows)=>{ eng.insert(clustername,table,rows) }
+    case _:Result =>
+      //TODO:  ManagementWorkflow
+
+    case storageOp: StorageOperation => {
+      try {
+        val eng = connector.getStorageEngine()
+        var qId:String=null
+        storageOp match {
+          case Insert(queryId, clustername, table, row) => {
+            qId=queryId
+            eng.insert(clustername, table, row)
+          }
+          case InsertBatch(queryId, clustername, table, rows) => {
+            qId=queryId
+            eng.insert(clustername, table, rows)
+          }
+        }
+        val result = CommandResult.createCommandResult("ok")
+        result.setQueryId(qId)
+        sender ! result
+      } catch {
+        case ex: Exception => {
+          val result=com.stratio.meta.common.result.Result.createExecutionErrorResult(ex.getStackTraceString)
+          sender ! result
+        }
+        case err: Error =>
+          log.error("error in ConnectorActor( receiving StorageOperation)")
       }
-      val result=CommandResult.createCommandResult("ok")
-      result.setQueryId("TODO: extract a real query ID from the metadataop") //TODO
-      sender ! result
     }
+
+
+
 
     case msg: getConnectorName => {
       sender ! replyConnectorName(connectorName)
@@ -110,8 +165,8 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     case MemberUp(member) =>
       println("member up")
       log.info("*******Member is Up: {} {}!!!!!", member.toString, member.getRoles)
-      //val actorRefe=context.actorSelection(RootActorPath(member.address) / "user" / "connectoractor" )
-      //actorRefe ! "hola "+member.address+ "  "+RootActorPath(member.address)
+    //val actorRefe=context.actorSelection(RootActorPath(member.address) / "user" / "connectoractor" )
+    //actorRefe ! "hola "+member.address+ "  "+RootActorPath(member.address)
 
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))
