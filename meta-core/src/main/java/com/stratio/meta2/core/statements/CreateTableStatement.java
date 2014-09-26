@@ -135,10 +135,6 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         this.properties = StringUtils.convertJsonToOptions(properties);
     }
 
-    public void setIfNotExists(boolean ifNotExists) {
-        this.ifNotExists = ifNotExists;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("CREATE TABLE ");
@@ -188,5 +184,9 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
 
     public boolean isIfNotExists() {
         return ifNotExists;
+    }
+
+    public void setIfNotExists(boolean ifNotExists) {
+        this.ifNotExists = ifNotExists;
     }
 }

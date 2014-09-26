@@ -110,11 +110,12 @@ public class CreateIndexStatement extends MetadataStatement {
     }
 
     /**
-     * Set the name of the index.
+     * Set the name of the index from a column name as both have the same attributes.
      *
-     * @param name The name.
+     * @param columnName The column name.
      */
-    public void setName(IndexName name) {
+    public void setName(ColumnName columnName) {
+        this.name = new IndexName(columnName.getTableName(), columnName.getName());
         this.name = name;
         /*
         if (name.contains(".")) {
@@ -128,14 +129,12 @@ public class CreateIndexStatement extends MetadataStatement {
         */
     }
 
-
     /**
-     * Set the name of the index from a column name as both have the same attributes.
+     * Set the name of the index.
      *
-     * @param columnName The column name.
+     * @param name The name.
      */
-    public void setName(ColumnName columnName) {
-        this.name = new IndexName(columnName.getTableName(), columnName.getName());
+    public void setName(IndexName name) {
         this.name = name;
         /*
         if (name.contains(".")) {

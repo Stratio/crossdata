@@ -63,7 +63,7 @@ public class DropCatalogStatement extends MetadataStatement {
         return ifExists;
     }
 
-    public CatalogName getCatalogName(){
+    public CatalogName getCatalogName() {
         return catalog;
     }
 }

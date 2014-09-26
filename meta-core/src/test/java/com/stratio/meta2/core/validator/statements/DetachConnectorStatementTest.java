@@ -15,7 +15,7 @@ import com.stratio.meta2.core.statements.DetachConnectorStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
 
-public class DetachConnectorStatementTest extends BasicValidatorTest{
+public class DetachConnectorStatementTest extends BasicValidatorTest {
 
     @Test
     public void detachConnector() {

@@ -203,7 +203,7 @@ public class InsertIntoStatement extends StorageStatement {
         return ifNotExists;
     }
 
-    public CatalogName getCatalogName(){
+    public CatalogName getCatalogName() {
         return tableName.getCatalogName();
     }
 }

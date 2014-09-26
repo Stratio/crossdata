@@ -153,7 +153,7 @@ public class Validator {
 
         if (stmt instanceof AttachConnectorStatement) {
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) stmt;
-            name = new ConnectorName(((AttachConnectorStatement) stmt).getConnectorName());
+            name = attachConnectorStatement.getConnectorName();
         }
 
         if (stmt instanceof DetachConnectorStatement) {
@@ -175,19 +175,18 @@ public class Validator {
         boolean hasIfExist = false;
         if (stmt instanceof AttachConnectorStatement) {
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) stmt;
-            name = new ConnectorName(((AttachConnectorStatement) stmt).getConnectorName());
+            name = attachConnectorStatement.getConnectorName();
         }
 
         if (stmt instanceof DetachConnectorStatement) {
             DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) stmt;
             name = ((DetachConnectorStatement) stmt).getConnectorName();
         }
-        
+
         if (stmt instanceof DropConnectorStatement) {
             DropConnectorStatement dropConnectorStatement = (DropConnectorStatement) stmt;
             name = new ConnectorName(dropConnectorStatement.getName());
         }
-        
 
         validateExist(name, hasIfExist);
     }
@@ -202,7 +201,7 @@ public class Validator {
         }
 
         if (stmt instanceof AttachClusterStatement) {
-            name = new ClusterName(((AttachClusterStatement) stmt).getClusterName());
+            name = (((AttachClusterStatement) stmt).getClusterName());
             hasIfExists = ((AttachClusterStatement) stmt).isIfNotExists();
         }
 
@@ -211,17 +210,17 @@ public class Validator {
         }
 
         if (stmt instanceof AttachConnectorStatement) {
-            name = new ClusterName(((AttachConnectorStatement) stmt).getClusterName());
+            name = (((AttachConnectorStatement) stmt).getClusterName());
         }
 
-        if (stmt instanceof CreateTableStatement){
-            CreateTableStatement createTableStatement=(CreateTableStatement)stmt;
-            name=createTableStatement.getClusterName();
-            hasIfExists=createTableStatement.isIfNotExists();
+        if (stmt instanceof CreateTableStatement) {
+            CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
+            name = createTableStatement.getClusterName();
+            hasIfExists = createTableStatement.isIfNotExists();
         }
-        if (stmt instanceof DetachConnectorStatement){
-            DetachConnectorStatement detachConnectorStatement=(DetachConnectorStatement)stmt;
-            name=detachConnectorStatement.getClusterName();
+        if (stmt instanceof DetachConnectorStatement) {
+            DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) stmt;
+            name = detachConnectorStatement.getClusterName();
         }
 
         validateExist(name, hasIfExists);
@@ -237,7 +236,7 @@ public class Validator {
         }
 
         if (stmt instanceof AttachClusterStatement) {
-            name = new ClusterName(((AttachClusterStatement) stmt).getClusterName());
+            name = (((AttachClusterStatement) stmt).getClusterName());
             hasIfExists = ((AttachClusterStatement) stmt).isIfNotExists();
         }
 
@@ -245,14 +244,14 @@ public class Validator {
             name = new ClusterName(((DetachClusterStatement) stmt).getClusterName());
         }
 
-        if (stmt instanceof CreateTableStatement){
-            CreateTableStatement createTableStatement=(CreateTableStatement)stmt;
-            name=createTableStatement.getClusterName();
-            hasIfExists=createTableStatement.isIfNotExists();
+        if (stmt instanceof CreateTableStatement) {
+            CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
+            name = createTableStatement.getClusterName();
+            hasIfExists = createTableStatement.isIfNotExists();
         }
-        if (stmt instanceof DetachConnectorStatement){
-            DetachConnectorStatement detachConnectorStatement=(DetachConnectorStatement)stmt;
-            name=detachConnectorStatement.getClusterName();
+        if (stmt instanceof DetachConnectorStatement) {
+            DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) stmt;
+            name = detachConnectorStatement.getClusterName();
         }
 
         validateNotExist(name, hasIfExists);
@@ -284,7 +283,7 @@ public class Validator {
         Name name = null;
         boolean hasIfExists = false;
         if (statement instanceof AttachClusterStatement) {
-            name = new DataStoreName(((AttachClusterStatement) statement).getDatastoreName());
+            name = (((AttachClusterStatement) statement).getDatastoreName());
             hasIfExists = ((AttachClusterStatement) statement).isIfNotExists();
         }
         if (statement instanceof DropDataStoreStatement) {
@@ -297,7 +296,7 @@ public class Validator {
         Name name = null;
         boolean hasIfExists = false;
         if (statement instanceof AttachClusterStatement) {
-            name = new DataStoreName(((AttachClusterStatement) statement).getDatastoreName());
+            name = (((AttachClusterStatement) statement).getDatastoreName());
             hasIfExists = ((AttachClusterStatement) statement).isIfNotExists();
         }
         validateNotExist(name, hasIfExists);
@@ -353,21 +352,21 @@ public class Validator {
             hasIfExists = ((DropTableStatement) stmt).isIfExists();
         }
 
-        if (stmt instanceof CreateTableStatement){
-            CreateTableStatement createTableStatement=(CreateTableStatement)stmt;
-            name=createTableStatement.getTableName();
-            hasIfExists=createTableStatement.isIfNotExists();
+        if (stmt instanceof CreateTableStatement) {
+            CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
+            name = createTableStatement.getTableName();
+            hasIfExists = createTableStatement.isIfNotExists();
         }
 
-        if (stmt instanceof DescribeStatement){
-            DescribeStatement describeStatement=(DescribeStatement)stmt;
-            name=describeStatement.getTableName();
+        if (stmt instanceof DescribeStatement) {
+            DescribeStatement describeStatement = (DescribeStatement) stmt;
+            name = describeStatement.getTableName();
         }
 
-        if (stmt instanceof InsertIntoStatement){
-            InsertIntoStatement insertIntoStatement=(InsertIntoStatement)stmt;
-            name=insertIntoStatement.getTableName();
-            hasIfExists=insertIntoStatement.isIfNotExists();
+        if (stmt instanceof InsertIntoStatement) {
+            InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
+            name = insertIntoStatement.getTableName();
+            hasIfExists = insertIntoStatement.isIfNotExists();
         }
 
         validateExist(name, hasIfExists);
@@ -387,23 +386,22 @@ public class Validator {
             hasIfExists = ((DropTableStatement) stmt).isIfExists();
         }
 
-        if (stmt instanceof CreateTableStatement){
-            CreateTableStatement createTableStatement=(CreateTableStatement)stmt;
-            name=createTableStatement.getTableName();
-            hasIfExists=createTableStatement.isIfNotExists();
+        if (stmt instanceof CreateTableStatement) {
+            CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
+            name = createTableStatement.getTableName();
+            hasIfExists = createTableStatement.isIfNotExists();
         }
 
-        if (stmt instanceof DetachClusterStatement){
-            DetachClusterStatement detachClusterStatement=(DetachClusterStatement)stmt;
-            name=new ClusterName(detachClusterStatement.getClusterName());
+        if (stmt instanceof DetachClusterStatement) {
+            DetachClusterStatement detachClusterStatement = (DetachClusterStatement) stmt;
+            name = new ClusterName(detachClusterStatement.getClusterName());
         }
 
-        if (stmt instanceof AttachClusterStatement){
-            AttachClusterStatement attachClusterStatement=(AttachClusterStatement)stmt;
-            name=new ClusterName(attachClusterStatement.getClusterName());
-            hasIfExists=attachClusterStatement.isIfNotExists();
+        if (stmt instanceof AttachClusterStatement) {
+            AttachClusterStatement attachClusterStatement = (AttachClusterStatement) stmt;
+            name = (attachClusterStatement.getClusterName());
+            hasIfExists = attachClusterStatement.isIfNotExists();
         }
-
 
         validateNotExist(name, hasIfExists);
     }
@@ -428,10 +426,10 @@ public class Validator {
             name = ((DropCatalogStatement) stmt).getCatalogName();
         }
 
-        if (stmt instanceof CreateTableStatement){
-            CreateTableStatement createTableStatement=(CreateTableStatement)stmt;
-            name=createTableStatement.getEffectiveCatalog();
-            hasIfExists=createTableStatement.isIfNotExists();
+        if (stmt instanceof CreateTableStatement) {
+            CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
+            name = createTableStatement.getEffectiveCatalog();
+            hasIfExists = createTableStatement.isIfNotExists();
         }
         validateNotExist(name, hasIfExists);
     }
@@ -441,43 +439,43 @@ public class Validator {
         boolean hasIfExists = false;
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
-            name=alterCatalogStatement.getCatalogName();
+            name = alterCatalogStatement.getCatalogName();
         }
 
         if (stmt instanceof CreateCatalogStatement) {
             CreateCatalogStatement createCatalogStatement = (CreateCatalogStatement) stmt;
-            name=createCatalogStatement.getCatalogName();
+            name = createCatalogStatement.getCatalogName();
             hasIfExists = createCatalogStatement.isIfNotExists();
 
         }
 
         if (stmt instanceof DropCatalogStatement) {
             DropCatalogStatement dropCatalogStatement = (DropCatalogStatement) stmt;
-            name=dropCatalogStatement.getCatalogName();
+            name = dropCatalogStatement.getCatalogName();
             hasIfExists = dropCatalogStatement.isIfExists();
         }
 
-        if (stmt instanceof DescribeStatement){
-            DescribeStatement describeStatement=(DescribeStatement)stmt;
-            name=describeStatement.getEffectiveCatalog();
+        if (stmt instanceof DescribeStatement) {
+            DescribeStatement describeStatement = (DescribeStatement) stmt;
+            name = describeStatement.getEffectiveCatalog();
         }
 
-        if (stmt instanceof CreateTableStatement){
-            CreateTableStatement createTableStatement=(CreateTableStatement)stmt;
-            name=createTableStatement.getEffectiveCatalog();
-            hasIfExists=createTableStatement.isIfNotExists();
+        if (stmt instanceof CreateTableStatement) {
+            CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
+            name = createTableStatement.getEffectiveCatalog();
+            hasIfExists = createTableStatement.isIfNotExists();
         }
 
-        if (stmt instanceof DropTableStatement){
-            DropTableStatement dropTableStatement=(DropTableStatement)stmt;
-            name=dropTableStatement.getCatalogName();
+        if (stmt instanceof DropTableStatement) {
+            DropTableStatement dropTableStatement = (DropTableStatement) stmt;
+            name = dropTableStatement.getCatalogName();
             hasIfExists = ((DropTableStatement) stmt).isIfExists();
         }
 
-        if (stmt instanceof InsertIntoStatement){
-            InsertIntoStatement insertIntoStatement=(InsertIntoStatement)stmt;
-            name=insertIntoStatement.getCatalogName();
-            hasIfExists=insertIntoStatement.isIfNotExists();
+        if (stmt instanceof InsertIntoStatement) {
+            InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
+            name = insertIntoStatement.getCatalogName();
+            hasIfExists = insertIntoStatement.isIfNotExists();
         }
         validateExist(name, hasIfExists);
     }
@@ -496,7 +494,7 @@ public class Validator {
         } else {
             if (stmt instanceof AttachConnectorStatement) {
                 AttachConnectorStatement myStmt = (AttachConnectorStatement) stmt;
-                if ((myStmt.getOptions()==null || myStmt.getOptions().isEmpty())) {
+                if ((myStmt.getOptions() == null || myStmt.getOptions().isEmpty())) {
                     throw new ValidationException("AttachConnectorStatement options can't be empty");
                 }
             }
@@ -515,8 +513,7 @@ public class Validator {
 
         if (stmt instanceof DropIndexStatement) {
             DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
-            //TODO uncomment this file when dropIndex return a IndexName
-            //name=new IndexName(((DropIndexStatement) stmt).getName();
+            name = dropIndexStatement.getName();
             hasIfExist = ((CreateIndexStatement) stmt).isCreateIfNotExists();
         }
         validateNotExist(name, hasIfExist);
@@ -533,8 +530,7 @@ public class Validator {
 
         if (stmt instanceof DropIndexStatement) {
             DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
-            //TODO uncomment this file when dropIndex return a IndexName
-            //name=new IndexName(((DropIndexStatement) stmt).getName();
+            name = dropIndexStatement.getName();
             hasIfExist = ((CreateIndexStatement) stmt).isCreateIfNotExists();
         }
         validateExist(name, hasIfExist);

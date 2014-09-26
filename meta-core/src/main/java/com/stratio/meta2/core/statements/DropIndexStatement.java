@@ -70,10 +70,6 @@ public class DropIndexStatement extends MetadataStatement {
         */
     }
 
-    public void setName(ColumnName name){
-        this.name = new IndexName(name.getTableName(), name.getName());
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("DROP INDEX ");
@@ -96,7 +92,11 @@ public class DropIndexStatement extends MetadataStatement {
         return dropIfExists;
     }
 
-    public String getName() {
+    public IndexName getName() {
         return name;
+    }
+
+    public void setName(ColumnName name) {
+        this.name = new IndexName(name.getTableName(), name.getName());
     }
 }

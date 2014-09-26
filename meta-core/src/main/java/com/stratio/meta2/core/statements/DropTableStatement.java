@@ -85,7 +85,7 @@ public class DropTableStatement extends MetadataStatement {
         return ifExists;
     }
 
-    public CatalogName getCatalogName(){
+    public CatalogName getCatalogName() {
         return tableName.getCatalogName();
     }
 }

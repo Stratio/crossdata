@@ -66,7 +66,7 @@ public class AlterCatalogStatement extends MetadataStatement {
         return options;
     }
 
-    public CatalogName getCatalogName(){
+    public CatalogName getCatalogName() {
         return catalog;
     }
 }

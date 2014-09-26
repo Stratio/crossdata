@@ -13,7 +13,7 @@ import com.stratio.meta2.core.statements.DetachClusterStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
 
-public class DetachClusterStatementTest extends BasicValidatorTest{
+public class DetachClusterStatementTest extends BasicValidatorTest {
 
     @Test
     public void detachCluster() {

@@ -5,7 +5,6 @@ import org.testng.annotations.Test;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
-
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
@@ -16,14 +15,15 @@ import com.stratio.meta2.core.statements.AttachConnectorStatement;
 import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
 
-public class AttachConnectorStatementTest extends BasicValidatorTest{
+public class AttachConnectorStatementTest extends BasicValidatorTest {
 
     @Test
     public void attachExistingConnector() {
         String query = "ATTACH Connector CassandraConnector TO cluster WITH OPTIONS {'comment':'a comment'}";
 
-        AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement("CassandraConnector",
-                "cluster", "{'comment':'a comment'}");
+        AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(
+                new ConnectorName("CassandraConnector"),
+                new ClusterName("cluster"), "{'comment':'a comment'}");
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("system"));
@@ -43,8 +43,8 @@ public class AttachConnectorStatementTest extends BasicValidatorTest{
     public void attachConnectorUnknown() {
         String query = "ATTACH Connector unknown TO cluster WITH OPTIONS {'comment':'a comment'}";
 
-        AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement("unknown", "cluster",
-                "{'comment':'a comment'}");
+        AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName("unknown")
+                , new ClusterName("cluster"), "{'comment':'a comment'}");
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
@@ -86,8 +86,8 @@ public class AttachConnectorStatementTest extends BasicValidatorTest{
     public void attachConnectorEmptyOptions() {
         String query = "ATTACH Connector CassandraConnector TO cluster WITH OPTIONS";
 
-        AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement("CassandraConnector",
-                "cluster", "");
+        AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new
+                ConnectorName("CassandraConnector"), new ClusterName("cluster"), "");
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
