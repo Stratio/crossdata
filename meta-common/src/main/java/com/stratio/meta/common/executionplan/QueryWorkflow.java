@@ -21,6 +21,7 @@ package com.stratio.meta.common.executionplan;
 import java.io.Serializable;
 
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
+import com.stratio.meta.communication.StorageOperation;
 
 /**
  * Execution step for query operations.
