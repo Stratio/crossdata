@@ -23,6 +23,6 @@ import com.stratio.meta2.common.data.ColumnName;
 
 public class NotValidColumnException extends ValidationException {
     public NotValidColumnException(ColumnName name) {
-        super(name + " is not valid column in this sentence");
+        super(name + "is not valid column in this sentence");
     }
 }
