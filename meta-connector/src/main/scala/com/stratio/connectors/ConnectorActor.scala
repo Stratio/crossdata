@@ -66,10 +66,15 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     }
 
     case wf: LogicalWorkflow=> {
-     connector.getQueryEngine().execute(wf)
-      val result=QueryResult.createSuccessQueryResult()
-      result.setQueryId("TODO: extract a real query ID from the logicalworkflow") //TODO
-      sender ! result
+      try {
+        connector.getQueryEngine().execute(wf)
+        val result = QueryResult.createSuccessQueryResult()
+        result.setQueryId("TODO: extract a real query ID from the logicalworkflow") //TODO
+        sender ! result
+      }catch{
+        case ex:Exception=>
+        case err:Error=>
+      }
     }
 
     case metadataOp: MetadataOperation=> {
