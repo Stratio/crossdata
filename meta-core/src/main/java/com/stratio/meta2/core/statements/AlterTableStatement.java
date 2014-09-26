@@ -157,4 +157,11 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
         return effective;
     }
 
+    public ColumnName getColumn() {
+        return column;
+    }
+
+    public ColumnType getType() {
+        return type;
+    }
 }

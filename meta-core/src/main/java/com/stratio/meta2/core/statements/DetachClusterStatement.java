@@ -52,4 +52,8 @@ public class DetachClusterStatement extends MetadataStatement {
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER);
     }
+
+    public String getClusterName() {
+        return clusterName;
+    }
 }

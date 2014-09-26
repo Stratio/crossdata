@@ -68,7 +68,7 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
         } catch (ValidationException e) {
             Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            Assert.assertTrue(true);
         }
 
     }
@@ -84,7 +84,7 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("The catalog exists");
+            Assert.fail("The catalog exists yet");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -96,7 +96,8 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
     @Test
     public void createCatalogWithOptions() {
         String query = "CREATE CATALOG new_catalog WITH {\"comment\":\"This is a comment\"};";
-        CreateCatalogStatement alterCatalogStatement = new CreateCatalogStatement(new CatalogName("demo"), true, "");
+        CreateCatalogStatement alterCatalogStatement = new CreateCatalogStatement(new CatalogName("new_catalog"),
+                false, "");
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo"));

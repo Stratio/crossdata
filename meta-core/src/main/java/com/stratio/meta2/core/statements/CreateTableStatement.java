@@ -186,4 +186,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         return effective;
     }
 
+    public boolean isIfNotExists() {
+        return ifNotExists;
+    }
 }

@@ -133,10 +133,11 @@ public class DescribeStatement extends MetadataStatement implements ITableStatem
         ValidationRequirements validationRequirements = new ValidationRequirements();
         if (catalog != null) {
             validationRequirements.add(Validation.MUST_EXIST_CATALOG);
-            if (tableName != null) {
-                validationRequirements.add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE);
-            }
         }
+        if (tableName != null) {
+            validationRequirements.add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE);
+        }
+
         return validationRequirements;
 
     }

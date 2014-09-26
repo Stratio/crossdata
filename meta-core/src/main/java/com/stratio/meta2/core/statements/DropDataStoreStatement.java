@@ -20,4 +20,8 @@ public class DropDataStoreStatement extends MetadataStatement {
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(Validation.MUST_EXIST_DATASTORE);
     }
+
+    public String getName() {
+        return name;
+    }
 }

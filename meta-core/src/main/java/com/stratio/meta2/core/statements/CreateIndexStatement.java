@@ -270,4 +270,7 @@ public class CreateIndexStatement extends MetadataStatement {
                 .add(Validation.MUST_EXIST_COLUMN);
     }
 
+    public boolean isCreateIfNotExists() {
+        return createIfNotExists;
+    }
 }
