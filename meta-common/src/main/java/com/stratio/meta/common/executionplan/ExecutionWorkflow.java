@@ -27,7 +27,7 @@ import com.stratio.meta.common.logicalplan.LogicalStep;
  * required in order to execute a LogicalWorkflow in a specific connector.
  * Notice that a ExecutionStep may trigger further workflow execution.
  */
-public class ExecutionWorkflow implements Serializable {
+public class ExecutionWorkflow {
 
     /**
      * Query identifier.

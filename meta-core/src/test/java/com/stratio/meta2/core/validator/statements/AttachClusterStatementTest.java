@@ -6,8 +6,6 @@ import org.testng.annotations.Test;
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.common.data.CatalogName;
-import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
@@ -20,8 +18,7 @@ public class AttachClusterStatementTest {
     public void attachClusterNoOptions() {
         String query = "ATTACH CLUSTER myCluster on DATASTORE Cassandra";
 
-        AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("myCluster"), true,
-                new DataStoreName("Cassandra"), "");
+        AttachClusterStatement attachClusterStatement = new AttachClusterStatement("myCluster", true, "Cassandra", "");
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
@@ -42,8 +39,7 @@ public class AttachClusterStatementTest {
     public void attachClusterUnknownDatastore() {
         String query = "ATTACH CLUSTER myCluster on DATASTORE unknown";
 
-        AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("myCluster"), true,
-                new DataStoreName("unknown"), "");
+        AttachClusterStatement attachClusterStatement = new AttachClusterStatement("myCluster", true, "unknown", "");
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
@@ -63,8 +59,7 @@ public class AttachClusterStatementTest {
     public void attachClusterWithOptions() {
         String query = "ATTACH CLUSTER myCluster on DATASTORE Cassandra with options {'comment':'attach cluster'}";
 
-        AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("myCluster"), true,
-                new DataStoreName("Cassandra"),
+        AttachClusterStatement attachClusterStatement = new AttachClusterStatement("myCluster", true, "Cassandra",
                 "{'comment':'attach cluster'}");
         Validator validator = new Validator();
 

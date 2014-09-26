@@ -4,8 +4,9 @@ import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
-import com.stratio.meta.common.logicalplan.LogicalWorkflow
-import com.stratio.meta.communication._
+import com.stratio.meta.communication.{HeartbeatSig, getConnectorName, replyConnectorName}
+import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
+import com.stratio.meta2.core.statements.{CreateTableStatement, SelectStatement}
 
 object State extends Enumeration {
   type state = Value
@@ -64,33 +65,44 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       this.shutdown()
     }
 
-    case wf: LogicalWorkflow=> {
-      //TODO: the old execute is deprecated, change to the new execute
-     connector.getQueryEngine().execute(null, wf)
-      sender ! "ok" //TODO define this message
+    case inProgressQuery: MetadataInProgressQuery => {
+      log.info("->" + "Receiving MetadataInProgressQuery")
+
+      val statement = inProgressQuery.getStatement()
+      statement match {
+        //case ms:MetadataStatement =>
+        case ms: CreateTableStatement =>
+          log.info("->receiving CreateTableStatement")
+          //val clustername = inProgressQuery.getClusterName()
+          //connector.getMetadataEngine().createTable(clustername, ms.getTableMetadata())
+
+          connector.getMetadataEngine().createTable(null, ms.getTableMetadata())
+
+          sender ! "ok"
+        case _ =>
+          log.info("->receiving a statement of a type it shouldn't")
+      }
     }
 
-    case metadataOp: MetadataOperation=> {
-      val eng=connector.getMetadataEngine()
-      metadataOp match{
-        case CreateCatalog(clustername,metadata)=>{ eng.createCatalog(clustername,metadata) }
-        case CreateIndex(clustername,metadata) =>{ eng.createIndex(clustername,metadata) }
-        case CreateTable(clustername,metadata) =>{ eng.createTable(clustername,metadata) }
-        case DropCatalog(clustername,metadata) =>{ eng.dropCatalog(clustername,metadata) }
-        case DropIndex(clustername,metadata) =>{ eng.dropIndex(clustername,metadata) }
-        case DropTable(clustername,metadata) =>{ eng.dropTable(clustername,metadata) }
+    case inProgressQuery: SelectInProgressQuery => {
+      log.info("->" + "Receiving SelectInProgressQuery")
+      val statement = inProgressQuery.getStatement()
+      statement match {
+        case ms: SelectStatement =>
+          log.info("->receiving SelectStatement")
+          //val clustername = inProgressQuery.getClusterName()
+          //val logicalworkflow = inProgressQuery.getLogicalWorkFlow()
+          //connector.getQueryEngine().execute(clustername, logicalworkflow)
+
+          sender ! "ok"
+        case _ =>
+          log.info("->receiving a statement of a type it shouldn't")
       }
-      sender ! "ok" //TODO define this message
     }
 
-    case storageOp: StorageOperation=> {
-      val eng=connector.getStorageEngine()
-      storageOp match{
-        case Insert(clustername,table,row)=>{ eng.insert(clustername,table,row) }
-        case InsertBatch(clustername,table,rows)=>{ eng.insert(clustername,table,rows) }
-      }
-      sender ! "ok" //TODO define this message
-    }
+    case inProgressQuery: StorageInProgressQuery =>
+      log.info("->" + "Receiving StorageInProgressQuery")
+
 
     case msg: getConnectorName => {
       sender ! replyConnectorName(connectorName)

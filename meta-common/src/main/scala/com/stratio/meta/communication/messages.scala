@@ -18,15 +18,15 @@
 
 package com.stratio.meta.communication
 
-import java.util
-
 import com.stratio.meta.common.connector.ConnectorClusterConfig
-import com.stratio.meta.common.data.Row
+import com.stratio.meta.common.executionplan.ExecutionWorkflow
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta.common.security.ICredentials
-import com.stratio.meta2.common.data.{CatalogName, ClusterName, TableName}
-import com.stratio.meta2.common.metadata.{CatalogMetadata, IndexMetadata, TableMetadata}
+import com.stratio.meta2.common.data.{TableName, CatalogName, ClusterName}
+import com.stratio.meta2.common.metadata.{IndexMetadata, CatalogMetadata, TableMetadata}
+import com.stratio.meta.common.data.Row
+import java.util
 
 case class ACK(queryId: String, status: QueryStatus)
 
@@ -66,7 +66,7 @@ case class Insert(targetCluster: ClusterName, targetTable: TableMetadata, row: R
 case class InsertBatch(targetCluster: ClusterName, targetTable: TableMetadata, rows: util.Collection[Row]) extends StorageOperation
 
 //IQueryEngine
-//case class Execute(workflow: LogicalWorkflow)
+case class Execute(workflow: LogicalWorkflow)
 
 //IMetadataEngine
 
