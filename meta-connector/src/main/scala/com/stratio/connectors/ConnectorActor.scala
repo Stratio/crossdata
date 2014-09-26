@@ -5,6 +5,7 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
+import com.stratio.meta.common.result.{CommandResult, QueryResult, MetadataResult}
 import com.stratio.meta.communication._
 
 object State extends Enumeration {
@@ -20,8 +21,8 @@ object ConnectorActor {
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with ActorLogging {
   //class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
 
-  val connector = conn
   //TODO: test if it works with one thread and multiple threads
+  val connector = conn
   var state = State.Stopped
   var supervisorActorRef: ActorRef = null
 
@@ -65,9 +66,10 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     }
 
     case wf: LogicalWorkflow=> {
-      //TODO: the old execute is deprecated, change to the new execute
-     connector.getQueryEngine().execute(null, wf)
-      sender ! "ok" //TODO define this message
+     connector.getQueryEngine().execute(wf)
+      val result=QueryResult.createSuccessQueryResult()
+      result.setQueryId("TODO: extract a real query ID from the logicalworkflow") //TODO
+      sender ! result
     }
 
     case metadataOp: MetadataOperation=> {
@@ -80,7 +82,9 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
         case DropIndex(queryId, clustername,metadata) =>{ eng.dropIndex(clustername,metadata) }
         case DropTable(queryId, clustername,metadata) =>{ eng.dropTable(clustername,metadata) }
       }
-      sender ! "ok" //TODO define this message
+      val result=MetadataResult.createSuccessMetadataResult()
+      result.setQueryId("TODO: extract a real query ID from the metadataop") //TODO
+      sender ! result
     }
 
     case storageOp: StorageOperation=> {
@@ -89,22 +93,20 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
         case Insert(queryId, clustername,table,row)=>{ eng.insert(clustername,table,row) }
         case InsertBatch(queryId, clustername,table,rows)=>{ eng.insert(clustername,table,rows) }
       }
-      sender ! "ok" //TODO define this message
+      val result=CommandResult.createCommandResult("ok")
+      result.setQueryId("TODO: extract a real query ID from the metadataop") //TODO
+      sender ! result
     }
 
     case msg: getConnectorName => {
       sender ! replyConnectorName(connectorName)
     }
 
-    case s: String =>
-      println("->" + "Receiving String: {}" + s)
-      log.info("->" + "Receiving String: {}", s)
-
     case MemberUp(member) =>
       println("member up")
       log.info("*******Member is Up: {} {}!!!!!", member.toString, member.getRoles)
-    //val actorRefe=context.actorSelection(RootActorPath(member.address) / "user" / "connectoractor" )
-    //actorRefe ! "hola "+member.address+ "  "+RootActorPath(member.address)
+      //val actorRefe=context.actorSelection(RootActorPath(member.address) / "user" / "connectoractor" )
+      //actorRefe ! "hola "+member.address+ "  "+RootActorPath(member.address)
 
     case state: CurrentClusterState =>
       log.info("Current members: {}", state.members.mkString(", "))
