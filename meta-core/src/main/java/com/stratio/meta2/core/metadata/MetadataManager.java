@@ -173,6 +173,10 @@ public enum MetadataManager {
         }
     }
 
+    public void deleteCatalog(CatalogName catalogName) {
+
+    }
+
     public CatalogMetadata getCatalog(CatalogName name) {
         shouldBeInit();
         shouldExist(name);
@@ -208,6 +212,10 @@ public enum MetadataManager {
 
     public void createTable(TableMetadata tableMetadata) {
         createTable(tableMetadata, true);
+    }
+
+    public void deleteTable(TableName tableName) {
+
     }
 
     public TableMetadata getTable(TableName name) {
@@ -321,17 +329,20 @@ public enum MetadataManager {
 
     /**
      * Get the connectors that are attached to the clusters that store the requested tables.
-     * @param connectorStatus The status of the connector.
-     * @param tables The list of table names.
+     * 
+     * @param connectorStatus
+     *            The status of the connector.
+     * @param tables
+     *            The list of table names.
      * @return A map associating table names with a list of the available connectors.
      */
     public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus,
-            List<TableName> tables){
+            List<TableName> tables) {
 
         Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
 
         List<ConnectorMetadata> connectors;
-        for(TableName table: tables) {
+        for (TableName table : tables) {
 
             ClusterName clusterName = getTable(table).getClusterRef();
 
@@ -339,9 +350,9 @@ public enum MetadataManager {
                     .getConnectorAttachedRefs().keySet();
 
             connectors = new ArrayList<>();
-            for(ConnectorName connectorName: connectorNames){
+            for (ConnectorName connectorName : connectorNames) {
                 ConnectorMetadata connectorMetadata = getConnector(connectorName);
-                if(connectorMetadata.getStatus() == connectorStatus){
+                if (connectorMetadata.getStatus() == connectorStatus) {
                     connectors.add(connectorMetadata);
                 }
             }
