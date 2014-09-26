@@ -19,6 +19,10 @@
 package com.stratio.meta2.common.data;
 
 public class ConnectorName extends FirstLevelName {
+    /**
+     * Serial version UID.
+     */
+    private static final long serialVersionUID = 4037037885060672489L;
     private final String name;
 
     public ConnectorName(String connectorName) {

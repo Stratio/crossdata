@@ -37,6 +37,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     /**
      * A new actor connects to the cluster. If the new actor is a connector, we requests its name.
      */
+    //TODO Check that new actors are recognized and their information stored in the MetadataManager
     case mu: MemberUp => {
       log.info("Member is Up: " + mu.toString + mu.member.getRoles)
       val it = mu.member.getRoles.iterator()

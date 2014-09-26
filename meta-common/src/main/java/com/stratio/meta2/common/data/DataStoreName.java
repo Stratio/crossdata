@@ -19,6 +19,10 @@
 package com.stratio.meta2.common.data;
 
 public class DataStoreName extends FirstLevelName {
+    /**
+     * Serial version UID.
+     */
+    private static final long serialVersionUID = 4171381082865700657L;
     private final String name;
 
     public DataStoreName(String dataStoreName) {
