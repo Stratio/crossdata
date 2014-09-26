@@ -201,15 +201,15 @@ public class Coordinator {
 
     private void persistAttachCluster(AttachClusterStatement attachClusterStatement) {
         DataStoreMetadata datastoreMetadata =
-                MetadataManager.MANAGER.getDataStore(new DataStoreName(attachClusterStatement
-                        .getDatastoreName()));
+                MetadataManager.MANAGER.getDataStore(attachClusterStatement
+                        .getDatastoreName());
 
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs =
                 datastoreMetadata.getClusterAttachedRefs();
 
-        ClusterName key = new ClusterName(attachClusterStatement.getClusterName());
-        ClusterName clusterRef = new ClusterName(attachClusterStatement.getClusterName());
-        DataStoreName dataStoreRef = new DataStoreName(attachClusterStatement.getDatastoreName());
+        ClusterName key = attachClusterStatement.getClusterName();
+        ClusterName clusterRef = attachClusterStatement.getClusterName();
+        DataStoreName dataStoreRef = attachClusterStatement.getDatastoreName();
         Map<Selector, Selector> properties = attachClusterStatement.getOptions();
 
         ClusterAttachedMetadata value =
@@ -251,15 +251,15 @@ public class Coordinator {
 
     private void persistAttachConnector(AttachConnectorStatement attachConnectorStatement) {
         ClusterMetadata clusterMetadata =
-                MetadataManager.MANAGER.getCluster(new ClusterName(attachConnectorStatement
-                        .getClusterName()));
+                MetadataManager.MANAGER.getCluster(attachConnectorStatement
+                        .getClusterName());
 
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
                 clusterMetadata.getConnectorAttachedRefs();
 
-        ConnectorName key = new ConnectorName(attachConnectorStatement.getConnectorName());
-        ConnectorName connectorRef = new ConnectorName(attachConnectorStatement.getConnectorName());
-        ClusterName clusterRef = new ClusterName(attachConnectorStatement.getClusterName());
+        ConnectorName key = attachConnectorStatement.getConnectorName();
+        ConnectorName connectorRef = attachConnectorStatement.getConnectorName();
+        ClusterName clusterRef = attachConnectorStatement.getClusterName();
         Map<Selector, Selector> properties = attachConnectorStatement.getOptions();
         ConnectorAttachedMetadata value =
                 new ConnectorAttachedMetadata(connectorRef, clusterRef, properties);

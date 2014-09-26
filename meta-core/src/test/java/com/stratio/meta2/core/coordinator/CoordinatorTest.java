@@ -90,7 +90,8 @@ public class CoordinatorTest extends MetadataManagerTests {
                         new CatalogName("test"));
 
         AttachClusterStatement attachClusterStatement =
-                new AttachClusterStatement("clusterTest", false, "datastoreTest", "{}");
+                new AttachClusterStatement(new ClusterName("clusterTest"), false, new DataStoreName("datastoreTest"),
+                        "{}");
 
         MetadataParsedQuery metadataParsedQuery =
                 new MetadataParsedQuery(baseQuery, attachClusterStatement);
@@ -168,7 +169,7 @@ public class CoordinatorTest extends MetadataManagerTests {
                 new ConnectorAttachedMetadata(connectorRef, clusterRef, properties);
 
         AttachConnectorStatement attachConnectorStatement =
-                new AttachConnectorStatement("connectorTest", "clusterTest", "{}");
+                new AttachConnectorStatement(new ConnectorName("connectorTest"), new ClusterName("clusterTest"), "{}");
 
         MetadataParsedQuery metadataParsedQuery =
                 new MetadataParsedQuery(baseQuery, attachConnectorStatement);
