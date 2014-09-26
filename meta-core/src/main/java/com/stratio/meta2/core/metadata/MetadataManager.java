@@ -28,6 +28,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
+
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -44,6 +45,7 @@ import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
 
 public enum MetadataManager {
     MANAGER;
@@ -326,21 +328,19 @@ public enum MetadataManager {
      */
     public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus,
             List<TableName> tables){
-
         Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
-
         List<ConnectorMetadata> connectors = null;
         for(TableName table: tables) {
-
-
-
             connectors = new ArrayList<>();
-            //connectors.addAll(getCluster(getTable(table).getClusterRef()).getConnectorAttachedRefs());
-            //result.put(table, );
         }
-
-
         return result;
+    }
+
+    public ColumnMetadata getColumn(ColumnName name){
+        shouldBeInit();
+        shouldExist(name);
+        TableMetadata tableMetadata=this.getTable(name.getTableName());
+        return tableMetadata.getColumns().get(name);
     }
 
 }

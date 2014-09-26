@@ -21,8 +21,9 @@ package com.stratio.meta.common.exceptions.validation;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.common.data.ColumnName;
 
-public class NotValidColumnException extends ValidationException {
-    public NotValidColumnException(ColumnName name) {
-        super(name + " is not valid column in this sentence");
+public class NotMatchDataTypeException extends ValidationException {
+    public NotMatchDataTypeException(ColumnName name) {
+        super(name + " don't match data type");
     }
+
 }
