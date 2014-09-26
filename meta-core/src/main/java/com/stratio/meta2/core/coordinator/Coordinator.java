@@ -4,6 +4,16 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.meta.common.executionplan.ExecutionType;
+import com.stratio.meta.common.executionplan.ManagementWorkflow;
+import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.ErrorType;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta.communication.AttachCluster;
+import com.stratio.meta.communication.AttachConnector;
+import com.stratio.meta.communication.DetachCluster;
+import com.stratio.meta.communication.DetachConnector;
+import com.stratio.meta.communication.ManagementOperation;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
@@ -88,6 +98,24 @@ public class Coordinator {
             LOG.info("not known statement detected");
         }
         return null;
+    }
+
+    public Result executeManagementOperation(ManagementOperation workflow){
+        Result result = null;
+        if(AttachCluster.class.isInstance(workflow)){
+            AttachCluster ac = AttachCluster.class.cast(workflow);
+            result = persistAttachCluster(ac.targetCluster(), ac.datastoreName(), ac.options());
+        }else if(DetachCluster.class.isInstance(workflow)){
+            DetachCluster dc = DetachCluster.class.cast(workflow);
+            result = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "Not supported");
+        }else if(AttachConnector.class.isInstance(workflow)){
+            AttachConnector ac = AttachConnector.class.cast(workflow);
+            result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options());
+        }else if(DetachConnector.class.isInstance(workflow)){
+            DetachConnector dc = DetachConnector.class.cast(workflow);
+            result = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "Not supported");
+        }
+        return result;
     }
 
     public void persist(PlannedQuery plannedQuery) {
@@ -186,8 +214,9 @@ public class Coordinator {
         return null;
     }
 
-    public void persistAttachCluster(ClusterName clusterName, DataStoreName datastoreName,
+    public Result persistAttachCluster(ClusterName clusterName, DataStoreName datastoreName,
             Map<Selector, Selector> options) {
+        //TODO Move this type of operations to MetadataManager in order to use a single lock
         DataStoreMetadata datastoreMetadata =
                 MetadataManager.MANAGER.getDataStore(datastoreName);
 
@@ -201,6 +230,7 @@ public class Coordinator {
         datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
 
         MetadataManager.MANAGER.createDataStore(datastoreMetadata, false);
+        return CommandResult.createCommandResult("Cluster attached successfully");
     }
 
     public void persistCreateCatalog(CatalogMetadata catalog) {
@@ -233,7 +263,7 @@ public class Coordinator {
         MetadataManager.MANAGER.createTable(table, false);
     }
 
-    public void persistAttachConnector(ClusterName clusterName, ConnectorName connectorName,
+    public Result persistAttachConnector(ClusterName clusterName, ConnectorName connectorName,
             Map<Selector, Selector> options) {
         ClusterMetadata clusterMetadata =
                 MetadataManager.MANAGER.getCluster(clusterName);
@@ -247,6 +277,7 @@ public class Coordinator {
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
 
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);
+        return CommandResult.createCommandResult("Connector attached successfully");
     }
 
     enum StatementEnum {

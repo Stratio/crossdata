@@ -32,7 +32,7 @@ public class ExecutionWorkflow implements Serializable {
     /**
      * Query identifier.
      */
-    private final String queryId;
+    protected final String queryId;
 
     /**
      * The target actor reference associated with the connector.
