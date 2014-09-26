@@ -18,7 +18,8 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
@@ -35,7 +36,7 @@ public class DropIndexStatement extends MetadataStatement {
     /**
      * The name of the index.
      */
-    private String name = null;
+    private IndexName name = null;
 
     /**
      * Class constructor.
@@ -57,14 +58,20 @@ public class DropIndexStatement extends MetadataStatement {
      * @param name The name of the index. The name may contain the name of the catalog where the
      *             index is active.
      */
-    public void setName(String name) {
+    public void setName(IndexName name) {
         this.name = name;
+        /*
         if (name.contains(".")) {
             String[] ksAndName = name.split("\\.");
             catalog = new CatalogName(ksAndName[0]);
             this.name = ksAndName[1];
             catalogInc = true;
         }
+        */
+    }
+
+    public void setName(ColumnName name){
+        this.name = new IndexName(name.getTableName(), name.getName());
     }
 
     @Override

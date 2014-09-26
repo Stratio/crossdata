@@ -24,6 +24,7 @@ import org.testng.annotations.Test;
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
@@ -37,7 +38,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
     public void validateOk() {
         String query = "DROP INDEX gender_idx;";
         DropIndexStatement dropIndexStatement = new DropIndexStatement();
-        dropIndexStatement.setName("gender_idx");
+        dropIndexStatement.setName(new IndexName(null, null, "gender_idx"));
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
@@ -57,7 +58,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
     public void validateIfNotExists() {
         String query = "DROP INDEX IF EXISTS unknown;";
         DropIndexStatement dropIndexStatement = new DropIndexStatement();
-        dropIndexStatement.setName("unknown");
+        dropIndexStatement.setName(new IndexName(null, null, "unknown"));
         dropIndexStatement.setDropIfExists();
 
         Validator validator = new Validator();
@@ -79,7 +80,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
     public void validateNotExistsIndex() {
         String query = "DROP INDEX unknown;";
         DropIndexStatement dropIndexStatement = new DropIndexStatement();
-        dropIndexStatement.setName("unknown");
+        dropIndexStatement.setName(new IndexName(null, null, "unknown"));
         dropIndexStatement.setDropIfExists();
 
         Validator validator = new Validator();

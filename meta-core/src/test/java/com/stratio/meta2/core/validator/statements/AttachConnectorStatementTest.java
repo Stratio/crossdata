@@ -7,6 +7,8 @@ import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 
 import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
@@ -62,8 +64,9 @@ public class AttachConnectorStatementTest extends BasicValidatorTest{
     public void attachConnectorUnknownCluster() {
         String query = "ATTACH Connector newConnector TO unknown WITH OPTIONS {'comment':'a comment'}";
 
-        AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement("CassandraConnector",
-                "unknown", "{'comment':'a comment'}");
+        AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName
+                ("CassandraConnector"),
+                new ClusterName("unknown"), "{'comment':'a comment'}");
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));

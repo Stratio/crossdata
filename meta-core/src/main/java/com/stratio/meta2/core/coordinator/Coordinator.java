@@ -1,21 +1,28 @@
 package com.stratio.meta2.core.coordinator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.meta.common.executionplan.ExecutionType;
+import com.stratio.meta.common.executionplan.ManagementWorkflow;
+import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta.common.result.ErrorType;
+import com.stratio.meta.common.result.Result;
+import com.stratio.meta.communication.AttachCluster;
+import com.stratio.meta.communication.AttachConnector;
+import com.stratio.meta.communication.DetachCluster;
+import com.stratio.meta.communication.DetachConnector;
+import com.stratio.meta.communication.ManagementOperation;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
+import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
 import com.stratio.meta2.common.metadata.ClusterMetadata;
-import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
@@ -78,10 +85,10 @@ public class Coordinator {
             return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery);
         case DROP_TABLE:
             return new MetadataInProgressQuery((MetadataPlannedQuery) plannedQuery);
-        // SELECT
+            // SELECT
         case SELECT:
-            return coordinateSelect((SelectPlannedQuery) plannedQuery);
-        // STORAGE
+//            return coordinateSelect((SelectPlannedQuery) plannedQuery);
+            // STORAGE
         case INSERT_INTO:
             return new StorageInProgressQuery((StoragePlannedQuery) plannedQuery);
         case DELETE:
@@ -93,24 +100,42 @@ public class Coordinator {
         return null;
     }
 
+    public Result executeManagementOperation(ManagementOperation workflow){
+        Result result = null;
+        if(AttachCluster.class.isInstance(workflow)){
+            AttachCluster ac = AttachCluster.class.cast(workflow);
+            result = persistAttachCluster(ac.targetCluster(), ac.datastoreName(), ac.options());
+        }else if(DetachCluster.class.isInstance(workflow)){
+            DetachCluster dc = DetachCluster.class.cast(workflow);
+            result = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "Not supported");
+        }else if(AttachConnector.class.isInstance(workflow)){
+            AttachConnector ac = AttachConnector.class.cast(workflow);
+            result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options());
+        }else if(DetachConnector.class.isInstance(workflow)){
+            DetachConnector dc = DetachConnector.class.cast(workflow);
+            result = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "Not supported");
+        }
+        return result;
+    }
+
     public void persist(PlannedQuery plannedQuery) {
 
         switch (getStatement(plannedQuery)) {
         // METADATA
         case ATTACH_CLUSTER:
-            persistAttachCluster((AttachClusterStatement) plannedQuery.getStatement());
+            // persistAttachCluster((AttachClusterStatement) plannedQuery.getStatement());
             break;
         case ATTACH_CONNECTOR:
-            persistAttachConnector((AttachConnectorStatement) plannedQuery.getStatement());
+            // persistAttachConnector((AttachConnectorStatement) plannedQuery.getStatement());
             break;
         case CREATE_CATALOG:
-            persistCreateCatalog((CreateCatalogStatement) plannedQuery.getStatement());
+            // persistCreateCatalog((CreateCatalogStatement) plannedQuery.getStatement());
             break;
         case CREATE_INDEX:
-            persistCreateIndex((CreateIndexStatement) plannedQuery.getStatement());
+            // persistCreateIndex((CreateIndexStatement) plannedQuery.getStatement());
             break;
         case CREATE_TABLE:
-            persistCreateTable((CreateTableStatement) plannedQuery.getStatement());
+            // persistCreateTable((CreateTableStatement) plannedQuery.getStatement());
             break;
         case DESCRIBE:
             break;
@@ -189,84 +214,70 @@ public class Coordinator {
         return null;
     }
 
-    private SelectInProgressQuery coordinateSelect(SelectPlannedQuery selectPlannedQuery) {
-        SelectInProgressQuery inProgressQuery = new SelectInProgressQuery(selectPlannedQuery);
-        return inProgressQuery;
-    }
-
-    private InProgressQuery coordinateStorage(StoragePlannedQuery storagePlannedQuery) {
-        InProgressQuery inProgressQuery = null;
-        return inProgressQuery;
-    }
-
-    private void persistAttachCluster(AttachClusterStatement attachClusterStatement) {
+    public Result persistAttachCluster(ClusterName clusterName, DataStoreName datastoreName,
+            Map<Selector, Selector> options) {
+        //TODO Move this type of operations to MetadataManager in order to use a single lock
         DataStoreMetadata datastoreMetadata =
-                MetadataManager.MANAGER.getDataStore(new DataStoreName(attachClusterStatement
-                        .getDatastoreName()));
+                MetadataManager.MANAGER.getDataStore(datastoreName);
 
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs =
                 datastoreMetadata.getClusterAttachedRefs();
 
-        ClusterName key = new ClusterName(attachClusterStatement.getClusterName());
-        ClusterName clusterRef = new ClusterName(attachClusterStatement.getClusterName());
-        DataStoreName dataStoreRef = new DataStoreName(attachClusterStatement.getDatastoreName());
-        Map<Selector, Selector> properties = attachClusterStatement.getOptions();
-
         ClusterAttachedMetadata value =
-                new ClusterAttachedMetadata(clusterRef, dataStoreRef, properties);
+                new ClusterAttachedMetadata(clusterName, datastoreName, options);
 
-        clusterAttachedRefs.put(key, value);
+        clusterAttachedRefs.put(clusterName, value);
         datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
 
         MetadataManager.MANAGER.createDataStore(datastoreMetadata, false);
+        return CommandResult.createCommandResult("Cluster attached successfully");
     }
 
-    private void persistCreateCatalog(CreateCatalogStatement createCatalogStatement) {
-        MetadataManager.MANAGER.createCatalog(new CatalogMetadata(createCatalogStatement
-                .getCatalogName(), createCatalogStatement.getOptions(),
-                new HashMap<TableName, TableMetadata>()));
+    public void persistCreateCatalog(CatalogMetadata catalog) {
+        MetadataManager.MANAGER.createCatalog(catalog);
     }
 
-    private void persistCreateTable(CreateTableStatement createTableStatement) {
-        MetadataManager.MANAGER.createTable(createTableStatement.getTableMetadata());
+    public void persistCreateTable(TableMetadata table) {
+        MetadataManager.MANAGER.createTable(table);
     }
 
-    private void persistCreateIndex(CreateIndexStatement createIndexStatement) {
-        TableMetadata table = MetadataManager.MANAGER.getTable(createIndexStatement.getTableName());
-
-        List<ColumnName> targetColumnsNames = createIndexStatement.getTargetColumns();
-        List<ColumnMetadata> targetColumnsMetadata = new ArrayList<>();
-        for (ColumnName c : targetColumnsNames) {
-            targetColumnsMetadata.add(table.getColumns().get(c));
-        }
-
-        IndexMetadata index =
-                new IndexMetadata(createIndexStatement.getName(), targetColumnsMetadata,
-                        createIndexStatement.getType(), createIndexStatement.getOptions());
-        table.addIndex(createIndexStatement.getName(), index);
-
+    public void persistCreateIndex(IndexMetadata index) {
+        // TODO move to MetadataManager
+        TableMetadata table = MetadataManager.MANAGER.getTable(index.getName().getTableName());
+        table.addIndex(index.getName(), index);
         MetadataManager.MANAGER.createTable(table, false);
-
     }
 
-    private void persistAttachConnector(AttachConnectorStatement attachConnectorStatement) {
+    public void persistDropCatalog(CatalogName catalog) {
+        MetadataManager.MANAGER.deleteCatalog(catalog);
+    }
+
+    public void persistDropTable(TableName table) {
+        MetadataManager.MANAGER.deleteTable(table);
+    }
+
+    public void persistDropIndex(IndexName index) {
+        // TODO move to MetadataManager
+        TableMetadata table = MetadataManager.MANAGER.getTable(index.getTableName());
+        table.deleteIndex(index);
+        MetadataManager.MANAGER.createTable(table, false);
+    }
+
+    public Result persistAttachConnector(ClusterName clusterName, ConnectorName connectorName,
+            Map<Selector, Selector> options) {
         ClusterMetadata clusterMetadata =
-                MetadataManager.MANAGER.getCluster(new ClusterName(attachConnectorStatement
-                        .getClusterName()));
+                MetadataManager.MANAGER.getCluster(clusterName);
 
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
                 clusterMetadata.getConnectorAttachedRefs();
 
-        ConnectorName key = new ConnectorName(attachConnectorStatement.getConnectorName());
-        ConnectorName connectorRef = new ConnectorName(attachConnectorStatement.getConnectorName());
-        ClusterName clusterRef = new ClusterName(attachConnectorStatement.getClusterName());
-        Map<Selector, Selector> properties = attachConnectorStatement.getOptions();
         ConnectorAttachedMetadata value =
-                new ConnectorAttachedMetadata(connectorRef, clusterRef, properties);
-        connectorAttachedRefs.put(key, value);
+                new ConnectorAttachedMetadata(connectorName, clusterName, options);
+        connectorAttachedRefs.put(connectorName, value);
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
 
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);
+        return CommandResult.createCommandResult("Connector attached successfully");
     }
 
     enum StatementEnum {

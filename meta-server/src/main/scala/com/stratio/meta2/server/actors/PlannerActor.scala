@@ -36,12 +36,10 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
 
   def receive = {
     case query: ValidatedQuery => {
-      log.info("Planner Actor received ValidatedQuery")
-      log.info("ValidatedQuery =" + query)
-
       val timer = initTimer()
-      coordinator forward planner.planQuery(query)
+      val planned = planner.planQuery(query)
       finishTimer(timer)
+      coordinator forward planned
 
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
       sender ! ack

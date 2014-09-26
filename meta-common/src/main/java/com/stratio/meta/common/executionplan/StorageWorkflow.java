@@ -77,9 +77,9 @@ public class StorageWorkflow extends ExecutionWorkflow{
     public StorageOperation getStorageOperation(){
         StorageOperation result = null;
         if(ExecutionType.INSERT.equals(this.executionType)){
-            result = new Insert(this.clusterName, this.tableMetadata, this.row);
+            result = new Insert(this.queryId, this.clusterName, this.tableMetadata, this.row);
         }else if(ExecutionType.INSERT_BATCH.equals(this.executionType)){
-            result = new InsertBatch(this.clusterName, this.tableMetadata, this.rows);
+            result = new InsertBatch(this.queryId, this.clusterName, this.tableMetadata, this.rows);
         }
         return result;
     }

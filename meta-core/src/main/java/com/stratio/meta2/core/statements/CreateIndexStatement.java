@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.TableName;
@@ -52,7 +51,7 @@ public class CreateIndexStatement extends MetadataStatement {
     /**
      * The name of the index.
      */
-    private String name = null;
+    private IndexName name = null;
 
     /**
      * The name of the target table.
@@ -106,7 +105,8 @@ public class CreateIndexStatement extends MetadataStatement {
      * @return The name.
      */
     public IndexName getName() {
-        return new IndexName(tableName.getCatalogName().getName(), tableName.getName(), name);
+        //return new IndexName(tableName.getCatalogName().getName(), tableName.getName(), name);
+        return name;
     }
 
     /**
@@ -114,7 +114,9 @@ public class CreateIndexStatement extends MetadataStatement {
      *
      * @param name The name.
      */
-    public void setName(String name) {
+    public void setName(IndexName name) {
+        this.name = name;
+        /*
         if (name.contains(".")) {
             String[] ksAndTablename = name.split("\\.");
             catalog = new CatalogName(ksAndTablename[0]);
@@ -123,6 +125,28 @@ public class CreateIndexStatement extends MetadataStatement {
         } else {
             this.name = name;
         }
+        */
+    }
+
+
+    /**
+     * Set the name of the index from a column name as both have the same attributes.
+     *
+     * @param columnName The column name.
+     */
+    public void setName(ColumnName columnName) {
+        this.name = new IndexName(columnName.getTableName(), columnName.getName());
+        this.name = name;
+        /*
+        if (name.contains(".")) {
+            String[] ksAndTablename = name.split("\\.");
+            catalog = new CatalogName(ksAndTablename[0]);
+            this.name = ksAndTablename[1];
+            catalogInc = true;
+        } else {
+            this.name = name;
+        }
+        */
     }
 
     /**
@@ -225,7 +249,7 @@ public class CreateIndexStatement extends MetadataStatement {
             }
             result = sb.toString();
         } else {
-            result = name;
+            result = name.getName();
             if (IndexType.FULL_TEXT.equals(type)) {
                 result = "stratio_lucene_" + name;
             }

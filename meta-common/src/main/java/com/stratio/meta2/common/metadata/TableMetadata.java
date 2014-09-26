@@ -94,8 +94,9 @@ public class TableMetadata implements IMetadata {
 
     /**
      * Determine whether the selected column is part of the primary key or not.
-     *
-     * @param columnName The column name.
+     * 
+     * @param columnName
+     *            The column name.
      * @return Whether is part of the primary key.
      */
     public boolean isPK(ColumnName columnName) {
@@ -104,8 +105,9 @@ public class TableMetadata implements IMetadata {
 
     /**
      * Determine whether the selected column has an associated index.
-     *
-     * @param columnName The column name.
+     * 
+     * @param columnName
+     *            The column name.
      * @return Whether is indexed or not.
      */
     public boolean isIndexed(ColumnName columnName) {
@@ -119,6 +121,10 @@ public class TableMetadata implements IMetadata {
 
     public void addIndex(IndexName name, IndexMetadata data) {
         indexes.put(name, data);
+    }
+
+    public void deleteIndex(IndexName name) {
+        indexes.remove(name);
     }
 
 }

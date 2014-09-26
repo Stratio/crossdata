@@ -18,10 +18,12 @@
 
 package com.stratio.meta2.core.query;
 
+import java.io.Serializable;
+
 import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta2.common.data.CatalogName;
 
-public class BaseQuery {
+public class BaseQuery implements Serializable {
     /**
      * The query introduced by the user.
      */

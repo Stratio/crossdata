@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.stratio.meta.common.utils.StringUtils;
+import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
@@ -38,7 +40,7 @@ public class AttachClusterStatement extends MetadataStatement {
      * Cluster name given by the user. This name will be used to refer to the cluster when creating
      * new tables.
      */
-    private final String clusterName;
+    private final ClusterName clusterName;
 
     /**
      * Whether the storage should be created only if not exists.
@@ -48,7 +50,7 @@ public class AttachClusterStatement extends MetadataStatement {
     /**
      * Name of the datastore associated with the storage and the connectors.
      */
-    private final String datastoreName;
+    private final DataStoreName datastoreName;
 
     /**
      * A JSON with the options of the cluster.
@@ -63,7 +65,7 @@ public class AttachClusterStatement extends MetadataStatement {
      * @param datastoreName The name of the datastore.
      * @param options       A JSON with the options.
      */
-    public AttachClusterStatement(String clusterName, boolean ifNotExists, String datastoreName,
+    public AttachClusterStatement(ClusterName clusterName, boolean ifNotExists, DataStoreName datastoreName,
             String options) {
         this.clusterName = clusterName;
         this.ifNotExists = ifNotExists;
@@ -100,7 +102,7 @@ public class AttachClusterStatement extends MetadataStatement {
         return options;
     }
 
-    public String getClusterName() {
+    public ClusterName getClusterName() {
         return clusterName;
     }
 
@@ -108,7 +110,7 @@ public class AttachClusterStatement extends MetadataStatement {
         return ifNotExists;
     }
 
-    public String getDatastoreName() {
+    public DataStoreName getDatastoreName() {
         return datastoreName;
     }
 }

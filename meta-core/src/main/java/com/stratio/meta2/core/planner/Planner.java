@@ -104,7 +104,7 @@ public class Planner {
     protected ExecutionWorkflow buildExecutionWorkflow(LogicalWorkflow workflow) {
 
         List<TableName> tables = new ArrayList<>(workflow.getInitialSteps().size());
-        for(LogicalStep ls : workflow.getInitialSteps()){
+        for(LogicalStep ls: workflow.getInitialSteps()){
             tables.add(Project.class.cast(ls).getTableName());
         }
 
@@ -112,7 +112,18 @@ public class Planner {
         Map<TableName, List<ConnectorMetadata>> initialConnectors = MetadataManager.MANAGER.getAttachedConnectors(
                 Status.ONLINE, tables);
 
+        List<ConnectorMetadata> candidatesConnectors = new ArrayList<>();
+
         //Refine the list of available connectors and determine which connector to be used.
+        for(LogicalStep ls: workflow.getInitialSteps()){
+            Operations operations = ls.getOperation();
+            List<ConnectorMetadata> connectorList = initialConnectors.get(Project.class.cast(ls).getTableName());
+            for(ConnectorMetadata connectorMetadata: connectorList){
+                if(connectorMetadata.getSupportedOperations().getOperation().contains(operations)){
+                    //TODO
+                }
+            }
+        }
 
         return null;
     }
