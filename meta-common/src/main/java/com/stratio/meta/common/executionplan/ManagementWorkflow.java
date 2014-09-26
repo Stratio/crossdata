@@ -92,7 +92,7 @@ public class ManagementWorkflow extends ExecutionWorkflow {
         } else if (ExecutionType.DROP_CATALOG.equals(this.executionType)) {
             result = new DetachCluster(this.queryId, this.clusterName);
         } else if (ExecutionType.ATTACH_CONNECTOR.equals(this.executionType)) {
-            result = new AttachConnector(this.queryId, this.clusterName, this.connectorName);
+            result = new AttachConnector(this.queryId, this.clusterName, this.connectorName, this.options);
         } else if (ExecutionType.DETACH_CONNECTOR.equals(this.executionType)) {
             result = new DetachConnector(this.queryId, this.clusterName, this.connectorName);
         }

@@ -73,12 +73,12 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     case metadataOp: MetadataOperation=> {
       val eng=connector.getMetadataEngine()
       metadataOp match{
-        case CreateCatalog(clustername,metadata)=>{ eng.createCatalog(clustername,metadata) }
-        case CreateIndex(clustername,metadata) =>{ eng.createIndex(clustername,metadata) }
-        case CreateTable(clustername,metadata) =>{ eng.createTable(clustername,metadata) }
-        case DropCatalog(clustername,metadata) =>{ eng.dropCatalog(clustername,metadata) }
-        case DropIndex(clustername,metadata) =>{ eng.dropIndex(clustername,metadata) }
-        case DropTable(clustername,metadata) =>{ eng.dropTable(clustername,metadata) }
+        case CreateCatalog(queryId, clustername,metadata)=>{ eng.createCatalog(clustername,metadata) }
+        case CreateIndex(queryId, clustername,metadata) =>{ eng.createIndex(clustername,metadata) }
+        case CreateTable(queryId, clustername,metadata) =>{ eng.createTable(clustername,metadata) }
+        case DropCatalog(queryId, clustername,metadata) =>{ eng.dropCatalog(clustername,metadata) }
+        case DropIndex(queryId, clustername,metadata) =>{ eng.dropIndex(clustername,metadata) }
+        case DropTable(queryId, clustername,metadata) =>{ eng.dropTable(clustername,metadata) }
       }
       sender ! "ok" //TODO define this message
     }
@@ -86,8 +86,8 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     case storageOp: StorageOperation=> {
       val eng=connector.getStorageEngine()
       storageOp match{
-        case Insert(clustername,table,row)=>{ eng.insert(clustername,table,row) }
-        case InsertBatch(clustername,table,rows)=>{ eng.insert(clustername,table,rows) }
+        case Insert(queryId, clustername,table,row)=>{ eng.insert(clustername,table,row) }
+        case InsertBatch(queryId, clustername,table,rows)=>{ eng.insert(clustername,table,rows) }
       }
       sender ! "ok" //TODO define this message
     }

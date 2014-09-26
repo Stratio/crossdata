@@ -114,7 +114,7 @@ case class AttachCluster(queryId: String, targetCluster: ClusterName, datastoreN
 case class DetachCluster(queryId: String, targetCluster: ClusterName) extends ManagementOperation(queryId)
 
 case class AttachConnector(queryId: String, targetCluster: ClusterName,
-                           connectorName: ConnectorName) extends ManagementOperation(queryId)
+                           connectorName: ConnectorName, options: java.util.Map[Selector, Selector]) extends ManagementOperation(queryId)
 
 case class DetachConnector(queryId: String, targetCluster: ClusterName,
                            connectorName: ConnectorName) extends ManagementOperation(queryId)

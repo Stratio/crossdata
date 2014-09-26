@@ -46,8 +46,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
     case workflow: ManagementWorkflow => {
       val requestSender = sender
-      //TODO execute on coordinator and return results to the user
-      requestSender ! CommandResult.createCommandResult("");
+      requestSender ! coordinator.executeManagementOperation(workflow.getManagementOperation)
     }
 
     case workflow: QueryWorkflow => {
