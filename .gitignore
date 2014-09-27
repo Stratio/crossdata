@@ -16,5 +16,4 @@ meta-core/test-output/*
 sonar-project.properties
 */.sonar
 */test-output
-.gitignore
 *.log
