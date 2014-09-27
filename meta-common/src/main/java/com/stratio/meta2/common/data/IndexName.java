@@ -26,6 +26,8 @@ public class IndexName extends Name {
 
     private TableName tableName;
 
+    private String catalogName;
+
     /**
      * Default constructor.
      *
@@ -51,16 +53,6 @@ public class IndexName extends Name {
     public IndexName(TableName tableName, String columnName) {
         this.tableName = tableName;
         this.name = columnName;
-    }
-
-    /**
-     * Constructor using existing TableName.
-     *
-     * @param columnName Name of the column.
-     */
-    public IndexName(ColumnName columnName) {
-        this.tableName = columnName.getTableName();
-        this.name = columnName.getName();
     }
 
     public TableName getTableName() {
@@ -92,6 +84,8 @@ public class IndexName extends Name {
                 tableName = this.getTableName().getName();
                 if (this.getTableName().getCatalogName() != null) {
                     catalogName = this.getTableName().getCatalogName().getName();
+                } else {
+                    catalogName = this.catalogName;
                 }
             }
 

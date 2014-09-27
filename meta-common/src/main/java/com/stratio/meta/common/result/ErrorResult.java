@@ -30,11 +30,6 @@ package com.stratio.meta.common.result;
 public class ErrorResult extends Result {
 
     /**
-     * Serial version UID.
-     */
-    private static final long serialVersionUID = -3692402254351549778L;
-
-    /**
      * Type of error.
      */
     private final ErrorType type;
@@ -44,19 +39,10 @@ public class ErrorResult extends Result {
      */
     private final String errorMessage;
 
-    private Exception exception;
-
     public ErrorResult(ErrorType type, String errorMessage) {
         this.type = type;
         this.errorMessage = errorMessage;
         this.error = true;
-    }
-
-    public ErrorResult(ErrorType type, String errorMessage, Exception e) {
-        this.type = type;
-        this.errorMessage = errorMessage;
-        this.error = true;
-        this.exception = e;
     }
 
     /**
@@ -70,9 +56,5 @@ public class ErrorResult extends Result {
 
     public ErrorType getType() {
         return type;
-    }
-
-    public Exception getException() {
-        return exception;
     }
 }

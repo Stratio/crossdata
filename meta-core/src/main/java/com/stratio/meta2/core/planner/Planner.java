@@ -22,6 +22,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta.common.exceptions.PlanningException;
 import com.stratio.meta.common.executionplan.ExecutionWorkflow;
 import com.stratio.meta.common.logicalplan.Filter;
 import com.stratio.meta.common.logicalplan.Join;
@@ -101,31 +102,73 @@ public class Planner {
         return result;
     }
 
-    protected ExecutionWorkflow buildExecutionWorkflow(LogicalWorkflow workflow) {
+    protected ExecutionWorkflow buildExecutionWorkflow(LogicalWorkflow workflow) throws PlanningException {
 
         List<TableName> tables = new ArrayList<>(workflow.getInitialSteps().size());
-        for(LogicalStep ls: workflow.getInitialSteps()){
+        for(LogicalStep ls : workflow.getInitialSteps()){
             tables.add(Project.class.cast(ls).getTableName());
         }
 
         //Get the list of connector attached to the clusters that contain the required tables.
-        Map<TableName, List<ConnectorMetadata>> initialConnectors = MetadataManager.MANAGER.getAttachedConnectors(
+        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER.getAttachedConnectors(
                 Status.ONLINE, tables);
-
-        List<ConnectorMetadata> candidatesConnectors = new ArrayList<>();
 
         //Refine the list of available connectors and determine which connector to be used.
         for(LogicalStep ls: workflow.getInitialSteps()){
-            Operations operations = ls.getOperation();
-            List<ConnectorMetadata> connectorList = initialConnectors.get(Project.class.cast(ls).getTableName());
-            for(ConnectorMetadata connectorMetadata: connectorList){
-                if(connectorMetadata.getSupportedOperations().getOperation().contains(operations)){
-                    //TODO
-                }
+
+            TableName tableName = Project.class.cast(ls).getTableName();
+
+            updateCandidates(tableName, ls, candidatesConnectors);
+
+            /*
+            * TODO  We go through all the path from every initial step to the final,
+            * which causes double checking of the common path. This logic has to be improved.
+            * */
+            LogicalStep nextLogicalStep = ls.getNextStep();
+            while(nextLogicalStep != null){
+                updateCandidates(tableName, nextLogicalStep, candidatesConnectors);
+                nextLogicalStep = nextLogicalStep.getNextStep();
             }
         }
 
-        return null;
+        ConnectorMetadata chosenConnector;
+        if(candidatesConnectors.isEmpty()){
+            throw new PlanningException("No connector meets the required capabilities.");
+        } else {
+            // TODO: we shouldn't choose the first candidate, we should choose the best
+            chosenConnector = candidatesConnectors.values().iterator().next().get(0);
+        }
+
+        // TODO: Create this object properly
+        ExecutionWorkflow executionWorkflow = new ExecutionWorkflow(null, null, null, null);
+
+        return executionWorkflow;
+    }
+
+    /**
+     * Filter the list of connector candidates attached to the cluster that a table belongs to,
+     * according to the capabilities required by a logical step.
+     * @param tableName Table name extracted from the first step (see {@link Project}).
+     * @param ls Logical Step containing the {@link com.stratio.meta.common.connector.Operations} to be checked.
+     * @param candidatesConnectors Map with the Connectors (see {@link com.stratio.meta2.common.metadata.ConnectorMetadata}) that already met the previous
+     *                             Operations.
+     */
+    public void updateCandidates(TableName tableName, LogicalStep ls,
+            Map<TableName, List<ConnectorMetadata>> candidatesConnectors){
+        Operations operations = ls.getOperation();
+        List<ConnectorMetadata> connectorList = candidatesConnectors.get(tableName);
+        List<ConnectorMetadata> rejectedConnectors = new ArrayList<>();
+        for(ConnectorMetadata connectorMetadata: connectorList){
+            if(!connectorMetadata.getSupportedOperations().getOperation().contains(operations)){
+                rejectedConnectors.add(connectorMetadata);
+            }
+        }
+        connectorList.removeAll(rejectedConnectors);
+        if(connectorList.isEmpty()){
+            candidatesConnectors.remove(tableName);
+        } else {
+            candidatesConnectors.put(tableName, connectorList);
+        }
     }
 
     /**

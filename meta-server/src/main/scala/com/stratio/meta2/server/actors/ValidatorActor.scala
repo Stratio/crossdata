@@ -20,9 +20,9 @@ package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.meta2.core.query.ParsedQuery
+import com.stratio.meta2.core.statements.MetaStatement
 import com.stratio.meta2.core.validator.Validator
 import org.apache.log4j.Logger
-import com.stratio.meta.common.result.Result
 
 object ValidatorActor {
   def props(planner: ActorRef, validator: Validator): Props = Props(new ValidatorActor(planner, validator))
@@ -46,14 +46,21 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
 
   override def receive: Receive = {
     case query: ParsedQuery => {
-      val timer = initTimer()
-      val validatedQuery = validator.validate(query)
-      finishTimer(timer)
-      planner forward validatedQuery
+      log.info("Validator Actor received ParsedQuery ")
+      val validatedquery = validator.validate(query)
+      log.info("Validator Actor sends validated query to planner ")
+      log.info("Validatedquery= " + validatedquery)
+      planner forward validatedquery
+      sender ! "Ok"
+    }
+    case statement: MetaStatement => {
+
+      log.info("validator metaStatement")
     }
     case _ => {
-      log.error("Unknown message received by ValidatorActor");
-      sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
+      log.info("validator _")
+      sender ! "KO"
+      //sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
     }
   }
 }

@@ -91,17 +91,17 @@ public class MetadataWorkflow extends ExecutionWorkflow {
     public MetadataOperation getMetadataOperation(){
         MetadataOperation result = null;
         if(ExecutionType.CREATE_CATALOG.equals(this.executionType)){
-            result = new CreateCatalog(this.queryId, this.clusterName, this.catalogMetadata);
+            result = new CreateCatalog(this.clusterName, this.catalogMetadata);
         }else if(ExecutionType.DROP_CATALOG.equals(this.executionType)){
-            result = new DropCatalog(this.queryId, this.clusterName, this.catalogName);
+            result = new DropCatalog(this.clusterName, this.catalogName);
         }else if(ExecutionType.CREATE_TABLE.equals(this.executionType)){
-            result = new CreateTable(this.queryId, this.clusterName, this.tableMetadata);
+            result = new CreateTable(this.clusterName, this.tableMetadata);
         }else if(ExecutionType.DROP_TABLE.equals(this.executionType)){
-            result = new DropTable(this.queryId, this.clusterName, this.tableName);
+            result = new DropTable(this.clusterName, this.tableName);
         }else if(ExecutionType.CREATE_INDEX.equals(this.executionType)){
-            result = new CreateIndex(this.queryId, this.clusterName, this.indexMetadata);
+            result = new CreateIndex(this.clusterName, this.indexMetadata);
         }else if(ExecutionType.DROP_INDEX.equals(this.executionType)){
-            result = new DropIndex(this.queryId, this.clusterName, this.indexMetadata);
+            result = new DropIndex(this.clusterName, this.indexMetadata);
         }
         return result;
     }

@@ -39,9 +39,7 @@ public enum ExecutionType {
     SELECT,
 
     //Connector operations
-    ATTACH_CLUSTER,
-    DETACH_CLUSTER,
-    ATTACH_CONNECTOR,
-    DETACH_CONNECTOR
+    ATTACH,
+    DETACH
 
 }

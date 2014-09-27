@@ -4,10 +4,9 @@ import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
-import com.stratio.meta.common.logicalplan.LogicalWorkflow
-import com.stratio.meta.common.result.{CommandResult, QueryResult, MetadataResult}
-import com.stratio.meta.communication._
-import com.stratio.meta.common.result.Result
+import com.stratio.meta.communication.{HeartbeatSig, getConnectorName, replyConnectorName}
+import com.stratio.meta2.core.query.{MetadataInProgressQuery, SelectInProgressQuery, StorageInProgressQuery}
+import com.stratio.meta2.core.statements.{CreateTableStatement, SelectStatement}
 
 object State extends Enumeration {
   type state = Value
@@ -123,6 +122,9 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
         case err: Error =>
           log.error("error in ConnectorActor( receiving MetaOperation)")
       }
+      val result=MetadataResult.createSuccessMetadataResult()
+      result.setQueryId("TODO: extract a real query ID from the metadataop") //TODO
+      sender ! result
     }
 
     case _:Result =>
@@ -153,6 +155,9 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
         case err: Error =>
           log.error("error in ConnectorActor( receiving StorageOperation)")
       }
+      val result=CommandResult.createCommandResult("ok")
+      result.setQueryId("TODO: extract a real query ID from the metadataop") //TODO
+      sender ! result
     }
 
 

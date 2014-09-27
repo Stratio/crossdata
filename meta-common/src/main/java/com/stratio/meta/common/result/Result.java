@@ -29,20 +29,14 @@ public abstract class Result implements Serializable {
      * Serial version UID in order to be {@link java.io.Serializable}.
      */
     private static final long serialVersionUID = 8596330240278204430L;
-
     /**
      * Whether an error occurred during the execution of an action.
      */
     protected boolean error = false;
-
     /**
      * Query identifier associated with the result.
      */
     private String queryId;
-
-    public static ErrorResult createErrorResult(ErrorType type, String errorMessage, Exception e) {
-        return new ErrorResult(type, errorMessage, e);
-    }
 
     public static ErrorResult createErrorResult(ErrorType type, String errorMessage) {
         return new ErrorResult(type, errorMessage);

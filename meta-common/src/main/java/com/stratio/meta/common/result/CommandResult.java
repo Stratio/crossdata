@@ -26,7 +26,6 @@ public class CommandResult extends Result {
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.
      */
-    private static final long serialVersionUID = 911241322670910378L;
 
     /**
      * Execution result.

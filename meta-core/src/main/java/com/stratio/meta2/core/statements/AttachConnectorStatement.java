@@ -3,23 +3,21 @@ package com.stratio.meta2.core.statements;
 import java.util.Map;
 
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 public class AttachConnectorStatement extends MetadataStatement {
 
-    private ConnectorName connectorName;
-    private ClusterName clusterName;
+    private String connectorName;
+    private String clusterName;
 
     /**
      * The map of options passed to the connector during its attachment.
      */
     private Map<Selector, Selector> options = null;
 
-    public AttachConnectorStatement(ConnectorName connectorName, ClusterName clusterName, String json) {
+    public AttachConnectorStatement(String connectorName, String clusterName, String json) {
         this.connectorName = connectorName;
         this.clusterName = clusterName;
         this.options = StringUtils.convertJsonToOptions(json);
@@ -37,11 +35,11 @@ public class AttachConnectorStatement extends MetadataStatement {
                 .add(Validation.VALID_CONNECTOR_OPTIONS);
     }
 
-    public ConnectorName getConnectorName() {
+    public String getConnectorName() {
         return connectorName;
     }
 
-    public ClusterName getClusterName() {
+    public String getClusterName() {
         return clusterName;
     }
 

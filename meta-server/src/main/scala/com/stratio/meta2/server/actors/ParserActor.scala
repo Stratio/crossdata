@@ -24,12 +24,12 @@ import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta2.core.query.BaseQuery
 import org.apache.log4j.Logger
-import com.stratio.meta.common.result.Result
 
 object ParserActor {
   def props(validator: ActorRef, parser: Parser): Props = Props(new ParserActor(validator, parser))
 }
 
+//class ParserActor(validator: ActorRef, normalizer: ActorRef, parser:Parser) extends Actor with TimeTracker {
 class ParserActor(validator: ActorRef, parser: Parser) extends Actor with TimeTracker {
   override lazy val timerName = this.getClass.getName
   val log = Logger.getLogger(classOf[ParserActor])
@@ -38,14 +38,36 @@ class ParserActor(validator: ActorRef, parser: Parser) extends Actor with TimeTr
     case Query(queryId, catalog, statement, user) => {
       log.info("\nInit Parser Task {}{}{}{}", queryId, catalog, statement, user)
       val timer = initTimer()
+      //val stmt = parser.parseStatement(queryId, catalog, statement)
+      //val stmt = parser.parseStatement(catalog, statement)
       val baseQuery = new BaseQuery(queryId, statement, new CatalogName(catalog))
       val stmt = parser.parse(baseQuery)
+      //stmt.setQueryId(queryId)
+      //if(!stmt.hasError){
+      //stmt.setSessionCatalog(catalog)
+      //}
+      val parsedquery = parser.parse(baseQuery)
+      log.info("\nforwarding parsedquery to the validator " + parsedquery)
+      //sender ! "Ok"
+      validator forward parsedquery
+
+      /*
+      if(stmt.isInstanceOf[SelectParsedQuery]){
+        normalizer forward stmt
+      } else if(stmt.isInstanceOf[StorageParsedQuery] || stmt.isInstanceOf[MetadataParsedQuery] ){
+        validator forward stmt
+      } else {
+        sender ! Result.createUnsupportedOperationErrorResult("Unexpected result from Parser")
+      }
+
+      //validator forward stmt
       finishTimer(timer)
-      validator forward stmt
       log.info("Finish Parser Task")
+      */
     }
     case _ => {
-      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
+      //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
+      sender ! "KO"
     }
   }
 

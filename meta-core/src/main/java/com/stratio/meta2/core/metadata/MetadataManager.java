@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
 import javax.transaction.HeuristicMixedException;
@@ -28,6 +27,7 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
+
 
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
@@ -45,6 +45,7 @@ import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
 
 public enum MetadataManager {
     MANAGER;
@@ -173,10 +174,6 @@ public enum MetadataManager {
         }
     }
 
-    public void deleteCatalog(CatalogName catalogName) {
-
-    }
-
     public CatalogMetadata getCatalog(CatalogName name) {
         shouldBeInit();
         shouldExist(name);
@@ -212,10 +209,6 @@ public enum MetadataManager {
 
     public void createTable(TableMetadata tableMetadata) {
         createTable(tableMetadata, true);
-    }
-
-    public void deleteTable(TableName tableName) {
-
     }
 
     public TableMetadata getTable(TableName name) {
@@ -329,37 +322,25 @@ public enum MetadataManager {
 
     /**
      * Get the connectors that are attached to the clusters that store the requested tables.
-     * 
-     * @param connectorStatus
-     *            The status of the connector.
-     * @param tables
-     *            The list of table names.
+     * @param connectorStatus The status of the connector.
+     * @param tables The list of table names.
      * @return A map associating table names with a list of the available connectors.
      */
     public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus,
-            List<TableName> tables) {
-
+            List<TableName> tables){
         Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
-
-        List<ConnectorMetadata> connectors;
-        for (TableName table : tables) {
-
-            ClusterName clusterName = getTable(table).getClusterRef();
-
-            Set<ConnectorName> connectorNames = getCluster(clusterName)
-                    .getConnectorAttachedRefs().keySet();
-
+        List<ConnectorMetadata> connectors = null;
+        for(TableName table: tables) {
             connectors = new ArrayList<>();
-            for (ConnectorName connectorName : connectorNames) {
-                ConnectorMetadata connectorMetadata = getConnector(connectorName);
-                if (connectorMetadata.getStatus() == connectorStatus) {
-                    connectors.add(connectorMetadata);
-                }
-            }
-
-            result.put(table, connectors);
         }
         return result;
+    }
+
+    public ColumnMetadata getColumn(ColumnName name){
+        shouldBeInit();
+        shouldExist(name);
+        TableMetadata tableMetadata=this.getTable(name.getTableName());
+        return tableMetadata.getColumns().get(name);
     }
 
 }

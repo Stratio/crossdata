@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.stratio.meta.common.utils.StringUtils;
-import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
@@ -40,7 +38,7 @@ public class AttachClusterStatement extends MetadataStatement {
      * Cluster name given by the user. This name will be used to refer to the cluster when creating
      * new tables.
      */
-    private final ClusterName clusterName;
+    private final String clusterName;
 
     /**
      * Whether the storage should be created only if not exists.
@@ -50,7 +48,7 @@ public class AttachClusterStatement extends MetadataStatement {
     /**
      * Name of the datastore associated with the storage and the connectors.
      */
-    private final DataStoreName datastoreName;
+    private final String datastoreName;
 
     /**
      * A JSON with the options of the cluster.
@@ -65,7 +63,7 @@ public class AttachClusterStatement extends MetadataStatement {
      * @param datastoreName The name of the datastore.
      * @param options       A JSON with the options.
      */
-    public AttachClusterStatement(ClusterName clusterName, boolean ifNotExists, DataStoreName datastoreName,
+    public AttachClusterStatement(String clusterName, boolean ifNotExists, String datastoreName,
             String options) {
         this.clusterName = clusterName;
         this.ifNotExists = ifNotExists;
@@ -101,7 +99,7 @@ public class AttachClusterStatement extends MetadataStatement {
         return options;
     }
 
-    public ClusterName getClusterName() {
+    public String getClusterName() {
         return clusterName;
     }
 
@@ -109,7 +107,7 @@ public class AttachClusterStatement extends MetadataStatement {
         return ifNotExists;
     }
 
-    public DataStoreName getDatastoreName() {
+    public String getDatastoreName() {
         return datastoreName;
     }
 }

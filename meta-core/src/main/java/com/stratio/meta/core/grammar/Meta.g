@@ -331,9 +331,9 @@ attachClusterStatement returns [AttachClusterStatement acs]
     }
     @after{
         acs = new AttachClusterStatement(
-            new ClusterName($clusterName.text),
+            $clusterName.text,
             ifNotExists,
-            new DataStoreName($dataStoreName.text),
+            $dataStoreName.text,
             j);
     }:
     T_ATTACH T_CLUSTER
@@ -367,8 +367,7 @@ alterClusterStatement returns [AlterClusterStatement acs]
 
 attachConnectorStatement returns [AttachConnectorStatement acs]
     @after{
-        $acs = new AttachConnectorStatement(new ConnectorName($connectorName.text),
-        new ClusterName($clusterName.text), optionsJson);
+        $acs = new AttachConnectorStatement($connectorName.text, $clusterName.text, optionsJson);
     }:
     T_ATTACH T_CONNECTOR connectorName=T_IDENT T_TO clusterName=T_IDENT T_WITH T_OPTIONS optionsJson=getJson
 ;
@@ -485,8 +484,9 @@ dropIndexStatement returns [DropIndexStatement dis]
 	}:
 	T_DROP T_INDEX
 	(T_IF T_EXISTS {$dis.setDropIfExists();})?
-	name=getColumnName[null] { $dis.setName(new IndexName(name)); }
+	name=(T_KS_AND_TN | T_IDENT | T_LUCENE) {$dis.setName($name.text);}
 ;
+
 
 //CREATE HASH INDEX ON table1 (field1, field2);
 //CREATE HASH INDEX index1 ON table1 (field1, field2) USING com.company.Index.class;
@@ -497,7 +497,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 	}:
 	T_CREATE {$cis.setIndexType("default");} (indexType=getIndexType {$cis.setIndexType(indexType);})? T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
-	(name=getColumnName[null] { $cis.setName(name);} )?
+	(name=T_IDENT {$cis.setName($name.text);})?
 	T_ON tablename=getTableName {$cis.setTableName(tablename);}
 	T_START_PARENTHESIS
         firstField=getColumnName[tablename] {$cis.addColumn(firstField);}
@@ -745,7 +745,15 @@ truncateStatement returns [TruncateStatement trst]:
 
 metaStatement returns [MetaStatement st]:
     (T_START_BRACKET
-        ( gID=getGenericID { sessionCatalog = gID;} )?
+        ( gID=getGenericID { sessionCatalog = gID;}
+
+
+        /*allowedReservedWord=getAllowedReservedWord { sessionCatalog = allowedReservedWord; }
+        | inputCatalog=T_IDENT { sessionCatalog = $inputCatalog.text; }*/
+
+
+
+        )?
     T_END_BRACKET T_COMMA)?
     (st_nsnt   = insertIntoStatement { $st = st_nsnt;}
     | st_slct = selectStatement { $st = st_slct;}
