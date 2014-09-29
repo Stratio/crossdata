@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.core.statements;
 
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
@@ -80,4 +81,11 @@ public class DropTableStatement extends MetadataStatement {
         return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE);
     }
 
+    public boolean isIfExists() {
+        return ifExists;
+    }
+
+    public CatalogName getCatalogName(){
+        return tableName.getCatalogName();
+    }
 }

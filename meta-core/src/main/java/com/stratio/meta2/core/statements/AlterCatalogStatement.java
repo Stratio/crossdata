@@ -65,4 +65,8 @@ public class AlterCatalogStatement extends MetadataStatement {
     public Map<Selector, Selector> getOptions() {
         return options;
     }
+
+    public CatalogName getCatalogName(){
+        return catalog;
+    }
 }

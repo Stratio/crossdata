@@ -12,15 +12,16 @@ import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.DetachConnectorStatement;
+import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
 
-public class DetachConnectorStatementTest {
+public class DetachConnectorStatementTest extends BasicValidatorTest{
 
     @Test
     public void detachConnector() {
-        String query = "DETACH CONNECTOR CassandraConnector FROM Cassandra";
+        String query = "DETACH CONNECTOR CassandraConnector FROM cluster";
         DetachConnectorStatement detachConnectorStatement = new DetachConnectorStatement(
-                new ConnectorName("CassandraConnector"), new ClusterName("Cassandra"));
+                new ConnectorName("CassandraConnector"), new ClusterName("cluster"));
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("detachConnectorId", query, new CatalogName("system"));
@@ -38,9 +39,9 @@ public class DetachConnectorStatementTest {
 
     @Test
     public void detachUnknownConnector() {
-        String query = "DETACH CONNECTOR Unknown FROM Cassandra";
+        String query = "DETACH CONNECTOR Unknown FROM cluster";
         DetachConnectorStatement detachConnectorStatement = new DetachConnectorStatement(new ConnectorName("Unknown"),
-                new ClusterName("Cassandra"));
+                new ClusterName("cluster"));
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("detachConnectorId", query, new CatalogName("system"));

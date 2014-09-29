@@ -105,7 +105,7 @@ public class Planner {
     protected ExecutionWorkflow buildExecutionWorkflow(LogicalWorkflow workflow) throws PlanningException {
 
         List<TableName> tables = new ArrayList<>(workflow.getInitialSteps().size());
-        for(LogicalStep ls : workflow.getInitialSteps()){
+        for(LogicalStep ls: workflow.getInitialSteps()){
             tables.add(Project.class.cast(ls).getTableName());
         }
 
@@ -169,6 +169,7 @@ public class Planner {
         } else {
             candidatesConnectors.put(tableName, connectorList);
         }
+
     }
 
     /**
