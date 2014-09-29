@@ -10,14 +10,15 @@ import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.DetachClusterStatement;
+import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
 
-public class DetachClusterStatementTest {
+public class DetachClusterStatementTest extends BasicValidatorTest{
 
     @Test
     public void detachCluster() {
-        String query = "DROP CLUSTER Cassandra";
-        DetachClusterStatement detachClusterStatement = new DetachClusterStatement("Cassandra");
+        String query = "DROP CLUSTER cluster";
+        DetachClusterStatement detachClusterStatement = new DetachClusterStatement("cluster");
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));

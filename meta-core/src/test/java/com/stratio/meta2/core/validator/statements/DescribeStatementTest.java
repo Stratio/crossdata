@@ -25,6 +25,7 @@ import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.core.structures.DescribeType;
 import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
@@ -38,6 +39,7 @@ public class DescribeStatementTest extends BasicValidatorTest {
     public void describeCatalogIfNotExists() {
         String query = "DESCRIBE CATALOG demo;";
         DescribeStatement describeStatement = new DescribeStatement(DescribeType.CATALOG);
+        describeStatement.setCatalog(new CatalogName("demo"));
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("describeid", query, new CatalogName("demo"));
@@ -58,6 +60,7 @@ public class DescribeStatementTest extends BasicValidatorTest {
     public void describeNotExistingCatalog() {
         String query = "DECRIBE CATALOG myCatalog;";
         DescribeStatement describeStatement = new DescribeStatement(DescribeType.CATALOG);
+        describeStatement.setCatalog(new CatalogName("myCatalog"));
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("describeid", query, new CatalogName("myCatalog"));
@@ -78,6 +81,7 @@ public class DescribeStatementTest extends BasicValidatorTest {
     public void describeTable() {
         String query = "Describe Table demo.users;";
         DescribeStatement describeStatement = new DescribeStatement(DescribeType.TABLE);
+        describeStatement.setTableName(new TableName("demo","users"));
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("describeid", query, new CatalogName("demo"));
@@ -96,8 +100,9 @@ public class DescribeStatementTest extends BasicValidatorTest {
 
     @Test
     public void describeNotExistingTable() {
-        String query = "Describe table myCatalog;";
+        String query = "Describe table myCatalog3;";
         DescribeStatement describeStatement = new DescribeStatement(DescribeType.TABLE);
+        describeStatement.setTableName(new TableName("demo","myCatalog3"));
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("describeid", query, new CatalogName("demo"));

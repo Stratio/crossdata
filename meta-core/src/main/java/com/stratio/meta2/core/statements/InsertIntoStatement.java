@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.structures.Option;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
@@ -192,5 +193,17 @@ public class InsertIntoStatement extends StorageStatement {
     @Override
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE);
+    }
+
+    public TableName getTableName() {
+        return tableName;
+    }
+
+    public boolean isIfNotExists() {
+        return ifNotExists;
+    }
+
+    public CatalogName getCatalogName(){
+        return tableName.getCatalogName();
     }
 }

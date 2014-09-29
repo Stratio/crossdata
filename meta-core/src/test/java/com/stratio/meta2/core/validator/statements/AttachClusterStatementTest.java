@@ -81,4 +81,133 @@ public class AttachClusterStatementTest {
         }
     }
 
+    @Test
+    public void attachUnknownClusterWithOptionsIfexists() {
+        String query = "ATTACH CLUSTER IF EXIST unknown on DATASTORE Cassandra with options {'comment':'attach " +
+                "cluster'}";
+
+        AttachClusterStatement attachClusterStatement = new AttachClusterStatement("unknown", true, "Cassandra",
+                "{'comment':'attach cluster'}");
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.assertTrue(true);
+        }
+    }
+
+    @Test
+    public void attachUnknownClusterWithOptions() {
+        String query = "ATTACH CLUSTER unknown on DATASTORE Cassandra with options {'comment':'attach cluster'}";
+
+        AttachClusterStatement attachClusterStatement = new AttachClusterStatement("unknown",false, "Cassandra",
+                "{'comment':'attach cluster'}");
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("The cluster must exist");
+        } catch (ValidationException e) {
+            Assert.assertTrue(true);
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void attachUnknownClusterWithOptionsIfexists() {
+        String query = "ATTACH CLUSTER IF EXIST unknown on DATASTORE Cassandra with options {'comment':'attach " +
+                "cluster'}";
+
+        AttachClusterStatement attachClusterStatement = new AttachClusterStatement("unknown", true, "Cassandra",
+                "{'comment':'attach cluster'}");
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.assertTrue(true);
+        }
+    }
+
+    @Test
+    public void attachUnknownClusterWithOptions() {
+        String query = "ATTACH CLUSTER unknown on DATASTORE Cassandra with options {'comment':'attach cluster'}";
+
+        AttachClusterStatement attachClusterStatement = new AttachClusterStatement("unknown",false, "Cassandra",
+                "{'comment':'attach cluster'}");
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("The cluster must exist");
+        } catch (ValidationException e) {
+            Assert.assertTrue(true);
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void attachUnknownClusterWithOptionsIfexists() {
+        String query = "ATTACH CLUSTER IF EXIST unknown on DATASTORE Cassandra with options {'comment':'attach " +
+                "cluster'}";
+
+        AttachClusterStatement attachClusterStatement = new AttachClusterStatement("unknown", true, "Cassandra",
+                "{'comment':'attach cluster'}");
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.assertTrue(true);
+        }
+    }
+
+    @Test
+    public void attachUnknownClusterWithOptions() {
+        String query = "ATTACH CLUSTER unknown on DATASTORE Cassandra with options {'comment':'attach cluster'}";
+
+        AttachClusterStatement attachClusterStatement = new AttachClusterStatement("unknown",false, "Cassandra",
+                "{'comment':'attach cluster'}");
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+
+        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("The cluster must exist");
+        } catch (ValidationException e) {
+            Assert.assertTrue(true);
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
 }

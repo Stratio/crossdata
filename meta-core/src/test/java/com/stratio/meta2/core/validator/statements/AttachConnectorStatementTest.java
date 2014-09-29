@@ -52,11 +52,11 @@ public class AttachConnectorStatementTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertTrue(true);
+            Assert.fail("Connector must exists");
         } catch (ValidationException e) {
-            Assert.fail(e.getMessage());
+            Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            Assert.assertTrue(true);
         }
     }
 
@@ -74,11 +74,11 @@ public class AttachConnectorStatementTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertTrue(true);
+            Assert.fail("Connector must exists");
         } catch (ValidationException e) {
-            Assert.fail(e.getMessage());
+            Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            Assert.assertTrue(true);
         }
     }
 

@@ -23,6 +23,14 @@ public class DetachConnectorStatement extends MetadataStatement {
     @Override
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER)
-                .add(Validation.MUST_EXIST_ATTACH_CONNECTOR_CLUSTER);
+                .add(Validation.MUST_EXIST_ATTACH_CONNECTOR_CLUSTER).add(Validation.MUST_EXIST_CONNECTOR);
+    }
+
+    public ConnectorName getConnectorName() {
+        return connectorName;
+    }
+
+    public ClusterName getClusterName() {
+        return clusterName;
     }
 }

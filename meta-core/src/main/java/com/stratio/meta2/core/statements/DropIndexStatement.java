@@ -92,4 +92,11 @@ public class DropIndexStatement extends MetadataStatement {
         return new ValidationRequirements().add(Validation.MUST_EXIST_INDEX);
     }
 
+    public boolean isDropIfExists() {
+        return dropIfExists;
+    }
+
+    public IndexName getName() {
+        return name;
+    }
 }

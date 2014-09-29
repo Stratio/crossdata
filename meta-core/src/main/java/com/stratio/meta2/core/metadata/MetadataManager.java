@@ -45,6 +45,7 @@ import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
 
 public enum MetadataManager {
     MANAGER;
@@ -329,11 +330,9 @@ public enum MetadataManager {
 
     /**
      * Get the connectors that are attached to the clusters that store the requested tables.
-     * 
-     * @param connectorStatus
-     *            The status of the connector.
-     * @param tables
-     *            The list of table names.
+     *
+     * @param connectorStatus The status of the connector.
+     * @param tables          The list of table names.
      * @return A map associating table names with a list of the available connectors.
      */
     public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus,
@@ -360,6 +359,13 @@ public enum MetadataManager {
             result.put(table, connectors);
         }
         return result;
+    }
+
+    public ColumnMetadata getColumn(ColumnName name) {
+        shouldBeInit();
+        shouldExist(name);
+        TableMetadata tableMetadata = this.getTable(name.getTableName());
+        return tableMetadata.getColumns().get(name);
     }
 
 }

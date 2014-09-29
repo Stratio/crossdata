@@ -84,5 +84,8 @@ public class CreateCatalogStatement extends MetadataStatement {
         return options;
     }
 
+    public boolean isIfNotExists() {
+        return ifNotExists;
+    }
 }
 
