@@ -153,7 +153,7 @@ public class Validator {
 
         if (stmt instanceof AttachConnectorStatement) {
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) stmt;
-            name = new ConnectorName(((AttachConnectorStatement) stmt).getConnectorName());
+            name = attachConnectorStatement.getConnectorName();
         }
 
         if (stmt instanceof DetachConnectorStatement) {
@@ -175,7 +175,7 @@ public class Validator {
         boolean hasIfExist = false;
         if (stmt instanceof AttachConnectorStatement) {
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) stmt;
-            name = new ConnectorName(((AttachConnectorStatement) stmt).getConnectorName());
+            name = attachConnectorStatement.getConnectorName();
         }
 
         if (stmt instanceof DetachConnectorStatement) {
@@ -202,7 +202,7 @@ public class Validator {
         }
 
         if (stmt instanceof AttachClusterStatement) {
-            name = new ClusterName(((AttachClusterStatement) stmt).getClusterName());
+            name = (((AttachClusterStatement) stmt).getClusterName());
             hasIfExists = ((AttachClusterStatement) stmt).isIfNotExists();
         }
 
@@ -211,7 +211,7 @@ public class Validator {
         }
 
         if (stmt instanceof AttachConnectorStatement) {
-            name = new ClusterName(((AttachConnectorStatement) stmt).getClusterName());
+            name = (((AttachConnectorStatement) stmt).getClusterName());
         }
 
         if (stmt instanceof CreateTableStatement){
@@ -237,7 +237,7 @@ public class Validator {
         }
 
         if (stmt instanceof AttachClusterStatement) {
-            name = new ClusterName(((AttachClusterStatement) stmt).getClusterName());
+            name = (((AttachClusterStatement) stmt).getClusterName());
             hasIfExists = ((AttachClusterStatement) stmt).isIfNotExists();
         }
 
@@ -284,7 +284,7 @@ public class Validator {
         Name name = null;
         boolean hasIfExists = false;
         if (statement instanceof AttachClusterStatement) {
-            name = new DataStoreName(((AttachClusterStatement) statement).getDatastoreName());
+            name = (((AttachClusterStatement) statement).getDatastoreName());
             hasIfExists = ((AttachClusterStatement) statement).isIfNotExists();
         }
         if (statement instanceof DropDataStoreStatement) {
@@ -297,7 +297,7 @@ public class Validator {
         Name name = null;
         boolean hasIfExists = false;
         if (statement instanceof AttachClusterStatement) {
-            name = new DataStoreName(((AttachClusterStatement) statement).getDatastoreName());
+            name = (((AttachClusterStatement) statement).getDatastoreName());
             hasIfExists = ((AttachClusterStatement) statement).isIfNotExists();
         }
         validateNotExist(name, hasIfExists);
@@ -400,7 +400,7 @@ public class Validator {
 
         if (stmt instanceof AttachClusterStatement){
             AttachClusterStatement attachClusterStatement=(AttachClusterStatement)stmt;
-            name=new ClusterName(attachClusterStatement.getClusterName());
+            name=(attachClusterStatement.getClusterName());
             hasIfExists=attachClusterStatement.isIfNotExists();
         }
 
@@ -515,8 +515,7 @@ public class Validator {
 
         if (stmt instanceof DropIndexStatement) {
             DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
-            //TODO uncomment this file when dropIndex return a IndexName
-            //name=new IndexName(((DropIndexStatement) stmt).getName();
+            name=dropIndexStatement.getName();
             hasIfExist = ((CreateIndexStatement) stmt).isCreateIfNotExists();
         }
         validateNotExist(name, hasIfExist);
@@ -533,8 +532,7 @@ public class Validator {
 
         if (stmt instanceof DropIndexStatement) {
             DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
-            //TODO uncomment this file when dropIndex return a IndexName
-            //name=new IndexName(((DropIndexStatement) stmt).getName();
+           name=dropIndexStatement.getName();
             hasIfExist = ((CreateIndexStatement) stmt).isCreateIfNotExists();
         }
         validateExist(name, hasIfExist);
