@@ -30,11 +30,6 @@ import com.stratio.meta.common.logicalplan.LogicalStep;
 public class ExecutionWorkflow implements Serializable {
 
     /**
-     * Query identifier.
-     */
-    protected final String queryId;
-
-    /**
      * The target actor reference associated with the connector.
      */
     private final Serializable actorRef;
@@ -69,7 +64,6 @@ public class ExecutionWorkflow implements Serializable {
      * @param type     Type of results.
      */
     public ExecutionWorkflow(String queryId, Serializable actorRef, ExecutionType executionType, ResultType type) {
-        this.queryId = queryId;
         this.actorRef = actorRef;
         this.executionType = executionType;
         this.resultType = type;
@@ -77,10 +71,6 @@ public class ExecutionWorkflow implements Serializable {
 
     public Serializable getActorRef() {
         return actorRef;
-    }
-
-    public String getQueryId() {
-        return queryId;
     }
 
     public ResultType getResultType() {

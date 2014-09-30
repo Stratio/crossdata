@@ -74,12 +74,12 @@ public class StorageWorkflow extends ExecutionWorkflow{
      * Get the storage operation to be execution.
      * @return A {@link com.stratio.meta.communication.StorageOperation}.
      */
-    public StorageOperation getStorageOperation(){
+    public StorageOperation getStorageOperation(String queryId){
         StorageOperation result = null;
         if(ExecutionType.INSERT.equals(this.executionType)){
-            result = new Insert(this.queryId, this.clusterName, this.tableMetadata, this.row);
+            result = new Insert(queryId, this.clusterName, this.tableMetadata, this.row);
         }else if(ExecutionType.INSERT_BATCH.equals(this.executionType)){
-            result = new InsertBatch(this.queryId, this.clusterName, this.tableMetadata, this.rows);
+            result = new InsertBatch(queryId, this.clusterName, this.tableMetadata, this.rows);
         }
         return result;
     }

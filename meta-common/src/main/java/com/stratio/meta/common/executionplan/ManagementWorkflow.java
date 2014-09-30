@@ -85,16 +85,16 @@ public class ManagementWorkflow extends ExecutionWorkflow {
         this.options = options;
     }
 
-    public ManagementOperation getManagementOperation() {
+    public ManagementOperation getManagementOperation(String queryId) {
         ManagementOperation result = null;
         if (ExecutionType.ATTACH_CLUSTER.equals(this.executionType)) {
-            result = new AttachCluster(this.queryId, this.clusterName, this.datastoreName, this.options);
+            result = new AttachCluster(queryId, this.clusterName, this.datastoreName, this.options);
         } else if (ExecutionType.DROP_CATALOG.equals(this.executionType)) {
-            result = new DetachCluster(this.queryId, this.clusterName);
+            result = new DetachCluster(queryId, this.clusterName);
         } else if (ExecutionType.ATTACH_CONNECTOR.equals(this.executionType)) {
-            result = new AttachConnector(this.queryId, this.clusterName, this.connectorName, this.options);
+            result = new AttachConnector(queryId, this.clusterName, this.connectorName, this.options);
         } else if (ExecutionType.DETACH_CONNECTOR.equals(this.executionType)) {
-            result = new DetachConnector(this.queryId, this.clusterName, this.connectorName);
+            result = new DetachConnector(queryId, this.clusterName, this.connectorName);
         }
         return result;
     }

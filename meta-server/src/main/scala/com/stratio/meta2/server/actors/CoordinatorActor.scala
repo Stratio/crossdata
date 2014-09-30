@@ -6,6 +6,7 @@ import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.result._
 import com.stratio.meta.communication.ConnectToConnector
 import com.stratio.meta.communication.DisconnectFromConnector
+import com.stratio.meta2.core.query.{SelectPlannedQuery, StoragePlannedQuery, MetadataPlannedQuery, PlannedQuery}
 
 object CoordinatorActor {
   def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor(connectorMgr, coordinator))
@@ -29,35 +30,49 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
   def receive = {
 
-    case workflow: MetadataWorkflow => {
-      val requestSender = sender
-      inProgress.put(workflow.getQueryId, workflow)
-      inProgressSender.put(workflow.getQueryId, requestSender)
-      persistOnSuccess.put(workflow.getQueryId, workflow)
-      workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getMetadataOperation
-    }
+    case plannedQuery: PlannedQuery => {
+      val workflow = plannedQuery.getExecutionWorkflow
 
-    case workflow: StorageWorkflow => {
-      val requestSender = sender
-      inProgress.put(workflow.getQueryId, workflow)
-      inProgressSender.put(workflow.getQueryId, requestSender)
-      workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getStorageOperation
-    }
+      workflow match {
+        case workflow: MetadataWorkflow => {
+          val requestSender = sender
+          val queryId = plannedQuery
+            .asInstanceOf[MetadataPlannedQuery].getQueryId;
+          inProgress.put(queryId, workflow)
+          inProgressSender.put(queryId, requestSender)
+          persistOnSuccess.put(queryId, workflow)
+          workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getMetadataOperation(queryId)
+        }
 
-    case workflow: ManagementWorkflow => {
-      val requestSender = sender
-      requestSender ! coordinator.executeManagementOperation(workflow.getManagementOperation)
-    }
+        case workflow: StorageWorkflow => {
+          val requestSender = sender
+          val queryId = plannedQuery
+            .asInstanceOf[StoragePlannedQuery].getQueryId;
+          inProgress.put(queryId, workflow)
+          inProgressSender.put(queryId, requestSender)
+          workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getStorageOperation(queryId)
+        }
 
-    case workflow: QueryWorkflow => {
-      val requestSender = sender
-      inProgress.put(workflow.getQueryId, workflow)
-      inProgressSender.put(workflow.getQueryId, requestSender)
-      if(ResultType.RESULTS.equals(workflow.getResultType)){
-        workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getWorkflow
-      }else if(ResultType.TRIGGER_EXECUTION.equals(workflow.getResultType)){
-        //TODO Trigger next step execution.
-        throw new UnsupportedOperationException("Trigger execution not supported")
+        case workflow: ManagementWorkflow => {
+          val requestSender = sender
+          val queryId = plannedQuery
+            .asInstanceOf[MetadataPlannedQuery].getQueryId
+          requestSender ! coordinator.executeManagementOperation(workflow.getManagementOperation(queryId))
+        }
+
+        case workflow: QueryWorkflow => {
+          val requestSender = sender
+          val queryId = plannedQuery
+            .asInstanceOf[SelectPlannedQuery].getQueryId
+          inProgress.put(queryId, workflow)
+          inProgressSender.put(queryId, requestSender)
+          if(ResultType.RESULTS.equals(workflow.getResultType)){
+            workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getWorkflow
+          }else if(ResultType.TRIGGER_EXECUTION.equals(workflow.getResultType)){
+            //TODO Trigger next step execution.
+            throw new UnsupportedOperationException("Trigger execution not supported")
+          }
+        }
       }
     }
 
