@@ -73,13 +73,23 @@ options {
 
     public ColumnName normalizeColumnName(TableName tn, String str){
         String [] columnTokens = str.split("\\.");
-        if(columnTokens.length == 1){
+        if(columnTokens.length == 1) {
             return new ColumnName(getEffectiveTable(tn), columnTokens[0]);
-        }else if(columnTokens.length == 2){
+        } else if(columnTokens.length == 2) {
             return new ColumnName(getEffectiveCatalog(tn), columnTokens[0], columnTokens[1]);
-        }else{
+        } else {
             return new ColumnName(columnTokens[0], columnTokens[1], columnTokens[2]);
         }
+    }
+
+    public IndexName normalizeIndexName(String str){
+            String [] indexTokens = str.split("\\.");
+            if(indexTokens.length == 2){
+                return new IndexName(sessionCatalog, indexTokens[0], indexTokens[1]);
+            } else if(indexTokens.length == 3) {
+                return new IndexName(indexTokens[0], indexTokens[1], indexTokens[2]);
+            }
+            return null;
     }
 
     private ErrorsHelper foundErrors = new ErrorsHelper();
@@ -484,8 +494,8 @@ dropIndexStatement returns [DropIndexStatement dis]
 		$dis = new DropIndexStatement();
 	}:
 	T_DROP T_INDEX
-	(T_IF T_EXISTS {$dis.setDropIfExists();})?
-	name=getColumnName[null] { $dis.setName(new IndexName(name)); }
+	(T_IF T_EXISTS { $dis.setDropIfExists(); } )?
+	name=getIndexName { $dis.setName(name); }
 ;
 
 //CREATE HASH INDEX ON table1 (field1, field2);
@@ -494,6 +504,9 @@ dropIndexStatement returns [DropIndexStatement dis]
 createIndexStatement returns [CreateIndexStatement cis]
 	@init{
 		$cis = new CreateIndexStatement();
+	}
+	@after{
+	    cis.normalizeIndexName();
 	}:
 	T_CREATE {$cis.setIndexType("default");} (indexType=getIndexType {$cis.setIndexType(indexType);})? T_INDEX
 	(T_IF T_NOT T_EXISTS {$cis.setCreateIfNotExists();})?
@@ -1010,6 +1023,12 @@ getColumnName[TableName tablename] returns [ColumnName columnName]:
     | ident2=T_KS_AND_TN {$columnName = normalizeColumnName(tablename, $ident2.text);}
     | ident3=T_CTLG_TBL_COL {$columnName = normalizeColumnName(tablename, $ident3.text);}
     | allowedReservedWord=getAllowedReservedWord {$columnName = normalizeColumnName(tablename, allowedReservedWord);})
+;
+
+getIndexName returns [IndexName indexName]:
+    ident=(T_KS_AND_TN
+          | T_CTLG_TBL_COL
+          ) { $indexName = normalizeIndexName($ident.text); }
 ;
 
 getAllowedReservedWord returns [String str]:

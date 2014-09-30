@@ -41,12 +41,15 @@ import com.stratio.meta2.common.statements.structures.selectors.SelectExpression
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
 import com.stratio.meta2.core.metadata.MetadataManager;
+import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
+import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta2.core.structures.OrderBy;
 
 public class Normalizator {
+
     private NormalizedFields fields = new NormalizedFields();
-    private SelectParsedQuery parsedQuery;
+    private ParsedQuery parsedQuery;
 
     public Normalizator(SelectParsedQuery parsedQuery) {
         this.parsedQuery = parsedQuery;
@@ -54,6 +57,11 @@ public class Normalizator {
 
     public NormalizedFields getFields() {
         return fields;
+    }
+
+
+    public ParsedQuery getParsedQuery() {
+        return parsedQuery;
     }
 
     public void execute() throws ValidationException {
@@ -83,7 +91,7 @@ public class Normalizator {
     public void normalizeJoins()
             throws NotExistNameException, BadFormatException, AmbiguousNameException,
             NotValidColumnException, YodaConditionException {
-        InnerJoin innerJoin = parsedQuery.getStatement().getJoin();
+        InnerJoin innerJoin = ((SelectStatement) parsedQuery.getStatement()).getJoin();
         if (innerJoin != null) {
             normalizeJoins(innerJoin);
         }
@@ -101,7 +109,7 @@ public class Normalizator {
     private void normalizeWhere()
             throws BadFormatException, AmbiguousNameException, NotValidColumnException,
             NotExistNameException, YodaConditionException {
-        List<Relation> where = parsedQuery.getStatement().getWhere();
+        List<Relation> where = ((SelectStatement) parsedQuery.getStatement()).getWhere();
         if (where != null && !where.isEmpty()) {
             normalizeWhere(where);
         }
@@ -116,7 +124,7 @@ public class Normalizator {
     public void normalizeOrderBy()
             throws BadFormatException, AmbiguousNameException, NotExistNameException,
             NotValidColumnException {
-        OrderBy orderBy = parsedQuery.getStatement().getOrderBy();
+        OrderBy orderBy = ((SelectStatement) parsedQuery.getStatement()).getOrderBy();
         if (orderBy != null) {
             normalizeOrderBy(orderBy);
         }
@@ -144,7 +152,7 @@ public class Normalizator {
 
     public void normalizeSelectExpression()
             throws AmbiguousNameException, NotExistNameException, NotValidColumnException {
-        SelectExpression selectExpression = parsedQuery.getStatement().getSelectExpression();
+        SelectExpression selectExpression = ((SelectStatement) parsedQuery.getStatement()).getSelectExpression();
         if (selectExpression != null) {
             normalizeSelectExpresion(selectExpression);
         }
@@ -159,7 +167,7 @@ public class Normalizator {
 
     public void normalizeGroupBy() throws BadFormatException, AmbiguousNameException,
             NotExistNameException, NotValidColumnException {
-        GroupBy groupBy = parsedQuery.getStatement().getGroupBy();
+        GroupBy groupBy = ((SelectStatement) parsedQuery.getStatement()).getGroupBy();
         if (groupBy != null) {
             normalizeGroupBy(groupBy);
         }

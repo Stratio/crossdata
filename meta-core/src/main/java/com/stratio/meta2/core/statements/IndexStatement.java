@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,18 +16,35 @@
  * under the License.
  */
 
-package com.stratio.meta.core.normalizer;
+package com.stratio.meta2.core.statements;
 
-import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta2.core.query.SelectParsedQuery;
-import com.stratio.meta2.core.query.SelectValidatedQuery;
+import com.stratio.meta2.common.data.IndexName;
 
-public class Normalizer {
+public abstract class IndexStatement extends MetadataStatement {
 
-    public SelectValidatedQuery normalize(SelectParsedQuery parsedQuery) throws ValidationException {
-        Normalizator normalizator = new Normalizator(parsedQuery);
-        normalizator.execute();
-        return new SelectValidatedQuery(parsedQuery);
+    /**
+     * The name of the index.
+     */
+    protected IndexName name = null;
+
+
+    /**
+     * Get the index name.
+     *
+     * @return The name.
+     */
+    public IndexName getName() {
+        return name;
+    }
+
+    /**
+     * Set the name of the index.
+     *
+     * @param name The name.
+     */
+
+    public void setName(IndexName name) {
+        this.name = name;
     }
 
 }
