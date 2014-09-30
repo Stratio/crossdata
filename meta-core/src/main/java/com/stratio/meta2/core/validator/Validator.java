@@ -18,18 +18,28 @@
 
 package com.stratio.meta2.core.validator;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.exceptions.IgnoreQueryException;
 import com.stratio.meta.common.exceptions.ValidationException;
+import com.stratio.meta.common.exceptions.validation.BadFormatException;
 import com.stratio.meta.common.exceptions.validation.ExistNameException;
 import com.stratio.meta.common.exceptions.validation.NotExistNameException;
-import com.stratio.meta2.common.api.Manifest;
+
+import com.stratio.meta.common.exceptions.validation.NotMatchDataTypeException;
+import com.stratio.meta.common.exceptions.validation.YodaConditionException;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.Name;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
+import com.stratio.meta2.common.metadata.ColumnType;
+import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.MetadataValidatedQuery;
@@ -67,7 +77,7 @@ public class Validator {
     public ValidatedQuery validate(ParsedQuery parsedQuery)
             throws ValidationException, IgnoreQueryException {
         ValidatedQuery validatedQuery = null;
-
+        LOG.info("Validating MetaStatements...");
         for (Validation val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
             switch (val) {
             case MUST_NOT_EXIST_CATALOG:
@@ -100,14 +110,6 @@ public class Validator {
             case MUST_NOT_EXIST_DATASTORE:
                 validateNotExistDatastore(parsedQuery.getStatement());
                 break;
-            case VALID_DATASTORE_MANIFEST:
-                Manifest datastoreManifest = null;
-                validateManifest(datastoreManifest);
-                break;
-            case VALID_CONNECTOR_MANIFEST:
-                Manifest connectorManifest = null;
-                validateManifest(connectorManifest);
-                break;
             case VALID_CLUSTER_OPTIONS:
                 validateOptions(parsedQuery.getStatement());
                 break;
@@ -131,11 +133,14 @@ public class Validator {
             case MUST_NOT_EXIST_COLUMN:
                 validateNotExistColumn(parsedQuery.getStatement());
                 break;
+            case VALIDATE_TYPES:
+                validateInsertTypes(parsedQuery.getStatement());
+                break;
             default:
                 break;
-
             }
         }
+
         if (parsedQuery instanceof MetadataParsedQuery) {
             validatedQuery = new MetadataValidatedQuery((MetadataParsedQuery) parsedQuery);
         } else if (parsedQuery instanceof StorageParsedQuery) {
@@ -158,7 +163,7 @@ public class Validator {
 
         if (stmt instanceof DetachConnectorStatement) {
             DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) stmt;
-            name = ((DetachConnectorStatement) stmt).getConnectorName();
+            name = detachConnectorStatement.getConnectorName();
         }
 
         if (stmt instanceof DropConnectorStatement) {
@@ -180,7 +185,7 @@ public class Validator {
 
         if (stmt instanceof DetachConnectorStatement) {
             DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) stmt;
-            name = ((DetachConnectorStatement) stmt).getConnectorName();
+            name = detachConnectorStatement.getConnectorName();
         }
         
         if (stmt instanceof DropConnectorStatement) {
@@ -413,7 +418,7 @@ public class Validator {
         boolean hasIfExists = false;
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
-            name = ((AlterCatalogStatement) stmt).getCatalogName();
+            name = alterCatalogStatement.getCatalogName();
         }
 
         if (stmt instanceof CreateCatalogStatement) {
@@ -482,16 +487,12 @@ public class Validator {
         validateExist(name, hasIfExists);
     }
 
-    private void validateManifest(Manifest manifest) {
-
-    }
-
     private void validateOptions(MetaStatement stmt) throws ValidationException {
 
         if (stmt instanceof AttachClusterStatement) {
             AttachClusterStatement myStmt = (AttachClusterStatement) stmt;
             if (myStmt.getOptions().isEmpty()) {
-                throw new ValidationException("AttachClusteStatement options can't be empty");
+                throw new ValidationException("AttachClusterStatement options can't be empty");
             }
         } else {
             if (stmt instanceof AttachConnectorStatement) {
@@ -536,6 +537,65 @@ public class Validator {
             hasIfExist = ((CreateIndexStatement) stmt).isCreateIfNotExists();
         }
         validateExist(name, hasIfExist);
+    }
+
+    private void validateInsertTypes(MetaStatement stmt)
+            throws BadFormatException, NotMatchDataTypeException {
+        if (stmt instanceof InsertIntoStatement){
+            InsertIntoStatement insertIntoStatement=(InsertIntoStatement)stmt;
+            List<ColumnName> columnNameList=insertIntoStatement.getIds();
+            List<Selector>selectorList=insertIntoStatement.getCellValues();
+
+
+            for (int i=0; i<columnNameList.size();i++){
+                ColumnName columnName=columnNameList.get(i);
+                Selector valueSelector=selectorList.get(i);
+                ColumnMetadata columnMetadata= MetadataManager.MANAGER.getColumn(columnName);
+
+                validateColumnType(columnMetadata,valueSelector);
+            }
+        }
+    }
+
+
+    public void validateColumnType(ColumnMetadata columnMetadata, Selector right)
+            throws BadFormatException, NotMatchDataTypeException {
+
+        switch (right.getType()) {
+        case COLUMN:
+            ColumnName rightColumnName = ((ColumnSelector) right).getName();
+            ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);
+            if (columnMetadata.getColumnType() != rightColumnMetadata.getColumnType()) {
+                throw new NotMatchDataTypeException(rightColumnName);
+            }
+            break;
+        case ASTERISK:
+            throw new BadFormatException("Asterisk not supported in relations.");
+        case BOOLEAN:
+            if (columnMetadata.getColumnType() != ColumnType.BOOLEAN) {
+                throw new NotMatchDataTypeException(columnMetadata.getName());
+            }
+            break;
+        case STRING:
+            if (columnMetadata.getColumnType() != ColumnType.TEXT) {
+                throw new NotMatchDataTypeException(columnMetadata.getName());
+            }
+            break;
+        case INTEGER:
+            if (columnMetadata.getColumnType() != ColumnType.INT &&
+                    columnMetadata.getColumnType() != ColumnType.BIGINT) {
+                throw new NotMatchDataTypeException(columnMetadata.getName());
+            }
+            break;
+        case FLOATING_POINT:
+            if (columnMetadata.getColumnType() != ColumnType.FLOAT &&
+                    columnMetadata.getColumnType() != ColumnType.DOUBLE) {
+                throw new NotMatchDataTypeException(columnMetadata.getName());
+            }
+            break;
+        case RELATION:
+            throw new BadFormatException("Operation not supported in where.");
+        }
     }
 
 }

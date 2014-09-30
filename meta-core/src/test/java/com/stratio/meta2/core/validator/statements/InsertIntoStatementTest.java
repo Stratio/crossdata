@@ -29,6 +29,7 @@ import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.statements.structures.selectors.BooleanSelector;
 import com.stratio.meta2.common.statements.structures.selectors.IntegerSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
@@ -57,6 +58,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         values.add(new StringSelector("'pepe'"));
         values.add(new StringSelector("'male'"));
         values.add(new IntegerSelector(23));
+        values.add(new BooleanSelector(true));
         values.add(new StringSelector("'this is the phrase'"));
         values.add(new StringSelector("'mail@mail.com'"));
 
@@ -92,6 +94,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         values.add(new StringSelector("'pepe'"));
         values.add(new StringSelector("'male'"));
         values.add(new IntegerSelector(23));
+        values.add(new BooleanSelector(true));
         values.add(new StringSelector("'this is the phrase'"));
         values.add(new StringSelector("'mail@mail.com'"));
 
@@ -128,6 +131,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         values.add(new StringSelector("'pepe'"));
         values.add(new StringSelector("'male'"));
         values.add(new IntegerSelector(23));
+        values.add(new BooleanSelector(true));
         values.add(new StringSelector("'this is the phrase'"));
         values.add(new StringSelector("'mail@mail.com'"));
 
@@ -147,5 +151,44 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
             Assert.assertTrue(true);
         }
     }
+
+
+    @Test
+    public void validateErrorTypes() {
+        String query = "Insert into demo.users(name,gender,age,bool,phrase,email) values ('pepe','male',23,true,'this is the phrase','mail@mail.com';";
+        List<ColumnName> columns = new ArrayList<>();
+        List<Selector> values = new ArrayList<>();
+        columns.add(new ColumnName(new TableName("demo", "users"), "name"));
+        columns.add(new ColumnName(new TableName("demo", "users"), "gender"));
+        columns.add(new ColumnName(new TableName("demo", "users"), "age"));
+        columns.add(new ColumnName(new TableName("demo", "users"), "bool"));
+        columns.add(new ColumnName(new TableName("demo", "users"), "phrase"));
+        columns.add(new ColumnName(new TableName("demo", "users"), "email"));
+
+        //ERROR TYPE
+        values.add(new IntegerSelector(15));
+        values.add(new StringSelector("'male'"));
+        values.add(new IntegerSelector(23));
+        values.add(new BooleanSelector(true));
+        values.add(new StringSelector("'this is the phrase'"));
+        values.add(new StringSelector("'mail@mail.com'"));
+
+        StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns, values,
+                true);
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
+
+        ParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("There is an error in the types");
+        } catch (ValidationException e) {
+            Assert.assertTrue(true);
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
 
 }
