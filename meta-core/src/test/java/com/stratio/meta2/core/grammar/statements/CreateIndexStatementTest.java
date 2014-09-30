@@ -63,7 +63,8 @@ public class CreateIndexStatementTest extends ParsingTest {
                 + " entry_id: {type: \"uuid\"}, latitude: {type: \"double\"},"
                 + " longitude: {type: \"double\"}, name: {type: \"text\"},"
                 + " address: {type: \"string\"}, tags: {type: \"boolean\"}}}'};";
-        String expectedText = "CREATE FULL_TEXT INDEX stratio_lucene_demo_banks ON demo.banks"
+        String expectedText = "CREATE FULL_TEXT INDEX <unknown_name>.<unknown_name>.index[stratio_lucene_demo_banks] " +
+                "ON demo.banks"
                 + " (demo.banks.day, demo.banks.entry_id, demo.banks.latitude, demo.banks.longitude, demo.banks.name, demo.banks.address, demo.banks.tags)"
                 + " USING 'org.apache.cassandra.db.index.stratio.RowIndex'"
                 + " WITH {schema="
@@ -93,7 +94,9 @@ public class CreateIndexStatementTest extends ParsingTest {
     @Test
     public void createLuceneIndexWithOptions2() {
         String inputText = "CREATE FULL_TEXT INDEX IF NOT EXISTS index1 ON table1 (field1, field2) USING 'com.company.Index.class' WITH {'key1': 'val1', 'key2': 'val2'};";
-        String expectedText = "CREATE FULL_TEXT INDEX IF NOT EXISTS stratio_lucene_index1 ON demo.table1 (demo.table1.field1, demo.table1.field2) USING 'com.company.Index.class' WITH {key1=val1, key2=val2};";
+        String expectedText = "CREATE FULL_TEXT INDEX IF NOT EXISTS <unknown_name>.<unknown_name>" +
+                ".index[stratio_lucene_index1] ON demo.table1 (demo.table1.field1, " +
+                "demo.table1.field2) USING 'com.company.Index.class' WITH {key1=val1, key2=val2};";
         testRegularStatementSession("demo", inputText, expectedText, "createIndexWithOptions2");
     }
 
@@ -119,7 +122,8 @@ public class CreateIndexStatementTest extends ParsingTest {
     @Test
     public void createLuceneIndexLowercase() {
         String inputText = "[DEMO], create full_text index index1 on table1 (field1, field2);";
-        String expectedText = "create full_text index stratio_lucene_index1 on demo.table1 (demo.table1.field1, demo.table1.field2);";
+        String expectedText = "create full_text index <unknown_name>.<unknown_name>.index[stratio_lucene_index1] on " +
+                "demo.table1 (demo.table1.field1, demo.table1.field2);";
         testRegularStatement(inputText, expectedText, "createLuceneIndexLowercase");
     }
 

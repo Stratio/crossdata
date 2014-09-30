@@ -339,7 +339,7 @@ attachClusterStatement returns [AttachClusterStatement acs]
     T_ATTACH T_CLUSTER
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     clusterName=T_IDENT
-    T_ON T_DATASTORE dataStoreName=QUOTED_LITERAL
+    T_ON T_DATASTORE dataStoreName=T_IDENT
     T_WITH T_OPTIONS
     j=getJson
 ;

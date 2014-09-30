@@ -27,14 +27,16 @@ public class AttachConnectorStatementTest extends ParsingTest {
     @Test
     public void attachConnectorSimple1() {
         String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {\"ConsistencyLevel\": \"Quorum\", 'DefaultLimit': 999};";
-        String expectedText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {ConsistencyLevel: Quorum, DefaultLimit: 999};";
+        String expectedText = "ATTACH CONNECTOR connector.cass_con_native TO cluster.cassandraCluster WITH OPTIONS " +
+                "{ConsistencyLevel: Quorum, DefaultLimit: 999};";
         testRegularStatement(inputText, expectedText, "attachConnectorSimple1");
     }
 
     @Test
     public void attachConnectorSimple2() {
         String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {'ConsistencyLevel': 'Quorum', \"DefaultLimit\": 999};";
-        String expectedText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {ConsistencyLevel: Quorum, DefaultLimit: 999};";
+        String expectedText = "ATTACH CONNECTOR connector.cass_con_native TO cluster.cassandraCluster WITH OPTIONS " +
+                "{ConsistencyLevel: Quorum, DefaultLimit: 999};";
         testRegularStatement(inputText, expectedText, "attachConnectorSimple2");
     }
 

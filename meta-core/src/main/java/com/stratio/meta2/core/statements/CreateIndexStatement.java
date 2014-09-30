@@ -251,7 +251,8 @@ public class CreateIndexStatement extends MetadataStatement {
         } else {
             result = name.getName();
             if (IndexType.FULL_TEXT.equals(type)) {
-                result = "stratio_lucene_" + name;
+                //result = "stratio_lucene_" + name;
+                result = name.toString().replaceAll("\\[(\\w*)\\]", "[stratio_lucene_$1]");
             }
         }
         return result;

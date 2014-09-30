@@ -27,25 +27,29 @@ public class DropIndexStatementTest extends ParsingTest {
     @Test
     public void basic() {
         String inputText = "DROP INDEX demo.index_name;";
-        testRegularStatement(inputText, "basic");
+        String expectedText = "DROP INDEX <unknown_name>.demo.index[index_name];";
+        testRegularStatement(inputText, expectedText, "basic");
     }
 
     @Test
     public void noKsOk() {
         String inputText = "DROP INDEX index_name;";
-        testRegularStatement(inputText, "noKsOk");
+        String expectedText = "DROP INDEX <unknown_name>.<unknown_name>.index[index_name];";
+        testRegularStatement(inputText, expectedText, "noKsOk");
     }
 
     @Test
     public void ifExists() {
         String inputText = "DROP INDEX IF EXISTS demo.index_name;";
-        testRegularStatement(inputText, "ifExists");
+        String expectedText = "DROP INDEX IF EXISTS <unknown_name>.demo.index[index_name];";
+        testRegularStatement(inputText, expectedText, "ifExists");
     }
 
     @Test
     public void tokenOk() {
         String inputText = "DROP INDEX lucene;";
-        testRegularStatement(inputText, "tokenOk");
+        String expectedText = "DROP INDEX <unknown_name>.<unknown_name>.index[lucene];";
+        testRegularStatement(inputText, expectedText, "tokenOk");
     }
 
     @Test
