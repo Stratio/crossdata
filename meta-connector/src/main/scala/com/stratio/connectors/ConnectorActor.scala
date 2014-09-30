@@ -4,10 +4,8 @@ import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
-import com.stratio.meta.common.logicalplan.LogicalWorkflow
-import com.stratio.meta.common.result.{CommandResult, QueryResult, MetadataResult}
+import com.stratio.meta.common.result.{CommandResult, MetadataResult, QueryResult, Result}
 import com.stratio.meta.communication._
-import com.stratio.meta.common.result.Result
 
 object State extends Enumeration {
   type state = Value
@@ -20,7 +18,7 @@ object ConnectorActor {
 
 
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with ActorLogging {
-  //class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
+//class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
 
   //TODO: test if it works with one thread and multiple threads
   val connector = conn
@@ -36,6 +34,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
   // subscribe to cluster changes, re-subscribe when restart
 
   override def handleHeartbeat(heartbeat: HeartbeatSig) = {
+    //TODO: state = EXECUTING QUERY
     println("ConnectorActor receives a heartbeat message")
   }
 
@@ -66,11 +65,12 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       this.shutdown()
     }
 
-    case wf: LogicalWorkflow => {
+    case ex:Execute=>{
       try {
-        connector.getQueryEngine().execute(wf)
+        connector.getQueryEngine().execute(ex.workflow)
         val result = QueryResult.createSuccessQueryResult() //TODO: ADD RESULTSET
-        result.setQueryId("TODO: extract a real query ID (it doesn't come in the logicalworkflow)") //TODO
+        //TODO:activate heartbit
+        result.setQueryId(ex.queryId)
         sender ! result
       } catch {
         case ex: Exception => {
@@ -83,9 +83,9 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     }
 
     case metadataOp: MetadataOperation => {
+      var qId:String=null
       try {
         val eng = connector.getMetadataEngine()
-        var qId:String=null
         metadataOp match {
           case CreateCatalog(queryId, clustername, metadata) => {
             qId=queryId
@@ -123,15 +123,18 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
         case err: Error =>
           log.error("error in ConnectorActor( receiving MetaOperation)")
       }
+      val result=MetadataResult.createSuccessMetadataResult()
+      result.setQueryId(qId)
+      sender ! result
     }
 
     case _:Result =>
       //TODO:  ManagementWorkflow
 
     case storageOp: StorageOperation => {
+      var qId:String=null
       try {
         val eng = connector.getStorageEngine()
-        var qId:String=null
         storageOp match {
           case Insert(queryId, clustername, table, row) => {
             qId=queryId
@@ -143,7 +146,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
           }
         }
         val result = CommandResult.createCommandResult("ok")
-        result.setQueryId(qId)
+        //result.setQueryId(qId)
         sender ! result
       } catch {
         case ex: Exception => {
@@ -153,8 +156,11 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
         case err: Error =>
           log.error("error in ConnectorActor( receiving StorageOperation)")
       }
+      val result=CommandResult.createCommandResult("ok") //TODO: why does MetadataResult have
+      //TODO: createSuccessfulMetaResult and CommandResult doesn't have createSuccessfulCommandResult?
+      result.setQueryId(qId)
+      sender ! result
     }
-
 
 
 
