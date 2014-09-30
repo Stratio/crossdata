@@ -4,8 +4,10 @@ import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.connector.IConnector
-import com.stratio.meta.common.result.{CommandResult, MetadataResult, QueryResult, Result}
+import com.stratio.meta.common.result.{CommandResult, MetadataResult, Result}
 import com.stratio.meta.communication._
+
+import scala.collection.mutable.{ListMap, Map}
 
 object State extends Enumeration {
   type state = Value
@@ -24,6 +26,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
   val connector = conn
   var state = State.Stopped
   var supervisorActorRef: ActorRef = null
+  var runningJobs:Map[String,ActorRef]=new ListMap[String,ActorRef]()
 
 
   //val cluster = Cluster(context.system)
@@ -34,8 +37,11 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
   // subscribe to cluster changes, re-subscribe when restart
 
   override def handleHeartbeat(heartbeat: HeartbeatSig) = {
-    //TODO: state = EXECUTING QUERY
-    println("ConnectorActor receives a heartbeat message")
+    runningJobs.foreach{
+      keyval=>
+        keyval._2 ! IAmAlive(keyval._1)
+        log.info("ConnectorActor sends an ImAlive message (job="+keyval._1+")") //TODO: delete line after testing
+    }
   }
 
   override def preStart(): Unit = {
@@ -67,9 +73,8 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
 
     case ex:Execute=>{
       try {
-        connector.getQueryEngine().execute(ex.workflow)
-        val result = QueryResult.createSuccessQueryResult() //TODO: ADD RESULTSET
-        //TODO:activate heartbit
+        runningJobs.put(ex.queryId,sender)
+        val result=connector.getQueryEngine().execute(ex.workflow)
         result.setQueryId(ex.queryId)
         sender ! result
       } catch {
@@ -79,6 +84,8 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
         }
         case err: Error =>
           log.error("error in ConnectorActor( receiving LogicalWorkflow )")
+      } finally {
+        runningJobs.remove(ex.queryId)
       }
     }
 

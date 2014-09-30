@@ -25,6 +25,6 @@ case class Shutdown()
 
 case class HeartbeatSig()
 
-case class IAmAlive()
+case class IAmAlive(queryId:String)
 
 case class Stop()
