@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
 import com.stratio.meta.common.connector.Operations;
@@ -54,6 +55,8 @@ import com.stratio.meta2.core.query.SelectValidatedQuery;
 import com.stratio.meta2.core.statements.SelectStatement;
 
 public class PlannerWorkflowTest {
+
+    private static final Logger LOG = Logger.getLogger(PlannerWorkflowTest.class);
 
     ParsingTest helperPT = new ParsingTest();
 
@@ -312,6 +315,33 @@ public class PlannerWorkflowTest {
         public List<TableMetadata> getTableMetadata() {
             return tableMetadataList;
         }
+    }
+
+    @Test
+    public void connectorChoice(){
+        /*
+        List<LogicalStep> initialSteps = new LinkedList<>();
+        Operations operation = Operations.PROJECT;
+        TableName tableName = new TableName("demo", "myTable");
+        ClusterName clusterName = new ClusterName("clusterTest");
+        Project project = new Project(operation, tableName, clusterName);
+        operation = Operations.SELECT_OPERATOR;
+        Map<String, String> columnMap = new LinkedHashMap<>();
+        columnMap.put();
+        columnMap.put();
+        Map<String, ColumnType> typeMap;
+        Select select = new Select(operation, );
+        project.setNextStep(select);
+        Filter filter = new Filter();
+        project.setNextStep(filter);
+        initialSteps.add(project);
+        LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
+        try {
+            planner.buildExecutionWorkflow(workflow);
+        } catch (PlanningException e) {
+            LOG.error("connectorChoice test failed", e);
+        }
+        */
     }
 
 }

@@ -35,42 +35,46 @@ public class AttachClusterStatementTest extends ParsingTest {
 
     @Test
     public void createClusterBasicDoubleQuote() {
-        String inputText = "ATTACH CLUSTER dev ON DATASTORE \"db\""
+        String inputText = "ATTACH CLUSTER dev ON DATASTORE db"
                 + " WITH OPTIONS {\"host\": \"127.0.0.1\", 'port': 1234};";
-        String expectedText = "ATTACH CLUSTER dev ON DATASTORE \"db\""
+        String expectedText = "ATTACH CLUSTER cluster.dev ON DATASTORE datastore.db"
                 + " WITH OPTIONS {host=127.0.0.1, port=1234};";
         testRegularStatement(inputText, expectedText, "createClusterBasicDoubleQuote");
     }
 
     @Test
     public void createClusterBasicSingleQuote() {
-        String inputText = "ATTACH CLUSTER dev ON DATASTORE 'db'"
+        String inputText = "ATTACH CLUSTER dev ON DATASTORE db"
                 + " WITH OPTIONS {\"host1\": \"127.0.0.1\"};";
-        String expectedText = "ATTACH CLUSTER dev ON DATASTORE 'db'"
+        String expectedText = "ATTACH CLUSTER cluster.dev ON DATASTORE datastore.db"
                 + " WITH OPTIONS {host1=127.0.0.1};";
         testRegularStatement(inputText, expectedText, "createClusterBasicSingleQuote");
     }
 
     @Test
     public void createClusterBasicIfNotExists() {
-        String inputText = "ATTACH CLUSTER IF NOT EXISTS dev ON DATASTORE 'db'"
+        String inputText = "ATTACH CLUSTER IF NOT EXISTS dev ON DATASTORE db"
                 + " WITH OPTIONS {\"host1\": \"127.0.0.1\"};";
-        String expectedText = "ATTACH CLUSTER IF NOT EXISTS dev ON DATASTORE 'db'"
+        String expectedText = "ATTACH CLUSTER IF NOT EXISTS cluster.dev ON DATASTORE datastore.db"
                 + " WITH OPTIONS {host1=127.0.0.1};";
         testRegularStatement(inputText, expectedText, "createClusterBasicIfNotExists");
     }
 
     @Test
     public void attachClusterSimple() {
-        String inputText = "ATTACH CLUSTER production_madrid ON DATASTORE \"cassandra\" WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'mode': \"random\"};";
-        String expectedText = "ATTACH CLUSTER production_madrid ON DATASTORE \"cassandra\" WITH OPTIONS {host=127.0.0.1, port=9160, mode=random};";
+        String inputText = "ATTACH CLUSTER production_madrid ON DATASTORE cassandra WITH OPTIONS {'host':" +
+                " '127.0.0.1', 'port': 9160, 'mode': \"random\"};";
+        String expectedText = "ATTACH CLUSTER cluster.production_madrid ON DATASTORE datastore.cassandra WITH OPTIONS {host=127.0.0.1, port=9160, mode=random};";
         testRegularStatement(inputText, expectedText, "attachClusterSimple");
     }
 
     @Test
     public void attachClusterIfNotExists() {
-        String inputText = "ATTACH CLUSTER IF NOT EXISTS productionMadrid ON DATASTORE 'cassandra' WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, 'exhaustive': false};";
-        String expectedText = "ATTACH CLUSTER IF NOT EXISTS productionMadrid ON DATASTORE 'cassandra' WITH OPTIONS {host=127.0.0.1, port=9160, exhaustive=false};";
+        String inputText = "ATTACH CLUSTER IF NOT EXISTS productionMadrid ON DATASTORE cassandra WITH OPTIONS " +
+                "{'host': '127.0.0.1', \"port\": 9160, 'exhaustive': false};";
+        String expectedText = "ATTACH CLUSTER IF NOT EXISTS cluster.productionMadrid ON DATASTORE datastore" +
+                ".cassandra WITH " +
+                "OPTIONS {host=127.0.0.1, port=9160, exhaustive=false};";
         testRegularStatement(inputText, expectedText, "attachClusterIfNotExists");
     }
 

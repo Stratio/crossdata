@@ -36,7 +36,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  * ON {@literal <tableName>} ( {@literal <identifier> , ..., <identifier>}) <br>
  * ( USING {@literal <index_class>} )? ( WITH OPTIONS ( key_1=value_1 AND ... AND key_n=value_n) )?;
  */
-public class CreateIndexStatement extends MetadataStatement {
+public class CreateIndexStatement extends IndexStatement {
 
     /**
      * The {@link com.stratio.meta.core.structures.IndexType} to be created.
@@ -47,11 +47,6 @@ public class CreateIndexStatement extends MetadataStatement {
      * Whether the index should be created only if not exists.
      */
     private boolean createIfNotExists = false;
-
-    /**
-     * The name of the index.
-     */
-    private IndexName name = null;
 
     /**
      * The name of the target table.
@@ -97,35 +92,6 @@ public class CreateIndexStatement extends MetadataStatement {
      */
     public void setCreateIfNotExists() {
         createIfNotExists = true;
-    }
-
-    /**
-     * Get the index name.
-     *
-     * @return The name.
-     */
-    public IndexName getName() {
-        //return new IndexName(tableName.getCatalogName().getName(), tableName.getName(), name);
-        return name;
-    }
-
-    /**
-     * Set the name of the index.
-     *
-     * @param name The name.
-     */
-    public void setName(IndexName name) {
-        this.name = name;
-        /*
-        if (name.contains(".")) {
-            String[] ksAndTablename = name.split("\\.");
-            catalog = new CatalogName(ksAndTablename[0]);
-            this.name = ksAndTablename[1];
-            catalogInc = true;
-        } else {
-            this.name = name;
-        }
-        */
     }
 
 
@@ -225,6 +191,11 @@ public class CreateIndexStatement extends MetadataStatement {
         return options;
     }
 
+
+    public boolean isCreateIfNotExists() {
+        return createIfNotExists;
+    }
+
     /**
      * Get the name of the index. If a LUCENE index is to be created, the name of the index is
      * prepended with {@code stratio_lucene_}. If a name for the index is not specified, the index
@@ -251,10 +222,15 @@ public class CreateIndexStatement extends MetadataStatement {
         } else {
             result = name.getName();
             if (IndexType.FULL_TEXT.equals(type)) {
-                result = "stratio_lucene_" + name;
+                //result = "stratio_lucene_" + name;
+                result = name.toString().replaceAll("\\[(\\w*)\\]", "[stratio_lucene_$1]");
             }
         }
         return result;
+    }
+
+    public void normalizeIndexName(){
+        this.name = new IndexName(tableName, this.name.getName());
     }
 
     @Override
@@ -292,9 +268,5 @@ public class CreateIndexStatement extends MetadataStatement {
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(Validation.MUST_NOT_EXIST_INDEX).add(Validation.MUST_EXIST_TABLE)
                 .add(Validation.MUST_EXIST_COLUMN);
-    }
-
-    public boolean isCreateIfNotExists() {
-        return createIfNotExists;
     }
 }
