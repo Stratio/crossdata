@@ -192,7 +192,8 @@ public class InsertIntoStatement extends StorageStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE);
+        return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE).add
+                (Validation.VALIDATE_TYPES);
     }
 
     public TableName getTableName() {
@@ -205,5 +206,13 @@ public class InsertIntoStatement extends StorageStatement {
 
     public CatalogName getCatalogName(){
         return tableName.getCatalogName();
+    }
+
+    public List<ColumnName> getIds() {
+        return ids;
+    }
+
+    public List<Selector> getCellValues() {
+        return cellValues;
     }
 }
