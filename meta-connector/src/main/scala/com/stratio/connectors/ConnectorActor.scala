@@ -40,7 +40,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     runningJobs.foreach{
       keyval=>
         keyval._2 ! IAmAlive(keyval._1)
-        log.info("ConnectorActor sends an ImAlive message (job="+keyval._1+")") //TODO: delete line after testing
+        log.debug("ConnectorActor sends an ImAlive message (job="+keyval._1+")") //TODO: delete line after testing
     }
   }
 
