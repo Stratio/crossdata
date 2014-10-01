@@ -86,7 +86,7 @@ public class NormalizerTest extends MetadataManagerTests {
         // CLUSTER
         ClusterName clusterName = new ClusterName("testing");
         DataStoreName dataStoreRef = new DataStoreName("Cassandra");
-        Map<String, Object> clusterOptions = new HashMap<>();
+        Map<Selector, Selector> clusterOptions = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
 
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreRef, clusterOptions,

@@ -34,6 +34,7 @@ options {
     import com.stratio.meta2.core.structures.*;
     import com.stratio.meta.core.utils.*;
     import com.stratio.meta2.common.metadata.*;
+    import com.stratio.meta2.common.metadata.structures.*;
     import java.util.LinkedHashMap;
     import java.util.LinkedList;
     import java.util.Map;
@@ -608,7 +609,10 @@ createTableStatement returns [CreateTableStatement crtast]
         LinkedList<ColumnName> clusterKey = new LinkedList<>();
         boolean ifNotExists = false;
     }:
-    T_CREATE T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})? tablename=getTableName T_ON T_CLUSTER clusterID=T_IDENT
+    T_CREATE tableType=getTableType T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
+    tablename=getTableName
+    T_ON
+    T_CLUSTER clusterID=T_IDENT
     T_START_PARENTHESIS
         id1=getColumnName[tablename] type1=getDataType (T_PRIMARY T_KEY { partitionKey.add(id1); } )? { columns.put(id1, type1);}
         (T_COMMA idN=getColumnName[tablename] typeN=getDataType { columns.put(idN, typeN); } )*
@@ -626,10 +630,18 @@ createTableStatement returns [CreateTableStatement crtast]
     T_END_PARENTHESIS (T_WITH j=getJson)?
     {
         if(partitionKey.isEmpty()) throwParsingException("Primary Key definition missing");
-        $crtast = new CreateTableStatement(tablename, new ClusterName($clusterID.text), columns, partitionKey, clusterKey);
+        $crtast = new CreateTableStatement(tableType, tablename, new ClusterName($clusterID.text), columns,
+        partitionKey, clusterKey);
         $crtast.setProperties(j);
         $crtast.setIfNotExists(ifNotExists);
     }
+;
+
+getTableType returns [TableType tableType]
+    @init{
+        tableType = TableType.DATABASE;
+    }:
+    ( T_EPHEMERAL { tableType = TableType.EPHEMERAL; } )?
 ;
 
 alterTableStatement returns [AlterTableStatement altast]

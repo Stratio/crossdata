@@ -136,7 +136,7 @@ public class CoordinatorTest extends MetadataManagerTests {
         // Create and add a test cluster metadata to the metadatamanager
         ClusterName clusterName = new ClusterName("clusterTest");
         DataStoreName dataStoreRef = new DataStoreName("dataStoreTest");
-        Map<String, Object> options = new HashMap<>();
+        Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ClusterMetadata clusterTest =
                 new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
@@ -395,7 +395,7 @@ public class CoordinatorTest extends MetadataManagerTests {
         // Create and add a test cluster metadata to the metadatamanager
         ClusterName clusterName = new ClusterName(cluster);
         DataStoreName dataStoreRef = new DataStoreName(datastore);
-        Map<String, Object> options = new HashMap<>();
+        Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ClusterMetadata clusterTest =
                 new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);

@@ -21,40 +21,67 @@ package com.stratio.meta2.core.planner;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
 import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta.common.exceptions.PlanningException;
 import com.stratio.meta.common.logicalplan.Filter;
 import com.stratio.meta.common.logicalplan.Join;
 import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.logicalplan.Select;
+import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.InnerJoin;
+import com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType;
+import com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType;
+import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
+import com.stratio.meta2.common.api.generated.datastore.ClusterType;
+import com.stratio.meta2.common.api.generated.datastore.HostsType;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.ConnectorName;
+import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
+import com.stratio.meta2.common.metadata.ColumnType;
+import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
+import com.stratio.meta2.common.metadata.ConnectorMetadata;
+import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
+import com.stratio.meta2.common.statements.structures.selectors.IntegerSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.grammar.ParsingTest;
+import com.stratio.meta2.core.metadata.MetadataManager;
+import com.stratio.meta2.core.metadata.MetadataManagerTests;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.query.SelectValidatedQuery;
 import com.stratio.meta2.core.statements.SelectStatement;
 
-public class PlannerWorkflowTest {
+public class PlannerWorkflowTest extends MetadataManagerTests {
 
     private static final Logger LOG = Logger.getLogger(PlannerWorkflowTest.class);
 
@@ -319,29 +346,135 @@ public class PlannerWorkflowTest {
 
     @Test
     public void connectorChoice(){
-        /*
+        // Build Logical WORKFLOW
+
+            // Create initial steps (Projects)
         List<LogicalStep> initialSteps = new LinkedList<>();
         Operations operation = Operations.PROJECT;
         TableName tableName = new TableName("demo", "myTable");
         ClusterName clusterName = new ClusterName("clusterTest");
         Project project = new Project(operation, tableName, clusterName);
+
+            // Next step (Select)
         operation = Operations.SELECT_OPERATOR;
-        Map<String, String> columnMap = new LinkedHashMap<>();
-        columnMap.put();
-        columnMap.put();
-        Map<String, ColumnType> typeMap;
-        Select select = new Select(operation, );
+        Map<ColumnName, String> columnMap = new LinkedHashMap<>();
+        columnMap.put(new ColumnName(tableName, "id"), "id");
+        columnMap.put(new ColumnName(tableName, "user"), "user");
+        Map<String, ColumnType> typeMap = new LinkedHashMap<>();
+        typeMap.put("id", ColumnType.INT);
+        typeMap.put("user", ColumnType.VARCHAR);
+        Select select = new Select(operation, columnMap, typeMap);
+
+            // Next step (Filter)
         project.setNextStep(select);
-        Filter filter = new Filter();
+        operation = Operations.FILTER_PK_EQ;
+        Selector selector = new ColumnSelector(new ColumnName(tableName, "id"));
+        Operator operator = Operator.EQ;
+        Selector rightTerm = new IntegerSelector(25);
+        Relation relation = new Relation(selector, operator, rightTerm);
+        Filter filter = new Filter(operation, relation);
         project.setNextStep(filter);
         initialSteps.add(project);
+
+            // Add initial steps
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
+
+        // Fill in data for METADATAMANAGER
+            // Create & add DataStore
+        DataStoreName dataStoreName = new DataStoreName("DataStoreTest");
+        String version = "0.1.0";
+        com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType requiredPropertiesForDataStore = new
+                com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType();
+        ClusterType clusterType = new ClusterType();
+        clusterType.setName("Production");
+        List<HostsType> hosts = new ArrayList<>();
+        HostsType hostsType = new HostsType();
+        hostsType.setHost("127.0.0.1");
+        hostsType.setPort("9090");
+        hosts.add(hostsType);
+        clusterType.setHosts(hosts);
+        requiredPropertiesForDataStore.setCluster(clusterType);
+        com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType othersProperties = new com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType();
+        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version, requiredPropertiesForDataStore, othersProperties);
+        MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
+
+            // Create & add Connector
+        ConnectorName connectorName = new ConnectorName("ConnectorTest");
+        Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
+        RequiredPropertiesType requiredPropertiesForConnector = new RequiredPropertiesType();
+        OptionalPropertiesType optionalProperties = new OptionalPropertiesType();
+        SupportedOperationsType supportedOperations = new SupportedOperationsType();
+        Set<Operations> operations = new HashSet<>();
+        operations.add(Operations.PROJECT);
+        operations.add(Operations.SELECT_OPERATOR);
+        operations.add(Operations.FILTER_PK_EQ);
+        supportedOperations.setOperation(operations);
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs, requiredPropertiesForConnector,
+                optionalProperties, supportedOperations);
+        connectorMetadata.setActorRef(null);
+        MetadataManager.MANAGER.createConnector(connectorMetadata);
+
+            // Create & add Cluster
+        Map<Selector, Selector> options = new HashMap<>();
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
+        Map<Selector, Selector> properties = new HashMap<>();
+        ConnectorAttachedMetadata connectorAttachedMetadata = new ConnectorAttachedMetadata(connectorName, clusterName,
+                properties);
+        connectorAttachedRefs.put(connectorName, connectorAttachedMetadata);
+        ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options, connectorAttachedRefs);
+        MetadataManager.MANAGER.createCluster(clusterMetadata);
+
+            // Create & add Catalog
+        CatalogName catalogName = new CatalogName("demo");
+        Map<TableName, TableMetadata> catalogTables = new HashMap<>();
+        CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, catalogTables);
+        MetadataManager.MANAGER.createCatalog(catalogMetadata);
+
+            // Create & add Table
+        Map<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
+        ColumnName columnName = new ColumnName(tableName, "id");
+        Integer[] parameters = {25};
+        ColumnType columnType = ColumnType.INT;
+        ColumnMetadata columnMetadata = new ColumnMetadata(columnName, parameters, columnType);
+        columns.put(columnName, columnMetadata);
+
+        columnName = new ColumnName(tableName, "user");
+        String[] params = {"stratio"};
+        columnType = ColumnType.VARCHAR;
+        columnMetadata = new ColumnMetadata(columnName, params, columnType);
+        columns.put(columnName, columnMetadata);
+
+        Map<IndexName, IndexMetadata> indexes = new HashMap<>();
+        List<ColumnName> partitionKey = new ArrayList<>();
+        partitionKey.add(new ColumnName(tableName, "id"));
+        List<ColumnName> clusterKey = new ArrayList<>();
+        TableMetadata tableMetadata = new TableMetadata(tableName, options, columns, indexes, clusterName,
+                partitionKey, clusterKey);
+        MetadataManager.MANAGER.createTable(tableMetadata);
+
+        // Get initial steps
+        List<TableName> tables = planner.getInitialSteps(workflow.getInitialSteps());
+
+        // Get connectors meeting the required capabilities
+        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = planner.findCapableConnectors(tables,
+                workflow.getInitialSteps());
+
+        assertEquals(candidatesConnectors.values().iterator().next().iterator().next().getName(), connectorName,
+                "Candidate Connectors wrong");
+
+        // Get more suitable connector
+        try {
+            ConnectorMetadata chosenConnector = planner.findMoreSuitableConnector(candidatesConnectors);
+            assertEquals(chosenConnector.getName(), connectorName, "Chosen connector wrong");
+        } catch (PlanningException e) {
+            fail(e.getMessage());
+        }
+
         try {
             planner.buildExecutionWorkflow(workflow);
         } catch (PlanningException e) {
             LOG.error("connectorChoice test failed", e);
         }
-        */
     }
 
 }

@@ -291,6 +291,9 @@ public enum MetadataManager {
 
     public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
         shouldBeInit();
+        for(DataStoreName dataStore: connectorMetadata.getDataStoreRefs()){
+            shouldExist(dataStore);
+        }
         try {
             writeLock.lock();
             if (unique) {
@@ -341,7 +344,7 @@ public enum MetadataManager {
         Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
 
         List<ConnectorMetadata> connectors;
-        for (TableName table : tables) {
+        for (TableName table: tables) {
 
             ClusterName clusterName = getTable(table).getClusterRef();
 
@@ -349,7 +352,7 @@ public enum MetadataManager {
                     .getConnectorAttachedRefs().keySet();
 
             connectors = new ArrayList<>();
-            for (ConnectorName connectorName : connectorNames) {
+            for (ConnectorName connectorName: connectorNames) {
                 ConnectorMetadata connectorMetadata = getConnector(connectorName);
                 if (connectorMetadata.getStatus() == connectorStatus) {
                     connectors.add(connectorMetadata);

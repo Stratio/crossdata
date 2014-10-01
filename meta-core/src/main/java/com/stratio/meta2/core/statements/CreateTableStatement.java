@@ -29,6 +29,7 @@ import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.ColumnType;
+import com.stratio.meta2.common.metadata.structures.TableType;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
@@ -38,7 +39,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  */
 public class CreateTableStatement extends MetadataStatement implements ITableStatement {
 
-    private boolean ephemeral = false;
+    private TableType tableType = TableType.DATABASE;
 
     /**
      * The name of the target table.
@@ -85,17 +86,17 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     /**
      * Class constructor.
      *
-     * @param ephemeral    Flag for indicating an ephemeral table
+     * @param tableType    Table type {@link com.stratio.meta2.common.metadata.structures.TableType}.
      * @param tableName    The name of the table.
      * @param columns      A map with the name of the columns in the table and the associated data type.
      * @param partitionKey The list of columns that are part of the primary key.
      * @param clusterKey   The list of columns that are part of the clustering key.
      */
-    public CreateTableStatement(boolean ephemeral, TableName tableName, ClusterName clusterName,
+    public CreateTableStatement(TableType tableType, TableName tableName, ClusterName clusterName,
             Map<ColumnName, ColumnType> columns,
             List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
         this.command = false;
-        this.ephemeral = ephemeral;
+        this.tableType = tableType;
         this.tableName = tableName;
         this.clusterName = clusterName;
         this.columnsWithType = columns;
@@ -116,11 +117,11 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     public CreateTableStatement(TableName tableName, ClusterName clusterName,
             Map<ColumnName, ColumnType> columns,
             List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
-        this(false, tableName, clusterName, columns, partitionKey, clusterKey);
+        this(TableType.DATABASE, tableName, clusterName, columns, partitionKey, clusterKey);
     }
 
-    public boolean isEphemeral() {
-        return ephemeral;
+    public TableType getTableType() {
+        return tableType;
     }
 
     public Map<ColumnName, ColumnType> getColumnsWithTypes() {
@@ -163,7 +164,11 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("CREATE TABLE ");
+        StringBuilder sb = new StringBuilder("CREATE ");
+        if(tableType != TableType.DATABASE){
+            sb.append(tableType);
+        }
+        sb.append("TABLE ");
         if (ifNotExists) {
             sb.append("IF NOT EXISTS ");
         }
