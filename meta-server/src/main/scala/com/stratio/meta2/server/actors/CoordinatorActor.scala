@@ -31,13 +31,15 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
   def receive = {
 
     case plannedQuery: PlannedQuery => {
-      val workflow = plannedQuery.getExecutionWorkflow
+      val workflow = plannedQuery.getExecutionWorkflow()
+      println ("plannedquery")
+      println ("workflow="+workflow)
 
       workflow match {
         case workflow: MetadataWorkflow => {
+          println ("metadataworkflow")
           val requestSender = sender
-          val queryId = plannedQuery
-            .asInstanceOf[MetadataPlannedQuery].getQueryId;
+          val queryId = plannedQuery.asInstanceOf[MetadataPlannedQuery].getQueryId;
           inProgress.put(queryId, workflow)
           inProgressSender.put(queryId, requestSender)
           persistOnSuccess.put(queryId, workflow)
@@ -62,8 +64,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
         case workflow: QueryWorkflow => {
           val requestSender = sender
-          val queryId = plannedQuery
-            .asInstanceOf[SelectPlannedQuery].getQueryId
+          val queryId = plannedQuery.asInstanceOf[SelectPlannedQuery].getQueryId
           inProgress.put(queryId, workflow)
           inProgressSender.put(queryId, requestSender)
           if(ResultType.RESULTS.equals(workflow.getResultType)){
@@ -72,6 +73,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             //TODO Trigger next step execution.
             throw new UnsupportedOperationException("Trigger execution not supported")
           }
+        }
+        case _ =>{
+          println("non recognized workflow")
         }
       }
     }
