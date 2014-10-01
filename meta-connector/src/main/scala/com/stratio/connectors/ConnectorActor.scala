@@ -153,10 +153,11 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
           }
         }
         val result = CommandResult.createCommandResult("ok")
-        //result.setQueryId(qId)
+        result.setQueryId(qId)
         sender ! result
       } catch {
         case ex: Exception => {
+          log.debug(ex.getStackTraceString)
           val result=com.stratio.meta.common.result.Result.createExecutionErrorResult(ex.getStackTraceString)
           sender ! result
         }
