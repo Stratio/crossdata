@@ -52,8 +52,6 @@ import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType;
 import com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType;
 import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
-import com.stratio.meta2.common.api.generated.datastore.ClusterType;
-import com.stratio.meta2.common.api.generated.datastore.HostsType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -67,7 +65,6 @@ import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
-import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
@@ -381,22 +378,11 @@ public class PlannerWorkflowTest extends MetadataManagerTests {
 
         // Fill in data for METADATAMANAGER
             // Create & add DataStore
-        DataStoreName dataStoreName = new DataStoreName("DataStoreTest");
-        String version = "0.1.0";
-        com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType requiredPropertiesForDataStore = new
-                com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType();
-        ClusterType clusterType = new ClusterType();
-        clusterType.setName("Production");
-        List<HostsType> hosts = new ArrayList<>();
-        HostsType hostsType = new HostsType();
-        hostsType.setHost("127.0.0.1");
-        hostsType.setPort("9090");
-        hosts.add(hostsType);
-        clusterType.setHosts(hosts);
-        requiredPropertiesForDataStore.setCluster(clusterType);
-        com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType othersProperties = new com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType();
-        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version, requiredPropertiesForDataStore, othersProperties);
-        MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
+            final String DATASTORE_NAME = "dataStoreTest";
+            DataStoreName dataStoreName = new DataStoreName(DATASTORE_NAME);
+            final String version = "0.1.0";
+            insertDataStore(DATASTORE_NAME, "production");
+
 
             // Create & add Connector
         ConnectorName connectorName = new ConnectorName("ConnectorTest");

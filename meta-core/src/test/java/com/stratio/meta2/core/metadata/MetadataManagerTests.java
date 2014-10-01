@@ -20,7 +20,9 @@ package com.stratio.meta2.core.metadata;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
@@ -31,7 +33,11 @@ import org.apache.commons.io.FileUtils;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
+import com.stratio.meta2.common.api.generated.datastore.ClusterType;
+import com.stratio.meta2.common.api.generated.datastore.HostsType;
+import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.FirstLevelName;
+import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.core.grid.Grid;
 import com.stratio.meta2.core.grid.GridInitializer;
 
@@ -49,6 +55,26 @@ public class MetadataManagerTests {
                 .withMinInitialMembers(1)
                 .withJoinTimeoutInMs(3000)
                 .withPersistencePath(path).init();
+    }
+
+    protected DataStoreMetadata insertDataStore(String dataStore, String cluster){
+        DataStoreName dataStoreName = new DataStoreName(dataStore);
+        String version = "0.1.0";
+        com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType requiredPropertiesForDataStore = new
+                com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType();
+        ClusterType clusterType = new ClusterType();
+        clusterType.setName(cluster);
+        List<HostsType> hosts = new ArrayList<>();
+        HostsType hostsType = new HostsType();
+        hostsType.setHost("127.0.0.1");
+        hostsType.setPort("9090");
+        hosts.add(hostsType);
+        clusterType.setHosts(hosts);
+        requiredPropertiesForDataStore.setCluster(clusterType);
+        com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType othersProperties = new com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType();
+        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version, requiredPropertiesForDataStore, othersProperties);
+        MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
+        return dataStoreMetadata;
     }
 
     @BeforeClass

@@ -48,7 +48,6 @@ import com.stratio.meta2.common.metadata.ClusterMetadata;
 import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
-import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
@@ -75,13 +74,7 @@ public class NormalizerTest extends MetadataManagerTests {
     public void putData() throws Exception {
 
         // DATASTORE
-        DataStoreMetadata dsmd = new DataStoreMetadata(
-                new DataStoreName("Cassandra"), //name
-                "1.0.0", //version
-                null, //requiredProperties
-                null //othersProperties
-        );
-        MetadataManager.MANAGER.createDataStore(dsmd);
+        insertDataStore("Cassandra", "production");
 
         // CLUSTER
         ClusterName clusterName = new ClusterName("testing");
