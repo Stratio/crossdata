@@ -88,4 +88,7 @@ public class SupportedOperationsType implements Serializable {
         return this.operation;
     }
 
+    public void setOperation(Set<Operations> operation) {
+        this.operation = operation;
+    }
 }

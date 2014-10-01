@@ -27,9 +27,7 @@ import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.exceptions.validation.BadFormatException;
 import com.stratio.meta.common.exceptions.validation.ExistNameException;
 import com.stratio.meta.common.exceptions.validation.NotExistNameException;
-
 import com.stratio.meta.common.exceptions.validation.NotMatchDataTypeException;
-import com.stratio.meta.common.exceptions.validation.YodaConditionException;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.ConnectorName;
@@ -39,8 +37,9 @@ import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
 import com.stratio.meta2.core.metadata.MetadataManager;
+import com.stratio.meta2.core.normalizer.Normalizator;
+import com.stratio.meta2.core.normalizer.NormalizedFields;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.MetadataValidatedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
@@ -73,6 +72,8 @@ public class Validator {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(Validator.class);
+    private Normalizator normalizator=null;
+
 
     public ValidatedQuery validate(ParsedQuery parsedQuery)
             throws ValidationException, IgnoreQueryException {
@@ -136,6 +137,9 @@ public class Validator {
             case VALIDATE_TYPES:
                 validateInsertTypes(parsedQuery.getStatement());
                 break;
+            case VALIDATE_SELECT:
+                validateSelect(parsedQuery);
+                break;
             default:
                 break;
             }
@@ -147,9 +151,18 @@ public class Validator {
             validatedQuery = new StorageValidatedQuery((StorageParsedQuery) parsedQuery);
         } else if (parsedQuery instanceof SelectParsedQuery) {
             validatedQuery = new SelectValidatedQuery((SelectParsedQuery) parsedQuery);
+            NormalizedFields fields= normalizator.getFields();
+
+
         }
 
         return validatedQuery;
+    }
+
+    private void validateSelect(ParsedQuery parsedQuery) throws ValidationException {
+        SelectParsedQuery selectParsedQuery = (SelectParsedQuery) parsedQuery;
+        normalizator = new Normalizator(selectParsedQuery);
+        normalizator.execute();
     }
 
     private void validateNotExistConnector(MetaStatement stmt) throws IgnoreQueryException, ExistNameException {
@@ -187,12 +200,11 @@ public class Validator {
             DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) stmt;
             name = detachConnectorStatement.getConnectorName();
         }
-        
+
         if (stmt instanceof DropConnectorStatement) {
             DropConnectorStatement dropConnectorStatement = (DropConnectorStatement) stmt;
             name = new ConnectorName(dropConnectorStatement.getName());
         }
-        
 
         validateExist(name, hasIfExist);
     }
@@ -219,14 +231,14 @@ public class Validator {
             name = (((AttachConnectorStatement) stmt).getClusterName());
         }
 
-        if (stmt instanceof CreateTableStatement){
-            CreateTableStatement createTableStatement=(CreateTableStatement)stmt;
-            name=createTableStatement.getClusterName();
-            hasIfExists=createTableStatement.isIfNotExists();
+        if (stmt instanceof CreateTableStatement) {
+            CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
+            name = createTableStatement.getClusterName();
+            hasIfExists = createTableStatement.isIfNotExists();
         }
-        if (stmt instanceof DetachConnectorStatement){
-            DetachConnectorStatement detachConnectorStatement=(DetachConnectorStatement)stmt;
-            name=detachConnectorStatement.getClusterName();
+        if (stmt instanceof DetachConnectorStatement) {
+            DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) stmt;
+            name = detachConnectorStatement.getClusterName();
         }
 
         validateExist(name, hasIfExists);
@@ -250,14 +262,14 @@ public class Validator {
             name = new ClusterName(((DetachClusterStatement) stmt).getClusterName());
         }
 
-        if (stmt instanceof CreateTableStatement){
-            CreateTableStatement createTableStatement=(CreateTableStatement)stmt;
-            name=createTableStatement.getClusterName();
-            hasIfExists=createTableStatement.isIfNotExists();
+        if (stmt instanceof CreateTableStatement) {
+            CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
+            name = createTableStatement.getClusterName();
+            hasIfExists = createTableStatement.isIfNotExists();
         }
-        if (stmt instanceof DetachConnectorStatement){
-            DetachConnectorStatement detachConnectorStatement=(DetachConnectorStatement)stmt;
-            name=detachConnectorStatement.getClusterName();
+        if (stmt instanceof DetachConnectorStatement) {
+            DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) stmt;
+            name = detachConnectorStatement.getClusterName();
         }
 
         validateNotExist(name, hasIfExists);
@@ -358,21 +370,21 @@ public class Validator {
             hasIfExists = ((DropTableStatement) stmt).isIfExists();
         }
 
-        if (stmt instanceof CreateTableStatement){
-            CreateTableStatement createTableStatement=(CreateTableStatement)stmt;
-            name=createTableStatement.getTableName();
-            hasIfExists=createTableStatement.isIfNotExists();
+        if (stmt instanceof CreateTableStatement) {
+            CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
+            name = createTableStatement.getTableName();
+            hasIfExists = createTableStatement.isIfNotExists();
         }
 
-        if (stmt instanceof DescribeStatement){
-            DescribeStatement describeStatement=(DescribeStatement)stmt;
-            name=describeStatement.getTableName();
+        if (stmt instanceof DescribeStatement) {
+            DescribeStatement describeStatement = (DescribeStatement) stmt;
+            name = describeStatement.getTableName();
         }
 
-        if (stmt instanceof InsertIntoStatement){
-            InsertIntoStatement insertIntoStatement=(InsertIntoStatement)stmt;
-            name=insertIntoStatement.getTableName();
-            hasIfExists=insertIntoStatement.isIfNotExists();
+        if (stmt instanceof InsertIntoStatement) {
+            InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
+            name = insertIntoStatement.getTableName();
+            hasIfExists = insertIntoStatement.isIfNotExists();
         }
 
         validateExist(name, hasIfExists);
@@ -392,23 +404,22 @@ public class Validator {
             hasIfExists = ((DropTableStatement) stmt).isIfExists();
         }
 
-        if (stmt instanceof CreateTableStatement){
-            CreateTableStatement createTableStatement=(CreateTableStatement)stmt;
-            name=createTableStatement.getTableName();
-            hasIfExists=createTableStatement.isIfNotExists();
+        if (stmt instanceof CreateTableStatement) {
+            CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
+            name = createTableStatement.getTableName();
+            hasIfExists = createTableStatement.isIfNotExists();
         }
 
-        if (stmt instanceof DetachClusterStatement){
-            DetachClusterStatement detachClusterStatement=(DetachClusterStatement)stmt;
-            name=new ClusterName(detachClusterStatement.getClusterName());
+        if (stmt instanceof DetachClusterStatement) {
+            DetachClusterStatement detachClusterStatement = (DetachClusterStatement) stmt;
+            name = new ClusterName(detachClusterStatement.getClusterName());
         }
 
-        if (stmt instanceof AttachClusterStatement){
-            AttachClusterStatement attachClusterStatement=(AttachClusterStatement)stmt;
-            name=(attachClusterStatement.getClusterName());
-            hasIfExists=attachClusterStatement.isIfNotExists();
+        if (stmt instanceof AttachClusterStatement) {
+            AttachClusterStatement attachClusterStatement = (AttachClusterStatement) stmt;
+            name = (attachClusterStatement.getClusterName());
+            hasIfExists = attachClusterStatement.isIfNotExists();
         }
-
 
         validateNotExist(name, hasIfExists);
     }
@@ -433,10 +444,10 @@ public class Validator {
             name = ((DropCatalogStatement) stmt).getCatalogName();
         }
 
-        if (stmt instanceof CreateTableStatement){
-            CreateTableStatement createTableStatement=(CreateTableStatement)stmt;
-            name=createTableStatement.getEffectiveCatalog();
-            hasIfExists=createTableStatement.isIfNotExists();
+        if (stmt instanceof CreateTableStatement) {
+            CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
+            name = createTableStatement.getEffectiveCatalog();
+            hasIfExists = createTableStatement.isIfNotExists();
         }
         validateNotExist(name, hasIfExists);
     }
@@ -446,43 +457,43 @@ public class Validator {
         boolean hasIfExists = false;
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
-            name=alterCatalogStatement.getCatalogName();
+            name = alterCatalogStatement.getCatalogName();
         }
 
         if (stmt instanceof CreateCatalogStatement) {
             CreateCatalogStatement createCatalogStatement = (CreateCatalogStatement) stmt;
-            name=createCatalogStatement.getCatalogName();
+            name = createCatalogStatement.getCatalogName();
             hasIfExists = createCatalogStatement.isIfNotExists();
 
         }
 
         if (stmt instanceof DropCatalogStatement) {
             DropCatalogStatement dropCatalogStatement = (DropCatalogStatement) stmt;
-            name=dropCatalogStatement.getCatalogName();
+            name = dropCatalogStatement.getCatalogName();
             hasIfExists = dropCatalogStatement.isIfExists();
         }
 
-        if (stmt instanceof DescribeStatement){
-            DescribeStatement describeStatement=(DescribeStatement)stmt;
-            name=describeStatement.getEffectiveCatalog();
+        if (stmt instanceof DescribeStatement) {
+            DescribeStatement describeStatement = (DescribeStatement) stmt;
+            name = describeStatement.getEffectiveCatalog();
         }
 
-        if (stmt instanceof CreateTableStatement){
-            CreateTableStatement createTableStatement=(CreateTableStatement)stmt;
-            name=createTableStatement.getEffectiveCatalog();
-            hasIfExists=createTableStatement.isIfNotExists();
+        if (stmt instanceof CreateTableStatement) {
+            CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
+            name = createTableStatement.getEffectiveCatalog();
+            hasIfExists = createTableStatement.isIfNotExists();
         }
 
-        if (stmt instanceof DropTableStatement){
-            DropTableStatement dropTableStatement=(DropTableStatement)stmt;
-            name=dropTableStatement.getCatalogName();
+        if (stmt instanceof DropTableStatement) {
+            DropTableStatement dropTableStatement = (DropTableStatement) stmt;
+            name = dropTableStatement.getCatalogName();
             hasIfExists = ((DropTableStatement) stmt).isIfExists();
         }
 
-        if (stmt instanceof InsertIntoStatement){
-            InsertIntoStatement insertIntoStatement=(InsertIntoStatement)stmt;
-            name=insertIntoStatement.getCatalogName();
-            hasIfExists=insertIntoStatement.isIfNotExists();
+        if (stmt instanceof InsertIntoStatement) {
+            InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
+            name = insertIntoStatement.getCatalogName();
+            hasIfExists = insertIntoStatement.isIfNotExists();
         }
         validateExist(name, hasIfExists);
     }
@@ -497,7 +508,7 @@ public class Validator {
         } else {
             if (stmt instanceof AttachConnectorStatement) {
                 AttachConnectorStatement myStmt = (AttachConnectorStatement) stmt;
-                if ((myStmt.getOptions()==null || myStmt.getOptions().isEmpty())) {
+                if ((myStmt.getOptions() == null || myStmt.getOptions().isEmpty())) {
                     throw new ValidationException("AttachConnectorStatement options can't be empty");
                 }
             }
@@ -516,7 +527,7 @@ public class Validator {
 
         if (stmt instanceof DropIndexStatement) {
             DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
-            name=dropIndexStatement.getName();
+            name = dropIndexStatement.getName();
             hasIfExist = ((CreateIndexStatement) stmt).isCreateIfNotExists();
         }
         validateNotExist(name, hasIfExist);
@@ -533,7 +544,7 @@ public class Validator {
 
         if (stmt instanceof DropIndexStatement) {
             DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
-           name=dropIndexStatement.getName();
+            name = dropIndexStatement.getName();
             hasIfExist = ((CreateIndexStatement) stmt).isCreateIfNotExists();
         }
         validateExist(name, hasIfExist);
@@ -541,22 +552,20 @@ public class Validator {
 
     private void validateInsertTypes(MetaStatement stmt)
             throws BadFormatException, NotMatchDataTypeException {
-        if (stmt instanceof InsertIntoStatement){
-            InsertIntoStatement insertIntoStatement=(InsertIntoStatement)stmt;
-            List<ColumnName> columnNameList=insertIntoStatement.getIds();
-            List<Selector>selectorList=insertIntoStatement.getCellValues();
+        if (stmt instanceof InsertIntoStatement) {
+            InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
+            List<ColumnName> columnNameList = insertIntoStatement.getIds();
+            List<Selector> selectorList = insertIntoStatement.getCellValues();
 
+            for (int i = 0; i < columnNameList.size(); i++) {
+                ColumnName columnName = columnNameList.get(i);
+                Selector valueSelector = selectorList.get(i);
+                ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
 
-            for (int i=0; i<columnNameList.size();i++){
-                ColumnName columnName=columnNameList.get(i);
-                Selector valueSelector=selectorList.get(i);
-                ColumnMetadata columnMetadata= MetadataManager.MANAGER.getColumn(columnName);
-
-                validateColumnType(columnMetadata,valueSelector);
+                validateColumnType(columnMetadata, valueSelector);
             }
         }
     }
-
 
     public void validateColumnType(ColumnMetadata columnMetadata, Selector right)
             throws BadFormatException, NotMatchDataTypeException {

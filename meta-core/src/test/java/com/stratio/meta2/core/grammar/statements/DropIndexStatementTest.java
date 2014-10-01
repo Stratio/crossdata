@@ -25,30 +25,27 @@ import com.stratio.meta2.core.grammar.ParsingTest;
 public class DropIndexStatementTest extends ParsingTest {
 
     @Test
-    public void basic() {
+    public void noCatalog() {
         String inputText = "DROP INDEX demo.index_name;";
-        String expectedText = "DROP INDEX <unknown_name>.demo.index[index_name];";
-        testRegularStatement(inputText, expectedText, "basic");
+        testParserFails(inputText, "noCatalog");
     }
 
     @Test
-    public void noKsOk() {
+    public void noTableName() {
         String inputText = "DROP INDEX index_name;";
-        String expectedText = "DROP INDEX <unknown_name>.<unknown_name>.index[index_name];";
-        testRegularStatement(inputText, expectedText, "noKsOk");
+        testParserFails(inputText, "noTableName");
     }
 
     @Test
-    public void ifExists() {
+    public void noCatalogWithIfExists() {
         String inputText = "DROP INDEX IF EXISTS demo.index_name;";
-        String expectedText = "DROP INDEX IF EXISTS <unknown_name>.demo.index[index_name];";
-        testRegularStatement(inputText, expectedText, "ifExists");
+        testParserFails(inputText, "noCatalogWithIfExists");
     }
 
     @Test
     public void tokenOk() {
-        String inputText = "DROP INDEX lucene;";
-        String expectedText = "DROP INDEX <unknown_name>.<unknown_name>.index[lucene];";
+        String inputText = "DROP INDEX demo.table1.lucene;";
+        String expectedText = "DROP INDEX demo.table1.index[lucene];";
         testRegularStatement(inputText, expectedText, "tokenOk");
     }
 

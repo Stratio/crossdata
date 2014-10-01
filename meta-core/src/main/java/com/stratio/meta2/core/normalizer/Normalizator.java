@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.stratio.meta.core.normalizer;
+package com.stratio.meta2.core.normalizer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -58,7 +58,6 @@ public class Normalizator {
     public NormalizedFields getFields() {
         return fields;
     }
-
 
     public ParsedQuery getParsedQuery() {
         return parsedQuery;
@@ -272,7 +271,8 @@ public class Normalizator {
         case INTEGER:
 
         case RELATION:
-            throw new BadFormatException("Operation not supported in where.");
+            
+            //throw new BadFormatException("Operation not supported in where.");
         case ASTERISK:
             throw new BadFormatException("Asterisk not supported in relations.");
         }
@@ -317,8 +317,8 @@ public class Normalizator {
             }
             break;
         case FLOATING_POINT:
-            if (leftColumnMetadata.getColumnType() != ColumnType.FLOAT &&
-                    leftColumnMetadata.getColumnType() != ColumnType.DOUBLE) {
+            if (leftColumnMetadata.getColumnType() != ColumnType.FLOAT
+                    && leftColumnMetadata.getColumnType() != ColumnType.DOUBLE) {
                 throw new NotMatchDataTypeException(leftColumnName);
             }
             break;

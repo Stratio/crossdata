@@ -23,6 +23,7 @@ import java.util.Map;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class ClusterMetadata implements IMetadata {
 
@@ -33,10 +34,10 @@ public class ClusterMetadata implements IMetadata {
 
     private final ClusterName name;
     private final DataStoreName dataStoreRef;
-    private final Map<String, Object> options;
+    private final Map<Selector, Selector> options;
     private Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs;
 
-    public ClusterMetadata(ClusterName name, DataStoreName dataStoreRef, Map<String, Object> options,
+    public ClusterMetadata(ClusterName name, DataStoreName dataStoreRef, Map<Selector, Selector> options,
             Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) {
         this.name = name;
         this.options = options;
@@ -48,7 +49,7 @@ public class ClusterMetadata implements IMetadata {
         return name;
     }
 
-    public Map<String, Object> getOptions() {
+    public Map<Selector, Selector> getOptions() {
         return options;
     }
 

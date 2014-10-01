@@ -75,13 +75,7 @@ public class CoordinatorTest extends MetadataManagerTests {
     public void testAttachCluster() throws Exception {
 
         // Create and add a test datastore metadata to the metadatamanager
-        DataStoreName name = new DataStoreName("datastoreTest");
-        String version = "0.1.0";
-        RequiredPropertiesType requiredProperties = null;
-        OptionalPropertiesType othersProperties = null;
-        DataStoreMetadata datastoreTest =
-                new DataStoreMetadata(name, version, requiredProperties, othersProperties);
-        MetadataManager.MANAGER.createDataStore(datastoreTest, false);
+        DataStoreMetadata datastoreTest = insertDataStore("datastoreTest", "production");
 
         // Add information about the cluster attachment to the metadatamanager
         BaseQuery baseQuery =
@@ -125,18 +119,12 @@ public class CoordinatorTest extends MetadataManagerTests {
     public void testAttachConnector() throws Exception {
 
         // Create and add a test datastore metadata to the metadatamanager
-        DataStoreName dataStoreName = new DataStoreName("datastoreTest");
-        String dataStoreVersion = "0.1.0";
-        RequiredPropertiesType requiredProperties = null;
-        OptionalPropertiesType othersProperties = null;
-        DataStoreMetadata datastoreTest =
-                new DataStoreMetadata(dataStoreName, dataStoreVersion, requiredProperties, othersProperties);
-        MetadataManager.MANAGER.createDataStore(datastoreTest, false);
+        DataStoreMetadata datastoreTest = insertDataStore("datastoreTest", "production");
 
         // Create and add a test cluster metadata to the metadatamanager
         ClusterName clusterName = new ClusterName("clusterTest");
         DataStoreName dataStoreRef = new DataStoreName("dataStoreTest");
-        Map<String, Object> options = new HashMap<>();
+        Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ClusterMetadata clusterTest =
                 new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
@@ -395,7 +383,7 @@ public class CoordinatorTest extends MetadataManagerTests {
         // Create and add a test cluster metadata to the metadatamanager
         ClusterName clusterName = new ClusterName(cluster);
         DataStoreName dataStoreRef = new DataStoreName(datastore);
-        Map<String, Object> options = new HashMap<>();
+        Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ClusterMetadata clusterTest =
                 new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);

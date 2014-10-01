@@ -16,18 +16,23 @@
  * under the License.
  */
 
-package com.stratio.meta.core.normalizer;
+package com.stratio.meta2.common.metadata.structures;
 
-import com.stratio.meta.common.exceptions.ValidationException;
-import com.stratio.meta2.core.query.SelectParsedQuery;
-import com.stratio.meta2.core.query.SelectValidatedQuery;
-
-public class Normalizer {
-
-    public SelectValidatedQuery normalize(SelectParsedQuery parsedQuery) throws ValidationException {
-        Normalizator normalizator = new Normalizator(parsedQuery);
-        normalizator.execute();
-        return new SelectValidatedQuery(parsedQuery);
-    }
-
+/**
+ * Enumeration of the types of tables returned in metadata requests.
+ * <p/>
+ * <ul>
+ * <li>DATABASE: Persistent table.</li>
+ * <li>STREAMING: Ephemeral table supported by Stratio Streaming.</li>
+ * </ul>
+ */
+public enum TableType {
+    /**
+     * A table that is persisted in a database.
+     */
+    DATABASE,
+    /**
+     * An ephemeral table supported by Stratio Streaming.
+     */
+    EPHEMERAL
 }

@@ -18,7 +18,6 @@
 
 package com.stratio.meta2.core.statements;
 
-import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
@@ -52,8 +51,8 @@ public class DropIndexStatement extends IndexStatement {
         dropIfExists = true;
     }
 
-    public void setName(ColumnName name){
-        this.name = new IndexName(name.getTableName(), name.getName());
+    public void setName(IndexName name){
+        this.name = name;
     }
 
     public boolean isDropIfExists() {
@@ -65,9 +64,6 @@ public class DropIndexStatement extends IndexStatement {
         StringBuilder sb = new StringBuilder("DROP INDEX ");
         if (dropIfExists) {
             sb.append("IF EXISTS ");
-        }
-        if (catalogInc) {
-            sb.append(catalog).append(".");
         }
         sb.append(name);
         return sb.toString();

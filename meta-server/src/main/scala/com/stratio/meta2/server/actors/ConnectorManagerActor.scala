@@ -4,11 +4,9 @@ import akka.actor._
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
-import com.stratio.meta2.common.data.{ClusterName, ConnectorName}
+import com.stratio.meta2.common.data.ConnectorName
 import com.stratio.meta2.core.connector.ConnectorManager
 import com.stratio.meta2.core.metadata.MetadataManager
-import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.{CreateCatalogStatement, CreateTableStatement}
 import org.apache.log4j.Logger
 
 
@@ -48,8 +46,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
             val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
             val id = java.util.UUID.randomUUID.toString()
 
-            connectorActorRef ! getConnectorName()
-            connectorActorRef ! Start()
+            //connectorActorRef ! getConnectorName()
+            //connectorActorRef ! Start()
 
         }
       }
@@ -62,46 +60,6 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       val connectorRef = sender;
       MetadataManager.MANAGER.addConnectorRef(new ConnectorName(msg.name), connectorRef)
     }
-
-      /*
-    case query: StorageInProgressQuery => {
-      log.info("storage in progress query")
-      //connectorsMap(query.getConnectorName()) ! query
-      query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! query
-    }
-
-    case query: SelectInProgressQuery => {
-      val clustername = new ClusterName("//TODO:") //TODO: the query should give me the cluster's name
-      val executionStep = query.getExecutionStep
-      log.info("select in progress query")
-      //connectorsMap(query.getConnectorName()) ! Execute(clustername,workflow)
-      query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! Execute(null, executionStep)
-    }
-
-    case query: MetadataInProgressQuery => {
-
-      val statement = query.getStatement()
-      //val messagesender=connectorsMap(query.getConnectorName())
-      val messagesender = query.getExecutionStep.getActorRef
-
-      statement match {
-        case createCatalogStatement: CreateCatalogStatement => {
-          println("Createcatalog statement")
-          //messagesender ! CreateCatalog(query.getClusterName,query.getDefaultCatalog)
-          //createCatalogStatement
-        }
-        case createTableStatement: CreateTableStatement => {
-          println("CreateTableStatement")
-        }
-        case _ =>
-          println("Unidentified MetadataInProgressQuery Received")
-      }
-
-      log.info("metadata in progress query")
-      //connectorsMap(query.getConnectorName()) ! query
-      query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! query
-    }
-    */
 
     //pass the message to the connectorActor to extract the member in the cluster
     case state: CurrentClusterState => {
@@ -128,30 +86,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       logger.warn("ReceiveTimeout")
       //TODO Process ReceiveTimeout
     }
-
-    /*
-    case toConnector: MetadataStruct =>
-      connectorsMap(toConnector.connectorName) ! toConnector
-
-    case toConnector: StorageQueryStruct =>
-      connectorsMap(toConnector.connectorName) ! toConnector
-
-    case toConnector: WorkflowStruct =>
-      connectorsMap(toConnector.connectorName) ! toConnector
-
-    case response: Response =>
-      //connectorsMap += (response.msg -> sender)
-
-    case query: SelectPlannedQuery => {
-      log.info("ConnectorManagerActor received SelectPlannedQuery")
-      sender ! "Ok"
-    }
-    */
-
-    case other =>
+    case _=>
       println("connector actor receives event")
-    //      sender ! "OK"
-    //memberActorRef.tell(objetoConWorkflow, context.sender)
   }
 
 }

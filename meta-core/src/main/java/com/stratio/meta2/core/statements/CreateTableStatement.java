@@ -29,6 +29,7 @@ import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.ColumnType;
+import com.stratio.meta2.common.metadata.structures.TableType;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
@@ -37,6 +38,8 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  * Class that models a {@code CREATE TABLE} statement of the META language.
  */
 public class CreateTableStatement extends MetadataStatement implements ITableStatement {
+
+    private TableType tableType = TableType.DATABASE;
 
     /**
      * The name of the target table.
@@ -83,6 +86,29 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     /**
      * Class constructor.
      *
+     * @param tableType    Table type {@link com.stratio.meta2.common.metadata.structures.TableType}.
+     * @param tableName    The name of the table.
+     * @param columns      A map with the name of the columns in the table and the associated data type.
+     * @param partitionKey The list of columns that are part of the primary key.
+     * @param clusterKey   The list of columns that are part of the clustering key.
+     */
+    public CreateTableStatement(TableType tableType, TableName tableName, ClusterName clusterName,
+            Map<ColumnName, ColumnType> columns,
+            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
+        this.command = false;
+        this.tableType = tableType;
+        this.tableName = tableName;
+        this.clusterName = clusterName;
+        this.columnsWithType = columns;
+        this.partitionKey = partitionKey;
+        this.clusterKey = clusterKey;
+        this.primaryKey.addAll(partitionKey);
+        this.primaryKey.addAll(clusterKey);
+    }
+
+    /**
+     * Class constructor.
+     *
      * @param tableName    The name of the table.
      * @param columns      A map with the name of the columns in the table and the associated data type.
      * @param partitionKey The list of columns that are part of the primary key.
@@ -91,14 +117,11 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     public CreateTableStatement(TableName tableName, ClusterName clusterName,
             Map<ColumnName, ColumnType> columns,
             List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
-        this.command = false;
-        this.tableName = tableName;
-        this.clusterName = clusterName;
-        this.columnsWithType = columns;
-        this.partitionKey = partitionKey;
-        this.clusterKey = clusterKey;
-        this.primaryKey.addAll(partitionKey);
-        this.primaryKey.addAll(clusterKey);
+        this(TableType.DATABASE, tableName, clusterName, columns, partitionKey, clusterKey);
+    }
+
+    public TableType getTableType() {
+        return tableType;
     }
 
     public Map<ColumnName, ColumnType> getColumnsWithTypes() {
@@ -141,7 +164,11 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("CREATE TABLE ");
+        StringBuilder sb = new StringBuilder("CREATE ");
+        if(tableType != TableType.DATABASE){
+            sb.append(tableType);
+        }
+        sb.append("TABLE ");
         if (ifNotExists) {
             sb.append("IF NOT EXISTS ");
         }

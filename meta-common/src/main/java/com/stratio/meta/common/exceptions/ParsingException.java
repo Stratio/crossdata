@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Parsing exception thrown by the Driver if the statement could not be parsed.
  */
-public class ParsingException extends Exception {
+public class ParsingException extends RuntimeException {
 
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.

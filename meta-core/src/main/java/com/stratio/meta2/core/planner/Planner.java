@@ -104,17 +104,48 @@ public class Planner {
 
     protected ExecutionWorkflow buildExecutionWorkflow(LogicalWorkflow workflow) throws PlanningException {
 
-        List<TableName> tables = new ArrayList<>(workflow.getInitialSteps().size());
-        for(LogicalStep ls: workflow.getInitialSteps()){
+        List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
+
+        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = findCapableConnectors(tables,
+                workflow.getInitialSteps());
+
+        ConnectorMetadata chosenConnector = findMoreSuitableConnector(candidatesConnectors);
+
+        // TODO: Create this object properly
+        ExecutionWorkflow executionWorkflow = new ExecutionWorkflow(null, null, null, null);
+
+        return executionWorkflow;
+    }
+
+    protected List<TableName> getInitialSteps(List<LogicalStep> initialSteps){
+        List<TableName> tables = new ArrayList<>(initialSteps.size());
+        for(LogicalStep ls: initialSteps){
             tables.add(Project.class.cast(ls).getTableName());
         }
+        return tables;
+    }
+
+    protected ConnectorMetadata findMoreSuitableConnector(Map<TableName, List<ConnectorMetadata>> candidatesConnectors)
+            throws PlanningException {
+        ConnectorMetadata chosenConnector;
+        if(candidatesConnectors.isEmpty()){
+            throw new PlanningException("No connector meets the required capabilities.");
+        } else {
+            // TODO: we shouldn't choose the first candidate, we should choose the best one
+            chosenConnector = candidatesConnectors.values().iterator().next().get(0);
+        }
+        return chosenConnector;
+    }
+
+    protected Map<TableName, List<ConnectorMetadata>> findCapableConnectors(List<TableName> tables,
+            List<LogicalStep> initialSteps){
 
         //Get the list of connector attached to the clusters that contain the required tables.
         Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER.getAttachedConnectors(
                 Status.ONLINE, tables);
 
         //Refine the list of available connectors and determine which connector to be used.
-        for(LogicalStep ls: workflow.getInitialSteps()){
+        for(LogicalStep ls: initialSteps){
 
             TableName tableName = Project.class.cast(ls).getTableName();
 
@@ -130,19 +161,7 @@ public class Planner {
                 nextLogicalStep = nextLogicalStep.getNextStep();
             }
         }
-
-        ConnectorMetadata chosenConnector;
-        if(candidatesConnectors.isEmpty()){
-            throw new PlanningException("No connector meets the required capabilities.");
-        } else {
-            // TODO: we shouldn't choose the first candidate, we should choose the best
-            chosenConnector = candidatesConnectors.values().iterator().next().get(0);
-        }
-
-        // TODO: Create this object properly
-        ExecutionWorkflow executionWorkflow = new ExecutionWorkflow(null, null, null, null);
-
-        return executionWorkflow;
+        return candidatesConnectors;
     }
 
     /**
@@ -376,17 +395,17 @@ public class Planner {
     }
 
     protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap) {
-        Map<String, String> aliasMap = new HashMap<>();
+        Map<ColumnName, String> aliasMap = new HashMap<>();
         Map<String, ColumnType> typeMap = new HashMap<>();
-        for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
+        for (Selector s: selectStatement.getSelectExpression().getSelectorList()) {
             if (s.getAlias() != null) {
-                aliasMap.put(s.toString(), s.getAlias());
+                aliasMap.put(new ColumnName(selectStatement.getTableName(), s.toString()), s.getAlias());
 
                 typeMap.put(s.toString(),
                         tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
                                 .get(ColumnSelector.class.cast(s).getName()).getColumnType());
             } else {
-                aliasMap.put(s.toString(), s.toString());
+                aliasMap.put(new ColumnName(selectStatement.getTableName(), s.toString()), s.toString());
             }
         }
         Select result = new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap);

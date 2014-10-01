@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.normalizer;
+package com.stratio.meta2.core.normalizer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
