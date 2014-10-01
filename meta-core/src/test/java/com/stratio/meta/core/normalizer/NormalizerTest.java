@@ -57,6 +57,7 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.metadata.MetadataManagerTests;
+import com.stratio.meta2.core.normalizer.Normalizer;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.query.SelectValidatedQuery;

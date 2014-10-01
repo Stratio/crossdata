@@ -84,10 +84,12 @@ options {
 
     public IndexName normalizeIndexName(String str){
             String [] indexTokens = str.split("\\.");
-            if(indexTokens.length == 2){
+            if((indexTokens.length) == 2 && (!sessionCatalog.isEmpty())){
                 return new IndexName(sessionCatalog, indexTokens[0], indexTokens[1]);
             } else if(indexTokens.length == 3) {
                 return new IndexName(indexTokens[0], indexTokens[1], indexTokens[2]);
+            } else {
+                throwParsingException("Catalog can't be empty");
             }
             return null;
     }
@@ -99,7 +101,7 @@ options {
     }
 
     public void throwParsingException(String message) {
-        throw new RuntimeException(message);
+        throw new ParsingException(message);
     }
 
     public boolean checkWhereClauses(List<Relation> whereClauses){

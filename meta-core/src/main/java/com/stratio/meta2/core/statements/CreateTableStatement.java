@@ -38,6 +38,8 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
  */
 public class CreateTableStatement extends MetadataStatement implements ITableStatement {
 
+    private boolean ephemeral = false;
+
     /**
      * The name of the target table.
      */
@@ -83,6 +85,29 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     /**
      * Class constructor.
      *
+     * @param ephemeral    Flag for indicating an ephemeral table
+     * @param tableName    The name of the table.
+     * @param columns      A map with the name of the columns in the table and the associated data type.
+     * @param partitionKey The list of columns that are part of the primary key.
+     * @param clusterKey   The list of columns that are part of the clustering key.
+     */
+    public CreateTableStatement(boolean ephemeral, TableName tableName, ClusterName clusterName,
+            Map<ColumnName, ColumnType> columns,
+            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
+        this.command = false;
+        this.ephemeral = ephemeral;
+        this.tableName = tableName;
+        this.clusterName = clusterName;
+        this.columnsWithType = columns;
+        this.partitionKey = partitionKey;
+        this.clusterKey = clusterKey;
+        this.primaryKey.addAll(partitionKey);
+        this.primaryKey.addAll(clusterKey);
+    }
+
+    /**
+     * Class constructor.
+     *
      * @param tableName    The name of the table.
      * @param columns      A map with the name of the columns in the table and the associated data type.
      * @param partitionKey The list of columns that are part of the primary key.
@@ -91,14 +116,11 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     public CreateTableStatement(TableName tableName, ClusterName clusterName,
             Map<ColumnName, ColumnType> columns,
             List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
-        this.command = false;
-        this.tableName = tableName;
-        this.clusterName = clusterName;
-        this.columnsWithType = columns;
-        this.partitionKey = partitionKey;
-        this.clusterKey = clusterKey;
-        this.primaryKey.addAll(partitionKey);
-        this.primaryKey.addAll(clusterKey);
+        this(false, tableName, clusterName, columns, partitionKey, clusterKey);
+    }
+
+    public boolean isEphemeral() {
+        return ephemeral;
     }
 
     public Map<ColumnName, ColumnType> getColumnsWithTypes() {

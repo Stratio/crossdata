@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.normalizer;
+package com.stratio.meta2.core.normalizer;
 
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta2.core.query.SelectParsedQuery;
