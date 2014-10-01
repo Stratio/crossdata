@@ -19,6 +19,7 @@
 package com.stratio.meta2.server.parser
 
 import akka.actor.{ActorSystem, actorRef2Scala}
+import com.stratio.meta.common.result.ErrorResult
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.core.parser.Parser
@@ -46,10 +47,10 @@ class ParserActorTest extends ActorReceiveUtils with FunSuiteLike with ServerCon
   }
 
 
-  test("Should return a KO message") {
-    within(1000 millis) {
+  test("Should return a KO message"){
+    within(1000 millis){
       parserActor ! "non-sense making message"
-      expectMsg("KO") // bounded to 1 second
+      expectMsg(_:ErrorResult)// bounded to 1 second
       assert(true)
     }
   }

@@ -19,6 +19,7 @@
 package com.stratio.meta2.server.planner
 
 import akka.actor.ActorSystem
+import com.stratio.meta.communication.ACK
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.engine.Engine
@@ -27,11 +28,12 @@ import com.stratio.meta2.core.statements.SelectStatement
 import com.stratio.meta2.server.actors._
 import com.stratio.meta2.server.utilities.createEngine
 import org.apache.log4j.Logger
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuiteLike, Suite}
 
 import scala.concurrent.duration.DurationInt
 
-class PlannerActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig {
+class PlannerActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig with MockFactory {
   this: Suite =>
 
   override lazy val logger = Logger.getLogger(classOf[PlannerActorIntegrationTest])
@@ -41,17 +43,10 @@ class PlannerActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike wi
   val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()), "TestCoordinatorActor")
   val plannerActor = system.actorOf(PlannerActor.props(coordinatorRef, engine.getPlanner()), "TestPlannerActor")
 
-  test("Should return a KO message") {
-    within(1000 millis) {
-      plannerActor ! "non-sense making message"
-      expectMsg("KO") // bounded to 1 second
-      assert(true)
-    }
-  }
-
-
   test("Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
     within(5000 millis) {
+
+      //val validatedQuery=mock[ValidatedQuery]
       val tablename = new com.stratio.meta2.common.data.TableName("catalog", "table")
       val validatedQuery = new SelectValidatedQuery(
         new SelectParsedQuery(
@@ -60,7 +55,8 @@ class PlannerActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike wi
         )
       )
       plannerActor ! validatedQuery
-      expectMsg("Ok") // bounded to 1 second
+      expectMsg(ACK)// bounded to 1 second
+      //val ack:ACK=expectMsg(ACK).asInstanceOf[ACK]// bounded to 1 second
       assert(true)
     }
   }

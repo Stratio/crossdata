@@ -16,39 +16,36 @@
  * under the License.
  */
 
-package com.stratio.meta2.server.parser
+package com.stratio.meta2.server.validator
 
-import akka.actor.{ActorSystem, actorRef2Scala}
-import com.stratio.meta.common.ask.Query
+import akka.actor.ActorSystem
+import com.stratio.meta.common.result.ErrorResult
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.core.engine.Engine
-import com.stratio.meta2.server.actors._
-import com.stratio.meta2.server.utilities.createEngine
+import com.stratio.meta2.server.actors.{ValidatorActor, PlannerActor, CoordinatorActor, ConnectorManagerActor}
 import org.apache.log4j.Logger
 import org.scalatest.{FunSuiteLike, Suite}
-
 import scala.concurrent.duration.DurationInt
+import com.stratio.meta2.server.utilities.createEngine
 
-class ParserActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig {
+class ValidatorActorTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig {
   this: Suite =>
 
-  override lazy val logger = Logger.getLogger(classOf[ParserActorIntegrationTest])
+  override lazy val logger = Logger.getLogger(classOf[ValidatorActorTest])
   lazy val system1 = ActorSystem(clusterName, config)
   val engine: Engine = createEngine.create()
   val connectorManagerRef = system1.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")
   val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()), "TestCoordinatorActor")
   val plannerRef = system.actorOf(PlannerActor.props(coordinatorRef, engine.getPlanner()), "TestPlannerActor")
-  val validatorRef = system.actorOf(ValidatorActor.props(plannerRef, engine.getValidator()), "TestValidatorActor")
-  val parserActor = {
-    system1.actorOf(ParserActor.props(validatorRef, engine.getParser()), "TestParserActor")
-  }
+  val validatorActor = system.actorOf(ValidatorActor.props(plannerRef, engine.getValidator()), "TestValidatorActor")
 
 
-  test("Parser->Validator->Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
-    within(5000 millis) {
-      val query = new Query("queryId", "catalog", "select * from mytable;", "carlos")
-      parserActor ! query
-      expectMsg("Ok") // bounded to 1 second
+
+
+  test("Should return a KO message") {
+    within(1000 millis) {
+      validatorActor ! "non-sense making message"
+      expectMsg(_:ErrorResult)// bounded to 1 second
       assert(true)
     }
   }

@@ -18,6 +18,7 @@
 
 import akka.actor.{ActorSystem, actorRef2Scala}
 import com.stratio.meta.common.executionplan.ExecutionWorkflow
+import com.stratio.meta.common.result.ErrorResult
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.query._
@@ -57,15 +58,7 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Serv
     within(1000 millis) {
       val coordinatorActor = system.actorOf(CoordinatorActor.props(null, new Coordinator), "CoordinatorActor")
       coordinatorActor ! "anything; this doesn't make any sense"
-      expectMsg("KO") // bounded to the remainder of the 1 second
-      /*
-      val pq= new SelectPlannedQuery(null,null)
-      expectMsg("Ok") // bounded to 1 second
-
-      //val m = mock[IConnector]
-      //(m.getConnectorName _).expects().returning("My New Connector")
-      //assert(m.getConnectorName().equals("My New Connector"))
-      */
+      expectMsg(_: ErrorResult) // bounded to 1 second
     }
   }
 

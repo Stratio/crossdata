@@ -17,48 +17,51 @@
  */
 
 import akka.actor.{ActorSystem, actorRef2Scala}
+import com.stratio.connectors.MockConnectorActor
 import com.stratio.meta.common.executionplan.ExecutionWorkflow
+import com.stratio.meta.common.result.MetadataResult
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.server.actors.{ConnectorManagerActor, CoordinatorActor}
+import com.stratio.meta2.server.actors.CoordinatorActor
 import org.apache.log4j.Logger
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuiteLike, Suite}
 
 import scala.concurrent.duration.DurationInt
 
-//class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig{
-class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig {
+class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig{
+//class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig {
   this: Suite =>
 
   override lazy val logger = Logger.getLogger(classOf[CoordinatorActorIntegrationTest])
   lazy val system1 = ActorSystem(clusterName, config)
 
-  val connectorManagerActor = system1.actorOf(ConnectorManagerActor.props(null), "ConnectorManagerActor")
-  val coordinatorActor = system1.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator), "CoordinatorActor")
+  val mockConnectorActor = system1.actorOf(MockConnectorActor.props(), "MockConnectorActor")
+  //val connectorManagerActor = system1.actorOf(ConnectorManagerActor.props(null), "ConnectorManagerActor")
+  val coordinatorActor = system1.actorOf(CoordinatorActor.props(null, new Coordinator),
+    "CoordinatorActor")
 
-  val pq = new SelectInProgressQuery(
-    new SelectPlannedQuery(
-      new SelectValidatedQuery(
-        new SelectParsedQuery(
+  val pq =  new MetadataPlannedQuery(
+      new MetadataValidatedQuery(
+        new MetadataParsedQuery(
           new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
           , null)
       )
       , new ExecutionWorkflow(null, null, null, null)
-    )
   )
 
-  test("Basic Coordinator-ConnectorManager test") {
+  //test("Basic Coordinator-ConnectorManager test") {
+  test("Basic Coordinator-Connector test") {
     within(5000 millis) {
-      //val pq=mock[PlannedQuery]
       coordinatorActor ! pq
-      expectMsg("Ok") // bounded to 1 second
-      //expectMsg("Hola") // bounded to the remainder of the 1 second
 
-      //val m = mock[IConnector]
-      //(m.getConnectorName _).expects().returning("My New Connector")
-      //assert(m.getConnectorName().equals("My New Connector"))
+      val response=expectMsgType[MetadataResult]
+      response.getQueryId
+      println("-----------------")
+      println(response.getQueryId())
+      println("-----------------")
       assert(true)
     }
   }

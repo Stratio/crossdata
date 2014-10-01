@@ -36,13 +36,13 @@ class ParserActor(validator: ActorRef, parser: Parser) extends Actor with TimeTr
 
   def receive = {
     case Query(queryId, catalog, statement, user) => {
-      log.info("\nInit Parser Task {}{}{}{}", queryId, catalog, statement, user)
+      log.debug("\nInit Parser Task {}{}{}{}", queryId, catalog, statement, user)
       val timer = initTimer()
       val baseQuery = new BaseQuery(queryId, statement, new CatalogName(catalog))
       val stmt = parser.parse(baseQuery)
       finishTimer(timer)
       validator forward stmt
-      log.info("Finish Parser Task")
+      log.debug("Finish Parser Task")
     }
     case _ => {
       sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
