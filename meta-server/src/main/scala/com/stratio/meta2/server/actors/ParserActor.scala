@@ -25,6 +25,7 @@ import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta2.core.query.BaseQuery
 import org.apache.log4j.Logger
 import com.stratio.meta.common.result.Result
+import com.stratio.meta.common.exceptions.ParsingException
 
 object ParserActor {
   def props(validator: ActorRef, parser: Parser): Props = Props(new ParserActor(validator, parser))
@@ -36,15 +37,27 @@ class ParserActor(validator: ActorRef, parser: Parser) extends Actor with TimeTr
 
   def receive = {
     case Query(queryId, catalog, statement, user) => {
-      log.info("\nInit Parser Task {}{}{}{}", queryId, catalog, statement, user)
+      log.info("\nInit Parser Task", queryId, catalog, statement, user)
       val timer = initTimer()
       val baseQuery = new BaseQuery(queryId, statement, new CatalogName(catalog))
-      val stmt = parser.parse(baseQuery)
-      finishTimer(timer)
-      validator forward stmt
+      try {
+        val stmt = parser.parse(baseQuery)
+        validator forward stmt
+      }catch{
+        case pe:ParsingException => {
+          log.error("Parsing error: " + pe.getMessage + " sender: " + sender.toString())
+          val error = Result.createParsingErrorResult(pe.getMessage)
+          error.setQueryId(queryId)
+          sender ! error
+        }
+      }finally {
+        finishTimer(timer)
+      }
+
       log.info("Finish Parser Task")
     }
     case _ => {
+      log.error("Unknown message")
       sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
     }
   }

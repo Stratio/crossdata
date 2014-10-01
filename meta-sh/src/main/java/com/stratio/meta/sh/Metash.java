@@ -61,11 +61,6 @@ public class Metash {
     private static final Logger LOG = Logger.getLogger(Metash.class);
 
     /**
-     * Default user to connect to the meta server.
-     */
-    //private static final String DEFAULT_USER = "META_USER";
-
-    /**
      * Help content to be shown when the internal command {@code help} is used.
      */
     private final HelpContent help;
@@ -78,15 +73,6 @@ public class Metash {
      */
     private ConsoleReader console = null;
 
-    /**
-     * Current active user in the system.
-     */
-    //private String currentUser = null;
-
-    /**
-     * Current catalog from the point of view of the user session.
-     */
-    //private String currentCatalog = "";
     /**
      * History file.
      */
