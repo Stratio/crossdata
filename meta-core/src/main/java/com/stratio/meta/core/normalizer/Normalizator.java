@@ -59,7 +59,6 @@ public class Normalizator {
         return fields;
     }
 
-
     public ParsedQuery getParsedQuery() {
         return parsedQuery;
     }
@@ -317,8 +316,8 @@ public class Normalizator {
             }
             break;
         case FLOATING_POINT:
-            if (leftColumnMetadata.getColumnType() != ColumnType.FLOAT &&
-                    leftColumnMetadata.getColumnType() != ColumnType.DOUBLE) {
+            if (leftColumnMetadata.getColumnType() != ColumnType.FLOAT
+                    && leftColumnMetadata.getColumnType() != ColumnType.DOUBLE) {
                 throw new NotMatchDataTypeException(leftColumnName);
             }
             break;

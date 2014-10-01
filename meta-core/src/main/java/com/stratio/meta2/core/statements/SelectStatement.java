@@ -29,6 +29,7 @@ import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.SelectExpression;
 import com.stratio.meta2.core.structures.OrderBy;
+import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 /**
@@ -341,7 +342,8 @@ public class SelectStatement extends MetaStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements();
+        return new ValidationRequirements().add(Validation
+                .VALIDATE_SELECT);
     }
 
     public OrderBy getOrderBy() {
