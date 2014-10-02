@@ -59,6 +59,11 @@ public enum Operations {
     PROJECT,
 
     /**
+     * The engine supports asynchronous query execution.
+     */
+    ASYNC_QUERY,
+
+    /**
      * The engine supports aliasing output names.
      */
     SELECT_OPERATOR,

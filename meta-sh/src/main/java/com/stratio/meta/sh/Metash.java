@@ -413,19 +413,26 @@ public class Metash {
     public String sendManifest(String sentence) {
         LOG.debug("Command: " + sentence);
         // Get manifest type
-        sentence = sentence.substring(4);
-        int type_manifest = Manifest.TYPE_DATASTORE;
-        if (sentence.toLowerCase().startsWith("connector")) {
-            type_manifest = Manifest.TYPE_CONNECTOR;
+
+        String [] tokens = sentence.split(" ");
+        if(tokens.length != 3){
+            return "ERROR: Invalid ADD syntax";
         }
 
-        // Get path to the XML file
-        sentence = sentence.substring(11, sentence.length() - 1);
+        int type_manifest = -1;
+        if(tokens[1].equalsIgnoreCase("datastore")){
+            type_manifest = Manifest.TYPE_DATASTORE;
+        }else if (tokens[1].equalsIgnoreCase("connector")) {
+            type_manifest = Manifest.TYPE_CONNECTOR;
+        }else{
+            return "ERROR: Unknown type: " + tokens[1];
+        }
 
         // Create Manifest object from XML file
         Manifest manifest = null;
         try {
-            manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest, sentence);
+            manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest,
+                    tokens[2].replace(";", "").replace("\"", "").replace("'", ""));
         } catch (ManifestException e) {
             LOG.error("Manifest couldn't be parsed", e);
             return null;
