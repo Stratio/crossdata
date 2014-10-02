@@ -16,42 +16,30 @@
  * under the License.
  */
 
-package com.stratio.meta2.server.actors
+package com.stratio.meta2.server.mockConnector
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor, Props}
 import com.stratio.meta.common.result.{QueryStatus, Result}
 import com.stratio.meta.communication.ACK
-import com.stratio.meta2.core.planner.Planner
-import com.stratio.meta2.core.query.{SelectValidatedQuery, MetadataValidatedQuery}
+import com.stratio.meta2.core.query.{MetadataValidatedQuery, SelectValidatedQuery}
+import com.stratio.meta2.server.actors.TimeTracker
 import org.apache.log4j.Logger
 
-object PlannerActor {
-  def props(executor: ActorRef, planner: Planner): Props = Props(new PlannerActor(executor, planner))
+object MockPlannerActor {
+  def props(): Props = Props(new MockPlannerActor())
 }
 
-class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with TimeTracker {
+class MockPlannerActor() extends Actor with TimeTracker {
   override lazy val timerName = this.getClass.getName
-  val log = Logger.getLogger(classOf[PlannerActor])
+  val log = Logger.getLogger(classOf[MockPlannerActor])
 
   def receive = {
     //case query: ValidatedQuery => {
     case query: MetadataValidatedQuery => {
-      println("\n\n\ngetting MetadataValidatedQuery; sending ack to "+sender+"\n\n\n")
-      val timer = initTimer()
-      val planned = planner.planQuery(query)
-      finishTimer(timer)
-      coordinator forward planned
-
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
       sender ! ack
     }
     case query: SelectValidatedQuery => {
-      println("\n\n\ngetting SelectValidatedQuery; sending ack to "+sender+"\n\n\n")
-      val timer = initTimer()
-      val planned = planner.planQuery(query)
-      finishTimer(timer)
-      coordinator forward planned
-
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
       sender ! ack
     }
