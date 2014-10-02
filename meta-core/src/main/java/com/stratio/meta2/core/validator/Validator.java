@@ -82,22 +82,22 @@ public class Validator {
         for (Validation val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
             switch (val) {
             case MUST_NOT_EXIST_CATALOG:
-                validateCatalog(parsedQuery.getStatement(),false);
+                validateCatalog(parsedQuery.getStatement(), false);
                 break;
             case MUST_EXIST_CATALOG:
-                validateCatalog(parsedQuery.getStatement(),true);
+                validateCatalog(parsedQuery.getStatement(), true);
                 break;
             case MUST_EXIST_TABLE:
-                validateTable(parsedQuery.getStatement(),true);
+                validateTable(parsedQuery.getStatement(), true);
                 break;
             case MUST_NOT_EXIST_TABLE:
-                validateTable(parsedQuery.getStatement(),false);
+                validateTable(parsedQuery.getStatement(), false);
                 break;
             case MUST_NOT_EXIST_CLUSTER:
-                validateCluster(parsedQuery.getStatement(),false);
+                validateCluster(parsedQuery.getStatement(), false);
                 break;
             case MUST_EXIST_CLUSTER:
-                validateCluster(parsedQuery.getStatement(),true);
+                validateCluster(parsedQuery.getStatement(), true);
                 break;
             case MUST_EXIST_CONNECTOR:
                 validateConnector(parsedQuery.getStatement(), true);
@@ -106,10 +106,10 @@ public class Validator {
                 validateConnector(parsedQuery.getStatement(), false);
                 break;
             case MUST_EXIST_DATASTORE:
-                validateDatastore(parsedQuery.getStatement(),true);
+                validateDatastore(parsedQuery.getStatement(), true);
                 break;
             case MUST_NOT_EXIST_DATASTORE:
-                validateDatastore(parsedQuery.getStatement(),false);
+                validateDatastore(parsedQuery.getStatement(), false);
                 break;
             case VALID_CLUSTER_OPTIONS:
                 validateOptions(parsedQuery.getStatement());
@@ -123,16 +123,16 @@ public class Validator {
                 validateExistsProperties(parsedQuery.getStatement());
                 break;
             case MUST_NOT_EXIST_INDEX:
-                validateIndex(parsedQuery.getStatement(),false);
+                validateIndex(parsedQuery.getStatement(), false);
                 break;
             case MUST_EXIST_INDEX:
-                validateIndex(parsedQuery.getStatement(),true);
+                validateIndex(parsedQuery.getStatement(), true);
                 break;
             case MUST_EXIST_COLUMN:
-                validateColumn(parsedQuery.getStatement(),true);
+                validateColumn(parsedQuery.getStatement(), true);
                 break;
             case MUST_NOT_EXIST_COLUMN:
-                validateColumn(parsedQuery.getStatement(),false);
+                validateColumn(parsedQuery.getStatement(), false);
                 break;
             case VALIDATE_TYPES:
                 validateInsertTypes(parsedQuery.getStatement());
@@ -152,8 +152,10 @@ public class Validator {
         } else if (parsedQuery instanceof SelectParsedQuery) {
             validatedQuery = new SelectValidatedQuery((SelectParsedQuery) parsedQuery);
             NormalizedFields fields= normalizator.getFields();
-
-
+            ((SelectValidatedQuery)validatedQuery).setTableMetadata(fields.getTablesMetadata());
+            ((SelectValidatedQuery)validatedQuery).getColumns().addAll(fields.getColumnNames());
+            ((SelectValidatedQuery)validatedQuery).getTables().addAll(fields.getTableNames());
+            ((SelectValidatedQuery)validatedQuery).getRelationships().addAll(fields.getRelations());
         }
 
         return validatedQuery;
