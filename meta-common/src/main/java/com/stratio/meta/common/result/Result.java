@@ -68,6 +68,9 @@ public abstract class Result implements Serializable {
         return new ErrorResult(ErrorType.NOT_SUPPORTED, errorMessage);
     }
 
+    public static ErrorResult createCriticalOperationErrorResult(String errorMessage) {
+        return new ErrorResult(ErrorType.CRITICAL, errorMessage);
+    }
     /**
      * Get the query identifier.
      *

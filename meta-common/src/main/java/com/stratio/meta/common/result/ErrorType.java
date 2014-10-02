@@ -45,5 +45,10 @@ public enum ErrorType {
     /**
      * Operation not supported error.
      */
-    NOT_SUPPORTED
+    NOT_SUPPORTED,
+
+    /**
+     * Critical exceptions for connectors
+     */
+    CRITICAL
 }
