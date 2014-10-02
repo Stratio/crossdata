@@ -93,31 +93,36 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       var qId:String=null
       try {
         val eng = connector.getMetadataEngine()
-        metadataOp match {
-          case CreateCatalog(queryId, clustername, metadata) => {
-            qId=queryId
-            eng.createCatalog(clustername, metadata)
-          }
-          case CreateIndex(queryId, clustername, metadata) => {
-            qId=queryId
-            eng.createIndex(clustername, metadata)
-          }
-          case CreateTable(queryId, clustername, metadata) => {
-            qId=queryId
-            eng.createTable(clustername, metadata)
-          }
-          case DropCatalog(queryId, clustername, metadata) => {
-            qId=queryId
-            eng.dropCatalog(clustername, metadata)
-          }
-          case DropIndex(queryId, clustername, metadata) => {
-            qId=queryId
-            eng.dropIndex(clustername, metadata)
-          }
-          case DropTable(queryId, clustername, metadata) => {
-            qId=queryId
-            eng.dropTable(clustername, metadata)
-          }
+        val opclass=metadataOp.getClass().toString().split('.')
+        opclass( opclass.length -1 ) match{
+        case "CreateTable" =>{
+          qId=metadataOp.asInstanceOf[CreateTable].queryId
+          eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
+            metadataOp.asInstanceOf[CreateTable].tableMetadata)
+        }
+        case "CreateCatalog"=>{
+          qId=metadataOp.asInstanceOf[CreateCatalog].queryId
+          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
+            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+        }
+        case "CreateIndex"=>{
+          qId=metadataOp.asInstanceOf[CreateIndex].queryId
+          eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
+            metadataOp.asInstanceOf[CreateIndex].indexMetadata)
+        }
+        case "DropCatalog"=>{
+          qId=metadataOp.asInstanceOf[DropIndex].queryId
+          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
+          metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+        }
+        case "DropIndex"=>{
+          qId=metadataOp.asInstanceOf[DropIndex].queryId
+          eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster,metadataOp.asInstanceOf[DropIndex].indexMetadata)
+        }
+        case "DropTable"=>{
+          qId=metadataOp.asInstanceOf[DropTable].queryId
+          eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster,metadataOp.asInstanceOf[DropTable].tableName)
+        }
         }
         val result = MetadataResult.createSuccessMetadataResult()
         result.setQueryId(qId)

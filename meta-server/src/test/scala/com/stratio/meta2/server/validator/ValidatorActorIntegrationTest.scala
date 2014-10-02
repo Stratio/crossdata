@@ -19,13 +19,14 @@
 package com.stratio.meta2.server.validator
 
 import akka.actor.{ActorSystem, actorRef2Scala}
-import com.stratio.meta.common.result.ErrorResult
+import com.stratio.meta.communication.ACK
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.core.query.{BaseQuery, SelectParsedQuery}
 import com.stratio.meta2.core.statements.SelectStatement
 import com.stratio.meta2.server.actors._
+import com.stratio.meta2.server.mockConnector.MockPlannerActor
 import com.stratio.meta2.server.utilities.createEngine
 import org.apache.log4j.Logger
 import org.scalatest.{FunSuiteLike, Suite}
@@ -38,24 +39,27 @@ class ValidatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike 
   override lazy val logger = Logger.getLogger(classOf[ValidatorActorIntegrationTest])
   lazy val system1 = ActorSystem(clusterName, config)
   val engine: Engine = createEngine.create()
-  val connectorManagerRef = system1.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")
-  val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()), "TestCoordinatorActor")
-  val plannerRef = system.actorOf(PlannerActor.props(coordinatorRef, engine.getPlanner()), "TestPlannerActor")
+  //val connectorManagerRef = system1.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")
+  //val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()),  "TestCoordinatorActor")
+  //val plannerRef = system.actorOf(PlannerActor.props(coordinatorRef, engine.getPlanner()), "TestPlannerActor")
+  val plannerRef = system.actorOf(MockPlannerActor.props(), "TestPlannerActor")
   val validatorActor = system.actorOf(ValidatorActor.props(plannerRef, engine.getValidator()), "TestValidatorActor")
 
+
+  val myQueryId="query_id-2384234-1341234-23434"
   test("Validator->Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
     within(5000 millis) {
       var tablename = new com.stratio.meta2.common.data.TableName("catalog", "table")
       val parsedQuery = new SelectParsedQuery(
         new BaseQuery(
-          "query_id-2384234-1341234-23434",
+          myQueryId,
           "select * from myQuery;",
           new CatalogName("myCatalog")
         ), new SelectStatement(tablename)
       )
       validatorActor ! parsedQuery
-      expectMsg(_:ErrorResult)// bounded to 1 second
-      assert(true)
+      val response = expectMsgType[ACK]
+      assert(response.queryId==myQueryId)
     }
   }
 
