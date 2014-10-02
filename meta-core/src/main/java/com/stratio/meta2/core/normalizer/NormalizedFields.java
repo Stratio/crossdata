@@ -25,10 +25,14 @@ import java.util.Set;
 
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.GroupBy;
+import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
+import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.structures.OrderBy;
 
 public class NormalizedFields {
@@ -41,6 +45,9 @@ public class NormalizedFields {
     private List<Relation> where = new ArrayList<>();
     private OrderBy orderBy = new OrderBy();
     private GroupBy groupBy = new GroupBy();
+
+    private List<TableMetadata> tablesMetadata = new ArrayList<>();
+
 
     public NormalizedFields() {
     }
@@ -116,5 +123,14 @@ public class NormalizedFields {
     public void setGroupBy(GroupBy groupBy) {
         this.groupBy = groupBy;
     }
+
+    public List<TableMetadata> getTablesMetadata() {
+        //recover all Metadata about a tableName
+        for (TableName tableName:tableNames){
+            tablesMetadata.add(MetadataManager.MANAGER.getTable(tableName));
+        }
+        return tablesMetadata;
+    }
+
 
 }
