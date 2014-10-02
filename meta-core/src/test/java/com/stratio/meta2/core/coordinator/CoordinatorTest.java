@@ -119,7 +119,7 @@ public class CoordinatorTest extends MetadataManagerTests {
     public void testAttachConnector() throws Exception {
 
         // Create and add a test datastore metadata to the metadatamanager
-        DataStoreMetadata datastoreTest = insertDataStore("datastoreTest", "production");
+        DataStoreMetadata datastoreTest = insertDataStore("datastoreTest", "preproduction");
 
         // Create and add a test cluster metadata to the metadatamanager
         ClusterName clusterName = new ClusterName("clusterTest");

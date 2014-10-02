@@ -4,8 +4,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.meta.common.executionplan.ExecutionType;
-import com.stratio.meta.common.executionplan.ManagementWorkflow;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ErrorType;
 import com.stratio.meta.common.result.Result;
@@ -33,7 +31,6 @@ import com.stratio.meta2.core.query.InProgressQuery;
 import com.stratio.meta2.core.query.MetadataInProgressQuery;
 import com.stratio.meta2.core.query.MetadataPlannedQuery;
 import com.stratio.meta2.core.query.PlannedQuery;
-import com.stratio.meta2.core.query.SelectInProgressQuery;
 import com.stratio.meta2.core.query.SelectPlannedQuery;
 import com.stratio.meta2.core.query.StorageInProgressQuery;
 import com.stratio.meta2.core.query.StoragePlannedQuery;
@@ -124,9 +121,15 @@ public class Coordinator {
         // METADATA
         case ATTACH_CLUSTER:
             // persistAttachCluster((AttachClusterStatement) plannedQuery.getStatement());
+            AttachClusterStatement attachClusterStatement = (AttachClusterStatement) plannedQuery.getStatement();
+            persistAttachCluster(attachClusterStatement.getClusterName(), attachClusterStatement.getDatastoreName(),
+                    attachClusterStatement.getOptions());
             break;
         case ATTACH_CONNECTOR:
             // persistAttachConnector((AttachConnectorStatement) plannedQuery.getStatement());
+            AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) plannedQuery.getStatement();
+            persistAttachConnector(attachConnectorStatement.getClusterName(),
+                    attachConnectorStatement.getConnectorName(), attachConnectorStatement.getOptions());
             break;
         case CREATE_CATALOG:
             // persistCreateCatalog((CreateCatalogStatement) plannedQuery.getStatement());

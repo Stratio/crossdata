@@ -73,7 +73,7 @@ public class MetadataManagerTests {
         requiredPropertiesForDataStore.setCluster(clusterType);
         com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType othersProperties = new com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType();
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version, requiredPropertiesForDataStore, othersProperties);
-        MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
+        MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
         return dataStoreMetadata;
     }
 
