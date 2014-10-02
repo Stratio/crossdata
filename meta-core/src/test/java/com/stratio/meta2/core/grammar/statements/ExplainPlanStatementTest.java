@@ -26,9 +26,9 @@ public class ExplainPlanStatementTest extends ParsingTest {
 
     @Test
     public void explainPlanForDropIndex() {
-        String inputText = "EXPLAIN PLAN FOR DROP INDEX indexName;";
-        String expectedText = "EXPLAIN PLAN FOR DROP INDEX <unknown_name>.<unknown_name>.index[indexName];";
-        testRegularStatement(inputText, expectedText, "explainPlanForDropIndex");
+        String inputText = "EXPLAIN PLAN FOR DROP INDEX table1.indexName;";
+        String expectedText = "EXPLAIN PLAN FOR DROP INDEX demo.table1.index[indexName];";
+        testRegularStatementSession("demo", inputText, expectedText, "explainPlanForDropIndex");
     }
 
     @Test

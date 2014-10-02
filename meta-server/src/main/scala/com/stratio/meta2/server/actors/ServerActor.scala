@@ -47,11 +47,11 @@ class ServerActor(engine: Engine) extends Actor with ServerConfig {
 
   def receive = {
     case query: Query => {
-      println("query: " + query)
+      logger.info("query: " + query + " sender: " + sender.toString())
       parserActorRef forward query
     }
     case Connect(user) => {
-      logger.info("Welcome " + user + "!")
+      logger.info("Welcome " + user + "!" + sender.toString())
       sender ! ConnectResult.createConnectResult(UUID.randomUUID().toString)
     }
     case Disconnect(user) => {

@@ -78,10 +78,19 @@ public class ClusterType implements Serializable {
      * Sets the value of the name property.
      *
      * @param value allowed object is
-     *              {@link String }
+     *              {@link String}
      */
     public void setName(String value) {
         this.name = value;
+    }
+
+    /**
+     * Sets the hosts of the cluster
+     *
+     * @param hosts allowed object is {@link com.stratio.meta2.common.api.generated.datastore.HostsType}
+     */
+    public void setHosts(List<HostsType> hosts) {
+        this.hosts = hosts;
     }
 
     /**

@@ -26,7 +26,7 @@ import javax.transaction.TransactionManager;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.meta.core.normalizer.Normalizer;
+import com.stratio.meta2.core.normalizer.Normalizer;
 import com.stratio.meta2.common.data.FirstLevelName;
 import com.stratio.meta2.core.api.APIManager;
 import com.stratio.meta2.core.connector.ConnectorManager;

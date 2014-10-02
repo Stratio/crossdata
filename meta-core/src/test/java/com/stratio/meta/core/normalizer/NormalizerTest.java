@@ -48,7 +48,6 @@ import com.stratio.meta2.common.metadata.ClusterMetadata;
 import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
-import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
@@ -57,6 +56,7 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.metadata.MetadataManager;
 import com.stratio.meta2.core.metadata.MetadataManagerTests;
+import com.stratio.meta2.core.normalizer.Normalizer;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.query.SelectValidatedQuery;
@@ -74,18 +74,12 @@ public class NormalizerTest extends MetadataManagerTests {
     public void putData() throws Exception {
 
         // DATASTORE
-        DataStoreMetadata dsmd = new DataStoreMetadata(
-                new DataStoreName("Cassandra"), //name
-                "1.0.0", //version
-                null, //requiredProperties
-                null //othersProperties
-        );
-        MetadataManager.MANAGER.createDataStore(dsmd);
+        insertDataStore("Cassandra", "production");
 
         // CLUSTER
         ClusterName clusterName = new ClusterName("testing");
         DataStoreName dataStoreRef = new DataStoreName("Cassandra");
-        Map<String, Object> clusterOptions = new HashMap<>();
+        Map<Selector, Selector> clusterOptions = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
 
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreRef, clusterOptions,

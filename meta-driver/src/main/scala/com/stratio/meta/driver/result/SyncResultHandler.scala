@@ -64,7 +64,7 @@ class SyncResultHandler extends IResultHandler {
 
   override def processError(errorResult: Result): Unit = synchronized {
     val e = errorResult.asInstanceOf[ErrorResult]
-
+    println("processError: " + e)
     if (ErrorType.PARSING.equals(e.getType)) {
       exception = new ParsingException(e.getErrorMessage)
     } else if (ErrorType.VALIDATION.equals(e.getType)) {

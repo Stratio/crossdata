@@ -69,7 +69,11 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
 
   implicit val timeout = Timeout(5 seconds)
 
+  logger.info("Up!")
+
   override def receive: Actor.Receive = {
+
+
 
     /* The driver sends the connect message. */
     case c: Connect => {
@@ -102,7 +106,6 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
       clusterClientActor ! ClusterClient.Send(ProxyActor.remotePath(remoteActor), message, localAffinity = true)
     }
     case result: Result => {
-
       val handler = driver.getResultHandler(result.getQueryId)
       if (handler != null) {
         if (!result.isInstanceOf[ErrorResult]) {
@@ -111,13 +114,17 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
           handler.processError(result)
         }
       } else {
-        logger.warn("Result not expected received: " + result.getQueryId)
+        logger.warn("Result not expected received for QID: " + result.getQueryId)
       }
 
     }
     case unknown: Any => {
-      logger.warn("Unknown message: " + unknown)
+      logger.error("Unknown message: " + unknown)
       sender ! "Message type not supported"
+    }
+
+    case _ => {
+      logger.error("Unkwown message!!!");
     }
   }
 }
