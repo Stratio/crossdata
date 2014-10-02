@@ -243,38 +243,38 @@ public class Normalizator {
             throw new BadFormatException("Compare operations are just valid");
         }
         switch (relation.getLeftTerm().getType()) {
-        case FUNCTION:
-            checkFunctionSelector((FunctionSelector) relation.getLeftTerm());
-            break;
-        case COLUMN:
-            checkColumnSelector((ColumnSelector) relation.getLeftTerm());
-            break;
-        case ASTERISK:
-            throw new BadFormatException("Asterisk not supported in relations.");
-        case STRING:
-        case FLOATING_POINT:
-        case BOOLEAN:
-        case INTEGER:
-            throw new YodaConditionException();
+            case FUNCTION:
+                //checkFunctionSelector((FunctionSelector) relation.getLeftTerm());
+                //break;
+                throw new BadFormatException("Functions not supported yet");
+            case COLUMN:
+                checkColumnSelector((ColumnSelector) relation.getLeftTerm());
+                break;
+            case ASTERISK:
+                throw new BadFormatException("Asterisk not supported in relations.");
+            case STRING:
+            case FLOATING_POINT:
+            case BOOLEAN:
+            case INTEGER:
+                throw new YodaConditionException();
         }
         switch (relation.getRightTerm().getType()) {
-        case FUNCTION:
-            checkFunctionSelector((FunctionSelector) relation.getLeftTerm());
-            break;
-        case COLUMN:
-            checkColumnSelector((ColumnSelector) relation.getLeftTerm());
-            break;
-        case STRING:
-
-        case FLOATING_POINT:
-        case BOOLEAN:
-        case INTEGER:
-
-        case RELATION:
-            
-            //throw new BadFormatException("Operation not supported in where.");
-        case ASTERISK:
-            throw new BadFormatException("Asterisk not supported in relations.");
+            case FUNCTION:
+                //checkFunctionSelector(relation.getLeftTerm(), relation.getOperator());
+                //break;
+                throw new BadFormatException("Functions not supported yet");
+            case COLUMN:
+            case STRING:
+            case FLOATING_POINT:
+            case BOOLEAN:
+            case INTEGER:
+                ColumnSelector columnSelector = (ColumnSelector) relation.getLeftTerm();
+                checkRightSelector(columnSelector.getName(), relation.getOperator(), relation.getRightTerm());
+                break;
+            case RELATION:
+                throw new BadFormatException("Operation not supported yet.");
+            case ASTERISK:
+                throw new BadFormatException("Asterisk not supported in relations.");
         }
 
     }
@@ -291,39 +291,39 @@ public class Normalizator {
         ColumnMetadata leftColumnMetadata = MetadataManager.MANAGER.getColumn(leftColumnName);
 
         switch (right.getType()) {
-        case COLUMN:
-            ColumnName rightColumnName = ((ColumnSelector) right).getName();
-            ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);
-            if (leftColumnMetadata.getColumnType() != rightColumnMetadata.getColumnType()) {
-                throw new NotMatchDataTypeException(rightColumnName);
-            }
-            break;
-        case ASTERISK:
-            throw new BadFormatException("Asterisk not supported in relations.");
-        case BOOLEAN:
-            if (leftColumnMetadata.getColumnType() != ColumnType.BOOLEAN) {
-                throw new NotMatchDataTypeException(leftColumnName);
-            }
-            break;
-        case STRING:
-            if (leftColumnMetadata.getColumnType() != ColumnType.TEXT) {
-                throw new NotMatchDataTypeException(leftColumnName);
-            }
-            break;
-        case INTEGER:
-            if (leftColumnMetadata.getColumnType() != ColumnType.INT &&
-                    leftColumnMetadata.getColumnType() != ColumnType.BIGINT) {
-                throw new NotMatchDataTypeException(leftColumnName);
-            }
-            break;
-        case FLOATING_POINT:
-            if (leftColumnMetadata.getColumnType() != ColumnType.FLOAT
-                    && leftColumnMetadata.getColumnType() != ColumnType.DOUBLE) {
-                throw new NotMatchDataTypeException(leftColumnName);
-            }
-            break;
-        case RELATION:
-            throw new BadFormatException("Operation not supported in where.");
+            case COLUMN:
+                ColumnName rightColumnName = ((ColumnSelector) right).getName();
+                ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);
+                if (leftColumnMetadata.getColumnType() != rightColumnMetadata.getColumnType()) {
+                    throw new NotMatchDataTypeException(rightColumnName);
+                }
+                break;
+            case ASTERISK:
+                throw new BadFormatException("Asterisk not supported in relations.");
+            case BOOLEAN:
+                if (leftColumnMetadata.getColumnType() != ColumnType.BOOLEAN) {
+                    throw new NotMatchDataTypeException(leftColumnName);
+                }
+                break;
+            case STRING:
+                if (leftColumnMetadata.getColumnType() != ColumnType.TEXT) {
+                    throw new NotMatchDataTypeException(leftColumnName);
+                }
+                break;
+            case INTEGER:
+                if (leftColumnMetadata.getColumnType() != ColumnType.INT &&
+                        leftColumnMetadata.getColumnType() != ColumnType.BIGINT) {
+                    throw new NotMatchDataTypeException(leftColumnName);
+                }
+                break;
+            case FLOATING_POINT:
+                if (leftColumnMetadata.getColumnType() != ColumnType.FLOAT
+                        && leftColumnMetadata.getColumnType() != ColumnType.DOUBLE) {
+                    throw new NotMatchDataTypeException(leftColumnName);
+                }
+                break;
+            case RELATION:
+                throw new BadFormatException("Operation not supported in where.");
         }
     }
 
@@ -411,5 +411,89 @@ public class Normalizator {
         List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns());
         functionSelector.getFunctionColumns().clear();
         functionSelector.getFunctionColumns().addAll(normalizeSelector);
+    }
+
+    private void checkRightSelector(ColumnName name, Operator operator, Selector rightTerm)
+            throws BadFormatException, AmbiguousNameException, NotExistNameException {
+        // Get column type from MetadataManager
+        ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(name);
+
+        SelectorType rightTermType = rightTerm.getType();
+
+        if(rightTerm.getType() == SelectorType.COLUMN){
+            ColumnSelector columnSelector = (ColumnSelector) rightTerm;
+
+            TableName foundTableName = this.searchTableNameByColumn(columnSelector.getName());
+            columnSelector.getName().setTableName(foundTableName);
+
+            ColumnMetadata columnMetadataRightTerm = MetadataManager.MANAGER.getColumn(columnSelector.getName());
+            rightTermType = convertMetadataTypeToSelectorType(columnMetadataRightTerm.getColumnType());
+        }
+
+        // Create compatibilities table for ColumnType, Operator and SelectorType
+        checkCompatibility(columnMetadata.getColumnType(), operator, rightTermType);
+    }
+
+    private SelectorType convertMetadataTypeToSelectorType(ColumnType columnType) throws BadFormatException {
+        SelectorType selectorType = null;
+        switch (columnType){
+            case INT:
+            case BIGINT:
+                selectorType = SelectorType.INTEGER;
+                break;
+            case DOUBLE:
+            case FLOAT:
+                selectorType = SelectorType.FLOATING_POINT;
+                break;
+            case TEXT:
+            case VARCHAR:
+                selectorType = SelectorType.STRING;
+                break;
+            case BOOLEAN:
+                selectorType = SelectorType.BOOLEAN;
+                break;
+            case NATIVE:
+            case SET:
+            case LIST:
+            case MAP:
+                throw new BadFormatException("Type " + columnType + " not supported yet.");
+            }
+        return selectorType;
+    }
+
+    private void checkCompatibility(ColumnType columnType, Operator operator, SelectorType valueType) throws BadFormatException {
+        switch (columnType){
+            case BOOLEAN:
+                if(operator != Operator.EQ){
+                    throw new BadFormatException("Boolean relations only accept equal operator.");
+                }
+                if(valueType != SelectorType.BOOLEAN ){
+                    throw new BadFormatException("Boolean relations only accept TRUE or FALSE.");
+                }
+                break;
+            case INT:
+            case BIGINT:
+            case DOUBLE:
+            case FLOAT:
+                if((valueType != SelectorType.INTEGER) || (valueType != SelectorType.FLOATING_POINT)){
+                    throw new BadFormatException("Numeric term not found.");
+                }
+                break;
+            case TEXT:
+            case VARCHAR:
+                if(valueType != SelectorType.STRING){
+                    throw new BadFormatException("String term not found.");
+                }
+                if(operator != Operator.EQ){
+                    throw new BadFormatException("String relations only accept equal operator.");
+                }
+                break;
+            case NATIVE:
+                throw new BadFormatException("Native types not supported yet.");
+            case SET:
+            case LIST:
+            case MAP:
+                throw new BadFormatException("Collections not supported yet.");
+            }
     }
 }

@@ -21,6 +21,7 @@ package com.stratio.meta.common.connector;
 import com.stratio.meta.common.exceptions.ExecutionException;
 import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
+import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta2.common.data.ClusterName;
 
@@ -33,9 +34,9 @@ public interface IQueryEngine {
     /**
      * Execute a workflow to retrieve a subset of data.
      *
-     * @param workflow      The {@link com.stratio.meta.common.logicalplan.LogicalWorkflow} that
-     *                      contains the {@link com.stratio.meta.common.logicalplan.LogicalStep} to be
-     *                      executed.
+     * @param workflow The {@link com.stratio.meta.common.logicalplan.LogicalWorkflow} that
+     *                 contains the {@link com.stratio.meta.common.logicalplan.LogicalStep} to be
+     *                 executed.
      * @return A {@link com.stratio.meta.common.result.QueryResult}.
      * @throws UnsupportedException If the required set of operations are not supported by the
      *                              connector.
@@ -46,21 +47,28 @@ public interface IQueryEngine {
             ExecutionException;
 
     /**
-     * Execute a workflow to retrieve a subset of data.
+     * Execute a workflow asynchronously to retrieve a subset of data. Each time new data becomes available, the
+     * result handler is informed to process the data. This method should return immediately after being called.
      *
-     * @param targetCluster Target cluster.
+     * @param queryId       Query identifier
      * @param workflow      The {@link com.stratio.meta.common.logicalplan.LogicalWorkflow} that
      *                      contains the {@link com.stratio.meta.common.logicalplan.LogicalStep} to be
      *                      executed.
-     * @return A {@link com.stratio.meta.common.result.QueryResult}.
-     * @throws UnsupportedException If the required set of operations are not supported by the
-     *                              connector.
-     * @throws ExecutionException   If the execution of the required steps fails.
-     * @deprecated Use execute(LogicalWorkflow) as it may target several clusters.
+     * @param resultHandler A result handler to receive incoming results.
+     * @throws ExecutionException If the execution of the required steps fails.
      */
-    @Deprecated
-    public QueryResult execute(ClusterName targetCluster, LogicalWorkflow workflow)
+    public void asyncExecute(String queryId, LogicalWorkflow workflow, IResultHandler resultHandler)
             throws UnsupportedException,
+            ExecutionException;
+
+    /**
+     * Stop an asynchronous query.
+     *
+     * @param queryId The query identifier.
+     * @throws UnsupportedException If the required operation is not supported.
+     * @throws ExecutionException   If the execution of the required steps fails.
+     */
+    public void stop(String queryId) throws UnsupportedException,
             ExecutionException;
 
 }
