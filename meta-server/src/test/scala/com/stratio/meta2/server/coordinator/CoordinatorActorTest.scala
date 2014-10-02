@@ -17,48 +17,46 @@
  */
 
 import akka.actor.{ActorSystem, actorRef2Scala}
-import com.stratio.meta.common.executionplan.ExecutionWorkflow
-import com.stratio.meta.common.result.ErrorResult
+import com.stratio.connectors.MockConnectorActor
+import com.stratio.meta.common.executionplan.{ExecutionType, MetadataWorkflow, ResultType}
+import com.stratio.meta.common.result.MetadataResult
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.data.CatalogName
+import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.query._
 import com.stratio.meta2.server.actors.{ConnectorManagerActor, CoordinatorActor}
 import org.apache.log4j.Logger
-import org.scalatest.FunSuiteLike
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.{FunSuiteLike, Suite}
 
 import scala.concurrent.duration.DurationInt
 
-//import org.scalamock.scalatest.MockFactory
-
-import com.stratio.meta2.core.coordinator.Coordinator
-import org.scalatest.Suite
-
-//class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory  with ServerConfig{
-class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig {
+class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig {
+  //class CoordinatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig {
   this: Suite =>
 
-
-  override lazy val logger = Logger.getLogger(classOf[CoordinatorActorIntegrationTest])
+  override lazy val logger = Logger.getLogger(classOf[CoordinatorActorTest])
   lazy val system1 = ActorSystem(clusterName, config)
 
+  val mockConnectorActor = system1.actorOf(MockConnectorActor.props(), "MockConnectorActor")
   val connectorManagerActor = system1.actorOf(ConnectorManagerActor.props(null), "ConnectorManagerActor")
-  val coordinatorActor = system1.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator), "CoordinatorActor")
+  val coordinatorActor = system1.actorOf(CoordinatorActor.props(null, new Coordinator), "CoordinatorActor")
 
-  val pq = new SelectPlannedQuery(
-    new SelectValidatedQuery(
-      new SelectParsedQuery(
+  val pq = new MetadataPlannedQuery(
+    new MetadataValidatedQuery(
+      new MetadataParsedQuery(
         new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
         , null)
     )
-    , new ExecutionWorkflow(null, null, null, null)
+    , new MetadataWorkflow("query_id-2384234-1341234-23434", mockConnectorActor, ExecutionType.CREATE_TABLE,
+      ResultType.RESULTS)
   )
 
-
-  test("Should return a KO message") {
-    within(1000 millis) {
-      val coordinatorActor = system.actorOf(CoordinatorActor.props(null, new Coordinator), "CoordinatorActor")
-      coordinatorActor ! "anything; this doesn't make any sense"
-      expectMsg(_: ErrorResult) // bounded to 1 second
+  test("Receiving MetadataQuery test (has to get back a succesful response with the same queryId)") {
+    within(5000 millis) {
+      coordinatorActor ! pq
+      val response = expectMsgType[MetadataResult]
+      assert(response.getQueryId == "query_id-2384234-1341234-23434")
     }
   }
 

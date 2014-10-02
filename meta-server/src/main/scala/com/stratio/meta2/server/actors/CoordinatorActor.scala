@@ -32,12 +32,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
     case plannedQuery: PlannedQuery => {
       val workflow = plannedQuery.getExecutionWorkflow()
-      println ("plannedquery")
-      println ("workflow="+workflow)
 
       workflow match {
         case workflow: MetadataWorkflow => {
-          println ("metadataworkflow")
           val requestSender = sender
           val queryId = plannedQuery.asInstanceOf[MetadataPlannedQuery].getQueryId;
           inProgress.put(queryId, workflow)
@@ -82,6 +79,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
     case result: Result => {
       val queryId = result.getQueryId
+      println("receiving result from "+sender+"; queryId="+queryId)
       if(persistOnSuccess.contains(queryId)){
         //TODO Trigger coordinator persist operation.
         persistOnSuccess.remove(queryId)
