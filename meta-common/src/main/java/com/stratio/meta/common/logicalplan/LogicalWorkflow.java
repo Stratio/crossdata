@@ -23,10 +23,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Workflow defining the steps to be executed to retrieve the requested data.
- * Notice that a workflow may contain several entry points (e.g., for a JOIN
- * operation). The list of initial steps contains Project operations that should
- * be navigated using the getNextStep to determine the next step.
+ * Workflow defining the steps to be executed to retrieve the requested data. Notice that a workflow may contain several
+ * entry points (e.g., for a JOIN operation). The list of initial steps contains Project operations that should be
+ * navigated using the getNextStep to determine the next step.
  */
 public class LogicalWorkflow {
 
@@ -42,8 +41,9 @@ public class LogicalWorkflow {
 
     /**
      * Workflow constructor.
-     *
-     * @param initialSteps The list of initial steps.
+     * 
+     * @param initialSteps
+     *            The list of initial steps.
      */
     public LogicalWorkflow(List<LogicalStep> initialSteps) {
         this.initialSteps = initialSteps;
@@ -51,7 +51,7 @@ public class LogicalWorkflow {
 
     /**
      * Get the list of initial steps.
-     *
+     * 
      * @return The list of initial steps.
      */
     public List<LogicalStep> getInitialSteps() {
@@ -60,24 +60,26 @@ public class LogicalWorkflow {
 
     /**
      * Get the last step of the workflow.
-     *
+     * 
      * @return A {@link com.stratio.meta.common.logicalplan.LogicalStep}.
      */
     public LogicalStep getLastStep() {
         if (lastStep == null && initialSteps.size() > 0) {
-            //Find last step.
+            // Find last step.
             LogicalStep last = initialSteps.get(0);
             while (last.getNextStep() != null) {
                 last = last.getNextStep();
             }
+            this.lastStep = last;
         }
         return lastStep;
     }
 
     /**
      * Set the last step of the workflow.
-     *
-     * @param lastStep The last logical step.
+     * 
+     * @param lastStep
+     *            The last logical step.
      */
     public void setLastStep(LogicalStep lastStep) {
         this.lastStep = lastStep;
@@ -89,7 +91,7 @@ public class LogicalWorkflow {
 
         Set<LogicalStep> pending = new HashSet<>();
         LogicalStep step = null;
-        //Print initial PROJECT paths
+        // Print initial PROJECT paths
         for (LogicalStep initial : initialSteps) {
             step = initial;
             sb.append(step).append(System.lineSeparator());
@@ -107,7 +109,7 @@ public class LogicalWorkflow {
 
         }
 
-        //Print union paths.
+        // Print union paths.
         for (LogicalStep union : pending) {
             step = union;
             sb.append(step).append(System.lineSeparator());

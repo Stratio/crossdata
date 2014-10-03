@@ -26,15 +26,13 @@ import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.metadata.ColumnType;
 
 /**
- * Select operator that specifies the list of columns that should be
- * returned with their expected name. Notice that this operator is applied
- * to limit the number of columns returned and to provide alias support.
+ * Select operator that specifies the list of columns that should be returned with their expected name. Notice that this
+ * operator is applied to limit the number of columns returned and to provide alias support.
  */
 public class Select extends TransformationStep {
 
     /**
-     * Map of columns associating the name given in the Project logical steps
-     * with the name expected in the results.
+     * Map of columns associating the name given in the Project logical steps with the name expected in the results.
      */
     private final Map<ColumnName, String> columnMap;
 
@@ -45,11 +43,14 @@ public class Select extends TransformationStep {
 
     /**
      * Class constructor.
-     *
-     * @param operation The operation to be applied.
-     * @param columnMap Map of columns associating the name given in the Project
-     *                  logical steps with the name expected in the result.
-     * @param typeMap   The mapping of column types.
+     * 
+     * @param operation
+     *            The operation to be applied.
+     * @param columnMap
+     *            Map of columns associating the name given in the Project logical steps with the name expected in the
+     *            result.
+     * @param typeMap
+     *            The mapping of column types.
      */
     public Select(Operations operation, Map<ColumnName, String> columnMap, Map<String, ColumnType> typeMap) {
         super(operation);
