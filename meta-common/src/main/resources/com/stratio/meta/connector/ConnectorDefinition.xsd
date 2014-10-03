@@ -1,29 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:element name="Connector" type="ConnectorType"/>
-  <xs:complexType name="ConnectorType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="ConnectorName"/>
-      <xs:element type="xs:string" name="DataStoresName"/>
-      <xs:element type="xs:string" name="Version"/>
-      <xs:element type="RequiredPropertiesType" name="RequiredProperties"/>
-      <xs:element type="OptionalPropertiesType" name="OptionalProperties"/>
-      <xs:element type="SupportedOperationsType" name="SupportedOperations"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="OptionalPropertiesType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="Property" maxOccurs="unbounded" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="RequiredPropertiesType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="Property" maxOccurs="unbounded" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="SupportedOperationsType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="operation" maxOccurs="unbounded" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="Connector" type="ConnectorType"/>
+    <xs:complexType name="ConnectorType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="ConnectorName"/>
+            <xs:element type="DataStoreType" name="DataStores"/>
+            <xs:element type="xs:string" name="Version"/>
+            <xs:element type="PropertiesType" name="RequiredProperties" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element type="PropertiesType" name="OptionalProperties" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element type="SupportedOperationsType" name="SupportedOperations" maxOccurs="unbounded" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PropertiesType">
+        <xs:sequence>
+            <xs:element type="PropertyType" name="Property" maxOccurs="unbounded" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PropertyType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="PropertyName"/>
+            <xs:element type="xs:string" name="Description"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SupportedOperationsType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="operation"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DataStoreType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="DataStoreName" maxOccurs="unbounded" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
 </xs:schema>
