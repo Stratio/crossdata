@@ -12,6 +12,7 @@ trait HeartbeatActor extends Actor {
 
   private val callback = new Runnable {
     def run = {
+      println("heartbeat.")
       self ! new HeartbeatSig()
     }
   }
