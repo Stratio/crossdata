@@ -302,6 +302,7 @@ public class Planner {
 
             // Add CatalogMetadata to MetadataManager
             MetadataManager.MANAGER.createCatalog(catalogMetadata);
+
         } else if(metadataStatement instanceof CreateTableStatement){
             CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
         }

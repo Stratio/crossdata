@@ -6,8 +6,9 @@ import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.result._
 import com.stratio.meta.communication.ConnectToConnector
 import com.stratio.meta.communication.DisconnectFromConnector
+import com.stratio.meta2.core.metadata.MetadataManager
 import com.stratio.meta2.core.query.{SelectPlannedQuery, StoragePlannedQuery, MetadataPlannedQuery, PlannedQuery}
-import com.stratio.meta2.common.data.CatalogName
+import com.stratio.meta2.common.data.{FirstLevelName, CatalogName}
 
 object CoordinatorActor {
   def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor(connectorMgr, coordinator))
@@ -29,7 +30,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
   //TODO Move this to infinispan
   val persistOnSuccess: scala.collection.mutable.Map[String, MetadataWorkflow] = scala.collection.mutable.Map()
 
-  val pendingCatalogs: scala.collection.mutable.Map[CatalogName, MetadataWorkflow] = scala.collection.mutable.Map()
+  //TODO Move this to infinispan
+  val pendingQueries: scala.collection.mutable.Map[FirstLevelName, String] = scala.collection.mutable.Map()
 
   def receive = {
 
@@ -38,15 +40,15 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
       workflow match {
         case workflow: MetadataWorkflow => {
-          if (workflow.getExecutionType != ExecutionType.CREATE_CATALOG){
-            val requestSender = sender
-            val queryId = plannedQuery.asInstanceOf[MetadataPlannedQuery].getQueryId;
-            inProgress.put(queryId, workflow)
-            inProgressSender.put(queryId, requestSender)
+          val requestSender = sender
+          val queryId = plannedQuery.asInstanceOf[MetadataPlannedQuery].getQueryId;
+          inProgress.put(queryId, workflow)
+          inProgressSender.put(queryId, requestSender)
+          if(workflow.getActorRef != null){
             persistOnSuccess.put(queryId, workflow)
             workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getMetadataOperation(queryId)
           } else {
-            pendingCatalogs.put(workflow.getCatalogName, workflow)
+            pendingQueries.put(workflow.getCatalogMetadata.getName, queryId)
           }
         }
 
