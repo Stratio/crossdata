@@ -69,6 +69,10 @@ public class ExecutionWorkflow implements Serializable {
         this.resultType = type;
     }
 
+    public ExecutionType getExecutionType() {
+        return executionType;
+    }
+
     public Serializable getActorRef() {
         return actorRef;
     }

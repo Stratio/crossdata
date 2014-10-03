@@ -7,6 +7,7 @@ import com.stratio.meta.common.result._
 import com.stratio.meta.communication.ConnectToConnector
 import com.stratio.meta.communication.DisconnectFromConnector
 import com.stratio.meta2.core.query.{SelectPlannedQuery, StoragePlannedQuery, MetadataPlannedQuery, PlannedQuery}
+import com.stratio.meta2.common.data.CatalogName
 
 object CoordinatorActor {
   def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor(connectorMgr, coordinator))
@@ -28,6 +29,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
   //TODO Move this to infinispan
   val persistOnSuccess: scala.collection.mutable.Map[String, MetadataWorkflow] = scala.collection.mutable.Map()
 
+  val pendingCatalogs: scala.collection.mutable.Map[CatalogName, MetadataWorkflow] = scala.collection.mutable.Map()
+
   def receive = {
 
     case plannedQuery: PlannedQuery => {
@@ -35,12 +38,16 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
       workflow match {
         case workflow: MetadataWorkflow => {
-          val requestSender = sender
-          val queryId = plannedQuery.asInstanceOf[MetadataPlannedQuery].getQueryId;
-          inProgress.put(queryId, workflow)
-          inProgressSender.put(queryId, requestSender)
-          persistOnSuccess.put(queryId, workflow)
-          workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getMetadataOperation(queryId)
+          if (workflow.getExecutionType != ExecutionType.CREATE_CATALOG){
+            val requestSender = sender
+            val queryId = plannedQuery.asInstanceOf[MetadataPlannedQuery].getQueryId;
+            inProgress.put(queryId, workflow)
+            inProgressSender.put(queryId, requestSender)
+            persistOnSuccess.put(queryId, workflow)
+            workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getMetadataOperation(queryId)
+          } else {
+            pendingCatalogs.put(workflow.getCatalogName, workflow)
+          }
         }
 
         case workflow: StorageWorkflow => {

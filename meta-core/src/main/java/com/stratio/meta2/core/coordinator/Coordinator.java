@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.meta.common.executionplan.MetadataWorkflow;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ErrorType;
 import com.stratio.meta.common.result.Result;
@@ -133,12 +134,18 @@ public class Coordinator {
             break;
         case CREATE_CATALOG:
             // persistCreateCatalog((CreateCatalogStatement) plannedQuery.getStatement());
+            MetadataWorkflow metadataWorkflow = (MetadataWorkflow) plannedQuery.getExecutionWorkflow();
+            persistCreateCatalog(metadataWorkflow.getCatalogMetadata());
             break;
         case CREATE_INDEX:
             // persistCreateIndex((CreateIndexStatement) plannedQuery.getStatement());
+            metadataWorkflow = (MetadataWorkflow) plannedQuery.getExecutionWorkflow();
+            persistCreateIndex(metadataWorkflow.getIndexMetadata());
             break;
         case CREATE_TABLE:
             // persistCreateTable((CreateTableStatement) plannedQuery.getStatement());
+            metadataWorkflow = (MetadataWorkflow) plannedQuery.getExecutionWorkflow();
+            persistCreateTable(metadataWorkflow.getTableMetadata());
             break;
         case DESCRIBE:
             break;
