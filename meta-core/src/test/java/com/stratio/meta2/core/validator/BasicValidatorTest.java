@@ -110,7 +110,7 @@ public class BasicValidatorTest {
 
     private static ConnectorMetadata createConnectorMetadata() {
         Set<DataStoreName> dataStoreRefs = new HashSet<>();
-        dataStoreRefs.add(new DataStoreName("Casssandra"));
+        dataStoreRefs.add(new DataStoreName("Cassandra"));
         SupportedOperationsType supportedOperations = new SupportedOperationsType();
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0",
                 dataStoreRefs, null, null, supportedOperations);

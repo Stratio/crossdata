@@ -16,39 +16,28 @@
  * under the License.
  */
 
-package com.stratio.meta.common.result;
+package com.stratio.meta2.server.mockConnector
+
+import akka.actor.{Actor, Props}
+import com.stratio.meta.common.result.{QueryStatus, Result}
+import com.stratio.meta.communication.ACK
+import com.stratio.meta2.core.query.ParsedQuery
+
+object MockValidatorActor {
+  def props(): Props = Props(new MockValidatorActor())
+}
 
 /**
- * Types of errors reported by META when a query is processed.
+ * Actor in charge of the validation of sentences.
  */
-public enum ErrorType {
-    /**
-     * Parsing error.
-     */
-    PARSING,
+class MockValidatorActor() extends Actor {
 
-    /**
-     * Validation error.
-     */
-    VALIDATION,
-
-    /**
-     * Execution error.
-     */
-    EXECUTION,
-
-    /**
-     * Connection error.
-     */
-    CONNECTION,
-
-    /**
-     * Operation not supported error.
-     */
-    NOT_SUPPORTED,
-
-    /**
-     * Critical exceptions for connectors
-     */
-    CRITICAL
+  override def receive: Receive = {
+    case query: ParsedQuery => {
+      sender ! ACK(query.getQueryId,QueryStatus.VALIDATED)
+    }
+    case _ => {
+      sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
+    }
+  }
 }
