@@ -100,12 +100,12 @@ public class Planner {
         return pq;
     }
 
-    public MetadataPlannedQuery plannedQuery(MetadataValidatedQuery query) throws PlanningException {
+    public MetadataPlannedQuery planQuery(MetadataValidatedQuery query) throws PlanningException {
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
         return new MetadataPlannedQuery(query, executionWorkflow);
     }
 
-    public StoragePlannedQuery plannedQuery(StorageValidatedQuery query){
+    public StoragePlannedQuery planQuery(StorageValidatedQuery query){
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
         return new StoragePlannedQuery(query, executionWorkflow);
     }
