@@ -88,6 +88,30 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         this.indexMetadata = indexMetadata;
     }
 
+    public CatalogName getCatalogName() {
+        return catalogName;
+    }
+
+    public ClusterName getClusterName() {
+        return clusterName;
+    }
+
+    public TableName getTableName() {
+        return tableName;
+    }
+
+    public CatalogMetadata getCatalogMetadata() {
+        return catalogMetadata;
+    }
+
+    public TableMetadata getTableMetadata() {
+        return tableMetadata;
+    }
+
+    public IndexMetadata getIndexMetadata() {
+        return indexMetadata;
+    }
+
     public MetadataOperation getMetadataOperation(String queryId){
         MetadataOperation result = null;
         if(ExecutionType.CREATE_CATALOG.equals(this.executionType)){
