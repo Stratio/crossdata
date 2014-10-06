@@ -67,25 +67,25 @@ public enum MetadataManager {
     public boolean exists(Name name) {
         boolean result = false;
         switch (name.getType()) {
-        case Catalog:
+        case CATALOG:
             result = exists((CatalogName) name);
             break;
-        case Cluster:
+        case CLUSTER:
             result = exists((ClusterName) name);
             break;
-        case Column:
+        case COLUMN:
             result = exists((ColumnName) name);
             break;
-        case Connector:
+        case CONNECTOR:
             result = exists((ConnectorName) name);
             break;
-        case DataStore:
+        case DATASTORE:
             result = exists((DataStoreName) name);
             break;
-        case Table:
+        case TABLE:
             result = exists((TableName) name);
             break;
-        case Index:
+        case INDEX:
             result = exists((IndexName) name);
             break;
         }
@@ -205,7 +205,7 @@ public enum MetadataManager {
                     ((CatalogMetadata) metadata.get(tableMetadata.getName().getCatalogName()));
 
             if (catalogMetadata.getTables().containsKey(tableMetadata.getName()) && unique) {
-                throw new MetadataManagerException("Table [" + tableMetadata.getName() + "] already exists");
+                throw new MetadataManagerException("TABLE [" + tableMetadata.getName() + "] already exists");
             }
 
             catalogMetadata.getTables().put(tableMetadata.getName(), tableMetadata);

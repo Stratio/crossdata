@@ -44,6 +44,11 @@ public class CreateIndexStatement extends IndexStatement {
     private IndexType type = null;
 
     /**
+     * The {@link com.stratio.meta2.common.data.IndexName} to be created.
+     */
+    private IndexName name = null;
+
+    /**
      * Whether the index should be created only if not exists.
      */
     private boolean createIfNotExists = false;
@@ -101,18 +106,9 @@ public class CreateIndexStatement extends IndexStatement {
      * @param columnName The column name.
      */
     public void setName(ColumnName columnName) {
+        tableName=columnName.getTableName();
+        catalog=columnName.getTableName().getCatalogName();
         this.name = new IndexName(columnName.getTableName(), columnName.getName());
-        this.name = name;
-        /*
-        if (name.contains(".")) {
-            String[] ksAndTablename = name.split("\\.");
-            catalog = new CatalogName(ksAndTablename[0]);
-            this.name = ksAndTablename[1];
-            catalogInc = true;
-        } else {
-            this.name = name;
-        }
-        */
     }
 
     /**
@@ -166,6 +162,8 @@ public class CreateIndexStatement extends IndexStatement {
      * @param column The name of the column.
      */
     public void addColumn(ColumnName column) {
+        tableName=column.getTableName();
+        catalog=column.getTableName().getCatalogName();
         targetColumns.add(column);
     }
 
@@ -262,6 +260,10 @@ public class CreateIndexStatement extends IndexStatement {
         }
 
         return sb.toString();
+    }
+
+    public IndexName getName() {
+        return new IndexName(catalog.getName(),tableName.getName(),getIndexName());
     }
 
     @Override

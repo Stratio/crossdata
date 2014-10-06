@@ -141,6 +141,30 @@ public class Planner {
         return tables;
     }
 
+
+    protected void defineExecutionWorkflow(LogicalWorkflow workflow) {
+        List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
+        //Get the list of connector attached to the clusters that contain the required tables.
+        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
+                .getAttachedConnectors(Status.ONLINE, tables);
+        List<ExecutionWorkflow> executionWorkflows = new ArrayList<>();
+        Map<UnionStep, List<String>> joinActors = new HashMap<>();
+
+        //Refine the list of available connectors and determine which connector to be used.
+        for (LogicalStep ls : workflow.getInitialSteps()) {
+            updateExecutionWorkflow(executionWorkflows, joinActors,
+                    ls, candidatesConnectors.get(Project.class.cast(ls).getTableName().getQualifiedName()));
+        }
+    }
+
+    protected void updateExecutionWorkflow(
+            List<ExecutionWorkflow> executionWorkflows,
+            Map<UnionStep, List<String>> joinActors,
+            LogicalStep initial,
+            List<ConnectorMetadata> connectors){
+        //QueryWorkflow workflow = new QueryWorkflow();
+    }
+
     protected ConnectorMetadata findMoreSuitableConnector(Map<TableName, List<ConnectorMetadata>> candidatesConnectors)
             throws PlanningException {
         ConnectorMetadata chosenConnector;
@@ -183,7 +207,7 @@ public class Planner {
     /**
      * Filter the list of connector candidates attached to the cluster that a table belongs to,
      * according to the capabilities required by a logical step.
-     * @param tableName Table name extracted from the first step (see {@link Project}).
+     * @param tableName TABLE name extracted from the first step (see {@link Project}).
      * @param ls Logical Step containing the {@link com.stratio.meta.common.connector.Operations} to be checked.
      * @param candidatesConnectors Map with the Connectors (see {@link com.stratio.meta2.common.metadata.ConnectorMetadata}) that already met the previous
      *                             Operations.
@@ -194,7 +218,7 @@ public class Planner {
         List<ConnectorMetadata> connectorList = candidatesConnectors.get(tableName);
         List<ConnectorMetadata> rejectedConnectors = new ArrayList<>();
         for(ConnectorMetadata connectorMetadata: connectorList){
-            if(!connectorMetadata.getSupportedOperations().getOperation().contains(operations)){
+            if(!connectorMetadata.getSupportedOperations().contains(operations)){
                 rejectedConnectors.add(connectorMetadata);
             }
         }

@@ -29,6 +29,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta.common.executionplan.ExecutionWorkflow;
+import com.stratio.meta.common.executionplan.ResultType;
 import com.stratio.meta.common.logicalplan.Filter;
 import com.stratio.meta.common.logicalplan.Join;
 import com.stratio.meta.common.logicalplan.LogicalStep;
@@ -147,6 +149,22 @@ public class PlannerBaseTest extends MetadataManagerTests{
 
     public void assertSelect(LogicalWorkflow workflow) {
         assertTrue(Select.class.isInstance(workflow.getLastStep()), "Select step not found.");
+    }
+
+    public void assertExecutionWorkflow(ExecutionWorkflow executionWorkflow, int numberSteps, String [] targetActors){
+        assertNotNull(executionWorkflow, "Null execution workflow received");
+        int steps = 1;
+        ExecutionWorkflow current = executionWorkflow;
+        assertNotNull(current.getActorRef(), "Null target actor");
+        assertEquals(targetActors[0], current.getActorRef(), "Invalid target actor " + current.getActorRef());
+        while(ResultType.TRIGGER_EXECUTION.equals(current.getResultType())){
+            assertNotNull(current.getActorRef(), "Null target actor");
+            assertEquals(targetActors[steps-1], current.getActorRef(), "Invalid target actor");
+            current = current.getNextExecutionWorkflow();
+            steps++;
+        }
+        assertEquals(steps, numberSteps, "Invalid number of linked execution workflows.");
+
     }
 
 }

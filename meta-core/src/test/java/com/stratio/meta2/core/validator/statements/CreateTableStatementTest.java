@@ -141,7 +141,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Catalog must exists");
+            Assert.fail("CATALOG must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -155,14 +155,14 @@ public class CreateTableStatementTest extends BasicValidatorTest {
 
         Map<ColumnName, ColumnType> columns = new HashMap<>();
         List<ColumnName> primaryKey = new ArrayList<>();
-        ColumnName partitionColumn1 = new ColumnName("demo", "user", "name");
+        ColumnName partitionColumn1 = new ColumnName("demo", "users", "name");
         primaryKey.add(partitionColumn1);
 
-        columns.put(new ColumnName(new TableName("demo", "user"), "name"), ColumnType.TEXT);
-        columns.put(new ColumnName(new TableName("demo", "user"), "gender"), ColumnType.TEXT);
-        columns.put(new ColumnName(new TableName("demo", "user"), "age"), ColumnType.INT);
+        columns.put(new ColumnName(new TableName("demo", "users"), "name"), ColumnType.TEXT);
+        columns.put(new ColumnName(new TableName("demo", "users"), "gender"), ColumnType.TEXT);
+        columns.put(new ColumnName(new TableName("demo", "users"), "age"), ColumnType.INT);
 
-        CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("demo", "user"),
+        CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("demo", "users"),
                 new ClusterName("cluster"), columns, primaryKey, null);
         Validator validator = new Validator();
 

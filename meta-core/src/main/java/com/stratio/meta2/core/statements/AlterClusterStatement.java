@@ -23,7 +23,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 public class AlterClusterStatement extends MetadataStatement {
 
     /**
-     * Cluster name given by the user.
+     * CLUSTER name given by the user.
      */
     private final String clusterName;
 

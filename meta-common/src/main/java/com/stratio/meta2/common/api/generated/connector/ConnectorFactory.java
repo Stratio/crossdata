@@ -34,6 +34,7 @@ import com.stratio.meta2.common.api.generated.PropertyType;
 public class ConnectorFactory {
 
     private final static QName _Connector_QNAME = new QName("", "Connector");
+    private static final long serialVersionUID = 4399986588512302541L;
 
     /**
      * Create a new ConnectorFactory that can be used to create new instances of schema derived classes for package: generated
@@ -86,7 +87,7 @@ public class ConnectorFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link ConnectorType }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "Connector")
+    @XmlElementDecl(namespace = "", name = "CONNECTOR")
     public JAXBElement<ConnectorType> createConnector(ConnectorType value) {
         return new JAXBElement<ConnectorType>(_Connector_QNAME, ConnectorType.class, null, value);
     }

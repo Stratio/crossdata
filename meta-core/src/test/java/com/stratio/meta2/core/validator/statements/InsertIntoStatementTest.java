@@ -107,7 +107,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Table must exist");
+            Assert.fail("TABLE must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -144,7 +144,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Catalog must exist");
+            Assert.fail("CATALOG must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

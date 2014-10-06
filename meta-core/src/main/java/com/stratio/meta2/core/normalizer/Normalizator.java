@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.exceptions.validation.AmbiguousNameException;
 import com.stratio.meta.common.exceptions.validation.BadFormatException;
@@ -50,6 +51,7 @@ public class Normalizator {
 
     private NormalizedFields fields = new NormalizedFields();
     private ParsedQuery parsedQuery;
+
 
     public Normalizator(SelectParsedQuery parsedQuery) {
         this.parsedQuery = parsedQuery;
@@ -93,6 +95,7 @@ public class Normalizator {
         InnerJoin innerJoin = ((SelectStatement) parsedQuery.getStatement()).getJoin();
         if (innerJoin != null) {
             normalizeJoins(innerJoin);
+            fields.setJoin(innerJoin);
         }
     }
 
@@ -111,6 +114,7 @@ public class Normalizator {
         List<Relation> where = ((SelectStatement) parsedQuery.getStatement()).getWhere();
         if (where != null && !where.isEmpty()) {
             normalizeWhere(where);
+            fields.setWhere(where);
         }
     }
 
@@ -121,11 +125,15 @@ public class Normalizator {
     }
 
     public void normalizeOrderBy()
-            throws BadFormatException, AmbiguousNameException, NotExistNameException,
-            NotValidColumnException {
+            throws ValidationException {
+
+        //TODO: NOT SUPORTED YET. REVIEW IN FUTURES RELEASES
         OrderBy orderBy = ((SelectStatement) parsedQuery.getStatement()).getOrderBy();
+
         if (orderBy != null) {
             normalizeOrderBy(orderBy);
+            fields.setOrderBy(orderBy);
+            throw new ValidationException("ORDER BY not supported yet.");
         }
     }
 
@@ -164,11 +172,13 @@ public class Normalizator {
         fields.getSelectors().addAll(normalizeSelectors);
     }
 
-    public void normalizeGroupBy() throws BadFormatException, AmbiguousNameException,
-            NotExistNameException, NotValidColumnException {
+    public void normalizeGroupBy() throws ValidationException {
         GroupBy groupBy = ((SelectStatement) parsedQuery.getStatement()).getGroupBy();
+        //TODO: NOT SUPORTED YET. REVIEW IN FUTURES RELEASES
         if (groupBy != null) {
             normalizeGroupBy(groupBy);
+            fields.setGroupBy(groupBy);
+            throw new ValidationException("GROUP BY not supported yet.");
         }
     }
 
@@ -182,7 +192,7 @@ public class Normalizator {
             case COLUMN:
                 checkColumnSelector((ColumnSelector) selector);
                 if (!columnNames.add(((ColumnSelector) selector).getName())) {
-                    throw new BadFormatException("Column into group by is repeated");
+                    throw new BadFormatException("COLUMN into group by is repeated");
                 }
                 break;
             case ASTERISK:
@@ -218,6 +228,7 @@ public class Normalizator {
                 if (relation.getLeftTerm().getType() == SelectorType.COLUMN
                         && relation.getRightTerm().getType() == SelectorType.COLUMN) {
                     checkColumnSelector((ColumnSelector) relation.getRightTerm());
+                    checkColumnSelector((ColumnSelector) relation.getLeftTerm());
                 } else {
                     throw new BadFormatException("You must compare between columns");
                 }
@@ -340,7 +351,7 @@ public class Normalizator {
             NotExistNameException, NotValidColumnException {
         ColumnName columnName = selector.getName();
         if (columnName.isCompletedName()) {
-            if (!fields.getTableNames().contains(columnName.getTableName())) {
+            if (!MetadataManager.MANAGER.exists(columnName)) {
                 throw new NotValidColumnException(columnName);
             }
         } else {
@@ -348,15 +359,20 @@ public class Normalizator {
             columnName.setTableName(searched);
         }
         fields.getColumnNames().add(columnName);
+
     }
 
     public TableName searchTableNameByColumn(ColumnName columnName) throws AmbiguousNameException,
             NotExistNameException {
         TableName selectTableName = null;
-        for (TableName tableName : fields.getTableNames()) {
-            columnName.setTableName(tableName);
-            if (MetadataManager.MANAGER.exists(columnName)) {
-                if (selectTableName == null) {
+        if (columnName.isCompletedName()){
+            if(MetadataManager.MANAGER.exists(columnName)) {
+                selectTableName = columnName.getTableName();
+            }
+        }else {
+            for (TableName tableName : fields.getTableNames()) {
+                columnName.setTableName(tableName);
+                if (MetadataManager.MANAGER.exists(columnName)) {
                     selectTableName = tableName;
                 } else {
                     columnName.setTableName(null);
@@ -475,7 +491,7 @@ public class Normalizator {
             case BIGINT:
             case DOUBLE:
             case FLOAT:
-                if((valueType != SelectorType.INTEGER) || (valueType != SelectorType.FLOATING_POINT)){
+                if((valueType != SelectorType.INTEGER) && (valueType != SelectorType.FLOATING_POINT)){
                     throw new BadFormatException("Numeric term not found.");
                 }
                 break;
@@ -484,7 +500,7 @@ public class Normalizator {
                 if(valueType != SelectorType.STRING){
                     throw new BadFormatException("String term not found.");
                 }
-                if(operator != Operator.EQ){
+                if(operator != Operator.EQ && operator != Operator.DISTINCT){
                     throw new BadFormatException("String relations only accept equal operator.");
                 }
                 break;

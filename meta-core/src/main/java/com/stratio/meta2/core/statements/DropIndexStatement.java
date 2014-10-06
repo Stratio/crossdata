@@ -55,6 +55,10 @@ public class DropIndexStatement extends IndexStatement {
         this.name = name;
     }
 
+    public IndexName getName() {
+        return name;
+    }
+
     public boolean isDropIfExists() {
         return dropIfExists;
     }

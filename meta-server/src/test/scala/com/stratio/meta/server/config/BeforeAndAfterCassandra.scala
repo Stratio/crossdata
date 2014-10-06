@@ -149,7 +149,7 @@ trait BeforeAndAfterCassandra extends BeforeAndAfterAll {
    */
   protected def connect(host: String): Boolean = {
     var result: Boolean = false
-    /*val c: Cluster = Cluster.builder.addContactPoint(host).build
+    /*val c: CLUSTER = CLUSTER.builder.addContactPoint(host).build
     _session = c.connect
     result = null == _session.getLoggedKeyspace*/
     return result

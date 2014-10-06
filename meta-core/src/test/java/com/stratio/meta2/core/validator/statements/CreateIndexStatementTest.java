@@ -36,11 +36,12 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
 
     @Test
     public void createIndex() {
-        String query = "CREATE INDEX gender_idx ON users (gender); ";
+        String query = "CREATE INDEX bool_idx ON users (bool); ";
 
         CreateIndexStatement createIndexStatement = new CreateIndexStatement();
         createIndexStatement.setIndexType("DEFAULT");
-        createIndexStatement.addColumn(new ColumnName("demo", "users", "gender"));
+        createIndexStatement.setName(new ColumnName("demo", "users", "bool"));
+        createIndexStatement.addColumn(new ColumnName("demo", "users", "bool"));
 
         Validator validator = new Validator();
 
@@ -72,7 +73,7 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Table must exists");
+            Assert.fail("TABLE must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -95,7 +96,7 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Column must exists");
+            Assert.fail("COLUMN must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

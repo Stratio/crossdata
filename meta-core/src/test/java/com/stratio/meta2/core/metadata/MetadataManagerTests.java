@@ -137,7 +137,8 @@ public class MetadataManagerTests {
      * @param dataStoreName The datastore associated with this connector.
      * @return A {@link com.stratio.meta2.common.data.ConnectorName}.
      */
-    public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<Operations> operations) {
+    public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<Operations> operations,
+            String actorRef) {
         final String version = "0.1.0";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
@@ -149,7 +150,7 @@ public class MetadataManagerTests {
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
                 requiredPropertiesForConnector,
                 optionalProperties, supportedOperations);
-        connectorMetadata.setActorRef(null);
+        connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         return connectorName;
     }

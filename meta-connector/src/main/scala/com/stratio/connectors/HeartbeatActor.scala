@@ -1,6 +1,6 @@
 package com.stratio.connectors
 
-import java.util.concurrent.{Executors, TimeUnit}
+import java.util.concurrent.{TimeUnit, Executors}
 
 import akka.actor.Actor
 import com.stratio.meta.communication.HeartbeatSig
@@ -12,7 +12,6 @@ trait HeartbeatActor extends Actor {
 
   private val callback = new Runnable {
     def run = {
-      println("heartbeat.")
       self ! new HeartbeatSig()
     }
   }
@@ -20,9 +19,7 @@ trait HeartbeatActor extends Actor {
   scheduler.scheduleAtFixedRate(callback, 0, 500, TimeUnit.MILLISECONDS)
 
   def receive: Receive = {
-    case heartbeat: HeartbeatSig => {
-      handleHeartbeat(heartbeat)
-    }
+    case heartbeat: HeartbeatSig =>  handleHeartbeat(heartbeat)
   }
 
   def handleHeartbeat(heartbeat: HeartbeatSig) = {

@@ -120,7 +120,7 @@ public class JsonMetaResultSet implements Serializable {
     /**
      * Remove a row.
      *
-     * @param index Index of the row to remove
+     * @param index INDEX of the row to remove
      */
     public void remove(int index) {
         rows.remove(index);
