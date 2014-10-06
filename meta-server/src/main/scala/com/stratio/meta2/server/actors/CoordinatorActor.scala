@@ -49,7 +49,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
-            workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getMetadataOperation(queryId)
+            workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.createMetadataOperationMessage(queryId)
           } else {
             executionInfo.setQueryStatus(QueryStatus.PLANNED)
             ExecutionManager.MANAGER.createEntry(workflow.getCatalogMetadata.getName.toString, queryId)
@@ -71,7 +71,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           val requestSender = sender
           val queryId = plannedQuery
             .asInstanceOf[MetadataPlannedQuery].getQueryId
-          requestSender ! coordinator.executeManagementOperation(workflow.getManagementOperation(queryId))
+          requestSender ! coordinator.executeManagementOperation(workflow.createManagementOperationMessage(queryId))
         }
 
         case workflow: QueryWorkflow => {
