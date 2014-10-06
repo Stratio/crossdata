@@ -52,17 +52,15 @@ import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
+import com.stratio.meta2.common.metadata.IndexType;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.core.grammar.ParsingTest;
 import com.stratio.meta2.core.grid.Grid;
 import com.stratio.meta2.core.grid.GridInitializer;
 import com.stratio.meta2.core.metadata.MetadataManager;
 
 public class BasicValidatorTest {
 
-    protected static final ParsingTest pt = new ParsingTest();
-    protected static MetadataManager metadataManager = null;
     static Map<FirstLevelName, Serializable> metadataMap;
     private static String path = "";
 
@@ -102,7 +100,18 @@ public class BasicValidatorTest {
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "email"), parameters,
                         ColumnType.TEXT));
 
+
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
+        List<ColumnMetadata> columnsIndex=new ArrayList<>();
+        ColumnMetadata columnMetadataIndex=new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "gender"),
+                parameters, ColumnType.TEXT);
+        columnsIndex.add(columnMetadataIndex);
+
+        IndexMetadata indexMetadata=new IndexMetadata(new IndexName("demo","users","gender_idx"),columnsIndex,
+                IndexType.DEFAULT, options);
+
+        indexes.put(new IndexName("demo","users","gender_idx"), indexMetadata );
+
         tableMetadata = new TableMetadata(targetTable, options, columns, indexes, clusterRef, partitionKey, clusterKey);
 
         return tableMetadata;

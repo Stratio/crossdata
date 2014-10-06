@@ -12,9 +12,10 @@ import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.MetadataParsedQuery;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.statements.AttachConnectorStatement;
+import com.stratio.meta2.core.validator.BasicValidatorTest;
 import com.stratio.meta2.core.validator.Validator;
 
-public class AttachConnectorStatementTest {
+public class AttachConnectorStatementTest extends BasicValidatorTest {
 
     @Test
     public void attachExistingConnector() {

@@ -72,11 +72,9 @@ public class Validator {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(Validator.class);
-    private Normalizator normalizator=null;
+    private Normalizator normalizator = null;
 
-
-    public ValidatedQuery validate(ParsedQuery parsedQuery)
-            throws ValidationException, IgnoreQueryException {
+    public ValidatedQuery validate(ParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
         ValidatedQuery validatedQuery = null;
         LOG.info("Validating MetaStatements...");
         for (Validation val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
@@ -151,11 +149,13 @@ public class Validator {
             validatedQuery = new StorageValidatedQuery((StorageParsedQuery) parsedQuery);
         } else if (parsedQuery instanceof SelectParsedQuery) {
             validatedQuery = new SelectValidatedQuery((SelectParsedQuery) parsedQuery);
-            NormalizedFields fields= normalizator.getFields();
-            ((SelectValidatedQuery)validatedQuery).setTableMetadata(fields.getTablesMetadata());
-            ((SelectValidatedQuery)validatedQuery).getColumns().addAll(fields.getColumnNames());
-            ((SelectValidatedQuery)validatedQuery).getTables().addAll(fields.getTableNames());
-            ((SelectValidatedQuery)validatedQuery).getRelationships().addAll(fields.getRelations());
+            NormalizedFields fields = normalizator.getFields();
+            ((SelectValidatedQuery) validatedQuery).setTableMetadata(fields.getTablesMetadata());
+            ((SelectValidatedQuery) validatedQuery).getColumns().addAll(fields.getColumnNames());
+            ((SelectValidatedQuery) validatedQuery).getTables().addAll(fields.getTableNames());
+            ((SelectValidatedQuery) validatedQuery).getRelationships().addAll(fields.getWhere());
+            ((SelectValidatedQuery) validatedQuery).setJoin(fields.getJoin());
+
         }
 
         return validatedQuery;
@@ -163,10 +163,11 @@ public class Validator {
 
     private void validateName(boolean exist, Name name, boolean hasIfExist)
             throws IgnoreQueryException, NotExistNameException, ExistNameException {
-        if (exist)
+        if (exist) {
             validateExist(name, hasIfExist);
-        else
-            validateNotExist(name,hasIfExist);
+        } else {
+            validateNotExist(name, hasIfExist);
+        }
 
     }
 
@@ -197,8 +198,6 @@ public class Validator {
         }
         validateName(exist, name, hasIfExist);
     }
-
-
 
     private void validateCluster(MetaStatement stmt, boolean exist) throws IgnoreQueryException,
             NotExistNameException, ExistNameException {
@@ -236,8 +235,6 @@ public class Validator {
         validateName(exist, name, hasIfExists);
     }
 
-
-
     private void validateExist(Name name, boolean hasIfExists)
             throws NotExistNameException, IgnoreQueryException {
         if (!MetadataManager.MANAGER.exists(name)) {
@@ -274,18 +271,21 @@ public class Validator {
         validateName(exist, name, hasIfExists);
     }
 
-
-
     private void validateColumn(MetaStatement stmt, boolean exist)
             throws NotExistNameException, IgnoreQueryException, ExistNameException {
         ColumnName columnName = null;
         if (stmt instanceof AlterTableStatement) {
             columnName = ((AlterTableStatement) stmt).getColumn();
+            validateName(exist, columnName, false);
         }
-        validateName(exist, columnName, false);
+
+        if (stmt instanceof CreateIndexStatement) {
+            CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
+            for(ColumnName column:createIndexStatement.getTargetColumns()){
+                validateName(exist, column, false);
+            }
+        }
     }
-
-
 
     private void validateExistsProperties(MetaStatement stmt) throws ValidationException {
 
@@ -336,18 +336,23 @@ public class Validator {
 
         if (stmt instanceof DetachClusterStatement) {
             DetachClusterStatement detachClusterStatement = (DetachClusterStatement) stmt;
-            name = new ClusterName(detachClusterStatement.getClusterName());
+            name =detachClusterStatement.getTableMetadata().getName();
         }
 
         if (stmt instanceof AttachClusterStatement) {
             AttachClusterStatement attachClusterStatement = (AttachClusterStatement) stmt;
-            name = (attachClusterStatement.getClusterName());
+            name = attachClusterStatement.getTableMetadata().getName();
             hasIfExists = attachClusterStatement.isIfNotExists();
+        }
+
+        if (stmt instanceof CreateIndexStatement) {
+            CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
+            name = createIndexStatement.getTableName();
+            hasIfExists = createIndexStatement.isCreateIfNotExists();
         }
 
         validateName(exist, name, hasIfExists);
     }
-
 
     private void validateCatalog(MetaStatement stmt, boolean exist)
             throws IgnoreQueryException, ExistNameException, NotExistNameException {
@@ -361,13 +366,13 @@ public class Validator {
         if (stmt instanceof CreateCatalogStatement) {
             CreateCatalogStatement createCatalogStatement = (CreateCatalogStatement) stmt;
             hasIfExists = createCatalogStatement.isIfNotExists();
-            name = ((CreateCatalogStatement) stmt).getCatalogName();
+            name = createCatalogStatement.getCatalogName();
         }
 
         if (stmt instanceof DropCatalogStatement) {
             DropCatalogStatement dropCatalogStatement = (DropCatalogStatement) stmt;
             hasIfExists = dropCatalogStatement.isIfExists();
-            name = ((DropCatalogStatement) stmt).getCatalogName();
+            name = dropCatalogStatement.getCatalogName();
         }
 
         if (stmt instanceof CreateTableStatement) {
@@ -384,7 +389,7 @@ public class Validator {
         if (stmt instanceof DropTableStatement) {
             DropTableStatement dropTableStatement = (DropTableStatement) stmt;
             name = dropTableStatement.getCatalogName();
-            hasIfExists = ((DropTableStatement) stmt).isIfExists();
+            hasIfExists = dropTableStatement.isIfExists();
         }
 
         if (stmt instanceof InsertIntoStatement) {
@@ -396,8 +401,6 @@ public class Validator {
         validateName(exist, name, hasIfExists);
     }
 
-
-
     private void validateOptions(MetaStatement stmt) throws ValidationException {
 
         if (stmt instanceof AttachClusterStatement) {
@@ -408,7 +411,7 @@ public class Validator {
         } else {
             if (stmt instanceof AttachConnectorStatement) {
                 AttachConnectorStatement myStmt = (AttachConnectorStatement) stmt;
-                if ((myStmt.getOptions() == null || myStmt.getOptions().isEmpty())) {
+                if (myStmt.getOptions() == null || myStmt.getOptions().isEmpty()) {
                     throw new ValidationException("AttachConnectorStatement options can't be empty");
                 }
             }
@@ -423,18 +426,16 @@ public class Validator {
         if (stmt instanceof CreateIndexStatement) {
             CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
             name = createIndexStatement.getName();
-            hasIfExist = ((CreateIndexStatement) stmt).isCreateIfNotExists();
+            hasIfExist = createIndexStatement.isCreateIfNotExists();
         }
 
         if (stmt instanceof DropIndexStatement) {
             DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
             name = dropIndexStatement.getName();
-            hasIfExist = ((CreateIndexStatement) stmt).isCreateIfNotExists();
+            hasIfExist = dropIndexStatement.isDropIfExists();
         }
         validateName(exist, name, hasIfExist);
     }
-
-
 
     private void validateInsertTypes(MetaStatement stmt)
             throws BadFormatException, NotMatchDataTypeException {

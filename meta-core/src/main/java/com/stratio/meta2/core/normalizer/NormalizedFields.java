@@ -41,7 +41,7 @@ public class NormalizedFields {
     private Set<CatalogName> catalogNames = new HashSet<>();
     private List<Selector> selectors = new ArrayList<>(); // It can includes functions, column names, asterisks...
     private boolean distinctSelect = false;
-    private List<Relation> relations = new ArrayList<>(); // Join relations
+    private InnerJoin join ; // Join relations
     private List<Relation> where = new ArrayList<>();
     private OrderBy orderBy = new OrderBy();
     private GroupBy groupBy = new GroupBy();
@@ -50,6 +50,7 @@ public class NormalizedFields {
 
 
     public NormalizedFields() {
+
     }
 
     public Set<ColumnName> getColumnNames() {
@@ -92,12 +93,12 @@ public class NormalizedFields {
         this.distinctSelect = distinctSelect;
     }
 
-    public List<Relation> getRelations() {
-        return relations;
+    public InnerJoin getJoin() {
+        return join;
     }
 
-    public void setRelations(List<Relation> relations) {
-        this.relations = relations;
+    public void setJoin(InnerJoin join) {
+        this.join =join ;
     }
 
     public List<Relation> getWhere() {
