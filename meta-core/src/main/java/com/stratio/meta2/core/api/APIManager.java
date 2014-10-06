@@ -20,9 +20,7 @@ package com.stratio.meta2.core.api;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -34,16 +32,8 @@ import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta2.common.api.Manifest;
 import com.stratio.meta2.common.api.generated.connector.ConnectorType;
-import com.stratio.meta2.common.api.generated.connector.DataStoresNameType;
-import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
 import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
-import com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType;
-import com.stratio.meta2.common.data.ConnectorName;
-import com.stratio.meta2.common.data.DataStoreName;
-import com.stratio.meta2.common.metadata.ConnectorMetadata;
-import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.core.metadata.MetadataManager;
 
 public class APIManager {
 
@@ -123,17 +113,22 @@ public class APIManager {
     }
 
     private void persistDataStore(DataStoreType dataStoreType) {
+        // TODO
+        /*
         DataStoreName name = new DataStoreName(dataStoreType.getName());
         String version = dataStoreType.getVersion();
-        com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType requiredProperties = dataStoreType
+        com.stratio.meta2.common.api.generated.datastoreOld.RequiredPropertiesType requiredProperties = dataStoreType
                 .getRequiredProperties();
         OptionalPropertiesType optionalProperties = dataStoreType.getOptionalProperties();
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(name, version, requiredProperties,
                 optionalProperties);
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
+        */
     }
 
     private void persistConnector(ConnectorType connectorType) {
+        // TODO
+        /*
         ConnectorName name = new ConnectorName(connectorType.getConnectorName());
         String version = connectorType.getVersion();
 
@@ -141,14 +136,15 @@ public class APIManager {
         Set<DataStoreName> dataStoreRefs = new HashSet<>();
         dataStoreRefs.add(new DataStoreName(dataStoresName.getDatastore()));
 
-        com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType requiredProperties = connectorType
+        com.stratio.meta2.common.api.generated.connectorOld.RequiredPropertiesType requiredProperties = connectorType
                 .getRequiredProperties();
-        com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType
+        com.stratio.meta2.common.api.generated.connectorOld.OptionalPropertiesType
                 optionalProperties = connectorType.getOptionalProperties();
         SupportedOperationsType supportedOperations = connectorType.getSupportedOperations();
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs, requiredProperties,
                 optionalProperties, supportedOperations);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
+        */
     }
 
 }

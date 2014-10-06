@@ -29,9 +29,9 @@ import java.util.UUID;
 
 import org.testng.annotations.Test;
 
-import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
-import com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType;
-import com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType;
+import com.stratio.meta2.common.api.generated.connectorOld.SupportedOperationsType;
+import com.stratio.meta2.common.api.generated.datastoreOld.OptionalPropertiesType;
+import com.stratio.meta2.common.api.generated.datastoreOld.RequiredPropertiesType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -134,9 +134,9 @@ public class CoordinatorTest extends MetadataManagerTests {
         ConnectorName connectorName = new ConnectorName("connectorTest");
         String connectorVersion = "0.1.0";
         Set<DataStoreName> dataStoreRefs = new HashSet<>();
-        com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType connectorRequiredProperties =
+        com.stratio.meta2.common.api.generated.connectorOld.RequiredPropertiesType connectorRequiredProperties =
                 null;
-        com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType connectorOptionalProperties =
+        com.stratio.meta2.common.api.generated.connectorOld.OptionalPropertiesType connectorOptionalProperties =
                 null;
         SupportedOperationsType supportedOperations = null;
         ConnectorMetadata connectorTest =

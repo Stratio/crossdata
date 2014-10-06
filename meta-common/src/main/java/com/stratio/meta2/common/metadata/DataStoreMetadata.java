@@ -20,21 +20,21 @@ package com.stratio.meta2.common.metadata;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-import com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType;
-import com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType;
+import com.stratio.meta2.common.api.generated.PropertiesType;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.DataStoreName;
 
 public class DataStoreMetadata implements IMetadata {
     private final DataStoreName name;
     private final String version;
-    private final RequiredPropertiesType requiredProperties;
-    private final OptionalPropertiesType othersProperties;
+    private final Set<PropertiesType> requiredProperties;
+    private final Set<PropertiesType> othersProperties;
     private Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs;
 
-    public DataStoreMetadata(DataStoreName name, String version, RequiredPropertiesType requiredProperties,
-            OptionalPropertiesType othersProperties) {
+    public DataStoreMetadata(DataStoreName name, String version, Set<PropertiesType> requiredProperties,
+            Set<PropertiesType> othersProperties) {
         this.name = name;
         this.version = version;
         this.requiredProperties = requiredProperties;
@@ -50,11 +50,11 @@ public class DataStoreMetadata implements IMetadata {
         return version;
     }
 
-    public RequiredPropertiesType getRequiredProperties() {
+    public Set<PropertiesType> getRequiredProperties() {
         return requiredProperties;
     }
 
-    public OptionalPropertiesType getOthersProperties() {
+    public Set<PropertiesType> getOthersProperties() {
         return othersProperties;
     }
 

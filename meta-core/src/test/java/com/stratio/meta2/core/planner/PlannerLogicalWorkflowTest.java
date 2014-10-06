@@ -23,58 +23,15 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
 import com.stratio.meta.common.connector.Operations;
-import com.stratio.meta.common.exceptions.PlanningException;
-import com.stratio.meta.common.logicalplan.Filter;
-import com.stratio.meta.common.logicalplan.Join;
-import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
-import com.stratio.meta.common.logicalplan.Select;
-import com.stratio.meta.common.statements.structures.relationships.Operator;
-import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType;
-import com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType;
-import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
-import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
-import com.stratio.meta2.common.data.ColumnName;
-import com.stratio.meta2.common.data.ConnectorName;
-import com.stratio.meta2.common.data.DataStoreName;
-import com.stratio.meta2.common.data.IndexName;
-import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
-import com.stratio.meta2.common.metadata.ClusterMetadata;
-import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
-import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
-import com.stratio.meta2.common.metadata.ConnectorMetadata;
-import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
-import com.stratio.meta2.common.statements.structures.selectors.IntegerSelector;
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.core.grammar.ParsingTest;
-import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.metadata.MetadataManagerTests;
-import com.stratio.meta2.core.query.ParsedQuery;
-import com.stratio.meta2.core.query.SelectParsedQuery;
-import com.stratio.meta2.core.statements.SelectStatement;
 
 /**
  * Planner test concerning Logical workflow creation.

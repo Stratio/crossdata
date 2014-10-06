@@ -21,8 +21,7 @@ package com.stratio.meta2.common.metadata;
 import java.io.Serializable;
 import java.util.Set;
 
-import com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType;
-import com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType;
+import com.stratio.meta2.common.api.generated.PropertiesType;
 import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
@@ -33,15 +32,15 @@ public class ConnectorMetadata implements IMetadata {
     private final ConnectorName name;
     private final String version;
     private final Set<DataStoreName> dataStoreRefs;
-    private final RequiredPropertiesType requiredProperties;
-    private final OptionalPropertiesType optionalProperties;
-    private final SupportedOperationsType supportedOperations;
+    private final Set<PropertiesType> requiredProperties;
+    private final Set<PropertiesType> optionalProperties;
+    private final Set<SupportedOperationsType> supportedOperations;
     private Status status;
     private Serializable actorRef;
 
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
-            RequiredPropertiesType requiredProperties, OptionalPropertiesType optionalProperties,
-            SupportedOperationsType supportedOperations) {
+            Set<PropertiesType> requiredProperties, Set<PropertiesType> optionalProperties,
+            Set<SupportedOperationsType> supportedOperations) {
         this.name = name;
         this.version = version;
         this.dataStoreRefs = dataStoreRefs;
@@ -63,15 +62,15 @@ public class ConnectorMetadata implements IMetadata {
         return dataStoreRefs;
     }
 
-    public RequiredPropertiesType getRequiredProperties() {
+    public Set<PropertiesType> getRequiredProperties() {
         return requiredProperties;
     }
 
-    public OptionalPropertiesType getOptionalProperties() {
+    public Set<PropertiesType> getOptionalProperties() {
         return optionalProperties;
     }
 
-    public SupportedOperationsType getSupportedOperations() {
+    public Set<SupportedOperationsType> getSupportedOperations() {
         return supportedOperations;
     }
 
