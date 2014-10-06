@@ -83,7 +83,7 @@ public class DropTableStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Table must exist");
+            Assert.fail("TABLE must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

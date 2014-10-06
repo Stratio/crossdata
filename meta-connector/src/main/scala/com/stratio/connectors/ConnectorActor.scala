@@ -29,7 +29,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
   var runningJobs:Map[String,ActorRef]=new ListMap[String,ActorRef]()
 
 
-  //val cluster = Cluster(context.system)
+  //val cluster = CLUSTER(context.system)
   //import cluster.{ scheduler }
   //val heartbeatTask = scheduler.schedule(PeriodicTasksInitialDelay max HeartbeatInterval, HeartbeatInterval, self, HeartbeatTick)
 

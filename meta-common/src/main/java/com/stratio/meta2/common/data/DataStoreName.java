@@ -39,6 +39,6 @@ public class DataStoreName extends FirstLevelName {
     }
 
     @Override public NameType getType() {
-        return NameType.DataStore;
+        return NameType.DATASTORE;
     }
 }

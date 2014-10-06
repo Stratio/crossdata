@@ -54,7 +54,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     }
 
     /**
-     * Connector answers its name.
+     * CONNECTOR answers its name.
      */
     case msg: replyConnectorName => {
       val connectorRef = sender;

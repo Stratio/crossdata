@@ -37,7 +37,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 public class AttachClusterStatement extends MetadataStatement {
 
     /**
-     * Cluster name given by the user. This name will be used to refer to the cluster when creating
+     * CLUSTER name given by the user. This name will be used to refer to the cluster when creating
      * new tables.
      */
     private final ClusterName clusterName;

@@ -45,7 +45,7 @@ public class DetachClusterStatementTest extends BasicValidatorTest{
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, detachClusterStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Cluster must exists");
+            Assert.fail("CLUSTER must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

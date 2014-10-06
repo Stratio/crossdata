@@ -39,7 +39,7 @@ public class ConnectorName extends FirstLevelName {
     }
 
     @Override public NameType getType() {
-        return NameType.Connector;
+        return NameType.CONNECTOR;
     }
 
 }

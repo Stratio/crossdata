@@ -240,7 +240,7 @@ public class Coordinator {
         datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
 
         MetadataManager.MANAGER.createDataStore(datastoreMetadata, false);
-        return CommandResult.createCommandResult("Cluster attached successfully");
+        return CommandResult.createCommandResult("CLUSTER attached successfully");
     }
 
     public void persistCreateCatalog(CatalogMetadata catalog) {
@@ -287,7 +287,7 @@ public class Coordinator {
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
 
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);
-        return CommandResult.createCommandResult("Connector attached successfully");
+        return CommandResult.createCommandResult("CONNECTOR attached successfully");
     }
 
     enum StatementEnum {

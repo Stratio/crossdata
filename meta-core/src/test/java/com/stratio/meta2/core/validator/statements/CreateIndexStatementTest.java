@@ -72,7 +72,7 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Table must exists");
+            Assert.fail("TABLE must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -95,7 +95,7 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Column must exists");
+            Assert.fail("COLUMN must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

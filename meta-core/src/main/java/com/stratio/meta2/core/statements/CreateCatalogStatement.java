@@ -27,14 +27,14 @@ import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 /**
- * Class that models a {@code CREATE CATALOG} statement from the META language. Catalog
- * information will be stored internally as part of the existing metadata. Catalog creation
+ * Class that models a {@code CREATE CATALOG} statement from the META language. CATALOG
+ * information will be stored internally as part of the existing metadata. CATALOG creation
  * in the underlying datastore is done when a table is created in a catalog.
  */
 public class CreateCatalogStatement extends MetadataStatement {
 
     /**
-     * Whether the Catalog should be created only if it not exists.
+     * Whether the CATALOG should be created only if it not exists.
      */
     private final boolean ifNotExists;
 

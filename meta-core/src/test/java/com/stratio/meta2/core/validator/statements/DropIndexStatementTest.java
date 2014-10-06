@@ -90,7 +90,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Index must exist");
+            Assert.fail("INDEX must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

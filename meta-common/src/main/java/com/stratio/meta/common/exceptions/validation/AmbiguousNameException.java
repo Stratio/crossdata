@@ -23,6 +23,6 @@ import com.stratio.meta2.common.data.ColumnName;
 
 public class AmbiguousNameException extends ValidationException {
     public AmbiguousNameException(ColumnName columnName) {
-        super("Column name [" + columnName + "] is ambiguous");
+        super("COLUMN name [" + columnName + "] is ambiguous");
     }
 }

@@ -182,7 +182,7 @@ public class Normalizator {
             case COLUMN:
                 checkColumnSelector((ColumnSelector) selector);
                 if (!columnNames.add(((ColumnSelector) selector).getName())) {
-                    throw new BadFormatException("Column into group by is repeated");
+                    throw new BadFormatException("COLUMN into group by is repeated");
                 }
                 break;
             case ASTERISK:

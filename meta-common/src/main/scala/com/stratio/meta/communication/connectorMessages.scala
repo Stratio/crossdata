@@ -18,7 +18,7 @@
 
 package com.stratio.meta.communication
 
-//Connector messages
+//CONNECTOR messages
 case class Start()
 
 case class Shutdown()
