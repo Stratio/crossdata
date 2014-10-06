@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +57,7 @@ import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
+import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
@@ -104,7 +104,7 @@ public class MetadataManagerTests {
     @BeforeClass
     public void setUp(){
         initializeGrid();
-        Map<FirstLevelName, Serializable> metadataMap = Grid.getInstance().map("meta-test");
+        Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("meta-test");
         Lock lock = Grid.getInstance().lock("meta-test");
         TransactionManager tm = Grid.getInstance().transactionManager("meta-test");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);

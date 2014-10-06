@@ -48,7 +48,7 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ConnectorFactory implements Serializable {
 
-    private final static QName _Connector_QNAME = new QName("", "Connector");
+    private final static QName _Connector_QNAME = new QName("", "CONNECTOR");
     private static final long serialVersionUID = 4399986588512302541L;
 
     /**
@@ -102,7 +102,7 @@ public class ConnectorFactory implements Serializable {
     /**
      * Create an instance of {@link javax.xml.bind.JAXBElement }{@code <}{@link ConnectorType }{@code >}}
      */
-    @XmlElementDecl(namespace = "", name = "Connector")
+    @XmlElementDecl(namespace = "", name = "CONNECTOR")
     public JAXBElement<ConnectorType> createConnector(ConnectorType value) {
         return new JAXBElement<ConnectorType>(_Connector_QNAME, ConnectorType.class, null, value);
     }

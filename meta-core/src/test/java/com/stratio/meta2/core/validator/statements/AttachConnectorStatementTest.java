@@ -18,7 +18,7 @@ public class AttachConnectorStatementTest {
 
     @Test
     public void attachExistingConnector() {
-        String query = "ATTACH Connector CassandraConnector TO Cassandra WITH OPTIONS {'comment':'a comment'}";
+        String query = "ATTACH CONNECTOR CassandraConnector TO Cassandra WITH OPTIONS {'comment':'a comment'}";
 
         AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName
                 ("CassandraConnector"),
@@ -30,7 +30,7 @@ public class AttachConnectorStatementTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("The Connector must not exist");
+            Assert.fail("The CONNECTOR must not exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -40,7 +40,7 @@ public class AttachConnectorStatementTest {
 
     @Test
     public void attachConnectorUnknown() {
-        String query = "ATTACH Connector unknown TO myCluster WITH OPTIONS {'comment':'a comment'}";
+        String query = "ATTACH CONNECTOR unknown TO myCluster WITH OPTIONS {'comment':'a comment'}";
 
         AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName("unknown"),
                 new ClusterName("myCluster"),
@@ -52,7 +52,7 @@ public class AttachConnectorStatementTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Connector must exists");
+            Assert.fail("CONNECTOR must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -62,7 +62,7 @@ public class AttachConnectorStatementTest {
 
     @Test
     public void attachConnectorUnknownCluster() {
-        String query = "ATTACH Connector newConnector TO unknown WITH OPTIONS {'comment':'a comment'}";
+        String query = "ATTACH CONNECTOR newConnector TO unknown WITH OPTIONS {'comment':'a comment'}";
 
         AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName
                 ("CassandraConnector"),
@@ -74,7 +74,7 @@ public class AttachConnectorStatementTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Connector must exists");
+            Assert.fail("CONNECTOR must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -84,7 +84,7 @@ public class AttachConnectorStatementTest {
 
     @Test
     public void attachConnectorEmptyOptions() {
-        String query = "ATTACH Connector CassandraConnector TO Cassandra WITH OPTIONS";
+        String query = "ATTACH CONNECTOR CassandraConnector TO Cassandra WITH OPTIONS";
 
         AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName
                 ("CassandraConnector"),

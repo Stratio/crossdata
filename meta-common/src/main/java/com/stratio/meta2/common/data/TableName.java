@@ -19,7 +19,7 @@
 package com.stratio.meta2.common.data;
 
 /**
- * Table name recognized by the parser. The name may contain:
+ * TABLE name recognized by the parser. The name may contain:
  * <ul>
  * <li>catalog.table</li>
  * <li>table</li>
@@ -81,7 +81,7 @@ public class TableName extends Name {
     }
 
     @Override public NameType getType() {
-        return NameType.Table;
+        return NameType.TABLE;
     }
 
 }

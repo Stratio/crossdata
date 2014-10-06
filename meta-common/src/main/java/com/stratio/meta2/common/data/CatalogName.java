@@ -35,6 +35,6 @@ public class CatalogName extends FirstLevelName {
     }
 
     @Override public NameType getType() {
-        return NameType.Catalog;
+        return NameType.CATALOG;
     }
 }

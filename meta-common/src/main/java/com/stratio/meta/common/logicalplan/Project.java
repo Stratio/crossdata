@@ -33,12 +33,12 @@ import com.stratio.meta2.common.data.TableName;
 public class Project extends TransformationStep {
 
     /**
-     * Cluster name.
+     * CLUSTER name.
      */
     private final ClusterName clusterName;
 
     /**
-     * Table name.
+     * TABLE name.
      */
     private final TableName tableName;
 
@@ -64,7 +64,7 @@ public class Project extends TransformationStep {
      * Create a projection.
      *
      * @param operation   The operation to be applied.
-     * @param tableName   Table name.
+     * @param tableName   TABLE name.
      * @param clusterName The cluster name.
      * @param columnList  List of columns.
      */

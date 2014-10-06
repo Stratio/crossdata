@@ -209,7 +209,7 @@ public class Planner {
     /**
      * Filter the list of connector candidates attached to the cluster that a table belongs to,
      * according to the capabilities required by a logical step.
-     * @param tableName Table name extracted from the first step (see {@link Project}).
+     * @param tableName TABLE name extracted from the first step (see {@link Project}).
      * @param ls Logical Step containing the {@link com.stratio.meta.common.connector.Operations} to be checked.
      * @param candidatesConnectors Map with the Connectors (see {@link com.stratio.meta2.common.metadata.ConnectorMetadata}) that already met the previous
      *                             Operations.

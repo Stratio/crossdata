@@ -37,7 +37,7 @@ public interface IMetadataEngine {
      * Create a catalog in the underlying datastore.
      *
      * @param targetCluster   Target cluster.
-     * @param catalogMetadata Catalog metadata.
+     * @param catalogMetadata CATALOG metadata.
      * @throws UnsupportedException If the operation is not supported.
      * @throws ExecutionException   If the execution fails.
      */
@@ -49,7 +49,7 @@ public interface IMetadataEngine {
      * Create a table in the underlying datastore.
      *
      * @param targetCluster Target cluster.
-     * @param tableMetadata Table metadata.
+     * @param tableMetadata TABLE metadata.
      * @throws UnsupportedException If the operation is not supported.
      * @throws ExecutionException   If the execution fails.
      */
@@ -80,7 +80,7 @@ public interface IMetadataEngine {
             ExecutionException;
 
     /**
-     * Create an Index in the underlying datastore.
+     * Create an INDEX in the underlying datastore.
      *
      * @param targetCluster Target cluster.
      * @param indexMetadata The index.

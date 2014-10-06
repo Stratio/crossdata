@@ -38,7 +38,7 @@ public enum ExecutionType {
     //IQuery
     SELECT,
 
-    //Connector operations
+    //CONNECTOR operations
     ATTACH_CLUSTER,
     DETACH_CLUSTER,
     ATTACH_CONNECTOR,

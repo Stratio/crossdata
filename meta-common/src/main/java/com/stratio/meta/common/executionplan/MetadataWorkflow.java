@@ -112,7 +112,7 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         return indexMetadata;
     }
 
-    public MetadataOperation getMetadataOperation(String queryId){
+    public MetadataOperation createMetadataOperationMessage(String queryId){
         MetadataOperation result = null;
         if(ExecutionType.CREATE_CATALOG.equals(this.executionType)){
             result = new CreateCatalog(queryId, this.clusterName, this.catalogMetadata);

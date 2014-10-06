@@ -36,7 +36,7 @@ case class Reply(msg: String)
 
 case class Disconnect(userId: String)
 
-//Connector messages
+//CONNECTOR messages
 case class ConnectToConnector(msg: String)
 
 case class DisconnectFromConnector(msg: String)
@@ -56,7 +56,7 @@ case class replyConnectorName(name: String)
 case class getConnectorName()
 
 /**
- * Parent class for all operations to be executed on Connector Actors.
+ * Parent class for all operations to be executed on CONNECTOR Actors.
  * @param queryId The query identifier.
  */
 class Operation(queryId: String)

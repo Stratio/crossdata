@@ -54,7 +54,7 @@ public class ManifestTest {
 
         // REQUIRED PARAMETERS
         sb.append("Required parameters: ").append(System.lineSeparator());
-        sb.append("\t").append("Cluster: ").append(System.lineSeparator());
+        sb.append("\t").append("CLUSTER: ").append(System.lineSeparator());
         sb.append("\t").append("\t").append("Name: ").append("string").append(System.lineSeparator());
         sb.append("\t").append("\t").append("Hosts: ").append(System.lineSeparator());
         sb.append("\t").append("\t").append("\t").append("Host: ").append("string").append(System.lineSeparator());
