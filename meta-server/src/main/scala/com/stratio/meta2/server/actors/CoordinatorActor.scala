@@ -100,7 +100,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
       val clientActor = executionInfo.asInstanceOf[ExecutionInfo].getSender
       if(executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess){
-        coordinator.persist(metadataWorkflowOption.get)
+        coordinator.persist(executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.asInstanceOf[MetadataWorkflow ])
         ExecutionManager.MANAGER.deleteEntry(queryId)
       }
       clientActor.asInstanceOf[ActorRef] ! result
