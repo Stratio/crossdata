@@ -16,8 +16,9 @@
  * under the License.
  */
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.ActorSystem
 import akka.pattern.ask
+import akka.routing.RoundRobinRouter
 import akka.util.Timeout
 import com.stratio.connectors.ConnectorActor
 import com.stratio.connectors.config.ConnectConfig
@@ -41,30 +42,62 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory{
 
   override lazy val logger = Logger.getLogger(classOf[ConnectorActorTest])
   lazy val system1 = ActorSystem(clusterName, config)
-  implicit val timeout = Timeout(5 seconds)
+  implicit val timeout = Timeout(10 seconds)
 
    test("Send MetadataInProgressQuery to Connector") {
 
+     val queryId="queryId"
      val m = mock[IConnector]
      val me = mock[IMetadataEngine]
-     val slowfunc=() => { Thread.sleep(10000);QueryResult.createSuccessQueryResult() }
-     (me.createTable _).expects(*,*).returning(slowfunc())
+     val slowfunc=() => {
+       println("very slow function")
+       for(i<-1 to 5){
+         Thread.sleep(1000)
+         println(i+" seconds gone by")
+       }
+       QueryResult.createSuccessQueryResult()
+     }
+     //(me.createTable _).expects(*,*).onCall((ClusterName,TableMetadata)=>{ slowfunc() }).returning(  QueryResult
+       //.createSuccessQueryResult() )
+     (me.createTable _).expects(*,*).onCall((ClusterName,TableMetadata)=>{ slowfunc() })
      (m.getMetadataEngine _).expects().returning(me)
-     val message=CreateTable("queryId",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"), null, null,null,null,null,null) )
 
-     val connectorActor= system1.actorOf(ConnectorActor.props("myConnector",m), "connectorActor")
+     (me.createTable _).expects(*,*).onCall((ClusterName,TableMetadata)=>{ slowfunc() })
+     (m.getMetadataEngine _).expects().returning(me)
+
+     val connectorActor= system1.actorOf(ConnectorActor.props("myConnector",
+       m).withRouter(RoundRobinRouter(nrOfInstances=5)), "connectorActorTest")
+
+     val message=CreateTable(queryId,new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"), null, null,null,null,null,null) )
+     val message2=CreateTable(queryId+"2",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"), null, null,null,null,null,null) )
+     /*
      class ExecutorForwarder extends Actor {
-       var father:ActorRef=null
        def receive = {
-         case "start"=> connectorActor forward message
+         case "start" => connectorActor forward message
          case _ =>  println("error; we shouldn't get this message")
        }
      }
      val executorForwarder=system1.actorOf(Props(new ExecutorForwarder()), "executorForwarder")
      executorForwarder ! "start"
+     var future = ask(executorForwarder, "start")
+     */
+
+     Thread.sleep(3000)
+     println("sending message 1")
      var future = ask(connectorActor, message)
-     val result = Await.result(future, 3 seconds).asInstanceOf[MetadataResult]
-     assert(result.getQueryId()=="queryId")
+     println("sending message 2")
+     var future2 = ask(connectorActor, message2)
+     println("messages sent")
+
+     val result = Await.result(future, 12 seconds).asInstanceOf[MetadataResult]
+     println("result.getQueryId()="+result.getQueryId())
+     assert(result.getQueryId()==queryId)
+
+     val result2 = Await.result(future2, 16 seconds).asInstanceOf[MetadataResult]
+     println("result.getQueryId()="+result2.getQueryId())
+     assert(result2.getQueryId()==queryId+"2")
+
+
   }
 
 }

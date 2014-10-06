@@ -1,13 +1,15 @@
 package com.stratio.connectors
 
-import akka.actor.{ActorLogging, ActorRef, Props}
+import akka.actor._
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
+import akka.util.Timeout
 import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.common.result.{CommandResult, MetadataResult, Result}
 import com.stratio.meta.communication._
 
 import scala.collection.mutable.{ListMap, Map}
+import scala.concurrent.duration.DurationInt
 
 object State extends Enumeration {
   type state = Value
@@ -22,26 +24,23 @@ object ConnectorActor {
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with ActorLogging {
 //class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
 
+  implicit val timeout=Timeout(20 seconds)
+
   //TODO: test if it works with one thread and multiple threads
   val connector = conn
   var state = State.Stopped
-  var supervisorActorRef: ActorRef = null
+  var parentActorRef: ActorRef = null
   var runningJobs:Map[String,ActorRef]=new ListMap[String,ActorRef]()
 
-
-  //val cluster = CLUSTER(context.system)
-  //import cluster.{ scheduler }
-  //val heartbeatTask = scheduler.schedule(PeriodicTasksInitialDelay max HeartbeatInterval, HeartbeatInterval, self, HeartbeatTick)
-
-
-  // subscribe to cluster changes, re-subscribe when restart
+  //val router = context.actorOf(Props(new ExecutorActor).withRouter(RoundRobinRouter(5)))
+  //val router = context.actorOf(Props(new ExecutorActor).withRouter(RoundRobinRouter(5,
+  //supervisorStrategy = OneForOneStrategy( maxNrOfRetries = 2){ case _: Exception => Restart })), name = "router")
+  //router ! CurrentRoutees
 
   override def handleHeartbeat(heartbeat: HeartbeatSig) = {
-    println("heartbeat signal")
+    //println("receiving heartbeat signal")
     runningJobs.foreach{
-      keyval=>
-        keyval._2 ! IAmAlive(keyval._1)
-        log.debug("ConnectorActor sends an ImAlive message (job="+keyval._1+")") //TODO: delete line after testing
+      keyval=> keyval._2 ! IAmAlive(keyval._1)
     }
   }
 
@@ -51,13 +50,17 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
 
-  //override def receive = super.receive orElse{
-  override def receive = {
+  override def receive = super.receive orElse{
+  //override def receive = {
 
+
+    //case RouterRoutees(routees)=> routees foreach context.watch
+
+    //case heartbeat: HeartbeatSig =>  handleHeartbeat(heartbeat)
 
     case _: com.stratio.meta.communication.Start => {
       //context.actorSelection(RootActorPath(mu.member.address) / "user" / "coordinatorActor")
-      supervisorActorRef = sender
+      parentActorRef = sender
     }
 
     case connectRequest: com.stratio.meta.communication.Connect => {
@@ -78,6 +81,8 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
         val result=connector.getQueryEngine().execute(ex.workflow)
         result.setQueryId(ex.queryId)
         sender ! result
+        //router forward (connector.getQueryEngine(),ex)
+
       } catch {
         case ex: Exception => {
           val result=Result.createExecutionErrorResult(ex.getStackTraceString)
@@ -95,6 +100,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       try {
         val opclass=metadataOp.getClass().toString().split('.')
         val eng = connector.getMetadataEngine()
+
         opclass( opclass.length -1 ) match{
         case "CreateTable" =>{
           qId=metadataOp.asInstanceOf[CreateTable].queryId
@@ -141,7 +147,9 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       sender ! result
     }
 
-    case _:Result =>
+    case result:Result =>
+      println("connectorActor receives Result with ID="+result.getQueryId())
+      parentActorRef ! result
       //TODO:  ManagementWorkflow
 
     case storageOp: StorageOperation => {
@@ -211,3 +219,4 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     this.state = State.Stopped
   }
 }
+
