@@ -30,9 +30,19 @@ import com.stratio.meta.common.logicalplan.LogicalStep;
 public class ExecutionWorkflow implements Serializable {
 
     /**
+     * Actor reference of the query sender
+     */
+    private Serializable sender;
+
+    /**
+     * Whether the server should save  information or not once the execution succeed
+     */
+    private boolean persistOnSuccess = false;
+
+    /**
      * The target actor reference associated with the connector.
      */
-    private final Serializable actorRef;
+    private Serializable actorRef;
 
     /**
      * The type of operation to be executed.
@@ -63,7 +73,8 @@ public class ExecutionWorkflow implements Serializable {
      * @param executionType Type of execution.
      * @param type     Type of results.
      */
-    public ExecutionWorkflow(String queryId, Serializable actorRef, ExecutionType executionType, ResultType type) {
+    public ExecutionWorkflow(String queryId, Serializable actorRef, ExecutionType executionType,
+            ResultType type) {
         this.actorRef = actorRef;
         this.executionType = executionType;
         this.resultType = type;
@@ -85,6 +96,22 @@ public class ExecutionWorkflow implements Serializable {
         return triggerStep;
     }
 
+    public Serializable getSender() {
+        return sender;
+    }
+
+    public boolean isPersistOnSuccess() {
+        return persistOnSuccess;
+    }
+
+    public void setSender(Serializable sender) {
+        this.sender = sender;
+    }
+
+    public void setPersistOnSuccess(boolean persistOnSuccess) {
+        this.persistOnSuccess = persistOnSuccess;
+    }
+
     public void setTriggerStep(LogicalStep triggerStep) {
         this.triggerStep = triggerStep;
     }
@@ -95,5 +122,9 @@ public class ExecutionWorkflow implements Serializable {
 
     public void setNextExecutionWorkflow(ExecutionWorkflow nextExecutionWorkflow) {
         this.nextExecutionWorkflow = nextExecutionWorkflow;
+    }
+
+    public void setActorRef(Serializable actorRef) {
+        this.actorRef = actorRef;
     }
 }

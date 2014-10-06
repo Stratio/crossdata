@@ -38,6 +38,7 @@ import com.stratio.meta2.common.api.generated.datastore.HostsType;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.FirstLevelName;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
+import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.core.grid.Grid;
 import com.stratio.meta2.core.grid.GridInitializer;
 
@@ -80,7 +81,7 @@ public class MetadataManagerTests {
     @BeforeClass
     public void setUp() throws Exception {
         initializeGrid();
-        Map<FirstLevelName, Serializable> metadataMap = Grid.getInstance().map("meta-test");
+        Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("meta-test");
         Lock lock = Grid.getInstance().lock("meta-test");
         TransactionManager tm = Grid.getInstance().transactionManager("meta-test");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);

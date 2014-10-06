@@ -26,14 +26,16 @@ import javax.transaction.TransactionManager;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.meta2.core.normalizer.Normalizer;
 import com.stratio.meta2.common.data.FirstLevelName;
+import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.core.api.APIManager;
 import com.stratio.meta2.core.connector.ConnectorManager;
 import com.stratio.meta2.core.coordinator.Coordinator;
+import com.stratio.meta2.core.execution.ExecutionManager;
 import com.stratio.meta2.core.grid.Grid;
 import com.stratio.meta2.core.grid.GridInitializer;
 import com.stratio.meta2.core.metadata.MetadataManager;
+import com.stratio.meta2.core.normalizer.Normalizer;
 import com.stratio.meta2.core.parser.Parser;
 import com.stratio.meta2.core.planner.Planner;
 import com.stratio.meta2.core.validator.Validator;
@@ -57,7 +59,7 @@ public class Engine {
      */
     private final Validator validator;
     /**
-     * The {@link Planner} responsible for planification.
+     * The {@link Planner} responsible for planning.
      */
     private final Planner planner;
     /**
@@ -85,11 +87,17 @@ public class Engine {
             throw new RuntimeException("Unable to start grid: " + config, e);
         }
 
-        Map<FirstLevelName, Serializable> metadataMap = grid.map("meta");
-        Lock lock = grid.lock("meta");
-        TransactionManager tm = grid.transactionManager("meta");
-
+        // Initialize MetadataManager
+        Map<FirstLevelName, IMetadata> metadataMap = grid.map("metadata");
+        Lock lock = grid.lock("metadata");
+        TransactionManager tm = grid.transactionManager("metadata");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
+
+        // Initialize ExecutionManager
+        Map<String, Serializable> executionMap = grid.map("executionData");
+        Lock lockExecution = grid.lock("executionData");
+        TransactionManager tmExecution = grid.transactionManager("executionData");
+        ExecutionManager.MANAGER.init(executionMap, lockExecution, tmExecution);
 
         parser = new Parser();
         validator = new Validator();
