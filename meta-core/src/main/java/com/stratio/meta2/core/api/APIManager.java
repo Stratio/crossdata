@@ -100,7 +100,7 @@ public class APIManager {
             MetadataResult.class.cast(result).setTableList(new ArrayList(tableList.keySet()));
             //} else {
             result =
-                    Result.createExecutionErrorResult("Catalog " + cmd.params().get(0) + " not found");
+                    Result.createExecutionErrorResult("CATALOG " + cmd.params().get(0) + " not found");
             //}
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());

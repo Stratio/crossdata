@@ -85,6 +85,11 @@ public enum Operations {
     SELECT_INNER_JOIN,
 
     /**
+     * The engine supports inner joins with partial results.
+     */
+    SELECT_INNER_JOIN_PARTIALS_RESULTS,
+
+    /**
      * The engine supports order by clauses.
      */
     SELECT_ORDER_BY,

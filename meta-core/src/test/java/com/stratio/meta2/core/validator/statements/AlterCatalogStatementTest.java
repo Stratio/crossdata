@@ -44,7 +44,7 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Catalog options must exist");
+            Assert.fail("CATALOG options must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -63,7 +63,7 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Catalog must exist");
+            Assert.fail("CATALOG must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

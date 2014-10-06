@@ -141,7 +141,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Catalog must exists");
+            Assert.fail("CATALOG must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

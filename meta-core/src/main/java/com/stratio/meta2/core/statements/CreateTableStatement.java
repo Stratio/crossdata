@@ -86,7 +86,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     /**
      * Class constructor.
      *
-     * @param tableType    Table type {@link com.stratio.meta2.common.metadata.structures.TableType}.
+     * @param tableType    TABLE type {@link com.stratio.meta2.common.metadata.structures.TableType}.
      * @param tableName    The name of the table.
      * @param columns      A map with the name of the columns in the table and the associated data type.
      * @param partitionKey The list of columns that are part of the primary key.

@@ -49,7 +49,7 @@ public class DetachConnectorStatementTest extends BasicValidatorTest{
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, detachConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Connector must exist");
+            Assert.fail("CONNECTOR must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

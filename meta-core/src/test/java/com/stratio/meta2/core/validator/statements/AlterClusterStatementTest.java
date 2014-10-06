@@ -69,7 +69,7 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Cluster options must exists");
+            Assert.fail("CLUSTER options must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -89,7 +89,7 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Cluster must exists");
+            Assert.fail("CLUSTER must exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

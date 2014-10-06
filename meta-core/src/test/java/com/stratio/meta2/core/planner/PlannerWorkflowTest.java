@@ -137,11 +137,11 @@ public class PlannerWorkflowTest extends MetadataManagerTests {
                 targetProject = p;
             }
         }
-        assertNotNull(targetProject, "Table " + tableName + " not found.");
+        assertNotNull(targetProject, "TABLE " + tableName + " not found.");
         assertEquals(columns.length, targetProject.getColumnList().size(), "Number of columns differs.");
         List<String> columnList = Arrays.asList(columns);
         for (ColumnName cn : targetProject.getColumnList()) {
-            assertTrue(columnList.contains(cn.getQualifiedName()), "Column " + cn + " not found");
+            assertTrue(columnList.contains(cn.getQualifiedName()), "COLUMN " + cn + " not found");
         }
         return targetProject;
     }
@@ -377,14 +377,14 @@ public class PlannerWorkflowTest extends MetadataManagerTests {
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
 
         // Fill in data for METADATAMANAGER
-            // Create & add DataStore
+            // Create & add DATASTORE
             final String DATASTORE_NAME = "dataStoreTest";
             DataStoreName dataStoreName = new DataStoreName(DATASTORE_NAME);
             final String version = "0.1.0";
             insertDataStore(DATASTORE_NAME, "production");
 
 
-            // Create & add Connector
+            // Create & add CONNECTOR
         ConnectorName connectorName = new ConnectorName("ConnectorTest");
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         RequiredPropertiesType requiredPropertiesForConnector = new RequiredPropertiesType();
@@ -400,7 +400,7 @@ public class PlannerWorkflowTest extends MetadataManagerTests {
         connectorMetadata.setActorRef(null);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
 
-            // Create & add Cluster
+            // Create & add CLUSTER
         Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         Map<Selector, Selector> properties = new HashMap<>();
@@ -410,13 +410,13 @@ public class PlannerWorkflowTest extends MetadataManagerTests {
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options, connectorAttachedRefs);
         MetadataManager.MANAGER.createCluster(clusterMetadata);
 
-            // Create & add Catalog
+            // Create & add CATALOG
         CatalogName catalogName = new CatalogName("demo");
         Map<TableName, TableMetadata> catalogTables = new HashMap<>();
         CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, catalogTables);
         MetadataManager.MANAGER.createCatalog(catalogMetadata);
 
-            // Create & add Table
+            // Create & add TABLE
         Map<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
         ColumnName columnName = new ColumnName(tableName, "id");
         Integer[] parameters = {25};

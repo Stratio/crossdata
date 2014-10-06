@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -27,6 +28,7 @@ import com.stratio.meta.common.exceptions.PlanningException;
 import com.stratio.meta.common.executionplan.ExecutionType;
 import com.stratio.meta.common.executionplan.ExecutionWorkflow;
 import com.stratio.meta.common.executionplan.MetadataWorkflow;
+import com.stratio.meta.common.executionplan.QueryWorkflow;
 import com.stratio.meta.common.executionplan.ResultType;
 import com.stratio.meta.common.executionplan.StorageWorkflow;
 import com.stratio.meta.common.logicalplan.Filter;
@@ -78,25 +80,20 @@ public class Planner {
     private static final Logger LOG = Logger.getLogger(Planner.class);
 
     /**
-     * Create a PlannedQuery with the {@link com.stratio.meta.common.logicalplan.LogicalWorkflow}
-     * required to execute the user statement. This method is intended to be used only with Select
-     * statements as any other can be directly executed.
+     * Define a logical workflow that represents the operations required for executing the {@code SELECT} query sent
+     * by the user. After that, an ExecutionWorkflow is creating determining which connectors will execute the
+     * different elements of the original query.
      *
-     * @param query A {@link com.stratio.meta2.core.query.NormalizedQuery}.
-     * @return A {@link com.stratio.meta2.core.query.PlannedQuery}.
+     * @param query A {@link com.stratio.meta2.core.query.SelectValidatedQuery}.
+     * @return A {@link com.stratio.meta2.core.query.SelectPlannedQuery}.
+     * @throws com.stratio.meta.common.exceptions.PlanningException If the query cannot be planned.
      */
-    public SelectPlannedQuery planQuery(SelectValidatedQuery query) {
-        //Build the workflow.
-        LogicalWorkflow workflow = buildWorkflow((SelectValidatedQuery) query);
-
-        //TODO set queryID for Execution query.getQueryId()
-
+    public SelectPlannedQuery planQuery(SelectValidatedQuery query) throws PlanningException {
+        LogicalWorkflow workflow = buildWorkflow(query);
         //Plan the workflow execution into different connectors.
-        ExecutionWorkflow executionWorkflow = null;
-
+        ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(workflow);
         //Return the planned query.
-        SelectPlannedQuery pq = new SelectPlannedQuery((SelectValidatedQuery) query, executionWorkflow);
-
+        SelectPlannedQuery pq = new SelectPlannedQuery(query, executionWorkflow);
         return pq;
     }
 
@@ -110,6 +107,11 @@ public class Planner {
         return new StoragePlannedQuery(query, executionWorkflow);
     }
 
+    /**
+     * Build a Logical workflow for the incoming validated query.
+     * @param query A valid query.
+     * @return A {@link com.stratio.meta.common.logicalplan.LogicalWorkflow}
+     */
     protected LogicalWorkflow buildWorkflow(ValidatedQuery query) {
         LogicalWorkflow result = null;
         if (query instanceof SelectValidatedQuery) {
@@ -139,6 +141,30 @@ public class Planner {
             tables.add(Project.class.cast(ls).getTableName());
         }
         return tables;
+    }
+
+
+    protected void defineExecutionWorkflow(LogicalWorkflow workflow) {
+        List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
+        //Get the list of connector attached to the clusters that contain the required tables.
+        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
+                .getAttachedConnectors(Status.ONLINE, tables);
+        List<ExecutionWorkflow> executionWorkflows = new ArrayList<>();
+        Map<UnionStep, List<String>> joinActors = new HashMap<>();
+
+        //Refine the list of available connectors and determine which connector to be used.
+        for (LogicalStep ls : workflow.getInitialSteps()) {
+            updateExecutionWorkflow(executionWorkflows, joinActors,
+                    ls, candidatesConnectors.get(Project.class.cast(ls).getTableName().getQualifiedName()));
+        }
+    }
+
+    protected void updateExecutionWorkflow(
+            List<ExecutionWorkflow> executionWorkflows,
+            Map<UnionStep, List<String>> joinActors,
+            LogicalStep initial,
+            List<ConnectorMetadata> connectors){
+        //QueryWorkflow workflow = new QueryWorkflow();
     }
 
     protected ConnectorMetadata findMoreSuitableConnector(Map<TableName, List<ConnectorMetadata>> candidatesConnectors)
@@ -183,7 +209,7 @@ public class Planner {
     /**
      * Filter the list of connector candidates attached to the cluster that a table belongs to,
      * according to the capabilities required by a logical step.
-     * @param tableName Table name extracted from the first step (see {@link Project}).
+     * @param tableName TABLE name extracted from the first step (see {@link Project}).
      * @param ls Logical Step containing the {@link com.stratio.meta.common.connector.Operations} to be checked.
      * @param candidatesConnectors Map with the Connectors (see {@link com.stratio.meta2.common.metadata.ConnectorMetadata}) that already met the previous
      *                             Operations.

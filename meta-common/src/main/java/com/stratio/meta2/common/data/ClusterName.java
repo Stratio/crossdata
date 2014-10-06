@@ -35,7 +35,7 @@ public class ClusterName extends FirstLevelName {
     }
 
     @Override public NameType getType() {
-        return NameType.Cluster;
+        return NameType.CLUSTER;
     }
 
 }

@@ -43,7 +43,7 @@ public abstract class MetaStatement implements IStatement {
     protected boolean catalogInc = false;
 
     /**
-     * Catalog specified in the user provided statement.
+     * CATALOG specified in the user provided statement.
      */
     protected CatalogName catalog = null;
 

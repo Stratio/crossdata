@@ -35,7 +35,7 @@ public class DropConnectorStatementTest extends BasicValidatorTest {
 
     @Test
     public void validateOk() {
-        String query = "DROP Connector CassandraConnector;";
+        String query = "DROP CONNECTOR CassandraConnector;";
         DropConnectorStatement dropConnectorStatement = new DropConnectorStatement("CassandraConnector");
         Validator validator = new Validator();
 
@@ -54,7 +54,7 @@ public class DropConnectorStatementTest extends BasicValidatorTest {
 
     @Test
     public void validateIfNotExists() {
-        String query = "DROP Connector CassandrorConnector;";
+        String query = "DROP CONNECTOR CassandrorConnector;";
         DropConnectorStatement dropConnectorStatement = new DropConnectorStatement("CassandrorConnector");
 
         Validator validator = new Validator();
@@ -63,7 +63,7 @@ public class DropConnectorStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropConnectorStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Connector must exist");
+            Assert.fail("CONNECTOR must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

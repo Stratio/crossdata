@@ -68,7 +68,7 @@ public class DescribeStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Catalog must exist");
+            Assert.fail("CATALOG must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -79,7 +79,7 @@ public class DescribeStatementTest extends BasicValidatorTest {
 
     @Test
     public void describeTable() {
-        String query = "Describe Table demo.users;";
+        String query = "Describe TABLE demo.users;";
         DescribeStatement describeStatement = new DescribeStatement(DescribeType.TABLE);
         describeStatement.setTableName(new TableName("demo","users"));
         Validator validator = new Validator();
@@ -110,7 +110,7 @@ public class DescribeStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Table must exist");
+            Assert.fail("TABLE must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

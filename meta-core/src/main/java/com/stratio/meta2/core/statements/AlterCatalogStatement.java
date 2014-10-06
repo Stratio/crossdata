@@ -27,7 +27,7 @@ import com.stratio.meta2.core.validator.Validation;
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 /**
- * Class that models an {@code ALTER Catalog} statement from the META language.
+ * Class that models an {@code ALTER CATALOG} statement from the META language.
  */
 public class AlterCatalogStatement extends MetadataStatement {
 

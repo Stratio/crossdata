@@ -19,7 +19,6 @@
 package com.stratio.meta2.core.validator;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,17 +50,21 @@ import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
+import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.IndexType;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.core.grammar.ParsingTest;
 import com.stratio.meta2.core.grid.Grid;
 import com.stratio.meta2.core.grid.GridInitializer;
 import com.stratio.meta2.core.metadata.MetadataManager;
 
 public class BasicValidatorTest {
 
-    static Map<FirstLevelName, Serializable> metadataMap;
+    protected static final ParsingTest pt = new ParsingTest();
+    protected static MetadataManager metadataManager = null;
+    static Map<FirstLevelName, IMetadata> metadataMap;
     private static String path = "";
 
     private static CatalogMetadata generateCatalogsMetadata() {
