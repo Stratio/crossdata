@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -27,6 +28,7 @@ import com.stratio.meta.common.exceptions.PlanningException;
 import com.stratio.meta.common.executionplan.ExecutionType;
 import com.stratio.meta.common.executionplan.ExecutionWorkflow;
 import com.stratio.meta.common.executionplan.MetadataWorkflow;
+import com.stratio.meta.common.executionplan.QueryWorkflow;
 import com.stratio.meta.common.executionplan.ResultType;
 import com.stratio.meta.common.executionplan.StorageWorkflow;
 import com.stratio.meta.common.logicalplan.Filter;
@@ -139,6 +141,30 @@ public class Planner {
             tables.add(Project.class.cast(ls).getTableName());
         }
         return tables;
+    }
+
+
+    protected void defineExecutionWorkflow(LogicalWorkflow workflow) {
+        List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
+        //Get the list of connector attached to the clusters that contain the required tables.
+        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
+                .getAttachedConnectors(Status.ONLINE, tables);
+        List<ExecutionWorkflow> executionWorkflows = new ArrayList<>();
+        Map<UnionStep, List<String>> joinActors = new HashMap<>();
+
+        //Refine the list of available connectors and determine which connector to be used.
+        for (LogicalStep ls : workflow.getInitialSteps()) {
+            updateExecutionWorkflow(executionWorkflows, joinActors,
+                    ls, candidatesConnectors.get(Project.class.cast(ls).getTableName().getQualifiedName()));
+        }
+    }
+
+    protected void updateExecutionWorkflow(
+            List<ExecutionWorkflow> executionWorkflows,
+            Map<UnionStep, List<String>> joinActors,
+            LogicalStep initial,
+            List<ConnectorMetadata> connectors){
+        //QueryWorkflow workflow = new QueryWorkflow();
     }
 
     protected ConnectorMetadata findMoreSuitableConnector(Map<TableName, List<ConnectorMetadata>> candidatesConnectors)
