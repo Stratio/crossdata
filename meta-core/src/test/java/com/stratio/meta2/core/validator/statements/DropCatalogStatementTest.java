@@ -83,7 +83,7 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropCatalogStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Catalog must exist");
+            Assert.fail("CATALOG must exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

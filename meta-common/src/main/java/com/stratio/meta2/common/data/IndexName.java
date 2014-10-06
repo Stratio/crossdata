@@ -100,7 +100,7 @@ public class IndexName extends Name {
     }
 
     @Override public NameType getType() {
-        return NameType.Index;
+        return NameType.INDEX;
     }
 
 }

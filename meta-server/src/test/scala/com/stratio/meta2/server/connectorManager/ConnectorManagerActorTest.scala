@@ -56,8 +56,8 @@ class ConnectorManagerActorTest extends ActorReceiveUtils with FunSuiteLike with
       expectMsg("Ok") // bounded to 1 second
 
       //val m = mock[IConnector]
-      //(m.getConnectorName _).expects().returning("My New Connector")
-      //assert(m.getConnectorName().equals("My New Connector"))
+      //(m.getConnectorName _).expects().returning("My New CONNECTOR")
+      //assert(m.getConnectorName().equals("My New CONNECTOR"))
       */
     }
   }

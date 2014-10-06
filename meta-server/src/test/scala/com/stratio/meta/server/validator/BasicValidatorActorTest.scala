@@ -167,28 +167,28 @@ class BasicValidatorActorTest extends ActorReceiveUtils with FunSuiteLike with B
   test ("Insert into non-existing table"){
     within(7000 millis){
       val msg="insert into demo (field1, field2) values ('test1','text2');"
-      executeStatement(msg, "ks_demo", false, "Table demo does not exist.")
+      executeStatement(msg, "ks_demo", false, "TABLE demo does not exist.")
     }
   }
 
   test ("Select from non-existing table"){
   within(7000 millis){
       val msg="select * from unknown ;"
-      executeStatement(msg, "ks_demo", false, "Table unknown does not exist.")
+      executeStatement(msg, "ks_demo", false, "TABLE unknown does not exist.")
     }
   }
 
   test ("Create table"){
     within(5000 millis){
       val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
-      executeStatement(msg, "ks_demo", true, "Table should be created.")
+      executeStatement(msg, "ks_demo", true, "TABLE should be created.")
     }
   }
 
   test ("Create existing table"){
     within(7000 millis){
       val msg="create TABLE demo (field1 varchar PRIMARY KEY , field2 varchar);"
-      executeStatement(msg, "ks_demo", false, "Table already exists.")
+      executeStatement(msg, "ks_demo", false, "TABLE already exists.")
     }
   }
 

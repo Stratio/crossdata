@@ -38,9 +38,10 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
     case query: MetadataValidatedQuery => {
       println("\n\n\ngetting MetadataValidatedQuery; sending ack to "+sender+"\n\n\n")
       val timer = initTimer()
-      val planned = planner.planQuery(query)
+      //val planned = planner.planQuery(query)
       finishTimer(timer)
-      coordinator forward planned
+      //coordinator forward planned
+      //TODO plan metadata queries
 
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
       sender ! ack

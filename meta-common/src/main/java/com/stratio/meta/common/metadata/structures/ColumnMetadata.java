@@ -45,7 +45,7 @@ public class ColumnMetadata implements Serializable {
     private String columnAlias;
 
     /**
-     * Column type.
+     * COLUMN type.
      */
     private ColumnType type;
 
@@ -53,7 +53,7 @@ public class ColumnMetadata implements Serializable {
      * Class constructor.
      *
      * @param tableName  Parent table name.
-     * @param columnName Column name.
+     * @param columnName COLUMN name.
      */
     public ColumnMetadata(String tableName, String columnName) {
         this.tableName = tableName;

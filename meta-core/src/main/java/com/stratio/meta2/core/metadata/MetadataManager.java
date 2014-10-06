@@ -29,6 +29,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
+import com.stratio.meta.common.result.QueryStatus;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -44,6 +45,7 @@ import com.stratio.meta2.common.metadata.ClusterMetadata;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
+import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.metadata.ColumnMetadata;
 
@@ -52,7 +54,7 @@ public enum MetadataManager {
 
     private boolean isInit = false;
 
-    private Map<FirstLevelName, Serializable> metadata;
+    private Map<FirstLevelName, IMetadata> metadata;
     private Lock writeLock;
     private TransactionManager tm;
 
@@ -65,25 +67,25 @@ public enum MetadataManager {
     public boolean exists(Name name) {
         boolean result = false;
         switch (name.getType()) {
-        case Catalog:
+        case CATALOG:
             result = exists((CatalogName) name);
             break;
-        case Cluster:
+        case CLUSTER:
             result = exists((ClusterName) name);
             break;
-        case Column:
+        case COLUMN:
             result = exists((ColumnName) name);
             break;
-        case Connector:
+        case CONNECTOR:
             result = exists((ConnectorName) name);
             break;
-        case DataStore:
+        case DATASTORE:
             result = exists((DataStoreName) name);
             break;
-        case Table:
+        case TABLE:
             result = exists((TableName) name);
             break;
-        case Index:
+        case INDEX:
             result = exists((IndexName) name);
             break;
         }
@@ -146,7 +148,7 @@ public enum MetadataManager {
         return result;
     }
 
-    public synchronized void init(Map<FirstLevelName, Serializable> metadata, Lock writeLock, TransactionManager tm) {
+    public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock, TransactionManager tm) {
         if (metadata != null && writeLock != null) {
             this.metadata = metadata;
             this.writeLock = writeLock;
@@ -158,10 +160,16 @@ public enum MetadataManager {
     }
 
     public void createCatalog(CatalogMetadata catalogMetadata) {
+        createCatalog(catalogMetadata, true);
+    }
+
+    public void createCatalog(CatalogMetadata catalogMetadata, boolean unique) {
         shouldBeInit();
         try {
             writeLock.lock();
-            shouldBeUnique(catalogMetadata.getName());
+            if(unique){
+                shouldBeUnique(catalogMetadata.getName());
+            }
             beginTransaction();
             metadata.put(catalogMetadata.getName(), catalogMetadata);
             commitTransaction();
@@ -197,7 +205,7 @@ public enum MetadataManager {
                     ((CatalogMetadata) metadata.get(tableMetadata.getName().getCatalogName()));
 
             if (catalogMetadata.getTables().containsKey(tableMetadata.getName()) && unique) {
-                throw new MetadataManagerException("Table [" + tableMetadata.getName() + "] already exists");
+                throw new MetadataManagerException("TABLE [" + tableMetadata.getName() + "] already exists");
             }
 
             catalogMetadata.getTables().put(tableMetadata.getName(), tableMetadata);
@@ -369,6 +377,13 @@ public enum MetadataManager {
         shouldExist(name);
         TableMetadata tableMetadata = this.getTable(name.getTableName());
         return tableMetadata.getColumns().get(name);
+    }
+
+    public void setQueryStatus(CatalogName catalogName, QueryStatus queryStatus, String queryId){
+        CatalogMetadata catalogMetadata = getCatalog(catalogName);
+        catalogMetadata.setQueryStatus(queryStatus);
+        catalogMetadata.setQueryId(queryId);
+        createCatalog(catalogMetadata, false);
     }
 
 }

@@ -137,7 +137,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
         ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Table specified must not exists");
+            Assert.fail("TABLE specified must not exists");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {

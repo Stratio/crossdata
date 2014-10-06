@@ -55,7 +55,7 @@ public class ManifestHelper implements Serializable {
 
         // REQUIRED PARAMETERS
         sb.append("Required parameters: ").append(System.lineSeparator());
-        sb.append("\t").append("Cluster: ").append(System.lineSeparator());
+        sb.append("\t").append("CLUSTER: ").append(System.lineSeparator());
         ClusterType cluster = dataStoreType.getRequiredProperties().getCluster();
         sb.append("\t").append("\t").append("Name: ").append(cluster.getName()).append(System.lineSeparator());
         sb.append("\t").append("\t").append("Hosts: ").append(System.lineSeparator());
