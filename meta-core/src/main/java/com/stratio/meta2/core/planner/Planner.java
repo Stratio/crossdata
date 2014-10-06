@@ -66,30 +66,28 @@ public class Planner {
     private static final Logger LOG = Logger.getLogger(Planner.class);
 
     /**
-     * Create a PlannedQuery with the {@link com.stratio.meta.common.logicalplan.LogicalWorkflow}
-     * required to execute the user statement. This method is intended to be used only with Select
-     * statements as any other can be directly executed.
+     * Define a logical workflow that represents the operations required for executing the {@code SELECT} query sent
+     * by the user. After that, an ExecutionWorkflow is creating determining which connectors will execute the
+     * different elements of the original query.
      *
-     * @param query A {@link com.stratio.meta2.core.query.NormalizedQuery}.
-     * @return A {@link com.stratio.meta2.core.query.PlannedQuery}.
+     * @param query A {@link com.stratio.meta2.core.query.SelectValidatedQuery}.
+     * @return A {@link com.stratio.meta2.core.query.SelectPlannedQuery}.
+     * @throws com.stratio.meta.common.exceptions.PlanningException If the query cannot be planned.
      */
-    public SelectPlannedQuery planQuery(ValidatedQuery query) {
-        //Build the workflow.
-        LogicalWorkflow workflow = buildWorkflow((SelectValidatedQuery) query);
-
-
-        //TODO set queryID for Execution query.getQueryId()
-
+    public SelectPlannedQuery planQuery(SelectValidatedQuery query) throws PlanningException {
+        LogicalWorkflow workflow = buildWorkflow(query);
         //Plan the workflow execution into different connectors.
-        ExecutionWorkflow executionWorkflow = null;
-
+        ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(workflow);
         //Return the planned query.
-
-        SelectPlannedQuery pq = new SelectPlannedQuery((SelectValidatedQuery) query, executionWorkflow);
-
+        SelectPlannedQuery pq = new SelectPlannedQuery(query, executionWorkflow);
         return pq;
     }
 
+    /**
+     * Build a Logical workflow for the incoming validated query.
+     * @param query A valid query.
+     * @return A {@link com.stratio.meta.common.logicalplan.LogicalWorkflow}
+     */
     protected LogicalWorkflow buildWorkflow(ValidatedQuery query) {
         LogicalWorkflow result = null;
         if (query instanceof SelectValidatedQuery) {
