@@ -103,6 +103,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
 
         opclass( opclass.length -1 ) match{
         case "CreateTable" =>{
+          println("creating table fromfrom  "+self.path)
           qId=metadataOp.asInstanceOf[CreateTable].queryId
           eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
             metadataOp.asInstanceOf[CreateTable].tableMetadata)
