@@ -28,24 +28,6 @@ import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.query.InProgressQuery;
-import com.stratio.meta2.core.query.MetadataInProgressQuery;
-import com.stratio.meta2.core.query.MetadataPlannedQuery;
-import com.stratio.meta2.core.query.PlannedQuery;
-import com.stratio.meta2.core.query.SelectPlannedQuery;
-import com.stratio.meta2.core.query.StorageInProgressQuery;
-import com.stratio.meta2.core.query.StoragePlannedQuery;
-import com.stratio.meta2.core.statements.AttachClusterStatement;
-import com.stratio.meta2.core.statements.AttachConnectorStatement;
-import com.stratio.meta2.core.statements.CreateCatalogStatement;
-import com.stratio.meta2.core.statements.CreateIndexStatement;
-import com.stratio.meta2.core.statements.CreateTableStatement;
-import com.stratio.meta2.core.statements.DeleteStatement;
-import com.stratio.meta2.core.statements.DropCatalogStatement;
-import com.stratio.meta2.core.statements.DropIndexStatement;
-import com.stratio.meta2.core.statements.DropTableStatement;
-import com.stratio.meta2.core.statements.InsertIntoStatement;
-import com.stratio.meta2.core.statements.MetaStatement;
 
 public class Coordinator {
 
@@ -53,6 +35,33 @@ public class Coordinator {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(Coordinator.class);
+
+    public void persist(MetadataWorkflow metadataWorkflow) {
+
+        switch (metadataWorkflow.getExecutionType()) {
+        case CREATE_CATALOG:
+            persistCreateCatalog(metadataWorkflow.getCatalogMetadata());
+            break;
+        case CREATE_INDEX:
+            persistCreateIndex(metadataWorkflow.getIndexMetadata());
+            break;
+        case CREATE_TABLE:
+            persistCreateTable(metadataWorkflow.getTableMetadata());
+            break;
+        case DROP_CATALOG:
+            persistDropCatalog(metadataWorkflow.getCatalogName());
+            break;
+        case DROP_INDEX:
+            persistDropIndex(metadataWorkflow.getIndexMetadata().getName());
+            break;
+        case DROP_TABLE:
+            persistDropTable(metadataWorkflow.getTableName());
+            break;
+        default:
+            LOG.info("not known statement detected");
+            break;
+        }
+    }
 
     public Result executeManagementOperation(ManagementOperation workflow){
         Result result = null;
@@ -85,6 +94,25 @@ public class Coordinator {
                 new ClusterAttachedMetadata(clusterName, datastoreName, options);
 
         clusterAttachedRefs.put(clusterName, value);
+        datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
+
+        MetadataManager.MANAGER.createDataStore(datastoreMetadata, false);
+        return CommandResult.createCommandResult("Cluster attached successfully");
+    }
+
+    public Result persistDetachCluster(ClusterName clusterName, DataStoreName datastoreName,
+            Map<Selector, Selector> options) {
+        //TODO Move this type of operations to MetadataManager in order to use a single lock
+        DataStoreMetadata datastoreMetadata =
+                MetadataManager.MANAGER.getDataStore(datastoreName);
+
+        Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs =
+                datastoreMetadata.getClusterAttachedRefs();
+
+        ClusterAttachedMetadata value =
+                new ClusterAttachedMetadata(clusterName, datastoreName, options);
+
+        clusterAttachedRefs.remove(clusterName);
         datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
 
         MetadataManager.MANAGER.createDataStore(datastoreMetadata, false);
@@ -132,6 +160,23 @@ public class Coordinator {
         ConnectorAttachedMetadata value =
                 new ConnectorAttachedMetadata(connectorName, clusterName, options);
         connectorAttachedRefs.put(connectorName, value);
+        clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
+
+        MetadataManager.MANAGER.createCluster(clusterMetadata, false);
+        return CommandResult.createCommandResult("Connector attached successfully");
+    }
+
+    public Result persistDetachConnector(ClusterName clusterName, ConnectorName connectorName,
+            Map<Selector, Selector> options) {
+        ClusterMetadata clusterMetadata =
+                MetadataManager.MANAGER.getCluster(clusterName);
+
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
+                clusterMetadata.getConnectorAttachedRefs();
+
+        ConnectorAttachedMetadata value =
+                new ConnectorAttachedMetadata(connectorName, clusterName, options);
+        connectorAttachedRefs.remove(connectorName);
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
 
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);

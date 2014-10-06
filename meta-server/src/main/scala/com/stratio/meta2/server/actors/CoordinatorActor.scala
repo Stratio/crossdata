@@ -1,14 +1,12 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.result._
-import com.stratio.meta.communication.ConnectToConnector
-import com.stratio.meta.communication.DisconnectFromConnector
-import com.stratio.meta2.core.metadata.MetadataManager
-import com.stratio.meta2.core.query.{SelectPlannedQuery, StoragePlannedQuery, MetadataPlannedQuery, PlannedQuery}
-import com.stratio.meta2.common.data.{FirstLevelName, CatalogName}
+import com.stratio.meta.communication.{ConnectToConnector, DisconnectFromConnector}
+import com.stratio.meta2.common.data.FirstLevelName
+import com.stratio.meta2.core.coordinator.Coordinator
+import com.stratio.meta2.core.query.{MetadataPlannedQuery, PlannedQuery, SelectPlannedQuery, StoragePlannedQuery}
 
 object CoordinatorActor {
   def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor(connectorMgr, coordinator))
@@ -44,9 +42,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           val queryId = plannedQuery.asInstanceOf[MetadataPlannedQuery].getQueryId;
           inProgress.put(queryId, workflow)
           inProgressSender.put(queryId, requestSender)
-          if(workflow.getActorRef != null){
+          if (workflow.getActorRef != null) {
             persistOnSuccess.put(queryId, workflow)
-            workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getMetadataOperation(queryId)
+            workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.createMetadataOperationMessage(queryId)
           } else {
             pendingQueries.put(workflow.getCatalogMetadata.getName, queryId)
           }
@@ -65,7 +63,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           val requestSender = sender
           val queryId = plannedQuery
             .asInstanceOf[MetadataPlannedQuery].getQueryId
-          requestSender ! coordinator.executeManagementOperation(workflow.getManagementOperation(queryId))
+          requestSender ! coordinator.executeManagementOperation(workflow.createManagementOperationMessage(queryId))
         }
 
         case workflow: QueryWorkflow => {
@@ -73,14 +71,14 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           val queryId = plannedQuery.asInstanceOf[SelectPlannedQuery].getQueryId
           inProgress.put(queryId, workflow)
           inProgressSender.put(queryId, requestSender)
-          if(ResultType.RESULTS.equals(workflow.getResultType)){
+          if (ResultType.RESULTS.equals(workflow.getResultType)) {
             workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getWorkflow
-          }else if(ResultType.TRIGGER_EXECUTION.equals(workflow.getResultType)){
+          } else if (ResultType.TRIGGER_EXECUTION.equals(workflow.getResultType)) {
             //TODO Trigger next step execution.
             throw new UnsupportedOperationException("Trigger execution not supported")
           }
         }
-        case _ =>{
+        case _ => {
           println("non recognized workflow")
         }
       }
@@ -88,10 +86,13 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
     case result: Result => {
       val queryId = result.getQueryId
-      println("receiving result from "+sender+"; queryId="+queryId)
-      if(persistOnSuccess.contains(queryId)){
-        //TODO Trigger coordinator persist operation.
-        persistOnSuccess.remove(queryId)
+      println("receiving result from " + sender + "; queryId=" + queryId)
+      if (persistOnSuccess.contains(queryId)) {
+        val metadataWorkflowOption: Option[MetadataWorkflow] = persistOnSuccess.get(queryId)
+        if (metadataWorkflowOption != None) {
+          coordinator.persist(metadataWorkflowOption.get)
+          persistOnSuccess.remove(queryId)
+        }
       }
       inProgress.remove(queryId)
       val initialSender = inProgressSender(queryId)
