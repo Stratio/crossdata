@@ -37,6 +37,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
   // subscribe to cluster changes, re-subscribe when restart
 
   override def handleHeartbeat(heartbeat: HeartbeatSig) = {
+    println("heartbeat signal")
     runningJobs.foreach{
       keyval=>
         keyval._2 ! IAmAlive(keyval._1)
@@ -92,8 +93,8 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     case metadataOp: MetadataOperation => {
       var qId:String=null
       try {
-        val eng = connector.getMetadataEngine()
         val opclass=metadataOp.getClass().toString().split('.')
+        val eng = connector.getMetadataEngine()
         opclass( opclass.length -1 ) match{
         case "CreateTable" =>{
           qId=metadataOp.asInstanceOf[CreateTable].queryId

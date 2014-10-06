@@ -14,6 +14,7 @@
 
 package com.stratio.meta2.core.planner;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +24,11 @@ import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.exceptions.PlanningException;
+import com.stratio.meta.common.executionplan.ExecutionType;
 import com.stratio.meta.common.executionplan.ExecutionWorkflow;
+import com.stratio.meta.common.executionplan.MetadataWorkflow;
+import com.stratio.meta.common.executionplan.ResultType;
+import com.stratio.meta.common.executionplan.StorageWorkflow;
 import com.stratio.meta.common.logicalplan.Filter;
 import com.stratio.meta.common.logicalplan.Join;
 import com.stratio.meta.common.logicalplan.Limit;
@@ -35,9 +40,11 @@ import com.stratio.meta.common.logicalplan.UnionStep;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.InnerJoin;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
+import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
@@ -45,11 +52,16 @@ import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
 import com.stratio.meta2.core.metadata.MetadataManager;
+import com.stratio.meta2.core.query.MetadataPlannedQuery;
 import com.stratio.meta2.core.query.MetadataValidatedQuery;
 import com.stratio.meta2.core.query.SelectPlannedQuery;
 import com.stratio.meta2.core.query.SelectValidatedQuery;
+import com.stratio.meta2.core.query.StoragePlannedQuery;
 import com.stratio.meta2.core.query.StorageValidatedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
+import com.stratio.meta2.core.statements.CreateCatalogStatement;
+import com.stratio.meta2.core.statements.CreateTableStatement;
+import com.stratio.meta2.core.statements.MetadataStatement;
 import com.stratio.meta2.core.statements.SelectStatement;
 
 /**
@@ -83,6 +95,16 @@ public class Planner {
         return pq;
     }
 
+    public MetadataPlannedQuery planQuery(MetadataValidatedQuery query) throws PlanningException {
+        ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
+        return new MetadataPlannedQuery(query, executionWorkflow);
+    }
+
+    public StoragePlannedQuery planQuery(StorageValidatedQuery query){
+        ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
+        return new StoragePlannedQuery(query, executionWorkflow);
+    }
+
     /**
      * Build a Logical workflow for the incoming validated query.
      * @param query A valid query.
@@ -92,10 +114,6 @@ public class Planner {
         LogicalWorkflow result = null;
         if (query instanceof SelectValidatedQuery) {
             result = buildWorkflow((SelectValidatedQuery) query);
-        } else if (query instanceof StorageValidatedQuery) {
-            result = buildWorkflow((StorageValidatedQuery) query);
-        } else if (query instanceof MetadataValidatedQuery) {
-            result = buildWorkflow((MetadataValidatedQuery) query);
         }
         return result;
     }
@@ -222,7 +240,7 @@ public class Planner {
         //Prepare the result.
         List<LogicalStep> initialSteps = new ArrayList<>();
         LogicalStep initial = null;
-        for (LogicalStep ls : processed.values()) {
+        for (LogicalStep ls: processed.values()) {
             if (!UnionStep.class.isInstance(ls)) {
                 initial = ls;
                 //Go to the first element of the workflow
@@ -261,12 +279,40 @@ public class Planner {
         return workflow;
     }
 
-    protected LogicalWorkflow buildWorkflow(StorageValidatedQuery query) {
-        throw new UnsupportedOperationException();
+    protected ExecutionWorkflow buildExecutionWorkflow(MetadataValidatedQuery query) throws PlanningException {
+        MetadataStatement metadataStatement = query.getStatement();
+        String queryId = query.getQueryId();
+        MetadataWorkflow metadataWorkflow = null;
+        if (metadataStatement instanceof CreateCatalogStatement){
+
+            // Create parameters for metadata workflow
+            CreateCatalogStatement createCatalogStatement = (CreateCatalogStatement) metadataStatement;
+            Serializable actorRef = null;
+            ExecutionType executionType = ExecutionType.CREATE_CATALOG;
+            ResultType type = ResultType.RESULTS;
+
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+
+            // Create & add CatalogMetadata to the MetadataWorkflow
+            CatalogName name = createCatalogStatement.getCatalogName();
+            Map<Selector, Selector> options = createCatalogStatement.getOptions();
+            Map<TableName, TableMetadata> tables = new HashMap<>();
+            CatalogMetadata catalogMetadata = new CatalogMetadata(name, options, tables);
+            metadataWorkflow.setCatalogMetadata(catalogMetadata);
+
+            // Add CatalogMetadata to MetadataManager
+            MetadataManager.MANAGER.createCatalog(catalogMetadata);
+
+        } else if(metadataStatement instanceof CreateTableStatement){
+            CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
+        }
+
+        return metadataWorkflow;
     }
 
-    protected LogicalWorkflow buildWorkflow(MetadataValidatedQuery query) {
-        throw new UnsupportedOperationException();
+    protected ExecutionWorkflow buildExecutionWorkflow(StorageValidatedQuery query) {
+        StorageWorkflow storageWorkflow = null;
+        return storageWorkflow;
     }
 
     /**
@@ -276,7 +322,7 @@ public class Planner {
      * @param query        The query to be planned.
      */
     private void addProjectedColumns(Map<String, LogicalStep> projectSteps, SelectValidatedQuery query) {
-        for (ColumnName cn : query.getColumns()) {
+        for (ColumnName cn: query.getColumns()) {
             Project.class.cast(projectSteps.get(cn.getTableName().getQualifiedName())).addColumn(cn);
         }
     }
