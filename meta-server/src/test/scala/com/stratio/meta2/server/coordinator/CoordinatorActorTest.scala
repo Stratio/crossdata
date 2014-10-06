@@ -52,7 +52,7 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
       ResultType.RESULTS)
   )
 
-  test("Receiving MetadataQuery test (has to get back a succesful response with the same queryId)") {
+  test("Receiving MetadataQuery test (has to get back a successful response with the same queryId)") {
     within(5000 millis) {
       coordinatorActor ! pq
       val response = expectMsgType[MetadataResult]
