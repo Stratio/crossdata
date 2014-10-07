@@ -4,8 +4,10 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.result._
 import com.stratio.meta.communication.{ConnectToConnector, DisconnectFromConnector}
+import com.stratio.meta2.common.data.{ConnectorName, Status}
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.{ExecutionInfo, ExecutionManager}
+import com.stratio.meta2.core.metadata.MetadataManager
 import com.stratio.meta2.core.query.{MetadataPlannedQuery, PlannedQuery}
 
 object CoordinatorActor {
@@ -103,14 +105,13 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       clientActor.asInstanceOf[ActorRef] ! result
     }
 
-    case _: ConnectToConnector =>
-      //MetadataManager.MANAGER.
-      //TODO:  infinispan
-      println("connecting to connector ")
+    case ctc: ConnectToConnector =>
+      MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(ctc.msg),Status.ONLINE)
+      log.info("connected to connector ")
 
     case _: DisconnectFromConnector =>
-      //TODO:  infinispan
-      println("disconnecting from connector")
+      MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(ctc.msg),Status.OFFLINE)
+      log.info("disconnected from connector ")
 
     case _ => {
       sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
