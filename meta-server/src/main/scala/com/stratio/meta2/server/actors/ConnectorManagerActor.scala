@@ -4,11 +4,9 @@ import akka.actor._
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.communication._
-import com.stratio.meta2.common.data.{ClusterName, ConnectorName}
+import com.stratio.meta2.common.data.ConnectorName
 import com.stratio.meta2.core.connector.ConnectorManager
 import com.stratio.meta2.core.metadata.MetadataManager
-import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.{CreateCatalogStatement, CreateTableStatement}
 import org.apache.log4j.Logger
 
 
@@ -21,10 +19,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   log.info("Lifting connector actor")
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
-  //coordinatorActorRef ! "hola"
 
   override def preStart(): Unit = {
-    //#subscribe
     Cluster(context.system).subscribe(self, classOf[MemberEvent])
     //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
@@ -47,10 +43,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
           case "connector" =>
             val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
             val id = java.util.UUID.randomUUID.toString()
-
-            //connectorActorRef ! getConnectorName()
+            connectorActorRef ! getConnectorName()
             //connectorActorRef ! Start()
-
         }
       }
     }

@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.stratio.meta2.common.api.ManifestHelper;
-import com.stratio.meta2.common.api.PropertiesType;
 import com.stratio.meta2.common.api.PropertyType;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.DataStoreName;
@@ -36,8 +35,8 @@ public class DataStoreMetadata implements IMetadata {
     private final Set<PropertyType> othersProperties;
     private Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs;
 
-    public DataStoreMetadata(DataStoreName name, String version, List<PropertiesType> requiredProperties,
-            List<PropertiesType> othersProperties) {
+    public DataStoreMetadata(DataStoreName name, String version, List<PropertyType> requiredProperties,
+            List<PropertyType> othersProperties) {
         this.name = name;
         this.version = version;
         this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);

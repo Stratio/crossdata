@@ -24,9 +24,7 @@ import java.util.Set;
 
 import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta2.common.api.ManifestHelper;
-import com.stratio.meta2.common.api.PropertiesType;
 import com.stratio.meta2.common.api.PropertyType;
-import com.stratio.meta2.common.api.connector.SupportedOperationsType;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.Status;
@@ -43,8 +41,8 @@ public class ConnectorMetadata implements IMetadata {
     private Serializable actorRef;
 
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
-            List<PropertiesType> requiredProperties, List<PropertiesType> optionalProperties,
-            List<SupportedOperationsType> supportedOperations) {
+            List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
+            List<String> supportedOperations) {
         this.name = name;
         this.version = version;
         this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);

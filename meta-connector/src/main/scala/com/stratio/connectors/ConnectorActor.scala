@@ -32,10 +32,6 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
   var parentActorRef: ActorRef = null
   var runningJobs:Map[String,ActorRef]=new ListMap[String,ActorRef]()
 
-  //val router = context.actorOf(Props(new ExecutorActor).withRouter(RoundRobinRouter(5)))
-  //val router = context.actorOf(Props(new ExecutorActor).withRouter(RoundRobinRouter(5,
-  //supervisorStrategy = OneForOneStrategy( maxNrOfRetries = 2){ case _: Exception => Restart })), name = "router")
-  //router ! CurrentRoutees
 
   override def handleHeartbeat(heartbeat: HeartbeatSig) = {
     //println("receiving heartbeat signal")
