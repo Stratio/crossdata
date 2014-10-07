@@ -54,43 +54,27 @@ public class ManifestHelper implements Serializable {
 
         // REQUIRED PROPERTIES
         sb.append("Required properties: ").append(System.lineSeparator());
-
         for(PropertyType propertyType: dataStoreType.getRequiredProperties().getProperty()){
             sb.append("\t").append("Property: ").append(System.lineSeparator());
             sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
-            sb.append("\t").append("\t").append("Desciption: ").append(propertyType.getDescription()).append(System
+            sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
                     .lineSeparator());
         }
 
-//        for(PropertiesType propertiesType: dataStoreType.getRequiredProperties()){
-//            sb.append("\t").append("Property: ").append(System.lineSeparator());
-//            for(PropertyType propertyType: propertiesType.getProperty()){
-//                sb.append("\t").append("\t").append("PropertyName: ").append(propertiesType.getProperty());
-//            }
-//        }
-//
-//        sb.append("\t").append("Cluster: ").append(System.lineSeparator());
-//        sb.append("\t").append("CLUSTER: ").append(System.lineSeparator());
-//        ClusterType cluster = dataStoreType.getRequiredProperties().getCluster();
-//        sb.append("\t").append("\t").append("Name: ").append(cluster.getName()).append(System.lineSeparator());
-//        sb.append("\t").append("\t").append("Hosts: ").append(System.lineSeparator());
-//        List<HostsType> hostsList = cluster.getHosts();
-//        for (HostsType hosts : hostsList) {
-//            sb.append("\t").append("\t").append("\t").append("Host: ").append(hosts.getHost())
-//                    .append(System.lineSeparator());
-//            sb.append("\t").append("\t").append("\t").append("Port: ").append(hosts.getPort())
-//                    .append(System.lineSeparator());
-//        }
-//
-//        // OPTIONAL PROPERTIES
-//        sb.append("Optional properties: ").append(System.lineSeparator());
-//        List<PropertyType> propertiesList = dataStoreType.getOptionalProperties().getProperty();
-//        for (PropertyType propertyType : propertiesList) {
-//            sb.append("\t").append("Property").append(System.lineSeparator());
-//            sb.append("\t").append("\t").append("Name: ").append(propertyType.getName()).append(System.lineSeparator());
-//        }
+        // OPTIONAL PROPERTIES
+        sb.append("Optional properties: ").append(System.lineSeparator());
+        for (PropertyType propertyType : dataStoreType.getOptionalProperties().getProperty()) {
+            sb.append("\t").append("Property: ").append(System.lineSeparator());
+            sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
+            sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
+                    .lineSeparator());
+        }
 
-        // BEHAVIOURS
+        // BEHAVIORS
+        sb.append("Behaviors: ").append(System.lineSeparator());
+        for(String behavior: dataStoreType.getBehaviors().getBehavior()){
+            sb.append("\t").append("Behavior: ").append(behavior).append(System.lineSeparator());
+        }
 
         // RESULT
         return sb.toString();
@@ -100,49 +84,41 @@ public class ManifestHelper implements Serializable {
         StringBuilder sb = new StringBuilder("CONNECTOR");
         sb.append(System.lineSeparator());
 
-        // CONNECTOR NAME
+        // CONNECTOR NAMES
         sb.append("ConnectorName: ").append(connectorType.getConnectorName()).append(System.lineSeparator());
 
-        // TODO
-
         // DATA STORES NAME
-        /*
-        sb.append("DataStoresName: ").append(System.lineSeparator());
-        sb.append("\t").append("Datastore: ").append(connectorType.getDataStoresName().getDatastore()).append(
-                System.lineSeparator());
-        */
+        sb.append("DataStores: ").append(System.lineSeparator());
+        for(String dataStoreName: connectorType.getDataStores().getDataStoreName()){
+            sb.append("\t").append("DataStoreName: ").append(dataStoreName).append(System.lineSeparator());
+        }
 
         // VERSION
         sb.append("Version: ").append(connectorType.getVersion()).append(System.lineSeparator());
 
         // REQUIRED PROPERTIES
         sb.append("Required properties: ").append(System.lineSeparator());
-        /*
-        List<com.stratio.meta2.common.api.generated.PropertyType> propertiesList = connectorType
-                .getRequiredProperties().getProperty();
-        for (com.stratio.meta2.common.api.generated.PropertyType property : propertiesList) {
+        for(PropertyType propertyType: connectorType.getRequiredProperties().getProperty()){
             sb.append("\t").append("Property: ").append(System.lineSeparator());
-            sb.append("\t").append("\t").append("Name: ").append(property.getName()).append(
-                    System.lineSeparator());
-        }*/
+            sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
+            sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
+                    .lineSeparator());
+        }
 
         // OPTIONAL PROPERTIES
         sb.append("Optional properties: ").append(System.lineSeparator());
-        /*
-        propertiesList = connectorType.getOptionalProperties().getProperty();
-        for (com.stratio.meta2.common.api.generated.PropertyType property : propertiesList) {
+        for (PropertyType propertyType : connectorType.getOptionalProperties().getProperty()) {
             sb.append("\t").append("Property: ").append(System.lineSeparator());
-            sb.append("\t").append("\t").append("Name: ").append(property.getName()).append(
-                    System.lineSeparator());
-        }*/
+            sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
+            sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
+                    .lineSeparator());
+        }
 
         // SUPPORTED OPERATIONS
         sb.append("Supported operations: ").append(System.lineSeparator());
-        /*
-        Set<Operations> operationsList = connectorType.getSupportedOperations().getOperation();
-        for (Operations operation : operationsList) {
+        for (String operation: connectorType.getSupportedOperations().getOperation()) {
             sb.append("\t").append("Operation: ").append(operation).append(System.lineSeparator());
-        }*/
+        }
 
         // RESULT
         return sb.toString();

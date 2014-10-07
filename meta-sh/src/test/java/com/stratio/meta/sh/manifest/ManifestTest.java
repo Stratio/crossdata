@@ -47,23 +47,33 @@ public class ManifestTest {
         sb.append(System.lineSeparator());
 
         // NAME
-        sb.append("Name: ").append("string").append(System.lineSeparator());
+        sb.append("Name: ").append("Cassandra").append(System.lineSeparator());
 
         // VERSION
-        sb.append("Version: ").append("string").append(System.lineSeparator());
+        sb.append("Version: ").append("2.0.0").append(System.lineSeparator());
 
         // REQUIRED PARAMETERS
-        sb.append("Required parameters: ").append(System.lineSeparator());
-        sb.append("\t").append("CLUSTER: ").append(System.lineSeparator());
-        sb.append("\t").append("\t").append("Name: ").append("string").append(System.lineSeparator());
-        sb.append("\t").append("\t").append("Hosts: ").append(System.lineSeparator());
-        sb.append("\t").append("\t").append("\t").append("Host: ").append("string").append(System.lineSeparator());
-        sb.append("\t").append("\t").append("\t").append("Port: ").append("string").append(System.lineSeparator());
+        sb.append("Required properties: ").append(System.lineSeparator());
+        sb.append("\t").append("Property: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("PropertyName: ").append("Host").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: ").append("Cassandra Host").append(System.lineSeparator());
+        sb.append("\t").append("Property: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("PropertyName: ").append("Port").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: ").append("Cassandra Port").append(System.lineSeparator());
 
         // OPTIONAL PROPERTIES
         sb.append("Optional properties: ").append(System.lineSeparator());
-        sb.append("\t").append("Property").append(System.lineSeparator());
-        sb.append("\t").append("\t").append("Name: ").append("string").append(System.lineSeparator());
+        sb.append("\t").append("Property: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("PropertyName: ").append("Limit").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: ").append("1000").append(System.lineSeparator());
+        sb.append("\t").append("Property: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("PropertyName: ").append("Level").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: ").append("WARN").append(System.lineSeparator());
+
+        // BEHAVIORS
+        sb.append("Behaviors: ").append(System.lineSeparator());
+        sb.append("\t").append("Behavior: ").append("UPSERT_ON_INSERT").append(System.lineSeparator());
+        sb.append("\t").append("Behavior: ").append("FAKE_BEHAVIOR").append(System.lineSeparator());
 
         // ERROR MESSAGE
         StringBuilder sbError = new StringBuilder(System.lineSeparator());
@@ -90,30 +100,45 @@ public class ManifestTest {
         sb.append(System.lineSeparator());
 
         // CONNECTOR NAME
-        sb.append("ConnectorName: ").append("string").append(System.lineSeparator());
+        sb.append("ConnectorName: ").append("cassandra_native_connector").append(System.lineSeparator());
 
         // DATA STORES NAME
-        sb.append("DataStoresName: ").append(System.lineSeparator());
-        sb.append("\t").append("Datastore: ").append("string").append(System.lineSeparator());
+        sb.append("DataStores: ").append(System.lineSeparator());
+        sb.append("\t").append("DataStoreName: ").append("cassandra").append(System.lineSeparator());
 
         // VERSION
-        sb.append("Version: ").append("string").append(System.lineSeparator());
+        sb.append("Version: ").append("0.1.0").append(System.lineSeparator());
 
         // REQUIRED PROPERTIES
         sb.append("Required properties: ").append(System.lineSeparator());
         sb.append("\t").append("Property: ").append(System.lineSeparator());
-        sb.append("\t").append("\t").append("Name: ").append("string").append(
+        sb.append("\t").append("\t").append("PropertyName: ").append("Host").append(
+                System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: ").append("Cassandra Host").append(
+                System.lineSeparator());
+        sb.append("\t").append("Property: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("PropertyName: ").append("Port").append(
+                System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: ").append("Cassandra Port").append(
                 System.lineSeparator());
 
         // OPTIONAL PROPERTIES
         sb.append("Optional properties: ").append(System.lineSeparator());
         sb.append("\t").append("Property: ").append(System.lineSeparator());
-        sb.append("\t").append("\t").append("Name: ").append("string").append(
+        sb.append("\t").append("\t").append("PropertyName: ").append("Limit").append(
+                System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: ").append("1000").append(
                 System.lineSeparator());
 
         // SUPPORTED OPERATIONS
         sb.append("Supported operations: ").append(System.lineSeparator());
         sb.append("\t").append("Operation: ").append("CREATE_CATALOG").append(System.lineSeparator());
+        sb.append("\t").append("Operation: ").append("DROP_CATALOG").append(System.lineSeparator());
+        sb.append("\t").append("Operation: ").append("CREATE_TABLE").append(System.lineSeparator());
+        sb.append("\t").append("Operation: ").append("DROP_TABLE").append(System.lineSeparator());
+        sb.append("\t").append("Operation: ").append("INSERT").append(System.lineSeparator());
+        sb.append("\t").append("Operation: ").append("DELETE").append(System.lineSeparator());
+        sb.append("\t").append("Operation: ").append("PROJECT").append(System.lineSeparator());
 
         // ERROR MESSAGE
         StringBuilder sbError = new StringBuilder(System.lineSeparator());

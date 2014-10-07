@@ -1,17 +1,17 @@
 <Connector>
     <ConnectorName>cassandra_native_connector</ConnectorName>
-    <DataStoresName>
-        <Datastore>cassandra</Datastore>
-    </DataStoresName>
+    <DataStores>
+        <DataStoreName>cassandra</DataStoreName>
+    </DataStores>
     <Version>0.1.0</Version>
     <RequiredProperties>
         <Property>
-            <PropertyName>Port</PropertyName>
-            <Description>Cassandra Port</Description>
-        </Property>
-        <Property>
             <PropertyName>Host</PropertyName>
             <Description>Cassandra Host</Description>
+        </Property>
+        <Property>
+            <PropertyName>Port</PropertyName>
+            <Description>Cassandra Port</Description>
         </Property>
     </RequiredProperties>
     <OptionalProperties>

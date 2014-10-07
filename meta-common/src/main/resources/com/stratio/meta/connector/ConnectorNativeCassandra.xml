@@ -18,9 +18,9 @@
 
 <Connector>
     <ConnectorName>cassandra_native_connector</ConnectorName>
-    <DataStoresName>
-        <Datastore>cassandra</Datastore>
-    </DataStoresName>
+    <DataStores>
+        <DataStoreName>cassandra</DataStoreName>
+    </DataStores>
     <Version>0.1.0</Version>
     <RequiredProperties>
     </RequiredProperties>

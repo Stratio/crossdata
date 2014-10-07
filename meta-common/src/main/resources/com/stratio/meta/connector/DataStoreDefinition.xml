@@ -3,8 +3,8 @@
     <Version>2.0.0</Version>
     <RequiredProperties>
         <Property>
-            <PropertyName>Hosts</PropertyName>
-            <Description>Host list with its own port. Example: [host1,host2,host3]</Description>
+            <PropertyName>Host</PropertyName>
+            <Description>Cassandra Host</Description>
         </Property>
         <Property>
             <PropertyName>Port</PropertyName>
