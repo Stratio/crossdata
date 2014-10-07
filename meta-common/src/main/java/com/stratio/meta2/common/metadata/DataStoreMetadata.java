@@ -19,26 +19,28 @@
 package com.stratio.meta2.common.metadata;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.stratio.meta2.common.api.generated.PropertiesType;
+import com.stratio.meta2.common.api.ManifestHelper;
+import com.stratio.meta2.common.api.PropertyType;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.DataStoreName;
 
 public class DataStoreMetadata implements IMetadata {
     private final DataStoreName name;
     private final String version;
-    private final Set<PropertiesType> requiredProperties;
-    private final Set<PropertiesType> othersProperties;
+    private final Set<PropertyType> requiredProperties;
+    private final Set<PropertyType> othersProperties;
     private Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs;
 
-    public DataStoreMetadata(DataStoreName name, String version, Set<PropertiesType> requiredProperties,
-            Set<PropertiesType> othersProperties) {
+    public DataStoreMetadata(DataStoreName name, String version, List<PropertyType> requiredProperties,
+            List<PropertyType> othersProperties) {
         this.name = name;
         this.version = version;
-        this.requiredProperties = requiredProperties;
-        this.othersProperties = othersProperties;
+        this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
+        this.othersProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(othersProperties);
         this.clusterAttachedRefs = new HashMap<>();
     }
 
@@ -50,11 +52,11 @@ public class DataStoreMetadata implements IMetadata {
         return version;
     }
 
-    public Set<PropertiesType> getRequiredProperties() {
+    public Set<PropertyType> getRequiredProperties() {
         return requiredProperties;
     }
 
-    public Set<PropertiesType> getOthersProperties() {
+    public Set<PropertyType> getOthersProperties() {
         return othersProperties;
     }
 

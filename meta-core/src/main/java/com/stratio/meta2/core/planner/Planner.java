@@ -16,13 +16,17 @@ package com.stratio.meta2.core.planner;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.exceptions.PlanningException;
 import com.stratio.meta.common.executionplan.ExecutionType;
 import com.stratio.meta.common.executionplan.ExecutionWorkflow;
@@ -37,17 +41,20 @@ import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.logicalplan.Select;
 import com.stratio.meta.common.logicalplan.UnionStep;
-import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
+import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
@@ -63,6 +70,7 @@ import com.stratio.meta2.core.query.StorageValidatedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
 import com.stratio.meta2.core.statements.CreateCatalogStatement;
 import com.stratio.meta2.core.statements.CreateTableStatement;
+import com.stratio.meta2.core.statements.InsertIntoStatement;
 import com.stratio.meta2.core.statements.MetadataStatement;
 import com.stratio.meta2.core.statements.SelectStatement;
 
@@ -102,7 +110,7 @@ public class Planner {
         return new MetadataPlannedQuery(query, executionWorkflow);
     }
 
-    public StoragePlannedQuery planQuery(StorageValidatedQuery query) {
+    public StoragePlannedQuery planQuery(StorageValidatedQuery query) throws PlanningException {
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
         return new StoragePlannedQuery(query, executionWorkflow);
     }
@@ -136,13 +144,14 @@ public class Planner {
         return executionWorkflow;
     }
 
-    protected List<TableName> getInitialSteps(List<LogicalStep> initialSteps) {
+    protected List<TableName> getInitialSteps(List<LogicalStep> initialSteps){
         List<TableName> tables = new ArrayList<>(initialSteps.size());
         for (LogicalStep ls : initialSteps) {
             tables.add(Project.class.cast(ls).getTableName());
         }
         return tables;
     }
+
 
     protected void defineExecutionWorkflow(LogicalWorkflow workflow) {
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
@@ -383,9 +392,77 @@ public class Planner {
         return false;
     }
 
-    protected ExecutionWorkflow buildExecutionWorkflow(StorageValidatedQuery query) {
-        StorageWorkflow storageWorkflow = null;
+    protected ExecutionWorkflow buildExecutionWorkflow(StorageValidatedQuery query) throws PlanningException {
+
+        String queryId = query.getQueryId();
+        Serializable actorRef = null;
+        TableName tableName=null;
+        Collection<Row> rows=new ArrayList<>();
+        if (query.getStatement() instanceof InsertIntoStatement){
+            tableName = ((InsertIntoStatement) (query.getStatement())).getTableName();
+            rows=getInsertRows(((InsertIntoStatement) (query.getStatement())));
+        }else{
+            throw new PlanningException("Delete, Truncate and Update statements not supported yet");
+        }
+
+        TableMetadata tableMetadata=getTableMetadata(tableName);
+        ClusterMetadata clusterMetadata=getClusterMetadata( tableMetadata.getClusterRef());
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = clusterMetadata
+                .getConnectorAttachedRefs();
+
+        Iterator it = connectorAttachedRefs.keySet().iterator();
+        boolean found = false;
+        while (it.hasNext() && !found) {
+            ConnectorName connectorName = (ConnectorName) it.next();
+            ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+            if (connectorMetadata.getSupportedOperations().contains(Operations.INSERT)) {
+                actorRef = connectorMetadata.getActorRef();
+                found = true;
+            }
+        }
+        if (!found) {
+            throw new PlanningException("There is not actorRef for Storage Operation");
+        }
+
+        StorageWorkflow storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT,
+                ResultType.RESULTS);
+        storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+        storageWorkflow.setRows(rows);
+
         return storageWorkflow;
+    }
+
+    private Collection<Row> getInsertRows(InsertIntoStatement statement) {
+        Collection<Row> rows=new ArrayList<>();
+
+        List<Selector> values = statement.getCellValues();
+        List<ColumnName> ids = statement.getIds();
+
+        for (int i=0;i<ids.size();i++) {
+            ColumnName columnName=ids.get(i);
+            Selector value=values.get(i);
+            Cell cell = new Cell(value);
+            Row row = new Row(columnName.getName(), cell);
+            rows.add(row);
+        }
+        return rows;
+    }
+
+    private ClusterMetadata getClusterMetadata(ClusterName clusterRef) throws PlanningException {
+        ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterRef);
+
+        if (clusterMetadata == null) {
+            throw new PlanningException("There is not cluster metadata for Storage Operation");
+        }
+        return clusterMetadata;
+    }
+
+    private TableMetadata getTableMetadata(TableName tableName) throws PlanningException {
+        TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(tableName);
+        if (tableMetadata == null) {
+            throw new PlanningException("There is not specified Table for Storage Operation");
+        }
+        return tableMetadata;
     }
 
     /**

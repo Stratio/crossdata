@@ -19,7 +19,8 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.stratio.meta2.core.query.ParsedQuery
+import com.stratio.meta.common.exceptions.ValidationException
+import com.stratio.meta2.core.query.{ValidatedQuery, ParsedQuery}
 import com.stratio.meta2.core.validator.Validator
 import org.apache.log4j.Logger
 import com.stratio.meta.common.result.Result
@@ -47,9 +48,16 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
   override def receive: Receive = {
     case query: ParsedQuery => {
       val timer = initTimer()
-      val validatedQuery = validator.validate(query)
-      finishTimer(timer)
-      planner forward validatedQuery
+      var validatedQuery:ValidatedQuery=null
+      try{
+        validatedQuery = validator.validate(query)
+        finishTimer(timer)
+        planner forward validatedQuery
+      }catch{
+        case e:ValidationException => {
+          sender ! e
+        }
+      }
     }
     case _ => {
       log.error("Unknown message received by ValidatorActor");

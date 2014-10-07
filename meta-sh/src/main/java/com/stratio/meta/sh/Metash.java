@@ -419,7 +419,7 @@ public class Metash {
             return "ERROR: Invalid ADD syntax";
         }
 
-        int type_manifest = -1;
+        int type_manifest;
         if(tokens[1].equalsIgnoreCase("datastore")){
             type_manifest = Manifest.TYPE_DATASTORE;
         }else if (tokens[1].equalsIgnoreCase("connector")) {
@@ -429,7 +429,7 @@ public class Metash {
         }
 
         // Create Manifest object from XML file
-        Manifest manifest = null;
+        Manifest manifest;
         try {
             manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest,
                     tokens[2].replace(";", "").replace("\"", "").replace("'", ""));
