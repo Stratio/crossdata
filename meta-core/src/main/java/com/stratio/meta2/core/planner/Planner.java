@@ -43,7 +43,6 @@ import com.stratio.meta.common.logicalplan.Select;
 import com.stratio.meta.common.logicalplan.UnionStep;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.communication.Insert;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
@@ -53,6 +52,7 @@ import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
@@ -144,13 +144,14 @@ public class Planner {
         return executionWorkflow;
     }
 
-    protected List<TableName> getInitialSteps(List<LogicalStep> initialSteps) {
+    protected List<TableName> getInitialSteps(List<LogicalStep> initialSteps){
         List<TableName> tables = new ArrayList<>(initialSteps.size());
         for (LogicalStep ls : initialSteps) {
             tables.add(Project.class.cast(ls).getTableName());
         }
         return tables;
     }
+
 
     protected void defineExecutionWorkflow(LogicalWorkflow workflow) {
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
@@ -333,16 +334,62 @@ public class Planner {
             Map<Selector, Selector> options = createCatalogStatement.getOptions();
             Map<TableName, TableMetadata> tables = new HashMap<>();
             CatalogMetadata catalogMetadata = new CatalogMetadata(name, options, tables);
+            metadataWorkflow.setCatalogName(name);
             metadataWorkflow.setCatalogMetadata(catalogMetadata);
 
-            // Add CatalogMetadata to MetadataManager
-            MetadataManager.MANAGER.createCatalog(catalogMetadata);
-
         } else if (metadataStatement instanceof CreateTableStatement) {
+
+            // Create parameters for metadata workflow
             CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
+            Serializable actorRef = null;
+            ExecutionType executionType = ExecutionType.CREATE_TABLE;
+            ResultType type = ResultType.RESULTS;
+
+            if (!existsCatalogInCluster(createTableStatement.getTableName().getCatalogName(),
+                    createTableStatement.getClusterName())) {
+                executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
+                metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+                metadataWorkflow.setCatalogName(createTableStatement.getTableName().getCatalogName());
+                metadataWorkflow
+                        .setCatalogMetadata(MetadataManager.MANAGER.getCatalog(createTableStatement.getTableName()
+                                .getCatalogName()));
+            }
+
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+
+            // Create & add TableMetadata to the MetadataWorkflow
+            TableName name = createTableStatement.getTableName();
+            Map<Selector, Selector> options = createTableStatement.getProperties();
+            Map<ColumnName, ColumnMetadata> columnMap = new HashMap<>();
+            for (Map.Entry<ColumnName, ColumnType> c : createTableStatement.getColumnsWithTypes().entrySet()) {
+                ColumnName columnName = c.getKey();
+                ColumnMetadata columnMetadata = new ColumnMetadata(columnName, null, c.getValue());
+                columnMap.put(columnName, columnMetadata);
+            }
+            ClusterName clusterName = createTableStatement.getClusterName();
+            List<ColumnName> partitionKey = createTableStatement.getPartitionKey();
+            List<ColumnName> clusterKey = createTableStatement.getClusterKey();
+            TableMetadata tableMetadata = new TableMetadata(name, options, columnMap, null,
+                    clusterName, partitionKey, clusterKey);
+            metadataWorkflow.setTableName(name);
+            metadataWorkflow.setTableMetadata(tableMetadata);
         }
 
         return metadataWorkflow;
+    }
+
+    protected boolean existsCatalogInCluster(CatalogName catalogName, ClusterName clusterName) {
+        CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalogName);
+        Map<TableName, TableMetadata> tables = catalogMetadata.getTables();
+        if (tables.isEmpty()) {
+            return false;
+        }
+        for (Map.Entry<TableName, TableMetadata> t : tables.entrySet()) {
+            if (t.getValue().getClusterRef().equals(clusterName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected ExecutionWorkflow buildExecutionWorkflow(StorageValidatedQuery query) throws PlanningException {

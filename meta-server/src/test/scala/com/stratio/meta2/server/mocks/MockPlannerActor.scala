@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta2.server.mockConnector
+package com.stratio.meta2.server.mocks
 
 import akka.actor.{Actor, Props}
 import com.stratio.meta.common.result.{QueryStatus, Result}

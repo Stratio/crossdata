@@ -27,6 +27,7 @@ public enum ExecutionType {
     CREATE_CATALOG,
     DROP_CATALOG,
     CREATE_TABLE,
+    CREATE_TABLE_AND_CATALOG,
     DROP_TABLE,
     CREATE_INDEX,
     DROP_INDEX,
