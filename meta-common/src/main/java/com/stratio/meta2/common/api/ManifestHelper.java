@@ -55,6 +55,13 @@ public class ManifestHelper implements Serializable {
         // REQUIRED PROPERTIES
         sb.append("Required properties: ").append(System.lineSeparator());
 
+        for(PropertyType propertyType: dataStoreType.getRequiredProperties().getProperty()){
+            sb.append("\t").append("Property: ").append(System.lineSeparator());
+            sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
+            sb.append("\t").append("\t").append("Desciption: ").append(propertyType.getDescription()).append(System
+                    .lineSeparator());
+        }
+
 //        for(PropertiesType propertiesType: dataStoreType.getRequiredProperties()){
 //            sb.append("\t").append("Property: ").append(System.lineSeparator());
 //            for(PropertyType propertyType: propertiesType.getProperty()){

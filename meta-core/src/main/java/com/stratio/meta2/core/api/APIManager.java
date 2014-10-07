@@ -20,7 +20,6 @@ package com.stratio.meta2.core.api;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -115,14 +114,14 @@ public class APIManager {
         String version = dataStoreType.getVersion();
 
         // REQUIRED PROPERTIES
-        List<PropertiesType> requiredProperties = dataStoreType.getRequiredProperties();
+        PropertiesType requiredProperties = dataStoreType.getRequiredProperties();
 
         // OPTIONAL PROPERTIES
-        List<PropertiesType> optionalProperties = dataStoreType.getOptionalProperties();
+        PropertiesType optionalProperties = dataStoreType.getOptionalProperties();
 
         // Create Metadata
-        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(name, version, requiredProperties,
-                optionalProperties);
+        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(name, version, requiredProperties.getProperty(),
+                optionalProperties.getProperty());
 
         // Persist
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
@@ -140,18 +139,18 @@ public class APIManager {
         String version = connectorType.getVersion();
 
         // REQUIRED PROPERTIES
-        List<PropertiesType> requiredProperties = connectorType.getRequiredProperties();
+        PropertiesType requiredProperties = connectorType.getRequiredProperties();
 
         // OPTIONAL PROPERTIES
-        List<PropertiesType> optionalProperties = connectorType.getOptionalProperties();
+        PropertiesType optionalProperties = connectorType.getOptionalProperties();
 
         // SUPPORTED OPERATIONS
-        List<SupportedOperationsType> supportedOperations = connectorType.getSupportedOperations();
+        SupportedOperationsType supportedOperations = connectorType.getSupportedOperations();
 
         // Create Metadata
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs.getDataStoreName(),
-                requiredProperties,
-                optionalProperties, supportedOperations);
+                requiredProperties.getProperty(),
+                optionalProperties.getProperty(), supportedOperations.getOperation());
 
         // Persist
         MetadataManager.MANAGER.createConnector(connectorMetadata);
