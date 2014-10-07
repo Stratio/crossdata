@@ -21,7 +21,7 @@ package com.stratio.meta2.server.mockConnector
 import akka.actor.{Actor, Props}
 import com.stratio.meta.common.result.{QueryStatus, Result}
 import com.stratio.meta.communication.ACK
-import com.stratio.meta2.core.query.{MetadataValidatedQuery, SelectValidatedQuery}
+import com.stratio.meta2.core.query.{ValidatedQuery, MetadataValidatedQuery, SelectValidatedQuery}
 import com.stratio.meta2.server.actors.TimeTracker
 import org.apache.log4j.Logger
 
@@ -34,7 +34,6 @@ class MockPlannerActor() extends Actor with TimeTracker {
   val log = Logger.getLogger(classOf[MockPlannerActor])
 
   def receive = {
-    //case query: ValidatedQuery => {
     case query: MetadataValidatedQuery => {
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
       sender ! ack
@@ -43,7 +42,10 @@ class MockPlannerActor() extends Actor with TimeTracker {
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
       sender ! ack
     }
-
+    case query: ValidatedQuery => {
+      val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
+      sender ! ack
+    }
     case _ => {
       sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
     }
