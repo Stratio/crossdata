@@ -47,24 +47,25 @@ class PlannerActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike wi
   val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()), "TestCoordinatorActor")
   val plannerActor = system.actorOf(PlannerActor.props(coordinatorRef, engine.getPlanner()), "TestPlannerActor")
 
-
-
+  var queryId="query_id-2384234-1341234-23434"
   var tablename = new com.stratio.meta2.common.data.TableName("catalog", "table")
   val selectParsedQuery = new SelectParsedQuery(
         new BaseQuery(
-          "query_id-2384234-1341234-23434",
+          queryId,
           "select * from myQuery;",
           new CatalogName("myCatalog")
         ), new SelectStatement(tablename)
   )
   val map0=new util.HashMap[ColumnName,ColumnType]()
+  map0.put(new ColumnName("keyspace","table","column"),ColumnType.BOOLEAN)
   val list0=new util.ArrayList[ColumnName]()
+  list0.add(new ColumnName("keyspace","table","column"))
   val metadataStatement=new CreateTableStatement(
     new TableName("mycatalog", "mytable"), new ClusterName("cluster"),map0,list0,list0
   )
   val metadataParsedQuery = new MetadataParsedQuery(
     new BaseQuery(
-      "query_id-2384234-1341234-23434",
+      queryId,
       "select * from myQuery;",
       new CatalogName("myCatalog")
     ), metadataStatement
@@ -72,7 +73,6 @@ class PlannerActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike wi
   val mdvq=new MetadataValidatedQuery(metadataParsedQuery)
   val svq=new SelectValidatedQuery(selectParsedQuery)
 
-  /*
   test("Metadata Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
     within(5000 millis) {
       plannerActor ! mdvq
@@ -81,8 +81,8 @@ class PlannerActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike wi
       assert(true)
     }
   }
-  */
 
+  /*
   test("Select Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
     within(5000 millis) {
       plannerActor ! svq
@@ -90,6 +90,7 @@ class PlannerActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike wi
       assert(true)
     }
   }
+  */
 
 }
 
