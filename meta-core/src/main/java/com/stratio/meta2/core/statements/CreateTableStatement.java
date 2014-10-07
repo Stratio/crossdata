@@ -69,6 +69,13 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     private List<ColumnName> clusterKey = new LinkedList<>();
 
     /**
+     * The list of properties of the table.
+     */
+    public Map<Selector, Selector> getProperties() {
+        return properties;
+    }
+
+    /**
      * The list of {@link com.stratio.meta2.core.structures.Property} of the table.
      */
     private Map<Selector, Selector> properties = new LinkedHashMap<>();
@@ -122,6 +129,14 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
             Map<ColumnName, ColumnType> columns,
             List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
         this(TableType.DATABASE, tableName, clusterName, columns, partitionKey, clusterKey);
+    }
+
+    public List<ColumnName> getPartitionKey() {
+        return partitionKey;
+    }
+
+    public List<ColumnName> getClusterKey() {
+        return clusterKey;
     }
 
     public TableType getTableType() {
