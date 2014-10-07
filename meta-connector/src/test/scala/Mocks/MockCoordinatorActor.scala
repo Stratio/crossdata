@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package ActorMocks
+package Mocks
 
 import akka.actor.{Actor, Props}
 import org.apache.log4j.Logger
