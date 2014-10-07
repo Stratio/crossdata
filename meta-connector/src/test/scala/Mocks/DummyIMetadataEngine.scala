@@ -1,3 +1,5 @@
+package Mocks
+
 import com.stratio.meta.common.connector._
 import com.stratio.meta.common.result.QueryResult
 import com.stratio.meta2.common.data.{CatalogName, ClusterName, TableName}

@@ -31,7 +31,7 @@ import com.stratio.meta2.common.data.ConnectorName;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="ConnectorName" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="DataStores" type="{}DataStoreType"/>
+ *         &lt;element name="DataStores" type="{}DataStoreRefsType"/>
  *         &lt;element name="Version" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="RequiredProperties" type="{}PropertiesType" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="OptionalProperties" type="{}PropertiesType" maxOccurs="unbounded" minOccurs="0"/>
@@ -58,7 +58,7 @@ public class ConnectorType extends Manifest {
     @XmlElement(name = "ConnectorName", required = true)
     protected ConnectorName connectorName;
     @XmlElement(name = "DataStores", required = true)
-    protected DataStoreType dataStores;
+    protected DataStoreRefsType dataStores;
     @XmlElement(name = "Version", required = true)
     protected String version;
     @XmlElement(name = "RequiredProperties")
@@ -101,10 +101,10 @@ public class ConnectorType extends Manifest {
      * 
      * @return
      *     possible object is
-     *     {@link DataStoreType }
+     *     {@link DataStoreRefsType }
      *     
      */
-    public DataStoreType getDataStores() {
+    public DataStoreRefsType getDataStores() {
         return dataStores;
     }
 
@@ -113,10 +113,10 @@ public class ConnectorType extends Manifest {
      * 
      * @param value
      *     allowed object is
-     *     {@link DataStoreType }
+     *     {@link DataStoreRefsType }
      *     
      */
-    public void setDataStores(DataStoreType value) {
+    public void setDataStores(DataStoreRefsType value) {
         this.dataStores = value;
     }
 

@@ -20,12 +20,12 @@ import javax.xml.bind.annotation.XmlType;
 import com.stratio.meta2.common.data.DataStoreName;
 
 /**
- * <p>Java class for DataStoreType complex type.
+ * <p>Java class for DataStoreRefsType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="DataStoreType">
+ * &lt;complexType name="DataStoreRefsType">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
@@ -39,10 +39,10 @@ import com.stratio.meta2.common.data.DataStoreName;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "DataStoreType", propOrder = {
+@XmlType(name = "DataStoreRefsType", propOrder = {
     "dataStoreName"
 })
-public class DataStoreType implements Serializable {
+public class DataStoreRefsType implements Serializable {
 
     @XmlElement(name = "DataStoreName", required = true)
     protected Set<DataStoreName> dataStoreName;
