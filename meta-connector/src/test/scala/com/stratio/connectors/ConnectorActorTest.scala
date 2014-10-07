@@ -16,14 +16,14 @@
  * under the License.
  */
 
+import Mocks.DummyIConnector
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.routing.RoundRobinRouter
 import akka.util.Timeout
 import com.stratio.connectors.ConnectorActor
 import com.stratio.connectors.config.ConnectConfig
-import com.stratio.meta.common.connector.{IConnector, IMetadataEngine}
-import com.stratio.meta.common.result.{MetadataResult, QueryResult}
+import com.stratio.meta.common.result.MetadataResult
 import com.stratio.meta.communication.CreateTable
 import com.stratio.meta2.common.data.{ClusterName, TableName}
 import com.stratio.meta2.common.metadata.TableMetadata
@@ -44,35 +44,10 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
   lazy val system1 = ActorSystem(clusterName, config)
   implicit val timeout = Timeout(10 seconds)
 
-
   test("Send 2 slow MetadataInProgressQuery to two connectors to test concurrency") {
-
     val queryId = "queryId"
-    val m = mock[IConnector]
-    val me = mock[IMetadataEngine]
-    val m2 = mock[IConnector]
-    val me2 = mock[IMetadataEngine]
-    val slowfunc = () => {
-      println("very slow function")
-      for (i <- 1 to 5) {
-        Thread.sleep(1000)
-        println(i + " seconds gone by")
-      }
-      QueryResult.createSuccessQueryResult()
-    }
-    val slowfunc2 = () => {
-      println("very slow function")
-      for (i <- 1 to 3) {
-        Thread.sleep(1500)
-        println(i + " seconds gone by")
-      }
-      QueryResult.createSuccessQueryResult()
-    }
-    (me.createTable _).expects(*, *).onCall((ClusterName, TableMetadata) => { slowfunc() })
-    (m.getMetadataEngine _).expects().returning(me)
-
-    (me2.createTable _).expects(*, *).onCall((ClusterName, TableMetadata) => { slowfunc2() })
-    (m2.getMetadataEngine _).expects().returning(me2)
+    val m = new DummyIConnector()
+    val m2 =new DummyIConnector()
 
     val ca1 = system1.actorOf(ConnectorActor.props("myConnector", m))
     val ca2 = system1.actorOf(ConnectorActor.props("myConnector2", m2))
@@ -93,8 +68,6 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val result2 = Await.result(future2, 16 seconds).asInstanceOf[MetadataResult]
     println("result.getQueryId()=" + result2.getQueryId())
     assert(result2.getQueryId() == queryId + "2")
-
-
   }
 
 
@@ -103,6 +76,7 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
   test("Send MetadataInProgressQuery to Connector") {
 
     val queryId = "queryId"
+    /*
     val m = mock[IConnector]
     val me = mock[IMetadataEngine]
     val m2 = mock[IConnector]
@@ -121,29 +95,21 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     (me2.createTable _).expects(*, *).onCall((ClusterName, TableMetadata) => { slowfunc() })
     (m2.getMetadataEngine _).expects().returning(me2)
 
-    //val connectorActor= system1.actorOf(ConnectorActor.props("myConnector",
-      //m).withRouter(RoundRobinRouter(nrOfInstances=2)), "connectorActorTest")
+   */
 
+    val m=new DummyIConnector()
+    val m2=new DummyIConnector()
     val ca1 = system1.actorOf(ConnectorActor.props("myConnector", m))
     val ca2 = system1.actorOf(ConnectorActor.props("myConnector2", m2))
+    //val connectorActor= system1.actorOf(ConnectorActor.props("myConnector",
+      //m).withRouter(RoundRobinRouter(nrOfInstances=2)), "connectorActorTest")
     val routees = Vector[ActorRef](ca1, ca2)
-    val connectorActor = system1.actorOf(ConnectorActor.props("myConnector", m).withRouter(RoundRobinRouter(routees = routees)))
-    /*
-    */
+    val connectorActor = system1.actorOf(ConnectorActor.props("myConnector", m).withRouter(RoundRobinRouter(routees
+    = routees)))
+
 
     val message = CreateTable(queryId, new ClusterName("cluster"), new TableMetadata(new TableName("catalog", "mytable"), null, null, null, null, null, null))
     val message2 = CreateTable(queryId + "2", new ClusterName("cluster"), new TableMetadata(new TableName("catalog", "mytable"), null, null, null, null, null, null))
-    /*
-    class ExecutorForwarder extends Actor {
-      def receive = {
-        case "start" => connectorActor forward message
-        case _ =>  println("error; we shouldn't get this message")
-      }
-    }
-    val executorForwarder=system1.actorOf(Props(new ExecutorForwarder()), "executorForwarder")
-    executorForwarder ! "start"
-    var future = ask(executorForwarder, "start")
-    */
 
     Thread.sleep(3000)
     println("sending message 1")
