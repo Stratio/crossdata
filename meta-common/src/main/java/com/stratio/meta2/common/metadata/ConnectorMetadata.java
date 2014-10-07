@@ -19,10 +19,14 @@
 package com.stratio.meta2.common.metadata;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
-import com.stratio.meta2.common.api.generated.PropertiesType;
-import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
+import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta2.common.api.ManifestHelper;
+import com.stratio.meta2.common.api.PropertiesType;
+import com.stratio.meta2.common.api.PropertyType;
+import com.stratio.meta2.common.api.connector.SupportedOperationsType;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.Status;
@@ -32,21 +36,21 @@ public class ConnectorMetadata implements IMetadata {
     private final ConnectorName name;
     private final String version;
     private final Set<DataStoreName> dataStoreRefs;
-    private final Set<PropertiesType> requiredProperties;
-    private final Set<PropertiesType> optionalProperties;
-    private final Set<SupportedOperationsType> supportedOperations;
+    private final Set<PropertyType> requiredProperties;
+    private final Set<PropertyType> optionalProperties;
+    private final Set<Operations> supportedOperations;
     private Status status;
     private Serializable actorRef;
 
-    public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
-            Set<PropertiesType> requiredProperties, Set<PropertiesType> optionalProperties,
-            Set<SupportedOperationsType> supportedOperations) {
+    public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
+            List<PropertiesType> requiredProperties, List<PropertiesType> optionalProperties,
+            List<SupportedOperationsType> supportedOperations) {
         this.name = name;
         this.version = version;
-        this.dataStoreRefs = dataStoreRefs;
-        this.requiredProperties = requiredProperties;
-        this.optionalProperties = optionalProperties;
-        this.supportedOperations = supportedOperations;
+        this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);
+        this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
+        this.optionalProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(optionalProperties);
+        this.supportedOperations = ManifestHelper.convertManifestOperationsToMetadataOperations(supportedOperations);
         this.status = Status.OFFLINE;
     }
 
@@ -62,15 +66,15 @@ public class ConnectorMetadata implements IMetadata {
         return dataStoreRefs;
     }
 
-    public Set<PropertiesType> getRequiredProperties() {
+    public Set<PropertyType> getRequiredProperties() {
         return requiredProperties;
     }
 
-    public Set<PropertiesType> getOptionalProperties() {
+    public Set<PropertyType> getOptionalProperties() {
         return optionalProperties;
     }
 
-    public Set<SupportedOperationsType> getSupportedOperations() {
+    public Set<Operations> getSupportedOperations() {
         return supportedOperations;
     }
 

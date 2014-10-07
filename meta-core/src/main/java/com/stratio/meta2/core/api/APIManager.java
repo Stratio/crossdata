@@ -20,8 +20,8 @@ package com.stratio.meta2.core.api;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -32,11 +32,11 @@ import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta2.common.api.Manifest;
-import com.stratio.meta2.common.api.generated.PropertiesType;
-import com.stratio.meta2.common.api.generated.connector.ConnectorType;
-import com.stratio.meta2.common.api.generated.connector.DataStoreRefsType;
-import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
-import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
+import com.stratio.meta2.common.api.PropertiesType;
+import com.stratio.meta2.common.api.connector.ConnectorType;
+import com.stratio.meta2.common.api.connector.DataStoreRefsType;
+import com.stratio.meta2.common.api.connector.SupportedOperationsType;
+import com.stratio.meta2.common.api.datastore.DataStoreType;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
@@ -109,16 +109,16 @@ public class APIManager {
 
     private void persistDataStore(DataStoreType dataStoreType) {
         // NAME
-        DataStoreName name = dataStoreType.getName();
+        DataStoreName name = new DataStoreName(dataStoreType.getName());
 
         // VERSION
         String version = dataStoreType.getVersion();
 
         // REQUIRED PROPERTIES
-        Set<PropertiesType> requiredProperties = dataStoreType.getRequiredProperties();
+        List<PropertiesType> requiredProperties = dataStoreType.getRequiredProperties();
 
         // OPTIONAL PROPERTIES
-        Set<PropertiesType> optionalProperties = dataStoreType.getOptionalProperties();
+        List<PropertiesType> optionalProperties = dataStoreType.getOptionalProperties();
 
         // Create Metadata
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(name, version, requiredProperties,
@@ -130,7 +130,7 @@ public class APIManager {
 
     private void persistConnector(ConnectorType connectorType) {
         // NAME
-        ConnectorName name = connectorType.getConnectorName();
+        ConnectorName name = new ConnectorName(connectorType.getConnectorName());
 
         // DATASTORES
         DataStoreRefsType dataStoreRefs = connectorType
@@ -140,16 +140,17 @@ public class APIManager {
         String version = connectorType.getVersion();
 
         // REQUIRED PROPERTIES
-        Set<PropertiesType> requiredProperties = connectorType.getRequiredProperties();
+        List<PropertiesType> requiredProperties = connectorType.getRequiredProperties();
 
         // OPTIONAL PROPERTIES
-        Set<PropertiesType> optionalProperties = connectorType.getOptionalProperties();
+        List<PropertiesType> optionalProperties = connectorType.getOptionalProperties();
 
         // SUPPORTED OPERATIONS
-        Set<SupportedOperationsType> supportedOperations = connectorType.getSupportedOperations();
+        List<SupportedOperationsType> supportedOperations = connectorType.getSupportedOperations();
 
         // Create Metadata
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs.getDataStoreName(), requiredProperties,
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs.getDataStoreName(),
+                requiredProperties,
                 optionalProperties, supportedOperations);
 
         // Persist

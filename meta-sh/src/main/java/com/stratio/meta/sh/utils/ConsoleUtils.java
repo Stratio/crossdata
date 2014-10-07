@@ -60,10 +60,10 @@ import com.stratio.meta.common.result.ErrorResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
 import com.stratio.meta2.common.api.Manifest;
-import com.stratio.meta2.common.api.generated.connector.ConnectorFactory;
-import com.stratio.meta2.common.api.generated.connector.ConnectorType;
-import com.stratio.meta2.common.api.generated.datastore.DataStoreFactory;
-import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
+import com.stratio.meta2.common.api.connector.ConnectorFactory;
+import com.stratio.meta2.common.api.connector.ConnectorType;
+import com.stratio.meta2.common.api.datastore.DataStoreFactory;
+import com.stratio.meta2.common.api.datastore.DataStoreType;
 
 import jline.console.ConsoleReader;
 import jline.console.history.History;
