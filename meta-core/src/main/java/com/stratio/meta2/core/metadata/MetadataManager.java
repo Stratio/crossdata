@@ -335,6 +335,12 @@ public enum MetadataManager {
         createConnector(connectorMetadata, false);
     }
 
+    public void setConnectorStatus(ConnectorName name, Status status){
+        ConnectorMetadata connectorMetadata = getConnector(name);
+        connectorMetadata.setStatus(status);
+        createConnector(connectorMetadata, false);
+    }
+
     public Serializable getConnectorRef(ConnectorName name) {
         return getConnector(name).getActorRef();
     }

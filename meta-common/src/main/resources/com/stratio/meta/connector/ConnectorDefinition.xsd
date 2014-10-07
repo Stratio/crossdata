@@ -5,7 +5,7 @@
     <xs:complexType name="ConnectorType">
         <xs:sequence>
             <xs:element type="xs:string" name="ConnectorName"/>
-            <xs:element type="DataStoreType" name="DataStores"/>
+            <xs:element type="DataStoreRefsType" name="DataStores"/>
             <xs:element type="xs:string" name="Version"/>
             <xs:element type="PropertiesType" name="RequiredProperties" maxOccurs="unbounded" minOccurs="0"/>
             <xs:element type="PropertiesType" name="OptionalProperties" maxOccurs="unbounded" minOccurs="0"/>
@@ -28,7 +28,7 @@
             <xs:element type="xs:string" name="operation"/>
         </xs:sequence>
     </xs:complexType>
-    <xs:complexType name="DataStoreType">
+    <xs:complexType name="DataStoreRefsType">
         <xs:sequence>
             <xs:element type="xs:string" name="DataStoreName" maxOccurs="unbounded" minOccurs="1"/>
         </xs:sequence>

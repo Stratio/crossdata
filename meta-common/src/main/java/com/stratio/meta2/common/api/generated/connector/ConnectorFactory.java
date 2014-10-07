@@ -52,11 +52,11 @@ public class ConnectorFactory {
     }
 
     /**
-     * Create an instance of {@link DataStoreType }
+     * Create an instance of {@link DataStoreRefsType }
      * 
      */
-    public DataStoreType createDataStoreType() {
-        return new DataStoreType();
+    public DataStoreRefsType createDataStoreType() {
+        return new DataStoreRefsType();
     }
 
     /**
