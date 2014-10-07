@@ -33,10 +33,10 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta2.common.api.generated.datastore.ClusterType;
-import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
-import com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType;
-import com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType;
+import com.stratio.meta2.common.api.generated.datastoreOld.ClusterType;
+import com.stratio.meta2.common.api.generated.datastoreOld.DataStoreType;
+import com.stratio.meta2.common.api.generated.datastoreOld.OptionalPropertiesType;
+import com.stratio.meta2.common.api.generated.datastoreOld.RequiredPropertiesType;
 
 public class ConnectTest extends DriverParentTest {
 

@@ -34,7 +34,7 @@ import org.jgroups.util.UUID;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
-import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
+import com.stratio.meta2.common.api.generated.connectorOld.SupportedOperationsType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -52,6 +52,7 @@ import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
+import com.stratio.meta2.common.metadata.IndexType;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.grammar.ParsingTest;
@@ -102,7 +103,18 @@ public class BasicValidatorTest {
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "email"), parameters,
                         ColumnType.TEXT));
 
+
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
+        List<ColumnMetadata> columnsIndex=new ArrayList<>();
+        ColumnMetadata columnMetadataIndex=new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "gender"),
+                parameters, ColumnType.TEXT);
+        columnsIndex.add(columnMetadataIndex);
+
+        IndexMetadata indexMetadata=new IndexMetadata(new IndexName("demo","users","gender_idx"),columnsIndex,
+                IndexType.DEFAULT, options);
+
+        indexes.put(new IndexName("demo","users","gender_idx"), indexMetadata );
+
         tableMetadata = new TableMetadata(targetTable, options, columns, indexes, clusterRef, partitionKey, clusterKey);
 
         return tableMetadata;

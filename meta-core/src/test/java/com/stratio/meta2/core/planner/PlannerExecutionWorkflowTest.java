@@ -21,9 +21,6 @@ package com.stratio.meta2.core.planner;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -37,6 +34,7 @@ import org.testng.annotations.Test;
 
 import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.exceptions.PlanningException;
+import com.stratio.meta.common.executionplan.ExecutionWorkflow;
 import com.stratio.meta.common.logicalplan.Filter;
 import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
@@ -44,30 +42,18 @@ import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.logicalplan.Select;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType;
-import com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType;
-import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
-import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.TableName;
-import com.stratio.meta2.common.metadata.CatalogMetadata;
-import com.stratio.meta2.common.metadata.ClusterMetadata;
-import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
-import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
-import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.IntegerSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.core.grammar.ParsingTest;
-import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.metadata.MetadataManagerTests;
 
 /**
  * Planner test concerning Execution workflow creation.
@@ -85,6 +71,41 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     private TableMetadata table1 = null;
     private TableMetadata table2 = null;
+
+    /**
+     * Create a test Project operator.
+     * @param tableName Name of the table.
+     * @param columns List of columns.
+     * @return A {@link com.stratio.meta.common.logicalplan.Project}.
+     */
+    public Project getProject(String tableName, ColumnName ... columns){
+        Operations operation = Operations.PROJECT;
+        Project project = new Project(operation, new TableName("demo", tableName), new ClusterName("TestCluster1"));
+        for(ColumnName cn: columns) {
+            project.addColumn(cn);
+        }
+        return project;
+    }
+
+    public Filter getFilter(Operations operation, ColumnName left, Operator operator, Selector right){
+        Relation relation = new Relation(new ColumnSelector(left), operator, right);
+        Filter filter = new Filter(operation, relation);
+        return filter;
+    }
+
+    public Select getSelect(ColumnName [] columns, ColumnType [] types){
+        Operations operation = Operations.SELECT_OPERATOR;
+        Map<ColumnName, String> columnMap = new LinkedHashMap<>();
+        Map<String, ColumnType> typeMap = new LinkedHashMap<>();
+
+        for(int index = 0; index < columns.length; index++){
+            columnMap.put(columns[index], columns[index].getName());
+            typeMap.put(columns[index].getName(), types[index]);
+        }
+        Select select = new Select(operation, columnMap, typeMap);
+        return select;
+    }
+
 
     @BeforeClass
     public void setUp(){
@@ -105,7 +126,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_OPERATOR);
         operationsC2.add(Operations.SELECT_WINDOW);
 
-        connectorName = createTestConnector("TestConnector1", dataStoreName, operationsC1);
+        connectorName = createTestConnector("TestConnector1", dataStoreName, operationsC1, "actorRef1");
         clusterName = createTestCluster("TestCluster1", dataStoreName, connectorName);
         CatalogName catalogName = createTestCatalog("demo");
         createTestTables();
@@ -132,37 +153,25 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
      * Simple workflow consisting on Project -> Select
      */
     @Test
-    public void simpleWorkflow(){
+    public void projectSelect(){
 
     }
 
 
     @Test
-    public void connectorChoice(){
+    public void projectFilterSelect(){
         // Build Logical WORKFLOW
 
         // Create initial steps (Projects)
         List<LogicalStep> initialSteps = new LinkedList<>();
-        Operations operation = Operations.PROJECT;
-        Project project = new Project(operation, new TableName("demo", "table1"), new ClusterName("TestCluster1"));
 
-        // Next step (Select)
-        operation = Operations.SELECT_OPERATOR;
-        Map<ColumnName, String> columnMap = new LinkedHashMap<>();
-        columnMap.put(new ColumnName(table1.getName(), "id"), "id");
-        columnMap.put(new ColumnName(table1.getName(), "user"), "user");
-        Map<String, ColumnType> typeMap = new LinkedHashMap<>();
-        typeMap.put("id", ColumnType.INT);
-        typeMap.put("user", ColumnType.VARCHAR);
-        Select select = new Select(operation, columnMap, typeMap);
+        Project project = getProject("table1");
 
-        // Next step (Filter)
-        operation = Operations.FILTER_PK_EQ;
-        Selector selector = new ColumnSelector(new ColumnName(table1.getName(), "id"));
-        Operator operator = Operator.EQ;
-        Selector rightTerm = new IntegerSelector(25);
-        Relation relation = new Relation(selector, operator, rightTerm);
-        Filter filter = new Filter(operation, relation);
+        ColumnName [] columns = {new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user")};
+        ColumnType [] types = {ColumnType.INT, ColumnType.TEXT};
+        Select select = getSelect(columns, types);
+
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ, new IntegerSelector(42));
 
         //Link the elements
         project.setNextStep(filter);
@@ -192,11 +201,15 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
             fail(e.getMessage());
         }
 
+        ExecutionWorkflow executionWorkflow = null;
         try {
-            planner.buildExecutionWorkflow(workflow);
+            executionWorkflow = planner.buildExecutionWorkflow(workflow);
         } catch (PlanningException e) {
             LOG.error("connectorChoice test failed", e);
         }
+        assertExecutionWorkflow(executionWorkflow, 1, new String [] {"actorRef1"});
+
+
     }
 
 

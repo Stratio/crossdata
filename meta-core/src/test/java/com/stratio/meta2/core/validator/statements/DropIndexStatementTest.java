@@ -38,7 +38,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
     public void validateOk() {
         String query = "DROP INDEX gender_idx;";
         DropIndexStatement dropIndexStatement = new DropIndexStatement();
-        dropIndexStatement.setName(new IndexName(null, null, "gender_idx"));
+        dropIndexStatement.setName(new IndexName("demo", "users", "gender_idx"));
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
@@ -58,7 +58,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
     public void validateIfNotExists() {
         String query = "DROP INDEX IF EXISTS unknown;";
         DropIndexStatement dropIndexStatement = new DropIndexStatement();
-        dropIndexStatement.setName(new IndexName(null, null, "unknown"));
+        dropIndexStatement.setName(new IndexName("demo", "users", "unknown"));
         dropIndexStatement.setDropIfExists();
 
         Validator validator = new Validator();
@@ -72,7 +72,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
         } catch (ValidationException e) {
             Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            Assert.assertTrue(true);
         }
     }
 
@@ -80,7 +80,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
     public void validateNotExistsIndex() {
         String query = "DROP INDEX unknown;";
         DropIndexStatement dropIndexStatement = new DropIndexStatement();
-        dropIndexStatement.setName(new IndexName(null, null, "unknown"));
+        dropIndexStatement.setName(new IndexName("demo", "users", "unknown"));
         dropIndexStatement.setDropIfExists();
 
         Validator validator = new Validator();

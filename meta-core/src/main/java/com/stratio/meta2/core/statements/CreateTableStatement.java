@@ -102,8 +102,12 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         this.columnsWithType = columns;
         this.partitionKey = partitionKey;
         this.clusterKey = clusterKey;
-        this.primaryKey.addAll(partitionKey);
-        this.primaryKey.addAll(clusterKey);
+        if (partitionKey!=null){
+            this.primaryKey.addAll(partitionKey);
+        }
+        if (clusterKey!=null) {
+            this.primaryKey.addAll(clusterKey);
+        }
     }
 
     /**

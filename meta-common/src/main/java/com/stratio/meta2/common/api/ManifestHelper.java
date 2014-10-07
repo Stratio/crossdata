@@ -19,15 +19,11 @@
 package com.stratio.meta2.common.api;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Set;
+import java.util.Iterator;
 
-import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta2.common.api.generated.PropertiesType;
 import com.stratio.meta2.common.api.generated.connector.ConnectorType;
-import com.stratio.meta2.common.api.generated.datastore.ClusterType;
 import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
-import com.stratio.meta2.common.api.generated.datastore.HostsType;
-import com.stratio.meta2.common.api.generated.datastore.PropertyType;
 
 public class ManifestHelper implements Serializable {
 
@@ -55,6 +51,12 @@ public class ManifestHelper implements Serializable {
 
         // REQUIRED PARAMETERS
         sb.append("Required parameters: ").append(System.lineSeparator());
+
+        Iterator<PropertiesType> propertiesIter = dataStoreType.getRequiredProperties().iterator();
+
+        // TODO
+
+        /*sb.append("\t").append("Cluster: ").append(System.lineSeparator());
         sb.append("\t").append("CLUSTER: ").append(System.lineSeparator());
         ClusterType cluster = dataStoreType.getRequiredProperties().getCluster();
         sb.append("\t").append("\t").append("Name: ").append(cluster.getName()).append(System.lineSeparator());
@@ -65,15 +67,18 @@ public class ManifestHelper implements Serializable {
                     .append(System.lineSeparator());
             sb.append("\t").append("\t").append("\t").append("Port: ").append(hosts.getPort())
                     .append(System.lineSeparator());
-        }
+        }*/
 
         // OPTIONAL PROPERTIES
+        /*
         sb.append("Optional properties: ").append(System.lineSeparator());
         List<PropertyType> propertiesList = dataStoreType.getOptionalProperties().getProperty();
         for (PropertyType propertyType : propertiesList) {
             sb.append("\t").append("Property").append(System.lineSeparator());
             sb.append("\t").append("\t").append("Name: ").append(propertyType.getName()).append(System.lineSeparator());
-        }
+        }*/
+
+        // BEHAVIOURS
 
         // RESULT
         return sb.toString();
@@ -86,39 +91,46 @@ public class ManifestHelper implements Serializable {
         // CONNECTOR NAME
         sb.append("ConnectorName: ").append(connectorType.getConnectorName()).append(System.lineSeparator());
 
+        // TODO
+
         // DATA STORES NAME
+        /*
         sb.append("DataStoresName: ").append(System.lineSeparator());
         sb.append("\t").append("Datastore: ").append(connectorType.getDataStoresName().getDatastore()).append(
                 System.lineSeparator());
+        */
 
         // VERSION
         sb.append("Version: ").append(connectorType.getVersion()).append(System.lineSeparator());
 
         // REQUIRED PROPERTIES
         sb.append("Required properties: ").append(System.lineSeparator());
-        List<com.stratio.meta2.common.api.generated.connector.PropertyType> propertiesList = connectorType
+        /*
+        List<com.stratio.meta2.common.api.generated.PropertyType> propertiesList = connectorType
                 .getRequiredProperties().getProperty();
-        for (com.stratio.meta2.common.api.generated.connector.PropertyType property : propertiesList) {
+        for (com.stratio.meta2.common.api.generated.PropertyType property : propertiesList) {
             sb.append("\t").append("Property: ").append(System.lineSeparator());
             sb.append("\t").append("\t").append("Name: ").append(property.getName()).append(
                     System.lineSeparator());
-        }
+        }*/
 
         // OPTIONAL PROPERTIES
         sb.append("Optional properties: ").append(System.lineSeparator());
+        /*
         propertiesList = connectorType.getOptionalProperties().getProperty();
-        for (com.stratio.meta2.common.api.generated.connector.PropertyType property : propertiesList) {
+        for (com.stratio.meta2.common.api.generated.PropertyType property : propertiesList) {
             sb.append("\t").append("Property: ").append(System.lineSeparator());
             sb.append("\t").append("\t").append("Name: ").append(property.getName()).append(
                     System.lineSeparator());
-        }
+        }*/
 
         // SUPPORTED OPERATIONS
         sb.append("Supported operations: ").append(System.lineSeparator());
+        /*
         Set<Operations> operationsList = connectorType.getSupportedOperations().getOperation();
         for (Operations operation : operationsList) {
             sb.append("\t").append("Operation: ").append(operation).append(System.lineSeparator());
-        }
+        }*/
 
         // RESULT
         return sb.toString();

@@ -28,7 +28,7 @@ public class ColumnMetadata implements IMetadata {
     public ColumnMetadata(ColumnName name, Object[] parameters,
             ColumnType columnType) {
         this.name = name;
-        this.parameters = parameters;
+        this.parameters = parameters.clone();
         this.columnType = columnType;
     }
 

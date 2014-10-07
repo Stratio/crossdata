@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.core.query;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.stratio.meta.common.result.QueryStatus;
@@ -29,10 +30,10 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 
 public class SelectValidatedQuery extends SelectParsedQuery implements ValidatedQuery {
 
-    private List<TableMetadata> tableMetadata;
-    private List<ColumnName> columns;
-    private List<Relation> relationships;
-    private List<TableName> tables;
+    private List<TableMetadata> tableMetadata=new ArrayList<>();
+    private List<ColumnName> columns=new ArrayList<>();
+    private List<Relation> relationships=new ArrayList<>();
+    private List<TableName> tables=new ArrayList<>();
     private InnerJoin join;
 
     public SelectValidatedQuery(SelectParsedQuery selectParsedQuery) {

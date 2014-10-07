@@ -37,11 +37,11 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import com.stratio.meta.common.connector.Operations;
-import com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType;
-import com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType;
-import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
-import com.stratio.meta2.common.api.generated.datastore.ClusterType;
-import com.stratio.meta2.common.api.generated.datastore.HostsType;
+import com.stratio.meta2.common.api.generated.connectorOld.OptionalPropertiesType;
+import com.stratio.meta2.common.api.generated.connectorOld.RequiredPropertiesType;
+import com.stratio.meta2.common.api.generated.connectorOld.SupportedOperationsType;
+import com.stratio.meta2.common.api.generated.datastoreOld.ClusterType;
+import com.stratio.meta2.common.api.generated.datastoreOld.HostsType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -83,8 +83,8 @@ public class MetadataManagerTests {
     protected DataStoreMetadata insertDataStore(String dataStore, String cluster) {
         DataStoreName dataStoreName = new DataStoreName(dataStore);
         String version = "0.1.0";
-        com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType requiredPropertiesForDataStore = new
-                com.stratio.meta2.common.api.generated.datastore.RequiredPropertiesType();
+        com.stratio.meta2.common.api.generated.datastoreOld.RequiredPropertiesType requiredPropertiesForDataStore = new
+                com.stratio.meta2.common.api.generated.datastoreOld.RequiredPropertiesType();
         ClusterType clusterType = new ClusterType();
         clusterType.setName(cluster);
         List<HostsType> hosts = new ArrayList<>();
@@ -94,7 +94,7 @@ public class MetadataManagerTests {
         hosts.add(hostsType);
         clusterType.setHosts(hosts);
         requiredPropertiesForDataStore.setCluster(clusterType);
-        com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType othersProperties = new com.stratio.meta2.common.api.generated.datastore.OptionalPropertiesType();
+        com.stratio.meta2.common.api.generated.datastoreOld.OptionalPropertiesType othersProperties = new com.stratio.meta2.common.api.generated.datastoreOld.OptionalPropertiesType();
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version,
                 requiredPropertiesForDataStore, othersProperties);
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
@@ -137,7 +137,8 @@ public class MetadataManagerTests {
      * @param dataStoreName The datastore associated with this connector.
      * @return A {@link com.stratio.meta2.common.data.ConnectorName}.
      */
-    public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<Operations> operations) {
+    public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<Operations> operations,
+            String actorRef) {
         final String version = "0.1.0";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
@@ -149,7 +150,7 @@ public class MetadataManagerTests {
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
                 requiredPropertiesForConnector,
                 optionalProperties, supportedOperations);
-        connectorMetadata.setActorRef(null);
+        connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         return connectorName;
     }
