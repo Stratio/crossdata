@@ -20,13 +20,11 @@ package com.stratio.meta2.common.api;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta2.common.api.connector.ConnectorType;
-import com.stratio.meta2.common.api.connector.SupportedOperationsType;
 import com.stratio.meta2.common.api.datastore.DataStoreType;
 import com.stratio.meta2.common.data.DataStoreName;
 
@@ -54,34 +52,36 @@ public class ManifestHelper implements Serializable {
         // VERSION
         sb.append("Version: ").append(dataStoreType.getVersion()).append(System.lineSeparator());
 
-        // REQUIRED PARAMETERS
-        sb.append("Required parameters: ").append(System.lineSeparator());
+        // REQUIRED PROPERTIES
+        sb.append("Required properties: ").append(System.lineSeparator());
 
-        Iterator<PropertiesType> propertiesIter = dataStoreType.getRequiredProperties().iterator();
-
-        // TODO
-
-        /*sb.append("\t").append("Cluster: ").append(System.lineSeparator());
-        sb.append("\t").append("CLUSTER: ").append(System.lineSeparator());
-        ClusterType cluster = dataStoreType.getRequiredProperties().getCluster();
-        sb.append("\t").append("\t").append("Name: ").append(cluster.getName()).append(System.lineSeparator());
-        sb.append("\t").append("\t").append("Hosts: ").append(System.lineSeparator());
-        List<HostsType> hostsList = cluster.getHosts();
-        for (HostsType hosts : hostsList) {
-            sb.append("\t").append("\t").append("\t").append("Host: ").append(hosts.getHost())
-                    .append(System.lineSeparator());
-            sb.append("\t").append("\t").append("\t").append("Port: ").append(hosts.getPort())
-                    .append(System.lineSeparator());
-        }*/
-
-        // OPTIONAL PROPERTIES
-        /*
-        sb.append("Optional properties: ").append(System.lineSeparator());
-        List<PropertyType> propertiesList = dataStoreType.getOptionalProperties().getProperty();
-        for (PropertyType propertyType : propertiesList) {
-            sb.append("\t").append("Property").append(System.lineSeparator());
-            sb.append("\t").append("\t").append("Name: ").append(propertyType.getName()).append(System.lineSeparator());
-        }*/
+//        for(PropertiesType propertiesType: dataStoreType.getRequiredProperties()){
+//            sb.append("\t").append("Property: ").append(System.lineSeparator());
+//            for(PropertyType propertyType: propertiesType.getProperty()){
+//                sb.append("\t").append("\t").append("PropertyName: ").append(propertiesType.getProperty());
+//            }
+//        }
+//
+//        sb.append("\t").append("Cluster: ").append(System.lineSeparator());
+//        sb.append("\t").append("CLUSTER: ").append(System.lineSeparator());
+//        ClusterType cluster = dataStoreType.getRequiredProperties().getCluster();
+//        sb.append("\t").append("\t").append("Name: ").append(cluster.getName()).append(System.lineSeparator());
+//        sb.append("\t").append("\t").append("Hosts: ").append(System.lineSeparator());
+//        List<HostsType> hostsList = cluster.getHosts();
+//        for (HostsType hosts : hostsList) {
+//            sb.append("\t").append("\t").append("\t").append("Host: ").append(hosts.getHost())
+//                    .append(System.lineSeparator());
+//            sb.append("\t").append("\t").append("\t").append("Port: ").append(hosts.getPort())
+//                    .append(System.lineSeparator());
+//        }
+//
+//        // OPTIONAL PROPERTIES
+//        sb.append("Optional properties: ").append(System.lineSeparator());
+//        List<PropertyType> propertiesList = dataStoreType.getOptionalProperties().getProperty();
+//        for (PropertyType propertyType : propertiesList) {
+//            sb.append("\t").append("Property").append(System.lineSeparator());
+//            sb.append("\t").append("\t").append("Name: ").append(propertyType.getName()).append(System.lineSeparator());
+//        }
 
         // BEHAVIOURS
 
@@ -142,12 +142,10 @@ public class ManifestHelper implements Serializable {
     }
 
     public static Set<PropertyType> convertManifestPropertiesToMetadataProperties(
-            List<PropertiesType> requiredProperties) {
+            List<PropertyType> requiredProperties) {
         Set<PropertyType> metadataProperties = new HashSet<>();
-        for(PropertiesType propertiesType: requiredProperties){
-            for(PropertyType propertyType: propertiesType.getProperty()){
-                metadataProperties.add(propertyType);
-            }
+        for(PropertyType propertyType: requiredProperties){
+            metadataProperties.add(propertyType);
         }
         return metadataProperties;
     }
@@ -161,10 +159,10 @@ public class ManifestHelper implements Serializable {
     }
 
     public static Set<Operations> convertManifestOperationsToMetadataOperations(
-            List<SupportedOperationsType> supportedOperations) {
+            List<String> supportedOperations) {
         Set<Operations> operations = new HashSet<>();
-        for(SupportedOperationsType supportedOperationsType: supportedOperations){
-            operations.add(Operations.valueOf(supportedOperationsType.getOperation().toUpperCase()));
+        for(String supportedOperation: supportedOperations){
+            operations.add(Operations.valueOf(supportedOperation.toUpperCase()));
         }
         return operations;
     }
