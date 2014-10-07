@@ -16,9 +16,7 @@ Stratio META brings batch and streaming queries into a single language. META pro
 
 ## Full documentation ##
 
-See the Wiki for full documentation, examples, operational details and other information.
-
-See the [Javadoc] () and [Language reference] () for the internal details.
+See the project webpage for more information, documentation, examples and operational details: http://stratio.github.io/crossdata/
 
 ## Prerequisites ##
 
