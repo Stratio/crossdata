@@ -132,6 +132,7 @@ public class MetadataManagerTests {
      * @param dataStoreName The datastore associated with this connector.
      * @return A {@link com.stratio.meta2.common.data.ConnectorName}.
      */
+    //TODO return ConnectorMetadata
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<Operations> operations,
             String actorRef) {
         final String version = "0.1.0";

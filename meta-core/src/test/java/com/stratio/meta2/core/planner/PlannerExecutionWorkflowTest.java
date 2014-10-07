@@ -203,7 +203,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         ExecutionWorkflow executionWorkflow = null;
         try {
-            executionWorkflow = planner.buildExecutionWorkflow(workflow);
+            executionWorkflow = planner.buildExecutionWorkflow("qid", workflow);
         } catch (PlanningException e) {
             LOG.error("connectorChoice test failed", e);
         }

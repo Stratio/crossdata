@@ -19,8 +19,10 @@
 package com.stratio.meta2.common.metadata;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
+import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta2.common.api.generated.PropertiesType;
 import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
 import com.stratio.meta2.common.data.ConnectorName;
@@ -34,7 +36,7 @@ public class ConnectorMetadata implements IMetadata {
     private final Set<DataStoreName> dataStoreRefs;
     private final Set<PropertiesType> requiredProperties;
     private final Set<PropertiesType> optionalProperties;
-    private final Set<SupportedOperationsType> supportedOperations;
+    private final Set<Operations> supportedOperations;
     private Status status;
     private Serializable actorRef;
 
@@ -46,7 +48,10 @@ public class ConnectorMetadata implements IMetadata {
         this.dataStoreRefs = dataStoreRefs;
         this.requiredProperties = requiredProperties;
         this.optionalProperties = optionalProperties;
-        this.supportedOperations = supportedOperations;
+        this.supportedOperations = new HashSet<>();
+        for(SupportedOperationsType type: supportedOperations){
+            this.supportedOperations.add(type.getOperation());
+        }
         this.status = Status.OFFLINE;
     }
 
@@ -70,10 +75,6 @@ public class ConnectorMetadata implements IMetadata {
         return optionalProperties;
     }
 
-    public Set<SupportedOperationsType> getSupportedOperations() {
-        return supportedOperations;
-    }
-
     public Status getStatus() {
         return status;
     }
@@ -90,4 +91,14 @@ public class ConnectorMetadata implements IMetadata {
         this.status = Status.ONLINE;
         this.actorRef = actorRef;
     }
+
+    /**
+     * Determine if the connector supports a specific operation.
+     * @param operation The required operation.
+     * @return Whether it is supported.
+     */
+    public boolean supports(Operations operation){
+        return supportedOperations.contains(operation);
+    }
+
 }

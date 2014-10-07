@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.exceptions.PlanningException;
+import com.stratio.meta.common.executionplan.ExecutionPath;
 import com.stratio.meta.common.executionplan.ExecutionType;
 import com.stratio.meta.common.executionplan.ExecutionWorkflow;
 import com.stratio.meta.common.executionplan.MetadataWorkflow;
@@ -89,7 +90,7 @@ public class Planner {
     public SelectPlannedQuery planQuery(SelectValidatedQuery query) throws PlanningException {
         LogicalWorkflow workflow = buildWorkflow(query);
         //Plan the workflow execution into different connectors.
-        ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(workflow);
+        ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query.getQueryId(), workflow);
         //Return the planned query.
         SelectPlannedQuery pq = new SelectPlannedQuery(query, executionWorkflow);
         return pq;
@@ -118,20 +119,64 @@ public class Planner {
         return result;
     }
 
-    protected ExecutionWorkflow buildExecutionWorkflow(LogicalWorkflow workflow) throws PlanningException {
+    protected ExecutionWorkflow buildExecutionWorkflow(String queryId, LogicalWorkflow workflow) throws
+            PlanningException {
 
+        //Get the list of tables accessed in this query
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
 
-        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = findCapableConnectors(tables,
-                workflow.getInitialSteps());
+        //Obtain the map of connector that is able to access those tables.
+        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
+                .getAttachedConnectors(Status.ONLINE, tables);
 
-        ConnectorMetadata chosenConnector = findMoreSuitableConnector(candidatesConnectors);
+        //Iterate through the initial steps and build valid execution paths
+        for(LogicalStep step: workflow.getInitialSteps()){
+            String targetTable = ((Project) step).getTableName().getQualifiedName();
+            ExecutionPath ep = defineExecutionPath(step, candidatesConnectors.get(targetTable));
+        }
+
+        //Iterate over the list of UnionSteps and solve paths.
 
         // TODO: Create this object properly
-        ExecutionWorkflow executionWorkflow = new ExecutionWorkflow(null, null, null, null);
+        ExecutionWorkflow executionWorkflow = new ExecutionWorkflow(queryId, null, null, null);
 
         return executionWorkflow;
     }
+
+    /**
+     * Define the a execution path that starts with a initial step. This process refines the list of available
+     * connectors in order to obtain the list that supports all operations in an execution paths.
+     * @param initial The initial step.
+     * @param availableConnectors The list of available connectors.
+     * @return An {@link com.stratio.meta.common.executionplan.ExecutionPath}.
+     */
+    protected ExecutionPath defineExecutionPath(LogicalStep initial, List<ConnectorMetadata> availableConnectors){
+        LogicalStep last = null;
+        LogicalStep current = initial;
+        List<ConnectorMetadata> toRemove = new ArrayList<>();
+        boolean exit = false;
+
+        while(!exit){
+            //Evaluate the connectors
+            for(ConnectorMetadata connector : availableConnectors){
+                if(!connector.supports(current.getOperation())){
+                    toRemove.add(connector);
+                }
+            }
+            //Remove invalid connectors
+            availableConnectors.removeAll(toRemove);
+            toRemove.clear();
+
+            if(availableConnectors.isEmpty()
+                    || current.getNextStep() == null
+                    || UnionStep.class.isInstance(current.getNextStep())){
+                exit = true;
+                last = current;
+            }
+        }
+        return new ExecutionPath(initial, last, availableConnectors);
+    }
+
 
     protected List<TableName> getInitialSteps(List<LogicalStep> initialSteps){
         List<TableName> tables = new ArrayList<>(initialSteps.size());
@@ -214,7 +259,7 @@ public class Planner {
      */
     public void updateCandidates(TableName tableName, LogicalStep ls,
             Map<TableName, List<ConnectorMetadata>> candidatesConnectors){
-        Operations operations = ls.getOperation();
+        /*Operations operations = ls.getOperation();
         List<ConnectorMetadata> connectorList = candidatesConnectors.get(tableName);
         List<ConnectorMetadata> rejectedConnectors = new ArrayList<>();
         for(ConnectorMetadata connectorMetadata: connectorList){
@@ -228,7 +273,7 @@ public class Planner {
         } else {
             candidatesConnectors.put(tableName, connectorList);
         }
-
+*/
     }
 
     /**
