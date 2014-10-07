@@ -33,10 +33,7 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.Result;
-import com.stratio.meta2.common.api.generated.datastoreOld.ClusterType;
-import com.stratio.meta2.common.api.generated.datastoreOld.DataStoreType;
-import com.stratio.meta2.common.api.generated.datastoreOld.OptionalPropertiesType;
-import com.stratio.meta2.common.api.generated.datastoreOld.RequiredPropertiesType;
+import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
 
 public class ConnectTest extends DriverParentTest {
 
@@ -98,7 +95,7 @@ public class ConnectTest extends DriverParentTest {
 
         // Create Manifest
         DataStoreType manifest = new DataStoreType();
-        manifest.setName("string_name");
+        /*manifest.setName("string_name");
         manifest.setVersion("0.0.1");
         RequiredPropertiesType rp = new RequiredPropertiesType();
         ClusterType ct = new ClusterType();
@@ -106,7 +103,7 @@ public class ConnectTest extends DriverParentTest {
         rp.setCluster(ct);
         manifest.setRequiredProperties(rp);
         OptionalPropertiesType op = new OptionalPropertiesType();
-        manifest.setOptionalProperties(op);
+        manifest.setOptionalProperties(op);*/
 
         // API Call
         try {

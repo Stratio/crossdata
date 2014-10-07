@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -49,9 +48,6 @@ import com.stratio.meta.common.logicalplan.Select;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.core.structures.InnerJoin;
-import com.stratio.meta2.common.api.generated.connector.OptionalPropertiesType;
-import com.stratio.meta2.common.api.generated.connector.RequiredPropertiesType;
-import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -387,7 +383,7 @@ public class PlannerWorkflowTest extends MetadataManagerTests {
             // Create & add CONNECTOR
         ConnectorName connectorName = new ConnectorName("ConnectorTest");
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
-        RequiredPropertiesType requiredPropertiesForConnector = new RequiredPropertiesType();
+        /*RequiredPropertiesType requiredPropertiesForConnector = new RequiredPropertiesType();
         OptionalPropertiesType optionalProperties = new OptionalPropertiesType();
         SupportedOperationsType supportedOperations = new SupportedOperationsType();
         Set<Operations> operations = new HashSet<>();
@@ -398,7 +394,7 @@ public class PlannerWorkflowTest extends MetadataManagerTests {
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs, requiredPropertiesForConnector,
                 optionalProperties, supportedOperations);
         connectorMetadata.setActorRef(null);
-        MetadataManager.MANAGER.createConnector(connectorMetadata);
+        MetadataManager.MANAGER.createConnector(connectorMetadata);*/
 
             // Create & add CLUSTER
         Map<Selector, Selector> options = new HashMap<>();

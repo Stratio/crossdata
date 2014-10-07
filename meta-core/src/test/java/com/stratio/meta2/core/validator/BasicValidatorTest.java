@@ -34,7 +34,7 @@ import org.jgroups.util.UUID;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
-import com.stratio.meta2.common.api.generated.connectorOld.SupportedOperationsType;
+import com.stratio.meta2.common.api.generated.connector.SupportedOperationsType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -52,7 +52,6 @@ import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
-import com.stratio.meta2.common.metadata.IndexType;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.grammar.ParsingTest;
@@ -110,10 +109,10 @@ public class BasicValidatorTest {
                 parameters, ColumnType.TEXT);
         columnsIndex.add(columnMetadataIndex);
 
-        IndexMetadata indexMetadata=new IndexMetadata(new IndexName("demo","users","gender_idx"),columnsIndex,
+        /*IndexMetadata indexMetadata=new IndexMetadata(new IndexName("demo","users","gender_idx"),columnsIndex,
                 IndexType.DEFAULT, options);
 
-        indexes.put(new IndexName("demo","users","gender_idx"), indexMetadata );
+        indexes.put(new IndexName("demo","users","gender_idx"), indexMetadata );*/
 
         tableMetadata = new TableMetadata(targetTable, options, columns, indexes, clusterRef, partitionKey, clusterKey);
 
@@ -124,9 +123,10 @@ public class BasicValidatorTest {
         Set<DataStoreName> dataStoreRefs = new HashSet<>();
         dataStoreRefs.add(new DataStoreName("Cassandra"));
         SupportedOperationsType supportedOperations = new SupportedOperationsType();
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0",
+        /*ConnectorMetadata connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0",
                 dataStoreRefs, null, null, supportedOperations);
-        return connectorMetadata;
+        return connectorMetadata;*/
+        return null;
     }
 
     private static DataStoreMetadata createDataStoreMetadata() {
