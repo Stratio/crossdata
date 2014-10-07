@@ -21,16 +21,9 @@ import java.util.Map;
 
 import org.testng.annotations.Test;
 
-<<<<<<< HEAD
-import com.stratio.meta2.common.api.generated.connectorOld.SupportedOperationsType;
-import com.stratio.meta2.common.api.generated.datastoreOld.OptionalPropertiesType;
-import com.stratio.meta2.common.api.generated.datastoreOld.RequiredPropertiesType;
-import com.stratio.meta2.common.data.CatalogName;
-=======
 import com.stratio.meta.common.executionplan.ExecutionType;
 import com.stratio.meta.common.executionplan.ManagementWorkflow;
 import com.stratio.meta.common.executionplan.ResultType;
->>>>>>> 23ffbebd2a8a0fbce3c9a11b4ff3a3a296b53b77
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
@@ -67,9 +60,8 @@ public class CoordinatorTest extends MetadataManagerTests {
         }
         assertTrue(found, "Attachment not found");
     }
-<<<<<<< HEAD
 
-    @Test
+    /*@Test
     public void testAttachConnector() throws Exception {
 
         // Create and add a test datastore metadata to the metadatamanager
@@ -367,10 +359,7 @@ public class CoordinatorTest extends MetadataManagerTests {
             columns.put(c.getKey(), c.getValue().getColumnType());
         }
         MetadataManager.MANAGER.createTable(table);
-    }
-
-=======
->>>>>>> 23ffbebd2a8a0fbce3c9a11b4ff3a3a296b53b77
+    }*/
 }
 //
 //    @Test

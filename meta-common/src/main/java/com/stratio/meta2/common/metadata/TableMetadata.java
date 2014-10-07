@@ -128,7 +128,7 @@ public class TableMetadata implements IMetadata {
      */
     public boolean isIndexed(ColumnName columnName) {
         for (IndexMetadata indexMetadata : indexes.values()) {
-            if (indexMetadata.getColumns().contains(columnName)) {
+            if (indexMetadata.getColumns().containsKey(columnName)) {
                 return true;
             }
         }
