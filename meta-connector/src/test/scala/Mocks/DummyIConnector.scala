@@ -1,3 +1,5 @@
+package Mocks
+
 import com.stratio.meta.common.connector._
 import com.stratio.meta.common.security.ICredentials
 import com.stratio.meta2.common.data.ClusterName

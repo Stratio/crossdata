@@ -16,7 +16,8 @@
  * under the License.
  */
 
-import akka.actor.ActorSystem
+import Mocks.DummyIConnector
+import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.routing.RoundRobinRouter
 import akka.util.Timeout
@@ -96,14 +97,15 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
 
    */
 
-    //val ca1 = system1.actorOf(ConnectorActor.props("myConnector", m))
-    //val ca2 = system1.actorOf(ConnectorActor.props("myConnector2", m2))
-    //val routees = Vector[ActorRef](ca1, ca2)
-    //val connectorActor = system1.actorOf(ConnectorActor.props("myConnector", m).withRouter(RoundRobinRouter(routees
-      //= routees)))
     val m=new DummyIConnector()
-    val connectorActor= system1.actorOf(ConnectorActor.props("myConnector",
-      m).withRouter(RoundRobinRouter(nrOfInstances=2)), "connectorActorTest")
+    val m2=new DummyIConnector()
+    val ca1 = system1.actorOf(ConnectorActor.props("myConnector", m))
+    val ca2 = system1.actorOf(ConnectorActor.props("myConnector2", m2))
+    //val connectorActor= system1.actorOf(ConnectorActor.props("myConnector",
+      //m).withRouter(RoundRobinRouter(nrOfInstances=2)), "connectorActorTest")
+    val routees = Vector[ActorRef](ca1, ca2)
+    val connectorActor = system1.actorOf(ConnectorActor.props("myConnector", m).withRouter(RoundRobinRouter(routees
+    = routees)))
 
 
     val message = CreateTable(queryId, new ClusterName("cluster"), new TableMetadata(new TableName("catalog", "mytable"), null, null, null, null, null, null))

@@ -64,14 +64,14 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     }
 
     case connectRequest: com.stratio.meta.communication.Connect => {
-      log.info("->" + "Receiving MetadataRequest")
+      log.debug("->" + "Receiving MetadataRequest")
       //connector.connect(connectRequest.credentials,connectRequest.connectorClusterConfig)
       this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
       sender ! "ok"
     }
 
     case _: com.stratio.meta.communication.Shutdown => {
-      log.info("->" + "Receiving Shutdown")
+      log.debug("->" + "Receiving Shutdown")
       this.shutdown()
     }
 
@@ -193,22 +193,22 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
 
     case MemberUp(member) =>
       println("member up")
-      log.info("*******Member is Up: {} {}!!!!!", member.toString, member.getRoles)
+      log.debug("*******Member is Up: {} {}!!!!!", member.toString, member.getRoles)
     //val actorRefe=context.actorSelection(RootActorPath(member.address) / "user" / "connectoractor" )
     //actorRefe ! "hola "+member.address+ "  "+RootActorPath(member.address)
 
     case state: CurrentClusterState =>
-      log.info("Current members: {}", state.members.mkString(", "))
+      log.debug("Current members: {}", state.members.mkString(", "))
 
     case UnreachableMember(member) =>
-      log.info("Member detected as unreachable: {}", member)
+      log.debug("Member detected as unreachable: {}", member)
 
     case MemberRemoved(member, previousStatus) =>
-      log.info("Member is Removed: {} after {}",
+      log.debug("Member is Removed: {} after {}",
         member.address, previousStatus)
 
     case _: MemberEvent =>
-      log.info("Receiving anything else")
+      log.debug("Receiving anything else")
 
   }
 
