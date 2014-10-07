@@ -94,6 +94,10 @@ case class DropCatalog(queryId: String, targetCluster: ClusterName, catalogName:
 case class CreateTable(queryId: String, targetCluster: ClusterName, tableMetadata: TableMetadata) extends
 MetadataOperation(queryId)
 
+case class CreateTableAndCatalog(queryId: String, targetCluster: ClusterName, catalogMetadata: CatalogMetadata,
+                                 tableMetadata: TableMetadata) extends
+MetadataOperation(queryId)
+
 case class DropTable(queryId: String, targetCluster: ClusterName, tableName: TableName) extends MetadataOperation(queryId)
 
 case class CreateIndex(queryId: String, targetCluster: ClusterName, indexMetadata: IndexMetadata) extends
