@@ -488,7 +488,7 @@ public class Metash {
                 try {
                     input.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOG.error(e);
                 }
             }
         }

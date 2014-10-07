@@ -24,6 +24,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
@@ -39,6 +41,11 @@ import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
  * Utility class for String transformation operations.
  */
 public class StringUtils {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(StringUtils.class);
 
     /**
      * Create a string from a list of objects using a separator between objects.
@@ -79,7 +86,7 @@ public class StringUtils {
                 options.put(new StringSelector(entry.getKey()), selector);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error(e);
         }
         return options;
     }
@@ -101,7 +108,7 @@ public class StringUtils {
                 options.put(entry.getKey(), obj);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error(e);
         }
         return options;
     }
