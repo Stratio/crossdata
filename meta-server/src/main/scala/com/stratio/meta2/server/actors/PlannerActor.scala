@@ -22,7 +22,7 @@ import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.meta.common.result.{QueryStatus, Result}
 import com.stratio.meta.communication.ACK
 import com.stratio.meta2.core.planner.Planner
-import com.stratio.meta2.core.query.{SelectValidatedQuery, MetadataValidatedQuery}
+import com.stratio.meta2.core.query.{StorageValidatedQuery, SelectValidatedQuery, MetadataValidatedQuery}
 import org.apache.log4j.Logger
 
 object PlannerActor {
@@ -38,10 +38,9 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
     case query: MetadataValidatedQuery => {
       println("\n\n\ngetting MetadataValidatedQuery; sending ack to "+sender+"\n\n\n")
       val timer = initTimer()
-      //val planned = planner.planQuery(query)
+      val planned = planner.planQuery(query)
       finishTimer(timer)
-      //coordinator forward planned
-      //TODO plan metadata queries
+      coordinator forward planned
 
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
       sender ! ack
@@ -53,6 +52,16 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
       finishTimer(timer)
       coordinator forward planned
 
+      val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
+      sender ! ack
+    }
+
+    case query: StorageValidatedQuery => {
+      println("\n\n\ngetting StorageValidatedQuery; sending ack to "+sender+"\n\n\n")
+      val timer = initTimer()
+      val planned = planner.planQuery(query)
+      finishTimer(timer)
+      coordinator forward planned
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
       sender ! ack
     }

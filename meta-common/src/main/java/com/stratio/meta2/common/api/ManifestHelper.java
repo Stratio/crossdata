@@ -19,11 +19,16 @@
 package com.stratio.meta2.common.api;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-import com.stratio.meta2.common.api.generated.PropertiesType;
-import com.stratio.meta2.common.api.generated.connector.ConnectorType;
-import com.stratio.meta2.common.api.generated.datastore.DataStoreType;
+import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta2.common.api.connector.ConnectorType;
+import com.stratio.meta2.common.api.connector.SupportedOperationsType;
+import com.stratio.meta2.common.api.datastore.DataStoreType;
+import com.stratio.meta2.common.data.DataStoreName;
 
 public class ManifestHelper implements Serializable {
 
@@ -136,4 +141,31 @@ public class ManifestHelper implements Serializable {
         return sb.toString();
     }
 
+    public static Set<PropertyType> convertManifestPropertiesToMetadataProperties(
+            List<PropertiesType> requiredProperties) {
+        Set<PropertyType> metadataProperties = new HashSet<>();
+        for(PropertiesType propertiesType: requiredProperties){
+            for(PropertyType propertyType: propertiesType.getProperty()){
+                metadataProperties.add(propertyType);
+            }
+        }
+        return metadataProperties;
+    }
+
+    public static Set<DataStoreName> convertManifestDataStoreNamesToMetadataDataStoreNames(List<String> dataStoreRefs) {
+        Set<DataStoreName> dataStoreNames = new HashSet<>();
+        for(String name: dataStoreRefs){
+            dataStoreNames.add(new DataStoreName(name));
+        }
+        return dataStoreNames;
+    }
+
+    public static Set<Operations> convertManifestOperationsToMetadataOperations(
+            List<SupportedOperationsType> supportedOperations) {
+        Set<Operations> operations = new HashSet<>();
+        for(SupportedOperationsType supportedOperationsType: supportedOperations){
+            operations.add(Operations.valueOf(supportedOperationsType.getOperation().toUpperCase()));
+        }
+        return operations;
+    }
 }

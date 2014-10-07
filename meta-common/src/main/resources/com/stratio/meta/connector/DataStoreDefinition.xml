@@ -1,20 +1,28 @@
 <DataStore>
-    <Name>string</Name>
-    <Version>string</Version>
+    <Name>Cassandra</Name>
+    <Version>2.0.0</Version>
     <RequiredProperties>
-        <cluster>
-            <name>string</name>
-            <!--Zero or more repetitions:-->
-            <hosts>
-                <host>string</host>
-                <port>string</port>
-            </hosts>
-        </cluster>
+        <Property>
+            <PropertyName>Hosts</PropertyName>
+            <Description>Host list with its own port. Example: [host1,host2,host3]</Description>
+        </Property>
+        <Property>
+            <PropertyName>Port</PropertyName>
+            <Description>Cassandra Port</Description>
+        </Property>
     </RequiredProperties>
     <OptionalProperties>
-        <!--Zero or more repetitions:-->
         <Property>
-            <Name>string</Name>
+            <PropertyName>Limit</PropertyName>
+            <Description>1000</Description>
+        </Property>
+        <Property>
+            <PropertyName>Level</PropertyName>
+            <Description>WARN</Description>
         </Property>
     </OptionalProperties>
+    <Behaviors>
+        <Behavior>UPSERT_ON_INSERT</Behavior>
+        <Behavior>FAKE_BEHAVIOR</Behavior>
+    </Behaviors>
 </DataStore>

@@ -16,13 +16,17 @@ package com.stratio.meta2.core.planner;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta.common.data.Cell;
+import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.exceptions.PlanningException;
 import com.stratio.meta.common.executionplan.ExecutionPath;
 import com.stratio.meta.common.executionplan.ExecutionType;
@@ -40,13 +44,18 @@ import com.stratio.meta.common.logicalplan.Select;
 import com.stratio.meta.common.logicalplan.UnionStep;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.communication.Insert;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.CatalogName;
+import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.ClusterMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
+import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
@@ -62,6 +71,7 @@ import com.stratio.meta2.core.query.StorageValidatedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
 import com.stratio.meta2.core.statements.CreateCatalogStatement;
 import com.stratio.meta2.core.statements.CreateTableStatement;
+import com.stratio.meta2.core.statements.InsertIntoStatement;
 import com.stratio.meta2.core.statements.MetadataStatement;
 import com.stratio.meta2.core.statements.SelectStatement;
 
@@ -101,13 +111,14 @@ public class Planner {
         return new MetadataPlannedQuery(query, executionWorkflow);
     }
 
-    public StoragePlannedQuery planQuery(StorageValidatedQuery query){
+    public StoragePlannedQuery planQuery(StorageValidatedQuery query) throws PlanningException {
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
         return new StoragePlannedQuery(query, executionWorkflow);
     }
 
     /**
      * Build a Logical workflow for the incoming validated query.
+     *
      * @param query A valid query.
      * @return A {@link com.stratio.meta.common.logicalplan.LogicalWorkflow}
      */
@@ -177,15 +188,13 @@ public class Planner {
         return new ExecutionPath(initial, last, availableConnectors);
     }
 
-
-    protected List<TableName> getInitialSteps(List<LogicalStep> initialSteps){
+    protected List<TableName> getInitialSteps(List<LogicalStep> initialSteps) {
         List<TableName> tables = new ArrayList<>(initialSteps.size());
-        for(LogicalStep ls: initialSteps){
+        for (LogicalStep ls : initialSteps) {
             tables.add(Project.class.cast(ls).getTableName());
         }
         return tables;
     }
-
 
     protected void defineExecutionWorkflow(LogicalWorkflow workflow) {
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
@@ -206,14 +215,14 @@ public class Planner {
             List<ExecutionWorkflow> executionWorkflows,
             Map<UnionStep, List<String>> joinActors,
             LogicalStep initial,
-            List<ConnectorMetadata> connectors){
+            List<ConnectorMetadata> connectors) {
         //QueryWorkflow workflow = new QueryWorkflow();
     }
 
     protected ConnectorMetadata findMoreSuitableConnector(Map<TableName, List<ConnectorMetadata>> candidatesConnectors)
             throws PlanningException {
         ConnectorMetadata chosenConnector;
-        if(candidatesConnectors.isEmpty()){
+        if (candidatesConnectors.isEmpty()) {
             throw new PlanningException("No connector meets the required capabilities.");
         } else {
             // TODO: we shouldn't choose the first candidate, we should choose the best one
@@ -223,14 +232,14 @@ public class Planner {
     }
 
     protected Map<TableName, List<ConnectorMetadata>> findCapableConnectors(List<TableName> tables,
-            List<LogicalStep> initialSteps){
+            List<LogicalStep> initialSteps) {
 
         //Get the list of connector attached to the clusters that contain the required tables.
         Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER.getAttachedConnectors(
                 Status.ONLINE, tables);
 
         //Refine the list of available connectors and determine which connector to be used.
-        for(LogicalStep ls: initialSteps){
+        for (LogicalStep ls : initialSteps) {
 
             TableName tableName = Project.class.cast(ls).getTableName();
 
@@ -241,7 +250,7 @@ public class Planner {
             * which causes double checking of the common path. This logic has to be improved.
             * */
             LogicalStep nextLogicalStep = ls.getNextStep();
-            while(nextLogicalStep != null){
+            while (nextLogicalStep != null) {
                 updateCandidates(tableName, nextLogicalStep, candidatesConnectors);
                 nextLogicalStep = nextLogicalStep.getNextStep();
             }
@@ -252,23 +261,28 @@ public class Planner {
     /**
      * Filter the list of connector candidates attached to the cluster that a table belongs to,
      * according to the capabilities required by a logical step.
-     * @param tableName TABLE name extracted from the first step (see {@link Project}).
-     * @param ls Logical Step containing the {@link com.stratio.meta.common.connector.Operations} to be checked.
+     *
+     * @param tableName            TABLE name extracted from the first step (see {@link Project}).
+     * @param ls                   Logical Step containing the {@link com.stratio.meta.common.connector.Operations} to be checked.
      * @param candidatesConnectors Map with the Connectors (see {@link com.stratio.meta2.common.metadata.ConnectorMetadata}) that already met the previous
      *                             Operations.
      */
     public void updateCandidates(TableName tableName, LogicalStep ls,
-            Map<TableName, List<ConnectorMetadata>> candidatesConnectors){
+
+            Map<TableName, List<ConnectorMetadata>> candidatesConnectors) {
         /*Operations operations = ls.getOperation();
+            Map<TableName, List<ConnectorMetadata>> candidatesConnectors) {
+        Operations operations = ls.getOperation();
+
         List<ConnectorMetadata> connectorList = candidatesConnectors.get(tableName);
         List<ConnectorMetadata> rejectedConnectors = new ArrayList<>();
-        for(ConnectorMetadata connectorMetadata: connectorList){
-            if(!connectorMetadata.getSupportedOperations().contains(operations)){
+        for (ConnectorMetadata connectorMetadata : connectorList) {
+            if (!connectorMetadata.getSupportedOperations().contains(operations)) {
                 rejectedConnectors.add(connectorMetadata);
             }
         }
         connectorList.removeAll(rejectedConnectors);
-        if(connectorList.isEmpty()){
+        if (connectorList.isEmpty()) {
             candidatesConnectors.remove(tableName);
         } else {
             candidatesConnectors.put(tableName, connectorList);
@@ -309,7 +323,7 @@ public class Planner {
         //Prepare the result.
         List<LogicalStep> initialSteps = new ArrayList<>();
         LogicalStep initial = null;
-        for (LogicalStep ls: processed.values()) {
+        for (LogicalStep ls : processed.values()) {
             if (!UnionStep.class.isInstance(ls)) {
                 initial = ls;
                 //Go to the first element of the workflow
@@ -352,7 +366,7 @@ public class Planner {
         MetadataStatement metadataStatement = query.getStatement();
         String queryId = query.getQueryId();
         MetadataWorkflow metadataWorkflow = null;
-        if (metadataStatement instanceof CreateCatalogStatement){
+        if (metadataStatement instanceof CreateCatalogStatement) {
 
             // Create parameters for metadata workflow
             CreateCatalogStatement createCatalogStatement = (CreateCatalogStatement) metadataStatement;
@@ -372,16 +386,84 @@ public class Planner {
             // Add CatalogMetadata to MetadataManager
             MetadataManager.MANAGER.createCatalog(catalogMetadata);
 
-        } else if(metadataStatement instanceof CreateTableStatement){
+        } else if (metadataStatement instanceof CreateTableStatement) {
             CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
         }
 
         return metadataWorkflow;
     }
 
-    protected ExecutionWorkflow buildExecutionWorkflow(StorageValidatedQuery query) {
-        StorageWorkflow storageWorkflow = null;
+    protected ExecutionWorkflow buildExecutionWorkflow(StorageValidatedQuery query) throws PlanningException {
+
+        String queryId = query.getQueryId();
+        Serializable actorRef = null;
+        TableName tableName=null;
+        Collection<Row> rows=new ArrayList<>();
+        if (query.getStatement() instanceof InsertIntoStatement){
+            tableName = ((InsertIntoStatement) (query.getStatement())).getTableName();
+            rows=getInsertRows(((InsertIntoStatement) (query.getStatement())));
+        }else{
+            throw new PlanningException("Delete, Truncate and Update statements not supported yet");
+        }
+
+        TableMetadata tableMetadata=getTableMetadata(tableName);
+        ClusterMetadata clusterMetadata=getClusterMetadata( tableMetadata.getClusterRef());
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = clusterMetadata
+                .getConnectorAttachedRefs();
+
+        Iterator it = connectorAttachedRefs.keySet().iterator();
+        boolean found = false;
+        while (it.hasNext() && !found) {
+            ConnectorName connectorName = (ConnectorName) it.next();
+            ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+            if (connectorMetadata.getSupportedOperations().contains(Operations.INSERT)) {
+                actorRef = connectorMetadata.getActorRef();
+                found = true;
+            }
+        }
+        if (!found) {
+            throw new PlanningException("There is not actorRef for Storage Operation");
+        }
+
+        StorageWorkflow storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT,
+                ResultType.RESULTS);
+        storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+        storageWorkflow.setRows(rows);
+
         return storageWorkflow;
+    }
+
+    private Collection<Row> getInsertRows(InsertIntoStatement statement) {
+        Collection<Row> rows=new ArrayList<>();
+
+        List<Selector> values = statement.getCellValues();
+        List<ColumnName> ids = statement.getIds();
+
+        for (int i=0;i<ids.size();i++) {
+            ColumnName columnName=ids.get(i);
+            Selector value=values.get(i);
+            Cell cell = new Cell(value);
+            Row row = new Row(columnName.getName(), cell);
+            rows.add(row);
+        }
+        return rows;
+    }
+
+    private ClusterMetadata getClusterMetadata(ClusterName clusterRef) throws PlanningException {
+        ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterRef);
+
+        if (clusterMetadata == null) {
+            throw new PlanningException("There is not cluster metadata for Storage Operation");
+        }
+        return clusterMetadata;
+    }
+
+    private TableMetadata getTableMetadata(TableName tableName) throws PlanningException {
+        TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(tableName);
+        if (tableMetadata == null) {
+            throw new PlanningException("There is not specified Table for Storage Operation");
+        }
+        return tableMetadata;
     }
 
     /**
@@ -391,7 +473,7 @@ public class Planner {
      * @param query        The query to be planned.
      */
     private void addProjectedColumns(Map<String, LogicalStep> projectSteps, SelectValidatedQuery query) {
-        for (ColumnName cn: query.getColumns()) {
+        for (ColumnName cn : query.getColumns()) {
             Project.class.cast(projectSteps.get(cn.getTableName().getQualifiedName())).addColumn(cn);
         }
     }
@@ -510,7 +592,7 @@ public class Planner {
     protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap) {
         Map<ColumnName, String> aliasMap = new HashMap<>();
         Map<String, ColumnType> typeMap = new HashMap<>();
-        for (Selector s: selectStatement.getSelectExpression().getSelectorList()) {
+        for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
             if (s.getAlias() != null) {
                 aliasMap.put(new ColumnName(selectStatement.getTableName(), s.toString()), s.getAlias());
 
