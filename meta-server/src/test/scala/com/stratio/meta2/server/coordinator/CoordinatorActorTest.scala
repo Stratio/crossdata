@@ -20,15 +20,20 @@ import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
 
 import akka.actor.{ActorSystem, actorRef2Scala}
+import akka.pattern.ask
 import com.stratio.connectors.MockConnectorActor
 import com.stratio.meta.common.exceptions.ExecutionException
 import com.stratio.meta.common.executionplan.{ExecutionType, QueryWorkflow, ResultType}
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
+import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
-import com.stratio.meta2.common.data.CatalogName
+import com.stratio.meta2.common.api.PropertyType
+import com.stratio.meta2.common.data.{CatalogName, ConnectorName, FirstLevelName}
+import com.stratio.meta2.common.metadata.{ConnectorMetadata, IMetadata}
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.ExecutionManager
 import com.stratio.meta2.core.grid.Grid
+import com.stratio.meta2.core.metadata.MetadataManager
 import com.stratio.meta2.core.query._
 import com.stratio.meta2.core.statements.SelectStatement
 import com.stratio.meta2.server.actors.CoordinatorActor
@@ -37,6 +42,7 @@ import org.apache.log4j.Logger
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuiteLike, Suite}
 
+import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 //class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory  with ServerConfig{
@@ -71,6 +77,28 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
     val lockExecution:Lock  = grid.lock("myExecutionData")
     val tmExecution:TransactionManager = grid.transactionManager("myExecutionData")
     ExecutionManager.MANAGER.init(executionMap, lockExecution, tmExecution)
+
+    val metadataMap = grid.map("myMetadata").asInstanceOf[java.util.Map[FirstLevelName,IMetadata]]
+    val lock:Lock  = grid.lock("myMetadata")
+    val tm = grid.transactionManager("myMetadata")
+    MetadataManager.MANAGER.init(metadataMap,lock,tm)
+    val future=connectorActor ? getConnectorName()
+    val connectorName= Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
+    val dataStoreRefs = new java.util.ArrayList[String]().asInstanceOf[java.util.List[String]]
+    val requiredProperties= new java.util.ArrayList[PropertyType]().asInstanceOf[java.util.List[PropertyType]]
+    val optionalProperties= new java.util.ArrayList[PropertyType]().asInstanceOf[java.util.List[PropertyType]]
+    val supportedOperations= new java.util.ArrayList[String]()
+    val connectorMetadata = new ConnectorMetadata(
+        new ConnectorName(connectorName.name),
+        "version",
+        dataStoreRefs,
+        requiredProperties,
+        optionalProperties,
+        supportedOperations
+    )
+    MetadataManager.MANAGER.createConnector( connectorMetadata )
+    MetadataManager.MANAGER.addConnectorRef(new ConnectorName(connectorName.name),connectorActor)
+    //MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName),Status.ONLINE)
   }
 
   test("Should return a KO message") {
