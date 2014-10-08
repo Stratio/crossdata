@@ -25,7 +25,7 @@ import com.stratio.meta.communication.ACK
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.server.actors._
-import com.stratio.meta2.server.mockConnector.MockValidatorActor
+import com.stratio.meta2.server.mocks.MockValidatorActor
 import com.stratio.meta2.server.utilities.createEngine
 import org.apache.log4j.Logger
 import org.scalatest.{FunSuiteLike, Suite}

@@ -33,7 +33,7 @@ import com.stratio.meta2.core.query.{SelectParsedQuery, BaseQuery, MetadataParse
 import com.stratio.meta2.core.statements.{SelectStatement, CreateTableStatement}
 import com.stratio.meta2.core.validator.Validator
 import com.stratio.meta2.server.actors._
-import com.stratio.meta2.server.mockConnector.MockPlannerActor
+import com.stratio.meta2.server.mocks.MockPlannerActor
 import com.stratio.meta2.server.utilities.createEngine
 import org.apache.log4j.Logger
 import org.scalamock.scalatest.MockFactory

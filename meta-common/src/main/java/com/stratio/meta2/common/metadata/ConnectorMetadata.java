@@ -40,6 +40,18 @@ public class ConnectorMetadata implements IMetadata {
     private Status status;
     private Serializable actorRef;
 
+    public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
+            Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
+            Set<Operations> supportedOperations) {
+        this.name = name;
+        this.version = version;
+        this.dataStoreRefs = dataStoreRefs;
+        this.requiredProperties = requiredProperties;
+        this.optionalProperties = optionalProperties;
+        this.supportedOperations = supportedOperations;
+        this.status = Status.OFFLINE;
+    }
+
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
             List<String> supportedOperations) {

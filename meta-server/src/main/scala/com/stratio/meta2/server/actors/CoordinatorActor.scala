@@ -1,9 +1,28 @@
+/*
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import com.stratio.meta.common.exceptions.ExecutionException
 import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.result._
-import com.stratio.meta.communication.{ConnectToConnector, DisconnectFromConnector}
+import com.stratio.meta.communication.{ACK, ConnectToConnector, DisconnectFromConnector}
 import com.stratio.meta2.common.data.{ConnectorName, Status}
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.{ExecutionInfo, ExecutionManager}
@@ -40,6 +59,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
       workflow match {
         case workflow: MetadataWorkflow => {
+          log.info(">>>>>> TRACE: MetadataWorkflow ")
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(sender)
           val queryId = plannedQuery.getQueryId
@@ -49,6 +69,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
             workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.createMetadataOperationMessage(queryId)
+            sender ! ACK(queryId, QueryStatus.EXECUTED)
           } else {
             executionInfo.setQueryStatus(QueryStatus.PLANNED)
             ExecutionManager.MANAGER.createEntry(workflow.getCatalogMetadata.getName.toString, queryId)
@@ -67,9 +88,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         }
 
         case workflow: ManagementWorkflow => {
+          log.info(">>>>>> TRACE: ManagementWorkflow ")
           val requestSender = sender
-          val queryId = plannedQuery
-            .asInstanceOf[MetadataPlannedQuery].getQueryId
+          val queryId = plannedQuery.getQueryId
           requestSender ! coordinator.executeManagementOperation(workflow.createManagementOperationMessage(queryId))
         }
 
@@ -114,7 +135,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       log.info("disconnected from connector ")
 
     case _ => {
-      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
+      //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
+      sender ! new ExecutionException("Non recogniced workflow")
     }
 
   }

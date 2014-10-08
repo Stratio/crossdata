@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +18,7 @@
 
 package com.stratio.meta.common.logicalplan;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,8 +28,9 @@ import java.util.Set;
  * entry points (e.g., for a JOIN operation). The list of initial steps contains Project operations that should be
  * navigated using the getNextStep to determine the next step.
  */
-public class LogicalWorkflow {
+public class LogicalWorkflow implements Serializable {
 
+    private static final long serialVersionUID = -4543756106145134702L;
     /**
      * List of initial steps. All initial steps MUST be Project operations.
      */

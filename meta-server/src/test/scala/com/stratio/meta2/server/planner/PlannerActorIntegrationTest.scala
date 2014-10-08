@@ -21,13 +21,14 @@ package com.stratio.meta2.server.planner
 import java.util
 
 import akka.actor.ActorSystem
+import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta.communication.ACK
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
-import com.stratio.meta2.common.data.{ColumnName, CatalogName, ClusterName, TableName}
+import com.stratio.meta2.common.data.{ClusterName, TableName, CatalogName, ColumnName}
 import com.stratio.meta2.common.metadata.ColumnType
 import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.{CreateTableStatement, SelectStatement}
+import com.stratio.meta2.core.statements.{CreateTableStatement, CreateCatalogStatement, SelectStatement}
 import com.stratio.meta2.server.actors._
 import com.stratio.meta2.server.utilities.createEngine
 import org.apache.log4j.Logger
@@ -47,42 +48,54 @@ class PlannerActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike wi
   val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()), "TestCoordinatorActor")
   val plannerActor = system.actorOf(PlannerActor.props(coordinatorRef, engine.getPlanner()), "TestPlannerActor")
 
-
-
+  var queryId="query_id-2384234-1341234-23434"
   var tablename = new com.stratio.meta2.common.data.TableName("catalog", "table")
   val selectParsedQuery = new SelectParsedQuery(
         new BaseQuery(
-          "query_id-2384234-1341234-23434",
+          queryId,
           "select * from myQuery;",
           new CatalogName("myCatalog")
         ), new SelectStatement(tablename)
   )
   val map0=new util.HashMap[ColumnName,ColumnType]()
+  map0.put(new ColumnName("keyspace","table","column"),ColumnType.BOOLEAN)
   val list0=new util.ArrayList[ColumnName]()
-  val metadataStatement=new CreateTableStatement(
-    new TableName("mycatalog", "mytable"), new ClusterName("cluster"),map0,list0,list0
-  )
+  list0.add(new ColumnName("keyspace","table","column"))
+  val metadataStatement=new CreateCatalogStatement(new CatalogName("mycatalog"),true,null)
+  val metadataStatement2=new CreateTableStatement( new TableName("mycatalog", "mytable"), new ClusterName("cluster"),
+    map0,list0,list0)
   val metadataParsedQuery = new MetadataParsedQuery(
     new BaseQuery(
-      "query_id-2384234-1341234-23434",
+      queryId,
       "select * from myQuery;",
       new CatalogName("myCatalog")
     ), metadataStatement
   )
+  val metadataParsedQuery2 = new MetadataParsedQuery(
+    new BaseQuery(
+      queryId,
+      "select * from myQuery;",
+      new CatalogName("myCatalog")
+    ), metadataStatement2
+  )
   val mdvq=new MetadataValidatedQuery(metadataParsedQuery)
+  val mdvq2=new MetadataValidatedQuery(metadataParsedQuery2)
   val svq=new SelectValidatedQuery(selectParsedQuery)
 
-  /*
   test("Metadata Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
     within(5000 millis) {
       plannerActor ! mdvq
-      expectMsg(ACK) // bounded to 1 second
+      expectMsg(ACK("query_id-2384234-1341234-23434",QueryStatus.PLANNED)) // bounded to 1 second
       //val ack:ACK=expectMsg(ACK).asInstanceOf[ACK]// bounded to 1 second
+
+      //plannerActor ! mdvq2
+      //expectMsg(ACK("query_id-2384234-1341234-23434",QueryStatus.PLANNED)) // bounded to 1 second
+
       assert(true)
     }
   }
-  */
 
+  /*
   test("Select Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
     within(5000 millis) {
       plannerActor ! svq
@@ -90,6 +103,7 @@ class PlannerActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike wi
       assert(true)
     }
   }
+  */
 
 }
 

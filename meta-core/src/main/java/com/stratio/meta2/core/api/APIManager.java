@@ -63,6 +63,7 @@ public class APIManager {
      * @return A {@link com.stratio.meta.common.result.MetadataResult}.
      */
     public Result processRequest(Command cmd) {
+        //TODO: create "LIST CONNECTORS" command
         Result result;
         if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
@@ -89,7 +90,7 @@ public class APIManager {
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
             persistManifest((Manifest) cmd.params().get(0));
-            result = CommandResult.createCommandResult("OK");
+            result = CommandResult.createCommandResult("Manifest added.");
         } else {
             result =
                     Result.createExecutionErrorResult("Command " + cmd.commandType() + " not supported");
@@ -124,7 +125,10 @@ public class APIManager {
                 optionalProperties.getProperty());
 
         // Persist
-        MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
+        MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
+
+        LOG.debug("DataStore added: "+MetadataManager.MANAGER.getDataStore(name).toString());
+
     }
 
     private void persistConnector(ConnectorType connectorType) {
@@ -153,7 +157,7 @@ public class APIManager {
                 optionalProperties.getProperty(), supportedOperations.getOperation());
 
         // Persist
-        MetadataManager.MANAGER.createConnector(connectorMetadata);
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
     }
 
 }

@@ -18,6 +18,7 @@
 
 package com.stratio.meta.common.logicalplan;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.stratio.meta.common.connector.Operations;
@@ -25,8 +26,9 @@ import com.stratio.meta.common.connector.Operations;
 /**
  * A step of a Logical plan.
  */
-public abstract class LogicalStep {
+public abstract class LogicalStep implements Serializable {
 
+    private static final long serialVersionUID = -552557268640861386L;
     /**
      * Type of operation to be executed.
      */

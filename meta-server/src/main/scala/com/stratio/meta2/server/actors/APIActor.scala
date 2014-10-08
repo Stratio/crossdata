@@ -34,10 +34,10 @@ class APIActor(metadata: APIManager) extends Actor with TimeTracker {
 
   def receive = {
     case cmd: Command => {
-      log.info("command received " + cmd.toString)
-      //val timer = initTimer()
-      //sender ! metadata.processRequest(cmd)
-      //finishTimer(timer)
+      log.debug("command received " + cmd.toString)
+      val timer = initTimer()
+      sender ! metadata.processRequest(cmd)
+      finishTimer(timer)
     }
     case _ => {
       log.info("command _ received ")

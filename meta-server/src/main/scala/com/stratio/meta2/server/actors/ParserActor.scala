@@ -43,8 +43,9 @@ class ParserActor(validator: ActorRef, parser: Parser) extends Actor with TimeTr
       val baseQuery = new BaseQuery(queryId, statement, new CatalogName(catalog))
       try {
         val stmt = parser.parse(baseQuery)
+        log.info(">>>>>> TRACE: Query parsed: " + stmt.getStatement)
         validator forward stmt
-        sender ! ACK(queryId,QueryStatus.PARSED)
+        sender ! ACK(queryId, QueryStatus.PARSED)
       }catch{
         case pe:ParsingException => {
           log.error("Parsing error: " + pe.getMessage + " sender: " + sender.toString())
