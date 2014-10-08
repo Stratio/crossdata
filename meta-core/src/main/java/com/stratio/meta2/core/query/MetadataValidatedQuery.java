@@ -15,6 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package com.stratio.meta2.core.query;
 
 import com.stratio.meta.common.result.QueryStatus;
