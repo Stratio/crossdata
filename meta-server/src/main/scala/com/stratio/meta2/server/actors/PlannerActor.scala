@@ -39,6 +39,7 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
       println("\n\n\ngetting MetadataValidatedQuery; sending ack to "+sender+"\n\n\n")
       val timer = initTimer()
       val planned = planner.planQuery(query)
+      log.info(">>>>>> TRACE: Query planned ")
       finishTimer(timer)
       coordinator forward planned
 

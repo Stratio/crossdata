@@ -89,7 +89,7 @@ public class APIManager {
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
             persistManifest((Manifest) cmd.params().get(0));
-            result = CommandResult.createCommandResult("OK");
+            result = CommandResult.createCommandResult("Manifest added.");
         } else {
             result =
                     Result.createExecutionErrorResult("Command " + cmd.commandType() + " not supported");
@@ -124,7 +124,10 @@ public class APIManager {
                 optionalProperties.getProperty());
 
         // Persist
-        MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
+        MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
+
+        LOG.debug("DataStore added: "+MetadataManager.MANAGER.getDataStore(name).toString());
+
     }
 
     private void persistConnector(ConnectorType connectorType) {

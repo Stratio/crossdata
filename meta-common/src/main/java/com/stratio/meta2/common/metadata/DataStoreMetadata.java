@@ -35,6 +35,15 @@ public class DataStoreMetadata implements IMetadata {
     private final Set<PropertyType> othersProperties;
     private Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs;
 
+    public DataStoreMetadata(DataStoreName name, String version, Set<PropertyType> requiredProperties,
+            Set<PropertyType> othersProperties) {
+        this.name = name;
+        this.version = version;
+        this.requiredProperties = requiredProperties;
+        this.othersProperties = othersProperties;
+        this.clusterAttachedRefs = new HashMap<>();
+    }
+
     public DataStoreMetadata(DataStoreName name, String version, List<PropertyType> requiredProperties,
             List<PropertyType> othersProperties) {
         this.name = name;
@@ -67,5 +76,15 @@ public class DataStoreMetadata implements IMetadata {
     public void setClusterAttachedRefs(
             Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs) {
         this.clusterAttachedRefs = clusterAttachedRefs;
+    }
+
+    @Override public String toString() {
+        return "DataStoreMetadata{" +
+                "name=" + name +
+                ", version='" + version + '\'' +
+                ", requiredProperties=" + requiredProperties +
+                ", othersProperties=" + othersProperties +
+                ", clusterAttachedRefs=" + clusterAttachedRefs +
+                '}';
     }
 }
