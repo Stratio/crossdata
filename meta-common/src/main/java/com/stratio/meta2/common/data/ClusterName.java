@@ -1,5 +1,5 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements.  
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership.  The STRATIO (C) licenses this file
  * to you under the Apache License, Version 2.0 (the
