@@ -18,3 +18,4 @@ sonar-project.properties
 */test-output
 .gitignore
 *.log
+atlassian-ide-plugin.xml

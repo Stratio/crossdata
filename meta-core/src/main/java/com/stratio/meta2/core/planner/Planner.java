@@ -18,9 +18,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -30,6 +32,7 @@ import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.exceptions.PlanningException;
 import com.stratio.meta.common.executionplan.ExecutionType;
 import com.stratio.meta.common.executionplan.ExecutionWorkflow;
+import com.stratio.meta.common.executionplan.ManagementWorkflow;
 import com.stratio.meta.common.executionplan.MetadataWorkflow;
 import com.stratio.meta.common.executionplan.ResultType;
 import com.stratio.meta.common.executionplan.StorageWorkflow;
@@ -68,6 +71,7 @@ import com.stratio.meta2.core.query.SelectValidatedQuery;
 import com.stratio.meta2.core.query.StoragePlannedQuery;
 import com.stratio.meta2.core.query.StorageValidatedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
+import com.stratio.meta2.core.statements.AttachClusterStatement;
 import com.stratio.meta2.core.statements.CreateCatalogStatement;
 import com.stratio.meta2.core.statements.CreateTableStatement;
 import com.stratio.meta2.core.statements.InsertIntoStatement;
@@ -224,7 +228,7 @@ public class Planner {
      * @param candidatesConnectors Map with the Connectors (see {@link com.stratio.meta2.common.metadata.ConnectorMetadata}) that already met the previous
      *                             Operations.
      */
-    public void updateCandidates(TableName tableName, LogicalStep ls,
+    protected void updateCandidates(TableName tableName, LogicalStep ls,
             Map<TableName, List<ConnectorMetadata>> candidatesConnectors) {
         Operations operations = ls.getOperation();
         List<ConnectorMetadata> connectorList = candidatesConnectors.get(tableName);
@@ -317,8 +321,34 @@ public class Planner {
 
     protected ExecutionWorkflow buildExecutionWorkflow(MetadataValidatedQuery query) throws PlanningException {
         MetadataStatement metadataStatement = query.getStatement();
+        ExecutionWorkflow executionWorkflow;
+
+        Set<String> metadataStatements = new HashSet<>();
+        metadataStatements.add(CreateCatalogStatement.class.toString());
+        metadataStatements.add(CreateTableStatement.class.toString());
+
+        Set<String> managementStatements = new HashSet<>();
+        managementStatements.add(AttachClusterStatement.class.toString());
+
+        System.out.println(">>>>>>> TRACE: metadataStatement.getClass().toString() = " + metadataStatement.getClass()
+                .toString());
+
+        if(metadataStatements.contains(metadataStatement.getClass())){
+            executionWorkflow = buildMetadataWorkflow(query);
+        } else if(managementStatements.contains(metadataStatement.getClass())) {
+            executionWorkflow = buildManagementWorkflow(query);
+        } else {
+            throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
+        }
+
+        return executionWorkflow;
+    }
+
+    private ExecutionWorkflow buildMetadataWorkflow(MetadataValidatedQuery query) throws PlanningException {
+        MetadataStatement metadataStatement = query.getStatement();
         String queryId = query.getQueryId();
-        MetadataWorkflow metadataWorkflow = null;
+        MetadataWorkflow metadataWorkflow;
+
         if (metadataStatement instanceof CreateCatalogStatement) {
 
             // Create parameters for metadata workflow
@@ -349,7 +379,8 @@ public class Planner {
                     createTableStatement.getClusterName())) {
                 executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
                 metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
-                metadataWorkflow.setCatalogName(createTableStatement.getTableName().getCatalogName());
+                metadataWorkflow.setCatalogName(
+                        createTableStatement.getTableName().getCatalogName());
                 metadataWorkflow
                         .setCatalogMetadata(MetadataManager.MANAGER.getCatalog(createTableStatement.getTableName()
                                 .getCatalogName()));
@@ -373,9 +404,38 @@ public class Planner {
                     clusterName, partitionKey, clusterKey);
             metadataWorkflow.setTableName(name);
             metadataWorkflow.setTableMetadata(tableMetadata);
+        } else {
+            throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }
 
         return metadataWorkflow;
+    }
+
+    private ExecutionWorkflow buildManagementWorkflow(MetadataValidatedQuery query) throws PlanningException {
+        MetadataStatement metadataStatement = query.getStatement();
+        String queryId = query.getQueryId();
+        ManagementWorkflow managementWorkflow;
+
+        if(metadataStatement instanceof AttachClusterStatement) {
+
+            // Create parameters for metadata workflow
+            AttachClusterStatement attachClusterStatement = (AttachClusterStatement) metadataStatement;
+            Serializable actorRef = null;
+            ExecutionType executionType = ExecutionType.ATTACH_CLUSTER;
+            ResultType type = ResultType.RESULTS;
+
+            managementWorkflow = new ManagementWorkflow(queryId, actorRef, executionType, type);
+
+            // Add required information
+            managementWorkflow.setClusterName(attachClusterStatement.getClusterName());
+            managementWorkflow.setDatastoreName(attachClusterStatement.getDatastoreName());
+            managementWorkflow.setOptions(attachClusterStatement.getOptions());
+
+        } else {
+            throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
+        }
+
+        return managementWorkflow;
     }
 
     protected boolean existsCatalogInCluster(CatalogName catalogName, ClusterName clusterName) {
