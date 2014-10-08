@@ -18,9 +18,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -32,6 +34,7 @@ import com.stratio.meta.common.executionplan.ExecutionPath;
 import com.stratio.meta.common.executionplan.ExecutionType;
 import com.stratio.meta.common.executionplan.ExecutionWorkflow;
 import com.stratio.meta.common.executionplan.MetadataWorkflow;
+import com.stratio.meta.common.executionplan.QueryWorkflow;
 import com.stratio.meta.common.executionplan.ResultType;
 import com.stratio.meta.common.executionplan.StorageWorkflow;
 import com.stratio.meta.common.logicalplan.Filter;
@@ -41,10 +44,10 @@ import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.logicalplan.Select;
+import com.stratio.meta.common.logicalplan.TransformationStep;
 import com.stratio.meta.common.logicalplan.UnionStep;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.communication.Insert;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
@@ -140,18 +143,78 @@ public class Planner {
         Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
                 .getAttachedConnectors(Status.ONLINE, tables);
 
+        List<ExecutionPath> executionPaths = new ArrayList<>();
+        Map<UnionStep, Set<ExecutionPath>> unionSteps = new HashMap<>();
         //Iterate through the initial steps and build valid execution paths
         for(LogicalStep step: workflow.getInitialSteps()){
             String targetTable = ((Project) step).getTableName().getQualifiedName();
             ExecutionPath ep = defineExecutionPath(step, candidatesConnectors.get(targetTable));
+            if(UnionStep.class.isInstance(ep.getLast())){
+                Set<ExecutionPath> paths = unionSteps.get(ep.getLast());
+                if(paths == null){
+                    paths = new HashSet<>();
+                }
+                paths.add(ep);
+            }
+            executionPaths.add(ep);
         }
 
-        //Iterate over the list of UnionSteps and solve paths.
-
-        // TODO: Create this object properly
-        ExecutionWorkflow executionWorkflow = new ExecutionWorkflow(queryId, null, null, null);
-
+        //Merge execution paths
+        ExecutionWorkflow executionWorkflow = mergeExecutionPaths(queryId, executionPaths, unionSteps);
         return executionWorkflow;
+    }
+
+    protected ExecutionWorkflow mergeExecutionPaths(String queryId,
+            List<ExecutionPath> executionPaths,
+            Map<UnionStep, Set<ExecutionPath>> unionSteps) throws PlanningException{
+
+        //Find first UnionStep
+        UnionStep mergeStep = null;
+        ExecutionPath [] paths = null;
+        for(Map.Entry<UnionStep, Set<ExecutionPath>> entry : unionSteps.entrySet()){
+            paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
+            if(paths.length == 2 && TransformationStep.class.isInstance(paths[0]) && TransformationStep.class
+                    .isInstance(paths[1])){
+                LOG.info("First Union found");
+                mergeStep = entry.getKey();
+            }
+        }
+
+        if(unionSteps.size() == 0){
+            ExecutionWorkflow result = toExecutionWorkflow(queryId, executionPaths, executionPaths.get(0).getLast(),
+                    executionPaths.get(0).getAvailableConnectors());
+        }
+
+        boolean exit = false;
+
+
+        //String queryId, Serializable actorRef, ExecutionType executionType, ResultType type
+        return new ExecutionWorkflow(queryId, null, null, null);
+    }
+
+    /**
+     * Define an query workflow.
+     * @param queryId The query identifier.
+     * @param executionPaths The list of execution paths that will be transformed into initial steps of a
+     * {@link com.stratio.meta.common.logicalplan.LogicalWorkflow}.
+     * @param last The last element of the workflow.
+     * @param connectors The List of available connectors.
+     * @return A {@link com.stratio.meta.common.executionplan.QueryWorkflow}.
+     */
+    protected QueryWorkflow toExecutionWorkflow(String queryId, List<ExecutionPath> executionPaths,
+            LogicalStep last, List<ConnectorMetadata> connectors){
+
+        //Define the list of initial steps.
+        List<LogicalStep> initialSteps = new ArrayList<>(executionPaths.size());
+        for(ExecutionPath path : executionPaths){
+            initialSteps.add(path.getInitial());
+        }
+        LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
+
+        //Select an actor
+        //TODO Improve actor selection based on cost analysis.
+        Serializable selectedActor = connectors.get(0).getActorRef();
+        return new QueryWorkflow(queryId, selectedActor, ExecutionType.SELECT, ResultType.RESULTS, workflow);
     }
 
     /**
@@ -160,8 +223,11 @@ public class Planner {
      * @param initial The initial step.
      * @param availableConnectors The list of available connectors.
      * @return An {@link com.stratio.meta.common.executionplan.ExecutionPath}.
+     * @throws PlanningException If the execution path cannot be determined.
      */
-    protected ExecutionPath defineExecutionPath(LogicalStep initial, List<ConnectorMetadata> availableConnectors){
+    protected ExecutionPath defineExecutionPath(LogicalStep initial, List<ConnectorMetadata> availableConnectors)
+        throws PlanningException {
+
         LogicalStep last = null;
         LogicalStep current = initial;
         List<ConnectorMetadata> toRemove = new ArrayList<>();
@@ -175,15 +241,22 @@ public class Planner {
                 }
             }
             //Remove invalid connectors
-            availableConnectors.removeAll(toRemove);
+            if(toRemove.size() == availableConnectors.size()){
+                throw new PlanningException("Cannot determine execution path as no connector supports " + current.toString());
+            }else{
+                availableConnectors.removeAll(toRemove);
+
+                if(current.getNextStep() == null
+                        || UnionStep.class.isInstance(current.getNextStep())){
+                    exit = true;
+                    last = current;
+                }else{
+                    current = current.getNextStep();
+                }
+            }
             toRemove.clear();
 
-            if(availableConnectors.isEmpty()
-                    || current.getNextStep() == null
-                    || UnionStep.class.isInstance(current.getNextStep())){
-                exit = true;
-                last = current;
-            }
+
         }
         return new ExecutionPath(initial, last, availableConnectors);
     }

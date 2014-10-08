@@ -19,8 +19,10 @@
 package com.stratio.meta2.core.planner;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -34,6 +36,7 @@ import org.testng.annotations.Test;
 
 import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.exceptions.PlanningException;
+import com.stratio.meta.common.executionplan.ExecutionPath;
 import com.stratio.meta.common.executionplan.ExecutionWorkflow;
 import com.stratio.meta.common.logicalplan.Filter;
 import com.stratio.meta.common.logicalplan.LogicalStep;
@@ -65,7 +68,11 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
      */
     private static final Logger LOG = Logger.getLogger(PlannerExecutionWorkflowTest.class);
 
-    private ConnectorName connectorName = null;
+    private PlannerWrapper plannerWrapper = new PlannerWrapper();
+
+    private ConnectorMetadata connector1 = null;
+
+    private ConnectorMetadata connector2 = null;
 
     private ClusterName clusterName = null;
 
@@ -126,8 +133,10 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_OPERATOR);
         operationsC2.add(Operations.SELECT_WINDOW);
 
-        connectorName = createTestConnector("TestConnector1", dataStoreName, operationsC1, "actorRef1");
-        clusterName = createTestCluster("TestCluster1", dataStoreName, connectorName);
+        connector1 = createTestConnector("TestConnector1", dataStoreName, operationsC1, "actorRef1");
+        connector2 = createTestConnector("TestConnector2", dataStoreName, operationsC2, "actorRef2");
+
+        clusterName = createTestCluster("TestCluster1", dataStoreName, connector1.getName());
         CatalogName catalogName = createTestCatalog("demo");
         createTestTables();
     }
@@ -161,10 +170,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
     @Test
     public void projectFilterSelect(){
         // Build Logical WORKFLOW
-
         // Create initial steps (Projects)
         List<LogicalStep> initialSteps = new LinkedList<>();
-
         Project project = getProject("table1");
 
         ColumnName [] columns = {new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user")};
@@ -190,13 +197,13 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Map<TableName, List<ConnectorMetadata>> candidatesConnectors = planner.findCapableConnectors(tables,
                 workflow.getInitialSteps());
 
-        assertEquals(candidatesConnectors.values().iterator().next().iterator().next().getName(), connectorName,
+        assertEquals(candidatesConnectors.values().iterator().next().iterator().next().getName(), connector1.getName(),
                 "Candidate Connectors wrong");
 
         // Get more suitable connector
         try {
             ConnectorMetadata chosenConnector = planner.findMoreSuitableConnector(candidatesConnectors);
-            assertEquals(chosenConnector.getName(), connectorName, "Chosen connector wrong");
+            assertEquals(chosenConnector.getName(), connector1.getName(), "Chosen connector wrong");
         } catch (PlanningException e) {
             fail(e.getMessage());
         }
@@ -212,5 +219,67 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     }
 
+
+    @Test
+    public void defineExecutionPath(){
+        List<LogicalStep> initialSteps = new LinkedList<>();
+        Project project = getProject("table1");
+
+        ColumnName [] columns = {new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user")};
+        ColumnType [] types = {ColumnType.INT, ColumnType.TEXT};
+        Select select = getSelect(columns, types);
+
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ, new IntegerSelector(42));
+
+        //Link the elements
+        project.setNextStep(filter);
+        filter.setNextStep(select);
+        initialSteps.add(project);
+
+        List<ConnectorMetadata> availableConnectors = new ArrayList<>();
+        availableConnectors.add(connector1);
+        availableConnectors.add(connector2);
+
+        ExecutionPath path = null;
+        try {
+            path = plannerWrapper.defineExecutionPath(project, availableConnectors);
+        } catch (PlanningException e) {
+            fail("Not expecting Planning Exception", e);
+        }
+
+        assertEquals(path.getInitial(), project, "Invalid initial step");
+        assertEquals(path.getLast(), select, "Invalid last step");
+
+        assertEquals(path.getAvailableConnectors().size(), 1, "Invalid size");
+        assertEquals(path.getAvailableConnectors().get(0), connector1, "Invalid connector selected");
+    }
+
+    @Test
+    public void defineExecutionSelectPathNotAvailable(){
+        List<LogicalStep> initialSteps = new LinkedList<>();
+        Project project = getProject("table1");
+
+        ColumnName [] columns = {new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user")};
+        ColumnType [] types = {ColumnType.INT, ColumnType.TEXT};
+        Select select = getSelect(columns, types);
+
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ, new IntegerSelector(42));
+
+        //Link the elements
+        project.setNextStep(filter);
+        filter.setNextStep(select);
+        initialSteps.add(project);
+
+        List<ConnectorMetadata> availableConnectors = new ArrayList<>();
+        availableConnectors.add(connector2);
+
+        try {
+            ExecutionPath path = plannerWrapper.defineExecutionPath(project, availableConnectors);
+            fail("Planning exception expected");
+        }catch (PlanningException e){
+            assertNotNull(e, "Expecting Planning exception");
+        }
+
+    }
 
 }

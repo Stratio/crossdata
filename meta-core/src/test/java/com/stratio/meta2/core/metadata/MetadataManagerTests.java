@@ -21,7 +21,7 @@ package com.stratio.meta2.core.metadata;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,6 +37,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta2.common.api.PropertyType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -50,6 +51,7 @@ import com.stratio.meta2.common.metadata.ClusterMetadata;
 import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
+import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
@@ -76,24 +78,26 @@ public class MetadataManagerTests {
 
     protected DataStoreMetadata insertDataStore(String dataStore, String cluster) {
         DataStoreName dataStoreName = new DataStoreName(dataStore);
-        /*String version = "0.1.0";
-        com.stratio.meta2.common.api.generated.datastoreOld.RequiredPropertiesType requiredPropertiesForDataStore = new
-                com.stratio.meta2.common.api.generated.datastoreOld.RequiredPropertiesType();
-        ClusterType clusterType = new ClusterType();
-        clusterType.setName(cluster);
-        List<HostsType> hosts = new ArrayList<>();
-        HostsType hostsType = new HostsType();
-        hostsType.setHost("127.0.0.1");
-        hostsType.setPort("9090");
-        hosts.add(hostsType);
-        clusterType.setHosts(hosts);
-        requiredPropertiesForDataStore.setCluster(clusterType);
-        com.stratio.meta2.common.api.generated.datastoreOld.OptionalPropertiesType othersProperties = new com.stratio.meta2.common.api.generated.datastoreOld.OptionalPropertiesType();
-        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version,
-                requiredPropertiesForDataStore, othersProperties);
+        String version = "0.1.0";
+
+        List<PropertyType> requiredProperties = new ArrayList<>();
+        PropertyType p1 = new PropertyType();
+        p1.setPropertyName("property1");
+        p1.setDescription("descriptionProperty1");
+        requiredProperties.add(p1);
+
+        List<PropertyType> otherProperties = new ArrayList<>();
+        PropertyType p2 = new PropertyType();
+        p2.setPropertyName("otherProperty1");
+        p2.setDescription("descriptionOtherProperty1");
+        otherProperties.add(p2);
+
+        //DataStoreName name, String version, List<PropertyType> requiredProperties, List<PropertyType> othersProperties
+        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(
+                dataStoreName, version,
+                requiredProperties, otherProperties);
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
-        return dataStoreMetadata;*/
-        return null;
+        return dataStoreMetadata;
     }
 
     @BeforeClass
@@ -132,23 +136,42 @@ public class MetadataManagerTests {
      * @param dataStoreName The datastore associated with this connector.
      * @return A {@link com.stratio.meta2.common.data.ConnectorName}.
      */
-    //TODO return ConnectorMetadata
-    public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<Operations> operations,
+    public ConnectorMetadata createTestConnector(String name, DataStoreName dataStoreName, Set<Operations> operations,
             String actorRef) {
         final String version = "0.1.0";
         ConnectorName connectorName = new ConnectorName(name);
-        Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
-        /*RequiredPropertiesType requiredPropertiesForConnector = new RequiredPropertiesType();
-        OptionalPropertiesType optionalProperties = new OptionalPropertiesType();
-        SupportedOperationsType supportedOperations = new SupportedOperationsType();
 
-        supportedOperations.setOperation(operations);
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                requiredPropertiesForConnector,
-                optionalProperties, supportedOperations);
+        List<PropertyType> requiredProperties = new ArrayList<>();
+        PropertyType p1 = new PropertyType();
+        p1.setPropertyName("property1");
+        p1.setDescription("descriptionProperty1");
+        requiredProperties.add(p1);
+
+        List<PropertyType> otherProperties = new ArrayList<>();
+        PropertyType p2 = new PropertyType();
+        p2.setPropertyName("otherProperty1");
+        p2.setDescription("descriptionOtherProperty1");
+        otherProperties.add(p2);
+
+        List<String> supportedOperations = new ArrayList<>();
+        for(Operations op : operations){
+            supportedOperations.add(op.toString());
+        }
+
+        List<String> dataStoreRefs = Arrays.asList(dataStoreName.getName());
+
+        //
+        //ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
+        //List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
+        //        List<String> supportedOperations)
+        //
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(
+                connectorName, version, dataStoreRefs,
+                requiredProperties, otherProperties, supportedOperations);
+
         connectorMetadata.setActorRef(actorRef);
-        MetadataManager.MANAGER.createConnector(connectorMetadata);*/
-        return connectorName;
+        MetadataManager.MANAGER.createConnector(connectorMetadata);
+        return connectorMetadata;
     }
 
     /**
@@ -193,8 +216,7 @@ public class MetadataManagerTests {
 
         //Create columns
         Map<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
-        int columnIndex = 0;
-        for(columnIndex = 0; columnIndex < columnNames.length; columnIndex++){
+        for(int columnIndex = 0; columnIndex < columnNames.length; columnIndex++){
             ColumnName columnName = new ColumnName(table, columnNames[columnIndex]);
             ColumnType columnType = columnTypes[columnIndex];
             ColumnMetadata columnMetadata = new ColumnMetadata(columnName, null, columnType);
