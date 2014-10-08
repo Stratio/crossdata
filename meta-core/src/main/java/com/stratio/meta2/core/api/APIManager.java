@@ -63,6 +63,7 @@ public class APIManager {
      * @return A {@link com.stratio.meta.common.result.MetadataResult}.
      */
     public Result processRequest(Command cmd) {
+        //TODO: create "LIST CONNECTORS" command
         Result result;
         if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
