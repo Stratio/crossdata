@@ -34,6 +34,7 @@ import org.jgroups.util.UUID;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
+import com.stratio.meta2.common.api.PropertyType;
 import com.stratio.meta2.common.api.connector.SupportedOperationsType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
@@ -130,7 +131,8 @@ public class BasicValidatorTest {
     }
 
     private static DataStoreMetadata createDataStoreMetadata() {
-        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(new DataStoreName("Cassandra"), "1.0", null, null);
+        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(new DataStoreName("Cassandra"), "1.0",
+                new HashSet<PropertyType>(), new HashSet<PropertyType>());
         return dataStoreMetadata;
     }
 

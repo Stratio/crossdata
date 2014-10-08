@@ -81,13 +81,13 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
     }
 
     case c: Disconnect => {
-      //println("Send connect " + c)
+      logger.debug("Send connect " + c)
       clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = true)
     }
 
     /* API Command */
     case cmd: Command => {
-      println("Send command: " + cmd);
+      logger.debug("Send command: " + cmd)
       clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), cmd, localAffinity = true)
     }
 

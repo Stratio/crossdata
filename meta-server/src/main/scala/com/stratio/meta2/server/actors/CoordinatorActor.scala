@@ -41,6 +41,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
       workflow match {
         case workflow: MetadataWorkflow => {
+          log.info(">>>>>> TRACE: MetadataWorkflow ")
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(sender)
           val queryId = plannedQuery.getQueryId
@@ -68,6 +69,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         }
 
         case workflow: ManagementWorkflow => {
+          log.info(">>>>>> TRACE: ManagementWorkflow ")
           val requestSender = sender
           val queryId = plannedQuery
             .asInstanceOf[MetadataPlannedQuery].getQueryId
