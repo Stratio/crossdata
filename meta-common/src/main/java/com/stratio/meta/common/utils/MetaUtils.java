@@ -122,7 +122,8 @@ public class MetaUtils {
             "DAYS",
             "MATCH",
             "DATASTORE",
-            "CONNECTOR");
+            "CONNECTOR",
+            "CLUSTER");
 
     /**
      * Private class constructor as all methods are static.

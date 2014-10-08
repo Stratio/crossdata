@@ -94,8 +94,7 @@ public class AttachClusterStatement extends MetadataStatement {
     @Override
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(Validation.MUST_EXIST_DATASTORE)
-                .add(Validation.VALID_CLUSTER_OPTIONS)
-                .add(Validation.MUST_EXIST_CLUSTER);
+                .add(Validation.VALID_CLUSTER_OPTIONS);
     }
 
     public Map<Selector, Selector> getOptions() {
