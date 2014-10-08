@@ -1,6 +1,7 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import com.stratio.meta.common.exceptions.ExecutionException
 import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.result._
 import com.stratio.meta.communication.{ConnectToConnector, DisconnectFromConnector}
@@ -116,7 +117,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       log.info("disconnected from connector ")
 
     case _ => {
-      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
+      //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
+      sender ! new ExecutionException("Non recogniced workflow")
     }
 
   }
