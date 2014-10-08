@@ -157,7 +157,7 @@ public class APIManager {
                 optionalProperties.getProperty(), supportedOperations.getOperation());
 
         // Persist
-        MetadataManager.MANAGER.createConnector(connectorMetadata);
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
     }
 
 }

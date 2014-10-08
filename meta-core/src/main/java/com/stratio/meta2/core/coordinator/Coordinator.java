@@ -1,5 +1,6 @@
 package com.stratio.meta2.core.coordinator;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -64,7 +65,8 @@ public class Coordinator {
     }
 
     public Result executeManagementOperation(ManagementOperation workflow){
-        Result result = null;
+        Result result = Result.createErrorResult(ErrorType.COORDINATION, "Wrong management operation");
+
         if(AttachCluster.class.isInstance(workflow)){
             AttachCluster ac = AttachCluster.class.cast(workflow);
             result = persistAttachCluster(ac.targetCluster(), ac.datastoreName(), ac.options());
@@ -74,16 +76,25 @@ public class Coordinator {
         }else if(AttachConnector.class.isInstance(workflow)){
             AttachConnector ac = AttachConnector.class.cast(workflow);
             result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options());
-        }else if(DetachConnector.class.isInstance(workflow)){
+        } else if(DetachConnector.class.isInstance(workflow)){
             DetachConnector dc = DetachConnector.class.cast(workflow);
             result = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "Not supported");
         }
+
+        result.setQueryId(workflow.queryId());
+
         return result;
     }
 
     public Result persistAttachCluster(ClusterName clusterName, DataStoreName datastoreName,
             Map<Selector, Selector> options) {
         //TODO Move this type of operations to MetadataManager in order to use a single lock
+
+        // Create and persist Cluster metadata
+        ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, datastoreName, options, new HashMap<ConnectorName, ConnectorAttachedMetadata>());
+        MetadataManager.MANAGER.createCluster(clusterMetadata, false);
+
+        // Add new attachment to DataStore
         DataStoreMetadata datastoreMetadata =
                 MetadataManager.MANAGER.getDataStore(datastoreName);
 

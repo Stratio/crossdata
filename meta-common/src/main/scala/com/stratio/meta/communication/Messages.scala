@@ -59,7 +59,7 @@ case class getConnectorName()
  * Parent class for all operations to be executed on CONNECTOR Actors.
  * @param queryId The query identifier.
  */
-class Operation(queryId: String)
+class Operation(val queryId: String)
 
 // ============================================================================
 //                                IStorageEngine
@@ -68,17 +68,17 @@ class Operation(queryId: String)
 
 sealed abstract class StorageOperation(queryId: String) extends Operation(queryId)
 
-case class Insert(queryId: String, targetCluster: ClusterName, targetTable: TableMetadata,
+case class Insert(override val queryId: String, targetCluster: ClusterName, targetTable: TableMetadata,
                   row: Row) extends StorageOperation(queryId)
 
-case class InsertBatch(queryId: String, targetCluster: ClusterName, targetTable: TableMetadata,
+case class InsertBatch(override val queryId: String, targetCluster: ClusterName, targetTable: TableMetadata,
                        rows: util.Collection[Row]) extends StorageOperation(queryId)
 
 // ============================================================================
 //                                IQueryEngine
 // ============================================================================
 
-case class Execute(queryId: String, workflow: LogicalWorkflow) extends Operation(queryId)
+case class Execute(override val queryId: String, workflow: LogicalWorkflow) extends Operation(queryId)
 
 // ============================================================================
 //                                IMetadataEngine
@@ -86,24 +86,24 @@ case class Execute(queryId: String, workflow: LogicalWorkflow) extends Operation
 
 sealed abstract class MetadataOperation(queryId: String) extends Operation(queryId)
 
-case class CreateCatalog(queryId: String, targetCluster: ClusterName, catalogMetadata: CatalogMetadata) extends
+case class CreateCatalog(override val queryId: String, targetCluster: ClusterName, catalogMetadata: CatalogMetadata) extends
 MetadataOperation(queryId)
 
-case class DropCatalog(queryId: String, targetCluster: ClusterName, catalogName: CatalogName) extends MetadataOperation(queryId)
+case class DropCatalog(override val queryId: String, targetCluster: ClusterName, catalogName: CatalogName) extends MetadataOperation(queryId)
 
-case class CreateTable(queryId: String, targetCluster: ClusterName, tableMetadata: TableMetadata) extends
+case class CreateTable(override val queryId: String, targetCluster: ClusterName, tableMetadata: TableMetadata) extends
 MetadataOperation(queryId)
 
-case class CreateTableAndCatalog(queryId: String, targetCluster: ClusterName, catalogMetadata: CatalogMetadata,
+case class CreateTableAndCatalog(override val queryId: String, targetCluster: ClusterName, catalogMetadata: CatalogMetadata,
                                  tableMetadata: TableMetadata) extends
 MetadataOperation(queryId)
 
-case class DropTable(queryId: String, targetCluster: ClusterName, tableName: TableName) extends MetadataOperation(queryId)
+case class DropTable(override val queryId: String, targetCluster: ClusterName, tableName: TableName) extends MetadataOperation(queryId)
 
-case class CreateIndex(queryId: String, targetCluster: ClusterName, indexMetadata: IndexMetadata) extends
+case class CreateIndex(override val queryId: String, targetCluster: ClusterName, indexMetadata: IndexMetadata) extends
 MetadataOperation(queryId)
 
-case class DropIndex(queryId: String, targetCluster: ClusterName, indexMetadata: IndexMetadata) extends
+case class DropIndex(override val queryId: String, targetCluster: ClusterName, indexMetadata: IndexMetadata) extends
 MetadataOperation(queryId)
 
 // ============================================================================
@@ -112,13 +112,13 @@ MetadataOperation(queryId)
 
 sealed abstract class ManagementOperation(queryId: String) extends Operation(queryId)
 
-case class AttachCluster(queryId: String, targetCluster: ClusterName, datastoreName: DataStoreName,
+case class AttachCluster(override val queryId: String, targetCluster: ClusterName, datastoreName: DataStoreName,
                          options: java.util.Map[Selector, Selector]) extends ManagementOperation(queryId)
 
-case class DetachCluster(queryId: String, targetCluster: ClusterName) extends ManagementOperation(queryId)
+case class DetachCluster(override val queryId: String, targetCluster: ClusterName) extends ManagementOperation(queryId)
 
-case class AttachConnector(queryId: String, targetCluster: ClusterName,
+case class AttachConnector(override val queryId: String, targetCluster: ClusterName,
                            connectorName: ConnectorName, options: java.util.Map[Selector, Selector]) extends ManagementOperation(queryId)
 
-case class DetachConnector(queryId: String, targetCluster: ClusterName,
+case class DetachConnector(override val queryId: String, targetCluster: ClusterName,
                            connectorName: ConnectorName) extends ManagementOperation(queryId)

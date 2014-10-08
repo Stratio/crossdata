@@ -4,7 +4,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.stratio.meta.common.exceptions.ExecutionException
 import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.result._
-import com.stratio.meta.communication.{ConnectToConnector, DisconnectFromConnector}
+import com.stratio.meta.communication.{ACK, ConnectToConnector, DisconnectFromConnector}
 import com.stratio.meta2.common.data.{ConnectorName, Status}
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.{ExecutionInfo, ExecutionManager}
@@ -51,6 +51,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
             workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.createMetadataOperationMessage(queryId)
+            sender ! ACK(queryId, QueryStatus.EXECUTED)
           } else {
             executionInfo.setQueryStatus(QueryStatus.PLANNED)
             ExecutionManager.MANAGER.createEntry(workflow.getCatalogMetadata.getName.toString, queryId)
@@ -71,8 +72,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         case workflow: ManagementWorkflow => {
           log.info(">>>>>> TRACE: ManagementWorkflow ")
           val requestSender = sender
-          val queryId = plannedQuery
-            .asInstanceOf[MetadataPlannedQuery].getQueryId
+          val queryId = plannedQuery.getQueryId
           requestSender ! coordinator.executeManagementOperation(workflow.createManagementOperationMessage(queryId))
         }
 

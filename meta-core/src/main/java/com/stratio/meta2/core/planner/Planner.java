@@ -72,6 +72,7 @@ import com.stratio.meta2.core.query.StoragePlannedQuery;
 import com.stratio.meta2.core.query.StorageValidatedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
 import com.stratio.meta2.core.statements.AttachClusterStatement;
+import com.stratio.meta2.core.statements.AttachConnectorStatement;
 import com.stratio.meta2.core.statements.CreateCatalogStatement;
 import com.stratio.meta2.core.statements.CreateTableStatement;
 import com.stratio.meta2.core.statements.InsertIntoStatement;
@@ -329,13 +330,14 @@ public class Planner {
 
         Set<String> managementStatements = new HashSet<>();
         managementStatements.add(AttachClusterStatement.class.toString());
+        managementStatements.add(AttachConnectorStatement.class.toString());
 
         System.out.println(">>>>>>> TRACE: metadataStatement.getClass().toString() = " + metadataStatement.getClass()
                 .toString());
 
-        if(metadataStatements.contains(metadataStatement.getClass())){
+        if(metadataStatements.contains(metadataStatement.getClass().toString())){
             executionWorkflow = buildMetadataWorkflow(query);
-        } else if(managementStatements.contains(metadataStatement.getClass())) {
+        } else if(managementStatements.contains(metadataStatement.getClass().toString())) {
             executionWorkflow = buildManagementWorkflow(query);
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
@@ -430,6 +432,21 @@ public class Planner {
             managementWorkflow.setClusterName(attachClusterStatement.getClusterName());
             managementWorkflow.setDatastoreName(attachClusterStatement.getDatastoreName());
             managementWorkflow.setOptions(attachClusterStatement.getOptions());
+
+        } else if(metadataStatement instanceof AttachConnectorStatement){
+
+            // Create parameters for metadata workflow
+            AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) metadataStatement;
+            Serializable actorRef = null;
+            ExecutionType executionType = ExecutionType.ATTACH_CONNECTOR;
+            ResultType type = ResultType.RESULTS;
+
+            managementWorkflow = new ManagementWorkflow(queryId, actorRef, executionType, type);
+
+            // Add required information
+            managementWorkflow.setConnectorName(attachConnectorStatement.getConnectorName());
+            managementWorkflow.setClusterName(attachConnectorStatement.getClusterName());
+            managementWorkflow.setOptions(attachConnectorStatement.getOptions());
 
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());

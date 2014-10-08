@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -27,8 +28,9 @@ import com.stratio.meta2.common.data.TableName;
 /**
  * This class represents one of the elements requested in a SELECT statement.
  */
-public abstract class Selector {
+public abstract class Selector implements Serializable {
 
+    private static final long serialVersionUID = -2200687442507159727L;
     /**
      * The alias to be applied to the current Selector.
      */

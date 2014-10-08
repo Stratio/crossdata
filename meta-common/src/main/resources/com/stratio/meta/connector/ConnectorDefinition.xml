@@ -17,7 +17,7 @@
     <OptionalProperties>
         <Property>
             <PropertyName>Limit</PropertyName>
-            <Description>1000</Description>
+            <Description>Default limit</Description>
         </Property>
     </OptionalProperties>
     <SupportedOperations>

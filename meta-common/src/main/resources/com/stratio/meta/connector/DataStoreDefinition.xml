@@ -14,11 +14,11 @@
     <OptionalProperties>
         <Property>
             <PropertyName>Limit</PropertyName>
-            <Description>1000</Description>
+            <Description>Default limit</Description>
         </Property>
         <Property>
             <PropertyName>Level</PropertyName>
-            <Description>WARN</Description>
+            <Description>Warning level</Description>
         </Property>
     </OptionalProperties>
     <Behaviors>
