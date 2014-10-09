@@ -162,6 +162,13 @@ public enum MetadataManager {
             throw new NullPointerException("Any parameter can't be NULL");
         }
     }
+    public synchronized void clear()
+            throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException,
+            RollbackException {
+        beginTransaction();
+        metadata.clear();
+        commitTransaction();
+    }
 
     public void createCatalog(CatalogMetadata catalogMetadata) {
         createCatalog(catalogMetadata, true);

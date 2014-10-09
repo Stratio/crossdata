@@ -27,7 +27,7 @@ import com.stratio.meta2.common.data.{ConnectorName, Status}
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.{ExecutionInfo, ExecutionManager}
 import com.stratio.meta2.core.metadata.MetadataManager
-import com.stratio.meta2.core.query.{MetadataPlannedQuery, PlannedQuery}
+import com.stratio.meta2.core.query.PlannedQuery
 
 object CoordinatorActor {
   def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor(connectorMgr, coordinator))
@@ -54,12 +54,13 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
   def receive = {
 
-    case plannedQuery: PlannedQuery => {
+      case plannedQuery: PlannedQuery => {
       val workflow = plannedQuery.getExecutionWorkflow()
+      log.info("\n\n\n\n>>>>>> TRACE: Workflow from "+workflow.getActorRef)
 
       workflow match {
         case workflow: MetadataWorkflow => {
-          log.info(">>>>>> TRACE: MetadataWorkflow ")
+          log.info("\n\n\n\n>>>>>> TRACE: MetadataWorkflow from "+workflow.getActorRef)
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(sender)
           val queryId = plannedQuery.getQueryId
