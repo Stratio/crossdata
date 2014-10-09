@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -65,7 +66,7 @@ import com.stratio.meta2.core.query.StorageValidatedQuery;
 import com.stratio.meta2.core.statements.InsertIntoStatement;
 import com.stratio.meta2.core.statements.StorageStatement;
 
-import junit.framework.Assert;
+
 
 /**
  * Planner test concerning Execution workflow creation.
