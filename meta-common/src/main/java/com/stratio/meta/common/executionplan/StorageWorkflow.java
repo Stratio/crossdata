@@ -49,7 +49,7 @@ public class StorageWorkflow extends ExecutionWorkflow{
      * @param executionType Type of execution.
      * @param type          Type of results.
      */
-    public StorageWorkflow(String queryId, Serializable actorRef, ExecutionType executionType,
+    public StorageWorkflow(String queryId, String actorRef, ExecutionType executionType,
             ResultType type) {
         super(queryId, actorRef, executionType, type);
     }

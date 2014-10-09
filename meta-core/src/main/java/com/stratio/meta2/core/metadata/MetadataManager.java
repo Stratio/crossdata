@@ -340,7 +340,7 @@ public enum MetadataManager {
         return (ConnectorMetadata) metadata.get(name);
     }
 
-    public void addConnectorRef(ConnectorName name, Serializable actorRef) {
+    public void addConnectorRef(ConnectorName name, String actorRef) {
         ConnectorMetadata connectorMetadata = getConnector(name);
         connectorMetadata.setActorRef(actorRef);
         createConnector(connectorMetadata, false);
@@ -352,7 +352,7 @@ public enum MetadataManager {
         createConnector(connectorMetadata, false);
     }
 
-    public Serializable getConnectorRef(ConnectorName name) {
+    public String getConnectorRef(ConnectorName name) {
         return getConnector(name).getActorRef();
     }
 

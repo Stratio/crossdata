@@ -18,10 +18,11 @@
 
 package com.stratio.meta2.server.actors
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.actor._
 import com.stratio.meta.common.exceptions.ExecutionException
 import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.result._
+import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication.{ACK, ConnectToConnector, DisconnectFromConnector}
 import com.stratio.meta2.common.data.{ConnectorName, Status}
 import com.stratio.meta2.core.coordinator.Coordinator
@@ -30,11 +31,13 @@ import com.stratio.meta2.core.metadata.MetadataManager
 import com.stratio.meta2.core.query.PlannedQuery
 
 object CoordinatorActor {
-  def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor(connectorMgr, coordinator))
+  def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor
+  (connectorMgr, coordinator))
 }
 
 class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends Actor with ActorLogging {
   log.info("Lifting coordinator actor")
+
 
   /**
    * Queries in progress.
@@ -62,7 +65,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         case workflow: MetadataWorkflow => {
           log.info("\n\n\n\n>>>>>> TRACE: MetadataWorkflow from "+workflow.getActorRef)
           val executionInfo = new ExecutionInfo
-          executionInfo.setSender(sender)
+          executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
           val queryId = plannedQuery.getQueryId
           executionInfo.setWorkflow(workflow)
           if(workflow.getActorRef != null){
@@ -81,7 +84,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         case workflow: StorageWorkflow => {
           val queryId = plannedQuery.getQueryId
           val executionInfo = new ExecutionInfo
-          executionInfo.setSender(sender)
+          executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
           executionInfo.setWorkflow(workflow)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
@@ -90,20 +93,19 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
         case workflow: ManagementWorkflow => {
           log.info(">>>>>> TRACE: ManagementWorkflow ")
-          val requestSender = sender
           val queryId = plannedQuery.getQueryId
-          requestSender ! coordinator.executeManagementOperation(workflow.createManagementOperationMessage(queryId))
+          sender ! coordinator.executeManagementOperation(workflow.createManagementOperationMessage(queryId))
         }
 
         case workflow: QueryWorkflow => {
           val queryId = plannedQuery.getQueryId
           val executionInfo = new ExecutionInfo
-          executionInfo.setSender(sender)
+          executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
           executionInfo.setWorkflow(workflow)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           if(ResultType.RESULTS.equals(workflow.getResultType)){
-            ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
-            workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getWorkflow
+            //ExecutionManager.MANAGER.createEntry(queryId, executionInfo) //TODO: FIX THIS
+            context.actorSelection(workflow.getActorRef()) ! workflow.getWorkflow
           }else if(ResultType.TRIGGER_EXECUTION.equals(workflow.getResultType)){
             //TODO Trigger next step execution.
             throw new UnsupportedOperationException("Trigger execution not supported")

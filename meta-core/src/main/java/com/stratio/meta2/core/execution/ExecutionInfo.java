@@ -25,7 +25,7 @@ import com.stratio.meta.common.result.QueryStatus;
 
 public class ExecutionInfo implements Serializable {
 
-    private Serializable sender = null;
+    private String sender = null;
 
     private ExecutionWorkflow workflow = null;
 
@@ -36,11 +36,11 @@ public class ExecutionInfo implements Serializable {
     public ExecutionInfo() {
     }
 
-    public Serializable getSender() {
+    public String getSender() {
         return sender;
     }
 
-    public void setSender(Serializable sender) {
+    public void setSender(String sender) {
         this.sender = sender;
     }
 
