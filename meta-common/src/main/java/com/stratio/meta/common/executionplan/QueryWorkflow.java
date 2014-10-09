@@ -52,4 +52,13 @@ public class QueryWorkflow extends ExecutionWorkflow {
         return workflow;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(super.toString());
+        sb.append(System.lineSeparator()).append(workflow);
+        if(getNextExecutionWorkflow() != null){
+            sb.append(System.lineSeparator()).append("TRIGGERS ").append(getNextExecutionWorkflow().toString());
+        }
+        return sb.toString();
+    }
 }

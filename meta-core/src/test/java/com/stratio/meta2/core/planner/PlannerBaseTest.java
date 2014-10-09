@@ -153,6 +153,7 @@ public class PlannerBaseTest extends MetadataManagerTests{
 
     public void assertExecutionWorkflow(ExecutionWorkflow executionWorkflow, int numberSteps, String [] targetActors){
         assertNotNull(executionWorkflow, "Null execution workflow received");
+        LOG.info(executionWorkflow);
         int steps = 1;
         ExecutionWorkflow current = executionWorkflow;
         assertNotNull(current.getActorRef(), "Null target actor");
@@ -164,7 +165,7 @@ public class PlannerBaseTest extends MetadataManagerTests{
             steps++;
         }
         assertEquals(steps, numberSteps, "Invalid number of linked execution workflows.");
-
+        assertEquals(current.getResultType(), ResultType.RESULTS, "Invalid result type for last execution workflow");
     }
 
 }

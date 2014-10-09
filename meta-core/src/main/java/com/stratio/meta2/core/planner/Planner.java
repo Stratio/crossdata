@@ -20,6 +20,7 @@ package com.stratio.meta2.core.planner;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +48,7 @@ import com.stratio.meta.common.logicalplan.Join;
 import com.stratio.meta.common.logicalplan.Limit;
 import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
+import com.stratio.meta.common.logicalplan.PartialResults;
 import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.logicalplan.Select;
 import com.stratio.meta.common.logicalplan.TransformationStep;
@@ -117,11 +119,23 @@ public class Planner {
         return pq;
     }
 
+    /**
+     * Define an execution plan for metadata queries.
+     * @param query A {@link com.stratio.meta2.core.query.MetadataValidatedQuery}.
+     * @return A {@link com.stratio.meta2.core.query.MetadataPlannedQuery}.
+     * @throws PlanningException If the query cannot be planned.
+     */
     public MetadataPlannedQuery planQuery(MetadataValidatedQuery query) throws PlanningException {
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
         return new MetadataPlannedQuery(query, executionWorkflow);
     }
 
+    /**
+     * Define an execution plan for storage queries.
+     * @param query A {@link com.stratio.meta2.core.query.StorageValidatedQuery}.
+     * @return A {@link com.stratio.meta2.core.query.StoragePlannedQuery}.
+     * @throws PlanningException If the query cannot be planned.
+     */
     public StoragePlannedQuery planQuery(StorageValidatedQuery query) throws PlanningException {
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
         return new StoragePlannedQuery(query, executionWorkflow);
@@ -141,6 +155,13 @@ public class Planner {
         return result;
     }
 
+    /**
+     * Build a execution workflow for a query analyzing the existing logical workflow.
+     * @param queryId The query identifier.
+     * @param workflow The {@link com.stratio.meta.common.logicalplan.LogicalWorkflow} associated with the query.
+     * @return A {@link com.stratio.meta.common.executionplan.ExecutionWorkflow}.
+     * @throws PlanningException If the workflow cannot be defined.
+     */
     protected ExecutionWorkflow buildExecutionWorkflow(String queryId, LogicalWorkflow workflow) throws
             PlanningException {
 
@@ -172,33 +193,119 @@ public class Planner {
         return executionWorkflow;
     }
 
-
+    /**
+     * Merge a set of execution paths solving union dependencies along.
+     * @param queryId The query identifier.
+     * @param executionPaths The list of execution paths.
+     * @param unionSteps A map of union steps waiting to be merged.
+     * @return A {@link com.stratio.meta.common.executionplan.ExecutionWorkflow}.
+     * @throws PlanningException If the execution paths cannot be merged.
+     */
     protected ExecutionWorkflow mergeExecutionPaths(String queryId,
             List<ExecutionPath> executionPaths,
             Map<UnionStep, Set<ExecutionPath>> unionSteps) throws PlanningException{
+
+        if(unionSteps.size() == 0){
+            return toExecutionWorkflow(
+                    queryId, executionPaths, executionPaths.get(0).getLast(),
+                    executionPaths.get(0).getAvailableConnectors(),
+                    ResultType.RESULTS);
+        }
 
         //Find first UnionStep
         UnionStep mergeStep = null;
         ExecutionPath [] paths = null;
         for(Map.Entry<UnionStep, Set<ExecutionPath>> entry : unionSteps.entrySet()){
             paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
-            if(paths.length == 2 && TransformationStep.class.isInstance(paths[0]) && TransformationStep.class
-                    .isInstance(paths[1])){
-                LOG.info("First Union found");
+            if(paths.length == 2
+                    && TransformationStep.class.isInstance(paths[0].getLast())
+                    && TransformationStep.class.isInstance(paths[1].getLast())){
                 mergeStep = entry.getKey();
+                LOG.info("First Union found: " + mergeStep);
             }
         }
 
-        if(unionSteps.size() == 0){
-            ExecutionWorkflow result = toExecutionWorkflow(queryId, executionPaths, executionPaths.get(0).getLast(),
-                    executionPaths.get(0).getAvailableConnectors());
-        }
+        List<ConnectorMetadata> toRemove = new ArrayList<>();
+        List<ConnectorMetadata> mergeConnectors = new ArrayList<>();
+
+        Map<PartialResults, ExecutionWorkflow> triggers = new HashMap<>();
+        List<ExecutionWorkflow> workflows = new ArrayList<>();
+        UnionStep nextUnion = null;
+        QueryWorkflow first = null;
 
         boolean exit = false;
+        while(!exit){
+            //Check whether the list of connectors found in the Execution paths being merged can execute the join
+            //operation
 
+            for(int index = 0; index < paths.length; index++) {
+                for (ConnectorMetadata connector : paths[index].getAvailableConnectors()) {
+                    if (!connector.supports(mergeStep.getOperation())) {
+                        toRemove.add(connector);
+                    }
+                }
 
+                if (paths[index].getAvailableConnectors().size() == toRemove.size()) {
+                    //Add intermediate result node
+                    PartialResults partialResults = new PartialResults(Operations.PARTIAL_RESULTS);
+                    partialResults.setNextStep(mergeStep);
+                    mergeStep.addPreviousSteps(partialResults);
+                    mergeStep.removePreviousStep(paths[0].getLast());
+                    //Create a trigger execution workflow with the partial results step.
+                    ExecutionWorkflow w = toExecutionWorkflow(
+                            queryId, Arrays.asList(paths[0]),
+                            paths[0].getLast(), paths[0].getAvailableConnectors(),
+                            ResultType.TRIGGER_EXECUTION);
+                    w.setTriggerStep(partialResults);
+
+                    triggers.put(partialResults, null);
+                    workflows.add(w);
+                } else {
+                    paths[0].getAvailableConnectors().removeAll(toRemove);
+                }
+
+                mergeConnectors.addAll(paths[0].getAvailableConnectors());
+            }
+            unionSteps.remove(mergeStep);
+
+            if(unionSteps.isEmpty()){
+                exit = true;
+            }else{
+                mergeStep = nextUnion;
+                paths = unionSteps.get(mergeStep).toArray(new ExecutionPath[unionSteps.get(mergeStep).size()]);
+                LOG.info("Load next merge step: " + mergeStep);
+            }
+        }
+
+        //Build the list of ExecutionWorkflows
         //String queryId, Serializable actorRef, ExecutionType executionType, ResultType type
-        return new ExecutionWorkflow(queryId, null, null, null);
+        return buildExecutionTree(first, workflows, triggers);
+    }
+
+    /**
+     * Build the tree of linked execution workflows.
+     * @param first The first workflow of the list.
+     * @param workflows The list of execution workflows involved.
+     * @param triggers The map of triggering steps.
+     * @return A {@link com.stratio.meta.common.executionplan.ExecutionWorkflow}.
+     */
+    public ExecutionWorkflow buildExecutionTree(
+            QueryWorkflow first,
+            List<ExecutionWorkflow> workflows,
+            Map<PartialResults,
+            ExecutionWorkflow> triggers){
+
+        LogicalStep triggerStep = first.getTriggerStep();
+        ExecutionWorkflow workflow = first;
+
+        while(!triggers.isEmpty()){
+            workflow.setNextExecutionWorkflow(triggers.get(triggerStep));
+            triggers.remove(triggerStep);
+            workflow = workflow.getNextExecutionWorkflow();
+            triggerStep = workflow.getTriggerStep();
+        }
+
+        return first;
     }
 
     /**
@@ -210,8 +317,10 @@ public class Planner {
      * @param connectors The List of available connectors.
      * @return A {@link com.stratio.meta.common.executionplan.QueryWorkflow}.
      */
-    protected QueryWorkflow toExecutionWorkflow(String queryId, List<ExecutionPath> executionPaths,
-            LogicalStep last, List<ConnectorMetadata> connectors){
+    protected QueryWorkflow toExecutionWorkflow(
+            String queryId, List<ExecutionPath> executionPaths,
+            LogicalStep last, List<ConnectorMetadata> connectors,
+            ResultType type){
 
         //Define the list of initial steps.
         List<LogicalStep> initialSteps = new ArrayList<>(executionPaths.size());
@@ -223,7 +332,7 @@ public class Planner {
         //Select an actor
         //TODO Improve actor selection based on cost analysis.
         Serializable selectedActor = connectors.get(0).getActorRef();
-        return new QueryWorkflow(queryId, selectedActor, ExecutionType.SELECT, ResultType.RESULTS, workflow);
+        return new QueryWorkflow(queryId, selectedActor, ExecutionType.SELECT, type, workflow);
     }
 
     /**
