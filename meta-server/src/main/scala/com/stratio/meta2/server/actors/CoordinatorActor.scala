@@ -104,7 +104,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setWorkflow(workflow)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           if(ResultType.RESULTS.equals(workflow.getResultType)){
-            //ExecutionManager.MANAGER.createEntry(queryId, executionInfo) //TODO: FIX THIS
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo) //TODO: FIX THIS
             context.actorSelection(workflow.getActorRef()) ! workflow.getWorkflow
           }else if(ResultType.TRIGGER_EXECUTION.equals(workflow.getResultType)){
             //TODO Trigger next step execution.
