@@ -597,8 +597,8 @@ public class Planner {
 
         String queryId = query.getQueryId();
         String actorRef = null;
-        TableName tableName=null;
-        Collection<Row> rows=new ArrayList<>();
+        TableName tableName;
+        Collection<Row> rows;
         if (query.getStatement() instanceof InsertIntoStatement){
             tableName = ((InsertIntoStatement) (query.getStatement())).getTableName();
             rows=getInsertRows(((InsertIntoStatement) (query.getStatement())));
@@ -628,6 +628,7 @@ public class Planner {
         StorageWorkflow storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT,
                 ResultType.RESULTS);
         storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+        storageWorkflow.setTableMetadata(tableMetadata);
         storageWorkflow.setRows(rows);
 
         return storageWorkflow;
