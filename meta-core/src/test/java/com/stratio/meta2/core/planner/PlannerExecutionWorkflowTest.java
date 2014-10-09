@@ -46,7 +46,6 @@ import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.logicalplan.Select;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
-import com.stratio.meta.communication.StorageOperation;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -332,8 +331,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Planner planner = new Planner();
         try {
             ExecutionWorkflow storageWorkflow = planner.buildExecutionWorkflow(storageValidatedQuery);
-            Assert.assertEquals(((StorageWorkflow)storageWorkflow).getClusterName().getName(),"cluster");
-            Assert.assertEquals(((StorageWorkflow)storageWorkflow).getTableMetadata().getName().getName(),"users");
+            Assert.assertEquals(((StorageWorkflow) storageWorkflow).getClusterName().getName(), "cluster");
+            Assert.assertEquals(((StorageWorkflow) storageWorkflow).getTableMetadata().getName().getName(), "users");
         } catch (PlanningException e) {
             Assert.fail(e.getMessage());
         }
