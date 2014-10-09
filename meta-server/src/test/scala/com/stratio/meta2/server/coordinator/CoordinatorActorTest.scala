@@ -21,6 +21,7 @@ import javax.transaction.TransactionManager
 
 import akka.actor.{ActorSystem, actorRef2Scala}
 import akka.pattern.ask
+import akka.serialization.JavaSerializer._
 import com.stratio.connectors.MockConnectorActor
 import com.stratio.meta.common.exceptions.ExecutionException
 import com.stratio.meta.common.executionplan.{ExecutionType, QueryWorkflow, ResultType}
