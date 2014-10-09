@@ -456,9 +456,6 @@ public class Planner {
         managementStatements.add(AttachClusterStatement.class.toString());
         managementStatements.add(AttachConnectorStatement.class.toString());
 
-        System.out.println(">>>>>>> TRACE: metadataStatement.getClass().toString() = " + metadataStatement.getClass()
-                .toString());
-
         if(metadataStatements.contains(metadataStatement.getClass().toString())){
             executionWorkflow = buildMetadataWorkflow(query);
         } else if(managementStatements.contains(metadataStatement.getClass().toString())) {
