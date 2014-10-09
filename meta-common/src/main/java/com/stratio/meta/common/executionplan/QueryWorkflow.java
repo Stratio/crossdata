@@ -42,7 +42,7 @@ public class QueryWorkflow extends ExecutionWorkflow {
      * @param type          Type of results.
      * @param workflow      The logical workflow.
      */
-    public QueryWorkflow(String queryId, Serializable actorRef, ExecutionType executionType,
+    public QueryWorkflow(String queryId, String actorRef, ExecutionType executionType,
             ResultType type, LogicalWorkflow workflow) {
         super(queryId, actorRef, executionType, type);
         this.workflow = workflow;

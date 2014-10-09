@@ -60,7 +60,7 @@ public class MetadataWorkflow extends ExecutionWorkflow {
      * @param executionType Type of execution.
      * @param type          Type of results.
      */
-    public MetadataWorkflow(String queryId, Serializable actorRef, ExecutionType executionType,
+    public MetadataWorkflow(String queryId, String actorRef, ExecutionType executionType,
             ResultType type) {
         super(queryId, actorRef, executionType, type);
     }

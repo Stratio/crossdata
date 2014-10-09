@@ -18,7 +18,6 @@
 
 package com.stratio.meta2.common.metadata;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
@@ -38,7 +37,7 @@ public class ConnectorMetadata implements IMetadata {
     private final Set<PropertyType> optionalProperties;
     private final Set<Operations> supportedOperations;
     private Status status;
-    private Serializable actorRef;
+    private String actorRef;
 
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
@@ -104,11 +103,11 @@ public class ConnectorMetadata implements IMetadata {
         this.status = status;
     }
 
-    public Serializable getActorRef() {
+    public String getActorRef() {
         return actorRef;
     }
 
-    public void setActorRef(Serializable actorRef) {
+    public void setActorRef(String actorRef) {
         this.status = Status.ONLINE;
         this.actorRef = actorRef;
     }
