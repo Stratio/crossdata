@@ -18,7 +18,6 @@
 
 package com.stratio.meta2.core.planner;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,6 +54,7 @@ import com.stratio.meta.common.logicalplan.TransformationStep;
 import com.stratio.meta.common.logicalplan.UnionStep;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
@@ -331,8 +331,8 @@ public class Planner {
 
         //Select an actor
         //TODO Improve actor selection based on cost analysis.
-        Serializable selectedActor = connectors.get(0).getActorRef();
-        return new QueryWorkflow(queryId, selectedActor, ExecutionType.SELECT, type, workflow);
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectors.get(0).getActorRef());
+        return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 
     /**
@@ -588,11 +588,11 @@ public class Planner {
 
             // Create parameters for metadata workflow
             CreateCatalogStatement createCatalogStatement = (CreateCatalogStatement) metadataStatement;
-            Serializable actorRef = null;
+            String actorRefUri = null;
             ExecutionType executionType = ExecutionType.CREATE_CATALOG;
             ResultType type = ResultType.RESULTS;
 
-            metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
             // Create & add CatalogMetadata to the MetadataWorkflow
             CatalogName name = createCatalogStatement.getCatalogName();
@@ -606,14 +606,14 @@ public class Planner {
 
             // Create parameters for metadata workflow
             CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
-            Serializable actorRef = null;
+            String actorRefUri = null;
             ExecutionType executionType = ExecutionType.CREATE_TABLE;
             ResultType type = ResultType.RESULTS;
 
             if (!existsCatalogInCluster(createTableStatement.getTableName().getCatalogName(),
                     createTableStatement.getClusterName())) {
                 executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
-                metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+                metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
                 metadataWorkflow.setCatalogName(
                         createTableStatement.getTableName().getCatalogName());
                 metadataWorkflow
@@ -621,7 +621,7 @@ public class Planner {
                                 .getCatalogName()));
             }
 
-            metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
             // Create & add TableMetadata to the MetadataWorkflow
             TableName name = createTableStatement.getTableName();
@@ -655,7 +655,7 @@ public class Planner {
 
             // Create parameters for metadata workflow
             AttachClusterStatement attachClusterStatement = (AttachClusterStatement) metadataStatement;
-            Serializable actorRef = null;
+            String actorRef = null;
             ExecutionType executionType = ExecutionType.ATTACH_CLUSTER;
             ResultType type = ResultType.RESULTS;
 
@@ -670,7 +670,7 @@ public class Planner {
 
             // Create parameters for metadata workflow
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) metadataStatement;
-            Serializable actorRef = null;
+            String actorRef = null;
             ExecutionType executionType = ExecutionType.ATTACH_CONNECTOR;
             ResultType type = ResultType.RESULTS;
 
@@ -705,9 +705,9 @@ public class Planner {
     protected ExecutionWorkflow buildExecutionWorkflow(StorageValidatedQuery query) throws PlanningException {
 
         String queryId = query.getQueryId();
-        Serializable actorRef = null;
-        TableName tableName=null;
-        Collection<Row> rows=new ArrayList<>();
+        String actorRef = null;
+        TableName tableName;
+        Collection<Row> rows;
         if (query.getStatement() instanceof InsertIntoStatement){
             tableName = ((InsertIntoStatement) (query.getStatement())).getTableName();
             rows=getInsertRows(((InsertIntoStatement) (query.getStatement())));
@@ -726,7 +726,7 @@ public class Planner {
             ConnectorName connectorName = (ConnectorName) it.next();
             ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
             if (connectorMetadata.getSupportedOperations().contains(Operations.INSERT)) {
-                actorRef = connectorMetadata.getActorRef();
+                actorRef = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
                 found = true;
             }
         }
@@ -737,6 +737,7 @@ public class Planner {
         StorageWorkflow storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT,
                 ResultType.RESULTS);
         storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+        storageWorkflow.setTableMetadata(tableMetadata);
         storageWorkflow.setRows(rows);
 
         return storageWorkflow;

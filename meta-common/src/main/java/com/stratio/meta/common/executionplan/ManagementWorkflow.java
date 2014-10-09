@@ -64,7 +64,7 @@ public class ManagementWorkflow extends ExecutionWorkflow {
      * @param executionType Type of execution.
      * @param type          Type of results.
      */
-    public ManagementWorkflow(String queryId, Serializable actorRef,
+    public ManagementWorkflow(String queryId, String actorRef,
             ExecutionType executionType, ResultType type) {
         super(queryId, actorRef, executionType, type);
     }
