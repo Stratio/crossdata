@@ -83,4 +83,20 @@ public class StorageWorkflow extends ExecutionWorkflow{
         }
         return result;
     }
+
+    public ClusterName getClusterName() {
+        return clusterName;
+    }
+
+    public TableMetadata getTableMetadata() {
+        return tableMetadata;
+    }
+
+    public Row getRow() {
+        return row;
+    }
+
+    public Collection<Row> getRows() {
+        return rows;
+    }
 }
