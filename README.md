@@ -1,47 +1,30 @@
-# stratio-meta #
+# About #
 
-One LANGUAGE to rule them all
-
-# Project description #
-
-Stratio META brings batch and streaming queries into a single language. META provides a distributed fault-tolerant server architecture that has the unique ability to execute queries in Cassandra, Spark, and/or Stratio Streaming. From an architectural point of view, Stratio META is composed of:
-
-   * meta-common : Definition of common classes used by other components.
-   * meta-core : Grammar definition, statement parsing, validation, and execution.
-   * meta-deep : Allows meta-server to support advanced capabilities such as SELECT with INNER JOIN.
-   * meta-dist : Contains config files and scripts to start/stop meta-server and meta-sh in production environments.
-   * meta-driver : Java API offered to client applications.
-   * meta-server : Listens for client connections and executes requested commands.
-   * meta-sh : The interactive shell; uses meta-driver to connect to the server.
+Crossdata (aka Meta) is a distributed framework that unifies the interaction with batch and streaming sources supporting multiple datastore technologies thanks to its generic architecture and a custom SQL-like language with support for streaming queries. Supporting multiple architectures imposes two main challenges: how to normalize the access to the datastores, and how to cope with datastore limitations. To access multiple technologies Crossdata defines a common unifying interface containing the set of operations that a datastore may support. New connectors can be easily added to increase its connectivity capabilities. Two types of connectors are defined: native and spark-based. Native connectors are faster for simple operations, while Spark-based connectors offer a larger set of functionality. The Crossdata planner decides which connector will be used for any request based its characteristics. We offer a shell, Java/REST APIs, and ODBC for BI.
 
 ## Full documentation ##
 
-See the project webpage for more information, documentation, examples and operational details: http://stratio.github.io/crossdata/
+See the Wiki for full documentation, examples, operational details and other information.
 
-## Prerequisites ##
+See the [Javadoc] () and [Language reference] () for the internal details.
 
-In order to execute META, the following elements are required:
+## Compiling Crossdata ##
 
-1. A working installation of Cassandra. The Stratio-cassandra fork is required to support LUCENE indexes.
-2. A working installation of Stratio Deep. Otherwise, advanced capabilities such as SELECT with INNER JOIN will not be available.
-
-## Compiling META ##
-
-Compiling META involves generating a set of files (.tokens, Lexers, and Parsers) from the different grammar files. To automatically build Stratio META execute the following command:
+Compiling Crossdata involves generating a set of files (.tokens, Lexers, and Parsers) from the different grammar files. To automatically build Stratio Crossdata execute the following command:
 
 ```
    > mvn clean compile install
 ```
 
-## Running the META-server##
+## Running the crossdata-server##
 
 ```
    > mvn exec:java -DskipTests -pl meta-server -Dexec.mainClass="com.stratio.meta.server.MetaApplication"
 ```
 
-## Running the META-shell ##
+## Running the crosdata-shell ##
 
-The META-shell allows users to launch interactive queries against a set of META servers. 
+The crossdata-shell allows users to launch interactive queries against a set of Crossdata servers. 
 Works both in Unix and Windows.
 The shell features:
 
@@ -83,9 +66,12 @@ Once the shell is running, you can exit the program introducing the word **exit*
 
 You can find more information about this project (tutorials, examples, etc...) in http://wordpress.dev.strat.io/
 
+## Send issues to Jira ##
+You can send us issues in https://crossdata.atlassian.net
+
 # License #
 
-Stratio Meta is licensed as [Apache2](http://www.apache.org/licenses/LICENSE-2.0.txt)
+Stratio Crossdata is licensed as [Apache2](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 Licensed to STRATIO (C) under one or more contributor license agreements.  
 See the NOTICE file distributed with this work for additional information 
